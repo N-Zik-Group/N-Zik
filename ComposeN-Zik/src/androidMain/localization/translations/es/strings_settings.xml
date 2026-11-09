@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Conéctate a YouTube primero para activar esta opción</string>
     <string name="settings_youtube_library_sync_content_description">Listas de reproducción, álbumes, artistas, historia, etc.</string>
     <string name="settings_youtube_login_enabled_label">Habilitar inicio de sesión en YouTube Music</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Ordenar</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Barra de herramientas</string>
 </resources>
