@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Legen Sie fest, wie Stücke von unliebsamen Künstlern ausgeschlossen werden.</string>
     <string name="player_exclude_disliked_songs_description">Legen Sie fest, wie ungestörte Tracks von Wiedergabevorschlägen ausgeschlossen werden.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Tracks, die die ausgewählte Dauer überschreiten, ausschließen.</string>
-    <string name="player_excluded_song_count_format">%s Songs ausgeschlossen</string>
+    <string name="player_excluded_song_count_format">Titel ausgenommen: %s</string>
     <string name="player_keep_minimized">Minimiert lassen</string>
     <string name="player_layout_artwork_style_description">Legen Sie fest, wie der Player die Titelcover anzeigt.</string>
     <string name="player_layout_controls_style_description">Wählen Sie das Layout der Player-Steuerelemente.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Albumcover neben kommenden Tracks in die Playervorschau einfügen.</string>
     <string name="player_queue_preview_song_count_description">Legen Sie fest, wie viele Titel in der Player-Vorschau erscheinen.</string>
     <string name="player_queue_remove_selected_confirmation_format">Auswahl aus der Warteschlange entfernen? Anzahl der Titel: %d</string>
-    <string name="player_queue_shuffled_count_format">Warteschlange gemischt (%d Songs)</string>
+    <string name="player_queue_shuffled_count_format">Warteschlange gemischt (Tracks: %d)</string>
     <string name="player_remaining_time_visible_description">Zeigt die verbleibende Zeit im aktuellen Track.</string>
     <string name="player_restart_required_message">Damit die Änderungen wirksam werden, ist ein Neustart des Players erforderlich!</string>
     <string name="player_rotating_buttons">Rotierende Buttons</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Zeigt eine Vorschau der kommenden Titel im Player.</string>
     <string name="player_show_player_top_actions_bar_description">Zeigt die Reihe der Player-Aktionen über dem Hauptinhalt an.</string>
     <string name="player_shuffle_empty_message">Keine Titel für die Zufallswiedergabe</string>
-    <string name="player_shuffled_song_count_format">%d Songs gemischt</string>
+    <string name="player_shuffled_song_count_format">Gemischte Titel: %d</string>
     <string name="player_sleep_timer_end_of_song_message">Schlaf-Timer erst am Ende des Songs beenden</string>
     <string name="player_sleep_timer_finished_message">Schlaf-Timer beendet</string>
     <string name="player_song_playback_error_format">Beim Titel %1$s ist etwas schiefgelaufen</string>
