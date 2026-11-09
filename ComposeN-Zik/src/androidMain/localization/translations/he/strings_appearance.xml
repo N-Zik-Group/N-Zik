@@ -242,6 +242,5 @@
     <string name="thumbnail_remove_success">Removed Thumbnail</string>
     <string name="glass_effect_rendering_quality">Rendering quality</string>
     <string name="image_editor_original">Original ratio</string>
-    <string name="image_editor_cancel">ביטול</string>
     <string name="image_editor_apply">Use image</string>
 </resources>
