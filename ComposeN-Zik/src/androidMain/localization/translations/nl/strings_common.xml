@@ -15,6 +15,7 @@
     <string name="common_delete_success">Verwijderd</string>
     <string name="common_description_unavailable">Geen beschrijving beschikbaar</string>
     <string name="common_duration_milliseconds_format">%1$s ms</string>
+    <string name="common_duration_milliseconds_unit">ms</string>
     <string name="common_empty_items">Geen artikelen</string>
     <string name="common_external_link_loading_suffix">laadt...</string>
     <string name="common_load_failed">Kan niet laden</string>
@@ -43,4 +44,6 @@
     <string name="common_value_input_hint">Voer de waarde in</string>
     <string name="common_unknown">Onbekend</string>
     <string name="common_duration_minutes_short">%1$d min</string>
+    <string name="common_external_link_loading_format">%1$s is aan het laden…</string>
+    <string name="common_loading_message">Loading…</string>
 </resources>
