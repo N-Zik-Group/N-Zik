@@ -226,6 +226,8 @@
     <string name="theme_shake_sensitivity_medium">中(3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">非常高 (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">编辑图像</string>
+    <string name="image_editor_failed">无法编辑图像。您当前的图像被保存。</string>
     <string name="thumbnail_action_edit">编辑缩略图</string>
     <string name="thumbnail_action_pick_from_gallery">从图库中选择</string>
     <string name="thumbnail_action_reset">重置缩略图</string>
@@ -235,4 +237,7 @@
     <string name="thumbnail_remove_failed">删除缩略图失败</string>
     <string name="thumbnail_remove_success">删除缩略图</string>
     <string name="glass_effect_rendering_quality">渲染质量</string>
+    <string name="image_editor_original">原始比率</string>
+    <string name="image_editor_cancel">取消</string>
+    <string name="image_editor_apply">使用图像</string>
 </resources>
