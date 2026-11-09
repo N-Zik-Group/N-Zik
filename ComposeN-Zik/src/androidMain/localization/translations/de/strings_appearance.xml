@@ -230,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Mittel (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Sehr hoch (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">Download</string>
+    <string name="cover_download_failed">Das Cover konnte nicht heruntergeladen werden.</string>
     <string name="image_editor_title">Bild bearbeiten</string>
     <string name="image_editor_failed">Bild konnte nicht bearbeitet werden. Ihr aktuelles Bild wurde beibehalten.</string>
     <string name="thumbnail_action_edit">Thumbnail bearbeiten</string>
