@@ -28,12 +28,47 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import kotlin.coroutines.resume
+
+private const val RewindCaptureDirectory = "shared_rewind"
+private const val RewindCaptureMaxAgeMs = 24L * 60L * 60L * 1000L
+private val rewindCaptureName = Regex(
+    """NZik_Rewind_(?:GLOBAL|[0-9]{4}(?:_(?:0[1-9]|1[0-2]))?)_(?:0[0-9]|1[0-6]|[0-9]{13})[.]png"""
+)
+private val rewindCaptureLock = Mutex()
+
+/** Keeps cached captures available until the current share or folder export finishes using them. */
+internal suspend fun <T> withRewindCaptures(block: suspend () -> T): T =
+    rewindCaptureLock.withLock { block() }
+
+/** Sweeps only expired captures while no Rewind share or export is using the cache. */
+internal fun cleanupExpiredRewindCaptures(cacheDir: File, now: Long = System.currentTimeMillis()) {
+    if (!rewindCaptureLock.tryLock()) return
+    try {
+        val directory = cacheDir.resolve(RewindCaptureDirectory)
+        if (!directory.exists()) return
+        if (directory.canonicalFile != cacheDir.canonicalFile.resolve(RewindCaptureDirectory)) {
+            throw IOException("Unexpected Rewind capture directory")
+        }
+        val captures = directory.listFiles() ?: throw IOException("Cannot list Rewind captures")
+        val staleBefore = now - RewindCaptureMaxAgeMs
+        for (file in captures) {
+            if (!rewindCaptureName.matches(file.name) || !file.isFile || file.canonicalFile != directory.canonicalFile.resolve(file.name)) continue
+            if (file.lastModified() in 1L until staleBefore && !file.delete() && file.exists()) {
+                throw IOException("Cannot delete expired Rewind capture")
+            }
+        }
+    } finally {
+        rewindCaptureLock.unlock()
+    }
+}
 
 /**
  * Settle time (ms) before each Rewind deck page frame is copied during the export capture.
@@ -78,7 +113,7 @@ internal suspend fun captureRewindDeckPages(
         return null
     }
 
-    val shareDirectory = File(activity.cacheDir, "shared_rewind").apply { mkdirs() }
+    val shareDirectory = File(activity.cacheDir, RewindCaptureDirectory).apply { mkdirs() }
     // One fresh set per share run, so a new share never mixes with previous pages
     shareDirectory.listFiles()?.forEach(File::delete)
 
@@ -178,7 +213,7 @@ internal suspend fun captureRewindSlidePng(
     page: Int
 ): File? {
     val activity = view.context as? Activity ?: return null
-    val shareDirectory = File(activity.cacheDir, "shared_rewind").apply { mkdirs() }
+    val shareDirectory = File(activity.cacheDir, RewindCaptureDirectory).apply { mkdirs() }
     val insetsController = WindowCompat.getInsetsController(activity.window, view)
     var succeeded = false
     try {
@@ -255,7 +290,7 @@ internal suspend fun shareRewindSlide(
     view: View,
     period: RewindPeriod,
     page: Int
-) {
+): Unit = withRewindCaptures {
     val file = if (Build.VERSION.SDK_INT >= 34) {
         captureRewindSlidePng(view, period, page)
     } else {
@@ -274,7 +309,7 @@ internal suspend fun shareRewindSlide(
     }
     if (file == null) {
         Timber.tag("RewindShare").e("Failed to capture slide %d for sharing", page + 1)
-        return
+        return@withRewindCaptures
     }
     val shared = runCatching { shareImageFile(context, file) }
         .onFailure { error ->
@@ -330,9 +365,9 @@ internal suspend fun captureRewindScreenshot(
             }
         }
         val imageFile = withContext(Dispatchers.IO) {
-            val shareDirectory = File(context.cacheDir, "shared_rewind").apply { mkdirs() }
+            val shareDirectory = File(context.cacheDir, RewindCaptureDirectory).apply { mkdirs() }
             // Captures from previous share runs (> 24 h old) are dropped (spec cleanup)
-            val staleBefore = System.currentTimeMillis() - 24L * 60L * 60L * 1000L
+            val staleBefore = System.currentTimeMillis() - RewindCaptureMaxAgeMs
             shareDirectory.listFiles()
                 ?.filter { it.lastModified() < staleBefore }
                 ?.forEach(File::delete)

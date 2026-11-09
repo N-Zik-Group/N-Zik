@@ -1,6 +1,7 @@
 package app.n_zik.android.utils.debug
 
 import java.io.File
+import java.io.IOException
 
 /**
  * Pure file helpers for the app's log files.
@@ -32,3 +33,19 @@ fun debugLogFiles(logsDir: File): List<File> =
  */
 fun purgeDebugLogs(logsDir: File): Int =
     debugLogFiles(logsDir).count { it.name == DEBUG_LOG_FILE_NAME && it.delete() }
+
+/** Clears the two diagnostic log files without changing the logging configuration. */
+internal fun clearDiagnosticLogs(filesDir: File) {
+    val logsDir = filesDir.resolve("logs")
+    if (!logsDir.exists()) return
+    if (logsDir.canonicalFile != filesDir.canonicalFile.resolve(logsDir.name) || !logsDir.isDirectory) {
+        throw IOException("Unexpected diagnostic log directory")
+    }
+
+    val failed = debugLogFiles(logsDir).filter { file ->
+        file.exists() && (!file.isFile || (!file.delete() && file.exists()))
+    }
+    if (failed.isNotEmpty()) {
+        throw IOException("Cannot delete diagnostic log files: " + failed.joinToString { it.name })
+    }
+}

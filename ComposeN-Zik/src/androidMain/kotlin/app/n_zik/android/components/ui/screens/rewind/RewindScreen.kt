@@ -250,24 +250,26 @@ fun RewindScreen(
             // display framebuffer carries the GPU-rendered shader backgrounds, which a
 //
             // software canvas could never replay.
-            val deckPages = captureRewindDeckPages(
-                view = rootView,
-                pagerState = pagerState,
-                period = period,
-                pageCount = RewindDeckPageCount
-            )
-            val written = if (deckPages != null) {
-                exportRewindPagesToFolder(context, folderUri, deckPages)
-            } else {
-                // Last resort: software-replay only the final slide, exported to the same
-                // folder. The Bitmap canvas cannot draw a RuntimeShader, so the deck
-//
-                // switches to its solid fallback backgrounds for the capture, then restores.
-                val fallbackFile = captureFinaleSlide(context, rootView, pagerState, period)
-                if (fallbackFile != null) {
-                    exportRewindPagesToFolder(context, folderUri, listOf(fallbackFile))
+            val written = withRewindCaptures {
+                val deckPages = captureRewindDeckPages(
+                    view = rootView,
+                    pagerState = pagerState,
+                    period = period,
+                    pageCount = RewindDeckPageCount
+                )
+                if (deckPages != null) {
+                    exportRewindPagesToFolder(context, folderUri, deckPages)
                 } else {
-                    0
+                    // Last resort: software-replay only the final slide, exported to the same
+                    // folder. The Bitmap canvas cannot draw a RuntimeShader, so the deck
+//
+                    // switches to its solid fallback backgrounds for the capture, then restores.
+                    val fallbackFile = captureFinaleSlide(context, rootView, pagerState, period)
+                    if (fallbackFile != null) {
+                        exportRewindPagesToFolder(context, folderUri, listOf(fallbackFile))
+                    } else {
+                        0
+                    }
                 }
             }
             shareMode = false

@@ -3,9 +3,11 @@ package app.n_zik.android.utils.debug
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.io.IOException
 
 class DebugLogsTest {
 
@@ -39,5 +41,20 @@ class DebugLogsTest {
     @Test
     fun `purgeDebugLogs returns zero when no log files exist`() {
         assertEquals(0, purgeDebugLogs(logsDir))
+    }
+
+    @Test
+    fun `diagnostic cleanup reports a failure even when the other log was removed`() {
+        val filesDir = logsDir
+        val diagnostics = debugLogFiles(filesDir.resolve("logs").apply { mkdirs() })
+        val blocked = diagnostics[0].apply { mkdir() }
+        val child = blocked.resolve("keep.txt").apply { writeText("keep") }
+        val crashLog = diagnostics[1].apply { writeText("crash") }
+
+        val failure = assertThrows(IOException::class.java) { clearDiagnosticLogs(filesDir) }
+
+        assertTrue(failure.message.orEmpty().contains(blocked.name))
+        assertTrue(child.exists())
+        assertFalse(crashLog.exists())
     }
 }

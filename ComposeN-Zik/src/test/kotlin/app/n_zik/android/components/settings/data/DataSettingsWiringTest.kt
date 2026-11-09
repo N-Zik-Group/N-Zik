@@ -65,6 +65,7 @@ import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
+import app.it.fast4x.rimusic.utils.logDebugEnabledKey
 import app.it.fast4x.rimusic.utils.pauseListenHistoryKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
@@ -75,13 +76,17 @@ import app.n_zik.android.R
 import app.n_zik.android.components.dialog.backup.ImportBackupDialog
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.components.dialog.export.ExportBackupDialog
+import app.n_zik.android.components.image.PickedImageEditor
 import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.EventTable
+import app.n_zik.android.core.profiles.coversDir
 import app.n_zik.android.core.profiles.waveformsDir
 import app.n_zik.android.download.services.MyDownloadService
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.utils.debug.debugLogFiles
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 
 /** Behavioral wiring for the migrated Data page, using semantic selectors. */
@@ -237,6 +242,32 @@ class DataSettingsWiringTest {
         val generated = activeDirectory.resolve("generated.json").apply { writeText("{}") }
         val unrelated = activeDirectory.resolve("keep.txt").apply { writeText("keep") }
         val inactive = inactiveDirectory.resolve("inactive.json").apply { writeText("{}") }
+        val cover = coversDir(context, "default").apply { mkdirs() }.resolve("cover.jpg").apply { writeText("cover") }
+        val logs = context.filesDir.resolve("logs").apply { mkdirs() }
+        val diagnosticFiles = debugLogFiles(logs).onEach { it.writeText("diagnostic log") }
+        val otherLog = logs.resolve("other.txt").apply { writeText("other log") }
+        context.preferences.edit().putBoolean(logDebugEnabledKey, true).apply()
+
+        val editorRoot = context.cacheDir.resolve("image_edit").apply { mkdirs() }
+        val activeId = UUID.randomUUID().toString()
+        PickedImageEditor.retainDirectory(activeId)
+        val activeDraft = editorRoot.resolve(activeId).apply { mkdirs() }.resolve("input.jpg").apply { writeText("active") }
+        val abandoned = editorRoot.resolve(UUID.randomUUID().toString()).apply { mkdirs() }
+        abandoned.resolve("input.jpg").writeText("abandoned")
+        val unknownDraft = editorRoot.resolve("unknown").apply { mkdirs() }
+
+        val shares = context.cacheDir.resolve("shared_rewind").apply { mkdirs() }
+        val expiredAt = System.currentTimeMillis() - Duration.ofHours(25).toMillis()
+        val expired = shares.resolve("NZik_Rewind_2026_03_01.png").apply {
+            writeText("expired")
+            assertTrue(setLastModified(expiredAt))
+        }
+        val fresh = shares.resolve("NZik_Rewind_GLOBAL_16.png").apply { writeText("fresh") }
+        val unknownShare = shares.resolve("NZik_Rewind_2026_unknown.png").apply {
+            writeText("unknown")
+            assertTrue(setLastModified(expiredAt))
+        }
+        val unrelatedExport = context.cacheDir.resolve("export.tmp").apply { writeText("export") }
         val completed = AtomicInteger()
         try {
             composeRule.setContent {
@@ -276,7 +307,55 @@ class DataSettingsWiringTest {
             assertFalse(generated.exists())
             assertTrue(unrelated.exists())
             assertTrue(inactive.exists())
+
+            confirm("diagnostic_logs", R.string.common_action_clear, 5)
+            assertTrue(diagnosticFiles.none { it.exists() })
+            assertTrue(otherLog.exists())
+            assertTrue(context.preferences.getBoolean(logDebugEnabledKey, false))
+
+            composeRule.onNodeWithTag("data.storage.cleanup.temporary_files").performScrollTo().performClick()
+            composeRule.onNodeWithText(context.getString(R.string.common_action_cancel)).performClick()
+            assertTrue(abandoned.exists())
+            assertTrue(expired.exists())
+            assertEquals(5, completed.get())
+
+            confirm("temporary_files", R.string.common_action_delete, 6)
+            assertFalse(abandoned.exists())
+            assertFalse(expired.exists())
+            assertTrue(activeDraft.exists())
+            assertTrue(unknownDraft.exists())
+            assertTrue(fresh.exists())
+            assertTrue(unknownShare.exists())
+            assertTrue(unrelatedExport.exists())
+
+            generated.writeText("{}")
+            diagnosticFiles.forEach { it.writeText("new log") }
+            assertTrue(abandoned.mkdir())
+            abandoned.resolve("input.jpg").writeText("another abandoned draft")
+            expired.writeText("another expired share")
+            assertTrue(expired.setLastModified(expiredAt))
+
+            confirm("all", R.string.common_action_clear, 7)
+            verify(exactly = 2) { ImageCacheFactory.clearImageCache() }
+            verify(exactly = 2) { cache.removeResource("first") }
+            verify(exactly = 2) { cache.removeResource("second") }
+            verify(exactly = 2) { DownloadService.sendRemoveAllDownloads(any(), MyDownloadService::class.java, false) }
+            verify(exactly = 0) { binder.downloadCache }
+            assertFalse(generated.exists())
+            assertTrue(inactive.exists())
+            assertTrue(unrelated.exists())
+            assertTrue(cover.exists())
+            assertTrue(diagnosticFiles.none { it.exists() })
+            assertTrue(otherLog.exists())
+            assertTrue(context.preferences.getBoolean(logDebugEnabledKey, false))
+            assertFalse(abandoned.exists())
+            assertFalse(expired.exists())
+            assertTrue(activeDraft.exists())
+            assertTrue(fresh.exists())
+            assertTrue(unknownShare.exists())
+            assertTrue(unrelatedExport.exists())
         } finally {
+            PickedImageEditor.discard(context, activeId)
             unmockkStatic(DownloadService::class)
         }
     }
