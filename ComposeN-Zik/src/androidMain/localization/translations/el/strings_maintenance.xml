@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">Τελευταία κατάρρευση</string>
     <string name="maintenance_lastfm_active">Συνεδρία ενεργή</string>
     <string name="maintenance_library">Βιβλιοθήκη</string>
-    <string name="maintenance_library_albums">Άλμπουμ: %d</string>
-    <string name="maintenance_library_artists">Καλλιτέχνες: %d</string>
+    <string name="maintenance_library_albums">%d άλμπουμ</string>
+    <string name="maintenance_library_artists">%d καλλιτέχνες</string>
     <string name="maintenance_library_listened">%d άκουσε</string>
-    <string name="maintenance_library_playlists">Λίστες αναπαραγωγής: %d</string>
-    <string name="maintenance_library_songs">Τραγούδια: %d</string>
+    <string name="maintenance_library_playlists">Λίστες αναπαραγωγής %d</string>
+    <string name="maintenance_library_songs">%d τραγούδια</string>
     <string name="maintenance_live_subsystems">Ζωντανά υποσυστήματα</string>
     <string name="maintenance_log_view">Προβολή</string>
     <string name="maintenance_lt_connected">Συνδεδεμένο</string>
@@ -197,7 +197,7 @@
     <string name="recovery_error">Παρουσιάστηκε σφάλμα: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Εξαγωγή βάσης δεδομένων</string>
-    <string name="recovery_export_database_description">Αποθηκεύστε τη βιβλιοθήκη, τις λίστες αναπαραγωγής και το ιστορικό σας</string>
+    <string name="recovery_export_database_with_covers_description">Αποθηκεύστε τη βιβλιοθήκη, τις λίστες αναπαραγωγής και το ιστορικό σας ως SQLite. Αν έχετε προσαρμοσμένα καλύμματα, η εξαγωγή είναι ένα ZIP με τη βάση δεδομένων και καλύπτει.</string>
     <string name="recovery_export_logs">Εξαγωγή αρχείων καταγραφής</string>
     <string name="recovery_export_logs_description">Αποθήκευση αρχείων καταγραφής σφαλμάτων και αποσφαλμάτωσης για μια αναφορά σφαλμάτων</string>
     <string name="recovery_export_profiles_description">Η λίστα προφίλ και οι φωτογραφίες προσώπου σε ένα αρχείο .txt</string>
@@ -210,7 +210,7 @@
     <string name="recovery_group_settings">Ρυθμίσεις</string>
     <string name="recovery_group_storage">Αποθήκευση</string>
     <string name="recovery_import_database">Εισαγωγή βάσης δεδομένων</string>
-    <string name="recovery_import_database_description">Επαναφορά μιας προηγουμένως εξαγόμενης βάσης δεδομένων</string>
+    <string name="recovery_import_database_with_covers_description">Επαναφορά αντιγράφου ασφαλείας βάσης δεδομένων SQLite ή ZIP, συμπεριλαμβανομένων τυχόν προσαρμοσμένων καλύψεων στο ZIP.</string>
     <string name="recovery_import_profiles_description">Επαναφορά της λίστας προφίλ και των όψεων φωτογραφιών από ένα αρχείο .txt</string>
     <string name="recovery_import_settings">Εισαγωγή ρυθμίσεων</string>
     <string name="recovery_import_settings_description">Επαναφορά προτιμήσεων από ένα αρχείο CSV</string>
@@ -311,4 +311,5 @@
     <string name="updates_warning_acknowledge">Κατανοώ</string>
     <string name="updates_check_failed">Αδυναμία ελέγχου για ενημερώσεις.</string>
     <string name="updates_install_generic_error">Δεν ήταν δυνατή η εγκατάσταση της ενημέρωσης.</string>
+    <string name="updates_channel_available_format">Διαθέσιμη ενημέρωση %1$s</string>
 </resources>
