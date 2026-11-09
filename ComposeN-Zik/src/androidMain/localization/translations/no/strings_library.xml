@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Liker du alle sangene vil ta om %1$s. Lukk appen for å avbryte. Vil du fortsette?</string>
     <string name="library_on_device_permission_request_failed">Kunne ikke be om tilgang til musikk på denne enheten.</string>
     <string name="library_on_device_permission_settings_failed">Kunne ikke åpne tillatelsesinnstillinger.</string>
+    <string name="artist_more_from_format">Mer fra %1$s</string>
+    <string name="playlist_top_show_title_format">Vis %1$s</string>
 </resources>
