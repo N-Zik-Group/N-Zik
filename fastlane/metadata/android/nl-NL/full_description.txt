@@ -27,7 +27,7 @@ Glazen credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Ac
 
 💾 <b>Offline, Metadata & Privacy</b>
 - Slimme caching en downloads voor tracks en afspeellijsten, met selecteerbare downloadkwaliteit
-- Exporteer op FFmpeg-powered met volledige metadata (FFmpeg is een downloadbare extensie, geïnstalleerd op eerste gebruik)
+- FFmpeg-export met volledige metadata, behalve op 32-bit x86
 - In-app metadata editor (AAC/Opus, cover kunst)
 - Lokale luisterstatistieken en geschiedenis
 -Automatische back-up met aangepaste intervallen en retentie
