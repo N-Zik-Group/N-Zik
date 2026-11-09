@@ -198,4 +198,5 @@
     <string name="listen_together_server_request_failed">Kuuntele Yhdessä palvelin ei voinut suorittaa pyyntöä.</string>
     <string name="network_stream_retrying_playback">Yritetään jatkaa toistoa…</string>
     <string name="listen_together_invite_link">Kutsu linkki yhteen</string>
+    <string name="listen_together_server_location_poland">Puola</string>
 </resources>
