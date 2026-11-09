@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Úložiště</string>
+    <string name="storage_breakdown_info_title">O úložišti</string>
+    <string name="storage_breakdown_nzik_total">Celkem používáno N-Zik</string>
+    <string name="storage_breakdown_subtitle">Členění podle skladovacích prostor</string>
+    <string name="storage_breakdown_waiting">Měření úložiště…</string>
+    <string name="storage_breakdown_cached_images">Obrázky v mezipaměti</string>
+    <string name="storage_breakdown_streamed_audio">Streamované zvuky</string>
+    <string name="storage_breakdown_downloaded_audio">Stažený zvuk</string>
+    <string name="storage_breakdown_custom_covers">Vlastní obaly</string>
+    <string name="storage_breakdown_waveforms">Waveovy formy</string>
+    <string name="storage_breakdown_other_nzik_data">Ostatní data N-Zik</string>
+    <string name="storage_breakdown_other_used_space">Systém, aplikace &amp; soubory</string>
+    <string name="storage_breakdown_free_space">Volné místo</string>
+    <string name="storage_info_images">Obrazy a další obrázky uloženy do mezipaměti pro rychlejší zobrazení.</string>
+    <string name="storage_info_streaming">Zvuk uložený dočasně po streamování, takže může být přehrán znovu bez načítání stejných dat.</string>
+    <string name="storage_info_downloads">Zvuk uložen v N-Zik pro offline poslech.</string>
+    <string name="storage_info_waveforms">Vygenerované soubory používané k nakreslení zvukového vlnového tvaru v přehrávači.</string>
+    <string name="storage_info_covers">Umělecká díla, kterou jste zvolili nebo importovali jako vlastní obálky.</string>
+    <string name="storage_info_other_nzik">Zbytek soukromých dat N-Zika včetně databází, nastavení, indexů, rozšíření a logů.</string>
+    <string name="storage_info_other_used">Zbývající využívaný prostor na vnitřní hlasitosti, včetně Androidu, nainstalovaných aplikací a osobních souborů.</string>
+    <string name="storage_info_free">Prostor pro aplikace a soubory s vnitřní hlasitostí.</string>
+    <string name="storage_cleanup_title">Vyčistit</string>
+    <string name="storage_cleanup_failed">Nelze dokončit čištění úložiště.</string>
+    <string name="storage_cleanup_images_description">Vymazat uklízené obrázkem N-Zik.</string>
+    <string name="storage_cleanup_streaming_description">Vymazat audio v mezipaměti během vysílání.</string>
+    <string name="storage_cleanup_downloads_description">Odstranit offline zvuk a zrušit čekající stahování do aktivního profilu úložiště.</string>
+    <string name="storage_cleanup_waveforms_description">Vymazat generované soubory tvaru vln.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Vymazat vlnové formuláře</string>
+    <string name="storage_cleanup_diagnostic_logs">Vymazat diagnostické protokoly</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Odstranit ladění a chybové soubory. Vaše nastavení protokolování zůstává stejné.</string>
+    <string name="storage_cleanup_temporary_files">Odstranit opuštěné dočasné soubory</string>
+    <string name="storage_cleanup_temporary_files_description">Odebrat koncepty opuštěného obrazu a přepnout zachycení sdílení starší než 24 hodin.</string>
+    <string name="storage_cleanup_all">Vymazat vše</string>
+    <string name="storage_cleanup_all_description">Vymazat obrázky a streamovací keše a generované tvary vln pro aktivní profil, včetně uložení, které sdílí s ostatními profily. Odstranit offline zvuk a zrušit čekající stahování do aktivního profilu úložiště. Odstranit diagnostické logy, koncepty opuštěného editoru obrázků a prošlé zachycení záznamů. Vaše knihovna, vlastní obálky a nastavení jsou uchovávány.</string>
     <!-- Backup -->
     <string name="backup_action_export">Exportovat zálohu</string>
     <string name="backup_action_import">Importovat zálohu</string>
@@ -15,11 +50,14 @@
     <string name="backup_auto_schedule_day_of_month_description">Vyberte den měsíce pro automatické měsíční zálohy.</string>
     <string name="backup_auto_schedule_day_of_week_description">Vyberte den v týdnu pro týdenní automatické zálohy.</string>
     <string name="backup_auto_schedule_time_description">Vyberte hodinu, ve které budou automaticky spuštěny zálohy.</string>
+    <string name="backup_auto_content_format_description">Zvolte, co se má zálohovat automaticky. Zálohování databáze používá ZIP, když obsahují vlastní obálky.</string>
     <string name="backup_before_update_description">Automaticky zálohovat data před instalací aktualizace</string>
     <string name="backup_before_update_failed">Předinstalování zálohy se nezdařilo</string>
     <string name="backup_before_update_running_message">Zálohování dat před instalací…</string>
     <string name="backup_before_update_running_title">Probíhá zálohování</string>
     <string name="backup_excluded_preferences_and_cache_description">Osobní předvolby (tj. režim tématu) a mezipaměť jsou vynechány.</string>
+    <string name="backup_export_library_options_description">Exportovat databázi s jejími vlastními obálkami, nastaveními nebo profily</string>
+    <string name="backup_import_library_options_description">Obnovit zálohu, nastavení nebo profily SQLite nebo ZIP databáze</string>
     <string name="backup_include_discord_credentials">Zahrnout Discord identitu</string>
     <string name="backup_include_lastfm_credentials">Zahrnout údaje o identitě Last.fm</string>
     <string name="backup_include_proxy_password">Zahrnout heslo proxy serveru</string>
@@ -56,12 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Exportovat seznam profilů a fotky obličeje do jednoho .txt souboru</string>
     <string name="backup_export_all">Exportovat vše</string>
+    <string name="backup_export_all_with_covers_description">Exportovat databázi, nastavení a stav profilu zvlášť. Databáze používá ZIP, pokud obsahuje vlastní obálky.</string>
+    <string name="backup_export_database_with_covers_and_settings_description">Exportovat databázi a nastavení odděleně. Databáze používá ZIP, pokud obsahuje vlastní kryty.</string>
+    <string name="backup_export_database_with_covers_description">Ukládat skladby, playlisty a historii jako SQLite. Pokud máte vlastní obálky, export je ZIP s databází a obálkami.</string>
     <string name="backup_export_profile_state_failed">Export stavu profilu se nezdařil</string>
     <string name="backup_export_settings_description">Exportovat nastavení a předvolby aplikace</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importovat seznam profilů a fotky obličeje ze souboru .txt</string>
     <string name="backup_import_all">Importovat vše</string>
+    <string name="backup_import_all_with_covers_description">Obnovit zálohu SQLite nebo ZIP databáze, nastavení a stav profilu z oddělených souborů.</string>
+    <string name="backup_import_database_with_covers_and_settings_description">Obnovit zálohu SQLite nebo ZIP databáze a samostatný soubor nastavení.</string>
     <string name="backup_import_completed_profile">Importováno do %1$s</string>
+    <string name="backup_import_database_with_covers_description">Obnovení skladeb, skladeb a historie z SQLite nebo ZIP. ZIP záloh také obnoví zahrnuté vlastní kryty.</string>
     <string name="backup_import_profile_state_complete">Stav profilu importován: %1$d profily</string>
     <string name="backup_import_profile_state_complete_base">Stav profilu importován: základní profil</string>
     <string name="backup_import_profile_state_failed">Import stavu profilu se nezdařil</string>
@@ -72,11 +116,14 @@
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Vymazat mezipaměť skladeb</string>
     <string name="cache_downloads_max_size_description">Vyberte kolik místa na disku je k dispozici pro stažené skladby. Tlačítko Koš odstraní stažené zvuky.</string>
+    <string name="cache_downloads_limit_description">Vyberte kolik místa na disku je k dispozici pro stažené skladby. Tlačítko Koš odstraní stažené zvuky.</string>
     <string name="cache_image_max_size_description">Omezit prostor na disk použitý v mezipaměti obrázků. Tlačítko koš vymaže stažené obrázky z této keše.</string>
+    <string name="cache_image_limit_description">Omezit prostor na disk použitý v mezipaměti obrázků. Tlačítko koš vymaže stažené obrázky z této keše.</string>
     <string name="cache_location_description">Vyberte, kde aplikace ukládá svou vyrovnávací paměť pro přehrávání skladeb.</string>
     <string name="cache_location_private">Soukromé</string>
     <string name="cache_location_system">Systémové</string>
     <string name="cache_streaming_max_size_description">Omezit prostor na disk použitý pro ukládání streamovaných skladeb. Tlačítko koš vymaže tuto vyrovnávací paměť přehrávání.</string>
+    <string name="cache_streaming_limit_description">Omezit prostor na disk použitý pro ukládání streamovaných skladeb. Tlačítko koš vymaže tuto vyrovnávací paměť přehrávání.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Stáhnout všechny skladby</string>
     <string name="downloads_action_refresh_quality">Aktualizovat stahování</string>
@@ -136,7 +183,10 @@
     <string name="storage_samsung_advice_message">Automatická správa paměti společnosti Samsung může odstranit stahování a soubory mezipaměti N-Zik, i když jste o to nepožádali. Chcete-li vaše stahování v bezpečí, použijte místo úložiště systému místo soukromé (aplikace) úložiště úložiště.</string>
     <string name="storage_samsung_advice_title">Doporučení pro úložiště Samsung</string>
     <string name="storage_samsung_system_usage_message">V současné době máte %1$s stahování a cache v úložišti systému.</string>
+    <string name="backup_export_database_failed">Export databáze selhal</string>
     <string name="backup_import_failed">Import se nezdařil</string>
     <string name="export_no_songs">Žádné skladby nebyly exportovány</string>
     <string name="export_cached_songs_generic_error">Export selhal</string>
+    <string name="backup_startup_preparing_library">Příprava tvé knihovny…</string>
+    <string name="backup_startup_recovery_failed">Nepodařilo se dokončit obnovení vaší knihovny.</string>
 </resources>
