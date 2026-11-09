@@ -137,6 +137,9 @@
     <string name="modules_download_needed">El módulo necesita descargar (~25 MB). Compruebe la conexión.</string>
     <string name="modules_downloading">Descargando módulo</string>
     <string name="modules_edit_unavailable">Editar metadatos no disponibles: %1$s</string>
+    <string name="modules_ffmpeg_preparation">Preparando FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">Descargando FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Necesario exportar canciones cacheadas y editar metadatos de canciones. Descargado en el primer uso.</string>
     <string name="modules_info">Info</string>
     <string name="modules_insufficient_space">Esta característica necesita unos 70 MB de espacio libre</string>
