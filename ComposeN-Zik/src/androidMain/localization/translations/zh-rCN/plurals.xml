@@ -31,4 +31,46 @@
     <plurals name="statistics_songs_heard_count">
         <item quantity="other">%1$d 首歌曲</item>
     </plurals>
+    <plurals name="profile_last_used_minute_count">
+        <item quantity="other">%1$d 分钟前</item>
+    </plurals>
+    <plurals name="profile_last_used_hour_count">
+        <item quantity="other">%1$d 小时前</item>
+    </plurals>
+    <plurals name="profile_last_used_day_count">
+        <item quantity="other">%1$d 天前</item>
+    </plurals>
+    <plurals name="profile_last_used_week_count">
+        <item quantity="other">%1$d 周前</item>
+    </plurals>
+    <plurals name="profile_last_used_month_count">
+        <item quantity="other">%1$d 个月前</item>
+    </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="other">删除 %1$d 搜索查询</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="other">删除 %1$d 回放事件</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="other">%1$d 剧集 · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="other">将 %1$d 首歌曲添加到 YouTube 播放列表</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="other">%1$d 歌曲添加到YouTube播放列表</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="other">配置文件状态已导入： %1$d 配置文件</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="other">无法同步 %1$d 相册。请返回相册选项卡重试。</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="other">导出 %1$d 缓存/下载歌曲？</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="other">%1$d 下载的歌曲丢失并被删除。请再次下载。</item>
+    </plurals>
 </resources>
