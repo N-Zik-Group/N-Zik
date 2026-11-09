@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Líbí se vám všechny skladby asi %1$s. Zavřete aplikaci pro zrušení. Chcete pokračovat?</string>
     <string name="library_on_device_permission_request_failed">Nelze požádat o přístup k hudbě na tomto zařízení.</string>
     <string name="library_on_device_permission_settings_failed">Nelze otevřít nastavení oprávnění.</string>
+    <string name="artist_more_from_format">Více z %1$s</string>
+    <string name="playlist_top_show_title_format">Zobrazit %1$s</string>
 </resources>
