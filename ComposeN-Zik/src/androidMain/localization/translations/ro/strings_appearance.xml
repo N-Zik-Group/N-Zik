@@ -226,6 +226,8 @@
     <string name="theme_shake_sensitivity_medium">Medie (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Foarte mare (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Editare imagine</string>
+    <string name="image_editor_failed">Nu s-a putut edita imaginea. Imaginea ta curentă a fost păstrată.</string>
     <string name="thumbnail_action_edit">Editează miniatura</string>
     <string name="thumbnail_action_pick_from_gallery">Alege din galerie</string>
     <string name="thumbnail_action_reset">Resetează miniatura</string>
@@ -235,4 +237,7 @@
     <string name="thumbnail_remove_failed">Eliminarea miniaturii a eșuat</string>
     <string name="thumbnail_remove_success">Miniatura a fost eliminată</string>
     <string name="glass_effect_rendering_quality">Calitate randare</string>
+    <string name="image_editor_original">Raportul original</string>
+    <string name="image_editor_cancel">Anulează</string>
+    <string name="image_editor_apply">Utilizare imagine</string>
 </resources>
