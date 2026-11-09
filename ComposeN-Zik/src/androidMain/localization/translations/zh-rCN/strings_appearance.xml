@@ -230,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">中(3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">非常高 (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">下载</string>
+    <string name="cover_download_failed">无法下载封面。</string>
     <string name="image_editor_title">编辑图像</string>
     <string name="image_editor_failed">无法编辑图像。您当前的图像被保存。</string>
     <string name="thumbnail_action_edit">编辑缩略图</string>
