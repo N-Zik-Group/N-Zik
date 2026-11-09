@@ -27,7 +27,7 @@ Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Bac
 
 💾 <b>Offline, Metadata & Privacy</b>
 - Smart caching and downloads for tracks and playlists, with selectable download quality
-- FFmpeg-powered export with full metadata (FFmpeg is a downloadable extension, installed on first use)
+- FFmpeg-powered export with full metadata (downloadable on first use; unavailable on 32-bit x86 devices)
 - In-app metadata editor (AAC/Opus, cover art)
 - Local listening stats and history
 - Auto-backup with custom intervals and retention
