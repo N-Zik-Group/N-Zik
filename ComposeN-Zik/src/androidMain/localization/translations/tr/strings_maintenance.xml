@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">Son çökme</string>
     <string name="maintenance_lastfm_active">Oturum aktif</string>
     <string name="maintenance_library">Kütüphane</string>
-    <string name="maintenance_library_albums">%d albüm</string>
-    <string name="maintenance_library_artists">%d sanatçı</string>
+    <string name="maintenance_library_albums">Albums: %d</string>
+    <string name="maintenance_library_artists">Artists: %d</string>
     <string name="maintenance_library_listened">%d dinlendi</string>
-    <string name="maintenance_library_playlists">%d çalma listesi</string>
-    <string name="maintenance_library_songs">%d şarkı</string>
+    <string name="maintenance_library_playlists">Playlists: %d</string>
+    <string name="maintenance_library_songs">Songs: %d</string>
     <string name="maintenance_live_subsystems">Canlı alt sistemler</string>
     <string name="maintenance_log_view">Görüntüle</string>
     <string name="maintenance_lt_connected">Bağlanıldı</string>
