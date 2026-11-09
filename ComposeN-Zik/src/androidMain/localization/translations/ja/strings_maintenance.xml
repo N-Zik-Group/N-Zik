@@ -137,6 +137,9 @@
     <string name="modules_download_needed">モジュールをダウンロードする必要があります。接続を確認してください。</string>
     <string name="modules_downloading">モジュールをダウンロード中</string>
     <string name="modules_edit_unavailable">利用できないメタデータの編集： %1$s</string>
+    <string name="modules_ffmpeg_preparation">FFmpegの準備</string>
+    <string name="modules_ffmpeg_downloading">FFmpegをダウンロード中</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">キャッシュされた曲をエクスポートし、曲のメタデータを編集するために必要です。最初にダウンロードしました。</string>
     <string name="modules_info">情報</string>
     <string name="modules_insufficient_space">この機能には約 70 MB の空き容量が必要です</string>
