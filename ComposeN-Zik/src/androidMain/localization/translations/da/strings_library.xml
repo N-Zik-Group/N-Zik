@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Hvis du lytter til alle sangene, vil det tage omkring %1$s. Luk app\'en for at annullere. Vil du fortsætte?</string>
     <string name="library_on_device_permission_request_failed">Kunne ikke anmode om adgang til musik på denne enhed.</string>
     <string name="library_on_device_permission_settings_failed">Kunne ikke åbne tilladelsesindstillinger.</string>
+    <string name="artist_more_from_format">Mere fra %1$s</string>
+    <string name="playlist_top_show_title_format">Vis %1$s</string>
 </resources>
