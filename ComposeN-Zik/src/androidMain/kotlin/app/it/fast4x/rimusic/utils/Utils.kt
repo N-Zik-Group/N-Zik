@@ -32,8 +32,6 @@ import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.core.coil.thumbnail
 import com.zionhuang.innertube.pages.LibraryPage
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.http.HttpStatusCode
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic.addToPlaylist
 import it.fast4x.innertube.YtMusic.likeVideoOrSong
@@ -58,6 +56,7 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import app.kreate.android.me.knighthat.utils.Toaster
@@ -625,57 +624,44 @@ suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: 
     if( !canPushToYTM() ) return
     if( !isNetworkConnected(appContext()) ) return
 
-    val mediaItemsChunks = mediaItems.chunked(50)
-    mediaItemsChunks.forEachIndexed { index, items ->
-        if (mediaItems.size <= 50) {}
-        else if (index == 0) {
-            Toaster.i(
-                "${mediaItems.size} "+appContext().resources.getString(R.string.sync_youtube_playlist_songs_adding_suffix)
-            )
-        } else {
-            delay(2000)
-        }
-        PlaylistEditThrottle.throttle(ytplaylistId)
-        addToPlaylist(ytplaylistId, items.map { it.mediaId })
-            .onSuccess {
-                Database.playlistTable
-                        .findById( localPlaylistId )
-                        .first()
-                        ?.let {
-                            Database.mapIgnore( it, *items.toTypedArray() )
-                        }
-                if (items.size == 50)
-                    Toaster.i(R.string.sync_youtube_songs_remaining, formatArgs = arrayOf((mediaItems.size - (index + 1) * 50).toString()))
-            }
-            .onFailure {
-                Timber.tag("Utils").e("YtMusic addToPlaylist (list of size ${items.size}) error: ${it.stackTraceToString()}")
-                if(it is ClientRequestException && it.response.status == HttpStatusCode.BadRequest) {
-                    Toaster.w( R.string.sync_youtube_playlist_batch_failed )
-                    items.forEachIndexed { itemIndex, item ->
-                        delay(500)
-                        PlaylistEditThrottle.throttle(ytplaylistId)
-                        addToPlaylist(ytplaylistId, item.mediaId).onFailure {
-                            Timber.tag("Utils").e("YtMusic addToPlaylist (list insert backup) error: ${it.stackTraceToString()}")
-                                Toaster.e(
-                                    appContext().resources.getString(R.string.sync_youtube_playlist_add_failed) + ": ${item.mediaMetadata.title} - ${item.mediaMetadata.artist}"
-                                )
-                        }.onSuccess {
-                            Database.playlistTable
-                                    .findById( localPlaylistId )
-                                    .first()
-                                    ?.let { playlist ->
-                                        Database.mapIgnore( playlist, item )
-                                    }
-                            Toaster.n( appContext().resources.getString(R.string.sync_youtube_songs_remaining, mediaItems.size - index * 50 - itemIndex - 1) )
-                        }
-                    }
-                }
-            }
+    if (mediaItems.isEmpty()) return
+
+    val resources = appContext().resources
+    val progressInterval = 50
+    if (mediaItems.size > progressInterval) {
+        Toaster.i("${mediaItems.size} " + resources.getString(R.string.sync_youtube_playlist_songs_adding_suffix))
     }
 
-    Toaster.n(
-        "${mediaItems.size} "+ appContext().resources.getString(R.string.sync_youtube_playlist_songs_added_suffix)
-    )
+    // The multi-item API sends individual requests and can fail after a partial write.
+    // Count confirmed single-item requests so we never retry or count an entire failed batch.
+    var addedCount = 0
+    mediaItems.forEachIndexed { index, item ->
+        PlaylistEditThrottle.throttle(ytplaylistId)
+        addToPlaylist(ytplaylistId, item.mediaId)
+            .onSuccess {
+                addedCount++
+                Database.playlistTable.findById(localPlaylistId).first()?.let { playlist ->
+                    Database.mapIgnore(playlist, item)
+                }
+            }
+            .onFailure { error ->
+                if (error is CancellationException) throw error
+                Timber.tag("Utils").e(error, "Failed to add a song to the YouTube playlist")
+                Toaster.e(
+                    resources.getString(R.string.sync_youtube_playlist_add_failed) +
+                        ": ${item.mediaMetadata.title} - ${item.mediaMetadata.artist}"
+                )
+            }
+
+        if ((index + 1) % progressInterval == 0 && index < mediaItems.lastIndex) {
+            Toaster.i(
+                R.string.sync_youtube_songs_remaining,
+                formatArgs = arrayOf((mediaItems.size - addedCount).toString())
+            )
+        }
+    }
+
+    Toaster.n("$addedCount " + resources.getString(R.string.sync_youtube_playlist_songs_added_suffix))
 }
 
 suspend fun addSongToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: String, mediaItem: MediaItem){

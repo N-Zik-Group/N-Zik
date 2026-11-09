@@ -161,6 +161,7 @@ import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.showFloatingIconKey
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -978,30 +979,31 @@ fun PlaylistSongList(
                         ) {
                             var isDescriptionExpanded by remember { mutableStateOf(false) }
                             val attributionsIndex = description.lastIndexOf("\n\nFrom Wikipedia")
-                            val nonTranslatedText by remember {
-                                mutableStateOf(
-                                    if (attributionsIndex == -1) description
-                                    else description.substring(0, attributionsIndex)
-                                )
-                            }
+                            val nonTranslatedText = if (attributionsIndex == -1) description
+                            else description.substring(0, attributionsIndex)
 
-                            var translatedText by remember { mutableStateOf("") }
-                            if (translateEnabled == true && languageDestination != null) {
-                                LaunchedEffect(nonTranslatedText, languageDestination) {
-                                    val result = withContext(NzikDispatchers.DATA) {
+                            val translationTarget = languageDestination.takeIf { translateEnabled == true }
+                            var translatedText by remember(nonTranslatedText, translationTarget) {
+                                mutableStateOf<String?>(null)
+                            }
+                            if (translationTarget != null) {
+                                LaunchedEffect(nonTranslatedText, translationTarget) {
+                                    translatedText = withContext(NzikDispatchers.DATA) {
                                         try {
                                             translator.translate(
                                                 nonTranslatedText,
-                                                languageDestination,
+                                                translationTarget,
                                                 Language.AUTO
-                                            ).translatedText
+                                            ).translatedText.takeIf { it.isNotBlank() }
+                                        } catch (e: CancellationException) {
+                                            throw e
                                         } catch (e: Exception) {
                                             Timber.tag("PlaylistSongList").e(e, "Failed to translate text")
+                                            null
                                         }
                                     }
-                                    translatedText = if (result.toString() == "kotlin.Unit") "" else result.toString()
                                 }
-                            } else translatedText = nonTranslatedText
+                            }
 
                             var showMoreButton by remember { mutableStateOf(false) }
 
@@ -1052,7 +1054,7 @@ fun PlaylistSongList(
                                     )
 
                                     BasicText(
-                                        text = translatedText,
+                                        text = translatedText ?: nonTranslatedText,
                                         style = typography().xs.secondary.align(TextAlign.Justify),
                                         maxLines = if (isDescriptionExpanded) Int.MAX_VALUE else 3,
                                         overflow = TextOverflow.Ellipsis,

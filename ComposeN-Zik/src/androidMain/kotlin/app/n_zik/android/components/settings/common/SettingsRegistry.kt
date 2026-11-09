@@ -223,7 +223,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(2, R.string.player_behavior_and_visuals, R.drawable.equalizer,
         keywordRes = listOf(
             R.string.player_behavior_and_visuals, R.string.settings_player_top_action_bar_visible_label,
-            R.string.settings_lyrics_top_spacing_label, R.string.settings_player_next_queue_visible_label, R.string.settings_player_next_two_songs_visible_label,
+            R.string.settings_lyrics_top_spacing_label, R.string.settings_player_next_queue_visible_label,
             R.string.settings_player_queue_visible_count_label, R.string.settings_player_album_cover_visible_label, R.string.settings_player_disable_text_marquee_label,
             R.string.settings_player_disable_text_marquee_description, R.string.player_rotating_buttons,
             R.string.player_enable_rotation_buttons,

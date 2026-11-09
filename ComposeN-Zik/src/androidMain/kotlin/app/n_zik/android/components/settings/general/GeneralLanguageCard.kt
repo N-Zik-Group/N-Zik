@@ -8,7 +8,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.core.os.LocaleListCompat
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.app.LocaleManagerCompat
 import androidx.compose.ui.res.stringResource
 import app.it.fast4x.rimusic.enums.Languages
 import app.it.fast4x.rimusic.utils.languageAppKey
@@ -24,7 +25,7 @@ fun GeneralLanguageCard(
     visible: Boolean,
 ) {
     var languageApp by rememberPreference(languageAppKey, Languages.System)
-    val systemLocale = LocaleListCompat.getDefault().get(0).toString()
+    val systemLocale = LocaleManagerCompat.getSystemLocales(LocalContext.current)[0]?.toLanguageTag()
 
     var showLanguageDialog by remember { mutableStateOf(false) }
 
@@ -44,7 +45,7 @@ fun GeneralLanguageCard(
 
             DialogPresence(visible = showLanguageDialog) {
                 ValueSelectorDialog(
-                    title = stringResource(R.string.settings_app_language_label) + ": $systemLocale",
+                    title = stringResource(R.string.settings_app_language_label) + systemLocale?.let { ": $it" }.orEmpty(),
                     selectedValue = languageApp,
                     onValueSelected = { languageApp = it },
                     valueText = { it.text },
