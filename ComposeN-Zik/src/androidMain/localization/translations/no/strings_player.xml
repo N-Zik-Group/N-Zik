@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Velg hvordan sporene fra utsatte artister er ekskludert.</string>
     <string name="player_exclude_disliked_songs_description">Velg hvor dårlig sporene er ekskludert fra avspillingsforslag.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Ekskluder spor som overskrider den valgte durasjonsgrensen.</string>
-    <string name="player_excluded_song_count_format">Ekskludert %s sanger</string>
+    <string name="player_excluded_song_count_format">Sanger ekskludert: %s</string>
     <string name="player_keep_minimized">Behold minimert</string>
     <string name="player_layout_artwork_style_description">Velg hvordan spilleren viser sporkunst.</string>
     <string name="player_layout_controls_style_description">Velg oppsettet av spillerstyringer.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Inkluder albumgrafikk ved siden av kommende spor i forhåndsvisningen.</string>
     <string name="player_queue_preview_song_count_description">Velg hvor mange kommende spor som vises i spillerens forhåndsvisning.</string>
     <string name="player_queue_remove_selected_confirmation_format">Fjern utvalget fra køen? Valgte spor: %d</string>
-    <string name="player_queue_shuffled_count_format">Kø som ble tilfeldig (%d sanger)</string>
+    <string name="player_queue_shuffled_count_format">Kø sauffled (spor: %d)</string>
     <string name="player_remaining_time_visible_description">Vis tiden som gjenstår i gjeldende spor.</string>
     <string name="player_restart_required_message">Spilleren må startes på nytt for effektive endringer!</string>
     <string name="player_rotating_buttons">Roterende knapper</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Vis en forhåndsvisning av kommende spor i spilleren.</string>
     <string name="player_show_player_top_actions_bar_description">Vis handlingene til spilleren over hovedinnholdet.</string>
     <string name="player_shuffle_empty_message">Ingen sang å stokke</string>
-    <string name="player_shuffled_song_count_format">%d sanger tilfeldig</string>
+    <string name="player_shuffled_song_count_format">Spor fragmenter: %d</string>
     <string name="player_sleep_timer_end_of_song_message">Dvaletid satt til slutten på denne sangen</string>
     <string name="player_sleep_timer_finished_message">Søvntimer avsluttet</string>
     <string name="player_song_playback_error_format">Det oppstod en feil under avspillingen av sang %1$s</string>
