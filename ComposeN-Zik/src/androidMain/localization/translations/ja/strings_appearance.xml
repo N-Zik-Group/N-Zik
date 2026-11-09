@@ -230,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">中 (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">非常に高い (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">ダウンロード</string>
+    <string name="cover_download_failed">カバーをダウンロードできませんでした。</string>
     <string name="image_editor_title">画像を編集</string>
     <string name="image_editor_failed">画像を編集できませんでした。現在の画像は保持されています。</string>
     <string name="thumbnail_action_edit">サムネイルを編集</string>
