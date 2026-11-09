@@ -230,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Medio (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Molto Alto (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">Scarica</string>
+    <string name="cover_download_failed">Impossibile scaricare la copertina.</string>
     <string name="image_editor_title">Modifica immagine</string>
     <string name="image_editor_failed">Impossibile modificare l\'immagine. L\'immagine attuale è stata mantenuta.</string>
     <string name="thumbnail_action_edit">Modifica la copertina</string>
