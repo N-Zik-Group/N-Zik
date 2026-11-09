@@ -226,6 +226,8 @@
     <string name="theme_shake_sensitivity_medium">Mellem (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Meget Høj (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Rediger billede</string>
+    <string name="image_editor_failed">Kunne ikke redigere billedet. Dit nuværende billede blev bibeholdt.</string>
     <string name="thumbnail_action_edit">Rediger miniaturebillede</string>
     <string name="thumbnail_action_pick_from_gallery">Vælg fra galleri</string>
     <string name="thumbnail_action_reset">Nulstil miniaturebillede</string>
@@ -235,4 +237,7 @@
     <string name="thumbnail_remove_failed">Kunne ikke fjerne miniaturebillede</string>
     <string name="thumbnail_remove_success">Miniaturebillede fjernet</string>
     <string name="glass_effect_rendering_quality">Rendering kvalitet</string>
+    <string name="image_editor_original">Oprindeligt forhold</string>
+    <string name="image_editor_cancel">Annuller</string>
+    <string name="image_editor_apply">Brug billede</string>
 </resources>
