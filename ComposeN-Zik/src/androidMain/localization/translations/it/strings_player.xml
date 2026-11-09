@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Scegli come sono escluse le tracce degli artisti dispiaciuti.</string>
     <string name="player_exclude_disliked_songs_description">Scegli come le tracce non gradite sono escluse dai suggerimenti di riproduzione.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Escludi tracce che superano il limite di durata selezionato.</string>
-    <string name="player_excluded_song_count_format">Esclusi %s brani</string>
+    <string name="player_excluded_song_count_format">Brani esclusi: %s</string>
     <string name="player_keep_minimized">Mantieni minimizzato</string>
     <string name="player_layout_artwork_style_description">Scegli come il giocatore visualizza l\'arte della traccia.</string>
     <string name="player_layout_controls_style_description">Scegli il layout dei comandi del lettore.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Includi le copertine degli album accanto alle tracce imminenti nell\'anteprima del riproduttore.</string>
     <string name="player_queue_preview_song_count_description">Scegli quante tracce verranno visualizzate nell\'anteprima del giocatore.</string>
     <string name="player_queue_remove_selected_confirmation_format">Rimuovere la selezione dalla coda? Tracce selezionate: %d</string>
-    <string name="player_queue_shuffled_count_format">Coda mischiata (%d canzoni)</string>
+    <string name="player_queue_shuffled_count_format">Coda mischiata (tracce: %d)</string>
     <string name="player_remaining_time_visible_description">Mostra il tempo rimanente nella traccia corrente.</string>
     <string name="player_restart_required_message">Il giocatore deve essere riavviato per apportare cambiamenti effettivi!</string>
     <string name="player_rotating_buttons">Rotazione pulsanti</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Mostra un\'anteprima delle tracce imminenti all\'interno del giocatore.</string>
     <string name="player_show_player_top_actions_bar_description">Mostra la riga delle azioni del giocatore sopra il contenuto principale.</string>
     <string name="player_shuffle_empty_message">Nessuna canzone da riprodurre in modalità casuale</string>
-    <string name="player_shuffled_song_count_format">%d canzoni mescolate</string>
+    <string name="player_shuffled_song_count_format">Tracce mescolate: %d</string>
     <string name="player_sleep_timer_end_of_song_message">Timer di spegnimento impostato alla fine di questo brano</string>
     <string name="player_sleep_timer_finished_message">Timer spegnimento terminato</string>
     <string name="player_song_playback_error_format">Si è verificato un errore durante la riproduzione del brano %1$s</string>
