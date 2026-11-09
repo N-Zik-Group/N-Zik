@@ -1,5 +1,6 @@
 package app.n_zik.android.listentogether
 
+import android.app.Application
 import android.content.Context
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.MediaItem
@@ -11,13 +12,16 @@ import androidx.media3.common.util.UnstableApi
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.AfterEach
+import org.junit.After
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 /**
  * Policy matrix for [ListenTogetherGuestGuardPlayer]
@@ -27,6 +31,8 @@ import org.junit.jupiter.api.Test
  * tests flip [listenTogetherGuestLock] directly on the same guard instance.
  */
 @OptIn(UnstableApi::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [33], application = Application::class)
 class ListenTogetherGuestGuardPlayerTest {
 
     private val upstream = mockk<Player>(relaxed = true)
@@ -35,7 +41,7 @@ class ListenTogetherGuestGuardPlayerTest {
     private var now = 0L
     private lateinit var guard: ListenTogetherGuestGuardPlayer
 
-    @BeforeEach
+    @Before
     fun setup() {
         toasts.clear()
         now = 0L
@@ -49,7 +55,7 @@ class ListenTogetherGuestGuardPlayerTest {
         listenTogetherGuestLock.value = false
     }
 
-    @AfterEach
+    @After
     fun teardown() {
         listenTogetherGuestLock.value = false
     }
@@ -58,12 +64,7 @@ class ListenTogetherGuestGuardPlayerTest {
 
     private fun item(id: String) = MediaItem.Builder().setMediaId(id).build()
 
-    /**
-     * A [Player.Commands] and its [Player.Commands.Builder] wired as mocks so the guard's
-     * `buildUpon().addAllCommands().remove(...)….build()` chain runs on the JVM — the real
-     * implementation depends on android.util.SparseBooleanArray, which unit tests cannot execute.
-     * The builder echoes itself for every mutation; [built] is what the final `.build()` returns.
-     */
+    /** Records command mutations while Robolectric initializes Android-backed Media3 defaults. */
     private class CommandsStub(
         val upstream: Player.Commands,
         val builder: Player.Commands.Builder,

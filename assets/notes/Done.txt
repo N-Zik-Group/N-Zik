@@ -26,3 +26,9 @@ Fixed:
 - fix(storage): make the Samsung storage advice readable
   - Stack the warning and optional usage summary in a scrollable body so the paragraphs stay separate on short screens.
   - Allow both storage action labels to wrap in place and cover the rendered popup with a Compose regression test.
+
+Other:
+- chore(player): migrate Media3 and automotive session callbacks (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Upgrade Media3 to 1.11.1 and centralize primary/secondary engine construction with the existing audio-focus and load-control policy.
+  - Adapt automotive playback requests, paging and captured selections while retaining offline, parental and controller ownership guards.
+  - Cover engine configuration, queue commands and automotive request compatibility.

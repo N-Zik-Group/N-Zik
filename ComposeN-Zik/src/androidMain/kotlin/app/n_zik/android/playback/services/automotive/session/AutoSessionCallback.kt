@@ -59,6 +59,7 @@ import app.kreate.android.me.knighthat.utils.getLocalSongs
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.playback.services.automotive.browse.PaginationHelper
 import app.n_zik.android.playback.services.automotive.browse.AutoBrowseTree
 import app.n_zik.android.playback.services.automotive.browse.loadAutoLibraryPlaylists
 import app.n_zik.android.playback.services.automotive.browse.loadAutoPlaylistSongs
@@ -181,6 +182,7 @@ class AutoSessionCallback(
 
     override fun onDisconnected(session: MediaSession, controller: MediaSession.ControllerInfo) {
         connectionCommands.remove(controller)
+        autoBrowseTree.releaseBrowser(controller)
         super.onDisconnected(session, controller)
     }
 
@@ -202,15 +204,20 @@ class AutoSessionCallback(
         scope.cancel()
     }
 
-    override fun onConnect(
+    override fun onConnectAsync(
         session: MediaSession,
         controller: MediaSession.ControllerInfo
-    ): MediaSession.ConnectionResult {
-        val connectionResult = super.onConnect(session, controller)
+    ): ListenableFuture<MediaSession.ConnectionResult> {
+        // Preserve the previous controller policy; the guarded player still limits commands.
+        val defaultSessionCommands = if (session is MediaLibrarySession) {
+            MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
+        } else {
+            MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS
+        }
         // Connecting a notification controller must not invalidate rows already displayed by AA.
         if (session.isAutoCompanionController(controller)) currentContainer = null
         val result = MediaSession.ConnectionResult.accept(
-            connectionResult.availableSessionCommands.buildUpon()
+            defaultSessionCommands.buildUpon()
                 .add(AutoSessionConstants.CommandToggleDownload)
                 .add(AutoSessionConstants.CommandToggleLike)
                 .add(AutoSessionConstants.CommandToggleShuffle)
@@ -221,16 +228,16 @@ class AutoSessionCallback(
                 .add(AutoSessionConstants.CommandDislikeAlbum)
                 .add(AutoSessionConstants.CommandDislikeArtist)
                 .build(),
-            connectionResult.availablePlayerCommands.buildUpon()
+            MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS.buildUpon()
                 .add(Player.COMMAND_PLAY_PAUSE)
                 .add(Player.COMMAND_PREPARE)
                 .add(Player.COMMAND_STOP)
                 .build()
         )
         connectionCommands[controller] = result.availableSessionCommands to result.availablePlayerCommands
-        return MediaSession.ConnectionResult.accept(
+        return Futures.immediateFuture(MediaSession.ConnectionResult.accept(
             commandsForAccess(result.availableSessionCommands), result.availablePlayerCommands
-        )
+        ))
     }
 
     override fun onPostConnect(
@@ -238,7 +245,7 @@ class AutoSessionCallback(
         controller: MediaSession.ControllerInfo
     ) {
         super.onPostConnect(session, controller)
-        // Media3 registers the controller only after onConnect returns.
+        // Media3 registers the controller after the connection result is accepted.
         if (session.isAutoCompanionController(controller)) {
             session.setSessionActivity(controller, null)
         }
@@ -274,7 +281,7 @@ class AutoSessionCallback(
         if (!accessPolicy().online) return Futures.immediateFuture(LibraryResult.ofError(SessionError.ERROR_NOT_SUPPORTED))
         Timber.tag("AutoSessionCallback").d("onSearch: $query")
         autoBrowseTree.clearCache()
-        session.notifySearchResultChanged(browser, query, 0, params)
+        session.notifySearchResultChanged(browser, query, searchCategories(query).size, params)
         return Futures.immediateFuture(LibraryResult.ofVoid(params))
     }
 
@@ -286,17 +293,25 @@ class AutoSessionCallback(
         pageSize: Int,
         params: MediaLibraryService.LibraryParams?
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
+        if (page < 0 || pageSize <= 0) return Futures.immediateFuture(LibraryResult.ofError(SessionError.ERROR_BAD_VALUE))
         if (!accessPolicy().online) return Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.of(), params))
-        val results = listOf(            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_SONGS}/$query", context.getString(R.string.library_songs_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.musical_notes), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
-            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_ALBUMS}/$query", context.getString(R.string.library_albums_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.album), MediaMetadata.MEDIA_TYPE_FOLDER_ALBUMS),
-            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_ARTISTS}/$query", context.getString(R.string.library_artists_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.people), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
-            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_VIDEOS}/$query", context.getString(R.string.search_videos_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.video), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
-            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_PLAYLISTS}/$query", context.getString(R.string.library_playlists_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.library), MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS),
-            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_FEATURED}/$query", context.getString(R.string.search_featured_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.featured_playlist), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
-            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_PODCASTS}/$query", context.getString(R.string.podcast_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.podcast), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
-        )
-        return Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.copyOf(results), params))
+        return synchronized(selectionRequestLock) {
+            val profile = getActiveProfile(context)
+            val results = PaginationHelper.slice(searchCategories(query), page, pageSize)
+            autoBrowseTree.retainFolders(results, profile)
+            Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.copyOf(results), params))
+        }
     }
+
+    private fun searchCategories(query: String): List<MediaItem> = listOf(
+        AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_SONGS}/$query", context.getString(R.string.library_songs_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.musical_notes), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
+        AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_ALBUMS}/$query", context.getString(R.string.library_albums_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.album), MediaMetadata.MEDIA_TYPE_FOLDER_ALBUMS),
+        AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_ARTISTS}/$query", context.getString(R.string.library_artists_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.people), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
+        AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_VIDEOS}/$query", context.getString(R.string.search_videos_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.video), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
+        AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_PLAYLISTS}/$query", context.getString(R.string.library_playlists_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.library), MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS),
+        AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_FEATURED}/$query", context.getString(R.string.search_featured_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.featured_playlist), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
+        AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_PODCASTS}/$query", context.getString(R.string.podcast_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.podcast), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
+    )
 
     override fun onCustomCommand(
         session: MediaSession,
@@ -331,19 +346,7 @@ class AutoSessionCallback(
         browser: MediaSession.ControllerInfo,
         params: MediaLibraryService.LibraryParams?,
     ): ListenableFuture<LibraryResult<MediaItem>> = Futures.immediateFuture(
-        LibraryResult.ofItem(
-            MediaItem.Builder()
-                .setMediaId(PlayerServiceModern.ROOT)
-                .setMediaMetadata(
-                    MediaMetadata.Builder()
-                        .setIsPlayable(false)
-                        .setIsBrowsable(false)
-                        .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
-                        .build()
-                )
-                .build(),
-            params
-        )
+        LibraryResult.ofItem(autoBrowseTree.rootItem(), params)
     )
 
     @OptIn(UnstableApi::class)
@@ -355,6 +358,8 @@ class AutoSessionCallback(
         pageSize: Int,
         params: MediaLibraryService.LibraryParams?,
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
+        if (page < 0 || pageSize <= 0) return Futures.immediateFuture(LibraryResult.ofError(SessionError.ERROR_BAD_VALUE))
+        val requestProfile = getActiveProfile(context)
         val epoch = synchronized(selectionRequestLock) {
             synchronized(browsedParents) {
                 // Remember first requests before scheduling their load so access changes
@@ -369,15 +374,21 @@ class AutoSessionCallback(
             val pageIndex = pageId?.index ?: -1
             val actualParentId = pageId?.parentId ?: parentId
             noteCurrentContainer(actualParentId)
-            val list = autoBrowseTree.getChildren(parentId, pageIndex, if (::binder.isInitialized) binder else null)
-            synchronized(browsedParents) {
-                // Publish known counts and rows together only for the current access epoch.
-                if (epoch != accessEpoch.get()) {
-                    LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
-                } else {
-                    browsedParents[parentId] = list.size
-                    while (browsedParents.size > 32) browsedParents.remove(browsedParents.keys.first())
-                    LibraryResult.ofItemList(ImmutableList.copyOf(list), params)
+            val list = (if (page > 0) autoBrowseTree.retainedChildren(parentId, browser) else null)
+                ?: autoBrowseTree.getChildren(parentId, pageIndex, if (::binder.isInitialized) binder else null, browser)
+            synchronized(selectionRequestLock) {
+                synchronized(browsedParents) {
+                    // Publish counts, subscriptions and sliced rows in the same access epoch.
+                    if (epoch != accessEpoch.get() || getActiveProfile(context) != requestProfile ||
+                        !autoBrowseTree.selectionStore.retains(list)) {
+                        LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
+                    } else {
+                        val visible = PaginationHelper.slice(list, page, pageSize)
+                        autoBrowseTree.retainFolders(visible, requestProfile)
+                        browsedParents[parentId] = list.size
+                        while (browsedParents.size > 32) browsedParents.remove(browsedParents.keys.first())
+                        LibraryResult.ofItemList(ImmutableList.copyOf(visible), params)
+                    }
                 }
             }
         }
@@ -411,13 +422,33 @@ class AutoSessionCallback(
     ): ListenableFuture<LibraryResult<MediaItem>> = scope.future(NzikDispatchers.DATA) {
         val requestProfile = getActiveProfile(context)
         val epoch = accessEpoch.get()
-        if (AutoMediaIdContract.isScopedSelection(mediaId)) {
-            val selection = autoBrowseTree.selectionStore.resolve(mediaId)
+        val folder = autoBrowseTree.folder(mediaId, if (::binder.isInitialized) binder else null)
+        if (folder != null) {
+            return@future synchronized(selectionRequestLock) {
+                if (getActiveProfile(context) != requestProfile || epoch != accessEpoch.get()) {
+                    LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
+                } else {
+                    synchronized(browsedParents) {
+                        browsedParents.putIfAbsent(mediaId, Int.MAX_VALUE)
+                        while (browsedParents.size > 32) browsedParents.remove(browsedParents.keys.first())
+                    }
+                    LibraryResult.ofItem(folder, null)
+                }
+            }
+        }
+        val scopedAction = AutoMediaIdContract.isScopedAction(mediaId)
+        if (AutoMediaIdContract.isScopedSelection(mediaId) || scopedAction) {
+            val selection = (if (scopedAction) autoBrowseTree.selectionStore.resolveAction(mediaId)
+                else autoBrowseTree.selectionStore.resolve(mediaId))
                 ?: return@future LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
-            val item = selection.items[selection.startIndex].buildUpon().setMediaId(mediaId).build()
-            val eligible = accessPolicy().eligible(listOf(item), selection.parentId)
+            val item = if (scopedAction) autoBrowseTree.retainedAction(mediaId)
+                ?: return@future LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
+                else selection.items[selection.startIndex].buildUpon().setMediaId(mediaId).build()
+            val eligible = accessPolicy().eligible(if (scopedAction) selection.items else listOf(item), selection.parentId)
+            val retained = if (scopedAction) autoBrowseTree.selectionStore.resolveAction(mediaId)
+                else autoBrowseTree.selectionStore.resolve(mediaId)
             if (getActiveProfile(context) != requestProfile || epoch != accessEpoch.get() ||
-                autoBrowseTree.selectionStore.resolve(mediaId)?.items !== selection.items) {
+                retained?.items !== selection.items) {
                 return@future LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
             }
             if (eligible.isEmpty()) return@future LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
@@ -498,6 +529,11 @@ class AutoSessionCallback(
         val requestedIndex = if (startIndex == -1) 0 else startIndex
         val selectedId = mediaItems.getOrNull(requestedIndex)?.mediaId
             ?: return MediaSession.MediaItemsWithStartPosition(emptyList(), 0, startPositionMs)
+        if (selectedId == MediaItem.DEFAULT_MEDIA_ID) {
+            val resolved = AutoPlaybackRequestResolver(context, database, accessPolicy())
+                .resolve(mediaItems[requestedIndex].requestMetadata)
+            return MediaSession.MediaItemsWithStartPosition(resolved, 0, startPositionMs)
+        }
         val scopedAction = AutoMediaIdContract.isScopedAction(selectedId)
         if (AutoMediaIdContract.isScopedSelection(selectedId) || scopedAction) {
             val selection = if (scopedAction) autoBrowseTree.selectionStore.resolveAction(selectedId)

@@ -1,5 +1,6 @@
 package app.n_zik.android.listentogether
 
+import android.app.Application
 import android.content.Context
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -8,15 +9,20 @@ import io.mockk.mockk
 import io.mockk.mockkClass
 import io.mockk.slot
 import io.mockk.verify
-import org.junit.jupiter.api.AfterEach
+import org.junit.After
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import java.lang.reflect.Proxy
 
 @OptIn(UnstableApi::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [33], application = Application::class)
 class QueueNavigationCommandsTest {
     private val navigation = setOf(
         Player.COMMAND_SEEK_TO_PREVIOUS,
@@ -32,7 +38,7 @@ class QueueNavigationCommandsTest {
     private val upstream = mockk<Player>(relaxed = true)
     private val guard = ListenTogetherGuestGuardPlayer(upstream, mockk<Context>(relaxed = true))
 
-    @AfterEach
+    @After
     fun resetGuestLock() {
         listenTogetherGuestLock.value = false
     }

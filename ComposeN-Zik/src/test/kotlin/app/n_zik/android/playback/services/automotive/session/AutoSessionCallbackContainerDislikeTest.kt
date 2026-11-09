@@ -72,7 +72,7 @@ class AutoSessionCallbackContainerDislikeTest {
             mockk<MediaSession.ControllerInfo>(),
             parentId,
             0,
-            0,
+            200,
             null
         ).get()
     }
@@ -84,7 +84,7 @@ class AutoSessionCallbackContainerDislikeTest {
             mockk<MediaSession.ControllerInfo>(),
             parentId,
             0,
-            0,
+            200,
             null
         ).get()
         return result.value.orEmpty().map { it.mediaId }
@@ -118,7 +118,7 @@ class AutoSessionCallbackContainerDislikeTest {
             val controller = mockk<MediaSession.ControllerInfo>()
             every { session.isAutoCompanionController(controller) } returns false
 
-            val connection = callback.onConnect(session, controller)
+            val connection = callback.onConnectAsync(session, controller).get()
 
             assertTrue(connection.isAccepted)
             assertTrue(connection.availableSessionCommands.contains(AutoSessionConstants.CommandDislikeAlbum))
@@ -148,7 +148,7 @@ class AutoSessionCallbackContainerDislikeTest {
             val controller = mockk<MediaSession.ControllerInfo>()
             every { session.isAutoCompanionController(controller) } returns true
 
-            assertTrue(callback.onConnect(session, controller).isAccepted)
+            assertTrue(callback.onConnectAsync(session, controller).get().isAccepted)
             onDatabase {
                 callback.toggleContainerDislike(PlayerServiceModern.ALBUM)
                 assertFalse(Database.albumTable.isDisliked("LOCAL_ALBUM_PREVIOUS").first())

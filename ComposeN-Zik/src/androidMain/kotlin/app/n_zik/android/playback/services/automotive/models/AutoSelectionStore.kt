@@ -82,6 +82,17 @@ class AutoSelectionStore(
         return Selection(snapshot.items, 0, snapshot.parent)
     }
 
+    /** Prevents a later page from publishing scoped rows after their capture was evicted. */
+    @Synchronized
+    internal fun retains(items: List<MediaItem>): Boolean {
+        checkProfile()
+        return items.all { item ->
+            val token = AutoMediaIdContract.parseSelection(item.mediaId)?.token
+                ?: AutoMediaIdContract.parseScopedAction(item.mediaId)?.token
+            token == null || entries.containsKey(token)
+        }
+    }
+
     /** Supplies the newest displayed list for legacy container playback actions. */
     @Synchronized
     fun itemsForParent(parentId: String): List<MediaItem>? {

@@ -114,7 +114,7 @@ class AutoOfflineNavigationTest {
     private fun assertPolicyRoundTrip(forced: Boolean) {
         assertTrue(NetworkQualityHelper.isNetworkConnected(app))
         assertTrue(rootIds().contains(AutoSessionConstants.ID_QUICK_PICKS))
-        assertSearch(callback.onConnect(session, controller).availableSessionCommands, true)
+        assertSearch(callback.onConnectAsync(session, controller).get().availableSessionCommands, true)
         if (forced) app.preferences.edit().putBoolean(fullOfflineModeKey, true).commit()
         else setPhysicalOnline(false)
         assertEquals(forced, OfflineMode.enabled(app))
@@ -127,7 +127,7 @@ class AutoOfflineNavigationTest {
                 !commands.contains(AutoSessionConstants.CommandSearch)
         }, any()) }
         verify { session.notifyChildrenChanged(PlayerServiceModern.ROOT, 4, null) }
-        assertSearch(callback.onConnect(session, controller).availableSessionCommands, false)
+        assertSearch(callback.onConnectAsync(session, controller).get().availableSessionCommands, false)
         assertEquals(SessionError.ERROR_NOT_SUPPORTED, callback.onSearch(session, controller, "queen", null).get().resultCode)
         assertTrue(callback.onGetSearchResult(session, controller, "queen", 0, 20, null).get().value.orEmpty().isEmpty())
         verify(exactly = 0) { session.notifySearchResultChanged(any(), any(), any(), any()) }
@@ -140,7 +140,7 @@ class AutoOfflineNavigationTest {
                 commands.contains(AutoSessionConstants.CommandSearch)
         }, any()) }
         verify { session.notifyChildrenChanged(PlayerServiceModern.ROOT, 5, null) }
-        assertSearch(callback.onConnect(session, controller).availableSessionCommands, true)
+        assertSearch(callback.onConnectAsync(session, controller).get().availableSessionCommands, true)
         assertTrue(rootIds().contains(AutoSessionConstants.ID_QUICK_PICKS))
     }
 
@@ -320,10 +320,10 @@ class AutoOfflineNavigationTest {
         every { gatedTree.selectionStore } returns tree.selectionStore
         val entered = CountDownLatch(1)
         val release = CompletableDeferred<Unit>()
-        coEvery { gatedTree.getChildren(PlayerServiceModern.ARTIST, -1, null) } coAnswers {
+        coEvery { gatedTree.getChildren(PlayerServiceModern.ARTIST, -1, null, controller) } coAnswers {
             // Complete the actual handler, snapshot capture and pagination first,
             // then hold the already published nonempty result at the callback boundary.
-            val loaded = tree.getChildren(PlayerServiceModern.ARTIST, -1, null)
+            val loaded = tree.getChildren(PlayerServiceModern.ARTIST, -1, null, controller)
             assertTrue(loaded.isNotEmpty())
             entered.countDown()
             release.await()

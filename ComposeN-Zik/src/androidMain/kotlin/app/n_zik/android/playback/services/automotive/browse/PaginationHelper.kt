@@ -13,6 +13,14 @@ import app.n_zik.android.playback.services.automotive.session.AutoSessionConstan
 object PaginationHelper {
     private const val ITEMS_PER_PAGE = 200
 
+    /** Applies the browser contract after the legacy page-folder presentation. */
+    fun slice(items: List<MediaItem>, page: Int, pageSize: Int): List<MediaItem> {
+        require(page >= 0 && pageSize > 0)
+        val offset = page.toLong() * pageSize.toLong()
+        if (offset >= items.size) return emptyList()
+        return items.subList(offset.toInt(), minOf(items.size.toLong(), offset + pageSize).toInt())
+    }
+
     fun paginate(context: Context, filteredList: List<MediaItem>, actualParentId: String, pageIndex: Int): List<MediaItem> {
         val shuffle = filteredList.firstOrNull { AutoMediaIdContract.isShuffle(it.mediaId) }
         val navigation = filteredList.filter { AutoMediaIdContract.parseSearchContinuation(it.mediaId) != null }

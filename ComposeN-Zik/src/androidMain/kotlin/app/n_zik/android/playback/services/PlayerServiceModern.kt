@@ -56,7 +56,6 @@ import androidx.annotation.MainThread
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
-import androidx.media3.common.AudioAttributes
 import androidx.media3.common.AuxEffectInfo
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -725,23 +724,12 @@ class PlayerServiceModern : MediaLibraryService(),
         // Metrolist model: each player keeps its own ExoPlayer-allocated audio session;
         // effects follow the active player via explicit session open/close broadcasts.
         player = DiagExoPlayer(
-            ExoPlayer.Builder(this)
-                .setMediaSourceFactory(createMediaSourceFactory())
-                .setRenderersFactory(createRendersFactory())
-                .setHandleAudioBecomingNoisy(false)
-                .setWakeMode(C.WAKE_MODE_NETWORK)
-                .setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setUsage(C.USAGE_MEDIA)
-                        .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-                        .build(),
-                    isHandleAudioFocusEnabled()
-                )
-                .setUsePlatformDiagnostics(false)
-                // Issue #881 (gh-881), Phase 3 Fix C: back buffer so backward seeks within
-                // SEEK_BACK_BUFFER_MS resolve in-buffer instead of re-opening the full
-                // data-source chain (80–760 ms of BUFFERING + bar stuck on the old position).
-                .setLoadControl(createSeekFriendlyLoadControl())
+            createPlaybackEngineBuilder(
+                context = this,
+                mediaSourceFactory = createMediaSourceFactory(),
+                renderersFactory = createRendersFactory(),
+                handleAudioFocus = isHandleAudioFocusEnabled(),
+            )
                 .setSeekBackIncrementMs(5000)
                 .setSeekForwardIncrementMs(5000)
                 .build()
@@ -3326,21 +3314,12 @@ class PlayerServiceModern : MediaLibraryService(),
         // Issue #881 (gh-881): the secondary (crossfade) player is wrapped in the diagnostics
         // facade too — a seek landing on it must be visible in the same SEEK_CALL journal (spec S1).
         return DiagExoPlayer(
-            ExoPlayer.Builder(this)
-                .setMediaSourceFactory(createMediaSourceFactory())
-                .setRenderersFactory(createRendersFactory())
-                .setWakeMode(C.WAKE_MODE_NETWORK)
-                .setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setUsage(C.USAGE_MEDIA)
-                        .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-                        .build(),
-                    false // NEVER handle audio focus for secondary player
-                )
-                .setUsePlatformDiagnostics(false)
-                // Issue #881 (gh-881), Phase 3 Fix C: same back buffer as the primary player —
-                // the crossfade player follows the same backward-seek pattern (spec gh-881).
-                .setLoadControl(createSeekFriendlyLoadControl())
+            createPlaybackEngineBuilder(
+                context = this,
+                mediaSourceFactory = createMediaSourceFactory(),
+                renderersFactory = createRendersFactory(),
+                handleAudioFocus = false,
+            )
                 .build()
         ).also { attachCrossfadeAudioDiagnostics(it) }
     }

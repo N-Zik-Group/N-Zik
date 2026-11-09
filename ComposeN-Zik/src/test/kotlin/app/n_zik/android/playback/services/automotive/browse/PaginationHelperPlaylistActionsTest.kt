@@ -10,6 +10,7 @@ import app.n_zik.android.playback.services.automotive.session.TestApplication
 import app.n_zik.android.playback.services.automotive.models.AutoSelectionStore
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -32,6 +33,15 @@ class PaginationHelperPlaylistActionsTest {
         assertEquals("PLAYLIST_PLAY_ALL/42", items[0].mediaId)
         assertEquals("PLAYLIST_SHUFFLE/42", items[1].mediaId)
         assertTrue(items.take(2).all { it.mediaMetadata.isPlayable == true && it.mediaMetadata.isBrowsable != true })
+    }
+
+    @Test fun `standard pages slice final legacy presentation without overflow or changing actions`() {
+        val visible = PaginationHelper.paginate(context, listOf(shuffle()) + songs(401), parent, -1)
+        assertEquals(visible, visible.indices.flatMap { PaginationHelper.slice(visible, it, 1) })
+        assertEquals(visible, PaginationHelper.slice(visible, 0, Int.MAX_VALUE))
+        assertTrue(PaginationHelper.slice(visible, Int.MAX_VALUE, Int.MAX_VALUE).isEmpty())
+        assertThrows(IllegalArgumentException::class.java) { PaginationHelper.slice(visible, -1, 1) }
+        assertThrows(IllegalArgumentException::class.java) { PaginationHelper.slice(visible, 0, 0) }
     }
 
     @Test

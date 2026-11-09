@@ -96,7 +96,7 @@ class AutoSessionRemoteArtworkPolicyTest {
         val requests = load(original, failUrl = learned)
         assertEquals(listOf(learned, original), requests.map { it.data })
         assertEquals("playlist_policy-playlist_HIGH", requests.first().diskCacheKey)
-        verify { ImageCacheFactory.clearCacheForKey(learned, ImageCacheFactory.NetworkQuality.HIGH) }
+        verify { ImageCacheFactory.clearCacheForKey(learned, ImageCacheFactory.NetworkQuality.HIGH, invalidateColors = false) }
         assertFalse(context.getSharedPreferences("playlist_thumbnail_store", 0).contains("policy-playlist"))
     }
 
@@ -152,7 +152,7 @@ class AutoSessionRemoteArtworkPolicyTest {
         every { ImageCacheFactory.getDownloadDecision(url) } returns ImageCacheFactory.DownloadDecision(
             useNetwork = false, quality = ImageCacheFactory.NetworkQuality.LOW,
         )
-        every { ImageCacheFactory.clearCacheForKey(any(), any()) } returns Unit
+        every { ImageCacheFactory.clearCacheForKey(any(), any(), invalidateColors = false) } returns Unit
         val loader = mockk<ImageLoader>()
         every { ImageCacheFactory.LOADER } returns loader
         val source = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {

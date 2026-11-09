@@ -252,7 +252,7 @@ class AutoBrowseSnapshotSelectionTest {
         val controller = mockk<MediaSession.ControllerInfo>()
         every { session.isAutoCompanionController(controller) } returns false
 
-        assertTrue(callback.onConnect(session, controller).isAccepted)
+        assertTrue(callback.onConnectAsync(session, controller).get().isAccepted)
 
         listOf(2, 3).forEach { index ->
             val result = select(rows[index].mediaId)
