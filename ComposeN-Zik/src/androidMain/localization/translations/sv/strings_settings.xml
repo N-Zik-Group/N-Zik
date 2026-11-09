@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Anslut till YouTube först för att aktivera detta alternativ</string>
     <string name="settings_youtube_library_sync_content_description">Spellistor, album, artister, historia, osv.</string>
     <string name="settings_youtube_login_enabled_label">Aktivera YouTube Music inloggning</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Sortera</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Verktygsfält</string>
 </resources>
