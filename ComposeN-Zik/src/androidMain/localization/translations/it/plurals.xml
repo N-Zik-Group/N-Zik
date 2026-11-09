@@ -62,7 +62,7 @@
         <item quantity="other">Aggiunti %1$d brani alla playlist di YouTube</item>
     </plurals>
     <plurals name="backup_import_profile_state_complete_count">
-        <item quantity="one">Stato profilo importato: profilo %1$d</item>
+        <item quantity="one">Stato profilo importato: profilo %1$dÈ</item>
         <item quantity="other">Stato profilo importato: profili %1$d</item>
     </plurals>
     <plurals name="sync_failed_notification_album_count">
@@ -78,12 +78,12 @@
         <item quantity="other">%1$d i brani scaricati mancano dei loro file e sono stati rimossi. Si prega di scaricarli di nuovo.</item>
     </plurals>
     <plurals name="recommendations_quick_picks_song_count">
-        <item quantity="one">%1$d canzone consigliata</item>
-        <item quantity="other">Canzoni consigliate %1$d</item>
+        <item quantity="one">%1$d brano consigliato</item>
+        <item quantity="other">%1$d brani consigliati</item>
     </plurals>
     <plurals name="listen_together_blocked_user_count">
-        <item quantity="one">Utente %1$d bloccato</item>
-        <item quantity="other">Utenti di %1$d bloccati</item>
+        <item quantity="one">%1$d utente bloccato</item>
+        <item quantity="other">%1$d utenti bloccati</item>
     </plurals>
     <plurals name="sync_failed_notification_artist_count">
         <item quantity="one">Sincronizzazione artista %1$d non riuscita. Torna alla scheda Artisti per riprovare.</item>
@@ -94,11 +94,11 @@
         <item quantity="other">Sincronizzazione delle playlist %1$d non riuscita. Torna alla scheda Playlist per riprovare.</item>
     </plurals>
     <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">Vuoi riprovare a sincronizzare l\'elemento %1$d non riuscito?</item>
-        <item quantity="other">Vuoi riprovare a sincronizzare gli elementi %1$d non riusciti?</item>
+        <item quantity="one">Vuoi riprovare a sincronizzare %1$d elemento non riuscito?</item>
+        <item quantity="other">Vuoi riprovare a sincronizzare %1$d elementi non riusciti?</item>
     </plurals>
     <plurals name="sync_progress_artist_count">
-        <item quantity="one">Sincronizzazione artista... (%1$d/%2$d)</item>
+        <item quantity="one">Sincronizzazione dell\'artista... (%1$d/%2$d)</item>
         <item quantity="other">Sincronizzazione degli artisti... (%1$d/%2$d)</item>
     </plurals>
     <plurals name="library_sync_artist_refresh_count">
@@ -110,12 +110,12 @@
         <item quantity="other">Trovare artisti di %1$d non riuscito, riprovare</item>
     </plurals>
     <plurals name="sync_progress_album_count">
-        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
+        <item quantity="one">Sincronizzazione album... (%1$d/%2$d)</item>
         <item quantity="other">Sincronizzazione album... (%1$d/%2$d)</item>
     </plurals>
     <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">Aggiornamento album %1$d</item>
-        <item quantity="other">Aggiornamento album %1$d</item>
+        <item quantity="one">Aggiornamento di %1$d album</item>
+        <item quantity="other">Aggiornamento di %1$d album</item>
     </plurals>
     <plurals name="library_sync_album_retry_count">
         <item quantity="one">Trovare l\'album %1$d non riuscito, riprovare</item>
@@ -126,8 +126,8 @@
         <item quantity="other">Sincronizzazione scalette... (%1$d/%2$d)</item>
     </plurals>
     <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="one">Aggiornamento playlist %1$d</item>
-        <item quantity="other">Aggiornamento playlist %1$d</item>
+        <item quantity="one">Aggiornamento di %1$d playlist</item>
+        <item quantity="other">Aggiornamento di %1$d playlist</item>
     </plurals>
     <plurals name="library_sync_playlist_retry_count">
         <item quantity="one">Trovare la scaletta %1$d non riuscita, riprovare</item>
@@ -143,7 +143,7 @@
     </plurals>
     <plurals name="maintenance_pass_skipped_count">
         <item quantity="one">%1$d elemento saltato</item>
-        <item quantity="other">%1$d oggetti saltati</item>
+        <item quantity="other">%1$d elementi saltati</item>
     </plurals>
     <plurals name="maintenance_dedup_flagged_count">
         <item quantity="one">Riga di %1$d segnalata</item>
@@ -154,8 +154,8 @@
         <item quantity="other">Merged %1$d rows</item>
     </plurals>
     <plurals name="recovery_profile_deleted_count">
-        <item quantity="one">Profilo %1$d eliminato</item>
-        <item quantity="other">Profili %1$d eliminati</item>
+        <item quantity="one">%1$d profilo eliminato</item>
+        <item quantity="other">%1$d profili eliminati</item>
     </plurals>
     <plurals name="recovery_profile_reset_count">
         <item quantity="one">Ripristina il profilo %1$d . Riavvia l\'app</item>
@@ -166,8 +166,8 @@
         <item quantity="other">Profili di %1$d ripristinati: rilanciare l\'app</item>
     </plurals>
     <plurals name="album_loading_song_count">
-        <item quantity="one">Caricamento brano %1$d…</item>
-        <item quantity="other">Caricamento delle canzoni di %1$d…</item>
+        <item quantity="one">Caricamento di %1$d brano…</item>
+        <item quantity="other">Caricamento di %1$d brani…</item>
     </plurals>
     <plurals name="artist_deduplication_result_count">
         <item quantity="one">Merged %1$d duplicato artista con l\'artista giusto</item>
@@ -182,8 +182,8 @@
         <item quantity="other">%1$d canzoni • %2$s</item>
     </plurals>
     <plurals name="metadata_musicbrainz_rating_vote_count">
-        <item quantity="one">(Votazione%1$d)</item>
-        <item quantity="other">(Votazioni%1$d)</item>
+        <item quantity="one">(%1$d voto)</item>
+        <item quantity="other">(%1$d voti)</item>
     </plurals>
     <plurals name="metadata_musicbrainz_rating_vote_count_attribution">
         <item quantity="one">%1$d voto su MusicBrainz</item>
@@ -219,30 +219,30 @@
     </plurals>
     <plurals name="rewind_loader_status_minute_count">
         <item quantity="one">%1$s MINUTO</item>
-        <item quantity="other">MINUTI %1$s</item>
+        <item quantity="other">%1$s MINUTI</item>
     </plurals>
     <plurals name="rewind_loader_status_play_count">
-        <item quantity="one">%1$s GIOCA</item>
-        <item quantity="other">%1$s GIOCA</item>
+        <item quantity="one">%1$s RIPRODUZIONE</item>
+        <item quantity="other">%1$s RIPRODUZIONI</item>
     </plurals>
     <plurals name="rewind_loader_status_song_count">
-        <item quantity="one">%1$s UNIQUE SONG</item>
-        <item quantity="other">%1$s SOGLIO UNICO</item>
+        <item quantity="one">%1$s BRANO UNICO</item>
+        <item quantity="other">%1$s BRANI UNICI</item>
     </plurals>
     <plurals name="rewind_meta_song_count">
         <item quantity="one">%1$s brano</item>
         <item quantity="other">%1$s brani</item>
     </plurals>
     <plurals name="rewind_play_count_label">
-        <item quantity="one">%1$s play</item>
+        <item quantity="one">%1$s riproduzione</item>
         <item quantity="other">%1$s riproduzioni</item>
     </plurals>
     <plurals name="rewind_top_song_teaser_count">
-        <item quantity="one">%1$d SONG.\nONE WINNER.</item>
-        <item quantity="other">%1$d SONGS.\nONE WINNER.</item>
+        <item quantity="one">%1$d CANZONE.\nUN VINCITORE.</item>
+        <item quantity="other">%1$d CANZONI.\nUN VINCITORE.</item>
     </plurals>
     <plurals name="maintenance_abnormal_job_count">
-        <item quantity="one">Processo %1$d non finito</item>
-        <item quantity="other">I lavori %1$d non sono terminati</item>
+        <item quantity="one">%1$d processo non finito</item>
+        <item quantity="other">%1$d processi non finito</item>
     </plurals>
 </resources>
