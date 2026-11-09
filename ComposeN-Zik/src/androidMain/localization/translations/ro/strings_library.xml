@@ -409,6 +409,7 @@
     <string name="song_matching_unmatched_label">Melodie neadecvată</string>
     <string name="metadata_musicbrainz_rating">Clasificare</string>
     <string name="metadata_cover_art">Copertă de copertă</string>
+    <string name="metadata_cover_url_hint">Lipește link-ul imaginii</string>
     <string name="metadata_file_path_unavailable">Nu se poate rezolva calea fișierului</string>
     <string name="metadata_save_failed">Salvarea metadatelor a eșuat</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
