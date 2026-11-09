@@ -230,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Mellem (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Meget Høj (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">Hent</string>
+    <string name="cover_download_failed">Kunne ikke downloade coveret.</string>
     <string name="image_editor_title">Rediger billede</string>
     <string name="image_editor_failed">Kunne ikke redigere billedet. Dit nuværende billede blev bibeholdt.</string>
     <string name="thumbnail_action_edit">Rediger miniaturebillede</string>
