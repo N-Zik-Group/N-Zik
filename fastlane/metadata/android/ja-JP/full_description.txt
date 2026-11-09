@@ -27,7 +27,7 @@ Android向けの多言語YouTubeミュージックフロントエンド。パフ
 
 💾 <b>オフライン、メタデータ、プライバシー</b>
 - 選択可能なダウンロード品質を持つトラックとプレイリストのスマートキャッシュとダウンロード
-- FFmpegで動作するフルメタデータエクスポート (FFmpegはダウンロード可能な拡張機能で、最初に使用してインストールされます)
+- FFmpeg-powered export with full metadata (download on first use; available on 32-bit x86 devices)
 - アプリ内メタデータエディタ（AAC/Opus、カバーアート）
 - ローカルのリスニング統計と履歴
 - カスタムの間隔と保持の自動バックアップ
