@@ -42,6 +42,7 @@
     <string name="home_greeting_evening">Bonsoir</string>
     <string name="home_greeting_morning">Bonjour</string>
     <string name="home_greeting_night">Bonsoir</string>
+    <string name="home_greeting_with_profile_format">%1$s, %2$s</string>
     <string name="home_playlists_settings">Accueil Playists</string>
     <string name="home_songs_settings">Accueil Titres</string>
     <string name="home_sort_last_played_song_label">Par les titres joués dernièrement</string>
@@ -248,6 +249,7 @@
     <string name="playlist_refresh_on_open_enable">Activer l\'actualisation à l\'ouverture</string>
     <string name="playlist_remove_selected_confirmation">Souhaitez-vous supprimer les morceaux sélectionnés de cette playlist ?</string>
     <string name="playlist_remove_songs_confirmation">Retirer la sélection de la playlist ? Nombre de titres : %d</string>
+    <string name="playlist_remove_songs_success_format">%1$s %2$d</string>
     <string name="playlist_rename_dialog_title">Renommer la playlist</string>
     <string name="playlist_reorder_ascending_sort_required_message">La réorganisation est possible uniquement dans le tri ascendant</string>
     <string name="playlist_reorder_lock_toggle_label">Verrouiller / Déverrouiller la réorganisation des titres</string>
@@ -377,6 +379,27 @@
     <string name="song_metadata_update_action_open">Ouvrir la boîte de dialogue de mise à jour</string>
     <string name="song_metadata_updated_count">Mise à jour de %1$d titres</string>
     <string name="song_play_time_action_reset">Réinitialiser le temps de lecture total</string>
+    <string name="song_like_status_action_reset">Réinitialiser le statut « J\'aime » / « Je n\'aime pas »</string>
+    <string name="song_update_action_clear_playback_cache">Vider le cache de lecture</string>
+    <string name="song_update_action_remove_offline_download">Supprimer le téléchargement hors ligne</string>
+    <string name="song_update_result_partial">Mise à jour partielle. %1$s</string>
+    <string name="song_update_result_failed">Non mis à jour. %1$s</string>
+    <string name="song_update_error_metadata_unavailable">Informations YouTube indisponibles.</string>
+    <string name="song_update_error_network">Impossible d\'accéder à YouTube. Vérifiez votre connexion.</string>
+    <string name="song_update_error_missing_title">YouTube n\'a pas renvoyé de titre.</string>
+    <string name="song_update_error_missing_artists">YouTube n\'a renvoyé aucun artiste.</string>
+    <string name="song_update_error_incomplete_artists">Les informations sur l\'artiste provenant de YouTube sont incomplètes.</string>
+    <string name="song_update_error_missing_cover">YouTube n\'a pas renvoyé de couverture.</string>
+    <string name="song_update_error_wrong_song">YouTube a renvoyé un autre morceau. Les informations le concernant ont été ignorées.</string>
+    <string name="song_update_error_cache_unavailable">Le cache de lecture n\'est pas disponible. Refermez le lecteur et réessayez.</string>
+    <string name="song_update_error_profile_changed">La mise à jour s\'est interrompue car le profil actif a changé.</string>
+    <string name="song_update_error_storage">Impossible d\'enregistrer les modifications sur cet appareil.</string>
+    <string name="song_update_error_cache_clear">Impossible de terminer la suppression du cache de lecture.</string>
+    <string name="song_update_error_download_remove">Impossible de supprimer le téléchargement hors ligne.</string>
+    <string name="song_update_error_cover_reset">Impossible de terminer la réinitialisation de la couverture.</string>
+    <string name="song_update_error_playback_refresh">Les modifications ont été enregistrées, mais le lecteur n\'a pas pu actualiser la page.</string>
+    <string name="song_update_batch_result">Mise à jour : %1$d · Mise à jour partielle : %2$d · Pas de mise à jour : %3$d</string>
+    <string name="song_update_batch_reason_count">%1$s (%2$d)</string>
     <!-- Song Matching -->
     <string name="song_matching_action_open">Version de l\'album/de l\'audio</string>
     <string name="song_matching_all_confirmation">Voulez-vous faire correspondre %d chansons sans correspondance?</string>
@@ -393,4 +416,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Aimer toutes les chansons prendra environ %1$s. Fermer l\'application pour annuler. Voulez-vous continuer ?</string>
     <string name="library_on_device_permission_request_failed">Impossible de demander l\'accès à la musique sur cet appareil.</string>
     <string name="library_on_device_permission_settings_failed">Impossible d\'ouvrir les paramètres d\'autorisation.</string>
+    <string name="artist_more_from_format">Plus de %1$s</string>
+    <string name="playlist_top_show_title_format">Afficher %1$s</string>
 </resources>
