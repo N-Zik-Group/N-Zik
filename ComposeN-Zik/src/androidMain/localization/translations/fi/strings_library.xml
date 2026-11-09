@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Liking all the songs will take about %1$s. Close the app to cancel. Do you want to continue?</string>
     <string name="library_on_device_permission_request_failed">Musiikin käyttöä ei voitu pyytää tällä laitteella.</string>
     <string name="library_on_device_permission_settings_failed">Käyttöoikeusasetuksia ei voitu avata.</string>
+    <string name="artist_more_from_format">Enemmän %1$s</string>
+    <string name="playlist_top_show_title_format">Näytä %1$s</string>
 </resources>
