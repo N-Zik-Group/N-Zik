@@ -258,7 +258,7 @@
     <string name="sync_youtube_playlist_songs_added_suffix">låtar läggs till i YouTube-spellistan. Upprepa processen om det finns några saknade låtar</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">låtar kommer att läggas till i YTM-spellistan</string>
     <string name="sync_youtube_playlists_title">YTM spellistor</string>
-    <string name="sync_youtube_songs_remaining">%1$s låtar kvar</string>
+    <string name="sync_youtube_songs_remaining">Låtar kvar: %1$s</string>
     <string name="sync_youtube_unlike_failed">Det gick inte att till skillnad från låten på YouTube</string>
     <string name="sync_youtube_unlike_success">Låten är omtyckt på YouTube</string>
     <string name="sync_starting_notification">Startar synkronisering...</string>
