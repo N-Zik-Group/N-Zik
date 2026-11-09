@@ -258,7 +258,7 @@
     <string name="sync_youtube_playlist_songs_added_suffix">melodiile sunt adăugate în lista de redare YouTube. Repetă procesul dacă există melodii lipsă</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">melodiile vor fi adăugate în lista de redare YTM</string>
     <string name="sync_youtube_playlists_title">Playlist-uri YTM</string>
-    <string name="sync_youtube_songs_remaining">%1$s melodii ramase</string>
+    <string name="sync_youtube_songs_remaining">Melodii rămase: %1$s</string>
     <string name="sync_youtube_unlike_failed">Nu s-a putut plăcea melodia pe YouTube</string>
     <string name="sync_youtube_unlike_success">Melodia nu este plăcută pe YouTube</string>
     <string name="sync_starting_notification">Pornire sincronizare...</string>
