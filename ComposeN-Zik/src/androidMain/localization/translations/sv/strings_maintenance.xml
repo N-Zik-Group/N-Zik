@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
     <string name="logs_action_export">Exportera loggar</string>
     <string name="logs_action_export_both">Exportera båda loggarna</string>
@@ -40,6 +41,7 @@
     <string name="maintenance_dedup_flagged">Flaggade %d rader</string>
     <string name="maintenance_dedup_merged">Sammanfogade %d rader</string>
     <string name="maintenance_dedup_merged_flagged">Sammanfogade %1$d rader · Flaggade %2$d rader</string>
+    <string name="maintenance_dedup_counts_format">%1$s · %2$s</string>
     <string name="maintenance_discord_invalid_token">Ogiltig token</string>
     <string name="maintenance_discord_ok">Ok</string>
     <string name="maintenance_discord_reconnect_failed">Återupptagande misslyckades</string>
@@ -197,6 +199,7 @@
     <string name="recovery_error">Ett fel uppstod: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Exportera databas</string>
+    <string name="recovery_export_database_with_covers_description">Spara ditt bibliotek, spellistor och historik som SQLite. Om du har anpassade omslag, exporteras en ZIP med databasen och omslag.</string>
     <string name="recovery_export_logs">Exportera loggar</string>
     <string name="recovery_export_logs_description">Spara krasch- och felsökningsloggar för en felrapport</string>
     <string name="recovery_export_profiles_description">Profillistan och ansiktsbilderna i en enda .txt-fil</string>
@@ -209,6 +212,7 @@
     <string name="recovery_group_settings">Inställningar</string>
     <string name="recovery_group_storage">Lagring</string>
     <string name="recovery_import_database">Importera databas</string>
+    <string name="recovery_import_database_with_covers_description">Återställ en säkerhetskopia av SQLite- eller ZIP-databasen, inklusive eventuella anpassade omslag i ZIP.</string>
     <string name="recovery_import_profiles_description">Återställ profillistan och ansiktsbilderna från en .txt-fil</string>
     <string name="recovery_import_settings">Importera inställningar</string>
     <string name="recovery_import_settings_description">Återställ inställningar från en CSV-fil</string>
@@ -309,4 +313,5 @@
     <string name="updates_warning_acknowledge">Jag förstår</string>
     <string name="updates_check_failed">Kunde inte söka efter uppdateringar.</string>
     <string name="updates_install_generic_error">Kunde inte installera uppdateringen.</string>
+    <string name="updates_channel_available_format">%1$s uppdatering tillgänglig</string>
 </resources>
