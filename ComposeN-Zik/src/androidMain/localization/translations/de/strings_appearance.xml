@@ -226,6 +226,8 @@
     <string name="theme_shake_sensitivity_medium">Mittel (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Sehr hoch (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Bild bearbeiten</string>
+    <string name="image_editor_failed">Bild konnte nicht bearbeitet werden. Ihr aktuelles Bild wurde beibehalten.</string>
     <string name="thumbnail_action_edit">Thumbnail bearbeiten</string>
     <string name="thumbnail_action_pick_from_gallery">Aus der Galerie auswählen</string>
     <string name="thumbnail_action_reset">Thumbnail zurücksetzen</string>
@@ -235,4 +237,7 @@
     <string name="thumbnail_remove_failed">Fehler beim Entfernen des Thumbnails</string>
     <string name="thumbnail_remove_success">Thumbnail entfernt</string>
     <string name="glass_effect_rendering_quality">Rendering-Qualität</string>
+    <string name="image_editor_original">Original-Verhältnis</string>
+    <string name="image_editor_cancel">Abbrechen</string>
+    <string name="image_editor_apply">Bild verwenden</string>
 </resources>
