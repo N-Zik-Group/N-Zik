@@ -18,10 +18,10 @@
     <string name="glass_effect_destination_pages">Sayfalar</string>
     <string name="glass_effect_destination_playback">Geri oynat</string>
     <string name="glass_effect_destination_shared">Paylaşılan elementler</string>
-    <string name="glass_effect_loading_indicators">Loading indicators</string>
-    <string name="glass_effect_loading_indicators_description">Style loading animations on pages and in cards and dialogs.</string>
-    <string name="glass_effect_pull_to_refresh">Pull to refresh</string>
-    <string name="glass_effect_pull_to_refresh_description">Style the indicator that appears when you pull down to refresh.</string>
+    <string name="glass_effect_loading_indicators">Yükleme göstergeleri</string>
+    <string name="glass_effect_loading_indicators_description">Sayfalarda, kartlarda ve iletişim kutularında stil yükleme animasyonları.</string>
+    <string name="glass_effect_pull_to_refresh">Yenilemek için aşağı kaydır</string>
+    <string name="glass_effect_pull_to_refresh_description">Yenilemek için aşağı kaydırdığınızda görünen göstergenin görünümünü düzenleyin.</string>
     <string name="glass_effect_destination_windows">Pencereler ve mesajlar</string>
     <string name="glass_effect_dialog_dimming">Diyalog arka planının karartılması</string>
     <string name="glass_effect_dispersion">Renk ayrımı</string>
@@ -125,7 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">Ayarları gruplandıran ve profillerinizi gösteren kartlar.</string>
     <string name="glass_effect_role_visualizer">Görselleştirici · kontroller</string>
     <string name="glass_effect_role_visualizer_description">Görselleştiriciyle birlikte kullanılan oklar ve Ayarlar düğmesi.</string>
-    <string name="glass_effect_shared_components_summary">Choose how Glass looks on components used across the app, including loading indicators and pull to refresh.</string>
+    <string name="glass_effect_shared_components_summary">Yükleme göstergeleri ve aşağı kaydırarak yenileme dahil olmak üzere, uygulama genelinde kullanılan bileşenlerde Camın nasıl görüneceğini seçin.</string>
     <string name="glass_effect_summary">Cam efekti yüzeylerini, renklerini, kenarlarını ve kalitesini özelleştirin.</string>
     <string name="glass_effect_switches_description">Cam özelliği etkinleştirildiğinde, ortak materyal ve etkileşim efektlerine sahip sıvı Cam anahtarlarını kullanın.</string>
     <string name="glass_effect_switches_title">Cam anahtarlar</string>
@@ -230,8 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Orta (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Çok Yüksek (1,0G)</string>
     <!-- Thumbnail -->
-    <string name="image_editor_title">Edit image</string>
-    <string name="image_editor_failed">Could not edit the image. Your current image was kept.</string>
+    <string name="image_editor_title">Resmi düzenle</string>
+    <string name="image_editor_failed">Resim düzenlenemedi. Mevcut resminiz korundu.</string>
     <string name="thumbnail_action_edit">Küçük Resmi Düzenle</string>
     <string name="thumbnail_action_pick_from_gallery">Galeriden seçin</string>
     <string name="thumbnail_action_reset">Küçük Resmi Sıfırla</string>
@@ -241,7 +241,6 @@
     <string name="thumbnail_remove_failed">Küçük Resmi Kaldırma Başarısız</string>
     <string name="thumbnail_remove_success">Küçük Resim Kaldırıldı</string>
     <string name="glass_effect_rendering_quality">İşleme kalitesi</string>
-    <string name="image_editor_original">Original ratio</string>
-    <string name="image_editor_cancel">İptal</string>
-    <string name="image_editor_apply">Use image</string>
+    <string name="image_editor_original">Orijinal oran</string>
+    <string name="image_editor_apply">Resim Kullan</string>
 </resources>
