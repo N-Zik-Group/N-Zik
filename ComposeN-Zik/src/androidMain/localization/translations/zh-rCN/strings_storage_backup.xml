@@ -3,7 +3,7 @@
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">存储</string>
     <string name="storage_breakdown_info_title">关于存储</string>
-    <string name="storage_breakdown_nzik_total">NZik共使用</string>
+    <string name="storage_breakdown_nzik_total">N-Zik使用总数</string>
     <string name="storage_breakdown_subtitle">存储分解</string>
     <string name="storage_breakdown_waiting">测量存储…</string>
     <string name="storage_breakdown_cached_images">缓存图像</string>
@@ -11,20 +11,20 @@
     <string name="storage_breakdown_downloaded_audio">下载的音频</string>
     <string name="storage_breakdown_custom_covers">自定义封面</string>
     <string name="storage_breakdown_waveforms">波形</string>
-    <string name="storage_breakdown_other_nzik_data">其他NZI克数据</string>
+    <string name="storage_breakdown_other_nzik_data">其他 N-Zik 数据</string>
     <string name="storage_breakdown_other_used_space">系统、应用 &amp; 文件</string>
     <string name="storage_breakdown_free_space">空闲空间</string>
     <string name="storage_info_images">美工和其他图像缓存以便更快显示。</string>
     <string name="storage_info_streaming">串流后暂时保持音频，因此可以在不获取相同数据的情况下重新播放音频。</string>
-    <string name="storage_info_downloads">音频保存在NZik以便离线监听。</string>
+    <string name="storage_info_downloads">音频保存在N-Zik，用于脱机监听。</string>
     <string name="storage_info_waveforms">生成用于在播放器中绘制音频波形的文件。</string>
     <string name="storage_info_covers">您选择或导入的艺术作品作为自定义封面。</string>
-    <string name="storage_info_other_nzik">NZik的其他私人数据，包括其数据库、设置、索引、扩展和日志。</string>
+    <string name="storage_info_other_nzik">N-Zik的其余私有数据，包括其数据库、设置、索引、扩展和日志。</string>
     <string name="storage_info_other_used">内部卷上剩余的空间已使用，包括Android、已安装的应用程序和个人文件。</string>
     <string name="storage_info_free">内部卷上的应用和文件可用的空间。</string>
     <string name="storage_cleanup_title">清理</string>
     <string name="storage_cleanup_failed">无法完成存储清理。</string>
-    <string name="storage_cleanup_images_description">清除由 NZiki 缓存的艺术作品。</string>
+    <string name="storage_cleanup_images_description">清除N-Zik缓存的艺术作品。</string>
     <string name="storage_cleanup_streaming_description">在串流时清除音频缓存。</string>
     <string name="storage_cleanup_downloads_description">删除离线音频并取消活动配置文件下载存储的等待下载。</string>
     <string name="storage_cleanup_waveforms_description">清除生成的波形文件。</string>
@@ -139,7 +139,7 @@
     <string name="downloads_delete_all_count_confirmation">删除所有 %d 下载？</string>
     <string name="downloads_delete_dialog_title">删除下载</string>
     <string name="downloads_download_all_confirmation">您真的要全部下载吗？</string>
-    <string name="downloads_download_all_count_confirmation">下载所有 %d 歌曲吗？</string>
+    <string name="downloads_download_all_count_confirmation">下载所有东西吗？(简体： %d)</string>
     <string name="downloads_download_dialog_title">下载歌曲</string>
     <string name="downloads_empty_message">无需下载</string>
     <string name="downloads_error_network">发生网络错误</string>
@@ -166,16 +166,16 @@
     <string name="export_running_status">正在导出…</string>
     <string name="export_song_unavailable_message">歌曲必须缓存或下载以导出</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">您想要删除所有下载 (%d 歌曲)吗？</string>
+    <string name="library_cleanup_all_downloads_confirmation">删除所有下载? (长: %d)</string>
     <string name="library_cleanup_all_favorites_confirmation">您想要删除所有 %d 收藏夹吗？</string>
-    <string name="library_cleanup_all_listening_history_confirmation">您想要重置 %d 歌曲的侦听历史吗？</string>
-    <string name="library_cleanup_all_songs_confirmation">:警告：这将永久删除所有 %d 歌曲并从所有播放列表中删除它们。此操作不能撤消！</string>
-    <string name="library_cleanup_entire_cache_confirmation">您想要清理整个缓存 (%d 歌曲)吗？</string>
-    <string name="library_cleanup_selected_cache_confirmation">您想要从缓存中删除这些 %d 歌曲吗？</string>
+    <string name="library_cleanup_all_listening_history_confirmation">重置收听历史？(长: %d)</string>
+    <string name="library_cleanup_all_songs_confirmation">:警告: 警告: 这将永久删除您的歌曲并从所有播放列表中删除它们(简体: %d) 此操作不能撤销!</string>
+    <string name="library_cleanup_entire_cache_confirmation">清除整个缓存吗？(简体： %d)</string>
+    <string name="library_cleanup_selected_cache_confirmation">从缓存中移除选区? (简体: %d)</string>
     <string name="library_cleanup_selected_downloads_confirmation">您想要删除这些 %d 下载吗？</string>
-    <string name="library_cleanup_selected_favorites_confirmation">您想要从收藏夹中删除这些 %d 歌曲吗？</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">您想要重置 %d 歌曲的侦听历史吗？</string>
-    <string name="library_cleanup_selected_songs_confirmation">:警告：这将永久删除这些 %d 歌曲并从所有播放列表中删除它们。此操作不能撤消！</string>
+    <string name="library_cleanup_selected_favorites_confirmation">从收藏夹中移除选区吗？(简体： %d)</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">重置选择的监听历史？ (简体： %d)</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ 警告：这将永久删除所选内容并从所有播放列表中删除它。(简体: %d) 此操作不能撤消！</string>
     <string name="library_cleanup_title">智能回收站</string>
     <string name="library_favorites_remove_dialog_title">从收藏夹中删除</string>
     <string name="library_listening_history_reset_dialog_title">重置监听历史</string>
