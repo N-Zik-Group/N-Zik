@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">选择如何排除不喜欢的艺术家的曲目。</string>
     <string name="player_exclude_disliked_songs_description">选择从播放建议中排除不喜欢的曲目。</string>
     <string name="player_exclude_songs_with_duration_limit_description">排除超过选定时间限制的曲目。</string>
-    <string name="player_excluded_song_count_format">排除 %s 歌曲</string>
+    <string name="player_excluded_song_count_format">歌曲不包括: %s</string>
     <string name="player_keep_minimized">保持最小化</string>
     <string name="player_layout_artwork_style_description">选择播放器如何显示曲目艺术作品。</string>
     <string name="player_layout_controls_style_description">选择播放器控件的布局。</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">在播放器预览中包含即将播放的曲目旁边的专辑艺术作品。</string>
     <string name="player_queue_preview_song_count_description">选择在播放器预览中显示多少曲目。</string>
     <string name="player_queue_remove_selected_confirmation_format">从队列中删除选择吗？选中的曲目： %d</string>
-    <string name="player_queue_shuffled_count_format">队列已随机播放(%d 歌曲)</string>
+    <string name="player_queue_shuffled_count_format">队列已排序(轨迹： %d)</string>
     <string name="player_remaining_time_visible_description">显示当前曲目的剩余时间。</string>
     <string name="player_restart_required_message">播放器必须重启才能使更改生效！</string>
     <string name="player_rotating_buttons">旋转按钮</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">在播放器中显示即将播放的曲目预览。</string>
     <string name="player_show_player_top_actions_bar_description">在主内容上方显示玩家动作的一行。</string>
     <string name="player_shuffle_empty_message">没有要随机播放的歌曲</string>
-    <string name="player_shuffled_song_count_format">%d 首歌曲已打乱。</string>
+    <string name="player_shuffled_song_count_format">已排序的曲目: %d</string>
     <string name="player_sleep_timer_end_of_song_message">睡眠计时器延迟到歌曲结束时</string>
     <string name="player_sleep_timer_finished_message">睡眠计时器已结束</string>
     <string name="player_song_playback_error_format">媒体%1$s出错了</string>
