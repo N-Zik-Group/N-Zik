@@ -137,6 +137,9 @@
     <string name="modules_download_needed">Η μονάδα χρειάζεται λήψη (~25 MB). Ελέγξτε τη σύνδεση.</string>
     <string name="modules_downloading">Λήψη ενθέματος</string>
     <string name="modules_edit_unavailable">Επεξεργασία μεταδεδομένων μη διαθέσιμα: %1$s</string>
+    <string name="modules_ffmpeg_preparation">Προετοιμασία FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">Λήψη FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Απαιτείται η εξαγωγή προσωρινά αποθηκευμένων τραγουδιών και η επεξεργασία μεταδεδομένων τραγουδιού. Λήφθηκε κατά την πρώτη χρήση.</string>
     <string name="modules_info">Πληροφορίες</string>
     <string name="modules_insufficient_space">Αυτή η λειτουργία χρειάζεται περίπου 70 MB ελεύθερου χώρου</string>
