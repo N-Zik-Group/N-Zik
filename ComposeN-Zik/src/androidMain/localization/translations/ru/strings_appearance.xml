@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">Страницы</string>
     <string name="glass_effect_destination_playback">Воспроизведение</string>
     <string name="glass_effect_destination_shared">Общие элементы</string>
+    <string name="glass_effect_loading_indicators">Индикаторы загрузки</string>
+    <string name="glass_effect_loading_indicators_description">Стиль загрузки анимации на страницах и в карточках и диалогах.</string>
+    <string name="glass_effect_pull_to_refresh">Потяните для обновления</string>
+    <string name="glass_effect_pull_to_refresh_description">Стиль индикатора, отображаемого при открытии вниз для обновления.</string>
     <string name="glass_effect_destination_windows">Окна и сообщения</string>
     <string name="glass_effect_dialog_dimming">Фон диалогового окна затемнения</string>
     <string name="glass_effect_dispersion">Разделение цвета</string>
@@ -121,7 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">Карты, которые группируют и показывают ваши профили.</string>
     <string name="glass_effect_role_visualizer">Визуализатор · Управление</string>
     <string name="glass_effect_role_visualizer_description">Кнопка стрелок и настроек используется в визуализаторе.</string>
-    <string name="glass_effect_shared_summary">Выберите обычный вид приложения. Другие группы позволяют вам изменять специфические части.</string>
+    <string name="glass_effect_shared_components_summary">Выберите, как стекло смотрит на компоненты, используемые в приложении, включая индикаторы загрузки и тянуть для обновления.</string>
     <string name="glass_effect_summary">Настройка поверхностей Стеклянного эффекта, цветов, контуров и качества.</string>
     <string name="glass_effect_switches_description">Использовать жидкие стеклянные переключатели с общим материалом и эффектами взаимодействия при включённом стекле.</string>
     <string name="glass_effect_switches_title">Стеклянные переключатели</string>
