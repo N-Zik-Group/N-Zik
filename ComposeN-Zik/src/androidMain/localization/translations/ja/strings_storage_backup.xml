@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">ストレージ</string>
+    <string name="storage_breakdown_info_title">ストレージについて</string>
+    <string name="storage_breakdown_nzik_total">N-Zik が使用する合計</string>
+    <string name="storage_breakdown_subtitle">ストレージの内訳：</string>
+    <string name="storage_breakdown_waiting">Measuring storage…</string>
+    <string name="storage_breakdown_cached_images">キャッシュされた画像</string>
+    <string name="storage_breakdown_streamed_audio">ストリーミングオーディオ</string>
+    <string name="storage_breakdown_downloaded_audio">ダウンロードしたオーディオ</string>
+    <string name="storage_breakdown_custom_covers">カスタムカバー</string>
+    <string name="storage_breakdown_waveforms">波形</string>
+    <string name="storage_breakdown_other_nzik_data">その他のN-Zik データ</string>
+    <string name="storage_breakdown_other_used_space">システム、アプリ、 &amp; ファイル</string>
+    <string name="storage_breakdown_free_space">空き容量</string>
+    <string name="storage_info_images">アートワークやその他の画像はキャッシュされて表示が速くなります。</string>
+    <string name="storage_info_streaming">ストリーミング後に一時的にオーディオが保持されるため、同じデータを取得せずに再び再生できます。</string>
+    <string name="storage_info_downloads">オフラインリスニングのために音声を N-Zik に保存しました。</string>
+    <string name="storage_info_waveforms">プレーヤーでオーディオ波形を描画するために使用される生成されたファイル。</string>
+    <string name="storage_info_covers">カスタムカバーとして選択またはインポートされた作品。</string>
+    <string name="storage_info_other_nzik">データベース、設定、インデックス、拡張機能、ログを含む、N-Zikのプライベートデータの残り。</string>
+    <string name="storage_info_other_used">Android、インストールされたアプリや個人ファイルを含む内部ボリュームの残りの使用スペース。</string>
+    <string name="storage_info_free">内部ボリュームのアプリやファイルで利用可能です。</string>
+    <string name="storage_cleanup_title">クリーンアップ</string>
+    <string name="storage_cleanup_failed">ストレージのクリーンアップを完了できませんでした。</string>
+    <string name="storage_cleanup_images_description">N-Zik によってキャッシュされたアートワークをクリアします。</string>
+    <string name="storage_cleanup_streaming_description">ストリーミング中にオーディオキャッシュをクリアします。</string>
+    <string name="storage_cleanup_downloads_description">オフラインオーディオを削除し、アクティブなプロファイルのダウンロードストレージの保留中のダウンロードをキャンセルします。</string>
+    <string name="storage_cleanup_waveforms_description">生成した波形ファイルをクリアします。</string>
+    <string name="storage_cleanup_waveforms_dialog_title">波形をクリア</string>
+    <string name="storage_cleanup_diagnostic_logs">診断ログをクリア</string>
+    <string name="storage_cleanup_diagnostic_logs_description">デバッグとクラッシュログファイルを削除します。ログの設定は変わりません。</string>
+    <string name="storage_cleanup_temporary_files">放棄された一時ファイルを削除</string>
+    <string name="storage_cleanup_temporary_files_description">放棄されたイメージエディタの下書きを削除し、Rewind共有は24時間以上前のものです。</string>
+    <string name="storage_cleanup_all">すべてクリア</string>
+    <string name="storage_cleanup_all_description">他のプロファイルと共有するストレージを含む、アクティブなプロファイルの画像とストリーミングキャッシュと生成された波形をクリアします。 オフラインオーディオを削除し、アクティブなプロファイルのダウンロードストレージの保留中のダウンロードをキャンセルします。 診断ログ、放棄された画像エディタの下書きと期限切れのRewind共有キャプチャを削除します。あなたのライブラリ、カスタムカバー、設定は保持されます。</string>
     <!-- Backup -->
     <string name="backup_action_export">バックアップをエクスポート</string>
     <string name="backup_action_import">バックアップをインポート</string>
@@ -15,11 +50,14 @@
     <string name="backup_auto_schedule_day_of_month_description">毎月の自動バックアップの月の日を選択します。</string>
     <string name="backup_auto_schedule_day_of_week_description">ウィークリー自動バックアップの平日を選択します。</string>
     <string name="backup_auto_schedule_time_description">スケジュールされた自動バックアップを実行する時間を選択します。</string>
+    <string name="backup_auto_content_format_description">自動的にバックアップする方法を選択します。データベースのバックアップは、カスタムカバーを含むときに ZIP を使用します。</string>
     <string name="backup_before_update_description">アップデートをインストールする前にデータを自動的にバックアップする</string>
     <string name="backup_before_update_failed">インストール前のバックアップに失敗しました</string>
     <string name="backup_before_update_running_message">Backing up data before installation…</string>
     <string name="backup_before_update_running_title">バックアップ中</string>
     <string name="backup_excluded_preferences_and_cache_description">個人設定 (テーマの種類など) とキャッシュは含まれません。</string>
+    <string name="backup_export_library_options_description">カスタムカバー、設定、またはプロファイルを含むデータベースをエクスポート</string>
+    <string name="backup_import_library_options_description">SQLite または ZIP データベースのバックアップ、設定、またはプロファイルを復元する</string>
     <string name="backup_include_discord_credentials">DiscordのID認証情報を含める</string>
     <string name="backup_include_lastfm_credentials">Last.fm ID 資格情報を含める</string>
     <string name="backup_include_proxy_password">プロキシパスワードを含める</string>
@@ -56,12 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">プロフィール一覧と顔写真を単一の.txtファイルにエクスポートします</string>
     <string name="backup_export_all">すべてエクスポート</string>
+    <string name="backup_export_all_with_covers_description">データベース、設定、およびプロファイルの状態を個別にエクスポートします。データベースにはカスタムカバーが含まれている場合、ZIPが使用されます。</string>
+    <string name="backup_export_database_with_covers_and_settings_description">データベースと設定を個別にエクスポートします。カスタムカバーが含まれている場合、データベースはZIPを使用します。</string>
+    <string name="backup_export_database_with_covers_description">曲、プレイリスト、履歴をSQLiteとして保存します。カスタムカバーがある場合は、エクスポートはデータベースとカバーのあるZIPです。</string>
     <string name="backup_export_profile_state_failed">プロファイル状態のエクスポートに失敗しました</string>
     <string name="backup_export_settings_description">アプリの設定と設定をエクスポート</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">.txt ファイルからプロフィール一覧と顔写真をインポート</string>
     <string name="backup_import_all">すべてインポート</string>
+    <string name="backup_import_all_with_covers_description">SQLiteまたはZIPデータベースのバックアップ、設定、およびプロファイルの状態を別のファイルから復元します。</string>
+    <string name="backup_import_database_with_covers_and_settings_description">SQLite または ZIP データベースのバックアップと個別の設定ファイルを復元します。</string>
     <string name="backup_import_completed_profile">%1$s にインポートしました</string>
+    <string name="backup_import_database_with_covers_description">SQLiteまたはZIPから曲、プレイリスト、および履歴を復元します。ZIPバックアップも含まれるカスタムカバーを復元します。</string>
     <string name="backup_import_profile_state_complete">プロファイルの状態がインポートされました: %1$d プロファイル</string>
     <string name="backup_import_profile_state_complete_base">インポートされたプロファイルの状態: ベースプロファイル</string>
     <string name="backup_import_profile_state_failed">プロファイル状態のインポートに失敗しました</string>
@@ -72,11 +116,14 @@
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">曲のキャッシュをクリア</string>
     <string name="cache_downloads_max_size_description">ダウンロードした曲のディスク容量を選択します。format@@0ボタンは、ダウンロードしたオーディオを削除します。</string>
+    <string name="cache_downloads_limit_description">ダウンロードした曲のディスク容量を選択します。format@@0ボタンは、ダウンロードしたオーディオを削除します。</string>
     <string name="cache_image_max_size_description">キャッシュされたアートワークによって使用されるディスク容量を制限します。format@@0ボタンは、このキャッシュからダウンロードされた画像を消去します。</string>
+    <string name="cache_image_limit_description">キャッシュされたアートワークによって使用されるディスク容量を制限します。format@@0ボタンは、このキャッシュからダウンロードされた画像を消去します。</string>
     <string name="cache_location_description">曲の再生キャッシュを保存する場所を選択します。</string>
     <string name="cache_location_private">プライベート</string>
     <string name="cache_location_system">システム</string>
     <string name="cache_streaming_max_size_description">ストリーミングした曲をキャッシュするディスク容量を制限します。format@@0ボタンを押すと再生キャッシュがクリアされます。</string>
+    <string name="cache_streaming_limit_description">ストリーミングした曲をキャッシュするディスク容量を制限します。format@@0ボタンを押すと再生キャッシュがクリアされます。</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">すべての曲をダウンロード</string>
     <string name="downloads_action_refresh_quality">ダウンロードを更新</string>
@@ -136,7 +183,10 @@
     <string name="storage_samsung_advice_message">Samsungの自動メモリ管理は、N-Zikのダウンロードとキャッシュファイルを削除することができます。 ダウンロードを安全に保つには、システムストレージの代わりにプライベート(アプリ)の保存場所を使用します。</string>
     <string name="storage_samsung_advice_title">サムスンストレージのアドバイス</string>
     <string name="storage_samsung_system_usage_message">現在、システムストレージのダウンロードとキャッシュの %1$s があります。</string>
+    <string name="backup_export_database_failed">データベースのエクスポートに失敗しました</string>
     <string name="backup_import_failed">インポートに失敗しました</string>
     <string name="export_no_songs">曲がエクスポートされていません</string>
     <string name="export_cached_songs_generic_error">エクスポートに失敗しました</string>
+    <string name="backup_startup_preparing_library">Preparing your library…</string>
+    <string name="backup_startup_recovery_failed">ライブラリの復元を完了できませんでした。</string>
 </resources>
