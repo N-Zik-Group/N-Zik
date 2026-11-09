@@ -2,7 +2,6 @@ package app.n_zik.android.core.backup
 
 import android.app.Application
 import android.content.ContextWrapper
-import app.n_zik.android.MainApplication
 import java.io.DataOutputStream
 import java.io.File
 import java.io.RandomAccessFile
@@ -17,7 +16,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
-import org.robolectric.shadows.ShadowProcess
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
@@ -44,11 +42,7 @@ class DatabaseRestoreJournalTest {
             override fun getDatabasePath(name: String) = databases.resolve(name)
         }
 
-        ShadowProcess.setProcessName(context.packageName)
-        val application = MainApplication()
-        MainApplication::class.java.getDeclaredMethod("attachBaseContext", android.content.Context::class.java)
-            .apply { isAccessible = true }
-            .invoke(application, context)
+        DatabaseRestoreJournal.onProcessStart(context, mainProcess = true)
         DatabaseRestoreJournal.onProcessStart(context, mainProcess = false)
 
         assertThrows(IllegalStateException::class.java) {

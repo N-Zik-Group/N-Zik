@@ -1,5 +1,7 @@
 package app.n_zik.android.extensions.musicbrainz.workers
 
+import app.n_zik.android.core.backup.awaitLibraryReadyForWork
+
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
@@ -60,6 +62,7 @@ class MbBackfillWorker(
     private val helper = MBMetadataHelper.Default
 
     override suspend fun doWork(): Result {
+        if (!applicationContext.awaitLibraryReadyForWork()) return Result.retry()
         Timber.tag(TAG).i("Starting MusicBrainz metadata backfill")
 
         Database.artistTable

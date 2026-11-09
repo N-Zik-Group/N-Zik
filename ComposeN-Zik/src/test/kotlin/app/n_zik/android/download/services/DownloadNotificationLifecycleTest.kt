@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.IBinder
+import android.os.Looper
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadCursor
@@ -16,9 +17,12 @@ import androidx.media3.exoplayer.offline.DownloadService
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.n_zik.android.R
+import app.n_zik.android.awaitLibraryReady
+import app.n_zik.android.core.backup.isLibraryReady
 import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
 import app.n_zik.android.core.notifications.channelId
 import app.n_zik.android.download.utils.MyDownloadHelper
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -26,6 +30,7 @@ import io.mockk.justRun
 import io.mockk.verify
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
+import kotlinx.coroutines.CompletableDeferred
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -166,12 +171,11 @@ class DownloadNotificationLifecycleTest {
         }
         every { MyDownloadHelper.getDownloadManager(any()) } returns manager
         val service = Robolectric.buildService(MyDownloadService::class.java).get()
-        val intent = Intent().setAction(MyDownloadService.ACTION_CANCEL_ONGOING)
         every { cursor.moveToNext() } returnsMany listOf(true, false)
         every { cursor.download } returns download
         justRun { DownloadService.sendRemoveDownload(service, MyDownloadService::class.java, "track", false) }
 
-        assertEquals(Service.START_STICKY, service.onStartCommand(intent, 0, 1))
+        service.cancelOngoingDownloads()
 
         verify(exactly = 1) { cursor.close() }
         verify(exactly = 1) {
@@ -182,9 +186,46 @@ class DownloadNotificationLifecycleTest {
             DownloadService.sendRemoveDownload(service, MyDownloadService::class.java, "track", false)
         } throws IllegalStateException("Removal failed")
 
-        assertThrows(IllegalStateException::class.java) { service.onStartCommand(intent, 0, 2) }
+        assertThrows(IllegalStateException::class.java) { service.cancelOngoingDownloads() }
 
         verify(exactly = 2) { cursor.close() }
+    }
+
+    @Test
+    fun `pending download command opens the manager and replays once recovery finishes`() {
+        mockkStatic("app.n_zik.android.GlobalVarsKt")
+        mockkStatic("app.n_zik.android.MainApplicationKt")
+        mockkStatic("app.n_zik.android.core.backup.LibraryStartupWorkerGateKt")
+        every { app.n_zik.android.appContext() } returns context
+        val readiness = CompletableDeferred<Unit>()
+        every { any<Context>().isLibraryReady() } answers { readiness.isCompleted }
+        coEvery { any<Context>().awaitLibraryReady() } coAnswers { readiness.await() }
+
+        mockkObject(MyDownloadHelper)
+        val manager = mockk<DownloadManager>(relaxed = true)
+        val cursor = mockk<DownloadCursor>(relaxed = true)
+        every { manager.downloadIndex.getDownloads() } returns cursor
+        every { MyDownloadHelper.getDownloadManager(any()) } returns manager
+
+        val controller = Robolectric.buildService(MyDownloadService::class.java).create()
+        val service = controller.get()
+        val mainLooper = shadowOf(Looper.getMainLooper())
+        val command = Intent(MyDownloadService.ACTION_CANCEL_ONGOING)
+
+        try {
+            mainLooper.idle()
+            assertEquals(Service.START_REDELIVER_INTENT, service.onStartCommand(command, 0, 1))
+            verify(exactly = 0) { MyDownloadHelper.getDownloadManager(any()) }
+            verify(exactly = 0) { cursor.moveToNext() }
+
+            readiness.complete(Unit)
+            mainLooper.idle()
+            verify(exactly = 1) { manager.resumeDownloads() }
+            verify(exactly = 1) { cursor.moveToNext() }
+            verify(exactly = 1) { cursor.close() }
+        } finally {
+            controller.destroy()
+        }
     }
 
     class TestService : Service() {

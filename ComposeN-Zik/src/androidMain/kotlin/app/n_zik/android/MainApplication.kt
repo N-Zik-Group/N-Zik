@@ -67,6 +67,7 @@ import app.n_zik.android.core.network.client.Store
 import app.n_zik.android.core.notifications.ensureProfileChannels
 import app.n_zik.android.core.backup.DatabaseBackup
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
+import app.n_zik.android.core.backup.LibraryStartup
 import app.n_zik.android.core.rescue.RescueProcess
 import app.n_zik.android.components.settings.applyUseLoginForSearch
 import app.n_zik.android.core.settings.ensurePlayerBehaviorDefaults
@@ -123,15 +124,17 @@ import kotlinx.coroutines.withTimeout
 
 class MainApplication : Application(), SingletonImageLoader.Factory {
 
-    override fun attachBaseContext(base: Context) {
-        super.attachBaseContext(base)
-        // Content providers can run before onCreate, so finish recovery before they open SQLite.
-        DatabaseRestoreJournal.onProcessStart(this, mainProcess = isMainProcess())
-    }
+    internal val libraryStartup = LibraryStartup(
+        recover = { DatabaseRestoreJournal.onProcessStart(this, mainProcess = isMainProcess()) },
+        initialize = {
+            if (isMainProcess()) initializeMainProcess()
+            cleanRetiredLibraryFiles()
+        },
+    )
 
-    override fun onCreate() {
-        super.onCreate()
+    internal suspend fun awaitLibraryReady() = libraryStartup.awaitReady()
 
+    private fun cleanRetiredLibraryFiles() {
         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
             DatabaseRestoreJournal.cleanRetiredFiles(filesDir, includeRescueBackups = true)
             runCatching { DatabaseRestoreJournal.cleanAbandonedImports(this@MainApplication) }
@@ -139,10 +142,19 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             runCatching { DatabaseBackup.cleanAbandonedExports(this@MainApplication) }
                 .onFailure { Timber.tag("MainApplication").w(it, "Could not clean abandoned database exports") }
         }
+    }
+
+    override fun onCreate() {
+        super.onCreate()
 
         // RescueActivity runs in the :rescue process. Starting the full app there can make
         // that process claim WebView's data directory and crash the next main-process WebView.
-        if (!isMainProcess()) return
+        if (!isMainProcess()) {
+            libraryStartup.start()
+            return
+        }
+
+        Dependencies.init(this)
 
         // Rescue Center safety net: the Rescue writes a kill-request flag when its hot kill
         // (broadcast) may be lost (main process dead or fully frozen). Consume it BEFORE any
@@ -155,11 +167,8 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 //
         // recorded the kill request on every Rescue Center open even while the process was
         // alive) is discarded WITHOUT killing — only a fresh request justifies it.
-        if (runCatching { RescueProcess.discardStaleKillRequest(this) }.getOrDefault(false)) {
-            return
-        }
-
-        if (runCatching { RescueProcess.consumeKillRequest(this) }.getOrDefault(false)) {
+        val staleKillRequest = runCatching { RescueProcess.discardStaleKillRequest(this) }.getOrDefault(false)
+        if (!staleKillRequest && runCatching { RescueProcess.consumeKillRequest(this) }.getOrDefault(false)) {
             // killProcess is the public API for ending a process from inside (the framework's
             // exitProcess is @hide and not part of the SDK).
             Process.killProcess(Process.myPid())
@@ -167,21 +176,22 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         }
 
         // Same Rescue Center: register the receiver that ends this process on demand. Early,
-        // BEFORE Dependencies.init, so the receiver exists even if initialization crashes below
+        // before library initialization, so the receiver exists even if initialization crashes below
 //
         // (same rationale as the shortcuts registration just below).
         RescueProcess.registerKillMainReceiver(this)
 
-        // Same Rescue Center: start the alive-marker updater — the only reliable liveness
-        // signal the `:rescue` process can see from API 31 on (the process probe is then
-//
-        // restricted to the calling process). Background thread: the marker stays fresh even
-        // while the main thread is frozen, and it is never stopped (it lives with the process).
-        RescueProcess.startAliveMarkerUpdater(this)
-
-        // Register app shortcuts early, BEFORE Dependencies.init, so that the Rescue
+        // Register app shortcuts before library initialization so that the Rescue
         // shortcut exists even if initialization crashes below.
         app.n_zik.android.shortcuts.registerAppShortcuts(this)
+
+        libraryStartup.start()
+    }
+
+    private fun initializeMainProcess() {
+        // Publish library ownership after the lease is acquired, while the early kill
+        // receiver stays available even when startup is still waiting.
+        RescueProcess.startAliveMarkerUpdater(this)
 
         // Extension modules (spec-ffmpeg-extension-module): the download notification's
         // Cancel action reaches the in-process ModuleManager through this receiver.
@@ -195,7 +205,6 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             registerReceiver(moduleCancelReceiver, moduleCancelFilter)
         }
 
-        Dependencies.init(this)
         WidgetAppearance.observeIdlePreferences(this)
         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
             PickedImageEditor.cleanupOrphans(applicationContext)
@@ -706,6 +715,14 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             }
         return processName == packageName
     }
+}
+
+internal suspend fun Context.awaitLibraryReady() {
+    (applicationContext as? MainApplication)?.awaitLibraryReady()
+}
+
+internal fun Context.requireLibraryAccess() {
+    (applicationContext as? MainApplication)?.libraryStartup?.requireRecovered()
 }
 
 object Dependencies {

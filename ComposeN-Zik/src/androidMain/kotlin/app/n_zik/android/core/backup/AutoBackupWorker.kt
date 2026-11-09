@@ -11,6 +11,7 @@ class AutoBackupWorker(
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
+        if (!applicationContext.awaitLibraryReadyForWork()) return Result.retry()
         Timber.tag("AutoBackup").d("AutoBackupWorker started")
         val uriString = applicationContext.getSharedPreferences("preferences", Context.MODE_PRIVATE)
             .getString(BackupManager.PREF_URI, "") ?: ""

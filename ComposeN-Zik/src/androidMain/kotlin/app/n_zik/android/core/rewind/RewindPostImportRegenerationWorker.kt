@@ -1,5 +1,7 @@
 package app.n_zik.android.core.rewind
 
+import app.n_zik.android.core.backup.awaitLibraryReadyForWork
+
 import android.content.Context
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.CoroutineWorker
@@ -46,6 +48,7 @@ internal class RewindPostImportRegenerationWorker(
     }
 
     override suspend fun doWork(): Result {
+        if (!applicationContext.awaitLibraryReadyForWork()) return Result.retry()
         if (Database.isClosed) {
             // The import closes the database before the app restarts with the imported
             // file: a live run would hit the dead Room singleton. The work is persisted,

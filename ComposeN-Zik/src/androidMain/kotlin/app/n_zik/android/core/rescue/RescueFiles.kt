@@ -268,7 +268,7 @@ object RescueFiles {
 
     /** Captures a rescue export through raw SQLite without starting Room. */
     internal fun prepareDatabaseExport(context: Context): DatabaseBackup.Export =
-        DatabaseBackup.prepareExport(context, rescueTargetProfile())
+        DatabaseBackup.prepareRescueExport(context, rescueTargetProfile())
 
     /**
      * Folds the WAL into [dbFile] through a raw SQLite connection, and throws when it cannot.
@@ -305,12 +305,7 @@ object RescueFiles {
 
     /** Restores a SQLite or ZIP database backup into the profile selected for rescue. */
     fun importDatabase(context: Context, uri: Uri): Result<Unit> = runCatching {
-        DatabaseBackup.restore(context, uri, rescueTargetProfile()) {
-            if (RescueProcess.isMainProcessLikelyAlive(context)) {
-                throw DatabaseBusyException("Main process started during database import")
-            }
-            DatabaseRestoreJournal.requireMainProcessStopped(context)
-        }
+        DatabaseBackup.restoreFromRescue(context, uri, rescueTargetProfile())
         Timber.tag(TAG).i("Database imported successfully")
     }
 

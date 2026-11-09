@@ -13,6 +13,9 @@ import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.exoplayer.scheduler.PlatformScheduler
 import app.n_zik.android.R
 import app.n_zik.android.appContext
+import app.n_zik.android.awaitLibraryReady
+import app.n_zik.android.core.backup.LibraryStartupException
+import app.n_zik.android.core.backup.isLibraryReady
 import app.n_zik.android.core.notifications.channelId
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.download.utils.MyDownloadHelper.DOWNLOAD_NOTIFICATION_CHANNEL_ID
@@ -34,11 +37,15 @@ import app.n_zik.android.playback.exceptions.TimeoutException
 import app.n_zik.android.playback.exceptions.UnknownException
 import app.n_zik.android.playback.exceptions.UnplayableException
 import app.n_zik.android.playback.exceptions.VideoIdMismatchException
+import app.n_zik.android.utils.coroutines.NzikDispatchers
 import androidx.media3.datasource.HttpDataSource
 import java.io.InterruptedIOException
 import java.net.SocketException
 import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 private const val JOB_ID = 8888
 const val FOREGROUND_NOTIFICATION_ID = 8989
@@ -58,19 +65,69 @@ class MyDownloadService : DownloadService(
 
     companion object {
         const val ACTION_CANCEL_ONGOING = "app.n_zik.android.download.action.CANCEL_ONGOING"
+        // Media3's scheduler uses this private action without setting KEY_FOREGROUND.
+        private const val SCHEDULED_RESTART = "androidx.media3.exoplayer.downloadService.action.RESTART"
+    }
+
+    private data class PendingStart(val intent: Intent?, val flags: Int, val id: Int)
+
+    private val pendingStarts = ArrayDeque<PendingStart>()
+    private var startupJob: Job? = null
+    private var downloadManagerStarted = false
+    private var waitingForeground = false
+
+    override fun onCreate() {
+        if (isLibraryReady()) {
+            initializeDownloadManager()
+            return
+        }
+        startupJob = NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+            try {
+                awaitLibraryReady()
+            } catch (error: LibraryStartupException) {
+                Timber.tag("MyDownloadService").e(error, "Library is unavailable for downloads")
+                stopSelf()
+                return@launch
+            }
+            initializeDownloadManager()
+            while (pendingStarts.isNotEmpty()) {
+                val pending = pendingStarts.removeFirst()
+                onStartCommand(pending.intent, pending.flags, pending.id)
+            }
+        }
+    }
+
+    private fun initializeDownloadManager() {
+        super.onCreate()
+        downloadManagerStarted = true
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_CANCEL_ONGOING) {
-            val downloadManager = MyDownloadHelper.getDownloadManager(this)
-            downloadManager.downloadIndex.getDownloads().use { cursor ->
-                while (cursor.moveToNext()) {
-                    val state = cursor.download.state
-                    if (state == Download.STATE_DOWNLOADING || state == Download.STATE_QUEUED || state == Download.STATE_RESTARTING || state == Download.STATE_STOPPED) {
-                        DownloadService.sendRemoveDownload(this, MyDownloadService::class.java, cursor.download.request.id, false)
-                    }
-                }
+        if (!downloadManagerStarted) {
+            if (!waitingForeground &&
+                (intent?.getBooleanExtra(KEY_FOREGROUND, false) == true || intent?.action == SCHEDULED_RESTART)
+            ) {
+                val channel = channelId(DOWNLOAD_NOTIFICATION_CHANNEL_ID, getActiveProfile(this))
+                NotificationUtil.createNotificationChannel(
+                    this, channel, R.string.downloads_title, 0, NotificationUtil.IMPORTANCE_LOW,
+                )
+                startForeground(
+                    FOREGROUND_NOTIFICATION_ID,
+                    NotificationCompat.Builder(this, channel)
+                        .setSmallIcon(R.drawable.ic_launcher_monochrome)
+                        .setContentTitle(getString(R.string.downloads_title))
+                        .setContentText(getString(R.string.backup_startup_preparing_library))
+                        .setProgress(0, 0, true)
+                        .setOngoing(true)
+                        .build(),
+                )
+                waitingForeground = true
             }
+            pendingStarts.addLast(PendingStart(intent, flags, startId))
+            return if (intent == null) START_STICKY else START_REDELIVER_INTENT
+        }
+        if (intent?.action == ACTION_CANCEL_ONGOING) {
+            cancelOngoingDownloads()
             return START_STICKY
         } else if (intent?.action == DownloadService.ACTION_PAUSE_DOWNLOADS) {
             app.n_zik.android.appContext().getSharedPreferences("download_prefs", Context.MODE_PRIVATE).edit().putBoolean("downloads_paused_state", true).apply()
@@ -78,6 +135,25 @@ class MyDownloadService : DownloadService(
             app.n_zik.android.appContext().getSharedPreferences("download_prefs", Context.MODE_PRIVATE).edit().putBoolean("downloads_paused_state", false).apply()
         }
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    internal fun cancelOngoingDownloads() {
+        val downloadManager = MyDownloadHelper.getDownloadManager(this)
+        downloadManager.downloadIndex.getDownloads().use { cursor ->
+            while (cursor.moveToNext()) {
+                val state = cursor.download.state
+                if (state == Download.STATE_DOWNLOADING || state == Download.STATE_QUEUED || state == Download.STATE_RESTARTING || state == Download.STATE_STOPPED) {
+                    DownloadService.sendRemoveDownload(this, MyDownloadService::class.java, cursor.download.request.id, false)
+                }
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        startupJob?.cancel()
+        pendingStarts.clear()
+        // DownloadService dereferences its manager helper, which is only attached by its onCreate.
+        if (downloadManagerStarted) super.onDestroy()
     }
 
     override fun getDownloadManager(): DownloadManager {

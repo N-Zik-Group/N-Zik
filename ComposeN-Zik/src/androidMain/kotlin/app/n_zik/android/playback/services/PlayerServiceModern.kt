@@ -27,14 +27,21 @@ import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.kreate.android.me.knighthat.sync.YouTubeSync
 
 import app.n_zik.android.MainApplication
+import app.n_zik.android.awaitLibraryReady
+import app.n_zik.android.core.backup.LibraryStartupException
+import app.n_zik.android.core.backup.LibraryStartupState
+import app.n_zik.android.core.backup.isLibraryReady
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.coroutines.runPeriodically
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 
 import android.annotation.SuppressLint
 import android.app.NotificationManager
+import android.app.NotificationChannel
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -53,10 +60,14 @@ import android.media.audiofx.BassBoost
 import android.media.audiofx.LoudnessEnhancer
 import android.media.audiofx.PresetReverb
 import android.os.Build
+import android.os.IBinder
+import android.os.Looper
 import android.os.SystemClock
+import android.content.pm.ServiceInfo
 import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.media3.common.AuxEffectInfo
@@ -66,6 +77,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
+import androidx.media3.common.SimpleBasePlayer
 import androidx.media3.common.Timeline
 import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.UnstableApi
@@ -313,6 +325,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
     private val coroutineScope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
     private lateinit var mediaSession: MediaLibrarySession
+    private val playbackReady = CompletableDeferred<Unit>()
 
     /**
      * One-shot "open player" token of the session activity (spec-notification-click-opens-player,
@@ -324,7 +337,7 @@ class PlayerServiceModern : MediaLibraryService(),
      */
     private val openPlayerToken = System.currentTimeMillis()
     private var mediaLibrarySessionCallback: AutoSessionCallback =
-        AutoSessionCallback(this, Database, MyDownloadHelper)
+        AutoSessionCallback(this, Database, MyDownloadHelper, playbackReady)
     private var sessionController: MediaController? = null
     lateinit var player: ExoPlayer
     private var internalEffectsSessionId = C.AUDIO_SESSION_ID_UNSET
@@ -622,6 +635,88 @@ class PlayerServiceModern : MediaLibraryService(),
     @kotlin.OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     override fun onCreate() {
         super.onCreate()
+        if (isLibraryReady()) {
+            initializePlayback()
+            return
+        }
+        coroutineScope.launch(NzikDispatchers.UI) {
+            try {
+                awaitLibraryReady()
+            } catch (error: LibraryStartupException) {
+                Timber.tag("PlayerServiceModern").e(error, "Library is unavailable for playback")
+                val startup = (application as? MainApplication)?.libraryStartup
+                if (startup == null) {
+                    removeStartupPlaybackNotification()
+                    playbackReady.completeExceptionally(error)
+                    stopSelf()
+                    return@launch
+                }
+                // A bound controller can keep this service alive through a recovery retry.
+                startup.state.first { state ->
+                    if (state is LibraryStartupState.Failed) removeStartupPlaybackNotification()
+                    state == LibraryStartupState.Ready
+                }
+            }
+            if (!playbackInitializationStarted) initializePlaybackAndReplay()
+        }
+    }
+
+    private var playbackInitializationStarted = false
+    private data class PendingPlaybackStart(val intent: Intent?, val flags: Int, val id: Int)
+    private val pendingPlaybackStarts = ArrayDeque<PendingPlaybackStart>()
+    private var startupForeground = false
+
+    private fun initializePlaybackAndReplay() {
+        initializePlayback()
+        while (pendingPlaybackStarts.isNotEmpty()) {
+            val pending = pendingPlaybackStarts.removeFirst()
+            dispatchPlaybackStart(pending.intent, pending.flags, pending.id)
+        }
+        if (startupForeground) {
+            coroutineScope.launch(NzikDispatchers.UI) {
+                delay(30_000L)
+                // A failed resume might never emit a Media3 notification update.
+                removeStartupPlaybackNotification()
+            }
+        }
+    }
+
+    private fun removeStartupPlaybackNotification() {
+        if (!startupForeground) return
+        startupForeground = false
+        ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
+    }
+
+    private fun showStartupPlaybackNotification() {
+        val channel = channelId(NotificationChannelId, getActiveProfile(this))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            getSystemService(NotificationManager::class.java)?.createNotificationChannel(
+                NotificationChannel(channel, getString(R.string.player_title), NotificationManager.IMPORTANCE_LOW),
+            )
+        }
+        val notification = NotificationCompat.Builder(this, channel)
+            .setSmallIcon(R.drawable.ic_launcher_monochrome)
+            .setContentTitle(getString(R.string.player_title))
+            .setContentText(getString(R.string.backup_startup_preparing_library))
+            .setContentIntent(PendingIntent.getActivity(
+                this,
+                OpenLibraryStartupActivityRequestCode,
+                Intent(this, MainActivity::class.java).addFlags(FLAG_ACTIVITY_NEW_TASK),
+                PendingIntent.FLAG_IMMUTABLE,
+            ))
+            .setProgress(0, 0, true)
+            .setOngoing(true)
+            .build()
+        ServiceCompat.startForeground(
+            this, DefaultMediaNotificationProvider.DEFAULT_NOTIFICATION_ID, notification,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK else 0,
+        )
+        startupForeground = true
+    }
+
+    @kotlin.OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+    private fun initializePlayback() {
+        playbackInitializationStarted = true
         isRunning = true
 
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -783,27 +878,14 @@ class PlayerServiceModern : MediaLibraryService(),
         // (QuickPicks + the five categories) by default, search on demand, now-playing only
         // while something actually plays — never the in-app screen (search bar + "your
         // selection").
-        val openPlayerSessionActivity = PendingIntent.getActivity(
-            this,
-            OpenPlayerSessionActivityRequestCode,
-            Intent(this, MainActivity::class.java)
-                .putExtra(MainActivity.EXTRA_OPEN_PLAYER_TOKEN, openPlayerToken),
-            FLAG_ACTIVITY_NEW_TASK or PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        mediaSession =
-            // Local artwork goes out as the signed provider URI (Android Auto home card)
-            MediaLibrarySession.Builder(this, SessionArtworkPlayer(mediaLibrarySessionCallback.wrapPlayer(guestGuardPlayer)), mediaLibrarySessionCallback)
-                .setBitmapLoader(
-                    SessionBitmapLoader(
-                        this,
-                        coroutineScope,
-                        250 * resources.displayMetrics.density.toInt()
-                    )
-                )
-                .setPeriodicPositionUpdateEnabled(false)
-                .setSessionActivity(openPlayerSessionActivity)
-                .build()
-        
+        val sessionPlayer = SessionArtworkPlayer(mediaLibrarySessionCallback.wrapPlayer(guestGuardPlayer))
+        if (::mediaSession.isInitialized) {
+            // Keep the token and legacy browser binder acquired during startup.
+            mediaSession.player = sessionPlayer
+        } else {
+            mediaSession = buildLibrarySession(sessionPlayer)
+        }
+
         mediaLibrarySessionCallback.observeRepository(mediaSession)
         ResolvedSessionDuration.bind(coroutineScope, playerUpdateTrigger) { mediaSession.player }
         bindStoredDurationSelections(coroutineScope, playerUpdateTrigger) { guestGuardPlayer }
@@ -947,6 +1029,24 @@ class PlayerServiceModern : MediaLibraryService(),
         maybeSetupLastFmScrobbleManager()
 
         encryptedPreferences.registerOnSharedPreferenceChangeListener(encryptedPrefsListener)
+        playbackReady.complete(Unit)
+    }
+
+    private fun buildLibrarySession(sessionPlayer: Player): MediaLibrarySession {
+        val openPlayerSessionActivity = PendingIntent.getActivity(
+            this,
+            OpenPlayerSessionActivityRequestCode,
+            Intent(this, MainActivity::class.java)
+                .putExtra(MainActivity.EXTRA_OPEN_PLAYER_TOKEN, openPlayerToken),
+            FLAG_ACTIVITY_NEW_TASK or PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        return MediaLibrarySession.Builder(this, sessionPlayer, mediaLibrarySessionCallback)
+            .setBitmapLoader(
+                SessionBitmapLoader(this, coroutineScope, 250 * resources.displayMetrics.density.toInt())
+            )
+            .setPeriodicPositionUpdateEnabled(false)
+            .setSessionActivity(openPlayerSessionActivity)
+            .build()
     }
 
     /** Creates (or tears down) the LastFM scrobble manager based on the current settings: toggle ON + session key + API keys all required. */
@@ -971,6 +1071,24 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (!playbackInitializationStarted) {
+            if (isLibraryReady()) {
+                initializePlaybackAndReplay()
+            } else {
+                pendingPlaybackStarts.addLast(PendingPlaybackStart(intent, flags, startId))
+                if (intent?.action == Intent.ACTION_MEDIA_BUTTON) {
+                    if (!startupForeground) showStartupPlaybackNotification()
+                    val startup = (application as? MainApplication)?.libraryStartup
+                    if (startup?.state?.value is LibraryStartupState.Failed) startup.start()
+                }
+                // Re-delivering an already replayed play/pause toggle could reverse its action.
+                return START_STICKY
+            }
+        }
+        return dispatchPlaybackStart(intent, flags, startId)
+    }
+
+    private fun dispatchPlaybackStart(intent: Intent?, flags: Int, startId: Int): Int {
         return try {
             super.onStartCommand(intent, flags, startId)
         } catch (e: Exception) {
@@ -979,10 +1097,31 @@ class PlayerServiceModern : MediaLibraryService(),
         }
     }
 
-    override fun onBind(intent: Intent?) = super.onBind(intent) ?: binder
+    override fun onBind(intent: Intent?): IBinder? {
+        if (!playbackInitializationStarted && isLibraryReady()) initializePlaybackAndReplay()
+        return super.onBind(intent) ?: binder.takeIf { playbackInitializationStarted }
+    }
 
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession =
-        mediaSession
+    override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
+        if (!playbackInitializationStarted) return
+        // The Media3 provider now replaces or removes the startup notification.
+        startupForeground = false
+        super.onUpdateNotification(session, startInForegroundRequired)
+    }
+
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? {
+        if (isDestroying || playbackReady.isCancelled) return null
+        if (!playbackInitializationStarted && isLibraryReady()) initializePlaybackAndReplay()
+        if (!::mediaSession.isInitialized) {
+            // Legacy MediaBrowser needs a session binder and a synchronous root on connect.
+            // A silent player exposes no transport commands and owns no database or cache.
+            val waitingPlayer = object : SimpleBasePlayer(Looper.getMainLooper()) {
+                override fun getState(): State = State.Builder().build()
+            }
+            mediaSession = buildLibrarySession(waitingPlayer)
+        }
+        return mediaSession
+    }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
         maybeSavePlayerQueue()
@@ -1110,6 +1249,10 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
+        if (!playbackInitializationStarted) {
+            super.onTaskRemoved(rootIntent)
+            return
+        }
         isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
         if (isclosebackgroundPlayerEnabled) {
             broadCastPendingIntent<NotificationDismissReceiver>().send()
@@ -1124,6 +1267,15 @@ class PlayerServiceModern : MediaLibraryService(),
     override fun onDestroy() {
         if (isDestroying) return
         isDestroying = true
+        pendingPlaybackStarts.clear()
+        playbackReady.cancel()
+        if (!playbackInitializationStarted) {
+            if (::mediaSession.isInitialized) mediaSession.release()
+            mediaLibrarySessionCallback.release()
+            coroutineScope.cancel()
+            super.onDestroy()
+            return
+        }
         isRunning = false
         sessionRebindRecoveryJob?.cancel()
         sessionRebindRecoveryJob = null
@@ -3736,6 +3888,7 @@ class PlayerServiceModern : MediaLibraryService(),
          * Precedent: 500 = PlaylistWidgetManager open-app Pi.
          */
         const val OpenPlayerSessionActivityRequestCode = 501
+        private const val OpenLibraryStartupActivityRequestCode = 502
 
         const val SleepTimerNotificationId = 1002
         const val SleepTimerNotificationChannelId = "sleep_timer_channel_id"

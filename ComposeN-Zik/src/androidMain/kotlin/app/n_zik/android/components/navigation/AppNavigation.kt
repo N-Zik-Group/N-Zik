@@ -196,10 +196,15 @@ fun AppNavigation(
     navController: NavHostController,
     miniPlayer: @Composable () -> Unit = {},
     openTabFromShortcut: Int,
+    shortcutDelivery: Long = 0L,
+    onShortcutConsumed: (Long) -> Unit = {},
     hasTopNavBarVisible: Boolean = false,
     hasSideNavBarVisible: Boolean = false,
     hasPageNavBar: Boolean = false,
 ) {
+    val pendingShortcutTab by rememberUpdatedState(openTabFromShortcut)
+    val pendingShortcutDelivery by rememberUpdatedState(shortcutDelivery)
+    val acknowledgeShortcut by rememberUpdatedState(onShortcutConsumed)
     val sideRail = remember(navController) { SideRailState() }
     val headerProfileFace = rememberHeaderProfileFace()
     val sideHeaderMenuTrigger = remember(navController) { GlassMenuTriggerState() }
@@ -509,7 +514,9 @@ fun AppNavigation(
                 navController = navController,
                 onPlaylistUrl = navigateToPlaylist,
                 miniPlayer = miniPlayer,
-                openTabFromShortcut = openTabFromShortcut
+                openTabFromShortcut = pendingShortcutTab,
+                shortcutDelivery = pendingShortcutDelivery,
+                onShortcutConsumed = acknowledgeShortcut,
             )
         }
 

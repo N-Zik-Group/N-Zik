@@ -16,9 +16,11 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.it.fast4x.rimusic.enums.ColorPaletteName
 import app.it.fast4x.rimusic.ui.styling.Appearance
@@ -35,6 +37,8 @@ import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setDefaultPalette
 import app.n_zik.android.BuildConfig
+import app.n_zik.android.MainApplication
+import app.n_zik.android.core.backup.LibraryStartupState
 import app.n_zik.android.core.rescue.RescueProcess
 import com.kieronquinn.monetcompat.core.MonetCompat
 import timber.log.Timber
@@ -94,7 +98,15 @@ class RescueActivity : AppCompatActivity() {
         )
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        val startup = (application as? MainApplication)?.libraryStartup
         setContent {
+            if (startup != null) {
+                val state by startup.state.collectAsStateWithLifecycle()
+                if (state != LibraryStartupState.Ready) {
+                    LibraryStartupScreen(state, startup::start)
+                    return@setContent
+                }
+            }
             val systemDark = isSystemInDarkTheme()
             // Resolved once per system theme, never on recomposition: it reads preferences and may
             // set up MonetCompat.

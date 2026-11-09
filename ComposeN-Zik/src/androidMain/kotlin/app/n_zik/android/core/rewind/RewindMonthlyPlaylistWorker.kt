@@ -1,5 +1,7 @@
 package app.n_zik.android.core.rewind
 
+import app.n_zik.android.core.backup.awaitLibraryReadyForWork
+
 import android.Manifest
 import android.app.PendingIntent
 import android.content.Context
@@ -125,6 +127,7 @@ internal class RewindMonthlyPlaylistWorker(
     }
 
     override suspend fun doWork(): Result {
+        if (!applicationContext.awaitLibraryReadyForWork()) return Result.retry()
         return try {
             // Computed at execution, not scheduling: the finished month is always
             // "now minus one" when the work fires (a WorkManager delay is never exact).

@@ -31,6 +31,7 @@ import it.fast4x.innertube.utils.from
 import it.fast4x.innertube.YtMusic
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Deferred
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import androidx.media3.session.SessionCommands
 import kotlinx.coroutines.flow.first
@@ -85,7 +86,8 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 class AutoSessionCallback(
     val context: Context,
     val database: Database,
-    val downloadHelper: MyDownloadHelper
+    val downloadHelper: MyDownloadHelper,
+    private val playbackReady: Deferred<Unit>? = null,
 ) : MediaLibrarySession.Callback {
     private val scope = NzikDispatchers.fireAndForget(NzikDispatchers.UI)
     private var observationJob: Job? = null
@@ -347,8 +349,22 @@ class AutoSessionCallback(
         customCommand: SessionCommand,
         args: Bundle,
     ): ListenableFuture<SessionResult> {
+        val readiness = playbackReady
+        if (readiness != null && !readiness.isCompleted) {
+            return scope.future(NzikDispatchers.UI) {
+                readiness.await()
+                handleCustomCommand(customCommand)
+            }
+        }
+        if (readiness?.isCancelled == true) {
+            return Futures.immediateFuture(SessionResult(SessionError.ERROR_INVALID_STATE))
+        }
+        return Futures.immediateFuture(handleCustomCommand(customCommand))
+    }
+
+    private fun handleCustomCommand(customCommand: SessionCommand): SessionResult {
         if (!accessPolicy().allowsCommand(customCommand.customAction)) {
-            return Futures.immediateFuture(SessionResult(SessionError.ERROR_NOT_SUPPORTED))
+            return SessionResult(SessionError.ERROR_NOT_SUPPORTED)
         }
         when (customCommand.customAction) {
             AutoSessionConstants.ACTION_TOGGLE_LIKE -> toggleLike()
@@ -365,7 +381,7 @@ class AutoSessionCallback(
             AutoSessionConstants.ACTION_DISLIKE_ALBUM -> scope.launch(NzikDispatchers.DATA) { toggleContainerDislike(PlayerServiceModern.ALBUM) }
             AutoSessionConstants.ACTION_DISLIKE_ARTIST -> scope.launch(NzikDispatchers.DATA) { toggleContainerDislike(PlayerServiceModern.ARTIST) }
         }
-        return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+        return SessionResult(SessionResult.RESULT_SUCCESS)
     }
 
     @OptIn(UnstableApi::class)
@@ -425,8 +441,9 @@ class AutoSessionCallback(
             }.onFailure { Timber.tag("AutoLibraryChildren").d("Children diagnostics unavailable") }
         }
         if (page < 0 || pageSize <= 0) return Futures.immediateFuture(LibraryResult.ofError(SessionError.ERROR_BAD_VALUE))
-        val requestProfile = getActiveProfile(context)
-        val epoch = synchronized(selectionRequestLock) {
+        val waitingForStartup = playbackReady?.isCompleted == false
+        val initialProfile = getActiveProfile(context)
+        val initialEpoch = synchronized(selectionRequestLock) {
             synchronized(browsedParents) {
                 // Remember first requests before scheduling their load so access changes
                 // can notify even a parent whose first result is still in flight.
@@ -436,6 +453,9 @@ class AutoSessionCallback(
             }
         }
         return scope.future(NzikDispatchers.DATA) {
+            playbackReady?.await()
+            val requestProfile = if (waitingForStartup) getActiveProfile(context) else initialProfile
+            val epoch = if (waitingForStartup) accessEpoch.get() else initialEpoch
             val pageId = AutoMediaIdContract.parsePage(parentId)
             val pageIndex = pageId?.index ?: -1
             val actualParentId = pageId?.parentId ?: parentId
@@ -486,6 +506,7 @@ class AutoSessionCallback(
         browser: MediaSession.ControllerInfo,
         mediaId: String,
     ): ListenableFuture<LibraryResult<MediaItem>> = scope.future(NzikDispatchers.DATA) {
+        playbackReady?.await()
         val requestProfile = getActiveProfile(context)
         val epoch = accessEpoch.get()
         val folder = autoBrowseTree.folder(mediaId, if (::binder.isInitialized) binder else null)
@@ -545,6 +566,7 @@ class AutoSessionCallback(
         pendingRequest = request
         pendingSelection?.cancel(true)
         scope.future(NzikDispatchers.DATA) {
+            playbackReady?.await()
             val requestProfile = getActiveProfile(context)
             val epoch = accessEpoch.get()
             val selectedId = mediaItems.getOrNull(if (startIndex == -1) 0 else startIndex)?.mediaId
@@ -870,6 +892,7 @@ class AutoSessionCallback(
         controller: MediaSession.ControllerInfo,
         mediaItems: MutableList<MediaItem>
     ): ListenableFuture<MutableList<MediaItem>> = scope.future(NzikDispatchers.DATA) {
+        playbackReady?.await()
         val requestProfile = getActiveProfile(context)
         val epoch = accessEpoch.get()
         val retained = mutableListOf<Pair<String, List<MediaItem>>>()
@@ -939,6 +962,7 @@ class AutoSessionCallback(
         val defaultResult = MediaSession.MediaItemsWithStartPosition(emptyList(), 0, 0)
         if (!context.preferences.getBoolean(persistentQueueKey, false)) return Futures.immediateFuture(defaultResult)
         return scope.future(NzikDispatchers.DATA) {
+            playbackReady?.await()
             val requestProfile = getActiveProfile(context)
             val epoch = accessEpoch.get()
             try {

@@ -14,6 +14,7 @@ import androidx.compose.ui.util.fastZip
 import androidx.media3.common.MediaItem
 import androidx.room.AutoMigration
 import androidx.room.Room
+import app.n_zik.android.requireLibraryAccess
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.withTransaction
@@ -1018,8 +1019,10 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
 
     companion object {
         val Instance: DatabaseInitializer by lazy {
+            val context = appContext()
+            context.requireLibraryAccess()
             val db = Room.databaseBuilder(
-                    context = appContext(),
+                    context = context,
                     klass = DatabaseInitializer::class.java,
                     name = Database.FILE_NAME
                 )

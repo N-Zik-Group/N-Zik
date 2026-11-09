@@ -197,4 +197,6 @@
     <string name="backup_import_failed">Import failed</string>
     <string name="export_no_songs">No songs exported</string>
     <string name="export_cached_songs_generic_error">Export failed</string>
+    <string name="backup_startup_preparing_library">Preparing your library…</string>
+    <string name="backup_startup_recovery_failed">Could not finish restoring your library.</string>
 </resources>

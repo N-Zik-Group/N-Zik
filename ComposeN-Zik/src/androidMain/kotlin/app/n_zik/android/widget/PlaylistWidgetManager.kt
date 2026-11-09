@@ -121,6 +121,20 @@ object PlaylistWidgetManager {
     @Volatile
     private var lastWidgetState: WidgetState? = null
 
+    /** Refreshes the requested widgets using their current sizes and playback snapshot. */
+    internal suspend fun refreshIdleWidgets(
+        context: Context,
+        manager: AppWidgetManager,
+        ids: IntArray,
+    ) {
+        if (ids.isEmpty()) return
+        if (lastWidgetState == null) {
+            updateIdleWidgets(context)
+            return
+        }
+        ids.forEach { id -> updateIdleWidget(context, id, manager.getAppWidgetOptions(id)) }
+    }
+
     suspend fun updateIdleWidgets(context: Context) {
         updateWidgets(
             context = context,

@@ -9,6 +9,7 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.requireLibraryAccess
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.LibraryBackupSchema
 import app.n_zik.android.core.profiles.ProfileDataDirNames
@@ -80,9 +81,14 @@ internal object DatabaseBackup {
         }
     }
 
+    @Synchronized
+    fun prepareRescueExport(context: Context, profile: String): Export =
+        DatabaseRestoreJournal.withRescueSnapshot(context) { prepareExport(context, profile) }
+
     /** Captures the database and only the covers associated with that snapshot. */
     @Synchronized
     fun prepareExport(context: Context, profile: String): Export {
+        context.requireLibraryAccess()
         val source = context.getDatabasePath(Database.fileNameForProfile(profile))
         val lease = DatabaseExportStaging.create(context)
         val stage = lease.directory
@@ -153,6 +159,11 @@ internal object DatabaseBackup {
         }
     }
 
+    @Synchronized
+    fun restoreFromRescue(context: Context, uri: Uri, profile: String) {
+        DatabaseRestoreJournal.withRescueMutation(context) { restore(context, uri, profile) }
+    }
+
     /**
      * Validates the entire input and rewrites staged cover references before [beforeReplace]
      * closes a live database. Installation preserves the old database, sidecars, and replaced
@@ -171,6 +182,7 @@ internal object DatabaseBackup {
         beforeReplace: () -> Unit = {},
         openInput: () -> InputStream,
     ) {
+        context.requireLibraryAccess()
         val staging = DatabaseRestoreJournal.createImportStage(context)
         val stage = staging.directory
         try {

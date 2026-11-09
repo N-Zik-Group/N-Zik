@@ -18,6 +18,8 @@ import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import app.n_zik.android.R
+import app.n_zik.android.awaitLibraryReady
+import app.n_zik.android.core.backup.LibraryStartupException
 import app.n_zik.android.bridge.audio.PhoneAudioLibrary
 import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.bridge.command.BinderPhoneQueue
@@ -122,6 +124,13 @@ class BridgeServerService : Service() {
     }
 
     private suspend fun startServer() {
+        try {
+            awaitLibraryReady()
+        } catch (error: LibraryStartupException) {
+            Timber.tag(TAG).e(error, "Library is unavailable for the bridge")
+            finish(BridgeState.Failed, getString(R.string.bridge_server_failed))
+            return
+        }
         BridgeServerController.publish(BridgeState.Starting)
         val monitor = WifiNetworkMonitor(this).also { it.start() }
         wifiMonitor = monitor

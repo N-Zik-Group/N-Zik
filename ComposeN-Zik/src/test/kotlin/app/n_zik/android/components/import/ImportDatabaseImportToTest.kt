@@ -79,6 +79,7 @@ class ImportDatabaseImportToTest {
         }
         importedBytes = backup.readBytes()
         context = mockk()
+        every { context.applicationContext } returns application
         every { context.assets } returns application.assets
         every { context.cacheDir } returns tmp.newFolder()
         every { context.filesDir } returns tmp.newFolder()

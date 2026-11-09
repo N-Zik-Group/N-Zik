@@ -1,5 +1,7 @@
 package app.n_zik.android.core.rewind
 
+import app.n_zik.android.core.backup.awaitLibraryReadyForWork
+
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.JournalPermission
@@ -125,6 +127,7 @@ internal class RewindYearlyPlaylistWorker(
     }
 
     override suspend fun doWork(): Result {
+        if (!applicationContext.awaitLibraryReadyForWork()) return Result.retry()
         return try {
             // Computed at execution, not scheduling: the work fires on the 1st of January
             // of year Y, so the finished year is Y-1 — the same "now minus one" approach

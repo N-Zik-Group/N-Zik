@@ -1,5 +1,7 @@
 package app.n_zik.android.components.ui.screens.rewind
 
+import app.n_zik.android.core.backup.awaitLibraryReadyForWork
+
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.JournalPermission
@@ -128,6 +130,7 @@ internal class RewindReminderWorker(
     }
 
     override suspend fun doWork(): Result {
+        if (!applicationContext.awaitLibraryReadyForWork()) return Result.retry()
         return try {
             val finished = LocalDate.now().minusMonths(1)
             if (!isMonthlyReminderEnabled(applicationContext)) {

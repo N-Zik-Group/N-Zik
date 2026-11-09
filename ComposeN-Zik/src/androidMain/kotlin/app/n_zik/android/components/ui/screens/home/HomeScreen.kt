@@ -204,7 +204,9 @@ fun HomeScreen(
     navController: NavController,
     onPlaylistUrl: (String) -> Unit,
     miniPlayer: @Composable () -> Unit = {},
-    openTabFromShortcut: Int
+    openTabFromShortcut: Int,
+    shortcutDelivery: Long = 0L,
+    onShortcutConsumed: (Long) -> Unit = {},
 ) {
     val saveableStateHolder = rememberSaveableStateHolder()
 
@@ -249,20 +251,16 @@ fun HomeScreen(
     val isReady by rememberHomeEntranceReady(binder)
 
     // The search shortcut is not a tab: open the search screen on top of the home tab.
-    // `searchShortcutConsumed` only guards against the *same* sentinel occurrence re-firing
-//
-    // across an unrelated recomposition while it's still pending (e.g. MainActivity's own reset
-//
-    // effect hasn't applied yet) -- it resets as soon as the sentinel moves on, so a shortcut
-    // tapped again later (app already running) is a fresh occurrence and opens search again.
-    var searchShortcutConsumed by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(openTabFromShortcut) {
+    // Home can leave composition between deliveries. Save which request it already handled.
+    var consumedSearchDelivery by rememberSaveable { mutableStateOf<Long?>(null) }
+    LaunchedEffect(openTabFromShortcut, shortcutDelivery) {
         if (openTabFromShortcut != OPEN_SEARCH_SHORTCUT) {
-            searchShortcutConsumed = false
-        } else if (shouldOpenSearchFromShortcut(openTabFromShortcut, searchShortcutConsumed)) {
-            searchShortcutConsumed = true
+            consumedSearchDelivery = null
+        } else if (shouldOpenSearchFromShortcut(openTabFromShortcut, consumedSearchDelivery == shortcutDelivery)) {
+            consumedSearchDelivery = shortcutDelivery
             navController.navigate(NavRoutes.search.name)
         }
+        if (openTabFromShortcut == OPEN_SEARCH_SHORTCUT) onShortcutConsumed(shortcutDelivery)
     }
 
     // Tab shortcuts (songs/albums/artists/library) only drove the tab index once, via the
@@ -272,12 +270,13 @@ fun HomeScreen(
     // Redundant on the very first composition (the snapshot already applied the same value); a
 //
     // no-op once the sentinel is consumed back to -1 by MainActivity.
-    LaunchedEffect(openTabFromShortcut) {
+    LaunchedEffect(openTabFromShortcut, shortcutDelivery) {
         if (shouldSwitchTabFromShortcut(openTabFromShortcut)) {
             tabIdForIndex(openTabFromShortcut)?.let { targetTabId ->
                 val foundIndex = activeTabs.indexOf(targetTabId)
                 if (foundIndex != -1) onTabChanged(foundIndex)
             }
+            onShortcutConsumed(shortcutDelivery)
         }
     }
 

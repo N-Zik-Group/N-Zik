@@ -28,6 +28,7 @@ internal object DatabaseRestoreJournal {
     private const val RETIRED_JOURNAL_PREFIX = ".database-restore-retired-"
     private const val RETIRED_BACKUPS_PREFIX = ".rescue-backups-retired-"
     private var mainProcessLease: FileLock? = null
+    private var lockedDirectory: File? = null
     private val activeImports = mutableSetOf<File>()
 
     /** Called before either process can access the library. The main process holds a lease until exit. */
@@ -72,6 +73,15 @@ internal object DatabaseRestoreJournal {
         } finally {
             cleanRetiredFiles(context.filesDir)
         }
+    }
+
+    /** Serializes a raw backup snapshot with restores while allowing a live main process. */
+    fun <T> withRescueSnapshot(context: Context, action: () -> T): T = withLock(context.filesDir) {
+        val databaseDir = checkNotNull(context.getDatabasePath("data.db").parentFile)
+        check(!Transaction(context.filesDir, databaseDir).hasPendingRestore()) {
+            "The database restore has not finished"
+        }
+        action()
     }
 
     /** Keeps import staging alive while its owning process validates and installs the archive. */
@@ -191,10 +201,26 @@ internal object DatabaseRestoreJournal {
     }
 
     @Synchronized
-    private fun <T> withLock(filesDir: File, action: () -> T): T =
-        RandomAccessFile(filesDir.resolve("database-restore.lock"), "rw").use { file ->
-            file.channel.lock().use { action() }
+    private fun <T> withLock(filesDir: File, action: () -> T): T {
+        val directory = filesDir.canonicalFile
+        val heldDirectory = lockedDirectory
+        if (heldDirectory != null) {
+            // This monitor is reentrant. Nested import staging shares the outer rescue lock;
+            // opening a second descriptor for the same inode could release that lock.
+            check(heldDirectory == directory) { "Nested database restore lock for another directory" }
+            return action()
         }
+        return RandomAccessFile(directory.resolve("database-restore.lock"), "rw").use { file ->
+            file.channel.lock().use {
+                lockedDirectory = directory
+                try {
+                    action()
+                } finally {
+                    lockedDirectory = null
+                }
+            }
+        }
+    }
 
     internal class Transaction(filesDir: File, databaseDir: File) {
         private val imageRoot = filesDir.canonicalFile
@@ -203,6 +229,8 @@ internal object DatabaseRestoreJournal {
         private val pending = journal.resolve("pending")
 
         private data class Entry(val target: File, val existed: Boolean)
+
+        fun hasPendingRestore(): Boolean = pending.isFile
 
         fun recover() {
             if (!journal.exists()) return

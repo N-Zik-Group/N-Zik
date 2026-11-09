@@ -1,5 +1,7 @@
 package app.n_zik.android.core.profiles
 
+import app.n_zik.android.requireLibraryAccess
+
 import android.content.Context
 import android.content.SharedPreferences
 import android.database.sqlite.SQLiteDatabase
@@ -195,8 +197,9 @@ fun profileIndexDbFile(context: Context, profileId: String): File =
     context.getDatabasePath("${ProfileDataDirNames.INDEX_DB_BASE_NAME}_$profileId.db")
 
 /** The [DatabaseProvider] of a cache pointing at [dbName] (the Media3 index): the base database keeps [StandaloneDatabaseProvider] bit-for-bit (Media3 1.10.1 has no custom-name constructor on it); a suffixed profile database wraps an anonymous [SQLiteOpenHelper] with EMPTY `onCreate`/`onUpgrade` — the same behavior as StandaloneDatabaseProvider: the Media3 features create their own tables when missing. */
-fun cacheDatabaseProvider(context: Context, dbName: String): DatabaseProvider =
-    if (dbName == ProfileDataDirNames.INDEX_DB_FILE) StandaloneDatabaseProvider(context)
+fun cacheDatabaseProvider(context: Context, dbName: String): DatabaseProvider {
+    context.requireLibraryAccess()
+    return if (dbName == ProfileDataDirNames.INDEX_DB_FILE) StandaloneDatabaseProvider(context)
     else DefaultDatabaseProvider(
         object : SQLiteOpenHelper(context, dbName, null, 1) {
             // Empty on purpose: StandaloneDatabaseProvider does the same.
@@ -204,6 +207,7 @@ fun cacheDatabaseProvider(context: Context, dbName: String): DatabaseProvider =
             override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
         }
     )
+}
 
 /**
  * The [dirOf] directories of the base AND of every user profile, deduplicated by absolute

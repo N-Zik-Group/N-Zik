@@ -125,6 +125,7 @@ class DatabaseBackupSafTest {
 
                 assertTrue("Unexpected import result: $failure", failure is IllegalStateException)
                 assertEquals("The main process is using the database", failure?.message)
+                assertEquals(0, provider.openCount)
             }
         }
 
@@ -162,6 +163,8 @@ class DatabaseBackupSafTest {
         val documentUri: Uri = Uri.parse("content://$AUTHORITY/document/backup")
         var mime: String? = null
         var displayName: String? = null
+        var openCount = 0
+            private set
 
         override fun onCreate() = true
 
@@ -172,8 +175,10 @@ class DatabaseBackupSafTest {
             return Bundle().apply { putParcelable("uri", documentUri) }
         }
 
-        override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor =
-            ParcelFileDescriptor.open(file, ParcelFileDescriptor.parseMode(mode))
+        override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor {
+            openCount++
+            return ParcelFileDescriptor.open(file, ParcelFileDescriptor.parseMode(mode))
+        }
 
         override fun getType(uri: Uri): String? = mime
         override fun insert(uri: Uri, values: ContentValues?): Uri? = null

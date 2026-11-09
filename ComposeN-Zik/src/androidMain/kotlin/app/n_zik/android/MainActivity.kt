@@ -90,6 +90,7 @@ import app.n_zik.android.components.ui.screens.home.HomeTopMiniPlayerAnchorState
 import app.n_zik.android.components.ui.screens.home.LocalHomeTopMiniPlayerAnchor
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.key
@@ -132,7 +133,10 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.withStarted
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -340,6 +344,7 @@ import app.it.fast4x.rimusic.utils.artistThumbnailRoundnessDpKey
 import app.it.fast4x.rimusic.utils.transitionEffectKey
 import app.it.fast4x.rimusic.utils.useSystemFontKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -364,6 +369,8 @@ import app.n_zik.android.extensions.discord.DiscordUiState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.navigation.NavController
 import app.n_zik.android.enums.PendingMiniPlayerAction
+import app.n_zik.android.components.ui.screens.rescue.LibraryStartupScreen
+import app.n_zik.android.core.backup.LibraryStartupState
 import app.n_zik.android.core.backup.BackupManager
 import androidx.core.view.WindowInsetsCompat
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -709,8 +716,19 @@ class MainActivity :
 
     private var screenCapturePolicy: app.n_zik.android.privacy.ScreenCapturePolicy? = null
 
+    private var libraryUiStarted = false
+    private val deferredLaunchIntents = DeferredLibraryIntents()
+    private var waitingColdLaunch = false
+    private var awaitingDeferredNavigation = false
+    private var libraryIntentDelivery by mutableStateOf(0L)
+    private var savedLibraryNavigation: Bundle? = null
+
     override fun onStart() {
         super.onStart()
+        if (libraryUiStarted) bindLibraryUi()
+    }
+
+    private fun bindLibraryUi() {
         if (screenCapturePolicy == null) screenCapturePolicy = app.n_zik.android.privacy.ScreenCapturePolicy.bind(this)
 
         runCatching {
@@ -875,9 +893,47 @@ class MainActivity :
     @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        intentUriData = restoreListenTogetherInvite(intent, savedInstanceState)
-            ?: (intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri())
-                ?.takeUnless { parseListenTogetherInvite(it) != null }
+        val startup = (application as? MainApplication)?.libraryStartup
+        @Suppress("DEPRECATION")
+        val savedLaunchIntents = savedInstanceState?.getParcelableArrayList<Intent>(DEFERRED_LAUNCH_INTENTS)
+        savedLaunchIntents?.forEach(deferredLaunchIntents::offer)
+        waitingColdLaunch = savedInstanceState?.getBoolean(WAITING_COLD_LAUNCH) == true
+        awaitingDeferredNavigation = savedInstanceState?.getBoolean(AWAITING_DEFERRED_NAVIGATION) == true
+        libraryIntentDelivery = savedInstanceState?.getLong(LIBRARY_INTENT_DELIVERY) ?: 0L
+        savedLibraryNavigation = savedInstanceState?.getBundle(PENDING_LIBRARY_NAVIGATION)
+        if (startup == null || startup.state.value == LibraryStartupState.Ready) {
+            startLibraryUi(savedInstanceState)
+            return
+        }
+
+        if (savedInstanceState == null) {
+            waitingColdLaunch = true
+        }
+        awaitingDeferredNavigation = true
+        setContent {
+            val state by startup.state.collectAsStateWithLifecycle()
+            LibraryStartupScreen(state, startup::start)
+        }
+        lifecycleScope.launch(NzikDispatchers.UI) {
+            startup.state.first { it == LibraryStartupState.Ready }
+            lifecycle.withStarted {
+                startLibraryUi(savedInstanceState)
+                bindLibraryUi()
+                consumePendingStaleStartupWarning()
+            }
+        }
+    }
+
+    @OptIn(ExperimentalTextApi::class, UnstableApi::class, ExperimentalComposeUiApi::class)
+    private fun startLibraryUi(savedInstanceState: Bundle?) {
+        libraryUiStarted = true
+        val isRestoredInstance = savedInstanceState != null && !waitingColdLaunch
+        val restoredNavigation = savedLibraryNavigation
+            ?.takeIf { isRestoredInstance }?.let(PendingLibraryNavigation::fromBundle)
+        savedLibraryNavigation = null
+        intentUriData = restoredNavigation?.uri ?: if (restoredNavigation == null) {
+            initialLibraryUri(intent, savedInstanceState, waitingColdLaunch)
+        } else null
         MonetCompat.enablePaletteCompat()
 
         enableEdgeToEdge(
@@ -901,8 +957,6 @@ class MainActivity :
         )
         monet.updateMonetColors()
 
-        val isRestoredInstance = savedInstanceState != null
-
         // Direct profile shortcut (spec-profile-shortcuts, cold path): the active profile is
         // set BEFORE startApp runs (it is dispatched after onCreate returns, via
 //
@@ -916,14 +970,22 @@ class MainActivity :
 //
         // stripped (it is the action, not an extra) — re-deriving the flag would re-open the
         // profiles page on every rotation / theme change / process-death restore.
-        openProfilesShortcut = !isRestoredInstance && intent?.action == action_profiles
+        openProfilesShortcut = restoredNavigation?.openProfiles ?: (!isRestoredInstance && intent.action == action_profiles)
         // Debug-only updater backdoor: same restored-instance gating as [openProfilesShortcut]
         // (a re-created activity re-receives the kept launch intent).
-        openUpdaterDebugShortcut =
-            BuildConfig.DEBUG && !isRestoredInstance && intent?.action == action_debug_open_updater
+        openUpdaterDebugShortcut = restoredNavigation?.openUpdater
+            ?: (BuildConfig.DEBUG && !isRestoredInstance && intent.action == action_debug_open_updater)
+        if (restoredNavigation != null) {
+            shortcutIntentAction = restoredNavigation.shortcut
+            rewindDeckTarget = restoredNavigation.rewindDeck
+            rewindPlaylistTarget = restoredNavigation.rewindPlaylist
+            openPlayerColdToken = restoredNavigation.coldPlayerToken
+            openPlayerFromNotificationWarm = restoredNavigation.openWarmPlayer
+            if (restoredNavigation.hasPending) awaitingDeferredNavigation = true
+        }
 
         monet.invokeOnReady {
-            startApp(isRestoredInstance)
+            if (!isDestroyed) startApp(isRestoredInstance)
         }
 
         // Rewind notification deep links (deck / playlist): consume the launch intent's
@@ -934,7 +996,7 @@ class MainActivity :
         // reject an already-consumed target while a fresh tap still opens (spec GH-275
 //
         // follow-up). The app ON path is onNewIntent, which shares the same contract.
-        consumeRewindDeepLinks(intent)
+        if (restoredNavigation == null) consumeRewindDeepLinks(intent)
         // "Now playing" notification tap (spec-notification-click-opens-player): consume the
         // launch intent's open-player token synchronously — app OFF path. A positive token is
 //
@@ -944,13 +1006,10 @@ class MainActivity :
         // token — there is no persistent marker); the extra is stripped off the kept intent
 //
         // either way.
-        consumeOpenPlayerDeepLink(intent, cold = true)
+        if (restoredNavigation == null) consumeOpenPlayerDeepLink(intent, cold = true)
 
         checkIfAppIsRunningInBackground()
-        // App shortcuts are now registered in MainApplication.onCreate (before Dependencies.init)
-        // so they survive initialization crashes. See ShortcutIconSync.kt.
-//
-        // Verify backup location exists
+        // Verify the backup location once startup has recovered the library.
         lifecycleScope.launch(NzikDispatchers.DATA) {
             BackupManager.verifyBackupLocation(this@MainActivity)
         }
@@ -1057,9 +1116,10 @@ class MainActivity :
         // onCreate / onNewIntent) and must not ride the home-tab shortcut state,
 //
         // which would pop the back stack to home.
-        shortcutIntentAction =
-            initialShortcutAction(inviteAwareShortcutAction(intent), isRestoredInstance)
+        if (!isRestoredInstance) {
+            shortcutIntentAction = initialShortcutAction(inviteAwareShortcutAction(intent), isRestoredInstance)
                 ?.takeUnless { isSelfConsumedShortcutAction(it) }
+        }
         // Rewind deep links are consumed synchronously in onCreate / onNewIntent
         // (consumeRewindDeepLinks), before startApp runs — see those call sites.
         onboardingStep = OnboardingStep.resolveStartupStep(
@@ -1994,11 +2054,11 @@ class MainActivity :
                 // once we've actually arrived there, gives HomeScreen a real chance to observe it.
 //
                 val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-                LaunchedEffect(shortcutIntentAction, currentRoute) {
+                LaunchedEffect(shortcutIntentAction, libraryIntentDelivery, currentRoute) {
                     if (shortcutIntentAction != null) {
-                        if (currentRoute?.startsWith(NavRoutes.home.name) == true) {
+                        if (openTabFromShortcut == -1) {
                             shortcutIntentAction = null
-                        } else {
+                        } else if (currentRoute?.startsWith(NavRoutes.home.name) != true) {
                             navController.popBackStack(NavRoutes.home.name, inclusive = false)
                         }
                     }
@@ -2015,7 +2075,7 @@ class MainActivity :
                 // NavHost is not composed (empty graph — navigating would crash), so the
 //
                 // target is held until the flow completes and the effect re-runs.
-                LaunchedEffect(rewindDeckTarget, onboardingStep == null) {
+                LaunchedEffect(rewindDeckTarget, libraryIntentDelivery, onboardingStep == null) {
                     if (onboardingStep != null) return@LaunchedEffect
                     rewindDeckTarget?.let { (year, month) ->
                         // rewindDeckRoute omits the month argument for the yearly target:
@@ -2034,7 +2094,7 @@ class MainActivity :
                 // an effect, like the deck above: the navigation happens once the graph is
 //
                 // composed, and the onboarding gate holds the target until the flow completes.
-                LaunchedEffect(rewindPlaylistTarget, onboardingStep == null) {
+                LaunchedEffect(rewindPlaylistTarget, libraryIntentDelivery, onboardingStep == null) {
                     if (onboardingStep != null) return@LaunchedEffect
                     rewindPlaylistTarget?.let { playlistId ->
                         navController.navigate("${NavRoutes.localPlaylist.name}/$playlistId")
@@ -2054,7 +2114,7 @@ class MainActivity :
                 // until the flow completes and the effect re-runs. The token was already
 //
                 // consumed off the intent in onNewIntent (one-shot contract).
-                LaunchedEffect(openPlayerFromNotificationWarm, onboardingStep == null) {
+                LaunchedEffect(openPlayerFromNotificationWarm, libraryIntentDelivery, onboardingStep == null) {
                     if (onboardingStep != null) return@LaunchedEffect
                     if (openPlayerFromNotificationWarm) {
                         openPlayerFromNotificationWarm = false
@@ -2087,7 +2147,7 @@ class MainActivity :
                 // re-runs. The direct per-profile shortcut does NOT navigate — it only
 //
                 // launches in (cold) or switches to (warm) its profile.
-                LaunchedEffect(openProfilesShortcut, onboardingStep == null) {
+                LaunchedEffect(openProfilesShortcut, libraryIntentDelivery, onboardingStep == null) {
                     if (onboardingStep != null) return@LaunchedEffect
                     if (openProfilesShortcut) {
                         navController.navigate(NavRoutes.profiles.name)
@@ -2098,7 +2158,7 @@ class MainActivity :
                 // Debug-only backdoor: open the OTA updater screen (unreachable in debug
                 // builds, where IS_AUTOUPDATE is false). Gated on onboarding like the
                 // profiles effect above: the NavHost is not composed while onboarding is up.
-                LaunchedEffect(openUpdaterDebugShortcut, onboardingStep == null) {
+                LaunchedEffect(openUpdaterDebugShortcut, libraryIntentDelivery, onboardingStep == null) {
                     if (onboardingStep != null) return@LaunchedEffect
                     if (openUpdaterDebugShortcut) {
                         navController.navigate(NavRoutes.updater.name)
@@ -2243,7 +2303,13 @@ class MainActivity :
                                             hasTopNavBarVisible = NavigationBarPosition.Top.isCurrent() && hasNavBar,
                                             hasSideNavBarVisible = hasSideNavBarVisible,
                                             hasPageNavBar = hasNavBar,
-                                            openTabFromShortcut = openTabFromShortcut
+                                            openTabFromShortcut = openTabFromShortcut.takeIf {
+                                                currentRoute?.startsWith(NavRoutes.home.name) == true
+                                            } ?: -1,
+                                            shortcutDelivery = libraryIntentDelivery,
+                                            onShortcutConsumed = { delivery ->
+                                                if (libraryIntentDelivery == delivery) shortcutIntentAction = null
+                                            },
                                         )
                                     }
 
@@ -2740,103 +2806,99 @@ class MainActivity :
                 }
             }
 
+            LaunchedEffect(onboardingStep == null, navController) {
+                if (onboardingStep != null) return@LaunchedEffect
+                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    navController.currentBackStackEntryFlow.first()
+                    if (awaitingDeferredNavigation) {
+                        snapshotFlow(::libraryIntentConsumersIdle).first { it }
+                        awaitingDeferredNavigation = false
+                    }
+                    while (true) {
+                        deferredLaunchIntents.drain(::libraryIntentConsumersIdle, ::consumeNewLibraryIntent)
+                        snapshotFlow { deferredLaunchIntents.hasQueued }.first { it }
+                    }
+                }
+            }
+
             // Same gate guard as the rewind reminder effect above: the NavHost is only
             // composed once onboarding is done — a shared / deep-linked URL must not
 //
             // navigate into an empty graph while the gate is up
-            LaunchedEffect(intentUriData, onboardingStep == null) {
+            LaunchedEffect(intentUriData, libraryIntentDelivery, onboardingStep == null) {
                 if (onboardingStep != null) return@LaunchedEffect
                 val uri = intentUriData ?: return@LaunchedEffect
-
-                parseListenTogetherInvite(uri)?.let { roomCode ->
-                    intentUriData = null
-                    openListenTogetherInvite(navController, roomCode)
-                    return@LaunchedEffect
-                }
-
-                Toaster.n(
-                    getString(R.string.common_external_link_loading_format, BuildConfig.APP_NAME),
-                    duration = Toast.LENGTH_LONG
-                )
-
-                lifecycleScope.launch(NzikDispatchers.UI) {
-                    when (val path = uri.pathSegments.firstOrNull()) {
-                        "playlist" -> uri.getQueryParameter("list")?.let { playlistId ->
-                            val browseId = "VL$playlistId"
-
-                            if (playlistId.startsWith("OLAK5uy_")) {
-                                Innertube.playlistPage(browseId = browseId)
-                                    ?.getOrNull()?.let {
-                                        it.songsPage?.items?.firstOrNull()?.album?.endpoint?.browseId?.let { browseId ->
-                                            navController.navigate(route = "${NavRoutes.album.name}/$browseId")
-
-                                        }
-                                    }
-                            } else {
-                                navController.navigate(route = "${NavRoutes.playlist.name}/$browseId")
-                            }
-                        }
-
-                        "channel", "c" -> uri.lastPathSegment?.let { channelId ->
-                            try {
-                                navController.navigate(route = "${NavRoutes.artist.name}/$channelId")
-                            } catch (e: Exception) {
-                            Timber.tag("MainActivity").e("onCreate intentUriData ${e.stackTraceToString()}")
-                            }
-                        }
-
-                        "search" -> uri.getQueryParameter("q")?.let { query ->
-                            navController.navigate(route = "${NavRoutes.searchResults.name}/$query")
-                        }
-
-                        "localPlaylist" -> uri.lastPathSegment?.let { playlistId ->
-                            navController.navigate(route = "${NavRoutes.localPlaylist.name}/$playlistId")
-                        }
-
-                        "playFavorites" -> {
-                            lifecycleScope.launch(NzikDispatchers.DATA) {
-                                val favorites = Database.songTable.allFavorites().first()
-                                if (favorites.isNotEmpty()) {
-                                    val mediaItems = favorites.map { it.asMediaItem }
-                                    withContext(NzikDispatchers.UI) {
-                                        val validBinder = snapshotFlow { binder }.filterNotNull().first()
-                                        validBinder.player.forcePlayFromBeginning(mediaItems)
-                                    }
-                                }
-                            }
-                        }
-
-                        "album" -> uri.lastPathSegment?.let { albumId ->
-                            navController.navigate(route = "${NavRoutes.album.name}/$albumId")
-                        }
-
-                        else -> when {
-                            path == "watch" -> uri.getQueryParameter("v")
-                            uri.host == "youtu.be" -> path
-                            else -> null
-                        }?.let { videoId ->
-                            Innertube.song(videoId)?.getOrNull()?.let { song ->
-                                val binder = snapshotFlow { binder }.filterNotNull().first()
-                                withContext(NzikDispatchers.UI) {
-                                    if (song.explicit && preferences.getBoolean(
-                                            parentalControlEnabledKey,
-                                            false
-                                        )
-                                    ) {
-                                        Toaster.w( R.string.parental_control_is_enabled )
-                                    } else {
-                                        binder?.player?.forcePlay(song.asMediaItem)
-                                    }
-                                }
-                            }
-                        }
+                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    if (intentUriData != uri) return@repeatOnLifecycle
+                    navController.currentBackStackEntryFlow.first()
+                    try {
+                        openLibraryUri(navController, uri)
+                    } catch (cancelled: CancellationException) {
+                        // The activity can resume or recreate with the same pending URI.
+                        throw cancelled
+                    } catch (error: Exception) {
+                        Timber.tag("MainActivity").e(error, "Could not handle a library link")
                     }
+                    intentUriData = null
                 }
-                intentUriData = null
             }
 
 
             //throw RuntimeException("This is a simulated exception to crash");
+        }
+    }
+
+    @OptIn(UnstableApi::class)
+    private suspend fun openLibraryUri(navController: NavController, uri: Uri) {
+        parseListenTogetherInvite(uri)?.let { roomCode ->
+            openListenTogetherInvite(navController, roomCode)
+            return
+        }
+
+        Toaster.n(
+            getString(R.string.common_external_link_loading_format, BuildConfig.APP_NAME),
+            duration = Toast.LENGTH_LONG,
+        )
+
+        when (val path = uri.pathSegments.firstOrNull()) {
+            "playlist" -> uri.getQueryParameter("list")?.let { playlistId ->
+                val browseId = "VL$playlistId"
+                if (playlistId.startsWith("OLAK5uy_")) {
+                    val albumId = Innertube.playlistPage(browseId = browseId)
+                        ?.getOrNull()?.songsPage?.items?.firstOrNull()?.album?.endpoint?.browseId
+                    if (albumId != null) navController.navigate("${NavRoutes.album.name}/$albumId")
+                } else {
+                    navController.navigate("${NavRoutes.playlist.name}/$browseId")
+                }
+            }
+
+            "channel", "c" -> uri.lastPathSegment?.let { navController.navigate("${NavRoutes.artist.name}/$it") }
+            "search" -> uri.getQueryParameter("q")?.let { navController.navigate("${NavRoutes.searchResults.name}/$it") }
+            "localPlaylist" -> uri.lastPathSegment?.let { navController.navigate("${NavRoutes.localPlaylist.name}/$it") }
+            "album" -> uri.lastPathSegment?.let { navController.navigate("${NavRoutes.album.name}/$it") }
+            "playFavorites" -> {
+                val mediaItems = withContext(NzikDispatchers.DATA) {
+                    Database.songTable.allFavorites().first().map { it.asMediaItem }
+                }
+                if (mediaItems.isNotEmpty()) {
+                    val validBinder = snapshotFlow { binder }.filterNotNull().first()
+                    validBinder.player.forcePlayFromBeginning(mediaItems)
+                }
+            }
+
+            else -> when {
+                path == "watch" -> uri.getQueryParameter("v")
+                uri.host == "youtu.be" -> path
+                else -> null
+            }?.let { videoId ->
+                val song = Innertube.song(videoId)?.getOrNull() ?: return
+                val validBinder = snapshotFlow { binder }.filterNotNull().first()
+                if (song.explicit && preferences.getBoolean(parentalControlEnabledKey, false)) {
+                    Toaster.w(R.string.parental_control_is_enabled)
+                } else {
+                    validBinder.player.forcePlay(song.asMediaItem)
+                }
+            }
         }
     }
 
@@ -2853,12 +2915,49 @@ class MainActivity :
 
     override fun onSaveInstanceState(outState: Bundle) {
         saveListenTogetherInvite(outState, intentUriData)
+        val navigation = if (libraryUiStarted) {
+            PendingLibraryNavigation(
+                uri = intentUriData,
+                shortcut = shortcutIntentAction,
+                rewindDeck = rewindDeckTarget,
+                rewindPlaylist = rewindPlaylistTarget,
+                coldPlayerToken = openPlayerColdToken,
+                openWarmPlayer = openPlayerFromNotificationWarm,
+                openProfiles = openProfilesShortcut,
+                openUpdater = openUpdaterDebugShortcut,
+            ).toBundle()
+        } else savedLibraryNavigation
+        if (navigation != null) outState.putBundle(PENDING_LIBRARY_NAVIGATION, navigation)
+        if (deferredLaunchIntents.hasPending) {
+            outState.putParcelableArrayList(DEFERRED_LAUNCH_INTENTS, deferredLaunchIntents.snapshot())
+        }
+        if (!libraryUiStarted) {
+            outState.putBoolean(WAITING_COLD_LAUNCH, waitingColdLaunch)
+        }
+        if (awaitingDeferredNavigation) outState.putBoolean(AWAITING_DEFERRED_NAVIGATION, true)
+        outState.putLong(LIBRARY_INTENT_DELIVERY, libraryIntentDelivery)
         super.onSaveInstanceState(outState)
     }
 
     @UnstableApi
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        if (!libraryUiStarted || awaitingDeferredNavigation || !libraryIntentConsumersIdle() || deferredLaunchIntents.hasPending) {
+            deferredLaunchIntents.offer(intent)
+            return
+        }
+        consumeNewLibraryIntent(intent)
+    }
+
+    private fun libraryIntentConsumersIdle(): Boolean =
+        intentUriData == null && shortcutIntentAction == null &&
+            rewindDeckTarget == null && rewindPlaylistTarget == null &&
+            !openProfilesShortcut && !openUpdaterDebugShortcut && !openPlayerFromNotificationWarm
+
+    @OptIn(UnstableApi::class)
+    private fun consumeNewLibraryIntent(intent: Intent) {
+        // Identical consecutive payloads still need a fresh effect, even if Compose coalesces the clear.
+        libraryIntentDelivery++
         intentUriData = listenTogetherInviteUri(intent)
             ?: (intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri())
                 ?.takeUnless { parseListenTogetherInvite(it) != null }
@@ -2908,7 +3007,7 @@ class MainActivity :
         Timber.tag(PLAYBACK_DIAG_TAG).i(
             "UI_WINDOW_FOCUS hasFocus=%b lifecycle=%s", hasFocus, lifecycle.currentState
         )
-        if (hasFocus) consumePendingStaleStartupWarning()
+        if (hasFocus && libraryUiStarted) consumePendingStaleStartupWarning()
     }
 
     /**
@@ -2932,7 +3031,7 @@ class MainActivity :
 
     override fun onStop() {
         runCatching {
-            unbindService(serviceConnection)
+            if (libraryUiStarted) unbindService(serviceConnection)
         }.onFailure {
             Timber.tag("MainActivity").e("onStop unbindService ${it.stackTraceToString()}")
         }
@@ -2946,7 +3045,7 @@ class MainActivity :
         super.onDestroy()
 
         runCatching {
-            monet.removeMonetColorsChangedListener(this)
+            _monet?.removeMonetColorsChangedListener(this)
             _monet = null
             // NzikDispatchers is process-lifetime and shared with PlayerServiceModern's
             // StreamResolver, which can outlive this Activity — never close it here.
@@ -3053,6 +3152,92 @@ class MainActivity :
     }
 
 
+}
+
+private const val DEFERRED_LAUNCH_INTENTS = "libraryStartup.deferredLaunchIntents"
+private const val WAITING_COLD_LAUNCH = "libraryStartup.waitingColdLaunch"
+private const val AWAITING_DEFERRED_NAVIGATION = "libraryStartup.awaitingDeferredNavigation"
+private const val LIBRARY_INTENT_DELIVERY = "libraryStartup.intentDelivery"
+private const val PENDING_LIBRARY_NAVIGATION = "libraryStartup.pendingNavigation"
+
+internal fun initialLibraryUri(intent: Intent, savedState: Bundle?, waitingColdLaunch: Boolean): Uri? {
+    if (savedState != null && !waitingColdLaunch) return restoreListenTogetherInvite(intent, savedState)
+    return listenTogetherInviteUri(intent)
+        ?: (intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri())
+            ?.takeUnless { parseListenTogetherInvite(it) != null }
+}
+
+/** Persists targets after the original intent has been consumed, including one-shot Rewind extras. */
+internal data class PendingLibraryNavigation(
+    val uri: Uri?,
+    val shortcut: String?,
+    val rewindDeck: Pair<Int, Int>?,
+    val rewindPlaylist: Long?,
+    val coldPlayerToken: Long?,
+    val openWarmPlayer: Boolean,
+    val openProfiles: Boolean,
+    val openUpdater: Boolean,
+) {
+    val hasPending: Boolean
+        get() = uri != null || shortcut != null || rewindDeck != null || rewindPlaylist != null ||
+            openWarmPlayer || openProfiles || openUpdater
+
+    fun toBundle(): Bundle = Bundle().apply {
+        putString("uri", uri?.toString())
+        putString("shortcut", shortcut)
+        rewindDeck?.let { (year, month) -> putIntArray("rewindDeck", intArrayOf(year, month)) }
+        rewindPlaylist?.let { putLong("rewindPlaylist", it) }
+        coldPlayerToken?.let { putLong("coldPlayerToken", it) }
+        putBoolean("openWarmPlayer", openWarmPlayer)
+        putBoolean("openProfiles", openProfiles)
+        putBoolean("openUpdater", openUpdater)
+    }
+
+    companion object {
+        fun fromBundle(bundle: Bundle): PendingLibraryNavigation = PendingLibraryNavigation(
+            uri = bundle.getString("uri")?.let(Uri::parse),
+            shortcut = bundle.getString("shortcut"),
+            rewindDeck = bundle.getIntArray("rewindDeck")?.takeIf { it.size == 2 }?.let { it[0] to it[1] },
+            rewindPlaylist = bundle.getLong("rewindPlaylist").takeIf { bundle.containsKey("rewindPlaylist") },
+            coldPlayerToken = bundle.getLong("coldPlayerToken").takeIf { bundle.containsKey("coldPlayerToken") },
+            openWarmPlayer = bundle.getBoolean("openWarmPlayer"),
+            openProfiles = bundle.getBoolean("openProfiles"),
+            openUpdater = bundle.getBoolean("openUpdater"),
+        )
+    }
+}
+
+/** Queues only warm deliveries. The activity's original intent owns the cold launch. */
+internal class DeferredLibraryIntents {
+    private val pending = mutableStateListOf<Intent>()
+    private var dispatching = false
+
+    val hasPending: Boolean
+        get() = dispatching || pending.isNotEmpty()
+
+    val hasQueued: Boolean
+        get() = pending.isNotEmpty()
+
+    fun offer(intent: Intent) {
+        if (intent.action != Intent.ACTION_MAIN || intent.data != null || intent.extras?.isEmpty == false) {
+            pending.add(intent)
+        }
+    }
+
+    fun snapshot(): ArrayList<Intent> = ArrayList(pending)
+
+    /** Each consumer clears its own state after accepting a request. Wait before writing over it. */
+    suspend fun drain(consumersIdle: () -> Boolean, dispatch: (Intent) -> Unit) {
+        while (hasPending) {
+            snapshotFlow(consumersIdle).first { it }
+            if (dispatching) {
+                dispatching = false
+                continue
+            }
+            dispatching = true
+            dispatch(pending.removeAt(0))
+        }
+    }
 }
 
 var appRunningInBackground: Boolean = false

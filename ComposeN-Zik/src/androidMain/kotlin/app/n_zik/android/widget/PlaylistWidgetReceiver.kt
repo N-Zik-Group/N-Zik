@@ -3,11 +3,12 @@ package app.n_zik.android.widget
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
-import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.core.backup.isLibraryReady
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class PlaylistWidgetReceiver : AppWidgetProvider() {
 
@@ -16,7 +17,10 @@ class PlaylistWidgetReceiver : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray,
     ) {
-        refreshIdleWidgets(context, appWidgetManager, appWidgetIds)
+        if (appWidgetIds.isEmpty()) return
+        refresh(context) {
+            PlaylistWidgetManager.refreshIdleWidgets(context, appWidgetManager, appWidgetIds)
+        }
     }
 
     override fun onAppWidgetOptionsChanged(
@@ -26,39 +30,28 @@ class PlaylistWidgetReceiver : AppWidgetProvider() {
         newOptions: Bundle,
     ) {
         super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
-        refreshIdleWidget(context, appWidgetId, newOptions)
-    }
-
-    private fun refreshIdleWidgets(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray,
-    ) {
-        val pendingResult = goAsync()
-        NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-            try {
-                appWidgetIds.forEach { appWidgetId ->
-                    PlaylistWidgetManager.updateIdleWidget(
-                        context = context,
-                        appWidgetId = appWidgetId,
-                        options = appWidgetManager.getAppWidgetOptions(appWidgetId),
-                    )
-                }
-            } catch (e: Exception) {
-            } finally {
-                pendingResult.finish()
-            }
+        refresh(context) {
+            PlaylistWidgetManager.updateIdleWidget(context, appWidgetId, newOptions)
         }
     }
 
-    private fun refreshIdleWidget(context: Context, appWidgetId: Int, options: Bundle) {
+    private fun refresh(context: Context, update: suspend () -> Unit) {
+        if (!context.isLibraryReady()) {
+            // Persist one refresh without extending the widget broadcast's lifetime.
+            PlaylistWidgetRefreshWorker.schedule(context)
+            return
+        }
+
         val pendingResult = goAsync()
         NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
             try {
-                PlaylistWidgetManager.updateIdleWidget(context, appWidgetId, options)
-            } catch (e: Exception) {
+                update()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                Timber.tag("PlaylistWidgetReceiver").w(error, "Could not refresh playlist widgets")
             } finally {
-                pendingResult.finish()
+                pendingResult?.finish()
             }
         }
     }

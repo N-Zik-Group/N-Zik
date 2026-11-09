@@ -1,5 +1,7 @@
 package app.n_zik.android.playback.services
 
+import app.n_zik.android.core.backup.isLibraryReady
+
 import android.content.ContentProvider
 import android.content.ContentUris
 import android.content.ContentValues
@@ -115,7 +117,12 @@ class ArtworkContentProvider : ContentProvider() {
         val songId = uri.lastPathSegment ?: return null
         val ctx = context ?: return null
         return try {
-            if (uri.pathSegments.firstOrNull() == "remote") {
+            val requestType = uri.pathSegments.firstOrNull()
+            if (!ctx.isLibraryReady()) {
+                if (requestType == "remote" || requestType == "source") return null
+                return placeholder(ctx)?.let { writeSeekableJpeg(ctx, it) }
+            }
+            if (requestType == "remote") {
                 if (!LocalArtworkRules.isTrustedCaller(runCatching { callingPackage }.getOrNull(), ctx.packageName)) return null
                 val profile = getActiveProfile(ctx)
                 val (source, crop) = remoteSource(uri, profile) ?: return null
@@ -125,7 +132,7 @@ class ArtworkContentProvider : ContentProvider() {
                 return writeSeekableBytes(ctx, bytes)
             }
             val profile = getActiveProfile(ctx)
-            val sourceRequest = uri.pathSegments.firstOrNull() == "source"
+            val sourceRequest = requestType == "source"
             val bitmap = (if (sourceRequest) registeredSource(ctx, uri) else
                 customCover(ctx, songId) ?: mediaStoreArtIfTrusted(ctx, songId))
                 ?: placeholder(ctx) ?: return null

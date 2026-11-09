@@ -1,4 +1,11 @@
 Fixed:
+- fix(startup): keep the app responsive during library restore
+  - Run restore journal recovery and acquire the library lease in LibraryStartup before opening Room or starting library-dependent services.
+  - Show a responsive waiting screen in MainActivity and RescueActivity, with a retry action if recovery fails.
+  - Preserve pending navigation across activity recreation and replay hardware media button, download, and Playlist widget requests when the library is ready.
+  - Keep Media3 clients connected while the player waits for the library.
+
+Fixed:
 - fix(settings): group Glass indicators under Shared and improve settings search
   - Move the loading and pull-to-refresh controls into Shared with a refreshed description.
   - Find the three Storage cleanup actions by name in global and Data settings search.

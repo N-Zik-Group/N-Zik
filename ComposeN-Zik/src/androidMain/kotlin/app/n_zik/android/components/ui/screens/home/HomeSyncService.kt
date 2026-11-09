@@ -1,6 +1,8 @@
 package app.n_zik.android.components.ui.screens.home
 
 import android.app.Service
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Intent
 import android.os.IBinder
 import android.content.pm.ServiceInfo
@@ -13,8 +15,12 @@ import kotlinx.coroutines.cancel
 import timber.log.Timber
 import app.n_zik.android.R
 import app.n_zik.android.appContext
+import app.n_zik.android.awaitLibraryReady
+import app.n_zik.android.core.backup.isLibraryReady
+import app.n_zik.android.core.backup.LibraryStartupException
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.notifications.channelId
+import app.n_zik.android.core.notifications.ensureProfileChannels
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import it.fast4x.innertube.YtMusic
 import it.fast4x.innertube.Innertube
@@ -61,6 +67,14 @@ class HomeSyncService : Service() {
             else -> 1001
         }
         
+        val profile = getActiveProfile(this)
+        val notificationChannel = channelId(SYNC_NOTIFICATION_CHANNEL_ID, profile)
+        if (!isLibraryReady() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ensureProfileChannels(this, profile)
+            getSystemService(NotificationManager::class.java)?.createNotificationChannel(
+                NotificationChannel(notificationChannel, getString(R.string.sync_notifications), NotificationManager.IMPORTANCE_LOW)
+            )
+        }
         HomeSyncState.showSyncNotification(
             title = appContext().getString(R.string.sync_notifications),
             message = appContext().getString(R.string.sync_starting_notification),
@@ -68,7 +82,7 @@ class HomeSyncService : Service() {
             isOngoing = true
         )
         
-        val builder = NotificationCompat.Builder(appContext(), channelId(SYNC_NOTIFICATION_CHANNEL_ID, getActiveProfile(appContext())))
+        val builder = NotificationCompat.Builder(this, notificationChannel)
             .setSmallIcon(R.drawable.ic_launcher)
             .setContentTitle(appContext().getString(R.string.sync_notifications))
             .setContentText(appContext().getString(R.string.sync_background_notification))
@@ -97,17 +111,23 @@ class HomeSyncService : Service() {
 
         serviceScope.launch {
             val resultNotificationId = notificationId + 100
+            var startupFailed = false
             try {
+                awaitLibraryReady()
                 when (action) {
                     ACTION_SYNC_ARTISTS -> syncArtists(ids, notificationId, resultNotificationId)
                     ACTION_SYNC_ALBUMS -> syncAlbums(ids, notificationId, resultNotificationId)
                     ACTION_SYNC_PLAYLISTS -> syncPlaylists(ids, notificationId, resultNotificationId)
                 }
+            } catch (e: LibraryStartupException) {
+                startupFailed = true
+                Timber.tag("HomeSyncService").e(e, "Library is unavailable for sync")
             } catch (e: Exception) {
                 Timber.e(e, "Sync failed with exception")
             } finally {
                 @Suppress("DEPRECATION")
-                stopForeground(false)
+                stopForeground(startupFailed)
+                if (startupFailed) HomeSyncState.clearSyncNotification(notificationId)
             }
             activeSyncs--
             Timber.tag("HomeSyncService").d("Active syncs remaining: $activeSyncs")
