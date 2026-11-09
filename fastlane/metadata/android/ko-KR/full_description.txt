@@ -27,7 +27,7 @@ Glass 크레딧: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / B
 
 💾 <b>오프라인, 메타데이터 및 프라이버시</b>
 - 트랙 및 재생 목록용 스마트 캐싱 및 다운로드, 다운로드 품질 선택 가능
-- 전체 메타데이터가 포함된 FFmpeg 기반 내보내기 (표준 빌드 전용)
+- FFmpeg-powered export with full metadata (downloadable on first use; unavailable on 32-bit x86 devices)
 - 앱 내 메타데이터 편집기 (AAC/Opus, 커버 아트)
 - 로컬 청취 통계 및 기록
 - 맞춤 간격 및 보존 기간의 자동 백업
