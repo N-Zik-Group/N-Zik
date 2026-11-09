@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">Pagine</string>
     <string name="glass_effect_destination_playback">Riproduzione</string>
     <string name="glass_effect_destination_shared">Elementi condivisi</string>
+    <string name="glass_effect_loading_indicators">Indicatori di carico</string>
+    <string name="glass_effect_loading_indicators_description">Animazioni di caricamento dello stile nelle pagine e nelle schede e nelle finestre di dialogo.</string>
+    <string name="glass_effect_pull_to_refresh">Tira per aggiornare</string>
+    <string name="glass_effect_pull_to_refresh_description">Stile l\'indicatore che appare quando si tira giù per aggiornare.</string>
     <string name="glass_effect_destination_windows">Windows e messaggi</string>
     <string name="glass_effect_dialog_dimming">Sfondo di dialogo oscuramento</string>
     <string name="glass_effect_dispersion">Suddivisione del colore</string>
@@ -121,6 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">Le carte che raggruppano le impostazioni e mostrano i tuoi profili.</string>
     <string name="glass_effect_role_visualizer">Visualizzatore · controlli</string>
     <string name="glass_effect_role_visualizer_description">Il pulsante frecce e impostazioni usato con il visualizzatore.</string>
+    <string name="glass_effect_shared_components_summary">Scegli come Glass appare sui componenti utilizzati in tutta l\'app, inclusi gli indicatori di caricamento e tirare per aggiornare.</string>
     <string name="glass_effect_summary">Personalizza superfici effetto vetro, colori, contorni e qualità.</string>
     <string name="glass_effect_switches_description">Utilizzare gli interruttori di vetro liquido con il materiale condiviso e gli effetti di interazione quando Glass è abilitato.</string>
     <string name="glass_effect_switches_title">Interruttori in vetro</string>
@@ -225,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Medio (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Molto Alto (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Modifica immagine</string>
+    <string name="image_editor_failed">Impossibile modificare l\'immagine. L\'immagine attuale è stata mantenuta.</string>
     <string name="thumbnail_action_edit">Modifica la copertina</string>
     <string name="thumbnail_action_pick_from_gallery">Scegli dalla galleria</string>
     <string name="thumbnail_action_reset">Reimposta la copertina</string>
@@ -234,4 +241,6 @@
     <string name="thumbnail_remove_failed">Impossibile rimuovere la copertina</string>
     <string name="thumbnail_remove_success">Copertina Rimossa</string>
     <string name="glass_effect_rendering_quality">Qualità rendering</string>
+    <string name="image_editor_original">Rapporto originale</string>
+    <string name="image_editor_apply">Usa immagine</string>
 </resources>
