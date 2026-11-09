@@ -230,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Keskikokoinen (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Erittäin Korkea (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">Lataa</string>
+    <string name="cover_download_failed">Kantta ei voitu ladata.</string>
     <string name="image_editor_title">Muokkaa kuvaa</string>
     <string name="image_editor_failed">Kuvaa ei voitu muokata. Nykyinen kuvasi säilytettiin.</string>
     <string name="thumbnail_action_edit">Muokkaa pienoiskuvaa</string>
