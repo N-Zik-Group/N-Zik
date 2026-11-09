@@ -137,6 +137,9 @@
     <string name="modules_download_needed">Modul trenger nedlasting (~25 MB). Sjekk tilkoblingen.</string>
     <string name="modules_downloading">Laster ned modul</string>
     <string name="modules_edit_unavailable">Rediger manglende metadata: %1$s</string>
+    <string name="modules_ffmpeg_preparation">Forbereder FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">Laster ned FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Trengs for å eksportere bufrede sanger og for å redigere sangmetadata. Lastet ned ved første bruk.</string>
     <string name="modules_info">Informasjon</string>
     <string name="modules_insufficient_space">Denne funksjonen trenger ca. 70 MB ledig plass</string>
