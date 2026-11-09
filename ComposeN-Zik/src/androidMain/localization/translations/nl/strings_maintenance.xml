@@ -137,6 +137,9 @@
     <string name="modules_download_needed">Module heeft download nodig (~25 MB). Controleer de verbinding.</string>
     <string name="modules_downloading">Module downloaden</string>
     <string name="modules_edit_unavailable">Bewerk metadata niet beschikbaar: %1$s</string>
+    <string name="modules_ffmpeg_preparation">FFmpeg voorbereiden</string>
+    <string name="modules_ffmpeg_downloading">Downloaden van FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Nodig om nummers in de cache te exporteren en metagegevens van het nummer te bewerken. Gedownload bij eerste gebruik.</string>
     <string name="modules_info">Informatie</string>
     <string name="modules_insufficient_space">Deze functie heeft ongeveer 70 MB vrije ruimte nodig</string>
