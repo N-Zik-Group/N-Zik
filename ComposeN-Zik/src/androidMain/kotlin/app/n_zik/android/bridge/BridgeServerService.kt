@@ -1,5 +1,6 @@
 package app.n_zik.android.bridge
 
+import java.util.Locale
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.JournalPermission
@@ -10,13 +11,17 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
+import androidx.core.content.ContextCompat
 import app.n_zik.android.R
 import app.n_zik.android.awaitLibraryReady
 import app.n_zik.android.core.backup.LibraryStartupException
@@ -52,7 +57,7 @@ import java.util.concurrent.atomic.AtomicReference
 import timber.log.Timber
 
 private const val TAG = "BridgeServerService"
-private const val CHANNEL_ID = "bridge_server_channel"
+internal const val BRIDGE_SERVER_CHANNEL_ID = "bridge_server_channel"
 private const val NOTIFICATION_ID_RUNNING = 4201
 private const val NOTIFICATION_ID_STOPPED = 4202
 private const val WIFI_WAIT_MS = 1_500L
@@ -64,10 +69,12 @@ private const val HOTSPOT_POLL_MS = 5_000L
  * cleanly on `onTimeout()` (Android 15+ dataSync budget) and when the Wi-Fi is lost.
  */
 class BridgeServerService : Service() {
+    private val notificationResources get() = ContextCompat.getContextForLanguage(this).resources
 
     companion object {
         const val ACTION_START = "app.n_zik.android.bridge.action.START"
         const val ACTION_STOP = "app.n_zik.android.bridge.action.STOP"
+        internal const val ACTION_REFRESH_LOCALE = "app.n_zik.android.bridge.action.REFRESH_LOCALE"
     }
 
     private val scope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
@@ -89,13 +96,35 @@ class BridgeServerService : Service() {
     // Stops come from the DATA pool (user, Wi-Fi, onTimeout, auto-stop): one at a time
     private val stopMutex = Mutex()
 
+    private val localeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val strings = notificationResources
+            val text = when (val state = BridgeServerController.state.value) {
+                BridgeState.Starting -> strings.getString(R.string.bridge_server_starting)
+                is BridgeState.Running -> strings.getString(R.string.bridge_server_running_address).format(Locale.ROOT, state.ip, state.port)
+                else -> return
+            }
+            notificationManager()?.notify(
+                NOTIFICATION_ID_RUNNING,
+                buildNotification(strings.getString(R.string.bridge_server), text, ongoing = true),
+            )
+        }
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        ContextCompat.registerReceiver(
+            this, localeReceiver, IntentFilter(ACTION_REFRESH_LOCALE), ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> {
                 // startForeground must happen right away after startForegroundService()
-                startInForeground(getString(R.string.bridge_server_starting))
+                startInForeground(notificationResources.getString(R.string.bridge_server_starting))
                 if (lifecycleJob?.isActive != true && server == null) {
                     lifecycleJob = scope.launch { startServer() }
                 }
@@ -112,6 +141,7 @@ class BridgeServerService : Service() {
     }
 
     override fun onDestroy() {
+        unregisterReceiver(localeReceiver)
         // Never leave the phone muted without a server
         BridgeServerController.attachOutputs(null)
         BridgeServerController.publishAudioOutput(AudioOutput.PHONE)
@@ -128,7 +158,7 @@ class BridgeServerService : Service() {
             awaitLibraryReady()
         } catch (error: LibraryStartupException) {
             Timber.tag(TAG).e(error, "Library is unavailable for the bridge")
-            finish(BridgeState.Failed, getString(R.string.bridge_server_failed))
+            finish(BridgeState.Failed, notificationResources.getString(R.string.bridge_server_failed))
             return
         }
         BridgeServerController.publish(BridgeState.Starting)
@@ -140,10 +170,10 @@ class BridgeServerService : Service() {
         val viaHotspot = wifiAddress == null
         if (ipv4 == null) {
             Timber.tag(TAG).i("Neither on Wi-Fi nor sharing a hotspot, bridge not started")
-            finish(BridgeState.NotOnWifi, getString(R.string.bridge_server_stopped_wifi))
+            finish(BridgeState.NotOnWifi, notificationResources.getString(R.string.bridge_server_stopped_wifi))
             return
         }
-        val host = ipv4.hostAddress ?: return finish(BridgeState.Failed, getString(R.string.bridge_server_failed))
+        val host = ipv4.hostAddress ?: return finish(BridgeState.Failed, notificationResources.getString(R.string.bridge_server_failed))
         BridgeServerController.loadAutoStopSettings(this)
         // One hub, one player source and one command executor per server run: the revision starts again at 0
         val stateHub = BridgeStateHub()
@@ -207,7 +237,7 @@ class BridgeServerService : Service() {
             libraryObserver?.stop()
             libraryObserver = null
             releasePlayerSource()
-            return finish(BridgeState.Failed, getString(R.string.bridge_server_failed))
+            return finish(BridgeState.Failed, notificationResources.getString(R.string.bridge_server_failed))
         }
         server = bridge
         outputs = audioOutputs
@@ -216,7 +246,7 @@ class BridgeServerService : Service() {
         BridgeServerController.publish(BridgeState.Running(host, port, viaHotspot))
         if (Build.VERSION.SDK_INT >= 37) PermissionUsageJournal.record(this, PermissionFeature.PC_SERVER,
             JournalPermission.LOCAL_NETWORK, PermissionEventKind.USED)
-        startInForeground(getString(R.string.bridge_server_running_address, host, port))
+        startInForeground(notificationResources.getString(R.string.bridge_server_running_address).format(Locale.ROOT, host, port))
         // Network lost or address changed: stop without the serverStopped frame (transient for clients)
         wifiWatch = scope.launch {
             if (viaHotspot) {
@@ -270,10 +300,10 @@ class BridgeServerService : Service() {
         // After the sessions are closed: serverStopped stays the last message they received
         releasePlayerSource()
         val message = when (code) {
-            BridgeStopCode.STOP_USER -> getString(R.string.bridge_server_stopped_user)
-            BridgeStopCode.AUTO_STOP -> getString(R.string.bridge_server_stopped_auto)
-            BridgeStopCode.TIMEOUT -> getString(R.string.bridge_server_stopped_timeout)
-            null -> getString(R.string.bridge_server_stopped_wifi)
+            BridgeStopCode.STOP_USER -> notificationResources.getString(R.string.bridge_server_stopped_user)
+            BridgeStopCode.AUTO_STOP -> notificationResources.getString(R.string.bridge_server_stopped_auto)
+            BridgeStopCode.TIMEOUT -> notificationResources.getString(R.string.bridge_server_stopped_timeout)
+            null -> notificationResources.getString(R.string.bridge_server_stopped_wifi)
         }
         finish(if (code == null) BridgeState.NotOnWifi else BridgeState.Stopped, message)
     }
@@ -294,14 +324,14 @@ class BridgeServerService : Service() {
         BridgeServerController.publish(state)
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         if (message != null) {
-            notificationManager()?.notify(NOTIFICATION_ID_STOPPED, buildNotification(getString(R.string.bridge_server_stopped), message, ongoing = false))
+            notificationManager()?.notify(NOTIFICATION_ID_STOPPED, buildNotification(notificationResources.getString(R.string.bridge_server_stopped), message, ongoing = false))
         }
         stopSelf()
     }
 
     private fun startInForeground(text: String) {
         notificationManager()?.cancel(NOTIFICATION_ID_STOPPED)
-        val notification = buildNotification(getString(R.string.bridge_server), text, ongoing = true)
+        val notification = buildNotification(notificationResources.getString(R.string.bridge_server), text, ongoing = true)
         runCatching {
             ServiceCompat.startForeground(
                 this,
@@ -314,7 +344,7 @@ class BridgeServerService : Service() {
 
     private fun buildNotification(title: String, text: String, ongoing: Boolean): Notification {
         ensureChannel()
-        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+        val builder = NotificationCompat.Builder(this, BRIDGE_SERVER_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_monochrome)
             .setContentTitle(title)
             .setContentText(text)
@@ -328,7 +358,7 @@ class BridgeServerService : Service() {
                 Intent(this, BridgeServerService::class.java).setAction(ACTION_STOP),
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
             )
-            builder.addAction(R.drawable.close, getString(R.string.bridge_server_stop), stopIntent)
+            builder.addAction(R.drawable.close, notificationResources.getString(R.string.bridge_server_stop), stopIntent)
         }
         return builder.build()
     }
@@ -336,10 +366,11 @@ class BridgeServerService : Service() {
     private fun ensureChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val manager = notificationManager() ?: return
-        if (manager.getNotificationChannel(CHANNEL_ID) != null) return
-        manager.createNotificationChannel(
-            NotificationChannel(CHANNEL_ID, getString(R.string.bridge_server), NotificationManager.IMPORTANCE_LOW)
-        )
+        val name = notificationResources.getString(R.string.bridge_server)
+        val channel = manager.getNotificationChannel(BRIDGE_SERVER_CHANNEL_ID)
+            ?: NotificationChannel(BRIDGE_SERVER_CHANNEL_ID, name, NotificationManager.IMPORTANCE_LOW)
+        channel.name = name
+        manager.createNotificationChannel(channel)
     }
 
     private fun notificationManager(): NotificationManager? = getSystemService(NotificationManager::class.java)

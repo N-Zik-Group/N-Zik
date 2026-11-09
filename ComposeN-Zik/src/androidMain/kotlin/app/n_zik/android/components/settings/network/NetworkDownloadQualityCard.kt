@@ -17,7 +17,7 @@ internal fun NetworkDownloadQualityCard(
     onRestartRequired: (Boolean) -> Unit,
 ) {
     SettingsSectionCard(
-        title = stringResource(R.string.settings_download_quality),
+        title = stringResource(R.string.downloads_quality),
         icon = R.drawable.network,
         content = {
             if (query.isBlank() || stringResource(R.string.downloads_quality_format).contains(query, true) || stringResource(R.string.downloads_action_refresh_quality).contains(query, true)) {

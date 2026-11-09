@@ -144,7 +144,7 @@ fun GeneralAudioEffectsCard(
                         onSlideComplete = {
                             loudnessBaseGain = newValue
                         },
-                        toDisplay = { "%.2f dB".format(it) },
+                        toDisplay = { stringResource(R.string.player_decibels_value, it) },
                         range = -20f..20f,
                         stepSize = 0f,
                         defaultValue = 5f,
@@ -182,7 +182,7 @@ fun GeneralAudioEffectsCard(
                         onSlideComplete = {
                             volumeBoostLevel = newValueVolume
                         },
-                        toDisplay = { "%.2f dB".format(it).replace(",", ".") },
+                        toDisplay = { stringResource(R.string.player_decibels_value, it) },
                         range = -30f..30f,
                         stepSize = 0f,
                         defaultValue = 0f,
@@ -237,7 +237,7 @@ fun GeneralAudioEffectsCard(
                         onSlideComplete = {
                             bassboostLevel = newValue
                         },
-                        toDisplay = { "%.2f dB".format(it * 15f).replace(",", ".") },
+                        toDisplay = { stringResource(R.string.player_decibels_value, it * 15f) },
                         range = 0f..1f,
                         stepSize = 0f,
                         defaultValue = 0f,

@@ -1,6 +1,8 @@
 package app.n_zik.android.widget
 
 import android.content.Context
+import android.content.res.Resources
+import androidx.core.content.ContextCompat
 import android.os.SystemClock
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.utils.getActiveProfile
@@ -31,19 +33,20 @@ internal class PlaylistQuickPickSource(private val now: () -> Long = { SystemClo
     suspend fun load(context: Context, database: Database = Database): List<Entry> = withContext(NzikDispatchers.DATA) {
         mutex.withLock {
             val profile = getActiveProfile(context)
-            val language = context.resources.configuration.locales.toLanguageTags()
+            val resources = ContextCompat.getContextForLanguage(context).resources
+            val language = resources.configuration.locales.toLanguageTags()
             val timestamp = now()
             cached?.takeIf { it.profile == profile && it.language == language && timestamp - it.createdAt in 0L until 60_000L }
                 ?.let { return@withLock it.entries }
-            val entries = build(context, database)
+            val entries = build(resources, database)
             if (profile != getActiveProfile(context)) return@withLock emptyList()
             cached = Snapshot(profile, language, timestamp, entries)
             entries
         }
     }
 
-    private suspend fun build(context: Context, database: Database): List<Entry> {
-        val favorites = Entry(Target.Favorites, context.getString(R.string.library_favorites_title), null)
+    private suspend fun build(resources: Resources, database: Database): List<Entry> {
+        val favorites = Entry(Target.Favorites, resources.getString(R.string.library_favorites_title), null)
         val items = mutableListOf<Entry>()
         database.playlistTable.sortPreviewsByPlayCount(8).firstOrNull().orEmpty().forEach { preview ->
             val playlist = preview.playlist
@@ -53,12 +56,12 @@ internal class PlaylistQuickPickSource(private val now: () -> Long = { SystemClo
         val artists = database.artistTable.sortFollowingByPlayCount(8).firstOrNull().orEmpty() +
             database.artistTable.sortInLibraryByPlayCount(8).firstOrNull().orEmpty()
         artists.distinctBy { it.id }.forEach {
-            items += Entry(Target.Artist(it.id), it.name ?: context.getString(R.string.common_unknown), it.thumbnailUrl)
+            items += Entry(Target.Artist(it.id), it.name ?: resources.getString(R.string.common_unknown), it.thumbnailUrl)
         }
         val albums = database.albumTable.sortBookmarkedByPlayCount(8).firstOrNull().orEmpty() +
             database.albumTable.sortInLibraryByPlayCount(8).firstOrNull().orEmpty()
         albums.distinctBy { it.id }.forEach {
-            items += Entry(Target.Album(it.id), it.title ?: context.getString(R.string.common_unknown), it.thumbnailUrl)
+            items += Entry(Target.Album(it.id), it.title ?: resources.getString(R.string.common_unknown), it.thumbnailUrl)
         }
         database.songTable.all().firstOrNull().orEmpty().shuffled().take(8).forEach {
             items += Entry(Target.Track(it), it.title, it.thumbnailUrl)

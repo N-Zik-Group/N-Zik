@@ -8,6 +8,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.IBinder
 import android.os.Looper
+import androidx.core.app.AppLocalesStorageHelper
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadCursor
@@ -45,6 +46,8 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import java.text.NumberFormat
+import java.util.Locale
 
 @UnstableApi
 @RunWith(RobolectricTestRunner::class)
@@ -107,6 +110,22 @@ class DownloadNotificationLifecycleTest {
         assertTrue(notification.actions.all {
             shadowOf(it.actionIntent).savedIntent.component?.className == MyDownloadService::class.java.name
         })
+    }
+
+    @Test
+    @Config(sdk = [32], qualifiers = "en")
+    fun `foreground download text and percent follow the saved app language`() {
+        val previous = AppLocalesStorageHelper.readLocales(context)
+        try {
+            AppLocalesStorageHelper.persistLocales(context, "fr")
+            val notification = DownloadProgressNotification(context).build(listOf(download), false, 0, 0)
+            val percent = NumberFormat.getPercentInstance(Locale.FRENCH).format(0)
+            assertEquals("1 en cours ($percent)", notification.extras.getString(Notification.EXTRA_SUB_TEXT))
+            assertEquals("Annuler", notification.actions[1].title.toString())
+            assertEquals(1, shadowOf(notification.actions[1].actionIntent).requestCode)
+        } finally {
+            AppLocalesStorageHelper.persistLocales(context, previous)
+        }
     }
 
     @Test

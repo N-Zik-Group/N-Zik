@@ -11,7 +11,6 @@
     <string name="bridge_auto_stop_never">Nigdy</string>
     <string name="bridge_auto_stop_no_client">Zatrzymaj się bez podłączonego komputera</string>
     <string name="bridge_battery_action">Wyłącz optymalizację baterii</string>
-    <string name="bridge_battery_title">Optymalizacja baterii</string>
     <string name="bridge_battery_warning">Optymalizacja baterii jest włączona: Android może zatrzymać serwer PC w tle</string>
     <string name="bridge_connected_pc">Połączony PC</string>
     <string name="bridge_disconnect">Rozłącz</string>

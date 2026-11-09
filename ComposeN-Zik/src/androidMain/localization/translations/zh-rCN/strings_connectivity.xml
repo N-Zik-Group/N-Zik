@@ -11,7 +11,6 @@
     <string name="bridge_auto_stop_never">从不使用</string>
     <string name="bridge_auto_stop_no_client">停止未连接 PC</string>
     <string name="bridge_battery_action">禁用电池优化</string>
-    <string name="bridge_battery_title">电池优化</string>
     <string name="bridge_battery_warning">电池优化是在: Android 可能会在后台停止 PC 服务器</string>
     <string name="bridge_connected_pc">已连接的 PC</string>
     <string name="bridge_disconnect">断开连接</string>

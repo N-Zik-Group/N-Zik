@@ -2,6 +2,7 @@
 
 package app.n_zik.android.components.menu.player
 
+import app.n_zik.android.utils.percentLabel
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
@@ -766,7 +767,7 @@ private fun VolumeRow(
         )
 
         BasicText(
-            text = "${if (maxVolume > 0) kotlin.math.round(((currentVolume / maxVolume) * 100)).toInt() else 0}%",
+            text = percentLabel(if (maxVolume > 0) kotlin.math.round(((currentVolume / maxVolume) * 100)).toInt() else 0),
             style = typography().xxs.copy(
                 fontWeight = FontWeight.SemiBold,
                 color = colorPalette().accent
@@ -1068,7 +1069,7 @@ private fun VolumeGridEntry(
                 )
             }
         },
-        subtitle = "${if (maxVolume > 0) kotlin.math.round(((currentVolume / maxVolume) * 100)).toInt() else 0}%",
+        subtitle = percentLabel(if (maxVolume > 0) kotlin.math.round(((currentVolume / maxVolume) * 100)).toInt() else 0),
         onClick = { isShowingDialog = true },
         trailingContent = {
             Icon(
@@ -1133,7 +1134,7 @@ private fun VolumeDialog(
         Spacer(modifier = Modifier.height(16.dp))
 
         BasicText(
-            text = "${if (maxVolume > 0) kotlin.math.round(((dialogVolume / maxVolume) * 100)).toInt() else 0}%",
+            text = percentLabel(if (maxVolume > 0) kotlin.math.round(((dialogVolume / maxVolume) * 100)).toInt() else 0),
             style = typography().l.semiBold.copy(
                 color = colorPalette().accent
             ),

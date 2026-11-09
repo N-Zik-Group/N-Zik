@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.utils.percentLabel
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 import androidx.compose.animation.AnimatedVisibility
@@ -41,6 +42,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import app.n_zik.android.utils.secondsLabel
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.password
 import androidx.compose.ui.semantics.semantics
@@ -212,7 +214,7 @@ fun LastFmSettingsCard() {
                         stepSize = 5f,
                         onSlide = { minDurationUi = it },
                         onSlideComplete = { lastfmMinTrackDurationSeconds = minDurationUi.toInt() },
-                        toDisplay = { "${it.toInt()} s" },
+                        toDisplay = { secondsLabel(it.toInt()) },
                         isIntegerOnly = true,
                         icon = R.drawable.time
                     )
@@ -228,7 +230,7 @@ fun LastFmSettingsCard() {
                                 stepSize = 5f,
                                 onSlide = { thresholdUi = it },
                                 onSlideComplete = { lastfmScrobbleThresholdPercent = thresholdUi.toInt() },
-                                toDisplay = { "${it.toInt()} %" },
+                                toDisplay = { percentLabel(it.toInt()) },
                                 isIntegerOnly = true,
                                 icon = R.drawable.playbackduration
                             )
@@ -241,7 +243,7 @@ fun LastFmSettingsCard() {
                                 stepSize = 30f,
                                 onSlide = { maxDelayUi = it },
                                 onSlideComplete = { lastfmMaxScrobbleDelaySeconds = maxDelayUi.toInt() },
-                                toDisplay = { "${it.toInt()} s" },
+                                toDisplay = { secondsLabel(it.toInt()) },
                                 isIntegerOnly = true,
                                 icon = R.drawable.playbackduration
                             )

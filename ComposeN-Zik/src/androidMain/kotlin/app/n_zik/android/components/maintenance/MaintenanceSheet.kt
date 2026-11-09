@@ -43,7 +43,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import app.n_zik.android.utils.percentLabel
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -283,9 +285,19 @@ internal fun passStatusText(status: PassStatus): String {
     val texts = ArrayList<String>(status.parts.size)
     for (part in status.parts) {
         val count = part.count
-        texts.add(if (count != null) stringResource(part.resId, count) else stringResource(part.resId))
+        texts.add(if (count != null) maintenanceCount(part.resId, count) else stringResource(part.resId))
     }
     return texts.joinToString(" · ")
+}
+
+@Composable
+private fun maintenanceCount(resId: Int, count: Int): String = when (resId) {
+    R.string.maintenance_pass_cleaned -> pluralStringResource(R.plurals.maintenance_pass_cleaned_count, count, count)
+    R.string.maintenance_pass_deferred -> pluralStringResource(R.plurals.maintenance_pass_deferred_count, count, count)
+    R.string.maintenance_pass_skipped -> pluralStringResource(R.plurals.maintenance_pass_skipped_count, count, count)
+    R.string.maintenance_dedup_flagged -> pluralStringResource(R.plurals.maintenance_dedup_flagged_count, count, count)
+    R.string.maintenance_dedup_merged -> pluralStringResource(R.plurals.maintenance_dedup_merged_count, count, count)
+    else -> stringResource(resId, count)
 }
 
 /** Whether a pass status carries at least one state part (a non-null counter) — the fixed "No data" / "Nothing to clean" sentences carry none. The expanded rows use it to decide whether to repeat the status as their top summary line: a fixed sentence is already what the expansion shows, so it is never repeated on top of it. */
@@ -687,11 +699,17 @@ internal fun lastRunLine(
 @Composable
 private fun cacheUsedStatusText(context: Context, usedBytes: Long, maxBytes: Long): String {
     val used = Formatter.formatShortFileSize(context, usedBytes)
-    return if (maxBytes > 0L) {
-        "$used${stringResource(R.string.common_storage_used_suffix)} (${usedBytes * 100 / maxBytes}%)"
+    val limit = if (maxBytes > 0L) {
+        percentLabel((usedBytes * 100 / maxBytes).toInt())
     } else {
-        "$used${stringResource(R.string.common_storage_used_suffix)} (${stringResource(R.string.common_limit_unlimited_label)})"
+        stringResource(R.string.common_limit_unlimited_label)
     }
+    return stringResource(
+        R.string.maintenance_cache_usage_status_format,
+        used,
+        stringResource(R.string.common_storage_used_suffix),
+        limit,
+    )
 }
 
 /** One Listen Together reading taken at refresh time (the client's StateFlows are NOT observed live in the sheet — the spec reads them on open/refresh only). */
@@ -1037,8 +1055,12 @@ fun MaintenanceSheet(
             val detail = when {
                 detailResId == null -> ""
                 detailArgs2 != null && detailArgs != null ->
-                    ": ${stringResource(detailResId, detailArgs, detailArgs2)}"
-                detailArgs != null -> ": ${stringResource(detailResId, detailArgs)}"
+                    ": ${stringResource(
+                        R.string.maintenance_dedup_counts_format,
+                        maintenanceCount(R.string.maintenance_dedup_merged, detailArgs),
+                        maintenanceCount(R.string.maintenance_dedup_flagged, detailArgs2),
+                    )}"
+                detailArgs != null -> ": ${maintenanceCount(detailResId, detailArgs)}"
                 else -> ": ${stringResource(detailResId)}"
             }
             dedupGroups.add(GroupLine(cleanPrefix(record.name), stringResource(display.statusResId) + detail))
@@ -1069,7 +1091,7 @@ fun MaintenanceSheet(
     val dbCleanupEmpty = dbCleanupEmptyRes(dbCleanup)
     val dbCleanupEmptyArg = dbCleanupEmpty.second
     val dbCleanupEmptyText = if (dbCleanupEmptyArg != null) {
-        stringResource(dbCleanupEmpty.first, dbCleanupEmptyArg)
+        maintenanceCount(dbCleanupEmpty.first, dbCleanupEmptyArg)
     } else {
         stringResource(dbCleanupEmpty.first)
     }
@@ -1086,7 +1108,7 @@ fun MaintenanceSheet(
     val downloadRevalidationEmpty = downloadRevalidationEmptyRes(downloadRevalidation)
     val downloadRevalidationEmptyArg = downloadRevalidationEmpty.second
     val downloadRevalidationEmptyText = if (downloadRevalidationEmptyArg != null) {
-        stringResource(downloadRevalidationEmpty.first, downloadRevalidationEmptyArg)
+        maintenanceCount(downloadRevalidationEmpty.first, downloadRevalidationEmptyArg)
     } else {
         stringResource(downloadRevalidationEmpty.first)
     }
@@ -1205,7 +1227,7 @@ fun MaintenanceSheet(
     val anyJobRunning = jobs?.any { it.state == WorkInfo.State.RUNNING } == true
     val jobsStatus = when {
         jobs == null -> stringResource(R.string.maintenance_no_data)
-        abnormal.isNotEmpty() -> stringResource(R.string.maintenance_jobs_abnormal, abnormal.size)
+        abnormal.isNotEmpty() -> pluralStringResource(R.plurals.maintenance_abnormal_job_count, abnormal.size, abnormal.size)
         else -> stringResource(R.string.maintenance_jobs_all_ok)
     }
     val jobsColor = when {

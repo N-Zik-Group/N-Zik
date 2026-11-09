@@ -11,7 +11,6 @@
     <string name="bridge_auto_stop_never">Aldrig</string>
     <string name="bridge_auto_stop_no_client">Stoppa utan dator ansluten</string>
     <string name="bridge_battery_action">Inaktivera batterioptimering</string>
-    <string name="bridge_battery_title">Batterioptimering</string>
     <string name="bridge_battery_warning">Batterioptimering är på: Android kan stoppa PC-servern i bakgrunden</string>
     <string name="bridge_connected_pc">Ansluten PC</string>
     <string name="bridge_disconnect">Koppla från</string>

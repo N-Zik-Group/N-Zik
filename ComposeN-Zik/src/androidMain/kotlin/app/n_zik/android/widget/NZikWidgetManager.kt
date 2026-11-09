@@ -4,6 +4,7 @@ import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
+import androidx.core.content.ContextCompat
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
@@ -34,8 +35,8 @@ object NZikWidgetManager {
     suspend fun updateIdleWidgets(context: Context) {
         updateWidgets(
             context = context,
-            title = context.getString(R.string.widget_not_playing_status),
-            artist = context.getString(R.string.widget_action_tap_to_play),
+            title = ContextCompat.getString(context, R.string.widget_not_playing_status),
+            artist = ContextCompat.getString(context, R.string.widget_action_tap_to_play),
             artworkBitmap = null,
             isPlaying = false,
             isLiked = false,
@@ -116,7 +117,7 @@ object NZikWidgetManager {
         PlaylistWidgetManager.updateWidgets(
             context = context,
             title = title,
-            artist = if (artworkBitmap == null) context.getString(R.string.widget_configuration_choose_item_hint) else artist,
+            artist = if (artworkBitmap == null) ContextCompat.getString(context, R.string.widget_configuration_choose_item_hint) else artist,
             artworkBitmap = albumArt,
             isPlaying = isPlaying,
             isLiked = isLiked,
@@ -237,6 +238,14 @@ object NZikWidgetManager {
         palette: ColorPalette
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_music_player)
+        views.setPlaybackDescriptions(
+            context,
+            R.id.widget_album_art,
+            R.id.widget_prev_icon,
+            R.id.widget_play_pause,
+            R.id.widget_next_icon,
+            R.id.widget_like_button,
+        )
 
         views.setTextViewText(R.id.widget_song_title, widgetDisplayTitle(title))
         views.setTextViewText(R.id.widget_artist_name, cleanPrefix(artist))
@@ -286,6 +295,14 @@ object NZikWidgetManager {
         palette: ColorPalette
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_compact_square)
+        views.setPlaybackDescriptions(
+            context,
+            R.id.widget_compact_album_art,
+            R.id.widget_compact_prev_icon,
+            R.id.widget_compact_play_pause,
+            R.id.widget_compact_next_icon,
+            R.id.widget_compact_like_button,
+        )
 
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause_low else R.drawable.ic_widget_play_low
         views.setImageViewResource(R.id.widget_compact_play_pause, playPauseIcon)
@@ -312,6 +329,14 @@ object NZikWidgetManager {
         currentPosition: Long,
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_compact_wide)
+        views.setPlaybackDescriptions(
+            context,
+            R.id.widget_wide_album_art,
+            R.id.widget_wide_prev_icon,
+            R.id.widget_wide_play_pause,
+            R.id.widget_wide_next_icon,
+            R.id.widget_wide_like_button,
+        )
 
         views.setTextViewText(R.id.widget_wide_song_title, widgetDisplayTitle(title))
         views.setTextViewText(R.id.widget_wide_artist_name, cleanPrefix(artist))
@@ -374,6 +399,14 @@ object NZikWidgetManager {
         palette: ColorPalette
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_turntable)
+        views.setPlaybackDescriptions(
+            context,
+            R.id.widget_turntable_album_art,
+            R.id.widget_turntable_prev_button,
+            R.id.widget_turntable_play_pause,
+            R.id.widget_turntable_next_button,
+            R.id.widget_turntable_like_button,
+        )
 
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause_secondary else R.drawable.ic_widget_play_secondary
         views.setImageViewResource(R.id.widget_turntable_play_pause, playPauseIcon)

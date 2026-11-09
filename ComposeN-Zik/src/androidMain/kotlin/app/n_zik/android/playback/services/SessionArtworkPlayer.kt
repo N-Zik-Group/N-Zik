@@ -1,5 +1,6 @@
 package app.n_zik.android.playback.services
 
+import app.n_zik.android.appTextResources
 import java.util.IdentityHashMap
 
 import android.media.MediaMetadata.METADATA_KEY_DURATION
@@ -133,8 +134,8 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
             // Legacy conversion applies extras last, so a reserved key could clobber the real duration.
             if (hasReservedDuration) setExtras(Bundle(metadata.extras).apply { remove(METADATA_KEY_DURATION) })
             providerArtworkUri?.let { setArtworkUri(it); setArtworkData(null, null) }
-            if (needsTitleFallback) setTitle(appContext().getString(R.string.metadata_unknown_title))
-            if (needsArtistFallback) setArtist(appContext().getString(R.string.metadata_unknown_artist))
+            if (needsTitleFallback) setTitle(appTextResources().getString(R.string.metadata_unknown_title))
+            if (needsArtistFallback) setArtist(appTextResources().getString(R.string.metadata_unknown_artist))
         }.build()
     }
 }

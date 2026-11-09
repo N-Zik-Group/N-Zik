@@ -371,7 +371,7 @@ fun RewindFinaleCard(
                         FinaleFeature(
                             label = stringResource(R.string.rewind_finale_top_song),
                             title = topSong?.song?.cleanTitle() ?: "—",
-                            subtitle = topSong?.let { stringResource(R.string.rewind_play_count, formatRewindNumber(it.playCount.toLong())) } ?: "",
+                            subtitle = topSong?.let { rewindCount(R.plurals.rewind_play_count_label, it.playCount.toLong()) } ?: "",
                             imageUrl = topSong?.song?.thumbnailUrl,
                             circular = false,
                             artistName = null,
@@ -413,7 +413,7 @@ fun RewindFinaleCard(
                         FinaleFeature(
                             label = stringResource(R.string.rewind_finale_top_playlist),
                             title = topPlaylist?.playlist?.playlist?.cleanName() ?: "—",
-                            subtitle = topPlaylist?.let { stringResource(R.string.rewind_meta_songs, formatRewindNumber(it.songCount.toLong())) } ?: "",
+                            subtitle = topPlaylist?.let { rewindCount(R.plurals.rewind_meta_song_count, it.songCount.toLong()) } ?: "",
                             imageUrl = null,
                             circular = false,
                             artistName = null,

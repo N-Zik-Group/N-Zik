@@ -142,7 +142,7 @@ fun RewindTopPlaylistsCard(
                                     modifier = Modifier.rewindMarqueeOnly()
                                 )
                                 Text(
-                                    text = stringResource(R.string.rewind_meta_songs, formatRewindNumber(entry.songCount.toLong())),
+                                    text = rewindCount(R.plurals.rewind_meta_song_count, entry.songCount.toLong()),
                                     color = rowOn.copy(alpha = 0.58f),
                                     fontSize = textScale.size(9.sp),
                                     maxLines = 1,

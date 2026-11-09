@@ -1,6 +1,8 @@
 package app.n_zik.android
 
 import android.content.Context
+import android.content.res.Resources
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
@@ -105,6 +107,9 @@ fun showStatsIconInNav() = rememberPreference( showStatsInNavbarKey, false ).val
 fun binder() = LocalPlayerServiceBinder.current?.service
 
 fun appContext(): Context = Dependencies.application.applicationContext
+
+/** Resolves text resources using the app language even outside an Activity. */
+fun appTextResources(): Resources = ContextCompat.getContextForLanguage(appContext()).resources
 fun context(): Context = Dependencies.application
 
 // Explicit non-null return: the platform getString() is a nullable type, and the

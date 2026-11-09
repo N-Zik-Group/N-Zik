@@ -1,5 +1,7 @@
 package app.n_zik.android.components.ui.screens.rewind.slides
 
+import androidx.compose.ui.res.pluralStringResource
+import androidx.annotation.PluralsRes
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.glassContentCaptureEnabled
@@ -69,7 +71,12 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.ContentScale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import android.text.format.DateFormat
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.TimeZone
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -1432,12 +1439,18 @@ internal fun firstNonBlank(vararg values: String?): String =
 
 @Composable
 internal fun formatHourLabel(hour: String?): String {
-    val raw = hour?.substringBefore(':')?.toIntOrNull() ?: return "—"
-    val normalized = when {
-        raw == 0 -> 12
-        raw > 12 -> raw - 12
-        else -> raw
-    }
-    val meridiem = if (raw < 12) stringResource(R.string.rewind_hour_am) else stringResource(R.string.rewind_hour_pm)
-    return "$normalized $meridiem"
+    val raw = hour?.substringBefore(':')?.toIntOrNull()?.takeIf { it in 0..23 } ?: return "—"
+    val locale = LocalConfiguration.current.locales[0]
+    val pattern = DateFormat.getBestDateTimePattern(locale, "ha")
+    return SimpleDateFormat(pattern, locale).apply {
+        timeZone = TimeZone.getTimeZone("UTC")
+    }.format(Date(raw * 3_600_000L))
 }
+
+@Composable
+internal fun rewindCount(@PluralsRes id: Int, count: Long): String =
+    pluralStringResource(id, count.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), formatRewindNumber(count))
+
+@Composable
+internal fun rewindCount(@PluralsRes id: Int, count: Long, duration: String): String =
+    pluralStringResource(id, count.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), duration, formatRewindNumber(count))

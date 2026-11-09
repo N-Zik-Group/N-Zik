@@ -1,5 +1,6 @@
 package app.it.fast4x.rimusic.utils
 
+import app.n_zik.android.appTextResources
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import android.R.attr.duration
 import app.n_zik.android.core.database.*
@@ -626,7 +627,7 @@ suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: 
 
     if (mediaItems.isEmpty()) return
 
-    val resources = appContext().resources
+    val resources = appTextResources()
     val progressInterval = 50
     if (mediaItems.size > progressInterval) {
         Toaster.i(
@@ -712,12 +713,12 @@ suspend fun addToYtLikedSongs(mediaItems: List<MediaItem>){
                     )
 
                     Toaster.s(
-                        "${index + 1}/${mediaItems.size} " + appContext().resources.getString(R.string.sync_youtube_like_success)
+                        "${index + 1}/${mediaItems.size} " + appTextResources().getString(R.string.sync_youtube_like_success)
                     )
                 }
             }
             .onFailure {
-                Toaster.e(R.string.sync_youtube_like_failed_with_index, formatArgs = arrayOf("${index + 1}/${mediaItems.size}", appContext().resources.getString(R.string.sync_youtube_like_failed)))
+                Toaster.e(R.string.sync_youtube_like_failed_with_index, formatArgs = arrayOf("${index + 1}/${mediaItems.size}", appTextResources().getString(R.string.sync_youtube_like_failed)))
             }
     }
 }

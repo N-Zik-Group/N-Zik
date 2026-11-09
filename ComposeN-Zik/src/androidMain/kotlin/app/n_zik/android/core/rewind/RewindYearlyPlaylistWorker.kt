@@ -15,6 +15,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -213,12 +214,13 @@ internal class RewindYearlyPlaylistWorker(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val resources = ContextCompat.getContextForLanguage(applicationContext).resources
         NotificationManagerCompat.from(applicationContext).notify(
             NOTIFICATION_ID,
             NotificationCompat.Builder(applicationContext, channelId(RewindReminderWorker.CHANNEL_ID, getActiveProfile(applicationContext)))
                 .setSmallIcon(R.drawable.ic_launcher_monochrome)
-                .setContentTitle(applicationContext.getString(R.string.rewind_playlist_notification_title, finishedYear))
-                .setContentText(applicationContext.getString(R.string.rewind_playlist_notification_description))
+                .setContentTitle(resources.getString(R.string.rewind_playlist_notification_title, finishedYear))
+                .setContentText(resources.getString(R.string.rewind_playlist_notification_description))
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setAutoCancel(true)
                 .setContentIntent(pending)

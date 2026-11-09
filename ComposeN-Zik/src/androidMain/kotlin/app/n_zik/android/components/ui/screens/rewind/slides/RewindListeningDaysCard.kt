@@ -154,7 +154,7 @@ fun RewindListeningDaysCard(
                         }
                         Spacer(Modifier.height(10.dp))
                         RewindAdaptiveTitle(
-                            text = stringResource(R.string.rewind_listening_days_without, formatRewindNumber((daysInPeriod - data.daysWithMusic).coerceAtLeast(0).toLong())),
+                            text = rewindCount(R.plurals.rewind_listening_day_count_without, (daysInPeriod - data.daysWithMusic).coerceAtLeast(0).toLong()),
                             color = rewindColors.value.cream.copy(alpha = 0.52f),
                             fontSize = textScale.size(10.sp),
                             lineHeight = textScale.size(14.sp),

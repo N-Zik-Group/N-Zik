@@ -15,6 +15,8 @@
 
 package app.n_zik.android.listentogether
 
+import androidx.annotation.StringRes
+import app.n_zik.android.appTextResources
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.JournalPermission
@@ -25,6 +27,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
+import android.content.res.Resources
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.PowerManager
@@ -91,15 +94,23 @@ enum class RoomRole {
 data class LogEntry(
     val timestamp: String,
     val level: LogLevel,
-    val message: String,
-    val details: String? = null,
+    @StringRes val messageRes: Int,
+    val details: LogDetail? = null,
 )
 
-enum class LogLevel {
-    INFO,
-    WARNING,
-    ERROR,
-    DEBUG,
+fun interface LogDetail {
+    fun resolve(resources: Resources): String
+}
+
+// Stable legacy wire reasons. Resolve them in the recipient's locale.
+internal const val LISTEN_TOGETHER_BLOCKED_REASON = "Blocked by host"
+internal const val LISTEN_TOGETHER_JOIN_BLOCKED_REASON = "You are blocked"
+
+enum class LogLevel(@StringRes val labelRes: Int) {
+    INFO(R.string.listen_together_log_level_info),
+    WARNING(R.string.listen_together_log_level_warning),
+    ERROR(R.string.listen_together_log_level_error),
+    DEBUG(R.string.listen_together_log_level_debug),
 }
 
 /**
@@ -346,7 +357,7 @@ class ListenTogetherClient(
 
         private fun emitEvent(event: ListenTogetherEvent) {
             if (eventQueue.trySend(event).isFailure) {
-                log(LogLevel.ERROR, "Failed to queue Listen Together event", event::class.simpleName)
+                log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_queue_listen_together_event, event::class.simpleName)
             }
         }
 
@@ -361,19 +372,19 @@ class ListenTogetherClient(
                         isNetworkAvailable = available
 
                         if (available && !previous) {
-                            log(LogLevel.INFO, "Network restored, checking if reconnection needed")
+                            log(LogLevel.INFO, R.string.listen_together_log_event_network_restored_checking_if_reconnection_needed)
                             // Reset attempts when network is restored to allow a fresh set of retries
                             if (_connectionState.value == ConnectionState.ERROR ||
                                 _connectionState.value == ConnectionState.DISCONNECTED
                             ) {
                                 if (sessionToken != null || _roomState.value != null || pendingAction != null) {
-                                    log(LogLevel.INFO, "Network restored, triggering reconnection")
+                                    log(LogLevel.INFO, R.string.listen_together_log_event_network_restored_triggering_reconnection)
                                     reconnectAttempts = 0 // Reset attempts for a fresh start
                                     connect()
                                 }
                             }
                         } else if (!available && previous) {
-                            log(LogLevel.WARNING, "Network lost")
+                            log(LogLevel.WARNING, R.string.listen_together_log_event_network_lost)
                         }
                     }
                 } catch (e: Exception) {
@@ -401,8 +412,8 @@ class ListenTogetherClient(
                     if (generationAtLoadStart != sessionApplyGeneration.get()) {
                         log(
                             LogLevel.INFO,
-                            "Skipping persisted session restore",
-                            "User started a new room flow before restore completed",
+                            R.string.listen_together_log_event_skipping_persisted_session_restore,
+                            logDetail(R.string.listen_together_log_detail_restore_superseded),
                         )
                         return
                     }
@@ -411,16 +422,16 @@ class ListenTogetherClient(
                     _userId.value = userId.ifEmpty { null }
                     wasHost = isHost
                     sessionStartTime = timestamp
-                    log(LogLevel.INFO, "Loaded persisted session", "Room: $roomCode, Host: $isHost")
+                    log(LogLevel.INFO, R.string.listen_together_log_event_loaded_persisted_session, logDetail(R.string.listen_together_log_detail_room_and_host, roomCode, isHost))
                 } else if (token.isNotEmpty()) {
                     if (generationAtLoadStart != sessionApplyGeneration.get()) {
                         return
                     }
-                    log(LogLevel.WARNING, "Session expired", "Age: ${System.currentTimeMillis() - timestamp}ms")
+                    log(LogLevel.WARNING, R.string.listen_together_log_event_session_expired, logDetail(R.string.listen_together_log_detail_session_age, System.currentTimeMillis() - timestamp))
                     clearPersistedSession()
                 }
             } catch (e: Exception) {
-                log(LogLevel.ERROR, "Failed to load persisted session", e.message)
+                log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_load_persisted_session, e.message)
             }
 
             // Also load blocked usernames
@@ -448,7 +459,7 @@ class ListenTogetherClient(
                     }
                 _blockedUsernames.value = blockedList.toSet()
             } catch (e: Exception) {
-                log(LogLevel.ERROR, "Failed to load blocked usernames", e.message)
+                log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_load_blocked_usernames, e.message)
                 _blockedUsernames.value = emptySet()
             }
         }
@@ -461,7 +472,7 @@ class ListenTogetherClient(
                 val blockedJson = json.encodeToString(_blockedUsernames.value.toList())
                 DataStoreUtils.saveString(context, PREF_BLOCKED_USERS, blockedJson)
             } catch (e: Exception) {
-                log(LogLevel.ERROR, "Failed to save blocked usernames", e.message)
+                log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_save_blocked_usernames, e.message)
             }
         }
 
@@ -474,13 +485,13 @@ class ListenTogetherClient(
                 val normalizedUrl = normalizeServerUrl(configuredUrl)
 
                 if (normalizedUrl != configuredUrl) {
-                    log(LogLevel.INFO, "Migrating server URL", "Old: $configuredUrl -> New: $normalizedUrl")
+                    log(LogLevel.INFO, R.string.listen_together_log_event_migrating_server_url, logDetail(R.string.listen_together_log_detail_url_migration, configuredUrl, normalizedUrl))
                     scope.launch {
                         DataStoreUtils.saveString(context, PREF_SERVER_URL, normalizedUrl)
                     }
                 }
             } catch (e: Exception) {
-                log(LogLevel.ERROR, "Failed to migrate server URL", e.message)
+                log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_migrate_server_url, e.message)
             }
         }
 
@@ -499,7 +510,7 @@ class ListenTogetherClient(
                     DataStoreUtils.saveString(context, PREF_SESSION_TIMESTAMP, System.currentTimeMillis().toString())
                 }
             } catch (e: Exception) {
-                log(LogLevel.ERROR, "Failed to save persisted session", e.message)
+                log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_save_persisted_session, e.message)
             }
         }
 
@@ -518,7 +529,7 @@ class ListenTogetherClient(
                     editor.apply()
                 }
             } catch (e: Exception) {
-                log(LogLevel.ERROR, "Failed to clear persisted session", e.message)
+                log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_clear_persisted_session, e.message)
             }
         }
 
@@ -601,16 +612,35 @@ class ListenTogetherClient(
             return cappedDelay + jitter
         }
 
+        private fun logReason(reason: String?): LogDetail? = when (reason) {
+            LISTEN_TOGETHER_JOIN_BLOCKED_REASON, LISTEN_TOGETHER_BLOCKED_REASON ->
+                logDetail(R.string.listen_together_user_blocked_by_host)
+            "Rejected by host", "Removed by host" -> null
+            else -> reason?.let { raw -> LogDetail { raw } }
+        }
+
+        private fun logDetail(@StringRes resource: Int, vararg args: Any?): LogDetail =
+            LogDetail { resources -> resources.getString(resource, *args) }
+
         private fun log(
             level: LogLevel,
-            message: String,
+            @StringRes messageRes: Int,
             details: String? = null,
+        ) = log(level, messageRes, details?.let { raw -> LogDetail { raw } })
+
+        private fun log(
+            level: LogLevel,
+            @StringRes messageRes: Int,
+            detail: LogDetail?,
         ) {
             val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))
-            val entry = LogEntry(timestamp, level, message, details)
+            val entry = LogEntry(timestamp, level, messageRes, detail)
 
             _logs.value = (_logs.value + entry).takeLast(MAX_LOG_ENTRIES)
 
+            val resources = appTextResources()
+            val message = resources.getString(messageRes)
+            val details = detail?.resolve(resources)
             when (level) {
                 LogLevel.ERROR -> Timber.tag(TAG).e("$message ${details ?: ""}")
                 LogLevel.WARNING -> Timber.tag(TAG).w("$message ${details ?: ""}")
@@ -630,13 +660,13 @@ class ListenTogetherClient(
             if (_connectionState.value == ConnectionState.CONNECTED ||
                 _connectionState.value == ConnectionState.CONNECTING
             ) {
-                log(LogLevel.WARNING, "Already connected or connecting")
+                log(LogLevel.WARNING, R.string.listen_together_log_event_already_connected_or_connecting)
                 return
             }
 
             _connectionState.value = ConnectionState.CONNECTING
             serverClock.reset()
-            log(LogLevel.INFO, "Connecting to server", getServerUrl())
+            log(LogLevel.INFO, R.string.listen_together_log_event_connecting_to_server, getServerUrl())
 
             val request =
                 Request
@@ -653,14 +683,14 @@ class ListenTogetherClient(
                             webSocket: WebSocket,
                             response: Response,
                         ) {
-                            log(LogLevel.INFO, "Connected to server")
+                            log(LogLevel.INFO, R.string.listen_together_log_event_connected_to_server)
                             _connectionState.value = ConnectionState.CONNECTED
                             reconnectAttempts = 0
                             startPingJob()
 
                             // Try to reconnect to previous session if we have a valid token
                             if (sessionToken != null && storedRoomCode != null) {
-                                log(LogLevel.INFO, "Attempting to reconnect to previous session", "Room: $storedRoomCode")
+                                log(LogLevel.INFO, R.string.listen_together_log_event_attempting_to_reconnect_to_previous_session, logDetail(R.string.listen_together_log_detail_room, storedRoomCode))
                                 sendMessage(MessageTypes.RECONNECT, ReconnectPayload(sessionToken!!))
                             } else {
                                 // Execute any pending action
@@ -681,7 +711,7 @@ class ListenTogetherClient(
                             code: Int,
                             reason: String,
                         ) {
-                            log(LogLevel.INFO, "Server closing connection", "Code: $code, Reason: $reason")
+                            log(LogLevel.INFO, R.string.listen_together_log_event_server_closing_connection, logDetail(R.string.listen_together_log_detail_close_code_reason, code, reason))
                             webSocket.close(1000, null)
                         }
 
@@ -690,7 +720,7 @@ class ListenTogetherClient(
                             code: Int,
                             reason: String,
                         ) {
-                            log(LogLevel.INFO, "Connection closed", "Code: $code, Reason: $reason")
+                            log(LogLevel.INFO, R.string.listen_together_log_event_connection_closed, logDetail(R.string.listen_together_log_detail_close_code_reason, code, reason))
                             handleDisconnect()
                         }
 
@@ -699,7 +729,7 @@ class ListenTogetherClient(
                             t: Throwable,
                             response: Response?,
                         ) {
-                            log(LogLevel.ERROR, "Connection failure", t.message)
+                            log(LogLevel.ERROR, R.string.listen_together_log_event_connection_failure, t.message)
                             handleConnectionFailure(t)
                         }
                     },
@@ -712,12 +742,12 @@ class ListenTogetherClient(
 
             when (action) {
                 is PendingAction.CreateRoom -> {
-                    log(LogLevel.INFO, "Executing pending create room", action.username)
+                    log(LogLevel.INFO, R.string.listen_together_log_event_executing_pending_create_room, action.username)
                     sendMessage(MessageTypes.CREATE_ROOM, CreateRoomPayload(action.username))
                 }
 
                 is PendingAction.JoinRoom -> {
-                    log(LogLevel.INFO, "Executing pending join room", "${action.roomCode} as ${action.username}")
+                    log(LogLevel.INFO, R.string.listen_together_log_event_executing_pending_join_room, logDetail(R.string.listen_together_log_detail_pending_join, action.roomCode, action.username))
                     sendMessage(MessageTypes.JOIN_ROOM, JoinRoomPayload(action.roomCode.uppercase(), action.username))
                 }
             }
@@ -727,7 +757,7 @@ class ListenTogetherClient(
          * Disconnect from the server
          */
         fun disconnect() {
-            log(LogLevel.INFO, "Disconnecting from server")
+            log(LogLevel.INFO, R.string.listen_together_log_event_disconnecting_from_server)
             releaseWakeLock() // Release wake lock when disconnecting
             pingJob?.cancel()
             pingJob = null
@@ -826,13 +856,13 @@ class ListenTogetherClient(
                 wakeLock?.release()
             }
             wakeLock?.acquire(10 * 60 * 1000L)
-            log(LogLevel.DEBUG, "Wake lock acquired")
+            log(LogLevel.DEBUG, R.string.listen_together_log_event_wake_lock_acquired)
         }
 
         private fun releaseWakeLock() {
             if (wakeLock?.isHeld == true) {
                 wakeLock?.release()
-                log(LogLevel.DEBUG, "Wake lock released")
+                log(LogLevel.DEBUG, R.string.listen_together_log_event_wake_lock_released)
             }
         }
 
@@ -843,17 +873,18 @@ class ListenTogetherClient(
                 val nm = context.getSystemService(NotificationManager::class.java)
                 val existing = nm?.getNotificationChannel(profileChannelId)
                 if (existing == null) {
+                    val resources = appTextResources()
                     val channel =
                         NotificationChannel(
                             profileChannelId,
-                            context.getString(R.string.listen_together_notification_channel_name),
+                            resources.getString(R.string.listen_together_notification_channel_name),
                             NotificationManager.IMPORTANCE_HIGH,
                         )
-                    channel.description = context.getString(R.string.listen_together_notification_channel_description)
+                    channel.description = resources.getString(R.string.listen_together_notification_channel_description)
                     nm?.createNotificationChannel(channel)
                 }
             } catch (e: Exception) {
-                log(LogLevel.WARNING, "Failed to create notification channel", e.message)
+                log(LogLevel.WARNING, R.string.listen_together_log_event_failed_to_create_notification_channel, e.message)
             }
         }
 
@@ -892,18 +923,19 @@ class ListenTogetherClient(
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
                 )
 
-            val content = context.getString(R.string.listen_together_join_request_notification, payload.username)
+            val resources = appTextResources()
+            val content = resources.getString(R.string.listen_together_join_request_notification, payload.username)
 
             val builder =
                 NotificationCompat
                     .Builder(context, channelId(NOTIFICATION_CHANNEL_ID, getActiveProfile(context)))
                     .setSmallIcon(R.drawable.people)
-                    .setContentTitle(context.getString(R.string.listen_together_title))
+                    .setContentTitle(resources.getString(R.string.listen_together_title))
                     .setContentText(content)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setAutoCancel(true)
-                    .addAction(0, context.getString(R.string.listen_together_action_approve), approvePI)
-                    .addAction(0, context.getString(R.string.listen_together_action_reject), rejectPI)
+                    .addAction(0, resources.getString(R.string.listen_together_action_approve), approvePI)
+                    .addAction(0, resources.getString(R.string.listen_together_action_reject), rejectPI)
 
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
                 NotificationManagerCompat.from(context).notify(notifId, builder.build())
@@ -946,18 +978,20 @@ class ListenTogetherClient(
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
                 )
 
-            val content = context.getString(R.string.listen_together_suggestion_received, payload.fromUsername, payload.trackInfo.title)
+            val resources = appTextResources()
+            val title = payload.trackInfo.title.ifBlank { resources.getString(R.string.metadata_unknown_title) }
+            val content = resources.getString(R.string.listen_together_suggestion_received, payload.fromUsername, title)
 
             val builder =
                 NotificationCompat
                     .Builder(context, channelId(NOTIFICATION_CHANNEL_ID, getActiveProfile(context)))
                     .setSmallIcon(R.drawable.people)
-                    .setContentTitle(context.getString(R.string.listen_together_title))
+                    .setContentTitle(resources.getString(R.string.listen_together_title))
                     .setContentText(content)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setAutoCancel(true)
-                    .addAction(0, context.getString(R.string.listen_together_action_approve), approvePI)
-                    .addAction(0, context.getString(R.string.listen_together_action_reject), rejectPI)
+                    .addAction(0, resources.getString(R.string.listen_together_action_approve), approvePI)
+                    .addAction(0, resources.getString(R.string.listen_together_action_reject), rejectPI)
 
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
                 NotificationManagerCompat.from(context).notify(notifId, builder.build())
@@ -978,7 +1012,7 @@ class ListenTogetherClient(
 
             // If we have a session, try to reconnect
             if (sessionToken != null && _roomState.value != null) {
-                log(LogLevel.INFO, "Connection lost, will attempt to reconnect")
+                log(LogLevel.INFO, R.string.listen_together_log_event_connection_lost_will_attempt_to_reconnect)
                 handleConnectionFailure(Exception("Connection lost"))
             } else {
                 emitEvent(ListenTogetherEvent.Disconnected)
@@ -993,7 +1027,7 @@ class ListenTogetherClient(
             val shouldReconnect = sessionToken != null || _roomState.value != null || pendingAction != null
 
             if (!isNetworkAvailable) {
-                log(LogLevel.WARNING, "Connection failure, waiting for network", t.message)
+                log(LogLevel.WARNING, R.string.listen_together_log_event_connection_failure_waiting_for_network, t.message)
                 _connectionState.value = ConnectionState.DISCONNECTED
                 return
             }
@@ -1007,8 +1041,8 @@ class ListenTogetherClient(
 
                 log(
                     LogLevel.INFO,
-                    "Attempting reconnect",
-                    "Attempt $reconnectAttempts/$MAX_RECONNECT_ATTEMPTS, waiting ${delaySeconds}s, reason: ${t.message}",
+                    R.string.listen_together_log_event_attempting_reconnect,
+                    logDetail(R.string.listen_together_log_detail_reconnect_attempt, reconnectAttempts, MAX_RECONNECT_ATTEMPTS, delaySeconds, t.message),
                 )
 
                 emitEvent(ListenTogetherEvent.Reconnecting(reconnectAttempts, MAX_RECONNECT_ATTEMPTS))
@@ -1017,7 +1051,7 @@ class ListenTogetherClient(
 
                     // Check if we're still supposed to be reconnecting
                     if (_connectionState.value == ConnectionState.RECONNECTING || _connectionState.value == ConnectionState.DISCONNECTED) {
-                        log(LogLevel.INFO, "Reconnecting after backoff", "Delay was ${delaySeconds}s")
+                        log(LogLevel.INFO, R.string.listen_together_log_event_reconnecting_after_backoff, logDetail(R.string.listen_together_log_detail_reconnect_delay, delaySeconds))
                         connect()
                     }
                 }
@@ -1028,8 +1062,8 @@ class ListenTogetherClient(
                 if (sessionToken != null) {
                     log(
                         LogLevel.ERROR,
-                        "Reconnection failed",
-                        "Max attempts reached, but session preserved for manual reconnect",
+                        R.string.listen_together_log_event_reconnection_failed,
+                        logDetail(R.string.listen_together_log_detail_reconnect_manual),
                     )
                     emitEvent(
                         ListenTogetherEvent.ConnectionError(
@@ -1051,7 +1085,7 @@ class ListenTogetherClient(
         }
 
         private fun handleMessage(data: ByteArray) {
-            log(LogLevel.DEBUG, "Received message", "${data.size} bytes")
+            log(LogLevel.DEBUG, R.string.listen_together_log_event_received_message, logDetail(R.string.listen_together_log_detail_message_bytes, data.size))
 
             try {
                 // Decode message using Protobuf
@@ -1083,7 +1117,7 @@ class ListenTogetherClient(
                         savePersistedSession()
 
                         acquireWakeLock() // Keep connection alive while in room
-                        log(LogLevel.INFO, "Room created", "Code: ${payload.roomCode}")
+                        log(LogLevel.INFO, R.string.listen_together_log_event_room_created, logDetail(R.string.listen_together_log_detail_room_code, payload.roomCode))
                         emitEvent(ListenTogetherEvent.RoomCreated(payload.roomCode, payload.userId))
                         // App custom toast (info variant, app pattern) for room creation so the host sees it regardless of UI
                         Toaster.i(R.string.listen_together_room_created, payload.roomCode)
@@ -1094,14 +1128,14 @@ class ListenTogetherClient(
 
                         // Check if user is blocked
                         if (isUserBlocked(payload.username)) {
-                            log(LogLevel.INFO, "Join request from blocked user ignored", "User: ${payload.username}")
+                            log(LogLevel.INFO, R.string.listen_together_log_event_join_request_from_blocked_user_ignored, logDetail(R.string.listen_together_log_detail_user, payload.username))
                             // Silently reject blocked users
-                            rejectJoin(payload.userId, "You are blocked")
+                            rejectJoin(payload.userId, LISTEN_TOGETHER_JOIN_BLOCKED_REASON)
                             return
                         }
 
                         _pendingJoinRequests.value += payload
-                        log(LogLevel.INFO, "Join request received", "User: ${payload.username}")
+                        log(LogLevel.INFO, R.string.listen_together_log_event_join_request_received, logDetail(R.string.listen_together_log_detail_user, payload.username))
 
                         // Check if auto-approval is enabled
                         val autoApprovalEnabled = DataStoreUtils.getBoolean(context, PREF_AUTO_APPROVAL, false)
@@ -1109,7 +1143,7 @@ class ListenTogetherClient(
                         if (_role.value == RoomRole.HOST) {
                             if (autoApprovalEnabled) {
                                 // Automatically approve the join request
-                                log(LogLevel.INFO, "Auto-approving join request", "User: ${payload.username}")
+                                log(LogLevel.INFO, R.string.listen_together_log_event_auto_approving_join_request, logDetail(R.string.listen_together_log_detail_user, payload.username))
                                 approveJoin(payload.userId)
                             } else {
                                 // Notify host with Approve/Reject actions
@@ -1139,13 +1173,13 @@ class ListenTogetherClient(
                         savePersistedSession()
 
                         acquireWakeLock() // Keep connection alive while in room
-                        log(LogLevel.INFO, "Joined room", "Code: ${payload.roomCode}")
+                        log(LogLevel.INFO, R.string.listen_together_log_event_joined_room, logDetail(R.string.listen_together_log_detail_room_code, payload.roomCode))
                         emitEvent(ListenTogetherEvent.JoinApproved(payload.roomCode, payload.userId, payload.state))
                     }
 
                     MessageTypes.JOIN_REJECTED -> {
                         val payload = codec.decodePayload(msgType, payloadBytes) as? JoinRejectedPayload ?: return
-                        log(LogLevel.WARNING, "Join rejected", payload.reason)
+                        log(LogLevel.WARNING, R.string.listen_together_log_event_join_rejected, logReason(payload.reason))
                         emitEvent(ListenTogetherEvent.JoinRejected(payload.reason))
                     }
 
@@ -1162,7 +1196,7 @@ class ListenTogetherClient(
                             NotificationManagerCompat.from(context).cancel(notifId)
                         }
 
-                        log(LogLevel.INFO, "User joined", payload.username)
+                        log(LogLevel.INFO, R.string.listen_together_log_event_user_joined, payload.username)
                         emitEvent(ListenTogetherEvent.UserJoined(payload.userId, payload.username))
                     }
 
@@ -1172,7 +1206,7 @@ class ListenTogetherClient(
                             _roomState.value?.copy(
                                 users = _roomState.value!!.users.filter { it.userId != payload.userId },
                             )
-                        log(LogLevel.INFO, "User left", payload.username)
+                        log(LogLevel.INFO, R.string.listen_together_log_event_user_left, payload.username)
                         emitEvent(ListenTogetherEvent.UserLeft(payload.userId, payload.username))
                     }
 
@@ -1192,13 +1226,13 @@ class ListenTogetherClient(
                             // Lost host role
                             _role.value = RoomRole.GUEST
                         }
-                        log(LogLevel.INFO, "Host changed", "New host: ${payload.newHostName}")
+                        log(LogLevel.INFO, R.string.listen_together_log_event_host_changed, logDetail(R.string.listen_together_log_detail_new_host, payload.newHostName))
                         emitEvent(ListenTogetherEvent.HostChanged(payload.newHostId, payload.newHostName))
                     }
 
                     MessageTypes.KICKED -> {
                         val payload = codec.decodePayload(msgType, payloadBytes) as? KickedPayload ?: return
-                        log(LogLevel.WARNING, "Kicked from room", payload.reason)
+                        log(LogLevel.WARNING, R.string.listen_together_log_event_kicked_from_room, logReason(payload.reason))
                         releaseWakeLock() // Release wake lock when kicked
                         sessionToken = null
                         _roomState.value = null
@@ -1210,10 +1244,10 @@ class ListenTogetherClient(
                     MessageTypes.SYNC_PLAYBACK -> {
                         val payload = codec.decodePayload(msgType, payloadBytes) as? PlaybackActionPayload ?: return
                         if (!acceptPlaybackRevision(payload.revision)) {
-                            log(LogLevel.DEBUG, "Discarding stale playback event", "Revision: ${payload.revision}")
+                            log(LogLevel.DEBUG, R.string.listen_together_log_event_discarding_stale_playback_event, logDetail(R.string.listen_together_log_detail_revision, payload.revision))
                             return
                         }
-                        log(LogLevel.DEBUG, "Playback sync", "Action: ${payload.action}")
+                        log(LogLevel.DEBUG, R.string.listen_together_log_event_playback_sync, logDetail(R.string.listen_together_log_detail_action, payload.action))
 
                         // Update room state based on action
                         when (payload.action) {
@@ -1317,21 +1351,21 @@ class ListenTogetherClient(
                     MessageTypes.BUFFER_WAIT -> {
                         val payload = codec.decodePayload(msgType, payloadBytes) as? BufferWaitPayload ?: return
                         _bufferingUsers.value = payload.waitingFor
-                        log(LogLevel.DEBUG, "Waiting for buffering", "Users: ${payload.waitingFor.size}")
+                        log(LogLevel.DEBUG, R.string.listen_together_log_event_waiting_for_buffering, logDetail(R.string.listen_together_log_detail_waiting_users, payload.waitingFor.size))
                         emitEvent(ListenTogetherEvent.BufferWait(payload.trackId, payload.waitingFor))
                     }
 
                     MessageTypes.BUFFER_COMPLETE -> {
                         val payload = codec.decodePayload(msgType, payloadBytes) as? BufferCompletePayload ?: return
                         _bufferingUsers.value = emptyList()
-                        log(LogLevel.INFO, "All users buffered", "Track: ${payload.trackId}")
+                        log(LogLevel.INFO, R.string.listen_together_log_event_all_users_buffered, logDetail(R.string.listen_together_log_detail_track, payload.trackId))
                         emitEvent(ListenTogetherEvent.BufferComplete(payload.trackId))
                     }
 
                     MessageTypes.SYNC_STATE -> {
                         val payload = codec.decodePayload(msgType, payloadBytes) as? SyncStatePayload ?: return
                         if (!acceptPlaybackRevision(payload.revision)) {
-                            log(LogLevel.DEBUG, "Discarding stale sync state", "Revision: ${payload.revision}")
+                            log(LogLevel.DEBUG, R.string.listen_together_log_event_discarding_stale_sync_state, logDetail(R.string.listen_together_log_detail_revision, payload.revision))
                             return
                         }
                         _roomState.value =
@@ -1344,7 +1378,7 @@ class ListenTogetherClient(
                                 queue = payload.queue ?: _roomState.value!!.queue,
                                 revision = maxOf(_roomState.value!!.revision, payload.revision),
                             )
-                        log(LogLevel.INFO, "Sync state received", "Playing: ${payload.isPlaying}, Position: ${payload.position}")
+                        log(LogLevel.INFO, R.string.listen_together_log_event_sync_state_received, logDetail(R.string.listen_together_log_detail_playback_state, payload.isPlaying, payload.position))
                         emitEvent(ListenTogetherEvent.SyncStateReceived(payload))
                     }
 
@@ -1354,18 +1388,18 @@ class ListenTogetherClient(
                         if (_role.value == RoomRole.HOST) {
                             // Check if user is blocked
                             if (isUserBlocked(payload.fromUsername)) {
-                                log(LogLevel.INFO, "Suggestion from blocked user ignored", "User: ${payload.fromUsername}")
+                                log(LogLevel.INFO, R.string.listen_together_log_event_suggestion_from_blocked_user_ignored, logDetail(R.string.listen_together_log_detail_user, payload.fromUsername))
                                 return
                             }
 
-                            log(LogLevel.INFO, "Suggestion received", "${payload.fromUsername}: ${payload.trackInfo.title}")
+                            log(LogLevel.INFO, R.string.listen_together_log_event_suggestion_received, logDetail(R.string.listen_together_log_detail_suggestion_from, payload.fromUsername, payload.trackInfo.title))
 
                             // Check if auto-approval of suggestions is enabled
                             val autoApproveSuggestionsEnabled = DataStoreUtils.getBoolean(context, PREF_AUTO_APPROVE_SUGGESTIONS, false)
 
                             if (autoApproveSuggestionsEnabled) {
                                 // Automatically approve the suggestion
-                                log(LogLevel.INFO, "Auto-approving suggestion", "${payload.fromUsername}: ${payload.trackInfo.title}")
+                                log(LogLevel.INFO, R.string.listen_together_log_event_auto_approving_suggestion, logDetail(R.string.listen_together_log_detail_suggestion_from, payload.fromUsername, payload.trackInfo.title))
                                 approveSuggestion(payload.suggestionId)
                             } else {
                                 // Add to pending list and show notification
@@ -1382,7 +1416,7 @@ class ListenTogetherClient(
 
                     MessageTypes.SUGGESTION_APPROVED -> {
                         val payload = codec.decodePayload(msgType, payloadBytes) as? SuggestionApprovedPayload ?: return
-                        log(LogLevel.INFO, "Suggestion approved", payload.trackInfo.title)
+                        log(LogLevel.INFO, R.string.listen_together_log_event_suggestion_approved, payload.trackInfo.title)
 
                         // Dismiss notification if it exists (for host who approved via another device/modal)
                         suggestionNotifications.remove(payload.suggestionId)?.let { notifId ->
@@ -1397,7 +1431,7 @@ class ListenTogetherClient(
 
                     MessageTypes.SUGGESTION_REJECTED -> {
                         val payload = codec.decodePayload(msgType, payloadBytes) as? SuggestionRejectedPayload ?: return
-                        log(LogLevel.WARNING, "Suggestion rejected", payload.reasonOrNull.orEmpty())
+                        log(LogLevel.WARNING, R.string.listen_together_log_event_suggestion_rejected, logReason(payload.reasonOrNull))
 
                         // Dismiss notification if it exists
                         suggestionNotifications.remove(payload.suggestionId)?.let { notifId ->
@@ -1412,7 +1446,7 @@ class ListenTogetherClient(
 
                     MessageTypes.ERROR -> {
                         val payload = codec.decodePayload(msgType, payloadBytes) as? ErrorPayload ?: return
-                        log(LogLevel.ERROR, "Server error", "${payload.code}: ${payload.message}")
+                        log(LogLevel.ERROR, R.string.listen_together_log_event_server_error, logDetail(R.string.listen_together_log_detail_code_message, payload.code, payload.message))
 
                         // Handle specific error cases
                         when (payload.code) {
@@ -1427,8 +1461,8 @@ class ListenTogetherClient(
                                 if (storedRoomCode != null && storedUsername != null && !wasHost) {
                                     log(
                                         LogLevel.WARNING,
-                                        "Session expired on server",
-                                        "Attempting automatic rejoin to room: $storedRoomCode",
+                                        R.string.listen_together_log_event_session_expired_on_server,
+                                        logDetail(R.string.listen_together_log_detail_rejoin_room, storedRoomCode),
                                     )
                                     // Try rejoining as a guest
                                     scope.launch {
@@ -1439,8 +1473,8 @@ class ListenTogetherClient(
                                     // Host session expired - would need to create new room
                                     log(
                                         LogLevel.WARNING,
-                                        "Host session expired",
-                                        "Room: $storedRoomCode - manual intervention may be needed",
+                                        R.string.listen_together_log_event_host_session_expired,
+                                        logDetail(R.string.listen_together_log_detail_rejoin_manual, storedRoomCode),
                                     )
                                     clearPersistedSession()
                                     sessionToken = null
@@ -1467,7 +1501,7 @@ class ListenTogetherClient(
                                 )
                             if (firstSample && _role.value == RoomRole.GUEST) requestSync()
                         }
-                        log(LogLevel.DEBUG, "Pong received")
+                        log(LogLevel.DEBUG, R.string.listen_together_log_event_pong_received)
                     }
 
                     MessageTypes.RECONNECTED -> {
@@ -1488,8 +1522,8 @@ class ListenTogetherClient(
                         acquireWakeLock() // Re-acquire wake lock after reconnection
                         log(
                             LogLevel.INFO,
-                            "Successfully reconnected to room",
-                            "Code: ${payload.roomCode}, isHost: ${payload.isHost}, attempt was $reconnectAttempts",
+                            R.string.listen_together_log_event_successfully_reconnected_to_room,
+                            logDetail(R.string.listen_together_log_detail_reconnected_session, payload.roomCode, payload.isHost, reconnectAttempts),
                         )
                         emitEvent(ListenTogetherEvent.Reconnected(payload.roomCode, payload.userId, payload.state, payload.isHost))
                     }
@@ -1504,7 +1538,7 @@ class ListenTogetherClient(
                                         if (user.userId == payload.userId) user.copy(isConnected = true) else user
                                     },
                             )
-                        log(LogLevel.INFO, "User reconnected", payload.username)
+                        log(LogLevel.INFO, R.string.listen_together_log_event_user_reconnected, payload.username)
                         emitEvent(ListenTogetherEvent.UserReconnected(payload.userId, payload.username))
                     }
 
@@ -1518,16 +1552,16 @@ class ListenTogetherClient(
                                         if (user.userId == payload.userId) user.copy(isConnected = false) else user
                                     },
                             )
-                        log(LogLevel.INFO, "User temporarily disconnected", payload.username)
+                        log(LogLevel.INFO, R.string.listen_together_log_event_user_temporarily_disconnected, payload.username)
                         emitEvent(ListenTogetherEvent.UserDisconnected(payload.userId, payload.username))
                     }
 
                     else -> {
-                        log(LogLevel.WARNING, "Unknown message type", msgType)
+                        log(LogLevel.WARNING, R.string.listen_together_log_event_unknown_message_type, msgType)
                     }
                 }
             } catch (e: Exception) {
-                log(LogLevel.ERROR, "Error parsing message", e.message)
+                log(LogLevel.ERROR, R.string.listen_together_log_event_error_parsing_message, e.message)
             }
         }
 
@@ -1537,14 +1571,14 @@ class ListenTogetherClient(
         ) {
             try {
                 val data = codec.encode(type, payload)
-                log(LogLevel.DEBUG, "Sending message", "$type (protobuf)")
+                log(LogLevel.DEBUG, R.string.listen_together_log_event_sending_message, logDetail(R.string.listen_together_log_detail_protobuf_type, type))
 
                 val success = webSocket?.send(okio.ByteString.of(*data)) ?: false
                 if (!success) {
-                    log(LogLevel.ERROR, "Failed to send message", type)
+                    log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_send_message, type)
                 }
             } catch (e: Exception) {
-                log(LogLevel.ERROR, "Error encoding message", "$type: ${e.message}")
+                log(LogLevel.ERROR, R.string.listen_together_log_event_error_encoding_message, logDetail(R.string.listen_together_log_detail_type_error, type, e.message))
             }
         }
 
@@ -1572,7 +1606,7 @@ class ListenTogetherClient(
             if (_connectionState.value == ConnectionState.CONNECTED) {
                 sendMessage(MessageTypes.CREATE_ROOM, CreateRoomPayload(username))
             } else {
-                log(LogLevel.INFO, "Not connected, queueing create room action")
+                log(LogLevel.INFO, R.string.listen_together_log_event_not_connected_queueing_create_room_action)
                 pendingAction = PendingAction.CreateRoom(username)
                 if (_connectionState.value == ConnectionState.DISCONNECTED ||
                     _connectionState.value == ConnectionState.ERROR
@@ -1604,7 +1638,7 @@ class ListenTogetherClient(
             if (_connectionState.value == ConnectionState.CONNECTED) {
                 sendMessage(MessageTypes.JOIN_ROOM, JoinRoomPayload(roomCode.uppercase(), username))
             } else {
-                log(LogLevel.INFO, "Not connected, queueing join room action")
+                log(LogLevel.INFO, R.string.listen_together_log_event_not_connected_queueing_join_room_action)
                 pendingAction = PendingAction.JoinRoom(roomCode, username)
                 if (_connectionState.value == ConnectionState.DISCONNECTED ||
                     _connectionState.value == ConnectionState.ERROR
@@ -1644,7 +1678,7 @@ class ListenTogetherClient(
          */
         fun approveJoin(userId: String) {
             if (_role.value != RoomRole.HOST) {
-                log(LogLevel.ERROR, "Cannot approve join", "Not host")
+                log(LogLevel.ERROR, R.string.listen_together_log_event_cannot_approve_join, logDetail(R.string.listen_together_log_detail_not_host))
                 return
             }
             sendMessage(MessageTypes.APPROVE_JOIN, ApproveJoinPayload(userId))
@@ -1663,7 +1697,7 @@ class ListenTogetherClient(
             reason: String? = null,
         ) {
             if (_role.value != RoomRole.HOST) {
-                log(LogLevel.ERROR, "Cannot reject join", "Not host")
+                log(LogLevel.ERROR, R.string.listen_together_log_event_cannot_reject_join, logDetail(R.string.listen_together_log_detail_not_host))
                 return
             }
             sendMessage(MessageTypes.REJECT_JOIN, RejectJoinPayload(userId, reason))
@@ -1683,7 +1717,7 @@ class ListenTogetherClient(
             reason: String? = null,
         ) {
             if (_role.value != RoomRole.HOST) {
-                log(LogLevel.ERROR, "Cannot kick user", "Not host")
+                log(LogLevel.ERROR, R.string.listen_together_log_event_cannot_kick_user, logDetail(R.string.listen_together_log_detail_not_host))
                 return
             }
             sendMessage(MessageTypes.KICK_USER, KickUserPayload(userId, reason))
@@ -1694,7 +1728,7 @@ class ListenTogetherClient(
          */
         fun transferHost(newHostId: String) {
             if (_role.value != RoomRole.HOST) {
-                log(LogLevel.ERROR, "Cannot transfer host", "Not host")
+                log(LogLevel.ERROR, R.string.listen_together_log_event_cannot_transfer_host, logDetail(R.string.listen_together_log_detail_not_host))
                 return
             }
             sendMessage(MessageTypes.TRANSFER_HOST, TransferHostPayload(newHostId))
@@ -1714,7 +1748,7 @@ class ListenTogetherClient(
             volume: Float? = null,
         ) {
             if (_role.value != RoomRole.HOST) {
-                log(LogLevel.ERROR, "Cannot control playback", "Not host")
+                log(LogLevel.ERROR, R.string.listen_together_log_event_cannot_control_playback, logDetail(R.string.listen_together_log_detail_not_host))
                 return
             }
             sendMessage(
@@ -1743,7 +1777,7 @@ class ListenTogetherClient(
         fun sendBufferReady(trackId: String) {
             val sanitizedTrackId = trackId.trim()
             if (sanitizedTrackId.isEmpty()) {
-                log(LogLevel.WARNING, "Skipping buffer ready", "Track ID is blank")
+                log(LogLevel.WARNING, R.string.listen_together_log_event_skipping_buffer_ready, logDetail(R.string.listen_together_log_detail_blank_track_id))
                 return
             }
             sendMessage(MessageTypes.BUFFER_READY, BufferReadyPayload(sanitizedTrackId))
@@ -1754,11 +1788,11 @@ class ListenTogetherClient(
          */
         fun suggestTrack(trackInfo: TrackInfo) {
             if (!isInRoom) {
-                log(LogLevel.ERROR, "Cannot suggest track", "Not in room")
+                log(LogLevel.ERROR, R.string.listen_together_log_event_cannot_suggest_track, logDetail(R.string.listen_together_log_detail_not_in_room))
                 return
             }
             if (_role.value == RoomRole.HOST) {
-                log(LogLevel.WARNING, "Host should not suggest tracks")
+                log(LogLevel.WARNING, R.string.listen_together_log_event_host_should_not_suggest_tracks)
                 return
             }
             sendMessage(MessageTypes.SUGGEST_TRACK, SuggestTrackPayload(trackInfo))
@@ -1770,7 +1804,7 @@ class ListenTogetherClient(
          */
         fun approveSuggestion(suggestionId: String) {
             if (_role.value != RoomRole.HOST) {
-                log(LogLevel.ERROR, "Cannot approve suggestion", "Not host")
+                log(LogLevel.ERROR, R.string.listen_together_log_event_cannot_approve_suggestion, logDetail(R.string.listen_together_log_detail_not_host))
                 return
             }
             sendMessage(MessageTypes.APPROVE_SUGGESTION, ApproveSuggestionPayload(suggestionId))
@@ -1791,7 +1825,7 @@ class ListenTogetherClient(
             reason: String? = null,
         ) {
             if (_role.value != RoomRole.HOST) {
-                log(LogLevel.ERROR, "Cannot reject suggestion", "Not host")
+                log(LogLevel.ERROR, R.string.listen_together_log_event_cannot_reject_suggestion, logDetail(R.string.listen_together_log_detail_not_host))
                 return
             }
             sendMessage(MessageTypes.REJECT_SUGGESTION, RejectSuggestionPayload(suggestionId, reason))
@@ -1808,10 +1842,10 @@ class ListenTogetherClient(
          */
         fun requestSync() {
             if (_roomState.value == null) {
-                log(LogLevel.ERROR, "Cannot request sync", "Not in room")
+                log(LogLevel.ERROR, R.string.listen_together_log_event_cannot_request_sync, logDetail(R.string.listen_together_log_detail_not_in_room))
                 return
             }
-            log(LogLevel.INFO, "Requesting sync state from server")
+            log(LogLevel.INFO, R.string.listen_together_log_event_requesting_sync_state_from_server)
             sendMessageNoPayload(MessageTypes.REQUEST_SYNC)
         }
 
@@ -1836,7 +1870,7 @@ class ListenTogetherClient(
                 saveBlockedUsernames()
             }
 
-            log(LogLevel.INFO, "User blocked", username)
+            log(LogLevel.INFO, R.string.listen_together_log_event_user_blocked, username)
         }
 
         /**
@@ -1852,7 +1886,7 @@ class ListenTogetherClient(
                 saveBlockedUsernames()
             }
 
-            log(LogLevel.INFO, "User unblocked", username)
+            log(LogLevel.INFO, R.string.listen_together_log_event_user_unblocked, username)
         }
 
         /**
@@ -1876,14 +1910,14 @@ class ListenTogetherClient(
          * Force reconnection to server (useful for manual recovery)
          */
         fun forceReconnect() {
-            log(LogLevel.INFO, "Forcing reconnection to server")
+            log(LogLevel.INFO, R.string.listen_together_log_event_forcing_reconnection_to_server)
             reconnectAttempts = 0 // Reset attempts to retry from start
 
             if (webSocket != null) {
                 try {
                     webSocket?.close(1000, "Forcing reconnection")
                 } catch (e: Exception) {
-                    log(LogLevel.DEBUG, "Error closing WebSocket", e.message)
+                    log(LogLevel.DEBUG, R.string.listen_together_log_event_error_closing_websocket, e.message)
                 }
                 webSocket = null
             }

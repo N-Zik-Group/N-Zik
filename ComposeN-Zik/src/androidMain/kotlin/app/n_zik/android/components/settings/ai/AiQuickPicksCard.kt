@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import app.it.fast4x.rimusic.enums.LocalRecommandationsNumber
@@ -76,12 +77,12 @@ internal fun AiQuickPicksCard(search: Search) {
                 )
             }
 
-            if (showTips && (search.inputValue.isBlank() || stringResource(R.string.settings_recommendations_song_count_description).contains(search.inputValue, true) || (stringResource(R.string.recommendations_quick_picks_count, localRecommandationsNumber.value)).contains(search.inputValue, true))) {
+            if (showTips && (search.inputValue.isBlank() || stringResource(R.string.settings_recommendations_song_count_description).contains(search.inputValue, true) || (pluralStringResource(R.plurals.recommendations_quick_picks_song_count, localRecommandationsNumber.value, localRecommandationsNumber.value)).contains(search.inputValue, true))) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("ai.quick_picks.quick_selection_type"),
                     title = stringResource(R.string.settings_recommendations_song_count_description),
                     text = stringResource(R.string.recommendations_local_song_count_description),
-                    selectedValueText = stringResource(R.string.recommendations_quick_picks_count, localRecommandationsNumber.value),
+                    selectedValueText = pluralStringResource(R.plurals.recommendations_quick_picks_song_count, localRecommandationsNumber.value, localRecommandationsNumber.value),
                     icon = R.drawable.sparkles,
                     onClick = { showQuickSelectionDialog = true }
                 )
@@ -93,7 +94,7 @@ internal fun AiQuickPicksCard(search: Search) {
                     values = LocalRecommandationsNumber.values().toList(),
                     onValueSelected = { localRecommandationsNumber = it },
                     valueText = { option ->
-                        stringResource(R.string.recommendations_quick_picks_count, option.value)
+                        pluralStringResource(R.plurals.recommendations_quick_picks_song_count, option.value, option.value)
                     },
                     onDismiss = { showQuickSelectionDialog = false }
                 )

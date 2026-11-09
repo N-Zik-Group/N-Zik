@@ -606,15 +606,14 @@ if (isBuffering && shouldBePlaying) {
                   )
               }
 
-              val fmtSpeed = "%.1fx".format(playbackSpeed).replace(",", ".")
-              if (fmtSpeed != "1.0x")
+              if (playbackSpeed != 1f)
                   Box(
                       modifier = Modifier
                           .align(Alignment.BottomCenter)
 
                   ) {
                       BasicText(
-                          text = fmtSpeed,
+                          text = stringResource(R.string.player_playback_speed_value, playbackSpeed),
                           style = TextStyle(
                               color = colorPalette().text,
                               fontStyle = typography().xxxs.semiBold.fontStyle,

@@ -1,6 +1,7 @@
 package app.n_zik.android.components.ui.screens.home
 
 
+import app.n_zik.android.appTextResources
 import app.n_zik.android.components.navigation.FloatingActionSiblingSpace
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -224,7 +225,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
             onComplete = { successCount, failCount ->
                 isExportingCache = false
                 if (successCount > 0) Toaster.done()
-                else Toaster.e(R.string.export_cached_songs_failed, appContext().getString(R.string.export_no_songs))
+                else Toaster.e(R.string.export_cached_songs_failed, appTextResources().getString(R.string.export_no_songs))
             }
         )
     }
@@ -237,7 +238,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                 coroutineScope.launch(NzikDispatchers.DATA) {
                     val browseId = if (urlPlaylistId.startsWith("VL")) urlPlaylistId else "VL$urlPlaylistId"
                     Innertube.playlistPage(browseId = browseId)?.getOrNull()?.let { playlistPage ->
-                        val playlistName = playlistPage.title ?: appContext().getString(R.string.playlist_youtube_title)
+                        val playlistName = playlistPage.title ?: appTextResources().getString(R.string.playlist_youtube_title)
                         val playlist = Playlist(name = playlistName, browseId = browseId)
                         val playlistRowId = Database.playlistTable.insert(playlist)
                         val isFavoriteTab = builtInPlaylist == BuiltInPlaylist.Favorites

@@ -1,5 +1,8 @@
 package app.it.fast4x.rimusic.ui.screens.artist
 
+import androidx.compose.ui.res.pluralStringResource
+import app.it.fast4x.rimusic.utils.durationTextToMillis
+import app.it.fast4x.rimusic.utils.formatAsDuration
 import app.n_zik.android.components.glass.GlassArtworkBackdrop
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.draw.clip
@@ -183,16 +186,7 @@ fun ArtistLocalSongs(
         }
     }
 
-    val totalDuration = songs?.sumOf { it.durationText?.split(":")?.let { parts ->
-        if (parts.size == 2) parts[0].toInt() * 60 + parts[1].toInt() else 0
-    } ?: 0 } ?: 0
-    val totalDurationText = if (totalDuration > 0) {
-        val hours = totalDuration / 3600
-        val minutes = (totalDuration % 3600) / 60
-        val seconds = totalDuration % 60
-        if (hours > 0) "%dh %02dm %02ds".format(hours, minutes, seconds)
-        else "%dm %02ds".format(minutes, seconds)
-    } else ""
+    val totalDurationMs = songs?.sumOf { it.durationText?.let(::durationTextToMillis) ?: 0L } ?: 0L
 
     // Hoisted swipe action preferences
     val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
@@ -343,7 +337,11 @@ fun ArtistLocalSongs(
         item {
             if (songCount > 0) {
                 Text(
-                    text = stringResource(R.string.artist_songs_count_duration, songCount, totalDurationText),
+                    text = if (totalDurationMs > 0) {
+                        pluralStringResource(R.plurals.library_song_count_with_duration, songCount, songCount, formatAsDuration(totalDurationMs))
+                    } else {
+                        pluralStringResource(R.plurals.library_song_count, songCount, songCount)
+                    },
                     style = MaterialTheme.typography.bodyLarge,
                     color = colorPalette().text,
                     modifier = Modifier

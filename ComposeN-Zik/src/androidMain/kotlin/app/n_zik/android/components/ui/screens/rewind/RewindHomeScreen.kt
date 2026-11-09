@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.screens.rewind
 
+import app.n_zik.android.components.ui.screens.rewind.slides.rewindCount
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 
 import androidx.compose.animation.Crossfade
@@ -298,11 +299,7 @@ private fun RewindHomeContent(
                     Column(modifier = Modifier.animateItem()) {
                         RewindHomeYearRow(
                             label = stringResource(R.string.rewind_home_all_time),
-                            stats = stringResource(
-                                R.string.rewind_home_year_stats,
-                                rewindHomeDuration(allTime.minutes),
-                                formatRewindNumber(allTime.plays.toLong())
-                            ),
+                            stats = rewindCount(R.plurals.rewind_home_year_play_count, allTime.plays.toLong(), rewindHomeDuration(allTime.minutes)),
                             tops = allTime.topArtworks,
                             // All time has no ending: never locked.
                             locked = false,
@@ -341,11 +338,7 @@ private fun RewindHomeContent(
                         stats = if (yearLocked) {
                             stringResource(R.string.rewind_home_locked)
                         } else {
-                            stringResource(
-                                R.string.rewind_home_year_stats,
-                                rewindHomeDuration(year.minutes),
-                                formatRewindNumber(year.plays.toLong())
-                            )
+                            rewindCount(R.plurals.rewind_home_year_play_count, year.plays.toLong(), rewindHomeDuration(year.minutes))
                         },
                         tops = year.topArtworks,
                         locked = yearLocked,
@@ -817,10 +810,7 @@ private fun RewindHomeMonthCell(
                     )
                     Spacer(Modifier.height(2.dp))
                     Text(
-                        text = stringResource(
-                            R.string.rewind_play_count,
-                            formatRewindNumber(month.plays.toLong())
-                        ),
+                        text = rewindCount(R.plurals.rewind_play_count_label, month.plays.toLong()),
                         color = if (showArtwork) Color.White.copy(alpha = 0.7f) else palette.textSecondary,
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Medium

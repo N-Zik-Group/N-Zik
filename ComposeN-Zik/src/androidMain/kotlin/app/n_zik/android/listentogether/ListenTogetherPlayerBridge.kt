@@ -1,5 +1,6 @@
 package app.n_zik.android.listentogether
 
+import app.n_zik.android.appTextResources
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
@@ -10,6 +11,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.core.net.toUri
 import androidx.media3.common.util.UnstableApi
+import app.n_zik.android.R
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import androidx.compose.runtime.mutableStateOf
@@ -397,8 +399,8 @@ object ListenTogetherPlayerBridge {
         val metadata = item.mediaMetadata
         return TrackInfo(
             id = videoIdOf(item.mediaId),
-            title = metadata.title?.toString() ?: "Unknown",
-            artist = metadata.artist?.toString() ?: "Unknown",
+            title = metadata.title?.toString().orEmpty(),
+            artist = metadata.artist?.toString().orEmpty(),
             album = metadata.albumTitle?.toString().orEmpty(),
             duration = player.duration.takeIf { it > 0 } ?: 0L,
             thumbnail = metadata.artworkUri?.toString().orEmpty(),
@@ -503,8 +505,8 @@ object ListenTogetherPlayerBridge {
     @UnstableApi
     fun trackToMediaItem(track: TrackInfo): MediaItem {
         val metadataBuilder = MediaMetadata.Builder()
-            .setTitle(track.title)
-            .setArtist(track.artist)
+            .setTitle(track.title.ifBlank { appTextResources().getString(R.string.metadata_unknown_title) })
+            .setArtist(track.artist.ifBlank { appTextResources().getString(R.string.metadata_unknown_artist) })
             .setIsPlayable(true)
             .setIsBrowsable(false)
             .setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
@@ -536,13 +538,13 @@ object ListenTogetherPlayerBridge {
 
     /** Upcoming queue windows after the current item, converted to proto [TrackInfo] (Metrolist `Timeline.Window.toTrackInfo()` equivalent). */
     private fun Timeline.Window.toTrackInfo(): TrackInfo {
-        val mediaItem = mediaItem ?: return TrackInfo("unknown", "Unknown", "Unknown", "", 0L, "")
+        val mediaItem = mediaItem ?: return TrackInfo("unknown", "", "", "", 0L, "")
         val metadata = mediaItem.mediaMetadata
         val durationMs = if (durationUs > 0) durationUs / 1000 else 0L
         return TrackInfo(
             id = videoIdOf(mediaItem.mediaId),
-            title = metadata.title?.toString() ?: "Unknown",
-            artist = metadata.artist?.toString() ?: "Unknown",
+            title = metadata.title?.toString().orEmpty(),
+            artist = metadata.artist?.toString().orEmpty(),
             album = metadata.albumTitle?.toString().orEmpty(),
             duration = durationMs,
             thumbnail = metadata.artworkUri?.toString().orEmpty(),

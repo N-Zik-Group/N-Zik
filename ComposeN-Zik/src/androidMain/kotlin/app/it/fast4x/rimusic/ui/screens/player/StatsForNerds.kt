@@ -1,5 +1,6 @@
 package app.it.fast4x.rimusic.ui.screens.player
 
+import app.n_zik.android.utils.percentLabel
 import app.n_zik.android.core.database.*
 
 import android.annotation.SuppressLint
@@ -377,7 +378,7 @@ fun StatsForNerds(
 
                     if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == true) {
                          BasicText(
-                            text = "100%",
+                            text = percentLabel(100),
                             maxLines = 1,
                             modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                             overflow = TextOverflow.Visible,
@@ -387,15 +388,10 @@ fun StatsForNerds(
 
                     if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
                         BasicText(
-                            text = if (downloadCachedBytes == 0L) {
-                                Formatter.formatShortFileSize(context, cachedBytes) + (format?.contentLength?.let {
-                                    if (it > 0) " (${(cachedBytes.toFloat() / it * 100).roundToInt()}%)" else ""
-                                } ?: "")
-                            } else {
-                                Formatter.formatShortFileSize(context, downloadCachedBytes) + (format?.contentLength?.let {
-                                    if (it > 0) " (${(downloadCachedBytes.toFloat() / it * 100).roundToInt()}%)" else ""
-                                } ?: "")
-                            },
+                            text = cacheSizeText(
+                                if (downloadCachedBytes == 0L) cachedBytes else downloadCachedBytes,
+                                format?.contentLength,
+                            ),
                             maxLines = 1,
                             modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                             overflow = TextOverflow.Visible,
@@ -403,14 +399,14 @@ fun StatsForNerds(
                         )
 
                         BasicText(
-                            text = format?.loudnessDb?.let { "%.2f dB".format(it) } ?: stringResource(R.string.audio_quality_format_unknown),
+                            text = format?.loudnessDb?.let { stringResource(R.string.player_decibels_value, it) } ?: stringResource(R.string.audio_quality_format_unknown),
                             maxLines = 1,
                             modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                             overflow = TextOverflow.Visible,
                             style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                         )
                         BasicText(
-                            text = format?.perceptualLoudnessDb?.let { "%.2f dB".format(it) } ?: stringResource(R.string.audio_quality_format_unknown),
+                            text = format?.perceptualLoudnessDb?.let { stringResource(R.string.player_decibels_value, it) } ?: stringResource(R.string.audio_quality_format_unknown),
                             maxLines = 1,
                             modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                             overflow = TextOverflow.Visible,
@@ -453,7 +449,7 @@ fun StatsForNerds(
                     )
                     if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
                         BasicText(
-                            text = "${(binder.player.volume * 100).roundToInt()}%",
+                            text = percentLabel((binder.player.volume * 100).roundToInt()),
                             maxLines = 1,
                             modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                             overflow = TextOverflow.Visible,
@@ -588,7 +584,7 @@ fun StatsForNerds(
                                   modifier = modifier.weight(1f)
                               ) {
                                   BasicText(
-                                      text = stringResource(R.string.library_cached_title) + " : " + "100%",
+                                      text = stringResource(R.string.player_statistics_cache_status, stringResource(R.string.library_cached_title), percentLabel(100)),
                                       maxLines = 1,
                                       modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
                                       overflow = TextOverflow.Visible,
@@ -602,10 +598,14 @@ fun StatsForNerds(
                                   modifier = modifier.weight(1f)
                               ) {
                                   BasicText(
-                                      text = if (downloadCachedBytes == 0L)
-                                          stringResource(R.string.library_cached_title) + " : " + Formatter.formatShortFileSize(context, cachedBytes) + format?.contentLength?.let { if (it > 0) " (${(cachedBytes.toFloat() / it * 100).roundToInt()}%)" else "" }
-                                      else
-                                          stringResource(R.string.library_downloaded_title) + " : " + Formatter.formatShortFileSize(context, downloadCachedBytes) + format?.contentLength?.let { if (it > 0) " (${(downloadCachedBytes.toFloat() / it * 100).roundToInt()}%)" else "" },
+                                      text = stringResource(
+                                          R.string.player_statistics_cache_status,
+                                          stringResource(if (downloadCachedBytes == 0L) R.string.library_cached_title else R.string.library_downloaded_title),
+                                          cacheSizeText(
+                                              if (downloadCachedBytes == 0L) cachedBytes else downloadCachedBytes,
+                                              format?.contentLength,
+                                          ),
+                                      ),
                                       maxLines = 1,
                                       modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
                                       overflow = TextOverflow.Visible,
@@ -617,7 +617,7 @@ fun StatsForNerds(
                                    modifier = modifier.weight(1f)
                                ) {
                                    BasicText(
-                                       text = stringResource(R.string.player_statistics_loudness_label) + " : " + (format?.loudnessDb?.let { "%.2f dB".format(it) } ?: stringResource(R.string.audio_quality_format_unknown)),
+                                       text = stringResource(R.string.player_statistics_loudness_label) + " : " + (format?.loudnessDb?.let { stringResource(R.string.player_decibels_value, it) } ?: stringResource(R.string.audio_quality_format_unknown)),
                                        maxLines = 1,
                                        modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
                                        overflow = TextOverflow.Visible,
@@ -691,7 +691,7 @@ fun StatsForNerds(
                                    modifier = modifier.weight(1f)
                                ) {
                                     BasicText(
-                                        text = stringResource(R.string.player_statistics_perceptual_loudness_label) + " : " + (format?.perceptualLoudnessDb?.let { "%.2f dB".format(it) } ?: stringResource(R.string.audio_quality_format_unknown)),
+                                        text = stringResource(R.string.player_statistics_perceptual_loudness_label) + " : " + (format?.perceptualLoudnessDb?.let { stringResource(R.string.player_decibels_value, it) } ?: stringResource(R.string.audio_quality_format_unknown)),
                                         maxLines = 1,
                                         modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
                                         overflow = TextOverflow.Visible,
@@ -743,7 +743,7 @@ fun StatsForNerds(
                                 modifier = modifier.weight(1f)
                             ) {
                                  BasicText(
-                                     text = stringResource(R.string.player_statistics_volume_label) + " : " + "${(binder.player.volume * 100).roundToInt()}%",
+                                     text = stringResource(R.string.player_statistics_volume_label) + " : " + percentLabel((binder.player.volume * 100).roundToInt()),
                                      maxLines = 1,
                                      modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
                                      overflow = TextOverflow.Visible,
@@ -760,6 +760,14 @@ fun StatsForNerds(
     }
 }
 
+
+@Composable
+private fun cacheSizeText(bytes: Long, totalBytes: Long?): String {
+    val size = Formatter.formatShortFileSize(LocalContext.current, bytes)
+    if (totalBytes == null || totalBytes <= 0) return size
+    val percentage = percentLabel((bytes.toDouble() / totalBytes * 100).roundToInt())
+    return stringResource(R.string.player_statistics_cache_size_progress, size, percentage)
+}
 
 private fun getContainer(format: Format): String {
     val mimeType = format.mimeType ?: return "?"

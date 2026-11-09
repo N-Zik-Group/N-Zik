@@ -1,5 +1,6 @@
 package app.n_zik.android.modules
 
+import app.n_zik.android.appTextResources
 import android.os.Build
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
@@ -107,7 +108,7 @@ object FfmpegModule {
             // off the caller's dispatcher (callers run on Main)
             val loaded = withContext(NzikDispatchers.DATA) { ensureLoaded() }
             if (!loaded) {
-                return ModuleState.FAILED(appContext().getString(R.string.modules_load_failed))
+                return ModuleState.FAILED(appTextResources().getString(R.string.modules_load_failed))
             }
         }
         return state

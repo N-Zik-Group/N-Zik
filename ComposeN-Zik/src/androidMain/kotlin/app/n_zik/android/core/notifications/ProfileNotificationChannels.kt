@@ -3,11 +3,17 @@ package app.n_zik.android.core.notifications
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.res.Resources
+import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import android.os.Build
 import android.service.notification.StatusBarNotification
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.profileDisplayName
 import app.n_zik.android.R
+import app.n_zik.android.bridge.BRIDGE_SERVER_CHANNEL_ID
+import app.n_zik.android.modules.AndroidModuleDownloadListener
+import app.n_zik.android.updater.services.UpdateDownloadManager
 import app.n_zik.android.components.ui.screens.home.HomeSyncService
 import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -128,19 +134,73 @@ fun ensureProfileChannels(context: Context, profileId: String) {
     if (profileId == DEFAULT_PROFILE_ID) return
     val displayName = context.profileDisplayName(profileId) ?: profileId
     val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    val strings = ContextCompat.getContextForLanguage(context).resources
     notificationManager.createNotificationChannels(
         PROFILE_CHANNEL_SPECS.map { spec ->
             NotificationChannel(
                 channelId(spec.baseId, profileId),
-                context.getString(R.string.profile_channel_name, context.getString(spec.nameRes), displayName),
+                strings.getString(R.string.profile_channel_name, strings.getString(spec.nameRes), displayName),
                 spec.importance,
             ).apply {
-                description = context.getString(spec.descRes)
+                description = strings.getString(spec.descRes)
                 if (spec.badgeOff) setShowBadge(false)
             }
         },
     )
     Timber.tag(TAG).d("Ensured the 6 channels of profile '%s'", profileId)
+}
+
+/** Creates a canonical channel before library initialization without rewriting an existing channel. */
+internal fun ensureStartupNotificationChannel(context: Context, baseId: String, profileId: String): String {
+    val id = channelId(baseId, profileId)
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return id
+    val manager = context.getSystemService(NotificationManager::class.java) ?: return id
+    if (manager.getNotificationChannel(id) != null) return id
+    val spec = PROFILE_CHANNEL_SPECS.first { it.baseId == baseId }
+    val strings = ContextCompat.getContextForLanguage(context).resources
+    val baseName = strings.getString(spec.nameRes)
+    val name = if (profileId == DEFAULT_PROFILE_ID) baseName else strings.getString(
+        R.string.profile_channel_name,
+        baseName,
+        context.profileDisplayName(profileId) ?: profileId,
+    )
+    manager.createNotificationChannel(NotificationChannel(id, name, spec.importance).apply {
+        description = strings.getString(spec.descRes)
+        if (spec.badgeOff) setShowBadge(false)
+    })
+    return id
+}
+
+/** Refreshes only the names and descriptions of existing channels when the app locale changes. */
+@RequiresApi(Build.VERSION_CODES.O)
+internal fun refreshNotificationChannelLabels(context: Context, strings: Resources, manager: NotificationManager) {
+    for (channel in manager.notificationChannels) {
+        val spec = PROFILE_CHANNEL_SPECS.firstOrNull {
+            channel.id == it.baseId || channel.id.startsWith("${it.baseId}_")
+        }
+        val name = if (spec != null) {
+            val baseName = strings.getString(spec.nameRes)
+            val profileId = channel.id.removePrefix(spec.baseId).removePrefix("_")
+            if (profileId.isEmpty()) baseName else strings.getString(
+                R.string.profile_channel_name,
+                baseName,
+                context.profileDisplayName(profileId) ?: profileId,
+            )
+        } else {
+            when (channel.id) {
+                BRIDGE_SERVER_CHANNEL_ID -> strings.getString(R.string.bridge_server)
+                UpdateDownloadManager.UPDATE_CHANNEL_ID -> strings.getString(R.string.updates_channel_name)
+                AndroidModuleDownloadListener.CHANNEL_ID -> strings.getString(R.string.modules_download_channel)
+                else -> continue
+            }
+        }
+        val description = spec?.let { strings.getString(it.descRes) } ?: channel.description
+        if (channel.name.toString() != name || channel.description != description) {
+            channel.name = name
+            channel.description = description
+            manager.createNotificationChannel(channel)
+        }
+    }
 }
 
 /**

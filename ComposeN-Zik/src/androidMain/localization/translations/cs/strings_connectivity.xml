@@ -11,7 +11,6 @@
     <string name="bridge_auto_stop_never">Nikdy</string>
     <string name="bridge_auto_stop_no_client">Zastavit bez připojení PC</string>
     <string name="bridge_battery_action">Zakázat optimalizaci baterie</string>
-    <string name="bridge_battery_title">Optimalizace baterie</string>
     <string name="bridge_battery_warning">Optimalizace baterie je zapnuta: Android může zastavit PC server na pozadí</string>
     <string name="bridge_connected_pc">Připojený PC</string>
     <string name="bridge_disconnect">Odpojit</string>

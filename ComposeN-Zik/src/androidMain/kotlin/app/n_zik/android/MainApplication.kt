@@ -9,10 +9,14 @@ import app.n_zik.android.components.image.PickedImageEditor
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.res.Configuration
+import android.content.res.Resources
+import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Process
 import android.os.StrictMode
+import androidx.core.content.ContextCompat
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import java.io.File
@@ -65,6 +69,7 @@ import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.network.client.NetworkGate
 import app.n_zik.android.core.network.client.Store
 import app.n_zik.android.core.notifications.ensureProfileChannels
+import app.n_zik.android.core.notifications.refreshNotificationChannelLabels
 import app.n_zik.android.core.backup.DatabaseBackup
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.core.backup.LibraryStartup
@@ -183,7 +188,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 
         // Register app shortcuts before library initialization so that the Rescue
         // shortcut exists even if initialization crashes below.
-        app.n_zik.android.shortcuts.registerAppShortcuts(this)
+        refreshShortcutLanguage(ContextCompat.getContextForLanguage(this), refreshWidgets = false)
 
         libraryStartup.start()
     }
@@ -623,63 +628,91 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         }
     }
 
-    private fun createNotificationChannels() {
+    private var shortcutLocaleTags: String? = null
+    private var launcherLocaleTags: String? = null
+
+    internal fun refreshShortcutLanguage(context: Context, refreshWidgets: Boolean = true): Boolean {
+        val localeTags = context.resources.configuration.locales.toLanguageTags()
+        val widgetsNeedRefresh = refreshWidgets && launcherLocaleTags != localeTags
+        if (widgetsNeedRefresh) launcherLocaleTags = localeTags
+        if (shortcutLocaleTags != localeTags && app.n_zik.android.shortcuts.registerAppShortcuts(context)) {
+            shortcutLocaleTags = localeTags
+        }
+        return widgetsNeedRefresh
+    }
+
+    private var notificationChannelLocaleTags: String? = null
+
+    internal fun createNotificationChannels(strings: Resources = appTextResources()) {
+        val localeTags = strings.configuration.locales.toLanguageTags()
+        if (notificationChannelLocaleTags == localeTags) return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationManager = getSystemService(NotificationManager::class.java)
 
             // Channel for music player
             val playerChannel = NotificationChannel(
                 PlayerServiceModern.NotificationChannelId,
-                applicationContext.getString(R.string.player_title),
+                strings.getString(R.string.player_title),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = applicationContext.getString(R.string.player_title)
+                description = strings.getString(R.string.player_title)
                 setShowBadge(false)
             }
 
             // Channel for sleep timer
             val sleepTimerChannel = NotificationChannel(
                 PlayerServiceModern.SleepTimerNotificationChannelId,
-                applicationContext.getString(R.string.player_sleep_timer_title),
+                strings.getString(R.string.player_sleep_timer_title),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = applicationContext.getString(R.string.player_sleep_timer_title)
+                description = strings.getString(R.string.player_sleep_timer_title)
                 setShowBadge(false)
             }
 
             // Channel for downloads
             val downloadChannel = NotificationChannel(
                 MyDownloadHelper.DOWNLOAD_NOTIFICATION_CHANNEL_ID,
-                applicationContext.getString(R.string.downloads_title),
+                strings.getString(R.string.downloads_title),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = applicationContext.getString(R.string.downloads_title)
+                description = strings.getString(R.string.downloads_title)
                 setShowBadge(false)
             }
 
             // Channel for sync
             val syncChannel = NotificationChannel(
                 "sync_channel_id",
-                applicationContext.getString(R.string.sync_action_sync),
+                strings.getString(R.string.sync_action_sync),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = applicationContext.getString(R.string.sync_notifications)
+                description = strings.getString(R.string.sync_notifications)
                 setShowBadge(false)
             }
 
             // Channel for the monthly rewind reminder
             val rewindChannel = NotificationChannel(
                 RewindReminderWorker.CHANNEL_ID,
-                applicationContext.getString(R.string.rewind_channel),
+                strings.getString(R.string.rewind_channel),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = applicationContext.getString(R.string.rewind_channel)
+                description = strings.getString(R.string.rewind_channel)
                 setShowBadge(false)
             }
 
             notificationManager.createNotificationChannels(
                 listOf(playerChannel, sleepTimerChannel, downloadChannel, syncChannel, rewindChannel)
             )
+            refreshNotificationChannelLabels(this, strings, notificationManager)
+        }
+        notificationChannelLocaleTags = localeTags
+        sendBroadcast(Intent(app.n_zik.android.bridge.BridgeServerService.ACTION_REFRESH_LOCALE).setPackage(packageName))
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (isMainProcess()) {
+            createNotificationChannels()
+            refreshShortcutLanguage(ContextCompat.getContextForLanguage(this), refreshWidgets = false)
         }
     }
 

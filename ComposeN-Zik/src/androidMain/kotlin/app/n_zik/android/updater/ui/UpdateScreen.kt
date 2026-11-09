@@ -1,6 +1,8 @@
 @file:kotlin.OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.n_zik.android.updater.ui
 
+import app.n_zik.android.appTextResources
+import app.n_zik.android.utils.percentLabel
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.rememberGlassSettings
@@ -238,7 +240,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                             )
                                         }
                                         BasicText(
-                                            text = "${(state.progress * 100).toInt()}%",
+                                            text = percentLabel((state.progress * 100).toInt()),
                                             modifier = Modifier.padding(start = 8.dp).width(40.dp),
                                             style = typography().s.copy(
                                                 color = colorPalette().accent,
@@ -1008,7 +1010,7 @@ fun parseChangelogText(text: String): List<Pair<String, List<String>>> {
     packSection()
 
     if (sections.isEmpty() && currentChanges.isNotEmpty()) {
-        val otherTitle = appContext().getString(R.string.common_other_section_title)
+        val otherTitle = appTextResources().getString(R.string.common_other_section_title)
         sections.add(otherTitle to currentChanges.toList())
     }
 

@@ -1,5 +1,6 @@
 package app.n_zik.android.components.extensions
 
+import app.n_zik.android.utils.percentLabel
 import android.content.Context
 import android.os.Build
 import android.text.format.Formatter
@@ -495,7 +496,7 @@ private fun DownloadingSettingsEntry(
                 if (progress != null && progress > 0.01f) {
                     Spacer(modifier = Modifier.height(2.dp))
                     BasicText(
-                        text = "${(progress * 100).toInt()}%",
+                        text = percentLabel((progress * 100).toInt()),
                         style = typography().xs.copy(color = palette.textSecondary),
                     )
                 }

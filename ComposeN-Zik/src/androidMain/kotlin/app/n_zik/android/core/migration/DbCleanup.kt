@@ -78,7 +78,7 @@ object DbCleanup {
 //
                 // leaving the `%d` format specifier unfilled.
                 runCatching {
-                    Toaster.s(context.getString(R.string.artist_link_cleanup_result, result.removed))
+                    Toaster.s(context.resources.getQuantityString(R.plurals.artist_link_cleanup_result_count, result.removed, result.removed))
                 }.onFailure { e ->
                     Timber.tag(TAG).w(e, "Cleanup succeeded but toast failed")
                 }

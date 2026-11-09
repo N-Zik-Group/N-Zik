@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -44,7 +45,7 @@ class RetrySyncDialog(
     @Composable
     override fun DialogBody() {
         BasicText(
-            text = stringResource(R.string.sync_retry_failed_items_confirmation, failedCount),
+            text = pluralStringResource(R.plurals.sync_retry_failed_item_confirmation, failedCount, failedCount),
             style = typography().s.medium.copy(color = colorPalette().text)
         )
     }

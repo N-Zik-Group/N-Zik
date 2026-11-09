@@ -1,8 +1,7 @@
 package app.n_zik.android.components.ui.screens.home
 
+import app.n_zik.android.appTextResources
 import android.app.Service
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Intent
 import android.os.IBinder
 import android.content.pm.ServiceInfo
@@ -20,7 +19,7 @@ import app.n_zik.android.core.backup.isLibraryReady
 import app.n_zik.android.core.backup.LibraryStartupException
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.notifications.channelId
-import app.n_zik.android.core.notifications.ensureProfileChannels
+import app.n_zik.android.core.notifications.ensureStartupNotificationChannel
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import it.fast4x.innertube.YtMusic
 import it.fast4x.innertube.Innertube
@@ -59,6 +58,7 @@ class HomeSyncService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action ?: return START_NOT_STICKY
+        val strings = appTextResources()
         
         val notificationId = when (action) {
             ACTION_SYNC_ARTISTS -> 1001
@@ -68,24 +68,22 @@ class HomeSyncService : Service() {
         }
         
         val profile = getActiveProfile(this)
-        val notificationChannel = channelId(SYNC_NOTIFICATION_CHANNEL_ID, profile)
-        if (!isLibraryReady() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            ensureProfileChannels(this, profile)
-            getSystemService(NotificationManager::class.java)?.createNotificationChannel(
-                NotificationChannel(notificationChannel, getString(R.string.sync_notifications), NotificationManager.IMPORTANCE_LOW)
-            )
+        val notificationChannel = if (isLibraryReady()) {
+            channelId(SYNC_NOTIFICATION_CHANNEL_ID, profile)
+        } else {
+            ensureStartupNotificationChannel(this, SYNC_NOTIFICATION_CHANNEL_ID, profile)
         }
         HomeSyncState.showSyncNotification(
-            title = appContext().getString(R.string.sync_notifications),
-            message = appContext().getString(R.string.sync_starting_notification),
+            title = strings.getString(R.string.sync_notifications),
+            message = strings.getString(R.string.sync_starting_notification),
             notificationId = notificationId,
             isOngoing = true
         )
         
         val builder = NotificationCompat.Builder(this, notificationChannel)
             .setSmallIcon(R.drawable.ic_launcher)
-            .setContentTitle(appContext().getString(R.string.sync_notifications))
-            .setContentText(appContext().getString(R.string.sync_background_notification))
+            .setContentTitle(strings.getString(R.string.sync_notifications))
+            .setContentText(strings.getString(R.string.sync_background_notification))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
         
@@ -148,6 +146,7 @@ class HomeSyncService : Service() {
 
     // ARTISTS SYNC
     private suspend fun syncArtists(ids: List<String>?, notificationId: Int, resultNotificationId: Int) {
+        val strings = appTextResources()
         if (HomeSyncState.isSyncingArtists) return
         HomeSyncState.isSyncingArtists = true
         HomeSyncState.artistSyncProgress = 0f
@@ -162,8 +161,8 @@ class HomeSyncService : Service() {
         Timber.tag("HomeSyncService").d("══════ ARTIST SYNC START ══════ Total: $totalArtists (YT: ${ytArtists.size}, Local/Fallback: ${localArtists.size})")
 
         withContext(NzikDispatchers.UI) {
-            if (totalArtists > 0) Toaster.i(appContext().getString(R.string.library_sync_artist_refresh_count_format, totalArtists))
-            if (ids == null && totalArtists == 0) Toaster.w(appContext().getString(R.string.sync_no_items))
+            if (totalArtists > 0) Toaster.i(strings.getQuantityString(R.plurals.library_sync_artist_refresh_count, totalArtists, totalArtists))
+            if (ids == null && totalArtists == 0) Toaster.w(strings.getString(R.string.sync_no_items))
         }
         
         if (totalArtists == 0) {
@@ -186,8 +185,8 @@ class HomeSyncService : Service() {
             HomeSyncState.artistSyncCurrentName = artist.name ?: ""
             HomeSyncState.artistSyncProgress = index.toFloat() / ytArtists.size
             HomeSyncState.showSyncNotification(
-                title = appContext().getString(R.string.sync_notifications),
-                message = appContext().getString(R.string.sync_progress_artists, index + 1, totalArtists),
+                title = strings.getString(R.string.sync_notifications),
+                message = strings.getQuantityString(R.plurals.sync_progress_artist_count, totalArtists, index + 1, totalArtists),
                 notificationId = notificationId,
                 isOngoing = true,
                 maxProgress = totalArtists,
@@ -233,8 +232,8 @@ class HomeSyncService : Service() {
             HomeSyncState.artistSyncCurrentName = artist.name ?: ""
             HomeSyncState.artistSyncProgress = (ytArtists.size + index).toFloat() / totalArtists
             HomeSyncState.showSyncNotification(
-                title = appContext().getString(R.string.sync_notifications),
-                message = appContext().getString(R.string.sync_progress_artists, ytArtists.size + index + 1, totalArtists),
+                title = strings.getString(R.string.sync_notifications),
+                message = strings.getQuantityString(R.plurals.sync_progress_artist_count, totalArtists, ytArtists.size + index + 1, totalArtists),
                 notificationId = notificationId,
                 isOngoing = true,
                 maxProgress = totalArtists,
@@ -322,23 +321,23 @@ class HomeSyncService : Service() {
 
         withContext(NzikDispatchers.UI) {
             if (abortSync) {
-                Toaster.e(appContext().getString(R.string.sync_failed))
-                HomeSyncState.showSyncNotification(appContext().getString(R.string.sync_failed), appContext().getString(R.string.sync_aborted_network_error), resultNotificationId)
+                Toaster.e(strings.getString(R.string.sync_failed))
+                HomeSyncState.showSyncNotification(strings.getString(R.string.sync_failed), strings.getString(R.string.sync_aborted_network_error), resultNotificationId)
             } else if (failedCount > 0) {
                 HomeSyncState.failedArtistsList = failedList
-                val errorMessage = appContext().getString(R.string.library_sync_artist_retry_count_format, failedCount)
-                val notificationMessage = appContext().getString(R.string.sync_failed_notification_artists, failedCount)
+                val errorMessage = strings.getQuantityString(R.plurals.library_sync_artist_retry_count, failedCount, failedCount)
+                val notificationMessage = strings.getQuantityString(R.plurals.sync_failed_notification_artist_count, failedCount, failedCount)
                 Toaster.e(errorMessage)
                 HomeSyncState.showSyncNotification(
-                    title = appContext().getString(R.string.sync_completed_with_errors),
+                    title = strings.getString(R.string.sync_completed_with_errors),
                     message = notificationMessage,
                     notificationId = resultNotificationId
                 )
             } else {
-                Toaster.s(appContext().getString(R.string.library_sync_artists_complete_message))
+                Toaster.s(strings.getString(R.string.library_sync_artists_complete_message))
                 HomeSyncState.showSyncNotification(
-                    title = appContext().getString(R.string.sync_successful),
-                    message = appContext().getString(R.string.sync_success_notification_artists),
+                    title = strings.getString(R.string.sync_successful),
+                    message = strings.getString(R.string.sync_success_notification_artists),
                     notificationId = resultNotificationId
                 )
             }
@@ -349,6 +348,7 @@ class HomeSyncService : Service() {
 
     // ALBUMS SYNC
     private suspend fun syncAlbums(ids: List<String>?, notificationId: Int, resultNotificationId: Int) {
+        val strings = appTextResources()
         if (HomeSyncState.isSyncingAlbums) return
         HomeSyncState.isSyncingAlbums = true
         HomeSyncState.albumSyncProgress = 0f
@@ -363,8 +363,8 @@ class HomeSyncService : Service() {
         Timber.tag("HomeSyncService").d("══════ ALBUM SYNC START ══════ Total: $totalAlbums (YT: ${ytAlbums.size}, Local/Fallback: ${localAlbums.size})")
 
         withContext(NzikDispatchers.UI) {
-            if (totalAlbums > 0) Toaster.i(appContext().getString(R.string.library_sync_album_refresh_count_format, totalAlbums))
-            if (ids == null && totalAlbums == 0) Toaster.w(appContext().getString(R.string.sync_no_items))
+            if (totalAlbums > 0) Toaster.i(strings.getQuantityString(R.plurals.library_sync_album_refresh_count, totalAlbums, totalAlbums))
+            if (ids == null && totalAlbums == 0) Toaster.w(strings.getString(R.string.sync_no_items))
         }
 
         if (totalAlbums == 0) {
@@ -387,8 +387,8 @@ class HomeSyncService : Service() {
             HomeSyncState.albumSyncCurrentName = album.title ?: ""
             HomeSyncState.albumSyncProgress = index.toFloat() / ytAlbums.size
             HomeSyncState.showSyncNotification(
-                title = appContext().getString(R.string.sync_notifications),
-                message = appContext().getString(R.string.sync_progress_albums, index + 1, totalAlbums),
+                title = strings.getString(R.string.sync_notifications),
+                message = strings.getQuantityString(R.plurals.sync_progress_album_count, totalAlbums, index + 1, totalAlbums),
                 notificationId = notificationId,
                 isOngoing = true,
                 maxProgress = totalAlbums,
@@ -445,8 +445,8 @@ class HomeSyncService : Service() {
             HomeSyncState.albumSyncCurrentName = album.title ?: ""
             HomeSyncState.albumSyncProgress = (ytAlbums.size + index).toFloat() / totalAlbums
             HomeSyncState.showSyncNotification(
-                title = appContext().getString(R.string.sync_notifications),
-                message = appContext().getString(R.string.sync_progress_albums, ytAlbums.size + index + 1, totalAlbums),
+                title = strings.getString(R.string.sync_notifications),
+                message = strings.getQuantityString(R.plurals.sync_progress_album_count, totalAlbums, ytAlbums.size + index + 1, totalAlbums),
                 notificationId = notificationId,
                 isOngoing = true,
                 maxProgress = totalAlbums,
@@ -558,27 +558,27 @@ class HomeSyncService : Service() {
 
         withContext(NzikDispatchers.UI) {
             if (abortSync) {
-                Toaster.e(appContext().getString(R.string.sync_failed))
-                HomeSyncState.showSyncNotification(appContext().getString(R.string.sync_failed), appContext().getString(R.string.sync_aborted_network_error), resultNotificationId)
+                Toaster.e(strings.getString(R.string.sync_failed))
+                HomeSyncState.showSyncNotification(strings.getString(R.string.sync_failed), strings.getString(R.string.sync_aborted_network_error), resultNotificationId)
             } else if (failedCount > 0) {
                 HomeSyncState.failedAlbumsList = failedList
-                val errorMessage = appContext().getString(R.string.library_sync_album_retry_count_format, failedCount)
-                val notificationMessage = appContext().resources.getQuantityString(
+                val errorMessage = strings.getQuantityString(R.plurals.library_sync_album_retry_count, failedCount, failedCount)
+                val notificationMessage = strings.getQuantityString(
                     R.plurals.sync_failed_notification_album_count,
                     failedCount,
                     failedCount,
                 )
                 Toaster.e(errorMessage)
                 HomeSyncState.showSyncNotification(
-                    title = appContext().getString(R.string.sync_completed_with_errors),
+                    title = strings.getString(R.string.sync_completed_with_errors),
                     message = notificationMessage,
                     notificationId = resultNotificationId
                 )
             } else {
-                Toaster.s(appContext().getString(R.string.library_sync_albums_complete_message))
+                Toaster.s(strings.getString(R.string.library_sync_albums_complete_message))
                 HomeSyncState.showSyncNotification(
-                    title = appContext().getString(R.string.sync_successful),
-                    message = appContext().getString(R.string.sync_success_notification_albums),
+                    title = strings.getString(R.string.sync_successful),
+                    message = strings.getString(R.string.sync_success_notification_albums),
                     notificationId = resultNotificationId
                 )
             }
@@ -589,6 +589,7 @@ class HomeSyncService : Service() {
     
     // PLAYLISTS SYNC
     private suspend fun syncPlaylists(ids: List<String>?, notificationId: Int, resultNotificationId: Int) {
+        val strings = appTextResources()
         if (HomeSyncState.isSyncingPlaylists) return
         HomeSyncState.isSyncingPlaylists = true
         HomeSyncState.playlistSyncProgress = 0f
@@ -603,7 +604,7 @@ class HomeSyncService : Service() {
         Timber.tag("HomeSyncService").d("══════ PLAYLIST SYNC START ══════ Total filtered: ${ytPlaylists.size}")
 
         withContext(NzikDispatchers.UI) {
-            if (ytPlaylists.isNotEmpty()) Toaster.i(appContext().getString(R.string.library_sync_playlist_refresh_count_format, ytPlaylists.size))
+            if (ytPlaylists.isNotEmpty()) Toaster.i(strings.getQuantityString(R.plurals.library_sync_playlist_refresh_count, ytPlaylists.size, ytPlaylists.size))
         }
 
         if (ytPlaylists.isEmpty()) {
@@ -625,8 +626,8 @@ class HomeSyncService : Service() {
             HomeSyncState.playlistSyncCurrentName = preview.playlist.name
             HomeSyncState.playlistSyncProgress = index.toFloat() / ytPlaylists.size
             HomeSyncState.showSyncNotification(
-                title = appContext().getString(R.string.sync_notifications),
-                message = appContext().getString(R.string.sync_progress_playlists, index + 1, ytPlaylists.size),
+                title = strings.getString(R.string.sync_notifications),
+                message = strings.getQuantityString(R.plurals.sync_progress_playlist_count, ytPlaylists.size, index + 1, ytPlaylists.size),
                 notificationId = notificationId,
                 isOngoing = true,
                 maxProgress = ytPlaylists.size,
@@ -685,23 +686,23 @@ class HomeSyncService : Service() {
 
         withContext(NzikDispatchers.UI) {
             if (abortSync) {
-                Toaster.e(appContext().getString(R.string.sync_failed))
-                HomeSyncState.showSyncNotification(appContext().getString(R.string.sync_failed), appContext().getString(R.string.sync_aborted_network_error), resultNotificationId)
+                Toaster.e(strings.getString(R.string.sync_failed))
+                HomeSyncState.showSyncNotification(strings.getString(R.string.sync_failed), strings.getString(R.string.sync_aborted_network_error), resultNotificationId)
             } else if (failedCount > 0) {
                 HomeSyncState.failedPlaylistsList = failedList
-                val errorMessage = appContext().getString(R.string.library_sync_playlist_retry_count_format, failedCount)
-                val notificationMessage = appContext().getString(R.string.sync_failed_notification_playlists, failedCount)
+                val errorMessage = strings.getQuantityString(R.plurals.library_sync_playlist_retry_count, failedCount, failedCount)
+                val notificationMessage = strings.getQuantityString(R.plurals.sync_failed_notification_playlist_count, failedCount, failedCount)
                 Toaster.e(errorMessage)
                 HomeSyncState.showSyncNotification(
-                    title = appContext().getString(R.string.sync_completed_with_errors),
+                    title = strings.getString(R.string.sync_completed_with_errors),
                     message = notificationMessage,
                     notificationId = resultNotificationId
                 )
             } else {
-                Toaster.s(appContext().getString(R.string.library_sync_playlists_complete_message))
+                Toaster.s(strings.getString(R.string.library_sync_playlists_complete_message))
                 HomeSyncState.showSyncNotification(
-                    title = appContext().getString(R.string.sync_successful),
-                    message = appContext().getString(R.string.sync_success_notification_playlists),
+                    title = strings.getString(R.string.sync_successful),
+                    message = strings.getString(R.string.sync_success_notification_playlists),
                     notificationId = resultNotificationId
                 )
             }

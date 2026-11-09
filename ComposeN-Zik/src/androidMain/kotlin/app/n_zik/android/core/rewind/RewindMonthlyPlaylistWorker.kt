@@ -10,6 +10,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -26,9 +27,9 @@ import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import java.time.Duration
 import java.time.LocalDate
+import java.time.Month
 import java.time.ZonedDateTime
 import java.time.format.TextStyle
-import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 /**
@@ -161,7 +162,7 @@ internal class RewindMonthlyPlaylistWorker(
 //
                         // follow-up — the notification opens the playlist directly).
                         val playlistId = Database.playlistTable.findByName(name).first()?.id
-                        postCreatedNotification(finished.month.getDisplayName(TextStyle.FULL, Locale.getDefault()), playlistId)
+                        postCreatedNotification(finished.month, playlistId)
                     }
                     Result.success()
                 }
@@ -172,7 +173,9 @@ internal class RewindMonthlyPlaylistWorker(
         }
     }
 
-    private fun postCreatedNotification(finishedMonthName: String, playlistId: Long?) {
+    private fun postCreatedNotification(finishedMonth: Month, playlistId: Long?) {
+        val resources = ContextCompat.getContextForLanguage(applicationContext).resources
+        val finishedMonthName = finishedMonth.getDisplayName(TextStyle.FULL, resources.configuration.locales[0])
         if (!isMonthlyPlaylistNotificationEnabled(applicationContext)) {
             Timber.tag(TAG).i("Playlist notification toggle off: skipping the notification")
             return
@@ -215,8 +218,8 @@ internal class RewindMonthlyPlaylistWorker(
             NOTIFICATION_ID,
             NotificationCompat.Builder(applicationContext, channelId(RewindReminderWorker.CHANNEL_ID, getActiveProfile(applicationContext)))
                 .setSmallIcon(R.drawable.ic_launcher_monochrome)
-                .setContentTitle(applicationContext.getString(R.string.rewind_playlist_notification_title, finishedMonthName))
-                .setContentText(applicationContext.getString(R.string.rewind_playlist_notification_description))
+                .setContentTitle(resources.getString(R.string.rewind_playlist_notification_title, finishedMonthName))
+                .setContentText(resources.getString(R.string.rewind_playlist_notification_description))
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setAutoCancel(true)
                 .setContentIntent(pending)

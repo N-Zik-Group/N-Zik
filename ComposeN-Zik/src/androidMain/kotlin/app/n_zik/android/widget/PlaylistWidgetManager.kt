@@ -4,6 +4,7 @@ import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
+import androidx.core.content.ContextCompat
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -138,8 +139,8 @@ object PlaylistWidgetManager {
     suspend fun updateIdleWidgets(context: Context) {
         updateWidgets(
             context = context,
-            title = context.getString(R.string.widget_not_playing_status),
-            artist = context.getString(R.string.widget_configuration_choose_item_hint),
+            title = ContextCompat.getString(context, R.string.widget_not_playing_status),
+            artist = ContextCompat.getString(context, R.string.widget_configuration_choose_item_hint),
             artworkBitmap = null,
             isPlaying = false,
             isLiked = false,
@@ -259,6 +260,14 @@ object PlaylistWidgetManager {
         artworkUri: String?,
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_playlist)
+        views.setPlaybackDescriptions(
+            context,
+            R.id.widget_playlist_album_art,
+            R.id.widget_playlist_prev_icon,
+            R.id.widget_playlist_play_pause,
+            R.id.widget_playlist_next_icon,
+            R.id.widget_playlist_like_button,
+        )
 
         views.setTextViewText(R.id.widget_playlist_song_title, widgetDisplayTitle(title))
         views.setTextViewText(R.id.widget_playlist_artist_name, cleanPrefix(artist))

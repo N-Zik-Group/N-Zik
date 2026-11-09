@@ -1,5 +1,6 @@
 package app.n_zik.android.utils
 
+import androidx.core.os.LocaleListCompat
 import app.it.fast4x.rimusic.enums.Languages
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -26,6 +27,18 @@ class AppLanguageLocaleTest {
     @Test
     fun `portuguese brazilian should map to the pt-BR tag`() {
         assertSingleTag(Languages.PortugueseBrazilian, "pt-BR")
+    }
+
+    @Test
+    fun `system app overrides select the matching picker option`() {
+        assertEquals(Languages.System, appLanguageForLocales(LocaleListCompat.getEmptyLocaleList()))
+        assertEquals(Languages.French, appLanguageForLocales(LocaleListCompat.forLanguageTags("fr-CA")))
+        assertEquals(Languages.ChineseTraditional, appLanguageForLocales(LocaleListCompat.forLanguageTags("zh-Hant-HK")))
+        assertEquals(Languages.SerbianLatin, appLanguageForLocales(LocaleListCompat.forLanguageTags("sr-Latn-RS")))
+        assertEquals(Languages.SerbianCyrillic, appLanguageForLocales(LocaleListCompat.forLanguageTags("sr-Cyrl-CS")))
+        assertEquals(Languages.PortugueseBrazilian, appLanguageForLocales(LocaleListCompat.forLanguageTags("pt-BR")))
+        assertEquals(Languages.PortugueseBrazilian, appLanguageForLocales(LocaleListCompat.forLanguageTags("pt-Latn-BR")))
+        assertEquals(null, appLanguageForLocales(LocaleListCompat.forLanguageTags("sw")))
     }
 
     private fun assertSingleTag(language: Languages, expectedTag: String) {

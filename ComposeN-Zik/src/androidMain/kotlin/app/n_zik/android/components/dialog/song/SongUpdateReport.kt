@@ -13,6 +13,7 @@ import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.appContext
+import app.n_zik.android.utils.ToastRelay
 import app.n_zik.android.playback.services.PlayerServiceModern
 
 /** The action that could not complete, without exposing provider exception text. */
@@ -121,8 +122,7 @@ internal fun songUpdateBatchMessage(context: Context, reports: List<SongUpdateRe
 internal fun showSongUpdateBatchReport(reports: List<SongUpdateReport>) {
     if (reports.isEmpty()) return
     if (reports.all { it.completed }) {
-        // Long selects the formatted-count overload, not the toast-duration overload.
-        Toaster.s(R.string.song_metadata_updated_count, reports.size.toLong())
+        ToastRelay.successWithPlural(R.plurals.song_metadata_updated_song_count, R.string.song_metadata_updated_count, reports.size)
     } else {
         val message = songUpdateBatchMessage(appContext(), reports)
         if (reports.any { it.anyCompleted || it.completed }) Toaster.w(message, Toast.LENGTH_LONG)

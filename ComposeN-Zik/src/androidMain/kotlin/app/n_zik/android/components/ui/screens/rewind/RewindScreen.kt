@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.screens.rewind
 
+import app.n_zik.android.components.ui.screens.rewind.slides.rewindCount
 import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
@@ -849,10 +850,10 @@ private fun RewindLoadingScreen(
             // "READY, username" message.
             val finalMessage = when {
                 p < 0.68f -> stringResource(R.string.rewind_loader_status_building)
-                p < 0.76f -> data?.let { stringResource(R.string.rewind_loader_status_plays, formatRewindNumber(it.stats.totalPlays.toLong())) } ?: stringResource(R.string.rewind_loader_status_counting_plays)
-                p < 0.84f -> data?.let { stringResource(R.string.rewind_loader_status_songs, formatRewindNumber(it.totalUniqueSongs.toLong())) } ?: stringResource(R.string.rewind_loader_status_counting_songs)
-                p < 0.91f -> data?.let { stringResource(R.string.rewind_loader_status_minutes, formatRewindNumber(it.stats.totalMinutes)) } ?: stringResource(R.string.rewind_loader_status_counting_minutes)
-                p < 0.97f -> data?.let { stringResource(R.string.rewind_loader_status_days, formatRewindNumber(it.daysWithMusic.toLong())) } ?: stringResource(R.string.rewind_loader_status_counting_days)
+                p < 0.76f -> data?.let { rewindCount(R.plurals.rewind_loader_status_play_count, it.stats.totalPlays.toLong()) } ?: stringResource(R.string.rewind_loader_status_counting_plays)
+                p < 0.84f -> data?.let { rewindCount(R.plurals.rewind_loader_status_song_count, it.totalUniqueSongs.toLong()) } ?: stringResource(R.string.rewind_loader_status_counting_songs)
+                p < 0.91f -> data?.let { rewindCount(R.plurals.rewind_loader_status_minute_count, it.stats.totalMinutes) } ?: stringResource(R.string.rewind_loader_status_counting_minutes)
+                p < 0.97f -> data?.let { rewindCount(R.plurals.rewind_loader_status_day_count, it.daysWithMusic.toLong()) } ?: stringResource(R.string.rewind_loader_status_counting_days)
                 else -> stringResource(R.string.rewind_loader_status_ready)
             }
             Text(

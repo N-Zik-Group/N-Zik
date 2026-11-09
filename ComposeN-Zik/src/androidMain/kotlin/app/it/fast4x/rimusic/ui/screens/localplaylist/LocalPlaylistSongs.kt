@@ -817,7 +817,13 @@ fun LocalPlaylistSongs(
                                         }
                                     }
                                     if (removed) withContext(NzikDispatchers.UI) {
-                                        Toaster.s("${context.resources.getString(R.string.common_delete_success)} ${selectedSongs.size}")
+                                        Toaster.s(
+                                            context.getString(
+                                                R.string.playlist_remove_songs_success_format,
+                                                context.getString(R.string.common_delete_success),
+                                                selectedSongs.size,
+                                            ),
+                                        )
                                         itemSelector.isActive = false
                                     }
                                 }

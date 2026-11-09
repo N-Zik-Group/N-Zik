@@ -59,7 +59,7 @@ object UpdateDownloadManager {
     private var downloadJob: Job? = null
     private var activeCall: Call? = null
 
-    private const val UPDATE_CHANNEL_ID = "update_channel"
+    internal const val UPDATE_CHANNEL_ID = "update_channel"
     private const val UPDATE_NOTIFICATION_ID = 9999
 
     private fun ensureNotificationChannel(context: Context) {

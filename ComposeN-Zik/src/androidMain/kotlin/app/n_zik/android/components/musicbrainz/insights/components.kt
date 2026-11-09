@@ -1,5 +1,6 @@
 package app.n_zik.android.components.musicbrainz.insights
 
+import androidx.compose.ui.res.pluralStringResource
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -89,7 +90,7 @@ fun RatingBar(
         }
         if (votes != null && votes > 0) {
             Text(
-                text = stringResource(R.string.metadata_musicbrainz_rating_votes_attribution, votes),
+                text = pluralStringResource(R.plurals.metadata_musicbrainz_rating_vote_count_attribution, votes, votes),
                 style = typography().xxs,
                 color = colorPalette().textSecondary
             )

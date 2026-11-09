@@ -320,7 +320,7 @@ fun AlbumDetails(
                     if (loadedSongsCount > 0) {
                         Spacer(modifier = Modifier.height(8.dp))
                         BasicText(
-                            text = stringResource(R.string.album_loading_song_count_format, loadedSongsCount),
+                            text = pluralStringResource(R.plurals.album_loading_song_count, loadedSongsCount, loadedSongsCount),
                             style = typography().xxs.copy(
                                 color = colorPalette().textDisabled
                             )

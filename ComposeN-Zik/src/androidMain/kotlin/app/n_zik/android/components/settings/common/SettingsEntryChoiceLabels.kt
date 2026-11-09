@@ -2,6 +2,7 @@ package app.n_zik.android.components.settings.common
 
 import java.net.Proxy
 import java.util.Locale
+import app.n_zik.android.utils.secondsLabel
 
 import app.it.fast4x.rimusic.enums.AlbumSwipeAction
 import app.it.fast4x.rimusic.enums.AnimatedGradient
@@ -57,7 +58,8 @@ import app.n_zik.android.R
 /** Finite selector labels keyed by exact navigation target; never reads saved preference values. */
 internal fun settingsEntryChoiceLabels(
     resolveString: (Int) -> String,
-    locale: Locale = Locale.getDefault(),
+    locale: Locale,
+    resolvePlural: (Int, Int) -> String,
 ): Map<String, List<String>> {
     fun resources(vararg ids: Int) = ids.map(resolveString)
     fun cacheLabel(name: String): String = when (name) {
@@ -141,10 +143,10 @@ internal fun settingsEntryChoiceLabels(
             resources(R.string.profile_name_source_local, R.string.profile_display_name_source_youtube, R.string.profile_identity_source_discord, R.string.profile_identity_source_lastfm),
         "embedded.profile.face_avatar_source" to
             resources(R.string.profile_name_source_local, R.string.profile_display_name_source_youtube, R.string.profile_identity_source_discord, R.string.profile_identity_source_lastfm),
-        "general.playback.pause_between_songs" to PauseBetweenSongs.entries.map { "${it.name}s" },
+        "general.playback.pause_between_songs" to PauseBetweenSongs.entries.map { secondsLabel(it.name.toInt(), locale) },
         "general.playback.exclude_songs_with_duration_limit" to
             DurationInMinutes.entries.map { if (it == DurationInMinutes.Disabled) resolveString(R.string.common_option_disabled) else "${it.name}m" },
-        "general.playback.crossfade_duration" to listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20).map { "${it}s" },
+        "general.playback.crossfade_duration" to listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20).map { secondsLabel(it, locale) },
         "general.queue_management.max_songs_in_queue" to
             MaxSongs.entries.map { if (it == MaxSongs.Unlimited) resolveString(R.string.common_limit_unlimited_label) else it.name },
         "general.queue_management.max_songs_in_queue_android_auto" to
@@ -157,6 +159,6 @@ internal fun settingsEntryChoiceLabels(
         "ai.smart_recommendations.smart_recommendations_number" to
             RecommendationsNumber.entries.map { if (it == RecommendationsNumber.Adaptive) resolveString(R.string.recommendations_adaptive) else it.name },
         "ai.quick_picks.quick_selection_type" to
-            LocalRecommandationsNumber.entries.map { String.format(locale, resolveString(R.string.recommendations_quick_picks_count), it.value) },
+            LocalRecommandationsNumber.entries.map { resolvePlural(R.plurals.recommendations_quick_picks_song_count, it.value) },
     )
 }

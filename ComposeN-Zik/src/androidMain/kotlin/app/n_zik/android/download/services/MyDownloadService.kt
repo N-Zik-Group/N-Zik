@@ -4,6 +4,7 @@ import android.app.Notification
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.media3.common.util.NotificationUtil
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.util.Util
@@ -17,6 +18,7 @@ import app.n_zik.android.awaitLibraryReady
 import app.n_zik.android.core.backup.LibraryStartupException
 import app.n_zik.android.core.backup.isLibraryReady
 import app.n_zik.android.core.notifications.channelId
+import app.n_zik.android.core.notifications.ensureStartupNotificationChannel
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.download.utils.MyDownloadHelper.DOWNLOAD_NOTIFICATION_CHANNEL_ID
 import app.n_zik.android.download.utils.MyDownloadHelper.batchTotal
@@ -107,16 +109,14 @@ class MyDownloadService : DownloadService(
             if (!waitingForeground &&
                 (intent?.getBooleanExtra(KEY_FOREGROUND, false) == true || intent?.action == SCHEDULED_RESTART)
             ) {
-                val channel = channelId(DOWNLOAD_NOTIFICATION_CHANNEL_ID, getActiveProfile(this))
-                NotificationUtil.createNotificationChannel(
-                    this, channel, R.string.downloads_title, 0, NotificationUtil.IMPORTANCE_LOW,
-                )
+                val channel = ensureStartupNotificationChannel(this, DOWNLOAD_NOTIFICATION_CHANNEL_ID, getActiveProfile(this))
+                val strings = ContextCompat.getContextForLanguage(this).resources
                 startForeground(
                     FOREGROUND_NOTIFICATION_ID,
                     NotificationCompat.Builder(this, channel)
                         .setSmallIcon(R.drawable.ic_launcher_monochrome)
-                        .setContentTitle(getString(R.string.downloads_title))
-                        .setContentText(getString(R.string.backup_startup_preparing_library))
+                        .setContentTitle(strings.getString(R.string.downloads_title))
+                        .setContentText(strings.getString(R.string.backup_startup_preparing_library))
                         .setProgress(0, 0, true)
                         .setOngoing(true)
                         .build(),
@@ -244,15 +244,16 @@ class MyDownloadService : DownloadService(
             val hadCompletedOrFailed = (completedCount > 0 || failedCount > 0)
 
             if (hadCompletedOrFailed) {
+                val strings = ContextCompat.getContextForLanguage(context).resources
                 val title = if (failedCount > 0) {
-                    context.getString(R.string.downloads_completed_with_failed, completedCount, failedCount)
+                    strings.getString(R.string.downloads_completed_with_failed, completedCount, failedCount)
                 } else {
-                    context.getString(R.string.downloads_completed, completedCount)
+                    strings.getString(R.string.downloads_completed, completedCount)
                 }
 
                 val notification = NotificationCompat.Builder(context, channelId(DOWNLOAD_NOTIFICATION_CHANNEL_ID, getActiveProfile(context)))
                     .setSmallIcon(if (failedCount == 0) R.drawable.downloaded else R.drawable.alert_circle_not_filled)
-                    .setContentTitle(context.getString(R.string.downloads_title))
+                    .setContentTitle(strings.getString(R.string.downloads_title))
                     .setContentText(title)
                     .setSubText(downloadDisplayName(lastName))
                     .setAutoCancel(true)

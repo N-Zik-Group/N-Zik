@@ -52,7 +52,11 @@ import app.it.fast4x.rimusic.utils.volumeBoostLevelKey
 import app.it.fast4x.rimusic.utils.volumeNormalizationKey
 import app.n_zik.android.components.dialog.settings.AppShortcutsSettingsDialog
 
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.Composable
+import androidx.core.os.LocaleListCompat
+import app.n_zik.android.core.database.Database
+import app.n_zik.android.utils.shouldRecreateActivity
 import androidx.core.content.edit
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.putEnum
@@ -100,6 +104,9 @@ internal fun applyGeneralDefaults(context: Context) {
         putBoolean(enablePictureInPictureAutoKey, false)
         putEnum(pipModuleKey, PipModule.Cover)
         putString(jumpPreviousKey, "3")
+    }
+    if (shouldRecreateActivity(Database.isClosed) && !AppCompatDelegate.getApplicationLocales().isEmpty) {
+        AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
     }
     AppShortcutsSettingsDialog.reset(context)
 }

@@ -1,5 +1,6 @@
 package app.it.fast4x.rimusic.utils
 
+import app.n_zik.android.appTextResources
 import app.n_zik.android.core.database.*
 
 import android.widget.Toast
@@ -378,10 +379,11 @@ suspend fun importYTMPlaylists(force: Boolean = false, showDetails: Boolean = tr
                 .findByBrowseId(remotePlaylist.key)
                 .first()
 
+        val remoteTitle = remotePlaylist.title?.takeIf(String::isNotBlank)
         val playlistId: Long
         if (existingPlaylist == null) {
             val newPlaylist = Playlist(
-                name = remotePlaylist.title ?: "Unknown Playlist",
+                name = remoteTitle ?: appTextResources().getString(R.string.playlist_youtube_title),
                 browseId = browseIdWithVL,
                 isYoutubePlaylist = true,
                 isEditable = remotePlaylist.isEditable ?: false
@@ -392,7 +394,7 @@ suspend fun importYTMPlaylists(force: Boolean = false, showDetails: Boolean = tr
             playlistId = existingPlaylist.id
             Database.playlistTable.update(
                 existingPlaylist.copy(
-                    name = remotePlaylist.title ?: existingPlaylist.name,
+                    name = remoteTitle ?: existingPlaylist.name,
                     browseId = browseIdWithVL,
                     isEditable = remotePlaylist.isEditable ?: existingPlaylist.isEditable
                 )

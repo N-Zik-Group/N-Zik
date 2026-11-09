@@ -91,7 +91,7 @@ fun RewindTopSongsCard(
                         rank = index + 1,
                         title = song.song.cleanTitle(),
                         subtitle = firstNonBlank(song.song.cleanArtistsText(), stringResource(R.string.rewind_unknown_artist)),
-                        meta = stringResource(R.string.rewind_play_count, formatRewindNumber(song.playCount.toLong())),
+                        meta = rewindCount(R.plurals.rewind_play_count_label, song.playCount.toLong()),
                         imageUrl = song.song.thumbnailUrl,
                         foreground = rowOn,
                         accent = if (index == 0) rewindColors.value.pink else rowOn,

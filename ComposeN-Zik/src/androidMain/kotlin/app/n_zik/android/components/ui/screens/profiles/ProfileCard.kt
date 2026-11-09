@@ -4,6 +4,7 @@ import app.n_zik.android.components.glass.GlassProfilePreferences
 
 import app.n_zik.android.components.image.writeOwnedImageAtomically
 import android.content.Context
+import android.icu.text.RelativeDateTimeFormatter
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -309,15 +310,17 @@ fun loadActiveProfileFace(context: Context, defaultName: String): ProfileFace =
 fun lastUsedRelativeText(context: Context, lastUsed: Long?, nowMillis: Long = System.currentTimeMillis()): String? {
     val millis = lastUsed ?: return null
     val relative = relativeTime(millis, nowMillis)
-    return when (relative.unit) {
-        RelativeUnit.JustNow -> context.getString(R.string.profile_last_used_now)
-        RelativeUnit.Minutes -> context.resources.getQuantityString(R.plurals.profile_last_used_minute_count, relative.value.toInt(), relative.value)
-        RelativeUnit.Hours -> context.resources.getQuantityString(R.plurals.profile_last_used_hour_count, relative.value.toInt(), relative.value)
-        RelativeUnit.Days -> context.resources.getQuantityString(R.plurals.profile_last_used_day_count, relative.value.toInt(), relative.value)
-        RelativeUnit.Weeks -> context.resources.getQuantityString(R.plurals.profile_last_used_week_count, relative.value.toInt(), relative.value)
-        RelativeUnit.Months -> context.resources.getQuantityString(R.plurals.profile_last_used_month_count, relative.value.toInt(), relative.value)
-        RelativeUnit.Date -> DateFormat.getDateFormat(context).format(Date(millis)).toString()
+    val unit = when (relative.unit) {
+        RelativeUnit.JustNow -> return context.getString(R.string.profile_last_used_now)
+        RelativeUnit.Minutes -> RelativeDateTimeFormatter.RelativeUnit.MINUTES
+        RelativeUnit.Hours -> RelativeDateTimeFormatter.RelativeUnit.HOURS
+        RelativeUnit.Days -> RelativeDateTimeFormatter.RelativeUnit.DAYS
+        RelativeUnit.Weeks -> RelativeDateTimeFormatter.RelativeUnit.WEEKS
+        RelativeUnit.Months -> RelativeDateTimeFormatter.RelativeUnit.MONTHS
+        RelativeUnit.Date -> return DateFormat.getDateFormat(context).format(Date(millis)).toString()
     }
+    val formatter = RelativeDateTimeFormatter.getInstance(context.resources.configuration.locales[0])
+    return formatter.format(relative.value.toDouble(), RelativeDateTimeFormatter.Direction.LAST, unit)
 }
 
 /** Deterministic backgrounds of the initials avatar (index by [faceInitialsColorIndex]). */

@@ -15,6 +15,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import timber.log.Timber
@@ -31,7 +32,7 @@ import timber.log.Timber
 object AndroidModuleDownloadListener : ModuleDownloadListener {
 
     private const val TAG = "ModuleDownloadNotification"
-    private const val CHANNEL_ID = "module_download_channel"
+    internal const val CHANNEL_ID = "module_download_channel"
     // Offset from the update notification (9999) so both can coexist
     private const val NOTIFICATION_ID_OFFSET = 10_000
 
@@ -72,8 +73,8 @@ object AndroidModuleDownloadListener : ModuleDownloadListener {
             def,
             NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.extension)
-                .setContentTitle(context.getString(R.string.modules_download_completed))
-                .setContentText(context.getString(def.displayNameRes) + " " + def.version)
+                .setContentTitle(ContextCompat.getString(context, R.string.modules_download_completed))
+                .setContentText(ContextCompat.getString(context, def.displayNameRes) + " " + def.version)
                 .setOngoing(false)
                 .setAutoCancel(true)
                 .build(),
@@ -92,8 +93,8 @@ object AndroidModuleDownloadListener : ModuleDownloadListener {
             def,
             NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.extension)
-                .setContentTitle(context.getString(R.string.modules_download_failed))
-                .setContentText(context.getString(def.displayNameRes))
+                .setContentTitle(ContextCompat.getString(context, R.string.modules_download_failed))
+                .setContentText(ContextCompat.getString(context, def.displayNameRes))
                 .setOngoing(false)
                 .setAutoCancel(true)
                 .build(),
@@ -108,8 +109,8 @@ object AndroidModuleDownloadListener : ModuleDownloadListener {
             def,
             NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.extension)
-                .setContentTitle(context.getString(R.string.modules_uninstalled))
-                .setContentText(context.getString(def.displayNameRes) + " " + def.version)
+                .setContentTitle(ContextCompat.getString(context, R.string.modules_uninstalled))
+                .setContentText(ContextCompat.getString(context, def.displayNameRes) + " " + def.version)
                 .setOngoing(false)
                 .setAutoCancel(true)
                 .build(),
@@ -133,13 +134,13 @@ object AndroidModuleDownloadListener : ModuleDownloadListener {
             NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.extension)
                 .setContentTitle(
-                    context.getString(if (indeterminate) R.string.modules_updating else R.string.modules_downloading),
+                    ContextCompat.getString(context, if (indeterminate) R.string.modules_updating else R.string.modules_downloading),
                 )
                 .setContentText(def.version)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setProgress(100, percent, indeterminate)
-                .addAction(0, context.getString(R.string.common_action_cancel), cancelPendingIntent(context, def))
+                .addAction(0, ContextCompat.getString(context, R.string.common_action_cancel), cancelPendingIntent(context, def))
                 .build(),
         )
     }
@@ -164,7 +165,7 @@ object AndroidModuleDownloadListener : ModuleDownloadListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                context.getString(R.string.modules_download_channel),
+                ContextCompat.getString(context, R.string.modules_download_channel),
                 NotificationManager.IMPORTANCE_DEFAULT,
             )
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

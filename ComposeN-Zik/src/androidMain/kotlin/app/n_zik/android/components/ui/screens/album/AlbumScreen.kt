@@ -1,6 +1,7 @@
 // Ported from RiPlay (AGPL-3.0) — base: it.fast4x.riplay.ui.screens.album / it.fast4x.riplay.extensions.musicbrainz
 package app.n_zik.android.components.ui.screens.album
 
+import app.n_zik.android.appTextResources
 import app.n_zik.android.components.glass.GlassArtworkBackdrop
 import app.n_zik.android.components.ui.screens.CollectionPageStatus
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
@@ -593,7 +594,7 @@ fun AlbumDetails(
                         if (loadedSongsCount > 0) {
                             Spacer(modifier = Modifier.height(8.dp))
                             BasicText(
-                                text = stringResource(R.string.album_loading_song_count_format, loadedSongsCount),
+                                text = pluralStringResource(R.plurals.album_loading_song_count, loadedSongsCount, loadedSongsCount),
                                 style = typography().xxs.copy(
                                     color = colorPalette().textDisabled
                                 )
@@ -769,7 +770,7 @@ fun AlbumDetails(
                                         when {
                                             success -> Toaster.s(R.string.metadata_musicbrainz_resync_success)
                                             paused > 0 -> Toaster.e(
-                                                appContext().getString(R.string.metadata_musicbrainz_resync_paused, (paused / 60).coerceAtLeast(1))
+                                                appTextResources().getString(R.string.metadata_musicbrainz_resync_paused, (paused / 60).coerceAtLeast(1))
                                             )
                                             else -> Toaster.e(R.string.metadata_musicbrainz_resync_error)
                                         }

@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import app.n_zik.android.utils.secondsLabel
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.enums.DislikeMode
 import app.it.fast4x.rimusic.enums.DurationInMinutes
@@ -317,17 +318,7 @@ fun GeneralPlaybackCard(
                 modifier = Modifier.settingsSearchTarget("general.playback.pause_between_songs"),
                 title = stringResource(R.string.settings_playback_pause_between_songs_label),
                 text = stringResource(R.string.player_pause_between_songs_description),
-                selectedValueText = when (pauseBetweenSongs) {
-                    PauseBetweenSongs.`0` -> "0s"
-                    PauseBetweenSongs.`5` -> "5s"
-                    PauseBetweenSongs.`10` -> "10s"
-                    PauseBetweenSongs.`15` -> "15s"
-                    PauseBetweenSongs.`20` -> "20s"
-                    PauseBetweenSongs.`30` -> "30s"
-                    PauseBetweenSongs.`40` -> "40s"
-                    PauseBetweenSongs.`50` -> "50s"
-                    PauseBetweenSongs.`60` -> "60s"
-                },
+                selectedValueText = secondsLabel(pauseBetweenSongs.name.toInt()),
                 onClick = { showPauseBetweenSongsDialog = true },
                 icon = R.drawable.pause
             )
@@ -338,17 +329,7 @@ fun GeneralPlaybackCard(
                     selectedValue = pauseBetweenSongs,
                     onValueSelected = { pauseBetweenSongs = it },
                     valueText = {
-                        when (it) {
-                            PauseBetweenSongs.`0` -> "0s"
-                            PauseBetweenSongs.`5` -> "5s"
-                            PauseBetweenSongs.`10` -> "10s"
-                            PauseBetweenSongs.`15` -> "15s"
-                            PauseBetweenSongs.`20` -> "20s"
-                            PauseBetweenSongs.`30` -> "30s"
-                            PauseBetweenSongs.`40` -> "40s"
-                            PauseBetweenSongs.`50` -> "50s"
-                            PauseBetweenSongs.`60` -> "60s"
-                        }
+                        secondsLabel(it.name.toInt())
                     },
                     values = PauseBetweenSongs.values().toList(),
                     onDismiss = { showPauseBetweenSongsDialog = false }
@@ -373,7 +354,7 @@ fun GeneralPlaybackCard(
                         modifier = Modifier.settingsSearchTarget("general.playback.crossfade_duration"),
                         title = stringResource(R.string.settings_audio_crossfade_duration_label),
                         text = stringResource(R.string.player_crossfade_duration_description),
-                        selectedValueText = "${crossfadeDuration / 1000}s",
+                        selectedValueText = secondsLabel(crossfadeDuration / 1000),
                         onClick = { showCrossfadeDurationDialog = true },
                         icon = R.drawable.time
                     )
@@ -383,7 +364,7 @@ fun GeneralPlaybackCard(
                             title = stringResource(R.string.settings_audio_crossfade_duration_label),
                             selectedValue = crossfadeDuration,
                             onValueSelected = { crossfadeDuration = it },
-                            valueText = { "${it / 1000}s" },
+                            valueText = { secondsLabel(it / 1000) },
                             values = listOf(1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 12000, 15000, 20000),
                             onDismiss = { showCrossfadeDurationDialog = false }
                         )

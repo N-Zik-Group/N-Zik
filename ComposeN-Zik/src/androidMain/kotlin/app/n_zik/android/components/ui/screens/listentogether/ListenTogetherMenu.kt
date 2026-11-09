@@ -70,6 +70,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -96,6 +97,7 @@ import app.n_zik.android.listentogether.JoinRequestPayload
 import app.n_zik.android.listentogether.ListenTogetherClient
 import app.n_zik.android.listentogether.ListenTogetherEvent
 import app.n_zik.android.listentogether.ListenTogetherManager
+import app.n_zik.android.listentogether.LISTEN_TOGETHER_BLOCKED_REASON
 import app.n_zik.android.listentogether.ListenTogetherServers
 import app.n_zik.android.listentogether.RoomRole
 import app.n_zik.android.listentogether.SuggestionReceivedPayload
@@ -148,6 +150,7 @@ fun ListenTogetherMenu() {
 
     val invalidRoomCodeText = stringResource(R.string.listen_together_invalid_room_code)
     val joinRequestDeniedText = stringResource(R.string.listen_together_join_request_denied)
+    val blockedByHostText = stringResource(R.string.listen_together_user_blocked_by_host)
     val connectionLostText = stringResource(R.string.listen_together_error)
     val serverErrorText = stringResource(R.string.listen_together_server_request_failed)
 
@@ -155,11 +158,17 @@ fun ListenTogetherMenu() {
         listenTogetherManager.events.collect { event ->
             when (event) {
                 is ListenTogetherEvent.JoinRejected -> {
-                    val message = joinRejectionMessage(event.reason, joinRequestDeniedText, invalidRoomCodeText)
+                    val message = joinRejectionMessage(
+                        event.reason,
+                        joinRequestDeniedText,
+                        invalidRoomCodeText,
+                        blockedByHostText,
+                    ) { reason ->
+                        context.getString(R.string.listen_together_join_request_denied_reason, reason)
+                    }
                     joinErrorMessage = message
                     isJoiningRoom = false
                     isCreatingRoom = false
-                    // Covers the banned-user case ("You are blocked") and any denial reason
                     Toaster.e(message)
                 }
 
@@ -269,7 +278,7 @@ fun ListenTogetherMenu() {
             historyEnabled = historyEnabled,
             blockedLabel =
                 if (blockedUsernames.isNotEmpty()) {
-                    stringResource(R.string.listen_together_blocked_users_count, blockedUsernames.size)
+                    pluralStringResource(R.plurals.listen_together_blocked_user_count, blockedUsernames.size, blockedUsernames.size)
                 } else {
                     stringResource(R.string.listen_together_no_blocked_users)
                 },
@@ -299,12 +308,12 @@ fun ListenTogetherMenu() {
                     menuState.display {
                         UserActionMenu(
                             username = usernameToManage,
-                            onKick = { listenTogetherManager.kickUser(clickedUserId, "Removed by host") },
+                            onKick = { listenTogetherManager.kickUser(clickedUserId) },
                             onPermanentKick = {
                                 listenTogetherManager.blockUser(usernameToManage)
                                 listenTogetherManager.kickUser(
                                     clickedUserId,
-                                    context.getString(R.string.listen_together_user_blocked_by_host),
+                                    LISTEN_TOGETHER_BLOCKED_REASON,
                                 )
                             },
                             onTransferOwnership = { listenTogetherManager.transferHost(clickedUserId) },
@@ -313,9 +322,9 @@ fun ListenTogetherMenu() {
                 }
             },
             onApproveJoin = { listenTogetherManager.approveJoin(it) },
-            onRejectJoin = { listenTogetherManager.rejectJoin(it, "Rejected by host") },
+            onRejectJoin = { listenTogetherManager.rejectJoin(it) },
             onApproveSuggestion = { listenTogetherManager.approveSuggestion(it) },
-            onRejectSuggestion = { listenTogetherManager.rejectSuggestion(it, "Rejected by host") },
+            onRejectSuggestion = { listenTogetherManager.rejectSuggestion(it) },
             onLeaveRoom = { listenTogetherManager.leaveRoom() },
             onCreateRoom = { showCreateRoomSheet = true },
             onJoinRoom = { showJoinRoomSheet = true },
@@ -585,7 +594,7 @@ private fun ListLtMenuContent(content: LtMenuContent) {
             MenuSectionTitle(stringResource(R.string.listen_together_pending_suggestions))
             content.pendingSuggestions.forEach { suggestion ->
                 ListMenu.Entry(
-                    text = suggestion.trackInfo.title,
+                    text = suggestion.trackInfo.title.ifBlank { stringResource(R.string.metadata_unknown_title) },
                     subtitle = suggestion.fromUsername,
                     icon = { SettingIcon(R.drawable.musical_notes, palette.accent) },
                     trailingContent = {
@@ -840,7 +849,7 @@ private fun LazyGridScope.GridLtMenuContent(content: LtMenuContent, palette: Col
             content.pendingSuggestions.forEach { suggestion ->
                 item {
                     GridMenu.Entry(
-                        text = suggestion.trackInfo.title,
+                        text = suggestion.trackInfo.title.ifBlank { stringResource(R.string.metadata_unknown_title) },
                         subtitle = suggestion.fromUsername,
                         icon = { GridEntryIcon(R.drawable.musical_notes, palette.accent) },
                         trailingContent = {

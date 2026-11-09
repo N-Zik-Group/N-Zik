@@ -97,7 +97,7 @@ internal fun settingsEntrySearchIndex(resources: Resources): SettingsEntrySearch
     return SettingsEntrySearchIndex(
         AllSettingsEntryTargets,
         SettingsEntryDescriptions,
-        { resolve -> settingsEntryChoiceLabels(resolve, resources.configuration.locales[0]) },
+        { resolve -> settingsEntryChoiceLabels(resolve, resources.configuration.locales[0]) { id, count -> resources.getQuantityString(id, count, count) } },
         resources::getString,
     ).also {
         cachedResources = WeakReference(resources)

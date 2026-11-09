@@ -209,7 +209,7 @@ fun LyricsTrackSelector(
                 if (playerEnableLyricsPopupMessage)
                     coroutineScope.launch {
                         Toaster.e(
-                            R.string.lyrics_fetch_error_message,
+                            R.string.lyrics_provider_fetch_error_message,
                             providerName,
                             duration = Toast.LENGTH_LONG
                         )

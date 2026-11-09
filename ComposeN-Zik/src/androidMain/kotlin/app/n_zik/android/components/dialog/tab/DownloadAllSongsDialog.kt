@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.tab
 
+import app.n_zik.android.appTextResources
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -62,7 +63,7 @@ class DownloadAllSongsDialog(
             super.onShortClick()
         } else {
             app.kreate.android.me.knighthat.utils.Toaster.toast(
-                appContext().getString(R.string.downloads_empty_message),
+                appTextResources().getString(R.string.downloads_empty_message),
                 type = app.kreate.android.me.knighthat.utils.Toaster.Type.INFO
             )
         }

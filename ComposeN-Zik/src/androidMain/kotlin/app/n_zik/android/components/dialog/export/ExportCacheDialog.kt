@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.export
 
+import app.n_zik.android.appTextResources
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.core.database.*
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
@@ -725,14 +726,14 @@ class ExportCacheDialog(
         DialogPresence(visible = isActive, inherit = true) {
 
         val lyricsOptions = listOf(
-            null to appContext().getString(R.string.lyrics_empty),
-            LyricsType.Synced.name to appContext().getString(R.string.lyrics_synced),
-            LyricsType.Unsynced.name to appContext().getString(R.string.lyrics_unsynced),
-            LyricsType.Karaoke.name to appContext().getString(R.string.lyrics_karaoke)
+            null to appTextResources().getString(R.string.lyrics_empty),
+            LyricsType.Synced.name to appTextResources().getString(R.string.lyrics_synced),
+            LyricsType.Unsynced.name to appTextResources().getString(R.string.lyrics_unsynced),
+            LyricsType.Karaoke.name to appTextResources().getString(R.string.lyrics_karaoke)
         )
         ValueSelectorDialog(
             onDismiss = { hideDialog() },
-            title = appContext().getString(R.string.export_cached_songs_lyrics_confirmation),
+            title = appTextResources().getString(R.string.export_cached_songs_lyrics_confirmation),
             selectedValue = selectedLyricsType,
             values = lyricsOptions.map { it.first },
             onValueSelected = { type ->

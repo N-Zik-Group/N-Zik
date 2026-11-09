@@ -2,6 +2,8 @@
 package app.n_zik.android.components.ui.screens.home
 
 
+import app.n_zik.android.appTextResources
+import androidx.compose.ui.res.pluralStringResource
 import app.n_zik.android.components.navigation.FloatingActionSiblingSpace
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.search.SearchEmptyFeedback
@@ -308,7 +310,7 @@ fun HomeLibrary(
                 coroutineScope.launch(NzikDispatchers.DATA) {
                     val browseId = if (playlistId.startsWith("VL")) playlistId else "VL$playlistId"
                     Innertube.playlistPage(browseId = browseId)?.getOrNull()?.let { playlistPage ->
-                        val playlistName = playlistPage.title ?: appContext().getString(R.string.playlist_youtube_title)
+                        val playlistName = playlistPage.title ?: appTextResources().getString(R.string.playlist_youtube_title)
                         val playlist = Playlist(name = playlistName, browseId = browseId)
                         val playlistRowId = Database.playlistTable.insert(playlist)
                         
@@ -480,7 +482,7 @@ fun HomeLibrary(
 
     fun refresh(itemsToRefresh: List<PlaylistPreview>? = null) {
         if (refreshing || HomeSyncState.isSyncingPlaylists) {
-            Toaster.e(appContext().getString(R.string.library_sync_already_running_message))
+            Toaster.e(appTextResources().getString(R.string.library_sync_already_running_message))
             return
         }
         val targetPlaylists = itemsToRefresh ?: actionSource.targets
@@ -621,9 +623,9 @@ fun HomeLibrary(
                         val hasSelection = itemSelector.isNotEmpty()
                         val itemsToDelete = selected.toList()
                         val text = if (hasSelection) {
-                            stringResource(R.string.playlist_delete_selected_confirmation_count_format, itemsToDelete.size)
+                            pluralStringResource(R.plurals.playlist_delete_selected_confirmation_count, itemsToDelete.size, itemsToDelete.size)
                         } else {
-                            stringResource(R.string.playlist_delete_all_confirmation_count_format, itemsToDelete.size)
+                            pluralStringResource(R.plurals.playlist_delete_all_confirmation_count, itemsToDelete.size, itemsToDelete.size)
                         }
                         ConfirmationDialog(
                             title = stringResource(R.string.playlist_delete_multiple_dialog_title),

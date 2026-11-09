@@ -46,6 +46,7 @@
     <string name="home_greeting_evening">Good evening</string>
     <string name="home_greeting_morning">Good morning</string>
     <string name="home_greeting_night">Good night</string>
+    <string name="home_greeting_with_profile_format">%1$s, %2$s</string>
     <string name="home_playlists_settings">Home Playists</string>
     <string name="home_songs_settings">Home Songs</string>
     <string name="home_sort_last_played_song_label">By Last played song</string>
@@ -262,6 +263,7 @@
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
     <string name="playlist_remove_selected_confirmation">Remove the selected songs from this playlist?</string>
     <string name="playlist_remove_songs_confirmation">Remove the selection from the playlist? Selected tracks: %d</string>
+    <string name="playlist_remove_songs_success_format">%1$s %2$d</string>
     <string name="playlist_rename_dialog_title">Rename playlist</string>
     <string name="playlist_reorder_ascending_sort_required_message">Reorder is possible only in ascending sorting</string>
     <string name="playlist_reorder_lock_toggle_label">Lock/Unlock reorder songs</string>

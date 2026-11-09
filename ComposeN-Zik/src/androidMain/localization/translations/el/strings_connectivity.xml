@@ -11,7 +11,6 @@
     <string name="bridge_auto_stop_never">Ποτέ</string>
     <string name="bridge_auto_stop_no_client">Διακοπή χωρίς συνδεδεμένο PC</string>
     <string name="bridge_battery_action">Απενεργοποίηση βελτιστοποίησης μπαταρίας</string>
-    <string name="bridge_battery_title">Βελτιστοποίηση μπαταρίας</string>
     <string name="bridge_battery_warning">Βελτιστοποίηση μπαταρίας είναι: Το Android μπορεί να σταματήσει το διακομιστή PC στο παρασκήνιο</string>
     <string name="bridge_connected_pc">Συνδεδεμένος Υπολογιστής</string>
     <string name="bridge_disconnect">Αποσύνδεση</string>

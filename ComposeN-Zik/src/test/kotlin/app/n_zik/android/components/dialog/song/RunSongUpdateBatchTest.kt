@@ -8,6 +8,7 @@ import app.it.fast4x.rimusic.models.SongArtistMap
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.appContext
+import app.n_zik.android.utils.ToastRelay
 import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.DatabaseInitializer
@@ -181,6 +182,8 @@ class RunSongUpdateBatchTest {
         coEvery { SongUpdatePlaybackRefresh.publish(any(), any(), any(), any()) } just runs
 
         mockkObject(Toaster)
+        mockkObject(ToastRelay)
+        every { ToastRelay.successWithPlural(any(), any(), any()) } just runs
         every { Toaster.done() } just runs
         every { Toaster.e(any<Int>(), any<Int>()) } just runs
         every { Toaster.e(any<String>(), any<Int>()) } just runs
@@ -242,7 +245,7 @@ class RunSongUpdateBatchTest {
         assertEquals( 3, updatedRows.size )
         updatedRows.forEach { assertEquals( "Fetched title", it.title ) }
         // one summary toast with the processed count - never per-song done toasts
-        verify( exactly = 1 ) { Toaster.s( R.string.song_metadata_updated_count, 3L ) }
+        verify( exactly = 1 ) { ToastRelay.successWithPlural(R.plurals.song_metadata_updated_song_count, R.string.song_metadata_updated_count, 3) }
         verify( exactly = 0 ) { Toaster.done() }
         assertEquals( 3, progressCalls.size )
     }
@@ -267,7 +270,7 @@ class RunSongUpdateBatchTest {
             val stored = if ( row.id == "video_00001" ) stored1 else stored2
             assertEquals( stored.title, row.title )
         }
-        verify( exactly = 1 ) { Toaster.s( R.string.song_metadata_updated_count, 3L ) }
+        verify( exactly = 1 ) { ToastRelay.successWithPlural(R.plurals.song_metadata_updated_song_count, R.string.song_metadata_updated_count, 3) }
         assertEquals( 3, progressCalls.size )
     }
 
@@ -291,7 +294,7 @@ class RunSongUpdateBatchTest {
         coVerify( exactly = 0 ) { Innertube.song( "local:track_1" ) }
         verify( exactly = 2 ) { songTable.updateReplace( any() ) }
         assertEquals( setOf( "video_00001", "video_00002" ), updatedRows.map { it.id }.toSet() )
-        verify( exactly = 1 ) { Toaster.s( R.string.song_metadata_updated_count, 2L ) }
+        verify( exactly = 1 ) { ToastRelay.successWithPlural(R.plurals.song_metadata_updated_song_count, R.string.song_metadata_updated_count, 2) }
         // progress counts the remote targets only
         assertEquals( 2, progressCalls.size )
     }

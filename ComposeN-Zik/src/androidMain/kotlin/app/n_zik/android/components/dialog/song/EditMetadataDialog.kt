@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.song
 
+import app.n_zik.android.appTextResources
 import android.content.ContentUris
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -329,7 +330,7 @@ class EditMetadataDialog private constructor(
             val moduleState = FfmpegModule.ensureReady()
             if (moduleState !is ModuleState.READY) {
                 if (moduleState is ModuleState.FAILED) {
-                    Toaster.e(appContext().getString(R.string.modules_edit_unavailable, moduleState.message))
+                    Toaster.e(appTextResources().getString(R.string.modules_edit_unavailable, moduleState.message))
                 }
                 hideDialog()
                 return@LaunchedEffect
@@ -503,8 +504,8 @@ class EditMetadataDialog private constructor(
             if (moduleState !is ModuleState.READY) {
                 withContext(NzikDispatchers.UI) {
                     val reason = (moduleState as? ModuleState.FAILED)?.message
-                        ?: appContext().getString(R.string.modules_not_available_arch)
-                    Toaster.e(appContext().getString(R.string.modules_save_failed, reason))
+                        ?: appTextResources().getString(R.string.modules_not_available_arch)
+                    Toaster.e(appTextResources().getString(R.string.modules_save_failed, reason))
                 }
                 return@launch
             }

@@ -11,7 +11,6 @@
     <string name="bridge_auto_stop_never">Niciodată</string>
     <string name="bridge_auto_stop_no_client">Oprire fără PC conectat</string>
     <string name="bridge_battery_action">Dezactivează optimizarea bateriei</string>
-    <string name="bridge_battery_title">Optimizare baterie</string>
     <string name="bridge_battery_warning">Optimizarea bateriei este activă: Android poate opri serverul PC în fundal</string>
     <string name="bridge_connected_pc">PC conectat</string>
     <string name="bridge_disconnect">Deconectare</string>

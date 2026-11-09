@@ -1,5 +1,6 @@
 package app.n_zik.android.updater.services
 
+import app.n_zik.android.appTextResources
 import app.n_zik.android.updater.models.GithubRelease
 import app.n_zik.android.updater.models.UpdaterConstants
 import android.os.Looper
@@ -699,11 +700,11 @@ object Updater {
             }
         } catch (e: Exception) {
             val message = when (e) {
-                is UnknownHostException -> appContext().getString(R.string.common_error_no_internet)
-                is NoSuchFileException -> appContext().getString(R.string.updates_no_update_available)
+                is UnknownHostException -> appTextResources().getString(R.string.common_error_no_internet)
+                is NoSuchFileException -> appTextResources().getString(R.string.updates_no_update_available)
                 else -> {
                     Timber.tag("Updater").w(e, "Update check failed")
-                    appContext().getString(R.string.updates_check_failed)
+                    appTextResources().getString(R.string.updates_check_failed)
                 }
             }
             

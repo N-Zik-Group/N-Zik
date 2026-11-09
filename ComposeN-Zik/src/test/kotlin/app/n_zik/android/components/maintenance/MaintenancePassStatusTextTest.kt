@@ -44,9 +44,9 @@ class MaintenancePassStatusTextTest {
             )
         }
         val expected = listOf(
-            context.getString(R.string.maintenance_pass_cleaned, 2),
-            context.getString(R.string.maintenance_pass_skipped, 3),
-            context.getString(R.string.maintenance_pass_deferred, 1),
+            context.resources.getQuantityString(R.plurals.maintenance_pass_cleaned_count, 2, 2),
+            context.resources.getQuantityString(R.plurals.maintenance_pass_skipped_count, 3, 3),
+            context.resources.getQuantityString(R.plurals.maintenance_pass_deferred_count, 1, 1),
         ).joinToString(" · ")
         assertEquals("every part must be rendered, joined by the shared separator", expected, text)
     }
@@ -59,7 +59,7 @@ class MaintenancePassStatusTextTest {
         }
         assertEquals(
             "the count must be interpolated into the %d placeholder",
-            context.getString(R.string.maintenance_pass_cleaned, 1),
+            "1 item cleaned",
             text,
         )
     }

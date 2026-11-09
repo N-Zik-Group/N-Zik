@@ -11,7 +11,6 @@
     <string name="bridge_auto_stop_never">Nunca</string>
     <string name="bridge_auto_stop_no_client">Detener sin conexión de PC</string>
     <string name="bridge_battery_action">Desactivar optimización de batería</string>
-    <string name="bridge_battery_title">Optimización de la batería</string>
     <string name="bridge_battery_warning">La optimización de la batería está en: Android puede detener el servidor de PC en segundo plano</string>
     <string name="bridge_connected_pc">PC conectado</string>
     <string name="bridge_disconnect">Desconectar</string>

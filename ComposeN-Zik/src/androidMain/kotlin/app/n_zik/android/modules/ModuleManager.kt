@@ -1,7 +1,7 @@
 package app.n_zik.android.modules
 
+import app.n_zik.android.appTextResources
 import app.n_zik.android.R
-import app.n_zik.android.appContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,10 +29,10 @@ interface ModuleFailureMessages {
 
 /** Production [ModuleFailureMessages] - resolved strings via the app context. */
 object AppModuleFailureMessages : ModuleFailureMessages {
-    override fun unavailable(): String = appContext().getString(R.string.modules_not_available_arch)
-    override fun insufficientSpace(): String = appContext().getString(R.string.modules_insufficient_space)
-    override fun downloadFailed(cause: Throwable): String = appContext().getString(R.string.modules_download_failed)
-    override fun downloadNeeded(): String = appContext().getString(R.string.modules_download_needed)
+    override fun unavailable(): String = appTextResources().getString(R.string.modules_not_available_arch)
+    override fun insufficientSpace(): String = appTextResources().getString(R.string.modules_insufficient_space)
+    override fun downloadFailed(cause: Throwable): String = appTextResources().getString(R.string.modules_download_failed)
+    override fun downloadNeeded(): String = appTextResources().getString(R.string.modules_download_needed)
 }
 
 /**

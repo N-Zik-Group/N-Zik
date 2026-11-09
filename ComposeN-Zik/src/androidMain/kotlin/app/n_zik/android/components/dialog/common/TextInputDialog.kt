@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.common
 
+import app.n_zik.android.appTextResources
 import androidx.annotation.CallSuper
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandIn
@@ -17,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
-import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import org.intellij.lang.annotations.MagicConstant
@@ -48,7 +48,7 @@ abstract class TextInputDialog(
     override fun onValueChanged(newValue: String): Boolean {
         val result = newValue.matches( constraintRegex )
         if( !result )
-            errorMessage = appContext().resources.getString( R.string.common_validation_invalid_input )
+            errorMessage = appTextResources().getString( R.string.common_validation_invalid_input )
         else
             errorMessage = ""
 
@@ -58,7 +58,7 @@ abstract class TextInputDialog(
     @CallSuper
     override fun onSet( newValue: String ) {
         if( !allowEmpty && newValue.isEmpty() )
-            errorMessage = appContext().resources.getString( R.string.common_validation_empty_value )
+            errorMessage = appTextResources().getString( R.string.common_validation_empty_value )
     }
 
     @Composable

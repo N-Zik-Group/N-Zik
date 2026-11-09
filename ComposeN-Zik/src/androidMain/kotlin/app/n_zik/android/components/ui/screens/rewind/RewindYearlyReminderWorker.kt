@@ -15,6 +15,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -175,6 +176,7 @@ internal class RewindYearlyReminderWorker(
     }
 
     private fun postRewindReminder(finishedYear: Int) {
+        val resources = ContextCompat.getContextForLanguage(applicationContext).resources
         val manager = NotificationManagerCompat.from(applicationContext)
 
         // Year extra only (the shared contract key [RewindReminderWorker.EXTRA_DECK_YEAR]) —
@@ -196,8 +198,8 @@ internal class RewindYearlyReminderWorker(
             NOTIFICATION_ID,
             NotificationCompat.Builder(applicationContext, channelId(RewindReminderWorker.CHANNEL_ID, getActiveProfile(applicationContext)))
                 .setSmallIcon(R.drawable.ic_launcher_monochrome)
-                .setContentTitle(applicationContext.getString(R.string.rewind_notification_title, finishedYear.toString()))
-                .setContentText(applicationContext.getString(R.string.rewind_yearly_notification_description))
+                .setContentTitle(resources.getString(R.string.rewind_notification_title, finishedYear.toString()))
+                .setContentText(resources.getString(R.string.rewind_yearly_notification_description))
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setAutoCancel(true)
                 .setContentIntent(pending)

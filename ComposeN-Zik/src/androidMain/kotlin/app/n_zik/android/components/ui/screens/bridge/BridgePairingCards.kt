@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.screens.bridge
 
+import java.util.Locale
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
@@ -164,7 +165,7 @@ internal fun PairPcCard(running: BridgeState.Running, code: PairingCode?) {
                             ActiveCode(shown)
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = stringResource(R.string.bridge_pair_manual_hint, running.ip, running.port),
+                                text = stringResource(R.string.bridge_pair_manual_hint).format(Locale.ROOT, running.ip, running.port),
                                 style = typography().xs,
                                 color = palette.textSecondary,
                                 textAlign = TextAlign.Center,
@@ -281,7 +282,7 @@ private fun messageText(message: PairingMessage, running: BridgeState.Running, c
         is PairingMessage.OfferSent -> stringResource(R.string.bridge_pair_offer_sent, message.pcName)
         PairingMessage.OfferExpired -> stringResource(R.string.bridge_pair_offer_expired)
         PairingMessage.Unreachable ->
-            stringResource(R.string.bridge_pair_unreachable, running.ip, running.port, code?.display.orEmpty())
+            stringResource(R.string.bridge_pair_unreachable).format(Locale.ROOT, running.ip, running.port, code?.display.orEmpty())
         PairingMessage.NotPairingQr -> stringResource(R.string.bridge_pair_invalid_qr)
         PairingMessage.UnsupportedVersion -> stringResource(R.string.bridge_pair_unsupported_version)
         PairingMessage.InvalidQr -> stringResource(R.string.bridge_pair_invalid_payload)

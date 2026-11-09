@@ -1,5 +1,6 @@
 package app.n_zik.android.playback.services
 
+import app.n_zik.android.appTextResources
 import app.n_zik.android.playback.utils.playNextIfAvailable
 import app.n_zik.android.playback.utils.playPreviousIfAvailable
 import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
@@ -41,7 +42,6 @@ import kotlinx.coroutines.flow.first
 
 import android.annotation.SuppressLint
 import android.app.NotificationManager
-import android.app.NotificationChannel
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -138,6 +138,7 @@ import app.it.fast4x.rimusic.extensions.audiovolume.OnAudioVolumeChangedListener
 import app.n_zik.android.core.maintenance.MaintenanceDownloadSelfHealState
 import app.n_zik.android.core.maintenance.MaintenanceStateStore
 import app.n_zik.android.core.notifications.channelId
+import app.n_zik.android.core.notifications.ensureStartupNotificationChannel
 import app.n_zik.android.core.profiles.ProfileDataDirNames
 import app.n_zik.android.core.profiles.cacheDatabaseProvider
 import app.n_zik.android.core.profiles.mediaCacheDir
@@ -688,16 +689,12 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     private fun showStartupPlaybackNotification() {
-        val channel = channelId(NotificationChannelId, getActiveProfile(this))
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            getSystemService(NotificationManager::class.java)?.createNotificationChannel(
-                NotificationChannel(channel, getString(R.string.player_title), NotificationManager.IMPORTANCE_LOW),
-            )
-        }
+        val channel = ensureStartupNotificationChannel(this, NotificationChannelId, getActiveProfile(this))
+        val strings = appTextResources()
         val notification = NotificationCompat.Builder(this, channel)
             .setSmallIcon(R.drawable.ic_launcher_monochrome)
-            .setContentTitle(getString(R.string.player_title))
-            .setContentText(getString(R.string.backup_startup_preparing_library))
+            .setContentTitle(strings.getString(R.string.player_title))
+            .setContentText(strings.getString(R.string.backup_startup_preparing_library))
             .setContentIntent(PendingIntent.getActivity(
                 this,
                 OpenLibraryStartupActivityRequestCode,
@@ -2441,7 +2438,7 @@ class PlayerServiceModern : MediaLibraryService(),
             buttons
                 .filter { it == notificationPlayerFirstIcon }
                 .map {
-                    val displayName = appContext().resources.getString( commandButtonLabelRes(it) )
+                    val displayName = appTextResources().getString( commandButtonLabelRes(it) )
 
                     CommandButton.Builder()
                         .setDisplayName( displayName )
@@ -2455,7 +2452,7 @@ class PlayerServiceModern : MediaLibraryService(),
             buttons
                 .filter { it == notificationPlayerSecondIcon }
                 .map {
-                    val displayName = appContext().resources.getString( commandButtonLabelRes(it) )
+                    val displayName = appTextResources().getString( commandButtonLabelRes(it) )
 
                     CommandButton.Builder()
                         .setDisplayName( displayName )
@@ -2469,7 +2466,7 @@ class PlayerServiceModern : MediaLibraryService(),
             buttons
                 .filterNot { it == notificationPlayerFirstIcon || it == notificationPlayerSecondIcon }
                 .map {
-                    val displayName = appContext().resources.getString( commandButtonLabelRes(it) )
+                    val displayName = appTextResources().getString( commandButtonLabelRes(it) )
 
                     CommandButton.Builder()
                         .setDisplayName( displayName )
@@ -3101,7 +3098,7 @@ class PlayerServiceModern : MediaLibraryService(),
             timerJob = coroutineScope.timer(delayMillis) {
                 val notification = NotificationCompat
                     .Builder(this@PlayerServiceModern, channelId(SleepTimerNotificationChannelId, getActiveProfile(this@PlayerServiceModern)))
-                    .setContentTitle(getString(R.string.player_sleep_timer_finished_message))
+                    .setContentTitle(appTextResources().getString(R.string.player_sleep_timer_finished_message))
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setAutoCancel(true)
                     .setOnlyAlertOnce(true)

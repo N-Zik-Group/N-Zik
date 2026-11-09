@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.utils.percentLabel
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
@@ -70,7 +71,7 @@ private fun InteractionSlider(@StringRes title: Int, @StringRes description: Int
     SliderSettingsEntry(
         title = stringResource(title), text = stringResource(description),
         state = value, range = range, icon = icon,
-        stepSize = 0f, toDisplay = { "${(it * 100).roundToInt()}%" },
+        stepSize = 0f, toDisplay = { percentLabel((it * 100).roundToInt()) },
         inputValueText = Float::toString, onSlide = onChange,
         modifier = Modifier.testTag("settings.glass.$tag").settingsSearchTarget("glass.$tag"),
     )

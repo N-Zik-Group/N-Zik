@@ -1,6 +1,7 @@
 package app.n_zik.android.utils
 
 import android.content.Context
+import androidx.core.app.AppLocalesStorageHelper
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
@@ -16,6 +17,35 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], qualifiers = "en")
 class LocalizedToastRelayTest {
+    @Test
+    @Config(sdk = [32])
+    fun `background resource toasts use the saved app language before Android 13`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val application = mockk<MainApplication>()
+        every { application.applicationContext } returns context
+        Dependencies.init(application)
+        val previous = AppLocalesStorageHelper.readLocales(context)
+        val messages = mutableListOf<ToastRelay.Relayed>()
+        val listener = ToastRelay.Listener { messages += it }
+        ToastRelay.addListener(listener)
+        try {
+            AppLocalesStorageHelper.persistLocales(context, "fr")
+            assertEquals("Cancel", context.getString(R.string.common_action_cancel))
+            assertEquals("Annuler", ToastRelay.legacyResource(R.string.common_action_cancel, emptyArray()))
+            ToastRelay.onLegacyToast("Annuler", "NORMAL")
+            ToastRelay.successWithPlural(R.plurals.library_song_count, R.string.song_metadata_updated_count, 3)
+            assertEquals("updated_songs_count", messages.last().key)
+            assertEquals(listOf("3"), messages.last().args)
+            val french = context.createConfigurationContext(
+                android.content.res.Configuration(context.resources.configuration).apply { setLocale(java.util.Locale.FRENCH) },
+            )
+            assertEquals(french.resources.getQuantityString(R.plurals.library_song_count, 3, 3), messages.last().message)
+        } finally {
+            ToastRelay.removeListener(listener)
+            AppLocalesStorageHelper.persistLocales(context, previous)
+        }
+    }
+
     @Test
     fun `localized warnings keep the published resource key and arguments`() {
         val context = ApplicationProvider.getApplicationContext<Context>()

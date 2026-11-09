@@ -3,8 +3,10 @@ package app.n_zik.android
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.SharedPreferences
+import android.os.Looper
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.WorkManager
 import app.it.fast4x.rimusic.utils.encryptedPreferences
 import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.core.maintenance.MaintenanceConvergenceState
@@ -12,6 +14,7 @@ import app.n_zik.android.core.maintenance.MaintenanceDedupState
 import app.n_zik.android.core.maintenance.MaintenanceDbCleanupState
 import app.n_zik.android.core.maintenance.MaintenanceStateStore
 import app.n_zik.android.core.migration.ConvergenceSummary
+import app.n_zik.android.listentogether.ListenTogetherPlayerBridge
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -26,6 +29,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowProcess
 import java.util.concurrent.atomic.AtomicBoolean
@@ -96,29 +100,23 @@ class MaintenanceBootChainTest {
      * is protected, hence the plain reflective call. The credential migration inside
      * onCreate builds an AndroidKeyStore-backed EncryptedSharedPreferences, which does not
      * exist on Robolectric's JVM: stub the entry point with a relaxed mock (the migration
-     * loops over empty prefs, so nothing is actually migrated). Post-chain init (the
-     * WorkManager worker scheduling) also requires WorkManager, which is not initialized in
-     * this harness: it throws AFTER the maintenance chain has been launched, so the failure
-     * is swallowed (test harness only — the chain itself starts well before it).
+     * loops over empty prefs, so nothing is actually migrated). Stub WorkManager scheduling
+     * so the main-thread initializer can complete without running background workers.
      */
     private fun launchApp() {
         mockkStatic("app.it.fast4x.rimusic.utils.EncryptedPreferencesKt")
         every { any<Context>().encryptedPreferences } returns mockk<SharedPreferences>(relaxed = true)
+        mockkObject(WorkManager.Companion)
+        every { WorkManager.getInstance(any()) } returns mockk<WorkManager>(relaxed = true)
+        mockkObject(ListenTogetherPlayerBridge)
+        every { ListenTogetherPlayerBridge.ensureBound(any()) } returns Unit
         ShadowProcess.setProcessName(context.packageName)
         val app = MainApplication()
         ContextWrapper::class.java
             .getDeclaredMethod("attachBaseContext", Context::class.java)
             .apply { isAccessible = true }
             .invoke(app, context)
-        try {
-            app.onCreate()
-        } catch (e: Exception) {
-            // Expected under Robolectric: post-chain init fails (WorkManager not initialized).
-            // The maintenance chain was already launched, so the assertions below still verify
-
-            // its full effect; if the chain itself had not started, the await() polling
-            // would time out with a clear message instead.
-        }
+        app.onCreate()
     }
 
     /** The boot chain is fire-and-forget on the DATA pool: poll [condition] until [timeoutMs]. */
@@ -126,6 +124,7 @@ class MaintenanceBootChainTest {
         val deadline = System.currentTimeMillis() + timeoutMs
         while (!condition()) {
             check(System.currentTimeMillis() < deadline) { "timed out waiting for: $what" }
+            shadowOf(Looper.getMainLooper()).idle()
             Thread.sleep(25)
         }
     }
@@ -185,9 +184,9 @@ class MaintenanceBootChainTest {
 
         // a rewrite (all three written = chain done).
         await(30_000, "the boot chain to write all three states") {
-            MaintenanceStateStore.readDbCleanup(context) != null &&
-                MaintenanceStateStore.readDedup(context) != null &&
-                MaintenanceStateStore.readConvergence(context) != null
+            (MaintenanceStateStore.readDbCleanup(context)?.timestamp ?: 0L) > seedTimestamp &&
+                (MaintenanceStateStore.readDedup(context)?.timestamp ?: 0L) > seedTimestamp &&
+                (MaintenanceStateStore.readConvergence(context)?.timestamp ?: 0L) > seedTimestamp
         }
 
         val dbCleanup = MaintenanceStateStore.readDbCleanup(context)

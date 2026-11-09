@@ -457,7 +457,7 @@ fun RescueScreen() {
                                     context.getString(R.string.recovery_accounts_imported_count, applied.profiles)
                                 // A base-only archive restores the base face and/or name, not a profile count.
                                 applied.faces > 0 || applied.names > 0 ->
-                                    context.getString(R.string.recovery_accounts_imported_base)
+                                    context.getString(R.string.backup_import_profile_state_complete_base)
                                 else ->
                                     context.getString(R.string.recovery_accounts_imported_count, 0)
                             }
@@ -604,7 +604,7 @@ fun RescueScreen() {
                                             showResult(
                                                 result,
                                                 result.getOrNull()?.let {
-                                                    context.getString(R.string.recovery_profiles_deleted_count, it)
+                                                    context.resources.getQuantityString(R.plurals.recovery_profile_deleted_count, it, it)
                                                 }
                                             )
                                             // Deleting the CURRENT profile switches the active slot
@@ -710,7 +710,7 @@ fun RescueScreen() {
                                             showResult(
                                                 result,
                                                 result.getOrNull()?.let {
-                                                    context.getString(R.string.recovery_profiles_reset_count, it)
+                                                    context.resources.getQuantityString(R.plurals.recovery_profile_reset_count, it, it)
                                                 }
                                             )
                                         }
@@ -812,7 +812,7 @@ fun RescueScreen() {
                                             showResult(
                                                 result,
                                                 result.getOrNull()?.let {
-                                                    context.getString(R.string.recovery_profiles_restored_count, it)
+                                                    context.resources.getQuantityString(R.plurals.recovery_profile_restored_count, it, it)
                                                 }
                                             )
                                         }

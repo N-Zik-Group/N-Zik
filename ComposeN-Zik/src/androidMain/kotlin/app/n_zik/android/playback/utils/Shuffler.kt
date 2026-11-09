@@ -177,7 +177,7 @@ object Shuffler {
                     }
                 }
                 withContext(NzikDispatchers.UI) {
-                    Toaster.s(R.string.playlist_positions_shuffled, formatArgs = *arrayOf(count))
+                    ToastRelay.successWithPlural(R.plurals.playlist_positions_shuffled_count, R.string.playlist_positions_shuffled, count)
                 }
             } catch (e: Exception) {
                 withContext(NzikDispatchers.UI) {

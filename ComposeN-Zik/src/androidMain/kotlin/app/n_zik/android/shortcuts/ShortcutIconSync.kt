@@ -188,12 +188,12 @@ internal fun resolveActiveShortcutIds(context: Context): List<String> {
  * This is called from [app.n_zik.android.MainApplication.onCreate] early (before
  * `Dependencies.init`) so that the Rescue shortcut exists even if initialization fails.
  */
-internal fun registerAppShortcuts(context: Context) {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return
+internal fun registerAppShortcuts(context: Context): Boolean {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return true
     val shortcutManager =
-        runCatching { context.getSystemService(ShortcutManager::class.java) }.getOrNull() ?: return
+        runCatching { context.getSystemService(ShortcutManager::class.java) }.getOrNull() ?: return false
 
-    runCatching {
+    return runCatching {
         val activeIds = resolveActiveShortcutIds(context)
         val blackIcons = isGoogleLauncher(homeLauncherPackage(context.packageManager))
         val registered = shortcutManager.setDynamicShortcuts(activeIds.map { buildShortcut(context, it, blackIcons) })
@@ -208,9 +208,10 @@ internal fun registerAppShortcuts(context: Context) {
             // false = rate-limited: this runs on every main-process start, including background ones.
             Timber.tag("ShortcutIconSync").w("Shortcuts not registered (rate limited)")
         }
+        registered
     }.onFailure {
         Timber.tag("ShortcutIconSync").e(it, "Failed to register shortcuts")
-    }
+    }.getOrDefault(false)
 }
 
 /**
@@ -245,7 +246,7 @@ internal fun shortcutIntentAction(shortcutId: String): String =
  * name, "N-Zik Fan").
  */
 internal fun profileShortcutDisplayName(context: Context, profileId: String): String =
-    resolveProfileDisplayName(profileId, context.profileDisplayName(profileId), context.getString(R.string.profile_base_name))
+    resolveProfileDisplayName(profileId, context.profileDisplayName(profileId), ContextCompat.getString(context, R.string.profile_base_name))
 
 /**
  * The launcher short label of a shortcut: the fixed label of the static shortcuts, the profile
@@ -258,7 +259,7 @@ internal fun shortcutShortLabel(context: Context, shortcutId: String): String =
         profileShortcutDisplayName(context, profileIdOfShortcut(shortcutId).orEmpty())
             .take(MAX_SHORTCUT_SHORT_LABEL_LENGTH)
     } else {
-        context.getString(shortcutSpec(shortcutId).first)
+        ContextCompat.getString(context, shortcutSpec(shortcutId).first)
     }
 
 /** Intent action for the Rescue Center shortcut. Must match the manifest intent-filter. */

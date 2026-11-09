@@ -580,6 +580,10 @@ class MainActivity :
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is PlayerServiceModern.Binder) {
                 this@MainActivity.binder = service
+                if (widgetLocaleRefreshPending) {
+                    widgetLocaleRefreshPending = false
+                    service.refreshArtworkWidgets()
+                }
             }
         }
 
@@ -590,6 +594,7 @@ class MainActivity :
     }
 
     private var binder by mutableStateOf<PlayerServiceModern.Binder?>(null)
+    private var widgetLocaleRefreshPending = false
     private var intentUriData by mutableStateOf<Uri?>(null)
 
     // Observable so a shortcut tap while the app is already running (delivered via onNewIntent,
@@ -2905,6 +2910,17 @@ class MainActivity :
 
     override fun onResume() {
         super.onResume()
+        val mainApplication = application as? MainApplication
+        mainApplication?.createNotificationChannels(resources)
+        if (mainApplication?.refreshShortcutLanguage(this) == true) {
+            app.n_zik.android.widget.PlaylistWidgetRefreshWorker.schedule(applicationContext)
+            val player = binder
+            if (player != null) player.refreshArtworkWidgets()
+            else if (PlayerServiceModern.isRunning) widgetLocaleRefreshPending = true
+            else lifecycleScope.launch(NzikDispatchers.DATA) {
+                app.n_zik.android.widget.NZikWidgetManager.updateIdleWidgets(this@MainActivity)
+            }
+        }
         appRunningInBackground = false
     }
 

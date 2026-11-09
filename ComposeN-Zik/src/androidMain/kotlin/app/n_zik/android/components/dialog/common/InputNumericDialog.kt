@@ -39,7 +39,8 @@ inline fun InputNumericDialog(
     val txtFieldError = remember { mutableStateOf("") }
     val txtField = remember { mutableStateOf(value) }
     val value_cannot_empty = stringResource(R.string.common_validation_empty_value)
-    val value_must_be_greater = stringResource(R.string.common_validation_minimum_value)
+    val minimum = valueMin.trim().toIntOrNull() ?: Int.MIN_VALUE
+    val minimumError = stringResource(R.string.common_validation_minimum_value_format, minimum)
 
     DefaultDialog(
         title = title,
@@ -52,11 +53,11 @@ inline fun InputNumericDialog(
                     DialogButton(
                         text = stringResource(R.string.common_action_apply),
                         onClick = {
+                            val number = txtField.value.trim().toIntOrNull()
                             when {
-                                txtField.value.isEmpty() -> txtFieldError.value = value_cannot_empty
-                                txtField.value.toInt() < valueMin.toInt() ->
-                                    txtFieldError.value = value_must_be_greater + valueMin
-                                else -> setValue(txtField.value)
+                                number == null -> txtFieldError.value = value_cannot_empty
+                                number < minimum -> txtFieldError.value = minimumError
+                                else -> setValue(txtField.value.trim())
                             }
                         }
                     ),

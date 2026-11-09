@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
 
     <!-- Logs -->
     <string name="logs_action_export">Export logs</string>
@@ -42,6 +43,7 @@
     <string name="maintenance_dedup_flagged">Flagged %d row(s)</string>
     <string name="maintenance_dedup_merged">Merged %d row(s)</string>
     <string name="maintenance_dedup_merged_flagged">Merged %1$d row(s) · Flagged %2$d row(s)</string>
+    <string name="maintenance_dedup_counts_format">%1$s · %2$s</string>
     <string name="maintenance_discord_invalid_token">Invalid token</string>
     <string name="maintenance_discord_ok">OK</string>
     <string name="maintenance_discord_reconnect_failed">Reconnection failed</string>

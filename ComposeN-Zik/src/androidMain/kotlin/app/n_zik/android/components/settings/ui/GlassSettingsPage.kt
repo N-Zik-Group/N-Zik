@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.utils.percentLabel
 import kotlin.math.roundToInt
 
 import android.graphics.Color as AndroidColor
@@ -249,7 +250,7 @@ internal fun GlassSettingsContent(
                                 }) },
                             )
                             if (liquid) {
-                                GlassSlider("vibrancy", stringResource(R.string.glass_effect_color_vibrancy), config.vibrancy, 0f..2f, "${(config.vibrancy * 50).roundToInt()}%", R.drawable.eye) { store.setFloat(glassVibrancyKey, it) }
+                                GlassSlider("vibrancy", stringResource(R.string.glass_effect_color_vibrancy), config.vibrancy, 0f..2f, percentLabel((config.vibrancy * 50).roundToInt()), R.drawable.eye) { store.setFloat(glassVibrancyKey, it) }
                                 GlassSlider("blur", stringResource(R.string.glass_effect_frost), config.blur, 0f..24f, "${config.blur.roundToInt()} dp", R.drawable.drop_blur) { store.setFloat(glassBlurKey, it) }
                             } else {
                                 Text(stringResource(if (config.quality == GlassQuality.Performance) R.string.glass_effect_quality_fastest_description else R.string.glass_effect_unsupported), color = ink.copy(alpha = .66f), style = typography().xxs, modifier = Modifier.padding(18.dp))
@@ -259,19 +260,19 @@ internal fun GlassSettingsContent(
                     item("colour", contentType = "group") {
                         GlassSection(R.string.glass_effect_group_color) {
                             TintRow(config, onTint = store::setTint, onColor = store::setColor, onStrength = { store.setFloat(glassTintStrengthKey, it) })
-                            GlassSlider("film", stringResource(R.string.glass_effect_film), config.film, 0f..1f, "${(config.film * 100).roundToInt()}%", R.drawable.droplet) { store.setFloat(glassFilmKey, it) }
-                            GlassSlider("indicator", stringResource(R.string.glass_effect_active_tab_indicator), config.indicatorOpacity, 0f..1f, "${(config.indicatorOpacity * 100).roundToInt()}%", R.drawable.checkmark) { store.setFloat(glassIndicatorOpacityKey, it) }
+                            GlassSlider("film", stringResource(R.string.glass_effect_film), config.film, 0f..1f, percentLabel((config.film * 100).roundToInt()), R.drawable.droplet) { store.setFloat(glassFilmKey, it) }
+                            GlassSlider("indicator", stringResource(R.string.glass_effect_active_tab_indicator), config.indicatorOpacity, 0f..1f, percentLabel((config.indicatorOpacity * 100).roundToInt()), R.drawable.checkmark) { store.setFloat(glassIndicatorOpacityKey, it) }
                         }
                     }
                     item("readability", contentType = "group") {
                         GlassSection(R.string.glass_effect_group_readability) {
-                            GlassSlider("dialogDimming", stringResource(R.string.glass_effect_dialog_dimming), config.dialogDimming, 0f..1f, "${(config.dialogDimming * 100).roundToInt()}%", R.drawable.eye_off) { store.setFloat(glassDialogDimmingKey, it) }
-                            GlassSlider("menuDimming", stringResource(R.string.glass_effect_menu_dimming), config.menuDimming, 0f..1f, "${(config.menuDimming * 100).roundToInt()}%", R.drawable.menu) { store.setFloat(glassMenuDimmingKey, it) }
+                            GlassSlider("dialogDimming", stringResource(R.string.glass_effect_dialog_dimming), config.dialogDimming, 0f..1f, percentLabel((config.dialogDimming * 100).roundToInt()), R.drawable.eye_off) { store.setFloat(glassDialogDimmingKey, it) }
+                            GlassSlider("menuDimming", stringResource(R.string.glass_effect_menu_dimming), config.menuDimming, 0f..1f, percentLabel((config.menuDimming * 100).roundToInt()), R.drawable.menu) { store.setFloat(glassMenuDimmingKey, it) }
                         }
                     }
                     item("edges", contentType = "group") {
                         GlassSection(R.string.glass_effect_group_edges) {
-                            GlassSlider("rim", stringResource(R.string.glass_effect_rim), config.rim, 0f..1f, "${(config.rim * 100).roundToInt()}%", R.drawable.sparkles) { store.setFloat(glassRimKey, it) }
+                            GlassSlider("rim", stringResource(R.string.glass_effect_rim), config.rim, 0f..1f, percentLabel((config.rim * 100).roundToInt()), R.drawable.sparkles) { store.setFloat(glassRimKey, it) }
                             if (refractive) {
                                 GlassSlider("refractionDepth", stringResource(R.string.glass_effect_refraction_depth), config.depth, 0f..1f, "${(config.depth * 48).roundToInt()} dp", R.drawable.sound_effect) { store.setFloat(glassDepthKey, it) }
                                 GlassSlider("refractionAmount", stringResource(R.string.glass_effect_refraction_amount), config.amount, 0f..1f, "${(config.amount * 48).roundToInt()} dp", R.drawable.resize) { store.setFloat(glassAmountKey, it) }
@@ -406,7 +407,7 @@ internal fun TintRow(config: GlassSettings, onTint: (GlassTintSource) -> Unit, o
             modifier = Modifier.testTag("settings.glass.hue").settingsSearchTarget("glass.hue"),
         )
     }
-    if (chosen.isSpecified) GlassSlider("tintStrength", stringResource(R.string.glass_effect_tint_strength), config.tintStrength, 0f..1f, "${(config.tintStrength * 100).roundToInt()}%", R.drawable.drop_half_fill, onChange = onStrength)
+    if (chosen.isSpecified) GlassSlider("tintStrength", stringResource(R.string.glass_effect_tint_strength), config.tintStrength, 0f..1f, percentLabel((config.tintStrength * 100).roundToInt()), R.drawable.drop_half_fill, onChange = onStrength)
 }
 
 @Composable

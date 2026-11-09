@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -61,6 +62,9 @@ import app.n_zik.android.components.ui.sliders.Slider
 import app.n_zik.android.components.ui.toggles.Switch
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
+import java.text.NumberFormat
+import java.text.ParsePosition
+import java.util.Locale
 
 /** Entry row that opens a dialog to add/remove items of a string list. */
 @Composable
@@ -476,6 +480,7 @@ fun SliderSettingsEntry(
     trailingContent: (@Composable () -> Unit)? = null,
 ) = Column(modifier = modifier) {
 
+    val inputLocale = LocalConfiguration.current.locales[0]
     val manualEnterDialog = object: IDialog {
 
         var valueFloat: Float by remember( state ) { mutableFloatStateOf( state ) }
@@ -485,16 +490,18 @@ fun SliderSettingsEntry(
             get() = stringResource( R.string.common_value_input_hint )
 
         override var isActive: Boolean by rememberSaveable { mutableStateOf(false) }
-        override var value: String by remember( valueFloat ) {
+        override var value: String by remember(valueFloat, inputLocale) {
             val isInteger = isIntegerOnly || kotlin.math.abs(valueFloat - kotlin.math.round(valueFloat)) < 0.001f
             val formatted = inputValueText?.invoke(valueFloat)
-                ?: if (isInteger) kotlin.math.round(valueFloat).toInt().toString()
-                else "%.1f".format(valueFloat).replace(",", ".")
-            mutableStateOf( formatted )
+                ?: NumberFormat.getNumberInstance(inputLocale).apply {
+                    isGroupingUsed = false
+                    maximumFractionDigits = if (isInteger) 0 else 1
+                }.format(valueFloat.toDouble())
+            mutableStateOf(formatted)
         }
 
         override fun onSet( newValue: String ) {
-            val parsed = newValue.replace(",", ".").toFloatOrNull() ?: return
+            val parsed = parseSliderInput(newValue, inputLocale) ?: return
             this.valueFloat = parsed.coerceIn(range.start, range.endInclusive)
             onSlide( this.valueFloat )
             onSlideComplete()
@@ -891,4 +898,18 @@ fun ModernSettingsEntry(
                     modifier = Modifier.size(16.dp)
                 )
     }
+}
+
+/** Parses a complete localized number, while still accepting an ASCII decimal from pasted input. */
+internal fun parseSliderInput(text: String, locale: Locale): Float? {
+    val input = text.trim()
+    val position = ParsePosition(0)
+    val localized = NumberFormat.getNumberInstance(locale).apply { isGroupingUsed = false }
+        .parse(input, position)
+    val value = if (localized != null && position.index == input.length) {
+        localized.toFloat()
+    } else {
+        input.replace(',', '.').toFloatOrNull()
+    }
+    return value?.takeIf(Float::isFinite)
 }

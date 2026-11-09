@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.player
 
+import app.n_zik.android.utils.percentLabel
 import app.n_zik.android.components.glass.NativeIconActionSize
 
 import app.n_zik.android.components.dialog.common.DialogPresence
@@ -146,7 +147,7 @@ class PlaybackSettingsMenu private constructor(
                         PlaybackParameters(rounded, playbackPitch)
                 },
                 valueRange = 0.1f..10f,
-                displayValue = { "%.1fx".format(it).replace(",", ".") },
+                displayValue = { stringResource(R.string.player_playback_speed_value, it) },
                 stepSize = 0f,
                 defaultValue = 1f,
                 drawValuePoints = true,
@@ -169,7 +170,7 @@ class PlaybackSettingsMenu private constructor(
                         PlaybackParameters(playbackSpeed, rounded)
                 },
                 valueRange = 0.1f..5f,
-                displayValue = { "%.1fx".format(it).replace(",", ".") },
+                displayValue = { stringResource(R.string.player_playback_speed_value, it) },
                 stepSize = 0f,
                 defaultValue = 1f,
                 drawValuePoints = true,
@@ -209,7 +210,7 @@ class PlaybackSettingsMenu private constructor(
                     binder.player.setGlobalVolume(playbackVolume)
                 },
                 valueRange = 0f..1f,
-                displayValue = { "${(it * 100).toInt()}%" },
+                displayValue = { percentLabel((it * 100).toInt()) },
                 stepSize = 0f,
                 defaultValue = 1f,
                 drawValuePoints = true,
@@ -231,7 +232,7 @@ class PlaybackSettingsMenu private constructor(
                     setDeviceVolume(context, playbackDeviceVolume)
                 },
                 valueRange = 0f..1f,
-                displayValue = { "${(it * 100).toInt()}%" },
+                displayValue = { percentLabel((it * 100).toInt()) },
                 stepSize = 0f,
                 onReset = {
                     playbackDeviceVolume = getDeviceVolume(context)
@@ -269,7 +270,7 @@ class PlaybackSettingsMenu private constructor(
                 value = bassBoost,
                 onValueChange = { bassBoost = kotlin.math.round(it * 10000f) / 10000f },
                 valueRange = 0f..1f,
-                displayValue = { "%.2f dB".format(it * 15f).replace(",", ".") },
+                displayValue = { stringResource(R.string.player_decibels_value, it * 15f) },
                 stepSize = 0f,
                 defaultValue = 0f,
                 drawValuePoints = true,
@@ -358,7 +359,7 @@ class PlaybackSettingsMenu private constructor(
                     title = stringResource(R.string.player_controls_speed_title),
                     icon = R.drawable.slow_motion,
                     value = playbackSpeed,
-                    toDisplay = { "%.1fx".format(it).replace(",", ".") },
+                    toDisplay = { stringResource(R.string.player_playback_speed_value, it) },
                     onValueChange = {
                         val rounded = kotlin.math.round(it * 10f) / 10f
                         playbackSpeed = rounded
@@ -382,7 +383,7 @@ class PlaybackSettingsMenu private constructor(
                     title = stringResource(R.string.player_controls_pitch_title),
                     icon = R.drawable.equalizer,
                     value = playbackPitch,
-                    toDisplay = { "%.1fx".format(it).replace(",", ".") },
+                    toDisplay = { stringResource(R.string.player_playback_speed_value, it) },
                     onValueChange = {
                         val rounded = kotlin.math.round(it * 10f) / 10f
                         playbackPitch = rounded
@@ -423,7 +424,7 @@ class PlaybackSettingsMenu private constructor(
                     title = stringResource(R.string.player_controls_playback_volume_title),
                     icon = R.drawable.volume_up,
                     value = playbackVolume,
-                    toDisplay = { "${(it * 100).toInt()}%" },
+                    toDisplay = { percentLabel((it * 100).toInt()) },
                     onValueChange = {
                         val rounded = kotlin.math.round(it * 100f) / 100f
                         playbackVolume = rounded
@@ -447,7 +448,7 @@ class PlaybackSettingsMenu private constructor(
                     title = stringResource(R.string.player_controls_device_volume_title),
                     icon = R.drawable.master_volume,
                     value = playbackDeviceVolume,
-                    toDisplay = { "${(it * 100).toInt()}%" },
+                    toDisplay = { percentLabel((it * 100).toInt()) },
                     onValueChange = {
                         val rounded = kotlin.math.round(it * 100f) / 100f
                         playbackDeviceVolume = rounded
@@ -489,7 +490,7 @@ class PlaybackSettingsMenu private constructor(
                     title = stringResource(R.string.settings_bass_boost_level),
                     icon = R.drawable.musical_notes,
                     value = bassBoost,
-                    toDisplay = { "%.2f dB".format(it * 15f).replace(",", ".") },
+                    toDisplay = { stringResource(R.string.player_decibels_value, it * 15f) },
                     onValueChange = { bassBoost = kotlin.math.round(it * 10000f) / 10000f },
                     valueRange = 0f..1f,
                     stepSize = 0f,
@@ -525,7 +526,7 @@ class PlaybackSettingsMenu private constructor(
                     title = stringResource(R.string.audio_loudness_boost_level),
                     icon = R.drawable.volume_up,
                     value = tempVolumeBoost,
-                    toDisplay = { "%.2f dB".format(it).replace(",", ".") },
+                    toDisplay = { stringResource(R.string.player_decibels_value, it) },
                     onValueChange = { tempVolumeBoost = kotlin.math.round(it * 100f) / 100f },
                     onSlideComplete = { volumeBoostLevel = tempVolumeBoost },
                     valueRange = -30f..30f,

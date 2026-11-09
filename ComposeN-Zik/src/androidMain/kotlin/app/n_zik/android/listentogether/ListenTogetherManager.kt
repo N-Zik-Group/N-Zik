@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.appTextResources
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import timber.log.Timber
@@ -534,7 +535,13 @@ class ListenTogetherManager(
 
             is ListenTogetherEvent.Kicked -> {
                 Timber.tag(TAG).d("Kicked from room: ${event.reason}")
-                val reason = event.reason.takeIf { it.isNotBlank() }
+                val reason = event.reason.trim().takeUnless { it.isEmpty() || it == "Removed by host" }?.let {
+                    if (it == LISTEN_TOGETHER_BLOCKED_REASON) {
+                        appTextResources().getString(R.string.listen_together_user_blocked_by_host)
+                    } else {
+                        it
+                    }
+                }
                 if (reason != null) {
                     Toaster.e(R.string.listen_together_kicked_reason, reason)
                 } else {
@@ -692,7 +699,7 @@ class ListenTogetherManager(
             }
 
             is ListenTogetherEvent.SuggestionRejected -> {
-                val reason = event.reason.takeIf { it.isNotBlank() }
+                val reason = event.reason.trim().takeUnless { it.isEmpty() || it == "Rejected by host" }
                 if (reason != null) {
                     Toaster.i(R.string.listen_together_suggestion_rejected_reason, reason)
                 } else {

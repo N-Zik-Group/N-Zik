@@ -194,7 +194,7 @@ internal fun BatteryOptimizationWarning() {
     if (!optimized) return
 
     SettingsSectionCard(
-        title = stringResource(R.string.bridge_battery_title),
+        title = stringResource(R.string.onboarding_permission_battery),
         icon = R.drawable.battery_opti,
         content = {
             Column(

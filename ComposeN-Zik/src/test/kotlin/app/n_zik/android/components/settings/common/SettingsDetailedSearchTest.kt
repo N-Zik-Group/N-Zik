@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings.common
 
 import java.util.Locale
+import app.n_zik.android.utils.secondsLabel
 
 import android.app.Application
 import android.content.Context
@@ -203,7 +204,7 @@ class SettingsDetailedSearchTest {
             R.string.player_background_artwork_m3e_morphing_label to "Artwork M3E morphing shapes",
             R.string.player_background_theme_m3e_morphing_label to "Theme M3E morphing shapes",
         ).forEach { (resource, label) -> assertEquals(label, english.getString(resource)) }
-        val catalog = settingsEntryChoiceLabels(english::getString, Locale.ENGLISH)
+        val catalog = settingsEntryChoiceLabels(english::getString, Locale.US) { id, count -> english.resources.getQuantityString(id, count, count) }
         val backgrounds = catalog.getValue("appearance.colors_and_background.background_colors")
         assertTrue(backgrounds.containsAll(listOf(R.string.common_color_source_artwork, R.string.common_color_source_theme, R.string.player_background_artwork_gradient_label, R.string.player_background_theme_gradient_label, R.string.player_background_artwork_blurred_label).map(english::getString)))
         assertEquals(backgrounds.size, backgrounds.distinct().size)
@@ -218,14 +219,14 @@ class SettingsDetailedSearchTest {
     @Test fun choiceCatalogUsesExistingStableTargetsAndFiniteLocalizedNativeAndNumericLabels() {
         val english = localized(Locale.ENGLISH)
         val french = localized(Locale.FRENCH)
-        val catalog = settingsEntryChoiceLabels(english::getString, Locale.ENGLISH)
+        val catalog = settingsEntryChoiceLabels(english::getString, Locale.US) { id, count -> english.resources.getQuantityString(id, count, count) }
         assertTrue(catalog.isNotEmpty())
         assertTrue(AllSettingsEntryTargets.map { it.id }.containsAll(catalog.keys))
         val samples = mapOf(
             "data.cache.image_cache_max_size" to "32MB",
-            "general.playback.pause_between_songs" to "5s",
-            "general.playback.crossfade_duration" to "12s",
-            "ai.quick_picks.quick_selection_type" to english.getString(R.string.recommendations_quick_picks_count, 3),
+            "general.playback.pause_between_songs" to secondsLabel(5, Locale.US),
+            "general.playback.crossfade_duration" to secondsLabel(12, Locale.US),
+            "ai.quick_picks.quick_selection_type" to english.resources.getQuantityString(R.plurals.recommendations_quick_picks_song_count, 3, 3),
             "ui.settings_use_font_type.settings_use_font_type" to FontType.entries.first().name,
             "other.proxy.proxy_mode" to "SOCKS",
             "ai.statistics.statistics_max_number_of_items" to english.getString(R.string.statistics_items_limit_custom),
@@ -245,7 +246,7 @@ class SettingsDetailedSearchTest {
 
     @Test fun formattedChoiceLabelsUseTheResourcesLocale() {
         val arabic = localized(Locale.forLanguageTag("ar"))
-        val choice = arabic.getString(R.string.recommendations_quick_picks_count, 3)
+        val choice = arabic.resources.getQuantityString(R.plurals.recommendations_quick_picks_song_count, 3, 3)
         assertEquals(
             1,
             searchSettingsEntries(arabic, choice).count { it.id == "ai.quick_picks.quick_selection_type" },

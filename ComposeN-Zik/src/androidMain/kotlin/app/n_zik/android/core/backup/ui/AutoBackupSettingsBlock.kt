@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -21,11 +22,14 @@ import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.ImportantSettingsDescription
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.core.backup.BackupManager
+import java.time.DayOfWeek
+import java.time.format.TextStyle
 import timber.log.Timber
 
 @Composable
 fun AutoBackupSettingsBlock() {
     val context = LocalContext.current
+    val locale = LocalConfiguration.current.locales[0]
 
     var autoBackupInterval by rememberPreference(BackupManager.PREF_INTERVAL, BackupManager.INTERVAL_NONE)
     var autoBackupOnDbChange by rememberPreference(BackupManager.PREF_DB_CHANGE, false)
@@ -304,16 +308,11 @@ fun AutoBackupSettingsBlock() {
         Column {
             OtherSettingsEntry(
                 title = stringResource(R.string.backup_auto_schedule_day_of_week),
-                text = stringResource(R.string.settings_description_with_value, stringResource(R.string.backup_auto_schedule_day_of_week_description), when (autoBackupScheduleDayOfWeek) {
-                    1 -> "Monday"
-                    2 -> "Tuesday"
-                    3 -> "Wednesday"
-                    4 -> "Thursday"
-                    5 -> "Friday"
-                    6 -> "Saturday"
-                    7 -> "Sunday"
-                    else -> "Monday"
-                }),
+                text = stringResource(
+                    R.string.settings_description_with_value,
+                    stringResource(R.string.backup_auto_schedule_day_of_week_description),
+                    DayOfWeek.of(autoBackupScheduleDayOfWeek.takeIf { it in 1..7 } ?: 1).getDisplayName(TextStyle.FULL_STANDALONE, locale),
+                ),
                 icon = R.drawable.calendar,
                 onClick = { showScheduleDayOfWeekDialog = true },
                 modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_schedule_day_of_week").padding(start = 24.dp)
@@ -331,12 +330,7 @@ fun AutoBackupSettingsBlock() {
                 BackupManager.scheduleBackup(context, autoBackupInterval)
                 showScheduleDayOfWeekDialog = false
             },
-            valueText = {
-                when (it) {
-                    1 -> "Monday"; 2 -> "Tuesday"; 3 -> "Wednesday"; 4 -> "Thursday"
-                    5 -> "Friday"; 6 -> "Saturday"; 7 -> "Sunday"; else -> "Monday"
-                }
-            },
+            valueText = { DayOfWeek.of(it).getDisplayName(TextStyle.FULL_STANDALONE, locale) },
             onDismiss = { showScheduleDayOfWeekDialog = false }
         )
     }

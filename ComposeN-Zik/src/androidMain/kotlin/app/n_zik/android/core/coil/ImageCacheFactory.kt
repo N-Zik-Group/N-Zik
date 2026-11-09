@@ -1,5 +1,6 @@
 package app.n_zik.android.core.coil
 
+import app.n_zik.android.appTextResources
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
@@ -865,7 +866,7 @@ object ImageCacheFactory {
                 }
             }
 
-            lastError = (result as? ErrorResult)?.throwable?.message ?: appContext().resources.getString(R.string.image_error_unknown)
+            lastError = (result as? ErrorResult)?.throwable?.message ?: appTextResources().getString(R.string.image_error_unknown)
             //Timber.tag("ImageCache").e("Error (loadBitmap): original=%s, modified=%s, error=%s", url, currentUrl, lastError)
 
             // Un-swap fallback for loadBitmap

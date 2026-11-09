@@ -7,32 +7,36 @@ class JoinRejectionMessageTest {
 
     private val denied = "Join request denied"
     private val invalidCode = "Invalid room code"
+    private val blocked = "Blocked by host"
+
+    private fun message(reason: String?) =
+        joinRejectionMessage(reason, denied, invalidCode, blocked) { "$denied: $it" }
 
     @Test
     fun `null reason maps to the generic denial message`() {
-        assertEquals(denied, joinRejectionMessage(null, denied, invalidCode))
+        assertEquals(denied, message(null))
     }
 
     @Test
     fun `blank reason maps to the generic denial message`() {
-        assertEquals(denied, joinRejectionMessage("   ", denied, invalidCode))
+        assertEquals(denied, message("   "))
     }
 
     @Test
     fun `invalid code reason maps to the invalid code message`() {
-        assertEquals(invalidCode, joinRejectionMessage("Invalid room code", denied, invalidCode))
+        assertEquals(invalidCode, message("Invalid room code"))
     }
 
     @Test
     fun `invalid marker is matched case-insensitively`() {
-        assertEquals(invalidCode, joinRejectionMessage("room code INVALID or expired", denied, invalidCode))
+        assertEquals(invalidCode, message("room code INVALID or expired"))
     }
 
     @Test
-    fun `other reasons are appended to the denial message`() {
-        assertEquals(
-            "$denied: You are blocked",
-            joinRejectionMessage("You are blocked", denied, invalidCode),
-        )
+    fun `legacy host reasons are localized and custom reasons are preserved`() {
+        assertEquals(blocked, message("You are blocked"))
+        assertEquals(blocked, message("Blocked by host"))
+        assertEquals(denied, message("Rejected by host"))
+        assertEquals("$denied: Custom reason", message("Custom reason"))
     }
 }

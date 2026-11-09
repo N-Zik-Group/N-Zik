@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.screens.bridge
 
+import java.util.Locale
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.JournalPermission
@@ -217,7 +218,7 @@ private fun BridgeStatusCard(
                 if (state is BridgeState.Running) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = stringResource(R.string.bridge_server_running_address, state.ip, state.port),
+                        text = stringResource(R.string.bridge_server_running_address).format(Locale.ROOT, state.ip, state.port),
                         style = typography().m.semiBold,
                         color = palette.text,
                     )

@@ -4,9 +4,12 @@ import android.Manifest
 import android.app.Notification
 import android.app.NotificationManager
 import android.content.Context
+import androidx.core.app.AppLocalesStorageHelper
+import androidx.core.content.ContextCompat
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import app.n_zik.android.MainActivity
+import app.n_zik.android.R
 import app.n_zik.android.utils.DataStoreUtils
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -89,6 +92,33 @@ class RewindReminderWorkerTest {
         assertEquals(1, reschedules.size)
     }
 
+    @Test
+    @Config(sdk = [32], qualifiers = "en")
+    fun reminderUsesTheAppLanguageForTheMonthAndNotification() {
+        val context = RuntimeEnvironment.getApplication()
+        val previous = AppLocalesStorageHelper.readLocales(context)
+        try {
+            AppLocalesStorageHelper.persistLocales(context, "fr")
+            val worker = workerWithRescheduleHook(mutableListOf())
+            val result = runBlocking { worker.doWork() }
+            assertTrue(result is ListenableWorker.Result.Success)
+            val resources = ContextCompat.getContextForLanguage(context).resources
+            val finishedMonth = LocalDate.now().minusMonths(1).month
+                .getDisplayName(TextStyle.FULL, Locale.FRENCH)
+            val notification = postedNotifications().single()
+            assertEquals(
+                resources.getString(R.string.rewind_notification_title, finishedMonth),
+                notification.extras.getCharSequence(Notification.EXTRA_TITLE).toString(),
+            )
+            assertEquals(
+                resources.getString(R.string.rewind_monthly_notification_description),
+                notification.extras.getCharSequence(Notification.EXTRA_TEXT).toString(),
+            )
+        } finally {
+            AppLocalesStorageHelper.persistLocales(context, previous)
+        }
+    }
+
     @Test
     fun notificationContentIntentOpensTheFinishedMonthDeck() {
         setPermissionState(granted = true, permission = Manifest.permission.POST_NOTIFICATIONS)

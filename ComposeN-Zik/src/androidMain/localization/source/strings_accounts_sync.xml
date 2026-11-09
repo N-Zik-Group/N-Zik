@@ -254,7 +254,7 @@
     <string name="sync_youtube_history_title">YTM History</string>
     <string name="sync_youtube_like_failed">Failed to like the song in YouTube</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">Song(s) are Liked in YouTube</string>
+    <string name="sync_youtube_like_success">Added to YouTube likes</string>
     <string name="sync_youtube_playlist_add_failed">Failed to add the song in the YouTube Playlist</string>
     <string name="sync_youtube_playlist_add_success">Added the song in the YouTube Playlist</string>
     <string name="sync_youtube_playlist_batch_failed">Error occurred for the next 50 songs. Adding songs to the playlist one by one</string>

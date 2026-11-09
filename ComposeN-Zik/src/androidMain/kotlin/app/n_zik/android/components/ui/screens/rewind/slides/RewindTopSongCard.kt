@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.screens.rewind.slides
 
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -140,7 +141,7 @@ internal fun RewindTopSongShow(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = if (phase == 0) stringResource(R.string.rewind_top_song_teaser, contenders.size) else stringResource(R.string.rewind_top_song_teaser_winner),
+                                text = if (phase == 0) pluralStringResource(R.plurals.rewind_top_song_teaser_count, contenders.size, contenders.size) else stringResource(R.string.rewind_top_song_teaser_winner),
                                 color = onPink,
                                 fontSize = textScale.size(if (compact) 35.sp else 42.sp),
                                 lineHeight = textScale.size(if (compact) 33.sp else 39.sp),

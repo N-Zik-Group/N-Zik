@@ -46,7 +46,7 @@ fun WelcomeMessage(){
         }
     }
 
-    var message by remember { mutableStateOf(baseMessage) }
+    var profileName by remember { mutableStateOf("") }
     // When no name was ever chosen, the greeting falls back to the default app name
     val defaultName = stringResource(R.string.profile_base_name)
 
@@ -54,7 +54,7 @@ fun WelcomeMessage(){
     // accounts card (the same trigger sum they key on) — not only on the
 
     // time-of-day bucket change.
-    LaunchedEffect(baseMessage, encryptedPreferencesUpdateTrigger + profileFaceUpdateTrigger) {
+    LaunchedEffect(baseMessage, defaultName, encryptedPreferencesUpdateTrigger + profileFaceUpdateTrigger) {
         withContext(NzikDispatchers.DATA) {
             // The greeting follows the active profile's face name
             // (spec-profiles-page-face): its display name or a logged-in account
@@ -64,7 +64,7 @@ fun WelcomeMessage(){
             runCatching {
                 val name = loadActiveProfileFace(appContext(), defaultName).name
                 if (name.isNotBlank()) {
-                    message = "$baseMessage, $name"
+                    profileName = name
                 }
             }.onFailure {
                 Timber.tag("WelcomeMessage").e(it, "Failed to resolve the greeting face name")
@@ -73,7 +73,11 @@ fun WelcomeMessage(){
     }
 
     TitleMiniSection(
-        title = message,
+        title = if (profileName.isBlank()) {
+            baseMessage
+        } else {
+            stringResource(R.string.home_greeting_with_profile_format, baseMessage, profileName)
+        },
         modifier = Modifier.padding(horizontal = 12.dp)
     )
 }

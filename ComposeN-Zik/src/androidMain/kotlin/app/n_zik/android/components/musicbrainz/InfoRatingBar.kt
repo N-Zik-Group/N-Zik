@@ -1,5 +1,6 @@
 package app.n_zik.android.components.musicbrainz
 
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -86,7 +87,7 @@ fun RatingBar(rating: Float?, votesCount: Int?) {
         if (votesCount != null && votesCount > 0) {
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = stringResource(R.string.metadata_musicbrainz_rating_votes, votesCount),
+                text = pluralStringResource(R.plurals.metadata_musicbrainz_rating_vote_count, votesCount, votesCount),
                 style = typography().xxs.semiBold,
                 color = colorPalette().text
             )

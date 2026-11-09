@@ -2,6 +2,7 @@
 package app.n_zik.android.components.ui.screens.home
 
 
+import app.n_zik.android.appTextResources
 import app.n_zik.android.components.navigation.FloatingActionSiblingSpace
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchNoResults
@@ -389,7 +390,7 @@ fun HomeArtists(
 
     fun refresh(itemsToRefresh: List<Artist>? = null) {
         if (refreshing || HomeSyncState.isSyncingArtists) {
-            Toaster.e(appContext().getString(R.string.library_sync_already_running_message))
+            Toaster.e(appTextResources().getString(R.string.library_sync_already_running_message))
             return
         }
         val targetItems = itemsToRefresh ?: itemsOnDisplay

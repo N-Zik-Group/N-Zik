@@ -1,6 +1,7 @@
 // Ported from RiPlay (AGPL-3.0) — base: it.fast4x.riplay.ui.screens.artist / it.fast4x.riplay.extensions.musicbrainz
 package app.n_zik.android.components.ui.screens.artist
 
+import app.n_zik.android.appTextResources
 import app.n_zik.android.components.glass.GlassArtworkBackdrop
 import app.n_zik.android.components.ui.screens.CollectionPageStatus
 import app.n_zik.android.components.navigation.rememberTopContentInsetProvider
@@ -702,7 +703,7 @@ fun ArtistOverview(
                                     when {
                                         success -> Toaster.s(R.string.metadata_musicbrainz_resync_success)
                                         paused > 0 -> Toaster.e(
-                                            appContext().getString(R.string.metadata_musicbrainz_resync_paused, (paused / 60).coerceAtLeast(1))
+                                            appTextResources().getString(R.string.metadata_musicbrainz_resync_paused, (paused / 60).coerceAtLeast(1))
                                         )
                                         else -> Toaster.e(R.string.metadata_musicbrainz_resync_error)
                                     }

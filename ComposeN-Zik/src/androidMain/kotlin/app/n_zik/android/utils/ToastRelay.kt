@@ -1,8 +1,11 @@
 package app.n_zik.android.utils
 
+import app.n_zik.android.appTextResources
 import android.content.res.Resources
 import android.widget.Toast
+import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
+import androidx.core.content.ContextCompat
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.appContext
@@ -39,7 +42,7 @@ object ToastRelay {
     fun legacyResource(@StringRes messageId: Int, formatArgs: Array<out Any?>): String {
         // A stale key left by a toast that threw before its hook never tags the next one
         pendingResource.remove()
-        val resources = appContext().resources
+        val resources = appTextResources()
         return resources.getString(messageId, *formatArgs).also {
             rememberResource(messageId, formatArgs, resources)
         }
@@ -61,9 +64,22 @@ object ToastRelay {
         }
     }
 
+    /** Formats the local plural and keeps the previously published toast key and count. */
+    internal fun successWithPlural(@PluralsRes pluralId: Int, @StringRes legacyId: Int, count: Int) {
+        val resources = appTextResources()
+        val message = resources.getQuantityString(pluralId, count, count)
+        pendingResource.remove()
+        try {
+            rememberResource(legacyId, arrayOf(count), resources)
+            Toaster.s(message)
+        } finally {
+            pendingResource.remove()
+        }
+    }
+
     /** Shows loading text while retaining the published loading warning identity. */
     internal fun loadingWarning() = warningWithResourceIdentity(
-        appContext().getString(R.string.common_loading_message),
+        ContextCompat.getString(appContext(), R.string.common_loading_message),
         R.string.common_external_link_loading_suffix,
     )
 

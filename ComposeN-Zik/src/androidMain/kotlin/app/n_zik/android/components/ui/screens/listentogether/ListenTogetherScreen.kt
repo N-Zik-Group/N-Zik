@@ -62,6 +62,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -98,6 +99,8 @@ import app.n_zik.android.listentogether.ConnectionState
 import app.n_zik.android.listentogether.JoinRequestPayload
 import app.n_zik.android.listentogether.ListenTogetherEvent
 import app.n_zik.android.listentogether.ListenTogetherManager
+import app.n_zik.android.listentogether.LISTEN_TOGETHER_BLOCKED_REASON
+import app.n_zik.android.listentogether.LISTEN_TOGETHER_JOIN_BLOCKED_REASON
 import app.n_zik.android.listentogether.LogEntry
 import app.n_zik.android.listentogether.LogLevel
 import app.n_zik.android.listentogether.SuggestionReceivedPayload
@@ -123,20 +126,20 @@ internal fun rememberUsernamePreference(context: Context): MutableState<String> 
     }
 
 /**
- * Maps a join-rejection reason (server or host supplied) to the user-facing
- * message: blank reason → generic denial, "invalid" (case-insensitive, e.g.
- * "Invalid room code") → the invalid-code message, anything else → the denial
- * text with the reason appended. Shared by the room screen and the popup
- * [ListenTogetherMenu].
+ * Maps known server and host reasons to localized labels. Unknown reasons are kept as supplied.
+ * Shared by the room screen and the popup [ListenTogetherMenu].
  */
 internal fun joinRejectionMessage(
     reason: String?,
     deniedText: String,
     invalidCodeText: String,
+    blockedText: String,
+    formatReason: (String) -> String,
 ): String = when {
-    reason.isNullOrBlank() -> deniedText
+    reason.isNullOrBlank() || reason == "Rejected by host" -> deniedText
+    reason == LISTEN_TOGETHER_JOIN_BLOCKED_REASON || reason == LISTEN_TOGETHER_BLOCKED_REASON -> blockedText
     reason.contains("invalid", ignoreCase = true) -> invalidCodeText
-    else -> "$deniedText: $reason"
+    else -> formatReason(reason)
 }
 
 /** Selects the action for a newly delivered invitation without changing the current room. */
@@ -217,6 +220,7 @@ fun ListenTogetherScreen(
     val waitingForApprovalText = stringResource(R.string.listen_together_waiting_for_approval)
     val invalidRoomCodeText = stringResource(R.string.listen_together_invalid_room_code)
     val joinRequestDeniedText = stringResource(R.string.listen_together_join_request_denied)
+    val blockedByHostText = stringResource(R.string.listen_together_user_blocked_by_host)
     val connectionLostText = stringResource(R.string.listen_together_error)
     val serverErrorText = stringResource(R.string.listen_together_server_request_failed)
 
@@ -231,11 +235,17 @@ fun ListenTogetherScreen(
         listenTogetherManager.events.collect { event ->
             when (event) {
                 is ListenTogetherEvent.JoinRejected -> {
-                    val message = joinRejectionMessage(event.reason, joinRequestDeniedText, invalidRoomCodeText)
+                    val message = joinRejectionMessage(
+                        event.reason,
+                        joinRequestDeniedText,
+                        invalidRoomCodeText,
+                        blockedByHostText,
+                    ) { reason ->
+                        context.getString(R.string.listen_together_join_request_denied_reason, reason)
+                    }
                     joinErrorMessage = message
                     isJoiningRoom = false
                     isCreatingRoom = false
-                    // Covers the banned-user case ("You are blocked") and any denial reason
                     Toaster.e(message)
                 }
 
@@ -428,14 +438,14 @@ fun ListenTogetherScreen(
                                             UserActionMenu(
                                                 username = username,
                                                 onKick = {
-                                                    listenTogetherManager.kickUser(clickedUserId, "Removed by host")
+                                                    listenTogetherManager.kickUser(clickedUserId)
                                                     menuState.hide()
                                                 },
                                                 onPermanentKick = {
                                                     listenTogetherManager.blockUser(username)
                                                     listenTogetherManager.kickUser(
                                                         clickedUserId,
-                                                        context.getString(R.string.listen_together_user_blocked_by_host),
+                                                        LISTEN_TOGETHER_BLOCKED_REASON,
                                                     )
                                                     menuState.hide()
                                                 },
@@ -456,7 +466,7 @@ fun ListenTogetherScreen(
                                 PendingJoinRequestsSection(
                                     requests = pendingJoinRequests,
                                     onApprove = { listenTogetherManager.approveJoin(it) },
-                                    onReject = { listenTogetherManager.rejectJoin(it, "Rejected by host") },
+                                    onReject = { listenTogetherManager.rejectJoin(it) },
                                 )
                             }
                         }
@@ -467,7 +477,7 @@ fun ListenTogetherScreen(
                                 PendingSuggestionsSection(
                                     suggestions = pendingSuggestions,
                                     onApprove = { listenTogetherManager.approveSuggestion(it) },
-                                    onReject = { listenTogetherManager.rejectSuggestion(it, "Rejected by host") },
+                                    onReject = { listenTogetherManager.rejectSuggestion(it) },
                                 )
                             }
                         }
@@ -768,7 +778,11 @@ internal fun ConnectedUsersSection(
     onUserClick: (String, String) -> Unit,
 ) {
     SettingsSectionCard(
-        title = "${stringResource(R.string.listen_together_connected_users)} (${users.size})",
+        title = stringResource(
+            R.string.listen_together_connected_users_title_format,
+            stringResource(R.string.listen_together_connected_users),
+            users.size,
+        ),
         icon = R.drawable.people,
         content = {
             Row(
@@ -945,7 +959,7 @@ internal fun PendingSuggestionsSection(
         content = {
             suggestions.forEach { suggestion ->
                 ListMenu.Entry(
-                    text = suggestion.trackInfo.title,
+                    text = suggestion.trackInfo.title.ifBlank { stringResource(R.string.metadata_unknown_title) },
                     subtitle = suggestion.fromUsername,
                     icon = { SettingIcon(R.drawable.musical_notes, palette.accent) },
                     trailingContent = {
@@ -1305,10 +1319,10 @@ fun ListenTogetherLogsMenu(
                         buildString {
                             append(log.timestamp)
                             append(" [")
-                            append(log.level.name)
+                            append(context.getString(log.level.labelRes))
                             append("] ")
-                            append(log.message)
-                            log.details?.let { d -> append(" -- $d") }
+                            append(context.getString(log.messageRes))
+                            log.details?.resolve(context.resources)?.let { d -> append(" -- $d") }
                         }
                     }
                 val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -1364,21 +1378,21 @@ private fun LogEntryRow(log: LogEntry) {
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = log.message,
+                text = stringResource(log.messageRes),
                 style = typography().xs,
                 color = palette.text,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = "${log.timestamp} [${log.level.name}]",
+                text = stringResource(R.string.listen_together_log_entry_metadata, log.timestamp, stringResource(log.level.labelRes)),
                 style = typography().xxs,
                 fontFamily = FontFamily.Monospace,
                 color = palette.textSecondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            log.details?.let { details ->
+            log.details?.resolve(LocalResources.current)?.let { details ->
                 Text(
                     text = details,
                     style = typography().xxs,

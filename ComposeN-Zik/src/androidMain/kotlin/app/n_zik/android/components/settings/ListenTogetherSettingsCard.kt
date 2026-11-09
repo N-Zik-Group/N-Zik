@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -266,10 +267,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
             title = stringResource(R.string.listen_together_blocked_users),
             text = stringResource(R.string.listen_together_blocked_users_description),
             selectedValueText = if (blockedUsernames.isNotEmpty()) {
-                stringResource(
-                    R.string.listen_together_blocked_users_count,
-                    blockedUsernames.size,
-                )
+                pluralStringResource(R.plurals.listen_together_blocked_user_count, blockedUsernames.size, blockedUsernames.size)
             } else {
                 stringResource(R.string.listen_together_no_blocked_users)
             },
