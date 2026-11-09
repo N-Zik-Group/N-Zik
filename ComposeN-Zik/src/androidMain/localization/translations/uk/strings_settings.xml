@@ -17,7 +17,7 @@
     <string name="language_name_azerbaijani">Азербайджанська (Azərbaycan)</string>
     <string name="language_name_bashkir">Bashkir (Башҡурт)</string>
     <string name="language_name_bengali">Бенгальська (&lt;unk&gt; ди-цзю)</string>
-    <string name="language_name_catalan">Каталонська (Catalá)</string>
+    <string name="language_name_catalan">Каталонська (Catala&lt;unk&gt; )</string>
     <string name="language_name_chinese_simplified">Китайське спрощене (&lt;unk&gt; )</string>
     <string name="language_name_chinese_traditional">Китайська (&lt;unk&gt; )</string>
     <string name="language_name_czech">Чеська (Чеська)</string>
@@ -27,7 +27,7 @@
     <string name="language_name_esperanto">Esperanto (Esperanto)</string>
     <string name="language_name_estonian">Estonian (eesti keel)</string>
     <string name="language_name_filipino">Filipino (Tagalog)</string>
-    <string name="language_name_finnish">Finnish (Suomalainen)</string>
+    <string name="language_name_finnish">Finnish (Suomi)</string>
     <string name="language_name_french">Французька (Français)</string>
     <string name="language_name_galician">Galician (galego)</string>
     <string name="language_name_german">Німецька (Deutsch)</string>
@@ -40,8 +40,8 @@
     <string name="language_name_irish">Irish (Gaeilge)</string>
     <string name="language_name_italian">Італійська (Italiano)</string>
     <string name="language_name_japanese">Японська (&lt;unk&gt; )</string>
-    <string name="language_name_korean">Корейська (ди-цзюй цзиґ)</string>
-    <string name="language_name_malayalam">Malayam (മലയാളം)</string>
+    <string name="language_name_korean">Корейське (З-Х-Х)</string>
+    <string name="language_name_malayalam">Malayalam (മലയാളം)</string>
     <string name="language_name_norwegian">Norwegian (norsk)</string>
     <string name="language_name_odia">Odia (ଓଡ଼ିଆ)</string>
     <string name="language_name_persian">Персидська (ди-цзю)</string>
@@ -50,8 +50,8 @@
     <string name="language_name_portuguese_brazilian">Португальська, Бразилія (Португальська, Brasileiro)</string>
     <string name="language_name_romanian">Румунська (Română)</string>
     <string name="language_name_russian">Російська (Русский)</string>
-    <string name="language_name_serbian_cyrillic">Serbian Cyrillic (Српска)</string>
-    <string name="language_name_serbian_latin">Serbian Latin (Gajeva latinica)</string>
+    <string name="language_name_serbian_cyrillic">Serbian Cyrillic (Српски)</string>
+    <string name="language_name_serbian_latin">Serbian Latin (Srpski)</string>
     <string name="language_name_sinhala">Sinhala (සිංහල)</string>
     <string name="language_name_spanish">Іспанська (Español)</string>
     <string name="language_name_swedish">Шведська (Шведська)</string>
@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Підключіться до YouTube, щоб увімкнути цей параметр</string>
     <string name="settings_youtube_library_sync_content_description">Плейлісти, альбоми, артисти, історію тощо.</string>
     <string name="settings_youtube_login_enabled_label">Увімкнути запис YouTube Music</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Sort</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: панель інструментів</string>
 </resources>
