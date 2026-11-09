@@ -42,6 +42,7 @@
     <string name="home_greeting_evening">Good evening</string>
     <string name="home_greeting_morning">Good morning</string>
     <string name="home_greeting_night">Good night</string>
+    <string name="home_greeting_with_profile_format">%1$s, %2$s</string>
     <string name="home_playlists_settings">Home Playists</string>
     <string name="home_songs_settings">Home Songs</string>
     <string name="home_sort_last_played_song_label">By Last played song</string>
@@ -248,6 +249,7 @@
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
     <string name="playlist_remove_selected_confirmation">Remove the selected songs from this playlist?</string>
     <string name="playlist_remove_songs_confirmation">Remove the selection from the playlist? Selected tracks: %d</string>
+    <string name="playlist_remove_songs_success_format">%1$s %2$d</string>
     <string name="playlist_rename_dialog_title">Rename playlist</string>
     <string name="playlist_reorder_ascending_sort_required_message">Reorder is possible only in ascending sorting</string>
     <string name="playlist_reorder_lock_toggle_label">Lock/Unlock reorder songs</string>
@@ -377,6 +379,27 @@
     <string name="song_metadata_update_action_open">Open update dialog</string>
     <string name="song_metadata_updated_count">Updated %1$d songs</string>
     <string name="song_play_time_action_reset">Reset total play time</string>
+    <string name="song_like_status_action_reset">Reset liked/disliked status</string>
+    <string name="song_update_action_clear_playback_cache">Clear playback cache</string>
+    <string name="song_update_action_remove_offline_download">Remove offline download</string>
+    <string name="song_update_result_partial">Partially updated. %1$s</string>
+    <string name="song_update_result_failed">Not updated. %1$s</string>
+    <string name="song_update_error_metadata_unavailable">YouTube information unavailable.</string>
+    <string name="song_update_error_network">Could not reach YouTube. Check your connection.</string>
+    <string name="song_update_error_missing_title">YouTube did not return a title.</string>
+    <string name="song_update_error_missing_artists">YouTube did not return artists.</string>
+    <string name="song_update_error_incomplete_artists">Artist information from YouTube is incomplete.</string>
+    <string name="song_update_error_missing_cover">YouTube did not return a cover.</string>
+    <string name="song_update_error_wrong_song">YouTube returned a different song. Its information was ignored.</string>
+    <string name="song_update_error_cache_unavailable">Playback cache unavailable. Reopen the player and try again.</string>
+    <string name="song_update_error_profile_changed">Update stopped because the active profile changed.</string>
+    <string name="song_update_error_storage">Could not save changes on this device.</string>
+    <string name="song_update_error_cache_clear">Could not finish clearing the playback cache.</string>
+    <string name="song_update_error_download_remove">Could not remove the offline download.</string>
+    <string name="song_update_error_cover_reset">Could not finish resetting the cover.</string>
+    <string name="song_update_error_playback_refresh">Changes saved, but the player could not refresh.</string>
+    <string name="song_update_batch_result">Updated: %1$d · Partly updated: %2$d · Not updated: %3$d</string>
+    <string name="song_update_batch_reason_count">%1$s (%2$d)</string>
     <!-- Song Matching -->
     <string name="song_matching_action_open">Match Album/Audio version</string>
     <string name="song_matching_all_confirmation">Do you want to match %d unmatched songs?</string>
@@ -393,4 +416,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Liking all the songs will take about %1$s. Close the app to cancel. Do you want to continue?</string>
     <string name="library_on_device_permission_request_failed">Could not request access to music on this device.</string>
     <string name="library_on_device_permission_settings_failed">Could not open permission settings.</string>
+    <string name="artist_more_from_format">More from %1$s</string>
+    <string name="playlist_top_show_title_format">Show %1$s</string>
 </resources>
