@@ -246,10 +246,11 @@
     <string name="sync_youtube_history_title">유튜브 뮤직 기록</string>
     <string name="sync_youtube_like_failed">Failed to like the song in YouTube</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">Song(s) are Liked in YouTube</string>
+    <string name="sync_youtube_like_success">Added to YouTube likes</string>
     <string name="sync_youtube_playlist_add_failed">Failed to add the song in the YouTube Playlist</string>
     <string name="sync_youtube_playlist_add_success">Added the song in the YouTube Playlist</string>
     <string name="sync_youtube_playlist_batch_failed">Error occurred for the next 50 songs. Adding songs to the playlist one by one</string>
+    <string name="sync_youtube_playlist_no_songs_added">No songs were added to the YouTube playlist</string>
     <string name="sync_youtube_playlist_songs_added_suffix">songs are added in the YouTube Playlist. Repeat the process if there are any Missing Songs</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">songs will be added in the YTM playlist</string>
     <string name="sync_youtube_playlists_title">YTM Playlists</string>
