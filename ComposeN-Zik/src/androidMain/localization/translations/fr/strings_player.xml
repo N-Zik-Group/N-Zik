@@ -289,7 +289,7 @@
     <string name="player_show_next_songs_in_player_description">Afficher un aperçu des pistes à venir dans le lecteur.</string>
     <string name="player_show_player_top_actions_bar_description">Affiche la ligne des actions du joueur au-dessus du contenu principal.</string>
     <string name="player_shuffle_empty_message">Aucun titre à mélanger</string>
-    <string name="player_shuffled_song_count_format">%d titres en lecture aléatoire</string>
+    <string name="player_shuffled_song_count_format">Titres lus au hasard : %d</string>
     <string name="player_sleep_timer_end_of_song_message">Délai de mise en veille reporté à la fin du titre</string>
     <string name="player_sleep_timer_finished_message">Minuterie de veille terminée</string>
     <string name="player_song_playback_error_format">Le média %1$s a mal fonctionné</string>
@@ -304,7 +304,7 @@
     <string name="player_statistics_perceptual_loudness_label">Intensité sonore perçue</string>
     <string name="player_statistics_sample_rate_label">Fréquence d\'échantillonnage</string>
     <string name="player_statistics_cache_size_progress">%1$s (%2$s)</string>
-    <string name="player_statistics_cache_status">%1$s: %2$s</string>
+    <string name="player_statistics_cache_status">%1$s : %2$s</string>
     <string name="player_statistics_volume_label">Volume</string>
     <string name="player_swap_controls_with_timeline">Échanger les contrôles avec la barre de lecture</string>
     <string name="player_swipe_sensitivity">Sensibilité du balayage du lecteur</string>

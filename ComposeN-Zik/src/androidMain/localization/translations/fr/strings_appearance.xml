@@ -231,7 +231,7 @@
     <string name="theme_shake_sensitivity_very_high">Très élevée (1,0 G)</string>
     <!-- Thumbnail -->
     <string name="cover_action_download">Télécharger</string>
-    <string name="cover_download_failed">Impossible de télécharger la couverture.</string>
+    <string name="cover_download_failed">Impossible de télécharger la pochette.</string>
     <string name="image_editor_title">Modifier l\'image</string>
     <string name="image_editor_failed">Impossible d\'éditer l\'image. Votre image actuelle a été conservée.</string>
     <string name="thumbnail_action_edit">Éditer la miniature</string>

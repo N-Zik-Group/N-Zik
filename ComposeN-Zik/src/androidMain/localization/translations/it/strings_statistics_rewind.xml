@@ -192,7 +192,7 @@
     <string name="rewind_monthly_heading">MESE DA\nMESe.</string>
     <string name="rewind_monthly_kicker">ANNAR, MESE PER MESE • %1$s</string>
     <string name="rewind_monthly_notification_description">Tocca per aprire il tuo riavvolgimento mensile.</string>
-    <string name="rewind_monthly_peak_minutes">MINUTI DI PEAK</string>
+    <string name="rewind_monthly_peak_minutes">MINUTI DI PUNTA</string>
     <string name="rewind_monthly_peak_month">MESE DI PEAK</string>
     <string name="rewind_monthly_peak_sub">%1$s HIT THE HARDEST.</string>
     <string name="rewind_notification_title">Il tuo riavvolgimento %1$s è pronto</string>
