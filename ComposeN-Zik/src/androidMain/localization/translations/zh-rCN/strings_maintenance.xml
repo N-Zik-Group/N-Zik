@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">离线(重试下次启动)</string>
     <string name="maintenance_song_cache">歌曲缓存</string>
     <string name="maintenance_song_download_cache">歌曲下载缓存</string>
-    <string name="maintenance_stats">统计信息</string>
     <string name="maintenance_status_deferred">递延的</string>
     <string name="maintenance_status_resolved">已解决</string>
     <string name="maintenance_status_skipped">跳过</string>
@@ -210,6 +209,13 @@
     <string name="recovery_export_settings_description">将您的偏好保存到CSV文件</string>
     <string name="recovery_group_app">应用</string>
     <string name="recovery_group_database">数据库</string>
+    <string name="recovery_legacy_media">恢复历史存储</string>
+    <string name="recovery_legacy_archive_audio">Audio · %1$s</string>
+    <string name="recovery_legacy_archive_images">图片和封面</string>
+    <string name="recovery_legacy_media_action">恢复</string>
+    <string name="recovery_legacy_media_description">从保存的存储归档中复制已验证的文件到选定的配置文件。</string>
+    <string name="recovery_legacy_media_source">%1$s 归档 %2$s</string>
+    <string name="recovery_legacy_media_confirmation">从 %1$s 归档 %2$s 恢复到 %3$s吗？这个归档仍然可用。如果它会替换不同的文件，则恢复停止。</string>
     <string name="recovery_group_logs">日志</string>
     <string name="recovery_group_profiles">Profiles</string>
     <string name="recovery_group_settings">设置</string>
