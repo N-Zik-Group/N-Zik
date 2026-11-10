@@ -40,7 +40,6 @@ internal fun LibraryStartupScreen(state: LibraryStartupState, retry: () -> Unit)
                     }
                 } else {
                     CircularProgressIndicator()
-                    Text(stringResource(R.string.backup_startup_preparing_library))
                 }
             }
         }

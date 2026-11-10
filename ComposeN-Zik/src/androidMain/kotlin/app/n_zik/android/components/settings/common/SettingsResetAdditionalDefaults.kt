@@ -96,9 +96,6 @@ internal fun resetAdditionalSettingsDefaults(
     cancelAutoBackup: () -> Unit = { BackupManager.scheduleBackup(context, BackupManager.INTERVAL_NONE) },
 ) {
     context.preferences.removeSettings(additionalProfileSettingKeys + additionalBackupSettingKeys)
-    // The scheduler/worker own device-wide backup options in the principal store.
-    // Clear only those options as well; keep its destination and every unrelated profile setting.
-    context.getSharedPreferences("preferences", Context.MODE_PRIVATE).removeSettings(additionalBackupSettingKeys)
     context.encryptedPreferences.removeSettings(additionalSecureSettingKeys)
     DataStoreUtils.prefs(context).removeSettings(additionalGlobalSettingKeys)
     cancelAutoBackup()

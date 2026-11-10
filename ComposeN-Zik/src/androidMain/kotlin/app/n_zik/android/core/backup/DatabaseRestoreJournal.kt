@@ -3,6 +3,19 @@ package app.n_zik.android.core.backup
 import android.content.Context
 import android.os.Build
 import android.system.Os
+import app.n_zik.android.components.settings.data.DeferredProfileCleanup
+import app.it.fast4x.rimusic.utils.isProfileIdSafe
+import app.it.fast4x.rimusic.utils.PROFILE_NAMES_FILE_NAME
+import app.n_zik.android.core.profiles.ProfileCacheLocationMigration
+import app.n_zik.android.core.profiles.LegacyMediaAccess
+import app.n_zik.android.core.profiles.LegacyMediaPublication
+import app.n_zik.android.core.profiles.LegacyWaveformPublication
+import app.n_zik.android.core.profiles.LegacyImagePublication
+import app.n_zik.android.core.profiles.ProtectedProfileHistory
+import app.n_zik.android.core.profiles.bindSelectedProcessStorageProfile
+import app.n_zik.android.download.utils.InactiveDownloadCleanup
+import app.n_zik.android.core.rescue.ProfileResetSnapshot
+import app.n_zik.android.core.rescue.RescueFiles
 import java.io.Closeable
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -27,21 +40,38 @@ internal object DatabaseRestoreJournal {
     private const val OWNER = ".owner"
     private const val RETIRED_JOURNAL_PREFIX = ".database-restore-retired-"
     private const val RETIRED_BACKUPS_PREFIX = ".rescue-backups-retired-"
-    private var mainProcessLease: FileLock? = null
+    private val mainProcessLeases = mutableMapOf<File, FileLock>()
     private var lockedDirectory: File? = null
     private val activeImports = mutableSetOf<File>()
 
     /** Called before either process can access the library. The main process holds a lease until exit. */
     fun onProcessStart(context: Context, mainProcess: Boolean) {
-        val filesDir = context.filesDir
+        val filesDir = context.filesDir.canonicalFile
         val databaseDir = checkNotNull(context.getDatabasePath("data.db").parentFile)
         withLock(filesDir) {
             Transaction(filesDir, databaseDir).recover()
-            if (mainProcess && mainProcessLease?.isValid != true) {
+            Transaction(filesDir, filesDir, profileState = true).recover()
+            ProfileStateArchive.resumePendingNames(context)
+            if (mainProcess && mainProcessLeases[filesDir]?.isValid != true) {
+                check(!ProfileResetSnapshot.hasPendingOperation(filesDir.resolve("rescue_backups/profiles"))) {
+                    "Finish the pending profile operation in Rescue before opening the library"
+                }
                 val channel = RandomAccessFile(filesDir.resolve("database-main.lock"), "rw").channel
                 try {
-                    mainProcessLease = channel.lock()
+                    mainProcessLeases[filesDir] = channel.lock()
+                    RescueFiles.resumeProfileDeletions(context, beforeStorageBound = true)
+                    val profile = bindSelectedProcessStorageProfile(context)
+                    InactiveDownloadCleanup.resume(context)
+                    DeferredProfileCleanup.resume(context, discardUnstarted = true)
+                    LegacyMediaPublication.resumeRescueRecovery(context)
+                    ProtectedProfileHistory.resume(context)
+                    LegacyMediaPublication.resume(context)
+                    LegacyWaveformPublication.resume(context)
+                    LegacyImagePublication.resume(context)
+                    ProfileCacheLocationMigration.resume(context, profile)
+                    LegacyMediaAccess.prepare(context, profile)
                 } catch (error: Throwable) {
+                    mainProcessLeases.remove(filesDir)
                     channel.close()
                     throw error
                 }
@@ -51,8 +81,9 @@ internal object DatabaseRestoreJournal {
 
     /** Called under the restore lock, which also gates acquisition of the main process lease. */
     fun requireMainProcessStopped(context: Context) {
-        check(mainProcessLease?.isValid != true) { "The main process is using the database" }
-        RandomAccessFile(context.filesDir.resolve("database-main.lock"), "rw").use { file ->
+        val filesDir = context.filesDir.canonicalFile
+        check(mainProcessLeases[filesDir]?.isValid != true) { "The main process is using the database" }
+        RandomAccessFile(filesDir.resolve("database-main.lock"), "rw").use { file ->
             val lease = try {
                 file.channel.tryLock()
             } catch (_: OverlappingFileLockException) {
@@ -63,10 +94,16 @@ internal object DatabaseRestoreJournal {
     }
 
     /** Serializes rescue changes with archive installs and main process startup. */
-    fun <T> withRescueMutation(context: Context, action: () -> T): T {
+    fun <T> withRescueMutation(context: Context, action: () -> T): T =
+        withRescueMutation(context, allowLegacyRecovery = false, action)
+
+    fun <T> withRescueMutation(context: Context, allowLegacyRecovery: Boolean, action: () -> T): T {
         try {
             return withLock(context.filesDir) {
                 requireMainProcessStopped(context)
+                check(allowLegacyRecovery || !ProtectedProfileHistory.hasPending(context)) {
+                    "Finish the pending historical recovery first"
+                }
                 Transaction(context.filesDir, checkNotNull(context.getDatabasePath("data.db").parentFile)).recover()
                 action()
             }
@@ -83,6 +120,10 @@ internal object DatabaseRestoreJournal {
         }
         action()
     }
+
+    /** Serializes storage identity checks and changes with Rescue and library startup. */
+    fun <T> withProfileStorageMutation(context: Context, action: () -> T): T =
+        withLock(context.filesDir, action)
 
     /** Keeps import staging alive while its owning process validates and installs the archive. */
     class ImportStage internal constructor(
@@ -175,6 +216,19 @@ internal object DatabaseRestoreJournal {
         }
     }
 
+    /** Uses the same rollback protocol with a separate profile-state journal and allowlist. */
+    fun installProfileState(filesDir: File, files: Map<File, File?>) {
+        try {
+            withLock(filesDir) {
+                val transaction = Transaction(filesDir, filesDir, profileState = true)
+                transaction.recover()
+                transaction.install(filesDir.resolve(PROFILE_NAMES_FILE_NAME), files)
+            }
+        } finally {
+            cleanRetiredFiles(filesDir)
+        }
+    }
+
     /** Detaches a rescue backup while the restore lock is held. */
     fun retireRescueBackups(directory: File): File = retireForDeletion(directory, RETIRED_BACKUPS_PREFIX)
 
@@ -222,10 +276,10 @@ internal object DatabaseRestoreJournal {
         }
     }
 
-    internal class Transaction(filesDir: File, databaseDir: File) {
+    internal class Transaction(filesDir: File, databaseDir: File, private val profileState: Boolean = false) {
         private val imageRoot = filesDir.canonicalFile
         private val databaseRoot = databaseDir.canonicalFile
-        private val journal = imageRoot.resolve("database-restore-journal")
+        private val journal = imageRoot.resolve(if (profileState) "profile-state-restore-journal" else "database-restore-journal")
         private val pending = journal.resolve("pending")
 
         private data class Entry(val target: File, val existed: Boolean)
@@ -262,7 +316,10 @@ internal object DatabaseRestoreJournal {
 
         fun install(database: File, files: Map<File, File?>) {
             check(files.size in 1..MAX_FILES)
-            val sources = files.entries.map { (target, source) -> target.canonicalFile to source }
+            val sources = files.entries.map { (target, source) ->
+                if (profileState) checkTarget(target)
+                target.canonicalFile to source
+            }
             val main = database.canonicalFile
             val entries = sources.map { (target, source) ->
                 checkTarget(target)
@@ -332,6 +389,16 @@ internal object DatabaseRestoreJournal {
         private fun checkTarget(target: File) {
             val path = target.canonicalFile
             val parent = path.parentFile
+            if (profileState) {
+                val isRegistry = parent == imageRoot &&
+                    target.name in setOf(PROFILE_NAMES_FILE_NAME, ProfileStateArchive.PENDING_NAMES_FILE)
+                val isAvatar = target.name == "avatar.jpg" && parent != null && parent.parentFile == imageRoot.resolve("profiles") &&
+                    parent.name.isNotBlank() && isProfileIdSafe(parent.name)
+                val isGeneration = parent == imageRoot.resolve("profile-storage-generations") &&
+                    target.name.isNotBlank() && isProfileIdSafe(target.name)
+                check(target == path && (isRegistry || isAvatar || isGeneration)) { "Invalid profile state restore path" }
+                return
+            }
             val isImage = parent != null && parent.parentFile == imageRoot &&
                 (parent.name == "thumbnail" || parent.name == "app_covers" || parent.name.startsWith("app_covers_"))
             check(target == path && (parent == databaseRoot || isImage)) { "Invalid database restore path" }
@@ -348,7 +415,7 @@ internal object DatabaseRestoreJournal {
     }
 
     private fun replace(source: File, target: File) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT == 0 || Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Files.move(source.toPath(), target.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
         } else {
             Os.rename(source.path, target.path)

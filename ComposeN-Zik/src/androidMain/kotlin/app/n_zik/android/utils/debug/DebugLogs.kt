@@ -1,5 +1,7 @@
 package app.n_zik.android.utils.debug
 
+import android.content.Context
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import java.io.File
 import java.io.IOException
 
@@ -13,9 +15,15 @@ import java.io.IOException
  * crash log survives (the Maintenance sheet and its log dialogs read it unconditionally).
  */
 
+/** Serializes confirmed cleanup with the in-process diagnostic writers. */
+internal val diagnosticFileMutationLock = Any()
+
 private const val DEBUG_LOG_FILE_NAME = "N-Zik_log.txt"
 
 private const val DEBUG_CRASH_LOG_FILE_NAME = "N-Zik_crash_log.txt"
+
+internal fun profileDiagnosticsDir(context: Context, profileId: String = getActiveProfile(context)): File =
+    context.filesDir.resolve("profiles/$profileId/diagnostics")
 
 /** The app log files located in [logsDir] — debug log + crash log (they may not exist yet). */
 fun debugLogFiles(logsDir: File): List<File> =
@@ -31,8 +39,9 @@ fun debugLogFiles(logsDir: File): List<File> =
  *
  * @return the number of files actually deleted (missing file = 0, skipped silently)
  */
-fun purgeDebugLogs(logsDir: File): Int =
+fun purgeDebugLogs(logsDir: File): Int = synchronized(diagnosticFileMutationLock) {
     debugLogFiles(logsDir).count { it.name == DEBUG_LOG_FILE_NAME && it.delete() }
+}
 
 /** Clears the two diagnostic log files without changing the logging configuration. */
 internal fun clearDiagnosticLogs(filesDir: File) {

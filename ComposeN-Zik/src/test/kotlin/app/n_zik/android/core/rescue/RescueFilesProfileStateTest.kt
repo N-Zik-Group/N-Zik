@@ -48,7 +48,8 @@ class RescueFilesProfileStateTest {
     // the MockKAnswerScope, so the mock is referenced by name, not `this`.
     private val editor = mockk<SharedPreferences.Editor>(relaxed = true)
 
-    init {
+    init {
+        every { editor.commit() } returns true
         every { editor.putString(any(), any()) } answers {
             store[firstArg<String>()] = secondArg<String>()
             editor
@@ -69,7 +70,17 @@ class RescueFilesProfileStateTest {
         }
         resolver = mockk()
         context = mockk()
-        every { context.filesDir } returns filesDir
+        every { context.filesDir } returns filesDir
+        every { context.cacheDir } returns tmp.resolve("cache").apply { mkdirs() }
+        every { context.externalCacheDir } returns null
+        val appInfo = mockk<android.content.pm.ApplicationInfo>()
+        android.content.pm.ApplicationInfo::class.java.getDeclaredField("dataDir").apply {
+            isAccessible = true
+            set(appInfo, tmp.absolutePath)
+        }
+        every { context.applicationInfo } returns appInfo
+        every { context.getDatabasePath(any()) } answers { tmp.resolve("databases").apply { mkdirs() }.resolve(firstArg<String>()) }
+
         every { context.contentResolver } returns resolver
         every { context.getSharedPreferences("profile_preferences", Context.MODE_PRIVATE) } returns prefs
     }
@@ -492,4 +503,34 @@ class RescueFilesProfileStateTest {
 
         assertTrue(ProfileStateArchive.hasState(context))
     }
-}
+
+    @Test
+    fun restoreKeepsOmittedLocalProfilesAndTheirGenerations() {
+        val registry = File(filesDir, "Profiles_names.txt")
+        registry.writeText("active\tActive\nold\tOld")
+        store["activeProfile"] = "active"
+        store["displayName_active"] = "Active"
+        store["displayName_old"] = "Old"
+        val oldIdentity = app.n_zik.android.core.profiles.profileStorageIdentity(context, "old")
+        val activeIdentity = app.n_zik.android.core.profiles.profileStorageIdentity(context, "active")
+        every { resolver.openInputStream(stateUri) } returns ByteArrayInputStream("new\tNew".toByteArray())
+
+        RescueFiles.importProfileState(context, stateUri).getOrThrow()
+
+        assertEquals("active", store["activeProfile"])
+        assertEquals(activeIdentity, app.n_zik.android.core.profiles.profileStorageIdentity(context, "active"))
+        assertEquals(oldIdentity, app.n_zik.android.core.profiles.profileStorageIdentity(context, "old"))
+        assertEquals(listOf("active\tActive", "old\tOld", "new\tNew"), registry.readLines())
+    }
+
+    @Test
+    fun restoreDoesNotAttachAnUnregisteredLibraryToANewGeneration() {
+        val oldDatabase = context.getDatabasePath("data_old.db").apply { writeText("private library") }
+        every { resolver.openInputStream(stateUri) } returns ByteArrayInputStream("old\tRestored".toByteArray())
+
+        assertTrue(RescueFiles.importProfileState(context, stateUri).isFailure)
+
+        assertEquals("private library", oldDatabase.readText())
+        assertFalse(File(filesDir, "Profiles_names.txt").exists())
+    }
+}

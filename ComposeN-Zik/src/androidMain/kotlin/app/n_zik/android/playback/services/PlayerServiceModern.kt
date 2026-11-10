@@ -139,10 +139,13 @@ import app.n_zik.android.core.maintenance.MaintenanceDownloadSelfHealState
 import app.n_zik.android.core.maintenance.MaintenanceStateStore
 import app.n_zik.android.core.notifications.channelId
 import app.n_zik.android.core.notifications.ensureStartupNotificationChannel
+import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.core.profiles.ProfileDataDirNames
 import app.n_zik.android.core.profiles.cacheDatabaseProvider
 import app.n_zik.android.core.profiles.mediaCacheDir
 import app.n_zik.android.core.profiles.profileSharedItems
+import app.n_zik.android.core.profiles.LegacyMediaAccess
+import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.core.profiles.resolveProfileDataDirNames
 import app.n_zik.android.extensions.discord.DiscordAdvancedSettings
 import app.n_zik.android.extensions.discord.DiscordPresenceManager
@@ -408,6 +411,7 @@ class PlayerServiceModern : MediaLibraryService(),
     private var shuffleOkFlashJob: Job? = null
 
     lateinit var cache: Cache
+    private var boundStreamingCache: ActiveStreamingCleanup.BoundCache? = null
     lateinit var downloadCache: Cache
     private lateinit var audioVolumeObserver: AudioVolumeObserver
     private lateinit var bitmapProvider: BitmapProvider
@@ -786,17 +790,23 @@ class PlayerServiceModern : MediaLibraryService(),
 
         // The streaming cache of the ACTIVE profile (spec-profile-data-separation): its own
         // suffixed folder + index when separate, the base folder + index when shared.
+        val ownerId = getActiveProfile(applicationContext)
+        val owner = profileStorageIdentity(applicationContext, ownerId)
         val location = mediaCacheLocation(applicationContext)
 
-        val cacheDir = location.dir ?:
-            // Temporary directory deletes itself after close
-            // It means songs remain on device as long as it's open
-            createTempDirectory(location.tempDirName).toFile()
-
-        // Ensure this location exists
-        cacheDir.mkdirs()
-
-        cache = SimpleCache(cacheDir, cacheEvictor, cacheDatabaseProvider(applicationContext, location.indexDbName))
+        cache = LegacyMediaAccess.reader(applicationContext, ownerId, ProfileDataItem.MEDIA_CACHE)
+            ?: run {
+                val cacheDir = location.dir ?: createTempDirectory(location.tempDirName).toFile()
+                cacheDir.mkdirs()
+                SimpleCache(cacheDir, cacheEvictor, cacheDatabaseProvider(applicationContext, location.indexDbName)).also {
+                    if (owner != null && location.dir != null) {
+                        val expected = checkNotNull(cacheDir.parentFile).canonicalFile.resolve(cacheDir.name)
+                        if (cacheDir.canonicalFile == expected) {
+                            boundStreamingCache = ActiveStreamingCleanup.BoundCache(owner, expected, it)
+                        }
+                    }
+                }
+            }
         downloadCache = MyDownloadHelper.getDownloadCache(applicationContext)
 
         // Pre-load persisted stream client data into playbackDataCache
@@ -1317,6 +1327,7 @@ class PlayerServiceModern : MediaLibraryService(),
             }
             sessionController?.release()
             sessionController = null
+            boundStreamingCache = null
             cache.release()
             //downloadCache.release()
             loudnessEnhancer?.release()
@@ -3085,6 +3096,9 @@ class PlayerServiceModern : MediaLibraryService(),
 
         val cache: Cache
             get() = this@PlayerServiceModern.cache
+
+        internal val streamingCleanupCache: ActiveStreamingCleanup.BoundCache?
+            get() = this@PlayerServiceModern.boundStreamingCache
 
         val downloadCache: Cache
             get() = this@PlayerServiceModern.downloadCache

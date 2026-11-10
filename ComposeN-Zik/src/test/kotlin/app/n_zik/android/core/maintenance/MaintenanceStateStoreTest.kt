@@ -3,6 +3,9 @@ package app.n_zik.android.core.maintenance
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.core.migration.ConvergenceSummary
+import app.n_zik.android.core.profiles.profileStorageIdentity
+import app.n_zik.android.core.profiles.invalidateProfileStorageIdentity
+import app.it.fast4x.rimusic.utils.writeProfileEntries
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -40,6 +43,27 @@ class MaintenanceStateStoreTest {
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
+    }
+
+    @Test
+    fun scheduledCleanupLogIsPrivateToTheProfileGeneration() {
+        assertTrue(context.writeProfileEntries(listOf("trip" to "Trip")))
+        val owner = checkNotNull(profileStorageIdentity(context, "trip"))
+        val other = checkNotNull(profileStorageIdentity(context, "default"))
+        val state = MaintenanceStorageCleanupState(
+            1_750_000_000_000L,
+            listOf(MaintenanceStorageCleanupRecord("IMAGES", MaintenanceStorageCleanupOutcome.COMPLETED)),
+        )
+
+        MaintenanceStateStore.saveStorageCleanup(context, owner, state)
+
+        assertEquals(state, MaintenanceStateStore.readStorageCleanup(context, owner))
+        assertNull(MaintenanceStateStore.readStorageCleanup(context, other))
+        invalidateProfileStorageIdentity(context, "trip")
+        val recreated = checkNotNull(profileStorageIdentity(context, "trip"))
+        assertTrue(recreated.generation != owner.generation)
+        assertNull(MaintenanceStateStore.readStorageCleanup(context, owner))
+        assertNull(MaintenanceStateStore.readStorageCleanup(context, recreated))
     }
 
     // ---- dedup ----

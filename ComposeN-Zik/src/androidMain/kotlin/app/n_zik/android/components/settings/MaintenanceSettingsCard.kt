@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.utils.debug.profileDiagnosticsDir
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 import androidx.compose.foundation.basicMarquee
@@ -26,7 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -52,15 +52,8 @@ import app.n_zik.android.components.dialog.logs.CopyLogsDialog
 import app.n_zik.android.components.maintenance.MaintenanceHealth
 import app.n_zik.android.components.maintenance.MaintenanceSheet
 import app.n_zik.android.components.maintenance.MaintenanceSnapshot
-import app.n_zik.android.components.maintenance.convergenceStatusRes
-import app.n_zik.android.components.maintenance.dbCleanupStatusRes
-import app.n_zik.android.components.maintenance.dedupStatusRes
-import app.n_zik.android.components.maintenance.downloadRevalidationStatusRes
-import app.n_zik.android.components.maintenance.downloadSelfHealStatusRes
-import app.n_zik.android.components.maintenance.lastRunLine
 import app.n_zik.android.components.maintenance.loadMaintenanceSnapshot
 import app.n_zik.android.components.maintenance.maintenanceHealth
-import app.n_zik.android.components.maintenance.passStatusText
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.extensions.discord.DiscordRpcErrorState
 import app.n_zik.android.uiRoundnessShape
@@ -69,30 +62,13 @@ import app.n_zik.android.typography
 import app.n_zik.android.utils.debug.purgeDebugLogs
 import timber.log.Timber
 
-/**
- * Maintenance settings card (Misc tab, spec "Maintenance — état de l'app en un regard"):
- * a section header with the shield icon, two categories (user decision, post-approval
- * iteration):
- * - **Stats**: a pass table in the Network/Quality status cards pattern (one row per boot
- *   pass with the sheet's "date · status" trailing, plus a live-subsystems health row),
- *   then an "Open" entry that opens the SAME [MaintenanceSheet] as the burger item.
- * - **Debug**: the debug-log switch (moved here from the removed legacy Debug card — the
- *   single source of truth for the switch) with the restart note, then the ALWAYS-visible
- *   "Export logs" entry (the [CopyLogsDialog] greys out "Debug log" / "Both logs" while
- *   the switch is off).
- *
- * Pass rows are a one-shot read at composition (the snapshot loader dispatches its disk
- * I/O to the DATA dispatcher and guards every chunk); the Discord error, the update
- * download state and the failed-download count are observed live, exactly like the sheet.
- * Only the sheet's RED rows count as broken systems — neutral states do not.
- */
+/** Shows live health and opens the detailed maintenance sheet from Settings. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaintenanceSettingsCard(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    val locale = LocalConfiguration.current.locales[0] ?: java.util.Locale.getDefault()
     val palette = colorPalette()
     var showSheet by remember { mutableStateOf(false) }
     var snapshot by remember { mutableStateOf<MaintenanceSnapshot?>(null) }
@@ -130,72 +106,12 @@ fun MaintenanceSettingsCard(
     // always visible (the dialog greys out the debug-dependent options when it is off)
     var logDebugEnabled by rememberPreference(logDebugEnabledKey, false)
 
-    // The boot-pass table shares the sheet's chevron rows trailing status (the same
-    // "date · status" cell, minus the chevron and the expansion)
-    val dedup = snapshot?.dedup
-    val convergence = snapshot?.convergence
-    val dbCleanup = snapshot?.dbCleanup
-    val downloadRevalidation = snapshot?.downloadRevalidation
-    val downloadSelfHeal = snapshot?.downloadSelfHeal
-
     SettingsSectionCard(
         title = stringResource(R.string.maintenance_title),
         icon = R.drawable.shield_checkmark,
         modifier = modifier,
         content = {
-            // STATS category: the boot-pass table + the live health row
-            CardCategoryLabel(stringResource(R.string.maintenance_stats))
-            MaintenancePassRow(
-                title = stringResource(R.string.maintenance_dedup),
-                status = lastRunLine(
-                    dedup?.timestamp,
-                    passStatusText(dedupStatusRes(dedup)),
-                    stringResource(R.string.maintenance_no_data),
-                    locale,
-                ),
-                icon = R.drawable.trash,
-            )
-            MaintenancePassRow(
-                title = stringResource(R.string.maintenance_convergence),
-                status = lastRunLine(
-                    convergence?.timestamp,
-                    passStatusText(convergenceStatusRes(convergence)),
-                    stringResource(R.string.maintenance_no_data),
-                    locale,
-                ),
-                icon = R.drawable.sync,
-            )
-            MaintenancePassRow(
-                title = stringResource(R.string.maintenance_db_cleanup),
-                status = lastRunLine(
-                    dbCleanup?.timestamp,
-                    passStatusText(dbCleanupStatusRes(dbCleanup)),
-                    stringResource(R.string.maintenance_no_data),
-                    locale,
-                ),
-                icon = R.drawable.data_migration,
-            )
-            MaintenancePassRow(
-                title = stringResource(R.string.maintenance_download_revalidation),
-                status = lastRunLine(
-                    downloadRevalidation?.timestamp,
-                    passStatusText(downloadRevalidationStatusRes(downloadRevalidation)),
-                    stringResource(R.string.maintenance_no_data),
-                    locale,
-                ),
-                icon = R.drawable.download,
-            )
-            MaintenancePassRow(
-                title = stringResource(R.string.maintenance_download_self_heal),
-                status = lastRunLine(
-                    downloadSelfHeal?.timestamp,
-                    passStatusText(downloadSelfHealStatusRes(downloadSelfHeal)),
-                    stringResource(R.string.maintenance_no_data),
-                    locale,
-                ),
-                icon = R.drawable.refresh,
-            )
-            MaintenancePassRow(
+            MaintenanceHealthRow(
                 title = stringResource(R.string.maintenance_live_subsystems),
                 status = healthText,
                 statusColor = healthColor,
@@ -237,7 +153,7 @@ fun MaintenanceSettingsCard(
                         // independently of this switch (always installed at startup)
 //
                         // and wipes itself after two clean boots (CrashLogAutoWipe)
-                        purgeDebugLogs(context.filesDir.resolve("logs"))
+                        purgeDebugLogs(profileDiagnosticsDir(context))
                     } else {
                         Toaster.i(R.string.settings_restart_required_message)
                     }
@@ -266,9 +182,8 @@ fun MaintenanceSettingsCard(
     )
 }
 
-/** One row of the card's pass table: the exact [OtherInfoSettingsEntry] layout (the Network/Quality status cards pattern — icon box, title, trailing status underneath), with an endless marquee on the status so a long "date · status" line scrolls instead of wrapping or truncating. */
 @Composable
-private fun MaintenancePassRow(
+private fun MaintenanceHealthRow(
     title: String,
     status: String,
     icon: Int,

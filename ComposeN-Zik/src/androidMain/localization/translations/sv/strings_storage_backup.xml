@@ -22,19 +22,10 @@
     <string name="storage_info_other_nzik">Resten av N-Ziks privata data, inklusive dess databaser, inställningar, index, tillägg och loggar.</string>
     <string name="storage_info_other_used">Det återstående använda utrymmet på den interna volymen, inklusive Android, installerade appar och personliga filer.</string>
     <string name="storage_info_free">Plats för appar och filer på den interna volymen.</string>
-    <string name="storage_cleanup_title">Rensa</string>
     <string name="storage_cleanup_failed">Det gick inte att slutföra rensningen av lagringsutrymmet.</string>
-    <string name="storage_cleanup_images_description">Rensa cachade bilder av N-Zik.</string>
-    <string name="storage_cleanup_streaming_description">Rensa ljudcachelagrad under strömning.</string>
-    <string name="storage_cleanup_downloads_description">Ta bort ljudet offline och avbryt väntande nedladdningar för den aktiva profilens nedladdningslagring.</string>
-    <string name="storage_cleanup_waveforms_description">Rensa genererade vågformsfiler.</string>
     <string name="storage_cleanup_waveforms_dialog_title">Rensa vågformer</string>
     <string name="storage_cleanup_diagnostic_logs">Rensa diagnostikloggar</string>
-    <string name="storage_cleanup_diagnostic_logs_description">Ta bort felsöknings- och kraschloggfilerna. Din loggningsinställning förblir densamma.</string>
-    <string name="storage_cleanup_temporary_files">Ta bort övergivna temporära filer</string>
-    <string name="storage_cleanup_temporary_files_description">Ta bort övergivna bildredigerare utkast och Rewind aktie fångar äldre än 24 timmar.</string>
     <string name="storage_cleanup_all">Rensa alla</string>
-    <string name="storage_cleanup_all_description">Rensa bild- och strömmande cacher och genererade vågformer för den aktiva profilen, inklusive lagring av dem med andra profiler. Ta bort ljudet offline och avbryt väntande nedladdningar för den aktiva profilens nedladdningslagring. Ta bort diagnostikloggar, övergivna utkast till bildredigerare och utgångna Rewind delnings fångar. Ditt bibliotek, anpassade omslag och inställningar behålls.</string>
     <!-- Backup -->
     <string name="backup_action_export">Exportera backup</string>
     <string name="backup_action_import">Importera backup</string>

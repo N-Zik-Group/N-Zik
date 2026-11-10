@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.header
 
+import app.n_zik.android.utils.debug.profileDiagnosticsDir
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Row
@@ -30,7 +31,6 @@ import app.n_zik.android.components.ui.LeadingIconBadge
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.ui.header.clampedLabelMaxWidth
 import app.n_zik.android.utils.debug.purgeDebugLogs
-import java.io.File
 
 /** Toggles debug logging on tap and opens its settings on long press. */
 @OptIn(ExperimentalFoundationApi::class)
@@ -59,7 +59,7 @@ fun DebugLogsMenuItem(
             if (logDebugEnabled) {
                 Toaster.i(R.string.settings_restart_required_message)
             } else {
-                purgeDebugLogs(File(context.filesDir, "logs"))
+                purgeDebugLogs(profileDiagnosticsDir(context))
             }
             onConsume()
         },

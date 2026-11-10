@@ -43,9 +43,9 @@ class SettingsDetailedSearchTest {
 
     @Test fun storageSectionsAndCleanupActionsAreSearchableGloballyAndInData() {
         val labels = listOf(
-            R.string.storage_breakdown_subtitle, R.string.storage_cleanup_title,
-            R.string.storage_cleanup_diagnostic_logs, R.string.storage_cleanup_temporary_files,
-            R.string.storage_cleanup_all,
+            R.string.storage_breakdown_subtitle, R.string.storage_cleanup_profile_title,
+            R.string.storage_cleanup_diagnostic_logs, R.string.storage_cleanup_clear_temporary_files,
+            R.string.storage_cleanup_all, R.string.storage_cleanup_clear_network_cache,
         )
         for (locale in listOf(Locale.ENGLISH, Locale.FRENCH)) {
             val localized = localized(locale)

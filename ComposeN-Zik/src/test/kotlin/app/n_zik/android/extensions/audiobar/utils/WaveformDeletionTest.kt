@@ -28,8 +28,10 @@ class WaveformDeletionTest {
         directory = temporary.newFolder("waveforms")
         mockkStatic("app.it.fast4x.rimusic.utils.ProfilePreferencesKt")
         mockkStatic("app.n_zik.android.core.profiles.ProfileDataDirsKt")
+        mockkStatic("app.n_zik.android.core.profiles.ProfileDataSharingKt")
         every { getActiveProfile(context) } returns "active"
         every { waveformsDir(context, "active") } returns directory
+        every { app.n_zik.android.core.profiles.isLegacyStorageShared(context, "active", any()) } returns false
     }
 
     @After

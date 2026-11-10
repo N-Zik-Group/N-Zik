@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Офлайн (повторний застосунок наступного запуску)</string>
     <string name="maintenance_song_cache">Кеш пісні</string>
     <string name="maintenance_song_download_cache">Кеш завантаження пісні</string>
-    <string name="maintenance_stats">Статистика</string>
     <string name="maintenance_status_deferred">Відкладено</string>
     <string name="maintenance_status_resolved">Вирішено</string>
     <string name="maintenance_status_skipped">Пропущені</string>

@@ -1,16 +1,22 @@
 package app.n_zik.android.download.utils
 
 import android.app.Application
+import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.activeProfileKey
 import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
 import app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey
 import app.it.fast4x.rimusic.utils.profilePreferences
+import app.it.fast4x.rimusic.utils.writeProfileEntries
+import app.n_zik.android.core.profiles.ProfileCacheLocationMigration
 import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.core.profiles.profileDataPrefs
+import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.core.profiles.setProfileShares
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -124,5 +130,55 @@ class MyDownloadHelperCacheLocationTest {
 
         assertEquals(File(app.cacheDir, "exo_downloads").absolutePath, location.dir!!.absolutePath)
         assertEquals("exoplayer_internal.db", location.indexDbName)
+    }
+
+    @Test
+    fun `location changes publish only after both directions have a verified destination`() {
+        assertTrue(app.writeProfileEntries(listOf("work" to "Work")))
+        activate("work")
+        val target = checkNotNull(profileStorageIdentity(app, "work"))
+        val system = File(app.cacheDir, "exo_downloads_work").apply { mkdirs() }
+        val private = File(app.filesDir, "exo_downloads_work")
+        val audio = File(system, "audio.bin").apply { writeText("offline audio") }
+        val index = app.getDatabasePath("exoplayer_internal_work.db")
+        index.parentFile?.mkdirs()
+        index.writeText("media index")
+        assertTrue(ProfileCacheLocationMigration.request(app, target, ExoPlayerCacheLocation.Private))
+        assertEquals(system, MyDownloadHelper.downloadCacheLocation(app).dir)
+
+        ProfileCacheLocationMigration.resume(app, "work") { error("Interrupted after publication") }
+        assertEquals(private, MyDownloadHelper.downloadCacheLocation(app).dir)
+        assertEquals("offline audio", File(private, "audio.bin").readText())
+        assertTrue(audio.exists())
+        ProfileCacheLocationMigration.resume(app, "work")
+        assertFalse(audio.exists())
+        assertEquals("media index", index.readText())
+        File(private, "another.bin").writeText("new download")
+
+        assertTrue(ProfileCacheLocationMigration.request(app, target, ExoPlayerCacheLocation.System))
+        ProfileCacheLocationMigration.resume(app, "work")
+        assertEquals(system, MyDownloadHelper.downloadCacheLocation(app).dir)
+        assertEquals("offline audio", audio.readText())
+        assertEquals("new download", File(system, "another.bin").readText())
+        assertNull(ProfileCacheLocationMigration.requested(app, target))
+    }
+
+    @Test
+    fun `a conflicting destination leaves the location and index untouched`() {
+        assertTrue(app.writeProfileEntries(listOf("work" to "Work")))
+        activate("work")
+        val target = checkNotNull(profileStorageIdentity(app, "work"))
+        val system = File(app.cacheDir, "exo_downloads_work").apply { mkdirs() }
+        val private = File(app.filesDir, "exo_downloads_work").apply { mkdirs() }
+        val audio = File(system, "audio.bin").apply { writeText("offline audio") }
+        val conflict = File(private, "audio.bin").apply { writeText("other data") }
+        assertTrue(ProfileCacheLocationMigration.request(app, target, ExoPlayerCacheLocation.Private))
+
+        ProfileCacheLocationMigration.resume(app, "work")
+
+        assertEquals(system, MyDownloadHelper.downloadCacheLocation(app).dir)
+        assertEquals("offline audio", audio.readText())
+        assertEquals("other data", conflict.readText())
+        assertEquals(ExoPlayerCacheLocation.Private, ProfileCacheLocationMigration.requested(app, target))
     }
 }

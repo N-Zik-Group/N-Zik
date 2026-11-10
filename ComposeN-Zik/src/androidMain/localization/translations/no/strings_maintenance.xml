@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Frakoblet (hentet neste oppstart)</string>
     <string name="maintenance_song_cache">Sang cache</string>
     <string name="maintenance_song_download_cache">Sang nedlastings cache</string>
-    <string name="maintenance_stats">Statistikk</string>
     <string name="maintenance_status_deferred">Utsatt</string>
     <string name="maintenance_status_resolved">Løst</string>
     <string name="maintenance_status_skipped">Ignorert</string>

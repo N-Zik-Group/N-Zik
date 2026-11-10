@@ -1,5 +1,8 @@
 package app.n_zik.android.core.network.client
 
+import android.content.Context
+import app.it.fast4x.rimusic.utils.getActiveProfile
+import it.fast4x.innertube.Innertube
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import okhttp3.Cache
@@ -9,6 +12,9 @@ import java.net.Proxy
 import java.util.concurrent.TimeUnit
 
 object NetworkClientFactory {
+    internal fun profileCacheDirectory(context: Context, profileId: String = getActiveProfile(context)): File =
+        (context.externalCacheDir ?: context.cacheDir).resolve("nzik-profile-network/$profileId")
+
     @Volatile
     private var client: OkHttpClient? = null
 
@@ -39,13 +45,37 @@ object NetworkClientFactory {
                 
                 client = builder.build()
             } else {
+                val cache = cacheDir?.let { directory ->
+                    currentClient.cache?.takeIf { it.directory == directory } ?: Cache(directory, 100L * 1024 * 1024)
+                }
                 client = currentClient.newBuilder()
                     .proxy(proxy)
+                    .cache(cache)
                     .build()
             }
             // Reset Ktor clients to force reconfiguration with new proxy/settings
             ktorClient = null
             ktorCachelessClient = null
+            Innertube.bindTransportCache(client?.cache)
+        }
+    }
+
+    /** Verify and remove confirmed entries while holding OkHttp's own writer monitor. */
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    internal fun clearBoundProfileCache(directory: File, keys: Set<String>, verify: () -> Boolean): Boolean = synchronized(this) {
+        val cache = client?.cache ?: return@synchronized false
+        if (directory.canonicalFile != directory || cache.directory.canonicalFile != directory) return@synchronized false
+        // Cache.evictAll also detaches in-flight editors. OkHttp 5.5.1 uses the
+        // DiskLruCache monitor for edit/commit, including writes from shared clients.
+        val disk = cache.cache
+        synchronized(disk) {
+            cache.initialize()
+            val unavailable = keys.any { key ->
+                val entry = disk.lruEntries[key]
+                entry == null || entry.currentEditor != null
+            }
+            if (keys.isEmpty() || unavailable || !verify()) false
+            else keys.map { disk.remove(it) }.all { it }
         }
     }
 

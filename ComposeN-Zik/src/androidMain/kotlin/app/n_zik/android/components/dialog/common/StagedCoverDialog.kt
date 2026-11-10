@@ -50,6 +50,8 @@ import app.n_zik.android.components.image.restoreOwnedCover
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.profiles.coversDir
+import app.n_zik.android.core.profiles.ProfileDataItem
+import app.n_zik.android.core.profiles.isLegacyStorageShared
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -188,6 +190,9 @@ abstract class StagedCoverDialog internal constructor(
                     val permanent = withContext(NzikDispatchers.DATA) {
                         if (!current(token, selected.id, profileId)) return@withContext null
                         if (edited == null) newValue else {
+                            check(!isLegacyStorageShared(context, profileId, ProfileDataItem.IMAGES)) {
+                                "The historical shared cover directory is still protected"
+                            }
                             val directory = coversDir(context, profileId)
                             val file = File(directory, "cover_${selected.id}.jpg").canonicalFile
                             require(file.parentFile == directory.canonicalFile)

@@ -10,6 +10,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.util.Util
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadManager
+import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.exoplayer.scheduler.PlatformScheduler
 import app.n_zik.android.R
@@ -19,6 +20,9 @@ import app.n_zik.android.core.backup.LibraryStartupException
 import app.n_zik.android.core.backup.isLibraryReady
 import app.n_zik.android.core.notifications.channelId
 import app.n_zik.android.core.notifications.ensureStartupNotificationChannel
+import app.n_zik.android.core.profiles.LegacyMediaAccess
+import app.n_zik.android.core.profiles.ProfileDataItem
+import app.n_zik.android.playback.services.StreamingCacheReaders
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.download.utils.MyDownloadHelper.DOWNLOAD_NOTIFICATION_CHANNEL_ID
 import app.n_zik.android.download.utils.MyDownloadHelper.batchTotal
@@ -77,6 +81,9 @@ class MyDownloadService : DownloadService(
     private var startupJob: Job? = null
     private var downloadManagerStarted = false
     private var waitingForeground = false
+    private var commands: ProfileDownloadCommands? = null
+    private var legacyStorageProtected = false
+    private var dispatchedStart = false
 
     override fun onCreate() {
         if (isLibraryReady()) {
@@ -100,11 +107,26 @@ class MyDownloadService : DownloadService(
     }
 
     private fun initializeDownloadManager() {
+        commands = ProfileDownloadCommands.capture(this)
+        legacyStorageProtected = LegacyMediaAccess.isProtected(this, getActiveProfile(this), ProfileDataItem.DOWNLOADS)
+        if (legacyStorageProtected) {
+            stopSelf()
+            return
+        }
         super.onCreate()
         downloadManagerStarted = true
+        if (commands?.isPaused(this) == true) MyDownloadHelper.getDownloadManager(this).pauseDownloads()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (legacyStorageProtected) {
+            stopSelfResult(startId)
+            return START_NOT_STICKY
+        }
+        if (intent?.data == null && (intent?.action == ACTION_ADD_DOWNLOAD || intent?.action == ACTION_REMOVE_DOWNLOAD)) {
+            // Unowned starts, including previously redelivered ones, cannot be attributed.
+            return rejectStart(startId)
+        }
         if (!downloadManagerStarted) {
             if (!waitingForeground &&
                 (intent?.getBooleanExtra(KEY_FOREGROUND, false) == true || intent?.action == SCHEDULED_RESTART)
@@ -126,15 +148,50 @@ class MyDownloadService : DownloadService(
             pendingStarts.addLast(PendingStart(intent, flags, startId))
             return if (intent == null) START_STICKY else START_REDELIVER_INTENT
         }
-        if (intent?.action == ACTION_CANCEL_ONGOING) {
-            cancelOngoingDownloads()
-            return START_STICKY
-        } else if (intent?.action == DownloadService.ACTION_PAUSE_DOWNLOADS) {
-            app.n_zik.android.appContext().getSharedPreferences("download_prefs", Context.MODE_PRIVATE).edit().putBoolean("downloads_paused_state", true).apply()
-        } else if (intent?.action == DownloadService.ACTION_RESUME_DOWNLOADS) {
-            app.n_zik.android.appContext().getSharedPreferences("download_prefs", Context.MODE_PRIVATE).edit().putBoolean("downloads_paused_state", false).apply()
+        when (intent?.action) {
+            ACTION_CANCEL_ONGOING, ACTION_PAUSE_DOWNLOADS, ACTION_RESUME_DOWNLOADS, ACTION_REMOVE_ALL_DOWNLOADS,
+            ACTION_ADD_DOWNLOAD, ACTION_REMOVE_DOWNLOAD, ACTION_SET_STOP_REASON, ACTION_SET_REQUIREMENTS -> {
+                val target = commands
+                if (target == null || !target.matches(intent) || target != ProfileDownloadCommands.capture(this)) {
+                    return rejectStart(startId)
+                }
+                if (intent.intersectsCleanup()) return rejectStart(startId)
+                when (intent.action) {
+                    ACTION_CANCEL_ONGOING -> {
+                        cancelOngoingDownloads()
+                        return START_STICKY
+                    }
+                    ACTION_PAUSE_DOWNLOADS -> target.setPaused(this, true)
+                    ACTION_RESUME_DOWNLOADS -> target.setPaused(this, false)
+                }
+            }
         }
+        dispatchedStart = true
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    private fun rejectStart(startId: Int): Int {
+        if (!dispatchedStart) stopSelfResult(startId)
+        return START_NOT_STICKY
+    }
+
+    private fun Intent.intersectsCleanup(): Boolean {
+        val cache = MyDownloadHelper.boundDownloadCache() ?: return false
+        return when (action) {
+            ACTION_ADD_DOWNLOAD -> {
+                @Suppress("DEPRECATION")
+                val request = getParcelableExtra<DownloadRequest>(KEY_DOWNLOAD_REQUEST)
+                request != null && (
+                    StreamingCacheReaders.isReserved(cache, request.id) ||
+                        StreamingCacheReaders.isReserved(cache, request.customCacheKey ?: request.id)
+                    )
+            }
+            ACTION_REMOVE_DOWNLOAD, ACTION_SET_STOP_REASON ->
+                StreamingCacheReaders.isReserved(cache, getStringExtra(KEY_CONTENT_ID))
+            ACTION_CANCEL_ONGOING, ACTION_REMOVE_ALL_DOWNLOADS, ACTION_SET_REQUIREMENTS ->
+                StreamingCacheReaders.isReserved(cache, null)
+            else -> false
+        }
     }
 
     internal fun cancelOngoingDownloads() {
@@ -143,7 +200,7 @@ class MyDownloadService : DownloadService(
             while (cursor.moveToNext()) {
                 val state = cursor.download.state
                 if (state == Download.STATE_DOWNLOADING || state == Download.STATE_QUEUED || state == Download.STATE_RESTARTING || state == Download.STATE_STOPPED) {
-                    DownloadService.sendRemoveDownload(this, MyDownloadService::class.java, cursor.download.request.id, false)
+                    downloadManager.removeDownload(cursor.download.request.id)
                 }
             }
         }
@@ -274,10 +331,7 @@ class MyDownloadService : DownloadService(
                 androidx.core.app.NotificationManagerCompat.from(context).cancel(FOREGROUND_NOTIFICATION_ID + 2)
                 androidx.core.app.NotificationManagerCompat.from(context).cancel(FOREGROUND_NOTIFICATION_ID)
 
-                if (downloads.isEmpty()) {
-                    app.n_zik.android.appContext().getSharedPreferences("download_prefs", Context.MODE_PRIVATE).edit().putBoolean("downloads_paused_state", false).apply()
-                    resetBatch()
-                }
+                if (downloads.isEmpty()) resetBatch()
             }
         }
     }

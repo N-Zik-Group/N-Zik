@@ -2,6 +2,9 @@ package app.n_zik.android.core.maintenance
 
 import android.content.Context
 import app.n_zik.android.core.migration.ConvergenceSummary
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
+import app.n_zik.android.core.profiles.profileDataPrefs
+import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.utils.DataStoreUtils
 import org.json.JSONArray
 import org.json.JSONObject
@@ -111,6 +114,18 @@ data class MaintenanceDownloadSelfHealState(
     val title: String,
 )
 
+internal enum class MaintenanceStorageCleanupOutcome { COMPLETED, SKIPPED, FAILED }
+
+internal data class MaintenanceStorageCleanupRecord(
+    val action: String,
+    val outcome: MaintenanceStorageCleanupOutcome,
+)
+
+internal data class MaintenanceStorageCleanupState(
+    val timestamp: Long,
+    val records: List<MaintenanceStorageCleanupRecord>,
+)
+
 /**
  * Single persistence base of the maintenance entries (spec "Maintenance — état de
  * l'app en un regard"): one SharedPreferences key per entry in the `app_settings`
@@ -143,6 +158,39 @@ object MaintenanceStateStore {
 
     /** SharedPreferences key of the S2 (pre-playback) download self-heal entry. */
     const val KEY_DOWNLOAD_SELF_HEAL = "maintenance_download_self_heal"
+
+    /** A previous generation's log can never become the recreated profile's last run. */
+    internal fun saveStorageCleanup(context: Context, owner: ProfileStorageIdentity, state: MaintenanceStorageCleanupState) {
+        if (profileStorageIdentity(context, owner.id) != owner) return
+        val records = JSONArray()
+        state.records.forEach { record ->
+            records.put(JSONObject().put("action", record.action).put("outcome", record.outcome.name))
+        }
+        val value = JSONObject().put("timestamp", state.timestamp).put("records", records).toString()
+        profileDataPrefs(context, owner.id).edit().putString(storageCleanupKey(owner), value).apply()
+    }
+
+    internal fun readStorageCleanup(context: Context, owner: ProfileStorageIdentity): MaintenanceStorageCleanupState? =
+        runCatching {
+            if (profileStorageIdentity(context, owner.id) != owner) return null
+            val value = profileDataPrefs(context, owner.id).getString(storageCleanupKey(owner), null) ?: return null
+            val json = JSONObject(value)
+            val rows = json.getJSONArray("records")
+            MaintenanceStorageCleanupState(
+                json.getLong("timestamp"),
+                List(rows.length()) { index ->
+                    val row = rows.getJSONObject(index)
+                    MaintenanceStorageCleanupRecord(row.getString("action"), MaintenanceStorageCleanupOutcome.valueOf(row.getString("outcome")))
+                },
+            )
+        }.onFailure { Timber.tag(TAG).w(it, "Could not read the scheduled storage cleanup log") }.getOrNull()
+
+    private const val STORAGE_CLEANUP_PREFIX = "maintenance_storage_cleanup_"
+
+    internal fun isStorageCleanupKey(key: String): Boolean = key.startsWith(STORAGE_CLEANUP_PREFIX)
+
+    private fun storageCleanupKey(owner: ProfileStorageIdentity): String =
+        "$STORAGE_CLEANUP_PREFIX${owner.id}_${owner.generation}"
 
     // -- writes (last successful run only; the caller never writes after a failure) --
 

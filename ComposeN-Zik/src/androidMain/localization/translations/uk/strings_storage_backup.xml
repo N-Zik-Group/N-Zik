@@ -22,19 +22,10 @@
     <string name="storage_info_other_nzik">Решта конфіденційних даних N-Zik, включаючи його бази, налаштування, індексатори та журнали.</string>
     <string name="storage_info_other_used">Залишилося використаного простору у внутрішньому гучності, включаючи встановленні програми та особисті файли.</string>
     <string name="storage_info_free">Простір, доступний для додатків та файлів у внутрішньому томі.</string>
-    <string name="storage_cleanup_title">Очищення</string>
     <string name="storage_cleanup_failed">Не вдалося завершити очищення пам’яті.</string>
-    <string name="storage_cleanup_images_description">Очистити файли кешовані за N-Ціком.</string>
-    <string name="storage_cleanup_streaming_description">Очищення кешованого аудіо під час потоку.</string>
-    <string name="storage_cleanup_downloads_description">Видаліть оффлайн аудіо і скасуйте завантаження, для збереження активних профілів.</string>
-    <string name="storage_cleanup_waveforms_description">Очистити створені файли хвиль.</string>
     <string name="storage_cleanup_waveforms_dialog_title">Очистити хвилі</string>
     <string name="storage_cleanup_diagnostic_logs">Очистити журнали діагностики</string>
-    <string name="storage_cleanup_diagnostic_logs_description">Видаліть файли журналу налагодження та збої. Налаштування журналювання залишається однаковим.</string>
-    <string name="storage_cleanup_temporary_files">Видалити покинуті тимчасові файли</string>
-    <string name="storage_cleanup_temporary_files_description">Видаляйте покинуті чернетки редакторів зображень та перемотування повідомлень старішими за 24 години.</string>
     <string name="storage_cleanup_all">Очистити все</string>
-    <string name="storage_cleanup_all_description">Очистити зображення і кеш потокового передавання і згенерованих схем хвиль для активного профілю, включаючи зберігання, яке має спільні файли з іншими профілями. Видаліть оффлайн аудіо і скасуйте завантаження, для збереження активних профілів. Видалити діагностичні журнали, покинуті чернетки редактора зображень і прострочені захоплення. Ваші бібліотеки, обкладинки та налаштування збережені.</string>
     <!-- Backup -->
     <string name="backup_action_export">Експортувати резервну копію</string>
     <string name="backup_action_import">Імпорт резервної копії</string>

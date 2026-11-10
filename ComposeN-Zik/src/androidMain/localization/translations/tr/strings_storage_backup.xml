@@ -22,19 +22,10 @@
     <string name="storage_info_other_nzik">N-Zik’in veritabanları, ayarları, dizinleri, uzantıları ve günlükleri dahil olmak üzere geri kalan tüm özel verileri.</string>
     <string name="storage_info_other_used">Android, yüklü uygulamalar ve kişisel dosyalar dahil olmak üzere dahili depolama alanında kalan kullanılabilir alan.</string>
     <string name="storage_info_free">Dahili birimde uygulamalar ve dosyalar için kullanılabilir alan.</string>
-    <string name="storage_cleanup_title">Temizle</string>
     <string name="storage_cleanup_failed">Depolama alanı temizleme işlemi tamamlanamadı.</string>
-    <string name="storage_cleanup_images_description">N-Zik tarafından önbelleğe alınan görselleri temizle.</string>
-    <string name="storage_cleanup_streaming_description">Akış sırasında önbelleğe alınan ses dosyasını sil.</string>
-    <string name="storage_cleanup_downloads_description">Etkin profilin indirme depolama alanındaki çevrimdışı ses dosyalarını sil ve bekleyen indirmeleri iptal et.</string>
-    <string name="storage_cleanup_waveforms_description">Oluşturulan waveform dosyalarını sil.</string>
     <string name="storage_cleanup_waveforms_dialog_title">Waveformları temizle</string>
     <string name="storage_cleanup_diagnostic_logs">Tanılama günlüklerini temizle</string>
-    <string name="storage_cleanup_diagnostic_logs_description">Hata ayıklama ve çökme günlük dosyalarını silin. Günlük kaydı ayarlarınız aynı kalır.</string>
-    <string name="storage_cleanup_temporary_files">Kullanılmayan geçici dosyaları sil</string>
-    <string name="storage_cleanup_temporary_files_description">Terk edilmiş resim düzenleyici taslaklarını silin ve 24 saatten daha eski Geri Sarma paylaşımlarını geri alın.</string>
     <string name="storage_cleanup_all">Tümünü temizle</string>
-    <string name="storage_cleanup_all_description">Etkin profil için görüntü ve akış önbelleklerini ve oluşturulan waveformları, diğer profillerle paylaştığı depolama alanı da dahil olmak üzere temizleyin. Etkin profilin indirme depolama alanı için çevrimdışı ses dosyalarını silin ve bekleyen indirmeleri iptal edin. Teşhis günlüklerini, terk edilmiş görüntü düzenleyici taslaklarını ve süresi dolmuş Rewind paylaşım yakalamalarını silin. Kitaplığınız, özel kapaklarınız ve ayarlarınız korunur.</string>
     <!-- Backup -->
     <string name="backup_action_export">Yedeklemeyi dışa aktar</string>
     <string name="backup_action_import">Yedeklemeyi içe aktar</string>

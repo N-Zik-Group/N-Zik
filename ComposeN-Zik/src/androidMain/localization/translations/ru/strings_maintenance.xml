@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Оффлайн (перепробовать следующий запуск)</string>
     <string name="maintenance_song_cache">Кэш треков</string>
     <string name="maintenance_song_download_cache">Кэш загрузки песни</string>
-    <string name="maintenance_stats">Статистика</string>
     <string name="maintenance_status_deferred">Отложено</string>
     <string name="maintenance_status_resolved">Решена</string>
     <string name="maintenance_status_skipped">Пропущено</string>

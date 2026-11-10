@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.logs
 
+import app.n_zik.android.utils.debug.profileDiagnosticsDir
 import androidx.compose.foundation.layout.PaddingValues
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -61,7 +62,7 @@ object CrashLogDialog : ContentFramedDialog {
 
         // The crash file is re-read on every open (the dialog re-composes on activation)
         LaunchedEffect(Unit) {
-            content = loadLogContent(context.filesDir.resolve("logs"), 1)
+            content = loadLogContent(profileDiagnosticsDir(context), 1)
         }
 
         val launcher = rememberLauncherForActivityResult(

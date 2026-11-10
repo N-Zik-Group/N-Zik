@@ -22,19 +22,10 @@
     <string name="storage_info_other_nzik">Der Rest der privaten Daten von N-Zik, einschließlich der Datenbanken, Einstellungen, Indizes, Erweiterungen und Protokolle.</string>
     <string name="storage_info_other_used">Der verbleibende Speicherplatz auf dem internen Volumen, einschließlich Android, installierte Apps und persönliche Dateien.</string>
     <string name="storage_info_free">Platz für Apps und Dateien auf dem internen Volumen.</string>
-    <string name="storage_cleanup_title">Bereinigen</string>
     <string name="storage_cleanup_failed">Konnte Speicherbereinigung nicht beenden.</string>
-    <string name="storage_cleanup_images_description">Leere Kunstwerke im Cache von N-Zik.</string>
-    <string name="storage_cleanup_streaming_description">Audiozwischenspeicher während des Streamens löschen.</string>
-    <string name="storage_cleanup_downloads_description">Löschen Sie Offline-Audio und kündigen Sie ausstehende Downloads für den Downloadspeicher des aktiven Profils.</string>
-    <string name="storage_cleanup_waveforms_description">Generierte Waveform-Dateien löschen.</string>
     <string name="storage_cleanup_waveforms_dialog_title">Wellenformen löschen</string>
     <string name="storage_cleanup_diagnostic_logs">Lösche Diagnoseprotokolle</string>
-    <string name="storage_cleanup_diagnostic_logs_description">Löschen Sie die Debugg- und Absturzprotokolldateien. Ihre Protokolleinstellung bleibt unverändert.</string>
-    <string name="storage_cleanup_temporary_files">Verlassene temporäre Dateien entfernen</string>
-    <string name="storage_cleanup_temporary_files_description">Entfernen Sie verlassene Bildbearbeitungsentwürfe und Rewind Freigaben ist älter als 24 Stunden.</string>
     <string name="storage_cleanup_all">Alles löschen</string>
-    <string name="storage_cleanup_all_description">Lösche Bild- und Streaming-Caches und generierte Wellenformen für das aktive Profil, einschließlich Speicher, die es mit anderen Profilen teilt. Löschen Sie Offline-Audio und kündigen Sie ausstehende Downloads für den Downloadspeicher des aktiven Profils. Lösche Diagnoseprotokolle, verlassene Bildbearbeitungsprogramme und abgelaufene Rewind-Sharing-Captures. Deine Bibliothek, benutzerdefinierte Cover und Einstellungen werden beibehalten.</string>
     <!-- Backup -->
     <string name="backup_action_export">Backup exportieren</string>
     <string name="backup_action_import">Backup importieren</string>

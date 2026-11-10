@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Offline (kokeiltu uudelleen seuraavan käynnistyksen)</string>
     <string name="maintenance_song_cache">Kappaleen välimuisti</string>
     <string name="maintenance_song_download_cache">Kappaleen latausvälimuisti</string>
-    <string name="maintenance_stats">Tilastot</string>
     <string name="maintenance_status_deferred">Laskettu</string>
     <string name="maintenance_status_resolved">Ratkaistu</string>
     <string name="maintenance_status_skipped">Ohitettu</string>

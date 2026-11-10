@@ -10,9 +10,14 @@ import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
+import app.n_zik.android.playback.services.StreamingCacheReaders
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import app.n_zik.android.core.profiles.waveformsDir
+import app.n_zik.android.core.profiles.ProfileDataItem
+import app.n_zik.android.core.profiles.isLegacyStorageShared
+import app.n_zik.android.core.profiles.profileStorageIdentity
+import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import kotlinx.coroutines.delay
@@ -61,7 +66,12 @@ object WaveformExtractor {
 
     private fun deleteWaveform(context: Context, mediaId: String, requireDeletion: Boolean) {
         Timber.tag(TAG).d("DELETE [$mediaId] Start deleteWaveform")
-        val waveformDir = waveformsDir(context, getActiveProfile(context))
+        val profileId = getActiveProfile(context)
+        if (isLegacyStorageShared(context, profileId, ProfileDataItem.WAVEFORMS)) {
+            if (requireDeletion) throw IOException("Legacy shared waveforms are protected")
+            return
+        }
+        val waveformDir = waveformsDir(context, profileId)
         val savedFile = File(waveformDir, "$mediaId.json")
         if (savedFile.exists()) {
             val deleted = savedFile.delete()
@@ -95,11 +105,9 @@ object WaveformExtractor {
         return withContext(NzikDispatchers.DATA) {
             // We use filesDir instead of cacheDir so it survives a "Clear Cache" by the user —
             // the ACTIVE profile's waveforms folder (spec-profile-data-separation).
-            val waveformDir = waveformsDir(context, getActiveProfile(context))
-            if (!waveformDir.exists()) {
-                waveformDir.mkdirs()
-                Timber.tag(TAG).d("EXTRACT [$mediaId] Created waveforms directory")
-            }
+            val profileId = getActiveProfile(context)
+            val target = profileStorageIdentity(context, profileId)
+            val waveformDir = waveformsDir(context, profileId)
 
             val savedFile = File(waveformDir, "$mediaId.json")
 
@@ -141,14 +149,14 @@ object WaveformExtractor {
             Timber.tag(TAG).d("EXTRACT [$mediaId] Found valid cache, starting extraction...")
             // Unique per-attempt filename: two near-simultaneous extractions for the same
             // mediaId (menu update + seekbar retry) must not share one temp file.
-            val tempFile = File(context.cacheDir, "temp_audio_${mediaId}_${UUID.randomUUID()}.tmp")
+            val tempDirectory = context.cacheDir.resolve("waveform_temp_$profileId").apply { mkdirs() }
+            val tempFile = File(tempDirectory, "${UUID.randomUUID()}.tmp")
+            val cacheDataSourceFactory = CacheDataSource.Factory()
+                .setCache(validCache)
+                .setUpstreamDataSourceFactory(null) // Only read from cache
+            val ds = StreamingCacheReaders.factory(validCache, cacheDataSourceFactory).createDataSource()
             try {
-                val cacheDataSourceFactory = CacheDataSource.Factory()
-                    .setCache(validCache)
-                    .setUpstreamDataSourceFactory(null) // Only read from cache
-
                 // Copy cached stream to a single temp file for fast native access
-                val ds = cacheDataSourceFactory.createDataSource()
                 val spec = DataSpec.Builder()
                     .setUri(Uri.parse("https://fake.uri"))
                     .setKey(mediaId)
@@ -157,25 +165,22 @@ object WaveformExtractor {
                 val size = ds.open(spec)
                 Timber.tag(TAG).d("EXTRACT [$mediaId] DataSource opened, size=$size bytes")
                 if (size == 0L) {
-                    ds.close()
                     Timber.tag(TAG).w("EXTRACT [$mediaId] DataSource size is 0 -> NotReady")
                     return@withContext WaveformResult.NotReady
                 }
 
                 val startTime = System.currentTimeMillis()
-                val fos = FileOutputStream(tempFile)
                 val buffer = ByteArray(64 * 1024)
-                var totalBytes = 0L
-                while (true) {
-                    val read = ds.read(buffer, 0, buffer.size)
-                    if (read <= 0) break
-                    fos.write(buffer, 0, read)
-                    totalBytes += read
+                FileOutputStream(tempFile).use { output ->
+                    while (true) {
+                        val read = ds.read(buffer, 0, buffer.size)
+                        if (read <= 0) break
+                        output.write(buffer, 0, read)
+                    }
                 }
-                fos.close()
                 ds.close()
                 val copyTime = System.currentTimeMillis() - startTime
-                Timber.tag(TAG).d("EXTRACT [$mediaId] Copied $totalBytes bytes to temp file in ${copyTime}ms")
+                Timber.tag(TAG).d("EXTRACT [$mediaId] Copied ${tempFile.length()} bytes to temp file in ${copyTime}ms")
 
                 val extractStartTime = System.currentTimeMillis()
                 // Use native PCM decoding and RMS calculation for a beautiful, accurate waveform
@@ -184,8 +189,14 @@ object WaveformExtractor {
                 Timber.tag(TAG).d("EXTRACT [$mediaId] Native extraction got ${amplitudes.size} samples in ${extractTime}ms")
 
                 if (amplitudes.size >= TARGET_SAMPLES - 2) {
-                    savedFile.writeText(gson.toJson(amplitudes))
-                    Timber.tag(TAG).d("EXTRACT [$mediaId] Saved JSON (${savedFile.length()} bytes) -> SUCCESS")
+                    if (target != null) DatabaseRestoreJournal.withProfileStorageMutation(context) {
+                        if (target == profileStorageIdentity(context, profileId) &&
+                            !isLegacyStorageShared(context, profileId, ProfileDataItem.WAVEFORMS)
+                        ) {
+                            waveformDir.mkdirs()
+                            savedFile.writeText(gson.toJson(amplitudes))
+                        }
+                    }
                     return@withContext WaveformResult.Success(amplitudes)
                 } else {
                     Timber.tag(TAG).w("EXTRACT [$mediaId] Only got ${amplitudes.size} samples (need ${TARGET_SAMPLES - 2}), extraction incomplete")
@@ -194,6 +205,7 @@ object WaveformExtractor {
             } catch (e: Exception) {
                 return@withContext classifyExtractionFailure(e)
             } finally {
+                runCatching(ds::close)
                 if (tempFile.exists()) {
                     tempFile.delete()
                     Timber.tag(TAG).d("EXTRACT [$mediaId] Cleaned up temp file")

@@ -22,19 +22,10 @@
     <string name="storage_info_other_nzik">بقية البيانات الخاصة لـ N-Zik، بما في ذلك قواعد بياناته وإعداداداته وفهرسه وإضافاته وسجلاته.</string>
     <string name="storage_info_other_used">المساحة المستخدمة المتبقية على المجلد الداخلي، بما في ذلك أندرويد، التطبيقات المثبتة والملفات الشخصية.</string>
     <string name="storage_info_free">المساحة المتاحة للتطبيقات والملفات على المجلد الداخلي.</string>
-    <string name="storage_cleanup_title">تنظيف</string>
     <string name="storage_cleanup_failed">لا يمكن إنهاء تنظيف التخزين.</string>
-    <string name="storage_cleanup_images_description">مسح الأعمال الفنية المخبأة من قبل N-Zik.</string>
-    <string name="storage_cleanup_streaming_description">مسح التخزين المؤقت للصوت أثناء البث.</string>
-    <string name="storage_cleanup_downloads_description">حذف الصوت دون اتصال وإلغاء التنزيلات المعلقة لتخزين تحميل الملف الشخصي النشط.</string>
-    <string name="storage_cleanup_waveforms_description">مسح ملفات نموذج الموجة التي تم إنشاؤها.</string>
     <string name="storage_cleanup_waveforms_dialog_title">مسح الموجات</string>
     <string name="storage_cleanup_diagnostic_logs">مسح سجلات التشخيص</string>
-    <string name="storage_cleanup_diagnostic_logs_description">حذف ملفات التصحيح وسجل الأعطال. إعداد التسجيل الخاص بك يبقى على حاله.</string>
-    <string name="storage_cleanup_temporary_files">إزالة الملفات المؤقتة المهجورة</string>
-    <string name="storage_cleanup_temporary_files_description">إزالة مسودات محرر الصور المهجورة و Rwind share التقاط أقدم من 24 ساعة.</string>
     <string name="storage_cleanup_all">مسح الكل</string>
-    <string name="storage_cleanup_all_description">مسح مخبآت الصور والبث وأشكال الموجات المولدة للملف الشخصي النشط، بما في ذلك التخزين الذي يشاركه مع ملفات شخصية أخرى. حذف الصوت دون اتصال وإلغاء التنزيلات المعلقة لتخزين تحميل الملف الشخصي النشط. حذف سجلات التشخيص، ومسودات محرر الصور المتروكة والتقاط مشاركة الريند منتهية الصلاحية. يتم الاحتفاظ بمكتبتك، أغلفة مخصصة وإعدادات.</string>
     <!-- Backup -->
     <string name="backup_action_export">تصدير النسخ الاحتياطي</string>
     <string name="backup_action_import">استيراد النسخ الاحتياطي</string>

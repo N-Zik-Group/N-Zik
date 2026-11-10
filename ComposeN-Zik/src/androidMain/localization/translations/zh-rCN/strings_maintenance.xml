@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">离线(重试下次启动)</string>
     <string name="maintenance_song_cache">歌曲缓存</string>
     <string name="maintenance_song_download_cache">歌曲下载缓存</string>
-    <string name="maintenance_stats">统计信息</string>
     <string name="maintenance_status_deferred">递延的</string>
     <string name="maintenance_status_resolved">已解决</string>
     <string name="maintenance_status_skipped">跳过</string>

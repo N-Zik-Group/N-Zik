@@ -27,7 +27,9 @@ fun ConfirmationDialog(
     confirmText: String,
     onCancel: () -> Unit = onDismiss,
     title: String,
-    dismissOnConfirm: Boolean = true
+    dismissOnConfirm: Boolean = true,
+    confirmEnabled: Boolean = true,
+    bodyModifier: Modifier = Modifier,
 ) {
     DialogFrame(
         onDismiss = onDismiss,
@@ -48,7 +50,8 @@ fun ConfirmationDialog(
                             onConfirm()
                             if (dismissOnConfirm) onDismiss()
                         },
-                        primary = true
+                        primary = true,
+                        enabled = confirmEnabled,
                     )
                 )
             )
@@ -59,7 +62,7 @@ fun ConfirmationDialog(
             style = typography().s.copy(
                 color = colorPalette().text
             ),
-            modifier = Modifier
+            modifier = bodyModifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState()).padding(24.dp)
         )

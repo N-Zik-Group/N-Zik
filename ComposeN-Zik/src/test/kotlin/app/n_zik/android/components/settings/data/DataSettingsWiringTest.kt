@@ -8,23 +8,35 @@ import androidx.compose.foundation.verticalScroll
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 
 import app.n_zik.android.components.settings.common.LocalSettingsSearchMessage
+import app.n_zik.android.components.tab.Search
 import java.time.Duration
 import android.app.Application
 import android.content.Context
+import android.graphics.Bitmap
 import android.os.Looper
 import android.text.format.Formatter
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.isEditable
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -35,18 +47,15 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.core.app.ApplicationProvider
-import androidx.media3.exoplayer.offline.DownloadService
-import androidx.media3.datasource.cache.Cache
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.mockkStatic
 import io.mockk.unmockkObject
-import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.flow.flowOf
 import org.junit.After
@@ -65,7 +74,6 @@ import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
-import app.it.fast4x.rimusic.utils.logDebugEnabledKey
 import app.it.fast4x.rimusic.utils.pauseListenHistoryKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
@@ -76,18 +84,17 @@ import app.n_zik.android.R
 import app.n_zik.android.components.dialog.backup.ImportBackupDialog
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.components.dialog.export.ExportBackupDialog
-import app.n_zik.android.components.image.PickedImageEditor
 import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.EventTable
 import app.n_zik.android.core.profiles.coversDir
-import app.n_zik.android.core.profiles.waveformsDir
-import app.n_zik.android.download.services.MyDownloadService
-import app.n_zik.android.playback.services.PlayerServiceModern
-import app.n_zik.android.utils.debug.debugLogFiles
-import java.util.UUID
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
+import app.n_zik.android.core.profiles.profileStorageIdentity
+import app.n_zik.android.core.profiles.ScopedTemporaryFiles
 import java.util.concurrent.atomic.AtomicInteger
+import java.io.File
+import org.robolectric.annotation.GraphicsMode
 
 /** Behavioral wiring for the migrated Data page, using semantic selectors. */
 @RunWith(RobolectricTestRunner::class)
@@ -104,7 +111,7 @@ class DataSettingsWiringTest {
         uiRoundnessShape = CircleShape,
         artistThumbnailShape = CircleShape,
     )
-    private val cardIds = listOf("storage", "cache", "backup", "auto-backup", "history", "reset")
+    private val cardIds = listOf("storage", "backup", "auto-backup", "history", "reset")
 
     @Before fun setUp() {
         searchMessages.clear()
@@ -177,7 +184,7 @@ class DataSettingsWiringTest {
             CompositionLocalProvider(LocalAppearance provides appearance, LocalPlayerServiceBinder provides null) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     StorageChart(reading.value)
-                    DataStorageCleanup(onCleanupComplete = { completed.incrementAndGet() })
+                    DataStorageCleanup(emptyList(), null, onCleanupComplete = { completed.incrementAndGet() })
                 }
             }
         }
@@ -228,136 +235,289 @@ class DataSettingsWiringTest {
         assertEquals(0, completed.get())
     }
 
-    @Test fun `confirmed storage actions use their own cleanup target`() {
-        val binder = mockk<PlayerServiceModern.Binder>()
-        val cache = mockk<Cache>(relaxed = true)
-        every { binder.cache } returns cache
-        every { cache.keys } returns setOf("first", "second")
-        every { ImageCacheFactory.clearImageCacheOrThrow() } answers { }
-        mockkStatic(DownloadService::class)
-        every { DownloadService.sendRemoveAllDownloads(any(), MyDownloadService::class.java, false) } answers { }
-
-        val activeDirectory = waveformsDir(context, "default").apply { mkdirs() }
-        val inactiveDirectory = waveformsDir(context, "inactive").apply { mkdirs() }
-        val generated = activeDirectory.resolve("generated.json").apply { writeText("{}") }
-        val unrelated = activeDirectory.resolve("keep.txt").apply { writeText("keep") }
-        val inactive = inactiveDirectory.resolve("inactive.json").apply { writeText("{}") }
-        val cover = coversDir(context, "default").apply { mkdirs() }.resolve("cover.jpg").apply { writeText("cover") }
-        val logs = context.filesDir.resolve("logs").apply { mkdirs() }
-        val diagnosticFiles = debugLogFiles(logs).onEach { it.writeText("diagnostic log") }
-        val otherLog = logs.resolve("other.txt").apply { writeText("other log") }
-        context.preferences.edit().putBoolean(logDebugEnabledKey, true).apply()
-
-        val editorRoot = context.cacheDir.resolve("image_edit").apply { mkdirs() }
-        val activeId = UUID.randomUUID().toString()
-        PickedImageEditor.retainDirectory(activeId)
-        val activeDraft = editorRoot.resolve(activeId).apply { mkdirs() }.resolve("input.jpg").apply { writeText("active") }
-        val abandoned = editorRoot.resolve(UUID.randomUUID().toString()).apply { mkdirs() }
-        abandoned.resolve("input.jpg").writeText("abandoned")
-        val unknownDraft = editorRoot.resolve("unknown").apply { mkdirs() }
-
-        val shares = context.cacheDir.resolve("shared_rewind").apply { mkdirs() }
-        val expiredAt = System.currentTimeMillis() - Duration.ofHours(25).toMillis()
-        val expired = shares.resolve("NZik_Rewind_2026_03_01.png").apply {
-            writeText("expired")
-            assertTrue(setLastModified(expiredAt))
-        }
-        val fresh = shares.resolve("NZik_Rewind_GLOBAL_16.png").apply { writeText("fresh") }
-        val unknownShare = shares.resolve("NZik_Rewind_2026_unknown.png").apply {
-            writeText("unknown")
-            assertTrue(setLastModified(expiredAt))
-        }
-        val unrelatedExport = context.cacheDir.resolve("export.tmp").apply { writeText("export") }
+    @Test fun `confirming populated active diagnostics removes only the selected logs`() {
+        val owner = checkNotNull(profileStorageIdentity(context, "default"))
+        val profile = ProfileStorageUsage(owner, "Main", emptyMap())
+        val logs = context.filesDir.resolve("profiles/${owner.id}/diagnostics").apply { mkdirs() }
+        val confirmedLog = logs.resolve("N-Zik_log.txt").apply { writeText("original diagnostics") }
+        val protectedLog = context.filesDir.resolve("N-Zik_log.txt").apply { writeText("historical diagnostics") }
         val completed = AtomicInteger()
-        try {
-            composeRule.setContent {
-                CompositionLocalProvider(LocalAppearance provides appearance, LocalPlayerServiceBinder provides binder) {
-                    Column(Modifier.verticalScroll(rememberScrollState())) {
-                        DataStorageCleanup(onCleanupComplete = { completed.incrementAndGet() })
-                    }
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    DataStorageCleanup(listOf(profile), profile, onCleanupComplete = { completed.incrementAndGet() })
                 }
             }
+        }
 
-            fun confirm(action: String, label: Int, expectedCompletions: Int) {
-                composeRule.onNodeWithTag("data.storage.cleanup.$action").performScrollTo().performClick()
-                composeRule.onNodeWithText(context.getString(label)).performClick()
+        try {
+            composeRule.onNodeWithTag("data.storage.cleanup.diagnostic_logs").performScrollTo().performClick()
+            composeRule.waitUntil(10_000) {
+                Shadows.shadowOf(Looper.getMainLooper()).idle()
+                composeRule.onAllNodes(hasTestTag("data.storage.cleanup.confirmation")).fetchSemanticsNodes().isNotEmpty()
+            }
+            confirmedLog.appendText("\nlog written while confirming")
+            composeRule.onNodeWithText(context.getString(R.string.common_action_clear)).assertIsEnabled().performClick()
+            composeRule.waitUntil(10_000) {
+                Shadows.shadowOf(Looper.getMainLooper()).idle()
+                completed.get() == 1
+            }
+            assertFalse(confirmedLog.exists())
+            assertEquals("historical diagnostics", protectedLog.readText())
+        } finally {
+            confirmedLog.delete()
+            protectedLog.delete()
+        }
+    }
+
+    @Test fun `cleanup keeps empty actions usable and confirms a zero byte temporary by scope`() {
+        val profile = ProfileStorageUsage(checkNotNull(profileStorageIdentity(context, "default")), "Main", emptyMap())
+        val selected = mutableStateOf<ProfileStorageUsage?>(profile)
+        val completed = AtomicInteger()
+        val cover = coversDir(context, "default").apply { mkdirs() }.resolve("cover.jpg").apply { writeText("cover") }
+        val unknown = context.cacheDir.resolve("export.tmp").apply { writeText("export") }
+        val editor = ScopedTemporaryFiles.directory(context, ScopedTemporaryFiles.IMAGE_EDITOR, profile.identity)
+            .resolve(java.util.UUID.randomUUID().toString()).apply { mkdirs() }
+        val temporary = editor.resolve("input.jpg").apply { check(createNewFile()) }
+        val fixture = checkNotNull(captureFiles(context, profile.identity, CleanupAction.TEMPORARY_FILES))
+        assertTrue("The temporary fixture must be captured before exercising the dialog", fixture.any { root ->
+            root.files.any { it.name == editor.name }
+        })
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    DataStorageCleanup(listOf(profile), selected.value, onCleanupComplete = { completed.incrementAndGet() })
+                }
+            }
+        }
+
+        try {
+            composeRule.waitUntil(10_000) {
+                Shadows.shadowOf(Looper.getMainLooper()).idle()
+                composeRule.onAllNodes(hasTestTag("data.storage.cleanup.temporary_files"))
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+            for (action in listOf("images", "streaming", "downloads", "waveforms", "network", "diagnostic_logs")) {
+                composeRule.onNodeWithTag("data.storage.cleanup.$action").assertIsEnabled()
+            }
+            composeRule.onNodeWithTag("data.storage.cleanup.network").performScrollTo().performClick()
+            val noFiles = context.getString(R.string.storage_cleanup_no_files)
+            composeRule.waitUntil(10_000) {
+                Shadows.shadowOf(Looper.getMainLooper()).idle()
+                composeRule.onAllNodes(hasText(noFiles, substring = true)).fetchSemanticsNodes().isNotEmpty()
+            }
+            composeRule.onNodeWithText(context.getString(R.string.common_action_clear)).assertIsEnabled().performClick()
+            composeRule.waitUntil(10_000) {
+                Shadows.shadowOf(Looper.getMainLooper()).idle()
+                completed.get() == 1 && composeRule.onAllNodes(isDialog()).fetchSemanticsNodes().isEmpty()
+            }
+            composeRule.onNodeWithTag("data.storage.cleanup.temporary_files").assertIsEnabled()
+            composeRule.onNodeWithTag("data.storage.cleanup.all").assertIsEnabled()
+            assertEquals(0L, temporary.length())
+            assertEquals("cover", cover.readText())
+            assertEquals("export", unknown.readText())
+
+            fun assertConfirmation(scope: String) {
+                composeRule.onNodeWithTag("data.storage.cleanup.all").performScrollTo().performClick()
+                val bodyTag = "data.storage.cleanup.confirmation"
                 composeRule.waitUntil(10_000) {
                     Shadows.shadowOf(Looper.getMainLooper()).idle()
-                    completed.get() == expectedCompletions
+                    composeRule.onAllNodes(hasTestTag(bodyTag)).fetchSemanticsNodes().isNotEmpty()
                 }
+                val body = composeRule.onNodeWithTag(bodyTag).fetchSemanticsNode().config[SemanticsProperties.Text]
+                    .single().text
+                val description = context.getString(R.string.storage_cleanup_dialog_all)
+                assertEquals(context.getString(R.string.storage_cleanup_dialog_scope, scope, description), body)
+                assertEquals(1, Regex(Regex.escape(scope)).findAll(body).count())
+                composeRule.onNodeWithText(context.getString(R.string.common_action_clear)).assertExists()
             }
 
-            confirm("images", R.string.common_action_clear, 1)
-            verify(exactly = 1) { ImageCacheFactory.clearImageCacheOrThrow() }
-            verify(exactly = 0) { cache.removeResource(any()) }
-            assertTrue(generated.exists())
-
-            confirm("streaming", R.string.common_action_clear, 2)
-            verify(exactly = 1) { cache.removeResource("first") }
-            verify(exactly = 1) { cache.removeResource("second") }
-            assertTrue(generated.exists())
-
-            confirm("downloads", R.string.common_action_delete, 3)
-            verify(exactly = 1) { DownloadService.sendRemoveAllDownloads(any(), MyDownloadService::class.java, false) }
-            verify(exactly = 2) { cache.removeResource(any()) }
-            verify(exactly = 0) { binder.downloadCache }
-            assertTrue(generated.exists())
-
-            confirm("waveforms", R.string.common_action_clear, 4)
-            assertFalse(generated.exists())
-            assertTrue(unrelated.exists())
-            assertTrue(inactive.exists())
-
-            confirm("diagnostic_logs", R.string.common_action_clear, 5)
-            assertTrue(diagnosticFiles.none { it.exists() })
-            assertTrue(otherLog.exists())
-            assertTrue(context.preferences.getBoolean(logDebugEnabledKey, false))
-
-            composeRule.onNodeWithTag("data.storage.cleanup.temporary_files").performScrollTo().performClick()
+            assertConfirmation("Main")
             composeRule.onNodeWithText(context.getString(R.string.common_action_cancel)).performClick()
-            assertTrue(abandoned.exists())
-            assertTrue(expired.exists())
-            assertEquals(5, completed.get())
-
-            confirm("temporary_files", R.string.common_action_delete, 6)
-            assertFalse(abandoned.exists())
-            assertFalse(expired.exists())
-            assertTrue(activeDraft.exists())
-            assertTrue(unknownDraft.exists())
-            assertTrue(fresh.exists())
-            assertTrue(unknownShare.exists())
-            assertTrue(unrelatedExport.exists())
-
-            generated.writeText("{}")
-            diagnosticFiles.forEach { it.writeText("new log") }
-            assertTrue(abandoned.mkdir())
-            abandoned.resolve("input.jpg").writeText("another abandoned draft")
-            expired.writeText("another expired share")
-            assertTrue(expired.setLastModified(expiredAt))
-
-            confirm("all", R.string.common_action_clear, 7)
-            verify(exactly = 2) { ImageCacheFactory.clearImageCacheOrThrow() }
-            verify(exactly = 2) { cache.removeResource("first") }
-            verify(exactly = 2) { cache.removeResource("second") }
-            verify(exactly = 2) { DownloadService.sendRemoveAllDownloads(any(), MyDownloadService::class.java, false) }
-            verify(exactly = 0) { binder.downloadCache }
-            assertFalse(generated.exists())
-            assertTrue(inactive.exists())
-            assertTrue(unrelated.exists())
-            assertTrue(cover.exists())
-            assertTrue(diagnosticFiles.none { it.exists() })
-            assertTrue(otherLog.exists())
-            assertTrue(context.preferences.getBoolean(logDebugEnabledKey, false))
-            assertFalse(abandoned.exists())
-            assertFalse(expired.exists())
-            assertTrue(activeDraft.exists())
-            assertTrue(fresh.exists())
-            assertTrue(unknownShare.exists())
-            assertTrue(unrelatedExport.exists())
+            composeRule.waitUntil(10_000) {
+                Shadows.shadowOf(Looper.getMainLooper()).idle()
+                composeRule.onAllNodes(isDialog()).fetchSemanticsNodes().isEmpty()
+            }
+            composeRule.runOnIdle { selected.value = null }
+            composeRule.waitUntil(10_000) {
+                Shadows.shadowOf(Looper.getMainLooper()).idle()
+                composeRule.onAllNodes(hasTestTag("data.storage.cleanup.all")).fetchSemanticsNodes().isNotEmpty()
+            }
+            composeRule.onNodeWithTag("data.storage.cleanup.network").assertIsEnabled()
+            assertConfirmation(context.getString(R.string.storage_cleanup_all_profiles))
         } finally {
-            PickedImageEditor.discard(context, activeId)
-            unmockkStatic(DownloadService::class)
+            temporary.delete()
+            editor.delete()
+            cover.delete()
+            unknown.delete()
         }
+    }
+
+    @Test fun `storage opens on Total and shows cache settings after selecting a profile`() {
+        val downloads = mapOf(StorageCategory.DOWNLOADS to 5L)
+        val profile = ProfileStorageUsage(ProfileStorageIdentity("default", "legacy"), "Principal", downloads)
+        val sample = checkNotNull(partitionStorage(100L, 80L, downloads)).copy(profiles = listOf(profile))
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    DataStorageCard(Search(initialVisible = false), mutableStateOf(false), measure = { sample })
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag("settingsDialogTab0").assertIsSelected()
+        composeRule.onNodeWithText(context.getString(R.string.settings_cache_location_label)).assertDoesNotExist()
+        composeRule.waitUntil(10_000) {
+            Shadows.shadowOf(Looper.getMainLooper()).idle()
+            composeRule.onAllNodes(hasText("Principal")).fetchSemanticsNodes().isNotEmpty() &&
+                composeRule.onAllNodes(hasTestTag("data.storage.chart.bar")).fetchSemanticsNodes().isNotEmpty()
+        }
+        val tabs = composeRule.onNodeWithTag("data.storage.tabs").getUnclippedBoundsInRoot()
+        val first = composeRule.onNodeWithTag("settingsDialogTab0").getUnclippedBoundsInRoot()
+        val second = composeRule.onNodeWithTag("settingsDialogTab1").getUnclippedBoundsInRoot()
+        val indicator = composeRule.onNodeWithTag("settingsDialogTabIndicator").getUnclippedBoundsInRoot()
+        val bar = composeRule.onNodeWithTag("data.storage.chart.bar").getUnclippedBoundsInRoot()
+        val percentage = composeRule.onNodeWithTag("data.storage.chart.percentage")
+        val percent = java.text.NumberFormat.getPercentInstance(context.resources.configuration.locales[0])
+        percentage.assert(hasText(percent.format(0.2)))
+        val card = composeRule.onNodeWithTag("data.card.storage").getUnclippedBoundsInRoot()
+        val band = composeRule.onNodeWithTag("data.storage.nzik-section").getUnclippedBoundsInRoot()
+        assertEquals(bar.left.value, tabs.left.value, 1f)
+        assertEquals(bar.right.value, tabs.right.value, 1f)
+        assertEquals(48f, (bar.left - card.left).value, 1f)
+        assertEquals(48f, (card.right - bar.right).value, 1f)
+        val capacity = composeRule.onNodeWithText(context.getString(R.string.storage_breakdown_device_capacity))
+            .getUnclippedBoundsInRoot()
+        assertTrue(percentage.getUnclippedBoundsInRoot().top >= capacity.bottom)
+        assertTrue(bar.top >= band.bottom)
+        assertEquals(tabs.left.value, first.left.value, 1f)
+        assertEquals(tabs.right.value, second.right.value, 1f)
+        assertEquals(first.right.value, second.left.value, 1f)
+        assertEquals((first.right - first.left).value, (second.right - second.left).value, 1f)
+        assertEquals(first.left.value, indicator.left.value, 1f)
+        assertEquals(first.right.value, indicator.right.value, 1f)
+        composeRule.onNodeWithTag("settingsDialogTab1").performClick().assertIsSelected()
+        composeRule.waitUntil(10_000) {
+            Shadows.shadowOf(Looper.getMainLooper()).idle()
+            composeRule.onAllNodes(hasText(context.getString(R.string.settings_cache_location_label)))
+                .fetchSemanticsNodes().isNotEmpty() &&
+                composeRule.onAllNodes(hasTestTag("data.storage.device")).fetchSemanticsNodes().isEmpty()
+        }
+        percentage.assertDoesNotExist()
+        composeRule.onNodeWithTag("data.storage.device").assertDoesNotExist()
+        composeRule.onNodeWithTag("data.storage.category.free").assertDoesNotExist()
+        composeRule.onNodeWithTag("data.storage.category.other_used").assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.storage_breakdown_device_capacity)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.storage_breakdown_usage)).assertDoesNotExist()
+        val zero = Formatter.formatShortFileSize(context, 0)
+        composeRule.onNodeWithTag("data.storage.category.network").assert(hasText(zero))
+        composeRule.onNodeWithTag("data.storage.category.historical").assert(hasText(zero))
+        composeRule.onNodeWithTag("data.storage.category.migration").assert(hasText(zero))
+        composeRule.onNodeWithTag("data.storage.used").assert(hasText(Formatter.formatShortFileSize(context, 5)))
+        composeRule.onNodeWithTag("data.storage.nzik-section").assert(hasText("Principal", substring = true))
+        composeRule.onNodeWithTag("data.storage.info").performSemanticsAction(SemanticsActions.OnClick) { it() }
+        composeRule.waitUntil(10_000) {
+            Shadows.shadowOf(Looper.getMainLooper()).idle()
+            composeRule.onAllNodes(isDialog()).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText(context.getString(R.string.storage_info_network)).assertExists()
+        composeRule.onNodeWithText(context.getString(R.string.storage_info_installation)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.storage_info_free)).assertDoesNotExist()
+    }
+
+    @Test fun `grouped storage highlights the legend while dragging and clears on release`() {
+        val sample = checkNotNull(partitionStorage(
+            100L, 40L, mapOf(StorageCategory.DOWNLOADS to 10L, StorageCategory.IMAGES to 20L),
+        ))
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance.copy(uiRoundnessShape = RoundedCornerShape(16.dp))) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    DataStorageCard(Search(initialVisible = false), mutableStateOf(false), measure = { sample })
+                }
+            }
+        }
+        composeRule.waitUntil(10_000) {
+            Shadows.shadowOf(Looper.getMainLooper()).idle()
+            composeRule.onAllNodes(hasTestTag("data.storage.chart.bar")).fetchSemanticsNodes().isNotEmpty()
+        }
+        val bar = composeRule.onNodeWithTag("data.storage.chart.bar").fetchSemanticsNode().boundsInRoot
+        val imagesTag = "data.storage.category.images"
+        val images = composeRule.onNodeWithTag(imagesTag).fetchSemanticsNode().boundsInRoot.center
+        val download = Offset(bar.left + bar.width * .35f, bar.center.y)
+        val root = composeRule.onRoot()
+
+        root.performTouchInput { down(download); advanceEventTime(1_000); moveTo(download) }
+        composeRule.onNodeWithTag("data.storage.category.downloads").assertIsSelected()
+        root.performTouchInput { moveTo(images) }
+        composeRule.onNodeWithTag(imagesTag).assertIsSelected()
+        root.performTouchInput { up() }
+        composeRule.onAllNodes(hasTestTag(imagesTag) and isSelected()).assertCountEquals(0)
+    }
+
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    @Test fun `storage shows one device summary and puts separate volumes in Info`() {
+        val primary = checkNotNull(partitionStorage(
+            10_000_000_000L,
+            7_600_000_000L,
+            mapOf(
+                StorageCategory.IMAGES to 18_000_000L,
+                StorageCategory.STREAMING to 25_000_000L,
+                StorageCategory.OTHER_NZIK to 12_000_000L,
+                StorageCategory.INSTALLATION to 14_000_000L,
+            ),
+        ))
+        val removable = checkNotNull(partitionStorage(
+            8_000_000_000L, 2_000_000_000L, mapOf(StorageCategory.DOWNLOADS to 3_000_000L),
+        )).copy(volumeLabel = "SD card", filePresence = StorageFilePresence(true, setOf("default")))
+        val unrelated = checkNotNull(partitionStorage(
+            8_000_000_000L, 3_000_000_000L, mapOf(StorageCategory.INSTALLATION to 6_144L),
+        )).copy(volumeLabel = "Empty volume", filePresence = StorageFilePresence(false, emptySet()))
+        val sample = primary.copy(
+            profiles = listOf(
+                ProfileStorageUsage(ProfileStorageIdentity("default", "legacy"), "Principal", emptyMap()),
+            ),
+            otherVolumes = listOf(removable, unrelated),
+        )
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance.copy(uiRoundnessShape = RoundedCornerShape(16.dp))) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    DataStorageCard(Search(initialVisible = false), mutableStateOf(false), measure = { sample })
+                }
+            }
+        }
+        composeRule.waitUntil(10_000) {
+            Shadows.shadowOf(Looper.getMainLooper()).idle()
+            composeRule.onAllNodes(hasTestTag("data.storage.used") and hasText(Formatter.formatShortFileSize(context, 69_000_000L)))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onAllNodes(SemanticsMatcher.expectValue(SemanticsProperties.TestTag, "data.storage.device")).assertCountEquals(1)
+        val system = composeRule.onNodeWithTag("data.storage.category.other_used").getUnclippedBoundsInRoot()
+        val free = composeRule.onNodeWithTag("data.storage.category.free").getUnclippedBoundsInRoot()
+        val capacity = composeRule.onNodeWithText(context.getString(R.string.storage_breakdown_device_capacity))
+            .getUnclippedBoundsInRoot()
+        assertTrue(system.top < free.top && free.top < capacity.top)
+        val zero = Formatter.formatShortFileSize(context, 0)
+        composeRule.onNodeWithTag("data.storage.category.historical").assert(hasText(zero))
+        composeRule.onNodeWithTag("data.storage.category.migration").assert(hasText(zero))
+        composeRule.onNodeWithTag("data.storage.secondary.0").assertDoesNotExist()
+        composeRule.onNodeWithTag("data.storage.category.downloads").assert(hasText(zero))
+        if (System.getenv("NZIK_CAPTURE_STORAGE_SCREENSHOT") == "1") {
+            val screenshot = File("build/reports/storage-redesign.png")
+            screenshot.parentFile?.mkdirs()
+            screenshot.outputStream().use {
+                assertTrue(composeRule.onRoot().captureToImage().asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, it))
+            }
+        }
+        composeRule.onNodeWithTag("data.storage.additional-volumes").performScrollTo().performClick()
+        composeRule.waitUntil(10_000) {
+            Shadows.shadowOf(Looper.getMainLooper()).idle()
+            composeRule.onAllNodes(hasTestTag("data.storage.secondary.0"), useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("data.storage.secondary.1").assertDoesNotExist()
+        composeRule.onNodeWithTag("data.storage.secondary.0.downloads")
+            .assert(hasText(Formatter.formatShortFileSize(context, 3_000_000L)))
+        composeRule.onNodeWithTag("data.storage.secondary.0.images").assertDoesNotExist()
     }
 
     @Test fun `unknown query shows empty state and clearing restores all cards`() {
@@ -370,10 +530,10 @@ class DataSettingsWiringTest {
         }
         composeRule.onNodeWithTag("search_no_results_text").assertDoesNotExist()
         assertTrue(searchMessages.contains(context.getString(R.string.search_no_results_message)))
-        composeRule.onNodeWithTag("data.card.cache", useUnmergedTree = true).assertDoesNotExist()
+        composeRule.onNodeWithTag("data.card.storage", useUnmergedTree = true).assertDoesNotExist()
         composeRule.onNode(isEditable()).performTextReplacement("")
         composeRule.waitForIdle()
-        composeRule.onNodeWithTag("data.card.cache", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("data.card.storage", useUnmergedTree = true).assertExists()
     }
 
     @Test fun `history deep link makes history open control visible`() {

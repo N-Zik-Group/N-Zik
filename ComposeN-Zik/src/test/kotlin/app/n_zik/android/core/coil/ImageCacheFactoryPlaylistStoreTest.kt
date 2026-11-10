@@ -23,6 +23,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import app.it.fast4x.rimusic.utils.setActiveProfile
 
 import app.n_zik.android.appContext
 
@@ -31,16 +32,35 @@ import app.n_zik.android.appContext
 @Config(sdk = [33], application = Application::class)
 class ImageCacheFactoryPlaylistStoreTest {
     private lateinit var preferences: SharedPreferences
+    private lateinit var context: Context
 
     @Before fun setUp() {
         val application = RuntimeEnvironment.getApplication()
-        val stored = application.getSharedPreferences("playlist_thumbnail_store", Context.MODE_PRIVATE)
+        val stored = application.getSharedPreferences("playlist_thumbnail_store_default_legacy", Context.MODE_PRIVATE)
         stored.edit().clear().commit()
         preferences = spyk(stored)
-        val context = mockk<Context>()
-        every { context.getSharedPreferences("playlist_thumbnail_store", Context.MODE_PRIVATE) } returns preferences
+        context = mockk()
+        every { context.filesDir } returns application.filesDir
+        every { context.getSharedPreferences("profile_preferences", Context.MODE_PRIVATE) } returns
+            application.getSharedPreferences("profile_preferences", Context.MODE_PRIVATE)
+        every { context.getSharedPreferences("playlist_thumbnail_store_default_legacy", Context.MODE_PRIVATE) } returns preferences
+        val other = application.getSharedPreferences("playlist_thumbnail_store_voyage_legacy", Context.MODE_PRIVATE)
+        other.edit().clear().commit()
+        every { context.getSharedPreferences("playlist_thumbnail_store_voyage_legacy", Context.MODE_PRIVATE) } returns other
+        setActiveProfile("default", context)
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { appContext() } returns context
+    }
+
+    @Test fun `the same learned thumbnail key is isolated by profile`() {
+        val main = "https://i.ytimg.com/vi/main/maxresdefault.jpg"
+        val voyage = "https://i.ytimg.com/vi/trip/maxresdefault.jpg"
+        ImageCacheFactory.PlaylistThumbnailStore.save("same", main, true)
+        setActiveProfile("voyage", context)
+        ImageCacheFactory.PlaylistThumbnailStore.save("same", voyage, true)
+        assertEquals(voyage, ImageCacheFactory.PlaylistThumbnailStore.getHighUrl("same"))
+        setActiveProfile("default", context)
+        assertEquals(main, ImageCacheFactory.PlaylistThumbnailStore.getHighUrl("same"))
     }
 
     @After fun tearDown() {

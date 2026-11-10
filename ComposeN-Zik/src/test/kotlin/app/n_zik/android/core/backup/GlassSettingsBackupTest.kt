@@ -7,6 +7,13 @@ import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.components.glass.*
 import app.n_zik.android.core.rescue.RescueFiles
 import app.it.fast4x.rimusic.utils.ytCookieKey
+import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
+import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
+import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
+import app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey
+import app.it.fast4x.rimusic.utils.writeProfileEntries
+import app.n_zik.android.core.profiles.ProfileCacheLocationMigration
+import app.n_zik.android.core.profiles.profileStorageIdentity
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -31,6 +38,38 @@ class GlassSettingsBackupTest {
         credentials.edit().clear().commit()
         RescueFiles.initialize(context)
         RescueFiles.setRescueProfile("default")
+    }
+
+    @Test fun `imported storage location is staged without switching the effective root`() {
+        val file = File(context.cacheDir, "location.csv")
+        file.writeText("Type,Key,Value\nString,$exoPlayerCacheLocationKey,Private\n")
+
+        RescueFiles.importSettings(context, Uri.fromFile(file)).getOrThrow()
+
+        val target = checkNotNull(profileStorageIdentity(context, DEFAULT_PROFILE_ID))
+        assertEquals(ExoPlayerCacheLocation.Private, ProfileCacheLocationMigration.requested(context, target))
+        assertFalse(plain.contains(exoPlayerCacheLocationKey))
+    }
+
+    @Test fun `settings-only reset and restore preserve the live storage location and quota`() {
+        plain.edit().putString(exoPlayerCacheLocationKey, "Private")
+            .putString(exoPlayerDiskDownloadCacheMaxSizeKey, "Unlimited")
+            .putString("preferenceToRestore", "previous value").commit()
+
+        RescueFiles.resetSettings(context).getOrThrow()
+        assertEquals("Private", plain.getString(exoPlayerCacheLocationKey, null))
+        assertEquals("Unlimited", plain.getString(exoPlayerDiskDownloadCacheMaxSizeKey, null))
+        assertFalse(plain.contains("preferenceToRestore"))
+
+        plain.edit().putString(exoPlayerCacheLocationKey, "System")
+            .putString(exoPlayerDiskDownloadCacheMaxSizeKey, "2GB").commit()
+        RescueFiles.restoreSettings(context).getOrThrow()
+
+        // Rescue swaps the durable XML and then exits, so its old preferences instance remains stale.
+        val restored = File(context.applicationInfo.dataDir, "shared_prefs/preferences.xml").readText()
+        assertTrue(restored.contains("name=\"$exoPlayerCacheLocationKey\">System</string>"))
+        assertTrue(restored.contains("name=\"$exoPlayerDiskDownloadCacheMaxSizeKey\">2GB</string>"))
+        assertTrue(restored.contains("name=\"preferenceToRestore\">previous value</string>"))
     }
 
     @Test fun `mistyped known Glass records fail before replacing a readable store`() {
@@ -144,6 +183,7 @@ class GlassSettingsBackupTest {
     }
 
     @Test fun `old profile CSV cannot restore selectors and preserves unrelated values and credentials`() {
+        check(context.writeProfileEntries(listOf("retired_profile" to "Retired")))
         RescueFiles.setRescueProfile("retired_profile")
         val profile = context.getSharedPreferences("preferences_retired_profile", Context.MODE_PRIVATE)
         profile.edit().clear().putString("UiType", "ViMusic").putString("messageType", "Essential")

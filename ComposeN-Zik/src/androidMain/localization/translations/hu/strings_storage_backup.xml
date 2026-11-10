@@ -22,19 +22,10 @@
     <string name="storage_info_other_nzik">The rest of N-Zik’s private data, including its databases, settings, indexes, extensions and logs.</string>
     <string name="storage_info_other_used">The remaining used space on the internal volume, including Android, installed apps and personal files.</string>
     <string name="storage_info_free">Space available for apps and files on the internal volume.</string>
-    <string name="storage_cleanup_title">Cleanup</string>
     <string name="storage_cleanup_failed">Could not finish storage cleanup.</string>
-    <string name="storage_cleanup_images_description">Clear artwork cached by N-Zik.</string>
-    <string name="storage_cleanup_streaming_description">Clear audio cached while streaming.</string>
-    <string name="storage_cleanup_downloads_description">Delete offline audio and cancel pending downloads for the active profile’s download storage.</string>
-    <string name="storage_cleanup_waveforms_description">Clear generated waveform files.</string>
     <string name="storage_cleanup_waveforms_dialog_title">Clear waveforms</string>
     <string name="storage_cleanup_diagnostic_logs">Clear diagnostic logs</string>
-    <string name="storage_cleanup_diagnostic_logs_description">Delete the debug and crash log files. Your logging setting stays the same.</string>
-    <string name="storage_cleanup_temporary_files">Remove abandoned temporary files</string>
-    <string name="storage_cleanup_temporary_files_description">Remove abandoned image editor drafts and Rewind share captures older than 24 hours.</string>
     <string name="storage_cleanup_all">Clear all</string>
-    <string name="storage_cleanup_all_description">Clear image and streaming caches and generated waveforms for the active profile, including storage it shares with other profiles. Delete offline audio and cancel pending downloads for the active profile’s download storage. Delete diagnostic logs, abandoned image editor drafts and expired Rewind share captures. Your library, custom covers and settings are kept.</string>
     <!-- Backup -->
     <string name="backup_action_export">Export backup</string>
     <string name="backup_action_import">Import backup</string>

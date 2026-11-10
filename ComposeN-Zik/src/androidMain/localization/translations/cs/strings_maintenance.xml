@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Offline (zkusit další spuštění)</string>
     <string name="maintenance_song_cache">Cache skladeb</string>
     <string name="maintenance_song_download_cache">Mezipaměť pro stahování skladeb</string>
-    <string name="maintenance_stats">Statistiky</string>
     <string name="maintenance_status_deferred">Odloženo</string>
     <string name="maintenance_status_resolved">Vyřešeno</string>
     <string name="maintenance_status_skipped">Přeskočeno</string>

@@ -31,6 +31,7 @@ import kotlinx.coroutines.withContext
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.CacheSpan
+import app.n_zik.android.playback.services.StreamingCacheReaders
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.appContext
@@ -126,10 +127,13 @@ class ExportCacheDialog private constructor(
 
                 try {
                     Timber.tag("ExportCache").i("Creating raw file...")
-                    val spans = (if( isCached ) binder.cache else binder.downloadCache).getCachedSpans( song.id )
-                    rawFile.outputStream().use { outStream ->
-                        spans.mapNotNull(CacheSpan::file).forEach { fileSpan ->
-                            fileSpan.inputStream().use { it.copyTo(outStream) }
+                    val cache = if (isCached) binder.cache else binder.downloadCache
+                    StreamingCacheReaders.acquire(cache, song.id).use {
+                        val spans = cache.getCachedSpans(song.id)
+                        rawFile.outputStream().use { outStream ->
+                            spans.mapNotNull(CacheSpan::file).forEach { fileSpan ->
+                                fileSpan.inputStream().use { it.copyTo(outStream) }
+                            }
                         }
                     }
                     Timber.tag("ExportCache").i("Raw file created. Size: ${rawFile.length()} bytes")
@@ -498,10 +502,13 @@ class ExportCacheDialog private constructor(
                         val cacheDir = appContext().cacheDir
                         val probeFile = File(cacheDir, "temp_probe_${song.id}_${System.currentTimeMillis()}.m4a")
                         try {
-                            val spans = binder.cache.getCachedSpans(song.id)
-                            probeFile.outputStream().use { out ->
-                                spans.mapNotNull(CacheSpan::file).forEach { fileSpan ->
-                                    fileSpan.inputStream().use { it.copyTo(out) }
+                            val cache = binder.cache
+                            StreamingCacheReaders.acquire(cache, song.id).use {
+                                val spans = cache.getCachedSpans(song.id)
+                                probeFile.outputStream().use { out ->
+                                    spans.mapNotNull(CacheSpan::file).forEach { fileSpan ->
+                                        fileSpan.inputStream().use { it.copyTo(out) }
+                                    }
                                 }
                             }
                             val probeSession = FFprobeKit.getMediaInformation(probeFile.absolutePath)

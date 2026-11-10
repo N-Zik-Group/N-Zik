@@ -19,6 +19,8 @@ import app.n_zik.android.components.ImportFromFile
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.components.image.ownedCoverMutationMutex
 import app.n_zik.android.core.rewind.RewindPostImportRegenerationWorker
+import app.n_zik.android.core.profiles.profileStorageIdentity
+import app.n_zik.android.core.profiles.isCurrentProcessStorageProfile
 import app.kreate.android.me.knighthat.utils.Toaster
 import timber.log.Timber
 
@@ -38,20 +40,22 @@ class ImportDatabase private constructor(
          */
         suspend fun importTo(context: Context, uri: Uri, profile: String) {
             val isActive = profile == getActiveProfile(context)
+            val activeOwner = if (isActive) checkNotNull(profileStorageIdentity(context, profile)) else null
             Timber.tag("ImportDatabase").d("Importing database into profile '$profile' (active: $isActive)")
             ownedCoverMutationMutex.withLock {
                 DatabaseBackup.restore(context, uri, profile) {
-                    if (isActive) {
+                    if (activeOwner != null) {
+                        check(isCurrentProcessStorageProfile(context, activeOwner)) { "The import target changed" }
                         Database.checkpoint()
                         Database.close()
                     }
                 }
             }
 
-            if (isActive) {
+            if (activeOwner != null) {
                 // The listening history was just replaced: recompute every existing
                 // rewind-* playlist from it (one-shot job, silent, not gated — spec 2)
-                RewindPostImportRegenerationWorker.schedule(context)
+                RewindPostImportRegenerationWorker.schedule(context, activeOwner)
             }
         }
 

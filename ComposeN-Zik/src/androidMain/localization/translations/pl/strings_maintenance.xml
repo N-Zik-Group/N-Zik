@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Offline (ponowiono próbę następnego uruchomienia)</string>
     <string name="maintenance_song_cache">Pamięć podręczna utworu</string>
     <string name="maintenance_song_download_cache">Pamięć podręczna pobierania utworu</string>
-    <string name="maintenance_stats">Statystyki</string>
     <string name="maintenance_status_deferred">Odroczone</string>
     <string name="maintenance_status_resolved">Rozwiązano</string>
     <string name="maintenance_status_skipped">Pominięto</string>

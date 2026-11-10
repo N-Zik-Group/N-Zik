@@ -22,19 +22,10 @@
     <string name="storage_info_other_nzik">De rest van de persoonlijke gegevens van N-Zik, inclusief de databases, instellingen, indexen, extensies en logbestanden.</string>
     <string name="storage_info_other_used">De resterende gebruikte ruimte op het interne volume, inclusief Android, geïnstalleerde apps en persoonlijke bestanden.</string>
     <string name="storage_info_free">Ruimte beschikbaar voor apps en bestanden op het interne volume.</string>
-    <string name="storage_cleanup_title">Opschonen</string>
     <string name="storage_cleanup_failed">Opschonen kan niet worden voltooid.</string>
-    <string name="storage_cleanup_images_description">Maak bestanden leeg die gecached zijn door N-Zik.</string>
-    <string name="storage_cleanup_streaming_description">Audiocache wissen tijdens het streamen.</string>
-    <string name="storage_cleanup_downloads_description">Verwijder offline audio en annuleer de openstaande downloads voor de downloadopslag van het actieve profiel.</string>
-    <string name="storage_cleanup_waveforms_description">Wis gegenereerde waveforme bestanden.</string>
     <string name="storage_cleanup_waveforms_dialog_title">Wis waveformen</string>
     <string name="storage_cleanup_diagnostic_logs">Wis diagnostische logs</string>
-    <string name="storage_cleanup_diagnostic_logs_description">Verwijder de debug en crash logbestanden. Uw log instelling blijft hetzelfde.</string>
-    <string name="storage_cleanup_temporary_files">Verwijder verlaten tijdelijke bestanden</string>
-    <string name="storage_cleanup_temporary_files_description">Verwijder achtergelaten afbeeldingenbewerkers concepten en keer delen opnames ouder dan 24 uur terug.</string>
     <string name="storage_cleanup_all">Alles wissen</string>
-    <string name="storage_cleanup_all_description">Verwijder afbeeldingen en streaming caches en gegenereerde golfformulieren voor het actieve profiel, inclusief opslag gedeeld met andere profielen. Verwijder offline audio en annuleer de openstaande downloads voor de downloadopslag van het actieve profiel. Verwijder diagnostische logboeken, verlaten beeldbewerkers concepten en verlopen Rewind share opties. Uw bibliotheek, aangepaste covers en instellingen worden bewaard.</string>
     <!-- Backup -->
     <string name="backup_action_export">Back-up exporteren</string>
     <string name="backup_action_import">Back-up importeren</string>

@@ -22,19 +22,10 @@
     <string name="storage_info_other_nzik">Остальные личные данные N-Zik, включая ее базы данных, настройки, индексы, расширения и журналы.</string>
     <string name="storage_info_other_used">Осталось места на внутреннем томе, включая Android, установленные приложения и персональные файлы.</string>
     <string name="storage_info_free">Пространство доступно для приложений и файлов на внутреннем томе.</string>
-    <string name="storage_cleanup_title">Очистить</string>
     <string name="storage_cleanup_failed">Не удалось завершить очистку хранилища.</string>
-    <string name="storage_cleanup_images_description">Очистить кэш картинок N-Zik.</string>
-    <string name="storage_cleanup_streaming_description">Очистить кэш аудио во время потока.</string>
-    <string name="storage_cleanup_downloads_description">Удалите оффлайн аудио и отмените ожидание загрузки для загрузочного хранилища активного профиля.</string>
-    <string name="storage_cleanup_waveforms_description">Очистить созданный waveform файл.</string>
     <string name="storage_cleanup_waveforms_dialog_title">Очистить формы</string>
     <string name="storage_cleanup_diagnostic_logs">Очистить журналы диагностики</string>
-    <string name="storage_cleanup_diagnostic_logs_description">Удалите отладку и файлы журнала сбоев. Ваши настройки в журнале остаются прежними.</string>
-    <string name="storage_cleanup_temporary_files">Удалить заброшенные временные файлы</string>
-    <string name="storage_cleanup_temporary_files_description">Удалите заброшенные черновики редактора изображений и перемотка общего доступа старше 24 часов.</string>
     <string name="storage_cleanup_all">Очистить все</string>
-    <string name="storage_cleanup_all_description">Очистить изображение и потоковое кэш и сгенерированные формы для активного профиля, включая хранилище с другими профилями. Удалите оффлайн аудио и отмените ожидание загрузки для загрузочного хранилища активного профиля. Удаление диагностических журналов, брошенных черновиков графического редактора и просроченных снимков общего доступа Rewind . Ваша библиотека, пользовательские обложки и настройки сохраняются.</string>
     <!-- Backup -->
     <string name="backup_action_export">Экспорт резервной копии</string>
     <string name="backup_action_import">Импорт резервной копии</string>

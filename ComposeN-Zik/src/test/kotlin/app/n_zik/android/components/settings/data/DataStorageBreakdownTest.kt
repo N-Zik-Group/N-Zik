@@ -14,6 +14,31 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class DataStorageBreakdownTest {
     @Test
+    fun profileChartOnlyUsesAllocatedAppCategories() {
+        val volume = requireNotNull(partitionStorage(
+            totalBytes = 1_000L,
+            freeBytes = 700L,
+            appBytes = mapOf(StorageCategory.IMAGES to 12L, StorageCategory.INSTALLATION to 8L),
+        ))
+        val chart = volume.displayChart(includeDevice = false)
+        assertEquals(20L, chart.totalBytes)
+        assertEquals(listOf(StorageCategory.IMAGES, StorageCategory.INSTALLATION), chart.bytes.keys.toList())
+        assertEquals(listOf(0.6, 1.0), chart.chartSegments().map { it.endFraction })
+        val total = volume.displayChart(includeDevice = true)
+        assertEquals(listOf(StorageCategory.OTHER_USED, StorageCategory.IMAGES, StorageCategory.INSTALLATION, StorageCategory.FREE), total.bytes.keys.toList())
+        assertEquals(1_000L, total.totalBytes)
+    }
+
+    @Test
+    fun primaryEmulationGroupsDifferentDeviceIdsWithoutMergingSeparateVolumes() {
+        val internal = storageVolumeIdentity(1, "41217664-9172-527a-b3d5-edabb50a7d69", false)
+        val emulated = storageVolumeIdentity(2, null, true)
+        val removable = storageVolumeIdentity(2, "1234-5678", false)
+        assertEquals(internal, emulated)
+        org.junit.Assert.assertNotEquals(internal, removable)
+    }
+
+    @Test
     fun usesTheSameProportionalEdgesForDrawingAndSelection() {
         val segments = requireNotNull(partitionStorage(
             totalBytes = 100L,
@@ -82,7 +107,7 @@ class DataStorageBreakdownTest {
         val result = requireNotNull(partitionStorage(100L, 100L, emptyMap()))
 
         assertEquals(StorageCategory.entries.toList(), result.bytes.keys.toList())
-        assertEquals(listOf(0L, 0L, 0L, 0L, 0L, 0L, 0L, 100L), result.bytes.values.toList())
+        assertEquals(StorageCategory.entries.map { if (it == StorageCategory.FREE) 100L else 0L }, result.bytes.values.toList())
         assertNotNull(partitionStorage(100L, 0L, mapOf(StorageCategory.OTHER_NZIK to 100L)))
     }
 

@@ -23,6 +23,7 @@ import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.semantics
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.Dialog
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.uiRoundnessShape
 import kotlinx.coroutines.delay
 
@@ -33,6 +34,7 @@ internal class SettingsTargetRegistry {
     val targets = mutableStateMapOf<String, BringIntoViewRequester>()
     var highlighted by mutableStateOf<String?>(null)
     var nestedTarget by mutableStateOf<SettingsEntryTarget?>(null)
+    var storageProfileTarget by mutableStateOf<ProfileStorageIdentity?>(null)
     private var pulseGeneration = 0
 
     suspend fun blink(id: String) {

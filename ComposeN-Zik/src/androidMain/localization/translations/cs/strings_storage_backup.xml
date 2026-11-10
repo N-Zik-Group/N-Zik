@@ -22,19 +22,10 @@
     <string name="storage_info_other_nzik">Zbytek soukromých dat N-Zika včetně databází, nastavení, indexů, rozšíření a logů.</string>
     <string name="storage_info_other_used">Zbývající využívaný prostor na vnitřní hlasitosti, včetně Androidu, nainstalovaných aplikací a osobních souborů.</string>
     <string name="storage_info_free">Prostor pro aplikace a soubory s vnitřní hlasitostí.</string>
-    <string name="storage_cleanup_title">Vyčistit</string>
     <string name="storage_cleanup_failed">Nelze dokončit čištění úložiště.</string>
-    <string name="storage_cleanup_images_description">Vymazat uklízené obrázkem N-Zik.</string>
-    <string name="storage_cleanup_streaming_description">Vymazat audio v mezipaměti během vysílání.</string>
-    <string name="storage_cleanup_downloads_description">Odstranit offline zvuk a zrušit čekající stahování do aktivního profilu úložiště.</string>
-    <string name="storage_cleanup_waveforms_description">Vymazat generované soubory tvaru vln.</string>
     <string name="storage_cleanup_waveforms_dialog_title">Vymazat vlnové formuláře</string>
     <string name="storage_cleanup_diagnostic_logs">Vymazat diagnostické protokoly</string>
-    <string name="storage_cleanup_diagnostic_logs_description">Odstranit ladění a chybové soubory. Vaše nastavení protokolování zůstává stejné.</string>
-    <string name="storage_cleanup_temporary_files">Odstranit opuštěné dočasné soubory</string>
-    <string name="storage_cleanup_temporary_files_description">Odebrat koncepty opuštěného obrazu a přepnout zachycení sdílení starší než 24 hodin.</string>
     <string name="storage_cleanup_all">Vymazat vše</string>
-    <string name="storage_cleanup_all_description">Vymazat obrázky a streamovací keše a generované tvary vln pro aktivní profil, včetně uložení, které sdílí s ostatními profily. Odstranit offline zvuk a zrušit čekající stahování do aktivního profilu úložiště. Odstranit diagnostické logy, koncepty opuštěného editoru obrázků a prošlé zachycení záznamů. Vaše knihovna, vlastní obálky a nastavení jsou uchovávány.</string>
     <!-- Backup -->
     <string name="backup_action_export">Exportovat zálohu</string>
     <string name="backup_action_import">Importovat zálohu</string>

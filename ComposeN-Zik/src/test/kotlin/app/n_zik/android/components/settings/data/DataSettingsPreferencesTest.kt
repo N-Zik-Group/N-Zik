@@ -15,7 +15,7 @@ import app.it.fast4x.rimusic.enums.CoilDiskCacheMaxSize
 import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
 import app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize
 import app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize
-import app.it.fast4x.rimusic.utils.coilCustomDiskCacheKey
+import app.n_zik.android.core.coil.PROFILE_IMAGE_CACHE_CUSTOM_MB
 import app.it.fast4x.rimusic.utils.coilDiskCacheMaxSizeKey
 import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
 import app.it.fast4x.rimusic.utils.exoPlayerCustomCacheKey
@@ -25,6 +25,9 @@ import app.it.fast4x.rimusic.utils.pauseListenHistoryKey
 import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.it.fast4x.rimusic.utils.writeProfileEntries
+import app.n_zik.android.core.profiles.ProfileCacheLocationMigration
+import app.n_zik.android.core.profiles.profileStorageIdentity
 
 /** Pins the reset values and profile boundaries to the original Data page. */
 @RunWith(RobolectricTestRunner::class)
@@ -37,12 +40,13 @@ class DataSettingsPreferencesTest {
         exoPlayerDiskDownloadCacheMaxSizeKey to ExoPlayerDiskDownloadCacheMaxSize.`2GB`.name,
         exoPlayerCacheLocationKey to ExoPlayerCacheLocation.System.name,
         exoPlayerCustomCacheKey to 32,
-        coilCustomDiskCacheKey to 32,
+        PROFILE_IMAGE_CACHE_CUSTOM_MB to 32,
         pauseSearchHistoryKey to false,
         pauseListenHistoryKey to false,
     )
 
     @Before fun setUp() {
+        check(context.writeProfileEntries(listOf("data-test" to "Data Test")))
         setActiveProfile("data-test", context)
         context.preferences.edit().clear().commit()
         context.getSharedPreferences("preferences", Context.MODE_PRIVATE).edit().clear().commit()
@@ -55,14 +59,24 @@ class DataSettingsPreferencesTest {
         val base = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         base.edit().putBoolean(pauseSearchHistoryKey, true).commit()
         applyDataDefaults(context)
-        assertEquals(expected + mapOf("sentinel" to "keep"), context.preferences.all)
+        assertEquals((expected - exoPlayerCacheLocationKey) + mapOf("sentinel" to "keep"), context.preferences.all)
         assertEquals(mapOf(pauseSearchHistoryKey to true), base.all)
+    }
+
+    @Test fun `reset stages a return from Private without switching the effective root`() {
+        context.preferences.edit().putString(exoPlayerCacheLocationKey, ExoPlayerCacheLocation.Private.name).commit()
+
+        applyDataDefaults(context)
+
+        val owner = checkNotNull(profileStorageIdentity(context, "data-test"))
+        assertEquals(ExoPlayerCacheLocation.System, ProfileCacheLocationMigration.requested(context, owner))
+        assertEquals(ExoPlayerCacheLocation.Private.name, context.preferences.getString(exoPlayerCacheLocationKey, null))
     }
 
     @Test fun `reset does not keep enforcing defaults after the action`() {
         applyDataDefaults(context)
-        context.preferences.edit().putInt(coilCustomDiskCacheKey, 256).putBoolean(pauseListenHistoryKey, true).commit()
-        assertEquals(256, context.preferences.getInt(coilCustomDiskCacheKey, 0))
+        context.preferences.edit().putInt(PROFILE_IMAGE_CACHE_CUSTOM_MB, 256).putBoolean(pauseListenHistoryKey, true).commit()
+        assertEquals(256, context.preferences.getInt(PROFILE_IMAGE_CACHE_CUSTOM_MB, 0))
         assertTrue(context.preferences.getBoolean(pauseListenHistoryKey, false))
     }
 

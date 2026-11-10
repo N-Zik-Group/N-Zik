@@ -1,8 +1,10 @@
 package app.n_zik.android.components.maintenance
 
+
+import app.n_zik.android.utils.debug.profileDiagnosticsDir
+import android.content.Context
 import app.n_zik.android.core.coil.configuredImageCacheBytes
 
-import android.content.Context
 import android.text.format.Formatter
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
@@ -107,6 +109,7 @@ import app.n_zik.android.core.maintenance.MaintenanceDownloadSelfHealState
 import app.n_zik.android.core.maintenance.MaintenanceStateStore
 import app.n_zik.android.core.migration.ConvergenceSummary
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.download.services.ProfileDownloadCommands
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.download.utils.downloadDisplayName
 import app.n_zik.android.extensions.discord.DiscordRpcError
@@ -834,10 +837,8 @@ internal suspend fun loadMaintenanceSnapshot(context: Context): MaintenanceSnaps
                 ExoPlayerDiskDownloadCacheMaxSize.`2GB`,
             ) == ExoPlayerDiskDownloadCacheMaxSize.Disabled
         }.getOrDefault(false)
-        // Downloads pause flag (persisted by MyDownloadService in the "download_prefs" file)
         val downloadsPaused = runCatching {
-            app.getSharedPreferences("download_prefs", Context.MODE_PRIVATE)
-                .getBoolean("downloads_paused_state", false)
+            ProfileDownloadCommands.capture(app)?.isPaused(app) == true
         }.getOrDefault(false)
 
         // Scheduled jobs (one chunk feeding TWO rows: the jobs row and the backup row's
@@ -901,7 +902,7 @@ internal suspend fun loadMaintenanceSnapshot(context: Context): MaintenanceSnaps
         // Last crash: read the log file once — the row shows the LAST complete block's
         // presence (not its content) plus the total number of complete crash blocks
         val crashLogContent = runCatching {
-            File(app.filesDir.resolve("logs"), "N-Zik_crash_log.txt")
+            File(profileDiagnosticsDir(app), "N-Zik_crash_log.txt")
                 .takeIf { it.exists() && it.length() > 0 }
                 ?.readText()
         }.getOrNull()
@@ -914,7 +915,7 @@ internal suspend fun loadMaintenanceSnapshot(context: Context): MaintenanceSnaps
         // an enabled-but-not-restarted app has debug ON but no exportable file yet
         val debugLogFileAvailable =
             runCatching {
-                debugLogsEnabled && File(app.filesDir.resolve("logs"), "N-Zik_log.txt")
+                debugLogsEnabled && File(profileDiagnosticsDir(app), "N-Zik_log.txt")
                     .let { it.exists() && it.length() > 0L }
             }.getOrDefault(false)
         val lastfmSessionAvailable =

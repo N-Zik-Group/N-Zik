@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Offline (genbehandlet næste lancering)</string>
     <string name="maintenance_song_cache">Sang cache</string>
     <string name="maintenance_song_download_cache">Sang download cache</string>
-    <string name="maintenance_stats">Statistik</string>
     <string name="maintenance_status_deferred">Udskudt</string>
     <string name="maintenance_status_resolved">Løst</string>
     <string name="maintenance_status_skipped">Oversprunget</string>

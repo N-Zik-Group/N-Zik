@@ -1,5 +1,8 @@
 package app.n_zik.android.components.ui.screens.rewind
 
+import app.it.fast4x.rimusic.utils.writeProfileEntries
+import app.n_zik.android.core.profiles.ProfileWorkOwner
+import io.mockk.every
 import android.Manifest
 import android.app.Notification
 import android.app.NotificationManager
@@ -133,7 +136,9 @@ class RewindYearlyReminderWorkerTest {
     @Test
     fun userPostsTheReminderOnTheProfileChannelWhenAUserProfileIsActive() {
         setPermissionState(granted = true, permission = Manifest.permission.POST_NOTIFICATIONS)
-        setActiveProfile("work", RuntimeEnvironment.getApplication())
+        val app = RuntimeEnvironment.getApplication()
+        assertTrue(app.writeProfileEntries(listOf("work" to "Work")))
+        setActiveProfile("work", app)
         val worker = workerWithRescheduleHook(mutableListOf())
 
         runBlocking { worker.doWork() }
@@ -295,7 +300,9 @@ class RewindYearlyReminderWorkerTest {
     }
 
     private fun workerWithRescheduleHook(reschedules: MutableList<Context>): RewindYearlyReminderWorker {
-        val worker = RewindYearlyReminderWorker(RuntimeEnvironment.getApplication(), mockk<WorkerParameters>(relaxed = true))
+        val worker = RewindYearlyReminderWorker(RuntimeEnvironment.getApplication(), mockk<WorkerParameters>(relaxed = true).also { parameters ->
+                every { parameters.inputData } returns ProfileWorkOwner.input(checkNotNull(ProfileWorkOwner.capture(RuntimeEnvironment.getApplication())))
+            })
         worker.rescheduleHook = { reschedules.add(it) }
         return worker
     }

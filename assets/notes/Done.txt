@@ -198,3 +198,11 @@ Added:
   - Wait for FFmpeg before opening the metadata editor or creating export files, including batch exports.
   - Cancel the owning transfer, remove partial files, and preserve the installed version when an update is cancelled.
   - Cover cancellation during a stalled HTTP response, screen disposal, and retry in focused regression tests.
+
+Added:
+- feat(storage): isolate storage and cleanup by profile
+  - Combine cache settings, storage usage, and cleanup in one Data card with Total and per-profile tabs.
+  - Attribute app data and caches to their profile and distinguish device usage, secondary volumes, and protected historical files.
+  - Clear eligible files while the app stays open and coordinate live cache cleanup with readers and writers.
+  - Preserve verified downloads and indexes during storage moves, recover interrupted operations, and keep older Rescue snapshots restorable.
+  - Validate profile generations before applying download commands and storage mutations. Cover recovery and profile isolation with regression tests.

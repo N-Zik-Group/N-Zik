@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Αποσυνδεδεμένος (ξαναδοκιμάστηκε επόμενη εκκίνηση)</string>
     <string name="maintenance_song_cache">Προσωρινή μνήμη τραγουδιού</string>
     <string name="maintenance_song_download_cache">Προσωρινή μνήμη λήψης τραγουδιού</string>
-    <string name="maintenance_stats">Στατιστικά</string>
     <string name="maintenance_status_deferred">Αναβαλλόμενη</string>
     <string name="maintenance_status_resolved">Επιλυμένο</string>
     <string name="maintenance_status_skipped">Παράλειψη</string>

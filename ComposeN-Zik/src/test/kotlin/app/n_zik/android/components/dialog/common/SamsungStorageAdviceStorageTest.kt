@@ -8,22 +8,20 @@ import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.activeProfileKey
 import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
 import app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey
-import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.profilePreferences
+import app.it.fast4x.rimusic.utils.writeProfileEntries
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
-import app.n_zik.android.core.profiles.profileCacheBaseDir
+import app.n_zik.android.core.profiles.ProfileCacheLocationMigration
+import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.core.profiles.profileDataPrefs
-import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.mediaCacheLocation
 import app.n_zik.android.utils.DataStoreUtils
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -44,8 +42,7 @@ class TestApplication : Application()
 /**
  * The storage read/write + flag-write timing of [SamsungStorageAdviceDialog]
  * (spec-samsung-storage-advice-dialog, review loop 1): the active profile's OWN location
- * setting is what the gate reads, [SamsungStorageAdviceDialog.onConfirm] writes Private
- * to the store the player service reads from, and the shown flag is persisted ONLY when
+ * setting is what the gate reads, [SamsungStorageAdviceDialog.onConfirm] requests a verified transfer, and the shown flag is persisted ONLY when
  * the trigger decision passes.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -62,10 +59,12 @@ class SamsungStorageAdviceStorageTest {
         Dependencies.init(mainApplication)
 
         app.profilePreferences.edit().clear().commit()
+        check(app.writeProfileEntries(listOf("work" to "Work")))
         profileDataPrefs(app, "work").edit().clear().commit()
         profileDataPrefs(app, DEFAULT_PROFILE_ID).edit().clear().commit()
         DataStoreUtils.prefs(app).edit().clear().commit()
         SamsungStorageAdviceDialog.isActive = false
+        RestartAppDialog.isActive = false
         SamsungStorageAdviceDialog.storageBytes = 0L
     }
 
@@ -95,28 +94,15 @@ class SamsungStorageAdviceStorageTest {
     }
 
     @Test
-    fun `onConfirm writes private and the service read resolves under filesDir`() {
+    fun `onConfirm queues private without changing the live service root`() {
         activate("work")
+        val profile = checkNotNull(profileStorageIdentity(app, "work"))
 
         SamsungStorageAdviceDialog.onConfirm()
 
-        assertEquals(
-            "the active profile's own store holds Private",
-            ExoPlayerCacheLocation.Private,
-            profileDataPrefs(app, "work").getEnum(exoPlayerCacheLocationKey, ExoPlayerCacheLocation.System)
-        )
-        val location = mediaCacheLocation(app)
-        assertNotNull("the media cache is enabled by default, so the dir resolves", location.dir)
-        assertEquals(
-            "the service-side media cache read follows the private location",
-            File(app.filesDir, "exoplayer_work").absolutePath,
-            location.dir?.absolutePath
-        )
-        assertEquals(
-            "profileCacheBaseDir follows the active profile's own setting",
-            app.filesDir.absolutePath,
-            profileCacheBaseDir(app, "work").absolutePath
-        )
+        assertEquals(ExoPlayerCacheLocation.Private, ProfileCacheLocationMigration.requested(app, profile))
+        assertEquals(ExoPlayerCacheLocation.System, SamsungStorageAdviceDialog.activeProfileCacheLocation(app))
+        assertEquals(File(app.cacheDir, "exoplayer_work").absolutePath, mediaCacheLocation(app).dir?.absolutePath)
     }
 
     @Test
@@ -203,21 +189,14 @@ class SamsungStorageAdviceStorageTest {
     }
 
     @Test
-    fun `onConfirm with a bound binder restarts the service and dismisses`() {
+    fun `onConfirm dismisses advice and opens the app restart prompt`() {
         activate("work")
-        val binder = mockk<PlayerServiceModern.Binder>()
-        every { binder.restartForegroundOrStop() } returns Unit
         SamsungStorageAdviceDialog.showDialog()
 
-        SamsungStorageAdviceDialog.onConfirm(binder)
+        SamsungStorageAdviceDialog.onConfirm()
 
-        verify(exactly = 1) { binder.restartForegroundOrStop() }
-        assertEquals(
-            "the active profile's own store holds Private",
-            ExoPlayerCacheLocation.Private,
-            profileDataPrefs(app, "work").getEnum(exoPlayerCacheLocationKey, ExoPlayerCacheLocation.System)
-        )
-        assertFalse("the dialog is dismissed after the primary action", SamsungStorageAdviceDialog.isActive)
+        assertTrue(RestartAppDialog.isActive)
+        assertFalse(SamsungStorageAdviceDialog.isActive)
     }
 
     @Test

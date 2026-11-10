@@ -22,19 +22,10 @@
     <string name="storage_info_other_nzik">Le reste des données privées de N-Zik, notamment ses bases de données, ses paramètres, ses index, ses extensions et ses fichiers journaux.</string>
     <string name="storage_info_other_used">L\'espace utilisé restant sur le volume interne, comprenant Android, les applications installées et les fichiers personnels.</string>
     <string name="storage_info_free">Espace disponible pour les applications et les fichiers sur le volume interne.</string>
-    <string name="storage_cleanup_title">Nettoyage</string>
     <string name="storage_cleanup_failed">Impossible de terminer le nettoyage de l\'espace de stockage.</string>
-    <string name="storage_cleanup_images_description">Effacez les illustrations mises en cache par N-Zik.</string>
-    <string name="storage_cleanup_streaming_description">Effacez l\'audio mis en cache pendant la lecture en continu.</string>
-    <string name="storage_cleanup_downloads_description">Supprimez les fichiers audio hors ligne et annulez les téléchargements en attente dans l\'espace de stockage dédié aux téléchargements du profil actif.</string>
-    <string name="storage_cleanup_waveforms_description">Supprimer les fichiers de formes d\'onde générés.</string>
     <string name="storage_cleanup_waveforms_dialog_title">Effacer les formes d\'ondes</string>
     <string name="storage_cleanup_diagnostic_logs">Effacer les journaux de diagnostic</string>
-    <string name="storage_cleanup_diagnostic_logs_description">Supprimez les fichiers journaux de débogage et d\'erreurs. Vos paramètres de journalisation restent inchangés.</string>
-    <string name="storage_cleanup_temporary_files">Supprimer les fichiers temporaires abandonnés</string>
-    <string name="storage_cleanup_temporary_files_description">Supprimer les brouillons d\'édition d\'images abandonnés et effacer les captures de partage datant de plus de 24 heures.</string>
     <string name="storage_cleanup_all">Tout effacer</string>
-    <string name="storage_cleanup_all_description">Videz les caches d’images et de streaming ainsi que les formes d’onde générées pour le profil actif, y compris l’espace de stockage qu’il partage avec d’autres profils. Supprimez les fichiers audio hors ligne et annulez les téléchargements en attente dans l’espace de stockage dédié aux téléchargements du profil actif. Supprimez les journaux de diagnostic, les brouillons abandonnés de l’éditeur d’images et les captures partagées « Récapitulatif » périmées. Votre bibliothèque, vos pochettes personnalisées et vos paramètres sont conservés.</string>
     <!-- Backup -->
     <string name="backup_action_export">Exporter la sauvegarde</string>
     <string name="backup_action_import">Importer une sauvegarde</string>

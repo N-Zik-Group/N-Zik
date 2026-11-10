@@ -31,7 +31,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -47,12 +46,10 @@ import app.n_zik.android.components.settings.common.SettingsDescription
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.center
-import app.it.fast4x.rimusic.utils.clearProfileFaceEntries
 import app.it.fast4x.rimusic.utils.currentProfileEntries
 import app.it.fast4x.rimusic.utils.encryptedPreferences
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.intent
-import app.it.fast4x.rimusic.utils.isAtLeastAndroid7
 import app.it.fast4x.rimusic.utils.isProfileNameValid
 import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.preferences
@@ -72,14 +69,15 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.export.ExportProfileStateDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.import.ImportProfileState
+import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.core.backup.ProfileStateArchive
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.notifications.cancelProfileNotifications
 import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.core.profiles.profileSharedItems
-import app.n_zik.android.core.notifications.deleteProfileChannels
 import app.n_zik.android.core.notifications.ensureProfileChannels
 import app.n_zik.android.core.notifications.recreateProfileChannels
+import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.download.services.MyDownloadService
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.shortcuts.registerAppShortcuts
@@ -88,11 +86,8 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.FaceAvatar
 import app.n_zik.android.utils.ProfileFace
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import java.io.File
+import java.util.UUID
 import kotlin.system.exitProcess
-
-private const val PREFERENCES_BASE_FILENAME = "preferences"
-private const val SECURE_PREFERENCES_BASE_FILENAME = "secure_preferences"
 
 /** One card row of the profiles page, resolved off the composition (DATA dispatcher). */
 private data class ProfileRow(
@@ -319,10 +314,19 @@ fun ProfileScreen(
             onDismiss = { showAddPopup = false },
             onSetValue = { name ->
                 val trimmedName = name.trim()
-                if (isProfileNameValid(trimmedName, context.takenProfileNames(profileIds, defaultName)) &&
-                    // The new profile was never renamed: a bare ID line in the names file.
-                    context.writeProfileEntries(context.currentProfileEntries() + (trimmedName to ""))
-                ) {
+                val created = DatabaseRestoreJournal.withProfileStorageMutation(context) {
+                    val ids = context.readProfileIds()
+                    if (!isProfileNameValid(trimmedName, context.takenProfileNames(ids, defaultName))) {
+                        return@withProfileStorageMutation false
+                    }
+                    val id = generateSequence { "profile-${UUID.randomUUID()}" }.first { it !in ids }
+                    if (!context.writeProfileEntries(context.currentProfileEntries() + (id to trimmedName))) {
+                        return@withProfileStorageMutation false
+                    }
+                    context.saveProfileDisplayName(id, trimmedName)
+                    true
+                }
+                if (created) {
                     // The new profile's direct shortcut must appear in the launcher right away
                     // (spec-profile-shortcuts: the shortcut set is re-registered after
                     //
@@ -401,23 +405,8 @@ fun ProfileScreen(
                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                     // The deletion does real file I/O (names file, prefs, database,
                     // avatar): keep it off the UI thread, like the page reads.
-                    context.writeProfileEntries(context.currentProfileEntries().filterNot { it.first == removingProfile })
-                    deletePreferencesForProfile(context, removingProfile)
-                    deleteRoomDatabaseByName(context, "data_$removingProfile.db")
-                    // The face entries (display name + last use) and the profile's own
-                    // files (its custom photo) are purged with the profile.
-                    context.clearProfileFaceEntries(removingProfile)
-                    deleteProfileAvatar(context, removingProfile)
-                    // The profile's 6 notification channels + its pending notifications are
-                    // purged with the profile —
-                    //
-                    // no orphan channel (or notification) left behind for a profile that no longer exists.
-                    deleteProfileChannels(context, removingProfile)
-                    // The profile's SEPARATE data dirs + index are purged with it
-                    // (spec-profile-data-separation) —
-                    //
-                    // the shared items stay with the base, and its sharing flags are forgotten.
-                    purgeProfileData(context, removingProfile)
+                    val profile = removingProfile
+                    RescueFiles.deleteRegisteredProfile(context, profile)
                     withContext(NzikDispatchers.UI) {
                         // The deleted profile's shortcut must vanish from the launcher right
                         // away (spec-profile-shortcuts: the shortcut set is re-registered after
@@ -557,59 +546,6 @@ internal fun executeProfileSwitch(profile: String, context: Context) {
     // The 6 channels of the incoming profile must exist before the process dies (the next
     // boot re-creates them via MainApplication as a safety net).
     ensureProfileChannels(context, profile)
-}
-
-private fun deletePreferencesForProfile(
-    context: Context,
-    profileName: String
-): Boolean {
-    // The encrypted store of a profile is `secure_preferences_<id>` (the account
-    // credentials) — there is no `private_preferences_<id>` in this app.
-    val plainName = PREFERENCES_BASE_FILENAME + "_$profileName"
-    val secureName = SECURE_PREFERENCES_BASE_FILENAME + "_$profileName"
-
-    val okPlain = deleteSharedPrefsByName(context, plainName)
-    val okSecure = deleteSharedPrefsByName(context, secureName)
-
-    // The cached EncryptedSharedPreferences instance still holds the deleted values in
-    // memory and would re-materialize the file on its next commit: evict it.
-    evictProfileSecurePrefs(profileName)
-
-    return okPlain && okSecure
-}
-
-private fun deleteSharedPrefsByName(context: Context, prefsName: String): Boolean {
-    return if (isAtLeastAndroid7) {
-        context.deleteSharedPreferences(prefsName)
-    } else {
-        context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-            .edit(commit = true) { clear() }
-
-        val dir = File(context.applicationInfo.dataDir, "shared_prefs")
-        val xml = File(dir, "$prefsName.xml")
-        val xmlBak = File(dir, "$prefsName.xml.bak")
-
-        var ok = true
-        if (xml.exists()) ok = xml.delete() && ok
-        if (xmlBak.exists()) ok = xmlBak.delete() && ok
-        ok
-    }
-}
-
-private fun deleteRoomDatabaseByName(context: Context, dbName: String): Boolean {
-    val primaryOk = context.deleteDatabase(dbName)
-
-    val dbFile = context.getDatabasePath(dbName)
-    var ok = primaryOk
-    listOf(
-        dbFile,                                   // "…/app_db__{id}"
-        File(dbFile.path + "-journal"),   // mode journal (ישן)
-        File(dbFile.path + "-wal"),       // write-ahead log
-        File(dbFile.path + "-shm")        // shared memory
-    ).forEach { f ->
-        if (f.exists()) ok = f.delete() && ok
-    }
-    return ok
 }
 
 /**

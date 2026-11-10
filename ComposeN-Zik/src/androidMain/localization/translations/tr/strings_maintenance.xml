@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Çevrimdışı (bir sonraki başlatmada yeniden denenecek)</string>
     <string name="maintenance_song_cache">Şarkı önbelleği</string>
     <string name="maintenance_song_download_cache">Şarkı indirme önbelleği</string>
-    <string name="maintenance_stats">İstatistikler</string>
     <string name="maintenance_status_deferred">Ertelendi</string>
     <string name="maintenance_status_resolved">Çözüldü</string>
     <string name="maintenance_status_skipped">Atlandı</string>

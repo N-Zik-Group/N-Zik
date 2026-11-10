@@ -8,6 +8,7 @@ import app.n_zik.android.widget.WidgetAppearance
 import app.n_zik.android.components.image.PickedImageEditor
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -55,6 +56,10 @@ import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
 import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
 import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.coil.materializeImageCacheCustomMb
+import app.n_zik.android.core.profiles.profileDataPrefs
+import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
+import app.it.fast4x.rimusic.utils.readProfileIds
 import app.n_zik.android.core.maintenance.MaintenanceConvergenceState
 import app.n_zik.android.core.maintenance.MaintenanceDbCleanupState
 import app.n_zik.android.core.maintenance.MaintenanceDedupState
@@ -74,6 +79,7 @@ import app.n_zik.android.core.backup.DatabaseBackup
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.core.backup.LibraryStartup
 import app.n_zik.android.core.rescue.RescueProcess
+import app.n_zik.android.download.services.withProfileDownloadCommandOwner
 import app.n_zik.android.components.settings.applyUseLoginForSearch
 import app.n_zik.android.core.settings.ensurePlayerBehaviorDefaults
 import app.n_zik.android.core.settings.ensureDefaultColorPaletteMode
@@ -88,6 +94,8 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.debug.CRASH_CLEAN_BOOT_STREAK_KEY
 import app.n_zik.android.utils.debug.CRASH_LAST_SEEN_COUNT_KEY
 import app.n_zik.android.utils.debug.crashLogFile
+import app.n_zik.android.utils.debug.profileDiagnosticsDir
+import app.n_zik.android.utils.debug.diagnosticFileMutationLock
 import app.n_zik.android.utils.debug.crashLogWipeDecision
 import app.n_zik.android.utils.logging.FileLoggingTree
 import app.n_zik.android.utils.logging.flushThenDelegate
@@ -128,6 +136,12 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 
 class MainApplication : Application(), SingletonImageLoader.Factory {
+    override fun startService(service: Intent): ComponentName? =
+        super.startService(withProfileDownloadCommandOwner(service))
+
+    override fun startForegroundService(service: Intent): ComponentName? =
+        super.startForegroundService(withProfileDownloadCommandOwner(service))
+
 
     internal val libraryStartup = LibraryStartup(
         recover = { DatabaseRestoreJournal.onProcessStart(this, mainProcess = isMainProcess()) },
@@ -194,6 +208,10 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
     }
 
     private fun initializeMainProcess() {
+        (readProfileIds() + DEFAULT_PROFILE_ID).forEach { id ->
+            runCatching { materializeImageCacheCustomMb(profileDataPrefs(this, id)) }
+                .onFailure { Timber.tag("MainApplication").w(it, "Could not normalize profile cache limits") }
+        }
         // Publish library ownership after the lease is acquired, while the early kill
         // receiver stays available even when startup is still waiting.
         RescueProcess.startAliveMarkerUpdater(this)
@@ -414,7 +432,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             
             NetworkClientFactory.configure(
                 proxy = proxy,
-                cacheDir = externalCacheDir ?: cacheDir
+                cacheDir = NetworkClientFactory.profileCacheDirectory(this),
             )
             Innertube.proxy = proxy
             MBNetwork.proxy = proxy
@@ -528,17 +546,19 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // Rewind yearly playlist (next 1st of January, WorkManager, self-rescheduling)
         RewindYearlyPlaylistWorker.schedule(this)
 
-        val logEnabled = preferences.getBoolean(logDebugEnabledKey, false)
+        val diagnosticsOwner = getActiveProfile(this)
+        val diagnosticPrefs = profileDataPrefs(this, diagnosticsOwner)
+        val logEnabled = diagnosticPrefs.getBoolean(logDebugEnabledKey, false)
         
         // Always create logs directory and set up crash handler
-        val dir = filesDir.resolve("logs").also {
-            if (it.exists()) return@also
-            it.mkdir()
-        }
+        val dir = profileDiagnosticsDir(this, diagnosticsOwner).apply { mkdirs() }
         
         // Always set up crash handler regardless of debug mode
         val crashCapture = CaptureCrash(dir.absolutePath, this)
-        Thread.setDefaultUncaughtExceptionHandler(crashCapture)
+        val guardedCrashCapture = Thread.UncaughtExceptionHandler { thread, error ->
+            synchronized(diagnosticFileMutationLock) { crashCapture.uncaughtException(thread, error) }
+        }
+        Thread.setDefaultUncaughtExceptionHandler(guardedCrashCapture)
 
         // Crash log auto-wipe (spec-maintenance-dialog): after 2 consecutive boots
         // without a NEW crash block, the crash log is wiped (the Maintenance "Last
@@ -551,11 +571,11 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 if (crashLogFile.exists()) countCrashBlocks(crashLogFile.readText()) else 0
             val decision = crashLogWipeDecision(
                 currentCrashCount = currentCrashCount,
-                lastSeenCrashCount = preferences.getInt(CRASH_LAST_SEEN_COUNT_KEY, 0),
-                cleanBootStreak = preferences.getInt(CRASH_CLEAN_BOOT_STREAK_KEY, 0),
+                lastSeenCrashCount = diagnosticPrefs.getInt(CRASH_LAST_SEEN_COUNT_KEY, 0),
+                cleanBootStreak = diagnosticPrefs.getInt(CRASH_CLEAN_BOOT_STREAK_KEY, 0),
             )
             if (decision.wipe) crashLogFile.delete()
-            preferences.edit()
+            diagnosticPrefs.edit()
                 .putInt(CRASH_CLEAN_BOOT_STREAK_KEY, decision.cleanBootStreak)
                 .putInt(CRASH_LAST_SEEN_COUNT_KEY, decision.lastSeenCrashCount)
                 .apply()
@@ -568,7 +588,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             Timber.plant(fileLoggingTree)
             // The tree writes asynchronously: give the queued lines up to 2 s to reach the disk
             // before CaptureCrash writes the crash log and kills the process.
-            Thread.setDefaultUncaughtExceptionHandler(flushThenDelegate(fileLoggingTree, 2000, crashCapture))
+            Thread.setDefaultUncaughtExceptionHandler(flushThenDelegate(fileLoggingTree, 2000, guardedCrashCapture))
             Timber.tag("MainApplication").d("Log enabled at ${dir.absolutePath}")
         } else {
             Timber.uprootAll()

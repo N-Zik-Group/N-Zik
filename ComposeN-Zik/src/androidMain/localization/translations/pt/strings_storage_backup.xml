@@ -22,19 +22,10 @@
     <string name="storage_info_other_nzik">O resto dos dados privados do N-Zik, incluindo seus bancos de dados, configurações, índices, extensões e logs.</string>
     <string name="storage_info_other_used">O espaço restante utilizado no volume interno, incluindo Android, apps instalados e arquivos pessoais.</string>
     <string name="storage_info_free">Espaço disponível para aplicativos e arquivos no volume interno.</string>
-    <string name="storage_cleanup_title">Limpar</string>
     <string name="storage_cleanup_failed">Não foi possível terminar a limpeza de armazenamento.</string>
-    <string name="storage_cleanup_images_description">Limpar trabalhos de arte em cache por N-Zik.</string>
-    <string name="storage_cleanup_streaming_description">Limpar áudio em cache durante streaming.</string>
-    <string name="storage_cleanup_downloads_description">Excluir áudio offline e cancelar downloads pendentes para o armazenamento de download do perfil ativo.</string>
-    <string name="storage_cleanup_waveforms_description">Limpar arquivos waveform gerados.</string>
     <string name="storage_cleanup_waveforms_dialog_title">Limpar waveforms</string>
     <string name="storage_cleanup_diagnostic_logs">Limpar registros de diagnóstico</string>
-    <string name="storage_cleanup_diagnostic_logs_description">Excluir os arquivos de log de depuração e de erro. Sua configuração de log permanece a mesma.</string>
-    <string name="storage_cleanup_temporary_files">Remover arquivos temporários abandonados</string>
-    <string name="storage_cleanup_temporary_files_description">Remova rascunhos do editor de imagens abandonados e as capturas de compartilhamento do Rewind mais de 24 horas.</string>
     <string name="storage_cleanup_all">Limpar tudo</string>
-    <string name="storage_cleanup_all_description">Limpar caches de imagem e streaming e ondas geradas para o perfil ativo, incluindo armazenamento que compartilha com outros perfis. Excluir áudio offline e cancelar downloads pendentes para o armazenamento de download do perfil ativo. Excluir logs de diagnóstico, rascunhos de editor de imagens abandonados e capturas de compartilhamento de Rewind expirado. Sua biblioteca, capas personalizadas e configurações são mantidas.</string>
     <!-- Backup -->
     <string name="backup_action_export">Exportar backup</string>
     <string name="backup_action_import">Importar backup</string>

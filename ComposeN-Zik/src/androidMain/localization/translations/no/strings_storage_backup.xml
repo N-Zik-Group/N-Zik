@@ -22,19 +22,10 @@
     <string name="storage_info_other_nzik">Resten av N-ziks private data, inkludert databaser, innstillinger, indekser, utvidelser og logger.</string>
     <string name="storage_info_other_used">Den gjenstående plassen på det interne volumet, inkludert Android, installerte apper og personlige filer.</string>
     <string name="storage_info_free">Mellomrom tilgjengelig for apper og filer på det interne volumet.</string>
-    <string name="storage_cleanup_title">Opprydding</string>
     <string name="storage_cleanup_failed">Klarte ikke fullføre opprydding ved lagring.</string>
-    <string name="storage_cleanup_images_description">Tøm kunstverk bufret av N-zik.</string>
-    <string name="storage_cleanup_streaming_description">Tøm lyden fra hurtiglager mens du strømmer.</string>
-    <string name="storage_cleanup_downloads_description">Slett frakoblet lyd og avbryt ventende nedlastinger for den aktive profilens nedlastingslagring.</string>
-    <string name="storage_cleanup_waveforms_description">Tøm genererte bølgeformfiler.</string>
     <string name="storage_cleanup_waveforms_dialog_title">Tydelige bølger</string>
     <string name="storage_cleanup_diagnostic_logs">Fjern diagnoselogger</string>
-    <string name="storage_cleanup_diagnostic_logs_description">Slett feilsøking og krasjloggfiler. Loggingsinnstillingene forblir det samme</string>
-    <string name="storage_cleanup_temporary_files">Fjern forlatte midlertidige filer</string>
-    <string name="storage_cleanup_temporary_files_description">Fjern forlatte bilderedigeringsprogramtillegg og Rewind deling bilder som er eldre enn 24 timer.</string>
     <string name="storage_cleanup_all">Fjern alle</string>
-    <string name="storage_cleanup_all_description">Klart bilde- og strømmecacher og genererte bølgeformer for den aktive profilen, inkludert lagring av den deler den med andre profiler. Slett frakoblet lyd og avbryt ventende nedlastinger for den aktive profilens nedlastingslagring. Slett diagnostisk logger, forlatte bilderedigeringsutkast, og utløpte reflektiviteter delingsbilder. Biblioteket ditt, egendefinerte dekker og innstillinger er beholdt.</string>
     <!-- Backup -->
     <string name="backup_action_export">Overfør sikkerhetskopi</string>
     <string name="backup_action_import">Innfør sikkerhetskopi</string>

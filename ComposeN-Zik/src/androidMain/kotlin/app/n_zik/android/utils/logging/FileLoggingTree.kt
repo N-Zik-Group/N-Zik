@@ -1,5 +1,6 @@
 package app.n_zik.android.utils.logging
 
+import app.n_zik.android.utils.debug.diagnosticFileMutationLock
 import android.util.Log
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CoroutineDispatcher
@@ -144,9 +145,9 @@ class FileLoggingTree(
     private var writeFailing = false
 
     /** @return `true` when every line of [lines] reached the file (or there was nothing to write) */
-    private fun writeBatch(lines: List<String>): Boolean {
-        if (lines.isEmpty()) return true
-        return try {
+    private fun writeBatch(lines: List<String>): Boolean = synchronized(diagnosticFileMutationLock) {
+        if (lines.isEmpty()) return@synchronized true
+        try {
             if (!logFile.exists()) {
                 logFile.createNewFile()
             }
@@ -166,7 +167,9 @@ class FileLoggingTree(
 
     private fun trimQuietly() {
         // The lines are already on disk: a failed trim must not trigger a retry (duplicates).
-        runCatching { trimLogFile(logFile, maxLogSize) }
+        synchronized(diagnosticFileMutationLock) {
+            runCatching { trimLogFile(logFile, maxLogSize) }
+        }
     }
 }
 

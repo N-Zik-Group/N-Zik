@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Offline (opnieuw geprobeerd volgende launch)</string>
     <string name="maintenance_song_cache">Nummer cache</string>
     <string name="maintenance_song_download_cache">Nummer download cache</string>
-    <string name="maintenance_stats">Statistieken</string>
     <string name="maintenance_status_deferred">Uitgesteld</string>
     <string name="maintenance_status_resolved">Opgelost</string>
     <string name="maintenance_status_skipped">Overgeslagen</string>

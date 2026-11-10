@@ -332,7 +332,6 @@ import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.restartActivityKey
 import app.it.fast4x.rimusic.utils.hideStatusBarKey
 import app.it.fast4x.rimusic.utils.saveProfileLastUsed
-import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.it.fast4x.rimusic.utils.setDefaultPalette
 import app.it.fast4x.rimusic.utils.showButtonPlayerVideoKey
 import app.it.fast4x.rimusic.utils.showSearchTabKey
@@ -372,6 +371,8 @@ import app.n_zik.android.enums.PendingMiniPlayerAction
 import app.n_zik.android.components.ui.screens.rescue.LibraryStartupScreen
 import app.n_zik.android.core.backup.LibraryStartupState
 import app.n_zik.android.core.backup.BackupManager
+import app.n_zik.android.core.profiles.selectColdStorageProfile
+import app.n_zik.android.download.services.withProfileDownloadCommandOwner
 import androidx.core.view.WindowInsetsCompat
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -841,30 +842,25 @@ class MainActivity :
     private fun validProfileIds(): List<String> =
         listOf(DEFAULT_PROFILE_ID) + runCatching { readProfileIds() }.getOrDefault(emptyList())
 
-    /**
-     * Consumes the direct profile shortcut carried by [intent] — COLD path
-     * (spec-profile-shortcuts): when the tap names a valid user profile that is not the active
-     * one, the active profile is set BEFORE the app reads any per-profile state — [startApp]
-     * (and with it the first per-profile prefs/DB access) runs only later, via
-     * `monet.invokeOnReady` — so the launch lands straight in the tapped profile. A tap on the
-     * active profile, or on an unknown/deleted ID, is a bare launch (no switch, no crash).
-     * The extra is one-shot: stripped off the intent the activity keeps, so the singleTask
-     * task relaunch re-delivering it cannot re-apply the tap (same pattern as the rewind deep
-     * links — see [consumeProfileShortcutExtra]).
-     */
-    internal fun consumeProfileShortcut(intent: Intent?) {
+    override fun startService(service: Intent): ComponentName? =
+        super.startService(withProfileDownloadCommandOwner(service))
+
+    override fun startForegroundService(service: Intent): ComponentName? =
+        super.startForegroundService(withProfileDownloadCommandOwner(service))
+
+    /** Selects the tapped profile before storage binds, or performs the normal profile handoff. */
+    internal fun consumeProfileShortcut(intent: Intent?, handoff: (String) -> Unit = ::handoffProfileShortcut) {
         val tapId = profileShortcutTarget(intent)
         val switchTarget = profileSwitchTarget(tapId, getActiveProfile(this), validProfileIds())
+        consumeProfileShortcutExtra(intent)
         switchTarget?.let {
-            setActiveProfile(it, this)
-            // The tapped profile counts as used from this launch (spec-profiles-page-face: the
-            // active profile is recorded as used on every app start — the boot-time record in
-//
-            // MainApplication still names the previous profile).
+            if (!selectColdStorageProfile(this, it)) {
+                handoff(it)
+                return
+            }
             saveProfileLastUsed(it, System.currentTimeMillis())
             Timber.tag("MainActivity").i("Profile shortcut (cold): active profile set to $it before launch")
         }
-        consumeProfileShortcutExtra(intent)
     }
 
     /**
@@ -881,16 +877,13 @@ class MainActivity :
         val tapId = profileShortcutTarget(intent)
         val switchTarget = profileSwitchTarget(tapId, getActiveProfile(this), validProfileIds())
         consumeProfileShortcutExtra(intent)
-        switchTarget?.let {
-            Timber.tag("MainActivity").i("Profile shortcut (warm): switching to $it, exiting the process")
-            executeProfileSwitch(it, this)
-            // exit 0, like the profiles page: the new profile's stores can only be loaded in a
-            // fresh process. The exit deliberately lives at the call site (not in
-//
-            // executeProfileSwitch) so the switch wiring stays pinnable under Robolectric
-            // without killing the test JVM (ProfileSwitchTest).
-            exitProcess(0)
-        }
+        switchTarget?.let(::handoffProfileShortcut)
+    }
+
+    private fun handoffProfileShortcut(profileId: String) {
+        Timber.tag("MainActivity").i("Profile shortcut: switching to $profileId, exiting the process")
+        executeProfileSwitch(profileId, this)
+        exitProcess(0)
     }
 
     @ExperimentalTextApi
@@ -962,13 +955,7 @@ class MainActivity :
         )
         monet.updateMonetColors()
 
-        // Direct profile shortcut (spec-profile-shortcuts, cold path): the active profile is
-        // set BEFORE startApp runs (it is dispatched after onCreate returns, via
-//
-        // monet.invokeOnReady), so the first per-profile prefs/DB access already sees the
-//
-        // tapped profile. The generic « Profiles » shortcut only records the navigation
-        // target — the effect below opens the page once the graph is composed.
+        // Consume the direct shortcut before creating profile-bound activity content.
         consumeProfileShortcut(intent)
         // Gated on isRestoredInstance (like [shortcutIntentAction] below): a recreated/restored
         // activity is handed the kept launch intent again, whose action_profiles cannot be
@@ -1157,7 +1144,7 @@ class MainActivity :
 
             NetworkClientFactory.configure(
                 proxy = proxy,
-                cacheDir = this@MainActivity.externalCacheDir ?: this@MainActivity.cacheDir
+                cacheDir = NetworkClientFactory.profileCacheDirectory(this@MainActivity)
             )
             Innertube.proxy = proxy
         }
@@ -1417,7 +1404,7 @@ class MainActivity :
                                 
                                 NetworkClientFactory.configure(
                                     proxy = proxy,
-                                    cacheDir = this@MainActivity.externalCacheDir ?: this@MainActivity.cacheDir
+                                    cacheDir = NetworkClientFactory.profileCacheDirectory(this@MainActivity)
                                 )
                                 Innertube.proxy = proxy
                             }

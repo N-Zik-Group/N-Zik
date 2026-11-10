@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Fuori rete (riprovato il prossimo lancio)</string>
     <string name="maintenance_song_cache">Cache brano</string>
     <string name="maintenance_song_download_cache">Cache download brano</string>
-    <string name="maintenance_stats">Statistiche</string>
     <string name="maintenance_status_deferred">Differito</string>
     <string name="maintenance_status_resolved">Risolto</string>
     <string name="maintenance_status_skipped">Saltato</string>

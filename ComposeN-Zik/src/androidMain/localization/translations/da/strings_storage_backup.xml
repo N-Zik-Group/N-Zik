@@ -22,19 +22,10 @@
     <string name="storage_info_other_nzik">Resten af N-ziks private data, herunder dens databaser, indstillinger, indekser, udvidelser og logs.</string>
     <string name="storage_info_other_used">Den resterende brugte plads på den interne volumen, herunder Android, installerede apps og personlige filer.</string>
     <string name="storage_info_free">Plads til apps og filer på den interne lydstyrke.</string>
-    <string name="storage_cleanup_title">Oprydning</string>
     <string name="storage_cleanup_failed">Kunne ikke afslutte lagringsoprydning.</string>
-    <string name="storage_cleanup_images_description">Ryd trykfil cachet af N-Zik.</string>
-    <string name="storage_cleanup_streaming_description">Ryd lyd cachet under streaming.</string>
-    <string name="storage_cleanup_downloads_description">Slet offline lyd og annullere afventende downloads for den aktive profil download lagring.</string>
-    <string name="storage_cleanup_waveforms_description">Ryd genererede bølgeformfiler.</string>
     <string name="storage_cleanup_waveforms_dialog_title">Ryd kurveformer</string>
     <string name="storage_cleanup_diagnostic_logs">Ryd diagnostiske logfiler</string>
-    <string name="storage_cleanup_diagnostic_logs_description">Slet fejlsøgnings- og nedbrudslogfiler. Din logningsindstilling forbliver den samme.</string>
-    <string name="storage_cleanup_temporary_files">Fjern forladte midlertidige filer</string>
-    <string name="storage_cleanup_temporary_files_description">Fjern forladte billede editor kladder og Rewind share indfanger ældre end 24 timer.</string>
     <string name="storage_cleanup_all">Ryd alle</string>
-    <string name="storage_cleanup_all_description">Ryd billed- og streamingcacher og genererede bølgeformer for den aktive profil, herunder lagerplads den deler med andre profiler. Slet offline lyd og annullere afventende downloads for den aktive profil download lagring. Slet diagnostiske logs, forladte billede editor kladder og udløbet Rewind share fanger. Dit bibliotek, brugerdefinerede omslag og indstillinger bibeholdes.</string>
     <!-- Backup -->
     <string name="backup_action_export">Eksportér sikkerhedskopi</string>
     <string name="backup_action_import">Importér sikkerhedskopi</string>

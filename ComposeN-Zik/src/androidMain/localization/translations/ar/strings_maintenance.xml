@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">دون اتصال (إعادة المحاولة في التشغيل التالي)</string>
     <string name="maintenance_song_cache">ذاكرة التخزين المؤقت للأغنية</string>
     <string name="maintenance_song_download_cache">ذاكرة التخزين المؤقت لتحميل الأغنية</string>
-    <string name="maintenance_stats">إحصائيات</string>
     <string name="maintenance_status_deferred">مؤجلة</string>
     <string name="maintenance_status_resolved">محلولة</string>
     <string name="maintenance_status_skipped">تخطي</string>

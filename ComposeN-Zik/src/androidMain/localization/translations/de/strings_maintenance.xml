@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Offline (nächsten Start erneut versucht)</string>
     <string name="maintenance_song_cache">Song-Cache</string>
     <string name="maintenance_song_download_cache">Song Download-Cache</string>
-    <string name="maintenance_stats">Statistik</string>
     <string name="maintenance_status_deferred">Aufgeschoben</string>
     <string name="maintenance_status_resolved">Gelöst</string>
     <string name="maintenance_status_skipped">Übersprungen</string>

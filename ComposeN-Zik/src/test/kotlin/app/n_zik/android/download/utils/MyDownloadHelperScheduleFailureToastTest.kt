@@ -66,7 +66,7 @@ class MyDownloadHelperScheduleFailureToastTest {
 
         val original = MyDownloadHelper.scheduleDownloadRequest
         try {
-            MyDownloadHelper.scheduleDownloadRequest = { _, _ ->
+            MyDownloadHelper.scheduleDownloadRequest = { _, _, _ ->
                 Result.failure(IllegalStateException("schedule failed"))
             }
             // runBlocking: JUnit 4 has no coroutine runner — drives the suspend core synchronously.

@@ -21,6 +21,10 @@ import app.n_zik.android.bridge.state.TrackLike
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.profiles.cacheDatabaseProvider
+import app.n_zik.android.core.profiles.LegacyMediaAccess
+import app.n_zik.android.core.profiles.ProfileDataItem
+import app.it.fast4x.rimusic.utils.getActiveProfile
+import androidx.media3.datasource.cache.Cache
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.core.rewind.RewindPlaylists.rewindDisplayName
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -527,7 +531,9 @@ internal class DatabaseLibraryProvider(
      * has no cache directory of its own (temp cache, or none at all). The `keys` read waits for the
      * cache's asynchronous open before anything else is read off it.
      */
-    private suspend fun <T> openMediaCache(block: suspend (SimpleCache) -> T): T? {
+    private suspend fun <T> openMediaCache(block: suspend (Cache) -> T): T? {
+        val profile = getActiveProfile(appContext)
+        LegacyMediaAccess.reader(appContext, profile, ProfileDataItem.MEDIA_CACHE)?.let { return block(it) }
         val location = mediaCacheLocation(appContext)
         val dir = location.dir ?: return null
         if (!dir.exists()) return null

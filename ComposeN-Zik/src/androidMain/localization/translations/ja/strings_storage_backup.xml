@@ -22,19 +22,10 @@
     <string name="storage_info_other_nzik">データベース、設定、インデックス、拡張機能、ログを含む、N-Zikのプライベートデータの残り。</string>
     <string name="storage_info_other_used">Android、インストールされたアプリや個人ファイルを含む内部ボリュームの残りの使用スペース。</string>
     <string name="storage_info_free">内部ボリュームのアプリやファイルで利用可能です。</string>
-    <string name="storage_cleanup_title">クリーンアップ</string>
     <string name="storage_cleanup_failed">ストレージのクリーンアップを完了できませんでした。</string>
-    <string name="storage_cleanup_images_description">N-Zik によってキャッシュされたアートワークをクリアします。</string>
-    <string name="storage_cleanup_streaming_description">ストリーミング中にオーディオキャッシュをクリアします。</string>
-    <string name="storage_cleanup_downloads_description">オフラインオーディオを削除し、アクティブなプロファイルのダウンロードストレージの保留中のダウンロードをキャンセルします。</string>
-    <string name="storage_cleanup_waveforms_description">生成した波形ファイルをクリアします。</string>
     <string name="storage_cleanup_waveforms_dialog_title">波形をクリア</string>
     <string name="storage_cleanup_diagnostic_logs">診断ログをクリア</string>
-    <string name="storage_cleanup_diagnostic_logs_description">デバッグとクラッシュログファイルを削除します。ログの設定は変わりません。</string>
-    <string name="storage_cleanup_temporary_files">放棄された一時ファイルを削除</string>
-    <string name="storage_cleanup_temporary_files_description">放棄されたイメージエディタの下書きを削除し、Rewind共有は24時間以上前のものです。</string>
     <string name="storage_cleanup_all">すべてクリア</string>
-    <string name="storage_cleanup_all_description">他のプロファイルと共有するストレージを含む、アクティブなプロファイルの画像とストリーミングキャッシュと生成された波形をクリアします。 オフラインオーディオを削除し、アクティブなプロファイルのダウンロードストレージの保留中のダウンロードをキャンセルします。 診断ログ、放棄された画像エディタの下書きと期限切れのRewind共有キャプチャを削除します。あなたのライブラリ、カスタムカバー、設定は保持されます。</string>
     <!-- Backup -->
     <string name="backup_action_export">バックアップをエクスポート</string>
     <string name="backup_action_import">バックアップをインポート</string>

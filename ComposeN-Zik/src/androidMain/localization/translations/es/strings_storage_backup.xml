@@ -22,19 +22,10 @@
     <string name="storage_info_other_nzik">El resto de los datos privados de N-Zik, incluyendo sus bases de datos, configuraciones, índices, extensiones y registros.</string>
     <string name="storage_info_other_used">El espacio restante utilizado en el volumen interno, incluyendo Android, aplicaciones instaladas y archivos personales.</string>
     <string name="storage_info_free">Espacio disponible para aplicaciones y archivos en el volumen interno.</string>
-    <string name="storage_cleanup_title">Limpieza</string>
     <string name="storage_cleanup_failed">No se pudo finalizar la limpieza de almacenamiento.</string>
-    <string name="storage_cleanup_images_description">Limpiar caché de artwork por N-Zik.</string>
-    <string name="storage_cleanup_streaming_description">Limpiar caché de audio mientras se transmite.</string>
-    <string name="storage_cleanup_downloads_description">Elimina el audio sin conexión y cancela las descargas pendientes para el almacenamiento de descargas del perfil activo.</string>
-    <string name="storage_cleanup_waveforms_description">Limpiar archivos waveform generados.</string>
     <string name="storage_cleanup_waveforms_dialog_title">Limpiar formas de onda</string>
     <string name="storage_cleanup_diagnostic_logs">Borrar registros de diagnóstico</string>
-    <string name="storage_cleanup_diagnostic_logs_description">Elimine los archivos de registro de depuración y bloqueo. Su configuración de registro sigue siendo la misma.</string>
-    <string name="storage_cleanup_temporary_files">Eliminar archivos temporales abandonados</string>
-    <string name="storage_cleanup_temporary_files_description">Eliminar borradores de editor de imágenes abandonados y rewind compartir captura más de 24 horas.</string>
     <string name="storage_cleanup_all">Limpiar todo</string>
-    <string name="storage_cleanup_all_description">Elimina la imagen y el streaming de cachés y genera formas de onda para el perfil activo, incluyendo el almacenamiento que comparte con otros perfiles. Elimina el audio sin conexión y cancela las descargas pendientes para el almacenamiento de descargas del perfil activo. Eliminar registros de diagnóstico, borradores de editor de imágenes abandonados y capturas de compartir de Rewind caducadas. Su biblioteca, portadas personalizadas y ajustes están asegurados.</string>
     <!-- Backup -->
     <string name="backup_action_export">Exportar respaldo</string>
     <string name="backup_action_import">Importar respaldo</string>

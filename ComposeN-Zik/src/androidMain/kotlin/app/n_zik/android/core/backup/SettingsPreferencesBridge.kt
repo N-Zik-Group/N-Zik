@@ -3,8 +3,19 @@ package app.n_zik.android.core.backup
 import android.content.Context
 import android.content.SharedPreferences
 import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.it.fast4x.rimusic.utils.exoPlayerCustomCacheKey
+import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
+import app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize
+import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
+import app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey
 import app.n_zik.android.components.glass.GlassProfilePreferences
 import app.n_zik.android.core.migration.RemovedSettingsMigration
+import app.n_zik.android.core.maintenance.MaintenanceStateStore
+import app.n_zik.android.core.coil.PROFILE_IMAGE_CACHE_CUSTOM_MB
+import app.n_zik.android.core.profiles.ProfileCacheLocationMigration
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
+import app.n_zik.android.core.profiles.profileDataPrefs
+import app.n_zik.android.core.profiles.profileDownloadSpanBytes
 import app.n_zik.android.components.glass.validGlassPreferenceValue
 import org.json.JSONArray
 
@@ -15,7 +26,9 @@ internal object SettingsPreferencesBridge {
 
     fun export(context: Context, plain: SharedPreferences, profileId: String = getActiveProfile(context)): MutableList<Triple<String, String, Any>> {
         val entries = plain.all.mapNotNull { (key, value) ->
-            if (RemovedSettingsMigration.isRemovedKey(key)) return@mapNotNull null
+            if (RemovedSettingsMigration.isRemovedKey(key) || ProfileCacheLocationMigration.isRequestKey(key) ||
+                MaintenanceStateStore.isStorageCleanupKey(key)
+            ) return@mapNotNull null
             value?.let { Triple(it::class.simpleName ?: "null", key, it) }
         }.toMutableList()
         val snapshot = JSONArray()
@@ -64,4 +77,41 @@ internal object SettingsPreferencesBridge {
     }
 
     fun isGlassRecord(type: String): Boolean = type == GLASS_RECORD_TYPE
+
+    fun stageStorageRow(
+        context: Context,
+        target: ProfileStorageIdentity,
+        editor: SharedPreferences.Editor,
+        key: String,
+        value: String,
+    ) {
+        when (key) {
+            exoPlayerCacheLocationKey -> ProfileCacheLocationMigration.stageRequest(
+                profileDataPrefs(context, target.id), editor, target, ExoPlayerCacheLocation.valueOf(value),
+            )
+            exoPlayerDiskDownloadCacheMaxSizeKey -> {
+                val limit = ExoPlayerDiskDownloadCacheMaxSize.valueOf(value)
+                val maximum = if (limit == ExoPlayerDiskDownloadCacheMaxSize.Disabled) 0L else limit.bytes
+                check(limit == ExoPlayerDiskDownloadCacheMaxSize.Unlimited ||
+                    profileDownloadSpanBytes(context, target.id) <= maximum
+                ) { "The imported download limit would hide existing offline audio" }
+                editor.putString(key, limit.name)
+            }
+        }
+    }
+
+    fun isStorageSetting(key: String): Boolean =
+        key == exoPlayerCacheLocationKey || key == exoPlayerDiskDownloadCacheMaxSizeKey
+
+    fun normalizeStorageRows(rows: List<Triple<String, String, String>>): List<Triple<String, String, String>> {
+        val accepted = rows.filterNot { (_, key) ->
+            ProfileCacheLocationMigration.isRequestKey(key) || MaintenanceStateStore.isStorageCleanupKey(key) ||
+                key.startsWith("downloads_paused_") ||
+                key.startsWith("share_downloads_") || key.startsWith("share_media_cache_") ||
+                key.startsWith("share_images_") || key.startsWith("share_waveforms_")
+        }
+        if (accepted.any { it.second == PROFILE_IMAGE_CACHE_CUSTOM_MB }) return accepted
+        val legacy = accepted.lastOrNull { it.second == exoPlayerCustomCacheKey } ?: return accepted
+        return accepted + Triple(legacy.first, PROFILE_IMAGE_CACHE_CUSTOM_MB, legacy.third)
+    }
 }

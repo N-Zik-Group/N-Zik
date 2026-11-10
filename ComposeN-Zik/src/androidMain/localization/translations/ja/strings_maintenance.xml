@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">オフライン (次の起動時に再試行)</string>
     <string name="maintenance_song_cache">楽曲キャッシュ</string>
     <string name="maintenance_song_download_cache">楽曲ダウンロードキャッシュ</string>
-    <string name="maintenance_stats">統計</string>
     <string name="maintenance_status_deferred">遅延しました</string>
     <string name="maintenance_status_resolved">解決済み</string>
     <string name="maintenance_status_skipped">スキップ</string>

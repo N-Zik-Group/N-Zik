@@ -22,19 +22,10 @@
     <string name="storage_info_other_nzik">Restul datelor private ale N-Zik, inclusiv bazele sale de date, setările, indexurile, extensiile și jurnalele.</string>
     <string name="storage_info_other_used">Spațiul utilizat rămas pe volumul intern, inclusiv Android, aplicații instalate și fișiere personale.</string>
     <string name="storage_info_free">Spaţiu disponibil pentru aplicaţii şi fişiere pe volumul intern.</string>
-    <string name="storage_cleanup_title">Curățare</string>
     <string name="storage_cleanup_failed">Nu s-a putut finaliza curățarea stocării.</string>
-    <string name="storage_cleanup_images_description">Curăță coperta cache de N-Zik.</string>
-    <string name="storage_cleanup_streaming_description">Șterge memoria cache în timpul streaming-ului.</string>
-    <string name="storage_cleanup_downloads_description">Șterge audio offline și anulează descărcările în așteptare pentru spațiul de stocare activ al profilului.</string>
-    <string name="storage_cleanup_waveforms_description">Ştergeţi fişierele de tip waveform generate.</string>
     <string name="storage_cleanup_waveforms_dialog_title">Golește formularele de undă</string>
     <string name="storage_cleanup_diagnostic_logs">Curăță jurnalele de diagnostic</string>
-    <string name="storage_cleanup_diagnostic_logs_description">Ștergeți fișierele de depanare și de blocare. Setarea de logare rămâne aceeași.</string>
-    <string name="storage_cleanup_temporary_files">Elimină fișierele temporare abandonate</string>
-    <string name="storage_cleanup_temporary_files_description">Elimină schițele editorului de imagini abandonate și Rewind share capturează mai mult de 24 de ore.</string>
     <string name="storage_cleanup_all">Șterge tot</string>
-    <string name="storage_cleanup_all_description">Șterge imaginea și geocutiile de streaming și formularele de undă generate pentru profilul activ, inclusiv stocarea pe care o împarte cu alte profiluri. Șterge audio offline și anulează descărcările în așteptare pentru spațiul de stocare activ al profilului. Ștergeți jurnalele de diagnostic, schițele editorului de imagini abandonate și capturele de partajare Rewind expirate. Biblioteca dvs., copertele personalizate și setările sunt păstrate.</string>
     <!-- Backup -->
     <string name="backup_action_export">Exportă backup</string>
     <string name="backup_action_import">Importă copia de rezervă</string>

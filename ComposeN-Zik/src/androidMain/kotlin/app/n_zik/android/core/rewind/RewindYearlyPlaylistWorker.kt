@@ -1,6 +1,8 @@
 package app.n_zik.android.core.rewind
 
 import app.n_zik.android.core.backup.awaitLibraryReadyForWork
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
+import app.n_zik.android.core.profiles.ProfileWorkOwner
 
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
@@ -94,19 +96,29 @@ internal class RewindYearlyPlaylistWorker(
          * a toggle takes effect without an app restart.
          */
         fun schedule(context: Context) {
+            val owner = ProfileWorkOwner.capture(context) ?: return
+            schedule(context, owner)
+        }
+
+        private fun schedule(context: Context, owner: ProfileStorageIdentity) {
+            if (!ProfileWorkOwner.isBound(context, owner)) return
+            val work = WorkManager.getInstance(context)
+            val workName = ProfileWorkOwner.name(WORK_NAME, owner)
+            work.cancelUniqueWork(WORK_NAME)
             if (!isYearlyPlaylistEnabled(context)) {
-                WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
+                work.cancelUniqueWork(workName)
                 Timber.tag(TAG).i("Rewind yearly playlist disabled in settings: canceling pending work")
                 return
             }
             val request = OneTimeWorkRequestBuilder<RewindYearlyPlaylistWorker>()
+                .setInputData(ProfileWorkOwner.input(owner))
                 .setInitialDelay(
                     applyJitter(msUntilNextYearStart(), (0L..JITTER_MS).random()),
                     TimeUnit.MILLISECONDS
                 )
                 .build()
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                WORK_NAME,
+            work.enqueueUniqueWork(
+                workName,
                 ExistingWorkPolicy.KEEP,
                 request
             )
@@ -128,7 +140,10 @@ internal class RewindYearlyPlaylistWorker(
     }
 
     override suspend fun doWork(): Result {
+        val owner = ProfileWorkOwner.read(inputData) ?: return Result.success()
         if (!applicationContext.awaitLibraryReadyForWork()) return Result.retry()
+        if (!ProfileWorkOwner.exists(applicationContext, owner)) return Result.success()
+        if (!ProfileWorkOwner.isBound(applicationContext, owner)) return Result.retry()
         return try {
             // Computed at execution, not scheduling: the work fires on the 1st of January
             // of year Y, so the finished year is Y-1 — the same "now minus one" approach
@@ -157,21 +172,25 @@ internal class RewindYearlyPlaylistWorker(
                     Timber.tag(TAG).w("Could not derive the listening window of \"$name\": skipping")
                     Result.success()
                 } else {
-                    val count = generateRewindPlaylist(name, window.first, window.second, GenerateMode.CreateIfMissing)
-                    if (count > 0) {
+                    val count = generateRewindPlaylist(name, window.first, window.second, GenerateMode.CreateIfMissing) {
+                        ProfileWorkOwner.isBound(applicationContext, owner)
+                    }
+                    if (count > 0 && ProfileWorkOwner.isBound(applicationContext, owner)) {
                         // The deep link needs the playlist's database id: the creation above
                         // already resolved the name, so one lookup is enough (spec GH-275
 //
                         // follow-up — the notification opens the playlist directly).
                         val playlistId = Database.playlistTable.findByName(name).first()?.id
-                        postCreatedNotification(finishedYear.toString(), playlistId)
+                        if (ProfileWorkOwner.isBound(applicationContext, owner)) postCreatedNotification(finishedYear.toString(), playlistId)
                     }
                     Result.success()
                 }
             }
         } finally {
             // Self-perpetuating cadence: always schedule the next year, success or failure
-            rescheduleHook?.invoke(applicationContext) ?: schedule(applicationContext)
+            if (ProfileWorkOwner.isBound(applicationContext, owner)) {
+                rescheduleHook?.invoke(applicationContext) ?: schedule(applicationContext, owner)
+            }
         }
     }
 

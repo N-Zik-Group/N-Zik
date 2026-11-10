@@ -22,19 +22,10 @@
     <string name="storage_info_other_nzik">Τα υπόλοιπα προσωπικά δεδομένα του N-Zik, συμπεριλαμβανομένων των βάσεων δεδομένων του, των ρυθμίσεων, των ευρετηρίων, των επεκτάσεων και των αρχείων καταγραφής.</string>
     <string name="storage_info_other_used">Ο υπόλοιπος χώρος που χρησιμοποιείται για την εσωτερική ένταση, συμπεριλαμβανομένου του Android, εγκατεστημένες εφαρμογές και προσωπικά αρχεία.</string>
     <string name="storage_info_free">Διαθέσιμος χώρος για εφαρμογές και αρχεία στην εσωτερική ένταση ήχου.</string>
-    <string name="storage_cleanup_title">Εκκαθάριση</string>
     <string name="storage_cleanup_failed">Αδύνατη η ολοκλήρωση της εκκαθάρισης του αποθηκευτικού χώρου.</string>
-    <string name="storage_cleanup_images_description">Καθαρισμός έργων τέχνης που έχουν αποθηκευτεί προσωρινά από το N-Zik.</string>
-    <string name="storage_cleanup_streaming_description">Εκκαθάριση προσωρινά αποθηκευμένου ήχου κατά τη ροή.</string>
-    <string name="storage_cleanup_downloads_description">Διαγραφή ήχου εκτός σύνδεσης και ακύρωση λήψεων εν αναμονή της λήψης για το ενεργό προφίλ του χώρου αποθήκευσης λήψεων.</string>
-    <string name="storage_cleanup_waveforms_description">Εκκαθάριση αρχείων κυματομορφής που δημιουργήθηκαν.</string>
     <string name="storage_cleanup_waveforms_dialog_title">Καθαρισμός κυματομορφών</string>
     <string name="storage_cleanup_diagnostic_logs">Εκκαθάριση διαγνωστικών αρχείων καταγραφής</string>
-    <string name="storage_cleanup_diagnostic_logs_description">Διαγράψτε τα αρχεία καταγραφής σφαλμάτων και σφαλμάτων. Η ρύθμιση καταγραφής σας παραμένει η ίδια.</string>
-    <string name="storage_cleanup_temporary_files">Αφαίρεση εγκαταλελειμμένων προσωρινών αρχείων</string>
-    <string name="storage_cleanup_temporary_files_description">Αφαιρέστε τα εγκαταλελειμμένα προσχέδια του επεξεργαστή εικόνων και Rewind μοιραστείτε συλλήψεις παλαιότερες από 24 ώρες.</string>
     <string name="storage_cleanup_all">Εκκαθάριση όλων</string>
-    <string name="storage_cleanup_all_description">Καθαρίστε την εικόνα και τη ροή κρύπτες και δημιουργούνται κυματομορφές για το ενεργό προφίλ, συμπεριλαμβανομένης της αποθήκευσης που μοιράζεται με άλλα προφίλ. Διαγραφή ήχου εκτός σύνδεσης και ακύρωση λήψεων εν αναμονή της λήψης για το ενεργό προφίλ του χώρου αποθήκευσης λήψεων. Διαγράψτε τα διαγνωστικά αρχεία καταγραφής, τα εγκαταλελειμμένα προσχέδια του επεξεργαστή εικόνων και τις λήγεις φωτογραφίες. Η βιβλιοθήκη, τα προσαρμοσμένα καλύμματα και οι ρυθμίσεις φυλάσσονται.</string>
     <!-- Backup -->
     <string name="backup_action_export">Εξαγωγή αντιγράφου ασφαλείας</string>
     <string name="backup_action_import">Εισαγωγή αντιγράφου ασφαλείας</string>

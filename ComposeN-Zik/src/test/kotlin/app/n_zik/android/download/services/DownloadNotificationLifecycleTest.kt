@@ -129,12 +129,12 @@ class DownloadNotificationLifecycleTest {
     }
 
     @Test
-    fun `empty idle clears progress pause flag and batch`() {
+    fun `empty idle clears progress and batch but preserves the profile pause flag`() {
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { app.n_zik.android.appContext() } returns context
         MyDownloadHelper.startBatchDownload(3)
-        context.getSharedPreferences("download_prefs", Context.MODE_PRIVATE).edit()
-            .putBoolean("downloads_paused_state", true).commit()
+        val target = checkNotNull(ProfileDownloadCommands.capture(context))
+        target.setPaused(context, true)
         val builder = DownloadProgressNotification(context)
         notifications.notify(8989, builder.build(emptyList(), true, 3, 0))
         notifications.notify(8991, builder.build(emptyList(), true, 3, 0))
@@ -148,8 +148,7 @@ class DownloadNotificationLifecycleTest {
         assertNull(shadowOf(notifications).getNotification(8989))
         assertNull(shadowOf(notifications).getNotification(8991))
         assertEquals(0, MyDownloadHelper.batchTotal)
-        assertFalse(context.getSharedPreferences("download_prefs", Context.MODE_PRIVATE)
-            .getBoolean("downloads_paused_state", true))
+        assertTrue(target.isPaused(context))
     }
 
     @Test
@@ -183,7 +182,6 @@ class DownloadNotificationLifecycleTest {
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { app.n_zik.android.appContext() } returns context
         mockkObject(MyDownloadHelper)
-        mockkStatic(DownloadService::class)
         val cursor = mockk<DownloadCursor>(relaxed = true)
         val manager = mockk<DownloadManager> {
             every { downloadIndex.getDownloads() } returns cursor
@@ -192,18 +190,14 @@ class DownloadNotificationLifecycleTest {
         val service = Robolectric.buildService(MyDownloadService::class.java).get()
         every { cursor.moveToNext() } returnsMany listOf(true, false)
         every { cursor.download } returns download
-        justRun { DownloadService.sendRemoveDownload(service, MyDownloadService::class.java, "track", false) }
+        justRun { manager.removeDownload("track") }
 
         service.cancelOngoingDownloads()
 
         verify(exactly = 1) { cursor.close() }
-        verify(exactly = 1) {
-            DownloadService.sendRemoveDownload(service, MyDownloadService::class.java, "track", false)
-        }
+        verify(exactly = 1) { manager.removeDownload("track") }
         every { cursor.moveToNext() } returns true
-        every {
-            DownloadService.sendRemoveDownload(service, MyDownloadService::class.java, "track", false)
-        } throws IllegalStateException("Removal failed")
+        every { manager.removeDownload("track") } throws IllegalStateException("Removal failed")
 
         assertThrows(IllegalStateException::class.java) { service.cancelOngoingDownloads() }
 
@@ -229,7 +223,8 @@ class DownloadNotificationLifecycleTest {
         val controller = Robolectric.buildService(MyDownloadService::class.java).create()
         val service = controller.get()
         val mainLooper = shadowOf(Looper.getMainLooper())
-        val command = Intent(MyDownloadService.ACTION_CANCEL_ONGOING)
+        val command = checkNotNull(ProfileDownloadCommands.capture(context))
+            .intent(context, MyDownloadService.ACTION_CANCEL_ONGOING)
 
         try {
             mainLooper.idle()

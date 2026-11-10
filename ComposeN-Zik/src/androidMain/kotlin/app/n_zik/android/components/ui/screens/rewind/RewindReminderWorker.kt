@@ -1,6 +1,8 @@
 package app.n_zik.android.components.ui.screens.rewind
 
 import app.n_zik.android.core.backup.awaitLibraryReadyForWork
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
+import app.n_zik.android.core.profiles.ProfileWorkOwner
 
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
@@ -98,19 +100,29 @@ internal class RewindReminderWorker(
          * a toggle takes effect without an app restart (spec GH-275).
          */
         fun schedule(context: Context) {
+            val owner = ProfileWorkOwner.capture(context) ?: return
+            schedule(context, owner)
+        }
+
+        private fun schedule(context: Context, owner: ProfileStorageIdentity) {
+            if (!ProfileWorkOwner.isBound(context, owner)) return
+            val work = WorkManager.getInstance(context)
+            val workName = ProfileWorkOwner.name(WORK_NAME, owner)
+            work.cancelUniqueWork(WORK_NAME)
             if (!isMonthlyReminderEnabled(context)) {
-                WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
+                work.cancelUniqueWork(workName)
                 Timber.tag(TAG).i("Rewind monthly reminder disabled in settings: canceling pending work")
                 return
             }
             val request = OneTimeWorkRequestBuilder<RewindReminderWorker>()
+                .setInputData(ProfileWorkOwner.input(owner))
                 .setInitialDelay(
                     applyJitter(msUntilNextMonthStart(), (0L..JITTER_MS).random()),
                     TimeUnit.MILLISECONDS
                 )
                 .build()
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                WORK_NAME,
+            work.enqueueUniqueWork(
+                workName,
                 ExistingWorkPolicy.KEEP,
                 request
             )
@@ -131,7 +143,10 @@ internal class RewindReminderWorker(
     }
 
     override suspend fun doWork(): Result {
+        val owner = ProfileWorkOwner.read(inputData) ?: return Result.success()
         if (!applicationContext.awaitLibraryReadyForWork()) return Result.retry()
+        if (!ProfileWorkOwner.exists(applicationContext, owner)) return Result.success()
+        if (!ProfileWorkOwner.isBound(applicationContext, owner)) return Result.retry()
         return try {
             val finished = LocalDate.now().minusMonths(1)
             if (!isMonthlyReminderEnabled(applicationContext)) {
@@ -154,12 +169,14 @@ internal class RewindReminderWorker(
                     finished.month.getDisplayName(TextStyle.FULL, Locale.getDefault()))
                 Result.success()
             } else {
-                postRewindReminder(finished)
+                if (ProfileWorkOwner.isBound(applicationContext, owner)) postRewindReminder(finished)
                 Result.success()
             }
         } finally {
             // Self-perpetuating cadence: always schedule the next month, success or failure
-            rescheduleHook?.invoke(applicationContext) ?: schedule(applicationContext)
+            if (ProfileWorkOwner.isBound(applicationContext, owner)) {
+                rescheduleHook?.invoke(applicationContext) ?: schedule(applicationContext, owner)
+            }
         }
     }
 

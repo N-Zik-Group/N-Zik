@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Desconectado (reintentó el próximo lanzamiento)</string>
     <string name="maintenance_song_cache">Caché de canciones</string>
     <string name="maintenance_song_download_cache">Caché de descarga de canción</string>
-    <string name="maintenance_stats">Estadísticas</string>
     <string name="maintenance_status_deferred">Aplazado</string>
     <string name="maintenance_status_resolved">Resuelto</string>
     <string name="maintenance_status_skipped">Omitido</string>

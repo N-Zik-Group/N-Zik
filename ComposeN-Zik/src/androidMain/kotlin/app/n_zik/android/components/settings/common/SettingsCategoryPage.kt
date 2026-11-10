@@ -64,6 +64,11 @@ import app.n_zik.android.components.settings.accounts.AccountsSettingsContent
 import app.n_zik.android.components.settings.ai.AIRecommendationSettingsContent
 import app.n_zik.android.components.settings.appearance.AppearanceSettingsContent
 import app.n_zik.android.components.settings.data.DataSettingsContent
+import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
+import app.n_zik.android.core.profiles.profileStorageIdentity
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.withContext
 import app.n_zik.android.components.settings.general.GeneralSettingsContent
 import app.n_zik.android.components.settings.network.NetworkSettingsContent
 import app.n_zik.android.components.settings.other.OtherSettingsContent
@@ -104,6 +109,7 @@ fun SettingsCategoryPage(
         onDispose {
             registry.nestedTarget?.nestedDestination?.let { settingsNestedDialog(it.dialogId)?.hideDialog() }
             registry.nestedTarget = null
+            registry.storageProfileTarget = null
         }
     }
     val scroll = rememberLazyListState()
@@ -171,19 +177,34 @@ fun SettingsCategoryPage(
     SettingsSearchEmptyFeedback(search.inputValue, matches.isEmpty() && entryMatches.isEmpty())
     LaunchedEffect(target, parentTarget) {
         if (target.isBlank()) return@LaunchedEffect
+        val storageRoute = target.split('|', limit = 3)
+        val rawTarget = storageRoute.first()
         // Two layout frames include children and their initial conditional composition.
         withFrameNanos { }
         withFrameNanos { }
-        val requestedTarget = when (target) {
+        val requestedTarget = when (rawTarget) {
             "appearance.player_presets_and_layout.icon_like_button" -> "appearance.timeline_and_controls.icon_like_button"
             "network.network_status.image_quality_format" -> "network.quality.image_quality_format"
             "network.network_status.audio_quality_format" -> "network.quality.audio_quality_format"
             "network.network_status.download_quality_format" -> "embedded.network.download_quality_format"
             "card.6.network_status" -> "card.6.quality"
             "card.6.settings_download_status" -> "card.6.settings_download_quality"
-            else -> target
+            "card.4.cache" -> settingsCardTargetId(context, 4, R.string.storage_breakdown_title)
+            else -> rawTarget
         }
         val entry = AllSettingsEntryTargets.firstOrNull { it.id == requestedTarget }
+        val storageEntry = entry?.cardTitleRes == R.string.storage_breakdown_title
+        if (storageEntry && (requestedTarget.startsWith("data.cache.") || storageRoute.size == 3)) {
+            val explicit = storageRoute.takeIf { it.size == 3 }?.let { ProfileStorageIdentity(it[2], it[1]) }
+            registry.storageProfileTarget = withContext(NzikDispatchers.DATA) {
+                if (explicit == null) profileStorageIdentity(context, getActiveProfile(context))
+                else profileStorageIdentity(context, explicit.id)?.takeIf { it == explicit }
+            }
+            if (explicit != null && registry.storageProfileTarget == null) {
+                showMessage(unavailableMessage)
+                return@LaunchedEffect
+            }
+        }
         val cardId = entry?.let { settingsCardTargetId(context, it.tab, it.cardTitleRes) }
             ?: requestedTarget.takeIf { it.startsWith("card.") }
             ?: parentTarget
@@ -204,6 +225,11 @@ fun SettingsCategoryPage(
             withFrameNanos { }
         }
         val nested = entry?.nestedDestination
+        if (storageEntry) {
+            withTimeoutOrNull(1500) {
+                snapshotFlow { registry.targets[requestedTarget] }.first { it != null }
+            }
+        }
         if (nested != null) {
             val opener = withTimeoutOrNull(1500) {
                 snapshotFlow { registry.targets[nested.openerId] }.first { it != null }
