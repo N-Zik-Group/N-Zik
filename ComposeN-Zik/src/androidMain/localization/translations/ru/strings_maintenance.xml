@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Оффлайн (перепробовать следующий запуск)</string>
     <string name="maintenance_song_cache">Кэш треков</string>
     <string name="maintenance_song_download_cache">Кэш загрузки песни</string>
-    <string name="maintenance_stats">Статистика</string>
     <string name="maintenance_status_deferred">Отложено</string>
     <string name="maintenance_status_resolved">Решена</string>
     <string name="maintenance_status_skipped">Пропущено</string>
@@ -210,6 +209,13 @@
     <string name="recovery_export_settings_description">Сохранить ваши настройки в CSV файл</string>
     <string name="recovery_group_app">Приложение</string>
     <string name="recovery_group_database">Данные</string>
+    <string name="recovery_legacy_media">Восстановление исторического хранилища</string>
+    <string name="recovery_legacy_archive_audio">Аудио · %1$s</string>
+    <string name="recovery_legacy_archive_images">Изображения и обложки</string>
+    <string name="recovery_legacy_media_action">Восстановить</string>
+    <string name="recovery_legacy_media_description">Скопируйте проверенные файлы из сохраненного архива в выбранный профиль.</string>
+    <string name="recovery_legacy_media_source">%1$s архив %2$s</string>
+    <string name="recovery_legacy_media_confirmation">Восстановление из архива %1$s %2$s в %3$s? Архив остается доступным. Recovery останавливается, если он заменит другие файлы.</string>
     <string name="recovery_group_logs">Логи</string>
     <string name="recovery_group_profiles">Profiles</string>
     <string name="recovery_group_settings">Настройки</string>
