@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Offline (genbehandlet næste lancering)</string>
     <string name="maintenance_song_cache">Sang cache</string>
     <string name="maintenance_song_download_cache">Sang download cache</string>
-    <string name="maintenance_stats">Statistik</string>
     <string name="maintenance_status_deferred">Udskudt</string>
     <string name="maintenance_status_resolved">Løst</string>
     <string name="maintenance_status_skipped">Oversprunget</string>
@@ -210,6 +209,13 @@
     <string name="recovery_export_settings_description">Gem dine præferencer til en CSV-fil</string>
     <string name="recovery_group_app">App</string>
     <string name="recovery_group_database">Database</string>
+    <string name="recovery_legacy_media">Gendan historisk lager</string>
+    <string name="recovery_legacy_archive_audio">Lyd · %1$s</string>
+    <string name="recovery_legacy_archive_images">Billeder og omslag</string>
+    <string name="recovery_legacy_media_action">Gendan</string>
+    <string name="recovery_legacy_media_description">Kopier bekræftede filer fra et gemt lagringsarkiv til den valgte profil.</string>
+    <string name="recovery_legacy_media_source">%1$s arkiv %2$s</string>
+    <string name="recovery_legacy_media_confirmation">Gendan fra %1$s arkiv %2$s til %3$s? Arkivet forbliver tilgængeligt. Recovery stopper, hvis det ville erstatte forskellige filer.</string>
     <string name="recovery_group_logs">Logfiler</string>
     <string name="recovery_group_profiles">Profiles</string>
     <string name="recovery_group_settings">Indstillinger</string>
