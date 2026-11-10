@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Offline (opnieuw geprobeerd volgende launch)</string>
     <string name="maintenance_song_cache">Nummer cache</string>
     <string name="maintenance_song_download_cache">Nummer download cache</string>
-    <string name="maintenance_stats">Statistieken</string>
     <string name="maintenance_status_deferred">Uitgesteld</string>
     <string name="maintenance_status_resolved">Opgelost</string>
     <string name="maintenance_status_skipped">Overgeslagen</string>
@@ -210,6 +209,13 @@
     <string name="recovery_export_settings_description">Sla je voorkeuren op in een CSV-bestand</string>
     <string name="recovery_group_app">App</string>
     <string name="recovery_group_database">Database</string>
+    <string name="recovery_legacy_media">Historische opslag herstellen</string>
+    <string name="recovery_legacy_archive_audio">Audio · %1$s</string>
+    <string name="recovery_legacy_archive_images">Afbeeldingen en omslagen</string>
+    <string name="recovery_legacy_media_action">Herstel</string>
+    <string name="recovery_legacy_media_description">Kopieer geverifieerde bestanden van een bewaard opslagarchief naar het geselecteerde profiel.</string>
+    <string name="recovery_legacy_media_source">%1$s archief %2$s</string>
+    <string name="recovery_legacy_media_confirmation">Herstel van het %1$s archief %2$s naar %3$s? Het archief blijft beschikbaar. Herstel stopt als het verschillende bestanden zou vervangen.</string>
     <string name="recovery_group_logs">Logboeken</string>
     <string name="recovery_group_profiles">Profiles</string>
     <string name="recovery_group_settings">Instellingen</string>
