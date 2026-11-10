@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Offline (nächsten Start erneut versucht)</string>
     <string name="maintenance_song_cache">Song-Cache</string>
     <string name="maintenance_song_download_cache">Song Download-Cache</string>
-    <string name="maintenance_stats">Statistik</string>
     <string name="maintenance_status_deferred">Aufgeschoben</string>
     <string name="maintenance_status_resolved">Gelöst</string>
     <string name="maintenance_status_skipped">Übersprungen</string>
@@ -210,6 +209,13 @@
     <string name="recovery_export_settings_description">Speichern Sie Ihre Einstellungen in einer CSV-Datei</string>
     <string name="recovery_group_app">App</string>
     <string name="recovery_group_database">Datenbank</string>
+    <string name="recovery_legacy_media">Historischen Speicher wiederherstellen</string>
+    <string name="recovery_legacy_archive_audio">Audio · %1$s</string>
+    <string name="recovery_legacy_archive_images">Bilder und Cover</string>
+    <string name="recovery_legacy_media_action">Wiederherstellen</string>
+    <string name="recovery_legacy_media_description">Kopieren Sie verifizierte Dateien aus einem gespeicherten Archiv in das ausgewählte Profil.</string>
+    <string name="recovery_legacy_media_source">%1$s Archiv %2$s</string>
+    <string name="recovery_legacy_media_confirmation">Wiederherstellen aus dem %1$s Archiv %2$s in %3$s? Das Archiv bleibt verfügbar. Wiederherstellung stoppt, wenn es verschiedene Dateien ersetzen würde.</string>
     <string name="recovery_group_logs">Logs</string>
     <string name="recovery_group_profiles">Profiles</string>
     <string name="recovery_group_settings">Einstellungen</string>
