@@ -82,16 +82,16 @@
         <item quantity="other">%1$d titres recommandés</item>
     </plurals>
     <plurals name="listen_together_blocked_user_count">
-        <item quantity="one">Utilisateur %1$d bloqué</item>
-        <item quantity="other">Utilisateurs %1$d bloqués</item>
+        <item quantity="one">%1$d utilisateur bloqué</item>
+        <item quantity="other">%1$d utilisateurs bloqués</item>
     </plurals>
     <plurals name="sync_failed_notification_artist_count">
         <item quantity="one">Échec de la synchronisation de %1$d artiste. Retournez dans l\'onglet « Artistes » pour réessayer.</item>
         <item quantity="other">Échec de la synchronisation de %1$d artistes. Retournez dans l\'onglet « Artistes » pour réessayer.</item>
     </plurals>
     <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="one">Impossible de synchroniser la liste de lecture %1$d . Retournez à l\'onglet Playlists pour réessayer.</item>
-        <item quantity="other">Impossible de synchroniser les listes de lecture %1$d . Retournez à l\'onglet Playlists pour réessayer.</item>
+        <item quantity="one">Échec de la synchronisation de %1$d playlist. Retournez dans l\'onglet « Playlists » pour réessayer.</item>
+        <item quantity="other">Échec de la synchronisation de %1$d playlists. Retournez dans l\'onglet « Playlists » pour réessayer.</item>
     </plurals>
     <plurals name="sync_retry_failed_item_confirmation">
         <item quantity="one">Voulez-vous essayer à nouveau la synchronisation de l\'élément %1$d en échec ?</item>
