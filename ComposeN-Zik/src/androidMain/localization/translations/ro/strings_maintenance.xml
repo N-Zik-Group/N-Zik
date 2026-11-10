@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Offline (a reîncercat următoarea lansare)</string>
     <string name="maintenance_song_cache">Cache melodie</string>
     <string name="maintenance_song_download_cache">Cache-ul pentru descărcare melodie</string>
-    <string name="maintenance_stats">Statistici</string>
     <string name="maintenance_status_deferred">Amânat</string>
     <string name="maintenance_status_resolved">Rezolvat</string>
     <string name="maintenance_status_skipped">Sărit</string>
@@ -210,6 +209,13 @@
     <string name="recovery_export_settings_description">Salvați preferințele într-un fișier CSV</string>
     <string name="recovery_group_app">Aplicație</string>
     <string name="recovery_group_database">Bază de date</string>
+    <string name="recovery_legacy_media">Recuperează stocarea istorică</string>
+    <string name="recovery_legacy_archive_audio">Audio · %1$s</string>
+    <string name="recovery_legacy_archive_images">Imagini și coperte</string>
+    <string name="recovery_legacy_media_action">Recuperează</string>
+    <string name="recovery_legacy_media_description">Copiați fișierele verificate dintr-o arhivă de stocare conservată în profilul selectat.</string>
+    <string name="recovery_legacy_media_source">%1$s arhivă %2$s</string>
+    <string name="recovery_legacy_media_confirmation">Recuperează din arhiva %1$s %2$s în %3$s? Arhiva rămâne disponibilă. Recuperarea se oprește dacă ar înlocui fișiere diferite.</string>
     <string name="recovery_group_logs">Jurnale</string>
     <string name="recovery_group_profiles">Profiles</string>
     <string name="recovery_group_settings">Setări</string>
