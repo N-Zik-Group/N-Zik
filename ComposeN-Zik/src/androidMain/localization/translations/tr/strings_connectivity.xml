@@ -80,7 +80,7 @@
     <string name="listen_together_create_room">Oda oluştur</string>
     <string name="listen_together_creating_room">Oda oluşturuluyor…</string>
     <string name="listen_together_custom_server">Özel sunucu</string>
-    <string name="listen_together_description">Arkadaşlarınızla gerçek zamanlı olarak müzik dinleyin. Oda sahibi olmak için bir oda oluşturun veya bir kodla mevcut odaya katılın</string>
+    <string name="listen_together_description">Arkadaşlarınızla gerçek zamanlı olarak müzik dinleyin. Ev sahibi olmak için bir oda oluşturun veya bir kodla mevcut odaya katılın</string>
     <string name="listen_together_disconnect">Bağlantıyı kes</string>
     <string name="listen_together_disconnected">Bağlantı kesildi</string>
     <string name="listen_together_enter_room_code">Bir oda kodu girin</string>
@@ -103,7 +103,7 @@
     <string name="listen_together_leave_room">Odadan ayrıl</string>
     <string name="listen_together_logs">Bağlantı günlükleri</string>
     <string name="listen_together_manage_user">Kullanıcıyı yönet</string>
-    <string name="listen_together_new_host">Yeni sunucu: %1$s</string>
+    <string name="listen_together_new_host">Yeni ev sahibi: %1$s</string>
     <string name="listen_together_no_blocked_users">Engellenmiş kullanıcı yok</string>
     <string name="listen_together_no_logs">Henüz günlük yok</string>
     <string name="listen_together_not_set">Ayarlanmamış</string>
@@ -124,7 +124,7 @@
     <string name="listen_together_suggestion_rejected_reason">Öneri reddedildi: %1$s</string>
     <string name="listen_together_suggestion_sent">Öneri oda sahibine gönderildi!</string>
     <string name="listen_together_switch_room_confirmation">Mevcut odanızdan ayrılın ve %1$s davetini açın?</string>
-    <string name="listen_together_sync_volume">Oda sahibinin ses seviyesine eşitle</string>
+    <string name="listen_together_sync_volume">Ev sahibinin ses seviyesine eşitle</string>
     <string name="listen_together_title">Birlikte Dinle</string>
     <string name="listen_together_transfer_ownership">Sahipliği aktar</string>
     <string name="listen_together_unblock">Engeli kaldır</string>
@@ -206,7 +206,7 @@
     <string name="listen_together_log_detail_close_code_reason">Kod: %1$d, Neden: %2$s</string>
     <string name="listen_together_log_detail_code_message">%1$s: %2$s</string>
     <string name="listen_together_log_detail_message_bytes">%1$d bytes</string>
-    <string name="listen_together_log_detail_new_host">Yeni sunucu: %1$s</string>
+    <string name="listen_together_log_detail_new_host">Yeni ev sahibi: %1$s</string>
     <string name="listen_together_log_detail_not_host">Ev sahibi değil</string>
     <string name="listen_together_log_detail_not_in_room">Odada değil</string>
     <string name="listen_together_log_detail_pending_join">%1$s as %2$s</string>
