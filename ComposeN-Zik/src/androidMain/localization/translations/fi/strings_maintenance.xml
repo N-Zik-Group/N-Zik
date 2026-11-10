@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Offline (kokeiltu uudelleen seuraavan käynnistyksen)</string>
     <string name="maintenance_song_cache">Kappaleen välimuisti</string>
     <string name="maintenance_song_download_cache">Kappaleen latausvälimuisti</string>
-    <string name="maintenance_stats">Tilastot</string>
     <string name="maintenance_status_deferred">Laskettu</string>
     <string name="maintenance_status_resolved">Ratkaistu</string>
     <string name="maintenance_status_skipped">Ohitettu</string>
@@ -210,6 +209,13 @@
     <string name="recovery_export_settings_description">Tallenna asetuksesi CSV-tiedostoon</string>
     <string name="recovery_group_app">Sovellus</string>
     <string name="recovery_group_database">Tietokanta</string>
+    <string name="recovery_legacy_media">Palauta historiallinen tallennustila</string>
+    <string name="recovery_legacy_archive_audio">Ääni · %1$s</string>
+    <string name="recovery_legacy_archive_images">Kuvat ja kannet</string>
+    <string name="recovery_legacy_media_action">Palauta</string>
+    <string name="recovery_legacy_media_description">Kopioi varmennetut tiedostot säilytetystä tallennusarkistosta valittuun profiiliin.</string>
+    <string name="recovery_legacy_media_source">%1$s arkisto %2$s</string>
+    <string name="recovery_legacy_media_confirmation">Palauta %1$s arkistosta %2$s %3$s? Arkisto pysyy saatavilla. Palautus pysähtyy, jos se korvaisi eri tiedostot.</string>
     <string name="recovery_group_logs">Lokit</string>
     <string name="recovery_group_profiles">Profiles</string>
     <string name="recovery_group_settings">Asetukset</string>
