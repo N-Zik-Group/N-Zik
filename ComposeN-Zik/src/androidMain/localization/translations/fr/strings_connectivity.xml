@@ -228,7 +228,7 @@
     <string name="listen_together_log_detail_track">Piste : %1$s</string>
     <string name="listen_together_log_detail_type_error">%1$s : %2$s</string>
     <string name="listen_together_log_detail_url_migration">Ancien : %1$s -&gt; Nouveau : %2$s</string>
-    <string name="listen_together_log_detail_user">Utilisateur: %1$s</string>
+    <string name="listen_together_log_detail_user">Utilisateur : %1$s</string>
     <string name="listen_together_log_detail_waiting_users">Utilisateurs : %1$d</string>
     <string name="listen_together_log_entry_metadata">%1$s [%2$s]</string>
     <string name="listen_together_log_event_all_users_buffered">Tous les utilisateurs ont mis en mémoire tampon</string>
