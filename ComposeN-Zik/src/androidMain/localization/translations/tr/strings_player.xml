@@ -50,7 +50,7 @@
     <string name="listen_together_permanently_kick_user_description">Bu kişinin katılma isteklerini engelle ve önerilerini gizle</string>
     <string name="listen_together_server_url_description">Paylaşımlı dinleme odalarını barındırmak ve bu odalara katılmak için kullanılacak sunucuyu seçin.</string>
     <string name="listen_together_settings_description">Sunucu, kullanıcı adı ve daha fazlasını yapılandırın</string>
-    <string name="listen_together_sync_volume_description">Misafirlerin ses seviyesi oda sahibinin ses seviyesine eşitlenir</string>
+    <string name="listen_together_sync_volume_description">Misafirlerin ses seviyesi ev sahibinin ses seviyesine eşitlenir</string>
     <string name="listen_together_transfer_ownership_description">Bu kişiyi odanın oda sahibi yapın</string>
     <string name="listen_together_username_description">Paylaşımlı dinleme odalarında diğer katılımcıların göreceği adı belirleyin.</string>
     <string name="listen_together_view_logs_description">Bağlantı olaylarını ve mesajlarını hata ayıklama</string>
