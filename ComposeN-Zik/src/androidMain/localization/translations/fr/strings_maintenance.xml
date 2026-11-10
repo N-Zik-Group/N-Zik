@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Hors ligne (nouvelle tentative au prochain démarrage)</string>
     <string name="maintenance_song_cache">Cache des morceaux</string>
     <string name="maintenance_song_download_cache">Cache de téléchargement des morceaux</string>
-    <string name="maintenance_stats">Statistiques</string>
     <string name="maintenance_status_deferred">Reporté</string>
     <string name="maintenance_status_resolved">Résolu</string>
     <string name="maintenance_status_skipped">Ignoré</string>
@@ -210,6 +209,13 @@
     <string name="recovery_export_settings_description">Enregistrez vos préférences dans un fichier CSV</string>
     <string name="recovery_group_app">Application</string>
     <string name="recovery_group_database">Base de données</string>
+    <string name="recovery_legacy_media">Récupérer le stockage historique</string>
+    <string name="recovery_legacy_archive_audio">Audio · %1$s</string>
+    <string name="recovery_legacy_archive_images">Images et couvertures</string>
+    <string name="recovery_legacy_media_action">Récupérer</string>
+    <string name="recovery_legacy_media_description">Copiez les fichiers vérifiés à partir d\'une archive de stockage préservée dans le profil sélectionné.</string>
+    <string name="recovery_legacy_media_source">Archives %1$s %2$s</string>
+    <string name="recovery_legacy_media_confirmation">Récupérer à partir de l\'archive %1$s %2$s vers %3$s? L\'archive reste disponible. La récupération s\'arrête si elle remplacerait différents fichiers.</string>
     <string name="recovery_group_logs">Journaux</string>
     <string name="recovery_group_profiles">Profils</string>
     <string name="recovery_group_settings">Paramètres</string>
