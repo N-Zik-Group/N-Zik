@@ -105,7 +105,6 @@
     <string name="maintenance_skip_offline">Offline (ponowiono próbę następnego uruchomienia)</string>
     <string name="maintenance_song_cache">Pamięć podręczna utworu</string>
     <string name="maintenance_song_download_cache">Pamięć podręczna pobierania utworu</string>
-    <string name="maintenance_stats">Statystyki</string>
     <string name="maintenance_status_deferred">Odroczone</string>
     <string name="maintenance_status_resolved">Rozwiązano</string>
     <string name="maintenance_status_skipped">Pominięto</string>
@@ -210,6 +209,13 @@
     <string name="recovery_export_settings_description">Zapisz swoje preferencje do pliku CSV</string>
     <string name="recovery_group_app">Aplikacja</string>
     <string name="recovery_group_database">Baza danych</string>
+    <string name="recovery_legacy_media">Odzyskaj historyczne przechowywanie</string>
+    <string name="recovery_legacy_archive_audio">Dźwięk · %1$s</string>
+    <string name="recovery_legacy_archive_images">Obrazy i okładki</string>
+    <string name="recovery_legacy_media_action">Odzyskaj</string>
+    <string name="recovery_legacy_media_description">Skopiuj zweryfikowane pliki z zachowanego archiwum do wybranego profilu.</string>
+    <string name="recovery_legacy_media_source">%1$s archiwum %2$s</string>
+    <string name="recovery_legacy_media_confirmation">Przywrócić z archiwum %1$s %2$s do %3$s? Archiwum pozostaje dostępne. Odzyskiwanie zatrzymuje się, jeśli zastąpi inne pliki.</string>
     <string name="recovery_group_logs">Logi</string>
     <string name="recovery_group_profiles">Profiles</string>
     <string name="recovery_group_settings">Ustawienia</string>
