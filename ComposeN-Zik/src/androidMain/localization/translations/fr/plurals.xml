@@ -94,8 +94,8 @@
         <item quantity="other">Échec de la synchronisation de %1$d playlists. Retournez dans l\'onglet « Playlists » pour réessayer.</item>
     </plurals>
     <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">Voulez-vous essayer à nouveau la synchronisation de l\'élément %1$d en échec ?</item>
-        <item quantity="other">Voulez-vous essayer à nouveau de synchroniser les éléments %1$d échoués ?</item>
+        <item quantity="one">Souhaitez-vous réessayer de synchroniser l\'élément %1$d dont la synchronisation a échoué ?</item>
+        <item quantity="other">Souhaitez-vous réessayer de synchroniser les %1$d éléments pour lesquels la synchronisation a échoué ?</item>
     </plurals>
     <plurals name="sync_progress_artist_count">
         <item quantity="one">Synchronisation de l\'artiste... (%1$d/%2$d)</item>
