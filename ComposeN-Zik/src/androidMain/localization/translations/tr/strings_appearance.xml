@@ -231,7 +231,7 @@
     <string name="theme_shake_sensitivity_very_high">Çok Yüksek (1,0G)</string>
     <!-- Thumbnail -->
     <string name="cover_action_download">İndir</string>
-    <string name="cover_download_failed">Could not download the cover.</string>
+    <string name="cover_download_failed">Kapak indirilemedi.</string>
     <string name="image_editor_title">Resmi düzenle</string>
     <string name="image_editor_failed">Resim düzenlenemedi. Mevcut resminiz korundu.</string>
     <string name="thumbnail_action_edit">Küçük Resmi Düzenle</string>
