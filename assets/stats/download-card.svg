@@ -46,7 +46,7 @@
     <!-- Column 1 -->
     <g class="animated delay-1">
       <text text-anchor="middle" x="110" y="65" class="text-label">TOTAL DOWNLOADS</text>
-      <text text-anchor="middle" x="110" y="95" class="text-value-1">61.9k</text>
+      <text text-anchor="middle" x="110" y="95" class="text-value-1">62.0k</text>
     </g>
 
     <line x1="220" y1="45" x2="220" y2="115" class="line" stroke-width="1" />
