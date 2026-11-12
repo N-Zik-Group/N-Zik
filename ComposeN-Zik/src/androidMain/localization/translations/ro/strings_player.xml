@@ -80,6 +80,14 @@
     <string name="lyrics_debug_interval_progress">versurProgres</string>
     <string name="lyrics_display_section_title">Afişare</string>
     <string name="lyrics_editor_title">Introdu versurile</string>
+    <string name="lyrics_editor_modify_text">Modifică textul</string>
+    <string name="lyrics_editor_import_file">Importă versuri</string>
+    <string name="lyrics_editor_import_preview">Previzualizare import · %1$s</string>
+    <string name="lyrics_editor_import_preview_note">N-Zik salvează versiunea afișată aici. În cazul în care fișierul conține și o versiune text simplu separată, acea versiune este rămasă în fișierul original.</string>
+    <string name="lyrics_editor_import_saved_other_mode">Importă salvate ca %1$s. Selectează această opțiune în setările de mod versuri pentru a o vedea.</string>
+    <string name="lyrics_editor_export_file">Exportă versuri</string>
+    <string name="lyrics_editor_import_error">Nu s-a putut citi acest Lyricsfil.</string>
+    <string name="lyrics_editor_export_error">Nu s-a putut exporta Lyricsfile.</string>
     <string name="lyrics_empty">Fără versuri</string>
     <string name="lyrics_fetch_error_message">A apărut o eroare la preluarea versurilor</string>
     <string name="lyrics_provider_fetch_error_message">Nu s-au putut lua versurile de la %1$s</string>
@@ -106,6 +114,11 @@
     <string name="lyrics_not_available">Nu sunt disponibile versuri. Vă rugăm să încercaţi din nou sau să le introduceţi manual.</string>
     <string name="lyrics_offset">Offset versuri</string>
     <string name="lyrics_popup_messages_description">Afișează mesajele pop-up legate de versuri în jucător.</string>
+    <string name="lyrics_provider_settings_title">Furnizori de versuri</string>
+    <string name="lyrics_provider_minimum_one">Păstrați cel puțin un furnizor activat pe modul.</string>
+    <string name="lyrics_provider_format_word_timed">Cuvânt după cuvânt</string>
+    <string name="lyrics_provider_format_line_timed">Linie după linie</string>
+    <string name="lyrics_provider_format_plain_text">Text simplu</string>
     <string name="lyrics_provider_betterlyrics_karaoke_label">%1$s (karaoke)</string>
     <string name="lyrics_provider_betterlyrics_synced_label">%1$s (sincronizat)</string>
     <string name="lyrics_provider_found_format">Versurile au fost găsite pe %s</string>
