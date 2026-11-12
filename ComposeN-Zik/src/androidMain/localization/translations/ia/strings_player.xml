@@ -80,6 +80,14 @@
     <string name="lyrics_debug_interval_progress">lyricsIntervalProgress</string>
     <string name="lyrics_display_section_title">Display</string>
     <string name="lyrics_editor_title">Insere le parolas del canto</string>
+    <string name="lyrics_editor_modify_text">Modify text</string>
+    <string name="lyrics_editor_import_file">Import Lyricsfile</string>
+    <string name="lyrics_editor_import_preview">Preview import · %1$s</string>
+    <string name="lyrics_editor_import_preview_note">N-Zik saves the version shown here. If the file also contains a separate plain-text version, that version is left in the original file.</string>
+    <string name="lyrics_editor_import_saved_other_mode">Import saved as %1$s. Select that option in the lyrics mode settings to view it.</string>
+    <string name="lyrics_editor_export_file">Export Lyricsfile</string>
+    <string name="lyrics_editor_import_error">Could not read this Lyricsfile.</string>
+    <string name="lyrics_editor_export_error">Could not export the Lyricsfile.</string>
     <string name="lyrics_empty">No lyrics</string>
     <string name="lyrics_fetch_error_message">Ocurreva un error al obtener le parolas de canto</string>
     <string name="lyrics_provider_fetch_error_message">Could not fetch lyrics from %1$s</string>
@@ -106,6 +114,11 @@
     <string name="lyrics_not_available">No lyrics available. Please try again or enter them manually.</string>
     <string name="lyrics_offset">Lyrics Offset</string>
     <string name="lyrics_popup_messages_description">Display lyric-related popup messages in the player.</string>
+    <string name="lyrics_provider_settings_title">Lyrics providers</string>
+    <string name="lyrics_provider_minimum_one">Keep at least one provider enabled per mode.</string>
+    <string name="lyrics_provider_format_word_timed">Word by word</string>
+    <string name="lyrics_provider_format_line_timed">Line by line</string>
+    <string name="lyrics_provider_format_plain_text">Plain text</string>
     <string name="lyrics_provider_betterlyrics_karaoke_label">%1$s (karaoke)</string>
     <string name="lyrics_provider_betterlyrics_synced_label">%1$s (synced)</string>
     <string name="lyrics_provider_found_format">Parolas de canto trovate sur %s</string>
