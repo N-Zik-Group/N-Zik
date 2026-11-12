@@ -217,6 +217,7 @@
     <string name="export_cached_songs_error">エクスポートエラー: %s</string>
     <string name="export_cached_songs_failed">エクスポート失敗: %s</string>
     <string name="export_cached_songs_lyrics_confirmation">歌詞を書き出しますか？</string>
+    <string name="export_cached_songs_lyricsfile">Lyricsfile (保存した歌詞)</string>
     <string name="export_file_name_dialog_title">エクスポートに名前を付けます</string>
     <string name="export_running_status">Exporting…</string>
     <string name="export_song_unavailable_message">エクスポートするには、曲をキャッシュまたはダウンロードする必要があります。</string>
