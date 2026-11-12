@@ -80,6 +80,14 @@
     <string name="lyrics_debug_interval_progress">LyricsIntervalProgress</string>
     <string name="lyrics_display_section_title">Εμφάνιση</string>
     <string name="lyrics_editor_title">Εισάγετε τους στίχους</string>
+    <string name="lyrics_editor_modify_text">Τροποποίηση κειμένου</string>
+    <string name="lyrics_editor_import_file">Εισαγωγή Lyricsfile</string>
+    <string name="lyrics_editor_import_preview">Εισαγωγή προεπισκόπησης · %1$s</string>
+    <string name="lyrics_editor_import_preview_note">Το N-Zik αποθηκεύει την έκδοση που εμφανίζεται εδώ. Αν το αρχείο περιέχει επίσης μια ξεχωριστή έκδοση απλού κειμένου, αυτή η έκδοση παραμένει στο αρχικό αρχείο.</string>
+    <string name="lyrics_editor_import_saved_other_mode">Εισαγωγή αποθηκεύτηκε ως %1$s. Επιλέξτε αυτή την επιλογή στις ρυθμίσεις λειτουργίας στίχων για να το δείτε.</string>
+    <string name="lyrics_editor_export_file">Εξαγωγή Lyricsfile</string>
+    <string name="lyrics_editor_import_error">Αδυναμία ανάγνωσης αυτού του Lyricsfile.</string>
+    <string name="lyrics_editor_export_error">Αδυναμία εξαγωγής του Lyricsfile.</string>
     <string name="lyrics_empty">Δεν υπάρχουν στίχοι</string>
     <string name="lyrics_fetch_error_message">Παρουσιάστηκε σφάλμα κατά την λήψη των στίχων</string>
     <string name="lyrics_provider_fetch_error_message">Δεν ήταν δυνατή η λήψη στίχων από %1$s</string>
@@ -106,6 +114,11 @@
     <string name="lyrics_not_available">Δεν υπάρχουν διαθέσιμοι στίχοι. Παρακαλώ δοκιμάστε ξανά ή εισαγάγετε τους χειροκίνητα.</string>
     <string name="lyrics_offset">Μετατόπιση Στίχων</string>
     <string name="lyrics_popup_messages_description">Εμφάνιση αναδυόμενων μηνυμάτων σχετικά με τους στίχους στον παίκτη.</string>
+    <string name="lyrics_provider_settings_title">Πάροχοι στίχων</string>
+    <string name="lyrics_provider_minimum_one">Διατηρήστε τουλάχιστον έναν πάροχο ενεργοποιημένο ανά λειτουργία.</string>
+    <string name="lyrics_provider_format_word_timed">Λέξη προς λέξη</string>
+    <string name="lyrics_provider_format_line_timed">Γραμμή ανά γραμμή</string>
+    <string name="lyrics_provider_format_plain_text">Απλό κείμενο</string>
     <string name="lyrics_provider_betterlyrics_karaoke_label">%1$s (καραόκε)</string>
     <string name="lyrics_provider_betterlyrics_synced_label">%1$s (συγχρονισμένο)</string>
     <string name="lyrics_provider_found_format">Οι στίχοι βρέθηκαν στο %s</string>
