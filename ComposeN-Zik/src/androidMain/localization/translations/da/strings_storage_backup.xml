@@ -217,6 +217,7 @@
     <string name="export_cached_songs_error">Eksport fejl: %s</string>
     <string name="export_cached_songs_failed">Eksport fejlede: %s</string>
     <string name="export_cached_songs_lyrics_confirmation">Eksportér sangtekster?</string>
+    <string name="export_cached_songs_lyricsfile">Lyricsfile (gemte sangtekster)</string>
     <string name="export_file_name_dialog_title">Navngiv din eksport</string>
     <string name="export_running_status">Eksporterer…</string>
     <string name="export_song_unavailable_message">Sangen skal cachelagres eller hentes for at eksportere</string>
