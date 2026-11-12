@@ -217,6 +217,7 @@
     <string name="export_cached_songs_error">خطأ في التصدير: %s</string>
     <string name="export_cached_songs_failed">فشل التصدير: %s</string>
     <string name="export_cached_songs_lyrics_confirmation">تصدير الكلمات؟</string>
+    <string name="export_cached_songs_lyricsfile">كلمات الاغنية (الكلمات المحفوظة)</string>
     <string name="export_file_name_dialog_title">اسم التصدير الخاص بك</string>
     <string name="export_running_status">تصدير…</string>
     <string name="export_song_unavailable_message">يجب أن يتم تخزين الأغنية مؤقتا أو تحميلها للتصدير</string>
