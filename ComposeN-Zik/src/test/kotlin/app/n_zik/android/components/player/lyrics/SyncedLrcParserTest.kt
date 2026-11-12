@@ -31,7 +31,7 @@ class SyncedLrcParserTest {
 
         val sentences = parseSyncedSentences(lrc)
 
-        // LrcLib.Lyrics.sentences always seeds the list with a leading (0, "") entry
+        // The initial blank line keeps lyrics hidden before the first timestamp.
         assertEquals(4, sentences.size)
         assertEquals(0L, sentences[0].timeMs)
         assertEquals("", sentences[0].text)
@@ -49,6 +49,16 @@ class SyncedLrcParserTest {
         assertEquals(3000L, sentences[3].timeMs)
         assertEquals("Background", sentences[3].text)
         assertTrue(sentences[3].isBackground)
+    }
+
+    @Test
+    fun `parseSyncedSentences keeps millisecond precision without leaking the closing tag`() {
+        val sentences = parseSyncedSentences("[0:01.234]First\n[01:02]Second\n[01:75.00]Invalid")
+
+        assertEquals(
+            listOf(SyncedSentence(0L, ""), SyncedSentence(1234L, "First"), SyncedSentence(62000L, "Second")),
+            sentences
+        )
     }
 
     @Test

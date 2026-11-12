@@ -18,6 +18,8 @@ import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import it.fast4x.kugou.KuGou
 import it.fast4x.lrclib.LrcLib
+import kotlinx.coroutines.CancellationException
+
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancelAndJoin
@@ -79,7 +81,11 @@ class LyricsFetchWorkerTest {
     private fun setupMocks() {
         mockkObject(Database)
         every { Database.lyricsTable } returns lyricsDao
-        every { Database.albumTable } returns albumDao
+        every { Database.albumTable } returns albumDao
+
+        coEvery { Database.transaction(any()) } coAnswers {
+            firstArg<suspend Database.() -> Unit>().invoke(Database)
+        }
         every { lyricsDao.findAllBySongId(any()) } returns flowOf(emptyList())
         every { lyricsDao.findBySongIdAndType(any(), any()) } returns flowOf(null)
         every { lyricsDao.upsert(any()) } answers {
@@ -120,7 +126,12 @@ class LyricsFetchWorkerTest {
         innertubeLyrics = { _ -> innertubeLyricsCalls++; innertubeLyricsResult }
     )
 
-    private suspend fun fetch(worker: LyricsFetchWorker, lyricsType: LyricsType) {
+    private suspend fun fetch(
+        worker: LyricsFetchWorker,
+        lyricsType: LyricsType,
+        enabledProviders: Set<LyricsProvider> = LyricsProvider.entries.toSet(),
+        durationProvider: () -> Long = { 213_000L }
+    ) {
         worker.fetch(
             context = context,
             mediaId = "song1",
@@ -128,14 +139,15 @@ class LyricsFetchWorkerTest {
             artistName = "Test Artist",
             title = "Test Title",
             mediaMetadata = metadata,
-            durationProvider = { 213_000L },
+            durationProvider = durationProvider,
             playerEnableLyricsPopupMessage = false,
             onLyricsUpdated = { lyricsUpdates += it },
             onErrorUpdated = { errorUpdates += it },
             onCheckedLrcUpdated = { checkedLrc += it },
             onCheckedKugouUpdated = { checkedKugou += it },
             onCheckedInnertubeUpdated = { checkedInnertube += it },
-            onFetchingStateChanged = { fetchingStates += it }
+            onFetchingStateChanged = { fetchingStates += it },
+            enabledProviders = enabledProviders
         )
     }
 
@@ -202,6 +214,11 @@ class LyricsFetchWorkerTest {
         assertEquals(0, lrcLibLyricsCalls)
         assertEquals(0, kuGouLyricsCalls)
         assertEquals(0, upserts.size)
+        assertEquals(null, globalLastKaraokeAttemptMediaId)
+
+        fetch(worker(testScheduler), LyricsType.Karaoke)
+
+        coVerify(exactly = 1) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
     }
 
     @Test
@@ -527,4 +544,165 @@ class LyricsFetchWorkerTest {
         assertEquals("fetched text", upserts.first().data)
         assertEquals(false, upserts.first().isEdited)
     }
-}
+
+    @Test
+    fun `Auto skips disabled providers and continues from a blank synced result`() = runTest {
+        setupMocks()
+        resetGlobals()
+        lrcLibLyricsResult = Result.success(LrcLib.Lyrics(" "))
+        val timedLyrics = "[00:01.00]Hello"
+        kuGouLyricsResult = Result.success(KuGou.Lyrics(timedLyrics))
+
+        fetch(worker(testScheduler), LyricsType.Auto, setOf(LyricsProvider.LrcLib, LyricsProvider.KuGou))
+
+        coVerify(exactly = 0) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
+        assertEquals(1, lrcLibLyricsCalls)
+        assertEquals(1, kuGouLyricsCalls)
+        assertEquals(0, lrcLibLyricsUnsyncedCalls)
+        assertEquals(timedLyrics, upserts.single().data)
+    }
+
+    @Test
+    fun `Auto continues from null synced responses to the enabled plain text source`() = runTest {
+        setupMocks()
+        resetGlobals()
+        kuGouLyricsResult = null
+        innertubeLyricsResult = Result.success("A line without timings")
+
+        fetch(worker(testScheduler), LyricsType.Auto, setOf(LyricsProvider.KuGou, LyricsProvider.YouTube))
+
+        assertEquals(0, lrcLibLyricsCalls)
+        assertEquals(0, lrcLibLyricsUnsyncedCalls)
+        assertEquals(1, kuGouLyricsCalls)
+        assertEquals(1, innertubeLyricsCalls)
+        assertEquals(LyricsType.Unsynced.name, upserts.single().type)
+    }
+
+    @Test
+    fun `Auto can reach YouTube without a track duration`() = runTest {
+        setupMocks()
+        resetGlobals()
+        innertubeLyricsResult = Result.success("A line without timings")
+
+        fetch(worker(testScheduler), LyricsType.Auto, setOf(LyricsProvider.KuGou, LyricsProvider.YouTube)) {
+            C.TIME_UNSET
+        }
+
+        assertEquals(0, kuGouLyricsCalls)
+        assertEquals(1, innertubeLyricsCalls)
+        assertEquals(LyricsType.Unsynced.name, upserts.single().type)
+    }
+
+    @Test
+    fun `Sync with only LrcLib enabled neither invokes other sources nor requests plain text`() = runTest {
+        setupMocks()
+        resetGlobals()
+        lrcLibLyricsResult = Result.success(null)
+        lrcLibLyricsUnsyncedResult = Result.success(LrcLib.Lyrics("Untimed lyrics"))
+
+        fetch(worker(testScheduler), LyricsType.Synced, setOf(LyricsProvider.LrcLib))
+
+        coVerify(exactly = 0) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
+        assertEquals(1, lrcLibLyricsCalls)
+        assertEquals(0, lrcLibLyricsUnsyncedCalls)
+        assertEquals(0, kuGouLyricsCalls)
+        assertEquals(0, innertubeLyricsCalls)
+        assertTrue(upserts.isEmpty())
+    }
+
+    @Test
+    fun `provider cancellation stops Auto before the next source`() = runTest {
+        setupMocks()
+        resetGlobals()
+        lrcLibLyricsResult = Result.failure(CancellationException("cancelled"))
+
+        val fetchJob = launch {
+            fetch(worker(testScheduler), LyricsType.Auto, setOf(LyricsProvider.LrcLib, LyricsProvider.KuGou))
+        }
+        fetchJob.join()
+
+        assertTrue(fetchJob.isCancelled)
+        assertEquals(1, lrcLibLyricsCalls)
+        assertEquals(0, kuGouLyricsCalls)
+        assertTrue(upserts.isEmpty())
+    }
+
+    @Test
+    fun `Sync projects BetterLyrics word timings to line timings`() = runTest {
+        setupMocks()
+        resetGlobals()
+        val ttml = """
+            <tt xmlns="http://www.w3.org/ns/ttml">
+              <body><div>
+                <p begin="00:00:01.000" end="00:00:03.000">
+                  <span begin="00:00:01.000" end="00:00:02.000">Hello</span>
+                  <span begin="00:00:02.000" end="00:00:03.000">world</span>
+                </p>
+              </div></body>
+            </tt>
+        """.trimIndent()
+        coEvery { BetterLyrics.fetchTTML(any(), any(), any(), any()) } returns ttml
+
+        fetch(worker(testScheduler), LyricsType.Synced, setOf(LyricsProvider.BetterLyrics))
+
+        val row = upserts.single()
+        assertEquals(LyricsType.Synced.name, row.type)
+        assertTrue(row.data.orEmpty().startsWith("[00:01.00]"))
+        assertTrue(row.data.orEmpty().lineSequence().none { it.startsWith("<") })
+    }
+
+    @Test
+    fun `Auto stores a line-only BetterLyrics result as Synced`() = runTest {
+        setupMocks()
+        resetGlobals()
+        coEvery { BetterLyrics.fetchTTML(any(), any(), any(), any()) } returns """
+            <tt xmlns="http://www.w3.org/ns/ttml">
+              <body><div><p begin="00:00:01.000">A timed line</p></div></body>
+            </tt>
+        """.trimIndent()
+
+        fetch(worker(testScheduler), LyricsType.Auto, setOf(LyricsProvider.BetterLyrics))
+
+        assertEquals(LyricsType.Synced.name, upserts.single().type)
+        assertEquals(null, globalLastUnSyncedAttemptMediaId)
+    }
+
+    @Test
+    fun `Auto preserves a manual Sync edit when BetterLyrics only finds line timings`() = runTest {
+        setupMocks()
+        resetGlobals()
+        val edit = Lyrics("song1", LyricsType.Synced.name, "[00:01.00]My lyrics", isEdited = true)
+        val oldAuto = Lyrics("song1", LyricsType.Karaoke.name, "[00:01.00]Old automatic result")
+        every { lyricsDao.findAllBySongId(any()) } returns flowOf(listOf(oldAuto, edit))
+        coEvery { BetterLyrics.fetchTTML(any(), any(), any(), any()) } returns """
+            <tt xmlns="http://www.w3.org/ns/ttml">
+              <body><div><p begin="00:00:01.000">Provider result</p></div></body>
+            </tt>
+        """.trimIndent()
+
+        fetch(worker(testScheduler), LyricsType.Auto, setOf(LyricsProvider.BetterLyrics))
+
+        assertEquals(edit, lyricsUpdates.single())
+        assertTrue(upserts.isEmpty())
+    }
+
+    @Test
+    fun `reopening a completed empty search reports that no lyrics are available`() = runTest {
+        setupMocks()
+        resetGlobals()
+        val providers = setOf(LyricsProvider.YouTube)
+
+        fetch(worker(testScheduler), LyricsType.Unsynced, providers)
+        errorUpdates.clear()
+        checkedLrc.clear()
+        checkedKugou.clear()
+        checkedInnertube.clear()
+        fetch(worker(testScheduler), LyricsType.Unsynced, providers)
+
+        assertEquals(1, innertubeLyricsCalls)
+        assertEquals(listOf(true), errorUpdates)
+        assertEquals(listOf(true), checkedLrc)
+        assertEquals(listOf(true), checkedKugou)
+        assertEquals(listOf(true), checkedInnertube)
+    }
+}

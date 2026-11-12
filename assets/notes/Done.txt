@@ -206,3 +206,15 @@ Added:
   - Clear eligible files while the app stays open and coordinate live cache cleanup with readers and writers.
   - Preserve verified downloads and indexes during storage moves, recover interrupted operations, and keep older Rescue snapshots restorable.
   - Validate profile generations before applying download commands and storage mutations. Cover recovery and profile isolation with regression tests.
+
+Added:
+- feat(lyrics): configure providers for each lyrics mode (issue https://github.com/N-Zik-Group/N-Zik/issues/838)
+  - Persist independent provider selections for Auto, Karaoke, Sync and Unsync, with at least one compatible source in each mode.
+  - Continue to the next compatible provider after missing or invalid results and recoverable failures. Derive timed lines from BetterLyrics word timing in Sync.
+  - Preserve manual edits during concurrent automatic writes and keep cached lyrics available during searches.
+
+- feat(lyrics): import and export Lyricsfile documents (issue https://github.com/N-Zik-Group/N-Zik/issues/968)
+  - Open the editor, Android document picker or export destination from full-width actions in EditLyricsDialog.
+  - Use SnakeYAML Engine to read bounded Lyricsfile documents and preserve line and word timing in import previews and exports.
+  - Offer Lyricsfile alongside LRC when exporting cached songs individually or in batches. Use saved lyrics for Lyricsfile export without a provider lookup.
+  - Avoid an Android ICU regex initialization error in the cache export dialog and cover lyric conversion and provider fallback with regression tests.

@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
@@ -28,6 +29,7 @@ import app.n_zik.android.components.glass.glassDialogButtonBackground
 import app.n_zik.android.components.glass.GlassDialogButtonFeedback
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import app.n_zik.android.colorPalette
+import app.n_zik.android.R
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.semiBold
@@ -47,6 +49,20 @@ data class DialogButton(
     val placement: DialogButtonPlacement = DialogButtonPlacement.Auto,
     val wrapLabel: Boolean = false,
 )
+
+/** Shows full-width dialog actions with the same appearance as the fixed cancel button. */
+@Composable
+internal fun DialogActionList(title: String, onDismiss: () -> Unit, actions: List<DialogButton>) {
+    DefaultDialog(
+        onDismiss = onDismiss,
+        title = title,
+        footer = { ButtonRow(listOf(DialogButton(stringResource(R.string.common_action_cancel), onDismiss))) }
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            actions.forEach { action -> ButtonRow(listOf(action)) }
+        }
+    }
+}
 
 /** Each row shares its width equally; the final row preserves semantic action order. */
 @Composable

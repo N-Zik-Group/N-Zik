@@ -10,8 +10,10 @@ import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.models.Format
 import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.appContext
+import app.n_zik.android.components.player.lyrics.LyricsFileCodec
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.FormatTable
+import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.modules.FfmpegModule
 import app.n_zik.android.modules.ModuleState
 import app.n_zik.android.playback.services.PlayerServiceModern
@@ -46,6 +48,24 @@ class ExportCacheDisplayNamesTest {
     @After fun cleanup() {
         unmockkAll()
         Dispatchers.resetMain()
+    }
+
+    @Test fun `cache LRC sidecar strips Lyricsfile storage metadata and keeps the timestamp`() {
+        val imported = LyricsFileCodec.decode(
+            """
+            version: "1.0"
+            metadata:
+              title: Example
+              artist: Example Artist
+            lines:
+              - text: First line
+                start_ms: 1234
+                end_ms: 4000
+            """.trimIndent()
+        )
+
+        assertEquals(LyricsType.Synced, imported.type)
+        assertEquals("[00:01.234]First line", ExportCacheDialog.toLrcSidecar(imported.type, imported.text))
     }
 
     // The export API launches a job; wait for its real progress and document-creation path.
