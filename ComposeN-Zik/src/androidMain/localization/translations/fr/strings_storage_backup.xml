@@ -217,6 +217,7 @@
     <string name="export_cached_songs_error">Erreur d\'exportation : %s</string>
     <string name="export_cached_songs_failed">Échec de l\'exportation : %s</string>
     <string name="export_cached_songs_lyrics_confirmation">Exporter les paroles ?</string>
+    <string name="export_cached_songs_lyricsfile">Lyricsfile (paroles enregistrées)</string>
     <string name="export_file_name_dialog_title">Nommez votre exportation</string>
     <string name="export_running_status">Exportation en cours…</string>
     <string name="export_song_unavailable_message">Le titre doit être mis en cache ou téléchargé pour être exporté</string>
