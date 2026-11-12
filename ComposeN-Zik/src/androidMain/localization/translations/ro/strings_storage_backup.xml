@@ -217,6 +217,7 @@
     <string name="export_cached_songs_error">Eroare de export: %s</string>
     <string name="export_cached_songs_failed">Exportare eșuată: %s</string>
     <string name="export_cached_songs_lyrics_confirmation">Exportă versurile?</string>
+    <string name="export_cached_songs_lyricsfile">Versuri (versuri salvate)</string>
     <string name="export_file_name_dialog_title">Numește exportul tău</string>
     <string name="export_running_status">Se exportă…</string>
     <string name="export_song_unavailable_message">Melodia trebuie să fie cache sau descărcată pentru a fi exportată</string>
