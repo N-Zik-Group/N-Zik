@@ -80,6 +80,14 @@
     <string name="lyrics_debug_interval_progress">Progreso de la letra Intervalo</string>
     <string name="lyrics_display_section_title">Mostrar</string>
     <string name="lyrics_editor_title">Ingresar la letra</string>
+    <string name="lyrics_editor_modify_text">Modificar texto</string>
+    <string name="lyrics_editor_import_file">Importar archivo de letra</string>
+    <string name="lyrics_editor_import_preview">Previsualizar importación · %1$s</string>
+    <string name="lyrics_editor_import_preview_note">N-Zik guarda la versión que se muestra aquí. Si el archivo también contiene una versión de texto simple, esa versión se deja en el archivo original.</string>
+    <string name="lyrics_editor_import_saved_other_mode">Importación guardada como %1$s. Selecciona esa opción en la configuración del modo de letras para verla.</string>
+    <string name="lyrics_editor_export_file">Exportar archivo de lirios</string>
+    <string name="lyrics_editor_import_error">No se pudo leer este archivo de leer.</string>
+    <string name="lyrics_editor_export_error">No se pudo exportar el archivo Lyricsfile.</string>
     <string name="lyrics_empty">Sin letras</string>
     <string name="lyrics_fetch_error_message">Ha ocurrido un error al cargar la letra</string>
     <string name="lyrics_provider_fetch_error_message">No se pudo obtener la letra de %1$s</string>
@@ -106,6 +114,11 @@
     <string name="lyrics_not_available">No hay letras disponibles. Por favor, inténtalo de nuevo o introdúzcalas manualmente.</string>
     <string name="lyrics_offset">Desplazamiento de Letras</string>
     <string name="lyrics_popup_messages_description">Mostrar mensajes emergentes relacionados con la letra en el reproductor.</string>
+    <string name="lyrics_provider_settings_title">Proveedores de letras</string>
+    <string name="lyrics_provider_minimum_one">Mantener al menos un proveedor habilitado por modo.</string>
+    <string name="lyrics_provider_format_word_timed">Palabra por palabra</string>
+    <string name="lyrics_provider_format_line_timed">Línea por línea</string>
+    <string name="lyrics_provider_format_plain_text">Texto simple</string>
     <string name="lyrics_provider_betterlyrics_karaoke_label">%1$s (karaoke)</string>
     <string name="lyrics_provider_betterlyrics_synced_label">%1$s (sincronizado)</string>
     <string name="lyrics_provider_found_format">Letra encontrada en %s</string>
