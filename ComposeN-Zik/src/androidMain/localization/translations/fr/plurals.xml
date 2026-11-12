@@ -110,12 +110,12 @@
         <item quantity="other">Impossible de trouver %1$d artistes, nouvelle tentative</item>
     </plurals>
     <plurals name="sync_progress_album_count">
-        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
+        <item quantity="one">Synchronisation de l\'album... (%1$d/%2$d)</item>
         <item quantity="other">Synchronisation des albums... (%1$d/%2$d)</item>
     </plurals>
     <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">Actualisation de l\'album %1$d</item>
-        <item quantity="other">Rafraîchissement des albums %1$d</item>
+        <item quantity="one">Actualisation de %1$d album</item>
+        <item quantity="other">Actualisation de %1$d albums</item>
     </plurals>
     <plurals name="library_sync_album_retry_count">
         <item quantity="one">Impossible de trouver l\'album %1$d , nouvelle tentative</item>
