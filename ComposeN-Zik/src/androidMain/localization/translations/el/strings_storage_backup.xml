@@ -217,6 +217,7 @@
     <string name="export_cached_songs_error">Σφάλμα εξαγωγής: %s</string>
     <string name="export_cached_songs_failed">Η εξαγωγή απέτυχε: %s</string>
     <string name="export_cached_songs_lyrics_confirmation">Εξαγωγή στίχων?</string>
+    <string name="export_cached_songs_lyricsfile">Lyricsfile (αποθηκευμένοι στίχοι)</string>
     <string name="export_file_name_dialog_title">Ονομάστε την εξαγωγή σας</string>
     <string name="export_running_status">Εξαγωγή…</string>
     <string name="export_song_unavailable_message">Το τραγούδι πρέπει να αποθηκεύεται προσωρινά ή να μεταφορτωθεί για εξαγωγή</string>
