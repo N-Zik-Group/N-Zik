@@ -217,6 +217,7 @@
     <string name="export_cached_songs_error">Dışa aktarma hatası: %s</string>
     <string name="export_cached_songs_failed">Dışa aktarma başarısız: %s</string>
     <string name="export_cached_songs_lyrics_confirmation">Şarkı sözlerini dışa aktar?</string>
+    <string name="export_cached_songs_lyricsfile">Lyricsfile (saved lyrics)</string>
     <string name="export_file_name_dialog_title">Dışa aktarmanıza isim verin</string>
     <string name="export_running_status">Dışa aktarılıyor…</string>
     <string name="export_song_unavailable_message">Dışa aktarmak için şarkı önbelleğe alınmış veya indirilmiş olmalıdır</string>
