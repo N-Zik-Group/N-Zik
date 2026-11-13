@@ -1,6 +1,8 @@
 package app.n_zik.android.core.backup
 
 import android.content.Context
+import android.graphics.BitmapFactory
+import android.os.Build
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.PROFILE_NAMES_FILE_NAME
 import app.it.fast4x.rimusic.utils.currentProfileEntries
@@ -8,15 +10,26 @@ import app.it.fast4x.rimusic.utils.isProfileIdSafe
 import app.it.fast4x.rimusic.utils.parseProfileEntries
 import app.it.fast4x.rimusic.utils.profileDisplayName
 import app.it.fast4x.rimusic.utils.readProfileIds
-import app.it.fast4x.rimusic.utils.saveProfileDisplayName
-import app.it.fast4x.rimusic.utils.writeProfileEntries
+import app.it.fast4x.rimusic.utils.activeProfileKey
+import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.it.fast4x.rimusic.utils.profileDisplayNameKey
+import app.it.fast4x.rimusic.utils.profilePreferences
+import app.n_zik.android.core.profiles.ProfileDataItem
+import app.n_zik.android.core.profiles.profileShareKey
+import app.n_zik.android.core.rescue.ProfileResetSnapshot
+import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.components.ui.screens.profiles.profileAvatarFile
 import app.n_zik.android.components.ui.screens.profiles.profileFaceUpdateTrigger
 import timber.log.Timber
+import java.io.ByteArrayOutputStream
+import java.io.DataInputStream
+import java.io.DataOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.Base64
+import java.util.UUID
 
 /**
  * The combined profile state archive (spec-profiles-page-face, import/export adaptation): a
@@ -30,6 +43,12 @@ import java.util.Base64
 object ProfileStateArchive {
 
     private const val TAG = "ProfileStateArchive"
+    internal const val PENDING_NAMES_FILE = "profile-state-names.pending"
+    private const val MAX_ARCHIVE_BYTES = 32 * 1024 * 1024
+    private const val MAX_IMAGE_BYTES = 2 * 1024 * 1024
+    private const val MAX_IMAGE_SIDE = 4096
+    private const val MAX_ENTRIES = 256
+    private const val MAX_FIELD_LENGTH = 1024
 
     /** Face line prefix: `__face__<id><TAB><base64 JPEG>`. */
     const val FACE_LINE_PREFIX = "__face__"
@@ -103,21 +122,22 @@ object ProfileStateArchive {
      * earlier version) is a valid list-only archive.
      */
     fun readArchive(inStream: InputStream): Archive {
-        val text = inStream.bufferedReader().readText()
+        val text = readBoundedText(inStream)
         val faces = LinkedHashMap<String, ByteArray>()
         val names = LinkedHashMap<String, String>()
         val listLines = mutableListOf<String>()
-        text.lineSequence().forEach { line ->
+        text.lineSequence().forEachIndexed { index, line ->
+            require(index < MAX_ENTRIES * 3) { "Too many entries in the profile state archive" }
             if (line.startsWith(NAME_LINE_PREFIX)) {
                 val rest = line.removePrefix(NAME_LINE_PREFIX)
                 val tab = rest.indexOf('\t')
                 if (tab <= 0) {
-                    Timber.tag(TAG).w("Dropping malformed name line %s", line)
-                    return@forEach
+                    Timber.tag(TAG).w("Dropping malformed profile name line")
+                    return@forEachIndexed
                 }
                 val id = rest.substring(0, tab).trim()
                 val name = rest.substring(tab + 1).trim()
-                if (isProfileIdSafe(id) && name.isNotEmpty()) {
+                if (validId(id) && name.isNotEmpty() && name.length <= MAX_FIELD_LENGTH) {
                     names[id] = name
                 } else {
                     Timber.tag(TAG).w("Dropping name line for %s (unsafe id or blank name)", id)
@@ -126,27 +146,31 @@ object ProfileStateArchive {
                 val rest = line.removePrefix(FACE_LINE_PREFIX)
                 val tab = rest.indexOf('\t')
                 if (tab <= 0) {
-                    Timber.tag(TAG).w("Dropping malformed face line %s", line)
-                    return@forEach
+                    Timber.tag(TAG).w("Dropping malformed profile face line")
+                    return@forEachIndexed
                 }
                 val id = rest.substring(0, tab)
                 val payload = rest.substring(tab + 1)
+                require(payload.length <= (MAX_IMAGE_BYTES + 2) / 3 * 4) { "Profile avatar data is too large" }
                 val bytes = try {
                     Base64.getDecoder().decode(payload)
                 } catch (e: IllegalArgumentException) {
                     Timber.tag(TAG).w("Dropping face line for %s (payload is not base64)", id)
-                    return@forEach
+                    return@forEachIndexed
                 }
-                if (isProfileIdSafe(id) && isValidImageHeader(bytes)) {
+                if (validId(id) && isValidAvatar(bytes)) {
                     faces[id] = bytes
                 } else {
                     Timber.tag(TAG).w("Dropping face line for %s (unsafe id or not a recognized image)", id)
                 }
             } else {
+                require(line.length <= MAX_FIELD_LENGTH * 2 + 1) { "Profile state field is too long" }
                 listLines.add(line)
             }
         }
-        return Archive(parseProfileEntries(listLines.joinToString("\n")), faces, names)
+        val entries = parseProfileEntries(listLines.joinToString("\n"))
+        require(entries.size <= MAX_ENTRIES && faces.size <= MAX_ENTRIES && names.size <= MAX_ENTRIES)
+        return Archive(entries, faces, names)
     }
 
     /**
@@ -164,54 +188,135 @@ object ProfileStateArchive {
      * @throws IllegalArgumentException when the archive holds no profile at all (no list line,
      *   no face, no name) — there is nothing to restore.
      */
-    fun apply(context: Context, archive: Archive): ApplyResult {
-        require(archive.entries.isNotEmpty() || archive.faces.isNotEmpty() || archive.names.isNotEmpty()) {
-            "Profile state archive contains no valid profile"
-        }
-        // An empty list is a base-only export: leave the names file (and the stored names)
-        // untouched so the device's existing profiles are preserved.
-        if (archive.entries.isNotEmpty()) {
-            if (!context.writeProfileEntries(archive.entries)) {
-                error("Could not write $PROFILE_NAMES_FILE_NAME")
+    fun apply(context: Context, archive: Archive): ApplyResult =
+        DatabaseRestoreJournal.withProfileStorageMutation(context) {
+            require(archive.entries.isNotEmpty() || archive.faces.isNotEmpty() || archive.names.isNotEmpty()) {
+                "Profile state archive contains no valid profile"
             }
-            archive.entries.forEach { (id, name) ->
-                // A profile listed WITHOUT a name must be un-renamed locally too: the
-                // imported state is the state, and a stale stored name would be
-//
-                // re-mirrored into the names file (and re-exported) on the next write.
-                if (name.isNotEmpty()) context.saveProfileDisplayName(id, name)
-                else context.saveProfileDisplayName(id, "")
+            require(archive.entries.size <= MAX_ENTRIES && archive.faces.size <= MAX_ENTRIES && archive.names.size <= MAX_ENTRIES)
+            require(archive.entries.all { (id, name) ->
+                validId(id) && id != DEFAULT_PROFILE_ID && name.length <= MAX_FIELD_LENGTH && name.none { it == '\n' || it == '\r' }
+            } && archive.entries.map { it.first }.distinct().size == archive.entries.size)
+            val files = context.filesDir.canonicalFile
+            DatabaseRestoreJournal.Transaction(files, files, profileState = true).recover()
+            resumePendingNames(context)
+            RescueFiles.resumeProfileDeletions(context)
+            val existing = context.currentProfileEntries().toMap()
+            val active = getActiveProfile(context)
+            val archiveIds = archive.entries.map { it.first }.toSet()
+            val published = (existing + archive.entries.toMap()).toList()
+            val restorable = archiveIds + DEFAULT_PROFILE_ID
+            val names = archive.entries.toMap() + archive.names.filterKeys { it in restorable }
+            require(names.all { (id, name) -> validId(id) && name.length <= MAX_FIELD_LENGTH })
+            val faces = archive.faces.filterKeys { it in restorable }
+            require(faces.values.all(::isValidAvatar))
+            val newIds = archiveIds - existing.keys
+            newIds.forEach { RescueFiles.requireUnoccupiedProfileId(context, it) }
+            val resetActive = active != DEFAULT_PROFILE_ID && active !in existing && active !in archiveIds
+
+            val stage = files.resolve(".profile-state-prepare-${UUID.randomUUID()}")
+            check(stage.mkdir())
+            try {
+                val updates = linkedMapOf<File, File?>()
+                fun stageFile(target: File, write: (FileOutputStream) -> Unit) {
+                    check(target == target.canonicalFile)
+                    val staged = stage.resolve(updates.size.toString())
+                    FileOutputStream(staged).use { stream ->
+                        write(stream)
+                        stream.fd.sync()
+                    }
+                    updates[target] = staged
+                }
+                for ((id, bytes) in faces) {
+                    stageFile(files.resolve("profiles/$id/avatar.jpg")) { it.write(bytes) }
+                }
+                for (id in newIds) {
+                    stageFile(files.resolve("profile-storage-generations/$id")) {
+                        it.write(UUID.randomUUID().toString().encodeToByteArray())
+                    }
+                }
+                stageFile(files.resolve(PENDING_NAMES_FILE)) { stream ->
+                    val data = DataOutputStream(stream)
+                    data.writeBoolean(resetActive)
+                    data.writeInt(names.size)
+                    names.forEach { (id, name) ->
+                        data.writeUTF(id)
+                        data.writeUTF(name)
+                    }
+                    data.writeInt(newIds.size)
+                    newIds.forEach(data::writeUTF)
+                    data.flush()
+                }
+                if (archive.entries.isNotEmpty()) {
+                    stageFile(files.resolve(PROFILE_NAMES_FILE_NAME)) {
+                        val text = published.joinToString("\n") { (id, name) -> if (name.isEmpty()) id else "$id\t$name" }
+                        it.write(text.encodeToByteArray())
+                    }
+                }
+                DatabaseRestoreJournal.installProfileState(files, updates)
+                resumePendingNames(context)
+                profileFaceUpdateTrigger++
+                ApplyResult(archive.entries.size, faces.size, archive.names.keys.count { it in restorable })
+            } finally {
+                ProfileResetSnapshot.deleteVerifiedTree(stage)
             }
         }
-        val restorable = archive.entries.mapTo(mutableSetOf<String>()) { it.first }.also { it += DEFAULT_PROFILE_ID }
-        var facesWritten = 0
-        archive.faces.forEach { (id, bytes) ->
-            if (id !in restorable) {
-                Timber.tag(TAG).w("Dropping face for profile %s (not in the restored list)", id)
-                return@forEach
+
+    internal fun resumePendingNames(context: Context) {
+        val marker = context.filesDir.canonicalFile.resolve(PENDING_NAMES_FILE)
+        if (ProfileResetSnapshot.fingerprint(marker) == "-") return
+        check(marker.isFile && marker.length() <= MAX_ARCHIVE_BYTES)
+        val editor = context.profilePreferences.edit()
+        DataInputStream(marker.inputStream().buffered()).use { input ->
+            if (input.readBoolean()) editor.putString(activeProfileKey, DEFAULT_PROFILE_ID)
+            val names = input.readInt()
+            check(names in 0..MAX_ENTRIES * 2)
+            repeat(names) {
+                val id = input.readUTF()
+                val name = input.readUTF()
+                check(validId(id) && name.length <= MAX_FIELD_LENGTH)
+                if (name.isBlank()) editor.remove(profileDisplayNameKey(id))
+                else editor.putString(profileDisplayNameKey(id), name)
             }
-            val faceFile = profileAvatarFile(context, id)
-            faceFile.parentFile?.mkdirs()
-            faceFile.writeBytes(bytes)
-            facesWritten++
-        }
-        var namesRestored = 0
-        archive.names.forEach { (id, name) ->
-            if (id !in restorable) {
-                Timber.tag(TAG).w("Dropping name for profile %s (not in the restored list)", id)
-                return@forEach
+            val newIds = input.readInt()
+            check(newIds in 0..MAX_ENTRIES)
+            repeat(newIds) {
+                val id = input.readUTF()
+                check(validId(id))
+                ProfileDataItem.ALL.forEach { editor.remove(profileShareKey(it, id)) }
             }
-            context.saveProfileDisplayName(id, name)
-            namesRestored++
+            check(input.read() == -1)
         }
-        // An import changes the face state (the names feed the initials, the faces feed the
-        // photos): let the always-composed header re-resolve the active face.
-        profileFaceUpdateTrigger++
-        Timber.tag(TAG).i(
-            "Profile state applied: %d profiles, %d faces, %d names",
-            archive.entries.size, facesWritten, namesRestored
-        )
-        return ApplyResult(archive.entries.size, facesWritten, namesRestored)
+        check(editor.commit()) { "Could not publish profile names" }
+        check(marker.delete()) { "Could not complete profile state restoration" }
+    }
+
+    private fun readBoundedText(input: InputStream): String {
+        val output = ByteArrayOutputStream()
+        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+        while (true) {
+            val read = input.read(buffer)
+            if (read < 0) break
+            require(read <= MAX_ARCHIVE_BYTES - output.size()) { "Profile state archive is too large" }
+            output.write(buffer, 0, read)
+        }
+        return output.toString(Charsets.UTF_8.name())
+    }
+
+    private fun validId(id: String): Boolean =
+        id.isNotBlank() && id.length <= MAX_FIELD_LENGTH && isProfileIdSafe(id) &&
+            id.none { it == '\r' || it == '\n' || it == '\t' }
+
+    private fun isValidAvatar(bytes: ByteArray): Boolean {
+        if (bytes.size > MAX_IMAGE_BYTES || !isValidImageHeader(bytes)) return false
+        if (Build.VERSION.SDK_INT == 0) return true
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+        if (bounds.outWidth !in 1..MAX_IMAGE_SIDE || bounds.outHeight !in 1..MAX_IMAGE_SIDE) return false
+        val sample = BitmapFactory.Options().apply { inSampleSize = 4 }
+        val decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, sample) ?: return false
+        decoded.recycle()
+        return true
     }
 
     /**

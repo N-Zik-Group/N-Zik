@@ -1,6 +1,8 @@
 package app.n_zik.android.core.rewind
 
 import app.n_zik.android.core.backup.awaitLibraryReadyForWork
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
+import app.n_zik.android.core.profiles.ProfileWorkOwner
 
 import android.content.Context
 import androidx.work.OneTimeWorkRequestBuilder
@@ -36,10 +38,15 @@ internal class RewindPostImportRegenerationWorker(
          * REPLACE keeps exactly one pending run: two back-to-back imports must not pile
          * up two full recomputations.
          */
-        fun schedule(context: Context) {
-            val request = OneTimeWorkRequestBuilder<RewindPostImportRegenerationWorker>().build()
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                WORK_NAME,
+        fun schedule(context: Context, owner: ProfileStorageIdentity? = ProfileWorkOwner.capture(context)) {
+            if (owner == null || !ProfileWorkOwner.exists(context, owner)) return
+            val request = OneTimeWorkRequestBuilder<RewindPostImportRegenerationWorker>()
+                .setInputData(ProfileWorkOwner.input(owner))
+                .build()
+            val work = WorkManager.getInstance(context)
+            work.cancelUniqueWork(WORK_NAME)
+            work.enqueueUniqueWork(
+                ProfileWorkOwner.name(WORK_NAME, owner),
                 ExistingWorkPolicy.REPLACE,
                 request
             )
@@ -48,7 +55,10 @@ internal class RewindPostImportRegenerationWorker(
     }
 
     override suspend fun doWork(): Result {
+        val owner = ProfileWorkOwner.read(inputData) ?: return Result.success()
         if (!applicationContext.awaitLibraryReadyForWork()) return Result.retry()
+        if (!ProfileWorkOwner.exists(applicationContext, owner)) return Result.success()
+        if (!ProfileWorkOwner.isBound(applicationContext, owner)) return Result.retry()
         if (Database.isClosed) {
             // The import closes the database before the app restarts with the imported
             // file: a live run would hit the dead Room singleton. The work is persisted,
@@ -69,8 +79,8 @@ internal class RewindPostImportRegenerationWorker(
                 playlist.name,
                 window.first,
                 window.second,
-                GenerateMode.Regenerate
-            )
+                GenerateMode.Regenerate,
+            ) { ProfileWorkOwner.isBound(applicationContext, owner) }
             Timber.tag(TAG).i("Regenerated \"${playlist.name}\" with $count songs")
         }
         return Result.success()

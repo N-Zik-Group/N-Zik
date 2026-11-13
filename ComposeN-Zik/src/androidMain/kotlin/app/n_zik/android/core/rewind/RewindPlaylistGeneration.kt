@@ -46,8 +46,10 @@ internal suspend fun generateRewindPlaylist(
     name: String,
     from: Long,
     to: Long,
-    mode: GenerateMode
+    mode: GenerateMode,
+    isStillOwner: () -> Boolean = { true },
 ): Int {
+    if (!isStillOwner()) return 0
     val songs = Database.eventTable.findSongsMostPlayedBetween(from, to).first()
     if (songs.isEmpty()) {
         Timber.tag(TAG).i("Empty rewind window for \"$name\": nothing created or modified")
@@ -59,13 +61,15 @@ internal suspend fun generateRewindPlaylist(
         Timber.tag(TAG).i("Rewind playlist \"$name\" already exists: skipping creation")
         return 0
     }
-    Database.asyncTransaction {
-        // Re-check inside the transaction (delete-then-recreate must hold even if a
-        // concurrent write raced between the check above and this block).
+    var written = 0
+    Database.transaction {
+        if (!isStillOwner()) return@transaction
+        // Recheck the row under the transaction in case another request created it.
         val existing = playlistTable.getAll().firstOrNull {
             it.name.trim().equals(name.trim(), ignoreCase = true)
         }
         if (existing != null) {
+            if (mode == GenerateMode.CreateIfMissing) return@transaction
             playlistTable.delete(existing)
         }
         val playlistId = playlistTable.insert(Playlist(name = name))
@@ -74,7 +78,8 @@ internal suspend fun generateRewindPlaylist(
             // `map` appends at MAX(position)+1 -> positions 0..n-1 in top order
             songPlaylistMapTable.map(song.id, playlistId)
         }
+        written = songs.size
     }
-    Timber.tag(TAG).i("Wrote ${songs.size} songs into rewind playlist \"$name\" (mode=$mode)")
-    return songs.size
+    Timber.tag(TAG).i("Wrote $written songs into rewind playlist \"$name\" (mode=$mode)")
+    return written
 }

@@ -1,6 +1,8 @@
 package app.n_zik.android.components.ui.screens.rewind
 
 import app.n_zik.android.core.backup.awaitLibraryReadyForWork
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
+import app.n_zik.android.core.profiles.ProfileWorkOwner
 
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
@@ -104,19 +106,29 @@ internal class RewindYearlyReminderWorker(
          * without an app restart (frozen contract GH-275).
          */
         fun schedule(context: Context) {
+            val owner = ProfileWorkOwner.capture(context) ?: return
+            schedule(context, owner)
+        }
+
+        private fun schedule(context: Context, owner: ProfileStorageIdentity) {
+            if (!ProfileWorkOwner.isBound(context, owner)) return
+            val work = WorkManager.getInstance(context)
+            val workName = ProfileWorkOwner.name(WORK_NAME, owner)
+            work.cancelUniqueWork(WORK_NAME)
             if (!isYearlyReminderEnabled(context)) {
-                WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
+                work.cancelUniqueWork(workName)
                 Timber.tag(TAG).i("Rewind yearly reminder disabled in settings: canceling pending work")
                 return
             }
             val request = OneTimeWorkRequestBuilder<RewindYearlyReminderWorker>()
+                .setInputData(ProfileWorkOwner.input(owner))
                 .setInitialDelay(
                     applyJitter(msUntilNextYearStart(), (0L..JITTER_MS).random()),
                     TimeUnit.MILLISECONDS
                 )
                 .build()
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                WORK_NAME,
+            work.enqueueUniqueWork(
+                workName,
                 ExistingWorkPolicy.KEEP,
                 request
             )
@@ -138,7 +150,10 @@ internal class RewindYearlyReminderWorker(
     }
 
     override suspend fun doWork(): Result {
+        val owner = ProfileWorkOwner.read(inputData) ?: return Result.success()
         if (!applicationContext.awaitLibraryReadyForWork()) return Result.retry()
+        if (!ProfileWorkOwner.exists(applicationContext, owner)) return Result.success()
+        if (!ProfileWorkOwner.isBound(applicationContext, owner)) return Result.retry()
         return try {
             // Computed at execution, not scheduling: the work fires on the 1st of January of
             // year Y, so the finished year is Y-1 — the same "now minus one" approach the
@@ -166,12 +181,14 @@ internal class RewindYearlyReminderWorker(
                 Timber.tag(TAG).i("POST_NOTIFICATIONS denied: skipping the %s yearly rewind reminder", finishedYear)
                 Result.success()
             } else {
-                postRewindReminder(finishedYear)
+                if (ProfileWorkOwner.isBound(applicationContext, owner)) postRewindReminder(finishedYear)
                 Result.success()
             }
         } finally {
             // Self-perpetuating cadence: always schedule the next year, success or failure
-            rescheduleHook?.invoke(applicationContext) ?: schedule(applicationContext)
+            if (ProfileWorkOwner.isBound(applicationContext, owner)) {
+                rescheduleHook?.invoke(applicationContext) ?: schedule(applicationContext, owner)
+            }
         }
     }
 

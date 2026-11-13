@@ -22,6 +22,8 @@ import app.n_zik.android.components.ImportFromFile
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.core.backup.SettingsPreferencesBridge
+import app.n_zik.android.core.backup.DatabaseRestoreJournal
+import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.kreate.android.me.knighthat.utils.Toaster
 
 class ImportSettings private constructor(
@@ -38,14 +40,20 @@ class ImportSettings private constructor(
          */
         fun onImport( context: Context, inStream: InputStream, profile: String = getActiveProfile(context) ) {
             Timber.tag("ImportSettings").d("Starting settings import into profile '$profile'...")
+            val target = checkNotNull(profileStorageIdentity(context, profile))
             val rows = RescueFiles.readSettingsCsv(inStream)
-            val editor = plainProfilePrefs(context, profile).edit()
-            val encryptedEditor = profileSecurePrefs(context, profile).edit()
-            val glassEditor = SettingsPreferencesBridge.stageGlass(context, rows, profile)
-            RescueFiles.applySettingRows(rows, editor, encryptedEditor)
-            check(editor.commit()) { "Could not save the settings" }
-            check(encryptedEditor.commit()) { "Could not save the credentials" }
-            check(glassEditor?.commit() ?: true) { "Could not save the Glass settings" }
+            DatabaseRestoreJournal.withProfileStorageMutation(context) {
+                check(profileStorageIdentity(context, profile) == target) { "The profile changed during settings import" }
+                val editor = plainProfilePrefs(context, profile).edit()
+                val encryptedEditor = profileSecurePrefs(context, profile).edit()
+                val glassEditor = SettingsPreferencesBridge.stageGlass(context, rows, profile)
+                RescueFiles.applySettingRows(rows, editor, encryptedEditor) { key, value ->
+                    SettingsPreferencesBridge.stageStorageRow(context, target, editor, key, value)
+                }
+                check(editor.commit()) { "Could not save the settings" }
+                check(encryptedEditor.commit()) { "Could not save the credentials" }
+                check(glassEditor?.commit() ?: true) { "Could not save the Glass settings" }
+            }
             Timber.tag("ImportSettings").d("Settings import complete")
         }
 

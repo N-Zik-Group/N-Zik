@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.header
 
+import app.n_zik.android.utils.debug.profileDiagnosticsDir
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -11,7 +12,6 @@ import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.utils.debug.purgeDebugLogs
-import java.io.File
 
 /**
  * Reactive "DEBUG" badge for the app header (title = [HEADER_BADGE_REF_TITLE], which is
@@ -44,7 +44,7 @@ fun DebugLogsBadge(
             if (logDebugEnabled) {
                 Toaster.i(R.string.settings_restart_required_message)
             } else {
-                purgeDebugLogs(File(context.filesDir, "logs"))
+                purgeDebugLogs(profileDiagnosticsDir(context))
             }
         },
         modifier = modifier

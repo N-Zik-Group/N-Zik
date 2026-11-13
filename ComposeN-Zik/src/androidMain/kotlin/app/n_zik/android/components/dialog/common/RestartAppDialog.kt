@@ -24,8 +24,9 @@ object RestartAppDialog: ConfirmDialog {
         get() = stringResource( R.string.common_restart_required_title )
 
     override var isActive: Boolean by mutableStateOf(false)
-
-    override fun hideDialog() = onConfirm()
+    override fun hideDialog() {
+        onConfirm()
+    }
 
     override fun onConfirm() {
         appContext().stopService( appContext().intent<PlayerServiceModern>() )

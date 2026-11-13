@@ -152,12 +152,7 @@ internal fun DataSettingsContent(
                 R.string.storage_breakdown_title,
                 modifier = { cardModifier(R.string.storage_breakdown_title) },
             ) {
-                DataStorageCard()
-            }
-        }
-        if (selectedCards == null || R.string.settings_cache_title in selectedCards) {
-            SettingsCardSlot(R.string.settings_cache_title, modifier = { cardModifier(R.string.settings_cache_title) }) {
-                DataCacheCard(search, restartState)
+                DataStorageCard(search, restartState)
             }
         }
         if (selectedCards == null || R.string.settings_section_backup_and_restore_title in selectedCards) {

@@ -1,5 +1,8 @@
 package app.n_zik.android.components.ui.screens.rewind
 
+import app.n_zik.android.core.profiles.ProfileWorkOwner
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
+import io.mockk.every
 import android.Manifest
 import android.app.Notification
 import android.app.NotificationManager
@@ -215,7 +218,9 @@ class RewindReminderWorkerTest {
     }
 
     private fun workerWithRescheduleHook(reschedules: MutableList<Context>): RewindReminderWorker {
-        val worker = RewindReminderWorker(RuntimeEnvironment.getApplication(), mockk<WorkerParameters>(relaxed = true))
+        val worker = RewindReminderWorker(RuntimeEnvironment.getApplication(), mockk<WorkerParameters>(relaxed = true).also { parameters ->
+                every { parameters.inputData } returns ProfileWorkOwner.input(ProfileStorageIdentity("default", "legacy"))
+            })
         worker.rescheduleHook = { reschedules.add(it) }
         return worker
     }

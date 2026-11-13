@@ -7,6 +7,7 @@ import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.it.fast4x.rimusic.utils.writeProfileEntries
 import app.n_zik.android.components.glass.GlassProfilePreferences
 import app.n_zik.android.components.glass.GlassStore
 import app.n_zik.android.components.glass.GlassArea
@@ -40,6 +41,7 @@ class GlassProfileBackupTest {
             GlassProfilePreferences.fileName("work"), "preferences", "preferences_work", "profile_preferences")
             .forEach { context.getSharedPreferences(it, Context.MODE_PRIVATE).edit().clear().commit() }
         setActiveProfile(DEFAULT_PROFILE_ID, context)
+        check(context.writeProfileEntries(listOf("work" to "Work")))
         RescueFiles.initialize(context)
         RescueFiles.setRescueProfile("work")
     }

@@ -3,6 +3,7 @@ package app.n_zik.android.core.rescue
 import android.app.ActivityManager
 import app.n_zik.android.core.backup.SettingsPreferencesBridge
 import app.n_zik.android.components.glass.GlassProfilePreferences
+import app.n_zik.android.components.ui.screens.profiles.evictProfileSecurePrefs
 import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.migration.RemovedSettingsMigration
 import android.content.Context
@@ -13,8 +14,10 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import android.os.Build
 import android.os.Process
+import android.system.Os
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.PROFILE_NAMES_FILE_NAME
+import app.it.fast4x.rimusic.utils.activeProfileKey
 import app.it.fast4x.rimusic.utils.clearProfileFaceEntries
 import app.it.fast4x.rimusic.utils.currentProfileEntries
 import app.it.fast4x.rimusic.utils.discordAvatarKey
@@ -28,11 +31,11 @@ import app.it.fast4x.rimusic.utils.isDiscordPresenceEnabledKey
 import app.it.fast4x.rimusic.utils.isProfileIdSafe
 import app.it.fast4x.rimusic.utils.profileDisplayName
 import app.it.fast4x.rimusic.utils.profileLastUsed
+import app.it.fast4x.rimusic.utils.profilePreferences
 import app.it.fast4x.rimusic.utils.proxyPasswordEncryptedKey
 import app.it.fast4x.rimusic.utils.readProfileIds
 import app.it.fast4x.rimusic.utils.saveProfileDisplayName
 import app.it.fast4x.rimusic.utils.saveProfileLastUsed
-import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.it.fast4x.rimusic.utils.useYtLoginOnlyForBrowseKey
 import app.it.fast4x.rimusic.utils.writeProfileEntries
 import app.it.fast4x.rimusic.utils.ytAccountChannelHandleKey
@@ -48,11 +51,21 @@ import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.core.backup.ProfileStateArchive
 import app.n_zik.android.core.notifications.deleteProfileChannels
 import app.n_zik.android.core.profiles.ProfileDataItem
+import app.n_zik.android.download.utils.InactiveDownloadCleanup
+import app.n_zik.android.core.profiles.ProtectedProfileHistory
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
+import app.n_zik.android.core.profiles.ProfileCacheLocationMigration
 import app.n_zik.android.core.profiles.clearProfileShareFlags
 import app.n_zik.android.core.profiles.coversDir
 import app.n_zik.android.core.profiles.downloadsDir
+import app.n_zik.android.core.profiles.invalidateProfileStorageIdentity
+import app.n_zik.android.core.profiles.isLegacyStorageShared
+import app.n_zik.android.core.profiles.isProcessStorageProfile
+import app.n_zik.android.core.profiles.privateProfileMediaPaths
 import app.n_zik.android.core.profiles.profileIndexDbFile
 import app.n_zik.android.core.profiles.profileSharedItems
+import app.n_zik.android.core.profiles.profileStorageGeneration
+import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.core.profiles.resolveProfileDataDirNames
 import app.n_zik.android.core.profiles.waveformsDir
 import app.n_zik.android.extensions.discord.discordAdvancedSettingKeys
@@ -65,13 +78,24 @@ import app.n_zik.android.extensions.lastfm.lastfmMinTrackDurationSecondsKey
 import app.n_zik.android.extensions.lastfm.lastfmScrobbleThresholdPercentKey
 import app.n_zik.android.extensions.lastfm.lastfmSessionKey
 import app.n_zik.android.extensions.lastfm.lastfmUsernameKey
+import app.n_zik.android.utils.debug.profileDiagnosticsDir
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import timber.log.Timber
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.io.StringReader
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.dom.DOMSource
+import javax.xml.transform.stream.StreamResult
+import org.w3c.dom.Element
+import org.xml.sax.InputSource
 
 /**
  * Pure file operations for the Rescue Center.
@@ -110,8 +134,6 @@ object RescueFiles {
     // Cache directories to clear (NEVER exo_downloads or exoplayer_internal.db)
     private const val STREAMING_CACHE_DIR = "exoplayer"
     private const val IMAGE_CACHE_DIR = "coil"
-    private const val DOWNLOAD_CACHE_DIR = "exo_downloads" // PROTECTED — never delete
-    private const val DOWNLOAD_DB_FILE = "exoplayer_internal.db" // PROTECTED — never delete
 
     private val PREFS_NAME: String
         get() = "preferences$profileSuffix"
@@ -391,37 +413,39 @@ object RescueFiles {
         uri: Uri,
         encryptedPrefsResult: Result<SharedPreferences>? = null
     ): Result<SettingsOutcome> = runCatching {
+        val profile = rescueTargetProfile()
+        val target = checkNotNull(profileStorageIdentity(context, profile))
         val rows = context.contentResolver.openInputStream(uri)?.use { inStream ->
             readSettingsCsv(inStream)
         } ?: error("Failed to open input stream for settings import")
 
         if (rows.isEmpty()) error("Empty settings file")
 
-        val profile = rescueTargetProfile()
-        val editor = profileDataPrefs(context, profile).edit()
-        val encEditor = encryptedPrefsResult?.getOrNull()?.edit()
+        DatabaseRestoreJournal.withProfileStorageMutation(context) {
+            check(profileStorageIdentity(context, profile) == target) { "The profile changed during settings import" }
+            val editor = profileDataPrefs(context, profile).edit()
+            val encEditor = encryptedPrefsResult?.getOrNull()?.edit()
+            val glassEditor = SettingsPreferencesBridge.stageGlass(context, rows, profile)
+            val stats = applySettingRows(rows, editor, encEditor) { key, value ->
+                SettingsPreferencesBridge.stageStorageRow(context, target, editor, key, value)
+            }
+            val hasRemovedRows = rows.any { RemovedSettingsMigration.isRemovedKey(it.second) }
+            if (stats.imported == 0 && stats.encryptedSkipped > 0 && glassEditor == null && !hasRemovedRows) {
+                return@withProfileStorageMutation SettingsOutcome(encryptedSkipped = true)
+            }
+            check(stats.imported > 0 || glassEditor != null || hasRemovedRows) {
+                "No setting could be imported"
+            }
 
-        val glassEditor = SettingsPreferencesBridge.stageGlass(context, rows, profile)
-        val stats = applySettingRows(rows, editor, encEditor)
-        val hasRemovedRows = rows.any { RemovedSettingsMigration.isRemovedKey(it.second) }
-        // A file holding only credentials, with the keystore unavailable: nothing to write, but
-        // the user must be told the credentials were skipped (a warning, not a generic error).
-        if (stats.imported == 0 && stats.encryptedSkipped > 0 && glassEditor == null && !hasRemovedRows) {
-            return@runCatching SettingsOutcome(encryptedSkipped = true)
+            check(editor.commit()) { "Could not save the settings" }
+            check(encEditor?.commit() ?: true) { "Could not save the credentials" }
+            check(glassEditor?.commit() ?: true) { "Could not save the Glass settings" }
+            Timber.tag(TAG).i(
+                "Settings imported: %d entries (%d encrypted keys skipped)",
+                stats.imported, stats.encryptedSkipped
+            )
+            SettingsOutcome(stats.encryptedSkipped > 0)
         }
-        // Nothing is written until commit(), so failing here leaves the settings untouched.
-        check(stats.imported > 0 || glassEditor != null || hasRemovedRows) {
-            "No setting could be imported"
-        }
-
-        check(editor.commit()) { "Could not save the settings" }
-        check(encEditor?.commit() ?: true) { "Could not save the credentials" }
-        check(glassEditor?.commit() ?: true) { "Could not save the Glass settings" }
-        Timber.tag(TAG).i(
-            "Settings imported: %d entries (%d encrypted keys skipped)",
-            stats.imported, stats.encryptedSkipped
-        )
-        SettingsOutcome(stats.encryptedSkipped > 0)
     }
 
     /** Counters returned by [applySettingRows]. */
@@ -435,15 +459,21 @@ object RescueFiles {
     internal fun applySettingRows(
         rows: List<Triple<String, String, String>>,
         plainEditor: SharedPreferences.Editor,
-        encryptedEditor: SharedPreferences.Editor?
+        encryptedEditor: SharedPreferences.Editor?,
+        stageStorage: (String, String) -> Unit = { _, _ -> error("No storage migration target") },
     ): SettingsImportStats {
         var imported = 0
         var encryptedSkipped = 0
         RemovedSettingsMigration.stageRemoval(plainEditor)
 
-        rows.forEach { (type, key, value) ->
+        SettingsPreferencesBridge.normalizeStorageRows(rows).forEach { (type, key, value) ->
             if (SettingsPreferencesBridge.isGlassRecord(type)) return@forEach
             if (RemovedSettingsMigration.isRemovedKey(key)) return@forEach
+            if (SettingsPreferencesBridge.isStorageSetting(key)) {
+                stageStorage(key, value)
+                imported++
+                return@forEach
+            }
             val targetEditor = if (key in ALL_ENCRYPTED_KEYS) {
                 if (encryptedEditor == null) {
                     encryptedSkipped++
@@ -506,9 +536,9 @@ object RescueFiles {
      * its face and/or name); errors when the file carries no valid profile at all.
      */
     fun importProfileState(context: Context, uri: Uri): Result<ProfileStateArchive.ApplyResult> = runCatching {
-        val applied = context.contentResolver.openInputStream(uri)?.use { inStream ->
-            ProfileStateArchive.apply(context, ProfileStateArchive.readArchive(inStream))
-        } ?: error("Failed to open input stream for profile state import")
+        val archive = context.contentResolver.openInputStream(uri)?.use(ProfileStateArchive::readArchive)
+            ?: error("Failed to open input stream for profile state import")
+        val applied = runRescueMutation(context) { ProfileStateArchive.apply(context, archive) }.getOrThrow()
         Timber.tag(TAG).i(
             "Profile state imported: %d profiles, %d faces, %d names",
             applied.profiles, applied.faces, applied.names
@@ -552,50 +582,78 @@ object RescueFiles {
      */
     internal fun deleteProfiles(context: Context, ids: List<String>): Result<Int> =
         runRescueMutation(context) {
-            val toDelete = ids.distinct().filterNot { it == DEFAULT_PROFILE_ID }
-            if (toDelete.isNotEmpty()) {
-                // A deleted active profile must not be the one the next launch starts
-                // on: point the active slot at the base (the one profile that always
-//
-                // exists — it is never a names-file line, so nothing else to update).
-                if (toDelete.contains(getActiveProfile(context))) {
-                    setActiveProfile(DEFAULT_PROFILE_ID, context)
-                }
-                // The names file first: a removed profile must not survive a crash
-                // mid-purge as a row with no files.
-                if (!context.writeProfileEntries(
-                        context.currentProfileEntries().filterNot { (id, _) -> id in toDelete }
-                    )
-                ) {
-                    throw IOException("Could not update $PROFILE_NAMES_FILE_NAME")
-                }
-                toDelete.forEach { id ->
-                    deleteProfileSettingsFiles(context, id)
-                    deleteProfileDatabaseFiles(context, id)
-                    // The profile's SEPARATE data dirs + index are purged with it
-                    // (spec-profile-data-separation) — the shared items stay with the base.
-                    deleteProfileDataFiles(context, id)
-                    context.clearProfileShareFlags(id)
-                    context.clearProfileFaceEntries(id)
-                    // The profile's own files dir (its custom face photo) — the same
-                    // rule as the profiles-page deletion (ProfileCard.profileDataDir).
-                    runCatching { File(context.filesDir, "profiles/$id").deleteRecursively() }
-                        .onFailure {
-                            Timber.tag(TAG).w(it, "Could not purge the profile files of %s", id)
-                        }
-                    // The profile's 6 notification channels + its pending notifications are
-                    // purged with the profile — no orphan channel (or surviving notification)
-//
-                    // left behind (the main process is not running, so its non-ongoing
-                    // notifications would otherwise survive in the shade).
-                    runCatching { deleteProfileChannels(context, id) }
-                        .onFailure {
-                            Timber.tag(TAG).w(it, "Could not purge the notification channels of %s", id)
-                        }
-                }
-            }
-            toDelete.size
+            ids.distinct().count { deleteRegisteredProfile(context, it, allowSelected = true) }
         }
+
+    internal fun deleteRegisteredProfile(context: Context, id: String, allowSelected: Boolean = false): Boolean =
+        DatabaseRestoreJournal.withProfileStorageMutation(context) {
+            if (id == DEFAULT_PROFILE_ID || id !in context.readProfileIds() ||
+                (!allowSelected && isProcessStorageProfile(context, id))
+            ) return@withProfileStorageMutation false
+            check(!ProfileResetSnapshot.hasPendingOperation(context.filesDir.resolve("$RESCUE_BACKUPS_DIR/profiles"))) {
+                "Finish the pending profile reset or restore first"
+            }
+            val directory = profileDeletionDirectory(context)
+            check(directory.canonicalFile == directory && (directory.isDirectory || directory.mkdirs()))
+            val marker = directory.resolve(id)
+            check(marker.isFile || marker.createNewFile()) { "Could not record the profile deletion" }
+            finishProfileDeletion(context, marker)
+            true
+        }
+
+    /** Called under the storage lock before opening or registering profiles. */
+    internal fun resumeProfileDeletions(context: Context, beforeStorageBound: Boolean = false) {
+        val directory = profileDeletionDirectory(context)
+        if (!directory.exists()) return
+        check(directory.canonicalFile == directory && directory.isDirectory)
+        checkNotNull(directory.listFiles()).sortedBy { it.name }.forEach { marker ->
+            check(beforeStorageBound || !isProcessStorageProfile(context, marker.name)) {
+                "Cannot finish deleting the bound profile"
+            }
+            finishProfileDeletion(context, marker)
+        }
+    }
+
+    private fun profileDeletionDirectory(context: Context): File =
+        context.filesDir.canonicalFile.resolve("profile-deletions")
+
+    private fun finishProfileDeletion(context: Context, marker: File) {
+        val id = marker.name
+        check(id != DEFAULT_PROFILE_ID && id.isNotBlank() && isProfileIdSafe(id))
+        check(marker.canonicalFile == marker && marker.isFile)
+        if (id == getActiveProfile(context)) {
+            check(context.profilePreferences.edit().putString(activeProfileKey, DEFAULT_PROFILE_ID).commit()) {
+                "Could not detach the profile selected for deletion"
+            }
+        }
+        val paths = profileDeletionPaths(context, id)
+        paths.forEach(ProfileResetSnapshot::validateTree)
+        deleteProfileSettingsFiles(context, id)
+        evictProfileSecurePrefs(id)
+        paths.forEach(ProfileResetSnapshot::deleteVerifiedTree)
+        context.clearProfileShareFlags(id)
+        context.clearProfileFaceEntries(id)
+        if (id in context.readProfileIds()) {
+            invalidateProfileStorageIdentity(context, id)
+            check(context.writeProfileEntries(context.currentProfileEntries().filterNot { it.first == id })) {
+                "Could not update $PROFILE_NAMES_FILE_NAME"
+            }
+        }
+        runCatching { deleteProfileChannels(context, id) }
+            .onFailure { Timber.tag(TAG).w(it, "Could not purge profile notification channels") }
+        check(marker.delete()) { "Could not complete the profile deletion" }
+    }
+
+    internal fun requireUnoccupiedProfileId(context: Context, id: String) {
+        check(profileDeletionPaths(context, id).all { !it.exists() && it.canonicalFile == it }) {
+            "The imported profile ID already owns unregistered data"
+        }
+    }
+
+    private fun profileDeletionPaths(context: Context, id: String): List<File> =
+        profileResetPaths(context, id).values.toList() +
+            listOfNotNull(context.externalCacheDir, context.cacheDir).distinct()
+                .map { it.canonicalFile.resolve("nzik-profile-network/$id") }
 
     /**
      * Factory-resets the profiles in [ids] (the base included — it is never a
@@ -625,33 +683,21 @@ object RescueFiles {
             val toReset = ids.distinct()
             if (toReset.isNotEmpty()) {
                 toReset.forEach { id ->
-                    // The backup first: a failed backup aborts the reset of this profile
-                    // before anything is wiped, so a reset is always restorable.
-                    backupProfileData(context, id)
-                    deleteProfileDatabaseFiles(context, id)
-                    deleteProfileSettingsFiles(context, id)
-                    if (id != DEFAULT_PROFILE_ID) {
-                        // The remaining SEPARATE data (the regenerable caches — the
-                        // non-regenerable dirs + index were moved to the backup above)
-//
-                        // is wiped, and the sharing flags are forgotten: the restored
-                        // (or never-restored) data is separate, so the default
-//
-                        // (separate) matches it (spec-profile-data-separation).
-                        deleteProfileDataFiles(context, id)
-                        context.clearProfileShareFlags(id)
-                    }
-                    context.clearProfileFaceEntries(id)
-                    runCatching { File(context.filesDir, "profiles/$id").deleteRecursively() }
-                        .onFailure {
-                            Timber.tag(TAG).w(it, "Could not purge the profile files of %s", id)
+                    check(id == DEFAULT_PROFILE_ID || id in context.readProfileIds()) { "Profile no longer exists" }
+                    check(GlassProfilePreferences.preferences(context, id).edit().commit()) { "Could not flush Glass settings" }
+                    val paths = profileResetPaths(context, id)
+                    ProfileResetSnapshot(profileBackupDir(context, id)).reset(paths, { faceEntries(context, id) }) {
+                        deleteProfileSettingsFiles(context, id)
+                        if (id != DEFAULT_PROFILE_ID) {
+                            context.clearProfileShareFlags(id)
                         }
+                        context.clearProfileFaceEntries(id)
+                        check(context.writeProfileEntries(context.currentProfileEntries())) {
+                            "Could not update the profile registry after reset"
+                        }
+                    }
                 }
-                // The reset profiles' display names are gone, so the names file (which
-                // mirrors the store) is rewritten: their lines lose the name portion.
-                if (!context.writeProfileEntries(context.currentProfileEntries())) {
-                    throw IOException("Could not update $PROFILE_NAMES_FILE_NAME")
-                }
+
             }
             Timber.tag(TAG).i("Reset %d profile(s) to factory state", toReset.size)
             toReset.size
@@ -670,88 +716,59 @@ object RescueFiles {
      * (side files included), the settings XMLs under their stored names, the face files
      * (the `profile/` dir) and the face entries (`face_entries.txt`).
      */
-    private fun profileBackupDir(context: Context, profileId: String): File =
-        File(File(context.filesDir, RESCUE_BACKUPS_DIR), "profiles/$profileId")
+    private fun profileBackupDir(context: Context, profileId: String): File {
+        val generation = profileStorageGeneration(context, profileId)
+        val name = if (generation == "legacy") profileId else "generation-$generation"
+        return context.filesDir.canonicalFile.resolve("$RESCUE_BACKUPS_DIR/profiles/$name")
+    }
 
     /** True when [profileId] carries a backup from a previous reset. */
     fun hasProfileBackup(context: Context, profileId: String): Boolean =
-        profileBackupDir(context, profileId).let { it.exists() && it.list()?.isNotEmpty() == true }
+        (profileId == DEFAULT_PROFILE_ID || profileId in context.readProfileIds()) &&
+            profileBackupDir(context, profileId).let {
+                it.list()?.isNotEmpty() == true || ProfileResetSnapshot.hasInterruptedRestore(it)
+            }
 
     /** The profile IDs that carry a reset backup (the non-empty `rescue_backups/profiles/` subdirectories) — the restore actions' availability. */
     fun profileBackupIds(context: Context): Set<String> =
-        runCatching {
-            File(File(context.filesDir, RESCUE_BACKUPS_DIR), "profiles")
-                .listFiles()
-                ?.filter { it.isDirectory && it.list()?.isNotEmpty() == true }
-                ?.mapTo(mutableSetOf()) { it.name }
-                ?: emptySet()
-        }.getOrDefault(emptySet())
-
-    /**
-     * Backs up [profileId]'s data to its reset-backup directory so a later
-     * [restoreProfiles] can bring it back: the database
-     * (original name, side files included), the settings XMLs (plain + encrypted — the
-     * account credentials), the face files and the face entries (display name + last
-     * use, captured BEFORE the wipe clears them).
-     *
-     * The files are MOVED, not copied: zero-copy and atomic on the same volume. Only
-     * the last reset is kept, exactly like the database and settings resets — a
-     * previous backup is replaced. A failure propagates to the caller, which must then
-     * abort the reset: nothing is wiped when the backup could not be taken.
-     */
-    private fun backupProfileData(context: Context, profileId: String) {
-        val backup = profileBackupDir(context, profileId)
-        runCatching { backup.deleteRecursively() }
-            .onFailure { Timber.tag(TAG).w(it, "Could not replace the stale backup of %s", profileId) }
-        check(backup.mkdirs()) { "Could not create the backup directory of $profileId" }
-
-        // The database under its original name — side files included.
-        val dbFile = context.getDatabasePath(profileDatabaseName(profileId))
-        if (dbFile.exists()) {
-            moveDatabaseFiles(dbFile, File(backup, dbFile.name))
+        (context.readProfileIds() + DEFAULT_PROFILE_ID).filterTo(mutableSetOf()) {
+            hasProfileBackup(context, it)
         }
 
-        // The settings XMLs (plain + encrypted) under their stored names.
-        val sharedPrefsDir = File(context.applicationInfo.dataDir, SHARED_PREFS_DIR)
+    private fun profileResetPaths(context: Context, profileId: String): Map<String, File> = buildMap {
+        val database = context.getDatabasePath(profileDatabaseName(profileId))
+        val databaseDir = checkNotNull(database.parentFile).canonicalFile
+        DB_FILE_SUFFIXES.forEach { suffix ->
+            val name = database.name + suffix
+            put(name, databaseDir.resolve(name))
+        }
+        val sharedPrefsDir = File(context.applicationInfo.dataDir, SHARED_PREFS_DIR).canonicalFile
         val suffix = if (profileId == DEFAULT_PROFILE_ID) "" else "_$profileId"
-        // Materialize inherited settings before capturing the profile reset backup.
-        check(GlassProfilePreferences.preferences(context, profileId).edit().commit()) { "Could not flush Glass settings" }
         listOf("preferences$suffix", "secure_preferences$suffix", GlassProfilePreferences.fileName(profileId)).forEach { name ->
-            val xml = File(sharedPrefsDir, "$name.xml")
-            if (xml.exists()) moveReplacing(xml, File(backup, "$name.xml"))
+            put("$name.xml", sharedPrefsDir.resolve("$name.xml"))
+            put("$name.xml.bak", sharedPrefsDir.resolve("$name.xml.bak"))
         }
+        put("profile", context.filesDir.canonicalFile.resolve("profiles/$profileId"))
+        putAll(privateProfileMediaPaths(context, profileId))
+    }
 
-        // The face files (the profile's own dir under filesDir).
-        val faceDir = File(context.filesDir, "profiles/$profileId")
-        if (faceDir.exists()) moveReplacing(faceDir, File(backup, "profile"))
+    private fun faceEntries(context: Context, profileId: String): String =
+        "name=${context.profileDisplayName(profileId).orEmpty()}\n" +
+            "lastUsed=${context.profileLastUsed(profileId) ?: 0L}\n"
 
-        // The face entries — captured before the wipe clears them.
-        File(backup, "face_entries.txt").writeText(
-            "name=${context.profileDisplayName(profileId).orEmpty()}\n" +
-                "lastUsed=${context.profileLastUsed(profileId) ?: 0L}\n"
-        )
-
-        // The SEPARATE non-regenerable data dirs (downloads, covers, waveforms) + the
-        // suffixed index (spec-profile-data-separation). The caches (streaming +
-//
-        // image) are wiped WITHOUT backup (user decision 2026-10-01). The shared
-        // items are NEVER backed up: they belong to the base. The base has no
-//
-        // suffixed data, so it is a no-op for the base.
-        if (profileId != DEFAULT_PROFILE_ID) {
-            val shared = context.profileSharedItems(profileId)
-            val separateDownloads = if (ProfileDataItem.DOWNLOADS in shared) null else downloadsDir(context, profileId)
-            separateDownloads?.let { if (it.exists()) moveDirReplacing(it, File(backup, "downloads")) }
-            val separateCovers = if (ProfileDataItem.IMAGES in shared) null else coversDir(context, profileId)
-            if (separateCovers != null && separateCovers.exists()) moveDirReplacing(separateCovers, File(backup, "covers"))
-            val separateWaveforms = if (ProfileDataItem.WAVEFORMS in shared) null else waveformsDir(context, profileId)
-            if (separateWaveforms != null && separateWaveforms.exists()) moveDirReplacing(separateWaveforms, File(backup, "waveforms"))
-            // The suffixed index (carries both indexes when both caches are separate).
-            if (ProfileDataItem.DOWNLOADS !in shared || ProfileDataItem.MEDIA_CACHE !in shared) {
-                val indexDb = profileIndexDbFile(context, profileId)
-                if (indexDb.exists()) moveDatabaseFiles(indexDb, File(backup, indexDb.name))
+    private fun restoreFaceEntries(context: Context, profileId: String, entries: File) {
+        if (!entries.isFile) return
+        var name = ""
+        var lastUsed = 0L
+        entries.forEachLine { line ->
+            when {
+                line.startsWith("name=") -> name = line.removePrefix("name=")
+                line.startsWith("lastUsed=") -> lastUsed = line.removePrefix("lastUsed=").toLongOrNull() ?: 0L
             }
         }
+        context.clearProfileFaceEntries(profileId)
+        if (name.isNotEmpty()) context.saveProfileDisplayName(profileId, name)
+        if (lastUsed > 0L) context.saveProfileLastUsed(profileId, lastUsed)
     }
 
     /**
@@ -765,6 +782,16 @@ object RescueFiles {
         val backup = profileBackupDir(context, profileId)
         if (!hasProfileBackup(context, profileId)) {
             error("No backup to restore for $profileId")
+        }
+
+        if (ProfileResetSnapshot.isVerifiedSnapshot(backup) || ProfileResetSnapshot.hasInterruptedRestore(backup)) {
+            ProfileResetSnapshot(backup).restore(profileResetPaths(context, profileId), { faceEntries(context, profileId) }) {
+                restoreFaceEntries(context, profileId, it)
+                check(context.writeProfileEntries(context.currentProfileEntries())) {
+                    "Could not update the profile registry after restore"
+                }
+            }
+            return
         }
 
         val suffix = if (profileId == DEFAULT_PROFILE_ID) "" else "_$profileId"
@@ -794,19 +821,7 @@ object RescueFiles {
         }
 
         // The face entries — re-applied to the store.
-        val entries = File(backup, "face_entries.txt")
-        if (entries.exists()) {
-            var name = ""
-            var lastUsed = 0L
-            entries.readText().lineSequence().forEach { line ->
-                when {
-                    line.startsWith("name=") -> name = line.removePrefix("name=")
-                    line.startsWith("lastUsed=") -> lastUsed = line.removePrefix("lastUsed=").toLongOrNull() ?: 0L
-                }
-            }
-            if (name.isNotEmpty()) context.saveProfileDisplayName(profileId, name)
-            if (lastUsed > 0L) context.saveProfileLastUsed(profileId, lastUsed)
-        }
+        restoreFaceEntries(context, profileId, File(backup, "face_entries.txt"))
 
         // The SEPARATE non-regenerable data dirs + the suffixed index — ping-pong
         // (the data written since the reset becomes the new backup). An item the
@@ -863,6 +878,16 @@ object RescueFiles {
             toRestore.size
         }
 
+    internal fun recoverProtectedProfileHistory(
+        context: Context,
+        archive: ProtectedProfileHistory.Archive,
+        target: ProfileStorageIdentity,
+    ): Result<Unit> = runCatching {
+        DatabaseRestoreJournal.withRescueMutation(context, allowLegacyRecovery = true) {
+            ProtectedProfileHistory.recover(context, archive, target)
+        }
+    }
+
     /**
      * Deletes the settings files of [profileId] (plain + encrypted — the base uses
      * the unsuffixed names, same rule as `Context.preferences`). A missing file is
@@ -879,28 +904,6 @@ object RescueFiles {
             // deleteSharedPreferences (API 24+) removes the shared_prefs XML from disk.
             if (!context.deleteSharedPreferences(name)) {
                 Timber.tag(TAG).w("Could not delete %s.xml (it may be missing)", name)
-            }
-        }
-    }
-
-    /**
-     * Deletes the database of [profileId] (+ its WAL/SHM/journal) — same naming rule
-     * as Database.fileNameForProfile (data.db for the base). A missing database is
-     * not an error: the profile may have never played anything.
-     */
-    private fun deleteProfileDatabaseFiles(context: Context, profileId: String) {
-        val dbName = "data${if (profileId != DEFAULT_PROFILE_ID) "_$profileId" else ""}.db"
-        runCatching { context.deleteDatabase(dbName) }
-            .onFailure { Timber.tag(TAG).w(it, "Could not delete the %s database", dbName) }
-        val dbFile = runCatching { context.getDatabasePath(dbName) }.getOrNull() ?: return
-        listOf(
-            dbFile,
-            File(dbFile.path + "-journal"),
-            File(dbFile.path + "-wal"),
-            File(dbFile.path + "-shm"),
-        ).forEach { f ->
-            if (f.exists() && !f.delete()) {
-                Timber.tag(TAG).w("Could not delete the database file %s", f.name)
             }
         }
     }
@@ -945,50 +948,22 @@ object RescueFiles {
 
     /** Deletes [file] + its SQLite side files (the [DB_FILE_SUFFIXES] set), returning the number of files removed — the same side-file rule as the global downloads delete, so a stale journal cannot be replayed onto a fresh index. */
     private fun removeWithSideFiles(file: File): Int {
-        var count = 0
-        DB_FILE_SUFFIXES.forEach { suffix ->
-            val f = File(file.path + suffix)
-            if (f.exists() && f.delete()) count++
+        val directory = checkNotNull(file.parentFile).canonicalFile
+        return DB_FILE_SUFFIXES.sumOf { suffix ->
+            val target = directory.resolve(file.name + suffix)
+            check(!target.exists() || target.isFile) { "Unexpected database side file" }
+            ProfileResetSnapshot.deleteVerifiedTree(target)
         }
-        return count
     }
 
-    /**
-     * The user profiles' OWN cache dirs a global cache clear must cover: their suffixed
-     * streaming + Coil image cache dirs under BOTH bases (the location setting may have
-     * changed — see [deleteProfileDataFiles]). Unconditional on the sharing flags: a
-     * stale suffixed dir is still the profile's own, while the shared (base) dirs are
-     * cleared by [clearCacheDirs] itself.
-     */
-    private fun profileCacheDirsToClear(context: Context): List<File> =
-        context.readProfileIds()
-            .filterNot { it == DEFAULT_PROFILE_ID }
-            .flatMap { id ->
-                val own = resolveProfileDataDirNames(id, emptySet())
-                listOf(context.cacheDir, context.filesDir).flatMap { base ->
-                    listOf(File(base, own.mediaCacheDir), File(base, own.imageCacheDir))
-                }
+    /** Both physical image cache roots of every registered non-base profile. */
+    private fun profileImageCaches(context: Context): List<File> =
+        context.readProfileIds().flatMap { id ->
+            val names = resolveProfileDataDirNames(id, emptySet())
+            listOf(context.cacheDir.canonicalFile, context.filesDir.canonicalFile).map { root ->
+                root.resolve(names.imageCacheDir)
             }
-
-    /** The user profiles' OWN download dirs a global downloads delete must cover (both bases — see [deleteProfileDataFiles]; the shared base dir is deleted by [deleteDownloadFiles] itself). */
-    private fun profileDownloadDirsToWipe(context: Context): List<File> =
-        context.readProfileIds()
-            .filterNot { it == DEFAULT_PROFILE_ID }
-            .flatMap { id ->
-                val name = resolveProfileDataDirNames(id, emptySet()).downloadsDir
-                listOf(context.cacheDir, context.filesDir).map { base -> File(base, name) }
-            }
-
-    /**
-     * The user profiles' OWN suffixed index databases — unconditional on the sharing
-     * flags: a profile whose downloads are shared now may still hold a stale suffixed
-     * database from when they were separate. The base index is the one
-     * [deleteDownloadFiles] deletes itself, and is never in this list.
-     */
-    private fun profileDownloadIndexDatabases(context: Context): List<File> =
-        context.readProfileIds()
-            .filterNot { it == DEFAULT_PROFILE_ID }
-            .map { profileIndexDbFile(context, it) }
+        }
 
     /** The display name of the document at [uri], or `null` when it cannot be read — used to detect the profile tag carried by a backup/export file name. */
     internal fun documentDisplayName(context: Context, uri: Uri): String? =
@@ -1029,7 +1004,8 @@ object RescueFiles {
      * Returns false if no logs exist.
      */
     fun exportCrashLogs(context: Context, uri: Uri): Result<Boolean> = runCatching {
-        val logsDir = File(context.filesDir, LOGS_DIR)
+        val profileLogs = profileDiagnosticsDir(context, rescueTargetProfile())
+        val logsDir = if (profileLogs.isDirectory) profileLogs else File(context.filesDir, LOGS_DIR)
         val crashLog = File(logsDir, CRASH_LOG_FILE)
         val debugLog = File(logsDir, DEBUG_LOG_FILE)
 
@@ -1059,161 +1035,98 @@ object RescueFiles {
     /**
      * Returns true if crash or debug log files exist.
      */
-    fun hasLogs(context: Context): Boolean {
-        val logsDir = File(context.filesDir, LOGS_DIR)
-        return File(logsDir, CRASH_LOG_FILE).exists() || File(logsDir, DEBUG_LOG_FILE).exists()
+    fun hasLogs(context: Context, includeHistorical: Boolean = true): Boolean {
+        val profileLogs = profileDiagnosticsDir(context, rescueTargetProfile())
+        val directory = if (includeHistorical && !profileLogs.isDirectory) File(context.filesDir, LOGS_DIR) else profileLogs
+        return directory.resolve(CRASH_LOG_FILE).isFile || directory.resolve(DEBUG_LOG_FILE).isFile
     }
 
     /**
      * Deletes the crash and debug log files.
      */
-    fun deleteLogs(context: Context): Result<Unit> = runCatching {
-        val logsDir = File(context.filesDir, LOGS_DIR)
+    fun deleteLogs(context: Context): Result<Unit> = runRescueMutation(context) {
+        val target = checkNotNull(profileStorageIdentity(context, rescueTargetProfile()))
+        val logsDir = context.filesDir.canonicalFile.resolve("profiles/${target.id}/diagnostics")
         val crashLog = File(logsDir, CRASH_LOG_FILE)
         val debugLog = File(logsDir, DEBUG_LOG_FILE)
 
-        var deletedAny = false
-        if (crashLog.exists() && crashLog.delete()) deletedAny = true
-        if (debugLog.exists() && debugLog.delete()) deletedAny = true
-
-        if (!deletedAny && hasLogs(context)) {
-            error("Failed to delete log files")
+        listOf(crashLog, debugLog).forEach { file ->
+            check(!file.exists() || file.isFile) { "Unexpected diagnostic log file" }
+            ProfileResetSnapshot.deleteVerifiedTree(file)
         }
         Timber.tag(TAG).i("Logs deleted successfully")
     }
 
     // Clear cache
 
-    /**
-     * Clears streaming cache, image cache, OkHttp cache, and temp files.
-     * NEVER touches [DOWNLOAD_CACHE_DIR] or [DOWNLOAD_DB_FILE].
-     *
-     * Iterates over both [Context.getCacheDir] and [Context.getFilesDir] because
-     * the user can configure the cache location to either via [ExoPlayerCacheLocation].
-     */
-    fun clearCache(context: Context): Result<Int> = runCatching {
-        clearCacheDirs(
-            context.cacheDir,
-            context.filesDir,
-            context.externalCacheDir,
-            // The user profiles' OWN streaming/image caches (spec-profile-data-separation)
-            // — the shared (base) dirs are the ones cleared above.
-            profileCacheDirsToClear(context),
+    /** Clears verified streaming and image caches across the two internal roots. */
+    fun clearCache(context: Context): Result<Int> = runRescueMutation(context) {
+        check(ProfileDataItem.ALL.none { item ->
+            item != ProfileDataItem.WAVEFORMS && isLegacyStorageShared(context, DEFAULT_PROFILE_ID, item)
+        }) { "A legacy cache is still shared and protected" }
+        val imageTargets = cacheTargets(
+            context.cacheDir.canonicalFile,
+            context.filesDir.canonicalFile,
+            profileImageCaches(context),
+            includeStreaming = false,
         )
+        imageTargets.forEach(ProfileResetSnapshot::validateTree)
+        val streamingFiles = cleanClosedMedia(context, InactiveDownloadCleanup.Kind.STREAMING)
+        streamingFiles + imageTargets.sumOf(::safeDeleteDir)
     }
 
-    /**
-     * File-based core of [clearCache], separated so it can be unit-tested with temp
-     * dirs. [profileCacheDirs] carries the user profiles' OWN suffixed streaming/image
-     * cache dirs (unconditional on the sharing flags, both bases — the shared base
-     * dirs are the ones cleared above).
-     */
+    /** Clears only recognized cache roots. Older unattributed files are retained. */
     internal fun clearCacheDirs(
         cacheDir: File,
         filesDir: File,
-        externalCacheDir: File?,
         profileCacheDirs: List<File> = emptyList(),
-    ): Int {
-        var deletedCount = 0
-        val bases = listOf(cacheDir, filesDir)
+        includeStreaming: Boolean = true,
+    ): Int = cacheTargets(cacheDir, filesDir, profileCacheDirs, includeStreaming).let { targets ->
+        targets.forEach(ProfileResetSnapshot::validateTree)
+        targets.sumOf(::safeDeleteDir)
+    }
 
-        bases.forEach { base ->
-            // Streaming cache (exoplayer)
-            deletedCount += safeDeleteDir(File(base, STREAMING_CACHE_DIR))
-            // Image cache (coil)
-            deletedCount += safeDeleteDir(File(base, IMAGE_CACHE_DIR))
-        }
-
-        // The user profiles' OWN suffixed caches (both bases — see profileCacheDirsToClear).
-        profileCacheDirs.forEach { deletedCount += safeDeleteDir(it) }
-
-        // OkHttp cache in externalCacheDir
-        externalCacheDir?.let { extCache ->
-            // OkHttp uses the externalCacheDir directly; clear non-protected children
-            extCache.listFiles()?.forEach { child ->
-                if (child.name != DOWNLOAD_CACHE_DIR && child.name != DOWNLOAD_DB_FILE) {
-                    deletedCount += safeDeleteDir(child)
-                }
+    private fun cacheTargets(
+        cacheDir: File,
+        filesDir: File,
+        profileCacheDirs: List<File>,
+        includeStreaming: Boolean,
+    ): List<File> {
+        val bases = listOf(cacheDir.canonicalFile, filesDir.canonicalFile).distinct()
+        val known = bases.flatMap { base ->
+            buildList {
+                add(base.resolve(IMAGE_CACHE_DIR))
+                if (includeStreaming) add(base.resolve(STREAMING_CACHE_DIR))
             }
         }
-
-        // Temp files in cacheDir
-        cacheDir.listFiles()?.forEach { child ->
-            if (child.isFile && (child.name.startsWith("temp_") ||
-                    child.name.startsWith("edit_meta_") ||
-                    child.name == "widget_thumbnail.png")
-            ) {
-                if (child.delete()) deletedCount++
-            }
-        }
-
-        Timber.tag(TAG).i("Cache cleared: %d items deleted", deletedCount)
-        return deletedCount
+        return (known + profileCacheDirs).distinct()
     }
 
     private fun safeDeleteDir(dir: File): Int {
-        if (!dir.exists()) return 0
-        return try {
-            val count = dir.walkBottomUp().count { it.delete() }
-            Timber.tag(TAG).d("Deleted %s (%d items)", dir.name, count)
-            count
-        } catch (e: Exception) {
-            Timber.tag(TAG).e(e, "Failed to delete %s", dir.absolutePath)
-            0
-        }
+        val parent = checkNotNull(dir.parentFile).canonicalFile
+        return ProfileResetSnapshot.deleteVerifiedTree(parent.resolve(dir.name))
     }
 
-    // Delete downloads
-
-    /**
-     * Deletes all downloaded media files and the ExoPlayer download database.
-     */
-    fun deleteDownloads(context: Context): Result<Int> = runCatching {
-        deleteDownloadFiles(
-            mediaBases = listOfNotNull(context.cacheDir, context.filesDir, context.externalCacheDir),
-            // The download index lives in the databases dir (StandaloneDatabaseProvider), not in a
-            // cache dir: deleting only the media would leave the index claiming songs are downloaded.
-            downloadDatabase = context.getDatabasePath(DOWNLOAD_DB_FILE),
-            // The user profiles' OWN download dirs (spec-profile-data-separation)
-            // — the shared (base) dir is the one deleted above.
-            profileDownloadDirs = profileDownloadDirsToWipe(context),
-            profileDownloadIndexDatabases = profileDownloadIndexDatabases(context),
-        )
+    /** Clears offline records and spans without replacing the rest of the Media3 index. */
+    fun deleteDownloads(context: Context): Result<Int> = runRescueMutation(context) {
+        cleanClosedMedia(context, InactiveDownloadCleanup.Kind.DOWNLOADS)
     }
 
-    /**
-     * File-based core of [deleteDownloads], separated so it can be unit-tested with
-     * temp dirs. [profileDownloadDirs] carries the user profiles' OWN suffixed download
-     * dirs (unconditional on the sharing flags, both bases — the shared base dir is
-     * the one deleted above); [profileDownloadIndexDatabases] the profiles' OWN suffixed
-     * index databases.
-     */
-    internal fun deleteDownloadFiles(
-        mediaBases: List<File>,
-        downloadDatabase: File,
-        profileDownloadDirs: List<File> = emptyList(),
-        profileDownloadIndexDatabases: List<File> = emptyList(),
-    ): Int {
-        var deletedCount = 0
-
-        mediaBases.forEach { base ->
-            deletedCount += safeDeleteDir(File(base, DOWNLOAD_CACHE_DIR))
+    private fun cleanClosedMedia(context: Context, kind: InactiveDownloadCleanup.Kind): Int {
+        val plans = (listOf(DEFAULT_PROFILE_ID) + context.readProfileIds()).distinct().map { id ->
+            val profile = checkNotNull(profileStorageIdentity(context, id))
+            checkNotNull(InactiveDownloadCleanup.capture(context, profile, kind, allowSelected = true)) {
+                "The selected media store is shared or could not be verified"
+            }
         }
-
-        // The user profiles' OWN suffixed download dirs (both bases — see profileDownloadDirsToWipe).
-        profileDownloadDirs.forEach { deletedCount += safeDeleteDir(it) }
-
-        // SQLite side files too, so a stale journal cannot be replayed onto a fresh index.
-        listOf("", "-journal", "-wal", "-shm").forEach { suffix ->
-            val file = File(downloadDatabase.path + suffix)
-            if (file.exists() && file.delete()) deletedCount++
+        var files = 0
+        plans.forEach { plan ->
+            check(InactiveDownloadCleanup.execute(context, plan, allowSelected = true)) {
+                "The selected media store changed after $files files were cleared"
+            }
+            files += plan.displayedFiles.count { '/' in it }
         }
-
-        // The suffixed profile index databases (+ their side files).
-        profileDownloadIndexDatabases.forEach { deletedCount += removeWithSideFiles(it) }
-
-        Timber.tag(TAG).i("Downloads deleted: %d items", deletedCount)
-        return deletedCount
+        return files
     }
 
     // Reset database (reversible)
@@ -1372,11 +1285,10 @@ object RescueFiles {
             backupDir = File(context.filesDir, RESCUE_BACKUPS_DIR)
         )
 
-        // Clear normal preferences
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .clear()
-            .commit()
+        val plain = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val editor = plain.edit()
+        plain.all.keys.filterNot(::isSettingsOnlyStorageKey).forEach(editor::remove)
+        check(editor.commit()) { "Could not clear normal preferences" }
         Timber.tag(TAG).i("Normal preferences cleared")
         check(glass.edit().clear().commit()) { "Could not clear Glass settings" }
 
@@ -1415,8 +1327,49 @@ object RescueFiles {
             error("No settings backup to restore")
         }
 
-        swapSettingsFiles(File(context.applicationInfo.dataDir, SHARED_PREFS_DIR), backupDir)
+        val sharedPrefsDir = File(context.applicationInfo.dataDir, SHARED_PREFS_DIR)
+        preserveSettingsOnlyStorage(sharedPrefsDir.resolve("$PREFS_NAME.xml"), backupDir.resolve("$PREFS_NAME.xml"))
+        swapSettingsFiles(sharedPrefsDir, backupDir)
         Timber.tag(TAG).i("Settings restored from backup")
+    }
+
+    private fun isSettingsOnlyStorageKey(key: String): Boolean =
+        SettingsPreferencesBridge.isStorageSetting(key) || ProfileCacheLocationMigration.isRequestKey(key)
+
+    /** Settings-only snapshots never change the live paths or quota of the retained media. */
+    private fun preserveSettingsOnlyStorage(live: File, backup: File) {
+        val builder = DocumentBuilderFactory.newInstance().apply { isExpandEntityReferences = false }.newDocumentBuilder()
+        builder.setEntityResolver { _, _ -> InputSource(StringReader("")) }
+        fun read(file: File) = if (file.exists()) {
+            builder.parse(file).also { check(it.doctype == null && it.documentElement.tagName == "map") }
+        } else {
+            builder.newDocument().apply { appendChild(createElement("map")) }
+        }
+        fun storageEntries(root: Element): List<Element> =
+            (0 until root.childNodes.length).mapNotNull { root.childNodes.item(it) as? Element }
+                .filter { isSettingsOnlyStorageKey(it.getAttribute("name")) }
+
+        val current = storageEntries(read(live).documentElement)
+        val restored = read(backup)
+        val target = restored.documentElement
+        val old = storageEntries(target)
+        if (current.isEmpty() && old.isEmpty()) return
+        old.forEach(target::removeChild)
+        current.forEach { target.appendChild(restored.importNode(it, true)) }
+        val stage = File.createTempFile(".settings-storage-", ".xml", backup.parentFile)
+        try {
+            FileOutputStream(stage).use { output ->
+                TransformerFactory.newInstance().newTransformer().transform(DOMSource(restored), StreamResult(output))
+                output.fd.sync()
+            }
+            if (Build.VERSION.SDK_INT == 0 || Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Files.move(stage.toPath(), backup.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
+            } else {
+                Os.rename(stage.path, backup.path)
+            }
+        } finally {
+            stage.delete()
+        }
     }
 
     /**
@@ -1465,6 +1418,9 @@ object RescueFiles {
 
     /** Deletes all backups (database, settings and the profile reset backups) from the rescue_backups directory. */
     fun deleteBackups(context: Context): Result<Unit> = runRescueMutation(context) {
+        check(!ProfileResetSnapshot.hasPendingOperation(context.filesDir.resolve("$RESCUE_BACKUPS_DIR/profiles"))) {
+            "Finish the pending profile reset or restore before deleting backups"
+        }
         val backupDir = File(context.filesDir, RESCUE_BACKUPS_DIR)
         backupDir.takeIf(File::exists)?.let(DatabaseRestoreJournal::retireRescueBackups)
     }.mapCatching { retired ->

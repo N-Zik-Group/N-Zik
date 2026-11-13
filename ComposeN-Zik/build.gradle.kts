@@ -510,6 +510,7 @@ dependencies {
     implementation(libs.androidyoutubeplayer)
     implementation(libs.androidx.glance.widgets)
     implementation(libs.gson)
+    implementation(libs.snakeyaml.engine)
     implementation(libs.hypnoticcanvas)
     implementation(libs.hypnoticcanvas.shaders)
     implementation(libs.github.jeziellago.compose.markdown)

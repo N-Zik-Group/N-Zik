@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.logs
 
+import app.n_zik.android.utils.debug.profileDiagnosticsDir
 import androidx.compose.foundation.layout.PaddingValues
 import java.io.File
 import android.net.Uri
@@ -133,7 +134,7 @@ object CopyLogsDialog : ContentFramedDialog {
         // "complete" log view the Maintenance sheet rows open
         var content by remember { mutableStateOf<String?>(null) }
         LaunchedEffect(currentOption) {
-            content = loadLogContent(context.filesDir.resolve("logs"), currentOption)
+            content = loadLogContent(profileDiagnosticsDir(context), currentOption)
         }
 
         val launcher = rememberLauncherForActivityResult(
@@ -142,7 +143,7 @@ object CopyLogsDialog : ContentFramedDialog {
             uri ?: return@rememberLauncherForActivityResult
             val option = currentOption
             coroutineScope.launch {
-                val content = loadLogContent(context.filesDir.resolve("logs"), option)
+                val content = loadLogContent(profileDiagnosticsDir(context), option)
                 if (content == null) {
                     Toaster.w(noLogAvailable)
                     return@launch
@@ -212,7 +213,7 @@ object CopyLogsDialog : ContentFramedDialog {
                                 // Re-read at click time so an updated file is exported.
                                 val option = currentOption
                                 coroutineScope.launch {
-                                    val content = loadLogContent(context.filesDir.resolve("logs"), option)
+                                    val content = loadLogContent(profileDiagnosticsDir(context), option)
                                     if (content == null) {
                                         Toaster.w(noLogAvailable)
                                     } else {

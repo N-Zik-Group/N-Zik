@@ -13,6 +13,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import android.app.Activity
 import android.content.Context
+import app.n_zik.android.core.profiles.ScopedTemporaryFiles
+import app.n_zik.android.core.rescue.ProfileResetSnapshot
 import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -60,6 +62,7 @@ internal object PickedImageEditor {
     private const val MAX_IMAGE_BYTES = 32L * 1024 * 1024
     private const val TAG = "PickedImageEditor"
     private val sessions = ConcurrentHashMap<String, EditSession>()
+    private val directoryPaths = ConcurrentHashMap<String, File>()
     private val ownedDirectories = ConcurrentHashMap.newKeySet<String>()
 
     internal class EditSession(
@@ -163,12 +166,22 @@ internal object PickedImageEditor {
 
     internal fun discard(context: Context, id: String?) {
         if (id == null || !runCatching { UUID.fromString(id).toString() == id }.getOrDefault(false)) return
-        val folder = directory(context, id)
-        if (folder.exists() && !folder.deleteRecursively()) Timber.tag(TAG).w("Could not remove an image edit directory")
+        val folder = directoryPaths.remove(id) ?: context.cacheDir.canonicalFile.resolve("image_edit/$id")
+        runCatching { ProfileResetSnapshot.deleteVerifiedTree(folder) }
+            .onFailure { Timber.tag(TAG).w(it, "Could not remove an image edit directory") }
         ownedDirectories.remove(id)
     }
 
-    internal fun directory(context: Context, id: String): File = File(File(context.cacheDir, "image_edit"), id)
+    internal fun directory(context: Context, id: String): File = directoryPaths.computeIfAbsent(id) {
+        val root = ScopedTemporaryFiles.directory(
+            context, ScopedTemporaryFiles.IMAGE_EDITOR, ScopedTemporaryFiles.activeOwner(context)
+        )
+        root.resolve(id).also { check(it.canonicalFile == it) }
+    }
+
+    internal fun isAbandonedDirectory(file: File): Boolean =
+        file.name !in ownedDirectories &&
+            runCatching { UUID.fromString(file.name).toString() == file.name }.getOrDefault(false)
 
     internal fun retainDirectory(id: String) {
         ownedDirectories.add(id)
@@ -176,8 +189,12 @@ internal object PickedImageEditor {
 
     /** Sweeps abandoned process state without touching live editors or unapplied image drafts. */
     internal suspend fun cleanupOrphans(context: Context) = withContext(NzikDispatchers.DATA) {
-        File(context.cacheDir, "image_edit").listFiles()?.filter { it.name !in ownedDirectories }?.forEach {
-            discard(context, it.name)
+        val owner = ScopedTemporaryFiles.activeOwner(context)
+        val root = ScopedTemporaryFiles.directory(context, ScopedTemporaryFiles.IMAGE_EDITOR, owner)
+        if (root.canonicalFile != root) return@withContext
+        root.listFiles()?.filter(::isAbandonedDirectory)?.forEach {
+            runCatching { ProfileResetSnapshot.deleteVerifiedTree(it) }
+                .onFailure { error -> Timber.tag(TAG).w(error, "Could not remove an abandoned image edit directory") }
         }
     }
 

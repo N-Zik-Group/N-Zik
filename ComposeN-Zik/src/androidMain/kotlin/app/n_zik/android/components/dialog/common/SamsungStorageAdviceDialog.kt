@@ -18,17 +18,16 @@ import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
 import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.getEnum
-import app.it.fast4x.rimusic.utils.putEnum
 import app.n_zik.android.R
-import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.maintenance.formatBytes
+import app.n_zik.android.core.profiles.ProfileCacheLocationMigration
 import app.n_zik.android.core.profiles.downloadsDir
 import app.n_zik.android.core.profiles.mediaCacheDir
 import app.n_zik.android.core.profiles.profileDataPrefs
+import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.core.profiles.totalDirectorySize
-import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.typography
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -76,29 +75,17 @@ object SamsungStorageAdviceDialog : ConfirmDialog {
         return downloads + mediaCache
     }
 
-    /** Switches the active profile to private storage, restarts the bound player, then dismisses. */
-    internal fun onConfirm(binder: PlayerServiceModern.Binder?) {
+    /** Requests a verified move at the next process start. */
+    override fun onConfirm() {
         val context = appContext()
-        val profileId = getActiveProfile(context)
-        profileDataPrefs(context, profileId).edit()
-            .putEnum(exoPlayerCacheLocationKey, ExoPlayerCacheLocation.Private)
-            .apply()
-        if (binder != null) {
-            // The log claims the restart, so it is emitted only when the restart actually runs.
-            Timber.tag(TAG).i("Switched to private storage, restarting player service")
-            binder.restartForegroundOrStop()
-        }
+        val target = profileStorageIdentity(context, getActiveProfile(context)) ?: return
+        if (!ProfileCacheLocationMigration.request(context, target, ExoPlayerCacheLocation.Private)) return
         hideDialog()
+        RestartAppDialog.showDialog()
     }
-
-    /** Interface confirm action: the production wiring is [Buttons], which passes the bound binder. */
-    override fun onConfirm() = onConfirm(null)
 
     @Composable
     override fun Buttons() {
-        // Captured during composition: the click handler itself has no composable context
-        // to read the local from.
-        val binder = LocalPlayerServiceBinder.current
         return ButtonRow(
             buttons = listOf(
                 DialogButton(
@@ -108,7 +95,7 @@ object SamsungStorageAdviceDialog : ConfirmDialog {
                 ),
                 DialogButton(
                     text = stringResource(R.string.storage_samsung_action_use_private),
-                    onClick = { onConfirm(binder) },
+                    onClick = ::onConfirm,
                     primary = true,
                     wrapLabel = true,
                 )

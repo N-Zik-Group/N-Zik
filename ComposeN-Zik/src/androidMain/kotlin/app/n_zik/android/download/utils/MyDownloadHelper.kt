@@ -6,13 +6,18 @@ import app.n_zik.android.core.maintenance.MaintenanceDownloadRevalidationState
 import app.n_zik.android.core.maintenance.MaintenanceDownloadSelfHealState
 import app.n_zik.android.core.maintenance.MaintenanceStateStore
 import app.n_zik.android.core.profiles.ProfileDataDirNames
+import app.n_zik.android.core.profiles.LegacyMediaAccess
+import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.core.profiles.cacheDatabaseProvider
 import app.n_zik.android.core.profiles.downloadsDir
+import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.profiles.profileSharedItems
 import app.n_zik.android.core.profiles.resolveProfileDataDirNames
+import app.n_zik.android.core.profiles.settingsProfileFor
 import java.io.File
 
 import app.n_zik.android.download.services.MyDownloadService
+import app.n_zik.android.download.services.ProfileDownloadCommands
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -37,7 +42,7 @@ import app.n_zik.android.playback.services.createDownloadDataSourceFactory
 
 import app.n_zik.android.enums.DownloadQualityFormat
 import app.n_zik.android.enums.downloadQualityFormatKey
-import app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize
+import app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize
 import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.playback.services.isLocal
 import app.it.fast4x.rimusic.utils.asMediaItem
@@ -46,15 +51,12 @@ import app.n_zik.android.appContext
 import app.it.fast4x.rimusic.utils.autoDownloadSongKey
 import app.it.fast4x.rimusic.utils.autoDownloadSongWhenAlbumBookmarkedKey
 import app.it.fast4x.rimusic.utils.autoDownloadSongWhenLikedKey
-import app.it.fast4x.rimusic.utils.download
 import app.it.fast4x.rimusic.utils.downloadSyncedLyrics
-import app.it.fast4x.rimusic.utils.exoPlayerCustomCacheKey
 import app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.isNetworkConnected
 import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.removeDownload
 import app.n_zik.android.core.coil.thumbnail
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
@@ -107,12 +109,9 @@ object MyDownloadHelper {
     // Semaphore to limit concurrent download preparation (avoids overwhelming the API)
     private val downloadPreparationSemaphore = Semaphore(3)
 
-    // P14 (review, 2026-10-23): seam behind [addDownloadInternal]'s A2 catch — the legacy
-    // `Context.download` wrapper is `inline reified` (not stubbable), so the failure test
-//
-    // swaps this to fail deterministically.
-    internal var scheduleDownloadRequest: (Context, DownloadRequest) -> Result<Unit> =
-        { context, request -> context.download<MyDownloadService>(request) }
+    // Scheduling seam lets the failure test exercise the real toast deterministically.
+    internal var scheduleDownloadRequest: (ProfileDownloadCommands, Context, DownloadRequest) -> Result<Unit> =
+        ProfileDownloadCommands::sendAdd
 
     // While the class is not a singleton (lifecycle), there should only be one download state at a time
 
@@ -215,9 +214,10 @@ object MyDownloadHelper {
     @Synchronized
     fun getDownloads() {
         val result = mutableMapOf<String, Download>()
-        val cursor = downloadManager.downloadIndex.getDownloads()
-        while (cursor.moveToNext()) {
-            result[cursor.download.request.id] = cursor.download
+        downloadManager.downloadIndex.getDownloads().use { cursor ->
+            while (cursor.moveToNext()) {
+                result[cursor.download.request.id] = cursor.download
+            }
         }
         downloads.value = result
 
@@ -256,21 +256,18 @@ object MyDownloadHelper {
     }
 
     @Synchronized
-    private fun initDownloadCache( context: Context ): SimpleCache {
+    private fun initDownloadCache( context: Context ): Cache {
+        val active = getActiveProfile(context)
+        LegacyMediaAccess.reader(context, active, ProfileDataItem.DOWNLOADS)?.let { return it }
         val location = downloadCacheLocation( context )
-        val cacheSize = context.preferences.getEnum( exoPlayerDiskDownloadCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB` )
-
-        val cacheEvictor = when( cacheSize ) {
-            ExoPlayerDiskCacheMaxSize.Unlimited -> NoOpCacheEvictor()
-
-            ExoPlayerDiskCacheMaxSize.Custom    -> {
-                val customCacheSize = context.preferences.getInt( exoPlayerCustomCacheKey, 32 ) * 1000 * 1000L
-                LeastRecentlyUsedCacheEvictor( customCacheSize )
-            }
-
-            else                                -> LeastRecentlyUsedCacheEvictor( cacheSize.bytes )
+        val owner = settingsProfileFor(context, active, ProfileDataItem.DOWNLOADS)
+        val settings = profileDataPrefs(context, owner)
+        val cacheSize = settings.getEnum(exoPlayerDiskDownloadCacheMaxSizeKey, ExoPlayerDiskDownloadCacheMaxSize.`2GB`)
+        val quota = when (cacheSize) {
+            ExoPlayerDiskDownloadCacheMaxSize.Unlimited -> Long.MAX_VALUE
+            ExoPlayerDiskDownloadCacheMaxSize.Disabled -> 0L
+            else -> cacheSize.bytes
         }
-
         val cacheDir = location.dir ?:
             // Temporary directory deletes itself after close
             // It means songs remain on device as long as it's open
@@ -279,7 +276,10 @@ object MyDownloadHelper {
         // Ensure this location exists
         cacheDir.mkdirs()
 
-        return SimpleCache( cacheDir, cacheEvictor, getDatabaseProvider( context, location.indexDbName ) )
+        val evictor = if (location.dir == null) LeastRecentlyUsedCacheEvictor(cacheSize.bytes) else NoOpCacheEvictor()
+        val cache = SimpleCache(cacheDir, evictor, getDatabaseProvider(context, location.indexDbName))
+        return if (location.dir == null || quota == Long.MAX_VALUE) cache
+        else DownloadQuotaCache(cache, quota, cacheDir.canonicalFile)
     }
 
     @Synchronized
@@ -291,6 +291,10 @@ object MyDownloadHelper {
     }
 
     @Synchronized
+    internal fun boundDownloadCache(): Cache? =
+        if (MyDownloadHelper::downloadCache.isInitialized) downloadCache else null
+
+    @Synchronized
     private fun ensureDownloadManagerInitialized(context: Context) {
         downloadQualityFormat =
             context.preferences.getEnum(downloadQualityFormatKey, DownloadQualityFormat.Auto)
@@ -298,9 +302,11 @@ object MyDownloadHelper {
         registerDownloadQualityPreferenceListener(context)
 
         if (!MyDownloadHelper::downloadManager.isInitialized) {
+            val active = getActiveProfile(context)
+            val protected = LegacyMediaAccess.isProtected(context, active, ProfileDataItem.DOWNLOADS)
             downloadManager = DownloadManager(
                 context,
-                getDatabaseProvider( context, downloadIndexDbName( context ) ),
+                getDatabaseProvider(context, LegacyMediaAccess.downloadIndex(context, active, downloadIndexDbName(context))),
                 getDownloadCache(context),
                 createDownloadDataSourceFactory(), // Use dedicated download resolver
                 NzikDispatchers.DATA.asExecutor()
@@ -309,8 +315,8 @@ object MyDownloadHelper {
                 minRetryCount = 2
                 requirements = Requirements(Requirements.NETWORK)
 
-                val wasPaused = app.n_zik.android.appContext().getSharedPreferences("download_prefs", Context.MODE_PRIVATE).getBoolean("downloads_paused_state", false)
-                if (wasPaused) {
+                val wasPaused = ProfileDownloadCommands.capture(context)?.isPaused(context) == true
+                if (wasPaused || protected) {
                     pauseDownloads()
                 }
 
@@ -318,7 +324,7 @@ object MyDownloadHelper {
                     object : DownloadManager.Listener {
 
                         override fun onInitialized(downloadManager: DownloadManager) {
-                            wipeStuckDownloadsOnStart(downloadManager)
+                            if (!protected) wipeStuckDownloadsOnStart(downloadManager)
                         }
 
                         override fun onDownloadChanged(
@@ -401,9 +407,7 @@ object MyDownloadHelper {
 //
             // completed library against the real files, off the main-Looper callback
             // that `onInitialized` above runs on (one file stat per span).
-            coroutineScope.launch {
-                revalidateCompletedDownloads(context, downloadManager)
-            }
+            if (!protected) coroutineScope.launch { revalidateCompletedDownloads(context, downloadManager) }
         }
     }
 
@@ -544,6 +548,7 @@ object MyDownloadHelper {
 
     fun addDownload(context: Context, mediaItem: MediaItem) {
         if (mediaItem.isLocal) return
+        val owner = ProfileDownloadCommands.capture(context) ?: return
 
         if( !isNetworkConnected( context ) ) {
             Toaster.noInternet()
@@ -564,7 +569,7 @@ object MyDownloadHelper {
         }
 
         coroutineScope.launch {
-            addDownloadInternal( context, mediaItem )
+            addDownloadInternal(context, mediaItem, owner)
         }
 
 
@@ -573,8 +578,14 @@ object MyDownloadHelper {
     /** Suspended core of [addDownload]: prepares the download request under the preparation semaphore, schedules it on [MyDownloadService], then preloads lyrics and artwork outside the semaphore so they don't block other downloads. */
     // internal (not private): the A2 failure test drives the scheduling path directly
     // (P14, review 2026-10-23) instead of going through the DB-backed [addDownload] entry.
-    internal suspend fun addDownloadInternal( context: Context, mediaItem: MediaItem ) {
+    internal suspend fun addDownloadInternal(
+        context: Context,
+        mediaItem: MediaItem,
+        owner: ProfileDownloadCommands? = ProfileDownloadCommands.capture(context),
+    ) {
+        if (owner == null) return
         downloadPreparationSemaphore.withPermit {
+            if (owner != ProfileDownloadCommands.capture(context)) return
             val artistTextRaw = mediaItem.artistTextOrDb()
             val artistText = if (artistTextRaw == "null" || artistTextRaw.isBlank()) context.getString(R.string.metadata_unknown_artist) else artistTextRaw
             val titleTextRaw = cleanPrefix(mediaItem.mediaMetadata.title?.toString().orEmpty())
@@ -593,7 +604,7 @@ object MyDownloadHelper {
 
             val imageUrl = mediaItem.mediaMetadata.artworkUri.thumbnail(1000)
 
-            scheduleDownloadRequest(context, downloadRequest).exceptionOrNull()?.let {
+            scheduleDownloadRequest(owner, context, downloadRequest).exceptionOrNull()?.let {
                 if (it is CancellationException) throw it
 
                 Timber.tag("MyDownloadHelper").e("scheduleDownload exception ${it.stackTraceToString()}")
@@ -603,22 +614,24 @@ object MyDownloadHelper {
             }
         }
         // Lyrics and image preload OUTSIDE semaphore - don't block download preparation
+        if (owner != ProfileDownloadCommands.capture(context)) return
         downloadSyncedLyrics( mediaItem.asSong )
         ImageCacheFactory.preloadImage(mediaItem.mediaMetadata.artworkUri.toString())
     }
 
     fun removeDownload(context: Context, mediaItem: MediaItem) {
         if (mediaItem.isLocal) return
+        val owner = ProfileDownloadCommands.capture(context) ?: return
         coroutineScope.launch {
-            removeDownloadInternal( context, mediaItem )
+            removeDownloadInternal(context, mediaItem, owner)
         }
     }
 
     /**
      * Suspended core of [removeDownload]: sends the removal intent to [MyDownloadService].
      */
-    private suspend fun removeDownloadInternal( context: Context, mediaItem: MediaItem ) {
-        context.removeDownload<MyDownloadService>(mediaItem.mediaId).exceptionOrNull()?.let {
+    private fun removeDownloadInternal(context: Context, mediaItem: MediaItem, owner: ProfileDownloadCommands) {
+        owner.sendRemove(context, mediaItem.mediaId).exceptionOrNull()?.let {
             if (it is CancellationException) throw it
 
             Timber.tag("MyDownloadHelper").e(it.stackTraceToString())
@@ -692,6 +705,7 @@ object MyDownloadHelper {
      * each re-downloaded song.
      */
     suspend fun updateDownloads(context: Context) {
+        val owner = ProfileDownloadCommands.capture(context) ?: return
         val targets = nonCompliantDownloadedSongIds()
         if ( targets.isEmpty() ) return
 
@@ -710,20 +724,17 @@ object MyDownloadHelper {
                     .build()
 
             runCatching {
-                removeDownloadInternal( context, mediaItem )
+                removeDownloadInternal(context, mediaItem, owner)
             }.onFailure { e ->
                 Timber.tag("MyDownloadHelper").e(e, "updateDownloads: remove failed for $songId, attempting the add anyway")
             }
-            addDownloadInternal( context, mediaItem )
+            addDownloadInternal(context, mediaItem, owner)
         }
     }
 
     fun resumeDownloads(context: Context) {
-        DownloadService.sendResumeDownloads(
-            context,
-            MyDownloadService::class.java,
-            false
-        )
+        val target = ProfileDownloadCommands.capture(context) ?: return
+        context.startService(target.intent(context, DownloadService.ACTION_RESUME_DOWNLOADS))
     }
 
     fun autoDownload(context: Context, mediaItem: MediaItem) {

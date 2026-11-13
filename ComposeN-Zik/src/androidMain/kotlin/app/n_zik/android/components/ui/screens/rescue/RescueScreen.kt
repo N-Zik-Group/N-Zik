@@ -17,6 +17,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
+import app.n_zik.android.core.profiles.ProtectedProfileHistory
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
+import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.components.ui.chipsViewport
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -202,6 +206,10 @@ fun RescueScreen() {
     // profiles that carry a reset backup (the data a reset set aside before wiping).
     var restoreProfilesDialog by remember { mutableStateOf(false) }
     var restoreSelection by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var legacyRecoveryTarget by remember { mutableStateOf<ProfileStorageIdentity?>(null) }
+    var legacyRecovery by remember {
+        mutableStateOf<Pair<ProtectedProfileHistory.Archive, ProfileStorageIdentity>?>(null)
+    }
 
     // Category filter: which scope of actions is shown — per-profile (with the profile
     // target as subcategory) or the entire app. All is the default.
@@ -218,10 +226,12 @@ fun RescueScreen() {
         fileState = withContext(NzikDispatchers.DATA) {
             RescueFileState(
                 hasLogs = RescueFiles.hasLogs(context),
+                hasDeletableLogs = RescueFiles.hasLogs(context, includeHistorical = false),
                 hasDatabaseBackup = RescueFiles.hasBackup(context),
                 hasSettingsBackup = RescueFiles.hasSettingsBackup(context),
                 hasProfileState = ProfileStateArchive.hasState(context),
-                profileBackups = RescueFiles.profileBackupIds(context)
+                profileBackups = RescueFiles.profileBackupIds(context),
+                protectedHistoryArchives = ProtectedProfileHistory.archives(context),
             )
         }
         // The selector options: the active profile first, then the user profiles —
@@ -374,6 +384,54 @@ fun RescueScreen() {
         } else {
             action()
         }
+    }
+
+    @Composable
+    fun archiveLabel(archive: ProtectedProfileHistory.Archive): String = when (archive.kind) {
+        ProtectedProfileHistory.Kind.MEDIA -> stringResource(
+            R.string.recovery_legacy_archive_audio, checkNotNull(archive.media).sourceLocation.text,
+        )
+        ProtectedProfileHistory.Kind.IMAGES -> stringResource(R.string.recovery_legacy_archive_images)
+        ProtectedProfileHistory.Kind.WAVEFORMS -> stringResource(R.string.storage_breakdown_waveforms)
+    }
+
+    DialogPresence(target = legacyRecoveryTarget) { target ->
+        val archives = fileState.protectedHistoryArchives
+        val first = archives.firstOrNull() ?: return@DialogPresence
+        ValueSelectorDialog(
+            title = stringResource(R.string.recovery_legacy_media),
+            selectedValue = first,
+            values = archives,
+            valueText = { archive ->
+                stringResource(R.string.recovery_legacy_media_source, archiveLabel(archive), archive.id.take(12))
+            },
+            onValueSelected = { archive ->
+                legacyRecoveryTarget = null
+                legacyRecovery = archive to target
+            },
+            onDismiss = { legacyRecoveryTarget = null },
+        )
+    }
+
+    DialogPresence(target = legacyRecovery) { (archive, target) ->
+        val label = profileOptions.firstOrNull { it.id == target.id }?.label ?: target.id
+        ConfirmationDialog(
+            title = stringResource(R.string.recovery_legacy_media),
+            text = stringResource(R.string.recovery_legacy_media_confirmation, archiveLabel(archive), archive.id.take(12), label),
+            confirmText = stringResource(R.string.recovery_legacy_media_action),
+            onDismiss = { legacyRecovery = null },
+            onConfirm = {
+                legacyRecovery = null
+                guardWrite {
+                    scope.launch {
+                        val result = withContext(NzikDispatchers.DATA) {
+                            RescueFiles.recoverProtectedProfileHistory(context, archive, target)
+                        }
+                        showResult(result)
+                    }
+                }
+            },
+        )
     }
 
     // SAF launchers
@@ -1032,6 +1090,23 @@ fun RescueScreen() {
                 title = stringResource(R.string.recovery_group_database),
                 iconRes = R.drawable.server,
                 content = {
+                    RescueActionCard(
+                        iconRes = R.drawable.restore,
+                        title = stringResource(R.string.recovery_legacy_media),
+                        description = stringResource(R.string.recovery_legacy_media_description),
+                        enabled = fileState.protectedHistoryArchives.isNotEmpty(),
+                        disabledReason = stringResource(R.string.recovery_no_backup),
+                        onClick = {
+                            val id = targetProfile
+                            guardWrite {
+                                scope.launch {
+                                    legacyRecoveryTarget = withContext(NzikDispatchers.DATA) {
+                                        profileStorageIdentity(context, id)
+                                    }
+                                }
+                            }
+                        },
+                    )
                     // Export database
                     RescueActionCard(
                         iconRes = R.drawable.server,
@@ -1328,7 +1403,7 @@ fun RescueScreen() {
                         iconRes = R.drawable.trash,
                         title = stringResource(R.string.recovery_delete_logs),
                         description = stringResource(R.string.recovery_delete_logs_description),
-                        enabled = fileState.hasLogs,
+                        enabled = fileState.hasDeletableLogs,
                         disabledReason = stringResource(R.string.recovery_no_logs),
                         onClick = {
                             guardWrite {
@@ -1680,10 +1755,12 @@ private data class ProfileOption(
 /** Availability of the actions that depend on files present on disk. */
 private data class RescueFileState(
     val hasLogs: Boolean = false,
+    val hasDeletableLogs: Boolean = false,
     val hasDatabaseBackup: Boolean = false,
     val hasSettingsBackup: Boolean = false,
     val hasProfileState: Boolean = false,
-    val profileBackups: Set<String> = emptySet()
+    val profileBackups: Set<String> = emptySet(),
+    val protectedHistoryArchives: List<ProtectedProfileHistory.Archive> = emptyList(),
 )
 
 @Composable

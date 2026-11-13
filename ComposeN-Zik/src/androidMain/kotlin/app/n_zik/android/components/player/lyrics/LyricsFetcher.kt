@@ -42,7 +42,7 @@ internal fun fetchAgainRowType(displayedType: String?, mode: LyricsType): String
     displayedType ?: mode.takeIf { it != LyricsType.Auto }?.name
 
 @Composable
-fun LyricsFetcher(
+internal fun LyricsFetcher(
     mediaId: String,
     lyricsType: LyricsType,
     checkLyrics: Boolean,
@@ -57,12 +57,15 @@ fun LyricsFetcher(
     onCheckedLrcUpdated: (Boolean) -> Unit,
     onCheckedKugouUpdated: (Boolean) -> Unit,
     onCheckedInnertubeUpdated: (Boolean) -> Unit,
-    onFetchingStateChanged: (Boolean) -> Unit
+    onFetchingStateChanged: (Boolean) -> Unit,
+    enabledProviders: Set<LyricsProvider>,
+    onProviderSelectionChanged: () -> Unit
 ) {
     val context = LocalContext.current
     var previousLyricsType by remember { mutableStateOf(lyricsType) }
     var previousCheckLyrics by remember { mutableStateOf(checkLyrics) }
-    LaunchedEffect(mediaId, lyricsType, checkLyrics, mediaMetadata.title, mediaMetadata.artist) {
+    var previousProviders by remember { mutableStateOf(enabledProviders) }
+    LaunchedEffect(mediaId, lyricsType, checkLyrics, mediaMetadata.title, mediaMetadata.artist, enabledProviders) {
         if (checkLyrics != previousCheckLyrics) {
             globalLastSyncedAttemptMediaId = null
             globalLastKaraokeAttemptMediaId = null
@@ -80,6 +83,12 @@ fun LyricsFetcher(
             onLyricsUpdated(null)
         }
 
+        if (enabledProviders != previousProviders) {
+            resetGlobalAttemptForType(LyricsType.Auto)
+            previousProviders = enabledProviders
+            onProviderSelectionChanged()
+        }
+
         LyricsFetchWorker().fetch(
             context = context,
             mediaId = mediaId,
@@ -94,7 +103,8 @@ fun LyricsFetcher(
             onCheckedLrcUpdated = onCheckedLrcUpdated,
             onCheckedKugouUpdated = onCheckedKugouUpdated,
             onCheckedInnertubeUpdated = onCheckedInnertubeUpdated,
-            onFetchingStateChanged = onFetchingStateChanged
+            onFetchingStateChanged = onFetchingStateChanged,
+            enabledProviders = enabledProviders
         )
     }
 }

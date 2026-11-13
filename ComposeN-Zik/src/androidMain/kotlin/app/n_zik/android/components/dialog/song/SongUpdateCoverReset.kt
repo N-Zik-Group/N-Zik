@@ -8,6 +8,8 @@ import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.profiles.coversDir
+import app.n_zik.android.core.profiles.ProfileDataItem
+import app.n_zik.android.core.profiles.isLegacyStorageShared
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import timber.log.Timber
 
@@ -15,6 +17,9 @@ import timber.log.Timber
 internal object SongUpdateCoverReset {
     fun reset(context: Context, songId: String, previousUrl: String?, requestProfile: String) {
         if (getActiveProfile(context) != requestProfile) return
+        if (isLegacyStorageShared(context, requestProfile, ProfileDataItem.IMAGES)) {
+            throw IOException("The historical shared cover directory is still protected")
+        }
         val directory = coversDir(context, requestProfile).canonicalFile
         val file = ownedCover(directory, songId)
         if (file == null) {

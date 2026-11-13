@@ -2,17 +2,23 @@ package app.n_zik.android.playback.services
 
 import android.app.Application
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.ParcelFileDescriptor
+import android.os.Process
 import app.it.fast4x.rimusic.utils.activeProfileKey
 import app.it.fast4x.rimusic.utils.profilePreferences
+import app.it.fast4x.rimusic.utils.writeProfileEntries
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowBinder
 import java.io.File
 import java.io.FileOutputStream
 
@@ -27,6 +33,8 @@ class ArtworkContentProviderProfileTest {
     fun setUp() {
         app = RuntimeEnvironment.getApplication()
         app.profilePreferences.edit().clear().commit()
+        ShadowBinder.reset()
+        assertTrue(app.writeProfileEntries(listOf("work" to "Work")))
     }
 
     /** A minimal real JPEG so the provider's decode/EXIF/center-crop pipeline runs. */
@@ -34,10 +42,26 @@ class ArtworkContentProviderProfileTest {
         val file = File(app.filesDir, "$dirName/cover_$songId.jpg")
         file.parentFile?.mkdirs()
         val bitmap = Bitmap.createBitmap(8, 8, Bitmap.Config.ARGB_8888)
+        bitmap.eraseColor(Color.MAGENTA)
         try {
             FileOutputStream(file).use { out -> bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out) }
         } finally {
             bitmap.recycle()
+        }
+    }
+
+    @Test
+    fun `untrusted UID receives the public placeholder instead of a private cover`() {
+        seedCover("app_covers", "private")
+        val content = provider()
+        val uri = ArtworkContentProvider.uriFor("private")
+        val privateBytes = servedBytes(requireNotNull(content.openFile(uri, "r")))
+        ShadowBinder.setCallingUid(Process.myUid() + 1)
+        try {
+            val publicBytes = servedBytes(requireNotNull(content.openFile(uri, "r")))
+            assertFalse(privateBytes.contentEquals(publicBytes))
+        } finally {
+            ShadowBinder.reset()
         }
     }
 
@@ -48,9 +72,12 @@ class ArtworkContentProviderProfileTest {
         seedCover("app_covers_work", "1")
         app.profilePreferences.edit().putString(activeProfileKey, "work").commit()
 
-        val pfd = provider().openFile(ArtworkContentProvider.uriFor("1"), "r")
-
+        val content = provider()
+        val pfd = content.openFile(ArtworkContentProvider.uriFor("1"), "r")
         assertNotNull("the profile's own cover must be served from app_covers_<id>", pfd)
+        val actual = servedBytes(requireNotNull(pfd))
+        val placeholder = servedBytes(requireNotNull(content.openFile(ArtworkContentProvider.uriFor("missing"), "r")))
+        assertFalse("the verified profile cover must differ from the public placeholder", actual.contentEquals(placeholder))
     }
 
     /** Reads the served JPEG through the descriptor (the temp file is unlinked, the FD stays open). */

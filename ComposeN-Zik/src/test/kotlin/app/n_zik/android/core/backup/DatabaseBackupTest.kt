@@ -45,7 +45,7 @@ class DatabaseBackupTest {
     val tmp = TemporaryFolder()
 
     @Test
-    fun `ZIP round trip rebases owned covers into the destination sharing directory`() {
+    fun `ZIP round trip protects shared covers and rebases independent ones`() {
         val source = device("source")
         val destination = device("destination")
         destination.setProfileShares(ProfileDataItem.IMAGES, "work", true)
@@ -83,23 +83,29 @@ class DatabaseBackupTest {
 
                 // The import detects the archive by signature, independent of its name.
                 val renamed = export.file.copyTo(tmp.newFolder().resolve("renamed.db"))
+                assertThrows(IllegalStateException::class.java) {
+                    DatabaseBackup.restore(destination, "work", openInput = renamed::inputStream)
+                }
+                assertFalse(destination.filesDir.resolve("app_covers").exists())
+                assertFalse(databaseFile(destination, "work").exists())
+                destination.setProfileShares(ProfileDataItem.IMAGES, "work", false)
                 DatabaseBackup.restore(destination, "work", openInput = renamed::inputStream)
             }
         }
 
-        val shared = destination.filesDir.resolve("app_covers")
+        val privateCovers = destination.filesDir.resolve("app_covers_work")
         val restored = databaseFile(destination, "work")
         SQLiteDatabase.openDatabase(restored.path, null, SQLiteDatabase.OPEN_READONLY).use { db ->
-            assertEquals(owned(shared.resolve(song.name)), thumbnail(db, "Song", "song"))
-            assertEquals(owned(shared.resolve(album.name)), thumbnail(db, "Song", "linkedSong"))
-            assertEquals(owned(shared.resolve(album.name)), thumbnail(db, "Album", "album"))
-            assertEquals(owned(shared.resolve(artist.name)), thumbnail(db, "Artist", "artist"))
+            assertEquals(owned(privateCovers.resolve(song.name)), thumbnail(db, "Song", "song"))
+            assertEquals(owned(privateCovers.resolve(album.name)), thumbnail(db, "Song", "linkedSong"))
+            assertEquals(owned(privateCovers.resolve(album.name)), thumbnail(db, "Album", "album"))
+            assertEquals(owned(privateCovers.resolve(artist.name)), thumbnail(db, "Artist", "artist"))
             assertEquals("${MODIFIED_PREFIX}https://example.test/cover_song.jpg", thumbnail(db, "Song", "remote"))
         }
-        assertArrayEquals(song.readBytes(), shared.resolve(song.name).readBytes())
-        assertArrayEquals(album.readBytes(), shared.resolve(album.name).readBytes())
-        assertArrayEquals(artist.readBytes(), shared.resolve(artist.name).readBytes())
-        assertFalse(destination.filesDir.resolve("app_covers_work").exists())
+        assertArrayEquals(song.readBytes(), privateCovers.resolve(song.name).readBytes())
+        assertArrayEquals(album.readBytes(), privateCovers.resolve(album.name).readBytes())
+        assertArrayEquals(artist.readBytes(), privateCovers.resolve(artist.name).readBytes())
+        assertFalse(destination.filesDir.resolve("app_covers").exists())
         assertArrayEquals(playlist.readBytes(), destination.filesDir.resolve("thumbnail/playlist_7").readBytes())
         assertEquals("keep playlist", unrelated.readText())
         assertTrue(source.cacheDir.listFiles().orEmpty().isEmpty())

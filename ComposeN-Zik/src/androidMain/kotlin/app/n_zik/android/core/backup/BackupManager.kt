@@ -8,6 +8,10 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.core.rescue.RescueFiles
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
+import app.n_zik.android.core.profiles.ProfileWorkOwner
+import app.n_zik.android.core.profiles.profileDataPrefs
+import kotlinx.coroutines.CancellationException
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -59,14 +63,22 @@ object BackupManager {
     private const val WORK_NAME = "AutoBackupWorker"
 
     fun scheduleBackup(context: Context, interval: Int) {
+        val owner = ProfileWorkOwner.capture(context) ?: return
+        scheduleBackup(context, interval, owner)
+    }
+
+    internal fun scheduleBackup(context: Context, interval: Int, owner: ProfileStorageIdentity) {
+        if (!ProfileWorkOwner.isBound(context, owner)) return
         Timber.tag("AutoBackup").d("scheduleBackup called with interval: $interval")
         val workManager = WorkManager.getInstance(context)
+        val workName = ProfileWorkOwner.name(WORK_NAME, owner)
+        workManager.cancelUniqueWork(WORK_NAME)
         if (interval == INTERVAL_NONE) {
-            workManager.cancelUniqueWork(WORK_NAME)
+            workManager.cancelUniqueWork(workName)
             return
         }
 
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val prefs = profileDataPrefs(context, owner.id)
         val now = LocalDateTime.now()
         var targetTime = now
 
@@ -122,18 +134,21 @@ object BackupManager {
         Timber.tag("AutoBackup").d("scheduleBackup: Enqueuing work with delay $initialDelay ms (Target time: $targetTime)")
 
         val request = OneTimeWorkRequestBuilder<AutoBackupWorker>()
+            .setInputData(ProfileWorkOwner.input(owner))
             .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
             .build()
 
         workManager.enqueueUniqueWork(
-            WORK_NAME,
+            workName,
             ExistingWorkPolicy.REPLACE,
             request
         )
     }
 
     fun triggerOnChangeBackup(context: Context) {
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val owner = ProfileWorkOwner.capture(context) ?: return
+        if (!ProfileWorkOwner.isBound(context, owner)) return
+        val prefs = profileDataPrefs(context, owner.id)
         val interval = prefs.getInt(PREF_INTERVAL, INTERVAL_NONE)
         if (interval == INTERVAL_NONE) return
 
@@ -142,19 +157,22 @@ object BackupManager {
         if (!enabled) return
 
         val request = OneTimeWorkRequestBuilder<AutoBackupWorker>()
+            .setInputData(ProfileWorkOwner.input(owner))
             .setInitialDelay(1, TimeUnit.MINUTES) // Debounce 1 minute
             .build()
 
 
         WorkManager.getInstance(context).enqueueUniqueWork(
-            WORK_NAME,
+            ProfileWorkOwner.name(WORK_NAME, owner),
             ExistingWorkPolicy.REPLACE,
             request
         )
     }
 
     suspend fun executePreInstallBackup(context: Context): Boolean {
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val owner = ProfileWorkOwner.capture(context) ?: return false
+        if (!ProfileWorkOwner.isBound(context, owner)) return false
+        val prefs = profileDataPrefs(context, owner.id)
         val enabled = prefs.getBoolean(PREF_PRE_INSTALL, false)
         if (!enabled) return true
 
@@ -165,17 +183,22 @@ object BackupManager {
         }
 
         Timber.tag("AutoBackup").i("Pre-install backup triggered")
-        return executeBackup(context, uriString)
+        return executeBackup(context, uriString, owner)
     }
 
-    suspend fun executeBackup(context: Context, uriString: String): Boolean {
+    suspend fun executeBackup(context: Context, uriString: String): Boolean =
+        ProfileWorkOwner.capture(context)?.let { executeBackup(context, uriString, it) } ?: false
+
+    internal suspend fun executeBackup(context: Context, uriString: String, owner: ProfileStorageIdentity): Boolean {
+        if (!ProfileWorkOwner.isBound(context, owner)) return false
         Timber.tag("AutoBackup").i("Starting executeBackup to URI: $uriString")
         if (uriString.isEmpty()) return false
         val treeUri = Uri.parse(uriString)
 
         return withContext(NzikDispatchers.DATA) {
             try {
-                val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+                val prefs = profileDataPrefs(context, owner.id)
+                val outputs = mutableListOf<OwnedAutoBackupRetention.Output>()
                 val target = prefs.getInt(PREF_TARGET, TARGET_DATABASE)
                 val includeYtb = prefs.getBoolean(PREF_INCLUDE_YTB, false)
                 val includeDiscord = prefs.getBoolean(PREF_INCLUDE_DISCORD, false)
@@ -189,7 +212,7 @@ object BackupManager {
                 // taken under one profile must stay recognizable as such, so it can never
 //
                 // be mistaken for another profile's data when it is imported later.
-                val profile = getActiveProfile(context)
+                val profile = owner.id
                 val parts = backupPartsOf(target)
 
                 if (parts.database) {
@@ -209,12 +232,14 @@ object BackupManager {
                             success = false
                         } else {
                             export.writeTo(context, newDocUri)
+                            outputs += OwnedAutoBackupRetention.Output(newDocUri, AutoBackupKind.DATABASE)
                             Timber.tag("AutoBackup").i("Database backup successful to $fileName")
                         }
                     }
                 }
 
                 if (parts.settings) {
+                    check(ProfileWorkOwner.isBound(context, owner))
                     Timber.tag("AutoBackup").d("Starting settings backup...")
                     val fileName = autoBackupFileName(BuildConfig.APP_NAME, profile, date, AutoBackupKind.SETTINGS)
                     val docUri = DocumentsContract.buildDocumentUriUsingTree(
@@ -224,7 +249,8 @@ object BackupManager {
                         context.contentResolver, docUri, "text/csv", fileName
                     )
                     if (newDocUri != null) {
-                        exportSettings(context, newDocUri, includeYtb, includeDiscord, includeLastfm, includeProxy)
+                        exportSettings(context, newDocUri, owner, includeYtb, includeDiscord, includeLastfm, includeProxy)
+                        outputs += OwnedAutoBackupRetention.Output(newDocUri, AutoBackupKind.SETTINGS)
                         Timber.tag("AutoBackup").i("Settings backup successful to $fileName")
                     } else {
                         Timber.tag("AutoBackup").e("Failed to create document for settings backup")
@@ -240,13 +266,27 @@ object BackupManager {
                     // in a single .txt. Nothing to archive (a fresh install) is not a failure —
                     // the backup simply carries no copy of it.
                     Timber.tag("AutoBackup").d("Starting profile state backup...")
-                    success = backupProfileState(context, treeUri, profile, date) && success
+                    check(ProfileWorkOwner.isBound(context, owner))
+                    if (ProfileStateArchive.hasState(context)) {
+                        val document = backupProfileState(context, treeUri, profile, date)
+                        if (document == null) success = false
+                        else outputs += OwnedAutoBackupRetention.Output(document, AutoBackupKind.PROFILE_STATE)
+                    }
                 }
 
-                Timber.tag("AutoBackup").d("Enforcing retention policy...")
-                enforceRetentionPolicy(context, treeUri)
+                if (success && ProfileWorkOwner.isBound(context, owner)) {
+                    runCatching {
+                        OwnedAutoBackupRetention.recordAndPrune(
+                            context, owner, treeUri, outputs, prefs.getInt(PREF_MAX_BACKUPS, 5),
+                        )
+                    }.onFailure { error ->
+                        Timber.tag("AutoBackup").w(error, "Verified backup retention could not finish")
+                    }
+                } else success = false
                 Timber.tag("AutoBackup").i("executeBackup finished. Success: $success")
                 success
+            } catch (cancelled: CancellationException) {
+                throw cancelled
             } catch (e: Exception) {
                 Timber.tag("AutoBackup").e(e, "executeBackup failed with exception")
                 false
@@ -254,57 +294,19 @@ object BackupManager {
         }
     }
 
-    private fun enforceRetentionPolicy(context: Context, treeUri: Uri) {
-        Timber.tag("AutoBackup").d("enforceRetentionPolicy started")
-        try {
-            val maxBackups = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
-                .getInt(PREF_MAX_BACKUPS, 5)
-                
-            if (maxBackups == -1) {
-                Timber.tag("AutoBackup").d("enforceRetentionPolicy: Max backups is unlimited (-1). Skipping.")
-                return
-            }
-            Timber.tag("AutoBackup").d("enforceRetentionPolicy: Max backups allowed is $maxBackups")
-
-            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
-                treeUri,
-                DocumentsContract.getTreeDocumentId(treeUri)
-            )
-            
-            val cursor = context.contentResolver.query(
-                childrenUri,
-                arrayOf(
-                    DocumentsContract.Document.COLUMN_DOCUMENT_ID,
-                    DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-                    DocumentsContract.Document.COLUMN_LAST_MODIFIED
-                ),
-                null,
-                null,
-                "${DocumentsContract.Document.COLUMN_LAST_MODIFIED} DESC"
-            )
-
-            cursor?.use {
-                val counts = mutableMapOf<AutoBackupKind, Int>()
-                while (it.moveToNext()) {
-                    val displayName = it.getString(1) ?: ""
-                    val kind = autoBackupKindOf(displayName) ?: continue
-                    val count = (counts[kind] ?: 0) + 1
-                    counts[kind] = count
-                    if (count > maxBackups) {
-                        val docId = it.getString(0)
-                        val deleteUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId)
-                        DocumentsContract.deleteDocument(context.contentResolver, deleteUri)
-                        Timber.tag("AutoBackup").i("enforceRetentionPolicy: Deleted old %s backup: $displayName", kind.name)
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Timber.tag("AutoBackup").e(e, "Failed to enforce retention policy")
-        }
-    }
-
-    private suspend fun exportSettings(context: Context, uri: Uri, includeYtb: Boolean, includeDiscord: Boolean, includeLastfm: Boolean, includeProxy: Boolean) {
-        val entries = SettingsPreferencesBridge.export(context, context.preferences)
+    private suspend fun exportSettings(
+        context: Context,
+        uri: Uri,
+        owner: ProfileStorageIdentity,
+        includeYtb: Boolean,
+        includeDiscord: Boolean,
+        includeLastfm: Boolean,
+        includeProxy: Boolean,
+    ) {
+        val entries = SettingsPreferencesBridge.export(context, profileDataPrefs(context, owner.id))
+        check(ProfileWorkOwner.isBound(context, owner))
+        val credentials = context.encryptedPreferences.all
+        check(ProfileWorkOwner.isBound(context, owner))
 
         Timber.tag("AutoBackup").d("exportSettings: Base settings count: ${entries.size}")
 
@@ -312,7 +314,7 @@ object BackupManager {
         // checked, the proxy key — exactly as the manual export and the rescue build them.
         entries.addAll(
             RescueFiles.buildCredentialExport(
-                context.encryptedPreferences.all,
+                credentials,
                 includeYtb,
                 includeDiscord,
                 includeLastfm,
@@ -322,7 +324,7 @@ object BackupManager {
 
         Timber.tag("AutoBackup").d("exportSettings: Final settings count to write: ${entries.size} (Include Ytb: $includeYtb, Include Discord: $includeDiscord, Include Lastfm: $includeLastfm, Include Proxy: $includeProxy)")
 
-        context.contentResolver.openOutputStream(uri)?.use { outStream ->
+        checkNotNull(context.contentResolver.openOutputStream(uri)) { "Cannot open the settings backup destination" }.use { outStream ->
             csvWriter().open(outStream) {
                 writeRow("Type", "Key", "Value")
                 flush()
@@ -332,31 +334,25 @@ object BackupManager {
         }
     }
 
-    /**
-     * Writes the profile state archive (list + faces) into the backup folder as a single .txt.
-     * Nothing to archive is skipped silently: a fresh install simply carries no copy of it.
-     *
-     * @return true when the archive was written (or there was nothing to write).
-     */
-    private suspend fun backupProfileState(context: Context, treeUri: Uri, profile: String, date: String): Boolean {
-        if (!ProfileStateArchive.hasState(context)) {
-            Timber.tag("AutoBackup").d("No profile state to back up, skipping")
-            return true
-        }
+    /** Writes the installed profile registry and faces as a single document. */
+    private suspend fun backupProfileState(context: Context, treeUri: Uri, profile: String, date: String): Uri? {
         val fileName = autoBackupFileName(BuildConfig.APP_NAME, profile, date, AutoBackupKind.PROFILE_STATE)
         val docUri = DocumentsContract.buildDocumentUriUsingTree(
             treeUri, DocumentsContract.getTreeDocumentId(treeUri)
         )
         val newDocUri = DocumentsContract.createDocument(context.contentResolver, docUri, "text/plain", fileName)
-            ?: return false
-        val outStream = context.contentResolver.openOutputStream(newDocUri) ?: return false
+            ?: return null
+        val outStream = context.contentResolver.openOutputStream(newDocUri) ?: return null
         outStream.use { out -> ProfileStateArchive.writeArchive(context, out) }
         Timber.tag("AutoBackup").i("Profile state backup successful to $fileName")
-        return true
+        return newDocUri
     }
 
     suspend fun verifyBackupLocation(context: Context) {
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val owner = ProfileWorkOwner.capture(context) ?: return
+        if (!ProfileWorkOwner.isBound(context, owner)) return
+        val prefs = profileDataPrefs(context, owner.id)
+        val workName = ProfileWorkOwner.name(WORK_NAME, owner)
         val uriString = prefs.getString(PREF_URI, "") ?: ""
         if (uriString.isEmpty()) return
 
@@ -387,13 +383,13 @@ object BackupManager {
                 prefs.edit().putString(PREF_URI, "").apply()
                 // Stop the backup from running and reset interval to avoid silent failures
                 prefs.edit().putInt(PREF_INTERVAL, INTERVAL_NONE).apply()
-                WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
+                WorkManager.getInstance(context).cancelUniqueWork(workName)
             }
         } catch (e: Exception) {
             Timber.tag("AutoBackup").e(e, "Error verifying backup location")
             prefs.edit().putString(PREF_URI, "").apply()
             prefs.edit().putInt(PREF_INTERVAL, INTERVAL_NONE).apply()
-            WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
+            WorkManager.getInstance(context).cancelUniqueWork(workName)
         }
     }
 }

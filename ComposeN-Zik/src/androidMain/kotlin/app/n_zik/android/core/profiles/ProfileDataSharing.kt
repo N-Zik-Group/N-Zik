@@ -3,6 +3,8 @@ package app.n_zik.android.core.profiles
 import android.content.Context
 import androidx.core.content.edit
 import app.it.fast4x.rimusic.utils.profilePreferences
+import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
+import app.it.fast4x.rimusic.utils.readProfileIds
 import timber.log.Timber
 
 /**
@@ -51,3 +53,7 @@ fun Context.clearProfileShareFlags(profileId: String) {
 /** The items [profileId] shares with the base profile (empty = everything separate, the default). */
 fun Context.profileSharedItems(profileId: String): Set<ProfileDataItem> =
     ProfileDataItem.ALL.filterTo(mutableSetOf()) { profileShares(it, profileId) }
+
+internal fun isLegacyStorageShared(context: Context, profileId: String, item: ProfileDataItem): Boolean =
+    if (profileId == DEFAULT_PROFILE_ID) context.readProfileIds().any { context.profileShares(item, it) }
+    else context.profileShares(item, profileId)

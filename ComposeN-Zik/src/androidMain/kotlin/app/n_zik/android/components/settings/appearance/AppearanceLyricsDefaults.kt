@@ -15,7 +15,9 @@ import app.it.fast4x.rimusic.utils.lyricsTypeKey
 import app.it.fast4x.rimusic.utils.otherLanguageAppLyricsKey
 import app.it.fast4x.rimusic.utils.romanizationEnabledKey
 import app.it.fast4x.rimusic.utils.showSecondLineKey
+import app.n_zik.android.components.player.lyrics.LyricsProvider
 import app.n_zik.android.components.player.lyrics.karaokeClipRectsDebugKey
+import app.n_zik.android.enums.lyrics.LyricsType
 
 /** Restore menu-only controls through their first-run readers without touching saved lyrics. */
 internal fun SharedPreferences.Editor.resetLyricsMenuDefaults() {
@@ -25,4 +27,5 @@ internal fun SharedPreferences.Editor.resetLyricsMenuDefaults() {
         lyricsBackgroundKey, lyricsTypeKey, karaokeRespectAgentPositionKey,
         otherLanguageAppLyricsKey, karaokeClipRectsDebugKey, lyricsSizeKey, lyricsSizeLKey,
     ).forEach { key -> remove(key) }
+    LyricsType.entries.forEach { mode -> remove(LyricsProvider.preferenceKey(mode)) }
 }

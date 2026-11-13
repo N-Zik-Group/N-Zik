@@ -101,6 +101,7 @@ class LyricsSettingsMenu private constructor(
     private val onSearchLyricsOnline: () -> Unit,
     private val onFetchLyricsAgain: () -> Unit,
     private val onPickFromLrcLib: () -> Unit,
+    private val onShowProviders: () -> Unit,
     private val onShowOffsetDialog: () -> Unit,
     override val menuState: MenuState,
     styleState: MutableState<MenuStyle>
@@ -119,6 +120,7 @@ class LyricsSettingsMenu private constructor(
             onSearchLyricsOnline: () -> Unit,
             onFetchLyricsAgain: () -> Unit,
             onPickFromLrcLib: () -> Unit,
+            onShowProviders: () -> Unit,
             onShowOffsetDialog: () -> Unit
         ): LyricsSettingsMenu =
             LyricsSettingsMenu(
@@ -132,6 +134,7 @@ class LyricsSettingsMenu private constructor(
                 onSearchLyricsOnline = onSearchLyricsOnline,
                 onFetchLyricsAgain = onFetchLyricsAgain,
                 onPickFromLrcLib = onPickFromLrcLib,
+                onShowProviders = onShowProviders,
                 onShowOffsetDialog = onShowOffsetDialog,
                 menuState = LocalMenuState.current,
                 styleState = rememberPreference(menuStyleKey, MenuStyle.List)
@@ -178,6 +181,18 @@ class LyricsSettingsMenu private constructor(
         var karaokeRespectAgentPosition by rememberPreference(karaokeRespectAgentPositionKey, true)
         var otherLanguageApp by rememberPreference(otherLanguageAppLyricsKey, Languages.System)
 
+        @Composable
+        fun providerSettingsEntry() {
+            ActionSettingEntry(
+                title = stringResource(R.string.lyrics_provider_settings_title),
+                icon = R.drawable.search,
+                onClick = {
+                    menuState.hide()
+                    onShowProviders()
+                }
+            )
+        }
+
         // Settings content for list
         @Composable
         fun settingsContent() {
@@ -200,6 +215,8 @@ class LyricsSettingsMenu private constructor(
                 },
                 onValueSelected = { lyricsType = it }
             )
+
+            providerSettingsEntry()
 
             val actualStateString = actualLyricsType()?.let {
                 when (it) {
@@ -624,6 +641,8 @@ class LyricsSettingsMenu private constructor(
                     onValueSelected = { lyricsType = it }
                 )
             }
+
+            item { providerSettingsEntry() }
 
             item {
                 val actualStateString = when (actualLyricsType()) {

@@ -36,8 +36,9 @@ import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import kotlin.coroutines.resume
+import app.n_zik.android.core.profiles.ScopedTemporaryFiles
 
-private const val RewindCaptureDirectory = "shared_rewind"
+private const val RewindCaptureDirectory = ScopedTemporaryFiles.REWIND_CAPTURE
 private const val RewindCaptureMaxAgeMs = 24L * 60L * 60L * 1000L
 private val rewindCaptureName = Regex(
     """NZik_Rewind_(?:GLOBAL|[0-9]{4}(?:_(?:0[1-9]|1[0-2]))?)_(?:0[0-9]|1[0-6]|[0-9]{13})[.]png"""
@@ -47,6 +48,13 @@ private val rewindCaptureLock = Mutex()
 /** Keeps cached captures available until the current share or folder export finishes using them. */
 internal suspend fun <T> withRewindCaptures(block: suspend () -> T): T =
     rewindCaptureLock.withLock { block() }
+
+internal fun isExpiredRewindCapture(file: File, now: Long = System.currentTimeMillis()): Boolean =
+    rewindCaptureName.matches(file.name) && file.lastModified() in 1L until now - RewindCaptureMaxAgeMs
+
+private fun rewindCaptureDirectory(context: Context): File = ScopedTemporaryFiles.requireWritableDirectory(
+    ScopedTemporaryFiles.directory(context, RewindCaptureDirectory, ScopedTemporaryFiles.activeOwner(context))
+)
 
 /** Sweeps only expired captures while no Rewind share or export is using the cache. */
 internal fun cleanupExpiredRewindCaptures(cacheDir: File, now: Long = System.currentTimeMillis()) {
@@ -58,10 +66,9 @@ internal fun cleanupExpiredRewindCaptures(cacheDir: File, now: Long = System.cur
             throw IOException("Unexpected Rewind capture directory")
         }
         val captures = directory.listFiles() ?: throw IOException("Cannot list Rewind captures")
-        val staleBefore = now - RewindCaptureMaxAgeMs
         for (file in captures) {
-            if (!rewindCaptureName.matches(file.name) || !file.isFile || file.canonicalFile != directory.canonicalFile.resolve(file.name)) continue
-            if (file.lastModified() in 1L until staleBefore && !file.delete() && file.exists()) {
+            if (!isExpiredRewindCapture(file, now) || !file.isFile || file.canonicalFile != directory.canonicalFile.resolve(file.name)) continue
+            if (!file.delete() && file.exists()) {
                 throw IOException("Cannot delete expired Rewind capture")
             }
         }
@@ -113,7 +120,7 @@ internal suspend fun captureRewindDeckPages(
         return null
     }
 
-    val shareDirectory = File(activity.cacheDir, RewindCaptureDirectory).apply { mkdirs() }
+    val shareDirectory = rewindCaptureDirectory(activity)
     // One fresh set per share run, so a new share never mixes with previous pages
     shareDirectory.listFiles()?.forEach(File::delete)
 
@@ -213,7 +220,7 @@ internal suspend fun captureRewindSlidePng(
     page: Int
 ): File? {
     val activity = view.context as? Activity ?: return null
-    val shareDirectory = File(activity.cacheDir, RewindCaptureDirectory).apply { mkdirs() }
+    val shareDirectory = rewindCaptureDirectory(activity)
     val insetsController = WindowCompat.getInsetsController(activity.window, view)
     var succeeded = false
     try {
@@ -365,7 +372,7 @@ internal suspend fun captureRewindScreenshot(
             }
         }
         val imageFile = withContext(Dispatchers.IO) {
-            val shareDirectory = File(context.cacheDir, RewindCaptureDirectory).apply { mkdirs() }
+            val shareDirectory = rewindCaptureDirectory(context)
             // Captures from previous share runs (> 24 h old) are dropped (spec cleanup)
             val staleBefore = System.currentTimeMillis() - RewindCaptureMaxAgeMs
             shareDirectory.listFiles()

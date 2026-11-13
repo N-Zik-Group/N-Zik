@@ -15,6 +15,7 @@ import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR
+import app.n_zik.android.core.profiles.ReadOnlyProfileCache
 import app.n_zik.android.R
 
 import app.kreate.android.me.knighthat.utils.Toaster
@@ -1204,14 +1205,15 @@ fun PlayerServiceModern.createDataSourceFactory(): DataSource.Factory {
     val lruCacheFactory = CacheDataSource.Factory()
         .setCache(cache)
         .setUpstreamDataSourceFactory(resolvingDataSourceFactory)
+        .apply { if (cache is ReadOnlyProfileCache) setCacheWriteDataSinkFactory(null) }
 
     val finalCacheFactory = CacheDataSource.Factory()
         .setCache(downloadCache)
-        .setUpstreamDataSourceFactory(lruCacheFactory)
+        .setUpstreamDataSourceFactory(StreamingCacheReaders.factory(cache, lruCacheFactory))
         .setCacheWriteDataSinkFactory(null)
         .setFlags(FLAG_IGNORE_CACHE_ON_ERROR)
 
-    return ResolvingDataSource.Factory(finalCacheFactory) { dataSpec ->
+    return ResolvingDataSource.Factory(StreamingCacheReaders.factory(downloadCache, finalCacheFactory)) { dataSpec ->
         val videoId = dataSpec.key ?: dataSpec.uri.toString().substringAfter("watch?v=")
         val parentalControlEnabled = appContext().preferences.getBoolean(parentalControlEnabledKey, false)
         if (parentalControlEnabled) {
@@ -1256,14 +1258,15 @@ fun PlayerServiceModern.createBackgroundMusicDataSourceFactory(): DataSource.Fac
     val lruCacheFactory = CacheDataSource.Factory()
         .setCache(cache)
         .setUpstreamDataSourceFactory(resolvingDataSourceFactory)
+        .apply { if (cache is ReadOnlyProfileCache) setCacheWriteDataSinkFactory(null) }
 
     val finalCacheFactory = CacheDataSource.Factory()
         .setCache(downloadCache)
-        .setUpstreamDataSourceFactory(lruCacheFactory)
+        .setUpstreamDataSourceFactory(StreamingCacheReaders.factory(cache, lruCacheFactory))
         .setCacheWriteDataSinkFactory(null)
         .setFlags(FLAG_IGNORE_CACHE_ON_ERROR)
 
-    return ResolvingDataSource.Factory(finalCacheFactory) { dataSpec ->
+    return ResolvingDataSource.Factory(StreamingCacheReaders.factory(downloadCache, finalCacheFactory)) { dataSpec ->
         val videoId = dataSpec.key ?: dataSpec.uri.toString().substringAfter("watch?v=")
         val parentalControlEnabled = appContext().preferences.getBoolean(parentalControlEnabledKey, false)
         if (parentalControlEnabled) {

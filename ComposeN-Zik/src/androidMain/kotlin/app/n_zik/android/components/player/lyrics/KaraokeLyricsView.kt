@@ -65,6 +65,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.text.TextLayoutResult
+import kotlin.math.roundToLong
 
 /**
  * A single word with its start and end time in milliseconds.
@@ -73,7 +74,8 @@ data class KaraokeWord(
     val text: String,
     val startMs: Long,
     val endMs: Long,
-    val charStartIndex: Int = 0
+    val charStartIndex: Int = 0,
+    val hasExplicitEnd: Boolean = true
 )
 
 /** A single karaoke line: the text, its timestamp, word-level timings, and agent/background info for positioning. */
@@ -82,7 +84,8 @@ data class KaraokeLine(
     val text: String,
     val words: List<KaraokeWord>,
     val agent: String? = null,     // "v1", "v2", "v1000", etc.
-    val isBackground: Boolean = false
+    val isBackground: Boolean = false,
+    val endMs: Long? = null
 )
 
 /**
@@ -115,9 +118,10 @@ fun getFastPathForRange(layout: TextLayoutResult, startIdx: Int, endIdx: Int): P
  *
  * Format: `[MM:SS.cc]{agent:v1|bg}Line text` followed by a word line
  * `<word1:startSec:endSec|word2:startSec:endSec>`.
+ * Imported Lyricsfile can use millisecond line tags and escaped word text.
  */
-fun parseKaraokeLrc(text: String): List<KaraokeLine> {
-    val lines = text.trim().lines()
+fun parseKaraokeLrc(text: String, preserveText: Boolean = false): List<KaraokeLine> {
+    val lines = if (preserveText) text.lines() else text.trim().lines()
     val result = mutableListOf<KaraokeLine>()
 
     val agentRegex = Regex("\\{agent:([^}]+)\\}")
@@ -132,22 +136,28 @@ fun parseKaraokeLrc(text: String): List<KaraokeLine> {
             if (closeBracket < 0) { i++; continue }
             val timeStr = line.substring(1, closeBracket)
             var lineText = line.substring(closeBracket + 1)
+            val importedLine = parseLyricsFileLineText(lineText)
 
             // Parse agent tag
-            val agentMatch = agentRegex.find(lineText)
+            val agentMatch = if (importedLine == null) agentRegex.find(lineText) else null
             val agent = agentMatch?.groupValues?.get(1)
             if (agentMatch != null) {
                 lineText = lineText.replaceFirst(agentRegex, "")
             }
 
             // Parse background tag
-            val isBg = bgRegex.containsMatchIn(lineText)
+            val isBg = importedLine == null && bgRegex.containsMatchIn(lineText)
             if (isBg) {
                 lineText = lineText.replaceFirst(bgRegex, "")
             }
 
-            val cleanText = lineText.trim()
+            val untaggedText = importedLine?.text ?: lineText
+            val cleanText = if (preserveText) untaggedText else untaggedText.trim()
             val timeMs = parseLrcTime(timeStr)
+            if (timeMs == null) {
+                i++
+                continue
+            }
 
             // Check if next lines are word-timing lines (can be multiline)
             var words = emptyList<KaraokeWord>()
@@ -175,30 +185,25 @@ fun parseKaraokeLrc(text: String): List<KaraokeLine> {
                 }
             }
 
-            result.add(KaraokeLine(timeMs, cleanText, words, agent, isBg))
+            result.add(KaraokeLine(timeMs, cleanText, words, agent, isBg, importedLine?.endMs))
         }
         i++
     }
     return result
 }
 
-private fun parseLrcTime(timeStr: String): Long {
-    // Format: MM:SS.cc
-    return try {
-        val parts = timeStr.split(":")
-        val minutes = parts[0].toLong()
-        val secondsParts = parts[1].split(".")
-        val seconds = secondsParts[0].toLong()
-        val centiseconds = secondsParts[1].toLong()
-        minutes * 60_000 + seconds * 1000 + centiseconds * 10
-    } catch (_: Exception) {
-        0L
-    }
+private val karaokeTimestamp = Regex("""(\d{1,9}):([0-5]\d)(?:[.:](\d{1,3}))?""")
+
+private fun parseLrcTime(timeStr: String): Long? {
+    val match = karaokeTimestamp.matchEntire(timeStr) ?: return null
+    val (minutes, seconds, fraction) = match.destructured
+    return minutes.toLong() * 60_000 + seconds.toLong() * 1000 + fraction.padEnd(3, '0').toLong()
 }
 
 private fun parseWordTimings(line: String): List<KaraokeWord> {
     // Format: <word1:startSec:endSec|word2:startSec:endSec>
-    val content = line.removePrefix("<").removeSuffix(">")
+    val imported = line.startsWith(LYRICSFILE_WORD_TIMINGS_PREFIX)
+    val content = line.removePrefix(if (imported) LYRICSFILE_WORD_TIMINGS_PREFIX else "<").removeSuffix(">")
     if (content.isBlank()) return emptyList()
 
     return content.split("|").mapNotNull { part ->
@@ -209,13 +214,18 @@ private fun parseWordTimings(line: String): List<KaraokeWord> {
         val secondLastColon = part.lastIndexOf(':', lastColon - 1)
         if (secondLastColon < 0) return@mapNotNull null
 
-        val wordText = part.substring(0, secondLastColon)
-        val startSec = part.substring(secondLastColon + 1, lastColon).toDoubleOrNull() ?: return@mapNotNull null
-        val endSec = part.substring(lastColon + 1).toDoubleOrNull() ?: return@mapNotNull null
+        val encodedWordText = part.substring(0, secondLastColon)
+        val wordText = if (imported) unescapeLyricsFileWord(encodedWordText) else encodedWordText
+        val endField = part.substring(lastColon + 1)
+        val inferredEnd = imported && endField.endsWith('~')
+        val startSec = part.substring(secondLastColon + 1, lastColon).toDoubleOrNull()
+        val endSec = (if (inferredEnd) endField.dropLast(1) else endField).toDoubleOrNull()
+        if (startSec == null || endSec == null || !startSec.isFinite() || !endSec.isFinite()) return@mapNotNull null
         KaraokeWord(
             text = wordText,
-            startMs = (startSec * 1000).toLong(),
-            endMs = (endSec * 1000).toLong()
+            startMs = (startSec * 1000).roundToLong(),
+            endMs = (endSec * 1000).roundToLong(),
+            hasExplicitEnd = !inferredEnd
         )
     }
 }

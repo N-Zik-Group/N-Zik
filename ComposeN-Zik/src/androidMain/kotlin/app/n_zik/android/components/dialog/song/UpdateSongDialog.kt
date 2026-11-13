@@ -26,7 +26,6 @@ import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.core.migration.NameConvergence
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.asSong
-import app.it.fast4x.rimusic.utils.removeDownload
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.isLocal
@@ -42,7 +41,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.dialog.common.CheckboxDialog
 import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
-import app.n_zik.android.download.services.MyDownloadService
+import app.n_zik.android.download.services.ProfileDownloadCommands
 import timber.log.Timber
 import java.util.Optional
 
@@ -413,6 +412,9 @@ internal suspend fun runSongUpdateCore(
 ) : Boolean {
     val context = appContext()
     if (getActiveProfile(context) != requestProfile) return progress.profileChanged()
+    val downloadOwner = if (selection.offlineDownload && !entry.isLocal) {
+        ProfileDownloadCommands.capture(context) ?: return progress.profileChanged()
+    } else null
     if (selection.cache && binder == null) {
         Timber.tag("Database").w("Cache reset unavailable: playback service is not connected")
         progress.issues += SongUpdateIssue.CACHE_UNAVAILABLE
@@ -564,13 +566,13 @@ internal suspend fun runSongUpdateCore(
             progress.anyCompleted = true
             WaveformExtractor.deleteWaveformOrThrow(context, entry.id)
         }
-        if (selection.offlineDownload && !entry.isLocal) {
-            if (getActiveProfile(context) != requestProfile) return@awaitSongUpdateCommit null
+        if (downloadOwner != null) {
+            if (downloadOwner != ProfileDownloadCommands.capture(context)) return@awaitSongUpdateCommit null
             // Use the service/manager removal path so its index and observed download
             // state follow the file deletion. Shared Format metadata still describes
             // the source and must survive either independent storage action.
             progress.failureIssue = SongUpdateIssue.DOWNLOAD_REMOVE
-            context.removeDownload<MyDownloadService>(entry.id).getOrThrow()
+            downloadOwner.sendRemove(context, entry.id).getOrThrow()
             progress.anyCompleted = true
         }
         if (selection.thumbnail && !fetchedSong?.thumbnailUrl.isNullOrBlank()) {

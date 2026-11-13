@@ -9,6 +9,8 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import app.it.fast4x.rimusic.utils.activeProfileKey
+import app.it.fast4x.rimusic.utils.currentProfileEntries
+import app.it.fast4x.rimusic.utils.writeProfileEntries
 import app.it.fast4x.rimusic.utils.profilePreferences
 import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.appContext
@@ -68,6 +70,8 @@ class ArtworkProviderBoundedTest {
     private fun assertUnavailableSourcePlaceholder(makeUnavailable: (File) -> Unit) {
         val app = RuntimeEnvironment.getApplication()
         val previousProfile = app.profilePreferences.getString(activeProfileKey, null)
+        val previousEntries = app.currentProfileEntries()
+        assertTrue(app.writeProfileEntries(previousEntries + ("unavailable-source" to "Unavailable")))
         val file = File.createTempFile("provider-unavailable", ".png", app.cacheDir).canonicalFile
         val source = Bitmap.createBitmap(1200, 900, Bitmap.Config.ARGB_8888)
         try {
@@ -106,6 +110,7 @@ class ArtworkProviderBoundedTest {
         } finally {
             file.delete()
             app.profilePreferences.edit().putString(activeProfileKey, previousProfile).commit()
+            assertTrue(app.writeProfileEntries(previousEntries))
         }
     }
 
@@ -120,8 +125,10 @@ class ArtworkProviderBoundedTest {
     private fun assertProfileChangeDuringDecode(customCover: Boolean) {
         val app = RuntimeEnvironment.getApplication()
         val previousProfile = app.profilePreferences.getString(activeProfileKey, null)
+        val previousEntries = app.currentProfileEntries()
         val profileA = "provider-decode-a"
         val profileB = "provider-decode-b"
+        assertTrue(app.writeProfileEntries(previousEntries + listOf(profileA to "A", profileB to "B")))
         val songId = "profile-decode-9989"
         fun image(file: File, color: Int): File {
             file.parentFile?.mkdirs()
@@ -184,6 +191,7 @@ class ArtworkProviderBoundedTest {
             fileA.delete()
             fileB.delete()
             app.profilePreferences.edit().putString(activeProfileKey, previousProfile).commit()
+            assertTrue(app.writeProfileEntries(previousEntries))
         }
     }
 
@@ -204,6 +212,8 @@ class ArtworkProviderBoundedTest {
         val app = RuntimeEnvironment.getApplication()
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { appContext() } returns app
+        val previousEntries = app.currentProfileEntries()
+        assertTrue(app.writeProfileEntries(previousEntries + listOf("source-profile" to "Source", "other-profile" to "Other")))
         app.profilePreferences.edit().putString(activeProfileKey, "source-profile").commit()
         val file = File.createTempFile("unrelated-photo-name", ".png")
         val source = Bitmap.createBitmap(1200, 900, Bitmap.Config.ARGB_8888)
@@ -231,6 +241,7 @@ class ArtworkProviderBoundedTest {
         } finally {
             file.delete()
             app.profilePreferences.edit().remove(activeProfileKey).commit()
+            assertTrue(app.writeProfileEntries(previousEntries))
         }
     }
 
@@ -252,6 +263,8 @@ class ArtworkProviderBoundedTest {
 
     @Test fun `custom profile cover produces bounded square seekable JPEG`() {
         val app = RuntimeEnvironment.getApplication()
+        val previousEntries = app.currentProfileEntries()
+        assertTrue(app.writeProfileEntries(previousEntries + ("bounded" to "Bounded")))
         app.profilePreferences.edit().putString(activeProfileKey, "bounded").commit()
         val file = File(app.filesDir, "app_covers_bounded/cover_9988.jpg")
         file.parentFile?.mkdirs()
@@ -266,6 +279,7 @@ class ArtworkProviderBoundedTest {
         } finally {
             file.delete()
             app.profilePreferences.edit().remove(activeProfileKey).commit()
+            assertTrue(app.writeProfileEntries(previousEntries))
         }
     }
 }

@@ -33,6 +33,7 @@ class ImportSettingsProfileTargetTest {
     @BeforeEach
     fun setup() {
         files = Files.createTempDirectory("nzik-import-settings-target").toFile()
+        files.resolve("Profiles_names.txt").writeText("work\n")
         context = mockk()
         every { context.applicationContext } returns context
         every { context.filesDir } returns files

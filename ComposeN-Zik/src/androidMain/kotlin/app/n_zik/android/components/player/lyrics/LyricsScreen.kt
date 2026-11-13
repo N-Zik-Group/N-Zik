@@ -118,6 +118,13 @@ fun LyricsScreen(
         val savedLyricsOnCover by rememberPreference(showlyricsthumbnailKey, true)
         val showlyricsthumbnail = onCover ?: (LocalPlayerCoverOverlay.current || savedLyricsOnCover)
         var lyricsType by rememberPreference(lyricsTypeKey, LyricsType.Auto)
+        val providerPreferences = LyricsType.entries.associateWith { mode ->
+            key(mode) { rememberPreference(LyricsProvider.preferenceKey(mode), "") }
+        }
+        val enabledProviders = LyricsProvider.decode(lyricsType, providerPreferences.getValue(lyricsType).value)
+        var showProviderDialog by rememberSaveable(saver = TolerantBoolStateSaver("lyrics.showProviderDialog")) {
+            mutableStateOf(false)
+        }
         var invalidLrc by remember(mediaId, lyricsType) { mutableStateOf(false) }
         var isPicking by remember(mediaId, lyricsType) { mutableStateOf(false) }
         var lyricsColor by rememberPreference(lyricsColorKey, LyricsColor.White)
@@ -137,15 +144,20 @@ fun LyricsScreen(
             lyrics = null
         }
 
-        val actualLyricsType = remember(lyrics, lyricsType) {
-            lyrics?.type?.let { runCatching { LyricsType.valueOf(it) }.getOrNull() }
+        val actualLyricsType = remember(lyrics, mediaId) {
+            lyrics?.takeIf { it.songId == mediaId }?.type
+                ?.let { runCatching { LyricsType.valueOf(it) }.getOrNull() }
         }
 
+        val mediaMetadata = mediaMetadataProvider()
         val editLyricsDialog = EditLyricsDialog(
             mediaId = mediaId,
             lyricsType = actualLyricsType ?: (if (lyricsType != LyricsType.Auto) lyricsType else LyricsType.Karaoke),
             getLyrics = { lyrics },
-            ensureSongInserted = { ensureSongInserted() }
+            ensureSongInserted = ensureSongInserted,
+            title = mediaMetadata.title?.toString()?.let(::cleanPrefix),
+            artist = mediaMetadata.artist?.toString()?.let(::cleanPrefix),
+            activeMode = lyricsType,
         )
 
 
@@ -185,7 +197,6 @@ fun LyricsScreen(
         var lyricsAlignment by rememberPreference(lyricsAlignmentKey, LyricsAlignment.Center)
         var karaokeRespectAgentPosition by rememberPreference(karaokeRespectAgentPositionKey, true)
         var lyricsSizeAnimate by rememberPreference(lyricsSizeAnimateKey, false)
-        val mediaMetadata = mediaMetadataProvider()
         // Issue #881 (gh-881): tolerant savers (spec M5) — these slots live in the Player
         // screen's sub-composition, the subtree most exposed to positional saveable shifts.
         var editedArtistName by rememberSaveable(saver = TolerantStringStateSaver("lyrics.editedArtistName")) { mutableStateOf<String?>(null) }
@@ -222,6 +233,24 @@ fun LyricsScreen(
             )
         }
 
+        DialogPresence(visible = showProviderDialog) {
+            LyricsProviderDialog(
+                initialSelection = providerPreferences.mapValues { (mode, preference) ->
+                    LyricsProvider.decode(mode, preference.value)
+                },
+                onDismiss = { showProviderDialog = false },
+                onApply = { selection ->
+                    selection.forEach { (mode, providers) ->
+                        val preference = providerPreferences.getValue(mode)
+                        if (providers != LyricsProvider.decode(mode, preference.value)) {
+                            preference.value = LyricsProvider.encode(providers)
+                        }
+                    }
+                    showProviderDialog = false
+                }
+            )
+        }
+
         val showOffsetDialog = ShowOffsetDialog(mediaId = mediaId)
         showOffsetDialog.Render()
 
@@ -254,7 +283,15 @@ fun LyricsScreen(
             onCheckedLrcUpdated = { checkedLyricsLrc = checkedLyricsLrc || it },
             onCheckedKugouUpdated = { checkedLyricsKugou = checkedLyricsKugou || it },
             onCheckedInnertubeUpdated = { checkedLyricsInnertube = checkedLyricsInnertube || it },
-            onFetchingStateChanged = { isFetching = it }
+            onFetchingStateChanged = { isFetching = it },
+            enabledProviders = enabledProviders,
+            onProviderSelectionChanged = {
+                isError = false
+                isErrorSync = false
+                checkedLyricsLrc = false
+                checkedLyricsKugou = false
+                checkedLyricsInnertube = false
+            }
         )
 
         editLyricsDialog.Render()
@@ -691,6 +728,7 @@ fun LyricsScreen(
                                             }
                                         },
                                         onPickFromLrcLib = { isPicking = true },
+                                        onShowProviders = { showProviderDialog = true },
                                         onShowOffsetDialog = { showOffsetDialog.onShortClick() }
                                     ).MenuComponent()
                                 }

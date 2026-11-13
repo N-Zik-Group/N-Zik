@@ -40,7 +40,6 @@ import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.colorPalette
 import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
-import it.fast4x.lrclib.LrcLib
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
@@ -56,20 +55,28 @@ internal data class SyncedSentence(
     val timeMs: Long,
     val text: String,
     val agent: String? = null,
-    val isBackground: Boolean = false
+    val isBackground: Boolean = false,
+    val endMs: Long? = null
 )
 
 private val agentTagRegex = Regex("\\{agent:([^}]*)\\}")
 private val bgTagRegex = Regex("\\{bg\\}")
+private val syncedLineRegex = Regex("""^\[(\d{1,9}):([0-5]\d)(?:[.:](\d{1,3}))?](.*)$""")
 
-internal fun parseSyncedSentences(lrcText: String): List<SyncedSentence> {
-    val rawSentences = LrcLib.Lyrics(lrcText).sentences
-    return rawSentences.map { (time, line) ->
-        val agentMatch = agentTagRegex.find(line)
+internal fun parseSyncedSentences(lrcText: String, preserveText: Boolean = false): List<SyncedSentence> = buildList {
+    add(SyncedSentence(0L, ""))
+    for (rawLine in lrcText.lineSequence()) {
+        val match = syncedLineRegex.matchEntire(rawLine.trimStart()) ?: continue
+        val (minutes, seconds, fraction, line) = match.destructured
+        val time = minutes.toLong() * 60_000 + seconds.toLong() * 1_000 +
+            fraction.padEnd(3, '0').toLong()
+        val importedLine = parseLyricsFileLineText(line)
+        val agentMatch = if (importedLine == null) agentTagRegex.find(line) else null
         val agent = agentMatch?.groupValues?.get(1)
-        val isBg = bgTagRegex.containsMatchIn(line)
-        val cleanText = line.replace(agentTagRegex, "").replace(bgTagRegex, "").trim()
-        SyncedSentence(time, cleanText, agent, isBg)
+        val isBg = importedLine == null && bgTagRegex.containsMatchIn(line)
+        val untaggedText = importedLine?.text ?: line.replace(agentTagRegex, "").replace(bgTagRegex, "")
+        val cleanText = if (preserveText) untaggedText else untaggedText.trim()
+        add(SyncedSentence(time, cleanText, agent, isBg, importedLine?.endMs))
     }
 }
 

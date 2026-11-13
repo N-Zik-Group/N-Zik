@@ -41,7 +41,7 @@ import it.fast4x.innertube.models.SectionListRenderer
 import okhttp3.ConnectionPool
 import okhttp3.Protocol
 import okhttp3.Response
-import java.io.File
+import okhttp3.Cache
 
 
 object Innertube {
@@ -59,6 +59,16 @@ object Innertube {
      */
     @Volatile
     var offlineGate: (() -> Boolean)? = null
+
+    private var transportCache: Cache? = null
+
+    /** The host owns the cache and may share it with other clients for the same profile. */
+    @Synchronized
+    fun bindTransportCache(cache: Cache?) {
+        if (transportCache === cache) return
+        transportCache = cache
+        recreateTransport()
+    }
 
     private fun createClient() = HttpClient(OkHttp) {
         expectSuccess = false
@@ -91,8 +101,7 @@ object Innertube {
                 retryOnConnectionFailure(true)
                 // Connection pool for better performance (like Metrolist)
                 connectionPool(okhttp3.ConnectionPool(10, 5, java.util.concurrent.TimeUnit.MINUTES))
-                // HTTP cache to reduce redundant network calls (like Metrolist)
-                cache(okhttp3.Cache(File(System.getProperty("java.io.tmpdir"), "n_zik_http_cache"), 50L * 1024L * 1024L))
+                cache(transportCache)
                 // OkHttp-level timeouts (like Metrolist)
                 connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
                 readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)

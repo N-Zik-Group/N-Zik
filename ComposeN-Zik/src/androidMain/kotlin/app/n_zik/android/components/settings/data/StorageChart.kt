@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.StrokeCap
@@ -45,6 +46,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
@@ -92,20 +94,76 @@ internal fun List<StorageChartSegment>.categoryAt(x: Float, width: Float): Stora
 private fun LayoutCoordinates.storageChartBounds(): Rect =
     Rect(positionInRoot(), Size(size.width.toFloat(), size.height.toFloat()))
 
+internal class StorageChartScope(
+    private val segments: List<StorageChartSegment>,
+    private val inspected: StorageCategory?,
+    private val amount: (StorageCategory) -> Float,
+    private val onBar: (Rect) -> Unit,
+    private val onRow: (StorageCategory, Rect) -> Unit,
+    private val onMarker: (StorageCategory, Offset) -> Unit,
+) {
+    fun row(category: StorageCategory): Modifier = Modifier
+        .testTag("data.storage.category.${category.name.lowercase()}")
+        .onGloballyPositioned { onRow(category, it.storageChartBounds()) }
+        .semantics(mergeDescendants = true) {
+            if (inspected != null) selected = inspected == category
+        }
+
+    fun marker(category: StorageCategory): Modifier = Modifier
+        .onGloballyPositioned { onMarker(category, it.storageChartBounds().center) }
+
+    @Composable
+    fun color(category: StorageCategory, normal: Color): Color =
+        lerp(colorPalette().textSecondary.copy(alpha = 0.55f), normal, amount(category))
+
+    @Composable
+    fun Bar(description: String? = null) {
+        val palette = colorPalette()
+        val settings = rememberGlassSettings()
+        val glass = settings.usesGlassMaterial(GlassArea.SettingsCards)
+        val inactiveColor = palette.textSecondary.copy(alpha = 0.55f)
+        Canvas(
+            Modifier.fillMaxWidth().height(20.dp)
+                .testTag("data.storage.chart.bar")
+                .onGloballyPositioned { onBar(it.storageChartBounds()) }
+                .then(if (description == null) Modifier else Modifier.semantics { contentDescription = description })
+                .glassSettingsCardRim(settings, CircleShape, glassTint(settings))
+                .glassSettingsCardBackground(
+                    backgroundColor = palette.background0,
+                    cardColor = palette.background1,
+                    shape = CircleShape,
+                    settings = settings.copy(rim = 0f),
+                    sourceBackdrop = LocalGlassContainerBackdrop.current,
+                )
+                .clip(CircleShape),
+        ) {
+            for (segment in segments) {
+                val start = segment.startX(size.width)
+                val end = segment.endX(size.width)
+                if (end <= start) continue
+                val color = lerp(inactiveColor, segment.category.color, amount(segment.category))
+                val alpha = if (glass) color.alpha * 0.68f else color.alpha
+                drawRect(color.copy(alpha = alpha), Offset(start, 0f), Size(end - start, size.height))
+            }
+        }
+    }
+}
+
 @Composable
-internal fun StorageChart(snapshot: StorageBreakdown) {
+internal fun StorageChart(
+    snapshot: StorageBreakdown,
+    content: (@Composable StorageChartScope.() -> Unit)? = null,
+) {
     val context = LocalContext.current
     val palette = colorPalette()
-    val settings = rememberGlassSettings()
-    val glass = settings.usesGlassMaterial(GlassArea.SettingsCards)
     val segments = remember(snapshot) { snapshot.chartSegments() }
     val latestSegments by rememberUpdatedState(segments)
+    val latestCategories by rememberUpdatedState(snapshot.bytes.keys)
     val rowBounds = remember { mutableStateMapOf<StorageCategory, Rect>() }
     val markers = remember { mutableStateMapOf<StorageCategory, Offset>() }
     var origin by remember { mutableStateOf(Offset.Zero) }
     var bar by remember { mutableStateOf(Rect.Zero) }
     var inspectedCategory by remember { mutableStateOf<StorageCategory?>(null) }
-    val inactiveColor = palette.textSecondary.copy(alpha = 0.55f)
     val inspection = updateTransition(inspectedCategory, label = "storageInspection")
     val emphasis = StorageCategory.entries.associateWith { category ->
         inspection.animateFloat(
@@ -129,7 +187,7 @@ internal fun StorageChart(snapshot: StorageBreakdown) {
                     if (bar.height > 0f && point.y >= bar.top && point.y < bar.bottom + 6.dp.toPx()) {
                         return latestSegments.categoryAt(point.x - bar.left, bar.width)
                     }
-                    return rowBounds.entries.firstOrNull { point in it.value }?.key
+                    return rowBounds.entries.firstOrNull { it.key in latestCategories && point in it.value }?.key
                 }
 
                 var inspecting = false
@@ -150,7 +208,7 @@ internal fun StorageChart(snapshot: StorageBreakdown) {
                     val category = segment.category
                     val progress = leaderProgress.getValue(category).value
                     if (progress <= 0f) continue
-                    val marker = markers[category]?.minus(origin) ?: continue
+                    val marker = (markers[category] ?: rowBounds[category]?.centerLeft)?.minus(origin) ?: continue
                     val start = segment.startX(bar.width)
                     val end = segment.endX(bar.width)
                     if (end <= start) continue
@@ -180,54 +238,37 @@ internal fun StorageChart(snapshot: StorageBreakdown) {
                     )
                 }
             },
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = if (content == null) Arrangement.spacedBy(12.dp) else Arrangement.Top,
     ) {
-        Canvas(
-            Modifier.fillMaxWidth().height(8.dp)
-                .testTag("data.storage.chart.bar")
-                .onGloballyPositioned { bar = it.storageChartBounds() }
-                // Draw the sole rim over the chart segments in either contour mode.
-                .glassSettingsCardRim(settings, CircleShape, glassTint(settings))
-                .glassSettingsCardBackground(
-                    backgroundColor = palette.background0,
-                    cardColor = palette.background1,
-                    shape = CircleShape,
-                    settings = settings.copy(rim = 0f),
-                    sourceBackdrop = LocalGlassContainerBackdrop.current,
-                )
-                .clip(CircleShape),
-        ) {
-            for (segment in segments) {
-                val start = segment.startX(size.width)
-                val end = segment.endX(size.width)
-                if (end <= start) continue
-                val color = lerp(inactiveColor, segment.category.color, emphasis.getValue(segment.category).value)
-                val alpha = if (glass) color.alpha * 0.68f else color.alpha
-                drawRect(color.copy(alpha = alpha), Offset(start, 0f), Size(end - start, size.height))
-            }
+        val scope = StorageChartScope(
+            segments, inspectedCategory, { emphasis.getValue(it).value },
+            onBar = { bar = it },
+            onRow = { category, bounds -> rowBounds[category] = bounds },
+            onMarker = { category, position -> markers[category] = position },
+        )
+        if (content != null) {
+            scope.content()
+            return@Column
         }
+        scope.Bar()
         Column(
             modifier = Modifier.padding(top = 6.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             for ((category, bytes) in snapshot.bytes) {
                 val startsVolumeGroup = category == StorageCategory.OTHER_USED || category == StorageCategory.FREE
-                val amount = emphasis.getValue(category).value
-                val textColor = lerp(inactiveColor, palette.text, amount)
+                val textColor = scope.color(category, palette.text)
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                         .padding(top = if (startsVolumeGroup) 6.dp else 0.dp)
-                        .onGloballyPositioned { rowBounds[category] = it.storageChartBounds() }
-                        .semantics(mergeDescendants = true) {
-                            if (inspectedCategory != null) selected = inspectedCategory == category
-                        },
+                        .then(scope.row(category)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(
                         Modifier.size(10.dp)
-                            .onGloballyPositioned { markers[category] = it.storageChartBounds().center }
-                            .background(lerp(inactiveColor, category.color, amount), CircleShape),
+                            .then(scope.marker(category))
+                            .background(scope.color(category, category.color), CircleShape),
                     )
                     BasicText(
                         text = stringResource(category.label),

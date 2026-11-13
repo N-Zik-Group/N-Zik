@@ -13,8 +13,11 @@ import app.n_zik.android.requireLibraryAccess
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.LibraryBackupSchema
 import app.n_zik.android.core.profiles.ProfileDataDirNames
+import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.core.profiles.coversDir
+import app.n_zik.android.core.profiles.isLegacyStorageShared
 import app.n_zik.android.core.rescue.RescueFiles
+import app.n_zik.android.core.rescue.ProfileResetSnapshot
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import java.io.Closeable
 import java.io.File
@@ -338,7 +341,12 @@ internal object DatabaseBackup {
                     val isRawPath = File(local).isAbsolute
                     val path = when {
                         isRawPath -> local
-                        uri.scheme == "file" && uri.authority.isNullOrEmpty() -> uri.path
+                        uri.scheme == "file" && uri.authority.isNullOrEmpty() -> uri.path?.let { decoded ->
+                            // Android's file URI rendering inserts a slash before a Windows test drive.
+                            if (File.separatorChar == '\\' && Regex("^/[A-Za-z]:[/\\\\]").containsMatchIn(decoded)) {
+                                decoded.drop(1)
+                            } else decoded
+                        }
                         else -> null
                     } ?: continue
                     val file = File(path)
@@ -351,6 +359,56 @@ internal object DatabaseBackup {
                     }
                 }
             }
+        }
+    }
+
+    /** Copies the consumer database and changes only verified references to the old shared cover root. */
+    fun relocateSharedCovers(
+        sourceDatabase: File,
+        stagedDatabase: File,
+        oldRoot: File,
+        newRoot: File,
+        verifyCover: (String) -> Unit,
+    ): Boolean {
+        if (!sourceDatabase.isFile) {
+            check(listOf("-wal", "-journal", "-shm").none { File(sourceDatabase.path + it).exists() })
+            return false
+        }
+        listOf("", "-wal", "-journal").forEach { suffix ->
+            ProfileResetSnapshot.copyTree(File(sourceDatabase.path + suffix), File(stagedDatabase.path + suffix))
+        }
+        return open(stagedDatabase, SQLiteDatabase.OPEN_READWRITE).use { db ->
+            db.rawQuery("PRAGMA quick_check", null).use {
+                check(it.moveToFirst() && it.getString(0) == "ok" && !it.moveToNext()) { "Invalid profile library" }
+            }
+            val references = coverReferences(db).filter {
+                it.path.parentFile?.canonicalFile == oldRoot.canonicalFile
+            }.toList()
+            if (references.isEmpty()) return@use false
+            references.map { it.path.name }.distinct().forEach { name ->
+                verifyCover(name)
+                validateImage(childFile(newRoot, name))
+            }
+            db.rawQuery("PRAGMA journal_mode=DELETE", null).use {
+                check(it.moveToFirst() && it.getString(0).equals("delete", ignoreCase = true))
+            }
+            db.beginTransaction()
+            try {
+                for (reference in references) {
+                    val file = childFile(newRoot, reference.path.name)
+                    val path = if (reference.usesFileUri) Uri.fromFile(file).toString() else file.absolutePath
+                    db.execSQL(
+                        "UPDATE `${reference.table}` SET thumbnailUrl = ? WHERE id = ?",
+                        arrayOf(reference.prefix + path, reference.id),
+                    )
+                }
+                db.setTransactionSuccessful()
+            } finally {
+                db.endTransaction()
+            }
+            val oldReferences = coverReferences(db).any { it.path.parentFile?.canonicalFile == oldRoot.canonicalFile }
+            check(!oldReferences) { "Shared cover references remain in the prepared library" }
+            true
         }
     }
 
@@ -396,6 +454,9 @@ internal object DatabaseBackup {
             val coverDir = coversDir(context, profile)
             // Close query cursors before updating their tables.
             val references = coverReferences(db).filter { "$COVERS/${it.path.name}" in images }.toList()
+            check(references.isEmpty() || !isLegacyStorageShared(context, profile, ProfileDataItem.IMAGES)) {
+                "The historical shared cover directory is still protected"
+            }
             val origins = mutableMapOf<String, String>()
             db.beginTransaction()
             try {

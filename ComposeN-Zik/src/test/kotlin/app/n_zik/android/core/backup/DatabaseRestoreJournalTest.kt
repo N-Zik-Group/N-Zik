@@ -2,6 +2,12 @@ package app.n_zik.android.core.backup
 
 import android.app.Application
 import android.content.ContextWrapper
+import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
+import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.components.settings.data.CleanupAction
+import app.n_zik.android.components.settings.data.DeferredProfileCleanup
+import app.n_zik.android.components.settings.data.captureFiles
+import app.n_zik.android.core.profiles.profileStorageIdentity
 import java.io.DataOutputStream
 import java.io.File
 import java.io.RandomAccessFile
@@ -21,6 +27,31 @@ import org.robolectric.annotation.Config
 @Config(sdk = [33], application = Application::class)
 class DatabaseRestoreJournalTest {
     @get:Rule val tmp = TemporaryFolder()
+
+    @Test
+    fun `main process startup discards an unstarted cleanup without touching its payload`() {
+        val files = tmp.newFolder("files")
+        val cache = tmp.newFolder("cache")
+        val databases = tmp.newFolder("databases")
+        val context = object : ContextWrapper(RuntimeEnvironment.getApplication()) {
+            override fun getFilesDir() = files
+            override fun getCacheDir() = cache
+            override fun getDatabasePath(name: String) = databases.resolve(name)
+        }
+        setActiveProfile(DEFAULT_PROFILE_ID, context)
+        val owner = checkNotNull(profileStorageIdentity(context, DEFAULT_PROFILE_ID))
+        val log = files.resolve("profiles/${owner.id}/diagnostics/N-Zik_log.txt").apply {
+            parentFile?.mkdirs()
+            writeText("keep old scheduled data")
+        }
+        val confirmed = checkNotNull(captureFiles(context, owner, CleanupAction.DIAGNOSTIC_LOGS, allowActive = true))
+        assertTrue(DeferredProfileCleanup.schedule(context, confirmed))
+
+        DatabaseRestoreJournal.onProcessStart(context, mainProcess = true)
+
+        assertEquals("keep old scheduled data", log.readText())
+        assertTrue(files.resolve(".profile-cache-cleanup").listFiles().orEmpty().isEmpty())
+    }
 
     @Test
     fun `startup rolls back an interrupted restore even after the database was replaced`() {

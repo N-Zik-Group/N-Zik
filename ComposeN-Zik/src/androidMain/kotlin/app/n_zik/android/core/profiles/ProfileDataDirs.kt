@@ -11,6 +11,7 @@ import androidx.media3.database.DefaultDatabaseProvider
 import androidx.media3.database.StandaloneDatabaseProvider
 import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
 import app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize
+import app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
 import app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey
@@ -126,24 +127,46 @@ fun profileCacheBaseDir(context: Context, profileId: String): File =
  * profile whose own setting differs from the base's must never see its own (empty)
  * separate folder while writing into the base's index database.
  */
-private fun settingsProfileFor(context: Context, profileId: String, item: ProfileDataItem): String =
+internal fun settingsProfileFor(context: Context, profileId: String, item: ProfileDataItem): String =
     if (context.profileShares(item, profileId)) DEFAULT_PROFILE_ID else profileId
 
 /**
  * The downloads directory of [profileId] (base name shared, `<name>_<id>` separate), null
- * when its download cache is Disabled — the cache then lives in a process-local temp dir
- * that deletes itself after close (the existing behavior, kept per profile). A shared item
+ * when its download cache is Disabled and no offline audio exists in its effective root.
+ * Previously committed offline audio remains readable even if an old settings import disabled new writes. A shared item
  * is governed by the BASE profile's settings, a separate one by the profile's own
  * (see [settingsProfileFor]).
  */
 fun downloadsDir(context: Context, profileId: String): File? {
     val settingsProfile = settingsProfileFor(context, profileId, ProfileDataItem.DOWNLOADS)
     val prefs = profileDataPrefs(context, settingsProfile)
-    if (prefs.getEnum(exoPlayerDiskDownloadCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`) == ExoPlayerDiskCacheMaxSize.Disabled) {
-        return null
-    }
     val names = resolveProfileDataDirNames(profileId, context.profileSharedItems(profileId))
-    return profileCacheBaseDir(context, settingsProfile).resolve(names.downloadsDir)
+    val directory = profileCacheBaseDir(context, settingsProfile).resolve(names.downloadsDir)
+    val disabled = prefs.getEnum(exoPlayerDiskDownloadCacheMaxSizeKey, ExoPlayerDiskDownloadCacheMaxSize.`2GB`) ==
+        ExoPlayerDiskDownloadCacheMaxSize.Disabled
+    return directory.takeIf { !disabled || downloadSpanFiles(it).any() }
+}
+
+private fun downloadSpanFiles(directory: File): Sequence<File> {
+    val root = checkNotNull(directory.parentFile).canonicalFile.resolve(directory.name)
+    if (!root.exists()) return emptySequence()
+    check(root.canonicalFile == root && root.isDirectory) { "The download directory cannot be verified" }
+    fun File.isSpan() = isFile && extension == "exo" && canonicalFile == absoluteFile
+    return checkNotNull(root.listFiles()).asSequence().flatMap { child ->
+        when {
+            child.isSpan() -> sequenceOf(child)
+            child.name.toIntOrNull() != null && child.isDirectory && child.canonicalFile == child ->
+                checkNotNull(child.listFiles()).asSequence().filter { it.isSpan() }
+            else -> emptySequence()
+        }
+    }
+}
+
+internal fun profileDownloadSpanBytes(context: Context, id: String): Long {
+    val name = resolveProfileDataDirNames(id, emptySet()).downloadsDir
+    return listOf(context.filesDir.canonicalFile, context.cacheDir.canonicalFile).distinct()
+        .asSequence().flatMap { downloadSpanFiles(it.resolve(name)) }
+        .fold(0L) { bytes, span -> Math.addExact(bytes, span.length()) }
 }
 
 /**
@@ -195,6 +218,42 @@ fun waveformsDir(context: Context, profileId: String): File {
  */
 fun profileIndexDbFile(context: Context, profileId: String): File =
     context.getDatabasePath("${ProfileDataDirNames.INDEX_DB_BASE_NAME}_$profileId.db")
+
+/** Physical private roots, including data left behind by older location or sharing settings. */
+internal fun privateProfileMediaPaths(context: Context, profileId: String): Map<String, File> {
+    val names = resolveProfileDataDirNames(profileId, emptySet())
+    val consumers = context.readProfileIds()
+    val cacheRoot = context.cacheDir.canonicalFile
+    val filesRoot = context.filesDir.canonicalFile
+    fun isPrivate(item: ProfileDataItem): Boolean =
+        profileId != DEFAULT_PROFILE_ID || consumers.none { context.profileShares(item, it) }
+    val hasPrivateIndex = isPrivate(ProfileDataItem.DOWNLOADS) && isPrivate(ProfileDataItem.MEDIA_CACHE)
+
+    return buildMap {
+        if (hasPrivateIndex) {
+            put("downloads", cacheRoot.resolve(names.downloadsDir))
+            put("downloads-private", filesRoot.resolve(names.downloadsDir))
+            put("streaming", cacheRoot.resolve(names.mediaCacheDir))
+            put("streaming-private", filesRoot.resolve(names.mediaCacheDir))
+        }
+        if (isPrivate(ProfileDataItem.IMAGES)) {
+            put("covers", filesRoot.resolve(names.coversDir))
+            put("coil", cacheRoot.resolve(names.imageCacheDir))
+            put("coil-private", filesRoot.resolve(names.imageCacheDir))
+        }
+        if (isPrivate(ProfileDataItem.WAVEFORMS)) {
+            put("waveforms", filesRoot.resolve(names.waveformsDir))
+        }
+        if (hasPrivateIndex) {
+            val index = context.getDatabasePath(names.downloadsIndexDb)
+            val databaseRoot = checkNotNull(index.parentFile).canonicalFile
+            listOf("", "-wal", "-shm", "-journal").forEach { suffix ->
+                val name = index.name + suffix
+                put(name, databaseRoot.resolve(name))
+            }
+        }
+    }
+}
 
 /** The [DatabaseProvider] of a cache pointing at [dbName] (the Media3 index): the base database keeps [StandaloneDatabaseProvider] bit-for-bit (Media3 1.10.1 has no custom-name constructor on it); a suffixed profile database wraps an anonymous [SQLiteOpenHelper] with EMPTY `onCreate`/`onUpgrade` — the same behavior as StandaloneDatabaseProvider: the Media3 features create their own tables when missing. */
 fun cacheDatabaseProvider(context: Context, dbName: String): DatabaseProvider {

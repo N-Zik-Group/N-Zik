@@ -26,6 +26,7 @@ import app.it.fast4x.rimusic.utils.otherLanguageAppPlaylistKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.selectedCountryCodeKey
 import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.it.fast4x.rimusic.utils.writeProfileEntries
 import app.n_zik.android.bridge.AutoStopSettings
 import app.n_zik.android.bridge.BridgeServerController
 import app.n_zik.android.components.search.SearchHistoryStore
@@ -61,6 +62,7 @@ class ReverseSettingsDefaultsTest {
         listOf("preferences", "preferences_reverse-reset", "preferences_other-reset", "app_settings").forEach {
             store(it).edit().clear().commit()
         }
+        check(context.writeProfileEntries(listOf("reverse-reset" to "Reverse Reset")))
         setActiveProfile("reverse-reset", context)
     }
 

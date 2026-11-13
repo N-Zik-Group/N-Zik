@@ -53,7 +53,13 @@ import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.imageQualityFormatKey
 import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.core.profiles.coilImageCacheDir
+import app.n_zik.android.core.profiles.ProfileDataItem
+import app.n_zik.android.core.profiles.isLegacyStorageShared
+import app.n_zik.android.core.profiles.profileDataPrefs
+import app.n_zik.android.core.profiles.profileStorageGeneration
+import app.n_zik.android.core.profiles.settingsProfileFor
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -86,15 +92,48 @@ object ImageCacheFactory {
     internal fun coilDiskCacheDir(context: Context): File =
         coilImageCacheDir(context, getActiveProfile(context))
 
+    private val diskMutationLock = Any()
+    private var metadataRevision = 0L
+
+    internal fun <T> captureCleanupState(capture: (Long) -> T): T = synchronized(diskMutationLock) {
+        capture(metadataRevision)
+    }
+
+    private fun updateCleanupMetadata(write: () -> Unit) = synchronized(diskMutationLock) {
+        metadataRevision++
+        write()
+    }
+
     val DISK_CACHE: DiskCache by lazy {
-        val preferences = appContext().preferences
+        val app = appContext()
+        val profile = getActiveProfile(app)
+        val owner = settingsProfileFor(app, profile, ProfileDataItem.IMAGES)
+        val preferences = profileDataPrefs(app, owner)
         // The Coil image cache of the ACTIVE profile (spec-profile-data-separation).
-        val cacheDir = coilDiskCacheDir(appContext())
+        val cacheDir = coilDiskCacheDir(app)
         val maxSizeBytes = configuredImageCacheBytes(preferences)
-        DiskCache.Builder()
-            .directory(cacheDir.toPath().toOkioPath())
-            .maxSizeBytes(maxSizeBytes)
-            .build()
+        if (isLegacyStorageShared(app, profile, ProfileDataItem.IMAGES)) {
+            ReadOnlyCoilCache(checkNotNull(cacheDir.parentFile).canonicalFile.resolve(cacheDir.name), maxSizeBytes)
+        } else {
+            CleanupCoilCache(
+                DiskCache.Builder().directory(cacheDir.toPath().toOkioPath()).maxSizeBytes(maxSizeBytes).build(),
+                diskMutationLock,
+            )
+        }
+    }
+
+    private const val PLAYLIST_THUMBNAIL_STORE = "playlist_thumbnail_store"
+    private const val IMAGE_METADATA_STORE = "image_cache_metadata"
+
+    internal fun profileMetadataFiles(identity: ProfileStorageIdentity): Set<String> =
+        setOf(PLAYLIST_THUMBNAIL_STORE, IMAGE_METADATA_STORE).flatMap { base ->
+            val name = "${base}_${identity.id}_${identity.generation}.xml"
+            listOf(name, "$name.bak")
+        }.toSet()
+
+    internal fun profileMetadataStoreName(context: Context, base: String): String {
+        val id = getActiveProfile(context)
+        return "${base}_${id}_${profileStorageGeneration(context, id)}"
     }
 
     enum class NetworkQuality(val size: Int, val ttl: Long) {
@@ -111,8 +150,10 @@ object ImageCacheFactory {
     private val storeVersion = MutableStateFlow(0)
 
     internal object PlaylistThumbnailStore {
-        private const val PREFS_NAME = "playlist_thumbnail_store"
-        private fun getPrefs() = appContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        private const val PREFS_NAME = PLAYLIST_THUMBNAIL_STORE
+        private fun getPrefs() = appContext().let { app ->
+            app.getSharedPreferences(profileMetadataStoreName(app, PREFS_NAME), Context.MODE_PRIVATE)
+        }
 
         // Store format: "lowResUrl|highResUrl"
         @Synchronized
@@ -140,7 +181,7 @@ object ImageCacheFactory {
 
                 val updated = "$low|$high"
                 if ((low.isNotEmpty() || high.isNotEmpty()) && updated != current) {
-                    preferences.edit().putString(id, updated).apply()
+                    updateCleanupMetadata { preferences.edit().putString(id, updated).apply() }
                     storeVersion.update { it + 1 }
                 }
             } catch (e: Exception) {
@@ -163,23 +204,25 @@ object ImageCacheFactory {
 
         fun clear(id: String) {
             try {
-                getPrefs().edit().remove(id).apply()
+                updateCleanupMetadata { getPrefs().edit().remove(id).apply() }
             } catch (e: Exception) {}
         }
 
         fun clearAll() {
-            try { getPrefs().edit().clear().apply() } catch (e: Exception) {}
+            try { updateCleanupMetadata { getPrefs().edit().clear().apply() } } catch (e: Exception) {}
         }
     }
 
     private object CacheMetadataStore {
-        private const val PREFS_NAME = "image_cache_metadata"
-        private fun getPrefs() = appContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        private const val PREFS_NAME = IMAGE_METADATA_STORE
+        private fun getPrefs() = appContext().let { app ->
+            app.getSharedPreferences(profileMetadataStoreName(app, PREFS_NAME), Context.MODE_PRIVATE)
+        }
 
         fun save(url: String, quality: NetworkQuality) {
             try {
                 val key = url.hashCode().toString()
-                getPrefs().edit().putString(key, "${quality.name}:${System.currentTimeMillis()}").apply()
+                updateCleanupMetadata { getPrefs().edit().putString(key, "${quality.name}:${System.currentTimeMillis()}").apply() }
             } catch (e: Exception) {}
         }
 
@@ -192,11 +235,11 @@ object ImageCacheFactory {
         }
 
         fun remove(url: String) {
-            try { getPrefs().edit().remove(url.hashCode().toString()).apply() } catch (e: Exception) {}
+            try { updateCleanupMetadata { getPrefs().edit().remove(url.hashCode().toString()).apply() } } catch (e: Exception) {}
         }
 
         fun clearAll() {
-            try { getPrefs().edit().clear().apply() } catch (e: Exception) {}
+            try { updateCleanupMetadata { getPrefs().edit().clear().apply() } } catch (e: Exception) {}
         }
     }
 
@@ -990,6 +1033,41 @@ object ImageCacheFactory {
         } finally {
             // Refresh observers even when only part of the cache could be cleared.
             app.n_zik.android.components.player.SharedArtworkColors.invalidate()
+        }
+    }
+
+    /** Uses the frozen owner for both metadata stores even if profile selection changes concurrently. */
+    internal fun clearBoundProfileCache(
+        context: Context,
+        owner: ProfileStorageIdentity,
+        expected: File,
+        revision: Long,
+        clearDisk: Boolean,
+        metadataFiles: Set<String>,
+        verify: () -> Boolean,
+    ): Boolean {
+        val cache = getDiskCache() as? CleanupCoilCache ?: return false
+        if (cache.directory.toFile().canonicalFile != expected) return false
+        val memoryCache = LOADER.memoryCache
+        return cache.whileIdle {
+            if (revision != metadataRevision || !verify()) return@whileIdle false
+            try {
+                memoryCache?.clear()
+                if (clearDisk) cache.clear()
+                val metadataCleared = listOf(PLAYLIST_THUMBNAIL_STORE, IMAGE_METADATA_STORE).map { base ->
+                    val name = "${base}_${owner.id}_${owner.generation}"
+                    if ("$name.xml" !in metadataFiles && "$name.xml.bak" !in metadataFiles) true
+                    else {
+                        metadataRevision++
+                        context.getSharedPreferences(name, Context.MODE_PRIVATE).edit().clear().commit()
+                    }
+                }.all { it }
+                cacheKeyMap.clear()
+                cooldownMap.clear()
+                metadataCleared && (!clearDisk || cache.size == 0L)
+            } finally {
+                app.n_zik.android.components.player.SharedArtworkColors.invalidate()
+            }
         }
     }
 

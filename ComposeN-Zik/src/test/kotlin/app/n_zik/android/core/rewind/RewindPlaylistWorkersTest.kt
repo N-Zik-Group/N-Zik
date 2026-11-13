@@ -1,5 +1,7 @@
 package app.n_zik.android.core.rewind
 
+import app.n_zik.android.core.profiles.ProfileWorkOwner
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import android.Manifest
 import android.app.Application
 import android.app.Notification
@@ -582,7 +584,9 @@ class RewindPlaylistWorkersTest {
     private fun monthlyWorker(reschedules: MutableList<Context>): RewindMonthlyPlaylistWorker {
         val worker = RewindMonthlyPlaylistWorker(
             RuntimeEnvironment.getApplication(),
-            mockk<WorkerParameters>(relaxed = true)
+            mockk<WorkerParameters>(relaxed = true).also { parameters ->
+                every { parameters.inputData } returns ProfileWorkOwner.input(ProfileStorageIdentity("default", "legacy"))
+            }
         )
         // the real self-reschedule needs a live WorkManager (unreachable from JVM tests)
         worker.rescheduleHook = { reschedules.add(it) }
@@ -592,7 +596,9 @@ class RewindPlaylistWorkersTest {
     private fun yearlyWorker(reschedules: MutableList<Context>): RewindYearlyPlaylistWorker {
         val worker = RewindYearlyPlaylistWorker(
             RuntimeEnvironment.getApplication(),
-            mockk<WorkerParameters>(relaxed = true)
+            mockk<WorkerParameters>(relaxed = true).also { parameters ->
+                every { parameters.inputData } returns ProfileWorkOwner.input(ProfileStorageIdentity("default", "legacy"))
+            }
         )
         worker.rescheduleHook = { reschedules.add(it) }
         return worker
@@ -601,6 +607,8 @@ class RewindPlaylistWorkersTest {
     private fun postImportWorker(): RewindPostImportRegenerationWorker =
         RewindPostImportRegenerationWorker(
             RuntimeEnvironment.getApplication(),
-            mockk<WorkerParameters>(relaxed = true)
+            mockk<WorkerParameters>(relaxed = true).also { parameters ->
+                every { parameters.inputData } returns ProfileWorkOwner.input(ProfileStorageIdentity("default", "legacy"))
+            }
         )
 }

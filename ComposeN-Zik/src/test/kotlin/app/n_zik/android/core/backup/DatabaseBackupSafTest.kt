@@ -15,6 +15,8 @@ import android.os.ParcelFileDescriptor
 import android.provider.DocumentsContract
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.profiles.profileStorageIdentity
+import app.it.fast4x.rimusic.utils.writeProfileEntries
 import app.n_zik.android.core.rescue.RescueFiles
 import java.io.File
 import java.io.RandomAccessFile
@@ -45,6 +47,7 @@ class DatabaseBackupSafTest {
             // Keep native SQLite below Windows' path limit in Robolectric.
             override fun getCacheDir(): File = root.resolve("cache").apply { mkdirs() }
             override fun getFilesDir(): File = root.resolve("files").apply { mkdirs() }
+            override fun getNoBackupFilesDir(): File = root.resolve("no-backup").apply { mkdirs() }
             override fun getDatabasePath(name: String): File =
                 root.resolve("databases").apply { mkdirs() }.resolve(name)
         }
@@ -131,6 +134,62 @@ class DatabaseBackupSafTest {
 
         assertArrayEquals(currentDatabase, active.readBytes())
         assertArrayEquals(currentImage, thumbnail.readBytes())
+    }
+
+    @Test
+    fun `automatic retention only removes verified outputs for the current profile and tree`() {
+        val previous = checkNotNull(profileStorageIdentity(context, "default"))
+        assertTrue(context.writeProfileEntries(listOf("travel" to "Travel")))
+        val travel = checkNotNull(profileStorageIdentity(context, "travel"))
+        val files = mutableMapOf<String, File>()
+        val deleted = mutableListOf<String>()
+        val provider = object : ContentProvider() {
+            override fun onCreate() = true
+
+            override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? =
+                files[DocumentsContract.getDocumentId(uri)]?.let { ParcelFileDescriptor.open(it, ParcelFileDescriptor.MODE_READ_ONLY) }
+
+            override fun call(method: String, arg: String?, extras: Bundle?): Bundle? {
+                if (method != "android:deleteDocument") return super.call(method, arg, extras)
+                @Suppress("DEPRECATION")
+                val uri = checkNotNull(extras?.getParcelable<Uri>("uri"))
+                val id = DocumentsContract.getDocumentId(uri)
+                files.remove(id)
+                deleted += id
+                return Bundle()
+            }
+
+            override fun getType(uri: Uri): String? = null
+            override fun insert(uri: Uri, values: ContentValues?): Uri? = null
+            override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?) = 0
+            override fun update(uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array<out String>?) = 0
+            override fun query(uri: Uri, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor? = null
+        }
+        provider.attachInfo(context, ProviderInfo().apply {
+            authority = AUTHORITY
+            exported = true
+        })
+        ShadowContentResolver.registerProviderInternal(AUTHORITY, provider)
+        val tree = DocumentsContract.buildTreeDocumentUri(AUTHORITY, "root")
+        fun output(id: String): OwnedAutoBackupRetention.Output {
+            files[id] = tmp.newFile().apply { writeText("complete $id") }
+            return OwnedAutoBackupRetention.Output(
+                DocumentsContract.buildDocumentUriUsingTree(tree, id), AutoBackupKind.DATABASE,
+            )
+        }
+
+        val old = output("old-default")
+        val changed = output("changed-default")
+        val otherProfile = output("old-travel")
+        val foreign = output("N-Zik_default_2026-11-09_100000_AutoBackup.sqlite")
+        OwnedAutoBackupRetention.recordAndPrune(context, previous, tree, listOf(old, changed), 5)
+        OwnedAutoBackupRetention.recordAndPrune(context, travel, tree, listOf(otherProfile), 1)
+        files.getValue("changed-default").writeText("replaced by the user")
+        val latest = output("latest-default")
+        OwnedAutoBackupRetention.recordAndPrune(context, previous, tree, listOf(latest), 1)
+
+        assertEquals(listOf("old-default"), deleted)
+        assertTrue(files.keys.containsAll(listOf("changed-default", "old-travel", "latest-default", DocumentsContract.getDocumentId(foreign.uri))))
     }
 
     private fun createLibraryWithPlaylist(): File =

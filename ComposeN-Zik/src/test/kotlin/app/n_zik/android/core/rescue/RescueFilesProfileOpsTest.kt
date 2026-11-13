@@ -223,6 +223,36 @@ class RescueFilesProfileOpsTest {
     // deleteProfiles
 
     @Test
+    fun interruptedDeletionIsReplayedBeforeAProfileIdCanBeReused() {
+        File(filesDir, "Profiles_names.txt").writeText("work\n")
+        seedProfileFiles("work", "data_work.db")
+        val marker = filesDir.resolve("profile-deletions/work").apply {
+            parentFile?.mkdirs()
+            createNewFile()
+        }
+
+        RescueFiles.resumeProfileDeletions(context)
+
+        assertFalse(marker.exists())
+        assertFalse(File(databasesDir, "data_work.db").exists())
+        assertFalse(File(sharedPrefsDir, "preferences_work.xml").exists())
+        assertTrue(File(filesDir, "Profiles_names.txt").readText().isBlank())
+    }
+
+    @Test
+    fun snapshotCanRestoreWhileNewlyPrivateCategoriesStayIntact() {
+        val live = filesDir.resolve("library").apply { writeText("saved library") }
+        val snapshot = ProfileResetSnapshot(filesDir.resolve("snapshots/principal"))
+        snapshot.reset(mapOf("library" to live), { "" }) {}
+        val waveforms = filesDir.resolve("waveforms").apply { writeText("newly private waveforms") }
+
+        snapshot.restore(mapOf("library" to live, "waveforms" to waveforms), { "" }) {}
+
+        assertEquals("saved library", live.readText())
+        assertEquals("newly private waveforms", waveforms.readText())
+    }
+
+    @Test
     fun deleteProfilesPurgesNamesSettingsDatabaseAndFace() {
         File(filesDir, "Profiles_names.txt").writeText("work\tBoulot\nhome\n")
         store["displayName_work"] = "Boulot"
@@ -719,7 +749,7 @@ class RescueFilesProfileOpsTest {
     }
 
     @Test
-    fun resetProfilesBacksUpTheSeparateDataAndWipesTheCaches() {
+    fun resetProfilesBacksUpPrivateCacheBeforeWiping() {
         File(filesDir, "Profiles_names.txt").writeText("work\n")
         store["share_media_cache_work"] = true
         seedBaseData()
@@ -736,8 +766,7 @@ class RescueFilesProfileOpsTest {
         // …including the suffixed index (side file included)…
         assertEquals("index", File(backup, "exoplayer_internal_work.db").readText())
         assertEquals("wal", File(backup, "exoplayer_internal_work.db-wal").readText())
-        // …while the regenerable caches are wiped WITHOUT backup
-        assertFalse(File(backup, "coil").exists())
+        assertEquals("x", File(backup, "coil/img.bin").readText())
         // The live separate data is gone
         assertFalse(File(cacheDir, "exo_downloads_work").exists())
         assertFalse(File(cacheDir, "coil_work").exists())
@@ -809,7 +838,7 @@ class RescueFilesProfileOpsTest {
     }
 
     @Test
-    fun restoreProfilesSkipsTheItemsTheProfileSharesNow() {
+    fun restoreProfilesRestoresPrivateFilesWithoutReplacingTheSharedSource() {
         File(filesDir, "Profiles_names.txt").writeText("work\n")
         seedBaseData()
         seedSeparateData("work")
@@ -822,16 +851,39 @@ class RescueFilesProfileOpsTest {
         val result = RescueFiles.restoreProfiles(context, listOf("work"))
 
         assertTrue(result.isSuccess)
-        // The shared images are NOT restored: the base location is untouched and the
-        // profile has no separate covers of its own
         assertTrue(File(filesDir, "app_covers/cover.jpg").exists())
-        assertFalse(File(filesDir, "app_covers_work").exists())
-        // The backup copy stays parked in the backup dir
-        assertEquals("x", File(backupDir("work"), "covers/cover.jpg").readText())
+        assertEquals("x", File(filesDir, "app_covers_work/cover.jpg").readText())
         // The separate items are restored
         assertEquals("x", File(cacheDir, "exo_downloads_work/dl.bin").readText())
         assertEquals("x", File(filesDir, "waveforms_work/x.json").readText())
         assertEquals("index", File(databasesDir, "exoplayer_internal_work.db").readText())
+    }
+
+    @Test
+    fun resetResumeKeepsBothDownloadRootsAndInactivePrivateCoversRestorable() {
+        File(filesDir, "Profiles_names.txt").writeText("work\n")
+        store["share_images_work"] = true
+        store["share_downloads_work"] = true
+        seedBaseData()
+        seedProfileFiles("work", "data_work.db")
+        seedSeparateData("work")
+        File(filesDir, "exo_downloads_work").dirWithFile("private.bin")
+        every { context.deleteSharedPreferences("nzik_square_glass_v2_work") } returns false
+
+        assertTrue(RescueFiles.resetProfiles(context, listOf("work")).isFailure)
+        assertTrue(File(backupDir("work"), ".reset-pending").isFile)
+        assertFalse(File(databasesDir, "data_work.db").exists())
+        every { context.deleteSharedPreferences("nzik_square_glass_v2_work") } returns true
+        assertTrue(RescueFiles.resetProfiles(context, listOf("work")).isSuccess)
+        assertTrue(RescueFiles.restoreProfiles(context, listOf("work")).isSuccess)
+
+        assertEquals("db", File(databasesDir, "data_work.db").readText())
+        assertEquals("wal", File(databasesDir, "data_work.db-wal").readText())
+        assertEquals("<xml/>", File(sharedPrefsDir, "preferences_work.xml").readText())
+        assertEquals("x", File(cacheDir, "exo_downloads_work/dl.bin").readText())
+        assertEquals("x", File(filesDir, "exo_downloads_work/private.bin").readText())
+        assertEquals("x", File(filesDir, "app_covers_work/cover.jpg").readText())
+        assertEquals("x", File(cacheDir, "exo_downloads/dl.bin").readText())
     }
 
     // Public entry points: the global cache clear / downloads delete must cover
@@ -873,29 +925,28 @@ class RescueFilesProfileOpsTest {
     }
 
     @Test
-    fun deleteDownloadsCoversTheBaseAndEveryProfilesSeparateDownloads() {
-        File(filesDir, "Profiles_names.txt").writeText("work\nhome\n")
+    fun deleteDownloadsRefusesAnUnverifiedIndexWithoutWipingMedia() {
+        File(filesDir, "Profiles_names.txt").writeText("work\n")
         seedBaseData()
         seedSeparateData("work")
-        seedSeparateData("home")
 
-        val result = RescueFiles.deleteDownloads(context)
+        assertTrue(RescueFiles.deleteDownloads(context).isFailure)
+        assertTrue(File(cacheDir, "exo_downloads/dl.bin").isFile)
+        assertTrue(File(cacheDir, "exo_downloads_work/dl.bin").isFile)
+        assertTrue(File(databasesDir, "exoplayer_internal.db").isFile)
+        assertTrue(File(databasesDir, "exoplayer_internal_work.db").isFile)
+        assertTrue(File(cacheDir, "exoplayer/stream.bin").isFile)
+    }
 
-        assertTrue(result.isSuccess)
-        // The base downloads + the base index (side files included) are gone
-        assertFalse(File(cacheDir, "exo_downloads").exists())
-        assertFalse(File(databasesDir, "exoplayer_internal.db").exists())
-        // Every profile's own suffixed downloads + suffixed index (+ side files) are gone
-        assertFalse(File(cacheDir, "exo_downloads_work").exists())
-        assertFalse(File(cacheDir, "exo_downloads_home").exists())
-        assertFalse(File(databasesDir, "exoplayer_internal_work.db").exists())
-        assertFalse(File(databasesDir, "exoplayer_internal_work.db-wal").exists())
-        assertFalse(File(databasesDir, "exoplayer_internal_home.db").exists())
-        // The streaming caches (base + profiles) survive a downloads delete
-        assertTrue(File(cacheDir, "exoplayer/stream.bin").exists())
-        assertTrue(File(cacheDir, "exoplayer_work/stream.bin").exists())
-        // The covers survive
-        assertTrue(File(filesDir, "app_covers/cover.jpg").exists())
-        assertTrue(File(filesDir, "app_covers_work/cover.jpg").exists())
+    @Test
+    fun deleteBackupsPreservesTheSnapshotDuringAnInterruptedReset() {
+        File(filesDir, "Profiles_names.txt").writeText("work\n")
+        seedProfileFiles("work", "data_work.db")
+        every { context.deleteSharedPreferences("nzik_square_glass_v2_work") } returns false
+
+        assertTrue(RescueFiles.resetProfiles(context, listOf("work")).isFailure)
+        assertTrue(RescueFiles.deleteBackups(context).isFailure)
+        assertEquals("db", File(backupDir("work"), "data_work.db").readText())
+        assertTrue(File(backupDir("work"), ".reset-pending").isFile)
     }
 }

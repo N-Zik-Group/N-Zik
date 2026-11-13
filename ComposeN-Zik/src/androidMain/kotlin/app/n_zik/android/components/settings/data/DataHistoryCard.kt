@@ -33,6 +33,11 @@ import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.profiles.waveformsDir
+import app.n_zik.android.core.profiles.ProfileDataItem
+import app.n_zik.android.core.profiles.isLegacyStorageShared
+import app.n_zik.android.core.profiles.profileStorageIdentity
+import app.n_zik.android.core.backup.DatabaseRestoreJournal
+import app.n_zik.android.core.rescue.ProfileResetSnapshot
 import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
@@ -117,12 +122,20 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
                     },
                     icon = R.drawable.trash,
                     onClick = {
+                        val profile = getActiveProfile(context)
                         Database.asyncTransaction {
                             eventTable.deleteAll()
                         }
                         NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                             withContext(NzikDispatchers.DATA) {
-                                waveformsDir(context, getActiveProfile(context)).deleteRecursively()
+                                DatabaseRestoreJournal.withProfileStorageMutation(context) {
+                                    if (profile == getActiveProfile(context) && profileStorageIdentity(context, profile) != null &&
+                                        !isLegacyStorageShared(context, profile, ProfileDataItem.WAVEFORMS)
+                                    ) {
+                                        val root = context.filesDir.canonicalFile
+                                        ProfileResetSnapshot.deleteVerifiedTree(root.resolve(waveformsDir(context, profile).name))
+                                    }
+                                }
                             }
                             WaveformExtractor.refreshSignal.tryEmit(System.currentTimeMillis())
                             Toaster.done()

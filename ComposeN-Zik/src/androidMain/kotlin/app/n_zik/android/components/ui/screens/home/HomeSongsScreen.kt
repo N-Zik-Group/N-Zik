@@ -69,6 +69,8 @@ import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
 import app.n_zik.android.components.tab.*
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import app.n_zik.android.components.dialog.export.ExportCacheDialog
+import app.n_zik.android.components.dialog.export.CachedLyricsExport
+import app.n_zik.android.components.dialog.export.CachedLyricsExportDialog
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.typography
@@ -85,7 +87,6 @@ import app.n_zik.android.components.dialog.common.FfmpegPreparation
 import app.n_zik.android.modules.ModuleState
 import app.n_zik.android.components.dialog.common.InProgressDialog
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
-import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.dialog.search.MatchResultsDialog
 import app.n_zik.android.components.dialog.media.YouTubeLinkImportDialog
 import app.n_zik.android.components.tab.ImportPlaylistsMenu
@@ -118,7 +119,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import app.n_zik.android.enums.lyrics.LyricsType
 
 @RequiresApi(Build.VERSION_CODES.O)
 @UnstableApi
@@ -191,7 +191,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
 
     var showExportCacheConfirmDialog by remember { mutableStateOf(false) }
     var showExportCacheLyricsDialog by remember { mutableStateOf(false) }
-    var exportCacheLyricsType by remember { mutableStateOf<String?>(null) }
+    var exportCacheLyricsChoice by remember { mutableStateOf(CachedLyricsExport.None) }
     val ffmpegPreparation = remember { FfmpegPreparation() }
     DisposableEffect(ffmpegPreparation) {
         onDispose { ffmpegPreparation.dispose() }
@@ -223,7 +223,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
             folderUri = folderUri,
             songs = songs,
             binder = currentBinder,
-            lyricsType = exportCacheLyricsType,
+            lyricsChoice = exportCacheLyricsChoice,
             prepareFfmpeg = {
                 withContext(NzikDispatchers.UI) {
                     ffmpegPreparation.awaitReady().also { state ->
@@ -662,23 +662,12 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                         )
                     }
                     DialogPresence(visible = showExportCacheLyricsDialog) {
-                        val lyricsOptions = listOf(
-                            null to stringResource(R.string.lyrics_empty),
-                            LyricsType.Synced.name to stringResource(R.string.lyrics_synced),
-                            LyricsType.Unsynced.name to stringResource(R.string.lyrics_unsynced),
-                            LyricsType.Karaoke.name to stringResource(R.string.lyrics_karaoke)
-                        )
-                        var selectedLyricsType by remember { mutableStateOf(exportCacheLyricsType) }
-                        ValueSelectorDialog(
+                        CachedLyricsExportDialog(
                             onDismiss = { showExportCacheLyricsDialog = false },
-                            title = stringResource(R.string.export_cached_songs_lyrics_confirmation),
-                            selectedValue = selectedLyricsType,
-                            values = lyricsOptions.map { it.first },
-                            onValueSelected = { type ->
-                                exportCacheLyricsType = type
+                            onChoice = { choice ->
+                                exportCacheLyricsChoice = choice
                                 exportCacheFolderLauncher.launch(null)
-                            },
-                            valueText = { type -> lyricsOptions.find { it.first == type }?.second ?: "" }
+                            }
                         )
                     }
                     ffmpegPreparation.Render()

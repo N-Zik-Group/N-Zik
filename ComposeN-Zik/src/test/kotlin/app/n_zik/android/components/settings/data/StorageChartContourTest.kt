@@ -64,7 +64,7 @@ class StorageChartContourTest {
                     val fill = if (settings.usesGlassMaterial(GlassArea.SettingsCards)) {
                         chartColor.copy(alpha = chartColor.alpha * .68f)
                     } else chartColor
-                    Box(Modifier.fillMaxWidth().height(8.dp).testTag("singleRimReference")
+                    Box(Modifier.fillMaxWidth().height(20.dp).testTag("singleRimReference")
                         .glassSettingsCardRim(CircleShape).clip(CircleShape).background(fill))
                     StorageChart(snapshot)
                 }
@@ -75,9 +75,19 @@ class StorageChartContourTest {
             compose.runOnIdle { mode.value = selected }
             val actual = compose.onNodeWithTag("data.storage.chart.bar").captureToImage().toPixelMap()
             val reference = compose.onNodeWithTag("singleRimReference").captureToImage().toPixelMap()
+            assertEquals(selected.name, reference.height, actual.height)
             val x = actual.width / 2
-            assertEquals(selected.name, reference[x, 0], actual[x, 0])
-            assertEquals(selected.name, reference[x, actual.height - 1], actual[x, actual.height - 1])
+            assertPixelColor(selected.name, reference[x, 0], actual[x, 0])
+            assertPixelColor(selected.name, reference[x, actual.height - 1], actual[x, actual.height - 1])
         }
+    }
+
+    private fun assertPixelColor(mode: String, expected: Color, actual: Color) {
+        // Canvas and a composited background can round an 8-bit color channel differently.
+        val tolerance = 1f / 255f + 0.00001f
+        assertEquals(mode, expected.red, actual.red, tolerance)
+        assertEquals(mode, expected.green, actual.green, tolerance)
+        assertEquals(mode, expected.blue, actual.blue, tolerance)
+        assertEquals(mode, expected.alpha, actual.alpha, tolerance)
     }
 }

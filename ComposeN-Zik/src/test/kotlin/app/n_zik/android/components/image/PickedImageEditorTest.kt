@@ -338,10 +338,13 @@ class PickedImageEditorTest {
     fun `startup sweep removes previous process images and preserves current editors and drafts`() {
         // The synchronous JUnit entry point waits for startup cleanup on the DATA dispatcher.
         runBlocking {
-            val abandonedEditor = editDirectory()
-            val abandonedDraft = editDirectory()
-            val liveEditor = editDirectory()
-            val liveDraft = editDirectory()
+            fun scopedDirectory() = PickedImageEditor.directory(context, UUID.randomUUID().toString()).apply { mkdirs() }
+            val abandonedEditor = scopedDirectory()
+            val abandonedDraft = scopedDirectory()
+            val liveEditor = scopedDirectory()
+            val liveDraft = scopedDirectory()
+            val legacy = editDirectory()
+            val legacyInput = File(legacy, "input.png").apply { writeText("unattributed") }
             val oldInput = File(abandonedEditor, "input.png").apply { writeText("old editor") }
             val oldPrepared = File(abandonedDraft, "prepared.png").apply { writeText("old draft") }
             val currentInput = File(liveEditor, "input.png").apply { writeText("current editor") }
@@ -354,10 +357,11 @@ class PickedImageEditorTest {
                 assertFalse(oldPrepared.exists())
                 assertFalse(abandonedEditor.exists())
                 assertFalse(abandonedDraft.exists())
+                assertTrue(legacyInput.isFile)
                 assertEquals("current editor", session.source.readText())
                 assertEquals("current draft", prepared.file.readText())
             } finally {
-                listOf(abandonedEditor, abandonedDraft, liveEditor, liveDraft).forEach {
+                listOf(abandonedEditor, abandonedDraft, liveEditor, liveDraft, legacy).forEach {
                     PickedImageEditor.discard(context, it.name)
                 }
             }

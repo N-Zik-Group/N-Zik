@@ -12,6 +12,11 @@ import androidx.media3.exoplayer.offline.DefaultDownloadIndex
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.test.core.app.ApplicationProvider
+import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
+import app.it.fast4x.rimusic.utils.PROFILE_NAMES_FILE_NAME
+import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.core.profiles.LegacyMediaAccess
+import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import io.mockk.every
@@ -80,6 +85,9 @@ class MyDownloadHelperInitS1OffMainTest {
 
     @Before
     fun initDependencies() {
+        setActiveProfile(DEFAULT_PROFILE_ID, context)
+        context.filesDir.resolve(PROFILE_NAMES_FILE_NAME).writeText("")
+        assertFalse(LegacyMediaAccess.isProtected(context, DEFAULT_PROFILE_ID, ProfileDataItem.DOWNLOADS))
         // MainApplication is final, so Dependencies.application is a mock wired to this
         // app's context (same pattern as MediaItemUtilsTest) — the init path reads
 
@@ -144,7 +152,11 @@ class MyDownloadHelperInitS1OffMainTest {
 
         // The real public entry point: drives ensureDownloadManagerInitialized — real
         // DownloadManager + DefaultDownloadIndex + listener wiring + the S1 launch.
-        MyDownloadHelper.getDownloadManager(context)
+        val manager = MyDownloadHelper.getDownloadManager(context)
+        assertTrue("S1 manager did not open the fixture's download index",
+            manager.downloadIndex.getDownloads().use { cursor ->
+                cursor.moveToFirst() || indexReadThreads.isNotEmpty()
+            })
 
         // Bounded wait: the S1 coroutine (DATA), the internal HandlerThread removal and
         // the onDownloadChanged listener (main looper) all run off the test thread.

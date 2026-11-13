@@ -1,10 +1,14 @@
 package app.n_zik.android.components.dialog.export
 
-import app.n_zik.android.appTextResources
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.FfmpegPreparation
 import app.n_zik.android.components.dialog.common.InProgressDialog
-import app.n_zik.android.components.dialog.common.ValueSelectorDialog
+import app.n_zik.android.components.dialog.common.DialogActionList
+import app.n_zik.android.components.dialog.common.DialogButton
+import app.n_zik.android.components.player.lyrics.KaraokeLine
+import app.n_zik.android.components.player.lyrics.LyricsFileCodec
+import app.n_zik.android.components.player.lyrics.parseKaraokeLrc
+import app.n_zik.android.components.player.lyrics.parseSyncedSentences
 import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.models.Lyrics
 import com.metrolist.music.betterlyrics.BetterLyrics
@@ -13,6 +17,7 @@ import it.fast4x.kugou.KuGou
 import it.fast4x.innertube.requests.lyrics
 import kotlin.time.Duration.Companion.milliseconds
 import android.net.Uri
+import android.content.ContentResolver
 import android.provider.DocumentsContract
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -27,10 +32,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.CacheSpan
+import app.n_zik.android.playback.services.StreamingCacheReaders
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.appContext
@@ -60,6 +68,30 @@ import java.nio.ByteOrder
 import java.nio.ByteBuffer
 import android.graphics.BitmapFactory
 import android.util.Base64
+import java.util.Locale
+
+/** Lyrics sidecar to accompany the cached audio. */
+internal enum class CachedLyricsExport(val label: Int, val legacyType: LyricsType? = null) {
+    None(R.string.lyrics_empty),
+    Synced(R.string.lyrics_synced, LyricsType.Synced),
+    Unsynced(R.string.lyrics_unsynced, LyricsType.Unsynced),
+    Karaoke(R.string.lyrics_karaoke, LyricsType.Karaoke),
+    Lyricsfile(R.string.export_cached_songs_lyricsfile);
+}
+
+@Composable
+internal fun CachedLyricsExportDialog(onDismiss: () -> Unit, onChoice: (CachedLyricsExport) -> Unit) {
+    DialogActionList(
+        title = stringResource(R.string.export_cached_songs_lyrics_confirmation),
+        onDismiss = onDismiss,
+        actions = CachedLyricsExport.entries.map { choice ->
+            DialogButton(stringResource(choice.label), onClick = {
+                onDismiss()
+                onChoice(choice)
+            })
+        }
+    )
+}
 
 class ExportCacheDialog private constructor(
     activeState: MutableState<Boolean>,
@@ -67,7 +99,7 @@ class ExportCacheDialog private constructor(
     private val getSong: () -> Song,
     val isExporting: MutableState<Boolean> = mutableStateOf(false),
     val extension: String = "m4a",
-    val lyricsType: MutableState<String?> = mutableStateOf(null),
+    private val lyricsChoice: MutableState<CachedLyricsExport>,
     private val ffmpegPreparation: FfmpegPreparation,
 ) : app.n_zik.android.components.dialog.common.Dialog, MenuIcon, Descriptive {
 
@@ -76,9 +108,17 @@ class ExportCacheDialog private constructor(
         get() = _isActiveState.value
         set(v) { _isActiveState.value = v }
 
-    var selectedLyricsType by mutableStateOf<String?>(null)
-
     companion object {
+        private fun hasInternalTimedLineTag(text: String): Boolean = text.lineSequence().any { line ->
+            val timestampEnd = line.indexOf(']')
+            if (!line.startsWith('[') || timestampEnd < 2) {
+                false
+            } else {
+                val content = line.substring(timestampEnd + 1).trimStart()
+                content.startsWith("{lyricsfile-line:") || content.startsWith("{agent:") || content.startsWith("{bg}")
+            }
+        }
+
         // Shared scope for this dialog's fire-and-forget export work (issue #606):
         // SupervisorJob (via NzikDispatchers.fireAndForget) so a failed export
 
@@ -126,10 +166,13 @@ class ExportCacheDialog private constructor(
 
                 try {
                     Timber.tag("ExportCache").i("Creating raw file...")
-                    val spans = (if( isCached ) binder.cache else binder.downloadCache).getCachedSpans( song.id )
-                    rawFile.outputStream().use { outStream ->
-                        spans.mapNotNull(CacheSpan::file).forEach { fileSpan ->
-                            fileSpan.inputStream().use { it.copyTo(outStream) }
+                    val cache = if (isCached) binder.cache else binder.downloadCache
+                    StreamingCacheReaders.acquire(cache, song.id).use {
+                        val spans = cache.getCachedSpans(song.id)
+                        rawFile.outputStream().use { outStream ->
+                            spans.mapNotNull(CacheSpan::file).forEach { fileSpan ->
+                                fileSpan.inputStream().use { it.copyTo(outStream) }
+                            }
                         }
                     }
                     Timber.tag("ExportCache").i("Raw file created. Size: ${rawFile.length()} bytes")
@@ -317,7 +360,7 @@ class ExportCacheDialog private constructor(
             val ffmpegPreparation = remember { FfmpegPreparation() }
             val song = getSong()
             val coroutineScope = rememberCoroutineScope()
-            val lyricsTypeState = remember { mutableStateOf<String?>(null) }
+            val lyricsChoiceState = remember { mutableStateOf(CachedLyricsExport.None) }
 
             var fileExtension by remember { mutableStateOf("m4a") }
             LaunchedEffect(song.id) {
@@ -335,6 +378,7 @@ class ExportCacheDialog private constructor(
                 folderUri ?: return@rememberLauncherForActivityResult
                 val currentBinder = binder ?: return@rememberLauncherForActivityResult
                 val currentSong = getSong()
+                val selectedLyrics = lyricsChoiceState.value
 
                 try {
                     val takeFlags = android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or
@@ -383,21 +427,9 @@ class ExportCacheDialog private constructor(
                             onExport(audioUri, currentBinder, currentSong, isExporting, showResultToast = false).join()
                         }
 
-                        val selectedType = lyricsTypeState.value
-                        if (selectedType != null) {
-                            val lrcData = getLyricsText(currentSong, selectedType)
-                            if (lrcData != null) {
-                                val lrcUri = DocumentsContract.createDocument(
-                                    appContext().contentResolver, parentUri,
-                                    "application/octet-stream", "$baseName.lrc"
-                                )
-                                if (lrcUri != null) {
-                                    appContext().contentResolver.openOutputStream(lrcUri)?.use { out ->
-                                        out.write(lrcData.toByteArray(Charsets.UTF_8))
-                                    }
-                                }
-                            }
-                        }
+                        writeLyricsSidecar(
+                            appContext().contentResolver, parentUri, baseName, currentSong, selectedLyrics
+                        )
 
                         kotlinx.coroutines.withContext(NzikDispatchers.UI) {
                             isExporting.value = false
@@ -423,17 +455,17 @@ class ExportCacheDialog private constructor(
                 getSong,
                 isExporting,
                 fileExtension,
-                lyricsTypeState,
+                lyricsChoiceState,
                 ffmpegPreparation,
             )
         }
 
         @UnstableApi
-        fun batchExport(
+        internal fun batchExport(
             folderUri: Uri,
             songs: List<Song>,
             binder: PlayerServiceModern.Binder,
-            lyricsType: String? = null,
+            lyricsChoice: CachedLyricsExport = CachedLyricsExport.None,
             prepareFfmpeg: suspend () -> ModuleState? = FfmpegModule::ensureReady,
             onProgress: (current: Int, total: Int, songTitle: String) -> Unit,
             onComplete: (successCount: Int, failCount: Int) -> Unit
@@ -498,10 +530,13 @@ class ExportCacheDialog private constructor(
                         val cacheDir = appContext().cacheDir
                         val probeFile = File(cacheDir, "temp_probe_${song.id}_${System.currentTimeMillis()}.m4a")
                         try {
-                            val spans = binder.cache.getCachedSpans(song.id)
-                            probeFile.outputStream().use { out ->
-                                spans.mapNotNull(CacheSpan::file).forEach { fileSpan ->
-                                    fileSpan.inputStream().use { it.copyTo(out) }
+                            val cache = binder.cache
+                            StreamingCacheReaders.acquire(cache, song.id).use {
+                                val spans = cache.getCachedSpans(song.id)
+                                probeFile.outputStream().use { out ->
+                                    spans.mapNotNull(CacheSpan::file).forEach { fileSpan ->
+                                        fileSpan.inputStream().use { it.copyTo(out) }
+                                    }
                                 }
                             }
                             val probeSession = FFprobeKit.getMediaInformation(probeFile.absolutePath)
@@ -525,26 +560,17 @@ class ExportCacheDialog private constructor(
                     }
                     onExport(docUri, binder, song, mutableStateOf(false), showResultToast = false).join()
 
-                    if (lyricsType != null) {
-                        try {
-                            val type = lyricsType ?: return@forEachIndexed
-                            val lrcData = getLyricsText(song, type)
-                            if (lrcData != null) {
-                                val lrcName = "$baseName.lrc"
-                                val lrcUri = DocumentsContract.createDocument(cr, parentUri, "application/octet-stream", lrcName)
-                                if (lrcUri != null) {
-                                    cr.openOutputStream(lrcUri)?.use { out ->
-                                        out.write(lrcData.toByteArray(Charsets.UTF_8))
-                                    }
-                                    Timber.tag("ExportCache").i("batchExport: Wrote .lrc for ${song.title}")
-                                }
-                            }
-                        } catch (e: Exception) {
-                            Timber.tag("ExportCache").w(e, "batchExport: Failed to write .lrc for ${song.title}")
-                        }
+                    try {
+                        writeLyricsSidecar(cr, parentUri, baseName, song, lyricsChoice)
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (failure: Exception) {
+                        Timber.tag("ExportCache").w(failure, "Could not write lyrics sidecar")
                     }
 
                     successCount++
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
                 } catch (e: Exception) {
                     Timber.tag("ExportCache").e(e, "batchExport: Failed ${song.title}")
                     failCount++
@@ -631,18 +657,123 @@ class ExportCacheDialog private constructor(
             return Base64.encodeToString(buffer.array(), Base64.NO_WRAP)
         }
 
-        @UnstableApi
-        internal suspend fun getLyricsText(song: Song, type: String): String? {
-            Timber.tag("ExportCache").i("getLyricsText: song=${song.title}, type=$type")
+        private suspend fun writeLyricsSidecar(
+            resolver: ContentResolver,
+            parentUri: Uri,
+            baseName: String,
+            song: Song,
+            choice: CachedLyricsExport,
+        ) {
+            if (choice == CachedLyricsExport.None) return
+            val isLyricsfile = choice == CachedLyricsExport.Lyricsfile
+            val text = if (isLyricsfile) {
+                getSavedLyricsfile(song)
+            } else {
+                val type = checkNotNull(choice.legacyType)
+                getLyricsText(song, type.name)?.let { toLrcSidecar(type, it) }
+            } ?: return
+
+            currentCoroutineContext().ensureActive()
+            val extension = if (isLyricsfile) "lyricsfile.yaml" else "lrc"
+            val mimeType = if (isLyricsfile) "application/yaml" else "application/octet-stream"
+            val uri = checkNotNull(DocumentsContract.createDocument(resolver, parentUri, mimeType, "$baseName.$extension"))
             try {
-                val allLyrics = Database.lyricsTable.findAllBySongId(song.id).first()
-                val matching = allLyrics.find { it.type == type }
-                if (matching?.data != null) {
-                    Timber.tag("ExportCache").i("getLyricsText: found in DB")
-                    return matching.data
+                checkNotNull(resolver.openOutputStream(uri, "wt")).use { output ->
+                    output.write(text.toByteArray(Charsets.UTF_8))
                 }
-            } catch (e: Exception) {
-                Timber.tag("ExportCache").w(e, "getLyricsText: DB lookup failed")
+            } catch (failure: Exception) {
+                try {
+                    DocumentsContract.deleteDocument(resolver, uri)
+                } catch (cleanupFailure: Exception) {
+                    Timber.tag("ExportCache").w("Could not remove incomplete lyrics sidecar (%s)", cleanupFailure.javaClass.simpleName)
+                }
+                throw failure
+            }
+        }
+
+        /** Uses saved lyrics only, following Auto's format preference. */
+        private suspend fun getSavedLyricsfile(song: Song): String? {
+            val saved = Database.lyricsTable.findAllBySongId(song.id).first()
+            for (type in listOf(LyricsType.Karaoke, LyricsType.Synced, LyricsType.Unsynced)) {
+                val row = saved.firstOrNull { it.type == type.name && !it.data.isNullOrBlank() } ?: continue
+                try {
+                    return LyricsFileCodec.encode(row, song.cleanTitle(), song.cleanArtistsText())
+                } catch (failure: IllegalArgumentException) {
+                    Timber.tag("ExportCache").w("Could not encode saved %s lyrics", type.name)
+                }
+            }
+            return null
+        }
+
+        /** Existing standard LRC is copied as-is. Internal timings use portable Enhanced LRC tags. */
+        internal fun toLrcSidecar(type: LyricsType, text: String): String? = when (type) {
+            LyricsType.Synced -> if (hasInternalTimedLineTag(text)) {
+                parseSyncedSentences(text, preserveText = true).drop(1)
+                    .joinToString("\n") { "[${lrcTimestamp(it.timeMs)}]${it.text}" }
+                    .ifBlank { null }
+            } else {
+                text.ifBlank { null }
+            }
+            LyricsType.Karaoke -> {
+                val lines = parseKaraokeLrc(text, preserveText = true)
+                if (hasInternalTimedLineTag(text) || lines.any { it.words.isNotEmpty() }) {
+                    lines.joinToString("\n") { line ->
+                        "[${lrcTimestamp(line.timeMs)}]${enhancedLrcText(line)}"
+                    }.ifBlank { null }
+                } else {
+                    text.ifBlank { null }
+                }
+            }
+            LyricsType.Unsynced -> text.ifBlank { null }
+            LyricsType.Auto -> null
+        }
+
+        private fun enhancedLrcText(line: KaraokeLine): String {
+            if (line.words.isEmpty()) return line.text
+            var offset = 0
+            val wordStarts = line.words.map { word ->
+                val index = line.text.indexOf(word.text, startIndex = offset)
+                if (index < 0) return line.text
+                offset = index + word.text.length
+                index
+            }
+            return buildString {
+                append(line.text.substring(0, wordStarts.first()))
+                for ((index, word) in line.words.withIndex()) {
+                    val start = wordStarts[index]
+                    val end = wordStarts.getOrElse(index + 1) { line.text.length }
+                    append('<').append(lrcTimestamp(word.startMs)).append('>')
+                    append(line.text.substring(start, end))
+                }
+                val lastWord = line.words.last()
+                val endTime = if (lastWord.hasExplicitEnd) lastWord.endMs else line.endMs
+                endTime?.takeIf { it >= lastWord.startMs }?.let {
+                    append('<').append(lrcTimestamp(it)).append('>')
+                }
+            }
+        }
+
+        private fun lrcTimestamp(timeMs: Long): String {
+            val nonnegativeTime = timeMs.coerceAtLeast(0)
+            return String.format(
+                Locale.ROOT, "%02d:%02d.%03d", nonnegativeTime / 60_000,
+                nonnegativeTime / 1000 % 60, nonnegativeTime % 1000
+            )
+        }
+
+        private fun <T> Result<T>.lyricsResultOrNull(): T? = getOrElse { failure ->
+            if (failure is CancellationException) throw failure
+            null
+        }
+
+        internal suspend fun getLyricsText(song: Song, type: String): String? {
+            try {
+                val matching = Database.lyricsTable.findBySongIdAndType(song.id, type).first()
+                if (matching != null && (matching.data != null || matching.isEdited)) return matching.data
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (failure: Exception) {
+                Timber.tag("ExportCache").w("Could not read saved lyrics (%s)", failure.javaClass.simpleName)
             }
 
             val artist = song.cleanArtistsText()
@@ -652,13 +783,11 @@ class ExportCacheDialog private constructor(
                 if (parts.size == 2) (parts[0].toLongOrNull() ?: 0) * 60_000 + (parts[1].toLongOrNull() ?: 0) * 1000 else 0L
             } ?: 0L
             val durationSec = (durationMs / 1000).toInt()
-            Timber.tag("ExportCache").i("getLyricsText: artist=$artist, title=$title, durMs=$durationMs")
-
             val data = try {
                 when (type) {
                     LyricsType.Karaoke.name -> {
-                        val blResult = runCatching { BetterLyrics.getLyrics(title, artist, durationSec) }.getOrNull()
-                        val blText = blResult?.getOrNull()
+                        val blResult = runCatching { BetterLyrics.getLyrics(title, artist, durationSec) }.lyricsResultOrNull()
+                        val blText = blResult?.lyricsResultOrNull()
                         val hasKaraoke = blText?.lines()?.any {
                             it.trim().startsWith("<") && it.contains(":") && it.contains(">")
                         } == true
@@ -666,8 +795,8 @@ class ExportCacheDialog private constructor(
                         if (hasKaraoke) blText else null
                     }
                     LyricsType.Synced.name -> {
-                        val blResult = runCatching { BetterLyrics.getLyrics(title, artist, durationSec) }.getOrNull()
-                        val blText = blResult?.getOrNull()
+                        val blResult = runCatching { BetterLyrics.getLyrics(title, artist, durationSec) }.lyricsResultOrNull()
+                        val blText = blResult?.lyricsResultOrNull()
                         val hasKaraoke = blText?.lines()?.any {
                             it.trim().startsWith("<") && it.contains(":") && it.contains(">")
                         } == true
@@ -675,48 +804,55 @@ class ExportCacheDialog private constructor(
                             Timber.tag("ExportCache").i("getLyricsText: BetterLyrics synced")
                             blText
                         } else {
-                            val lrcResult = runCatching { LrcLib.lyrics(artist, title, durationMs.milliseconds) }.getOrNull()
-                            val lrcText = lrcResult?.getOrNull()?.text
+                            val lrcResult = runCatching { LrcLib.lyrics(artist, title, durationMs.milliseconds) }.lyricsResultOrNull()
+                            val lrcText = lrcResult?.lyricsResultOrNull()?.text
                             if (lrcText != null) {
                                 Timber.tag("ExportCache").i("getLyricsText: LrcLib synced")
                                 lrcText
                             } else {
                                 Timber.tag("ExportCache").i("getLyricsText: trying KuGou synced")
-                                KuGou.lyrics(artist, title, durationSec.toLong())?.getOrNull()?.value
+                                KuGou.lyrics(artist, title, durationSec.toLong())?.lyricsResultOrNull()?.value
                             }
                         }
                     }
                     LyricsType.Unsynced.name -> {
-                        val lrcResult = runCatching { LrcLib.lyricsUnsynced(artist, title, durationMs.milliseconds) }.getOrNull()
-                        val plainText = lrcResult?.getOrNull()?.plainText
+                        val lrcResult = runCatching { LrcLib.lyricsUnsynced(artist, title, durationMs.milliseconds) }.lyricsResultOrNull()
+                        val plainText = lrcResult?.lyricsResultOrNull()?.let { lyrics -> lyrics.plainText.ifBlank { lyrics.text } }
                         if (!plainText.isNullOrBlank()) {
                             Timber.tag("ExportCache").i("getLyricsText: LrcLib unsynced OK")
                             plainText
                         } else {
                             Timber.tag("ExportCache").i("getLyricsText: trying Innertube unsynced")
-                            val ytResult = runCatching { Innertube.lyrics(videoId = song.id) }.getOrNull()
-                            val ytText = ytResult?.getOrNull()
-                            Timber.tag("ExportCache").i("getLyricsText: Innertube result=${ytText?.take(50)}")
-                            ytText
+                            val ytResult = runCatching { Innertube.lyrics(videoId = song.id) }.lyricsResultOrNull()
+                            ytResult?.lyricsResultOrNull()
                         }
                     }
                     else -> null
                 }
-            } catch (e: Exception) {
-                Timber.tag("ExportCache").e(e, "getLyricsText: network fetch failed")
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (failure: Exception) {
+                Timber.tag("ExportCache").w("Lyrics request failed (%s)", failure.javaClass.simpleName)
                 null
             }
 
-            Timber.tag("ExportCache").i("getLyricsText: final result=${data?.take(50)}")
-            if (!data.isNullOrBlank()) {
-                try {
-                    Database.lyricsTable.upsert(Lyrics(song.id, type, data))
-                    Timber.tag("ExportCache").i("getLyricsText: saved to DB")
-                } catch (e: Exception) {
-                    Timber.tag("ExportCache").w(e, "getLyricsText: failed to save to DB")
+            if (data.isNullOrBlank()) return null
+            var exportText: String? = data
+            try {
+                Database.transaction {
+                    val stored = lyricsTable.findBySongIdAndType(song.id, type).first()
+                    if (stored?.isEdited == true || !stored?.data.isNullOrBlank()) {
+                        exportText = stored?.data
+                    } else {
+                        lyricsTable.upsert(Lyrics(song.id, type, data, lastFetchedAt = System.currentTimeMillis()))
+                    }
                 }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (failure: Exception) {
+                Timber.tag("ExportCache").w("Could not store fetched lyrics (%s)", failure.javaClass.simpleName)
             }
-            return data?.ifBlank { null }
+            return exportText?.ifBlank { null }
         }
     }
 
@@ -753,24 +889,12 @@ class ExportCacheDialog private constructor(
     override fun Render() {
         DialogPresence(visible = isActive, inherit = true) {
 
-        val lyricsOptions = listOf(
-            null to appTextResources().getString(R.string.lyrics_empty),
-            LyricsType.Synced.name to appTextResources().getString(R.string.lyrics_synced),
-            LyricsType.Unsynced.name to appTextResources().getString(R.string.lyrics_unsynced),
-            LyricsType.Karaoke.name to appTextResources().getString(R.string.lyrics_karaoke)
-        )
-        ValueSelectorDialog(
+        CachedLyricsExportDialog(
             onDismiss = { hideDialog() },
-            title = appTextResources().getString(R.string.export_cached_songs_lyrics_confirmation),
-            selectedValue = selectedLyricsType,
-            values = lyricsOptions.map { it.first },
-            onValueSelected = { type ->
-                selectedLyricsType = type
-                lyricsType.value = type
-                hideDialog()
+            onChoice = { choice ->
+                lyricsChoice.value = choice
                 try { folderLauncher.launch(null) } catch (_: Exception) {}
-            },
-            valueText = { type -> lyricsOptions.find { it.first == type }?.second ?: "" }
+            }
         )
         }
     }

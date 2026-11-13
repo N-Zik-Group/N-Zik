@@ -3,18 +3,23 @@ package app.n_zik.android.playback.services
 import app.n_zik.android.core.backup.isLibraryReady
 
 import android.content.ContentProvider
+import app.n_zik.android.core.profiles.ScopedTemporaryFiles
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.os.Build
+import android.os.Binder
 import android.os.ParcelFileDescriptor
+import android.os.Process
 import android.provider.MediaStore
 import android.util.Size
 import timber.log.Timber
 import app.n_zik.android.R
 import app.n_zik.android.core.profiles.coversDir
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
+import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import java.io.File
 import java.io.FileOutputStream
@@ -41,15 +46,15 @@ class ArtworkContentProvider : ContentProvider() {
         /** Longest side served for MediaStore art (AA renders it at card size). */
         private const val MEDIA_STORE_ART_MAX_SIDE = 512
 
-        private data class Source(val profile: String, val file: File)
+        private data class Source(val profile: ProfileStorageIdentity, val file: File)
         private const val MAX_SOURCES = 1024
         private val sources = LinkedHashMap<String, Source>(MAX_SOURCES, 0.75f, true)
 
         /** Only in-process mapping can register files; exported requests accept opaque tokens. */
         internal fun uriForSource(ctx: Context, songId: String, file: File): Uri {
-            val profile = getActiveProfile(ctx)
+            val profile = profileStorageIdentity(ctx, getActiveProfile(ctx)) ?: return uriFor(songId)
             val canonical = file.canonicalFile
-            val expected = File(coversDir(ctx, profile), "cover_${songId}.jpg").canonicalFile
+            val expected = File(coversDir(ctx, profile.id), "cover_${songId}.jpg").canonicalFile
             if (canonical == expected) return uriFor(songId)
             val source = Source(profile, canonical)
             val token = synchronized(sources) {
@@ -120,7 +125,7 @@ class ArtworkContentProvider : ContentProvider() {
             val requestType = uri.pathSegments.firstOrNull()
             if (!ctx.isLibraryReady()) {
                 if (requestType == "remote" || requestType == "source") return null
-                return placeholder(ctx)?.let { writeSeekableJpeg(ctx, it) }
+                return placeholder(ctx)?.let { writeSeekableJpeg(ScopedTemporaryFiles.publicArtwork(ctx), it) }
             }
             if (requestType == "remote") {
                 if (!LocalArtworkRules.isTrustedCaller(runCatching { callingPackage }.getOrNull(), ctx.packageName)) return null
@@ -129,18 +134,24 @@ class ArtworkContentProvider : ContentProvider() {
                 // ContentProvider's synchronous descriptor API runs on its Binder worker, never the metadata getter.
                 val bytes = runBlocking { SessionArtworkLoader.load(source, crop) } ?: return null
                 if (profile != getActiveProfile(ctx)) return null
-                return writeSeekableBytes(ctx, bytes)
+                return writeSeekableBytes(privateArtworkDirectory(ctx), bytes)
             }
             val profile = getActiveProfile(ctx)
             val sourceRequest = requestType == "source"
-            val bitmap = (if (sourceRequest) registeredSource(ctx, uri) else
-                customCover(ctx, songId) ?: mediaStoreArtIfTrusted(ctx, songId))
-                ?: placeholder(ctx) ?: return null
+            val trusted = Binder.getCallingUid() == Process.myUid() ||
+                LocalArtworkRules.isTrustedCaller(runCatching { callingPackage }.getOrNull(), ctx.packageName)
+            val privateBitmap = when {
+                sourceRequest -> registeredSource(ctx, uri)
+                trusted -> customCover(ctx, songId) ?: mediaStoreArtIfTrusted(ctx, songId)
+                else -> null
+            }
+            val bitmap = privateBitmap ?: placeholder(ctx) ?: return null
             if (profile != getActiveProfile(ctx)) {
                 bitmap.recycle()
                 return null
             }
-            writeSeekableJpeg(ctx, bitmap)
+            val directory = if (privateBitmap == null) ScopedTemporaryFiles.publicArtwork(ctx) else privateArtworkDirectory(ctx)
+            writeSeekableJpeg(directory, bitmap)
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Failed to open artwork for song %s", songId)
             null
@@ -151,7 +162,7 @@ class ArtworkContentProvider : ContentProvider() {
         if (uri.pathSegments.size != 2 ||
             !LocalArtworkRules.isTrustedCaller(runCatching { callingPackage }.getOrNull(), ctx.packageName)) return null
         val source = synchronized(sources) { sources[uri.lastPathSegment] } ?: return null
-        if (source.profile != getActiveProfile(ctx)) return null
+        if (source.profile != profileStorageIdentity(ctx, getActiveProfile(ctx))) return null
         val bitmap = try {
             ArtworkBitmapDecoder.file(source.file)
         } catch (e: IOException) {
@@ -166,10 +177,11 @@ class ArtworkContentProvider : ContentProvider() {
 
     /** Custom cover with EXIF rotation applied, center-cropped (pre-existing behavior). */
     private fun customCover(ctx: Context, songId: String): Bitmap? {
-        // Resolved per request (spec-profile-data-separation): the ACTIVE profile's custom
-        // covers folder, so a profile set by a launcher shortcut before init still reads its own.
-        val file = File(coversDir(ctx, getActiveProfile(ctx)), "cover_${songId}.jpg")
-        if (!file.exists()) return null
+        if (songId.isBlank() || songId.any { it == '/' || it == '\\' }) return null
+        val directory = ctx.filesDir.canonicalFile.resolve(coversDir(ctx, getActiveProfile(ctx)).name)
+        if (directory.canonicalFile != directory.absoluteFile) return null
+        val file = directory.resolve("cover_$songId.jpg")
+        if (file.canonicalFile != file.absoluteFile || !file.isFile) return null
         return ArtworkBitmapDecoder.file(file)?.let { ArtworkBitmapDecoder.finish(it, square = true) }
     }
 
@@ -216,21 +228,27 @@ class ArtworkContentProvider : ContentProvider() {
     }?.let { ArtworkBitmapDecoder.finish(it, square = true) }
 
     // A regular file avoids ESPIPE in AA; unlinking leaves its open descriptor valid.
-    private fun writeSeekableJpeg(ctx: Context, bitmap: Bitmap): ParcelFileDescriptor {
-        val tempFile = File.createTempFile("artwork_", ".jpg", ctx.cacheDir)
+    private fun privateArtworkDirectory(context: Context): File = ScopedTemporaryFiles.directory(
+        context, ScopedTemporaryFiles.PRIVATE_ARTWORK, ScopedTemporaryFiles.activeOwner(context)
+    )
+
+    private fun writeSeekableJpeg(directory: File, bitmap: Bitmap): ParcelFileDescriptor {
+        var tempFile: File? = null
         try {
-            FileOutputStream(tempFile).use { out ->
+            val file = File.createTempFile("artwork_", ".jpg", ScopedTemporaryFiles.requireWritableDirectory(directory))
+            tempFile = file
+            FileOutputStream(file).use { out ->
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
             }
-            return ParcelFileDescriptor.open(tempFile, ParcelFileDescriptor.MODE_READ_ONLY)
+            return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
         } finally {
             bitmap.recycle()
-            tempFile.delete()
+            tempFile?.delete()
         }
     }
 
-    private fun writeSeekableBytes(ctx: Context, bytes: ByteArray): ParcelFileDescriptor {
-        val file = File.createTempFile("artwork_", ".jpg", ctx.cacheDir)
+    private fun writeSeekableBytes(directory: File, bytes: ByteArray): ParcelFileDescriptor {
+        val file = File.createTempFile("artwork_", ".jpg", ScopedTemporaryFiles.requireWritableDirectory(directory))
         try {
             file.writeBytes(bytes)
             return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
