@@ -1,6 +1,7 @@
 package app.n_zik.android.components.player
 
 import android.app.Application
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
@@ -83,6 +85,55 @@ class PlayerGlassBudgetLayoutTest {
             assertEquals("Natural lower grouping remains directly adjacent", controls.bottom, actions.top, 1f)
             assertEquals("Actions retain their original bottom anchor", 900f * compose.density.density, actions.bottom, 1f)
         }
+    }
+
+    @Test
+    fun `portrait overflow keeps expanded stats and the full action bar reachable`() {
+        val showStats = mutableStateOf(false)
+        compose.setContent {
+            PlayerGlassBudgetLayout(
+                enabled = false,
+                reserveLowerContent = true,
+                modifier = Modifier.requiredSize(400.dp, 220.dp),
+                header = {},
+                artwork = {},
+                information = {
+                    PlayerPortraitInformationLayout(
+                        artworkPrioritized = false,
+                        weightedControls = false,
+                        above = {},
+                        controls = { Box(Modifier.size(100.dp).testTag("portrait.transport")) },
+                        inlineStats = {
+                            AnimatedVisibility(visible = showStats.value) {
+                                Column(
+                                    Modifier.testTag("portrait.stats")
+                                        .verticalScroll(rememberScrollState()),
+                                ) {
+                                    Box(Modifier.size(100.dp, 1_000.dp))
+                                    Box(Modifier.size(100.dp, 40.dp).testTag("portrait.lastStatsRow"))
+                                }
+                            }
+                        },
+                        below = { Box(Modifier.size(100.dp, 60.dp).testTag("portrait.actions")) },
+                    )
+                },
+            )
+        }
+
+        compose.runOnIdle { showStats.value = true }
+        val density = compose.density.density
+        val outerViewport = compose.onNode(hasScrollAction() and !hasTestTag("portrait.stats"))
+        outerViewport.performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 2_000f * density) }
+        val actions = compose.onNodeWithTag("portrait.actions").fetchSemanticsNode().boundsInRoot
+        assertEquals(220f * density, actions.bottom, 1f)
+        assertEquals(60f * density, actions.height, 1f)
+
+        compose.onNodeWithTag("portrait.stats").performSemanticsAction(SemanticsActions.ScrollBy) {
+            it(0f, 2_000f * density)
+        }
+        val lastRow = compose.onNodeWithTag("portrait.lastStatsRow").fetchSemanticsNode().boundsInRoot
+        assertEquals(actions.top, lastRow.bottom, 1f)
+        assertEquals(40f * density, lastRow.height, 1f)
     }
 
     @Test

@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.LookaheadScope
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrainHeight
@@ -72,32 +73,42 @@ fun PlayerPortraitInformationLayout(
     above: @Composable ColumnScope.() -> Unit,
     controls: @Composable () -> Unit,
     below: @Composable ColumnScope.() -> Unit,
+    inlineStats: @Composable () -> Unit = {},
 ) {
+    val windowInfo = LocalWindowInfo.current
     // An unbounded Column gives a weighted controller zero height. Use explicit
     // slots so the natural lookahead pass sees metadata, timeline and transport;
     // the bounded pass still reserves the bottom actions before expanding gaps.
     Layout(content = {
         Column(horizontalAlignment = Alignment.CenterHorizontally, content = above)
         Box { controls() }
+        Box { inlineStats() }
         Column(horizontalAlignment = Alignment.CenterHorizontally, content = below)
     }) { children, constraints ->
         val loose = constraints.copy(minWidth = 0, minHeight = 0)
         val top = children[0].measure(loose)
-        val bottom = children[2].measure(loose.copy(maxHeight =
-            if (constraints.hasBoundedHeight) (constraints.maxHeight - top.height).coerceAtLeast(0)
-            else Constraints.Infinity))
+        val afterTop = if (constraints.hasBoundedHeight)
+            (constraints.maxHeight - top.height).coerceAtLeast(0) else Constraints.Infinity
+        val bottom = children[3].measure(loose.copy(maxHeight = afterTop))
+        // Reserve the actions before bounding the nested stats scroll container.
+        val statsBudget = if (constraints.hasBoundedHeight) afterTop
+            else (windowInfo.containerSize.height.coerceAtLeast(0) - top.height).coerceAtLeast(0)
+        val stats = children[2].measure(loose.copy(
+            maxHeight = (statsBudget - bottom.height).coerceAtLeast(0),
+        ))
         val remaining = if (constraints.hasBoundedHeight)
-            (constraints.maxHeight - top.height - bottom.height).coerceAtLeast(0) else Constraints.Infinity
+            (afterTop - bottom.height - stats.height).coerceAtLeast(0) else Constraints.Infinity
         val expand = constraints.hasBoundedHeight && (artworkPrioritized || weightedControls)
         val body = children[1].measure(loose.copy(
             minHeight = if (expand) remaining else 0,
             maxHeight = remaining))
-        val width = constraints.constrainWidth(maxOf(top.width, body.width, bottom.width))
+        val width = constraints.constrainWidth(maxOf(top.width, body.width, stats.width, bottom.width))
         val height = if (expand) constraints.maxHeight
-            else constraints.constrainHeight(top.height + body.height + bottom.height)
+            else constraints.constrainHeight(top.height + body.height + stats.height + bottom.height)
         layout(width, height) {
             top.placeRelative((width - top.width) / 2, 0)
             body.placeRelative((width - body.width) / 2, top.height)
+            stats.placeRelative((width - stats.width) / 2, height - bottom.height - stats.height)
             bottom.placeRelative((width - bottom.width) / 2, height - bottom.height)
         }
     }
