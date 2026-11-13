@@ -342,10 +342,12 @@ New:
 
 In the app, open **Settings > About > Credits**.
 
+Made with ❤️ by [NEVARLeVrai](https://github.com/NEVARLeVrai)
+
+Licensed under GPLv3 - see [LICENSE](https://github.com/N-Zik-Group/N-Zik/blob/main/LICENSE)
+
 # ⚠️ Disclaimer
 
 N-Zik and its contents are not affiliated with, funded, authorized, endorsed by, or in any way associated with YouTube, Google LLC, or any of its affiliates or subsidiaries.
 
 Any trademarks, service marks, trade names, or other intellectual property rights used in this project remain the property of their respective owners.
-
-Licensed under GPLv3 - see [LICENSE](LICENSE)
