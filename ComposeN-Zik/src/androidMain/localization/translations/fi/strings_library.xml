@@ -407,4 +407,5 @@
     <string name="library_on_device_permission_settings_failed">Käyttöoikeusasetuksia ei voitu avata.</string>
     <string name="artist_more_from_format">Enemmän %1$s</string>
     <string name="playlist_top_show_title_format">Näytä %1$s</string>
+    <string name="library_on_device_no_local_playlists">Ei paikallisia soittolistoja. Luo soittolista tai lisää kappale uuteen soittolistaan Käytössä olevasta laitteesta.</string>
 </resources>
