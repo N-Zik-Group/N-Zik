@@ -17,3 +17,11 @@ Clone with submodules using `git clone -b main --single-branch --recursive https
 ## 📬 Open a pull request
 
 Keep the change focused and link the related issue when there is one. Include verification steps and screenshots for visual changes when applicable.
+
+Don't forget to add 'release_notes.txt' in ComposeN-Zik/src/androidMain/res/raw/release_notes.txt
+Add in the file
+
+```
+New:
+- Initial release
+```
