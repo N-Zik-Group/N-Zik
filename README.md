@@ -340,9 +340,9 @@ New:
 
 **[View N-Zik credits and licenses](ComposeN-Zik/src/androidMain/res/raw/credits.md)**
 
-In the app, open **Settings > About > Credits**.
-
 Made with ❤️ by the N-Zik Group community · Licensed under GPLv3 - see [LICENSE](LICENSE)
+
+In the app, open **Settings > About > Credits**.
 
 # ⚠️ Disclaimer
 
