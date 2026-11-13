@@ -1,6 +1,6 @@
 # Build & Test Rules
 
-**Version:** 1.11.0 | **Last updated:** 2026-10-26
+**Version:** 1.12.0 | **Last updated:** 2026-11-13
 
 ## Gradle Version Catalog
 
@@ -30,6 +30,12 @@ If a needed library isn't in the catalog → HALT and ask user before adding to 
 
 > **Windows:** use `gradlew.bat` instead of `./gradlew` (e.g. `gradlew.bat :ComposeN-Zik:assembleDebug`).
 > **CWD:** all `gradlew` and `git` commands run from the repo root `N-Zik/` — the workspace root (the parent of `N-Zik/`) is **not** a git repo (BMAD files live there, outside the repo).
+
+## Java Process Cleanup
+
+- Track the Java processes used for task builds and tests, including Gradle and Kotlin daemons. Identify them by PID and confirm ownership using the build working directory in the daemon log or the process parent chain.
+- At the end of every task, after builds and tests finish, stop the task's dedicated Java processes and verify their PIDs have exited. Clean them up after failed or cancelled tasks too.
+- Leave IDE Java processes, shared daemons, and processes used by other tasks running. Stop only verified task PIDs and avoid global commands such as `gradlew --stop` or killing Java by process name when tasks run in parallel.
 
 ## Verification
 
@@ -75,12 +81,12 @@ When a new task starts while the main checkout holds in-progress work (uncommitt
 
   ```bash
   git fetch origin
-  git worktree add --detach ../worktrees/n-zik/main origin/main
+  git worktree add --detach ../worktrees/n-zik/issue-979 origin/main
   # ... work, commit on the detached HEAD ...
   git push origin HEAD:main        # fast-forward: the base is origin/main
   ```
 
-  `../worktrees/n-zik/` = the `worktrees/` folder at the workspace root (one level above `N-Zik/`, outside the repo — the Desktop Compagnon uses `worktrees/compagnon/`, so the two repos never collide). If `origin/main` moved between the fetch and the push, redo on top of the new `origin/main`.
+  Create every new N-Zik task worktree under `{project-root}/worktrees/n-zik/<task-id>/` (outside the repo), using a unique task identifier such as `issue-979`. If `origin/main` moved between the fetch and the push, redo on top of the new `origin/main`.
 - **Set a code task up exactly like the README's fresh clone** (a doc-only task needs nothing beyond the checkout; README "Clone the repo"):
   1. `git submodule update --init --recursive` — a worktree does not auto-init submodules; Gradle sync fails without them
   2. Create `ComposeN-Zik/src/androidMain/res/raw/release_notes.txt` (gitignored — it does not exist in a fresh checkout) with the README's initial content:
