@@ -235,11 +235,16 @@
     <string name="settings_local_music_action_add_blocked_folder">폴더 추가</string>
     <string name="settings_local_music_blocked_folder_exists_message">This folder already exists</string>
     <string name="settings_local_music_blocked_folders_description">Edit blacklist for on device songs</string>
+    <string name="settings_local_music_folder_exclusions_description">Hide songs in these folders and their subfolders for this profile.</string>
     <string name="settings_local_music_blocked_folders_title">차단된 폴더</string>
     <string name="settings_local_music_folders_description">Show folders in \"On Device\" page</string>
+    <string name="settings_local_music_folder_mode_description">Browse by folder when enabled. Turn off to see all on-device songs in one list.</string>
     <string name="settings_local_music_folders_label">폴더</string>
     <string name="settings_local_music_initial_folder_description">Folder shown for on device songs</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">이 폴더를 차단 목록에서 삭제하시겠나요?</string>
+    <string name="settings_local_music_refresh_title">Refresh on-device music</string>
+    <string name="settings_local_music_refresh_description">Update the on-device song list for the active profile.</string>
+    <string name="settings_local_music_start_folder_path_description">Enter a folder path such as Music/Live, or use / to start at the root. If the folder is unavailable, the browser opens the closest available parent.</string>
     <string name="settings_local_playlist_title">Local Playlist</string>
     <string name="settings_logging_disabled_label">Disable debug logs</string>
     <string name="settings_logging_error_file_description">활성화시, 오류를 강조하는 로그 파일이 생성됩니다</string>
@@ -490,4 +495,12 @@
     <string name="settings_youtube_login_enabled_label">Enable YouTube Music login</string>
     <string name="settings_dialog_sort_title_format">%1$s: Sort</string>
     <string name="settings_dialog_toolbar_title_format">%1$s: Toolbar</string>
+    <string name="settings_local_music_enabled_title">Enable on-device library</string>
+    <string name="settings_local_music_enabled_description">Show On device tabs and scan this device for music.</string>
+    <string name="settings_local_music_scan_on_startup_title">Scan on startup</string>
+    <string name="settings_local_music_scan_on_startup_description">Scan on-device music when this profile starts.</string>
+    <string name="settings_local_music_scan_not_run">No scan result yet</string>
+    <string name="settings_local_music_summary_title">On-device library summary</string>
+    <string name="settings_local_music_summary_description">See detected music and folders for this profile.</string>
+    <string name="settings_local_music_summary_count">%1$s: %2$d</string>
 </resources>
