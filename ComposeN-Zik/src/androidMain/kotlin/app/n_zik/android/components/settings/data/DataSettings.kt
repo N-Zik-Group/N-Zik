@@ -145,6 +145,11 @@ internal fun DataSettingsContent(
     ExportBackupDialog.Render()
     ImportBackupDialog.Render()
     cardsContainer {
+        if (R.string.settings_section_backup_and_restore_title in visibleCardTitleRes(context, 4, search.inputValue) &&
+            (selectedCards == null || R.string.settings_section_backup_and_restore_title in selectedCards)
+        ) {
+            SettingsCardSlot(R.string.settings_section_backup_and_restore_title, modifier = { cardModifier(R.string.settings_section_backup_and_restore_title) }) { DataBackupCard(search) }
+        }
         if (R.string.storage_breakdown_title in visibleCardTitleRes(context, 4, search.inputValue) &&
             (selectedCards == null || R.string.storage_breakdown_title in selectedCards)
         ) {
@@ -154,12 +159,6 @@ internal fun DataSettingsContent(
             ) {
                 DataStorageCard(search, restartState)
             }
-        }
-        if (selectedCards == null || R.string.settings_section_backup_and_restore_title in selectedCards) {
-            SettingsCardSlot(R.string.settings_section_backup_and_restore_title, modifier = { cardModifier(R.string.settings_section_backup_and_restore_title) }) { DataBackupCard(search) }
-        }
-        if (selectedCards == null || R.string.backup_auto_title in selectedCards) {
-            SettingsCardSlot(R.string.backup_auto_title, modifier = { cardModifier(R.string.backup_auto_title) }) { DataAutoBackupCard() }
         }
         if (selectedCards == null || R.string.library_history_title in selectedCards) {
             SettingsCardSlot(R.string.library_history_title, modifier = { cardModifier(R.string.library_history_title) }) { DataHistoryCard(search, navController, restartState, Modifier.onGloballyPositioned { onCardPosition("history", it.positionInRoot().y) }) }

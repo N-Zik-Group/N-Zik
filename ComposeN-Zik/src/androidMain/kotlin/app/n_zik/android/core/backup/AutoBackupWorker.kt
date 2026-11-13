@@ -16,14 +16,13 @@ class AutoBackupWorker(
         val owner = ProfileWorkOwner.read(inputData) ?: return Result.success()
         if (!applicationContext.awaitLibraryReadyForWork()) return Result.retry()
         if (!ProfileWorkOwner.exists(applicationContext, owner)) return Result.success()
-        if (!ProfileWorkOwner.isBound(applicationContext, owner)) return Result.retry()
         val preferences = profileDataPrefs(applicationContext, owner.id)
         Timber.tag("AutoBackup").d("AutoBackupWorker started")
         val uriString = preferences.getString(BackupManager.PREF_URI, "") ?: ""
             
         if (uriString.isEmpty()) {
-            Timber.tag("AutoBackup").w("AutoBackupWorker failed: URI not set")
-            return Result.failure()
+            Timber.tag("AutoBackup").d("No backup location set for profile %s", owner.id)
+            return Result.success()
         }
 
         val success = BackupManager.executeBackup(applicationContext, uriString, owner)

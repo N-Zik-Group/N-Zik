@@ -156,11 +156,6 @@ internal fun OtherSettingsContent(
     cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
 ) {
     cardsContainer {
-        if (selectedCards == null || R.string.library_on_device_title in selectedCards) {
-            SettingsCardSlot(R.string.library_on_device_title, modifier = { cardModifier(R.string.library_on_device_title) }) {
-                OtherOnDeviceCard(search)
-            }
-        }
         if (selectedCards == null || R.string.settings_section_service_lifetime_title in selectedCards) {
             SettingsCardSlot(R.string.settings_section_service_lifetime_title, modifier = { cardModifier(R.string.settings_section_service_lifetime_title) }) {
                 OtherServiceLifetimeCard(search)

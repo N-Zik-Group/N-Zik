@@ -295,6 +295,10 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(3, R.string.settings_reset, R.drawable.refresh,
         keywordRes = listOf(R.string.settings_reset, R.string.settings_restore_default_settings)),
     // Tab 4 - Data
+    SettingsCardRegistryEntry(4, R.string.settings_section_backup_and_restore_title, R.drawable.server,
+        keywordRes = listOf(
+            R.string.settings_section_backup_and_restore_title, R.string.backup_action_export, R.string.backup_action_import,
+        )),
     SettingsCardRegistryEntry(4, R.string.storage_breakdown_title, R.drawable.server,
         keywordRes = listOf(
             R.string.storage_breakdown_subtitle, R.string.storage_breakdown_nzik_total, R.string.storage_cleanup_profile_title,
@@ -303,22 +307,11 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.storage_cleanup_diagnostic_logs, R.string.storage_cleanup_clear_temporary_files,
             R.string.storage_cleanup_clear_network_cache, R.string.storage_breakdown_network,
             R.string.storage_cleanup_all,
+            R.string.storage_artwork_quality_title, R.string.storage_artwork_quality_original,
+            R.string.storage_artwork_quality_optimized,
             R.string.settings_cache_title, R.string.settings_cache_eviction_description, R.string.settings_cache_image_size_limit_label,
             R.string.settings_cache_action_set_custom_size, R.string.settings_cache_song_size_limit_label, R.string.settings_downloads_storage_limit_label,
             R.string.settings_cache_location_label,
-        )),
-    SettingsCardRegistryEntry(4, R.string.settings_section_backup_and_restore_title, R.drawable.server,
-        keywordRes = listOf(
-            R.string.settings_section_backup_and_restore_title, R.string.backup_action_export, R.string.backup_action_import,
-        )),
-    SettingsCardRegistryEntry(4, R.string.backup_auto_title, R.drawable.history,
-        keywordRes = listOf(
-            R.string.backup_auto_title, R.string.backup_auto_location, R.string.backup_auto_target,
-            R.string.backup_include_youtube_credentials, R.string.backup_include_discord_credentials,
-            R.string.backup_include_lastfm_credentials, R.string.backup_include_proxy_password,
-            R.string.backup_auto_max_backups, R.string.settings_backup_before_install_label, R.string.backup_auto_interval,
-            R.string.backup_auto_schedule_time, R.string.backup_auto_schedule_day_of_week,
-            R.string.backup_auto_schedule_day_of_month, R.string.backup_auto_on_change,
         )),
     SettingsCardRegistryEntry(4, R.string.library_history_title, R.drawable.history, focusId = "history",
         keywordRes = listOf(
@@ -405,12 +398,6 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(6, R.string.settings_reset, R.drawable.refresh,
         keywordRes = listOf(R.string.settings_reset, R.string.settings_restore_default_settings)),
     // Tab 7 - Other
-    SettingsCardRegistryEntry(7, R.string.library_on_device_title, R.drawable.folder,
-        keywordRes = listOf(
-            R.string.library_on_device_title, R.string.settings_local_music_blocked_folders_title,
-            R.string.settings_local_music_blocked_folders_description, R.string.settings_local_music_folders_label,
-            R.string.settings_local_music_initial_folder_description,
-        )),
     SettingsCardRegistryEntry(7, R.string.settings_section_service_lifetime_title, R.drawable.battery,
         keywordRes = listOf(R.string.settings_section_service_lifetime_title, R.string.settings_service_keep_screen_on_label, R.string.settings_service_keep_screen_on_description, R.string.settings_service_ignore_battery_optimizations_label)),
     SettingsCardRegistryEntry(7, R.string.settings_section_proxy_title, R.drawable.network,

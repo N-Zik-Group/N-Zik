@@ -4,7 +4,6 @@ import android.content.Context
 import android.database.DatabaseErrorHandler
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteDatabaseLockedException
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.DocumentsContract
 import app.it.fast4x.rimusic.cleanPrefix
@@ -15,6 +14,8 @@ import app.n_zik.android.core.database.LibraryBackupSchema
 import app.n_zik.android.core.profiles.ProfileDataDirNames
 import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.core.profiles.coversDir
+import app.n_zik.android.components.image.OWNED_COVER_EXTENSION_PATTERN
+import app.n_zik.android.components.image.validateOwnedArtwork
 import app.n_zik.android.core.profiles.isLegacyStorageShared
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.core.rescue.ProfileResetSnapshot
@@ -46,7 +47,7 @@ internal object DatabaseBackup {
     private const val MAX_TOTAL = 4L * 1024 * 1024 * 1024
     private const val MAX_ENTRIES = 50_000
     private val coverTables = listOf("Song", "Album", "Artist")
-    private val coverName = Regex("cover_[^/\\\\\\p{Cntrl}]+\\.jpg")
+    private val coverName = Regex("cover_[^/\\\\\\p{Cntrl}]+\\.(?:$OWNED_COVER_EXTENSION_PATTERN)")
     private val playlistName = Regex("playlist_[0-9]+")
     private val sidecars = listOf("-wal", "-shm", "-journal")
     private val keepCorruptDatabase = DatabaseErrorHandler { }
@@ -307,11 +308,7 @@ internal object DatabaseBackup {
     }
 
     private fun validateImage(file: File) {
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeFile(file.path, bounds)
-        require(bounds.outWidth in 1..4096 && bounds.outHeight in 1..4096) { "Invalid backup image dimensions" }
-        val image = requireNotNull(BitmapFactory.decodeFile(file.path)) { "Unreadable backup image" }
-        image.recycle()
+        validateOwnedArtwork(file)
     }
 
     private fun coverOrigin(file: File): String {

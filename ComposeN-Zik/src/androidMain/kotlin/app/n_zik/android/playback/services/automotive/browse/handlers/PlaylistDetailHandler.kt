@@ -31,7 +31,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import app.it.fast4x.rimusic.enums.OnDeviceSongSortBy
-import app.kreate.android.me.knighthat.utils.getLocalSongs
+import app.n_zik.android.components.ui.screens.home.onDevice.getProfileLocalSongs
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 
 class PlaylistDetailHandler : BrowseHandler {
@@ -75,7 +75,7 @@ class PlaylistDetailHandler : BrowseHandler {
             AutoSessionConstants.ID_ONDEVICE -> {
                 val sortBy = context.preferences.getEnum(Preference.HOME_ON_DEVICE_SONGS_SORT_BY.key, OnDeviceSongSortBy.Title)
                 val sortOrder = context.preferences.getEnum(Preference.HOME_ON_DEVICE_SONGS_SORT_ORDER.key, SortOrder.Ascending)
-                context.getLocalSongs(sortBy, sortOrder).map { songs -> songs.keys.toList() }
+                context.getProfileLocalSongs(sortBy, sortOrder).map { songs -> songs.keys.toList() }
             }
             AutoSessionConstants.ID_DOWNLOADED -> {
                 val sortBy = context.preferences.getEnum(Preference.HOME_SONGS_DOWNLOADED_SORT_BY.key, SongSortBy.Title)

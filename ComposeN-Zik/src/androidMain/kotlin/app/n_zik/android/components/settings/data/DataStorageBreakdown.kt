@@ -40,7 +40,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -83,9 +82,11 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.components.dialog.settings.SettingsDialogTabRow
-import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.searchSettingsEntries
+import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.components.settings.other.OtherOnDeviceCard
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.LocalSettingsTargets
 import app.n_zik.android.components.tab.Search
@@ -620,18 +621,35 @@ internal fun DataStorageCard(
     var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedGeneration by rememberSaveable { mutableStateOf<String?>(null) }
     val searchProfile = LocalSettingsTargets.current?.storageProfileTarget
+    val pageQuery = search.inputValue
+    val pageEntryTargets = remember(context, pageQuery) {
+        if (pageQuery.isBlank()) emptySet() else searchSettingsEntries(context, pageQuery).map { it.id }.toSet()
+    }
     val selected = breakdown?.profiles?.firstOrNull {
         it.identity.id == selectedId && it.identity.generation == selectedGeneration
     }
     val additionalVolumes = breakdown?.otherVolumes.orEmpty().filter { it.hasAppFilesFor(selected?.identity) }
     val summaryScope = StorageSummaryScope(breakdown != null, selected?.identity)
     val cacheTarget = selected?.identity
-    var lastCacheTarget by remember { mutableStateOf<ProfileStorageIdentity?>(null) }
-    SideEffect { if (cacheTarget != null) lastCacheTarget = cacheTarget }
     LaunchedEffect(searchProfile) {
         if (searchProfile != null) {
             selectedId = searchProfile.id
             selectedGeneration = searchProfile.generation
+        }
+    }
+    LaunchedEffect(pageQuery) {
+        if (pageQuery.isBlank() || selectedId != null || searchProfile != null) return@LaunchedEffect
+        if (pageEntryTargets.none {
+                (it.startsWith("data.cache.") && !it.startsWith("data.cache.clear-")) ||
+                    it.startsWith("embedded.auto_backup.") || it.startsWith("other.on_device.")
+            }
+        ) return@LaunchedEffect
+        val active = withContext(NzikDispatchers.DATA) {
+            profileStorageIdentity(context, getActiveProfile(context))
+        }
+        if (selectedId == null && active != null) {
+            selectedId = active.id
+            selectedGeneration = active.generation
         }
     }
     LaunchedEffect(breakdown, selectedId, selectedGeneration) {
@@ -651,131 +669,126 @@ internal fun DataStorageCard(
         }
     }
 
-    SettingsSectionCard(
-        modifier = Modifier.testTag("data.card.storage"),
-        title = stringResource(R.string.storage_breakdown_title),
-        icon = R.drawable.server,
-        headerAction = {
-            val label = stringResource(R.string.storage_breakdown_info_title)
-            Box(Modifier.width(40.dp), contentAlignment = Alignment.Center) {
-                val accent = colorPalette().accent
-                GlassCustomChip(
-                    color = accent.copy(alpha = 0.1f),
-                    modifier = Modifier.size(32.dp).testTag("data.storage.info"),
-                    role = Role.Button,
-                    onClick = { storageDialog = StorageDialog.INFO },
-                ) { chipModifier ->
-                    Box(chipModifier, contentAlignment = Alignment.Center) {
-                        Icon(
-                            painter = painterResource(R.drawable.information),
-                            contentDescription = label,
-                            tint = accent,
-                            modifier = Modifier.size(18.dp),
-                        )
-                    }
-                }
-            }
-        },
-        content = {
-            val profiles = breakdown?.profiles.orEmpty()
-            val storageInset = 16.dp
-            Box(Modifier.fillMaxWidth().padding(horizontal = storageInset)) {
-                SettingsDialogTabRow(
-                    labels = listOf(stringResource(R.string.storage_breakdown_tab_total)) + profiles.map { it.label },
-                    selectedTabIndex = profiles.indexOfFirst { it.identity == selected?.identity } + 1,
-                    containerTestTag = "data.storage.tabs",
-                    onTabSelected = { index ->
-                        val identity = profiles.getOrNull(index - 1)?.identity
-                        selectedId = identity?.id
-                        selectedGeneration = identity?.generation
-                    },
-                    equalWidthWhenFitting = true,
-                    followNestedTarget = false,
-                )
-            }
-            if (unavailable) SettingsDescription(
-                stringResource(
-                    if (breakdown == null) R.string.storage_breakdown_measurement_unavailable
-                    else R.string.storage_breakdown_measurement_stale,
-                ),
-                important = true,
-            )
-            AnimatedContent(
-                targetState = summaryScope,
-                modifier = Modifier.padding(horizontal = storageInset).padding(top = 14.dp, bottom = 4.dp),
-                transitionSpec = {
-                    (fadeIn(tween(160)) togetherWith fadeOut(tween(160)))
-                        .using(SizeTransform { _, _ -> tween(160) })
-                },
-                label = "storageSummaryScope",
-            ) { scope ->
-                val snapshot = if (scope.ready) breakdown else null
-                val scoped = snapshot?.profiles?.firstOrNull { it.identity == scope.profile }
-                Box(Modifier.fillMaxWidth().disableOutgoingStorageContent(scope == summaryScope)) {
-                    if (snapshot == null && !unavailable) {
-                        val loadingDescription = stringResource(R.string.storage_breakdown_waiting)
-                        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            InlineLoader(Modifier.semantics { contentDescription = loadingDescription })
-                        }
-                    } else if (snapshot != null && (scope.profile == null || scoped != null)) {
-                        StorageScopeSummary(snapshot, scoped)
-                    }
-                }
-            }
-            AnimatedContent(
-                targetState = additionalVolumes.size,
-                transitionSpec = {
-                    (fadeIn(tween(160)) togetherWith fadeOut(tween(160)))
-                        .using(SizeTransform { _, _ -> tween(160) })
-                },
-                label = "storageOtherVolumes",
-            ) { count ->
-                if (count > 0) {
+    Column {
+        SettingsSectionCard(
+            modifier = Modifier.testTag("data.card.storage"),
+            title = stringResource(R.string.storage_breakdown_title),
+            icon = R.drawable.server,
+            headerAction = {
+                val label = stringResource(R.string.storage_breakdown_info_title)
+                Box(Modifier.width(40.dp), contentAlignment = Alignment.Center) {
+                    val accent = colorPalette().accent
                     GlassCustomChip(
-                        color = colorPalette().accent.copy(alpha = 0.1f),
-                        modifier = Modifier.padding(horizontal = storageInset)
-                            .heightIn(min = 48.dp)
-                            .disableOutgoingStorageContent(count == additionalVolumes.size)
-                            .testTag("data.storage.additional-volumes"),
-                        onClick = { if (additionalVolumes.isNotEmpty()) storageDialog = StorageDialog.VOLUMES },
+                        color = accent.copy(alpha = 0.1f),
+                        modifier = Modifier.size(32.dp).testTag("data.storage.info"),
+                        role = Role.Button,
+                        onClick = { storageDialog = StorageDialog.INFO },
                     ) { chipModifier ->
-                        Box(chipModifier.padding(horizontal = 12.dp), contentAlignment = Alignment.Center) {
-                            BasicText(
-                                text = stringResource(R.string.storage_breakdown_other_volume_details, count),
-                                style = typography().xxs.semiBold.copy(color = colorPalette().accent),
+                        Box(chipModifier, contentAlignment = Alignment.Center) {
+                            Icon(
+                                painter = painterResource(R.drawable.information),
+                                contentDescription = label,
+                                tint = accent,
+                                modifier = Modifier.size(18.dp),
                             )
                         }
                     }
                 }
-            }
-            AnimatedVisibility(
-                visible = cacheTarget != null,
-                enter = fadeIn(tween(160)) + expandVertically(tween(160)),
-                exit = fadeOut(tween(160)) + shrinkVertically(tween(160)),
-            ) {
-                (cacheTarget ?: lastCacheTarget)?.let { target ->
-                    Column(Modifier.disableOutgoingStorageContent(cacheTarget != null)) {
-                        SettingsCardSectionDivider()
-                        key(target) { DataCacheSettings(search, restartState, target) }
-                    }
+            },
+            content = {
+                val profiles = breakdown?.profiles.orEmpty()
+                val storageInset = 16.dp
+                Box(Modifier.fillMaxWidth().padding(horizontal = storageInset)) {
+                    SettingsDialogTabRow(
+                        labels = listOf(stringResource(R.string.storage_breakdown_tab_total)) + profiles.map { it.label },
+                        selectedTabIndex = profiles.indexOfFirst { it.identity == selected?.identity } + 1,
+                        containerTestTag = "data.storage.tabs",
+                        onTabSelected = { index ->
+                            val identity = profiles.getOrNull(index - 1)?.identity
+                            selectedId = identity?.id
+                            selectedGeneration = identity?.generation
+                        },
+                        equalWidthWhenFitting = true,
+                        followNestedTarget = false,
+                    )
                 }
-            }
-            StorageSeparationPending(profiles, selected)
-            key(selected?.identity) {
-                val scopeWithAllVolumes = profiles.map { profile ->
-                    val otherFileCategories = breakdown?.otherVolumes.orEmpty().flatMap { volume ->
-                        volume.profiles.firstOrNull { it.identity == profile.identity }?.fileCategories.orEmpty()
-                    }
-                    profile.copy(fileCategories = profile.fileCategories + otherFileCategories)
-                }
-                DataStorageCleanup(
-                    scopeWithAllVolumes,
-                    selected?.let { current -> scopeWithAllVolumes.firstOrNull { it.identity == current.identity } },
-                    onCleanupComplete = { cleanupRevision++ },
+                if (unavailable) SettingsDescription(
+                    stringResource(
+                        if (breakdown == null) R.string.storage_breakdown_measurement_unavailable
+                        else R.string.storage_breakdown_measurement_stale,
+                    ),
+                    important = true,
                 )
-            }
-        },
-    )
+                AnimatedContent(
+                    targetState = summaryScope,
+                    modifier = Modifier.padding(horizontal = storageInset).padding(top = 14.dp, bottom = 4.dp),
+                    transitionSpec = {
+                        (fadeIn(tween(160)) togetherWith fadeOut(tween(160)))
+                            .using(SizeTransform { _, _ -> tween(160) })
+                    },
+                    label = "storageSummaryScope",
+                ) { scope ->
+                    val snapshot = if (scope.ready) breakdown else null
+                    val scoped = snapshot?.profiles?.firstOrNull { it.identity == scope.profile }
+                    Box(Modifier.fillMaxWidth().disableOutgoingStorageContent(scope == summaryScope)) {
+                        if (snapshot == null && !unavailable) {
+                            val loadingDescription = stringResource(R.string.storage_breakdown_waiting)
+                            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                InlineLoader(Modifier.semantics { contentDescription = loadingDescription })
+                            }
+                        } else if (snapshot != null && (scope.profile == null || scoped != null)) {
+                            StorageScopeSummary(snapshot, scoped)
+                        }
+                    }
+                }
+                AnimatedContent(
+                    targetState = additionalVolumes.size,
+                    transitionSpec = {
+                        (fadeIn(tween(160)) togetherWith fadeOut(tween(160)))
+                            .using(SizeTransform { _, _ -> tween(160) })
+                    },
+                    label = "storageOtherVolumes",
+                ) { count ->
+                    if (count > 0) {
+                        GlassCustomChip(
+                            color = colorPalette().accent.copy(alpha = 0.1f),
+                            modifier = Modifier.padding(horizontal = storageInset)
+                                .heightIn(min = 48.dp)
+                                .disableOutgoingStorageContent(count == additionalVolumes.size)
+                                .testTag("data.storage.additional-volumes"),
+                            onClick = { if (additionalVolumes.isNotEmpty()) storageDialog = StorageDialog.VOLUMES },
+                        ) { chipModifier ->
+                            Box(chipModifier.padding(horizontal = 12.dp), contentAlignment = Alignment.Center) {
+                                BasicText(
+                                    text = stringResource(R.string.storage_breakdown_other_volume_details, count),
+                                    style = typography().xxs.semiBold.copy(color = colorPalette().accent),
+                                )
+                            }
+                        }
+                    }
+                }
+                StorageSeparationPending(profiles, selected)
+                key(selected?.identity) {
+                    val scopeWithAllVolumes = profiles.map { profile ->
+                        val otherFileCategories = breakdown?.otherVolumes.orEmpty().flatMap { volume ->
+                            volume.profiles.firstOrNull { it.identity == profile.identity }?.fileCategories.orEmpty()
+                        }
+                        profile.copy(fileCategories = profile.fileCategories + otherFileCategories)
+                    }
+                    DataStorageCleanup(
+                        scopeWithAllVolumes,
+                        selected?.let { current -> scopeWithAllVolumes.firstOrNull { it.identity == current.identity } },
+                        onCleanupComplete = { cleanupRevision++ },
+                    )
+                }
+            },
+        )
+        if (cacheTarget != null) key(cacheTarget) {
+            DataCacheCard(search, restartState, cacheTarget)
+            DataAutoBackupCard(cacheTarget, pageEntryTargets)
+            OtherOnDeviceCard(search, cacheTarget, pageEntryTargets)
+        }
+    }
     DialogPresence(target = storageDialog) { dialog ->
         DataStorageInfoDialog(
             otherVolumes = if (dialog == StorageDialog.VOLUMES) additionalVolumes else emptyList(),

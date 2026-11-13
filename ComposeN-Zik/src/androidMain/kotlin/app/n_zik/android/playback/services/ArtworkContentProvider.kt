@@ -1,5 +1,10 @@
 package app.n_zik.android.playback.services
 
+import app.n_zik.android.components.image.OWNED_COVER_EXTENSION_PATTERN
+import app.it.fast4x.rimusic.cleanPrefix
+import app.n_zik.android.Dependencies
+import app.n_zik.android.core.database.Database
+
 import app.n_zik.android.core.backup.isLibraryReady
 
 import android.content.ContentProvider
@@ -180,8 +185,23 @@ class ArtworkContentProvider : ContentProvider() {
         if (songId.isBlank() || songId.any { it == '/' || it == '\\' }) return null
         val directory = ctx.filesDir.canonicalFile.resolve(coversDir(ctx, getActiveProfile(ctx)).name)
         if (directory.canonicalFile != directory.absoluteFile) return null
-        val file = directory.resolve("cover_$songId.jpg")
-        if (file.canonicalFile != file.absoluteFile || !file.isFile) return null
+        val url = if (Dependencies.isInitialized) {
+            Database.songTable.findByIdDirect(songId)?.thumbnailUrl?.let(::cleanPrefix)
+        } else null
+        val file = if (url != null) {
+            val uri = Uri.parse(url)
+            val path = when (uri.scheme) {
+                "file" -> uri.path
+                null -> url
+                else -> null
+            } ?: return null
+            File(path).takeIf {
+                it.parentFile == directory &&
+                    it.extension in OWNED_COVER_EXTENSION_PATTERN.split('|') &&
+                    it.name.startsWith("cover_")
+            } ?: return null
+        } else directory.resolve("cover_$songId.jpg")
+        if (!file.isFile || file.canonicalFile != file.absoluteFile) return null
         return ArtworkBitmapDecoder.file(file)?.let { ArtworkBitmapDecoder.finish(it, square = true) }
     }
 

@@ -34,8 +34,10 @@ class PickedImageEditorActivity : UCropActivity() {
         session = request
         val colors = ImageEditorColors.resolve(this)
         if (request != null) {
-            intent.putExtras(UCrop.of(Uri.fromFile(request.source), Uri.fromFile(request.output))
-                .withOptions(colors.options(this)).withMaxResultSize(2048, 2048).getIntent(this))
+            val crop = UCrop.of(Uri.fromFile(request.source), Uri.fromFile(request.output))
+                .withOptions(colors.options(this, request.originalSize))
+            if (!request.originalSize) crop.withMaxResultSize(2048, 2048)
+            intent.putExtras(crop.getIntent(this))
         }
         super.onCreate(savedInstanceState)
         if (request == null) {

@@ -100,7 +100,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.exoplayer.offline.Download
-import app.kreate.android.me.knighthat.utils.getLocalSongs
+import app.n_zik.android.components.ui.screens.home.onDevice.getProfileLocalSongs
 
 @UnstableApi
 @ExperimentalFoundationApi
@@ -170,7 +170,7 @@ fun OnDeviceSong(
     LaunchedEffect( isPermissionGranted, odSort.sortBy, odSort.sortOrder, refreshKey ) {
         if( !isPermissionGranted ) return@LaunchedEffect
 
-        context.getLocalSongs( odSort.sortBy, odSort.sortOrder )
+        context.getProfileLocalSongs( odSort.sortBy, odSort.sortOrder )
                .flowOn( NzikDispatchers.DATA )
                .distinctUntilChanged()
                .onEach { lazyListState.scrollToItem( 0, 0 ) }

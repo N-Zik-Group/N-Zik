@@ -223,3 +223,13 @@ Fixed:
 - fix(player): prevent portrait playback crashes with inline statistics (issue https://github.com/N-Zik-Group/N-Zik/issues/979)
   - Give the inline statistics panel a finite scroll viewport during portrait layout.
   - Preserve the action bar when expanded statistics overflow and cover both scroll areas with a regression test.
+
+Added:
+- feat(artwork): preserve original quality for custom covers
+  - Add Optimized (1,000 px) and Original modes per profile, preserve original files in database backups, and bound display decoding in the grid and player.
+  - Reported on Discord. Exported cover example: https://media.discordapp.net/attachments/1545794303845208215/1569999573496242307/cover_0jXTOUQ4A7g.jpg
+
+Improved:
+- improve(settings): organize Data settings by profile
+  - Put Backup and restore first with Import backup at the top, and keep the storage summary and cleanup together.
+  - Give each profile separate Cache settings, Automatic Backup, and On device cards, with global and Data search targets.

@@ -2,8 +2,11 @@ package app.n_zik.android.components.image
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.AtomicFile
+import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.components.ui.screens.profiles.decodeLimitedBitmap
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import java.io.File
@@ -15,6 +18,25 @@ import timber.log.Timber
 
 /** Serializes in-process cover edits, including rollback, with database backup imports. */
 internal val ownedCoverMutationMutex = Mutex()
+
+internal const val ORIGINAL_ARTWORK_QUALITY_KEY = "originalCustomArtworkQuality"
+internal const val OWNED_COVER_EXTENSION_PATTERN = "jpg|png|webp|gif|heic|img"
+
+internal fun keepsOriginalArtwork(context: Context): Boolean =
+    profileDataPrefs(context, getActiveProfile(context)).getBoolean(ORIGINAL_ARTWORK_QUALITY_KEY, false)
+
+/** Verifies image content with a small decode, independent of its stored dimensions. */
+internal fun validateOwnedArtwork(file: File) {
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeFile(file.path, bounds)
+    require(bounds.outWidth > 0 && bounds.outHeight > 0) { "Invalid artwork dimensions" }
+    var sample = 1
+    while (maxOf(bounds.outWidth, bounds.outHeight) / sample > 128) sample *= 2
+    val bitmap = requireNotNull(BitmapFactory.decodeFile(file.path, BitmapFactory.Options().apply {
+        inSampleSize = sample
+    })) { "Unreadable artwork" }
+    bitmap.recycle()
+}
 
 /** Decodes before replacing an app-owned image, preserving the previous file on failure. */
 internal fun saveOwnedImage(
@@ -28,19 +50,18 @@ internal fun saveOwnedImage(
         val root = context.filesDir.canonicalFile
         val target = File(File(root, directory), name).canonicalFile
         require(target.path.startsWith(root.path + File.separator))
-        val bytes = context.contentResolver.openInputStream(source)?.use { input ->
-            val output = ByteArrayOutputStream()
-            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-            var total = 0
-            while (true) {
-                val count = input.read(buffer)
-                if (count < 0) break
-                total += count
-                require(total <= MAX_IMAGE_BYTES) { "Image exceeds size limit" }
-                output.write(buffer, 0, count)
+        if (keepsOriginalArtwork(context)) {
+            writeOwnedImageAtomically(target) { output ->
+                check(copyArtwork(context, source, output)) { "Cannot open artwork" }
+                output.flush()
+                validateOwnedArtwork(File(target.path + ".new"))
             }
-            output.toByteArray()
-        } ?: return null
+            ArtworkRevisions.invalidate()
+            return Uri.fromFile(target)
+        }
+        val buffer = ByteArrayOutputStream()
+        if (!copyArtwork(context, source, buffer)) return null
+        val bytes = buffer.toByteArray()
         val decoded = decodeLimitedBitmap(bytes, 1000) ?: return null
         bitmap = decoded
         writeOwnedImageAtomically(target) { output ->
@@ -54,6 +75,22 @@ internal fun saveOwnedImage(
     } finally {
         bitmap?.recycle()
     }
+}
+
+private fun copyArtwork(context: Context, source: Uri, output: OutputStream): Boolean {
+    val input = context.contentResolver.openInputStream(source) ?: return false
+    input.use {
+        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+        var total = 0
+        while (true) {
+            val count = input.read(buffer)
+            if (count < 0) break
+            total += count
+            require(total <= MAX_IMAGE_BYTES) { "Image exceeds size limit" }
+            output.write(buffer, 0, count)
+        }
+    }
+    return true
 }
 
 /** The caller supplies an app-owned destination; no picked/gallery path is ever deleted. */

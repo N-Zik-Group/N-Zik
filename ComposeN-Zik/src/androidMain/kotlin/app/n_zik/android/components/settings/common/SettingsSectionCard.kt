@@ -311,14 +311,14 @@ fun ImportantSettingsDescription(
 
 /** Accent category label inside the card (the sheet's MenuSectionTitle pattern, compact 8dp vertical padding for the card layout). */
 @Composable
-internal fun CardCategoryLabel(label: String) {
+internal fun CardCategoryLabel(label: String, modifier: Modifier = Modifier) {
     BasicText(
         text = label,
         style = typography().xxs.semiBold.copy(
             color = colorPalette().accent,
             textAlign = TextAlign.Start,
         ),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp, horizontal = 4.dp),
     )

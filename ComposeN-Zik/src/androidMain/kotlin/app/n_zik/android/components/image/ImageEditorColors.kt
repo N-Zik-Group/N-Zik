@@ -38,9 +38,10 @@ import com.yalantis.ucrop.R as CropR
 
 /** Adapts NZik's selected palette to uCrop's native controls. */
 internal data class ImageEditorColors(val background: Int, val surface: Int, val text: Int, val accent: Int, val dark: Boolean) {
-    fun options(context: Context): UCrop.Options = readable().createOptions(context)
+    fun options(context: Context, originalSize: Boolean = false): UCrop.Options =
+        readable().createOptions(context, originalSize)
 
-    private fun createOptions(context: Context) = UCrop.Options().apply {
+    private fun createOptions(context: Context, originalSize: Boolean) = UCrop.Options().apply {
         setToolbarTitle(context.getString(R.string.image_editor_title))
         setToolbarColor(surface)
         setToolbarWidgetColor(text)
@@ -51,7 +52,7 @@ internal data class ImageEditorColors(val background: Int, val surface: Int, val
         setNavigationBarLight(!dark)
         setCompressionFormat(Bitmap.CompressFormat.PNG)
         setCompressionQuality(100)
-        setMaxBitmapSize(2048)
+        if (!originalSize) setMaxBitmapSize(2048)
         setImageToCropBoundsAnimDuration(200)
         setFreeStyleCropEnabled(true)
         setAllowedGestures(UCropActivity.SCALE, UCropActivity.ROTATE, UCropActivity.ALL)

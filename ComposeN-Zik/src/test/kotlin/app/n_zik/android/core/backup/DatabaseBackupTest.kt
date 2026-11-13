@@ -50,7 +50,8 @@ class DatabaseBackupTest {
         val destination = device("destination")
         destination.setProfileShares(ProfileDataItem.IMAGES, "work", true)
 
-        val song = cover(coversDir(source, "source"), "cover_song.jpg", Color.RED)
+        val song = coversDir(source, "source").apply { mkdirs() }.resolve("cover_song.jpg")
+            .apply { writeBytes(backupJpeg(Color.RED, width = 4800)) }
         val album = cover(coversDir(source, "source"), "cover_album.jpg", Color.GREEN)
         val artist = cover(coversDir(source, "source"), "cover_artist.jpg", Color.BLUE)
         val foreign = image(coversDir(source, "private"), "cover_foreign.jpg", "private")
@@ -293,18 +294,16 @@ class DatabaseBackupTest {
     }
 
     @Test
-    fun `export rejects a nonempty unreadable image and a decodable image over the import limit`() {
+    fun `export rejects a nonempty unreadable image`() {
         val source = device("source")
         library(source, "default").use(::addPlaylist)
         val thumbnail = source.filesDir.resolve("thumbnail").apply { mkdirs() }.resolve("playlist_7")
-        for (bytes in listOf(byteArrayOf(1, 2, 3), backupJpeg(Color.RED, width = 4097))) {
-            thumbnail.writeBytes(bytes)
+        thumbnail.writeBytes(byteArrayOf(1, 2, 3))
 
-            assertThrows(IllegalArgumentException::class.java) {
-                DatabaseBackup.prepareExport(source, "default").close()
-            }
-            assertTrue(source.cacheDir.listFiles().orEmpty().isEmpty())
+        assertThrows(IllegalArgumentException::class.java) {
+            DatabaseBackup.prepareExport(source, "default").close()
         }
+        assertTrue(source.cacheDir.listFiles().orEmpty().isEmpty())
     }
 
     @Test

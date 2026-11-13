@@ -73,6 +73,35 @@ class SettingsDetailedSearchTest {
         }
     }
 
+    @Test fun customArtworkQualityIsSearchableGloballyAndInData() {
+        val target = AllSettingsEntryTargets.single { it.id == "data.cache.artwork_quality" }
+        val labels = listOf(target.labelRes, R.string.storage_artwork_quality_optimized)
+        for (locale in listOf(Locale.ENGLISH, Locale.FRENCH)) {
+            val localized = localized(locale)
+            for (label in labels) {
+                val query = localized.getString(label)
+                assertTrue(target in searchSettingsEntries(localized, query))
+                assertTrue(target.cardTitleRes in visibleCardTitleRes(localized, target.tab, query))
+            }
+        }
+    }
+
+    @Test fun profileBackupAndOnDeviceEntriesAreSearchableGloballyAndInData() {
+        val entries = AllSettingsEntryTargets.filter {
+            it.id.startsWith("embedded.auto_backup.") || it.id.startsWith("other.on_device.")
+        }
+        assertEquals(20, entries.size)
+        for (locale in listOf(Locale.ENGLISH, Locale.FRENCH)) {
+            val localized = localized(locale)
+            for (entry in entries) {
+                val query = localized.getString(entry.labelRes)
+                assertEquals(R.string.storage_breakdown_title, entry.cardTitleRes)
+                assertTrue(entry.id, entry in searchSettingsEntries(localized, query))
+                assertTrue(entry.id, entry.cardTitleRes in visibleCardTitleRes(localized, 4, query))
+            }
+        }
+    }
+
     @Test fun localizedLabelAndDescriptionFindTheExactEntry() {
         val french = localized(Locale.FRENCH)
         val skipSilence = AllSettingsEntryTargets.single {

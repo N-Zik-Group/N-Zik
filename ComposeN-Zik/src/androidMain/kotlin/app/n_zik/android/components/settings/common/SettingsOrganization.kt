@@ -53,7 +53,6 @@ fun SettingsCardRegistryEntry.categoryId(): String = when {
     tab == 6 -> if (titleRes == R.string.downloads_title || titleRes == R.string.settings_download_quality) "downloads" else "network"
     tab == 7 -> when (titleRes) {
         R.string.parental_control -> "playback"
-        R.string.library_on_device_title -> "data"
         R.string.settings_section_proxy_title -> "network"
         R.string.maintenance_title, R.string.modules_title, R.string.recovery_center -> "maintenance"
         else -> "system"

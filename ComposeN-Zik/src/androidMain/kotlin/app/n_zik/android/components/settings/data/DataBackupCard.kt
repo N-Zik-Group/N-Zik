@@ -24,19 +24,6 @@ internal fun DataBackupCard(search: Search) {
         icon = R.drawable.server,
         content = {
 
-            if (search.inputValue.isBlank() || stringResource(R.string.backup_action_export).contains(search.inputValue, true) || stringResource(R.string.backup_export_library_options_description).contains(search.inputValue, true)) {
-                OtherSettingsEntry(
-                    modifier = Modifier.settingsSearchTarget("data.title_backup_and_restore.export_backup"),
-                    title = stringResource(R.string.backup_action_export),
-                    text = stringResource(R.string.backup_export_library_options_description),
-                    icon = R.drawable.export_outline,
-                    onClick = { ExportBackupDialog.showDialog() }
-                )
-            }
-            ImportantSettingsDescription(text = stringResource(
-                R.string.backup_excluded_preferences_and_cache_description
-            ))
-
             if (search.inputValue.isBlank() || stringResource(R.string.backup_action_import).contains(search.inputValue, true) || stringResource(R.string.backup_import_library_options_description).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("data.title_backup_and_restore.import_backup"),
@@ -49,6 +36,19 @@ internal fun DataBackupCard(search: Search) {
             ImportantSettingsDescription(text = stringResource(
                 R.string.backup_restore_overwrite_and_restart_warning,
                 context.applicationInfo.nonLocalizedLabel
+            ))
+
+            if (search.inputValue.isBlank() || stringResource(R.string.backup_action_export).contains(search.inputValue, true) || stringResource(R.string.backup_export_library_options_description).contains(search.inputValue, true)) {
+                OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("data.title_backup_and_restore.export_backup"),
+                    title = stringResource(R.string.backup_action_export),
+                    text = stringResource(R.string.backup_export_library_options_description),
+                    icon = R.drawable.export_outline,
+                    onClick = { ExportBackupDialog.showDialog() }
+                )
+            }
+            ImportantSettingsDescription(text = stringResource(
+                R.string.backup_excluded_preferences_and_cache_description
             ))
 
         }

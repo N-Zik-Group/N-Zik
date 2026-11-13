@@ -70,6 +70,7 @@ internal object PickedImageEditor {
         val context: Context,
         val source: File,
         val mimeType: String,
+        val originalSize: Boolean = false,
     ) {
         init {
             retainDirectory(id)
@@ -83,8 +84,8 @@ internal object PickedImageEditor {
     }
 
     /** Returns a staged result, or null when editing was cancelled or unavailable. */
-    suspend fun edit(context: Context, source: Uri): PreparedImage? =
-        edit(context) { app, directory -> copyImage(app, source, directory, "input") }
+    suspend fun edit(context: Context, source: Uri, originalSize: Boolean = false): PreparedImage? =
+        edit(context, originalSize) { app, directory -> copyImage(app, source, directory, "input") }
 
     suspend fun edit(context: Context, source: ByteArray): PreparedImage? =
         edit(context) { _, directory -> copyImage(source, directory, "input") }
@@ -109,6 +110,7 @@ internal object PickedImageEditor {
 
     private suspend fun edit(
         context: Context,
+        originalSize: Boolean = false,
         copy: suspend (Context, File) -> Pair<File, String>,
     ): PreparedImage? = withContext(NzikDispatchers.UI) {
         val activity = context.activity()
@@ -122,7 +124,7 @@ internal object PickedImageEditor {
             session = withContext(NzikDispatchers.DATA) {
                 cleanupOrphans(app)
                 val copied = copy(app, directory(app, id))
-                EditSession(id, app, copied.first, copied.second)
+                EditSession(id, app, copied.first, copied.second, originalSize)
             }
             sessions[id] = session
             activity.startActivity(editIntent(activity, id))

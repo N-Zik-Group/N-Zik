@@ -57,7 +57,7 @@ import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
 import app.it.fast4x.rimusic.utils.persistentQueueKey
 import app.it.fast4x.rimusic.utils.Preference
 import app.it.fast4x.rimusic.utils.preferences
-import app.kreate.android.me.knighthat.utils.getLocalSongs
+import app.n_zik.android.components.ui.screens.home.onDevice.getProfileLocalSongs
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -711,7 +711,7 @@ class AutoSessionCallback(
         if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_ONDEVICE_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_ONDEVICE_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
             val sortBy = try { context.preferences.getEnum(Preference.HOME_ON_DEVICE_SONGS_SORT_BY.key, OnDeviceSongSortBy.Title) } catch (e: Exception) { OnDeviceSongSortBy.Title }
             val sortOrder = try { context.preferences.getEnum(Preference.HOME_ON_DEVICE_SONGS_SORT_ORDER.key, SortOrder.Ascending) } catch (e: Exception) { SortOrder.Ascending }
-            val onDeviceSongs = context.getLocalSongs(sortBy, sortOrder).first().keys.filter { it.id !in excludedIds }.toList()
+            val onDeviceSongs = context.getProfileLocalSongs(sortBy, sortOrder).first().keys.filter { it.id !in excludedIds }.toList()
             val allSongs = if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) onDeviceSongs.shuffled() else onDeviceSongs
             if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
         }

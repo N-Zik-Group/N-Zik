@@ -7,6 +7,7 @@ import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -563,11 +564,18 @@ object ImageCacheFactory {
             )
             .build()
 
+        // Some player backgrounds use the success callback without drawing the painter.
+        val window = LocalWindowInfo.current.containerSize
+        val displayEdge = maxOf(window.width, window.height).takeIf { it > 0 } ?: 1000
+        val sizedRequest = if (isFileArtwork(currentUrl)) {
+            request.newBuilder().size(displayEdge, displayEdge).build()
+        } else request
+
         // Coil's CrossfadePainter freezes intrinsicSize and keeps applying its original Crop
         // after the fade ends, preventing this painter's live Crop/Fit geometry from taking over.
         val painterRequest = if (isVideoArtwork(sourceUrl) && contentScale == ContentScale.Crop) {
-            request.newBuilder().crossfade(false).build()
-        } else request
+            sizedRequest.newBuilder().crossfade(false).build()
+        } else sizedRequest
         val loadingPainter = painterResource(placeholder ?: R.drawable.loader)
         val errorPainter = painterResource(error)
         return rememberAsyncImagePainter(
@@ -875,7 +883,7 @@ object ImageCacheFactory {
         var lastError: String? = null
 
         while (currentUrl != null) {
-            val isLocalFile = currentUrl.startsWith("file://") || currentUrl.startsWith("/")
+            val isLocalFile = isFileArtwork(currentUrl)
             val maxSize = if (isLocalFile) 1000 else Int.MAX_VALUE
 
             val requestBuilder = ImageRequest.Builder(appContext())
@@ -953,6 +961,7 @@ object ImageCacheFactory {
         suspend fun executeWithFallback(url: String) {
             val request = ImageRequest.Builder(appContext())
                 .data(url)
+                .apply { if (isFileArtwork(url)) size(1000, 1000) }
                 .diskCacheKey(generateCacheKeySync(url, decision.quality))
                 .memoryCacheKey(generateCacheKeySync(url, decision.quality))
                 .build()
@@ -976,6 +985,9 @@ object ImageCacheFactory {
 
         if (finalUrl != null) executeWithFallback(finalUrl)
     }
+
+    private fun isFileArtwork(url: String?): Boolean =
+        url != null && (url.startsWith("file://") || url.startsWith("/"))
 
     fun isImageCached(thumbnailUrl: String?): Boolean = CacheMetadataStore.get(thumbnailUrl ?: "") != null
 

@@ -45,6 +45,7 @@ import app.n_zik.android.components.image.CoverImageExport
 import app.n_zik.android.components.image.CoverImageExportActivity
 import app.n_zik.android.components.image.PickedImageEditor
 import app.n_zik.android.components.image.PreparedImage
+import app.n_zik.android.components.image.keepsOriginalArtwork
 import app.n_zik.android.components.image.ownedCoverMutationMutex
 import app.n_zik.android.components.image.restoreOwnedCover
 import app.n_zik.android.core.coil.ImageCacheFactory
@@ -82,6 +83,7 @@ abstract class StagedCoverDialog internal constructor(
     private val save: ((Context, Uri, File, String, String) -> Uri?)? = null,
     private val applyDraft: (suspend (CoverEditTarget, Uri, () -> Boolean) -> Boolean)? = null,
     private val allowRemoteImport: Boolean = false,
+    private val savesOwnedArtwork: Boolean = save != null,
 ) : RenameDialog(activeState, valueState) {
     private var target: CoverEditTarget? = null
     private var profile: String? = null
@@ -194,7 +196,8 @@ abstract class StagedCoverDialog internal constructor(
                                 "The historical shared cover directory is still protected"
                             }
                             val directory = coversDir(context, profileId)
-                            val file = File(directory, "cover_${selected.id}.jpg").canonicalFile
+                            val extension = if (keepsOriginalArtwork(context)) edited.file.extension else "jpg"
+                            val file = File(directory, "cover_${selected.id}.$extension").canonicalFile
                             require(file.parentFile == directory.canonicalFile)
                             previousBytes = file.takeIf(File::exists)?.readBytes()
                             replacedFile = file
@@ -290,7 +293,9 @@ abstract class StagedCoverDialog internal constructor(
         if (!actionsEnabled) return
         val uri = currentCoverUri()
         val bytes = target?.currentBytes
-        if (uri != null) startEdit(++generation) { PickedImageEditor.edit(context, uri) }
+        if (uri != null) startEdit(++generation) {
+            PickedImageEditor.edit(context, uri, originalSize = savesOwnedArtwork && keepsOriginalArtwork(context))
+        }
         else if (bytes != null) startEdit(++generation) { PickedImageEditor.edit(context, bytes) }
     }
 
@@ -358,7 +363,10 @@ abstract class StagedCoverDialog internal constructor(
         val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             val token = pickedGeneration
             pickedGeneration = null
-            if (uri != null && token != null) startEdit(token) { PickedImageEditor.edit(context, uri) }
+            if (uri != null && token != null) startEdit(token) {
+                if (savesOwnedArtwork && keepsOriginalArtwork(context)) PickedImageEditor.prepareSource(context, uri)
+                else PickedImageEditor.edit(context, uri)
+            }
         }
         val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             exportInProgress = false

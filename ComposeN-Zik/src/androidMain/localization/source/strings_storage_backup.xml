@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="storage_artwork_quality_title">Custom artwork quality</string>
+    <string name="storage_artwork_quality_description">Applies to new custom artwork. Original files can use more storage.</string>
+    <string name="storage_artwork_quality_optimized">Optimized (1,000 px)</string>
+    <string name="storage_artwork_quality_original">Original</string>
 
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Storage</string>

@@ -2,6 +2,8 @@ package app.n_zik.android.core.backup.ui
 
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
+import app.n_zik.android.components.settings.common.LocalSettingsTargets
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -9,7 +11,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -20,32 +27,38 @@ import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.ImportantSettingsDescription
-import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.core.backup.BackupManager
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
+import app.n_zik.android.core.profiles.ProfileWorkOwner
+import app.n_zik.android.core.profiles.profileDataPrefs
 import java.time.DayOfWeek
 import java.time.format.TextStyle
 import timber.log.Timber
 
 @Composable
-fun AutoBackupSettingsBlock() {
+internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity, pageEntryTargets: Set<String>) {
     val context = LocalContext.current
     val locale = LocalConfiguration.current.locales[0]
+    val navigationTarget = LocalSettingsTargets.current?.storageEntryTarget
+    val searchTargets = (pageEntryTargets + listOfNotNull(navigationTarget))
+        .filter { it.startsWith("embedded.auto_backup.") }
+        .map { it.substringAfterLast('.') }
 
-    var autoBackupInterval by rememberPreference(BackupManager.PREF_INTERVAL, BackupManager.INTERVAL_NONE)
-    var autoBackupOnDbChange by rememberPreference(BackupManager.PREF_DB_CHANGE, false)
-    var autoBackupUri by rememberPreference(BackupManager.PREF_URI, "")
-    var autoBackupMaxBackups by rememberPreference(BackupManager.PREF_MAX_BACKUPS, 5)
-    var autoBackupCustomIntervalValue by rememberPreference(BackupManager.PREF_CUSTOM_INTERVAL_VALUE, 12)
-    var autoBackupCustomIntervalUnit by rememberPreference(BackupManager.PREF_CUSTOM_INTERVAL_UNIT, BackupManager.UNIT_HOURS)
-    var autoBackupScheduleHour by rememberPreference(BackupManager.PREF_SCHEDULE_HOUR, 2)
-    var autoBackupScheduleDayOfWeek by rememberPreference(BackupManager.PREF_SCHEDULE_DAY_OF_WEEK, 1)
-    var autoBackupScheduleDayOfMonth by rememberPreference(BackupManager.PREF_SCHEDULE_DAY_OF_MONTH, 1)
-    var autoBackupTarget by rememberPreference(BackupManager.PREF_TARGET, BackupManager.TARGET_DATABASE)
-    var autoBackupIncludeYtb by rememberPreference(BackupManager.PREF_INCLUDE_YTB, false)
-    var autoBackupIncludeDiscord by rememberPreference(BackupManager.PREF_INCLUDE_DISCORD, false)
-    var autoBackupIncludeLastfm by rememberPreference(BackupManager.PREF_INCLUDE_LASTFM, false)
-    var autoBackupIncludeProxy by rememberPreference(BackupManager.PREF_INCLUDE_PROXY, false)
-    var autoBackupPreInstall by rememberPreference(BackupManager.PREF_PRE_INSTALL, false)
+    var autoBackupInterval by rememberBackupPreference(context, target, BackupManager.PREF_INTERVAL, BackupManager.INTERVAL_NONE)
+    var autoBackupOnDbChange by rememberBackupPreference(context, target, BackupManager.PREF_DB_CHANGE, false)
+    var autoBackupUri by rememberBackupPreference(context, target, BackupManager.PREF_URI, "")
+    var autoBackupMaxBackups by rememberBackupPreference(context, target, BackupManager.PREF_MAX_BACKUPS, 5)
+    var autoBackupCustomIntervalValue by rememberBackupPreference(context, target, BackupManager.PREF_CUSTOM_INTERVAL_VALUE, 12)
+    var autoBackupCustomIntervalUnit by rememberBackupPreference(context, target, BackupManager.PREF_CUSTOM_INTERVAL_UNIT, BackupManager.UNIT_HOURS)
+    var autoBackupScheduleHour by rememberBackupPreference(context, target, BackupManager.PREF_SCHEDULE_HOUR, 2)
+    var autoBackupScheduleDayOfWeek by rememberBackupPreference(context, target, BackupManager.PREF_SCHEDULE_DAY_OF_WEEK, 1)
+    var autoBackupScheduleDayOfMonth by rememberBackupPreference(context, target, BackupManager.PREF_SCHEDULE_DAY_OF_MONTH, 1)
+    var autoBackupTarget by rememberBackupPreference(context, target, BackupManager.PREF_TARGET, BackupManager.TARGET_DATABASE)
+    var autoBackupIncludeYtb by rememberBackupPreference(context, target, BackupManager.PREF_INCLUDE_YTB, false)
+    var autoBackupIncludeDiscord by rememberBackupPreference(context, target, BackupManager.PREF_INCLUDE_DISCORD, false)
+    var autoBackupIncludeLastfm by rememberBackupPreference(context, target, BackupManager.PREF_INCLUDE_LASTFM, false)
+    var autoBackupIncludeProxy by rememberBackupPreference(context, target, BackupManager.PREF_INCLUDE_PROXY, false)
+    var autoBackupPreInstall by rememberBackupPreference(context, target, BackupManager.PREF_PRE_INSTALL, false)
 
     var showIntervalDialog by remember { mutableStateOf(false) }
     var showMaxBackupsDialog by remember { mutableStateOf(false) }
@@ -59,13 +72,13 @@ fun AutoBackupSettingsBlock() {
     val documentTreeLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree(),
         onResult = { uri: Uri? ->
-            if (uri != null) {
+            if (uri != null && ProfileWorkOwner.exists(context, target)) {
                 try {
                     val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or
                             Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                     context.contentResolver.takePersistableUriPermission(uri, takeFlags)
                     autoBackupUri = uri.toString()
-                    BackupManager.scheduleBackup(context, autoBackupInterval)
+                    BackupManager.scheduleBackup(context, autoBackupInterval, target)
                 } catch (e: Exception) {
                     Timber.e(e, "Failed to take persistable URI permission")
                 }
@@ -104,7 +117,9 @@ fun AutoBackupSettingsBlock() {
         onClick = { showTargetDialog = true }
     )
 
-    AnimatedVisibility(visible = autoBackupTarget == BackupManager.TARGET_SETTINGS || autoBackupTarget == BackupManager.TARGET_BOTH || autoBackupTarget == BackupManager.TARGET_ALL) {
+    AnimatedVisibility(visible = autoBackupTarget == BackupManager.TARGET_SETTINGS ||
+        autoBackupTarget == BackupManager.TARGET_BOTH || autoBackupTarget == BackupManager.TARGET_ALL ||
+        searchTargets.any { it.startsWith("include_") }) {
         Column {
             OtherSwitchSettingEntry(
                 title = stringResource(R.string.backup_include_youtube_credentials),
@@ -189,7 +204,7 @@ fun AutoBackupSettingsBlock() {
             ),
             onValueSelected = {
                 autoBackupInterval = it
-                BackupManager.scheduleBackup(context, it)
+                BackupManager.scheduleBackup(context, it, target)
                 showIntervalDialog = false
             },
             valueText = {
@@ -206,7 +221,8 @@ fun AutoBackupSettingsBlock() {
         )
     }
 
-    AnimatedVisibility(visible = autoBackupInterval == BackupManager.INTERVAL_CUSTOM) {
+    AnimatedVisibility(visible = autoBackupInterval == BackupManager.INTERVAL_CUSTOM ||
+        searchTargets.any { it.startsWith("auto_backup_custom_interval_") }) {
         Column {
             OtherSettingsEntry(
                 title = stringResource(R.string.backup_auto_custom_interval_value),
@@ -239,7 +255,7 @@ fun AutoBackupSettingsBlock() {
             values = (1..60).toList(),
             onValueSelected = {
                 autoBackupCustomIntervalValue = it
-                BackupManager.scheduleBackup(context, autoBackupInterval)
+                BackupManager.scheduleBackup(context, autoBackupInterval, target)
                 showCustomValueDialog = false
             },
             valueText = { it.toString() },
@@ -260,7 +276,7 @@ fun AutoBackupSettingsBlock() {
             ),
             onValueSelected = {
                 autoBackupCustomIntervalUnit = it
-                BackupManager.scheduleBackup(context, autoBackupInterval)
+                BackupManager.scheduleBackup(context, autoBackupInterval, target)
                 showCustomUnitDialog = false
             },
             valueText = {
@@ -277,7 +293,8 @@ fun AutoBackupSettingsBlock() {
         )
     }
 
-    AnimatedVisibility(visible = autoBackupInterval in listOf(BackupManager.INTERVAL_DAILY, BackupManager.INTERVAL_WEEKLY, BackupManager.INTERVAL_MONTHLY)) {
+    AnimatedVisibility(visible = autoBackupInterval in listOf(BackupManager.INTERVAL_DAILY, BackupManager.INTERVAL_WEEKLY, BackupManager.INTERVAL_MONTHLY) ||
+        "auto_backup_schedule_time" in searchTargets) {
         Column {
             OtherSettingsEntry(
                 title = stringResource(R.string.backup_auto_schedule_time),
@@ -296,7 +313,7 @@ fun AutoBackupSettingsBlock() {
             values = (0..23).toList(),
             onValueSelected = {
                 autoBackupScheduleHour = it
-                BackupManager.scheduleBackup(context, autoBackupInterval)
+                BackupManager.scheduleBackup(context, autoBackupInterval, target)
                 showScheduleHourDialog = false
             },
             valueText = { "${it.toString().padStart(2, '0')}:00" },
@@ -304,7 +321,8 @@ fun AutoBackupSettingsBlock() {
         )
     }
 
-    AnimatedVisibility(visible = autoBackupInterval == BackupManager.INTERVAL_WEEKLY) {
+    AnimatedVisibility(visible = autoBackupInterval == BackupManager.INTERVAL_WEEKLY ||
+        "auto_backup_schedule_day_of_week" in searchTargets) {
         Column {
             OtherSettingsEntry(
                 title = stringResource(R.string.backup_auto_schedule_day_of_week),
@@ -327,7 +345,7 @@ fun AutoBackupSettingsBlock() {
             values = (1..7).toList(),
             onValueSelected = {
                 autoBackupScheduleDayOfWeek = it
-                BackupManager.scheduleBackup(context, autoBackupInterval)
+                BackupManager.scheduleBackup(context, autoBackupInterval, target)
                 showScheduleDayOfWeekDialog = false
             },
             valueText = { DayOfWeek.of(it).getDisplayName(TextStyle.FULL_STANDALONE, locale) },
@@ -335,7 +353,8 @@ fun AutoBackupSettingsBlock() {
         )
     }
 
-    AnimatedVisibility(visible = autoBackupInterval == BackupManager.INTERVAL_MONTHLY) {
+    AnimatedVisibility(visible = autoBackupInterval == BackupManager.INTERVAL_MONTHLY ||
+        "auto_backup_schedule_day_of_month" in searchTargets) {
         Column {
             OtherSettingsEntry(
                 title = stringResource(R.string.backup_auto_schedule_day_of_month),
@@ -354,7 +373,7 @@ fun AutoBackupSettingsBlock() {
             values = (1..28).toList(),
             onValueSelected = {
                 autoBackupScheduleDayOfMonth = it
-                BackupManager.scheduleBackup(context, autoBackupInterval)
+                BackupManager.scheduleBackup(context, autoBackupInterval, target)
                 showScheduleDayOfMonthDialog = false
             },
             valueText = { it.toString() },
@@ -362,7 +381,8 @@ fun AutoBackupSettingsBlock() {
         )
     }
 
-    AnimatedVisibility(visible = autoBackupInterval != BackupManager.INTERVAL_NONE) {
+    AnimatedVisibility(visible = autoBackupInterval != BackupManager.INTERVAL_NONE ||
+        "auto_backup_on_change" in searchTargets) {
         Column {
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_on_change"),
@@ -420,5 +440,36 @@ fun AutoBackupSettingsBlock() {
             valueText = { if (it == -1) stringResource(R.string.common_limit_unlimited_label) else it.toString() },
             onDismiss = { showMaxBackupsDialog = false }
         )
+    }
+}
+
+@Composable
+private fun <T : Any> rememberBackupPreference(
+    context: Context,
+    target: ProfileStorageIdentity,
+    key: String,
+    default: T,
+): MutableState<T> = remember(context, target, key) {
+    val preferences = profileDataPrefs(context, target.id)
+    @Suppress("UNCHECKED_CAST")
+    val initial = (preferences.all[key] ?: default) as T
+    val state = mutableStateOf(initial)
+    object : MutableState<T> by state {
+        override var value: T
+            get() = state.value
+            set(value) {
+                if (!ProfileWorkOwner.exists(context, target)) return
+                val editor = preferences.edit()
+                when (value) {
+                    is Boolean -> editor.putBoolean(key, value)
+                    is Int -> editor.putInt(key, value)
+                    is String -> editor.putString(key, value)
+                }
+                editor.apply()
+                state.value = value
+            }
+
+        override fun component1(): T = value
+        override fun component2(): (T) -> Unit = { value = it }
     }
 }

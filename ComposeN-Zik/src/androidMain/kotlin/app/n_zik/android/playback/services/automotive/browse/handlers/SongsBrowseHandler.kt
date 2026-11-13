@@ -18,7 +18,7 @@ import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
-import app.kreate.android.me.knighthat.utils.getLocalSongs
+import app.n_zik.android.components.ui.screens.home.onDevice.getProfileLocalSongs
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -136,7 +136,7 @@ class SongsBrowseHandler : BrowseHandler {
                 val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_SONGS_ONDEVICE_SHUFFLE)
                 val sortBy = context.preferences.getEnum(Preference.HOME_ON_DEVICE_SONGS_SORT_BY.key, OnDeviceSongSortBy.Title)
                 val sortOrder = context.preferences.getEnum(Preference.HOME_ON_DEVICE_SONGS_SORT_ORDER.key, SortOrder.Ascending)
-                val songs = context.getLocalSongs(sortBy, sortOrder).first().keys.filter { it.id !in excludedIds }.toList()
+                val songs = context.getProfileLocalSongs(sortBy, sortOrder).first().keys.filter { it.id !in excludedIds }.toList()
                 listOf(shuffleItem) + songs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
             }
             AutoSessionConstants.ID_SONGS_CACHED -> {

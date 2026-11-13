@@ -26,6 +26,7 @@ class ChangePlaylistCoverDialog private constructor(
 ) : StagedCoverDialog(
     activeState, valueState, context, scope,
     getTarget = { getPlaylistId()?.let { CoverEditTarget(it.toString(), getThumbnail()) } },
+    savesOwnedArtwork = true,
     applyDraft = { target, uri, isCurrent ->
         val saved = savePlaylistThumbnail(context, uri, "playlist_${target.id}", isCurrent)
         if (saved != null && isCurrent()) {

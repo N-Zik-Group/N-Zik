@@ -110,6 +110,7 @@ fun SettingsCategoryPage(
             registry.nestedTarget?.nestedDestination?.let { settingsNestedDialog(it.dialogId)?.hideDialog() }
             registry.nestedTarget = null
             registry.storageProfileTarget = null
+            registry.storageEntryTarget = null
         }
     }
     val scroll = rememberLazyListState()
@@ -190,11 +191,17 @@ fun SettingsCategoryPage(
             "card.6.network_status" -> "card.6.quality"
             "card.6.settings_download_status" -> "card.6.settings_download_quality"
             "card.4.cache" -> settingsCardTargetId(context, 4, R.string.storage_breakdown_title)
+            "card.4.auto_backup_title" -> "embedded.auto_backup.section"
+            "card.7.on_device" -> "other.on_device.section"
             else -> rawTarget
         }
         val entry = AllSettingsEntryTargets.firstOrNull { it.id == requestedTarget }
         val storageEntry = entry?.cardTitleRes == R.string.storage_breakdown_title
-        if (storageEntry && (requestedTarget.startsWith("data.cache.") || storageRoute.size == 3)) {
+        if (storageEntry && (requestedTarget.startsWith("data.cache.") ||
+                requestedTarget.startsWith("embedded.auto_backup.") || requestedTarget.startsWith("other.on_device.") ||
+                storageRoute.size == 3)
+        ) {
+            registry.storageEntryTarget = requestedTarget
             val explicit = storageRoute.takeIf { it.size == 3 }?.let { ProfileStorageIdentity(it[2], it[1]) }
             registry.storageProfileTarget = withContext(NzikDispatchers.DATA) {
                 if (explicit == null) profileStorageIdentity(context, getActiveProfile(context))

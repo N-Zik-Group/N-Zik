@@ -28,9 +28,10 @@ import app.it.fast4x.rimusic.utils.getEnum
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.InputNumericDialog
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
+import app.n_zik.android.components.image.ORIGINAL_ARTWORK_QUALITY_KEY
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsDescription
-import app.n_zik.android.components.settings.common.CardCategoryLabel
+import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.core.coil.PROFILE_IMAGE_CACHE_CUSTOM_MB
 import app.n_zik.android.core.coil.imageCacheCustomMb
@@ -50,7 +51,22 @@ import kotlinx.coroutines.withContext
 /** Owns cache limits and location preferences. */
 @UnstableApi
 @Composable
-internal fun DataCacheSettings(
+internal fun DataCacheCard(
+    search: Search,
+    restartState: MutableState<Boolean>,
+    target: ProfileStorageIdentity,
+) {
+    SettingsSectionCard(
+        title = stringResource(R.string.storage_cache_settings_title),
+        icon = R.drawable.folder,
+        headerModifier = Modifier.settingsSearchTarget("data.cache.section"),
+        content = { DataCacheSettings(search, restartState, target) },
+    )
+}
+
+@UnstableApi
+@Composable
+private fun DataCacheSettings(
     search: Search,
     restartState: MutableState<Boolean>,
     target: ProfileStorageIdentity,
@@ -85,6 +101,7 @@ internal fun DataCacheSettings(
                     when (value) {
                         is Enum<*> -> editor.putString(key, value.name)
                         is Int -> editor.putInt(key, value)
+                        is Boolean -> editor.putBoolean(key, value)
                     }
                     editor.commit()
                 }
@@ -110,7 +127,32 @@ internal fun DataCacheSettings(
     var exoPlayerCustomCache by remember(preferences) { mutableStateOf(preferences.getInt(exoPlayerCustomCacheKey, 32)) }
     var showCoilCustomDiskCacheDialog by remember { mutableStateOf(false) }
     var coilCustomDiskCache by remember(preferences) { mutableStateOf(imageCacheCustomMb(preferences)) }
-    CardCategoryLabel(stringResource(R.string.storage_cache_settings_title))
+    var originalArtwork by remember(preferences) {
+        mutableStateOf(preferences.getBoolean(ORIGINAL_ARTWORK_QUALITY_KEY, false))
+    }
+    var showArtworkQualityDialog by remember(target) { mutableStateOf(false) }
+    val artworkQualityTitle = stringResource(R.string.storage_artwork_quality_title)
+    val artworkQualityLabel: @Composable (Boolean) -> String = {
+        stringResource(if (it) R.string.storage_artwork_quality_original else R.string.storage_artwork_quality_optimized)
+    }
+    OtherSettingsEntry(
+        title = artworkQualityTitle,
+        text = stringResource(R.string.storage_artwork_quality_description),
+        selectedValueText = artworkQualityLabel(originalArtwork),
+        icon = R.drawable.cover_edit,
+        modifier = Modifier.settingsSearchTarget("data.cache.artwork_quality"),
+        onClick = { showArtworkQualityDialog = true },
+    )
+    DialogPresence(visible = showArtworkQualityDialog) {
+        ValueSelectorDialog(
+            title = artworkQualityTitle,
+            selectedValue = originalArtwork,
+            values = listOf(false, true),
+            onValueSelected = { value -> save(ORIGINAL_ARTWORK_QUALITY_KEY, value) { originalArtwork = value } },
+            valueText = artworkQualityLabel,
+            onDismiss = { showArtworkQualityDialog = false },
+        )
+    }
     var showImageCacheDialog by remember { mutableStateOf(false) }
 
     OtherSettingsEntry(

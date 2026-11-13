@@ -14,6 +14,11 @@ import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 import android.app.Application
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import app.n_zik.android.core.profiles.profileDataPrefs
+import org.junit.Assert.assertEquals
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import org.robolectric.RobolectricTestRunner
@@ -23,6 +28,30 @@ import org.robolectric.RuntimeEnvironment
 @Config(sdk = [33], application = Application::class, shadows = [PosixAtomicFileShadow::class])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class OwnedImageStorageTest {
+    @Test
+    fun `original keeps source bytes while default limits the longest side`() {
+        val context = RuntimeEnvironment.getApplication()
+        val source = File(context.cacheDir, "large-source.png")
+        val bitmap = Bitmap.createBitmap(4800, 180, Bitmap.Config.ARGB_8888)
+        try {
+            source.outputStream().use { assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
+        } finally {
+            bitmap.recycle()
+        }
+
+        val optimized = requireNotNull(saveOwnedImage(context, Uri.fromFile(source), "artwork", "cover_test.jpg"))
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(optimized.path, bounds)
+        assertEquals(1000, bounds.outWidth)
+
+        profileDataPrefs(context, "default").edit().putBoolean(ORIGINAL_ARTWORK_QUALITY_KEY, true).commit()
+        val original = requireNotNull(saveOwnedImage(context, Uri.fromFile(source), "artwork", "cover_test.png"))
+        val saved = File(requireNotNull(original.path))
+        assertArrayEquals(source.readBytes(), saved.readBytes())
+        BitmapFactory.decodeFile(saved.path, bounds)
+        assertEquals(4800, bounds.outWidth)
+    }
+
     @Test
     fun `failed atomic publication reports error and removes unfinished staging`() {
         val context = RuntimeEnvironment.getApplication()

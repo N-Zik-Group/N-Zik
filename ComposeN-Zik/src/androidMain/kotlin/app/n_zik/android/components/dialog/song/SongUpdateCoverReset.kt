@@ -7,6 +7,7 @@ import android.net.Uri
 import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.components.image.OWNED_COVER_EXTENSION_PATTERN
 import app.n_zik.android.core.profiles.coversDir
 import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.core.profiles.isLegacyStorageShared
@@ -21,7 +22,10 @@ internal object SongUpdateCoverReset {
             throw IOException("The historical shared cover directory is still protected")
         }
         val directory = coversDir(context, requestProfile).canonicalFile
-        val file = ownedCover(directory, songId)
+        val previous = previousUrl?.let(::cleanPrefix)
+        val previousPath = previous?.let { Uri.parse(it).path }
+        val previousExtension = previousPath?.let { File(it).extension }
+        val file = ownedCover(directory, songId, previousExtension ?: "jpg")
         if (file == null) {
             Timber.tag("Database").w("update cover reset refused invalid song id")
             return
@@ -39,10 +43,11 @@ internal object SongUpdateCoverReset {
     }
 
     // Never treat a URL or an arbitrary stored local path as a deletion target.
-    internal fun ownedCover(directory: File, songId: String): File? {
+    internal fun ownedCover(directory: File, songId: String, extension: String = "jpg"): File? {
         if (songId.isBlank() || songId.any { it == '/' || it == '\\' }) return null
+        val suffix = extension.takeIf { it in OWNED_COVER_EXTENSION_PATTERN.split('|') } ?: "jpg"
         val parent = directory.canonicalFile
-        val filename = "cover_$songId.jpg"
+        val filename = "cover_$songId.$suffix"
         return File(parent, filename).canonicalFile.takeIf { it.parentFile == parent && it.name == filename }
     }
 }
