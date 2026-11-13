@@ -27,6 +27,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import app.n_zik.android.appRunningInBackground
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -39,6 +40,37 @@ import org.robolectric.annotation.Config
 @Config(sdk = [32], application = Application::class)
 class PlayerDecorationAnimationTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test
+    fun `app background flag refreshes player decoration visibility`() {
+        val previous = appRunningInBackground
+        val owner = object : LifecycleOwner {
+            override val lifecycle = LifecycleRegistry(this)
+        }
+        var active = false
+        try {
+            compose.runOnUiThread {
+                owner.lifecycle.currentState = Lifecycle.State.RESUMED
+                appRunningInBackground = false
+            }
+            compose.setContent {
+                CompositionLocalProvider(LocalLifecycleOwner provides owner) {
+                    active = rememberPlayerDecorationsActive(!appRunningInBackground)
+                }
+            }
+            compose.runOnIdle {
+                assertTrue(active)
+                appRunningInBackground = true
+            }
+            compose.runOnIdle {
+                assertFalse(active)
+                appRunningInBackground = false
+            }
+            compose.runOnIdle { assertTrue(active) }
+        } finally {
+            compose.runOnUiThread { appRunningInBackground = previous }
+        }
+    }
 
     @Test
     fun `visibility and lifecycle pause the production clock without counting hidden time`() {

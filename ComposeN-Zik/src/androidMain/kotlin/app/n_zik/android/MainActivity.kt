@@ -3243,7 +3243,8 @@ internal class DeferredLibraryIntents {
     }
 }
 
-var appRunningInBackground: Boolean = false
+// Player rendering observes this flag to resume decorations when the activity returns.
+var appRunningInBackground: Boolean by mutableStateOf(false)
 
 val LocalPlayerServiceBinder = staticCompositionLocalOf<PlayerServiceModern.Binder?> { null }
 
