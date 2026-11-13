@@ -322,6 +322,7 @@ New:
 
 ## 🔄 Automation & Maintenance
 
+[![Fetch, create, and update repo's contributors](https://github.com/N-Zik-Group/N-Zik/actions/workflows/weekly-update-contributors.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/weekly-update-contributors.yaml)  
 [![Automatic Dependency Submission](https://github.com/N-Zik-Group/N-Zik/actions/workflows/dependency-graph/auto-submission/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/dependency-graph/auto-submission)  
 [![Dependabot Updates](https://github.com/N-Zik-Group/N-Zik/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/dependabot/dependabot-updates)  
 [![Chores](https://github.com/N-Zik-Group/N-Zik/actions/workflows/house-keeper.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/house-keeper.yaml)  
@@ -335,8 +336,6 @@ New:
 # 👥 Contributors
 
 [![GitHub contributors](https://contrib.rocks/image?repo=N-Zik-Group/N-Zik)](https://github.com/N-Zik-Group/N-Zik/graphs/contributors)
-
-[![Fetch, create, and update repo's contributors](https://github.com/N-Zik-Group/N-Zik/actions/workflows/weekly-update-contributors.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/weekly-update-contributors.yaml)
 
 # 🎖️ Credits
 
