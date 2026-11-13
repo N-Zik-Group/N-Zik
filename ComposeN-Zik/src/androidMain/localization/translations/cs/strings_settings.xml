@@ -235,11 +235,16 @@
     <string name="settings_local_music_action_add_blocked_folder">Přidat složku</string>
     <string name="settings_local_music_blocked_folder_exists_message">Tato složka již existuje.</string>
     <string name="settings_local_music_blocked_folders_description">Úprava blacklistu pro skladby v zařízení.</string>
+    <string name="settings_local_music_folder_exclusions_description">Skrýt skladby v těchto složkách a jejich podsložkách pro tento profil.</string>
     <string name="settings_local_music_blocked_folders_title">Složky v blacklistu</string>
     <string name="settings_local_music_folders_description">Zobrazení složek na stránce V zařízení</string>
+    <string name="settings_local_music_folder_mode_description">Procházet podle složky, pokud je povoleno. Vypněte pro zobrazení všech skladeb na zařízení v jednom seznamu.</string>
     <string name="settings_local_music_folders_label">Složky</string>
     <string name="settings_local_music_initial_folder_description">Složka, která se zobrazí při otevření stránky V zařízení.</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">Opravdu chcete tuto složku odstranit z blacklistu?</string>
+    <string name="settings_local_music_refresh_title">Obnovit hudbu v zařízení</string>
+    <string name="settings_local_music_refresh_description">Aktualizovat seznam skladeb v zařízení pro aktivní profil.</string>
+    <string name="settings_local_music_start_folder_path_description">Zadejte cestu ke složce, jako je Music/Live, nebo použijte / začněte u rootu. Pokud není složka dostupná, prohlížeč otevře nejbližší nadřazený soubor.</string>
     <string name="settings_local_playlist_title">Místní seznam skladeb</string>
     <string name="settings_logging_disabled_label">Zakázat protokoly ladění</string>
     <string name="settings_logging_error_file_description">Vytvořit log soubor pro zvýraznění chyb</string>
@@ -490,4 +495,12 @@
     <string name="settings_youtube_login_enabled_label">Povolení přihlášení k službě YouTube Music</string>
     <string name="settings_dialog_sort_title_format">%1$s: Řadit</string>
     <string name="settings_dialog_toolbar_title_format">%1$s: Panel nástrojů</string>
+    <string name="settings_local_music_enabled_title">Povolit knihovnu na zařízení</string>
+    <string name="settings_local_music_enabled_description">Zobrazit na kartách zařízení a prohledat toto zařízení pro hudbu.</string>
+    <string name="settings_local_music_scan_on_startup_title">Skenovat při spuštění</string>
+    <string name="settings_local_music_scan_on_startup_description">Naskenovat hudbu na zařízení při spuštění tohoto profilu.</string>
+    <string name="settings_local_music_scan_not_run">Zatím žádný výsledek skenování</string>
+    <string name="settings_local_music_summary_title">Shrnutí knihovny v zařízení</string>
+    <string name="settings_local_music_summary_description">Zobrazit detekovanou hudbu a složky pro tento profil.</string>
+    <string name="settings_local_music_summary_count">%1$s: %2$d</string>
 </resources>
