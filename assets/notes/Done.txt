@@ -218,3 +218,8 @@ Added:
   - Use SnakeYAML Engine to read bounded Lyricsfile documents and preserve line and word timing in import previews and exports.
   - Offer Lyricsfile alongside LRC when exporting cached songs individually or in batches. Use saved lyrics for Lyricsfile export without a provider lookup.
   - Avoid an Android ICU regex initialization error in the cache export dialog and cover lyric conversion and provider fallback with regression tests.
+
+Fixed:
+- fix(player): prevent portrait playback crashes with inline statistics (issue https://github.com/N-Zik-Group/N-Zik/issues/979)
+  - Give the inline statistics panel a finite scroll viewport during portrait layout.
+  - Preserve the action bar when expanded statistics overflow and cover both scroll areas with a regression test.

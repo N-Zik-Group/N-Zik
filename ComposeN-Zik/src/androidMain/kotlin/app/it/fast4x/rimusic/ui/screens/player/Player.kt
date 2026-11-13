@@ -2548,18 +2548,17 @@ fun Player(
                             duration = { durationState.value }
                         )
                     }
-                }, below = {
-                if (!showthumbnail || playerType == PlayerType.Modern) {
-                    if (!isShowingStandaloneLyrics || statsExpanded) {
+                }, inlineStats = {
+                    if ((!showthumbnail || playerType == PlayerType.Modern) &&
+                        (!isShowingStandaloneLyrics || statsExpanded)
+                    ) {
                         StatsForNerds(
                             mediaId = mediaItem.mediaId,
                             isDisplayed = statsfornerds,
-                            onDismiss = {}
+                            onDismiss = {},
                         )
                     }
-                }
-                ActionsBar()
-              })
+                }, below = { ActionsBar() })
               }
                 }
             )
