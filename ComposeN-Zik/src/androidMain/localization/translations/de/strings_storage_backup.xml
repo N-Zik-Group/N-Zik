@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="storage_artwork_quality_title">Benutzerdefinierte Kunstwerkqualität</string>
+    <string name="storage_artwork_quality_description">Gilt auf neue benutzerdefinierte Artwork. Originaldateien können mehr Speicher verwenden.</string>
+    <string name="storage_artwork_quality_optimized">Optimiert (1.000 px)</string>
+    <string name="storage_artwork_quality_original">Original</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Speicher</string>
     <string name="storage_breakdown_tab_total">Gesamt</string>
