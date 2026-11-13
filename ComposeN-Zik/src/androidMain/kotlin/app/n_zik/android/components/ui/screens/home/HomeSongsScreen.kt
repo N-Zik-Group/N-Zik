@@ -843,7 +843,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                 topContentInset = topContentInsetProvider,
             ) { header(headerOffsetState, headerHeightState) }
         }) {
-            Column( Modifier.fillMaxSize().sharedHomeGlassContent().glassFloatingActionContent(floatingBackdrop) ) {
+            Column( Modifier.fillMaxSize().glassFloatingActionContent(floatingBackdrop) ) {
                 val headerPadding = with(androidx.compose.ui.platform.LocalDensity.current) { headerHeight.toDp() }
                 when( builtInPlaylist ) {
                     BuiltInPlaylist.OnDevice -> OnDeviceSong( navController, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, headerPadding, scrollContentInsetProvider )

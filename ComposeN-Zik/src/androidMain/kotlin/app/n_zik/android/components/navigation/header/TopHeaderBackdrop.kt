@@ -38,6 +38,7 @@ import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.navigation.appHeaderOverlayTopPx
 import app.n_zik.android.components.navigation.nav.topNavigationBarShape
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.components.ui.screens.home.LocalHomeGlassInAppHeader
 import app.n_zik.android.components.ui.screens.home.LocalSharedHomeHeaderGlass
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
@@ -56,7 +57,10 @@ internal fun UnifiedTopNavigationGlass(
     navigationTopPx: () -> Int,
     content: @Composable () -> Unit,
 ) {
-    val shared = LocalSharedHomeHeaderGlass.current?.takeIf { it.topNavigation && it.owner != null }
+    val appHeaderOwnsPane = LocalHomeGlassInAppHeader.current
+    val shared = LocalSharedHomeHeaderGlass.current?.takeIf {
+        it.topNavigation && (appHeaderOwnsPane || it.owner != null)
+    }
     if (shared != null) {
         DisposableEffect(shared) {
             onDispose { shared.navigationBottomPx = 0 }

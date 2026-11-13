@@ -39,10 +39,16 @@ import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import kotlin.math.roundToInt
 
 /** The four library Homes own status backing when no horizontal app header covers it. */
+internal val LocalHomeGlassInAppHeader = staticCompositionLocalOf { false }
+
+internal val LocalDrawHomeGlassPane = staticCompositionLocalOf { true }
+
 internal val LocalHomeTopCover = staticCompositionLocalOf { false }
 
 /** Landscape library Homes initially reserve no horizontal navigation row. */
@@ -67,7 +73,23 @@ internal fun HomeCollapsingHeader(
     val density = LocalDensity.current
     val owner = remember { Any() }
     val sharedGlass = LocalSharedHomeHeaderGlass.current
-    val controlsBackdrop = sharedGlass?.surface ?: rememberCanvasBackdrop { drawRect(panelColor) }
+    val drawPane = LocalDrawHomeGlassPane.current
+    val appHeaderOwnsPane = LocalHomeGlassInAppHeader.current
+    val toolbar = if (sharedGlass != null && appHeaderOwnsPane) rememberLayerBackdrop() else null
+    if (sharedGlass != null && toolbar != null) {
+        val tabProgress = LocalHomeToolbarTabProgress.current
+        val routeProgress = LocalHomeToolbarRouteProgress.current
+        DisposableEffect(sharedGlass, toolbar, tabProgress, routeProgress) {
+            val layer = HomeToolbarLayer(toolbar, tabProgress, routeProgress)
+            sharedGlass.toolbars.add(layer)
+            onDispose { sharedGlass.toolbars.remove(layer) }
+        }
+    }
+    // Home controls live in the page draw tree, including during route transitions.
+    // Sample the list directly so the shared pane can safely sample the page.
+    val controlsBackdrop = LocalHomeToolbarListBackdrop.current
+        ?: sharedGlass?.surface?.takeUnless { appHeaderOwnsPane }
+        ?: rememberCanvasBackdrop { drawRect(panelColor) }
     val railInsets = LocalSideRailContentInsets.current
     val direction = LocalLayoutDirection.current
     val leftRail = with(density) { railInsets.getLeft(density, direction).toDp() }
@@ -114,7 +136,13 @@ internal fun HomeCollapsingHeader(
     val headerBottomPx = WindowInsets.safeDrawing.getTop(density) + with(density) { APP_HEADER_HEIGHT.roundToPx() }
     val panelTopPx = with(density) { panelTop.roundToPx() }
     val panelOffsetPx = { panelTopPx + headerOffset.floatValue.roundToInt() }
-    if (sharedGlass != null) {
+    if (sharedGlass != null && drawPane && appHeaderOwnsPane) {
+        androidx.compose.runtime.SideEffect {
+            sharedGlass.panelTopPx = panelTopPx
+            sharedGlass.panelOffset = { headerOffset.floatValue }
+        }
+    }
+    if (sharedGlass != null && drawPane && !appHeaderOwnsPane) {
         SharedHomeHeaderPane(
             shared = sharedGlass,
             settings = rememberGlassSettings(),
@@ -154,6 +182,9 @@ internal fun HomeCollapsingHeader(
         modifier
             .zIndex(1f)
             .offset { IntOffset(0, panelOffsetPx()) }
+            .then(if (toolbar != null) {
+                Modifier.layerBackdrop(toolbar, drawOnScreen = false)
+            } else Modifier)
             .graphicsLayer {
                 alpha = homeHeaderVisibleFraction(headerHeight.intValue, headerOffset.floatValue)
             }
@@ -165,7 +196,7 @@ internal fun HomeCollapsingHeader(
                 // HomeChromeLayout measures this slot before subcomposing content.
                 // Publish in measurement, not an after-layout size callback.
                 headerHeight.intValue = panel.height
-                sharedGlass?.measuredPanelHeight?.intValue = panel.height
+                if (drawPane) sharedGlass?.measuredPanelHeight?.intValue = panel.height
                 layout(panel.width, panel.height) { panel.placeRelative(0, 0) }
             }
     ) {

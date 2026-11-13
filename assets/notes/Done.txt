@@ -262,3 +262,8 @@ Fixed:
   - Preserve each grid's position and reverse the Glass surface transition when returning to the app header.
 - fix(export): retain the album and release year when exporting cached audio
 - refactor(sync): remove the Home sync service and its settings
+
+Fixed:
+- fix(navigation): keep Home toolbars above the AppHeader Glass during transitions
+  - Slide and fade the title, toolbar and chips from the AppHeader edge while keeping the page reflection live.
+  - Keep the backdrop available when filters reload and prevent a render loop between the page and toolbar.

@@ -128,6 +128,15 @@ import app.n_zik.android.components.ui.screens.home.HomeScreen
 import app.n_zik.android.extensions.discord.DiscordUiState
 import app.n_zik.android.components.ui.screens.home.LocalHomeTopMiniPlayerAnchor
 import app.n_zik.android.components.ui.screens.home.LocalSharedHomeHeaderGlass
+import app.n_zik.android.components.ui.screens.home.LocalDrawHomeGlassPane
+import app.n_zik.android.components.ui.screens.home.LocalHomeGlassInAppHeader
+import app.n_zik.android.components.ui.screens.home.SharedHomeHeaderPane
+import app.n_zik.android.components.ui.screens.home.SharedHomeHeaderToolbar
+import app.n_zik.android.components.ui.screens.home.LocalHomeToolbarRouteProgress
+import app.n_zik.android.components.ui.screens.home.homeToolbarProgress
+import app.n_zik.android.components.navigation.header.headerScrollOpacity
+import app.n_zik.android.components.ui.screens.home.sharedHomeGlassTransitionHeight
+import app.n_zik.android.components.navigation.nav.topNavigationBarShape
 import app.n_zik.android.components.navigation.header.LocalUnifiedTopGlassSurface
 import app.n_zik.android.components.ui.screens.home.rememberSharedHomeHeaderGlass
 import app.n_zik.android.components.ui.screens.home.usesSharedHomeHeaderGlass
@@ -296,11 +305,15 @@ fun AppNavigation(
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val currentHomeTab by DiscordUiState.currentHomeTab.collectAsStateWithLifecycle()
     val isQuickPicks = isHome && (currentHomeTab == null || currentHomeTab == "quickpicks")
+    val useSharedHomeGlass = usesSharedHomeHeaderGlass(isHome, currentHomeTab, navigationPosition, glassSettings)
+    val keepHeaderSurface = navigationPosition.isHorizontal && glassSettings.usesGlassMaterial(GlassArea.Header)
     val sharedHomeGlass = rememberSharedHomeHeaderGlass(
-        enabled = usesSharedHomeHeaderGlass(isHome, currentHomeTab, navigationPosition, glassSettings),
+        enabled = useSharedHomeGlass,
         pageKey = NavRoutes.home.name,
         topNavigation = navigationPosition == NavigationBarPosition.Top,
+        keepHeaderSurface = keepHeaderSurface,
     )
+    val drawSharedHeader = sharedHomeGlass != null && keepHeaderSurface
     val isSettings = currentEntry?.destination?.route?.startsWith(NavRoutes.settings.name) == true
     val isRewind = currentEntry?.destination?.route?.let { route ->
         route == NavRoutes.rewind.name || route.startsWith("${NavRoutes.rewind.name}?")
@@ -392,6 +405,8 @@ fun AppNavigation(
         LocalSideHeaderSearchProgress provides sideHeaderSearchProgress,
         LocalSettingsBackNavigation provides settingsBackNavigation,
         LocalSharedHomeHeaderGlass provides sharedHomeGlass,
+        LocalDrawHomeGlassPane provides useSharedHomeGlass,
+        LocalHomeGlassInAppHeader provides drawSharedHeader,
         LocalUnifiedTopGlassSurface provides unifiedTopBackdrop.takeIf {
             hasTopNavBarVisible && glassSettings.usesGlassMaterial(GlassArea.Nav)
         },
@@ -470,7 +485,51 @@ fun AppNavigation(
         // Expanded Top chrome covers the fixed mini-player gap. The compact dock
         // keeps its own surface and lets page content show around the capsule.
         topContentCover = {
-            if (isHome && !isQuickPicks && hasTopNavBarVisible && !glassSettings.usesGlassMaterial(GlassArea.Nav)) {
+            if (drawSharedHeader) {
+                SharedHomeHeaderPane(
+                    shared = sharedHomeGlass,
+                    settings = glassSettings,
+                    filmColor = colorPalette().background0,
+                    shape = topNavigationBarShape(uiRoundnessShape()),
+                    heightPx = {
+                        val headerBottom = appHeaderOverlayTopPx(
+                            headerRowHeightPx, statusBarTopPx.toFloat(), topBarOffsetState.value,
+                        ).toInt()
+                        sharedHomeGlassTransitionHeight(
+                            maxOf(headerBottom, sharedHomeGlass.navigationBottomPx),
+                            sharedHomeGlass.expandedBottomPx().coerceAtLeast(headerBottom),
+                            sharedHomeGlass.expansion.value,
+                        )
+                    },
+                    opacity = {
+                        val headerOpacity = headerScrollOpacity(
+                            statusBarTopPx.toFloat(), headerRowHeightPx, topBarOffsetState.value,
+                        )
+                        val homeOpacity = sharedHomeGlass.panelVisibility() * sharedHomeGlass.expansion.value
+                        if (sharedHomeGlass.topNavigation && sharedHomeGlass.navigationBottomPx > 0) 1f
+                        else maxOf(headerOpacity, homeOpacity)
+                    },
+                    source = pageBackdrop,
+                    upperFilmColor = if (sharedHomeGlass.topNavigation) navStatusColor else null,
+                    upperHeightPx = { sharedHomeGlass.navigationBottomPx },
+                )
+                for (toolbar in sharedHomeGlass.toolbars) androidx.compose.runtime.key(toolbar) {
+                    SharedHomeHeaderToolbar(
+                        toolbar = { toolbar.backdrop },
+                        tabProgress = toolbar.tabProgress,
+                        routeProgress = toolbar.routeProgress,
+                        headerBottomPx = {
+                            val headerBottom = appHeaderOverlayTopPx(
+                                headerRowHeightPx, statusBarTopPx.toFloat(), topBarOffsetState.value,
+                            ).toInt()
+                            maxOf(headerBottom, sharedHomeGlass.navigationBottomPx)
+                        },
+                    )
+                }
+            }
+            if (isHome && !isQuickPicks && hasTopNavBarVisible && !drawSharedHeader &&
+                !glassSettings.usesGlassMaterial(GlassArea.Nav)
+            ) {
                 Box(Modifier.fillMaxWidth()
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                     .layout { measurable, constraints ->
@@ -518,6 +577,10 @@ fun AppNavigation(
             { browseId: String -> navController.navigateClean("${NavRoutes.playlist.name}/$browseId", context) }
 
         chromeComposable(route = NavRoutes.home.name) {
+            val toolbarProgress = if (LocalHomeGlassInAppHeader.current && transitionEffect != TransitionEffect.None) {
+                homeToolbarProgress()
+            } else null
+            CompositionLocalProvider(LocalHomeToolbarRouteProgress provides toolbarProgress) {
             HomeScreen(
                 navController = navController,
                 onPlaylistUrl = navigateToPlaylist,
@@ -526,6 +589,7 @@ fun AppNavigation(
                 shortcutDelivery = pendingShortcutDelivery,
                 onShortcutConsumed = acknowledgeShortcut,
             )
+            }
         }
 
         chromeComposable(route = NavRoutes.easterOne.name) {

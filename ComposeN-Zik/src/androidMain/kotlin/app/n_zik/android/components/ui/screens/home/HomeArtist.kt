@@ -609,7 +609,7 @@ fun HomeArtists(
                         if (gridReady) LazyVerticalGrid(
                             state = lazyGridState,
                             columns = GridCells.Adaptive( itemSize.size.dp ),
-                            modifier = Modifier.sharedHomeGlassContent().background( colorPalette().background0 ).fillMaxSize(),
+                            modifier = Modifier.background( colorPalette().background0 ).fillMaxSize(),
                             contentPadding = rememberPageChromeContentPadding(
                                 topInsetProvider = scrollContentInsetProvider,
                                 base = PaddingValues(bottom = Dimensions.bottomSpacer),

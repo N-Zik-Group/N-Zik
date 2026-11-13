@@ -326,6 +326,7 @@ fun HomeScreen(
     }
 
     val sharedHomeGlass = LocalSharedHomeHeaderGlass.current
+    val drawHomeGlassPane = LocalDrawHomeGlassPane.current
     val selectedHomeTab = activeTabs.getOrNull(tabIndex)
     LaunchedEffect(selectedHomeTab) {
         app.n_zik.android.extensions.discord.DiscordUiState.currentHomeTab.value = selectedHomeTab
@@ -357,10 +358,18 @@ fun HomeScreen(
             saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
                 val currentTabId = activeTabs.getOrNull(currentTabIndex)
 
+                val sharedToolbar = LocalHomeGlassInAppHeader.current && currentTabId != "quickpicks"
+                val toolbarList = if (sharedToolbar) {
+                    app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop()
+                } else null
+                val toolbarProgress = if (sharedToolbar && transitionEffect != TransitionEffect.None) {
+                    homeToolbarProgress()
+                } else null
                 androidx.compose.runtime.CompositionLocalProvider(
-                    LocalSharedHomeHeaderGlass provides sharedHomeGlass.takeIf {
-                        currentTabIndex == tabIndex || selectedHomeTab == "quickpicks"
-                    },
+                    LocalHomeToolbarListBackdrop provides toolbarList,
+                    LocalHomeToolbarTabProgress provides toolbarProgress,
+                    LocalSharedHomeHeaderGlass provides sharedHomeGlass.takeUnless { currentTabId == "quickpicks" },
+                    LocalDrawHomeGlassPane provides (drawHomeGlassPane && currentTabIndex == tabIndex),
                     app.n_zik.android.components.glass.LocalGlassScope provides
                         if (currentTabId == "quickpicks") app.n_zik.android.components.glass.GlassScope.Home
                         else app.n_zik.android.components.glass.GlassScope.Library,

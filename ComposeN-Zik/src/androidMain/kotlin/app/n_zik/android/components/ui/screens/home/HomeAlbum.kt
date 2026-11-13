@@ -623,7 +623,7 @@ fun HomeAlbums(
                                 base = PaddingValues(bottom = Dimensions.bottomSpacer),
                                 extraTopProvider = { with(headerDensity) { headerHeight.toDp() } },
                             ),
-                            modifier = Modifier.sharedHomeGlassContent().background( colorPalette().background0 ).fillMaxSize()
+                            modifier = Modifier.background( colorPalette().background0 ).fillMaxSize()
                         ) {
                             items(
                                 items = itemsOnDisplay.distinctBy { it.id },

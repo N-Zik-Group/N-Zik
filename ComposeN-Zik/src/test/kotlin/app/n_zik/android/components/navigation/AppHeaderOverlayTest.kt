@@ -23,6 +23,9 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import app.n_zik.android.components.ui.screens.home.SharedHomeHeaderToolbar
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -105,6 +108,35 @@ class AppHeaderOverlayTest {
             assertEquals(1, headerClicks)
             assertEquals(2, pageClicks)
         }
+    }
+
+    @Test fun `captured toolbar draws above the glass and receives taps in its original position`() {
+        var taps = 0
+        compose.setContent {
+            val toolbar = rememberLayerBackdrop()
+            AppHeaderOverlay(
+                modifier = Modifier.size(200.dp, 160.dp).testTag("scene"),
+                header = {},
+                topContentCover = {
+                    Box(Modifier.fillMaxWidth().height(100.dp).background(Color.Red))
+                    SharedHomeHeaderToolbar({ toolbar })
+                },
+            ) {
+                Box(Modifier.fillMaxSize().background(Color.Yellow)) {
+                    Box(Modifier.offset(y = 40.dp).fillMaxWidth().height(32.dp)
+                        .layerBackdrop(toolbar, drawOnScreen = false)
+                        .background(Color.Green)
+                        .clickable { taps++ })
+                }
+            }
+        }
+        val scene = compose.onNodeWithTag("scene")
+        val pixels = scene.captureToImage().toPixelMap()
+        assertEquals(Color.Red, pixels[100, 20])
+        assertEquals(Color.Green, pixels[100, 55])
+        assertEquals(Color.Yellow, pixels[100, 130])
+        scene.performTouchInput { click(Offset(center.x, height * .34f)) }
+        compose.runOnIdle { assertEquals(1, taps) }
     }
 
     @Test fun `top chrome covers scrolling rows and clips the departing header`() {

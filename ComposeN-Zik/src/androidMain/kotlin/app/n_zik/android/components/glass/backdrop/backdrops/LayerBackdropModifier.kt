@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.InspectorInfo
 import app.n_zik.android.components.glass.backdrop.internal.recordLayer
 
 /**
+ * @param drawOnScreen False when a sibling presents the recorded content above another layer.
  * @param frozen while this returns true the source is NOT re-recorded: the content is
  *   drawn straight to the screen on Compose's normal incremental path, and sampling glass
  *   surfaces keep replaying the last capture. Used during scroll, where re-recording the
@@ -30,16 +31,18 @@ import app.n_zik.android.components.glass.backdrop.internal.recordLayer
  */
 fun Modifier.layerBackdrop(
     backdrop: LayerBackdrop,
-    frozen: () -> Boolean = { false }
-): Modifier = this then LayerBackdropElement(backdrop, frozen)
+    drawOnScreen: Boolean = true,
+    frozen: () -> Boolean = { false },
+): Modifier = this then LayerBackdropElement(backdrop, frozen, drawOnScreen)
 
 private class LayerBackdropElement(
     val backdrop: LayerBackdrop,
-    val frozen: () -> Boolean
+    val frozen: () -> Boolean,
+    val drawOnScreen: Boolean,
 ) : ModifierNodeElement<LayerBackdropNode>() {
 
     override fun create(): LayerBackdropNode {
-        return LayerBackdropNode(backdrop, frozen)
+        return LayerBackdropNode(backdrop, frozen, drawOnScreen)
     }
 
     override fun update(node: LayerBackdropNode) {
@@ -48,6 +51,7 @@ private class LayerBackdropElement(
             node.backdrop = backdrop
         }
         node.frozen = frozen
+        node.drawOnScreen = drawOnScreen
         node.invalidateDraw()
     }
 
@@ -61,19 +65,20 @@ private class LayerBackdropElement(
         if (other !is LayerBackdropElement) return false
 
         if (backdrop != other.backdrop) return false
-        if (frozen != other.frozen) return false
+        if (frozen != other.frozen || drawOnScreen != other.drawOnScreen) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        return 31 * backdrop.hashCode() + frozen.hashCode()
+        return 31 * (31 * backdrop.hashCode() + frozen.hashCode()) + drawOnScreen.hashCode()
     }
 }
 
 private class LayerBackdropNode(
     var backdrop: LayerBackdrop,
-    var frozen: () -> Boolean
+    var frozen: () -> Boolean,
+    var drawOnScreen: Boolean,
 ) : DrawModifierNode, GlobalPositionAwareModifierNode, Modifier.Node() {
 
     override fun ContentDrawScope.draw() {
@@ -103,7 +108,7 @@ private class LayerBackdropNode(
         // cannot, so it re-issues the whole subtree every frame. Skipping the version
         // bump is what keeps the glass surfaces on their existing captures.
         if (frozen() && backdrop.hasRecording) {
-            backdrop.onDraw(this@draw)
+            if (drawOnScreen) backdrop.onDraw(this@draw)
             return
         }
         backdrop.isRecording = true
@@ -112,7 +117,7 @@ private class LayerBackdropNode(
         } finally {
             backdrop.isRecording = false
         }
-        drawLayer(backdrop.graphicsLayer)
+        if (drawOnScreen) drawLayer(backdrop.graphicsLayer)
         // Notify sampling glass surfaces that the source pixels changed, so they
         // re-record their own layers. When the source is static they skip it.
         backdrop.contentRecorded()

@@ -1,8 +1,7 @@
 package app.n_zik.android.components.navigation.header
 
-import androidx.compose.runtime.movableContentOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
+import app.n_zik.android.components.ui.screens.home.LocalSharedHomeHeaderGlass
+import app.n_zik.android.components.ui.screens.home.LocalHomeGlassInAppHeader
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
@@ -47,7 +46,6 @@ import app.n_zik.android.components.glass.rememberGlassSettings
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.material3.LocalContentColor
-import app.n_zik.android.components.ui.screens.home.LocalSharedHomeHeaderGlass
 
 class AppHeader(
     val navController: NavController
@@ -89,13 +87,13 @@ class AppHeader(
         val headerHeightPx = with(density) { APP_HEADER_HEIGHT.toPx() }
         val headerColor = backgroundOverride ?: colorPalette().background0
         val hasTopGlassBackdrop = statusBackgroundVisible && glassSettings.usesGlassMaterial(GlassArea.Nav)
-        val sharedHomeGlass = LocalSharedHomeHeaderGlass.current?.takeIf { it.owner != null }
+        val sharedHomeGlass = LocalSharedHomeHeaderGlass.current.takeIf { LocalHomeGlassInAppHeader.current }
         val standaloneGlass = glassEnabled && !hasTopGlassBackdrop && sharedHomeGlass == null
         val motionVisualOutset = if (glassEnabled) headerGlassMotionVisualOutset() else 0.dp
 
         Box(Modifier.fillMaxWidth()) {
         // Glass Top owns one continuous pane behind both this header and its nav row.
-        if (statusBackgroundVisible && !hasTopGlassBackdrop && !standaloneGlass) {
+        if (statusBackgroundVisible && !hasTopGlassBackdrop && !standaloneGlass && sharedHomeGlass == null) {
             TopHeaderBackdrop(
                 settings = glassSettings,
                 filmColor = surfaceColor(colorPalette().background1),
@@ -149,10 +147,8 @@ class AppHeader(
             }
         }
         }
-        val currentControls by rememberUpdatedState(controlsContent)
-        val controls = remember { movableContentOf<Backdrop?> { backdrop -> currentControls(backdrop) } }
         if (sharedHomeGlass != null) {
-            controls(sharedHomeGlass.surface)
+            controlsContent(sharedHomeGlass.surface)
         } else if (standaloneGlass) {
             StandaloneHeaderGlass(
                 settings = glassSettings,
@@ -161,10 +157,10 @@ class AppHeader(
                 statusBarTopPx = statusBarTopPx,
                 headerHeightPx = headerHeightPx,
                 headerOffsetPx = { topBarOffsetState.value },
-                content = controls,
+                content = { surface -> controlsContent(surface) },
             )
         } else {
-            controls(rememberHeaderControlsBackdrop(hasTopGlassBackdrop, headerColor))
+            controlsContent(rememberHeaderControlsBackdrop(hasTopGlassBackdrop, headerColor))
         }
         }
     }

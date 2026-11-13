@@ -726,7 +726,6 @@ fun HomeLibrary(
                             state = lazyGridState,
                             columns = GridCells.Adaptive( itemSize.size.dp ),
                             modifier = Modifier
-                                .sharedHomeGlassContent()
                                 .background(colorPalette().background0)
                                 .fillMaxSize(),
                             contentPadding = rememberPageChromeContentPadding(
