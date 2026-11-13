@@ -673,7 +673,7 @@ internal fun DataStorageCard(
         SettingsSectionCard(
             modifier = Modifier.testTag("data.card.storage"),
             title = stringResource(R.string.storage_breakdown_title),
-            icon = R.drawable.server,
+            icon = R.drawable.folder,
             headerAction = {
                 val label = stringResource(R.string.storage_breakdown_info_title)
                 Box(Modifier.width(40.dp), contentAlignment = Alignment.Center) {

@@ -20,7 +20,7 @@ import app.n_zik.android.components.settings.common.SettingsSectionCard
 internal fun AccountsAutoSyncCard() {
     SettingsSectionCard(
         title = stringResource(R.string.sync_imported_playlists_automatic_title),
-        icon = R.drawable.sync,
+        icon = R.drawable.playlist,
         content = {
             var autosyncArtists by rememberPreference(autosyncArtistsKey, false)
             var autosyncAlbums by rememberPreference(autosyncAlbumsKey, false)

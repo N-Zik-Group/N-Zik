@@ -16,7 +16,7 @@ internal fun NetworkServerCard(query: String, navController: NavController, modi
     if (query.isBlank() || stringResource(R.string.bridge_server).contains(query, true)) {
         SettingsSectionCard(
             title = stringResource(R.string.bridge_server),
-            icon = R.drawable.server,
+            icon = R.drawable.devices,
             modifier = modifier,
             content = {
                 OtherSettingsEntry(

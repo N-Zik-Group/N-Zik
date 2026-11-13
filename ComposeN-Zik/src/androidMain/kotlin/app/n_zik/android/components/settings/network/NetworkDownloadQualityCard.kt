@@ -18,7 +18,7 @@ internal fun NetworkDownloadQualityCard(
 ) {
     SettingsSectionCard(
         title = stringResource(R.string.downloads_quality),
-        icon = R.drawable.network,
+        icon = R.drawable.audio_quality,
         content = {
             if (query.isBlank() || stringResource(R.string.downloads_quality_format).contains(query, true) || stringResource(R.string.downloads_action_refresh_quality).contains(query, true)) {
                 DownloadQualityEntry(automaticQualityText = automaticQualityStatusText(networkQuality), onQualityChanged = { onRestartRequired(true) })

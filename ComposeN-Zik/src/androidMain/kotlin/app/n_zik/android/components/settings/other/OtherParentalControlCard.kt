@@ -21,7 +21,7 @@ internal fun OtherParentalControlCard(search: Search) {
 
     SettingsSectionCard(
         title = stringResource(R.string.parental_control),
-        icon = R.drawable.shield_checkmark,
+        icon = R.drawable.parental_control,
         content = {
             if (search.inputValue.isBlank() || stringResource(R.string.parental_control).contains(search.inputValue, true) || stringResource(R.string.settings_parental_age_restriction_description).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(

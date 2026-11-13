@@ -55,7 +55,7 @@ fun GeneralLanguageCard(
 
     SettingsSectionCard(
         title = stringResource(R.string.settings_languages_title),
-        icon = R.drawable.discover,
+        icon = R.drawable.globe,
         visible = visible,
         content = {
             OtherSettingsEntry(

@@ -36,7 +36,7 @@ internal fun UiToolbarsCard(search: Search) {
         SettingsSectionCard(
             modifier = Modifier.testTag("ui.card.toolbars"),
             title = stringResource(R.string.settings_library_toolbar_title),
-            icon = R.drawable.ellipsis_horizontal,
+            icon = R.drawable.sort_grid,
             content = {
                 if (search.inputValue.isBlank() || stringResource(R.string.library_songs_title).contains(search.inputValue, true) || stringResource(R.string.settings_library_toolbar_title).contains(search.inputValue, true)) {
                     OtherSettingsEntry(

@@ -99,7 +99,7 @@ data class SettingsCardRegistryEntry(
 
 val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     // Tab 0 - General
-    SettingsCardRegistryEntry(0, R.string.settings_languages_title, R.drawable.discover,
+    SettingsCardRegistryEntry(0, R.string.settings_languages_title, R.drawable.globe,
         keywordRes = listOf(R.string.settings_languages_title, R.string.settings_app_language_label)),
     SettingsCardRegistryEntry(0, R.string.common_playback_section_title, R.drawable.play_forward,
         keywordRes = listOf(
@@ -183,14 +183,14 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(1, R.string.settings_dock_title, R.drawable.ellipsis_horizontal,
         keywordRes = listOf(R.string.settings_dock_title, R.string.settings_dock_expanded_tab_order_label,
             R.string.settings_dock_compact_first_action_label, R.string.settings_dock_compact_second_action_label, R.string.settings_library_toolbar_title)),
-    SettingsCardRegistryEntry(1, R.string.settings_library_toolbar_title, R.drawable.ellipsis_horizontal,
+    SettingsCardRegistryEntry(1, R.string.settings_library_toolbar_title, R.drawable.sort_grid,
         keywordRes = listOf(R.string.settings_library_toolbar_title, R.string.library_songs_title, R.string.library_artists_title, R.string.library_albums_title, R.string.library_playlists_title)),
     SettingsCardRegistryEntry(1, R.string.settings_navigation_menu_title, R.drawable.burger, focusId = "burger",
         keywordRes = listOf(R.string.settings_navigation_menu_title, R.string.settings_navigation_menu_customization_description)),
     SettingsCardRegistryEntry(1, R.string.settings_reset, R.drawable.refresh,
         keywordRes = listOf(R.string.settings_reset, R.string.settings_restore_default_settings)),
     // Tab 2 - Appearance
-    SettingsCardRegistryEntry(2, R.string.player_presets_and_layout, R.drawable.ui,
+    SettingsCardRegistryEntry(2, R.string.player_presets_and_layout, R.drawable.images_sharp,
         keywordRes = listOf(
             R.string.player_presets_and_layout, R.string.settings_player_appearance_presets_title, R.string.settings_player_appearance_presets_preview_description,
             R.string.player_type, R.string.settings_player_queue_style_label, R.string.settings_player_artwork_style_label, R.string.settings_player_header_style_label,
@@ -249,7 +249,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.settings_player_action_bar_queue_arrow_visible_label,
             R.string.settings_player_action_bar_radio_visible_label, R.string.settings_player_action_bar_menu_visible_label,
         )),
-    SettingsCardRegistryEntry(2, R.string.settings_section_fullscreen_lyrics_title, R.drawable.song_lyrics,
+    SettingsCardRegistryEntry(2, R.string.settings_section_fullscreen_lyrics_title, R.drawable.resize,
         keywordRes = listOf(
             R.string.settings_section_fullscreen_lyrics_title, R.string.settings_player_queue_duration_visible_label,
             R.string.settings_lyrics_title_artist_visible_label, R.string.settings_player_timeline_label, R.string.settings_lyrics_controls_visible_label, R.string.lyrics_fullscreen_technical_info_title,
@@ -288,18 +288,18 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
         keywordRes = listOf(R.string.settings_section_smart_recommendations_title, R.string.recommendations_number)),
     SettingsCardRegistryEntry(3, R.string.statistics_title, R.drawable.trending, focusId = "statistics",
         keywordRes = listOf(R.string.statistics_title, R.string.statistics_max_number_of_items, R.string.statistics_playback_duration_label)),
-    SettingsCardRegistryEntry(3, R.string.playlist_top, R.drawable.playlist,
+    SettingsCardRegistryEntry(3, R.string.playlist_top, R.drawable.featured_playlist,
         keywordRes = listOf(R.string.playlist_top, R.string.statistics_max_number_of_items, R.string.recommendations_personal_top_title)),
     SettingsCardRegistryEntry(3, R.string.settings_data_title, R.drawable.server,
         keywordRes = listOf(R.string.settings_data_title, R.string.recommendations_action_reset_quick_picks)),
     SettingsCardRegistryEntry(3, R.string.settings_reset, R.drawable.refresh,
         keywordRes = listOf(R.string.settings_reset, R.string.settings_restore_default_settings)),
     // Tab 4 - Data
-    SettingsCardRegistryEntry(4, R.string.settings_section_backup_and_restore_title, R.drawable.server,
+    SettingsCardRegistryEntry(4, R.string.settings_section_backup_and_restore_title, R.drawable.backup,
         keywordRes = listOf(
             R.string.settings_section_backup_and_restore_title, R.string.backup_action_export, R.string.backup_action_import,
         )),
-    SettingsCardRegistryEntry(4, R.string.storage_breakdown_title, R.drawable.server,
+    SettingsCardRegistryEntry(4, R.string.storage_breakdown_title, R.drawable.folder,
         keywordRes = listOf(
             R.string.storage_breakdown_subtitle, R.string.storage_breakdown_nzik_total, R.string.storage_cleanup_profile_title,
             R.string.storage_breakdown_cached_images, R.string.storage_breakdown_streamed_audio,
@@ -339,7 +339,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.sync_direction, R.string.sync_cooldown, R.string.sync_show_details,
             R.string.sync_background_guard,
         )),
-    SettingsCardRegistryEntry(5, R.string.sync_imported_playlists_automatic_title, R.drawable.sync,
+    SettingsCardRegistryEntry(5, R.string.sync_imported_playlists_automatic_title, R.drawable.playlist,
         keywordRes = listOf(R.string.sync_imported_playlists_automatic_title, R.string.sync_channels, R.string.sync_albums, R.string.sync_likes)),
     SettingsCardRegistryEntry(5, R.string.sync_import_from_youtube, R.drawable.download,
         keywordRes = listOf(
@@ -379,13 +379,13 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(5, R.string.settings_reset, R.drawable.refresh,
         keywordRes = listOf(R.string.settings_reset, R.string.settings_restore_default_settings)),
     // Tab 6 - Network
-    SettingsCardRegistryEntry(6, R.string.bridge_server, R.drawable.server, focusId = "pcserver",
+    SettingsCardRegistryEntry(6, R.string.bridge_server, R.drawable.devices, focusId = "pcserver",
         keywordRes = listOf(R.string.bridge_server, R.string.bridge_server_description)),
-    SettingsCardRegistryEntry(6, R.string.settings_download_quality, R.drawable.network,
+    SettingsCardRegistryEntry(6, R.string.settings_download_quality, R.drawable.audio_quality,
         keywordRes = listOf(R.string.downloads_quality_format, R.string.downloads_action_refresh_quality)),
-    SettingsCardRegistryEntry(6, R.string.settings_network_quality_title, R.drawable.network,
+    SettingsCardRegistryEntry(6, R.string.settings_network_quality_title, R.drawable.headphones,
         keywordRes = listOf(R.string.settings_network_quality_title, R.string.audio_quality_format, R.string.settings_network_image_quality_label)),
-    SettingsCardRegistryEntry(6, R.string.network_settings, R.drawable.network,
+    SettingsCardRegistryEntry(6, R.string.network_settings, R.drawable.wifi,
         keywordRes = listOf(R.string.network_settings, R.string.settings_network_data_saver_label, R.string.settings_network_data_saver_description)),
     SettingsCardRegistryEntry(6, R.string.settings_network_offline_mode_label, R.drawable.airplane, focusId = "offline",
         keywordRes = listOf(R.string.settings_network_offline_mode_label, R.string.settings_network_offline_mode_description)),
@@ -400,12 +400,12 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     // Tab 7 - Other
     SettingsCardRegistryEntry(7, R.string.settings_section_service_lifetime_title, R.drawable.battery,
         keywordRes = listOf(R.string.settings_section_service_lifetime_title, R.string.settings_service_keep_screen_on_label, R.string.settings_service_keep_screen_on_description, R.string.settings_service_ignore_battery_optimizations_label)),
-    SettingsCardRegistryEntry(7, R.string.settings_section_proxy_title, R.drawable.network,
+    SettingsCardRegistryEntry(7, R.string.settings_section_proxy_title, R.drawable.link,
         keywordRes = listOf(
             R.string.settings_section_proxy_title, R.string.settings_proxy_enabled_label, R.string.settings_proxy_mode_label, R.string.settings_proxy_host_label,
             R.string.settings_proxy_port_label, R.string.settings_restart_required_message,
         )),
-    SettingsCardRegistryEntry(7, R.string.parental_control, R.drawable.shield_checkmark,
+    SettingsCardRegistryEntry(7, R.string.parental_control, R.drawable.parental_control,
         keywordRes = listOf(R.string.parental_control, R.string.settings_parental_age_restriction_description)),
     SettingsCardRegistryEntry(7, R.string.maintenance_title, R.drawable.shield_checkmark, focusId = "maintenance",
         keywordRes = listOf(
@@ -425,7 +425,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(9, R.string.rewind_settings_enabled, R.drawable.sparkles),
     // Tab 8 - About
     SettingsCardRegistryEntry(8, R.string.about_title, R.drawable.information),
-    SettingsCardRegistryEntry(8, R.string.settings_section_troubleshooting_title, R.drawable.information,
+    SettingsCardRegistryEntry(8, R.string.settings_section_troubleshooting_title, R.drawable.bugs,
         keywordRes = listOf(
             R.string.settings_section_troubleshooting_title, R.string.about_action_view_source,
             R.string.about_github_link_description, R.string.about_action_report_issue,

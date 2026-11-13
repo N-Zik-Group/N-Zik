@@ -21,7 +21,7 @@ internal fun DataBackupCard(search: Search) {
     SettingsSectionCard(
         modifier = Modifier.testTag("data.card.backup"),
         title = stringResource(R.string.settings_section_backup_and_restore_title),
-        icon = R.drawable.server,
+        icon = R.drawable.backup,
         content = {
 
             if (search.inputValue.isBlank() || stringResource(R.string.backup_action_import).contains(search.inputValue, true) || stringResource(R.string.backup_import_library_options_description).contains(search.inputValue, true)) {

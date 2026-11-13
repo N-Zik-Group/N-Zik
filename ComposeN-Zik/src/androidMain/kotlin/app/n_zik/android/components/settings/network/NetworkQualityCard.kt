@@ -39,7 +39,7 @@ internal fun NetworkQualityCard(
 
     SettingsSectionCard(
         title = stringResource(R.string.settings_network_quality_title),
-        icon = R.drawable.network,
+        icon = R.drawable.headphones,
         content = {
 
             if (query.isBlank() || stringResource(R.string.audio_quality_format).contains(query, true)) {

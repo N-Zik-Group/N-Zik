@@ -18,7 +18,7 @@ internal fun NetworkConnectionCard(query: String) {
 
     SettingsSectionCard(
         title = stringResource(R.string.network_settings),
-        icon = R.drawable.network,
+        icon = R.drawable.wifi,
         content = {
             if (query.isBlank() || stringResource(R.string.settings_network_data_saver_label).contains(query, true) || stringResource(R.string.settings_network_data_saver_description).contains(query, true)) {
                 OtherSwitchSettingEntry(

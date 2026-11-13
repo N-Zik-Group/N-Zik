@@ -86,7 +86,7 @@ AnimatedVisibility(
                     SettingsSectionCard(
                     modifier = Modifier.testTag("appearance.card.fullscreenLyrics"),
                         title = stringResource(R.string.settings_section_fullscreen_lyrics_title),
-                        icon = R.drawable.song_lyrics,
+                        icon = R.drawable.resize,
                         content = {
 
                 if (showTotalTimeQueue) {

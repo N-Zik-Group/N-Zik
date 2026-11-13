@@ -38,7 +38,7 @@ internal fun AiTopPlaylistsCard(search: Search) {
     val searchCtx_6 = search.inputValue.isBlank() || stringResource(R.string.playlist_top).contains(search.inputValue, true) || stringResource(R.string.statistics_max_number_of_items).contains(search.inputValue, true) || showMyTopPlaylistTitle.contains(search.inputValue, true)
     SettingsSectionCard(
         title = stringResource(R.string.playlist_top),
-        icon = R.drawable.playlist,
+        icon = R.drawable.featured_playlist,
         visible = searchCtx_6,
         content = {
             var showTopPlaylistsDialog by remember { mutableStateOf(false) }

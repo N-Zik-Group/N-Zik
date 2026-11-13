@@ -114,7 +114,7 @@ internal fun AppearancePresetsCard(search: Search) {
                 SettingsSectionCard(
                     modifier = Modifier.testTag("appearance.card.presets"),
                     title = stringResource(R.string.player_presets_and_layout),
-                    icon = R.drawable.ui,
+                    icon = R.drawable.images_sharp,
                     content = {
 
             DialogPresence(visible = appearanceChooser) {

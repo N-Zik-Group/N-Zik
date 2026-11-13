@@ -73,7 +73,7 @@ internal fun OtherProxyCard(search: Search) {
 
     SettingsSectionCard(
         title = stringResource(R.string.settings_section_proxy_title),
-        icon = R.drawable.network,
+        icon = R.drawable.link,
         content = {
             SettingsDescription(text = stringResource(R.string.settings_restart_required_message))
 
