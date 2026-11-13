@@ -3,6 +3,7 @@ package app.n_zik.android.components.ui.screens.home
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.MutableIntState
@@ -48,6 +49,7 @@ internal class SharedHomeHeaderGlass(
     val measuredPanelHeight: MutableIntState,
     val animatedPanelHeight: State<Int>,
     val topNavigation: Boolean,
+    val expansion: State<Float>,
 ) {
     var navigationBottomPx by mutableIntStateOf(0)
     var owner: Any? by mutableStateOf(null)
@@ -71,12 +73,14 @@ internal fun usesSharedHomeHeaderGlass(
 
 @Composable
 internal fun rememberSharedHomeHeaderGlass(enabled: Boolean, pageKey: Any?, topNavigation: Boolean = false): SharedHomeHeaderGlass? =
-    if (!enabled) null else key(pageKey, topNavigation) {
+    key(pageKey, topNavigation) {
+        val expansion = animateFloatAsState(if (enabled) 1f else 0f, navigationChromeTween(), label = "homeGlassExpansion")
         val list = rememberLayerBackdrop()
         val surface = rememberLayerBackdrop()
         val height = remember { mutableIntStateOf(0) }
         val animatedHeight = animateIntAsState(height.intValue, navigationChromeTween(), label = "homeGlassExtent")
-        remember(list, surface) { SharedHomeHeaderGlass(list, surface, height, animatedHeight, topNavigation) }
+        val shared = remember(list, surface) { SharedHomeHeaderGlass(list, surface, height, animatedHeight, topNavigation, expansion) }
+        shared.takeIf { enabled || expansion.value > 0f }
     }
 
 /** Apply only to the list/grid sibling, never the Box which also contains the toolbar. */
@@ -88,6 +92,9 @@ internal fun Modifier.sharedHomeGlassContent(): Modifier {
 
 internal fun sharedHomeGlassHeight(panelTop: Int, panelHeight: Int, panelOffset: Float): Int =
     (panelTop + panelHeight + panelOffset.roundToInt()).coerceAtLeast(0)
+
+internal fun sharedHomeGlassTransitionHeight(headerBottom: Int, expandedBottom: Int, expansion: Float): Int =
+    headerBottom + ((expandedBottom - headerBottom) * expansion.coerceIn(0f, 1f)).roundToInt()
 
 /** The initial header/mini clearance must fold away with the Home toolbar as well. */
 internal fun sharedTopHomeGlassHeight(navigationBottom: Int, panelTop: Int, panelHeight: Int, visible: Float): Int {

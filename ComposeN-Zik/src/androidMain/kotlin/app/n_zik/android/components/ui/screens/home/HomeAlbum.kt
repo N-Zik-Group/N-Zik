@@ -2,7 +2,7 @@
 package app.n_zik.android.components.ui.screens.home
 
 
-import app.n_zik.android.appTextResources
+import app.n_zik.android.components.ui.screens.home.onDevice.DeviceLibraryPullRefresh
 import app.n_zik.android.components.navigation.FloatingActionSiblingSpace
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchNoResults
@@ -53,7 +53,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.unit.Dp
 import androidx.compose.runtime.Composable
@@ -66,7 +65,6 @@ import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -76,6 +74,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import app.n_zik.android.core.ondevice.DEVICE_ALBUM_PREFIX
+import app.n_zik.android.core.ondevice.observeDeviceLibrary
+import app.n_zik.android.core.ondevice.DeviceLibraryResults
+import app.n_zik.android.core.ondevice.scanDeviceLibrary
+import app.n_zik.android.utils.getActiveProfile
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -89,7 +95,6 @@ import app.n_zik.android.compose.persist.persistList
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.OfflineMode
-import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassFloatingActions
@@ -120,7 +125,9 @@ import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.utils.Preference.HOME_ALBUMS_FAVORITES_SORT_BY
 import app.n_zik.android.utils.Preference.HOME_ALBUMS_FAVORITES_SORT_ORDER
 import app.n_zik.android.utils.Preference.HOME_ALBUMS_LIBRARY_SORT_BY
+import app.n_zik.android.utils.Preference.HOME_ON_DEVICE_ALBUMS_SORT_BY
 import app.n_zik.android.utils.Preference.HOME_ALBUMS_LIBRARY_SORT_ORDER
+import app.n_zik.android.utils.Preference.HOME_ON_DEVICE_ALBUMS_SORT_ORDER
 import app.n_zik.android.utils.Preference.HOME_ALBUMS_DISLIKED_SORT_BY
 import app.n_zik.android.utils.Preference.HOME_ALBUMS_DISLIKED_SORT_ORDER
 import app.n_zik.android.utils.Preference.HOME_ALBUM_ITEM_SIZE
@@ -136,16 +143,22 @@ import app.n_zik.android.utils.formatAsTime
 import app.n_zik.android.utils.center
 import app.n_zik.android.utils.color
 import app.n_zik.android.utils.showFavoritesAlbumKey
+import app.n_zik.android.utils.showOnDeviceAlbumsKey
+import app.n_zik.android.core.ondevice.isDeviceAlbumId
+import app.n_zik.android.playback.services.isLocal
+import app.n_zik.android.core.ondevice.deviceLibraryEnabled
 import app.n_zik.android.utils.showDislikedAlbumKey
 import app.n_zik.android.utils.excludeDislikedAlbumsKey
 import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.utils.homeAlbumsOrderKey
 import app.n_zik.android.utils.showFloatingIconKey
 import app.n_zik.android.utils.homeAlbumsLibraryToolbarOrderKey
+import app.n_zik.android.utils.homeAlbumsOnDeviceToolbarOrderKey
 import app.n_zik.android.utils.homeAlbumsFavoritesToolbarOrderKey
 import app.n_zik.android.utils.homeAlbumsDislikedToolbarOrderKey
 import app.n_zik.android.utils.homeAlbumsFavoritesSortMenuOrderKey
 import app.n_zik.android.utils.homeAlbumsLibrarySortMenuOrderKey
+import app.n_zik.android.utils.homeAlbumsOnDeviceSortMenuOrderKey
 import app.n_zik.android.utils.homeAlbumsDislikedSortMenuOrderKey
 import org.json.JSONArray
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -175,14 +188,9 @@ import app.n_zik.android.ui.components.themed.Enqueue
 import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.core.utils.Toaster
-import app.n_zik.android.components.dialog.common.RetrySyncDialog
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import app.n_zik.android.components.dialog.settings.HomeAlbumsToolbarSettingsDialog
-import androidx.compose.material3.LinearWavyProgressIndicator
-import app.n_zik.android.components.pullrefresh.OfflineGatedPullRefresh
-import androidx.core.content.ContextCompat
 import java.util.ArrayList
-import android.content.Intent
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import timber.log.Timber
 
@@ -204,24 +212,30 @@ fun HomeAlbums(
     // Essentials
     val menuState = LocalMenuState.current
     val binder = LocalPlayerServiceBinder.current
-    val lazyGridState = rememberLazyGridState()
 
     // Settings
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
     var albumType by rememberPreference(albumTypeKey, AlbumsType.Library )
+    val lazyGridState = AlbumsType.entries.map { tab ->
+        key(tab) { rememberLazyGridState() }
+    }[albumType.ordinal]
+    val headerOffsetState = AlbumsType.entries.map { tab ->
+        key(tab) { rememberSaveable { androidx.compose.runtime.mutableFloatStateOf(0f) } }
+    }[albumType.ordinal]
 
-    var items by persistList<Album>( "home/albums/items" )
-    var itemsToFilter by persistList<Album>( "home/albums/itemsToFilter" )
+    var items by key(albumType) { persistList<Album>( "home/albums/$albumType/items" ) }
+    var itemsToFilter by key(albumType) { persistList<Album>( "home/albums/$albumType/itemsToFilter" ) }
     var filterBy by rememberPreference(filterByKey, FilterBy.All)
     val (colorPalette, typography) = LocalAppearance.current
 
-    var itemsOnDisplay by persistList<Album>( "home/albums/on_display" )
+    var itemsOnDisplay by key(albumType) { persistList<Album>( "home/albums/$albumType/on_display" ) }
 
     val search = Search(lazyGridState)
     val itemSelector = ItemSelector<Album>()
 
     val sort = when( albumType ) {
         AlbumsType.Favorites -> Sort( HOME_ALBUMS_FAVORITES_SORT_BY, HOME_ALBUMS_FAVORITES_SORT_ORDER, homeAlbumsFavoritesSortMenuOrderKey, "alb_fav" )
+        AlbumsType.OnDevice -> Sort( HOME_ON_DEVICE_ALBUMS_SORT_BY, HOME_ON_DEVICE_ALBUMS_SORT_ORDER, homeAlbumsOnDeviceSortMenuOrderKey, "alb_dev" )
         AlbumsType.Library -> Sort( HOME_ALBUMS_LIBRARY_SORT_BY, HOME_ALBUMS_LIBRARY_SORT_ORDER, homeAlbumsLibrarySortMenuOrderKey, "alb_lib" )
         AlbumsType.Disliked -> Sort( HOME_ALBUMS_DISLIKED_SORT_BY, HOME_ALBUMS_DISLIKED_SORT_ORDER, homeAlbumsDislikedSortMenuOrderKey, "alb_dis" )
     }
@@ -239,12 +253,14 @@ fun HomeAlbums(
 
     val scope = rememberCoroutineScope()
     suspend fun getSelectedSongs(): List<Song> = withContext(NzikDispatchers.DATA) {
-        val selected = itemSelector.ifEmpty { itemsOnDisplay }
+        val deviceOnly = albumType == AlbumsType.OnDevice
+        val deviceGroups = if (deviceOnly) appContext().scanDeviceLibrary().albumSongIds else emptyMap()
+        val selected = itemSelector.ifEmpty { itemsOnDisplay }.filter { isDeviceAlbumId(it.id) == deviceOnly }
         val seen = HashSet<String>()
         val result = ArrayList<Song>()
         for( album in selected ) {
             for( song in Database.songAlbumMapTable.allSongsOfDirect( album.id ) ) {
-                if( seen.add( song.id ) ) result.add( song )
+                if (song.isLocal == deviceOnly && (!deviceOnly || song.id in deviceGroups[album.id].orEmpty()) && seen.add(song.id)) result.add(song)
             }
         }
         result
@@ -288,6 +304,9 @@ fun HomeAlbums(
         songs = { selectedSongs }
     )
 
+    val showOnDeviceTab by rememberPreference(showOnDeviceAlbumsKey, true)
+    val showOnDevice = deviceLibraryEnabled() && showOnDeviceTab
+    val onDeviceLabel = stringResource(R.string.library_on_device_title)
     val showFavoritesAlbum by rememberPreference(showFavoritesAlbumKey, true)
     val showDislikedAlbum by rememberPreference(excludeDislikedAlbumsKey, DislikeMode.Enabled)
     val homeAlbumsOrderPref by rememberPreference(homeAlbumsOrderKey, "")
@@ -295,11 +314,11 @@ fun HomeAlbums(
     val favoritesLabel = stringResource(R.string.library_favorites_title)
     val allLabel = stringResource(R.string.common_option_all)
     val dislikedLabel = stringResource(R.string.library_disliked_title)
-    val albumsDefaultOrder = listOf("all", "favorites", "disliked")
-    val labelMap = mapOf("favorites" to favoritesLabel, "all" to allLabel, "disliked" to dislikedLabel)
-    val typeMap = mapOf("favorites" to AlbumsType.Favorites, "all" to AlbumsType.Library, "disliked" to AlbumsType.Disliked)
-    val toggleMap = mapOf("favorites" to showFavoritesAlbum, "all" to true, "disliked" to showDislikedAlbum.isEnabled)
-    val buttonsList = remember(showFavoritesAlbum, homeAlbumsOrderPref, favoritesLabel, allLabel, dislikedLabel) {
+    val albumsDefaultOrder = listOf("all", "favorites", "disliked", "on_device")
+    val labelMap = mapOf("on_device" to onDeviceLabel, "favorites" to favoritesLabel, "all" to allLabel, "disliked" to dislikedLabel)
+    val typeMap = mapOf("on_device" to AlbumsType.OnDevice, "favorites" to AlbumsType.Favorites, "all" to AlbumsType.Library, "disliked" to AlbumsType.Disliked)
+    val toggleMap = mapOf("on_device" to showOnDevice, "favorites" to showFavoritesAlbum, "all" to true, "disliked" to showDislikedAlbum.isEnabled)
+    val buttonsList = remember(showOnDevice, onDeviceLabel, showDislikedAlbum, showFavoritesAlbum, homeAlbumsOrderPref, favoritesLabel, allLabel, dislikedLabel) {
         val order = try {
             val arr = JSONArray(homeAlbumsOrderPref)
             val parsed = (0 until arr.length()).map { arr.getString(it) }
@@ -316,7 +335,8 @@ fun HomeAlbums(
         }
     }
 
-    LaunchedEffect(showFavoritesAlbum) {
+    LaunchedEffect(showFavoritesAlbum, showOnDevice, albumType) {
+        if (!showOnDevice && albumType == AlbumsType.OnDevice) albumType = AlbumsType.Library
         if (!showFavoritesAlbum && albumType == AlbumsType.Favorites) albumType = AlbumsType.Library
     }
 
@@ -324,31 +344,53 @@ fun HomeAlbums(
         filterBy = FilterBy.All
     }
 
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val profile = getActiveProfile(context)
+    var eligibleDeviceGroups by remember(profile) {
+        mutableStateOf(DeviceLibraryResults.current(profile)?.albumIds)
+    }
+    LaunchedEffect(context, lifecycleOwner, albumType) {
+        if (albumType != AlbumsType.OnDevice) return@LaunchedEffect
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            context.observeDeviceLibrary().collect { eligibleDeviceGroups = it.albumIds }
+        }
+    }
+
     var searchDataReady by remember(sort.sortBy, sort.sortOrder, albumType) { mutableStateOf(false) }
-    var completedSearchQuery by remember { mutableStateOf<String?>(null) }
+    val groupsReady = albumType != AlbumsType.OnDevice || eligibleDeviceGroups != null
+    var completedSearchQuery by remember(albumType, sort.sortBy, sort.sortOrder, groupsReady) { mutableStateOf<String?>(null) }
+    val gridReady = searchDataReady && groupsReady && completedSearchQuery == search.inputValue
     LaunchedEffect( sort.sortBy, sort.sortOrder, albumType ) {
         when ( albumType ) {
             AlbumsType.Favorites -> Database.albumTable.sortBookmarked( sort.sortBy, sort.sortOrder )
             AlbumsType.Library -> Database.albumTable.sortInLibrary( sort.sortBy, sort.sortOrder )
+            AlbumsType.OnDevice -> kotlinx.coroutines.flow.combine(
+                Database.albumTable.sortInLibrary(sort.sortBy, sort.sortOrder),
+                Database.albumTable.sortInLibrary(AlbumSortBy.Title, sort.sortOrder),
+            ) { sorted, all -> (sorted + all).distinctBy { it.id } }
             AlbumsType.Disliked -> Database.albumTable.allDisliked()
         }.collect {
             itemsToFilter = it
             searchDataReady = true
         }
     }
-    LaunchedEffect( Unit, itemsToFilter, filterBy, showDislikedAlbum ) {
-        items = when(filterBy) {
-            FilterBy.All -> itemsToFilter
-            FilterBy.YoutubeLibrary -> itemsToFilter.filter { it.isYoutubeAlbum }
-            FilterBy.Local -> itemsToFilter.filterNot { it.isYoutubeAlbum }
+    LaunchedEffect( searchDataReady, groupsReady, itemsToFilter, albumType, filterBy, showDislikedAlbum, eligibleDeviceGroups, search.inputValue ) {
+        if (!searchDataReady || !groupsReady) return@LaunchedEffect
+        items = when {
+            albumType == AlbumsType.OnDevice -> itemsToFilter.filter { it.id in eligibleDeviceGroups.orEmpty() }
+            filterBy == FilterBy.All -> itemsToFilter.filterNot { isDeviceAlbumId(it.id) }
+            filterBy == FilterBy.YoutubeLibrary -> itemsToFilter.filter { !isDeviceAlbumId(it.id) && it.isYoutubeAlbum }
+            else -> itemsToFilter.filterNot { isDeviceAlbumId(it.id) || it.isYoutubeAlbum }
         }.let { list ->
             if (albumType != AlbumsType.Disliked) {
-                list.filter { it.dislikedAt == null }
+                list.filter {
+                    it.dislikedAt == null &&
+                        (!it.id.startsWith(DEVICE_ALBUM_PREFIX) || eligibleDeviceGroups?.contains(it.id) != false)
+                }
             } else list
         }
 
-    }
-    LaunchedEffect( items, search.inputValue ) {
         itemsOnDisplay = items.filter {
             it.title?.contains( search.inputValue, true) ?: false
                     || it.year?.contains( search.inputValue, true) ?: false
@@ -359,7 +401,7 @@ fun HomeAlbums(
     SearchEmptyFeedback(
         query = search.inputValue,
         empty = itemsOnDisplay.isEmpty(),
-        loading = !searchDataReady || completedSearchQuery != search.inputValue
+        loading = !gridReady
     )
 
 
@@ -394,57 +436,14 @@ fun HomeAlbums(
     var justSynced by rememberSaveable { mutableStateOf(!doAutoSync) }
 
 
-    var refreshing by remember { mutableStateOf(false) }
-
-    fun refresh(itemsToRefresh: List<Album>? = null) {
-        if (refreshing || HomeSyncState.isSyncingAlbums) {
-            Toaster.e(appTextResources().getString(R.string.library_sync_already_running_message))
-            return
-        }
-        val targetItems = itemsToRefresh ?: itemsOnDisplay
-        val ids = ArrayList(targetItems.map { it.id })
-        if (ids.isEmpty()) return
-        
-        val intent = Intent(appContext(), HomeSyncService::class.java).apply {
-            action = HomeSyncService.ACTION_SYNC_ALBUMS
-            putStringArrayListExtra(HomeSyncService.EXTRA_IDS, ids)
-        }
-        try {
-            ContextCompat.startForegroundService(appContext(), intent)
-        } catch (e: Exception) {
-            Timber.tag("HomeAlbum").e(e, "Failed to start HomeSyncService")
-            Toaster.e(R.string.sync_start_service_failed)
-        }
-    }
-
-    // START: Import YTM subscribed channels
     LaunchedEffect(justSynced, doAutoSync) {
         if (!justSynced && importYTMLikedAlbums())
             justSynced = true
     }
 
-    val retryDialog = RetrySyncDialog(
-        failedCount = HomeSyncState.failedAlbumsList.size,
-        onRetry = { 
-            val items = HomeSyncState.failedAlbumsList
-            HomeSyncState.failedAlbumsList = emptyList()
-            refresh(items) 
-        }
-    )
-    retryDialog.Render()
-    LaunchedEffect(HomeSyncState.failedAlbumsList) {
-        if (HomeSyncState.failedAlbumsList.isNotEmpty()) retryDialog.showDialog()
-    }
-
-    val context = LocalContext.current
-    val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
     val floatingBackdrop = rememberGlassFloatingActionBackdrop()
 
-    OfflineGatedPullRefresh(
-        isOnline = isOnline,
-        isRefreshing = refreshing,
-        onRefresh = { refresh() }
-    ) {
+    DeviceLibraryPullRefresh(albumType == AlbumsType.OnDevice) {
         Box(
             modifier = Modifier
                 .background(colorPalette().background0)
@@ -458,16 +457,21 @@ fun HomeAlbums(
                 val homeAlbumsToolbarOrderPrefFavorites by rememberPreference(homeAlbumsFavoritesToolbarOrderKey, "")
                 val homeAlbumsToolbarOrderPrefDisliked by rememberPreference(homeAlbumsDislikedToolbarOrderKey, "")
 
+                val onDeviceToolbarOrder by rememberPreference(homeAlbumsOnDeviceToolbarOrderKey, "")
+
                 val currentToolbarOrderPref = when (albumType) {
+                    AlbumsType.OnDevice -> onDeviceToolbarOrder
                     AlbumsType.Favorites -> homeAlbumsToolbarOrderPrefFavorites
                     AlbumsType.Disliked -> homeAlbumsToolbarOrderPrefDisliked
                     else -> homeAlbumsToolbarOrderPrefLibrary
                 }
 
-                val toolbarButtons = remember { mutableStateListOf<Button>() }
-
-                LaunchedEffect(sort.sortBy, sort.sortOrder, currentToolbarOrderPref, offlineMode) {
-                    val defaultToolbarOrder = HomeAlbumsToolbarSettingsDialog.allButtonIds
+                val toolbarButtons = buildList<Button> {
+                    val defaultToolbarOrder = if (albumType == AlbumsType.OnDevice) {
+                        HomeAlbumsToolbarSettingsDialog.onDeviceButtonIds
+                    } else {
+                        HomeAlbumsToolbarSettingsDialog.allButtonIds
+                    }
                     val order = try {
                         if (currentToolbarOrderPref.isBlank()) defaultToolbarOrder else {
                             val arr = JSONArray(currentToolbarOrderPref)
@@ -475,21 +479,20 @@ fun HomeAlbums(
                         }
                     } catch (_: Exception) { defaultToolbarOrder }
 
-                    toolbarButtons.clear()
-                    order.forEach { id ->
+                    order.filter { it in defaultToolbarOrder }.forEach { id ->
                         when(id) {
-                            "sort" -> toolbarButtons.add(sort)
-                            "position_lock" -> { if (sort.sortBy == AlbumSortBy.Custom) toolbarButtons.add(positionLock) }
-                            "sync" -> { if (isYouTubeSyncEnabled() && !offlineMode) toolbarButtons.add(sync) }
-                            "search" -> toolbarButtons.add(search)
-                            "randomizer" -> toolbarButtons.add(randomizer)
-                            "shuffle" -> toolbarButtons.add(shuffle)
-                            "item_selector" -> toolbarButtons.add(itemSelector)
-                            "play_next" -> toolbarButtons.add(playNext)
-                            "enqueue" -> toolbarButtons.add(enqueue)
-                            "add_to_playlist" -> toolbarButtons.add(addToPlaylist)
-                            "export_dialog" -> toolbarButtons.add(exportDialog)
-                            "item_size" -> toolbarButtons.add(itemSize)
+                            "sort" -> add(sort)
+                            "position_lock" -> { if (sort.sortBy == AlbumSortBy.Custom) add(positionLock) }
+                            "sync" -> { if (isYouTubeSyncEnabled() && !offlineMode) add(sync) }
+                            "search" -> add(search)
+                            "randomizer" -> add(randomizer)
+                            "shuffle" -> add(shuffle)
+                            "item_selector" -> add(itemSelector)
+                            "play_next" -> add(playNext)
+                            "enqueue" -> add(enqueue)
+                            "add_to_playlist" -> add(addToPlaylist)
+                            "export_dialog" -> add(exportDialog)
+                            "item_size" -> add(itemSize)
                         }
                     }
                 }
@@ -541,7 +544,7 @@ fun HomeAlbums(
                         )
                     }
                     AnimatedVisibility(
-                        visible = isYouTubeSyncEnabled(),
+                        visible = albumType != AlbumsType.OnDevice && isYouTubeSyncEnabled(),
                         enter = fadeIn(animationSpec = tween(200)) + expandVertically(animationSpec = tween(200)),
                         exit = fadeOut(animationSpec = tween(200)) + shrinkVertically(animationSpec = tween(200))
                     ) {
@@ -585,36 +588,6 @@ fun HomeAlbums(
                             )
                         }
                     }
-                    if (HomeSyncState.isSyncingAlbums) {
-                        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                BasicText(
-                                    text = stringResource(R.string.library_sync_current_item_format, HomeSyncState.albumSyncCurrentName),
-                                    style = typography.xxs.semiBold.copy(color = colorPalette.textSecondary),
-                                    maxLines = 1,
-                                    modifier = Modifier.weight(1f).padding(end = 8.dp).basicMarquee(iterations = Int.MAX_VALUE)
-                                )
-                                Row {
-                                    BasicText(
-                                        text = stringResource(R.string.library_sync_progress_format, HomeSyncState.albumSyncCurrentIndex, HomeSyncState.albumSyncTotal),
-                                        style = typography.xxs.semiBold.copy(color = colorPalette.textSecondary)
-                                    )
-                                    if (HomeSyncState.albumSyncFailed > 0) {
-                                        BasicText(
-                                            text = " " + stringResource(R.string.library_sync_failed_count_suffix, HomeSyncState.albumSyncFailed),
-                                            style = typography.xxs.semiBold.copy(color = colorPalette.red)
-                                        )
-                                    }
-                                }
-                            }
-                            LinearWavyProgressIndicator(
-                                progress = { HomeSyncState.albumSyncProgress },
-                                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                                color = colorPalette.accent,
-                                trackColor = colorPalette.background2
-                            )
-                        }
-                    }
                 }
             }
         }
@@ -627,7 +600,6 @@ fun HomeAlbums(
 
                     val headerHeightState = remember { androidx.compose.runtime.mutableIntStateOf(0) }
                     val headerHeight by headerHeightState
-                    val headerOffsetState = remember { androidx.compose.runtime.mutableFloatStateOf(0f) }
                     val headerOffset by headerOffsetState
 
                     val nestedScrollConnection = rememberHomeHeaderConnection(headerHeight, headerOffsetState, itemsOnDisplay.isNotEmpty())
@@ -643,7 +615,7 @@ fun HomeAlbums(
                         },
                     ) {
                         val headerDensity = androidx.compose.ui.platform.LocalDensity.current
-                        LazyVerticalGrid(
+                        if (gridReady) LazyVerticalGrid(
                             state = lazyGridState,
                             columns = GridCells.Adaptive( itemSize.size.dp ),
                             contentPadding = rememberPageChromeContentPadding(
@@ -784,7 +756,7 @@ fun HomeAlbums(
                             }
                         }
 
-                if (itemsOnDisplay.isEmpty()) {
+                if (gridReady && itemsOnDisplay.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding(topInsetProvider = scrollContentInsetProvider, base = PaddingValues(top = with(androidx.compose.ui.platform.LocalDensity.current) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() }, bottom = Dimensions.bottomSpacer))),
                         contentAlignment = Alignment.Center

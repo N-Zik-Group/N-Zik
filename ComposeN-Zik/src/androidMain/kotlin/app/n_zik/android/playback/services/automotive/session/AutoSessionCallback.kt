@@ -661,7 +661,14 @@ class AutoSessionCallback(
                 Timber.tag("AutoSessionCallback").w("Expired or invalid automotive selection: %s", selectedId)
                 return MediaSession.MediaItemsWithStartPosition(emptyList(), 0, startPositionMs)
             }
-            val allowed = accessPolicy().eligible(selection.items, selection.parentId)
+            val allowed = accessPolicy().eligible(selection.items, selection.parentId).let { eligible ->
+                if (autoBrowseTree.deviceGroupsHandler.detailParent(selection.parentId) == null) eligible
+                else {
+                    val currentIds = autoBrowseTree.deviceGroupsHandler.songs(selection.parentId, context, database)
+                        .mapTo(HashSet()) { it.id }
+                    eligible.filter { (_, item) -> AutoAccessPolicy.canonicalId(item) in currentIds }
+                }
+            }
             val currentSelection = if (scopedAction) autoBrowseTree.selectionStore.resolveAction(selectedId)
                 else autoBrowseTree.selectionStore.resolve(selectedId)
             if (currentSelection == null || currentSelection.items !== selection.items || currentSelection.startIndex != selection.startIndex) {
@@ -808,8 +815,9 @@ class AutoSessionCallback(
                 AutoSessionConstants.ID_QUICK_PICKS -> {
                     songId = paths[1]
                     val trending = database.eventTable.findSongsMostPlayedBetween(from = 0, limit = 500).first()
-                    val relatedSongs = if (accessPolicy().online && trending.isNotEmpty()) {
-                        Innertube.relatedPage(videoId = trending.first().id, setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)?.getOrNull()?.songs?.map { it.asSong } ?: emptyList()
+                    val relatedSeed = trending.firstOrNull { !it.isLocal }
+                    val relatedSongs = if (accessPolicy().online && relatedSeed != null) {
+                        Innertube.relatedPage(videoId = relatedSeed.id, setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)?.getOrNull()?.songs?.map { it.asSong } ?: emptyList()
                     } else emptyList()
                     val ytmQuickPicks = if (accessPolicy().online && isYouTubeLoggedIn()) {
                         YtMusic.getQuickPicks(setLogin = true).getOrNull()?.map { it.asSong } ?: emptyList()
@@ -840,6 +848,15 @@ class AutoSessionCallback(
                     songId = paths[1]
                 }
                 AutoSessionConstants.ID_SONGS_DISLIKED -> { songId = paths[1]; queryList = dislikedSongs() }
+                AutoSessionConstants.ID_ALBUMS_ONDEVICE, AutoSessionConstants.ID_ARTISTS_ONDEVICE -> {
+                    val selection = AutoMediaIdContract.parseSongSelection(mediaId, paths.first())
+                    if (selection != null && selection.section == null) {
+                        songId = selection.songId
+                        queryList = autoBrowseTree.deviceGroupsHandler.songs(
+                            "${paths.first()}/${selection.containerId}", context, database,
+                        )
+                    }
+                }
                 PlayerServiceModern.ARTIST -> {
                     // MediaId contract: "artist/{artistId}/{songId}" or
                     // "artist/{artistId}/{section}/{songId}" (issue #777).

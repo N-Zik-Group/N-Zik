@@ -12,6 +12,10 @@ import app.n_zik.android.models.Info
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
 import app.n_zik.android.cleanPrefix
+import app.n_zik.android.core.ondevice.isDeviceAlbumId
+import app.n_zik.android.core.ondevice.isDeviceArtistId
+import app.n_zik.android.playback.services.isLocal
+import kotlinx.coroutines.flow.map
 
 // ─── Composable fallbacks (for UI) ───
 
@@ -43,12 +47,12 @@ internal fun displayTrackTitle(title: String?): String? =
 @Composable
 fun MediaItem.artistIdsWithFallback(): List<Info> {
     val ids = mediaMetadata.extras?.getStringArrayList("artistIds")
-    val infos = if (!ids.isNullOrEmpty()) {
+    val infos = if (!isLocal && !ids.isNullOrEmpty()) {
         val names = mediaMetadata.extras?.getStringArrayList("artistNames")
         ids.mapIndexed { i, id -> Info(id, names?.getOrNull(i)) }
     } else {
         val dbArtists by remember(mediaId) {
-            Database.artistTable.findBySongId(mediaId)
+            Database.artistTable.findBySongId(mediaId.substringAfterLast('/'))
         }.collectAsStateWithLifecycle(initialValue = emptyList(), context = NzikDispatchers.DATA)
         dbArtists.map { Info(it.id, it.name) }
     }
@@ -57,7 +61,7 @@ fun MediaItem.artistIdsWithFallback(): List<Info> {
 //
     // disagree with the artist text shown in the player. Follow the displayed
     // text order instead (see alignInfosToDisplayOrder for the doubt rule).
-    return alignInfosToDisplayOrder(infos, artistTextWithFallback())
+    return alignInfosToDisplayOrder(infos.filter { isDeviceArtistId(it.id) == isLocal }, artistTextWithFallback())
 }
 
 /**
@@ -99,10 +103,12 @@ internal fun alignInfosToDisplayOrder(infos: List<Info>, displayText: String?): 
 
 @Composable
 fun MediaItem.albumIdWithFallback(): String? {
-    val albumId = mediaMetadata.extras?.getString("albumId")
-    if (!albumId.isNullOrBlank()) return albumId
+    val albumId = mediaMetadata.extras?.getString("albumId")?.takeUnless(::isDeviceAlbumId)
+    if (!isLocal && !albumId.isNullOrBlank()) return albumId
     val dbAlbum by remember(mediaId) {
-        Database.albumTable.findBySongId(mediaId)
+        Database.songAlbumMapTable.findAlbumsOf(mediaId.substringAfterLast('/')).map { albums ->
+            albums.firstOrNull { isDeviceAlbumId(it.id) == isLocal }
+        }
     }.collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
     return dbAlbum?.id
 }

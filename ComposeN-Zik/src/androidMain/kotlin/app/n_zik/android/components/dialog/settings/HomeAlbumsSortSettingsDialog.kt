@@ -21,6 +21,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 import app.n_zik.android.utils.homeAlbumsDislikedSortMenuOrderKey
 import app.n_zik.android.utils.homeAlbumsFavoritesSortMenuOrderKey
 import app.n_zik.android.utils.homeAlbumsLibrarySortMenuOrderKey
+import app.n_zik.android.utils.homeAlbumsOnDeviceSortMenuOrderKey
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
@@ -37,6 +38,7 @@ object HomeAlbumsSortSettingsDialog : ContentFramedDialog {
 
 
     private val librarySortIds = listOf("AlbumName", "Artist", "Year", "DateAdded", "PlayCount", "Duration", "Custom")
+    private val onDeviceSortIds = listOf("Title", "Artist", "Songs", "Duration", "PlayCount", "ListeningTime", "DateAdded", "Year", "Custom")
 
     private val favoritesSortIds = listOf("AlbumName", "Artist", "Year", "DateAdded", "PlayCount", "Duration")
 
@@ -45,7 +47,8 @@ object HomeAlbumsSortSettingsDialog : ContentFramedDialog {
     private enum class AlbumTab(val textId: Int, val availableIds: List<String>) {
         Library(R.string.library_title, librarySortIds),
         Favorites(R.string.library_favorites_title, favoritesSortIds),
-        Disliked(R.string.library_disliked_title, dislikedSortIds)
+        Disliked(R.string.library_disliked_title, dislikedSortIds),
+        OnDevice(R.string.library_on_device_title, onDeviceSortIds)
     }
 
     private val tabs = AlbumTab.entries
@@ -71,22 +74,26 @@ object HomeAlbumsSortSettingsDialog : ContentFramedDialog {
     private fun serializeOrder(order: List<String>): String { val a = JSONArray(); order.forEach { a.put(it) }; return a.toString() }
 
     private fun getSortIcon(id: String): Int = when (id) {
-        "AlbumName" -> R.drawable.text
+        "AlbumName", "Title" -> R.drawable.text
         "Artist" -> R.drawable.artist
         "Year" -> R.drawable.calendar
         "DateAdded" -> R.drawable.time
         "PlayCount" -> R.drawable.play
+        "Songs" -> R.drawable.medical
+        "ListeningTime" -> R.drawable.trending
         "Duration" -> R.drawable.time
         "Custom" -> R.drawable.position
         else -> R.drawable.text
     }
 
     private fun getSortLabelRes(id: String): Int? = when (id) {
-        "AlbumName" -> R.string.library_sort_name
+        "AlbumName", "Title" -> R.string.library_sort_name
         "Artist" -> R.string.library_sort_artist
         "Year" -> R.string.library_sort_album_year
         "DateAdded" -> R.string.library_sort_date_added
         "PlayCount" -> R.string.library_sort_play_count
+        "Songs" -> R.string.library_sort_songs_number
+        "ListeningTime" -> R.string.library_sort_listening_time
         "Duration" -> R.string.library_sort_duration
         "Custom" -> R.string.library_sort_custom_order
         else -> null
@@ -97,12 +104,14 @@ object HomeAlbumsSortSettingsDialog : ContentFramedDialog {
 
     private fun getTabPrefix(tab: AlbumTab): String = when (tab) {
         AlbumTab.Library -> "alb_lib"
+        AlbumTab.OnDevice -> "alb_dev"
         AlbumTab.Favorites -> "alb_fav"
         AlbumTab.Disliked -> "alb_dis"
     }
 
     private fun getSortOrderKey(tab: AlbumTab): String = when (tab) {
         AlbumTab.Library -> homeAlbumsLibrarySortMenuOrderKey
+        AlbumTab.OnDevice -> homeAlbumsOnDeviceSortMenuOrderKey
         AlbumTab.Favorites -> homeAlbumsFavoritesSortMenuOrderKey
         AlbumTab.Disliked -> homeAlbumsDislikedSortMenuOrderKey
     }

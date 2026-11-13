@@ -144,10 +144,10 @@ fun Skeleton(
 
     RegisterSideRailBody(
         pageKey = dockPageKey,
-        enabled = !navigationBarPosition.isHorizontal && !isFloating,
+        enabled = hasNavBar && !navigationBarPosition.isHorizontal && !isFloating,
     ) { surfaceBackdrop ->
         CompositionLocalProvider(LocalGlassBackdrop provides contentBackdrop.takeIf { captureGlass }) {
-            if (hasNavBar) (navigationBar as? VerticalNavigationBar)?.DrawTabs(surfaceBackdrop)
+            (navigationBar as? VerticalNavigationBar)?.DrawTabs(surfaceBackdrop)
         }
     }
 

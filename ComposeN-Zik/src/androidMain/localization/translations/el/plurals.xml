@@ -65,10 +65,6 @@
         <item quantity="one">Κατάσταση προφίλ εισήχθη: %1$d προφίλ</item>
         <item quantity="other">Κατάσταση προφίλ εισήχθη: %1$d προφίλ</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="one">Αποτυχία συγχρονισμού του άλμπουμ %1$d Επιστρέψτε στην καρτέλα Άλμπουμ για να ξαναδοκιμάσετε.</item>
-        <item quantity="other">Αποτυχία συγχρονισμού του άλμπουμ %1$d και επιστροφή στην καρτέλα Άλμπουμ για να ξαναδοκιμάσετε.</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="one">Εξαγωγή %1$d cached/downloaded song?</item>
         <item quantity="other">Εξαγωγή %1$d cached/downloaded songs?</item>
@@ -84,54 +80,6 @@
     <plurals name="listen_together_blocked_user_count">
         <item quantity="one">%1$d user blocked</item>
         <item quantity="other">%1$d users blocked</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="one">Απέτυχε ο συγχρονισμός του %1$d καλλιτέχνη. Επιστρέψτε στην καρτέλα Καλλιτέχνες για να ξαναδοκιμάσετε.</item>
-        <item quantity="other">Απέτυχε ο συγχρονισμός %1$d καλλιτεχνών. Επιστρέψτε στην καρτέλα Καλλιτέχνες για να ξαναδοκιμάσετε.</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="one">Απέτυχε ο συγχρονισμός της λίστας αναπαραγωγής %1$d Επιστρέψτε στην καρτέλα Λίστες για επανάληψη.</item>
-        <item quantity="other">Απέτυχε ο συγχρονισμός των λιστών αναπαραγωγής %1$d Πήγαινε πίσω στην καρτέλα Λίστες για επανάληψη.</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">Θέλετε να ξαναπροσπαθήσετε να συγχρονίσετε το στοιχείο %1$d απέτυχε?</item>
-        <item quantity="other">Θέλετε να ξαναπροσπαθήσετε να συγχρονίσετε τα στοιχεία %1$d απέτυχε?</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="one">Συγχρονισμός καλλιτέχνη... (%1$d/%2$d)</item>
-        <item quantity="other">Συγχρονισμός καλλιτεχνών... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="one">Ανανέωση καλλιτέχνη %1$d</item>
-        <item quantity="other">Ανανέωση %1$d καλλιτεχνών</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="one">Αποτυχία εύρεσης %1$d καλλιτέχνη, επανάληψη</item>
-        <item quantity="other">Αποτυχία εύρεσης %1$d καλλιτεχνών, επανάληψη</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
-        <item quantity="other">Συγχρονισμός άλμπουμ... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">Ανανέωση άλμπουμ %1$d</item>
-        <item quantity="other">Ανανέωση άλμπουμ %1$d</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="one">Αποτυχία εύρεσης άλμπουμ %1$d επανάληψης,</item>
-        <item quantity="other">Αποτυχία εύρεσης άλμπουμ %1$d επανάληψης,</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="one">Συγχρονισμός λίστας αναπαραγωγής... (%1$d/%2$d)</item>
-        <item quantity="other">Συγχρονισμός λιστών αναπαραγωγής... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="one">Ανανέωση λίστας αναπαραγωγής %1$d</item>
-        <item quantity="other">Ανανέωση λίστας αναπαραγωγής %1$d</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="one">Απέτυχε η εύρεση της λίστας αναπαραγωγής %1$d</item>
-        <item quantity="other">Αποτυχία εύρεσης %1$d λιστών αναπαραγωγής, επανάληψης</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="one">Καθαρίστηκε το στοιχείο %1$d</item>

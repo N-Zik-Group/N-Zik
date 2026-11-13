@@ -44,6 +44,13 @@ interface SongPlaylistMapTable {
     """)
     fun clearGhostMaps(): Int
 
+    @Query("""
+        SELECT playlistId FROM SongPlaylistMap
+        GROUP BY playlistId
+        HAVING MIN(CASE WHEN songId LIKE 'local:%' THEN 1 ELSE 0 END) = 1
+    """)
+    fun onDeviceOnlyPlaylistIds(): Flow<List<Long>>
+
     /** All [Song]s mapped to the playlist whose [Playlist.id] equals [playlistId]. */
     @Query("""
         SELECT DISTINCT S.*

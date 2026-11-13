@@ -21,6 +21,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 import app.n_zik.android.utils.homeLibraryMonthlyPlaylistSortMenuOrderKey
 import app.n_zik.android.utils.homeLibraryPinnedPlaylistSortMenuOrderKey
 import app.n_zik.android.utils.homeLibraryPlaylistSortMenuOrderKey
+import app.n_zik.android.utils.homeLibraryOnDeviceSortMenuOrderKey
 import app.n_zik.android.utils.homeLibraryYTPlaylistSortMenuOrderKey
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
@@ -38,6 +39,7 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
 
 
     private val libraryPlaylistSortIds = listOf("Name", "SongCount", "ListeningTime", "PlayCount", "DateAdded", "Custom")
+    private val onDeviceSortIds = listOf("Name", "SongCount", "ListeningTime", "PlayCount", "DateAdded", "Custom")
     private val ytPlaylistSortIds = listOf("Name", "SongCount", "DateAdded")
     private val pinnedPlaylistSortIds = listOf("Name", "SongCount", "ListeningTime", "PlayCount", "DateAdded")
     private val rewindSortIds = listOf("Name", "SongCount", "DateAdded")
@@ -46,13 +48,15 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
         Playlist(R.string.library_playlists_title, libraryPlaylistSortIds),
         YTPlaylist(R.string.playlist_youtube_title, ytPlaylistSortIds),
         PinnedPlaylist(R.string.playlist_pinned_title, pinnedPlaylistSortIds),
-        Rewind(R.string.rewind_title, rewindSortIds)
+        Rewind(R.string.rewind_title, rewindSortIds),
+        OnDevice(R.string.library_on_device_title, onDeviceSortIds)
     }
 
     private val tabs = LibraryTab.entries
 
     private fun getPrefix(tab: LibraryTab): String = when (tab) {
         LibraryTab.Playlist -> "lib_pl"
+        LibraryTab.OnDevice -> "lib_dev"
         LibraryTab.YTPlaylist -> "lib_yt"
         LibraryTab.PinnedPlaylist -> "lib_pin"
         LibraryTab.Rewind -> "lib_rw"
@@ -102,6 +106,7 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
 
         fun getKey(tab: LibraryTab): String = when (tab) {
             LibraryTab.Playlist -> homeLibraryPlaylistSortMenuOrderKey
+            LibraryTab.OnDevice -> homeLibraryOnDeviceSortMenuOrderKey
             LibraryTab.YTPlaylist -> homeLibraryYTPlaylistSortMenuOrderKey
             LibraryTab.PinnedPlaylist -> homeLibraryPinnedPlaylistSortMenuOrderKey
             LibraryTab.Rewind -> homeLibraryMonthlyPlaylistSortMenuOrderKey
@@ -173,12 +178,14 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
         tabs.forEach { tab ->
             val p = when (tab) {
                 LibraryTab.Playlist -> "lib_pl"
+                LibraryTab.OnDevice -> "lib_dev"
                 LibraryTab.YTPlaylist -> "lib_yt"
                 LibraryTab.PinnedPlaylist -> "lib_pin"
                 LibraryTab.Rewind -> "lib_rw"
             }
             val key = when (tab) {
                 LibraryTab.Playlist -> homeLibraryPlaylistSortMenuOrderKey
+                LibraryTab.OnDevice -> homeLibraryOnDeviceSortMenuOrderKey
                 LibraryTab.YTPlaylist -> homeLibraryYTPlaylistSortMenuOrderKey
                 LibraryTab.PinnedPlaylist -> homeLibraryPinnedPlaylistSortMenuOrderKey
                 LibraryTab.Rewind -> homeLibraryMonthlyPlaylistSortMenuOrderKey

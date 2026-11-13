@@ -65,10 +65,6 @@
         <item quantity="one">Profiltilstand importert: %1$d profil</item>
         <item quantity="other">Profiltilstand importert: %1$d profiler</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="one">Kan ikke synkronisere %1$d albumet. Gå tilbake til Albuma-fanen for å prøve på nytt.</item>
-        <item quantity="other">Kunne ikke synkronisere %1$d albumer. Gå tilbake til Albumfanen for å prøve på nytt.</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="one">Eksporter %1$d cached/lastet ned sang?</item>
         <item quantity="other">Eksporter %1$d cached/nedlastede sanger?</item>
@@ -84,54 +80,6 @@
     <plurals name="listen_together_blocked_user_count">
         <item quantity="one">%1$d bruker blokkert</item>
         <item quantity="other">%1$d brukere blokkert</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="one">Kunne ikke synkronisere %1$d artist. Gå tilbake til artistfanen for å prøve på nytt.</item>
-        <item quantity="other">Kunne ikke synkronisere %1$d artister. Gå tilbake til Kunstner-fanen for å prøve på nytt.</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="one">Kan ikke synkronisere %1$d spillelisten. Gå tilbake til Spilleliste-fanen for å prøve på nytt.</item>
-        <item quantity="other">Kunne ikke synkronisere %1$d spillelister. Gå tilbake til Spilleliste-fanen for å prøve på nytt.</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">Vil du forsøke å synkronisere %1$d på nytt?</item>
-        <item quantity="other">Ønsker du å synkronisere %1$d mislykkede elementer på nytt?</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="one">Synkroniserer artist... (%1$d/%2$d)</item>
-        <item quantity="other">Synkroniserer artister... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="one">Oppdaterer %1$d artist</item>
-        <item quantity="other">Refreshing %1$d artists</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="one">Kunne ikke finne %1$d artist, prøver på nytt</item>
-        <item quantity="other">Kunne ikke finne %1$d artister på nytt prøver</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
-        <item quantity="other">Synkroniserer albumer... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">Oppdaterer %1$d album</item>
-        <item quantity="other">Oppdaterer %1$d album</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="one">Finner ikke %1$d albumet, prøver på nytt</item>
-        <item quantity="other">Kunne ikke finne %1$d albumer, prøver på nytt</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="one">Synkroniserer spillelisten... (%1$d/%2$d)</item>
-        <item quantity="other">Synkroniserer spillelister... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="one">Oppdaterer %1$d spilleliste</item>
-        <item quantity="other">Oppdaterer %1$d spillelister</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="one">Kunne ikke finne %1$d spilleliste, prøver på nytt</item>
-        <item quantity="other">Kunne ikke finne %1$d spillelister, prøver på nytt</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="one">%1$d element renset</item>

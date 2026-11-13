@@ -177,7 +177,6 @@
     <string name="sync_background_guard_description">当应用程序处于后台时暂停自动同步</string>
     <string name="sync_channels">自动同步订阅频道</string>
     <string name="sync_channels_description">自动从 YouTube 音乐导入订阅的艺人</string>
-    <string name="sync_completed_with_errors">同步完成时出现错误</string>
     <string name="sync_cooldown">同步冷却时间</string>
     <string name="sync_cooldown_description">自动同步之间的最小时间(分钟)</string>
     <string name="sync_data_with_ytm_account">与 YTM 帐户同步数据</string>
@@ -204,8 +203,6 @@
     <string name="sync_imported_playlists_automatic_title">自动同步已导入播放列表</string>
     <string name="sync_likes">自动同步喜欢的歌曲</string>
     <string name="sync_likes_description">自动从 YouTube 音乐导入喜欢的歌曲</string>
-    <string name="sync_no_items">没有要同步的项目</string>
-    <string name="sync_notifications">同步通知</string>
     <string name="sync_now">立即同步</string>
     <string name="sync_now_description">强制与 YouTube 音乐完全同步</string>
     <string name="sync_per_playlist_auto">每个播放列表自动同步</string>
@@ -236,10 +233,6 @@
     <string name="sync_status_last">最后同步: %1$d分钟前</string>
     <string name="sync_status_never">从未同步</string>
     <string name="sync_status_running">同步： %1$s</string>
-    <string name="sync_success_notification_albums">成功同步所有相册。</string>
-    <string name="sync_success_notification_artists">成功同步所有艺术家。</string>
-    <string name="sync_success_notification_playlists">成功同步所有播放列表。</string>
-    <string name="sync_successful">同步成功</string>
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">您想要重新尝试同步 %1$d 失败项目吗？</string>
     <string name="sync_running_status">正在同步...</string>
@@ -257,10 +250,6 @@
     <string name="sync_youtube_songs_remaining">剩余%1$s 歌曲</string>
     <string name="sync_youtube_unlike_failed">与 YouTube 中的歌曲不同失败</string>
     <string name="sync_youtube_unlike_success">YouTube不喜欢歌曲</string>
-    <string name="sync_starting_notification">正在开始同步...</string>
-    <string name="sync_background_notification">正在后台同步...</string>
-    <string name="sync_aborted_network_error">同步因网络错误而中止。</string>
-    <string name="sync_start_service_failed">启动同步服务失败</string>
     <string name="sync_fetch_subscribed_channels_failed">获取订阅频道失败</string>
     <string name="sync_fetch_liked_albums_failed">获取喜欢的相册失败</string>
     <string name="sync_fetch_liked_songs_failed">获取喜欢的歌曲失败</string>

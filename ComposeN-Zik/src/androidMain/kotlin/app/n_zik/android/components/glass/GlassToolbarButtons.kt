@@ -33,7 +33,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -49,9 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.ui.components.navigation.header.TabToolBar
@@ -90,71 +87,63 @@ fun GlassToolbarButtons(
     }
     // Match the original TabToolBar measurement exactly, including its caller's
     // width fraction. Glass must not reveal additional actions or change overflow.
-    val density = LocalDensity.current.density
-    var availableWidth by remember { mutableStateOf(0.dp) }
-    var canDisplay by remember { mutableIntStateOf(0) }
-    LaunchedEffect(availableWidth) {
-        canDisplay = (availableWidth / (TabToolBar.TOOLBAR_ICON_SIZE + 15.dp)).toInt()
-    }
-    val baseModifier = modifier.fillMaxWidth()
-        .padding(TabToolBar.HORIZONTAL_PADDING, TabToolBar.VERTICAL_PADDING)
-        .onGloballyPositioned {
-            availableWidth = (it.size.width / density).dp - TabToolBar.HORIZONTAL_PADDING * 2
-        }
-    val content: @Composable (List<Button>) -> Unit = { targetButtons ->
-        if (canDisplay == 0) {
-            Spacer(Modifier.fillMaxWidth())
-        } else {
-            val clustered = targetButtons.size > canDisplay
-            val ellipsis = EllipsisMenuComponent.init {
-                targetButtons.takeLast((targetButtons.size - canDisplay + 1).coerceAtLeast(0))
-            }
-            val visible = targetButtons.take(if (clustered) canDisplay - 1 else targetButtons.size)
-            Row(Modifier.fillMaxWidth(), horizontalArrangement, verticalAlignment) {
-                val controls: @Composable RowScope.() -> Unit = {
-                    visible.forEach { it.ToolBarButton() }
-                    if (clustered) ellipsis.ToolBarButton()
+    BoxWithConstraints(modifier.fillMaxWidth().padding(TabToolBar.HORIZONTAL_PADDING, TabToolBar.VERTICAL_PADDING)) {
+        val canDisplay = ((maxWidth - TabToolBar.HORIZONTAL_PADDING * 2) / (TabToolBar.TOOLBAR_ICON_SIZE + 15.dp)).toInt().coerceAtLeast(0)
+        val content: @Composable (List<Button>) -> Unit = { targetButtons ->
+            if (canDisplay == 0) {
+                Spacer(Modifier.fillMaxWidth())
+            } else {
+                val clustered = targetButtons.size > canDisplay
+                val ellipsis = EllipsisMenuComponent.init {
+                    targetButtons.takeLast((targetButtons.size - canDisplay + 1).coerceAtLeast(0))
                 }
-                if (material) {
-                    GlassToolbarRow(visible.size + if (clustered) 1 else 0,
-                        modifier = Modifier.fillMaxWidth(),
-                        settings = settings, expandToWidth = true, itemShape = itemShape,
-                        trailingSeparator = clustered && showTrailingSeparator, content = controls)
-                } else CompositionLocalProvider(LocalToolbarStyle provides null) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement, verticalAlignment, content = controls)
+                val visible = targetButtons.take(if (clustered) canDisplay - 1 else targetButtons.size)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement, verticalAlignment) {
+                    val controls: @Composable RowScope.() -> Unit = {
+                        visible.forEach { it.ToolBarButton() }
+                        if (clustered) ellipsis.ToolBarButton()
+                    }
+                    if (material) {
+                        GlassToolbarRow(visible.size + if (clustered) 1 else 0,
+                            modifier = Modifier.fillMaxWidth(),
+                            settings = settings, expandToWidth = true, itemShape = itemShape,
+                            trailingSeparator = clustered && showTrailingSeparator, content = controls)
+                    } else CompositionLocalProvider(LocalToolbarStyle provides null) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement, verticalAlignment, content = controls)
+                    }
                 }
             }
         }
-    }
-    val motion = isGlassMotionAllowed()
-    var appeared by rememberSaveable { mutableStateOf(false) }
-    val appearance = remember { Animatable(if (appeared) 1f else 0f) }
-    val ready = canDisplay > 0 && buttons.isNotEmpty()
-    LaunchedEffect(ready, motion) {
-        if (ready && !appeared) {
-            if (motion) appearance.animateTo(1f, tween(220, easing = FastOutSlowInEasing))
-            else appearance.snapTo(1f)
-            appeared = true
+        val motion = !disableAnimation && isGlassMotionAllowed()
+        var appeared by rememberSaveable { mutableStateOf(false) }
+        val appearance = remember { Animatable(if (appeared) 1f else 0f) }
+        val ready = canDisplay > 0 && buttons.isNotEmpty()
+        LaunchedEffect(ready, motion) {
+            if (ready && !appeared) {
+                if (motion) appearance.animateTo(1f, tween(220, easing = FastOutSlowInEasing))
+                else appearance.snapTo(1f)
+                appeared = true
+            }
         }
-    }
-    Box(baseModifier) {
-        // Enter once when the width is known, including Home bars that disable
-        // list-change animations. Fresh Button instances are not a new toolbar.
-        Box(Modifier.graphicsLayer {
-            val progress = if (appeared) 1f else appearance.value
-            alpha = progress
-            scaleX = .96f + .04f * progress
-            scaleY = scaleX
-        }) {
-            if (disableAnimation || !motion) content(buttons)
-            else AnimatedContent(buttons, contentKey = { target -> target.map { it.javaClass.name } },
-                transitionSpec = {
-                    // Preserve Compose's default entrance while allowing the pressed pane to overdraw.
-                    ((fadeIn(tween(220, delayMillis = 90)) +
-                        scaleIn(tween(220, delayMillis = 90), initialScale = .92f)) togetherWith fadeOut(tween(90)))
-                        .using(SizeTransform(clip = false))
-                },
-                label = "GlassToolbarButtonsAnimation") { content(it) }
+        Box(Modifier.fillMaxWidth()) {
+            // Enter once when the width is known, including Home bars that disable
+            // list-change animations. Fresh Button instances are not a new toolbar.
+            Box(Modifier.graphicsLayer {
+                val progress = if (disableAnimation || appeared) 1f else appearance.value
+                alpha = progress
+                scaleX = .96f + .04f * progress
+                scaleY = scaleX
+            }) {
+                if (disableAnimation || !motion) content(buttons)
+                else AnimatedContent(buttons, contentKey = { target -> target.map { it.javaClass.name } },
+                    transitionSpec = {
+                        // Preserve Compose's default entrance while allowing the pressed pane to overdraw.
+                        ((fadeIn(tween(220, delayMillis = 90)) +
+                            scaleIn(tween(220, delayMillis = 90), initialScale = .92f)) togetherWith fadeOut(tween(90)))
+                            .using(SizeTransform(clip = false))
+                    },
+                    label = "GlassToolbarButtonsAnimation") { content(it) }
+            }
         }
     }
 }

@@ -49,9 +49,6 @@
     <plurals name="backup_import_profile_state_complete_count">
         <item quantity="other">プロファイルの状態がインポートされました: %1$d プロファイル</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="other">%1$d アルバムの同期に失敗しました。アルバムタブに戻って再試行してください。</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="other">%1$d キャッシュ/ダウンロードした曲をエクスポートしますか？</item>
     </plurals>
@@ -63,42 +60,6 @@
     </plurals>
     <plurals name="listen_together_blocked_user_count">
         <item quantity="other">%1$d ユーザーがブロックされました</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="other">%1$d アーティストの同期に失敗しました。再試行するには「アーティスト」タブに戻ります。</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="other">%1$d プレイリストの同期に失敗しました。再生リストタブに戻って再試行してください。</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="other">%1$d 失敗した項目を同期して再試行しますか？</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="other">アーティストを同期中... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="other">%1$d アーティストを更新中</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="other">%1$d アーティストが見つかりませんでした。再試行中</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="other">アルバムを同期中... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="other">%1$d アルバムを更新中</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="other">%1$d アルバムが見つかりませんでした。再試行中</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="other">プレイリストを同期しています... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="other">%1$d プレイリストを更新中</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="other">%1$d プレイリストが見つかりませんでした。再試行中</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="other">%1$d 個のアイテムが消去されました</item>

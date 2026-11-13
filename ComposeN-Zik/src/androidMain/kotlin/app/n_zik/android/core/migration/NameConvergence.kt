@@ -1,5 +1,8 @@
 package app.n_zik.android.core.migration
 
+import app.n_zik.android.core.ondevice.isDeviceAlbumId
+import app.n_zik.android.core.ondevice.isDeviceArtistId
+import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.models.Artist
@@ -123,7 +126,8 @@ object NameConvergence {
                     ?.takeIf { it.isNotBlank() }
             }
         val namesBySong: Map<String, List<String>> =
-            pairs.groupBy { it.songId }.mapValues { (_, links) -> rowNames(links.map { it.artistId }) }
+            pairs.filterNot { it.songId.startsWith(LOCAL_KEY_PREFIX) || isDeviceArtistId(it.artistId) }
+                .groupBy { it.songId }.mapValues { (_, links) -> rowNames(links.map { it.artistId }) }
 
         var changed = 0
         var unbackedSongs = 0
@@ -137,6 +141,7 @@ object NameConvergence {
         // 1) Song copies
         val songs = songTable.all().first()
         for (song in songs) {
+            if (song.id.startsWith(LOCAL_KEY_PREFIX)) continue
             val text = song.artistsText ?: continue
             if (text.startsWith(MODIFIED_PREFIX)) {
                 customSongs++ // custom copies are untouchable
@@ -171,13 +176,14 @@ object NameConvergence {
         // 2) Album copies
         val albums = albumTable.all().first()
         for (album in albums) {
+            if (isDeviceAlbumId(album.id)) continue
             val text = album.authorsText ?: continue
             if (text.startsWith(MODIFIED_PREFIX)) {
                 customAlbums++ // custom copies are untouchable
                 continue
             }
             val albumSongs = songAlbumMapTable.allSongsOfDirect(album.id)
-            if (albumSongs.isEmpty()) continue
+            if (albumSongs.isEmpty() || albumSongs.any { it.id.startsWith(LOCAL_KEY_PREFIX) }) continue
             // Every song of the album must carry the same non-empty set of linked
             // names; a song without any link silences the whole album. The sets are
 //
@@ -284,14 +290,18 @@ object NameConvergence {
         val new = cleanPrefix(newName).trim()
         if (old.isBlank()) return 0
         var changed = 0
+        val localArtist = isDeviceArtistId(artistId)
         for (song in db.songArtistMapTable.allSongsByDirect(artistId)) {
+            if (song.id.startsWith(LOCAL_KEY_PREFIX) != localArtist) continue
             val text = song.artistsText ?: continue
             replaceToken(text, old, new)?.let { converged ->
                 db.songTable.updateArtists(song.id, converged)
                 changed++
             }
         }
+        if (localArtist) return changed
         for (album in db.songAlbumMapTable.albumsOfArtistDirect(artistId)) {
+            if (isDeviceAlbumId(album.id) != localArtist) continue
             val text = album.authorsText ?: continue
             replaceToken(text, old, new)?.let { converged ->
                 db.albumTable.updateAuthors(album.id, converged)

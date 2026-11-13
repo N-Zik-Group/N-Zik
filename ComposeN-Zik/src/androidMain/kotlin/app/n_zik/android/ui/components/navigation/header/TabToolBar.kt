@@ -1,5 +1,6 @@
 package app.n_zik.android.ui.components.navigation.header
 
+import androidx.compose.foundation.layout.BoxWithConstraints
 import app.n_zik.android.components.ui.reservedIconActionCanvas
 import app.n_zik.android.components.ui.nativeControlIndication
 import app.n_zik.android.components.glass.glassGlobalIndication
@@ -21,9 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -49,59 +48,46 @@ object TabToolBar {
         modifier: Modifier = Modifier,
         disableAnimation: Boolean = false
     ) {
-        val density = LocalDensity.current.density
-        var availableWidth by remember { mutableStateOf(0.dp) }
-        val sizeWithSpacing = TOOLBAR_ICON_SIZE + 15.dp
-        var canDisplay by remember { mutableIntStateOf(0) }
+        BoxWithConstraints(modifier.fillMaxWidth().padding(HORIZONTAL_PADDING, VERTICAL_PADDING)) {
+            val canDisplay = ((maxWidth - HORIZONTAL_PADDING * 2) / (TOOLBAR_ICON_SIZE + 15.dp)).toInt().coerceAtLeast(0)
+            val content = @Composable { targetButtons: List<Button> ->
+                if( canDisplay == 0 ) {
+                    Spacer(modifier = Modifier.fillMaxWidth())
+                } else {
+                    val isClustered = targetButtons.size > canDisplay
+                    val ellipsisMenu = EllipsisMenuComponent.init {
+                        targetButtons.takeLast(
+                            (targetButtons.size - canDisplay + 1).coerceAtLeast( 0 )
+                        )
+                    }
 
-        LaunchedEffect( availableWidth ) {
-            canDisplay = (availableWidth / sizeWithSpacing).toInt()
-        }
+                    Row(
+                        horizontalArrangement = horizontalArrangement,
+                        verticalAlignment = verticalAlignment,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        targetButtons.take(
+                            if( isClustered ) canDisplay - 1 else targetButtons.size
+                        ).forEach { it.ToolBarButton() }
 
-        val baseModifier = modifier.fillMaxWidth()
-            .padding( HORIZONTAL_PADDING, VERTICAL_PADDING )
-            .onGloballyPositioned {
-                val widthDp = it.size.width / density
-                availableWidth = widthDp.dp - (HORIZONTAL_PADDING * 2)
+                        if( isClustered ) ellipsisMenu.ToolBarButton()
+                    }
+                }
             }
 
-        val content = @Composable { targetButtons: List<Button> ->
-            if( canDisplay == 0 ) {
-                Spacer(modifier = Modifier.fillMaxWidth())
+            if (disableAnimation) {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    content(buttons)
+                }
             } else {
-                val isClustered = targetButtons.size > canDisplay
-                val ellipsisMenu = EllipsisMenuComponent.init {
-                    targetButtons.takeLast(
-                        (targetButtons.size - canDisplay + 1).coerceAtLeast( 0 )
-                    )
-                }
-
-                Row(
-                    horizontalArrangement = horizontalArrangement,
-                    verticalAlignment = verticalAlignment,
+                AnimatedContent(
+                    targetState = buttons,
+                    contentKey = { target -> target.map { it.javaClass.name } },
+                    label = "ToolbarButtonsAnimation",
                     modifier = Modifier.fillMaxWidth()
-                ) {
-                    targetButtons.take(
-                        if( isClustered ) canDisplay - 1 else targetButtons.size
-                    ).forEach { it.ToolBarButton() }
-
-                    if( isClustered ) ellipsisMenu.ToolBarButton()
+                ) { targetButtons ->
+                    content(targetButtons)
                 }
-            }
-        }
-
-        if (disableAnimation) {
-            Box(modifier = baseModifier) {
-                content(buttons)
-            }
-        } else {
-            AnimatedContent(
-                targetState = buttons,
-                contentKey = { target -> target.map { it.javaClass.name } },
-                label = "ToolbarButtonsAnimation",
-                modifier = baseModifier
-            ) { targetButtons ->
-                content(targetButtons)
             }
         }
     }

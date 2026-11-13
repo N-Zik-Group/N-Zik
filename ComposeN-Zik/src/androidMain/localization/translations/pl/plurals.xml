@@ -97,12 +97,6 @@
         <item quantity="many">Zaimportowano stan profilu: %1$d profili</item>
         <item quantity="other">Zaimportowano stan profilu: %1$d profili</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="one">Nie udało się zsynchronizować %1$d album. Wróć do zakładki Albumy, aby spróbować ponownie.</item>
-        <item quantity="few">Nie udało się zsynchronizować %1$d albumów. Wróć do zakładki Albumy, aby spróbować ponownie.</item>
-        <item quantity="many">Nie udało się zsynchronizować %1$d albumów. Wróć do zakładki Albumy, aby spróbować ponownie.</item>
-        <item quantity="other">Nie udało się zsynchronizować %1$d albumów. Wróć do zakładki Albumy, aby spróbować ponownie.</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="one">Eksport %1$d cached/Pobrany utwor?</item>
         <item quantity="few">Eksport %1$d cached/Pobranych utworów?</item>
@@ -126,78 +120,6 @@
         <item quantity="few">%1$d użytkowników zablokowanych</item>
         <item quantity="many">%1$d użytkowników zablokowanych</item>
         <item quantity="other">%1$d użytkowników zablokowanych</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="one">Nie udało się zsynchronizować wykonawcy %1$d . Wróć do zakładki Artysty, aby spróbować ponownie.</item>
-        <item quantity="few">Nie udało się zsynchronizować %1$d artystów. Wróć do zakładki Artysty, aby spróbować ponownie.</item>
-        <item quantity="many">Nie udało się zsynchronizować %1$d artystów. Wróć do zakładki Artysty, aby spróbować ponownie.</item>
-        <item quantity="other">Nie udało się zsynchronizować %1$d artystów. Wróć do zakładki Artysty, aby spróbować ponownie.</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="one">Nie udało się zsynchronizować %1$d playlisty. Wróć do zakładki playlisty, aby spróbować ponownie.</item>
-        <item quantity="few">Nie udało się zsynchronizować %1$d playlist. Wróć do zakładki playlisty, aby spróbować ponownie.</item>
-        <item quantity="many">Nie udało się zsynchronizować %1$d playlist. Wróć do zakładki playlisty, aby spróbować ponownie.</item>
-        <item quantity="other">Nie udało się zsynchronizować %1$d playlist. Wróć do zakładki playlisty, aby spróbować ponownie.</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">Czy chcesz ponowić synchronizację %1$d nieudanego elementu?</item>
-        <item quantity="few">Czy chcesz ponowić synchronizację %1$d nieudanych elementów?</item>
-        <item quantity="many">Czy chcesz ponowić synchronizację %1$d nieudanych elementów?</item>
-        <item quantity="other">Czy chcesz ponowić synchronizację %1$d nieudanych elementów?</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="one">Synchronizuję artystę... (%1$d/%2$d)</item>
-        <item quantity="few">Synchronizuję artystów... (%1$d/%2$d)</item>
-        <item quantity="many">Synchronizuję artystów... (%1$d/%2$d)</item>
-        <item quantity="other">Synchronizuję artystów... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="one">Odświeżanie %1$d wykonawca</item>
-        <item quantity="few">Odświeżanie %1$d wykonawców</item>
-        <item quantity="many">Odświeżanie %1$d wykonawców</item>
-        <item quantity="other">Odświeżanie %1$d wykonawców</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="one">Nie udało się odnaleźć %1$d artysty, ponawianie próby</item>
-        <item quantity="few">Nie udało się znaleźć %1$d artystów, ponawiając próbę</item>
-        <item quantity="many">Nie udało się znaleźć %1$d artystów, ponawiając próbę</item>
-        <item quantity="other">Nie udało się znaleźć %1$d artystów, ponawiając próbę</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
-        <item quantity="few">Synchronizuję albumy... (%1$d/%2$d)</item>
-        <item quantity="many">Synchronizuję albumy... (%1$d/%2$d)</item>
-        <item quantity="other">Synchronizuję albumy... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">Odświeżanie %1$d album</item>
-        <item quantity="few">Odświeżanie %1$d albumów</item>
-        <item quantity="many">Odświeżanie %1$d albumów</item>
-        <item quantity="other">Odświeżanie %1$d albumów</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="one">Nie udało się znaleźć %1$d album, ponawiam próbę</item>
-        <item quantity="few">Nie udało się znaleźć %1$d albumów, ponawianie próby</item>
-        <item quantity="many">Nie udało się znaleźć %1$d albumów, ponawianie próby</item>
-        <item quantity="other">Nie udało się znaleźć %1$d albumów, ponawianie próby</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="one">Synchronizowanie playlisty... (%1$d/%2$d)</item>
-        <item quantity="few">Synchronizuję playlisty... (%1$d/%2$d)</item>
-        <item quantity="many">Synchronizuję playlisty... (%1$d/%2$d)</item>
-        <item quantity="other">Synchronizuję playlisty... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="one">Odświeżanie %1$d listy odtwarzania</item>
-        <item quantity="few">Odświeżanie %1$d playlist</item>
-        <item quantity="many">Odświeżanie %1$d playlist</item>
-        <item quantity="other">Odświeżanie %1$d playlist</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="one">Nie udało się odnaleźć %1$d playlisty, ponawianie próby</item>
-        <item quantity="few">Nie udało się znaleźć %1$d playlist, ponawianie próby</item>
-        <item quantity="many">Nie udało się znaleźć %1$d playlist, ponawianie próby</item>
-        <item quantity="other">Nie udało się znaleźć %1$d playlist, ponawianie próby</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="one">Oczyszczono obiekt %1$d</item>

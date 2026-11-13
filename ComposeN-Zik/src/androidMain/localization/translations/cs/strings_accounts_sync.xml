@@ -177,7 +177,6 @@
     <string name="sync_background_guard_description">Pozastavit automatickou synchronizaci, když je aplikace na pozadí</string>
     <string name="sync_channels">Automatická synchronizace odebíraných kanálů</string>
     <string name="sync_channels_description">Automaticky importovat odebírané umělce z YouTube Music</string>
-    <string name="sync_completed_with_errors">Synchronizace dokončena s chybami</string>
     <string name="sync_cooldown">Synchronizovat nastavení</string>
     <string name="sync_cooldown_description">Minimální doba mezi automatickými synchronizacemi (v minutách)</string>
     <string name="sync_data_with_ytm_account">Synchronizovat data s účtem YTM</string>
@@ -204,8 +203,6 @@
     <string name="sync_imported_playlists_automatic_title">Automatická synchronizace importovaných playlistů</string>
     <string name="sync_likes">Automatická synchronizace oblíbených skladeb</string>
     <string name="sync_likes_description">Automaticky importovat oblíbené skladby z YouTube Music</string>
-    <string name="sync_no_items">Žádné položky k synchronizaci</string>
-    <string name="sync_notifications">Synchronizovat oznámení</string>
     <string name="sync_now">Synchronizovat nyní</string>
     <string name="sync_now_description">Vynutit úplnou synchronizaci s hudbou YouTube</string>
     <string name="sync_per_playlist_auto">Automatická synchronizace na každý playlist</string>
@@ -236,10 +233,6 @@
     <string name="sync_status_last">Poslední synchronizace: %1$dmin</string>
     <string name="sync_status_never">Nikdy nesynchronizováno</string>
     <string name="sync_status_running">Synchronizace: %1$s</string>
-    <string name="sync_success_notification_albums">Synchronizace všech alb byla úspěšná.</string>
-    <string name="sync_success_notification_artists">Synchronizace všech umělců byla úspěšná.</string>
-    <string name="sync_success_notification_playlists">Synchronizace všech seznamů skladeb byla úspěšná.</string>
-    <string name="sync_successful">Synchronizace úspěšná</string>
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">Chcete znovu zkusit synchronizaci %1$d neúspěšných položek?</string>
     <string name="sync_running_status">Synchronizace...</string>
@@ -257,10 +250,6 @@
     <string name="sync_youtube_songs_remaining">%1$s Zbývající skladby</string>
     <string name="sync_youtube_unlike_failed">Nepodařilo se odpojit od skladby na YouTube</string>
     <string name="sync_youtube_unlike_success">Skladba se nelíbí na YouTube</string>
-    <string name="sync_starting_notification">Spouštění synchronizace...</string>
-    <string name="sync_background_notification">Synchronizace na pozadí...</string>
-    <string name="sync_aborted_network_error">Synchronizace přerušena z důvodu chyby sítě.</string>
-    <string name="sync_start_service_failed">Nepodařilo se spustit službu synchronizace</string>
     <string name="sync_fetch_subscribed_channels_failed">Nepodařilo se načíst odebírané kanály</string>
     <string name="sync_fetch_liked_albums_failed">Nepodařilo se načíst oblíbená alba</string>
     <string name="sync_fetch_liked_songs_failed">Nepodařilo se načíst oblíbené skladby</string>

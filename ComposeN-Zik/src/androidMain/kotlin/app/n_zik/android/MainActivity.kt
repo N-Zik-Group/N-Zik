@@ -1792,7 +1792,8 @@ class MainActivity :
 //
                 // Sourced from the nav controller rather than DiscordUiState so layout never
                 // depends on the RPC feature's destination listener
-                val playerRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+                val playerEntry = navController.currentBackStackEntryAsState().value
+                val playerRoute = playerEntry?.destination?.route
                 // Home draws one nav bar button per active tab and only shows the bar with two
                 // or more, so pass the real tab count: the same preferences HomeScreen reads,
 //
@@ -1815,7 +1816,13 @@ class MainActivity :
                 }
                 val hasNavBar = !areBarsHidden &&
                     (floatingDockState.registeredPresence(floatingDockPageKey)
-                        ?: appNavBarPresentForRoute(playerRoute, activeHomeTabCount))
+                        ?: appNavBarPresentForRoute(
+                            playerRoute,
+                            activeHomeTabCount,
+                            destinationId = if (playerRoute == "${NavRoutes.artist.name}/{id}") {
+                                playerEntry?.arguments?.getString("id")
+                            } else null,
+                        ))
                 val pageDock = floatingDock.copy(pagePresence = hasNavBar)
                 val dockPresence = androidx.compose.animation.core.animateFloatAsState(
                     targetValue = if (hasNavBar) 1f else 0f,

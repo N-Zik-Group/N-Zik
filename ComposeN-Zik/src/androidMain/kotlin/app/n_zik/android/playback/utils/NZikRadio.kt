@@ -1,5 +1,6 @@
 package app.n_zik.android.playback.utils
 
+import app.n_zik.android.playback.services.isLocal
 import android.content.Context
 import android.widget.Toast
 import androidx.annotation.MainThread
@@ -136,6 +137,7 @@ class NZikRadio(
                 return
             }
 
+            if (mediaItem.isLocal) return
             stopRadio(showToast = false) // Clean state before starting
             isRadioActive = true
 
@@ -146,6 +148,7 @@ class NZikRadio(
                 Toaster.i(R.string.radio_classic_started_message)
             }
         } else {
+            if (mediaItem.isLocal) return
             // Implicit start (fetching songs silently for queue/autofill)
             stopRadio(showToast = false)
         }
@@ -196,7 +199,7 @@ class NZikRadio(
         // If neither Radio nor AutoFill is enabled, do nothing.
         if ((!isRadioActive && !isAutoFillEnabled) || isLoading) return
         
-        val currentMediaItem = binder.player.currentMediaItem ?: return
+        val currentMediaItem = binder.player.currentMediaItem?.takeUnless { it.isLocal } ?: return
         
         // AutoFill: Silent fetch (No toast)
         fetchAndInject(currentMediaItem.mediaId, null, append = true, source = "auto-fill")

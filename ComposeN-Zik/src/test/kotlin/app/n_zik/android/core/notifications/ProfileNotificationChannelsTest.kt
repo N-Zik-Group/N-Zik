@@ -41,8 +41,7 @@ class ProfileNotificationChannelsTest {
     fun `channelId keeps the base profile ids unchanged`() {
         assertEquals("default_channel_id", channelId("default_channel_id", DEFAULT_PROFILE_ID))
         assertEquals("sleep_timer_channel_id", channelId("sleep_timer_channel_id", DEFAULT_PROFILE_ID))
-        assertEquals("download_channel", channelId("download_channel", DEFAULT_PROFILE_ID))
-        assertEquals("sync_channel_id", channelId("sync_channel_id", DEFAULT_PROFILE_ID))
+        assertEquals("download_channel", channelId("download_channel", DEFAULT_PROFILE_ID))
         assertEquals("rewind", channelId("rewind", DEFAULT_PROFILE_ID))
         assertEquals("listen_together_channel", channelId("listen_together_channel", DEFAULT_PROFILE_ID))
     }
@@ -52,20 +51,18 @@ class ProfileNotificationChannelsTest {
         // The base ids already contain underscores — the profile suffix must not double them.
         assertEquals("default_channel_id_work", channelId("default_channel_id", "work"))
         assertEquals("sleep_timer_channel_id_work", channelId("sleep_timer_channel_id", "work"))
-        assertEquals("download_channel_work", channelId("download_channel", "work"))
-        assertEquals("sync_channel_id_work", channelId("sync_channel_id", "work"))
+        assertEquals("download_channel_work", channelId("download_channel", "work"))
         assertEquals("rewind_work", channelId("rewind", "work"))
         assertEquals("listen_together_channel_work", channelId("listen_together_channel", "work"))
     }
 
     @Test
-    fun `profileChannelIds holds the six suffixed ids of a user profile`() {
+    fun `profileChannelIds holds the five suffixed ids of a user profile`() {
         assertEquals(
             setOf(
                 "default_channel_id_work",
                 "sleep_timer_channel_id_work",
-                "download_channel_work",
-                "sync_channel_id_work",
+                "download_channel_work",
                 "rewind_work",
                 "listen_together_channel_work",
             ),
@@ -74,13 +71,12 @@ class ProfileNotificationChannelsTest {
     }
 
     @Test
-    fun `profileChannelIds of the base profile holds the six current ids`() {
+    fun `profileChannelIds of the base profile holds the five current ids`() {
         assertEquals(
             setOf(
                 "default_channel_id",
                 "sleep_timer_channel_id",
-                "download_channel",
-                "sync_channel_id",
+                "download_channel",
                 "rewind",
                 "listen_together_channel",
             ),
@@ -94,13 +90,13 @@ class ProfileNotificationChannelsTest {
         nm.createNotificationChannels(
             listOf(
                 NotificationChannel("rewind_work", "Rewind", NotificationManager.IMPORTANCE_LOW),
-                NotificationChannel("sync_channel_id_work", "Sync", NotificationManager.IMPORTANCE_LOW),
+                NotificationChannel("download_channel_work", "Downloads", NotificationManager.IMPORTANCE_LOW),
                 NotificationChannel("rewind", "Rewind", NotificationManager.IMPORTANCE_LOW), // base channel
                 NotificationChannel("update", "Update", NotificationManager.IMPORTANCE_LOW), // global channel
             ),
         )
         nm.notify(1, Notification.Builder(context, "rewind_work").build())
-        nm.notify(2, Notification.Builder(context, "sync_channel_id_work").build())
+        nm.notify(2, Notification.Builder(context, "download_channel_work").build())
         nm.notify(3, Notification.Builder(context, "rewind").build())
         nm.notify(4, Notification.Builder(context, "update").build())
 
@@ -129,7 +125,7 @@ class ProfileNotificationChannelsTest {
     }
 
     @Test
-    fun `ensureProfileChannels creates the six profile channels with faithful specs`() {
+    fun `ensureProfileChannels creates the five profile channels with faithful specs`() {
         ensureProfileChannels(context, "work")
 
         val nm = context.getSystemService(NotificationManager::class.java)
@@ -150,19 +146,13 @@ class ProfileNotificationChannelsTest {
         assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.player_sleep_timer_title), "work"), sleepTimer?.name)
         assertEquals(context.getString(R.string.player_sleep_timer_title), sleepTimer?.description)
 
-        val download = nm.getNotificationChannel("download_channel_work")
+        val download = nm.getNotificationChannel("download_channel_work")
         assertNotNull(download)
         assertEquals(NotificationManager.IMPORTANCE_LOW, download?.importance)
         assertFalse(download?.canShowBadge() == true)
         assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.downloads_title), "work"), download?.name)
         assertEquals(context.getString(R.string.downloads_title), download?.description)
 
-        val sync = nm.getNotificationChannel("sync_channel_id_work")
-        assertNotNull(sync)
-        assertEquals(NotificationManager.IMPORTANCE_LOW, sync?.importance)
-        assertFalse(sync?.canShowBadge() == true)
-        assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.sync_action_sync), "work"), sync?.name)
-        assertEquals(context.getString(R.string.sync_notifications), sync?.description)
 
         val rewind = nm.getNotificationChannel("rewind_work")
         assertNotNull(rewind)
@@ -265,20 +255,20 @@ class ProfileNotificationChannelsTest {
             listOf(
                 NotificationChannel("rewind", "Rewind", NotificationManager.IMPORTANCE_LOW),
                 NotificationChannel("rewind_work", "Rewind", NotificationManager.IMPORTANCE_LOW),
-                NotificationChannel("sync_channel_id", "Sync", NotificationManager.IMPORTANCE_LOW),
-                NotificationChannel("sync_channel_id_work", "Sync", NotificationManager.IMPORTANCE_LOW),
+                NotificationChannel("download_channel", "Downloads", NotificationManager.IMPORTANCE_LOW),
+                NotificationChannel("download_channel_work", "Downloads", NotificationManager.IMPORTANCE_LOW),
             ),
         )
         nm.notify(1, Notification.Builder(context, "rewind").build())
         nm.notify(2, Notification.Builder(context, "rewind_work").build())
-        nm.notify(3, Notification.Builder(context, "sync_channel_id").build())
-        nm.notify(4, Notification.Builder(context, "sync_channel_id_work").build())
+        nm.notify(3, Notification.Builder(context, "download_channel").build())
+        nm.notify(4, Notification.Builder(context, "download_channel_work").build())
         // Tagged: id 4 also carries a TAGGED base-channel notification — the cancel must
         // target the (tag, id) pair, never the bare id (a bare cancel(4) on real Android only
 
         // removes the untagged notification).
-        nm.notify("base_tag", 4, Notification.Builder(context, "sync_channel_id").build())
-        nm.notify("profile_tag", 4, Notification.Builder(context, "sync_channel_id_work").build())
+        nm.notify("base_tag", 4, Notification.Builder(context, "download_channel").build())
+        nm.notify("profile_tag", 4, Notification.Builder(context, "download_channel_work").build())
 
         cancelProfileNotifications(context, "work")
 
@@ -299,8 +289,8 @@ class ProfileNotificationChannelsTest {
         )
         nm.notify(1, Notification.Builder(context, "rewind").build())
         nm.notify(2, Notification.Builder(context, "rewind_work").build())
-        nm.notify(3, Notification.Builder(context, "sync_channel_id").build())
-        nm.notify(4, Notification.Builder(context, "sync_channel_id_work").build())
+        nm.notify(3, Notification.Builder(context, "download_channel").build())
+        nm.notify(4, Notification.Builder(context, "download_channel_work").build())
 
         deleteProfileChannels(context, "work")
 

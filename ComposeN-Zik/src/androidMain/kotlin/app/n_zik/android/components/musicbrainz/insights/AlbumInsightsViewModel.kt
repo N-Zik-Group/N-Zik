@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import app.n_zik.android.cleanPrefix
+import app.n_zik.android.core.ondevice.isDeviceAlbumId
 import app.n_zik.android.models.Album
 import app.n_zik.android.Dependencies
 import app.n_zik.android.core.database.Database
@@ -67,9 +68,10 @@ class AlbumInsightsViewModel(application: Application) : AndroidViewModel(applic
                     .filter { it.totalPlayTimeMs >= 1 }
             }
 
+            val deviceAlbum = isDeviceAlbumId(albumId)
             val artist = withContext(NzikDispatchers.DATA) {
                 val authors = album.authorsText?.trim().orEmpty()
-                val byName = if (authors.isNotBlank()) artistTable.findByNameDirect(authors) else null
+                val byName = if (!deviceAlbum && authors.isNotBlank()) artistTable.findByNameDirect(authors) else null
                 // Name matching is fragile (casing, "feat.", collab text); fall back to the
                 // actual SongArtistMap relation of the album's own tracks, same source used
 //
@@ -91,6 +93,7 @@ class AlbumInsightsViewModel(application: Application) : AndroidViewModel(applic
                 } else {
                     val singleOrEpTypes = setOf("single", "ep")
                     albumTable.getOtherAlbumsByArtistName(artistName, albumId, limit = Int.MAX_VALUE)
+                        .filter { !deviceAlbum || isDeviceAlbumId(it.id) }
                         .partition { it.albumType?.lowercase() !in singleOrEpTypes }
                 }
             }
@@ -102,7 +105,7 @@ class AlbumInsightsViewModel(application: Application) : AndroidViewModel(applic
             // albums go into "Other albums", singles/EPs into their own section
             // (YTM bundles EPs with singles under "Singles & EPs", no way to split them).
             val (missingAlbums, missingSinglesAndEps) = withContext(NzikDispatchers.DATA) {
-                val artistId = artist?.id?.takeIf { it.isNotBlank() && !it.startsWith("local:") }
+                val artistId = artist?.id?.takeIf { !deviceAlbum && it.isNotBlank() && !it.startsWith("local:") }
                 if (artistId == null) {
                     Timber.tag("AlbumInsights").d(
                         "missingAlbums skipped: no usable YouTube artist id (artist.id=${artist?.id})"

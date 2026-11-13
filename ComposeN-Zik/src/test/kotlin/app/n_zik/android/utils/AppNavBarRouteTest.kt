@@ -98,4 +98,12 @@ class AppNavBarRouteTest {
         assertTrue(appNavBarPresentForRoute("home", 2))
         assertTrue(appNavBarPresentForRoute("home", 5))
     }
+
+    @Test
+    fun `local artist details do not reserve navigation bar space`() {
+        assertFalse(appNavBarPresentForRoute("artist/{id}", fullHomeTabCount, "LOCAL_ARTIST_DEVICE_1"))
+        assertFalse(appNavBarPresentForRoute("artist/{id}", fullHomeTabCount, "local:42"))
+        assertTrue(appNavBarPresentForRoute("artist/{id}", fullHomeTabCount, "UC123"))
+    }
+
 }

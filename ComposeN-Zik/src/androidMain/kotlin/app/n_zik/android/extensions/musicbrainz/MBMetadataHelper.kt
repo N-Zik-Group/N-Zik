@@ -6,6 +6,7 @@ import app.n_zik.android.core.database.AlbumTable
 import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.musicbrainz.MusicBrainz
+import app.n_zik.android.core.ondevice.isDeviceAlbumId
 import timber.log.Timber
 
 /**
@@ -84,7 +85,7 @@ class MBMetadataHelper(
 //
             // in the meantime (like/follow, bookmark, etc.) since updateReplace overwrites
             // the whole row.
-            val current = artistTable.findByIdDirect(artistId) ?: artist
+            val current = artistTable.findByIdDirect(artistId) ?: return false
             artistTable.update(
                 current.copy(
                     genres = metadata.genres.ifEmpty { emptyList() },
@@ -107,7 +108,7 @@ class MBMetadataHelper(
         } catch (e: Exception) {
             // Network error: keep genres/tags null so a later view can retry, but record
             // the attempt so we don't hammer MusicBrainz again before RETRY_COOLDOWN_MS
-            val current = artistTable.findByIdDirect(artistId) ?: artist
+            val current = artistTable.findByIdDirect(artistId) ?: return false
             artistTable.update(current.copy(mbLastFetch = now))
             Timber.tag(TAG).e(e, "Failed to fetch artist metadata for ${artist.name}")
             false
@@ -142,7 +143,8 @@ class MBMetadataHelper(
         // actual SongArtistMap relation of the album's own tracks, same source used
 //
         // by "Go to artist" and the Insights "other albums" enrichment.
-        val artist = albumAuthor?.let { artistTable.findByNameDirect(it) }
+        val artist = albumAuthor?.takeUnless { isDeviceAlbumId(albumId) }
+            ?.let { artistTable.findByNameDirect(it) }
             ?: Database.songAlbumMapTable.allSongsOfDirect(albumId, limit = 1).firstOrNull()
                 ?.let { song -> artistTable.findBySongIdDirect(song.id).firstOrNull() }
             ?: run {
@@ -172,7 +174,7 @@ class MBMetadataHelper(
 //
             // in the meantime (bookmark, dislike, etc.) since updateReplace overwrites the
             // whole row.
-            val current = albumTable.findByIdDirect(albumId) ?: album
+            val current = albumTable.findByIdDirect(albumId) ?: return false
             albumTable.updateReplace(
                 current.copy(
                     genres = finalGenres.ifEmpty { emptyList() },
@@ -191,7 +193,7 @@ class MBMetadataHelper(
             Timber.tag(TAG).d("Album metadata stored for ${album.title}")
             true
         } catch (e: Exception) {
-            val current = albumTable.findByIdDirect(albumId) ?: album
+            val current = albumTable.findByIdDirect(albumId) ?: return false
             albumTable.updateReplace(current.copy(mbLastFetch = now))
             Timber.tag(TAG).e(e, "Failed to fetch album metadata for ${album.title}")
             false

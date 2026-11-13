@@ -65,10 +65,6 @@
         <item quantity="one">État du profil importé : profil %1$d</item>
         <item quantity="other">État des profils importés : %1$d profils</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="one">Échec de la synchronisation de %1$d album. Retournez dans l\'onglet « Albums » pour réessayer.</item>
-        <item quantity="other">Échec de la synchronisation de %1$d albums. Retournez dans l\'onglet « Albums » pour réessayer.</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="one">Exporter le morceau %1$d mis en cache/téléchargé ?</item>
         <item quantity="other">Exporter %1$d morceaux mis en cache/téléchargés ?</item>
@@ -84,54 +80,6 @@
     <plurals name="listen_together_blocked_user_count">
         <item quantity="one">%1$d utilisateur bloqué</item>
         <item quantity="other">%1$d utilisateurs bloqués</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="one">Échec de la synchronisation de %1$d artiste. Retournez dans l\'onglet « Artistes » pour réessayer.</item>
-        <item quantity="other">Échec de la synchronisation de %1$d artistes. Retournez dans l\'onglet « Artistes » pour réessayer.</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="one">Échec de la synchronisation de %1$d playlist. Retournez dans l\'onglet « Playlists » pour réessayer.</item>
-        <item quantity="other">Échec de la synchronisation de %1$d playlists. Retournez dans l\'onglet « Playlists » pour réessayer.</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">Souhaitez-vous réessayer de synchroniser l\'élément %1$d dont la synchronisation a échoué ?</item>
-        <item quantity="other">Souhaitez-vous réessayer de synchroniser les %1$d éléments pour lesquels la synchronisation a échoué ?</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="one">Synchronisation de l\'artiste... (%1$d/%2$d)</item>
-        <item quantity="other">Synchronisation des artistes... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="one">Actualisation de %1$d artiste</item>
-        <item quantity="other">Actualisation de %1$d artistes</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="one">Impossible de trouver %1$d artiste, nouvelle tentative</item>
-        <item quantity="other">Impossible de trouver %1$d artistes, nouvelle tentative</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="one">Synchronisation de l\'album... (%1$d/%2$d)</item>
-        <item quantity="other">Synchronisation des albums... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">Actualisation de %1$d album</item>
-        <item quantity="other">Actualisation de %1$d albums</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="one">Impossible de trouver %1$d album, nouvelle tentative</item>
-        <item quantity="other">Impossible de trouver %1$d albums, nouvelle tentative</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="one">Synchronisation de la playlist... (%1$d/%2$d)</item>
-        <item quantity="other">Synchronisation des playlists... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="one">Actualisation de la playlist %1$d</item>
-        <item quantity="other">Actualisation de %1$d playlists</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="one">Impossible de trouver la playlist %1$d , nouvelle tentative</item>
-        <item quantity="other">Impossible de trouver les listes de lecture %1$d , nouvelle tentative</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="one">%1$d Élément nettoyé</item>

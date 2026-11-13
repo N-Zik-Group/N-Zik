@@ -2,6 +2,8 @@ package app.n_zik.android.components.ui.screens.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,6 +30,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.player.APP_HEADER_HEIGHT
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.components.navigation.LocalSideRailContentInsets
 import app.n_zik.android.components.navigation.nav.topNavigationBarShape
@@ -108,6 +111,7 @@ internal fun HomeCollapsingHeader(
             }
             .background(backgroundColor))
     }
+    val headerBottomPx = WindowInsets.safeDrawing.getTop(density) + with(density) { APP_HEADER_HEIGHT.roundToPx() }
     val panelTopPx = with(density) { panelTop.roundToPx() }
     val panelOffsetPx = { panelTopPx + headerOffset.floatValue.roundToInt() }
     if (sharedGlass != null) {
@@ -119,9 +123,12 @@ internal fun HomeCollapsingHeader(
             heightPx = {
                 val height = sharedGlass.animatedPanelHeight.value
                 val visible = homeHeaderVisibleFraction(headerHeight.intValue, headerOffset.floatValue)
-                if (sharedGlass.topNavigation && sharedGlass.navigationBottomPx > 0) {
+                val topNav = sharedGlass.topNavigation && sharedGlass.navigationBottomPx > 0
+                val expandedBottom = if (topNav) {
                     sharedTopHomeGlassHeight(sharedGlass.navigationBottomPx, panelTopPx, height, visible)
                 } else sharedHomeGlassHeight(panelTopPx, height, -height * (1f - visible))
+                val headerBottom = if (topNav) sharedGlass.navigationBottomPx else headerBottomPx.coerceAtMost(expandedBottom)
+                sharedHomeGlassTransitionHeight(headerBottom, expandedBottom, sharedGlass.expansion.value)
             },
             opacity = {
                 if (sharedGlass.topNavigation && sharedGlass.navigationBottomPx > 0) 1f

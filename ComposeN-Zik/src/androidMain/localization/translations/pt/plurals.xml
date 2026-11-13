@@ -65,10 +65,6 @@
         <item quantity="one">Estado do perfil importado: perfil %1$d</item>
         <item quantity="other">Estado do perfil importado: perfis %1$d</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="one">Failed to sync %1$d album. Go back to the Albums tab to retry.</item>
-        <item quantity="other">Failed to sync %1$d albums. Go back to the Albums tab to retry.</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="one">Exportar música %1$d armazenada/baixada?</item>
         <item quantity="other">Exportar músicas %1$d armazenadas em cache/baixadas?</item>
@@ -84,54 +80,6 @@
     <plurals name="listen_together_blocked_user_count">
         <item quantity="one">Usuário %1$d bloqueado</item>
         <item quantity="other">Usuários %1$d bloqueados</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="one">Falha ao sincronizar o artista %1$d . Volte para a aba Artistas para tentar novamente.</item>
-        <item quantity="other">Falha ao sincronizar artistas %1$d . Volte para a aba de artistas para tentar novamente.</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="one">Falha ao sincronizar a lista de reprodução do %1$d . Volte para a aba Playlists para tentar novamente.</item>
-        <item quantity="other">Falha ao sincronizar listas de reprodução %1$d . Volte para a aba Playlists para tentar novamente.</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">Você quer tentar sincronizar novamente o item que falhou %1$d?</item>
-        <item quantity="other">Você quer tentar sincronizar novamente os itens com falha do %1$d?</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="one">Sincronizando artista... (%1$d/%2$d)</item>
-        <item quantity="other">Sincronizando artistas... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="one">Artista %1$d atualizado</item>
-        <item quantity="other">Atualizando artistas %1$d</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="one">Falha ao encontrar %1$d artista, tentando novamente</item>
-        <item quantity="other">Falha ao encontrar %1$d artistas, tentando novamente</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
-        <item quantity="other">Sincronizando álbuns... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">Atualizando Álbum %1$d</item>
-        <item quantity="other">Atualizando álbuns %1$d</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="one">Failed to find %1$d album, retrying</item>
-        <item quantity="other">Failed to find %1$d albums, retrying</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="one">Sincronizando playlist... (%1$d/%2$d)</item>
-        <item quantity="other">Sincronizando playlists... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="one">Atualizando playlist %1$d</item>
-        <item quantity="other">Atualizando playlists de %1$d</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="one">Falha ao encontrar %1$d playlist, tentando novamente</item>
-        <item quantity="other">Falha ao encontrar %1$d playlists, tentando novamente</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="one">%1$d item limpo</item>

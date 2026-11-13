@@ -5,6 +5,7 @@ import app.n_zik.android.enums.PlaylistsType
 import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.isYouTubePlaylistSource
 import app.n_zik.android.core.rewind.RewindPlaylists
 import kotlinx.coroutines.flow.first
 
@@ -22,7 +23,9 @@ internal data class HomeLibraryPlaylistScope(
         val playlist = preview.playlist
         playlist.name.contains(query, ignoreCase = true) && when (type) {
             PlaylistsType.YTPlaylist -> matchesYouTubeLibraryFilter(playlist, youtubeFilter)
-            PlaylistsType.Playlist -> (!RewindPlaylists.isRewind(playlist.name) || showRewind) &&
+            PlaylistsType.Playlist, PlaylistsType.OnDevice ->
+                (type != PlaylistsType.OnDevice || !isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)) &&
+                (!RewindPlaylists.isRewind(playlist.name) || showRewind) &&
                 (!playlist.name.startsWith(PINNED_PREFIX, true) || showPinned)
             PlaylistsType.MonthlyPlaylist -> RewindPlaylists.isShown(
                 playlist.name, monthlyEnabled, yearlyEnabled, rewindFilter,

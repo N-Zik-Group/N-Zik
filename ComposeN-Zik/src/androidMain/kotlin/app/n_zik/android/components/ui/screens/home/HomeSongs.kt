@@ -137,7 +137,6 @@ fun HomeSongs(
     val parentalControlEnabled by rememberPreference( parentalControlEnabledKey, false )
     val maxTopPlaylistItems by rememberPreference( MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10` )
     val maxTopPlaylistItemsCustomValue by rememberPreference( MaxTopPlaylistItemsCustomValueKey, 10 )
-    val includeLocalSongs by rememberPreference( includeLocalSongsKey, true )
     val excludeSongWithDurationLimit by rememberPreference( excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled )
     var filterBy by rememberPreference(filterByKey, FilterBy.All)
     val showDislikedPlaylist by rememberPreference(excludeDislikedSongsKey, DislikeMode.Enabled)
@@ -243,9 +242,7 @@ fun HomeSongs(
                     Database.songTable
                         .sortAll( SongSortBy.Title, SortOrder.Ascending, excludeHidden = hiddenSongs.isHiddenExcluded() )
                         .map { list ->
-                            list.fastFilter {
-                                !includeLocalSongs || !it.id.startsWith( LOCAL_KEY_PREFIX, true )
-                            }.let { filtered ->
+                            list.let { filtered ->
                                 if (songSort.sortOrder == SortOrder.Ascending) {
                                     filtered.sortedByDescending { it.id in downloadedIds }
                                 } else {
@@ -256,11 +253,7 @@ fun HomeSongs(
                 } else {
                     Database.songTable
                         .sortAll( songSort.sortBy, songSort.sortOrder, excludeHidden = hiddenSongs.isHiddenExcluded() )
-                        .map { list ->
-                            list.fastFilter {
-                                !includeLocalSongs || !it.id.startsWith( LOCAL_KEY_PREFIX, true )
-                            }
-                        }
+
                 }
             }
 
@@ -340,7 +333,8 @@ fun HomeSongs(
 
         val selectedFilter = filterBy
         val selectedPlaylist = builtInPlaylist
-        retrievedSongs.map { songs ->
+        retrievedSongs.map { retrieved ->
+                val songs = retrieved.filterNot(Song::isLocal)
                 when(selectedFilter) {
                     FilterBy.All -> songs
                     FilterBy.YoutubeLibrary -> songs.filter { song -> song.isYoutubeSong }

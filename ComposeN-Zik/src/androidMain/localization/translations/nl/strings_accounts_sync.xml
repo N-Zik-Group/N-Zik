@@ -177,7 +177,6 @@
     <string name="sync_background_guard_description">Automatische synchronisatie pauzeren als de app op de achtergrond is</string>
     <string name="sync_channels">Auto Sync Geabonneerde Kanalen</string>
     <string name="sync_channels_description">Auto-import geabonneerde artiesten van YouTube Music</string>
-    <string name="sync_completed_with_errors">Synchronisatie voltooid met fouten</string>
     <string name="sync_cooldown">Synchroniseer afkoeltijd</string>
     <string name="sync_cooldown_description">Minimale tijd tussen automatische synchronisatie (in minuten)</string>
     <string name="sync_data_with_ytm_account">Gegevens synchroniseren met YTM account</string>
@@ -204,8 +203,6 @@
     <string name="sync_imported_playlists_automatic_title">Geïmporteerde afspeellijsten automatisch synchroniseren</string>
     <string name="sync_likes">Auto Sync Liked Nummers</string>
     <string name="sync_likes_description">Auto-importeer leuk liedjes van YouTube Music</string>
-    <string name="sync_no_items">Geen items om te synchroniseren</string>
-    <string name="sync_notifications">Synchroniseer meldingen</string>
     <string name="sync_now">Nu synchroniseren</string>
     <string name="sync_now_description">Forceer volledige synchronisatie met YouTube Music</string>
     <string name="sync_per_playlist_auto">Automatisch-Synchronisatie per afspeellijst</string>
@@ -236,10 +233,6 @@
     <string name="sync_status_last">Laatste synchronisatie: %1$dmin geleden</string>
     <string name="sync_status_never">Nooit gesynchroniseerd</string>
     <string name="sync_status_running">Synchroniseren: %1$s</string>
-    <string name="sync_success_notification_albums">Alle albums zijn succesvol gesynchroniseerd.</string>
-    <string name="sync_success_notification_artists">Alle artiesten zijn succesvol gesynchroniseerd.</string>
-    <string name="sync_success_notification_playlists">Alle afspeellijsten zijn succesvol gesynchroniseerd.</string>
-    <string name="sync_successful">Synchronisatie geslaagd</string>
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">Wilt u opnieuw proberen de %1$d mislukte items te synchroniseren?</string>
     <string name="sync_running_status">Synchroniseren...</string>
@@ -257,10 +250,6 @@
     <string name="sync_youtube_songs_remaining">%1$s Nummers resterend</string>
     <string name="sync_youtube_unlike_failed">Vergelijking van het nummer in YouTube mislukt</string>
     <string name="sync_youtube_unlike_success">Nummer wordt niet leuk gevonden in YouTube</string>
-    <string name="sync_starting_notification">Synchronisatie wordt gestart...</string>
-    <string name="sync_background_notification">Synchroniseren op de achtergrond...</string>
-    <string name="sync_aborted_network_error">Synchronisatie afgebroken als gevolg van netwerkfout.</string>
-    <string name="sync_start_service_failed">Het starten van de synchronisatie service is mislukt</string>
     <string name="sync_fetch_subscribed_channels_failed">Ophalen geabonneerde kanalen mislukt</string>
     <string name="sync_fetch_liked_albums_failed">Ophalen van geliefde albums mislukt</string>
     <string name="sync_fetch_liked_songs_failed">Ophalen van geliefde nummers mislukt</string>

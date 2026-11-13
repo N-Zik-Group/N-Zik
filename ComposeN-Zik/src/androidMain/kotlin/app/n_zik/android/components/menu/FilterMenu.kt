@@ -124,7 +124,7 @@ fun FilterMenu(
         onLocal?.let {
             ListMenu.Entry(
                 text = stringResource(R.string.library_on_device_title),
-                icon = { SettingIcon(R.drawable.devices) },
+                icon = { SettingIcon(R.drawable.folder) },
                 onClick = {
                     onDismiss()
                     onLocal()

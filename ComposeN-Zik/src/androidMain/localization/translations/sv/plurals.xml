@@ -65,10 +65,6 @@
         <item quantity="one">Profilstatus importerad: %1$d profil</item>
         <item quantity="other">Profilstatus importerad: %1$d profiler</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="one">Det gick inte att synkronisera %1$d album. Gå tillbaka till fliken album för att försöka igen.</item>
-        <item quantity="other">Det gick inte att synkronisera %1$d album. Gå tillbaka till fliken album för att försöka igen.</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="one">Exportera %1$d cachad/hämtad låt?</item>
         <item quantity="other">Exportera %1$d cachade/hämtade låtar?</item>
@@ -84,54 +80,6 @@
     <plurals name="listen_together_blocked_user_count">
         <item quantity="one">%1$d användare blockerad</item>
         <item quantity="other">%1$d användare blockerade</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="one">Det gick inte att synkronisera %1$d artist. Gå tillbaka till fliken Artister för att försöka igen.</item>
-        <item quantity="other">Det gick inte att synkronisera %1$d konstnärer. Gå tillbaka till fliken Artister för att försöka igen.</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="one">Det gick inte att synkronisera %1$d spellista. Gå tillbaka till fliken Spellistor för att försöka igen.</item>
-        <item quantity="other">Misslyckades att synkronisera %1$d spellistor. Gå tillbaka till fliken Spellistor för att försöka igen.</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">Vill du försöka återsynkronisera %1$d misslyckade objekt?</item>
-        <item quantity="other">Vill du försöka synkronisera misslyckade objekt igen med %1$d?</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="one">Synkroniserar konstnär... (%1$d/%2$d)</item>
-        <item quantity="other">Synkroniserar artister... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="one">Uppdaterar %1$d artist</item>
-        <item quantity="other">Uppdaterar %1$d artister</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="one">Det gick inte att hitta %1$d artist, försöker igen</item>
-        <item quantity="other">Det gick inte att hitta %1$d artister, försöker igen</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
-        <item quantity="other">Synkroniserar album... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">Uppdaterar %1$d album</item>
-        <item quantity="other">Uppdaterar %1$d album</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="one">Det gick inte att hitta %1$d album, försöker igen</item>
-        <item quantity="other">Det gick inte att hitta %1$d album, försöker igen</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="one">Synkroniserar spellista... (%1$d/%2$d)</item>
-        <item quantity="other">Synkroniserar spellistor... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="one">Uppdaterar %1$d spellista</item>
-        <item quantity="other">Uppdaterar %1$d spellistor</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="one">Det gick inte att hitta %1$d spellista, försöker igen</item>
-        <item quantity="other">Det gick inte att hitta %1$d spellistor, försöker igen</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="one">%1$d objekt rengöras</item>

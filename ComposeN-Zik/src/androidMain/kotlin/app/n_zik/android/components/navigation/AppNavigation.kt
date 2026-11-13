@@ -119,6 +119,10 @@ import app.n_zik.android.components.musicbrainz.insights.AlbumInsightsScreen
 import app.n_zik.android.components.musicbrainz.insights.ArtistInsightsScreen
 import app.n_zik.android.components.ui.screens.album.AlbumScreen
 import app.n_zik.android.components.ui.screens.artist.ArtistScreen
+import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceAlbumScreen
+import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceArtistScreen
+import app.n_zik.android.core.ondevice.isDeviceAlbumId
+import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.ui.screens.history.HistoryScreen
 import app.n_zik.android.components.ui.screens.home.HomeScreen
 import app.n_zik.android.extensions.discord.DiscordUiState
@@ -281,6 +285,10 @@ fun AppNavigation(
 
     val disableBackStack by rememberPreference(disableNavigationBackStackKey, false)
     val currentEntry by navController.currentBackStackEntryAsState()
+    val expectsDestinationTabs = hasPageNavBar && currentEntry?.let { entry ->
+        !entry.destination.route.orEmpty().startsWith("${NavRoutes.artist.name}/") ||
+            !isDeviceArtistId(entry.arguments?.getString("id").orEmpty())
+    } != false
     val settingsBackNavigation = remember(navController) {
         SettingsBackNavigation { currentEntry?.destination?.route }
     }
@@ -451,7 +459,7 @@ fun AppNavigation(
         PersistentHorizontalNavigation(
             position = navigationPosition,
             pageKey = { currentEntry?.id },
-            expectsTabs = { hasPageNavBar },
+            expectsTabs = { expectsDestinationTabs },
             registration = { horizontalDock?.state?.registration(it) },
             hidden = hideTopBar,
             topPx = { appHeaderOverlayTopPx(headerRowHeightPx, statusBarTopPx.toFloat(), topBarOffsetState.value).toInt() },
@@ -548,11 +556,11 @@ fun AppNavigation(
             )
         ) { navBackStackEntry ->
             val id = navBackStackEntry.arguments?.getString("id") ?: ""
-            ArtistScreen(
-                navController = navController,
-                browseId = id,
-                miniPlayer = miniPlayer,
-            )
+            if (isDeviceArtistId(id)) {
+                OnDeviceArtistScreen(navController, id, miniPlayer)
+            } else {
+                ArtistScreen(navController = navController, browseId = id, miniPlayer = miniPlayer)
+            }
         }
 
         chromeComposable(
@@ -565,11 +573,11 @@ fun AppNavigation(
             )
         ) { navBackStackEntry ->
             val id = navBackStackEntry.arguments?.getString("id") ?: ""
-            AlbumScreen(
-                navController = navController,
-                browseId = id,
-                miniPlayer = miniPlayer,
-            )
+            if (isDeviceAlbumId(id)) {
+                OnDeviceAlbumScreen(navController, id, miniPlayer)
+            } else {
+                AlbumScreen(navController = navController, browseId = id, miniPlayer = miniPlayer)
+            }
         }
 
         chromeComposable(
@@ -798,12 +806,13 @@ fun AppNavigation(
         }
 
         chromeComposable(
-            route = "${NavRoutes.localPlaylist.name}/{id}",
+            route = "${NavRoutes.localPlaylist.name}/{id}?onDevice={onDevice}",
             arguments = listOf(
                 navArgument(
                     name = "id",
                     builder = { type = NavType.LongType }
-                )
+                ),
+                navArgument("onDevice") { type = NavType.BoolType; defaultValue = false },
             )
         ) { navBackStackEntry ->
             val id = navBackStackEntry.arguments?.getLong("id") ?: 0L
@@ -811,6 +820,7 @@ fun AppNavigation(
             LocalPlaylistScreen(
                 navController = navController,
                 playlistId = id,
+                forceOnDevice = navBackStackEntry.arguments?.getBoolean("onDevice") == true,
                 miniPlayer = miniPlayer
             )
         }
@@ -923,7 +933,7 @@ fun AppNavigation(
         LocalGlassBackdrop provides pageBackdrop.takeIf { captureGlass },
     ) {
         PersistentSideHeader(navController, navigationPosition,
-            pageKey = { currentEntry?.id }, expectsTabs = { hasPageNavBar },
+            pageKey = { currentEntry?.id }, expectsTabs = { expectsDestinationTabs },
             registration = sideRail::registration)
     }
     }

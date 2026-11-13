@@ -14,6 +14,7 @@ import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.n_zik.android.utils.showYtPlaylistsKey
+import app.n_zik.android.utils.showOnDevicePlaylistsKey
 
 import app.n_zik.android.utils.showPinnedPlaylistsKey
 import app.n_zik.android.utils.showMonthlyPlaylistsKey
@@ -22,7 +23,8 @@ import app.n_zik.android.core.utils.Toaster
 import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import android.content.Context
-private val playlistsDefaultOrder = listOf("all", "pinned_playlists", "rewind", "yt_playlists")
+import app.n_zik.android.utils.preferences
+private val playlistsDefaultOrder = listOf("all", "pinned_playlists", "rewind", "yt_playlists", "on_device")
 
 object HomePlaylistsSettingsDialog : ContentFramedDialog {
 
@@ -32,6 +34,7 @@ object HomePlaylistsSettingsDialog : ContentFramedDialog {
     private val searchLabelResources = mapOf(
         "all" to R.string.common_option_all,
         "yt_playlists" to R.string.library_youtube_playlists_label,
+        "on_device" to R.string.library_on_device_title,
         "pinned_playlists" to R.string.playlist_pinned_title,
         "rewind" to R.string.rewind_title,
     )
@@ -47,11 +50,12 @@ object HomePlaylistsSettingsDialog : ContentFramedDialog {
     @Composable
     override fun DialogBody() {
         val ctx = LocalContext.current
-        val prefs = remember { ctx.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
+        val prefs = remember { ctx.preferences }
         var workingOrder by remember { mutableStateOf(parseOrder(prefs.getString(homePlaylistsOrderKey, "") ?: "").toMutableList()) }
 
         val prefKeys = mapOf(
             "yt_playlists" to showYtPlaylistsKey,
+            "on_device" to showOnDevicePlaylistsKey,
             "pinned_playlists" to showPinnedPlaylistsKey,
             "rewind" to showMonthlyPlaylistsKey
         )
@@ -80,6 +84,7 @@ object HomePlaylistsSettingsDialog : ContentFramedDialog {
         val items = workingOrder.map { id ->
             when (id) {
                 "all" -> ToggleItem(id, R.drawable.library, allLabel, "always_true_playlists", true)
+                "on_device" -> ToggleItem(id, R.drawable.folder, stringResource(R.string.library_on_device_title), showOnDevicePlaylistsKey, true)
                 "yt_playlists" -> ToggleItem(id, R.drawable.logo_youtube, ytLabel, showYtPlaylistsKey, true)
 
                 "pinned_playlists" -> ToggleItem(id, R.drawable.pin_filled, pinnedLabel, showPinnedPlaylistsKey, true)
@@ -120,9 +125,10 @@ object HomePlaylistsSettingsDialog : ContentFramedDialog {
     }
 
     fun reset(context: Context) {
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val prefs = context.preferences
         prefs.edit()
             .putString(homePlaylistsOrderKey, serializeOrder(playlistsDefaultOrder))
+            .putBoolean(showOnDevicePlaylistsKey, true)
             .putBoolean(showYtPlaylistsKey, true)
             .putBoolean(showPinnedPlaylistsKey, true)
             .putBoolean(showMonthlyPlaylistsKey, true)

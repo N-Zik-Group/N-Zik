@@ -65,10 +65,6 @@
         <item quantity="one">Profiel status geïmporteerd: %1$d profiel</item>
         <item quantity="other">Profiel status geïmporteerd: %1$d profielen</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="one">Synchroniseren van %1$d album mislukt. Ga terug naar het Albums tabblad om het opnieuw te proberen.</item>
-        <item quantity="other">Synchroniseren van %1$d albums mislukt. Ga terug naar het Albums tabblad om het opnieuw te proberen.</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="one">%1$d gecachet/gedownloade nummer exporteren?</item>
         <item quantity="other">%1$d gecachet/gedownloade nummers exporteren?</item>
@@ -84,54 +80,6 @@
     <plurals name="listen_together_blocked_user_count">
         <item quantity="one">%1$d gebruiker geblokkeerd</item>
         <item quantity="other">%1$d gebruikers geblokkeerd</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="one">Fout bij het synchroniseren van %1$d artiest. Ga terug naar het tabblad artiesten om het opnieuw te proberen.</item>
-        <item quantity="other">Fout bij het synchroniseren van %1$d artiesten. Ga terug naar het tabblad artiesten om het opnieuw te proberen.</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="one">Synchroniseren van %1$d afspeellijst mislukt. Ga terug naar het tabblad Afspeellijsten om het opnieuw te proberen.</item>
-        <item quantity="other">Synchroniseren van %1$d afspeellijsten mislukt. Ga terug naar het tabblad Afspeellijsten om het opnieuw te proberen.</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">Wilt u opnieuw proberen het mislukte %1$d item te synchroniseren?</item>
-        <item quantity="other">Wilt u opnieuw proberen de %1$d mislukte items te synchroniseren?</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="one">Artiest synchroniseren... (%1$d/%2$d)</item>
-        <item quantity="other">Artiesten synchroniseren... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="one">Vernieuwen %1$d artiest</item>
-        <item quantity="other">Vernieuwen %1$d artiesten</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="one">Fout bij het vinden van %1$d artiest, opnieuw proberen</item>
-        <item quantity="other">Kan %1$d artiesten niet vinden, opnieuw proberen</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
-        <item quantity="other">Albums synchroniseren... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">Album vernieuwen %1$d</item>
-        <item quantity="other">Vernieuwen %1$d albums</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="one">Fout bij het vinden van %1$d album, opnieuw proberen</item>
-        <item quantity="other">Fout bij het vinden van %1$d albums, opnieuw proberen</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="one">Afspeellijst synchroniseren... (%1$d/%2$d)</item>
-        <item quantity="other">Afspeellijsten synchroniseren... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="one">Vernieuwen %1$d afspeellijst</item>
-        <item quantity="other">Vernieuwen %1$d afspeellijsten</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="one">Fout bij het vinden van %1$d afspeellijst, opnieuw proberen</item>
-        <item quantity="other">Fout bij het vinden van %1$d afspeellijsten, opnieuw proberen</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="one">%1$d item schoongemaakt</item>

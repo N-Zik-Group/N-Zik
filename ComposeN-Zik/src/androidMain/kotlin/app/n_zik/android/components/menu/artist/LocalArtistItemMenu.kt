@@ -63,6 +63,9 @@ import app.n_zik.android.utils.semiBold
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
+import app.n_zik.android.playback.services.isLocal
+import app.n_zik.android.core.ondevice.isDeviceArtistId
+import app.n_zik.android.core.ondevice.DeviceLibraryResults
 import app.n_zik.android.appContext
 import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.colorPalette
@@ -338,7 +341,14 @@ class LocalArtistItemMenu private constructor(
         val changeId = ChangeArtistBrowseIdDialog(menuState = menuState) { artist }
 
         val binder = LocalPlayerServiceBinder.current
-        val songs by Database.artistSongs(artist.id).collectAsStateWithLifecycle(initialValue = emptyList(), context = NzikDispatchers.DATA)
+        val mappedSongs by Database.artistSongs(artist.id).collectAsStateWithLifecycle(initialValue = emptyList(), context = NzikDispatchers.DATA)
+
+        val deviceGroup = isDeviceArtistId(artist.id)
+        val profile = getActiveProfile(LocalContext.current)
+        val snapshot by remember(profile) { DeviceLibraryResults.forProfile(profile) }
+            .collectAsStateWithLifecycle(DeviceLibraryResults.current(profile))
+        val eligible = snapshot?.artistSongIds?.get(artist.id).orEmpty()
+        val songs = mappedSongs.filter { it.isLocal == deviceGroup && (!deviceGroup || it.id in eligible) }
 
         val playAll = object : MenuIcon, Descriptive, Clickable {
             override val iconId: Int = R.drawable.play
@@ -363,7 +373,7 @@ class LocalArtistItemMenu private constructor(
             add(shuffle)
             add(changeTitle)
             add(changeCover)
-            add(changeId)
+            if (!isDeviceArtistId(artist.id)) add(changeId)
         }
 
         MenuSheetSurface {

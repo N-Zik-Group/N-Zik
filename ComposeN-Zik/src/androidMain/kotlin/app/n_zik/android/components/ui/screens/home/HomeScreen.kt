@@ -325,7 +325,11 @@ fun HomeScreen(
         return
     }
 
-    val shareHomeGlass = LocalSharedHomeHeaderGlass.current != null
+    val sharedHomeGlass = LocalSharedHomeHeaderGlass.current
+    val selectedHomeTab = activeTabs.getOrNull(tabIndex)
+    LaunchedEffect(selectedHomeTab) {
+        app.n_zik.android.extensions.discord.DiscordUiState.currentHomeTab.value = selectedHomeTab
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -338,11 +342,6 @@ fun HomeScreen(
             miniPlayer,
             topInsetHandledByContent = true,
             topContentInsetProvider = topContentInset,
-            suppressTabTransition = { from, to ->
-                shareHomeGlass &&
-                    activeTabs.getOrNull(from) in listOf("songs", "artists", "albums", "playlists") &&
-                    activeTabs.getOrNull(to) in listOf("songs", "artists", "albums", "playlists")
-            },
             navBarContent = { Item ->
                 activeTabs.forEachIndexed { index, id ->
                     when (id) {
@@ -358,11 +357,10 @@ fun HomeScreen(
             saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
                 val currentTabId = activeTabs.getOrNull(currentTabIndex)
 
-                LaunchedEffect(currentTabId) {
-                    app.n_zik.android.extensions.discord.DiscordUiState.currentHomeTab.value = currentTabId
-                }
-
                 androidx.compose.runtime.CompositionLocalProvider(
+                    LocalSharedHomeHeaderGlass provides sharedHomeGlass.takeIf {
+                        currentTabIndex == tabIndex || selectedHomeTab == "quickpicks"
+                    },
                     app.n_zik.android.components.glass.LocalGlassScope provides
                         if (currentTabId == "quickpicks") app.n_zik.android.components.glass.GlassScope.Home
                         else app.n_zik.android.components.glass.GlassScope.Library,

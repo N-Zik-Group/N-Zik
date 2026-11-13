@@ -177,7 +177,6 @@
     <string name="sync_background_guard_description">إيقاف المزامنة التلقائية عندما يكون التطبيق في الخلفية</string>
     <string name="sync_channels">المزامنة التلقائية للقنوات المشتركة</string>
     <string name="sync_channels_description">استيراد تلقائي للفنانين المشتركين من يوتيوب الموسيقى</string>
-    <string name="sync_completed_with_errors">تمت المزامنة مع الأخطاء</string>
     <string name="sync_cooldown">تبريد المزامنة</string>
     <string name="sync_cooldown_description">الحد الأدنى للوقت بين المزامنة التلقائية (بالدقائق)</string>
     <string name="sync_data_with_ytm_account">مزامنة البيانات مع حساب YTM</string>
@@ -204,8 +203,6 @@
     <string name="sync_imported_playlists_automatic_title">مزامنة تلقائية لقوائم التشغيل المستوردة</string>
     <string name="sync_likes">المزامنة التلقائية للأغاني المعجبة</string>
     <string name="sync_likes_description">استيراد الاغاني المعجبة تلقائياً من يوتيوب الموسيقى</string>
-    <string name="sync_no_items">لا توجد عناصر للمزامنة</string>
-    <string name="sync_notifications">مزامنة الإشعارات</string>
     <string name="sync_now">المزامنة الآن</string>
     <string name="sync_now_description">فرض مزامنة كاملة مع موسيقى اليوتيوب</string>
     <string name="sync_per_playlist_auto">المزامنة التلقائية لقائمة التشغيل</string>
@@ -236,10 +233,6 @@
     <string name="sync_status_last">Last sync: %1$dmin ago</string>
     <string name="sync_status_never">لم تتم مزامنتها أبدا</string>
     <string name="sync_status_running">المزامنة: %1$s</string>
-    <string name="sync_success_notification_albums">تمت مزامنة جميع الألبومات بنجاح.</string>
-    <string name="sync_success_notification_artists">تمت مزامنة جميع الفنانين بنجاح.</string>
-    <string name="sync_success_notification_playlists">تمت مزامنة جميع قوائم التشغيل بنجاح.</string>
-    <string name="sync_successful">تمت المزامنة بنجاح</string>
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">هل تريد إعادة محاولة مزامنة العناصر الفاشلة %1$d؟</string>
     <string name="sync_running_status">مزامنة...</string>
@@ -257,10 +250,6 @@
     <string name="sync_youtube_songs_remaining">%1$s Songs Remaining</string>
     <string name="sync_youtube_unlike_failed">فشل في عكس الأغنية في يوتيوب</string>
     <string name="sync_youtube_unlike_success">الأغنية غير معجبة في اليوتيوب</string>
-    <string name="sync_starting_notification">بدء المزامنة...</string>
-    <string name="sync_background_notification">جارٍ المزامنة في الخلفية...</string>
-    <string name="sync_aborted_network_error">تم إحباط المزامنة بسبب خطأ في الشبكة.</string>
-    <string name="sync_start_service_failed">فشل في بدء خدمة المزامنة</string>
     <string name="sync_fetch_subscribed_channels_failed">فشل في جلب القنوات المشتركة</string>
     <string name="sync_fetch_liked_albums_failed">فشل في جلب الألبومات المعجبة</string>
     <string name="sync_fetch_liked_songs_failed">فشل في جلب الأغاني المعجبة</string>

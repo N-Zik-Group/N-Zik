@@ -102,6 +102,9 @@ interface ArtistTable {
     @Query("SELECT DISTINCT * FROM Artist WHERE id = :artistId")
     fun findByIdDirect( artistId: String ): Artist?
 
+    @Query("SELECT * FROM Artist WHERE substr(id, 1, 13) = 'LOCAL_ARTIST_' OR id LIKE 'local:%' ORDER BY id")
+    fun deviceArtistsDirect(): List<Artist>
+
     @Query("""
         SELECT DISTINCT Artist.*
         FROM SongArtistMap

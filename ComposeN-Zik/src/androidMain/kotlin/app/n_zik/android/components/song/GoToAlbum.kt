@@ -6,6 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import app.n_zik.android.R
+import app.n_zik.android.core.ondevice.isDeviceAlbumId
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.models.NavigationEndpoint
 import app.n_zik.innertube.requests.nextPage
@@ -44,6 +46,15 @@ class GoToAlbum(
         menuState.hide()
         
         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+            if (song.isLocal) {
+                val localId = Database.songAlbumMapTable.findAlbumsOfDirect(song.id).firstOrNull { isDeviceAlbumId(it.id) }?.id
+                kotlinx.coroutines.withContext(NzikDispatchers.UI) {
+                    if (localId != null) NavRoutes.album.navigateHere(navController, localId)
+                    else Toaster.e(R.string.album_lookup_failed)
+                }
+                return@launch
+            }
+
             val id = Database.albumTable
                     .findBySongId( song.id )
                     .first()

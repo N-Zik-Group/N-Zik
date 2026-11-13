@@ -111,7 +111,7 @@ class QuickPicksBrowseHandler : BrowseHandler {
             val relatedDeferred = async {
                 fetchSection("related page") {
                     if (!access.online) emptyList() else Innertube.relatedPage(
-                        videoId = trendingList.firstOrNull()?.id ?: DEFAULT_RELATED_SEED,
+                        videoId = trendingList.firstOrNull { !it.isLocal }?.id ?: DEFAULT_RELATED_SEED,
                         setLogin = useLogin
                     )?.getOrNull()?.songs ?: emptyList()
                 } ?: emptyList()

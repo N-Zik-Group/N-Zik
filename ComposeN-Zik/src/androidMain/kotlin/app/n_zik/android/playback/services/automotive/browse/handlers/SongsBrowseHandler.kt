@@ -1,6 +1,7 @@
 package app.n_zik.android.playback.services.automotive.browse.handlers
 
 import android.content.Context
+import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.exoplayer.offline.Download
@@ -48,7 +49,7 @@ class SongsBrowseHandler : BrowseHandler {
                 val showFavoritesPlaylist = try { context.preferences.getBoolean(showFavoritesPlaylistKey, true) } catch (e: Exception) { true }
                 val showDownloadedPlaylist = try { context.preferences.getBoolean(showDownloadedPlaylistKey, true) } catch (e: Exception) { true }
                 val showCachedPlaylist = try { context.preferences.getBoolean(showCachedPlaylistKey, true) } catch (e: Exception) { true }
-                val showOnDevicePlaylist = try { context.preferences.getBoolean(showOnDevicePlaylistKey, true) } catch (e: Exception) { true }
+                val showOnDevicePlaylist = context.isDeviceLibraryEnabled() && try { context.preferences.getBoolean(showOnDevicePlaylistKey, true) } catch (e: Exception) { true }
                 val showTopPlaylist = try { context.preferences.getBoolean(showMyTopPlaylistKey, true) } catch (e: Exception) { true }
                 // Phone/AA consistency: every song category below is filtered with
                 // the shuffler exclusions (excludedIds); the excluded songs only
@@ -86,7 +87,7 @@ class SongsBrowseHandler : BrowseHandler {
                     "cached" to browsableMediaItem(AutoSessionConstants.ID_SONGS_CACHED, context.getString(R.string.library_cached_title), cachedCount.toString(), drawableUri(context, R.drawable.download), MediaMetadata.MEDIA_TYPE_PLAYLIST),
                     "downloaded" to browsableMediaItem(AutoSessionConstants.ID_SONGS_DOWNLOADED, context.getString(R.string.library_downloaded_title), downloadedCount.toString(), drawableUri(context, R.drawable.downloaded), MediaMetadata.MEDIA_TYPE_PLAYLIST),
                     "top" to browsableMediaItem(AutoSessionConstants.ID_SONGS_TOP, context.getString(R.string.playlist_top), topCount.toString(), drawableUri(context, R.drawable.trending), MediaMetadata.MEDIA_TYPE_PLAYLIST),
-                    "on_device" to browsableMediaItem(AutoSessionConstants.ID_SONGS_ONDEVICE, context.getString(R.string.library_on_device_title), onDeviceCount.toString(), drawableUri(context, R.drawable.devices), MediaMetadata.MEDIA_TYPE_PLAYLIST)
+                    "on_device" to browsableMediaItem(AutoSessionConstants.ID_SONGS_ONDEVICE, context.getString(R.string.library_on_device_title), onDeviceCount.toString(), drawableUri(context, R.drawable.folder), MediaMetadata.MEDIA_TYPE_PLAYLIST)
                 )
                 homeCategoryOrder(context, homeSongsOrderKey, listOf("all", "favorites", "disliked", "cached", "downloaded", "top", "on_device"))
                     .mapNotNull { id ->
@@ -133,6 +134,7 @@ class SongsBrowseHandler : BrowseHandler {
                 listOf(shuffleItem) + songs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
             }
             AutoSessionConstants.ID_SONGS_ONDEVICE -> {
+                if (!context.isDeviceLibraryEnabled()) return emptyList()
                 val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_SONGS_ONDEVICE_SHUFFLE)
                 val sortBy = context.preferences.getEnum(Preference.HOME_ON_DEVICE_SONGS_SORT_BY.key, OnDeviceSongSortBy.Title)
                 val sortOrder = context.preferences.getEnum(Preference.HOME_ON_DEVICE_SONGS_SORT_ORDER.key, SortOrder.Ascending)

@@ -9,6 +9,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.core.ondevice.isDeviceAlbumId
+import app.n_zik.android.core.ondevice.rememberDeviceGroupOriginalName
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.models.Album
 import app.n_zik.android.core.utils.Toaster
@@ -54,6 +56,7 @@ class ChangeAlbumTitleDialog private constructor(
 
         val album = getAlbum() ?: return
         Database.asyncTransaction {
+            if (isDeviceAlbumId(album.id)) rememberDeviceGroupOriginalName(album.id, album.title)
             albumTable.insertIgnore( album )
             albumTable.updateTitle( album.id, "$MODIFIED_PREFIX$newValue" )
             Toaster.done()

@@ -88,7 +88,8 @@ class AlbumModifier private constructor(
 
 @Composable
 fun AlbumBookmark(
-    albumId: String
+    albumId: String,
+    localOnly: Boolean = false,
 ): MenuIcon = object : MenuIcon, Descriptive, DualIcon {
     val likeState by remember(albumId) {
         Database.albumTable.likeState( albumId )
@@ -126,7 +127,7 @@ fun AlbumBookmark(
             val pushAlbumBookmark = appContext().preferences.getBoolean(syncPushAlbumBookmarkKey, false)
             val syncDir = getSyncDirection()
             // Only sync to YouTube if NOT disliked (dislike is local only)
-            if (likeState != false && isYouTubeSyncEnabled() && pushAlbumBookmark && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
+            if (!localOnly && likeState != false && isYouTubeSyncEnabled() && pushAlbumBookmark && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
                 val playlistId = album?.shareUrl
                     ?.substringAfter("list=")
                     ?.takeIf { it.isNotBlank() }

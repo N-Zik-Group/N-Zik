@@ -1,6 +1,8 @@
 package app.n_zik.android.core.migration
 
 import android.content.Context
+import app.n_zik.android.core.ondevice.isDeviceArtistId
+import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.models.Artist
 import app.n_zik.android.models.Song
@@ -89,7 +91,7 @@ import timber.log.Timber
  * songs survive both of those sweeps.
  *
  * Network searches are rate-limited with a random 1-5 s gap between two
- * searches (same pattern as HomeSyncService, no per-launch cap) so a polluted
+ * searches without a per-launch cap so a polluted
  * database converges in a single launch; the runs are idempotent, so a launch
  * with nothing to do is a cheap no-op.
  *
@@ -100,8 +102,6 @@ object SameNameArtistDedup {
     /** Shared log tag (the [InnertubeSongTruthResolver] uses it too). */
     internal const val TAG = "SameNameArtistDedup"
 
-    /** Prefix of user-localized artist ids (no YTM browse id behind them). */
-    private const val LOCAL_ARTIST_ID_PREFIX = "LOCAL_ARTIST_"
 
     /** Songs per row the song-based fallback may try (network budget). */
     private const val SONGS_PER_ROW = 3
@@ -189,7 +189,7 @@ object SameNameArtistDedup {
 
         for (groupName in groupNames) {
             val rows = artistTable.allByNameIgnoreCase(groupName)
-            val ytRows = rows.filter { !it.id.startsWith(LOCAL_ARTIST_ID_PREFIX) }
+            val ytRows = rows.filter { !isDeviceArtistId(it.id) && !it.id.startsWith("LOCAL_ARTIST_") }
             val localCount = rows.size - ytRows.size
             localKept += localCount
             if (localCount > 0) {
@@ -307,8 +307,7 @@ object SameNameArtistDedup {
                 )
                 Timber.tag(TAG).w(e, "group '%s': resolution failed, skipped (retried on next launch)", groupName)
             }
-            // Random gap between two searches (same pattern as HomeSyncService),
-            // to stay gentle on the API and avoid a regular bot-like cadence.
+            // Space out consecutive metadata searches.
             delay((1000L..5000L).random())
         }
 
@@ -336,7 +335,7 @@ object SameNameArtistDedup {
      */
     private fun rowFallbackSongs(artistId: String, mapTable: SongArtistMapTable): List<Song> =
         mapTable.allSongsByDirect(artistId)
-            .filter { it.cleanTitle().isNotBlank() }
+            .filter { !it.id.startsWith(LOCAL_KEY_PREFIX) && it.cleanTitle().isNotBlank() }
             .take(SONGS_PER_ROW)
 
     /**
@@ -359,7 +358,7 @@ object SameNameArtistDedup {
             skipStore?.remember(groupName, null)
             return
         }
-        val ytRemaining = remaining.filter { !it.id.startsWith(LOCAL_ARTIST_ID_PREFIX) }
+        val ytRemaining = remaining.filter { !isDeviceArtistId(it.id) && !it.id.startsWith("LOCAL_ARTIST_") }
         val songs = if (fallbackJudged)
             ytRemaining.flatMap { row -> rowFallbackSongs(row.id, mapTable) }
                 .mapTo(mutableSetOf()) { it.id }
@@ -377,6 +376,7 @@ object SameNameArtistDedup {
         mapTable: SongArtistMapTable,
     ): GroupMerge {
         val truthId = found.browseId
+        if ((isDeviceArtistId(truthId) || truthId.startsWith("LOCAL_ARTIST_"))) return GroupMerge(0, 0)
         val canonicalName = "$MODIFIED_PREFIX$groupName"
         // The truth row can also already exist UNDER A DIFFERENT NAME (its real
         // channel name, outside the same-name group): it is still the truth by
@@ -427,7 +427,7 @@ object SameNameArtistDedup {
         var merged = 0
         var flagged = 0
         for (row in rows) {
-            if (row.id == truthId) continue
+            if (row.id == truthId || isDeviceArtistId(row.id) || row.id.startsWith("LOCAL_ARTIST_")) continue
             val rowImage = row.thumbnailUrl
             val isFlagged = when {
                 // D4: a row without a picture is neutral only in a group with no
@@ -449,6 +449,10 @@ object SameNameArtistDedup {
             }
 
             Database.transaction {
+                if (mapTable.allSongsByDirect(row.id).any { it.id.startsWith(LOCAL_KEY_PREFIX) }) {
+                    flagged++
+                    return@transaction
+                }
                 // A song already linked to the truth row keeps that link: drop the
                 // duplicate link first, otherwise the re-link UPDATE below would
 //
@@ -474,8 +478,8 @@ object SameNameArtistDedup {
                 }
                 artistTable.deleteById(row.id)
                 merged++
+                Timber.tag(TAG).d("group '%s': merged row %s into %s", groupName, row.id, truthId)
             }
-            Timber.tag(TAG).d("group '%s': merged row %s into %s", groupName, row.id, truthId)
         }
 
         return GroupMerge(merged, flagged)

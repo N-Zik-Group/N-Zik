@@ -65,10 +65,6 @@
         <item quantity="one">Stato profilo importato: profilo %1$dÈ</item>
         <item quantity="other">Stato profilo importato: profili %1$d</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="one">Sincronizzazione dell\'album %1$d non riuscita. Torna alla scheda Album per riprovare.</item>
-        <item quantity="other">Sincronizzazione album %1$d non riuscita. Torna alla scheda Album per riprovare.</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="one">Esportare %1$d cached/downloaded song?</item>
         <item quantity="other">Export %1$d cached/downloaded songs?</item>
@@ -84,54 +80,6 @@
     <plurals name="listen_together_blocked_user_count">
         <item quantity="one">%1$d utente bloccato</item>
         <item quantity="other">%1$d utenti bloccati</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="one">Sincronizzazione artista %1$d non riuscita. Torna alla scheda Artisti per riprovare.</item>
-        <item quantity="other">Sincronizzazione degli artisti %1$d non riuscita. Torna alla scheda Artisti per riprovare.</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="one">Sincronizzazione playlist %1$d non riuscita. Torna alla scheda Playlist per riprovare.</item>
-        <item quantity="other">Sincronizzazione delle playlist %1$d non riuscita. Torna alla scheda Playlist per riprovare.</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">Vuoi riprovare a sincronizzare %1$d elemento non riuscito?</item>
-        <item quantity="other">Vuoi riprovare a sincronizzare %1$d elementi non riusciti?</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="one">Sincronizzazione dell\'artista... (%1$d/%2$d)</item>
-        <item quantity="other">Sincronizzazione degli artisti... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="one">Aggiornamento artista %1$d</item>
-        <item quantity="other">Aggiornamento artisti %1$d</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="one">Trovare l\'artista %1$d non riuscito, riprovare</item>
-        <item quantity="other">Trovare artisti di %1$d non riuscito, riprovare</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="one">Sincronizzazione album... (%1$d/%2$d)</item>
-        <item quantity="other">Sincronizzazione album... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">Aggiornamento di %1$d album</item>
-        <item quantity="other">Aggiornamento di %1$d album</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="one">Trovare l\'album %1$d non riuscito, riprovare</item>
-        <item quantity="other">Trovare gli album di %1$d non riuscito, riprovare</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="one">Sincronizzazione playlist... (%1$d/%2$d)</item>
-        <item quantity="other">Sincronizzazione scalette... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="one">Aggiornamento di %1$d playlist</item>
-        <item quantity="other">Aggiornamento di %1$d playlist</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="one">Trovare la scaletta %1$d non riuscita, riprovare</item>
-        <item quantity="other">Ricerca delle playlist di %1$d non riuscita, riprova</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="one">%1$d elemento pulito</item>

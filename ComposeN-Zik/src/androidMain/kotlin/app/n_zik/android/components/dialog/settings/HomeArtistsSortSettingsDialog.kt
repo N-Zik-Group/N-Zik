@@ -21,6 +21,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 import app.n_zik.android.utils.homeArtistsDislikedSortMenuOrderKey
 import app.n_zik.android.utils.homeArtistsFavoritesSortMenuOrderKey
 import app.n_zik.android.utils.homeArtistsLibrarySortMenuOrderKey
+import app.n_zik.android.utils.homeArtistsOnDeviceSortMenuOrderKey
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
@@ -37,13 +38,15 @@ object HomeArtistsSortSettingsDialog : ContentFramedDialog {
 
 
     private val librarySortIds = listOf("Name", "PlayCount", "ListeningTime", "DateAdded", "Custom")
+    private val onDeviceSortIds = listOf("Name", "PlayCount", "ListeningTime", "DateAdded", "Custom")
     private val favoritesSortIds = listOf("Name", "PlayCount", "ListeningTime", "DateAdded")
     private val dislikedSortIds = listOf("Name", "PlayCount", "ListeningTime", "DateAdded")
 
     private enum class ArtistTab(val textId: Int, val availableIds: List<String>) {
         Library(R.string.library_title, librarySortIds),
         Favorites(R.string.library_favorites_title, favoritesSortIds),
-        Disliked(R.string.library_disliked_title, dislikedSortIds)
+        Disliked(R.string.library_disliked_title, dislikedSortIds),
+        OnDevice(R.string.library_on_device_title, onDeviceSortIds)
     }
 
     private val tabs = ArtistTab.entries
@@ -84,12 +87,14 @@ object HomeArtistsSortSettingsDialog : ContentFramedDialog {
 
     private fun getTabPrefix(tab: ArtistTab): String = when (tab) {
         ArtistTab.Library -> "art_lib"
+        ArtistTab.OnDevice -> "art_dev"
         ArtistTab.Favorites -> "art_fav"
         ArtistTab.Disliked -> "art_dis"
     }
 
     private fun getSortOrderKey(tab: ArtistTab): String = when (tab) {
         ArtistTab.Library -> homeArtistsLibrarySortMenuOrderKey
+        ArtistTab.OnDevice -> homeArtistsOnDeviceSortMenuOrderKey
         ArtistTab.Favorites -> homeArtistsFavoritesSortMenuOrderKey
         ArtistTab.Disliked -> homeArtistsDislikedSortMenuOrderKey
     }

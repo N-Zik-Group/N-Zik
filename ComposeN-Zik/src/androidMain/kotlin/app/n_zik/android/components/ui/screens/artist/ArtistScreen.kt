@@ -2,7 +2,7 @@
 package app.n_zik.android.components.ui.screens.artist
 
 import app.n_zik.android.appTextResources
-import app.n_zik.android.components.glass.GlassArtworkBackdrop
+import app.n_zik.android.components.ui.screens.CollectionArtworkHeader
 import app.n_zik.android.components.ui.screens.CollectionPageStatus
 import app.n_zik.android.components.navigation.rememberTopContentInsetProvider
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
@@ -81,12 +81,9 @@ import app.n_zik.android.components.navigation.Skeleton
 import app.n_zik.android.ui.components.SwipeablePlaylistItem
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
-import app.n_zik.android.ui.components.themed.AutoResizeText
 import app.n_zik.android.ui.components.themed.Enqueue
-import app.n_zik.android.ui.components.themed.FontSizeRange
 import app.n_zik.android.components.ui.HeaderIconAction
 import app.n_zik.android.components.ui.CollectionButtonToolbar
-import app.n_zik.android.components.glass.GlassToolbarRow
 import app.n_zik.android.components.ui.FullPageLoader
 import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.components.dialog.common.DialogPresence
@@ -568,56 +565,17 @@ fun ArtistOverview(
                 contentPadding = contentPadding,
             ) {
                 item("header") {
-                    GlassArtworkBackdrop(hasArtwork = !isLandscape) { artworkBackdrop ->
-                    Box(Modifier.fillMaxWidth()) {
-                        if (!isLandscape)
-                            Image(
-                                painter = thumbnailPainter,
-                                contentDescription = null,
-                                contentScale = ContentScale.FillWidth,
-                                modifier = Modifier.then(artworkBackdrop).aspectRatio(4f / 3)
-                                    .fillMaxWidth()
-                                    .align(Alignment.Center)
-                                    .fadingEdge(
-                                        top = WindowInsets.systemBars
-                                            .asPaddingValues()
-                                            .calculateTopPadding() + Dimensions.fadeSpacingTop,
-                                        bottom = Dimensions.fadeSpacingBottom
-                                    )
-                            )
-
-                        Column(Modifier.align(Alignment.BottomCenter)) {
-                            AutoResizeText(
-                                text = cleanPrefix(localArtist?.name ?: artistPage.artist.title ?: "..."),
-                                style = typography().l.semiBold,
-                                fontSizeRange = FontSizeRange(32.sp, 38.sp),
-                                fontWeight = typography().l.semiBold.fontWeight,
-                                fontFamily = typography().l.semiBold.fontFamily,
-                                color = typography().l.semiBold.color,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(horizontal = 30.dp)
-                                    .conditional(!disableScrollingText) {
-                                        basicMarquee(iterations = Int.MAX_VALUE)
-                                    }
-                                    .align(Alignment.CenterHorizontally)
-                            )
-
+                    CollectionArtworkHeader(
+                        localArtist?.name ?: artistPage.artist.title ?: "...",
+                        thumbnailPainter,
+                        disableScrollingText,
+                        subtitle = {
                             val statsText = artistStatisticsText(artistPage.subscribers, artistPage.listeners)
                             if (statsText.isNotBlank()) {
-                                BasicText(
-                                    text = statsText,
-                                    style = typography().s.copy(colorPalette().textSecondary),
-                                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                                )
+                                BasicText(statsText, style = typography().s.copy(colorPalette().textSecondary))
                             }
-                        }
-
-                        GlassToolbarRow(1,
-                            modifier = Modifier.align(Alignment.TopEnd)
-                                .padding(top = 5.dp, end = 5.dp),
-                        ) {
+                        },
+                    ) {
                         HeaderIconAction(
                             icon = R.drawable.share_social,
                             color = colorPalette().text,
@@ -635,8 +593,6 @@ fun ArtistOverview(
                                 )
                             }
                         )
-                        }
-                    }
                     }
                 }
 

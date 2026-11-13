@@ -1,6 +1,7 @@
 package app.n_zik.android.components.ui.screens.home
 
 
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.appTextResources
 import app.n_zik.android.components.navigation.FloatingActionSiblingSpace
 import android.os.Build
@@ -107,6 +108,7 @@ import app.n_zik.android.utils.homeSongsDownloadedToolbarOrderKey
 import app.n_zik.android.utils.homeSongsToolbarOrderKey
 import app.n_zik.android.utils.homeSongsFavoritesToolbarOrderKey
 import app.n_zik.android.utils.homeSongsOnDeviceToolbarOrderKey
+import app.n_zik.android.core.ondevice.deviceLibraryEnabled
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.utils.homeSongsTopToolbarOrderKey
 import app.n_zik.android.utils.homeSongsOfflineToolbarOrderKey
@@ -135,6 +137,13 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     val offlineMode by OfflineMode.rememberEnabled()
 
     var builtInPlaylist by rememberPreference( builtInPlaylistKey, BuiltInPlaylist.All )
+    val onDeviceTabEnabled by rememberPreference(showOnDevicePlaylistKey, true)
+    val showOnDeviceChip = deviceLibraryEnabled() && onDeviceTabEnabled
+    LaunchedEffect(showOnDeviceChip, builtInPlaylist) {
+        if (!showOnDeviceChip && builtInPlaylist == BuiltInPlaylist.OnDevice) {
+            builtInPlaylist = BuiltInPlaylist.All
+        }
+    }
     var isRecommendationEnabled by remember { mutableStateOf(false) }
     var recommendationCount by remember { mutableStateOf(0) }
     var isRecommendationsLoading by remember { mutableStateOf(false) }
@@ -163,7 +172,8 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     val itemsOnDisplayState = remember { mutableStateListOf<Song>() }
 
     val itemSelector = ItemSelector<Song>()
-    fun getSongs() = itemSelector.ifEmpty { itemsOnDisplayState }.toList()
+    fun getSongs() = itemSelector.ifEmpty { itemsOnDisplayState }
+        .filter { it.isLocal == (builtInPlaylist == BuiltInPlaylist.OnDevice) }
     fun getMediaItems() = getSongs().map( Song::asMediaItem )
 
     val search = Search(lazyListState)
@@ -699,7 +709,6 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                             val showCachedPlaylist by rememberPreference( showCachedPlaylistKey, true )
                             val showMyTopPlaylist by rememberPreference( showMyTopPlaylistKey, true )
                             val showDownloadedPlaylist by rememberPreference( showDownloadedPlaylistKey, true )
-                            val showOnDeviceChip by rememberPreference( showOnDevicePlaylistKey, true )
                             val showDislikedChip by rememberPreference( excludeDislikedSongsKey, DislikeMode.Enabled )
                             val homeSongsOrderPref by rememberPreference( homeSongsOrderKey, "" )
                             val chips = remember( showFavoritesPlaylist, showCachedPlaylist, showMyTopPlaylist, showDownloadedPlaylist, showOnDeviceChip, showDislikedChip, homeSongsOrderPref ) {

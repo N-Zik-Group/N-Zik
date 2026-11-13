@@ -25,6 +25,7 @@ import app.n_zik.innertube.requests.HomePage
 import app.n_zik.innertube.requests.chartsPageComplete
 import app.n_zik.innertube.requests.discoverPage
 import app.n_zik.innertube.requests.relatedPage
+import app.n_zik.android.playback.services.isLocal
 import kotlinx.coroutines.CancellationException
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.async
@@ -231,7 +232,7 @@ class HomeQuickPicksState(
                 }
                 if (fetchRelated) {
                     val related = Innertube.relatedPage(
-                        videoId = selected.firstOrNull()?.id ?: "4NRXx6U8ABQ",
+                        videoId = selected.firstOrNull { !it.isLocal }?.id ?: "4NRXx6U8ABQ",
                         setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse,
                     )
                     observations.publish(publication) { relatedPageResult.value = related }

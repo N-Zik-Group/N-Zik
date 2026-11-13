@@ -14,7 +14,6 @@ import app.n_zik.android.R
 import app.n_zik.android.bridge.BRIDGE_SERVER_CHANNEL_ID
 import app.n_zik.android.modules.AndroidModuleDownloadListener
 import app.n_zik.android.updater.services.UpdateDownloadManager
-import app.n_zik.android.components.ui.screens.home.HomeSyncService
 import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.listentogether.ListenTogetherClient
@@ -45,16 +44,6 @@ private data class ChannelSpec(
     val badgeOff: Boolean,
 )
 
-// All six base IDs reference their emitters' constants directly — a single source of the
-// profile channel set (HomeSyncService.SYNC_NOTIFICATION_CHANNEL_ID and
-//
-// ListenTogetherClient.NOTIFICATION_CHANNEL_ID were exposed for this; the others were already
-// visible).
-//
-// Renaming an emitter's constant moves the profile set with it, and the profileChannelIds
-// tests pin the agreement.
-
-/** The 6 profiled channels, in the same order as the base creation in MainApplication. */
 private val PROFILE_CHANNEL_SPECS = listOf(
     ChannelSpec(
         PlayerServiceModern.NotificationChannelId,
@@ -74,13 +63,6 @@ private val PROFILE_CHANNEL_SPECS = listOf(
         MyDownloadHelper.DOWNLOAD_NOTIFICATION_CHANNEL_ID,
         R.string.downloads_title,
         R.string.downloads_title,
-        NotificationManager.IMPORTANCE_LOW,
-        badgeOff = true,
-    ),
-    ChannelSpec(
-        HomeSyncService.SYNC_NOTIFICATION_CHANNEL_ID,
-        R.string.sync_action_sync,
-        R.string.sync_notifications,
         NotificationManager.IMPORTANCE_LOW,
         badgeOff = true,
     ),

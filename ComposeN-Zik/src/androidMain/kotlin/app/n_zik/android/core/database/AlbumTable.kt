@@ -107,6 +107,9 @@ interface AlbumTable {
     @Query("SELECT DISTINCT * FROM Album WHERE id = :albumId")
     fun findByIdDirect( albumId: String ): Album?
 
+    @Query("SELECT * FROM Album WHERE substr(id, 1, 12) = 'LOCAL_ALBUM_' ORDER BY id")
+    fun deviceAlbumsDirect(): List<Album>
+
     /**
      * @return [Album] that has song with id [songId]
      */
@@ -115,10 +118,16 @@ interface AlbumTable {
         FROM SongAlbumMap 
         JOIN Album ON id = albumId
         WHERE songId = :songId
+        ORDER BY substr(albumId, 1, 19) = 'LOCAL_ALBUM_DEVICE_', SongAlbumMap.rowid
+        LIMIT 1
     """)
     fun findBySongId( songId: String ): Flow<Album?>
 
-    @Query("SELECT DISTINCT A.* FROM Album A JOIN SongAlbumMap SAM ON SAM.albumId = A.id WHERE SAM.songId = :songId")
+    @Query("""
+        SELECT A.* FROM Album A JOIN SongAlbumMap SAM ON SAM.albumId = A.id
+        WHERE SAM.songId = :songId
+        ORDER BY substr(SAM.albumId, 1, 19) = 'LOCAL_ALBUM_DEVICE_', SAM.rowid LIMIT 1
+    """)
     fun findBySongIdDirect( songId: String ): Album?
 
     /**

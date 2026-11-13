@@ -177,7 +177,6 @@
     <string name="sync_background_guard_description">Pause auto-sync when app is in background</string>
     <string name="sync_channels">Sincronització automàtica dels canals subscrits</string>
     <string name="sync_channels_description">Auto-import subscribed artists from YouTube Music</string>
-    <string name="sync_completed_with_errors">Sync completed with errors</string>
     <string name="sync_cooldown">Sync Cooldown</string>
     <string name="sync_cooldown_description">Minimum time between auto-syncs (in minutes)</string>
     <string name="sync_data_with_ytm_account">Sync data with YTM account</string>
@@ -204,8 +203,6 @@
     <string name="sync_imported_playlists_automatic_title">Sincronització automàtica de llistes de reproducció importades</string>
     <string name="sync_likes">Auto Sync Liked Songs</string>
     <string name="sync_likes_description">Auto-import liked songs from YouTube Music</string>
-    <string name="sync_no_items">No items to sync</string>
-    <string name="sync_notifications">Sync Notifications</string>
     <string name="sync_now">Sync Now</string>
     <string name="sync_now_description">Force a full sync with YouTube Music</string>
     <string name="sync_per_playlist_auto">Per-Playlist Auto-Sync</string>
@@ -236,10 +233,6 @@
     <string name="sync_status_last">Last sync: %1$dmin ago</string>
     <string name="sync_status_never">Never synced</string>
     <string name="sync_status_running">Syncing: %1$s</string>
-    <string name="sync_success_notification_albums">Successfully synchronized all albums.</string>
-    <string name="sync_success_notification_artists">Successfully synchronized all artists.</string>
-    <string name="sync_success_notification_playlists">Successfully synchronized all playlists.</string>
-    <string name="sync_successful">Sync successful</string>
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">Do you want to retry syncing the %1$d failed items?</string>
     <string name="sync_running_status">Sincronitzant...</string>
@@ -257,10 +250,6 @@
     <string name="sync_youtube_songs_remaining">%1$s Songs Remaining</string>
     <string name="sync_youtube_unlike_failed">Failed to unlike the song in YouTube</string>
     <string name="sync_youtube_unlike_success">Song is Unliked in YouTube</string>
-    <string name="sync_starting_notification">Starting sync...</string>
-    <string name="sync_background_notification">Syncing in background...</string>
-    <string name="sync_aborted_network_error">Sync aborted due to network error.</string>
-    <string name="sync_start_service_failed">Failed to start sync service</string>
     <string name="sync_fetch_subscribed_channels_failed">Failed to fetch subscribed channels</string>
     <string name="sync_fetch_liked_albums_failed">Failed to fetch liked albums</string>
     <string name="sync_fetch_liked_songs_failed">Failed to fetch liked songs</string>

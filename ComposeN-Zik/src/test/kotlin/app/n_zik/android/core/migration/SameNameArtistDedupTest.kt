@@ -437,6 +437,20 @@ class SameNameArtistDedupTest {
     }
 
     @Test
+    fun onlineDuplicateWithLegacyLocalTrackKeepsItsLinks() = runTest {
+        insertSong("local:42")
+        insertArtist("TOPIC_A", "uma", thumbnail = "T")
+        insertArtist("TRUTH_ID", "uma", thumbnail = "T")
+        insertLink("local:42", "TOPIC_A")
+
+        val result = run(FakeResolver(mapOf("uma" to resolved("TRUTH_ID", "uma", "T"))))
+
+        assertEquals(0, result.merged)
+        assertNotNull(db.artistTable.findByIdDirect("TOPIC_A"))
+        assertEquals(setOf("local:42"), linksOf("TOPIC_A").map { it.songId }.toSet())
+    }
+
+    @Test
     fun groupOfOnlyLocalRowsIsSkippedWithoutNetwork() = runTest {
         insertArtist("LOCAL_ARTIST_a", "solo")
         insertArtist("LOCAL_ARTIST_b", "solo")

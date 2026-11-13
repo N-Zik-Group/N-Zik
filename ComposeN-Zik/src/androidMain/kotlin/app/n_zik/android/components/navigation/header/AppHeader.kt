@@ -1,5 +1,8 @@
 package app.n_zik.android.components.navigation.header
 
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
@@ -103,7 +106,7 @@ class AppHeader(
         }
         // Slide the themed surface above the page without fading its controls. The page
         // keeps its own scroll distance while this clip excludes the system status area.
-        val controls: @Composable (Backdrop?) -> Unit = { controlsBackdrop ->
+        val controlsContent: @Composable (Backdrop?) -> Unit = { controlsBackdrop ->
         Row(
             modifier = Modifier
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
@@ -146,6 +149,8 @@ class AppHeader(
             }
         }
         }
+        val currentControls by rememberUpdatedState(controlsContent)
+        val controls = remember { movableContentOf<Backdrop?> { backdrop -> currentControls(backdrop) } }
         if (sharedHomeGlass != null) {
             controls(sharedHomeGlass.surface)
         } else if (standaloneGlass) {

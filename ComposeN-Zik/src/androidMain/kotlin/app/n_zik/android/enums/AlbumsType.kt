@@ -10,7 +10,8 @@ enum class AlbumsType(
 
     Favorites( R.string.library_favorites_title ),
     Library( R.string.library_title ),
-    Disliked( R.string.library_disliked_title );
+    Disliked( R.string.library_disliked_title ),
+    OnDevice( R.string.library_on_device_title );
 }
 
 

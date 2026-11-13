@@ -10,6 +10,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import timber.log.Timber
 import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.core.ondevice.isDeviceArtistId
+import app.n_zik.android.core.ondevice.rememberDeviceGroupOriginalName
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.models.Artist
 import app.n_zik.android.core.utils.Toaster
@@ -75,6 +77,7 @@ class ChangeArtistTitleDialog private constructor(
         if (cleanNew.equals(oldName, ignoreCase = true)) return
         Database.asyncTransaction {
             syncTransaction {
+                if (isDeviceArtistId(artist.id)) rememberDeviceGroupOriginalName(artist.id, artist.name)
                 artistTable.insertIgnore( artist )
                 artistTable.update( artist.copy(name = "$MODIFIED_PREFIX$cleanNew") )
                 // Converge every copy linked to this row (songs + albums of its

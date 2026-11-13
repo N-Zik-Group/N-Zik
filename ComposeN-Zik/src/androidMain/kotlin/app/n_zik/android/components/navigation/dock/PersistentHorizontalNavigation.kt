@@ -22,6 +22,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.currentCompositionLocalContext
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.layout.SubcomposeLayout
@@ -81,10 +82,15 @@ private fun HorizontalNavigationPresentation(
     val imeLiftPx = rememberBottomNavigationImeLift(position)
     val settings = rememberGlassSettings()
     val backdrop = LocalGlassBackdrop.current
-    Box(Modifier.fillMaxSize().navigationPresentationInput(interactive)
+    val hasTabs = registration?.present == true
+    val lastVisibleRegistration = remember { mutableStateOf<FloatingDockState.Registration?>(null) }
+    SideEffect {
+        if (hasTabs) lastVisibleRegistration.value = registration
+    }
+    Box(Modifier.fillMaxSize()
         .offset { IntOffset(0, if (top) 0 else bottomOffsetPx().roundToInt() - imeLiftPx()) }
         .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))) {
-        // Destination changes must never restart a visibility/placement animation.
+        // Keep the landscape placement animation independent of route changes.
         AnimatedVisibility(
             visible = !hidden,
             enter = if (top) expandVertically(tween(LANDSCAPE_BARS_ANIMATION_MS, easing = FastOutSlowInEasing), clip = false) + fadeIn()
@@ -94,11 +100,21 @@ private fun HorizontalNavigationPresentation(
             modifier = Modifier.align(if (top) Alignment.TopCenter else Alignment.BottomCenter)
                 .offset { IntOffset(0, if (top) topPx() else 0) },
         ) {
-            if (top && settings.usesGlassMaterial(GlassArea.Nav) && registration?.present == true) {
-                UnifiedTopNavigationGlass(settings, surfaceColor(colorPalette().background1), backdrop, topPx) {
-                    registration.body?.invoke()
+            AnimatedVisibility(
+                visible = hasTabs,
+                enter = fadeIn(tween(180)),
+                exit = fadeOut(tween(180)),
+                modifier = Modifier.navigationPresentationInput(interactive && hasTabs && !hidden),
+            ) {
+                val displayed = if (hasTabs) registration else lastVisibleRegistration.value
+                if (top && settings.usesGlassMaterial(GlassArea.Nav)) {
+                    UnifiedTopNavigationGlass(settings, surfaceColor(colorPalette().background1), backdrop, topPx) {
+                        displayed?.body?.invoke()
+                    }
+                } else {
+                    displayed?.body?.invoke()
                 }
-            } else registration?.body?.invoke()
+            }
         }
     }
 }

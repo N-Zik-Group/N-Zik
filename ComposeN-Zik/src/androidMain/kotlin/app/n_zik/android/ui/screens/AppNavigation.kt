@@ -600,12 +600,13 @@ fun AppNavigation(
         }
 
         composable(
-            route = "${NavRoutes.localPlaylist.name}/{id}",
+            route = "${NavRoutes.localPlaylist.name}/{id}?onDevice={onDevice}",
             arguments = listOf(
                 navArgument(
                     name = "id",
                     builder = { type = NavType.LongType }
-                )
+                ),
+                navArgument("onDevice") { type = NavType.BoolType; defaultValue = false },
             )
         ) { navBackStackEntry ->
             val id = navBackStackEntry.arguments?.getLong("id") ?: 0L
@@ -613,6 +614,7 @@ fun AppNavigation(
             LocalPlaylistScreen(
                 navController = navController,
                 playlistId = id,
+                forceOnDevice = navBackStackEntry.arguments?.getBoolean("onDevice") == true,
                 miniPlayer = miniPlayer
             )
         }

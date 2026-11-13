@@ -177,7 +177,6 @@
     <string name="sync_background_guard_description">Παύση αυτόματου συγχρονισμού όταν η εφαρμογή βρίσκεται στο παρασκήνιο</string>
     <string name="sync_channels">Αυτόματος Συγχρονισμός Εγγεγραμμένων Καναλιών</string>
     <string name="sync_channels_description">Αυτόματη εισαγωγή εγγεγραμμένων καλλιτεχνών από το YouTube Music</string>
-    <string name="sync_completed_with_errors">Ο συγχρονισμός ολοκληρώθηκε με σφάλματα</string>
     <string name="sync_cooldown">Συγχρονισμός Κλήσης</string>
     <string name="sync_cooldown_description">Ελάχιστος χρόνος μεταξύ αυτόματων συγχρονισμών (σε λεπτά)</string>
     <string name="sync_data_with_ytm_account">Συγχρονισμός δεδομένων με λογαριασμό YTM</string>
@@ -204,8 +203,6 @@
     <string name="sync_imported_playlists_automatic_title">Αυτόματος Συγχρονισμός Εισαγόμενων Λιστών Αναπαραγωγής</string>
     <string name="sync_likes">Αυτόματος Συγχρονισμός Χρεωμένων Τραγουδιών</string>
     <string name="sync_likes_description">Αυτόματη εισαγωγή αγαπημένων τραγουδιών από το YouTube Music</string>
-    <string name="sync_no_items">Δεν υπάρχουν στοιχεία για συγχρονισμό</string>
-    <string name="sync_notifications">Συγχρονισμός Ειδοποιήσεων</string>
     <string name="sync_now">Συγχρονισμός Τώρα</string>
     <string name="sync_now_description">Εξαναγκασμός πλήρους συγχρονισμού με τη Μουσική YouTube</string>
     <string name="sync_per_playlist_auto">Αυτόματος Συγχρονισμός Per-Playlist</string>
@@ -236,10 +233,6 @@
     <string name="sync_status_last">Τελευταίος συγχρονισμός: %1$dmin πριν</string>
     <string name="sync_status_never">Ποτέ δεν συγχρονίστηκε</string>
     <string name="sync_status_running">Συγχρονισμός: %1$s</string>
-    <string name="sync_success_notification_albums">Επιτυχής συγχρονισμός όλων των άλμπουμ.</string>
-    <string name="sync_success_notification_artists">Επιτυχής συγχρονισμός όλων των καλλιτεχνών.</string>
-    <string name="sync_success_notification_playlists">Επιτυχής συγχρονισμός όλων των λιστών αναπαραγωγής.</string>
-    <string name="sync_successful">Επιτυχής συγχρονισμός</string>
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">Θέλετε να ξαναπροσπαθήσετε να συγχρονίσετε τα στοιχεία %1$d απέτυχε?</string>
     <string name="sync_running_status">Συγχρονισμός...</string>
@@ -257,10 +250,6 @@
     <string name="sync_youtube_songs_remaining">%1$s Songs Remaining</string>
     <string name="sync_youtube_unlike_failed">Απέτυχε η αντίθεση με το τραγούδι στο YouTube</string>
     <string name="sync_youtube_unlike_success">Το τραγούδι δεν άρεσε στο YouTube</string>
-    <string name="sync_starting_notification">Έναρξη συγχρονισμού...</string>
-    <string name="sync_background_notification">Συγχρονισμός στο παρασκήνιο...</string>
-    <string name="sync_aborted_network_error">Ο συγχρονισμός εγκαταλείφθηκε λόγω σφάλματος δικτύου.</string>
-    <string name="sync_start_service_failed">Αποτυχία έναρξης υπηρεσίας συγχρονισμού</string>
     <string name="sync_fetch_subscribed_channels_failed">Απέτυχε η λήψη καναλιών συνδρομητή</string>
     <string name="sync_fetch_liked_albums_failed">Αποτυχία λήψης άλμπουμ που άρεσε</string>
     <string name="sync_fetch_liked_songs_failed">Αποτυχία ανάκτησης αγαπημένων τραγουδιών</string>

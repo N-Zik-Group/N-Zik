@@ -661,8 +661,8 @@ class PlayerItemMenu private constructor(
                     add(addToFavorite)       // 5
                     add(addToPlaylist)       // 6
                     
-                    add(changeAlbumId)       // 7
-                    add(changeArtistId)      // 8
+                    add(goToAlbumObj)
+                    add(goToArtistObj)
                     
                     add(exportCacheDialog)
                 } else {
@@ -794,8 +794,10 @@ class PlayerItemMenu private constructor(
             updateDialog.Render()
         }
         
-        changeAlbumId.Render()
-        changeArtistId.Render()
+        if (!song.isLocal) {
+            changeAlbumId.Render()
+            changeArtistId.Render()
+        }
         
 
         DialogPresence(visible = showListenOnDialog) {

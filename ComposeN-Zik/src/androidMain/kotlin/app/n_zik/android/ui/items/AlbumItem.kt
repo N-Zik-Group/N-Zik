@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -58,6 +59,8 @@ import app.n_zik.android.uiRoundnessShape
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.ui.components.themed.HeaderIconButton
 import app.n_zik.android.ui.styling.favoritesIcon
+import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceCoverBadge
+import app.n_zik.android.core.ondevice.isDeviceAlbumId
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -102,6 +105,7 @@ fun AlbumItem(
         showInfo = showInfo,
         isYoutubeAlbum = isYoutubeAlbum,
         likeState = likeState,
+        showDeviceBadge = isDeviceAlbumId(album.id),
         thumbnailOverlay = thumbnailOverlay
     )
 }
@@ -165,6 +169,7 @@ fun AlbumItem(
     showInfo: Boolean = true,
     isYoutubeAlbum: Boolean = false,
     likeState: Boolean? = null,
+    showDeviceBadge: Boolean = false,
     thumbnailOverlay: @Composable () -> Unit = {}
 ) {
     ItemContainer(
@@ -200,6 +205,10 @@ fun AlbumItem(
                         contentScale = ContentScale.Fit
                     )
                 }
+            }
+
+            if (showDeviceBadge) {
+                OnDeviceCoverBadge(Modifier.align(Alignment.TopEnd).offset(x = 4.dp), size = 32.dp)
             }
 
             if (likeState != null)

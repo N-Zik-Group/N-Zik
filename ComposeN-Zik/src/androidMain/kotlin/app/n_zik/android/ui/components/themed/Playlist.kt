@@ -5,6 +5,7 @@ import app.n_zik.android.core.database.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -49,6 +50,7 @@ fun Playlist(
     showName: Boolean = true,
     disableScrollingText: Boolean,
     thumbnailUrl: String? = null,
+    coverOverlay: @Composable BoxScope.() -> Unit = {},
 ) {
     val thumbnails by remember {
         Database.songPlaylistMapTable
@@ -111,6 +113,7 @@ fun Playlist(
         // Locked badge as caller overlay so it renders on top of the base
         // composable's dark scrim.
         thumbnailOverlay = {
+            Box(Modifier.fillMaxSize(), content = coverOverlay)
             if (isReadOnlyPlaylistSource(playlist)){
                 Box(
                     modifier = Modifier.fillMaxSize(),

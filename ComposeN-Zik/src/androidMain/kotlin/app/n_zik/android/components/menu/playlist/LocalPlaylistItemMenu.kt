@@ -81,6 +81,7 @@ import app.n_zik.android.utils.syncPushPlaylistKey
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.playlist.ChangePlaylistBrowseIdDialog
@@ -128,6 +129,7 @@ class LocalPlaylistItemMenu private constructor(
     private val navController: NavController,
     playlistPreview: PlaylistPreview,
     override val menuState: MenuState,
+    private val onDevice: Boolean,
     styleState: MutableState<MenuStyle>
 ) : Menu {
 
@@ -139,10 +141,11 @@ class LocalPlaylistItemMenu private constructor(
 
     companion object {
         @Composable
-        operator fun invoke(navController: NavController, playlistPreview: PlaylistPreview): LocalPlaylistItemMenu =
+        operator fun invoke(navController: NavController, playlistPreview: PlaylistPreview, onDevice: Boolean = false): LocalPlaylistItemMenu =
             LocalPlaylistItemMenu(
                 navController = navController,
                 playlistPreview = playlistPreview,
+                onDevice = onDevice,
                 menuState = LocalMenuState.current,
                 styleState = rememberPreference(menuStyleKey, MenuStyle.List)
             )
@@ -151,7 +154,7 @@ class LocalPlaylistItemMenu private constructor(
     lateinit var buttons: List<Button>
     private var offlineMode = false
     private val hasYouTubeLink: Boolean
-        get() = playlistLinkKind(playlistPreview.playlist.browseId) != PlaylistLinkKind.Local
+        get() = !onDevice && playlistLinkKind(playlistPreview.playlist.browseId) != PlaylistLinkKind.Local
     override var menuStyle: MenuStyle by styleState
 
     @Composable
@@ -166,7 +169,7 @@ class LocalPlaylistItemMenu private constructor(
         val mgmtEnd = if (hasYouTubeLink) buttons.size - 1 else buttons.size
         for (i in 2 until mgmtEnd) {
             // idx 3 = download_all (network)
-            if (offlineMode && i == 3) continue
+            if (offlineMode && !onDevice && i == 3) continue
             buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
         }
 
@@ -193,7 +196,7 @@ class LocalPlaylistItemMenu private constructor(
         val mgmtEnd = if (hasYouTubeLink) buttons.size - 1 else buttons.size
         for (i in 2 until mgmtEnd) {
             // idx 3 = download_all (network)
-            if (offlineMode && i == 3) continue
+            if (offlineMode && !onDevice && i == 3) continue
             buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         }
 
@@ -371,7 +374,7 @@ class LocalPlaylistItemMenu private constructor(
         if (!ObserveEntityMenuSnapshot(snapshot, { Database.playlistTable.findById(it) }, menuState::hide)) return
         val observedSongs = remember(snapshot) { Database.songPlaylistMapTable.allSongsOf(snapshot.id) }
             .collectAsStateWithLifecycle<List<Song>?>(null, context = NzikDispatchers.DATA).value
-        SideEffect { songs = observedSongs }
+        SideEffect { songs = if (onDevice) observedSongs?.filter { it.isLocal } else observedSongs }
         val context = LocalContext.current
         offlineMode = OfflineMode.enabled(context)
         val binder = LocalPlayerServiceBinder.current
@@ -519,8 +522,10 @@ class LocalPlaylistItemMenu private constructor(
             list.add(shuffle)
             list.add(playNext)
             list.add(enqueue)
-            list.add(downloadAll)
-            list.add(deleteAll)
+            if (!onDevice) {
+                list.add(downloadAll)
+                list.add(deleteAll)
+            }
             
 
             if (playlistPreview.playlist.supportsInsertionPosition()) list.add(insertionDialog)
@@ -530,7 +535,7 @@ class LocalPlaylistItemMenu private constructor(
                 if (!RewindPlaylists.isRewind(playlistPreview.playlist.name)) {
                     list.add(rename)
                 }
-                if (playlistPreview.playlist.isYoutubePlaylist || playlistPreview.playlist.browseId?.startsWith(MODIFIED_PREFIX) == true || playlistPreview.playlist.browseId?.startsWith("VL") == true) {
+                if (!onDevice && (playlistPreview.playlist.isYoutubePlaylist || playlistPreview.playlist.browseId?.startsWith(MODIFIED_PREFIX) == true || playlistPreview.playlist.browseId?.startsWith("VL") == true)) {
                     list.add(changePlaylistId)
                 }
                 
@@ -543,7 +548,7 @@ class LocalPlaylistItemMenu private constructor(
                         coroutineScope.launch(NzikDispatchers.DATA) {
                             val pushPlaylist = appContext().preferences.getBoolean(syncPushPlaylistKey, false)
                             val syncDirection = getSyncDirection()
-                            if (playlistPreview.playlist.isYoutubePlaylist && playlistLinkKind(playlistPreview.playlist.browseId) == PlaylistLinkKind.YouTubePlaylist && isYouTubeSyncEnabled() && pushPlaylist && syncDirection != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
+                            if (!onDevice && playlistPreview.playlist.isYoutubePlaylist && playlistLinkKind(playlistPreview.playlist.browseId) == PlaylistLinkKind.YouTubePlaylist && isYouTubeSyncEnabled() && pushPlaylist && syncDirection != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
                                 val browseId = playlistPreview.playlist.browseId
                                 if (browseId != null) {
                                     YtMusic.deletePlaylist(browseId.removePrefix("VL"))
@@ -558,7 +563,7 @@ class LocalPlaylistItemMenu private constructor(
             }
             
             // Auto-sync toggle for this playlist
-            if (playlistPreview.playlist.isYoutubePlaylist && playlistLinkKind(playlistPreview.playlist.browseId) == PlaylistLinkKind.YouTubePlaylist && isYouTubeSyncEnabled()) {
+            if (!onDevice && playlistPreview.playlist.isYoutubePlaylist && playlistLinkKind(playlistPreview.playlist.browseId) == PlaylistLinkKind.YouTubePlaylist && isYouTubeSyncEnabled()) {
                 list.add(object : MenuIcon, Descriptive, DynamicColor {
                     override var isFirstColor: Boolean = playlistPreview.playlist.isAutoSync
                     override val iconId: Int = R.drawable.sync
@@ -576,7 +581,7 @@ class LocalPlaylistItemMenu private constructor(
                 })
             }
 
-            if (canRefreshPlaylist(playlistPreview.playlist) && !offlineMode) {
+            if (!onDevice && canRefreshPlaylist(playlistPreview.playlist) && !offlineMode) {
                 list.add(object : MenuIcon, Descriptive, Clickable {
                     override val iconId: Int = R.drawable.sync
                     override val messageId: Int = R.string.sync_action_sync
@@ -589,7 +594,7 @@ class LocalPlaylistItemMenu private constructor(
                 })
             }
 
-            if (canRefreshPlaylist(playlistPreview.playlist)) list.add(refreshOnOpen)
+            if (!onDevice && canRefreshPlaylist(playlistPreview.playlist)) list.add(refreshOnOpen)
 
             if (hasYouTubeLink) {
                 list.add(object : MenuIcon, Descriptive, Clickable {

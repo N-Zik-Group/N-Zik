@@ -122,6 +122,9 @@ interface SongArtistMapTable {
     @Query("SELECT songId, artistId FROM SongArtistMap")
     fun allPairsDirect(): List<SongArtistMap>
 
+    @Query("SELECT * FROM SongArtistMap WHERE substr(artistId, 1, 13) = 'LOCAL_ARTIST_' OR artistId LIKE 'local:%'")
+    fun deviceArtistPairsDirect(): List<SongArtistMap>
+
     /**
      * @param songId the song side of the pair
      *

@@ -163,7 +163,7 @@ internal val SettingsEntryDescriptions = mapOf(
     "network.network_status.image_quality_format" to R.string.network_current_artwork_quality_description,
     "network.quality.audio_quality_format" to R.string.network_stream_audio_quality_description,
     "network.quality.image_quality_format" to R.string.network_artwork_quality_description,
-    "other.on_device.folder_that_will_show_when_you_open_on_device_page" to R.string.library_on_device_start_folder_description,
+    "other.on_device.folder_that_will_show_when_you_open_on_device_page" to R.string.settings_local_music_start_folder_path_description,
     "other.proxy.enable_proxy" to R.string.network_proxy_enabled_description,
     "other.proxy.proxy_host" to R.string.network_proxy_host_description,
     "other.proxy.proxy_mode" to R.string.network_proxy_mode_description,

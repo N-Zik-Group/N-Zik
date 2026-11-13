@@ -97,12 +97,6 @@
         <item quantity="many">Стан профілю імпортовано: профілі %1$d</item>
         <item quantity="other">Стан профілю імпортовано: профілі %1$d</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="one">Failed to sync %1$d album. Go back to the Albums tab to retry.</item>
-        <item quantity="few">Failed to sync %1$d albums. Go back to the Albums tab to retry.</item>
-        <item quantity="many">Failed to sync %1$d albums. Go back to the Albums tab to retry.</item>
-        <item quantity="other">Failed to sync %1$d albums. Go back to the Albums tab to retry.</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="one">Експорт камери %1$d кешований/завантаженої пісні?</item>
         <item quantity="few">Експорт пісень %1$d кешовано/завантажених пісень?</item>
@@ -126,78 +120,6 @@
         <item quantity="few">Користувачів %1$d заблоковано</item>
         <item quantity="many">Користувачів %1$d заблоковано</item>
         <item quantity="other">Користувачів %1$d заблоковано</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="one">Не вдалося синхронізувати виконавця %1$d . Перейдіть назад до вкладки Artists щоб повторити спробу.</item>
-        <item quantity="few">Failed to sync %1$d artists. Go back to the Artists tab to retry.</item>
-        <item quantity="many">Failed to sync %1$d artists. Go back to the Artists tab to retry.</item>
-        <item quantity="other">Failed to sync %1$d artists. Go back to the Artists tab to retry.</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="one">Не вдалося синхронізувати плейлист %1$d зі списку відтворення. Поверніться до вкладки плейлістів, щоб повторити спробу.</item>
-        <item quantity="few">Failed to sync %1$d playlists. Go back to the Playlists tab to retry.</item>
-        <item quantity="many">Failed to sync %1$d playlists. Go back to the Playlists tab to retry.</item>
-        <item quantity="other">Failed to sync %1$d playlists. Go back to the Playlists tab to retry.</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">Ви бажаєте повторити синхронізацію %1$d невдалий?</item>
-        <item quantity="few">Ви бажаєте повторити спробу синхронізації %1$d невдалих елементів?</item>
-        <item quantity="many">Ви бажаєте повторити спробу синхронізації %1$d невдалих елементів?</item>
-        <item quantity="other">Ви бажаєте повторити спробу синхронізації %1$d невдалих елементів?</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="one">Синхронізація художника... (%1$d/%2$d)</item>
-        <item quantity="few">Синхронізація художників... (%1$d/%2$d)</item>
-        <item quantity="many">Синхронізація художників... (%1$d/%2$d)</item>
-        <item quantity="other">Синхронізація художників... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="one">Refreshing %1$d artist</item>
-        <item quantity="few">Оновлення %1$d виконавців</item>
-        <item quantity="many">Оновлення %1$d виконавців</item>
-        <item quantity="other">Оновлення %1$d виконавців</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="one">Не вдалося знайти виконавця %1$d , повторна спроба</item>
-        <item quantity="few">Не вдалося знайти виконавців %1$d повторна спроба</item>
-        <item quantity="many">Не вдалося знайти виконавців %1$d повторна спроба</item>
-        <item quantity="other">Не вдалося знайти виконавців %1$d повторна спроба</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
-        <item quantity="few">Синхронізація альбомів... (%1$d/%2$d)</item>
-        <item quantity="many">Синхронізація альбомів... (%1$d/%2$d)</item>
-        <item quantity="other">Синхронізація альбомів... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">Refreshing %1$d album</item>
-        <item quantity="few">Refreshing %1$d albums</item>
-        <item quantity="many">Refreshing %1$d albums</item>
-        <item quantity="other">Refreshing %1$d albums</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="one">Не вдалося знайти %1$d альбом, знову спроба</item>
-        <item quantity="few">Failed to find %1$d albums, retrying</item>
-        <item quantity="many">Failed to find %1$d albums, retrying</item>
-        <item quantity="other">Failed to find %1$d albums, retrying</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="one">Синхронізація списку відтворення... (%1$d/%2$d)</item>
-        <item quantity="few">Синхронізація списків відтворення... (%1$d/%2$d)</item>
-        <item quantity="many">Синхронізація списків відтворення... (%1$d/%2$d)</item>
-        <item quantity="other">Синхронізація списків відтворення... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="one">Refreshing %1$d playlist</item>
-        <item quantity="few">Refreshing %1$d playlists</item>
-        <item quantity="many">Refreshing %1$d playlists</item>
-        <item quantity="other">Refreshing %1$d playlists</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="one">Не вдалося знайти список відтворення %1$d повторна спроба</item>
-        <item quantity="few">Не вдалося знайти плейлисти %1$d , повторна спроба</item>
-        <item quantity="many">Не вдалося знайти плейлисти %1$d , повторна спроба</item>
-        <item quantity="other">Не вдалося знайти плейлисти %1$d , повторна спроба</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="one">Предмет %1$d очищено</item>

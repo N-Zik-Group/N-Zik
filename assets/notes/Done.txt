@@ -250,3 +250,15 @@ Fixed:
 - fix(player): resume animations when returning to the app
   - Make the foreground state observable so the full player redraws on return in Glass and standard modes.
   - Keep background audio uninterrupted and cover foreground transitions with a regression test.
+
+
+Added:
+- feat(library): add profile-controlled On device browsing for songs, albums, artists and playlists
+  - Request audio permission on activation, retain the scan until a manual refresh, and expose local groups in Android Auto.
+  - Keep device links and artwork edits local, and protect device records during playback and maintenance.
+
+Fixed:
+- fix(navigation): stabilize On device toolbars and restore Home transitions
+  - Preserve each grid's position and reverse the Glass surface transition when returning to the app header.
+- fix(export): retain the album and release year when exporting cached audio
+- refactor(sync): remove the Home sync service and its settings

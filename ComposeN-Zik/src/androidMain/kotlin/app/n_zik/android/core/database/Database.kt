@@ -1,4 +1,7 @@
 package app.n_zik.android.core.database
+import app.n_zik.android.core.ondevice.isDeviceAlbumId
+import app.n_zik.android.core.ondevice.isDeviceArtistId
+import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.utils.playlist.PlaylistInsertionPreferences
 import app.n_zik.android.utils.playlist.PlaylistInsertionPosition
 import app.n_zik.android.utils.playlist.supportsInsertionPosition
@@ -296,6 +299,7 @@ object Database {
 
     suspend fun upsert( songItem: Innertube.SongItem ) {
         val song = songItem.asSong
+        if (song.id.startsWith(LOCAL_KEY_PREFIX)) return
 
         // Phase 1: Read existing data from DB (no lock held)
         val dbSong = songTable.findByIdDirect(song.id)
@@ -315,6 +319,7 @@ object Database {
         val artistDataList = mutableListOf<Triple<String, String?, Artist?>>() // name -> browseId -> existing DB artist
 
         for ((artistName, browseId) in artistEntries) {
+            if (browseId != null && isDeviceArtistId(browseId)) continue
             if (browseId != null) {
                 // The row name is owned by the channel page: an existing row keeps
                 // its stored name (page name or user-modified), a new row starts
@@ -324,12 +329,12 @@ object Database {
                 val artist = artistTable.findByIdDirect(browseId) ?: Artist(id = browseId, name = artistName)
                 artistDataList.add(Triple(artistName, browseId, artist))
             } else {
-                val dbArtistByName = artistTable.findByNameDirect(artistName)
+                val dbArtistByName = artistTable.findByNameDirect(artistName)?.takeUnless { isDeviceArtistId(it.id) }
                 artistDataList.add(Triple(artistName, null, dbArtistByName))
             }
         }
 
-        val dbAlbum = songItem.album?.endpoint?.browseId?.let { albumTable.findByIdDirect(it) }
+        val dbAlbum = songItem.album?.endpoint?.browseId?.takeUnless(::isDeviceAlbumId)?.let { albumTable.findByIdDirect(it) }
 
         // Phase 2: Network calls (NO lock held)
         val artistsToUpsert = mutableListOf<Artist>()
@@ -454,7 +459,7 @@ object Database {
 
             // Upsert album
             songItem.album?.let {
-                val browseId = it.endpoint?.browseId ?: return@let
+                val browseId = it.endpoint?.browseId?.takeUnless(::isDeviceAlbumId) ?: return@let
                 val fetchedAlbum = if (dbAlbum != null) {
                     dbAlbum.copy(
                         title = PropUtils.retainIfModified(dbAlbum.title, it.name),
@@ -524,9 +529,12 @@ object Database {
      * @return number of stale links deleted before the re-insert
      */
     fun reconcileArtistLinks( songId: String, artists: List<Artist> ): Int {
+        if (songId.startsWith(LOCAL_KEY_PREFIX)) return 0
+        val onlineArtists = artists.filterNot { isDeviceArtistId(it.id) }
+        if (artists.isNotEmpty() && onlineArtists.isEmpty()) return 0
         val dropped = songArtistMapTable.deleteBySongId( songId )
-        artistTable.upsert( artists )
-        artists.forEach { artist ->
+        artistTable.upsert(onlineArtists)
+        onlineArtists.forEach { artist ->
             songArtistMapTable.insertIgnore( SongArtistMap( songId, artist.id ) )
         }
         return dropped
@@ -624,8 +632,9 @@ object Database {
             )
         } else newSong.copy(thumbnailUrl = newThumbnailUrl)
         songTable.upsert(mergedSong)
+        if (cleanSongId.startsWith(LOCAL_KEY_PREFIX)) return
 
-        val albumId = mediaItem.mediaMetadata.extras?.getString("albumId")
+        val albumId = mediaItem.mediaMetadata.extras?.getString("albumId")?.takeUnless(::isDeviceAlbumId)
         if (albumId != null) {
             val albumArtwork = (directArtwork ?: recoveredArtwork)?.takeUnless {
                 incomingModified || PersistentQueueArtwork.durableUri(it) == null ||
@@ -721,8 +730,8 @@ object Database {
 //
             // compares that stored name against artistsText - not the raw context name,
             // which can be a different spelling (JP vs romaji) of the same row.
-            artistsNames.zip(artistsIds).forEach { (name, id) ->
-                val existingArtist = artistTable.findByNameDirect(name)
+            artistsNames.zip(artistsIds).filterNot { (_, id) -> isDeviceArtistId(id) }.forEach { (name, id) ->
+                val existingArtist = artistTable.findByNameDirect(name)?.takeUnless { isDeviceArtistId(it.id) }
                 val targetArtistId = if (existingArtist != null) {
                     // Row resolved by name: its stored name IS the context name.
                     resolvedArtistNames += name
@@ -760,7 +769,7 @@ object Database {
             }
             // No browse IDs but we have names: try database by name first
             artistsNames.forEach { name ->
-                val existingArtist = artistTable.findByNameDirect(name)
+                val existingArtist = artistTable.findByNameDirect(name)?.takeUnless { isDeviceArtistId(it.id) }
                 if (existingArtist != null) {
                     songArtistMapTable.insertIgnore(SongArtistMap(cleanSongId, existingArtist.id))
                 } else if (autoFix) {
@@ -850,6 +859,7 @@ object Database {
 
     /** Ensures [album] and [song] exist, then maps them; [position] -1 (default) maps to the next free position. */
     fun mapIgnore( album: Album, song: Song, position: Int = -1 ) {
+        if (isDeviceAlbumId(album.id) != song.id.startsWith(LOCAL_KEY_PREFIX)) return
         albumTable.insertIgnore( album )
         songTable.insertIgnore( song )
         songAlbumMapTable.map( song.id, album.id, position )
@@ -862,10 +872,11 @@ object Database {
 
     /** Ensures [artist] and each [songs] entry exist, then maps them. */
     fun mapIgnore( artist: Artist, vararg songs: Song ) {
-        if( songs.isEmpty() ) return
+        val compatibleSongs = songs.filter { it.id.startsWith(LOCAL_KEY_PREFIX) == isDeviceArtistId(artist.id) }
+        if (compatibleSongs.isEmpty()) return
 
         artistTable.insertIgnore( artist )
-        songs.forEach {
+        compatibleSongs.forEach {
             songTable.insertIgnore( it )
             songArtistMapTable.insertIgnore(
                 SongArtistMap(it.id, artist.id)
@@ -892,7 +903,10 @@ object Database {
                 playlist.id
             } else playlistTable.insert(playlist)
             val existingIds = songPlaylistMapTable.songIdsInPlaylist(pId).toHashSet()
-            val newSongs = songs.distinctBy(Song::id).filterNot { it.id in existingIds }
+            val remotePlaylist = isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)
+            val newSongs = songs.distinctBy(Song::id).filter {
+                it.id !in existingIds && (!remotePlaylist || !it.id.startsWith(LOCAL_KEY_PREFIX))
+            }
             if (newSongs.isEmpty()) return@syncTransaction
 
             if (position == PlaylistInsertionPosition.Beginning) {

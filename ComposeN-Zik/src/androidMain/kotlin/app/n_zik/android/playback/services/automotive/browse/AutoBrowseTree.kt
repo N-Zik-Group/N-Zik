@@ -15,6 +15,7 @@ import app.n_zik.android.playback.services.automotive.browse.handlers.AlbumsBrow
 import app.n_zik.android.playback.services.automotive.browse.handlers.ArtistDetailHandler
 import app.n_zik.android.playback.services.automotive.browse.handlers.ArtistsBrowseHandler
 import app.n_zik.android.playback.services.automotive.browse.handlers.BrowseHandler
+import app.n_zik.android.playback.services.automotive.browse.handlers.AutoDeviceGroupsBrowseHandler
 import app.n_zik.android.playback.services.automotive.browse.handlers.PlaylistDetailHandler
 import app.n_zik.android.playback.services.automotive.browse.handlers.PlaylistsBrowseHandler
 import app.n_zik.android.playback.services.automotive.browse.handlers.QuickPicksBrowseHandler
@@ -43,12 +44,14 @@ class AutoBrowseTree(
     private val visibleLists = linkedMapOf<BrowseKey, List<MediaItem>>()
 
     private val searchHandler = SearchBrowseHandler()
+    internal val deviceGroupsHandler = AutoDeviceGroupsBrowseHandler()
     private val handlers: List<BrowseHandler> = listOf(
         RootBrowseHandler(),
         QuickPicksBrowseHandler(),
         SongsBrowseHandler(),
-        ArtistsBrowseHandler(),
-        AlbumsBrowseHandler(),
+        deviceGroupsHandler,
+        ArtistsBrowseHandler(deviceGroupsHandler),
+        AlbumsBrowseHandler(deviceGroupsHandler),
         PlaylistsBrowseHandler(),
         searchHandler,
         ArtistDetailHandler(),
@@ -178,7 +181,7 @@ class AutoBrowseTree(
         if (mediaId == AutoSuggestedQueueLoader.ROOT_ID) return rootItem(suggested = true)
         RootBrowseHandler().getChildren(PlayerServiceModern.ROOT, context, database, downloadHelper, binder)
             .firstOrNull { it.mediaId == mediaId }?.let { return it }
-        val parent = STATIC_PARENTS[mediaId] ?: return null
+        val parent = STATIC_PARENTS[mediaId] ?: deviceGroupsHandler.detailParent(mediaId) ?: return null
         return handlers.firstOrNull { it.handles(parent) }
             ?.getChildren(parent, context, database, downloadHelper, binder)
             ?.firstOrNull { it.mediaId == mediaId && it.mediaMetadata.isBrowsable == true }
@@ -197,9 +200,9 @@ class AutoBrowseTree(
                 AutoSessionConstants.ID_SONGS_CACHED, AutoSessionConstants.ID_SONGS_TOP,
                 AutoSessionConstants.ID_SONGS_ONDEVICE).forEach { put(it, PlayerServiceModern.SONG) }
             listOf(AutoSessionConstants.ID_ARTISTS_LIBRARY, AutoSessionConstants.ID_ARTISTS_FAVORITES,
-                AutoSessionConstants.ID_ARTISTS_DISLIKED).forEach { put(it, PlayerServiceModern.ARTIST) }
+                AutoSessionConstants.ID_ARTISTS_DISLIKED, AutoSessionConstants.ID_ARTISTS_ONDEVICE).forEach { put(it, PlayerServiceModern.ARTIST) }
             listOf(AutoSessionConstants.ID_ALBUMS_LIBRARY, AutoSessionConstants.ID_ALBUMS_FAVORITES,
-                AutoSessionConstants.ID_ALBUMS_DISLIKED).forEach { put(it, PlayerServiceModern.ALBUM) }
+                AutoSessionConstants.ID_ALBUMS_DISLIKED, AutoSessionConstants.ID_ALBUMS_ONDEVICE).forEach { put(it, PlayerServiceModern.ALBUM) }
             listOf(AutoSessionConstants.ID_PLAYLISTS_LOCAL, AutoSessionConstants.ID_PLAYLISTS_PINNED,
                 AutoSessionConstants.ID_PLAYLISTS_REWIND, AutoSessionConstants.ID_PLAYLISTS_YT)
                 .forEach { put(it, PlayerServiceModern.PLAYLIST) }

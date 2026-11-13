@@ -114,6 +114,8 @@ object FfmpegModule {
         return state
     }
 
+    internal fun loadIfInstalled(): Boolean = manager.installedDir(definition) != null && ensureLoaded()
+
     /**
      * FFmpeg's own version banner read from the LOCAL module: version, build
      * configuration and per-library versions from the `-version` output.

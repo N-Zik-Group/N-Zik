@@ -22,6 +22,7 @@ import timber.log.Timber
 import app.n_zik.android.utils.homeArtistsDislikedToolbarOrderKey
 import app.n_zik.android.utils.homeArtistsFavoritesToolbarOrderKey
 import app.n_zik.android.utils.homeArtistsLibraryToolbarOrderKey
+import app.n_zik.android.utils.homeArtistsOnDeviceToolbarOrderKey
 import app.n_zik.android.utils.homeArtistsToolbarOrderKey
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
@@ -33,8 +34,8 @@ import app.n_zik.android.components.settings.common.SettingsNestedOption
 object HomeArtistsToolbarSettingsDialog : ContentFramedDialog {
 
     /** Exact searchable options from the same definitions used by this dialog. */
-    internal fun searchOptions(): List<SettingsNestedOption> = listOf("lib" to R.string.common_option_all, "favs" to R.string.library_favorites_title, "disliked" to R.string.library_disliked_title)
-        .flatMapIndexed { index, (tab, label) -> allButtonIds.map { id ->
+    internal fun searchOptions(): List<SettingsNestedOption> = listOf("lib" to R.string.common_option_all, "favs" to R.string.library_favorites_title, "disliked" to R.string.library_disliked_title, "dev" to R.string.library_on_device_title)
+        .flatMapIndexed { index, (tab, label) -> availableButtonIds(tab).map { id ->
             SettingsNestedOption("${getTabPrefix(tab)}_$id", searchLabelResources.getValue(id), index, label)
         } }
 
@@ -61,7 +62,13 @@ object HomeArtistsToolbarSettingsDialog : ContentFramedDialog {
 
     private val lockedIds = setOf("sort", "sync", "position_lock")
 
+    internal val onDeviceButtonIds = allButtonIds.filterNot { it in setOf("sync", "export_dialog") }
+
+    private fun availableButtonIds(tab: String): List<String> =
+        if (tab == "dev") onDeviceButtonIds else allButtonIds
+
     private fun getTabPrefix(tab: String): String = when (tab) {
+        "dev" -> "dev"
         "favs" -> "favs"
         "disliked" -> "disliked"
         else -> "all"
@@ -70,7 +77,7 @@ object HomeArtistsToolbarSettingsDialog : ContentFramedDialog {
     override val dialogTitle: String @Composable get() = stringResource(R.string.settings_dialog_toolbar_title_format, stringResource(R.string.library_artists_title))
     override var isActive: Boolean by mutableStateOf(false)
 
-    private fun parseOrder(s: String): List<String> {
+    private fun parseOrder(s: String, allButtonIds: List<String>): List<String> {
         if (s.isBlank()) return allButtonIds
         return try {
             val a = JSONArray(s)
@@ -95,14 +102,15 @@ object HomeArtistsToolbarSettingsDialog : ContentFramedDialog {
         val tabs = listOf(
             "lib" to homeArtistsLibraryToolbarOrderKey,
             "favs" to homeArtistsFavoritesToolbarOrderKey,
-            "disliked" to homeArtistsDislikedToolbarOrderKey
+            "disliked" to homeArtistsDislikedToolbarOrderKey,
+            "dev" to homeArtistsOnDeviceToolbarOrderKey
         )
 
         var selectedTabIndex by remember { mutableStateOf(0) }
 
         var workingOrders by remember {
             mutableStateOf(
-                tabs.associate { (tab, key) -> tab to parseOrder(prefs.getString(key, "") ?: "").toMutableList() }.toMutableMap()
+                tabs.associate { (tab, key) -> tab to parseOrder(prefs.getString(key, "") ?: "", availableButtonIds(tab)).toMutableList() }.toMutableMap()
             )
         }
 
@@ -110,7 +118,7 @@ object HomeArtistsToolbarSettingsDialog : ContentFramedDialog {
             mutableStateOf(
                 tabs.associate { (tab, _) ->
                     val tp = getTabPrefix(tab)
-                    tab to allButtonIds.associateWith { id ->
+                    tab to availableButtonIds(tab).associateWith { id ->
                         prefs.getBoolean("${tp}_art_$id", true)
                     }.toMutableMap()
                 }.toMutableMap()
@@ -180,7 +188,7 @@ object HomeArtistsToolbarSettingsDialog : ContentFramedDialog {
             onDismiss = ::hideDialog,
             bodyHeader = {
                 SettingsDialogTabRow(
-                    labels = tabs.map { tab -> stringResource(when (tab.first) { "favs" -> R.string.library_favorites_title; "disliked" -> R.string.library_disliked_title; else -> R.string.common_option_all }) },
+                    labels = tabs.map { tab -> stringResource(when (tab.first) { "dev" -> R.string.library_on_device_title; "favs" -> R.string.library_favorites_title; "disliked" -> R.string.library_disliked_title; else -> R.string.common_option_all }) },
                     selectedTabIndex = selectedTabIndex,
                     onTabSelected = { selectedTabIndex = it },
                 )
@@ -197,9 +205,10 @@ object HomeArtistsToolbarSettingsDialog : ContentFramedDialog {
                 workingToggles = workingToggles.toMutableMap().apply { this[currentTabKey] = m }
             },
             onReset = {
-                val m = allButtonIds.associateWith { true }.toMutableMap()
+                val availableIds = availableButtonIds(currentTabKey)
+                val m = availableIds.associateWith { true }.toMutableMap()
                 workingToggles = workingToggles.toMutableMap().apply { this[currentTabKey] = m }
-                workingOrders = workingOrders.toMutableMap().apply { this[currentTabKey] = allButtonIds.toMutableList() }
+                workingOrders = workingOrders.toMutableMap().apply { this[currentTabKey] = availableIds.toMutableList() }
             },
             onCancel = { hideDialog() },
             onConfirm = {
@@ -230,14 +239,16 @@ object HomeArtistsToolbarSettingsDialog : ContentFramedDialog {
         val tabs = listOf(
             "favs" to homeArtistsFavoritesToolbarOrderKey,
             "all" to homeArtistsToolbarOrderKey,
-            "disliked" to homeArtistsDislikedToolbarOrderKey
+            "disliked" to homeArtistsDislikedToolbarOrderKey,
+            "dev" to homeArtistsOnDeviceToolbarOrderKey
         )
         tabs.forEach { (tab, key) ->
             val tp = getTabPrefix(tab)
-            allButtonIds.forEach { id ->
+            val availableIds = availableButtonIds(tab)
+            availableIds.forEach { id ->
                 edit.putBoolean("${tp}_art_$id", true)
             }
-            edit.putString(key, serializeOrder(allButtonIds))
+            edit.putString(key, serializeOrder(availableIds))
         }
         edit.apply()
     }

@@ -72,7 +72,7 @@ internal suspend fun loadAutoLibraryPlaylists(
 ): List<PlaylistPreview> {
     val scope = autoLibraryPlaylistScope(context, parentId)
     val (sortKey, orderKey) = when (scope.type) {
-        PlaylistsType.Playlist -> Preference.HOME_LIBRARY_PLAYLIST_SORT_BY to Preference.HOME_LIBRARY_PLAYLIST_SORT_ORDER
+        PlaylistsType.Playlist, PlaylistsType.OnDevice -> Preference.HOME_LIBRARY_PLAYLIST_SORT_BY to Preference.HOME_LIBRARY_PLAYLIST_SORT_ORDER
         PlaylistsType.YTPlaylist -> Preference.HOME_LIBRARY_YT_PLAYLIST_SORT_BY to Preference.HOME_LIBRARY_YT_PLAYLIST_SORT_ORDER
         PlaylistsType.PinnedPlaylist -> Preference.HOME_LIBRARY_PINNED_PLAYLIST_SORT_BY to Preference.HOME_LIBRARY_PINNED_PLAYLIST_SORT_ORDER
         PlaylistsType.MonthlyPlaylist -> Preference.HOME_LIBRARY_MONTHLY_PLAYLIST_SORT_BY to Preference.HOME_LIBRARY_MONTHLY_PLAYLIST_SORT_ORDER

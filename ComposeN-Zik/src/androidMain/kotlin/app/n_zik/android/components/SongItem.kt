@@ -380,8 +380,14 @@ fun SongItem(
 
                 Spacer( Modifier.padding(horizontal = 4.dp) )
 
-                // Show download icon when song is NOT local
-                if( !song.isLocal ) {
+                if (song.isLocal) {
+                    Icon(
+                        painter = painterResource(R.drawable.folder),
+                        contentDescription = stringResource(R.string.library_on_device_title),
+                        tint = colorPalette.textSecondary,
+                        modifier = Modifier.size(20.dp),
+                    )
+                } else {
                     val downloadStatesMap = LocalDownloadStatesMap.current
                     val cacheState = downloadStatesMap[song.id] ?: downloadedStateMedia( song.id )
                     val downloadState = getDownloadState( song.id )

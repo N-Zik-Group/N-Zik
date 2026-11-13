@@ -2,7 +2,7 @@
 package app.n_zik.android.components.ui.screens.album
 
 import app.n_zik.android.appTextResources
-import app.n_zik.android.components.glass.GlassArtworkBackdrop
+import app.n_zik.android.components.ui.screens.CollectionArtworkHeader
 import app.n_zik.android.components.ui.screens.CollectionPageStatus
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import android.content.Intent
@@ -101,12 +101,9 @@ import app.n_zik.android.models.Song
 import app.n_zik.android.models.SongAlbumMap
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.navigation.header.TabToolBar
-import app.n_zik.android.ui.components.themed.AutoResizeText
 import app.n_zik.android.ui.components.themed.Enqueue
-import app.n_zik.android.ui.components.themed.FontSizeRange
 import app.n_zik.android.components.ui.HeaderIconAction
 import app.n_zik.android.components.ui.CollectionButtonToolbar
-import app.n_zik.android.components.glass.GlassToolbarRow
 import app.n_zik.android.ui.components.themed.ItemsList
 import app.n_zik.android.components.ui.FullPageLoader
 import app.n_zik.android.ui.components.themed.MultiFloatingActionsContainer
@@ -635,45 +632,7 @@ fun AlbumDetails(
                             .background(colorPalette().background0)
                     ) {
                         item("header") {
-                            GlassArtworkBackdrop(hasArtwork = !isLandscape) { artworkBackdrop ->
-                            Box(Modifier.fillMaxWidth()) {
-                                if (!isLandscape)
-                                    Image(
-                                        painter = thumbnailPainter,
-                                        contentDescription = null,
-                                        contentScale = ContentScale.FillWidth,
-                                        modifier = Modifier.then(artworkBackdrop).aspectRatio(4f / 3)
-                                            .fillMaxWidth()
-                                            .align(Alignment.Center)
-                                            .fadingEdge(
-                                                top = WindowInsets.systemBars
-                                                    .asPaddingValues()
-                                                    .calculateTopPadding() + Dimensions.fadeSpacingTop,
-                                                bottom = Dimensions.fadeSpacingBottom
-                                            )
-                                    )
-
-                                AutoResizeText(
-                                    text = cleanPrefix(album?.title ?: "..."),
-                                    style = typography().l.semiBold,
-                                    fontSizeRange = FontSizeRange(32.sp, 38.sp),
-                                    fontWeight = typography().l.semiBold.fontWeight,
-                                    fontFamily = typography().l.semiBold.fontFamily,
-                                    color = typography().l.semiBold.color,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.align(Alignment.BottomCenter)
-                                        .padding(horizontal = 30.dp)
-                                        .conditional(!disableScrollingText) {
-                                            basicMarquee(iterations = Int.MAX_VALUE)
-                                        }
-                                )
-
-                                GlassToolbarRow(1,
-                                    modifier = Modifier.align(Alignment.TopEnd)
-                                        .padding(top = 5.dp, end = 5.dp),
-                                ) {
+                            CollectionArtworkHeader(album?.title ?: "...", thumbnailPainter, disableScrollingText) {
                                 HeaderIconAction(
                                     icon = R.drawable.share_social,
                                     color = colorPalette().text,
@@ -692,8 +651,6 @@ fun AlbumDetails(
                                         }
                                     }
                                 )
-                                }
-                            }
                             }
                         }
 

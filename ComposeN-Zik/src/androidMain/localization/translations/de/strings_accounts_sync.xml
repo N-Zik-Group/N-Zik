@@ -177,7 +177,6 @@
     <string name="sync_background_guard_description">Auto-Sync pausieren, wenn die App im Hintergrund ist</string>
     <string name="sync_channels">Abonnierte Kanäle automatisch synchronisieren</string>
     <string name="sync_channels_description">Abonnierte Künstler von YouTube Musik automatisch importieren</string>
-    <string name="sync_completed_with_errors">Synchronisation mit Fehlern abgeschlossen</string>
     <string name="sync_cooldown">Abklingzeit</string>
     <string name="sync_cooldown_description">Minimale Zeit zwischen Auto-Synchronisation (in Minuten)</string>
     <string name="sync_data_with_ytm_account">Daten mit YTM-Konto synchronisieren</string>
@@ -204,8 +203,6 @@
     <string name="sync_imported_playlists_automatic_title">Importierte Wiedergabelisten automatisch synchronisieren</string>
     <string name="sync_likes">Favoriten-Songs automatisch synchronisieren</string>
     <string name="sync_likes_description">Songs: \"Favoriten\" von YouTube Musik automatisch importieren</string>
-    <string name="sync_no_items">Keine Elemente zum Synchronisieren</string>
-    <string name="sync_notifications">Sychronisierungsbenachrichtigung</string>
     <string name="sync_now">Jetzt synchronisieren</string>
     <string name="sync_now_description">Eine vollständige Synchronisation mit YouTube Musik erzwingen</string>
     <string name="sync_per_playlist_auto">Per-Playlist Auto-Sync</string>
@@ -236,10 +233,6 @@
     <string name="sync_status_last">Letzter Sync: %1$dMin</string>
     <string name="sync_status_never">Niemals synchronisiert</string>
     <string name="sync_status_running">Synchronisierung: %1$s</string>
-    <string name="sync_success_notification_albums">Alle Alben erfolgreich synchronisiert.</string>
-    <string name="sync_success_notification_artists">Alle Künstler erfolgreich synchronisiert.</string>
-    <string name="sync_success_notification_playlists">Alle Playlisten erfolgreich synchronisiert.</string>
-    <string name="sync_successful">Synchronisierung erfolgreich</string>
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">Möchten Sie erneut versuchen, die fehlgeschlagenen %1$d Elemente zu synchronisieren?</string>
     <string name="sync_running_status">Synchronisiere...</string>
@@ -257,10 +250,6 @@
     <string name="sync_youtube_songs_remaining">%1$s Lieder verbleibend</string>
     <string name="sync_youtube_unlike_failed">\"Gefällt mir\" des Titels konnte auf YouTube nicht entfernt werden</string>
     <string name="sync_youtube_unlike_success">Der Titel ist auf YouTube nicht mit \"Gefällt mir\" markiert</string>
-    <string name="sync_starting_notification">Synchronisierung starten...</string>
-    <string name="sync_background_notification">Im Hintergrund synchronisieren...</string>
-    <string name="sync_aborted_network_error">Synchronisation wegen Netzwerkfehlers abgebrochen.</string>
-    <string name="sync_start_service_failed">Fehler beim Starten des Sync-Dienstes</string>
     <string name="sync_fetch_subscribed_channels_failed">Fehler beim Abrufen der abonnierten Kanäle</string>
     <string name="sync_fetch_liked_albums_failed">Fehler beim Abrufen von gefundenen Alben</string>
     <string name="sync_fetch_liked_songs_failed">Fehler beim Abrufen von Lieblingsliedern</string>

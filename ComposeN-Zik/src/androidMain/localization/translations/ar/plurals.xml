@@ -129,14 +129,6 @@
         <item quantity="many">حالة الملف الشخصي المستورد: %1$d ملفات شخصية</item>
         <item quantity="other">حالة الملف الشخصي المستورد: %1$d ملفات شخصية</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="zero">فشل مزامنة الألبومات %1$d . العودة إلى علامة التبويب الألبومات لإعادة المحاولة.</item>
-        <item quantity="one">فشل مزامنة الألبوم %1$d . العودة إلى علامة التبويب الألبومات لإعادة المحاولة.</item>
-        <item quantity="two">فشل مزامنة الألبومات %1$d . العودة إلى علامة التبويب الألبومات لإعادة المحاولة.</item>
-        <item quantity="few">فشل مزامنة الألبومات %1$d . العودة إلى علامة التبويب الألبومات لإعادة المحاولة.</item>
-        <item quantity="many">فشل مزامنة الألبومات %1$d . العودة إلى علامة التبويب الألبومات لإعادة المحاولة.</item>
-        <item quantity="other">فشل مزامنة الألبومات %1$d . العودة إلى علامة التبويب الألبومات لإعادة المحاولة.</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="zero">تصدير %1$d أغاني تم تنزيلها مؤقتاً؟</item>
         <item quantity="one">تصدير أغنية %1$d مؤقتاً/تم تنزيلها؟</item>
@@ -168,102 +160,6 @@
         <item quantity="few">تم حظر %1$d مستخدمين</item>
         <item quantity="many">تم حظر %1$d مستخدمين</item>
         <item quantity="other">تم حظر %1$d مستخدمين</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="zero">فشل مزامنة الفنانين %1$d . العودة إلى علامة التبويب للفنانين لإعادة المحاولة.</item>
-        <item quantity="one">فشل مزامنة الفنان %1$d . العودة إلى علامة التبويب للفنانين لإعادة المحاولة.</item>
-        <item quantity="two">فشل مزامنة الفنانين %1$d . العودة إلى علامة التبويب للفنانين لإعادة المحاولة.</item>
-        <item quantity="few">فشل مزامنة الفنانين %1$d . العودة إلى علامة التبويب للفنانين لإعادة المحاولة.</item>
-        <item quantity="many">فشل مزامنة الفنانين %1$d . العودة إلى علامة التبويب للفنانين لإعادة المحاولة.</item>
-        <item quantity="other">فشل مزامنة الفنانين %1$d . العودة إلى علامة التبويب للفنانين لإعادة المحاولة.</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="zero">فشل مزامنة قوائم التشغيل %1$d . العودة إلى علامة التبويب قوائم التشغيل لإعادة المحاولة.</item>
-        <item quantity="one">فشل مزامنة قائمة التشغيل %1$d . العودة إلى علامة التبويب قوائم التشغيل لإعادة المحاولة.</item>
-        <item quantity="two">فشل مزامنة قوائم التشغيل %1$d . العودة إلى علامة التبويب قوائم التشغيل لإعادة المحاولة.</item>
-        <item quantity="few">فشل مزامنة قوائم التشغيل %1$d . العودة إلى علامة التبويب قوائم التشغيل لإعادة المحاولة.</item>
-        <item quantity="many">فشل مزامنة قوائم التشغيل %1$d . العودة إلى علامة التبويب قوائم التشغيل لإعادة المحاولة.</item>
-        <item quantity="other">فشل مزامنة قوائم التشغيل %1$d . العودة إلى علامة التبويب قوائم التشغيل لإعادة المحاولة.</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="zero">هل تريد إعادة محاولة مزامنة العناصر الفاشلة %1$d؟</item>
-        <item quantity="one">هل تريد إعادة محاولة مزامنة العنصر %1$d الفاشل؟</item>
-        <item quantity="two">هل تريد إعادة محاولة مزامنة العناصر الفاشلة %1$d؟</item>
-        <item quantity="few">هل تريد إعادة محاولة مزامنة العناصر الفاشلة %1$d؟</item>
-        <item quantity="many">هل تريد إعادة محاولة مزامنة العناصر الفاشلة %1$d؟</item>
-        <item quantity="other">هل تريد إعادة محاولة مزامنة العناصر الفاشلة %1$d؟</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="zero">مزامنة الفنانين... (%1$d/%2$d)</item>
-        <item quantity="one">مزامنة الفنان... (%1$d/%2$d)</item>
-        <item quantity="two">مزامنة الفنانين... (%1$d/%2$d)</item>
-        <item quantity="few">مزامنة الفنانين... (%1$d/%2$d)</item>
-        <item quantity="many">مزامنة الفنانين... (%1$d/%2$d)</item>
-        <item quantity="other">مزامنة الفنانين... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="zero">تحديث فنانين %1$d</item>
-        <item quantity="one">تحديث الفنان %1$d</item>
-        <item quantity="two">تحديث فنانين %1$d</item>
-        <item quantity="few">تحديث فنانين %1$d</item>
-        <item quantity="many">تحديث فنانين %1$d</item>
-        <item quantity="other">تحديث فنانين %1$d</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="zero">فشل العثور على فنانين %1$d ، إعادة المحاولة</item>
-        <item quantity="one">فشل في العثور على فنان %1$d ، إعادة المحاولة</item>
-        <item quantity="two">فشل العثور على فنانين %1$d ، إعادة المحاولة</item>
-        <item quantity="few">فشل العثور على فنانين %1$d ، إعادة المحاولة</item>
-        <item quantity="many">فشل العثور على فنانين %1$d ، إعادة المحاولة</item>
-        <item quantity="other">فشل العثور على فنانين %1$d ، إعادة المحاولة</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="zero">مزامنة الألبومات... (%1$d/%2$d)</item>
-        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
-        <item quantity="two">مزامنة الألبومات... (%1$d/%2$d)</item>
-        <item quantity="few">مزامنة الألبومات... (%1$d/%2$d)</item>
-        <item quantity="many">مزامنة الألبومات... (%1$d/%2$d)</item>
-        <item quantity="other">مزامنة الألبومات... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="zero">تحديث ألبومات %1$d</item>
-        <item quantity="one">تحديث ألبوم %1$d</item>
-        <item quantity="two">تحديث ألبومات %1$d</item>
-        <item quantity="few">تحديث ألبومات %1$d</item>
-        <item quantity="many">تحديث ألبومات %1$d</item>
-        <item quantity="other">تحديث ألبومات %1$d</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="zero">فشل العثور على ألبومات %1$d ، إعادة المحاولة</item>
-        <item quantity="one">فشل في العثور على ألبوم %1$d ، إعادة المحاولة</item>
-        <item quantity="two">فشل العثور على ألبومات %1$d ، إعادة المحاولة</item>
-        <item quantity="few">فشل العثور على ألبومات %1$d ، إعادة المحاولة</item>
-        <item quantity="many">فشل العثور على ألبومات %1$d ، إعادة المحاولة</item>
-        <item quantity="other">فشل العثور على ألبومات %1$d ، إعادة المحاولة</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="zero">مزامنة قوائم التشغيل... (%1$d/%2$d)</item>
-        <item quantity="one">مزامنة قائمة التشغيل... (%1$d/%2$d)</item>
-        <item quantity="two">مزامنة قوائم التشغيل... (%1$d/%2$d)</item>
-        <item quantity="few">مزامنة قوائم التشغيل... (%1$d/%2$d)</item>
-        <item quantity="many">مزامنة قوائم التشغيل... (%1$d/%2$d)</item>
-        <item quantity="other">مزامنة قوائم التشغيل... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="zero">تحديث قوائم التشغيل %1$d</item>
-        <item quantity="one">تحديث قائمة التشغيل %1$d</item>
-        <item quantity="two">تحديث قوائم التشغيل %1$d</item>
-        <item quantity="few">تحديث قوائم التشغيل %1$d</item>
-        <item quantity="many">تحديث قوائم التشغيل %1$d</item>
-        <item quantity="other">تحديث قوائم التشغيل %1$d</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="zero">فشل العثور على قائمة تشغيل %1$d ، إعادة المحاولة</item>
-        <item quantity="one">فشل العثور على قائمة تشغيل %1$d ، إعادة المحاولة</item>
-        <item quantity="two">فشل العثور على قائمة تشغيل %1$d ، إعادة المحاولة</item>
-        <item quantity="few">فشل العثور على قائمة تشغيل %1$d ، إعادة المحاولة</item>
-        <item quantity="many">فشل العثور على قائمة تشغيل %1$d ، إعادة المحاولة</item>
-        <item quantity="other">فشل العثور على قائمة تشغيل %1$d ، إعادة المحاولة</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="zero">تم تنظيف العناصر %1$d</item>

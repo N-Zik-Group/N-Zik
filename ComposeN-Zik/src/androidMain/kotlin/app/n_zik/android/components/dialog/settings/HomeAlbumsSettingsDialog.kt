@@ -15,6 +15,7 @@ import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.utils.showFavoritesAlbumKey
+import app.n_zik.android.utils.showOnDeviceAlbumsKey
 import app.n_zik.android.utils.showDislikedAlbumKey
 import app.n_zik.android.utils.excludeDislikedAlbumsKey
 import app.n_zik.android.enums.DislikeMode
@@ -23,8 +24,9 @@ import app.n_zik.android.core.utils.Toaster
 import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import android.content.Context
+import app.n_zik.android.utils.preferences
 
-private val albumsDefaultOrder = listOf("all", "favorites", "disliked")
+private val albumsDefaultOrder = listOf("all", "favorites", "disliked", "on_device")
 
 object HomeAlbumsSettingsDialog : ContentFramedDialog {
 
@@ -34,6 +36,7 @@ object HomeAlbumsSettingsDialog : ContentFramedDialog {
     private val searchLabelResources = mapOf(
         "all" to R.string.common_option_all,
         "favorites" to R.string.library_favorites_title,
+        "on_device" to R.string.library_on_device_title,
         "disliked" to R.string.library_disliked_title,
     )
     override val dialogTitle: String @Composable get() = stringResource(R.string.home_albums_settings)
@@ -48,11 +51,12 @@ object HomeAlbumsSettingsDialog : ContentFramedDialog {
     @Composable
     override fun DialogBody() {
         val ctx = LocalContext.current
-        val prefs = remember { ctx.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
+        val prefs = remember { ctx.preferences }
         var workingOrder by remember { mutableStateOf(parseOrder(prefs.getString(homeAlbumsOrderKey, "") ?: "").toMutableList()) }
 
         val prefKeys = mapOf(
-            "favorites" to showFavoritesAlbumKey
+            "favorites" to showFavoritesAlbumKey,
+            "on_device" to showOnDeviceAlbumsKey
         )
 
         var workingToggles by remember {
@@ -83,6 +87,7 @@ object HomeAlbumsSettingsDialog : ContentFramedDialog {
         val items = workingOrder.map { id ->
             when (id) {
                 "all" -> ToggleItem(id, R.drawable.album, allLabel, "always_true_albums", true)
+                "on_device" -> ToggleItem(id, R.drawable.folder, stringResource(R.string.library_on_device_title), showOnDeviceAlbumsKey, true)
                 "favorites" -> ToggleItem(id, R.drawable.bookmark, favLabel, showFavoritesAlbumKey, true)
                 "disliked" -> ToggleItem(id, R.drawable.bookmark_slash, dislikedLabel, showDislikedAlbumKey, true)
                 else -> null
@@ -125,9 +130,10 @@ object HomeAlbumsSettingsDialog : ContentFramedDialog {
     }
 
     fun reset(context: Context) {
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val prefs = context.preferences
         prefs.edit()
             .putString(homeAlbumsOrderKey, serializeOrder(albumsDefaultOrder))
+            .putBoolean(showOnDeviceAlbumsKey, true)
             .putBoolean(showFavoritesAlbumKey, true)
             .putString(excludeDislikedAlbumsKey, DislikeMode.Enabled.name)
             .apply()

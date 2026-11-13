@@ -177,7 +177,6 @@
     <string name="sync_background_guard_description">Uygulama arka planda olduğunda otomatik senkronizasyonu duraklat</string>
     <string name="sync_channels">Abone Olunan Kanalları Otomatik Senkronize Et</string>
     <string name="sync_channels_description">YouTube Music\'ten abone olduğunuz sanatçıları otomatik olarak içe aktar</string>
-    <string name="sync_completed_with_errors">Senkronizasyon hatalarla tamamlandı</string>
     <string name="sync_cooldown">Senkronizasyon Bekleme Süresi</string>
     <string name="sync_cooldown_description">Otomatik senkronizasyonlar arasındaki minimum süre (dakika cinsinden)</string>
     <string name="sync_data_with_ytm_account">YTM hesabıyla verileri senkronize et</string>
@@ -204,8 +203,6 @@
     <string name="sync_imported_playlists_automatic_title">İçe Aktarılan Çalma Listelerini Otomatik Senkronize Et</string>
     <string name="sync_likes">Beğenilen Şarkıları Otomatik Olarak Senkronize Et</string>
     <string name="sync_likes_description">YouTube Music\'ten beğenilen şarkıları otomatik olarak içe aktar</string>
-    <string name="sync_no_items">Senkronizasyon edilecek öğe yok</string>
-    <string name="sync_notifications">Senkronizasyon Bildirimleri</string>
     <string name="sync_now">Şimdi Senkronize Et</string>
     <string name="sync_now_description">YouTube Music ile tam senkronizasyonu zorla</string>
     <string name="sync_per_playlist_auto">Çalma Listesi Başına Otomatik Senkronizasyon</string>
@@ -236,10 +233,6 @@
     <string name="sync_status_last">Son senkronizasyon: %1$d dakika önce</string>
     <string name="sync_status_never">Hiç senkronize edilmedi</string>
     <string name="sync_status_running">Senkronizasyon: %1$s</string>
-    <string name="sync_success_notification_albums">Tüm albümler başarıyla senkronize edildi.</string>
-    <string name="sync_success_notification_artists">Tüm sanatçılar başarıyla senkronize edildi.</string>
-    <string name="sync_success_notification_playlists">Tüm çalma listeleri başarıyla senkronize edildi.</string>
-    <string name="sync_successful">Senkronizasyon başarıyla tamamlandı</string>
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">%1$d adet başarısız olan öğenin senkronizasyonunu yeniden denemek ister misiniz?</string>
     <string name="sync_running_status">Senkronize ediliyor...</string>
@@ -257,10 +250,6 @@
     <string name="sync_youtube_songs_remaining">Kalan şarkılar: %1$s</string>
     <string name="sync_youtube_unlike_failed">Şarkı YouTube\'da beğenilmedi</string>
     <string name="sync_youtube_unlike_success">Şarkı YouTube\'da Beğenilmedi</string>
-    <string name="sync_starting_notification">Senkronizasyon başlıyor...</string>
-    <string name="sync_background_notification">Arka planda senkronizasyon devam ediyor...</string>
-    <string name="sync_aborted_network_error">Ağ hatası nedeniyle senkronizasyon iptal edildi.</string>
-    <string name="sync_start_service_failed">Senkronizasyon hizmeti başlatılamadı</string>
     <string name="sync_fetch_subscribed_channels_failed">Abone olunan kanallar alınamadı</string>
     <string name="sync_fetch_liked_albums_failed">Beğenilen albümler alınamadı</string>
     <string name="sync_fetch_liked_songs_failed">Beğenilen şarkılar alınamadı</string>

@@ -10,15 +10,15 @@ import org.junit.jupiter.api.Test
 class SongItemMenuLocalIndexTest {
 
     @Test
-    fun `local playback starts right after the editMetadata slot`() {
-        // 0=info, 1=editMetadata, then playback from 2
-        assertEquals(1, LOCAL_SONG_PLAYBACK_START - 1)
-        assertEquals(2, LOCAL_SONG_PLAYBACK_START)
+    fun `local playback starts after the three editing actions`() {
+        // 0=info, 1=edit metadata, 2=rename, 3=cover
+        assertEquals(3, LOCAL_SONG_PLAYBACK_START - 1)
+        assertEquals(4, LOCAL_SONG_PLAYBACK_START)
     }
 
     @Test
     fun `local playback buttons fit the layout`() {
-        // 5 playback buttons (2..6), delete/export from 7
-        assertEquals(7, LOCAL_SONG_PLAYBACK_START + LOCAL_PLAYBACK_COUNT)
+        // Five playback slots (4..8), followed by delete/export.
+        assertEquals(9, LOCAL_SONG_PLAYBACK_START + LOCAL_PLAYBACK_COUNT)
     }
 }

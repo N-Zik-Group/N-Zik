@@ -11,15 +11,12 @@ import timber.log.Timber
 
 internal data class HomeLibraryRefreshResult(val refreshedPodcasts: Int, val failedPodcasts: Int)
 
-/** Podcast snapshots refresh locally; ordinary playlist IDs retain the existing service path. */
-internal suspend fun refreshHomeLibraryTargets(
+/** Refresh the visible podcast snapshots. */
+internal suspend fun refreshHomeLibraryPodcasts(
     targets: List<PlaylistPreview>,
-    dispatchPlaylists: suspend (List<Long>) -> Unit,
     refreshPodcast: suspend (Playlist) -> Boolean = { refreshPlaylistSource(it) },
 ): HomeLibraryRefreshResult {
     val supported = targets.map { it.playlist }.distinctBy { it.id }.filter(::canRefreshPlaylist)
-    val ordinary = supported.filter { playlistLinkKind(it.browseId) == PlaylistLinkKind.YouTubePlaylist }
-    if (ordinary.isNotEmpty()) dispatchPlaylists(ordinary.map { it.id })
     var refreshed = 0
     var failed = 0
     supported.filter { playlistLinkKind(it.browseId) == PlaylistLinkKind.YouTubePodcast }.forEach { podcast ->

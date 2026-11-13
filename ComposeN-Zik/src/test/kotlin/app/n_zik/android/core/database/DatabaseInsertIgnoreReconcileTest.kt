@@ -131,6 +131,28 @@ class DatabaseInsertIgnoreReconcileTest {
     }
 
     @Test
+    fun localPlaybackKeepsIndexedArtistLinksWhenQueueCarriesOnlineIds() {
+        val item = mediaItemWithAuthors(listOf("A"), listOf("UC_A"))
+            .buildUpon().setMediaId("local:42").build()
+        every { any<MediaItem>().asSong } returns existingSong().copy(id = "local:42")
+
+        Database.insertIgnore(item, autoFix = false)
+
+        verify(exactly = 1) { songTable.upsert(match<Song> { it.id == "local:42" }) }
+        verify(exactly = 0) { mapTable.deleteBySongId(any()) }
+        verify(exactly = 0) { mapTable.insertIgnore(any<SongArtistMap>()) }
+    }
+
+    @Test
+    fun onlinePlaybackDoesNotReuseAnOnDeviceArtistWithTheSameName() {
+        every { artistTable.findByNameDirect("A") } returns Artist(id = "LOCAL_ARTIST_DEVICE_1", name = "A")
+        Database.insertIgnore(mediaItemWithAuthors(listOf("A"), listOf("UC_A")), autoFix = false)
+
+        verify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("s1", "UC_A")) }
+        verify(exactly = 0) { mapTable.insertIgnore(SongArtistMap("s1", "LOCAL_ARTIST_DEVICE_1")) }
+    }
+
+    @Test
     fun freshSongOnlyInsertsMappingsWithoutDelete() {
         every { songTable.findByIdDirect("s1") } returns null
         val item = mediaItemWithAuthors(listOf("A"), listOf("UC_A"))

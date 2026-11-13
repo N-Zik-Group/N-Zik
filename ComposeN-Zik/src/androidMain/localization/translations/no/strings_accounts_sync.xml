@@ -177,7 +177,6 @@
     <string name="sync_background_guard_description">Sett auto-synkronisering på pause når appen er i bakgrunnen</string>
     <string name="sync_channels">Automatisk synkronisering Abonnerte Kanaler</string>
     <string name="sync_channels_description">Autoimporter abonnerte artister fra YouTube Music</string>
-    <string name="sync_completed_with_errors">Synkronisering fullført med feil</string>
     <string name="sync_cooldown">Synkroniser nedkjøling</string>
     <string name="sync_cooldown_description">Minimumstid mellom auto-synkronisering (i minutter)</string>
     <string name="sync_data_with_ytm_account">Synkroniser data med YTM-konto</string>
@@ -204,8 +203,6 @@
     <string name="sync_imported_playlists_automatic_title">Synkroniser importerte spillelister automatisk</string>
     <string name="sync_likes">Synkroniser automatisk like sanger</string>
     <string name="sync_likes_description">Automatisk import av likte sanger fra YouTube Music</string>
-    <string name="sync_no_items">Ingen elementer å synkronisere</string>
-    <string name="sync_notifications">Synkroniser varsler</string>
     <string name="sync_now">Synkroniser nå</string>
     <string name="sync_now_description">Tving en full synkronisering med YouTube musikk</string>
     <string name="sync_per_playlist_auto">Auto-synkronisering på spilleliste</string>
@@ -236,10 +233,6 @@
     <string name="sync_status_last">Siste synkronisering: %1$dmin siden</string>
     <string name="sync_status_never">Aldri synkronisert</string>
     <string name="sync_status_running">Synkroniserer: %1$s</string>
-    <string name="sync_success_notification_albums">Alle album ble synkronisert.</string>
-    <string name="sync_success_notification_artists">Synkronisering ok alle artister.</string>
-    <string name="sync_success_notification_playlists">Alle spillelister ble synkronisert.</string>
-    <string name="sync_successful">Synkronisering fullført</string>
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">Ønsker du å synkronisere %1$d mislykkede elementer på nytt?</string>
     <string name="sync_running_status">Synkroniserer...</string>
@@ -257,10 +250,6 @@
     <string name="sync_youtube_songs_remaining">%1$s Sanger igjen</string>
     <string name="sync_youtube_unlike_failed">Kunne ikke avvise sangen på YouTube</string>
     <string name="sync_youtube_unlike_success">Sangen er ikke likt i YouTube</string>
-    <string name="sync_starting_notification">Starter synkronisering...</string>
-    <string name="sync_background_notification">Synkroniserer i bakgrunnen...</string>
-    <string name="sync_aborted_network_error">Synkronisering avbrutt på grunn av nettverksfeil.</string>
-    <string name="sync_start_service_failed">Kunne ikke starte synkroniseringstjenesten</string>
     <string name="sync_fetch_subscribed_channels_failed">Kunne ikke hente abonnerte kanaler</string>
     <string name="sync_fetch_liked_albums_failed">Kunne ikke hente likte album</string>
     <string name="sync_fetch_liked_songs_failed">Kunne ikke hente likte sanger</string>

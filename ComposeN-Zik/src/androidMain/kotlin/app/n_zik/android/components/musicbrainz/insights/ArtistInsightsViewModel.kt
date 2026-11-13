@@ -5,6 +5,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import app.n_zik.android.core.ondevice.isDeviceAlbumId
+import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.models.Artist
 import app.n_zik.android.Dependencies
 import app.n_zik.android.core.database.Database
@@ -57,8 +59,9 @@ class ArtistInsightsViewModel(application: Application) : AndroidViewModel(appli
                 return@launch
             }
 
+            val deviceArtist = isDeviceArtistId(artistId)
             val albums = withContext(NzikDispatchers.DATA) {
-                artistTable.getAlbumsByArtist(artistId)
+                artistTable.getAlbumsByArtist(artistId).filter { !deviceArtist || isDeviceAlbumId(it.id) }
             }
 
             val topTracks = withContext(NzikDispatchers.DATA) {
@@ -70,6 +73,7 @@ class ArtistInsightsViewModel(application: Application) : AndroidViewModel(appli
 
             val topAlbums = withContext(NzikDispatchers.DATA) {
                 artistTable.getTopAlbumsByArtist(artistId, limit = 5)
+                    .filter { !deviceArtist || isDeviceAlbumId(it.id) }
             }
 
             val relations = withContext(NzikDispatchers.DATA) {
@@ -113,7 +117,7 @@ class ArtistInsightsViewModel(application: Application) : AndroidViewModel(appli
                 val resolved = runCatching {
                     artistTable.getByMbId(target.id)
                 }.getOrNull()
-                if (resolved != null) {
+                if (resolved != null && (!isDeviceArtistId(artist.id) || isDeviceArtistId(resolved.id))) {
                     ArtistRelationInfo(
                         resolved,
                         entry.type.orEmpty(),

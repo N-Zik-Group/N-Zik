@@ -67,15 +67,15 @@ fun InfoAndCommunity(
     keywords: List<String>?,
     links: List<ExternalLink>?,
     bio: String?,
-    translate: Translate,
-    translator: Translator,
-    languageDestination: Language?,
+    translate: Translate? = null,
+    translator: Translator? = null,
+    languageDestination: Language? = null,
     lastSyncAt: Long? = null,
     lastSyncFailed: Boolean = false,
     pausedForSeconds: Long = 0,
     isSyncing: Boolean = false,
     onResyncClick: () -> Unit = {},
-    onInsightsClick: () -> Unit
+    onInsightsClick: () -> Unit = {},
 ) {
     var readMore by remember { mutableStateOf(true) }
     val glass = rememberGlassSettings()
@@ -84,9 +84,9 @@ fun InfoAndCommunity(
     val cleanedBio = bio?.cleanWikipediaText()
 
     var translatedBio by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(cleanedBio, translate.isActive, languageDestination) {
+    LaunchedEffect(cleanedBio, translate?.isActive == true, languageDestination) {
         translatedBio = null
-        if (translate.isActive && languageDestination != null && !cleanedBio.isNullOrBlank()) {
+        if (translator != null && translate?.isActive == true && languageDestination != null && !cleanedBio.isNullOrBlank()) {
             val result = withContext(NzikDispatchers.DATA) {
                 runCatching {
                     translator.translate(cleanedBio, languageDestination, Language.AUTO).translatedText
@@ -240,7 +240,7 @@ fun InfoAndCommunity(
                             modifier = Modifier
                                 .padding(horizontal = 12.dp, vertical = 8.dp)
                         ) {
-                            translate.ToolBarButton()
+                            translate?.ToolBarButton()
 
                             BasicText(
                                 text = "“",

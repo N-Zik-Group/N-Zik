@@ -177,7 +177,6 @@
     <string name="sync_background_guard_description">Keskeytä automaattinen synkronointi kun sovellus on taustalla</string>
     <string name="sync_channels">Tilattujen kanavien automaattinen synkronointi</string>
     <string name="sync_channels_description">Tuo tilatut artistit automaattisesti YouTube-musiikista</string>
-    <string name="sync_completed_with_errors">Synkronointi suoritettu virheiden kanssa</string>
     <string name="sync_cooldown">Synkronoi Jäähdytys</string>
     <string name="sync_cooldown_description">Minimi aika automaattisen synkronoinnin välillä (minuutteina)</string>
     <string name="sync_data_with_ytm_account">Synkronoi tiedot YTM-tilin kanssa</string>
@@ -204,8 +203,6 @@
     <string name="sync_imported_playlists_automatic_title">Synkronoi tuodut soittolistat automaattisesti</string>
     <string name="sync_likes">Automaattinen Synkronointi Tykkätyt Kappaleet</string>
     <string name="sync_likes_description">Tykkien kappaleiden tuonti YouTube-musiikista automaattisesti</string>
-    <string name="sync_no_items">Ei synkronoitavia kohteita</string>
-    <string name="sync_notifications">Synkronoi Ilmoitukset</string>
     <string name="sync_now">Synkronoi Nyt</string>
     <string name="sync_now_description">Pakota täysi synkronointi YouTube Musicin kanssa</string>
     <string name="sync_per_playlist_auto">Automaattinen Soittolistan Synkronointi</string>
@@ -236,10 +233,6 @@
     <string name="sync_status_last">Viimeisin synkronointi: %1$dminuuttia sitten</string>
     <string name="sync_status_never">Ei koskaan synkronoitu</string>
     <string name="sync_status_running">Synkronointi: %1$s</string>
-    <string name="sync_success_notification_albums">Kaikki albumit synkronoidaan onnistuneesti.</string>
-    <string name="sync_success_notification_artists">Kaikki taiteilijat synkronoidaan onnistuneesti.</string>
-    <string name="sync_success_notification_playlists">Kaikki soittolistat synkronoidaan onnistuneesti.</string>
-    <string name="sync_successful">Synkronointi onnistui</string>
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">Haluatko yrittää synkronoida uudelleen %1$d epäonnistuneita kohteita?</string>
     <string name="sync_running_status">Synkronoidaan...</string>
@@ -257,10 +250,6 @@
     <string name="sync_youtube_songs_remaining">%1$s Kappaletta Jäljellä</string>
     <string name="sync_youtube_unlike_failed">Kappaleen poisto YouTubessa epäonnistui</string>
     <string name="sync_youtube_unlike_success">Kappale on tykkää YouTubessa</string>
-    <string name="sync_starting_notification">Käynnistetään synkronointia...</string>
-    <string name="sync_background_notification">Synkronoidaan taustalla...</string>
-    <string name="sync_aborted_network_error">Synkronointi keskeytettiin verkkovirheen vuoksi.</string>
-    <string name="sync_start_service_failed">Synkronointipalvelun käynnistäminen epäonnistui</string>
     <string name="sync_fetch_subscribed_channels_failed">Tilattujen kanavien nouto epäonnistui</string>
     <string name="sync_fetch_liked_albums_failed">Tykittyjen albumien nouto epäonnistui</string>
     <string name="sync_fetch_liked_songs_failed">Tykkien kappaleiden noutaminen epäonnistui</string>

@@ -177,7 +177,6 @@
     <string name="sync_background_guard_description">Pauză sincronizare automată atunci când aplicația este în fundal</string>
     <string name="sync_channels">Sincronizare automată a canale-rol abonate</string>
     <string name="sync_channels_description">Auto-import de artişti abonaţi de pe YouTube Music</string>
-    <string name="sync_completed_with_errors">Sincronizare finalizată cu erori</string>
     <string name="sync_cooldown">Sincronizare redirecționare</string>
     <string name="sync_cooldown_description">Timp minim între auto-sincronizare (în minute)</string>
     <string name="sync_data_with_ytm_account">Sincronizare date cu contul YTM</string>
@@ -204,8 +203,6 @@
     <string name="sync_imported_playlists_automatic_title">Sincronizare automată a listelor de redare importate</string>
     <string name="sync_likes">Sincronizare automată melodii plăcute</string>
     <string name="sync_likes_description">Auto-importă melodiile preferate de pe muzica YouTube</string>
-    <string name="sync_no_items">Nu există elemente de sincronizat</string>
-    <string name="sync_notifications">Sincronizare notificări</string>
     <string name="sync_now">Sincronizează acum</string>
     <string name="sync_now_description">Forţează o sincronizare completă cu YouTube Music</string>
     <string name="sync_per_playlist_auto">Auto-sincronizare Per-Playlist</string>
@@ -236,10 +233,6 @@
     <string name="sync_status_last">Ultima sincronizare: %1$dmin în urmă</string>
     <string name="sync_status_never">Niciodată sincronizat</string>
     <string name="sync_status_running">Sincronizare: %1$s</string>
-    <string name="sync_success_notification_albums">Sincronizat cu succes toate albumele.</string>
-    <string name="sync_success_notification_artists">Sincronizat cu succes toți artiștii.</string>
-    <string name="sync_success_notification_playlists">Sincronizat cu succes toate listele de redare.</string>
-    <string name="sync_successful">Sincronizare reușită</string>
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">Doriți să reîncercați să sincronizați elementele %1$d eșuate?</string>
     <string name="sync_running_status">Sincronizare...</string>
@@ -257,10 +250,6 @@
     <string name="sync_youtube_songs_remaining">%1$s melodii ramase</string>
     <string name="sync_youtube_unlike_failed">Nu s-a putut plăcea melodia pe YouTube</string>
     <string name="sync_youtube_unlike_success">Melodia nu este plăcută pe YouTube</string>
-    <string name="sync_starting_notification">Pornire sincronizare...</string>
-    <string name="sync_background_notification">Sincronizare în fundal...</string>
-    <string name="sync_aborted_network_error">Sincronizare anulată din cauza unei erori de rețea.</string>
-    <string name="sync_start_service_failed">Pornirea serviciului de sincronizare a eșuat</string>
     <string name="sync_fetch_subscribed_channels_failed">Preluarea canalelor abonate a eșuat</string>
     <string name="sync_fetch_liked_albums_failed">Preluarea albumelor plăcute a eșuat</string>
     <string name="sync_fetch_liked_songs_failed">Nu s-a reușit preluarea melodiilor preferate</string>

@@ -1,6 +1,11 @@
 package app.n_zik.android.components.navigation
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.runtime.Composable
@@ -9,6 +14,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -72,9 +78,19 @@ internal fun SideRailBodySubcompose(
     SubcomposeLayout { constraints ->
         val presentation = committed.resolve(pageKey(), expectsTabs(), registration)
         val body = subcompose(Unit) {
-            Column(modifier = androidx.compose.ui.Modifier.navigationPresentationInput(presentation.interactive),
+            val incoming = presentation.registration
+            val lastVisible = remember { mutableStateOf<SideRailState.Registration?>(null) }
+            SideEffect { if (incoming != null) lastVisible.value = incoming }
+            Column(
                 horizontalAlignment = Alignment.CenterHorizontally) {
-                presentation.registration?.body?.invoke(surfaceBackdrop)
+                AnimatedVisibility(
+                    visible = incoming != null,
+                    enter = fadeIn(tween(180)),
+                    exit = fadeOut(tween(180)),
+                    modifier = Modifier.navigationPresentationInput(presentation.interactive && incoming != null),
+                ) {
+                    (incoming ?: lastVisible.value)?.body?.invoke(surfaceBackdrop)
+                }
             }
         }.single().measure(constraints)
         layout(body.width, body.height) { body.placeRelative(0, 0) }

@@ -51,19 +51,20 @@ import kotlinx.coroutines.launch
 const val ArtistToolbarActionCount = 4
 
 class FollowButton private constructor(
+    private val localOnly: Boolean,
     private val getArtist: () -> Artist
 ): Button, Descriptive {
 
     companion object {
         @Composable
-        operator fun invoke( getArtist: () -> Artist ): FollowButton =
-            FollowButton(getArtist)
+        operator fun invoke(localOnly: Boolean = false, getArtist: () -> Artist): FollowButton =
+            FollowButton(localOnly, getArtist)
     }
 
     override val messageId: Int = R.string.artist_action_follow
 
     override fun onShortClick() {
-        if ( isYouTubeSyncEnabled() && !isNetworkConnected( appContext() ) ){
+        if (!localOnly && isYouTubeSyncEnabled() && !isNetworkConnected(appContext())){
             Toaster.noInternet()
         } else {
             val artist = getArtist()
@@ -119,7 +120,7 @@ class FollowButton private constructor(
             }
 
             // Only sync to YouTube if NOT disliked (dislike is local only)
-            if (newState != false) {
+            if (!localOnly && newState != false) {
                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                     if( !isYouTubeSyncEnabled() ) return@launch
 

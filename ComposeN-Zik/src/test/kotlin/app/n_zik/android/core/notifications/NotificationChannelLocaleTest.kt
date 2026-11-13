@@ -39,15 +39,15 @@ class NotificationChannelLocaleTest {
     @Test
     fun `early startup uses the profiled label without rewriting an existing channel`() {
         val manager = context.getSystemService(NotificationManager::class.java)
-        val baseId = "sync_channel_id"
+        val baseId = "download_channel"
         val id = ensureStartupNotificationChannel(context, baseId, "work")
         val created = manager.getNotificationChannel(id)
-        assertEquals("sync_channel_id_work", id)
+        assertEquals("download_channel_work", id)
         assertEquals(
-            context.getString(R.string.profile_channel_name, context.getString(R.string.sync_action_sync), "work"),
+            context.getString(R.string.profile_channel_name, context.getString(R.string.downloads_title), "work"),
             created.name.toString(),
         )
-        assertEquals(context.getString(R.string.sync_notifications), created.description)
+        assertEquals(context.getString(R.string.downloads_title), created.description)
 
         created.name = "Existing profile label"
         manager.createNotificationChannel(created)

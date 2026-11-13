@@ -97,12 +97,6 @@
         <item quantity="many">Импорт состояния профиля: %1$d профилей</item>
         <item quantity="other">Импорт состояния профиля: %1$d профилей</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="one">Не удалось синхронизировать альбом %1$d . Вернитесь на вкладку Альбомы для повтора.</item>
-        <item quantity="few">Не удалось синхронизировать альбомы %1$d . Вернитесь на вкладку Альбомы для повтора.</item>
-        <item quantity="many">Не удалось синхронизировать альбомы %1$d . Вернитесь на вкладку Альбомы для повтора.</item>
-        <item quantity="other">Не удалось синхронизировать альбомы %1$d . Вернитесь на вкладку Альбомы для повтора.</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="one">Экспортировать %1$d кэшированные/скачанные песни?</item>
         <item quantity="few">Экспортировать %1$d кэшированные/загруженные песни?</item>
@@ -126,78 +120,6 @@
         <item quantity="few">%1$d пользователей заблокировано</item>
         <item quantity="many">%1$d пользователей заблокировано</item>
         <item quantity="other">%1$d пользователей заблокировано</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="one">Failed to sync %1$d artist. Go back to the Artists tab to retry.</item>
-        <item quantity="few">Failed to sync %1$d artists. Go back to the Artists tab to retry.</item>
-        <item quantity="many">Failed to sync %1$d artists. Go back to the Artists tab to retry.</item>
-        <item quantity="other">Failed to sync %1$d artists. Go back to the Artists tab to retry.</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="one">Не удалось синхронизировать плейлист %1$d . Вернитесь на вкладку Плейлисты для повтора.</item>
-        <item quantity="few">Не удалось синхронизировать плейлисты %1$d . Вернитесь на вкладку Плейлисты для повтора.</item>
-        <item quantity="many">Не удалось синхронизировать плейлисты %1$d . Вернитесь на вкладку Плейлисты для повтора.</item>
-        <item quantity="other">Не удалось синхронизировать плейлисты %1$d . Вернитесь на вкладку Плейлисты для повтора.</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">Do you want to retry syncing the %1$d failed item?</item>
-        <item quantity="few">Do you want to retry syncing the %1$d failed items?</item>
-        <item quantity="many">Do you want to retry syncing the %1$d failed items?</item>
-        <item quantity="other">Do you want to retry syncing the %1$d failed items?</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="one">Синхронизация исполнителя... (%1$d/%2$d)</item>
-        <item quantity="few">Синхронизация исполнителей... (%1$d/%2$d)</item>
-        <item quantity="many">Синхронизация исполнителей... (%1$d/%2$d)</item>
-        <item quantity="other">Синхронизация исполнителей... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="one">Refreshing %1$d artist</item>
-        <item quantity="few">Обновление %1$d исполнителей</item>
-        <item quantity="many">Обновление %1$d исполнителей</item>
-        <item quantity="other">Обновление %1$d исполнителей</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="one">Не удалось найти %1$d исполнителя, повторная попытка</item>
-        <item quantity="few">Не удалось найти %1$d исполнителей, повторите попытку</item>
-        <item quantity="many">Не удалось найти %1$d исполнителей, повторите попытку</item>
-        <item quantity="other">Не удалось найти %1$d исполнителей, повторите попытку</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
-        <item quantity="few">Синхронизация альбомов... (%1$d/%2$d)</item>
-        <item quantity="many">Синхронизация альбомов... (%1$d/%2$d)</item>
-        <item quantity="other">Синхронизация альбомов... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">Обновление альбома %1$d</item>
-        <item quantity="few">Обновление %1$d альбомов</item>
-        <item quantity="many">Обновление %1$d альбомов</item>
-        <item quantity="other">Обновление %1$d альбомов</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="one">Не удалось найти альбом %1$d , повторная попытка</item>
-        <item quantity="few">Не удалось найти %1$d альбомов, повторная попытка</item>
-        <item quantity="many">Не удалось найти %1$d альбомов, повторная попытка</item>
-        <item quantity="other">Не удалось найти %1$d альбомов, повторная попытка</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="one">Синхронизация плейлиста... (%1$d/%2$d)</item>
-        <item quantity="few">Синхронизация плейлистов... (%1$d/%2$d)</item>
-        <item quantity="many">Синхронизация плейлистов... (%1$d/%2$d)</item>
-        <item quantity="other">Синхронизация плейлистов... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="one">Обновление плейлиста %1$d</item>
-        <item quantity="few">Обновление плейлистов %1$d</item>
-        <item quantity="many">Обновление плейлистов %1$d</item>
-        <item quantity="other">Обновление плейлистов %1$d</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="one">Не удалось найти плейлист %1$d , повтор</item>
-        <item quantity="few">Не удалось найти плейлисты %1$d , повтор</item>
-        <item quantity="many">Не удалось найти плейлисты %1$d , повтор</item>
-        <item quantity="other">Не удалось найти плейлисты %1$d , повтор</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="one">%1$d элемент очищен</item>

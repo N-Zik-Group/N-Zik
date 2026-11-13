@@ -65,10 +65,6 @@
         <item quantity="one">Estado del perfil importado: Perfil %1$d</item>
         <item quantity="other">Estado del perfil importado: perfiles %1$d</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="one">Error al sincronizar el álbum %1$d . Volver a la pestaña de Álbumes para reintentarlo.</item>
-        <item quantity="other">Error al sincronizar álbumes %1$d . Volver a la pestaña de Álbumes para reintentarlo.</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="one">¿Exportar una canción en caché %1$d?</item>
         <item quantity="other">¿Exportar canciones en caché/descargadas %1$d?</item>
@@ -84,54 +80,6 @@
     <plurals name="listen_together_blocked_user_count">
         <item quantity="one">%1$d usuario bloqueado</item>
         <item quantity="other">%1$d usuarios bloqueados</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="one">Error al sincronizar el artista %1$d . Volver a la pestaña de Artistas para reintentarlo.</item>
-        <item quantity="other">Error al sincronizar artistas de %1$d . Volver a la pestaña de Artistas para reintentarlo.</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="one">Error al sincronizar la lista de reproducción %1$d . Volver a la pestaña Listas de reproducción para reintentar.</item>
-        <item quantity="other">Error al sincronizar listas de reproducción %1$d . Volver a la pestaña Listas de reproducción para reintentar.</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">¿Quieres volver a intentar sincronizar el elemento %1$d fallido?</item>
-        <item quantity="other">¿Quieres volver a intentar sincronizar los elementos fallidos %1$d?</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="one">Sincronizando artista... (%1$d/%2$d)</item>
-        <item quantity="other">Sincronizando artistas... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="one">Actualizando artista %1$d</item>
-        <item quantity="other">Actualizando artistas %1$d</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="one">No se pudo encontrar el artista %1$d , reintentando</item>
-        <item quantity="other">No se pudo encontrar %1$d artistas, reintentando</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
-        <item quantity="other">Sincronizando álbumes... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">Actualizando álbum %1$d</item>
-        <item quantity="other">Actualizando álbumes %1$d</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="one">No se pudo encontrar el álbum %1$d , reintentando</item>
-        <item quantity="other">Error al encontrar álbumes %1$d , reintentando</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="one">Sincronizando lista de reproducción... (%1$d/%2$d)</item>
-        <item quantity="other">Sincronizando listas de reproducción... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="one">Actualizando lista de reproducción %1$d</item>
-        <item quantity="other">Actualizando listas de reproducción %1$d</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="one">Error al encontrar la lista de reproducción %1$d , reintentando</item>
-        <item quantity="other">Error al encontrar listas de reproducción %1$d , reintentando</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="one">%1$d elemento limpiado</item>

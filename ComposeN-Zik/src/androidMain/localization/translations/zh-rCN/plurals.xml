@@ -49,9 +49,6 @@
     <plurals name="backup_import_profile_state_complete_count">
         <item quantity="other">配置文件状态已导入： %1$d 配置文件</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="other">无法同步 %1$d 相册。请返回相册选项卡重试。</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="other">导出 %1$d 缓存/下载歌曲？</item>
     </plurals>
@@ -63,42 +60,6 @@
     </plurals>
     <plurals name="listen_together_blocked_user_count">
         <item quantity="other">%1$d 用户被阻止</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="other">无法同步 %1$d 艺术家。请返回艺人标签页重试。</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="other">无法同步 %1$d 播放列表。请返回播放列表选项卡重试。</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="other">您想要重新尝试同步 %1$d 失败项目吗？</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="other">正在同步艺人... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="other">正在刷新 %1$d 艺人</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="other">无法找到 %1$d 艺术家，重试</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="other">正在同步相册... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="other">正在刷新 %1$d 相册</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="other">找到 %1$d 相册失败，重试</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="other">Syncing playlists... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="other">Refreshing %1$d playlists</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="other">Failed to find %1$d playlists, retrying</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="other">%1$d 项目已清理</item>

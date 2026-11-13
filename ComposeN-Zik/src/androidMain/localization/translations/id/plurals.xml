@@ -49,9 +49,6 @@
     <plurals name="backup_import_profile_state_complete_count">
         <item quantity="other">Profile state imported: %1$d profiles</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="other">Failed to sync %1$d albums. Go back to the Albums tab to retry.</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="other">Export %1$d cached/downloaded songs?</item>
     </plurals>
@@ -63,42 +60,6 @@
     </plurals>
     <plurals name="listen_together_blocked_user_count">
         <item quantity="other">%1$d users blocked</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="other">Failed to sync %1$d artists. Go back to the Artists tab to retry.</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="other">Failed to sync %1$d playlists. Go back to the Playlists tab to retry.</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="other">Do you want to retry syncing the %1$d failed items?</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="other">Syncing artists... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="other">Refreshing %1$d artists</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="other">Failed to find %1$d artists, retrying</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="other">Syncing albums... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="other">Refreshing %1$d albums</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="other">Failed to find %1$d albums, retrying</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="other">Syncing playlists... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="other">Refreshing %1$d playlists</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="other">Failed to find %1$d playlists, retrying</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="other">%1$d items cleaned</item>

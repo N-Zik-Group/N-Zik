@@ -21,34 +21,29 @@ class HomeLibraryRefreshTest {
     private val scope = HomeLibraryPlaylistScope(PlaylistsType.YTPlaylist, YouTubeLibraryFilter.Podcasts,
         "", true, true, true, true, RewindPlaylists.Filter.All)
 
-    @Test fun `podcast-only pull refresh loads visible exact IDs without starting ordinary service`() = runBlocking {
+    @Test fun `podcast-only pull refresh loads visible exact IDs and ignores ordinary playlists`() = runBlocking {
         val visible = scope.copy(query = "Playlist 1").visible(listOf(podcast, otherPodcast, playlist, local))
         val refreshed = mutableListOf<String?>()
-        val result = refreshHomeLibraryTargets(homeLibraryActionTargets(visible, emptyList()),
-            dispatchPlaylists = { error("Podcast-only filter must not start the ordinary service") },
+        val result = refreshHomeLibraryPodcasts(homeLibraryActionTargets(visible, emptyList()),
             refreshPodcast = { row -> refreshed.add(row.browseId); true })
         assertEquals(listOf(podcast.playlist.browseId), refreshed)
         assertEquals(HomeLibraryRefreshResult(1, 0), result)
     }
 
-    @Test fun `mixed visible targets split podcast loader and exact ordinary service IDs`() = runBlocking {
-        val serviceIds = mutableListOf<List<Long>>()
+    @Test fun `mixed visible targets refresh podcasts only`() = runBlocking {
         val refreshed = mutableListOf<Long>()
         val visible = scope.copy(youtubeFilter = YouTubeLibraryFilter.All)
             .visible(listOf(podcast, otherPodcast, playlist, local))
-        val result = refreshHomeLibraryTargets(visible,
-            dispatchPlaylists = { serviceIds.add(it) },
+        val result = refreshHomeLibraryPodcasts(visible,
             refreshPodcast = { row -> refreshed.add(row.id); true })
-        assertEquals(listOf(listOf(3L)), serviceIds)
         assertEquals(listOf(1L, 2L), refreshed)
         assertEquals(HomeLibraryRefreshResult(2, 0), result)
     }
 
-    @Test fun `empty and unsupported targets never dispatch an empty all-playlists request`() = runBlocking {
+    @Test fun `empty and unsupported targets do not refresh anything`() = runBlocking {
         for (targets in listOf(emptyList(), listOf(local, preview(5, "PIPED_IMPORT"),
             preview(6, "MPSPPLedited", editable = true), preview(7, "modified:MPSPPLcopy")))) {
-            val result = refreshHomeLibraryTargets(targets,
-                dispatchPlaylists = { error("Unsupported or empty IDs must not dispatch") },
+            val result = refreshHomeLibraryPodcasts(targets,
                 refreshPodcast = { error("Protected or local rows must not refresh") })
             assertEquals(HomeLibraryRefreshResult(0, 0), result)
         }
@@ -56,8 +51,7 @@ class HomeLibraryRefreshTest {
 
     @Test fun `failed podcast does not prevent other visible podcasts from refreshing`() = runBlocking {
         val refreshed = mutableListOf<Long>()
-        val result = refreshHomeLibraryTargets(listOf(podcast, otherPodcast),
-            dispatchPlaylists = { error("No ordinary rows") },
+        val result = refreshHomeLibraryPodcasts(listOf(podcast, otherPodcast),
             refreshPodcast = { row -> refreshed.add(row.id); row.id != podcast.playlist.id })
         assertEquals(listOf(1L, 2L), refreshed)
         assertEquals(HomeLibraryRefreshResult(1, 1), result)

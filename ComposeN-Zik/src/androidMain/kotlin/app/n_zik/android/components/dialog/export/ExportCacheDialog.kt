@@ -63,6 +63,9 @@ import android.graphics.Bitmap
 import java.io.ByteArrayOutputStream
 import app.n_zik.innertube.requests.songInfo
 import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.YtMusic
+import app.n_zik.innertube.requests.nextPage
+import app.n_zik.android.utils.isNetworkConnected
 import com.arthenica.ffmpegkit.FFprobeKit
 import java.nio.ByteOrder
 import java.nio.ByteBuffer
@@ -199,6 +202,7 @@ class ExportCacheDialog private constructor(
                     }
 
                     val album = Database.songAlbumMapTable.findAlbumOf(song.id).first()
+                    val mappedAlbums = Database.songAlbumMapTable.findAlbumsOfDirect(song.id)
                     val trackPosition = Database.songAlbumMapTable.findPositionOf(song.id).first()
                     Timber.tag("ExportCache").i("Album: ${album?.title}, year: ${album?.year}, position: $trackPosition")
 
@@ -213,8 +217,41 @@ class ExportCacheDialog private constructor(
                     }
 
                     val parsed = parseDescription(description)
-                    val finalAlbum = (album?.title ?: parsed.album)?.let(::cleanPrefix)
-                    val finalYear = album?.year?.toString() ?: parsed.year
+                    val embedded = android.media.MediaMetadataRetriever()
+                    val (embeddedAlbum, embeddedYear) = try {
+                        embedded.setDataSource(rawFile.absolutePath)
+                        embedded.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_ALBUM) to
+                            embedded.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_YEAR)
+                    } catch (error: RuntimeException) {
+                        Timber.tag("ExportCache").d(error, "Cached audio has no readable tags")
+                        null to null
+                    } finally {
+                        embedded.release()
+                    }
+                    val mappedTitle = album?.title?.takeIf(String::isNotBlank)
+                    val knownTitle = sequenceOf(mappedTitle, embeddedAlbum, parsed.album)
+                        .filterNotNull().map(::cleanPrefix).firstOrNull(String::isNotBlank)
+                    val matchingAlbum = mappedAlbums.firstOrNull {
+                        exportReleaseYear(it.year) != null &&
+                            it.title?.let(::cleanPrefix).equals(knownTitle, ignoreCase = true)
+                    }
+                    val knownYear = sequenceOf(album?.year, embeddedYear, matchingAlbum?.year, album?.originalYear?.toString())
+                        .mapNotNull(::exportReleaseYear).firstOrNull()
+                    val sourceAlbum = if ((knownTitle == null || knownYear == null) &&
+                        song.id.matches(Regex("[A-Za-z0-9_-]{11}")) && isNetworkConnected(appContext())
+                    ) {
+                        Innertube.nextPage(videoId = song.id)?.getOrNull()?.itemsPage?.items
+                            ?.firstOrNull { it.key == song.id }?.album
+                    } else null
+                    val sourceAlbumMatches = knownTitle == null || sourceAlbum?.name?.let(::cleanPrefix)
+                        .equals(knownTitle, ignoreCase = true)
+                    val sourceYear = if (knownYear == null && sourceAlbumMatches) {
+                        sourceAlbum?.endpoint?.browseId?.let { browseId ->
+                            YtMusic.getAlbum(browseId, withSongs = false).getOrNull()?.album?.year
+                        }
+                    } else null
+                    val finalAlbum = knownTitle ?: sourceAlbum?.name?.let(::cleanPrefix)
+                    val finalYear = knownYear ?: exportReleaseYear(sourceYear) ?: exportReleaseYear(parsed.year)
                     
                     Timber.tag("ExportCache").i("Parsed from description: composers=${parsed.composers}, copyright=${parsed.copyright}, genre=${parsed.genre}, descAlbum=${parsed.album}, descYear=${parsed.year}")
 
@@ -904,3 +941,8 @@ class ExportCacheDialog private constructor(
 }
 
 
+
+private val exportReleaseDatePattern = Regex("""^([1-9][0-9]{3})(?:[-/][0-9]{1,2}(?:[-/][0-9]{1,2})?(?:[T ].*)?)?$""")
+
+internal fun exportReleaseYear(value: String?): String? =
+    value?.trim()?.let { exportReleaseDatePattern.matchEntire(it)?.groupValues?.get(1) }

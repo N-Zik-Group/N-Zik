@@ -177,7 +177,6 @@
     <string name="sync_background_guard_description">Wstrzymaj automatyczną synchronizację, gdy aplikacja jest w tle</string>
     <string name="sync_channels">Automatyczna synchronizacja subskrybowanych kanałów</string>
     <string name="sync_channels_description">Automatycznie zaimportuj subskrybowanych artystów z muzyki YouTube</string>
-    <string name="sync_completed_with_errors">Synchronizacja zakończona z błędami</string>
     <string name="sync_cooldown">Odnowienie synchronizacji</string>
     <string name="sync_cooldown_description">Minimalny czas między automatyczną synchronizacją (w minutach)</string>
     <string name="sync_data_with_ytm_account">Synchronizuj dane z kontem YTM</string>
@@ -204,8 +203,6 @@
     <string name="sync_imported_playlists_automatic_title">Automatyczna Synchronizacja Zaimportowanych Playlist</string>
     <string name="sync_likes">Automatyczna synchronizacja polubień piosenek</string>
     <string name="sync_likes_description">Automatyczny import polubień piosenek z muzyki YouTube</string>
-    <string name="sync_no_items">Brak elementów do synchronizacji</string>
-    <string name="sync_notifications">Synchronizuj powiadomienia</string>
     <string name="sync_now">Synchronizuj teraz</string>
     <string name="sync_now_description">Wymuś pełną synchronizację z muzyką YouTube</string>
     <string name="sync_per_playlist_auto">Auto-synchronizacja z listą per-laylist</string>
@@ -236,10 +233,6 @@
     <string name="sync_status_last">Ostatnia synchronizacja: %1$dmin temu</string>
     <string name="sync_status_never">Nigdy nie synchronizowano</string>
     <string name="sync_status_running">Synchronizacja: %1$s</string>
-    <string name="sync_success_notification_albums">Pomyślnie zsynchronizowano wszystkie albumy.</string>
-    <string name="sync_success_notification_artists">Pomyślnie zsynchronizowano wszystkich artystów.</string>
-    <string name="sync_success_notification_playlists">Pomyślnie zsynchronizowano wszystkie playlisty.</string>
-    <string name="sync_successful">Synchronizacja zakończona powodzeniem</string>
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">Czy chcesz ponowić synchronizację %1$d nieudanych elementów?</string>
     <string name="sync_running_status">Synchronizacja...</string>
@@ -257,10 +250,6 @@
     <string name="sync_youtube_songs_remaining">Pozostało piosenek %1$s</string>
     <string name="sync_youtube_unlike_failed">Nie udało się odlubić utworu w YouTube</string>
     <string name="sync_youtube_unlike_success">Utwór jest nielubiony w YouTube</string>
-    <string name="sync_starting_notification">Uruchamianie synchronizacji...</string>
-    <string name="sync_background_notification">Synchronizuję w tle...</string>
-    <string name="sync_aborted_network_error">Synchronizacja przerwana z powodu błędu sieci.</string>
-    <string name="sync_start_service_failed">Nie udało się uruchomić usługi synchronizacji</string>
     <string name="sync_fetch_subscribed_channels_failed">Nie udało się pobrać subskrybowanych kanałów</string>
     <string name="sync_fetch_liked_albums_failed">Nie udało się pobrać polubionych albumów</string>
     <string name="sync_fetch_liked_songs_failed">Nie udało się pobrać polubionych utworów</string>

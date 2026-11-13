@@ -1,5 +1,6 @@
 package app.n_zik.android.repository
 
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.core.database.*
 
 import androidx.core.content.edit
@@ -170,8 +171,8 @@ object QuickPicksRepository {
     }
 
     private suspend fun refreshRelatedIfNeeded() {
-        val currentTrending = _trending.value
-        if (currentTrending != null && (_relatedPage.value == null || _relatedPage.value?.songs?.firstOrNull()?.key != currentTrending.id)) {
+        val currentTrending = _trendingList.value.firstOrNull { !it.isLocal } ?: return
+        if (_relatedPage.value == null || _relatedPage.value?.songs?.firstOrNull()?.key != currentTrending.id) {
             _relatedPage.value = Innertube.relatedPage(videoId = currentTrending.id, setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)?.getOrNull()
         }
     }

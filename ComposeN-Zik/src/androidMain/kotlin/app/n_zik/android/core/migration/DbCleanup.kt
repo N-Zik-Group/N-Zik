@@ -1,6 +1,8 @@
 package app.n_zik.android.core.migration
 
 import android.content.Context
+import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
+import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.models.SongArtistMap
@@ -110,6 +112,7 @@ object DbCleanup {
         var removed = 0
         val removedLinks = mutableListOf<DbCleanupLinkRecord>()
         for (pair in pairs) {
+            if (pair.songId.startsWith(LOCAL_KEY_PREFIX) || isDeviceArtistId(pair.artistId)) continue
             val song = songs[pair.songId] ?: continue // no stored artist list: nothing to judge against
             val name = artistName(pair.artistId)
             if (isSuspiciousArtistLink(name, song.artistsText)) {

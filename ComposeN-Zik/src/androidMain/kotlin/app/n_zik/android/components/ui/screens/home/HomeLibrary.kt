@@ -2,6 +2,10 @@
 package app.n_zik.android.components.ui.screens.home
 
 
+import app.n_zik.android.core.database.isYouTubePlaylistSource
+import app.n_zik.android.core.ondevice.scanDeviceLibrary
+import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceCoverBadge
+import app.n_zik.android.components.ui.screens.home.onDevice.DeviceLibraryPullRefresh
 import app.n_zik.android.appTextResources
 import androidx.compose.ui.res.pluralStringResource
 import app.n_zik.android.components.navigation.FloatingActionSiblingSpace
@@ -34,7 +38,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.unit.Dp
 import androidx.compose.runtime.Composable
@@ -51,7 +54,6 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -79,6 +81,7 @@ import app.n_zik.android.enums.PlaylistSortBy
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.components.menu.playlist.LocalPlaylistItemMenu
 import androidx.navigation.NavController
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.compose.persist.persistList
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.OfflineMode
@@ -111,7 +114,9 @@ import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.utils.Preference.HOME_LIBRARY_ITEM_SIZE
 import app.n_zik.android.utils.Preference.HOME_LIBRARY_PLAYLIST_SORT_BY
+import app.n_zik.android.utils.Preference.HOME_ON_DEVICE_PLAYLISTS_SORT_BY
 import app.n_zik.android.utils.Preference.HOME_LIBRARY_PLAYLIST_SORT_ORDER
+import app.n_zik.android.utils.Preference.HOME_ON_DEVICE_PLAYLISTS_SORT_ORDER
 import app.n_zik.android.utils.Preference.HOME_LIBRARY_YT_PLAYLIST_SORT_BY
 import app.n_zik.android.utils.Preference.HOME_LIBRARY_YT_PLAYLIST_SORT_ORDER
 
@@ -133,12 +138,16 @@ import app.n_zik.android.utils.showMonthlyPlaylistsKey
 import app.n_zik.android.utils.showPinnedPlaylistsKey
 
 import app.n_zik.android.utils.showYtPlaylistsKey
+import app.n_zik.android.utils.showOnDevicePlaylistsKey
+import app.n_zik.android.core.ondevice.deviceLibraryEnabled
 import app.n_zik.android.utils.homePlaylistsOrderKey
 import app.n_zik.android.utils.homeLibraryToolbarOrderKey
+import app.n_zik.android.utils.homeLibraryOnDeviceToolbarOrderKey
 import app.n_zik.android.utils.homeLibraryYTPlaylistToolbarOrderKey
 import app.n_zik.android.utils.homeLibraryPinnedPlaylistToolbarOrderKey
 import app.n_zik.android.utils.homeLibraryMonthlyPlaylistToolbarOrderKey
 import app.n_zik.android.utils.homeLibraryPlaylistSortMenuOrderKey
+import app.n_zik.android.utils.homeLibraryOnDeviceSortMenuOrderKey
 import app.n_zik.android.utils.homeLibraryYTPlaylistSortMenuOrderKey
 import app.n_zik.android.utils.homeLibraryPinnedPlaylistSortMenuOrderKey
 import app.n_zik.android.utils.homeLibraryMonthlyPlaylistSortMenuOrderKey
@@ -177,21 +186,16 @@ import app.n_zik.android.components.tab.ImportPlaylistsMenu
 import app.n_zik.android.components.tab.ImportSongsFromServices
 import app.n_zik.android.typography
 import kotlinx.coroutines.withContext
-import app.n_zik.android.components.dialog.common.RetrySyncDialog
 import app.n_zik.android.components.dialog.settings.HomeLibraryToolbarSettingsDialog
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.rememberDataStoreBooleanPreference
-import androidx.compose.material3.LinearWavyProgressIndicator
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.utils.formatAsTime
-import app.n_zik.android.components.pullrefresh.OfflineGatedPullRefresh
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
-import androidx.core.content.ContextCompat
 import java.util.ArrayList
-import android.content.Intent
 
 
 @Composable
@@ -232,10 +236,15 @@ fun HomeLibrary(
     val binder = LocalPlayerServiceBinder.current
     
     // Essentials
-    val lazyGridState = rememberLazyGridState()
 
     // Non-vital
     var playlistType by rememberPreference(playlistTypeKey, PlaylistsType.Playlist)
+    val lazyGridState = PlaylistsType.entries.map { tab ->
+        key(tab) { rememberLazyGridState() }
+    }[playlistType.ordinal]
+    val headerOffsetState = PlaylistsType.entries.map { tab ->
+        key(tab) { rememberSaveable { androidx.compose.runtime.mutableFloatStateOf(0f) } }
+    }[playlistType.ordinal]
     var youtubeLibraryFilter by rememberPreference(YOUTUBE_LIBRARY_FILTER_KEY, YouTubeLibraryFilter.All)
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
@@ -243,14 +252,16 @@ fun HomeLibrary(
     // the import dialog prunes its network choices.
     val offlineMode by OfflineMode.rememberEnabled()
 
-    var items by persistList<PlaylistPreview>("home/playlists/items")
+    var items by key(playlistType) { persistList<PlaylistPreview>("home/playlists/$playlistType/items") }
 
-    var itemsOnDisplay by persistList<PlaylistPreview>("home/playlists/on_display")
+    var itemsOnDisplay by key(playlistType) { persistList<PlaylistPreview>("home/playlists/$playlistType/on_display") }
 
     val search = Search(lazyGridState)
     val itemSelector = ItemSelector<PlaylistPreview>()
     val showPinnedPlaylists by rememberPreference(showPinnedPlaylistsKey, true)
     val showRewind by rememberPreference(showMonthlyPlaylistsKey, true)
+    val showOnDeviceTab by rememberPreference(showOnDevicePlaylistsKey, true)
+    val showOnDevice = deviceLibraryEnabled() && showOnDeviceTab
     val showYtPlaylists by rememberPreference(showYtPlaylistsKey, true)
     val rewindMonthlyPlaylistEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true)
     val rewindYearlyPlaylistEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
@@ -259,11 +270,23 @@ fun HomeLibrary(
         playlistType, youtubeLibraryFilter, search.inputValue, showRewind, showPinnedPlaylists,
         rewindMonthlyPlaylistEnabled, rewindYearlyPlaylistEnabled, rewindPlaylistsFilter,
     )
-    val filteredItems = libraryScope.visible(itemsOnDisplay)
+    val devicePlaylistIds by remember { Database.songPlaylistMapTable.onDeviceOnlyPlaylistIds() }
+        .collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
+    val filteredItems = devicePlaylistIds?.let { ids ->
+        val deviceIds = ids.toHashSet()
+        val deviceTab = playlistType == PlaylistsType.OnDevice
+        libraryScope.visible(itemsOnDisplay).filter { preview ->
+            val playlist = preview.playlist
+            val onDevice = playlist.id in deviceIds &&
+                !isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)
+            if (deviceTab) onDevice else !showOnDevice || !onDevice
+        }
+    }.orEmpty()
     val actionTargets = homeLibraryActionTargets(filteredItems, itemSelector.toList())
     LaunchedEffect(libraryScope) { itemSelector.isActive = false }
 
     val sort = when( playlistType ) {
+        PlaylistsType.OnDevice -> Sort( HOME_ON_DEVICE_PLAYLISTS_SORT_BY, HOME_ON_DEVICE_PLAYLISTS_SORT_ORDER, homeLibraryOnDeviceSortMenuOrderKey, "lib_dev" )
         PlaylistsType.Playlist -> Sort( HOME_LIBRARY_PLAYLIST_SORT_BY, HOME_LIBRARY_PLAYLIST_SORT_ORDER, homeLibraryPlaylistSortMenuOrderKey, "lib_pl" )
         PlaylistsType.YTPlaylist -> Sort( HOME_LIBRARY_YT_PLAYLIST_SORT_BY, HOME_LIBRARY_YT_PLAYLIST_SORT_ORDER, homeLibraryYTPlaylistSortMenuOrderKey, "lib_yt" )
 
@@ -274,7 +297,13 @@ fun HomeLibrary(
     val itemSize = ItemSize.init( HOME_LIBRARY_ITEM_SIZE )
 
     var selectedSongs by remember(actionTargets) { mutableStateOf<List<Song>>(emptyList()) }
-    val actionSource = rememberHomeLibraryActionSource(actionTargets, selectedSongs)
+    val actionSource = rememberHomeLibraryActionSource(actionTargets, selectedSongs) { targets ->
+        val songs = loadHomeLibraryActionSongs(targets)
+        if (playlistType == PlaylistsType.OnDevice) {
+            val eligible = appContext().scanDeviceLibrary().songIds
+            songs.filter { it.isLocal && it.id in eligible }
+        } else songs
+    }
     suspend fun getSelectedSongs(): List<Song> = withContext(NzikDispatchers.DATA) {
         actionSource.loadSongs()
     }
@@ -388,9 +417,10 @@ fun HomeLibrary(
         }
     }
 
-    var searchDataReady by remember(sort.sortBy, sort.sortOrder) { mutableStateOf(false) }
-    var completedSearchQuery by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect( sort.sortBy, sort.sortOrder ) {
+    var searchDataReady by remember(playlistType, sort.sortBy, sort.sortOrder) { mutableStateOf(false) }
+    var completedSearchQuery by remember(playlistType, sort.sortBy, sort.sortOrder) { mutableStateOf<String?>(null) }
+    val gridReady = searchDataReady && devicePlaylistIds != null && completedSearchQuery == search.inputValue
+    LaunchedEffect( playlistType, sort.sortBy, sort.sortOrder ) {
         Database.playlistTable
                 .sortPreviews( sort.sortBy, sort.sortOrder )
                 .distinctUntilChanged()
@@ -399,7 +429,8 @@ fun HomeLibrary(
                     searchDataReady = true
                 }
     }
-    LaunchedEffect( items, search.inputValue ) {
+    LaunchedEffect( playlistType, searchDataReady, items, search.inputValue ) {
+        if (!searchDataReady) return@LaunchedEffect
         itemsOnDisplay = items.filter {
             it.playlist.name.contains( search.inputValue, true )
         }
@@ -411,13 +442,15 @@ fun HomeLibrary(
 
     // YT playlists can come from imports (not only live sync), so the tab
     // visibility follows the showYtPlaylists setting alone.
-    val playlistsDefaultOrder = listOf("all", "pinned_playlists", "rewind", "yt_playlists")
+    val playlistsDefaultOrder = listOf("all", "pinned_playlists", "rewind", "yt_playlists", "on_device")
     val toggleMap = mapOf(
+        "on_device" to showOnDevice,
         "yt_playlists" to showYtPlaylists,
         "pinned_playlists" to showPinnedPlaylists,
         "rewind" to showRewind
     )
     val typeMap = mapOf(
+        "on_device" to PlaylistsType.OnDevice,
         "yt_playlists" to PlaylistsType.YTPlaylist,
         "pinned_playlists" to PlaylistsType.PinnedPlaylist,
         "rewind" to PlaylistsType.MonthlyPlaylist
@@ -426,12 +459,14 @@ fun HomeLibrary(
     val ytLabel = stringResource(R.string.library_youtube_playlists_label)
     val pinnedLabel = stringResource(R.string.playlist_pinned_title)
     val rewindLabel = stringResource(R.string.rewind_title)
+    val onDeviceLabel = stringResource(R.string.library_on_device_title)
     val labelMap = mapOf(
+        "on_device" to onDeviceLabel,
         "yt_playlists" to ytLabel,
         "pinned_playlists" to pinnedLabel,
         "rewind" to rewindLabel
     )
-    val buttonsList = remember(showPinnedPlaylists, showRewind, showYtPlaylists, homePlaylistsOrderPref, allLabel, ytLabel, pinnedLabel, rewindLabel) {
+    val buttonsList = remember(showOnDevice, onDeviceLabel, showPinnedPlaylists, showRewind, showYtPlaylists, homePlaylistsOrderPref, allLabel, ytLabel, pinnedLabel, rewindLabel) {
         val order = try {
             val arr = JSONArray(homePlaylistsOrderPref)
             val parsed = (0 until arr.length()).map { arr.getString(it) }
@@ -453,10 +488,10 @@ fun HomeLibrary(
     }
     // END - Additional playlists
 
-    LaunchedEffect(showPinnedPlaylists, showRewind, showYtPlaylists) {
+    LaunchedEffect(showPinnedPlaylists, showRewind, showYtPlaylists, showOnDevice, playlistType) {
+        if (!showOnDevice && playlistType == PlaylistsType.OnDevice) playlistType = PlaylistsType.Playlist
         if (!showPinnedPlaylists && playlistType == PlaylistsType.PinnedPlaylist) playlistType = PlaylistsType.Playlist
         if (!showRewind && playlistType == PlaylistsType.MonthlyPlaylist) playlistType = PlaylistsType.Playlist
-        if (!showYtPlaylists && playlistType == PlaylistsType.YTPlaylist) playlistType = PlaylistsType.Playlist
         if (!showYtPlaylists && playlistType == PlaylistsType.YTPlaylist) playlistType = PlaylistsType.Playlist
     }
 
@@ -480,24 +515,17 @@ fun HomeLibrary(
 
     var refreshing by remember { mutableStateOf(false) }
 
-    fun refresh(itemsToRefresh: List<PlaylistPreview>? = null) {
-        if (refreshing || HomeSyncState.isSyncingPlaylists) {
+    fun refreshPodcasts() {
+        if (refreshing) {
             Toaster.e(appTextResources().getString(R.string.library_sync_already_running_message))
             return
         }
-        val targetPlaylists = itemsToRefresh ?: actionSource.targets
-        // The service interprets an empty ID list as a request to refresh every playlist.
+        val targetPlaylists = actionSource.targets
         if (targetPlaylists.isEmpty()) return
         refreshing = true
         coroutineScope.launch {
             try {
-                val result = refreshHomeLibraryTargets(targetPlaylists, dispatchPlaylists = { targetIds ->
-                    val intent = Intent(appContext(), HomeSyncService::class.java).apply {
-                        action = HomeSyncService.ACTION_SYNC_PLAYLISTS
-                        putStringArrayListExtra(HomeSyncService.EXTRA_IDS, ArrayList(targetIds.map(Long::toString)))
-                    }
-                    ContextCompat.startForegroundService(appContext(), intent)
-                })
+                val result = refreshHomeLibraryPodcasts(targetPlaylists)
                 if (result.failedPodcasts > 0) Toaster.e(R.string.common_error_title)
                 else if (result.refreshedPodcasts > 0) Toaster.done()
             } catch (cancelled: CancellationException) {
@@ -511,28 +539,11 @@ fun HomeLibrary(
         }
     }
 
-    val retryDialog = RetrySyncDialog(
-        failedCount = HomeSyncState.failedPlaylistsList.size,
-        onRetry = { 
-            val items = HomeSyncState.failedPlaylistsList
-            HomeSyncState.failedPlaylistsList = emptyList()
-            refresh(items) 
-        }
-    )
-    retryDialog.Render()
-    LaunchedEffect(HomeSyncState.failedPlaylistsList) {
-        if (HomeSyncState.failedPlaylistsList.isNotEmpty()) retryDialog.showDialog()
-    }
-
     val context = LocalContext.current
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
     val floatingBackdrop = rememberGlassFloatingActionBackdrop()
 
-    OfflineGatedPullRefresh(
-        isOnline = isOnline,
-        isRefreshing = refreshing,
-        onRefresh = { refresh() }
-    ) {
+    DeviceLibraryPullRefresh(playlistType == PlaylistsType.OnDevice, isOnline, refreshing, ::refreshPodcasts) {
         Box(
             modifier = Modifier
                 .background(colorPalette().background0)
@@ -548,17 +559,22 @@ fun HomeLibrary(
                 val homeLibraryToolbarOrderPrefPinned by rememberPreference(homeLibraryPinnedPlaylistToolbarOrderKey, "")
                 val homeLibraryToolbarOrderPrefMonthly by rememberPreference(homeLibraryMonthlyPlaylistToolbarOrderKey, "")
 
+                val onDeviceToolbarOrder by rememberPreference(homeLibraryOnDeviceToolbarOrderKey, "")
+
                 val currentToolbarOrderPref = when (playlistType) {
+                    PlaylistsType.OnDevice -> onDeviceToolbarOrder
                     PlaylistsType.YTPlaylist -> homeLibraryToolbarOrderPrefYT
                     PlaylistsType.PinnedPlaylist -> homeLibraryToolbarOrderPrefPinned
                     PlaylistsType.MonthlyPlaylist -> homeLibraryToolbarOrderPrefMonthly
                     else -> homeLibraryToolbarOrderPrefLibrary
                 }
 
-                val toolbarButtons = remember { mutableStateListOf<Button>() }
-
-                LaunchedEffect(sort.sortBy, sort.sortOrder, currentToolbarOrderPref, offlineMode) {
-                    val defaultToolbarOrder = HomeLibraryToolbarSettingsDialog.allButtonIds
+                val toolbarButtons = buildList<Button> {
+                    val defaultToolbarOrder = if (playlistType == PlaylistsType.OnDevice) {
+                        HomeLibraryToolbarSettingsDialog.onDeviceButtonIds
+                    } else {
+                        HomeLibraryToolbarSettingsDialog.allButtonIds
+                    }
                     val order = try {
                         if (currentToolbarOrderPref.isBlank()) defaultToolbarOrder else {
                             val arr = JSONArray(currentToolbarOrderPref)
@@ -566,22 +582,21 @@ fun HomeLibrary(
                         }
                     } catch (_: Exception) { defaultToolbarOrder }
 
-                    toolbarButtons.clear()
-                    order.forEach { id ->
+                    order.filter { it in defaultToolbarOrder }.forEach { id ->
                         when(id) {
-                            "sort" -> toolbarButtons.add(sort)
-                            "position_lock" -> { if (sort.sortBy == PlaylistSortBy.Custom) toolbarButtons.add(positionLock) }
-                            "sync" -> { if (isYouTubeSyncEnabled() && !offlineMode) toolbarButtons.add(sync) }
-                            "search" -> toolbarButtons.add(search)
-                            "shuffle" -> toolbarButtons.add(shuffle)
-                            "item_selector" -> toolbarButtons.add(itemSelector)
-                            "play_next" -> toolbarButtons.add(playNext)
-                            "enqueue" -> toolbarButtons.add(enqueue)
-                            "add_to_playlist" -> toolbarButtons.add(addToPlaylist)
-                            "export_dialog" -> toolbarButtons.add(exportDialog)
-                            "delete_playlists" -> toolbarButtons.add(deletePlaylistsButton)
-                            "import_menu" -> toolbarButtons.add(importMenu)
-                            "item_size" -> toolbarButtons.add(itemSize)
+                            "sort" -> add(sort)
+                            "position_lock" -> { if (sort.sortBy == PlaylistSortBy.Custom) add(positionLock) }
+                            "sync" -> { if (isYouTubeSyncEnabled() && !offlineMode) add(sync) }
+                            "search" -> add(search)
+                            "shuffle" -> add(shuffle)
+                            "item_selector" -> add(itemSelector)
+                            "play_next" -> add(playNext)
+                            "enqueue" -> add(enqueue)
+                            "add_to_playlist" -> add(addToPlaylist)
+                            "export_dialog" -> add(exportDialog)
+                            "delete_playlists" -> add(deletePlaylistsButton)
+                            "import_menu" -> add(importMenu)
+                            "item_size" -> add(itemSize)
                         }
                     }
                 }
@@ -590,7 +605,7 @@ fun HomeLibrary(
                 SearchEmptyFeedback(
                     query = search.inputValue,
                     empty = filteredItems.isEmpty(),
-                    loading = !searchDataReady || completedSearchQuery != search.inputValue
+                    loading = !gridReady
                 )
 
                 val hapticFeedback = LocalHapticFeedback.current
@@ -685,36 +700,6 @@ fun HomeLibrary(
                             }
                         }
                     }
-                    if (HomeSyncState.isSyncingPlaylists) {
-                        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                BasicText(
-                                    text = stringResource(R.string.library_sync_current_item_format, HomeSyncState.playlistSyncCurrentName),
-                                    style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
-                                    maxLines = 1,
-                                    modifier = Modifier.weight(1f).padding(end = 8.dp).basicMarquee(iterations = Int.MAX_VALUE)
-                                )
-                                Row {
-                                    BasicText(
-                                        text = stringResource(R.string.library_sync_progress_format, HomeSyncState.playlistSyncCurrentIndex, HomeSyncState.playlistSyncTotal),
-                                        style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary)
-                                    )
-                                    if (HomeSyncState.playlistSyncFailed > 0) {
-                                        BasicText(
-                                            text = " " + stringResource(R.string.library_sync_failed_count_suffix, HomeSyncState.playlistSyncFailed),
-                                            style = typography().xxs.semiBold.copy(color = colorPalette().red)
-                                        )
-                                    }
-                                }
-                            }
-                            LinearWavyProgressIndicator(
-                                progress = { HomeSyncState.playlistSyncProgress },
-                                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                                color = colorPalette().accent,
-                                trackColor = colorPalette().background2
-                            )
-                        }
-                        }
                     }
                 }
             }
@@ -722,7 +707,6 @@ fun HomeLibrary(
             Box(modifier = Modifier.fillMaxSize().glassFloatingActionContent(floatingBackdrop)) {
                     val headerHeightState = remember { androidx.compose.runtime.mutableIntStateOf(0) }
                     val headerHeight by headerHeightState
-                    val headerOffsetState = remember { androidx.compose.runtime.mutableFloatStateOf(0f) }
                     val headerOffset by headerOffsetState
 
                         val nestedScrollConnection = rememberHomeHeaderConnection(headerHeight, headerOffsetState, filteredItems.isNotEmpty())
@@ -738,7 +722,7 @@ fun HomeLibrary(
                         },
                     ) {
                         val headerDensity = androidx.compose.ui.platform.LocalDensity.current
-                        LazyVerticalGrid(
+                        if (gridReady) LazyVerticalGrid(
                             state = lazyGridState,
                             columns = GridCells.Adaptive( itemSize.size.dp ),
                             modifier = Modifier
@@ -806,14 +790,19 @@ fun HomeLibrary(
                                                     else itemSelector.add( preview )
                                                 } else {
                                                     search.hideIfEmpty()
-                                                    onPlaylistClick(preview.playlist)
+                                                    if (playlistType == PlaylistsType.OnDevice) {
+                                                        navController.navigate("localPlaylist/${preview.playlist.id}?onDevice=true")
+                                                    } else {
+                                                        onPlaylistClick(preview.playlist)
+                                                    }
                                                 }
                                             },
                                             onLongClick = {
                                                 menuState.display {
                                                     LocalPlaylistItemMenu(
                                                         navController = navController,
-                                                        playlistPreview = preview
+                                                        playlistPreview = preview,
+                                                        onDevice = playlistType == PlaylistsType.OnDevice,
                                                     ).MenuComponent()
                                                 }
                                             }
@@ -822,6 +811,9 @@ fun HomeLibrary(
                                     isYoutubePlaylist = preview.playlist.isYoutubePlaylist,
                                     isEditable = preview.playlist.isEditable,
                                     thumbnailOverlay = {
+                                        if (!preview.playlist.isYoutubePlaylist) {
+                                            OnDeviceCoverBadge(Modifier.align(Alignment.TopEnd).zIndex(3f))
+                                        }
                                         if( itemSelector.isActive ) {
                                             key(itemSelector.size) {
                                                 Icon(
@@ -890,12 +882,16 @@ fun HomeLibrary(
                     }
                 }
 
-                if (filteredItems.isEmpty()) {
+                if (gridReady && filteredItems.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding(topInsetProvider = scrollContentInsetProvider, base = PaddingValues(top = with(androidx.compose.ui.platform.LocalDensity.current) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() }, bottom = Dimensions.bottomSpacer))),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.common_empty_items))
+                        if (search.inputValue.isBlank()) {
+                            val message = if (playlistType == PlaylistsType.OnDevice)
+                                R.string.library_on_device_no_local_playlists else R.string.common_empty_items
+                            SearchNoResults(text = stringResource(message))
+                        }
                     }
                 }
                     }
@@ -923,13 +919,3 @@ fun HomeLibrary(
         }
     }
 }
-
-
-
-
-
-
-
-
-
-

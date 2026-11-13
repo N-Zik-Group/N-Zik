@@ -69,10 +69,6 @@
         <item quantity="one">İçe aktarılan profil durumu: %1$d profil</item>
         <item quantity="other">İçe aktarılan profil durumu: %1$d profiller</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="one">%1$d albümün senkronizasyonu başarısız oldu. Tekrar denemek için Albümler sekmesine geri dönün.</item>
-        <item quantity="other">%1$d albümlerin senkronizasyonu başarısız oldu. Tekrar denemek için Albümler sekmesine geri dönün.</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="one">Önbelleğe alınmış/indirilmiş %1$d şarkıyı dışa aktarmak ister misiniz?</item>
         <item quantity="other">Önbelleğe alınmış/indirilmiş %1$d şarkıları dışa aktarmak ister misiniz?</item>
@@ -88,54 +84,6 @@
     <plurals name="listen_together_blocked_user_count">
         <item quantity="one">%1$d kullanıcı engellendi</item>
         <item quantity="other">%1$d kullanıcılar engellendi</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="one">%1$d sanatçının senkronizasyonu başarısız oldu. Tekrar denemek için Sanatçılar sekmesine geri dönün.</item>
-        <item quantity="other">%1$d sanatçıların senkronizasyonu başarısız oldu. Tekrar denemek için Sanatçılar sekmesine geri dönün.</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="one">%1$d çalma listesi senkronize edilemedi. Tekrar denemek için Çalma listeleri sekmesine geri dönün.</item>
-        <item quantity="other">%1$d çalma listeleri senkronize edilemedi. Tekrar denemek için Çalma listeleri sekmesine geri dönün.</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">%1$d başarısız olan öğenin senkronizasyonunu yeniden denemek ister misiniz?</item>
-        <item quantity="other">%1$d başarısız olan öğelerin senkronizasyonunu yeniden denemek ister misiniz?</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="one">Sanatçı senkronize ediliyor... (%1$d/%2$d)</item>
-        <item quantity="other">Sanatçılar senkronize ediliyor... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="one">%1$d sanatçı yenileniyor</item>
-        <item quantity="other">%1$d sanatçılar yenileniyor</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="one">%1$d sanatçı bulunamadı, yeniden deneniyor</item>
-        <item quantity="other">%1$d sanatçılar bulunamadı, yeniden deneniyor</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="one">Albüm senkronize ediliyor... (%1$d/%2$d)</item>
-        <item quantity="other">Albümler senkronize ediliyor... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">%1$d albüm yenileniyor</item>
-        <item quantity="other">%1$d albümler yenileniyor</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="one">%1$d albüm bulunamadı, yeniden deneniyor</item>
-        <item quantity="other">%1$d albümler bulunamadı, yeniden deneniyor</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="one">Çalma listesi senkronize ediliyor... (%1$d/%2$d)</item>
-        <item quantity="other">Çalma listeleri senkronize ediliyor... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="one">%1$d çalma listesi yenileniyor</item>
-        <item quantity="other">%1$d çalma listeleri yenileniyor</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="one">%1$d çalma listesi bulunamadı, yeniden deneniyor</item>
-        <item quantity="other">%1$d çalma listeleri bulunamadı, yeniden deneniyor</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="one">%1$d öğe temizlendi</item>

@@ -90,7 +90,7 @@ class SettingsDetailedSearchTest {
         val entries = AllSettingsEntryTargets.filter {
             it.id.startsWith("embedded.auto_backup.") || it.id.startsWith("other.on_device.")
         }
-        assertEquals(20, entries.size)
+        assertEquals(22, entries.size)
         for (locale in listOf(Locale.ENGLISH, Locale.FRENCH)) {
             val localized = localized(locale)
             for (entry in entries) {

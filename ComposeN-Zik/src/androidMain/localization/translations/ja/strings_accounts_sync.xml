@@ -177,7 +177,6 @@
     <string name="sync_background_guard_description">アプリがバックグラウンドで動作しているときに自動同期を一時停止する</string>
     <string name="sync_channels">購読中のチャンネルを自動同期</string>
     <string name="sync_channels_description">YouTube音楽から購読しているアーティストを自動インポート</string>
-    <string name="sync_completed_with_errors">同期がエラーと共に完了しました</string>
     <string name="sync_cooldown">クールダウンを同期</string>
     <string name="sync_cooldown_description">自動同期の最小時間 (分)</string>
     <string name="sync_data_with_ytm_account">YTMアカウントとデータを同期</string>
@@ -204,8 +203,6 @@
     <string name="sync_imported_playlists_automatic_title">インポートした再生リストを自動で同期</string>
     <string name="sync_likes">お気に入りの曲を自動同期</string>
     <string name="sync_likes_description">YouTube音楽からいいね曲を自動インポート</string>
-    <string name="sync_no_items">同期するアイテムがありません</string>
-    <string name="sync_notifications">通知を同期</string>
     <string name="sync_now">今すぐ同期</string>
     <string name="sync_now_description">YouTube音楽と強制的に完全同期する</string>
     <string name="sync_per_playlist_auto">プレイリスト毎の自動同期</string>
@@ -236,10 +233,6 @@
     <string name="sync_status_last">前回の同期: %1$d分前</string>
     <string name="sync_status_never">同期しない</string>
     <string name="sync_status_running">同期中: %1$s</string>
-    <string name="sync_success_notification_albums">すべてのアルバムを正常に同期しました。</string>
-    <string name="sync_success_notification_artists">すべてのアーティストの同期に成功しました。</string>
-    <string name="sync_success_notification_playlists">すべてのプレイリストを正常に同期しました。</string>
-    <string name="sync_successful">同期成功</string>
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">%1$d 失敗した項目を同期して再試行しますか？</string>
     <string name="sync_running_status">同期中...</string>
@@ -257,10 +250,6 @@
     <string name="sync_youtube_songs_remaining">%1$s 曲残ります。</string>
     <string name="sync_youtube_unlike_failed">YouTubeの曲と違って失敗しました</string>
     <string name="sync_youtube_unlike_success">YouTubeでは曲がお気に入りではありません</string>
-    <string name="sync_starting_notification">同期を開始中...</string>
-    <string name="sync_background_notification">バックグラウンドで同期中...</string>
-    <string name="sync_aborted_network_error">ネットワークエラーのため同期が中止されました。</string>
-    <string name="sync_start_service_failed">サービスの同期を開始できませんでした</string>
     <string name="sync_fetch_subscribed_channels_failed">購読中のチャンネルを取得できませんでした</string>
     <string name="sync_fetch_liked_albums_failed">いいね！されたアルバムの取得に失敗しました</string>
     <string name="sync_fetch_liked_songs_failed">いいね！した曲を取得できませんでした</string>

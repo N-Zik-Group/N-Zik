@@ -71,4 +71,13 @@ class HomeLibraryPlaylistScopeTest {
         assertEquals(listOf(month), all.copy(type = PlaylistsType.MonthlyPlaylist,
             monthlyEnabled = true, yearlyEnabled = false).visible(rows))
     }
+
+    @Test fun `on device filters remote playlists while retaining pinned and search rules`() {
+        val remotePlaylist = remote.copy(playlist = remote.playlist.copy(isYoutubePlaylist = true))
+        val pinned = preview(7, "${PINNED_PREFIX}Local pinned")
+        val scope = podcastScope.copy(type = PlaylistsType.OnDevice, query = "local", showPinned = false)
+        assertEquals(listOf(local), scope.visible(listOf(remotePlaylist, local, pinned)))
+        assertEquals(listOf(local, pinned), scope.copy(showPinned = true).visible(listOf(remotePlaylist, local, pinned)))
+        assertTrue(scope.copy(query = "science").visible(listOf(remotePlaylist, local)).isEmpty())
+    }
 }

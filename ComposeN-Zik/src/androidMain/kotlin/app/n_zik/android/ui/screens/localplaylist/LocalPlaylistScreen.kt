@@ -24,6 +24,7 @@ import app.n_zik.android.components.navigation.Skeleton
 fun LocalPlaylistScreen(
     navController: NavController,
     playlistId: Long,
+    forceOnDevice: Boolean = false,
     miniPlayer: @Composable () -> Unit = {}
 ) {
     val saveableStateHolder = rememberSaveableStateHolder()
@@ -42,7 +43,8 @@ fun LocalPlaylistScreen(
                 0 -> LocalPlaylistSongs(
                     navController = navController,
                     playlistId = playlistId,
-                    onDelete = {}
+                    onDelete = {},
+                    forceOnDevice = forceOnDevice
                 )
             }
         }

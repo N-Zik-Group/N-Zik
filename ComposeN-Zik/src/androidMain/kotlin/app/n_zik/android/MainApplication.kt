@@ -78,6 +78,9 @@ import app.n_zik.android.core.notifications.refreshNotificationChannelLabels
 import app.n_zik.android.core.backup.DatabaseBackup
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.core.backup.LibraryStartup
+import app.n_zik.android.core.ondevice.scanDeviceLibrary
+import app.n_zik.android.core.ondevice.SCAN_DEVICE_LIBRARY_ON_STARTUP_KEY
+import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
 import app.n_zik.android.core.rescue.RescueProcess
 import app.n_zik.android.download.services.withProfileDownloadCommandOwner
 import app.n_zik.android.components.settings.applyUseLoginForSearch
@@ -228,6 +231,11 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             registerReceiver(moduleCancelReceiver, moduleCancelFilter)
         }
 
+        if (isDeviceLibraryEnabled() && preferences.getBoolean(SCAN_DEVICE_LIBRARY_ON_STARTUP_KEY, true)) {
+            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                scanDeviceLibrary()
+            }
+        }
         WidgetAppearance.observeIdlePreferences(this)
         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
             PickedImageEditor.cleanupOrphans(applicationContext)
@@ -699,16 +707,6 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 setShowBadge(false)
             }
 
-            // Channel for sync
-            val syncChannel = NotificationChannel(
-                "sync_channel_id",
-                strings.getString(R.string.sync_action_sync),
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                description = strings.getString(R.string.sync_notifications)
-                setShowBadge(false)
-            }
-
             // Channel for the monthly rewind reminder
             val rewindChannel = NotificationChannel(
                 RewindReminderWorker.CHANNEL_ID,
@@ -720,7 +718,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             }
 
             notificationManager.createNotificationChannels(
-                listOf(playerChannel, sleepTimerChannel, downloadChannel, syncChannel, rewindChannel)
+                listOf(playerChannel, sleepTimerChannel, downloadChannel, rewindChannel)
             )
             refreshNotificationChannelLabels(this, strings, notificationManager)
         }

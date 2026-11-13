@@ -160,14 +160,14 @@ class SongItemMenu private constructor(
             val playbackStart = LOCAL_SONG_PLAYBACK_START
             // Section: Management
             SectionTitle(stringResource(R.string.library_management_section_title))
-            buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            buttons.filterIsInstance<ChangeAlbumBrowseIdDialog>().firstOrNull()?.let { it.ListMenuItem() }
-            buttons.filterIsInstance<ChangeArtistBrowseIdDialog>().firstOrNull()?.let { it.ListMenuItem() }
+            for (i in 1 until playbackStart) {
+                buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
+            }
 
             // Section: Playback
             SectionTitle(stringResource(R.string.common_playback_section_title))
             // Full offline mode: startRadio (the first playback entry) needs the network — skipped
-            for (i in (if (offlineMode) playbackStart + 1 else playbackStart) until playbackStart + LOCAL_PLAYBACK_COUNT) {
+            for (i in (playbackStart + 1) until playbackStart + LOCAL_PLAYBACK_COUNT) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
             refreshBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -242,16 +242,16 @@ class SongItemMenu private constructor(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SectionTitle(stringResource(R.string.library_management_section_title))
             }
-            buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            buttons.filterIsInstance<ChangeAlbumBrowseIdDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
-            buttons.filterIsInstance<ChangeArtistBrowseIdDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
+            for (i in 1 until playbackStart) {
+                buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            }
 
             // Section: Playback
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SectionTitle(stringResource(R.string.common_playback_section_title))
             }
             // Full offline mode: startRadio (the first playback entry) needs the network — skipped
-            for (i in (if (offlineMode) playbackStart + 1 else playbackStart) until playbackStart + LOCAL_PLAYBACK_COUNT) {
+            for (i in (playbackStart + 1) until playbackStart + LOCAL_PLAYBACK_COUNT) {
                 buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
             refreshBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -548,7 +548,9 @@ class SongItemMenu private constructor(
         buttons = mutableListOf<Button>().apply {
             add( infoButton )
             if (song.isLocal) {
-                add( editMetadata )
+                add(editMetadata)
+                add(renameSong)
+                add(changeCover)
             } else {
                 add( renameSong )
                 add( changeAuthor )
@@ -559,6 +561,10 @@ class SongItemMenu private constructor(
             add( enqueue )
             add( addToFavorite )
             add( addToPlaylist )
+            if (song.isLocal) {
+                add(goToAlbum)
+                add(goToArtistFallback)
+            }
             if( !song.isLocal ) {
                 add( goToAlbum )
                 // Per-artist "More of" buttons
@@ -659,13 +665,9 @@ class SongItemMenu private constructor(
         //</editor-fold>
 
         //<editor-fold desc="Dialog renders">
-        if (song.isLocal) {
-            editMetadata.Render()
-        } else {
-            renameSong.Render()
-            changeAuthor.Render()
-            changeCover.Render()
-        }
+        renameSong.Render()
+        changeCover.Render()
+        if (song.isLocal) editMetadata.Render() else changeAuthor.Render()
         if (!song.isLocal) {
             changeAlbumId.Render()
             changeArtistId.Render()
@@ -775,7 +777,7 @@ class SongItemMenu private constructor(
  * gate is gone (spec-ffmpeg-extension-module): the module is downloaded on first use,
  * so the button is always present and the menu layout is fixed.
  */
-internal const val LOCAL_SONG_PLAYBACK_START = 2
+internal const val LOCAL_SONG_PLAYBACK_START = 4
 
 /** Number of playback buttons of a local song's menu (radio, play next, enqueue, favorite, add to playlist). */
 internal const val LOCAL_PLAYBACK_COUNT = 5

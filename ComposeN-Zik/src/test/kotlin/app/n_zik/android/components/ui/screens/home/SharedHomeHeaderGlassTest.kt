@@ -54,6 +54,14 @@ import org.robolectric.annotation.GraphicsMode
 class SharedHomeHeaderGlassTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun `shared glass edge follows the same geometry in both directions`() {
+        val expansion = listOf(0f, .25f, .5f, .75f, 1f)
+        val opening = expansion.map { sharedHomeGlassTransitionHeight(64, 200, it) }
+        val closing = expansion.asReversed().map { sharedHomeGlassTransitionHeight(64, 200, it) }
+        assertEquals(listOf(64, 98, 132, 166, 200), opening)
+        assertEquals(opening.asReversed(), closing)
+    }
+
     @Test fun `Top collapse removes initial header and mini clearance along with the toolbar`() {
         // The scroll reserve stays fixed, whereas navigation has already moved up.
         assertEquals(340, sharedTopHomeGlassHeight(152, 152, 188, 1f))

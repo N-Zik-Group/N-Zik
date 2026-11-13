@@ -612,8 +612,7 @@ internal fun remoteTargets( targets: List<Song> ): List<Song> = targets.filterNo
 /**
  * The Home Songs toolbar batch « Update » action: applies [runSongUpdateCore] sequentially to
  * every non-local target (local songs are skipped silently — they carry no YTM id). YTM
- * fetches are rate-limited with a random 1-5 s gap between requests (same pattern as
- * HomeSyncService), only when a fetch box is ticked; a single summary toast replaces the
+ * fetches are rate-limited with a random 1-5 s gap between requests, only when a fetch box is ticked; a single summary toast replaces the
  * per-song done toasts.
  *
  * [onProgress] is invoked on the DATA dispatcher after every processed song with the
@@ -653,8 +652,7 @@ internal suspend fun runSongUpdateBatch(
             Timber.tag("Database").d( "update batch cancelled processed=%d of %d", index, songsToUpdate.size )
             return index
         }
-        // Random 1-5 s gap between YTM fetches (same pattern as
-        // HomeSyncService) to stay gentle on the API.
+        // Random 1-5 s gap between YTM fetches.
         if( index > 0 && selection.needsFetch ) delay( fetchGapMs() )
         reports += runSongUpdateReport(binder, entry, selection, requestProfile)
         onProgress( index + 1, songsToUpdate.size )

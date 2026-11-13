@@ -97,12 +97,6 @@
         <item quantity="many">Stav profilu importován: %1$d profily</item>
         <item quantity="other">Stav profilu importován: %1$d profily</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="one">Nepodařilo se synchronizovat %1$d alba. Vraťte se zpět na kartu Album a zkuste to znovu.</item>
-        <item quantity="few">Synchronizace %1$d alb se nezdařila. Vraťte se zpět na kartu Album a zkuste to znovu.</item>
-        <item quantity="many">Synchronizace %1$d alb se nezdařila. Vraťte se zpět na kartu Album a zkuste to znovu.</item>
-        <item quantity="other">Synchronizace %1$d alb se nezdařila. Vraťte se zpět na kartu Album a zkuste to znovu.</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="one">Export %1$d cached/downloaded song?</item>
         <item quantity="few">Export %1$d cached/downloaded songs?</item>
@@ -126,78 +120,6 @@
         <item quantity="few">%1$d uživatelů zablokováno</item>
         <item quantity="many">%1$d uživatelů zablokováno</item>
         <item quantity="other">%1$d uživatelů zablokováno</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="one">Synchronizace %1$d umělce se nezdařila. Zkuste to znovu.</item>
-        <item quantity="few">Synchronizace %1$d umělců se nezdařila. Zkuste to znovu.</item>
-        <item quantity="many">Synchronizace %1$d umělců se nezdařila. Zkuste to znovu.</item>
-        <item quantity="other">Synchronizace %1$d umělců se nezdařila. Zkuste to znovu.</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="one">Synchronizace %1$d seznamu skladeb se nezdařila. Zkuste to znovu.</item>
-        <item quantity="few">Synchronizace %1$d seznamů skladeb se nezdařila. Zkuste to znovu.</item>
-        <item quantity="many">Synchronizace %1$d seznamů skladeb se nezdařila. Zkuste to znovu.</item>
-        <item quantity="other">Synchronizace %1$d seznamů skladeb se nezdařila. Zkuste to znovu.</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">Chcete znovu zkusit synchronizaci %1$d selhalo?</item>
-        <item quantity="few">Chcete znovu zkusit synchronizaci %1$d neúspěšných položek?</item>
-        <item quantity="many">Chcete znovu zkusit synchronizaci %1$d neúspěšných položek?</item>
-        <item quantity="other">Chcete znovu zkusit synchronizaci %1$d neúspěšných položek?</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="one">Synchronizace umělce... (%1$d/%2$d)</item>
-        <item quantity="few">Synchronizace umělců... (%1$d/%2$d)</item>
-        <item quantity="many">Synchronizace umělců... (%1$d/%2$d)</item>
-        <item quantity="other">Synchronizace umělců... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="one">Obnovuji %1$d umělce</item>
-        <item quantity="few">Obnovuji %1$d umělců</item>
-        <item quantity="many">Obnovuji %1$d umělců</item>
-        <item quantity="other">Obnovuji %1$d umělců</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="one">Nepodařilo se najít %1$d umělce, zkuste to znovu</item>
-        <item quantity="few">Nepodařilo se najít %1$d umělce, pokusím se znovu</item>
-        <item quantity="many">Nepodařilo se najít %1$d umělce, pokusím se znovu</item>
-        <item quantity="other">Nepodařilo se najít %1$d umělce, pokusím se znovu</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
-        <item quantity="few">Synchronizace alba... (%1$d/%2$d)</item>
-        <item quantity="many">Synchronizace alba... (%1$d/%2$d)</item>
-        <item quantity="other">Synchronizace alba... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">Obnovuji %1$d alba</item>
-        <item quantity="few">Obnovuji %1$d alba</item>
-        <item quantity="many">Obnovuji %1$d alba</item>
-        <item quantity="other">Obnovuji %1$d alba</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="one">Nepodařilo se najít %1$d album, opakuji</item>
-        <item quantity="few">Nepodařilo se najít %1$d alba a pokusit se znovu</item>
-        <item quantity="many">Nepodařilo se najít %1$d alba a pokusit se znovu</item>
-        <item quantity="other">Nepodařilo se najít %1$d alba a pokusit se znovu</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="one">Synchronizace playlistu... (%1$d/%2$d)</item>
-        <item quantity="few">Synchronizace playlistů... (%1$d/%2$d)</item>
-        <item quantity="many">Synchronizace playlistů... (%1$d/%2$d)</item>
-        <item quantity="other">Synchronizace playlistů... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="one">Refreshing %1$d playlist</item>
-        <item quantity="few">Obnovuji %1$d playlistů</item>
-        <item quantity="many">Obnovuji %1$d playlistů</item>
-        <item quantity="other">Obnovuji %1$d playlistů</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="one">Failed to find %1$d playlist, retrying</item>
-        <item quantity="few">Failed to find %1$d playlists, retrying</item>
-        <item quantity="many">Failed to find %1$d playlists, retrying</item>
-        <item quantity="other">Failed to find %1$d playlists, retrying</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="one">%1$d vyčištěn předmět</item>

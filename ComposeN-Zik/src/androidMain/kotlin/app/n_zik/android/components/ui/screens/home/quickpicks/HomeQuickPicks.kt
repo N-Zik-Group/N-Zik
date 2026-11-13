@@ -47,6 +47,7 @@ import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.px
 import app.n_zik.android.utils.*
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
@@ -461,7 +462,14 @@ fun HomeQuickPicksContent(
                             itemInHorizontalGridWidth = itemInHorizontalGridWidth,
                             navController = navController,
                             endPaddingValues = endPaddingValues,
-                            onSongClick = { binder?.startRadio(it, true) },
+                            onSongClick = { song ->
+                                if (song.isLocal) {
+                                    binder?.stopRadio()
+                                    binder?.player?.forcePlay(song.asMediaItem)
+                                } else {
+                                    binder?.startRadio(song, true)
+                                }
+                            },
                             scrollToStartTrigger = state.refreshKey.value
                         )
                     }

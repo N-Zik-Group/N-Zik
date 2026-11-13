@@ -78,6 +78,10 @@ import app.n_zik.android.utils.splitArtistNames
 import app.n_zik.android.utils.syncPushAlbumBookmarkKey
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.playback.services.isLocal
+import app.n_zik.android.core.ondevice.isDeviceAlbumId
+import app.n_zik.android.core.ondevice.DeviceLibraryResults
+import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.album.ChangeAlbumAuthorsDialog
@@ -145,6 +149,19 @@ class AlbumItemMenu private constructor(
 
     @Composable
     override fun ListMenu() = ListMenu.Menu(title = null, showDragHandle = false) {
+        if (isDeviceAlbumId(album.id)) {
+            SectionTitle(stringResource(R.string.common_playback_section_title))
+            buttons.take(3).filterIsInstance<MenuIcon>().forEach { it.ListMenuItem() }
+            SectionTitle(stringResource(R.string.library_management_section_title))
+            buttons.subList(3, 6).filterIsInstance<MenuIcon>().forEach { it.ListMenuItem() }
+            val links = buttons.drop(6).filterIsInstance<MenuIcon>()
+            if (links.isNotEmpty()) {
+                SectionTitle(stringResource(R.string.common_navigation_section_title))
+                links.forEach { it.ListMenuItem() }
+            }
+            return@Menu
+        }
+
         // Section: Playback
         SectionTitle(stringResource(R.string.common_playback_section_title))
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -172,6 +189,19 @@ class AlbumItemMenu private constructor(
 
     @Composable
     override fun GridMenu() = GridMenu.Menu(title = null, showDragHandle = false) {
+        if (isDeviceAlbumId(album.id)) {
+            item(span = { GridItemSpan(maxLineSpan) }) { SectionTitle(stringResource(R.string.common_playback_section_title)) }
+            buttons.take(3).filterIsInstance<MenuIcon>().forEach { button -> item { button.GridMenuItem() } }
+            item(span = { GridItemSpan(maxLineSpan) }) { SectionTitle(stringResource(R.string.library_management_section_title)) }
+            buttons.subList(3, 6).filterIsInstance<MenuIcon>().forEach { button -> item { button.GridMenuItem() } }
+            val links = buttons.drop(6).filterIsInstance<MenuIcon>()
+            if (links.isNotEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }) { SectionTitle(stringResource(R.string.common_navigation_section_title)) }
+                links.forEach { button -> item { button.GridMenuItem() } }
+            }
+            return@Menu
+        }
+
         // Section: Playback
         item(span = { GridItemSpan(maxLineSpan) }) {
             SectionTitle(stringResource(R.string.common_playback_section_title))
@@ -424,15 +454,23 @@ class AlbumItemMenu private constructor(
         val coroutineScope = rememberCoroutineScope()
         val changeTitle = ChangeAlbumTitleDialog { album }
         val changeAuthors = ChangeAlbumAuthorsDialog { album }
-        val changeCover = ChangeAlbumCoverDialog { album }
+        val changeCover = if (isDeviceAlbumId(album.id)) ChangeAlbumCoverDialog.forAlbumDetails { album }
+        else ChangeAlbumCoverDialog { album }
         val changeId = ChangeAlbumBrowseIdDialog(menuState = menuState) { album }
 
         // Fetch songs lazily when menu opens
-        val songs by remember(album.id) {
+        val mappedSongs by remember(album.id) {
             Database.songAlbumMapTable
                     .allSongsOf( album.id )
                     .distinctUntilChanged()
         }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
+
+        val deviceGroup = isDeviceAlbumId(album.id)
+        val profile = getActiveProfile(LocalContext.current)
+        val snapshot by remember(profile) { DeviceLibraryResults.forProfile(profile) }
+            .collectAsStateWithLifecycle(DeviceLibraryResults.current(profile))
+        val eligible = snapshot?.albumSongIds?.get(album.id).orEmpty()
+        val songs = mappedSongs.filter { it.isLocal == deviceGroup && (!deviceGroup || it.id in eligible) }
 
         // Collect artists from the first song if available
         // We observe the songs list to react to its population
@@ -479,15 +517,22 @@ class AlbumItemMenu private constructor(
 
         val shuffle = SongShuffler { songs }
 
+        val onDevice = isDeviceAlbumId(album.id)
         buttons = mutableListOf<Button>().apply {
             add(shuffle)
             add(playNext)
             add(enqueue)
             add(addToPlaylist)
-            add(downloadAll)
-            add(deleteAll)
+            if (onDevice) {
+                add(changeTitle)
+                add(changeCover)
+            } else {
+                add(downloadAll)
+                add(deleteAll)
+            }
             
-            if (artistsData.isEmpty()) {
+            val linkedArtists = artistsData.filter { isDeviceArtistId(it.id) == onDevice }
+            if (linkedArtists.isEmpty() && !onDevice) {
                 val artistNames = album.authorsText
                     .splitArtistNames()
 
@@ -524,7 +569,7 @@ class AlbumItemMenu private constructor(
                     }
                 }
             } else {
-                artistsData.forEach { artist ->
+                linkedArtists.forEach { artist ->
                     add(object : MenuIcon, Descriptive, Clickable {
                         override val iconId: Int = R.drawable.people
                         override val messageId: Int = R.string.library_artists_title
@@ -538,11 +583,13 @@ class AlbumItemMenu private constructor(
                 }
             }
 
-            add(changeTitle)
-            add(changeAuthors)
-            add(changeCover)
-            add(changeId)
-            add(changeArtistId)
+            if (!onDevice) {
+                add(changeTitle)
+                add(changeAuthors)
+                add(changeCover)
+                add(changeId)
+                add(changeArtistId)
+            }
         }
 
         MenuSheetSurface {

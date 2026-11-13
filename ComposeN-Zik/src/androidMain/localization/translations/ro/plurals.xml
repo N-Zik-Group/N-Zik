@@ -81,11 +81,6 @@
         <item quantity="few">Starea profilului importat: %1$d profiluri</item>
         <item quantity="other">Starea profilului importat: %1$d profiluri</item>
     </plurals>
-    <plurals name="sync_failed_notification_album_count">
-        <item quantity="one">Sincronizarea albumului %1$d a eșuat. Întoarce-te la fila Albums pentru a reîncerca.</item>
-        <item quantity="few">Sincronizarea albumelor %1$d a eșuat. Reveniți la fila Albums pentru a reîncerca.</item>
-        <item quantity="other">Sincronizarea albumelor %1$d a eșuat. Reveniți la fila Albums pentru a reîncerca.</item>
-    </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
         <item quantity="one">Exportă melodia cache/descărcată %1$d?</item>
         <item quantity="few">Exportă melodiile cache/descărcate %1$d?</item>
@@ -105,66 +100,6 @@
         <item quantity="one">%1$d utilizator blocat</item>
         <item quantity="few">%1$d utilizatori blocați</item>
         <item quantity="other">%1$d utilizatori blocați</item>
-    </plurals>
-    <plurals name="sync_failed_notification_artist_count">
-        <item quantity="one">Sincronizarea artistului %1$d a eșuat. Întoarce-te la fila Artiști pentru a reîncerca.</item>
-        <item quantity="few">Sincronizarea artiștilor %1$d a eșuat. Întoarce-te la fila Artiști pentru a reîncerca.</item>
-        <item quantity="other">Sincronizarea artiștilor %1$d a eșuat. Întoarce-te la fila Artiști pentru a reîncerca.</item>
-    </plurals>
-    <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="one">Sincronizarea listei de redare %1$d a eșuat. Reveniți la fila Playlists pentru a reîncerca.</item>
-        <item quantity="few">Sincronizarea listelor de redare %1$d a eșuat. Înapoi la fila Playlists pentru a reîncerca.</item>
-        <item quantity="other">Sincronizarea listelor de redare %1$d a eșuat. Înapoi la fila Playlists pentru a reîncerca.</item>
-    </plurals>
-    <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">Doriți să reîncercați sincronizarea elementului %1$d a eșuat?</item>
-        <item quantity="few">Doriți să reîncercați să sincronizați elementele %1$d eșuate?</item>
-        <item quantity="other">Doriți să reîncercați să sincronizați elementele %1$d eșuate?</item>
-    </plurals>
-    <plurals name="sync_progress_artist_count">
-        <item quantity="one">Se sincronizează artistul... (%1$d/%2$d)</item>
-        <item quantity="few">Se sincronizează artiștii... (%1$d/%2$d)</item>
-        <item quantity="other">Se sincronizează artiștii... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_artist_refresh_count">
-        <item quantity="one">Reîmprospătare artist %1$d</item>
-        <item quantity="few">Reîmprospătarea artiştilor %1$d</item>
-        <item quantity="other">Reîmprospătarea artiştilor %1$d</item>
-    </plurals>
-    <plurals name="library_sync_artist_retry_count">
-        <item quantity="one">Nu s-a reușit găsirea artistului %1$d , reîncercând</item>
-        <item quantity="few">Căutarea artiștilor %1$d a eșuat</item>
-        <item quantity="other">Căutarea artiștilor %1$d a eșuat</item>
-    </plurals>
-    <plurals name="sync_progress_album_count">
-        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
-        <item quantity="few">Se sincronizează albumele... (%1$d/%2$d)</item>
-        <item quantity="other">Se sincronizează albumele... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">Împrospătare album %1$d</item>
-        <item quantity="few">Reîmprospătare albume %1$d</item>
-        <item quantity="other">Reîmprospătare albume %1$d</item>
-    </plurals>
-    <plurals name="library_sync_album_retry_count">
-        <item quantity="one">Nu a reuşit să găsească %1$d album, reîncearcă</item>
-        <item quantity="few">Nu s-a putut găsi albumele %1$d , se reîncearcă</item>
-        <item quantity="other">Nu s-a putut găsi albumele %1$d , se reîncearcă</item>
-    </plurals>
-    <plurals name="sync_progress_playlist_count">
-        <item quantity="one">Se sincronizează playlistul... (%1$d/%2$d)</item>
-        <item quantity="few">Se sincronizează listele de redare... (%1$d/%2$d)</item>
-        <item quantity="other">Se sincronizează listele de redare... (%1$d/%2$d)</item>
-    </plurals>
-    <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="one">Reîmprospătare listă %1$d</item>
-        <item quantity="few">Reîmprospătare liste de redare %1$d</item>
-        <item quantity="other">Reîmprospătare liste de redare %1$d</item>
-    </plurals>
-    <plurals name="library_sync_playlist_retry_count">
-        <item quantity="one">Nu s-a putut găsi lista de redare %1$d</item>
-        <item quantity="few">Nu s-au putut găsi listele de redare %1$d</item>
-        <item quantity="other">Nu s-au putut găsi listele de redare %1$d</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="one">%1$d element curățat</item>

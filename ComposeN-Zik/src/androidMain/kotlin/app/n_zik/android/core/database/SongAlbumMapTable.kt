@@ -84,6 +84,7 @@ interface SongAlbumMapTable {
         FROM Album A
         JOIN SongAlbumMap SAM ON SAM.albumId = A.id
         WHERE SAM.songId = :songId
+        ORDER BY substr(SAM.albumId, 1, 19) = 'LOCAL_ALBUM_DEVICE_', SAM.rowid
         LIMIT :limit
     """)
     fun findAlbumOf( songId: String, limit: Int = Int.MAX_VALUE ): Flow<Album?>
@@ -103,8 +104,15 @@ interface SongAlbumMapTable {
     fun findAlbumsOfDirect( songId: String ): List<Album>
 
     @Query("""
+        SELECT A.* FROM Album A JOIN SongAlbumMap M ON A.id = M.albumId
+        WHERE M.songId = :songId ORDER BY M.rowid
+    """)
+    fun findAlbumsOf(songId: String): Flow<List<Album>>
+
+    @Query("""
         SELECT position FROM SongAlbumMap
         WHERE songId = :songId
+        ORDER BY substr(albumId, 1, 19) = 'LOCAL_ALBUM_DEVICE_', rowid
         LIMIT 1
     """)
     fun findPositionOf( songId: String ): Flow<Int?>
@@ -128,6 +136,9 @@ interface SongAlbumMapTable {
         )
     """)
     fun map( songId: String, albumId: String, position: Int = -1 )
+
+    @Query("SELECT * FROM SongAlbumMap WHERE substr(albumId, 1, 12) = 'LOCAL_ALBUM_'")
+    fun deviceAlbumPairsDirect(): List<SongAlbumMap>
 
     /**
      * Delete the source song's links to every album that the target song already holds, so a
