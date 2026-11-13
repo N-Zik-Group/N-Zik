@@ -407,4 +407,5 @@
     <string name="library_on_device_permission_settings_failed">Kan machtigingsinstellingen niet openen.</string>
     <string name="artist_more_from_format">Meer van %1$s</string>
     <string name="playlist_top_show_title_format">Toon %1$s</string>
+    <string name="library_on_device_no_local_playlists">Geen lokale afspeellijsten. Maak een afspeellijst of voeg een nummer toe aan een nieuwe afspeellijst op het apparaat.</string>
 </resources>
