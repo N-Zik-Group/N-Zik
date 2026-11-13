@@ -235,11 +235,16 @@
     <string name="settings_local_music_action_add_blocked_folder">Adicionar pasta</string>
     <string name="settings_local_music_blocked_folder_exists_message">Essa pasta já existe.</string>
     <string name="settings_local_music_blocked_folders_description">Edite a lista de bloqueio para músicas do dispositivo.</string>
+    <string name="settings_local_music_folder_exclusions_description">Ocultar músicas nestas pastas e suas subpastas para este perfil.</string>
     <string name="settings_local_music_blocked_folders_title">Pastas bloqueadas</string>
     <string name="settings_local_music_folders_description">Mostrar pastas na página do dispositivo</string>
+    <string name="settings_local_music_folder_mode_description">Navegue por pasta quando ativado. Desative para ver todas as músicas no dispositivo em uma lista.</string>
     <string name="settings_local_music_folders_label">Pastas</string>
     <string name="settings_local_music_initial_folder_description">Pasta que será exibida quando você abrir na página do dispositivo.</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">Você tem certeza que deseja remover essa pasta da lista de bloqueio?</string>
+    <string name="settings_local_music_refresh_title">Atualizar música no dispositivo</string>
+    <string name="settings_local_music_refresh_description">Atualize a lista de músicas no dispositivo para o perfil ativo.</string>
+    <string name="settings_local_music_start_folder_path_description">Informe um caminho de pasta como Música/Live, ou use / para iniciar na raiz. Se a pasta não estiver disponível, o navegador abre o pai mais próximo disponível.</string>
     <string name="settings_local_playlist_title">Playlist local</string>
     <string name="settings_logging_disabled_label">Desativar logs de depuração</string>
     <string name="settings_logging_error_file_description">Se habilitado, crie um arquivo de log para destacar erros</string>
@@ -490,4 +495,12 @@
     <string name="settings_youtube_login_enabled_label">Habilitar \"login\" no YouTube Music</string>
     <string name="settings_dialog_sort_title_format">%1$s: Ordenar</string>
     <string name="settings_dialog_toolbar_title_format">%1$s: Barra</string>
+    <string name="settings_local_music_enabled_title">Habilitar biblioteca no dispositivo</string>
+    <string name="settings_local_music_enabled_description">Mostrar nas abas do dispositivo e escanear música neste dispositivo.</string>
+    <string name="settings_local_music_scan_on_startup_title">Digitalizar ao iniciar</string>
+    <string name="settings_local_music_scan_on_startup_description">Escanear música no dispositivo quando este perfil iniciar.</string>
+    <string name="settings_local_music_scan_not_run">Nenhum resultado de verificação ainda</string>
+    <string name="settings_local_music_summary_title">Resumo da biblioteca no dispositivo</string>
+    <string name="settings_local_music_summary_description">Veja as músicas e pastas detectadas para este perfil.</string>
+    <string name="settings_local_music_summary_count">%1$s: %2$d</string>
 </resources>
