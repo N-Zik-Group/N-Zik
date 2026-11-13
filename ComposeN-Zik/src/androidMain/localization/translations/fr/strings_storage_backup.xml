@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="storage_image_quality_title">Qualité de l\'image</string>
-    <string name="storage_image_quality_description">S\'applique aux œuvres d\'art en ligne et aux nouvelles couvertures et photos de profil. L\'original utilise la plus haute qualité disponible et peut utiliser plus de stockage et de données.</string>
+    <string name="storage_image_quality_title">Qualité d\'image</string>
+    <string name="storage_image_quality_description">S\'applique aux illustrations en ligne ainsi qu\'aux nouvelles couvertures et photos de profil. L\'option « Original » utilise la meilleure qualité disponible et peut nécessiter davantage d\'espace de stockage et de données.</string>
     <string name="storage_image_quality_optimized">Optimisé</string>
-    <string name="storage_image_quality_original">Originale</string>
+    <string name="storage_image_quality_original">Original</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Stockage</string>
     <string name="storage_breakdown_tab_total">Total</string>
