@@ -235,11 +235,16 @@
     <string name="settings_local_music_action_add_blocked_folder">Lägg till mapp</string>
     <string name="settings_local_music_blocked_folder_exists_message">Denna mapp finns redan</string>
     <string name="settings_local_music_blocked_folders_description">Redigera svartlista för på enhetens låtar</string>
+    <string name="settings_local_music_folder_exclusions_description">Dölj låtar i dessa mappar och deras undermappar för denna profil.</string>
     <string name="settings_local_music_blocked_folders_title">Svartlistade mappar</string>
     <string name="settings_local_music_folders_description">Visa mappar på sidan \"På enhet\"</string>
+    <string name="settings_local_music_folder_mode_description">Bläddra efter mapp när den är aktiverad. Stäng av för att se alla låtar på enheten i en lista.</string>
     <string name="settings_local_music_folders_label">Mappar</string>
     <string name="settings_local_music_initial_folder_description">Mapp som visas för på enhetens låtar</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">Är du säker på att du vill ta bort den här mappen från svartlistan?</string>
+    <string name="settings_local_music_refresh_title">Uppdatera musik på enheten</string>
+    <string name="settings_local_music_refresh_description">Uppdatera låtlistan på enheten för den aktiva profilen.</string>
+    <string name="settings_local_music_start_folder_path_description">Ange en mappsökväg som Music/Live eller använd / för att starta vid roten. Om mappen inte är tillgänglig öppnar webbläsaren närmaste tillgängliga förälder.</string>
     <string name="settings_local_playlist_title">Lokal spellista</string>
     <string name="settings_logging_disabled_label">Inaktivera debug-loggar</string>
     <string name="settings_logging_error_file_description">Om aktiverad, skapa en loggfil för att markera fel</string>
@@ -490,4 +495,12 @@
     <string name="settings_youtube_login_enabled_label">Aktivera YouTube Music inloggning</string>
     <string name="settings_dialog_sort_title_format">%1$s: Sortera</string>
     <string name="settings_dialog_toolbar_title_format">%1$s: Verktygsfält</string>
+    <string name="settings_local_music_enabled_title">Aktivera enhetsbibliotek</string>
+    <string name="settings_local_music_enabled_description">Visa på enhetsflikar och skanna enheten efter musik.</string>
+    <string name="settings_local_music_scan_on_startup_title">Skanna vid uppstart</string>
+    <string name="settings_local_music_scan_on_startup_description">Skanna musik på enheten när profilen startar.</string>
+    <string name="settings_local_music_scan_not_run">Inget skanningsresultat ännu</string>
+    <string name="settings_local_music_summary_title">Sammanfattning av biblioteket på enheten</string>
+    <string name="settings_local_music_summary_description">Se upptäckt musik och mappar för denna profil.</string>
+    <string name="settings_local_music_summary_count">%1$s: %2$d</string>
 </resources>
