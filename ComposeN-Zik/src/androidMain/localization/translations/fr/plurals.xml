@@ -118,16 +118,16 @@
         <item quantity="other">Actualisation de %1$d albums</item>
     </plurals>
     <plurals name="library_sync_album_retry_count">
-        <item quantity="one">Impossible de trouver l\'album %1$d , nouvelle tentative</item>
-        <item quantity="other">Impossible de trouver les albums %1$d en essayant à nouveau</item>
+        <item quantity="one">Impossible de trouver %1$d album, nouvelle tentative</item>
+        <item quantity="other">Impossible de trouver %1$d albums, nouvelle tentative</item>
     </plurals>
     <plurals name="sync_progress_playlist_count">
         <item quantity="one">Synchronisation de la playlist... (%1$d/%2$d)</item>
-        <item quantity="other">Synchronisation des listes de lecture... (%1$d/%2$d)</item>
+        <item quantity="other">Synchronisation des playlists... (%1$d/%2$d)</item>
     </plurals>
     <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="one">Rafraîchissement de la playlist %1$d</item>
-        <item quantity="other">Rafraîchissement des listes de lecture %1$d</item>
+        <item quantity="one">Actualisation de la playlist %1$d</item>
+        <item quantity="other">Actualisation de %1$d playlists</item>
     </plurals>
     <plurals name="library_sync_playlist_retry_count">
         <item quantity="one">Impossible de trouver la playlist %1$d , nouvelle tentative</item>
