@@ -235,11 +235,16 @@
     <string name="settings_local_music_action_add_blocked_folder">Добавить папку</string>
     <string name="settings_local_music_blocked_folder_exists_message">Эта папка уже существует</string>
     <string name="settings_local_music_blocked_folders_description">Редактировать чёрный список для песен на устройстве</string>
+    <string name="settings_local_music_folder_exclusions_description">Скрыть песни в этих папках и их подпапках для этого профиля.</string>
     <string name="settings_local_music_blocked_folders_title">Чёрный список папок</string>
     <string name="settings_local_music_folders_description">Показывать папки на странице \"На устройстве\"</string>
+    <string name="settings_local_music_folder_mode_description">Просматривать по папкам при включении. Отключите для просмотра всех треков на устройствах в одном списке.</string>
     <string name="settings_local_music_folders_label">Папки</string>
     <string name="settings_local_music_initial_folder_description">Папка для треков на устройстве</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">Вы уверены, что хотите убрать эту папку из чёрного списка?</string>
+    <string name="settings_local_music_refresh_title">Обновить музыку на устройстве</string>
+    <string name="settings_local_music_refresh_description">Обновите список треков на устройстве для активного профиля.</string>
+    <string name="settings_local_music_start_folder_path_description">Введите путь к папке, такой как Музыка/Live, или используйте / чтобы начать с root. Если папка недоступна, браузер открывает ближайшего родителя.</string>
     <string name="settings_local_playlist_title">Локальный плейлист</string>
     <string name="settings_logging_disabled_label">Отключить отладочные журналы</string>
     <string name="settings_logging_error_file_description">Если включено, создается файл логов для выявления ошибок</string>
@@ -490,4 +495,12 @@
     <string name="settings_youtube_login_enabled_label">Включить вход в YouTube Music</string>
     <string name="settings_dialog_sort_title_format">%1$s: Сортировка</string>
     <string name="settings_dialog_toolbar_title_format">%1$s: Панель инструментов</string>
+    <string name="settings_local_music_enabled_title">Включить библиотеку на устройстве</string>
+    <string name="settings_local_music_enabled_description">Показывать вкладки на устройстве и сканировать это устройство для музыки.</string>
+    <string name="settings_local_music_scan_on_startup_title">Сканировать при запуске</string>
+    <string name="settings_local_music_scan_on_startup_description">Сканировать музыку на устройствах при запуске профиля.</string>
+    <string name="settings_local_music_scan_not_run">Пока нет результатов сканирования</string>
+    <string name="settings_local_music_summary_title">Обзор библиотеки на устройстве</string>
+    <string name="settings_local_music_summary_description">Смотрите найденную музыку и папки для этого профиля.</string>
+    <string name="settings_local_music_summary_count">%1$s: %2$d</string>
 </resources>
