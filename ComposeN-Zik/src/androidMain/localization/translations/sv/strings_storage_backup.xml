@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="storage_artwork_quality_title">Anpassad tryckkvalitet</string>
+    <string name="storage_artwork_quality_description">Gäller för nya anpassade tryckfiler. Originalfiler kan använda mer lagringsutrymme.</string>
+    <string name="storage_artwork_quality_optimized">Optimerad (1000 px)</string>
+    <string name="storage_artwork_quality_original">Ursprunglig</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Lagring</string>
     <string name="storage_breakdown_tab_total">Totalt</string>
