@@ -407,4 +407,5 @@
     <string name="library_on_device_permission_settings_failed">无法打开权限设置。</string>
     <string name="artist_more_from_format">更多来自 %1$s</string>
     <string name="playlist_top_show_title_format">显示 %1$s</string>
+    <string name="library_on_device_no_local_playlists">没有本地播放列表。在设备上创建播放列表或添加歌曲到新播放列表。</string>
 </resources>
