@@ -318,7 +318,8 @@ New:
 [![Build Stable Flavors](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-all-flavors-weekly.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-all-flavors-weekly.yml)  
 [![Build Beta](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-beta-flavor.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-beta-flavor.yaml)  
 [![Build Dev](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-dev.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-dev.yml)  
-[![Automatic Cache Builder](https://github.com/N-Zik-Group/N-Zik/actions/workflows/cache-builder.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/cache-builder.yaml)
+[![Automatic Cache Builder](https://github.com/N-Zik-Group/N-Zik/actions/workflows/cache-builder.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/cache-builder.yaml)  
+[![Build & Sign Release64 Flavor Only (TEST)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-test.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-test.yaml)
 
 ## 🔄 Automation & Maintenance
 
@@ -328,16 +329,13 @@ New:
 [![Chores](https://github.com/N-Zik-Group/N-Zik/actions/workflows/house-keeper.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/house-keeper.yaml)  
 [![Close stale tickets weekly](https://github.com/N-Zik-Group/N-Zik/actions/workflows/close-stale-tickets.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/close-stale-tickets.yaml)  
 [![Comment or close on label](https://github.com/N-Zik-Group/N-Zik/actions/workflows/comment-on-label.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/comment-on-label.yaml)  
-[![CodeQL](https://github.com/N-Zik-Group/N-Zik/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/github-code-scanning/codeql)  
 [![Update Project Stats and Chart](https://github.com/N-Zik-Group/N-Zik/actions/workflows/metrics.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/metrics.yml)  
 [![Update Android Lockdown Countdown](https://github.com/N-Zik-Group/N-Zik/actions/workflows/update-android-lockdown-countdown.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/update-android-lockdown-countdown.yml)  
-[![Sync Listen Together proto from metroproto](https://github.com/N-Zik-Group/N-Zik/actions/workflows/sync-metroproto.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/sync-metroproto.yml)
-
-[![Add labels](https://github.com/N-Zik-Group/N-Zik/actions/workflows/add-labels.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/add-labels.yaml)
-[![Auto-assign issues](https://github.com/N-Zik-Group/N-Zik/actions/workflows/auto-assign-issues.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/auto-assign-issues.yml)
-[![Build & Sign Release64 Flavor Only (TEST)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-test.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-test.yaml)
-[![CodeQL](https://github.com/N-Zik-Group/N-Zik/actions/workflows/codeql.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/codeql.yml)
-[![Label automation tests](https://github.com/N-Zik-Group/N-Zik/actions/workflows/label-automation-tests.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/label-automation-tests.yml)
+[![Sync Listen Together proto from metroproto](https://github.com/N-Zik-Group/N-Zik/actions/workflows/sync-metroproto.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/sync-metroproto.yml)  
+[![Add labels](https://github.com/N-Zik-Group/N-Zik/actions/workflows/add-labels.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/add-labels.yaml)  
+[![Auto-assign issues](https://github.com/N-Zik-Group/N-Zik/actions/workflows/auto-assign-issues.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/auto-assign-issues.yml)  
+[![CodeQL](https://github.com/N-Zik-Group/N-Zik/actions/workflows/codeql.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/codeql.yml)  
+[![Label automation tests](https://github.com/N-Zik-Group/N-Zik/actions/workflows/label-automation-tests.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/label-automation-tests.yml)  
 [![Fetch, create, and update repo's translators](https://github.com/N-Zik-Group/N-Zik/actions/workflows/weekly-update-translators.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/weekly-update-translators.yaml)
 
 # 👥 Contributors
