@@ -305,26 +305,7 @@ Android UI sources are in [the thematic catalogs](ComposeN-Zik/src/androidMain/l
 
 # 🤝 Contributing
 
-## 🛠️ Improve the App
-
-Pull requests are welcome!  
-Feel free to fix bugs, enhance features, or suggest new ideas.
-
-# 📜 Clone the repo
-
-Use this command to clone the repo
-
-```
-git clone -b main --single-branch --recursive https://github.com/N-Zik-Group/N-Zik.git
-```
-
-Don't forget to add 'release_notes.txt' in ComposeN-Zik/src/androidMain/res/raw/release_notes.txt
-Add in the file
-
-```
-New:
-- Initial release
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, verification and pull requests.
 
 # 👀 Status
 
