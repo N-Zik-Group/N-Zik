@@ -407,4 +407,5 @@
     <string name="library_on_device_permission_settings_failed">No se pudo abrir la configuración de permisos.</string>
     <string name="artist_more_from_format">Más de %1$s</string>
     <string name="playlist_top_show_title_format">Mostrar %1$s</string>
+    <string name="library_on_device_no_local_playlists">No hay listas de reproducción locales. Crea una lista de reproducción o añade una canción a una nueva lista de reproducción desde el dispositivo On.</string>
 </resources>
