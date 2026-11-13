@@ -333,6 +333,13 @@ New:
 [![Update Android Lockdown Countdown](https://github.com/N-Zik-Group/N-Zik/actions/workflows/update-android-lockdown-countdown.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/update-android-lockdown-countdown.yml)  
 [![Sync Listen Together proto from metroproto](https://github.com/N-Zik-Group/N-Zik/actions/workflows/sync-metroproto.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/sync-metroproto.yml)
 
+[![Add labels](https://github.com/N-Zik-Group/N-Zik/actions/workflows/add-labels.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/add-labels.yaml)
+[![Auto-assign issues](https://github.com/N-Zik-Group/N-Zik/actions/workflows/auto-assign-issues.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/auto-assign-issues.yml)
+[![Build & Sign Release64 Flavor Only (TEST)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-test.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-test.yaml)
+[![CodeQL](https://github.com/N-Zik-Group/N-Zik/actions/workflows/codeql.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/codeql.yml)
+[![Label automation tests](https://github.com/N-Zik-Group/N-Zik/actions/workflows/label-automation-tests.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/label-automation-tests.yml)
+[![Fetch, create, and update repo's translators](https://github.com/N-Zik-Group/N-Zik/actions/workflows/weekly-update-translators.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/weekly-update-translators.yaml)
+
 # 👥 Contributors
 
 [![GitHub contributors](https://contrib.rocks/image?repo=N-Zik-Group/N-Zik)](https://github.com/N-Zik-Group/N-Zik/graphs/contributors)
