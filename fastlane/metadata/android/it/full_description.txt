@@ -1,5 +1,9 @@
 Frontend multilingue di YouTube Music per Android, focalizzato su prestazioni, UI/UX, espansione delle funzioni e supporto a lungo termine.
 
+<b>N-Zik</b> è un fork open source di <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+
+<b>Nota:</b> N-Zik è nato come progetto personale. Per alternative più mature, consulta <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> o <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+
 <b>Uso dell'IA:</b> Uso IA generativa per il codice (tramite <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), revisionato e testato prima del rilascio.
 
 ✨ <b>PERCHÉ N-ZIK?</b> Niente pubblicità, riproduzione in background, caching offline, UI personalizzabile - gratis, sempre.
