@@ -235,11 +235,16 @@
     <string name="settings_local_music_action_add_blocked_folder">Додати теку</string>
     <string name="settings_local_music_blocked_folder_exists_message">Ця папка вже існує</string>
     <string name="settings_local_music_blocked_folders_description">Редагувати чорний список для пісень на пристрої</string>
+    <string name="settings_local_music_folder_exclusions_description">Приховати пісні у цих теках та їх підтеках для цього профілю.</string>
     <string name="settings_local_music_blocked_folders_title">Теки чорного списку</string>
     <string name="settings_local_music_folders_description">Відображати папки на сторінці \"На пристрої\"</string>
+    <string name="settings_local_music_folder_mode_description">Перегляд по папці, коли увімкнено. Вимкніть для відображення всіх пісень на пристрої в одному списку.</string>
     <string name="settings_local_music_folders_label">Теки</string>
     <string name="settings_local_music_initial_folder_description">Папка для пісень на пристрої</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">Ви впевнені, що хочете видалити цю теку з чорного списку?</string>
+    <string name="settings_local_music_refresh_title">Оновити музику на пристрої</string>
+    <string name="settings_local_music_refresh_description">Оновлення списку пісень на пристрої для активного профілю.</string>
+    <string name="settings_local_music_start_folder_path_description">Введіть шлях до папки, наприклад Music/Live, або використовуйте / щоб почати з кореневого каталогу. Якщо папка недоступна, браузер відкриває найближчий доступний батько.</string>
     <string name="settings_local_playlist_title">Локальний список відтворення</string>
     <string name="settings_logging_disabled_label">Вимкнути журнали зневадження</string>
     <string name="settings_logging_error_file_description">Якщо увімкнено, створіть файл журналу щоб виділити помилки</string>
@@ -490,4 +495,12 @@
     <string name="settings_youtube_login_enabled_label">Увімкнути запис YouTube Music</string>
     <string name="settings_dialog_sort_title_format">%1$s: Sort</string>
     <string name="settings_dialog_toolbar_title_format">%1$s: панель інструментів</string>
+    <string name="settings_local_music_enabled_title">Увімкнути бібліотеку на пристрої</string>
+    <string name="settings_local_music_enabled_description">Показувати на вкладках пристрою і сканувати цей пристрій.</string>
+    <string name="settings_local_music_scan_on_startup_title">Відкривати при запуску</string>
+    <string name="settings_local_music_scan_on_startup_description">Сканувати музику на пристрої, коли цей профіль починається.</string>
+    <string name="settings_local_music_scan_not_run">Ще немає результатів сканування</string>
+    <string name="settings_local_music_summary_title">Резюме бібліотеки наш.пристроїв</string>
+    <string name="settings_local_music_summary_description">Перегляньте виявлену музику та теки для цього профілю.</string>
+    <string name="settings_local_music_summary_count">%1$s: %2$d</string>
 </resources>
