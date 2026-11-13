@@ -407,4 +407,5 @@
     <string name="library_on_device_permission_settings_failed">Kunne ikke åpne tillatelsesinnstillinger.</string>
     <string name="artist_more_from_format">Mer fra %1$s</string>
     <string name="playlist_top_show_title_format">Vis %1$s</string>
+    <string name="library_on_device_no_local_playlists">Ingen lokale spillelister. Opprett en spilleliste eller legg til en sang til en ny spilleliste fra enheten.</string>
 </resources>
