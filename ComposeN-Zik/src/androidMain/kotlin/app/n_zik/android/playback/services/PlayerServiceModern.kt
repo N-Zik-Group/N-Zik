@@ -187,6 +187,7 @@ import app.it.fast4x.rimusic.utils.exoPlayerMinTimeForEventKey
 import app.it.fast4x.rimusic.utils.fadeInEffect
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.getEnum
+import app.it.fast4x.rimusic.utils.isExplicit
 import app.it.fast4x.rimusic.utils.intent
 import app.it.fast4x.rimusic.utils.isAtLeastAndroid10
 import app.it.fast4x.rimusic.utils.isAtLeastAndroid6
@@ -268,7 +269,6 @@ import app.n_zik.android.playback.exceptions.StreamResolutionOfflineException
 import app.n_zik.android.playback.exceptions.UnmatchedSongException
 import app.n_zik.android.playback.exceptions.UnplayableException
 import app.n_zik.android.playback.exceptions.VideoIdMismatchException
-import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
 import androidx.media3.datasource.HttpDataSource
 import app.it.fast4x.rimusic.utils.crossfadeGaplessKey
@@ -1009,13 +1009,8 @@ class PlayerServiceModern : MediaLibraryService(),
 
         maybeReverb()
 
-        /* Queue is saved in events without scheduling it (remove this in future)*/
-        // Load persistent queue when start activity and save periodically in background
         if (isPersistentQueueEnabled) {
-            maybeResumePlaybackOnStart()
-
-            coroutineScope.launch { runPeriodically(30_000) { maybeSavePlayerQueue() } }
-
+            coroutineScope.launch(NzikDispatchers.UI) { runPeriodically(30_000) { maybeSavePlayerQueue() } }
         }
 
         /** Discord presence */
@@ -1283,6 +1278,9 @@ class PlayerServiceModern : MediaLibraryService(),
             super.onDestroy()
             return
         }
+        runCatching { maybeSavePlayerQueue(finalSnapshot = true) }.onFailure {
+            Timber.tag("PlayerServiceModern").e(it, "Failed to capture queue during destruction")
+        }
         isRunning = false
         sessionRebindRecoveryJob?.cancel()
         sessionRebindRecoveryJob = null
@@ -1301,7 +1299,6 @@ class PlayerServiceModern : MediaLibraryService(),
              */
             lastFmScrobbleManager?.destroy()
             lastFmScrobbleManager = null
-            maybeSavePlayerQueue()
             sessionPolicyJob?.cancel()
             profilePreferences.unregisterOnSharedPreferenceChangeListener(sessionProfileListener)
             boundSessionPreferences?.unregisterOnSharedPreferenceChangeListener(this)
@@ -1551,8 +1548,9 @@ class PlayerServiceModern : MediaLibraryService(),
                     // This seeds the Song row with real data (title, artist, thumbnail)
 //
                     // before StreamResolver can insert a blank placeholder for FK satisfaction.
+                    val artwork = Database.prepareArtworkForInsert(item)
                     Database.transaction {
-                        insertIgnore(item)
+                        insertIgnore(item, autoFix = true, preparedArtwork = artwork)
                     }
 
                     try {
@@ -1660,7 +1658,8 @@ class PlayerServiceModern : MediaLibraryService(),
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
         scheduleCrossfade()
         if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
-            maybeSavePlayerQueue()
+            queuePlaylistChanged = true
+            maybeSavePlayerQueue(saveEmpty = true)
         }
     }
 
@@ -2804,41 +2803,28 @@ class PlayerServiceModern : MediaLibraryService(),
         super.onPositionDiscontinuity(oldPosition, newPosition, reason)
     }
 
-    private fun maybeSavePlayerQueue() {
+    private var queuePlaylistChanged = false
 
-        if (!isPersistentQueueEnabled) return
-        Timber.tag("PlayerServiceModern").d("onCreate savePersistentQueue is enabled")
-
-        coroutineScope.launch(NzikDispatchers.UI) {
-            val mediaItems = player.currentTimeline.mediaItems
-            val mediaItemIndex = player.currentMediaItemIndex
-            val mediaItemPosition = player.currentPosition
-
-            if (mediaItems.isEmpty()) return@launch
-
-
-            mediaItems.mapIndexed { index, mediaItem ->
-                QueuedMediaItem(
-                    mediaItem = mediaItem,
-                    position = if (index == mediaItemIndex) mediaItemPosition else null
-                )
-            }.let { queuedMediaItems ->
-                if (queuedMediaItems.isEmpty()) return@let
-
-                Database.asyncTransaction {
-                    queueTable.deleteAll()
-                    queueTable.insert( queuedMediaItems )
-                }
-
-                Timber.tag("PlayerServiceModern").d("QueuePersistentEnabled Saved queue")
-            }
-
+    @MainThread
+    private fun maybeSavePlayerQueue(finalSnapshot: Boolean = false, saveEmpty: Boolean = false) {
+        if (!isPersistentQueueEnabled || !::player.isInitialized || (isDestroying && !finalSnapshot)) return
+        val mediaItems = player.currentTimeline.mediaItems
+        if (mediaItems.isEmpty() && !saveEmpty) return
+        val mediaItemIndex = player.currentMediaItemIndex
+        val mediaItemPosition = player.currentPosition
+        val profile = getActiveProfile(this)
+        val snapshot = mediaItems.mapIndexed { index, mediaItem ->
+            QueuedMediaItem(mediaItem = mediaItem, position = mediaItemPosition.takeIf { index == mediaItemIndex })
         }
-    }
 
-    private fun maybeResumePlaybackOnStart() {
-        if( isPersistentQueueEnabled && preferences.getBoolean(resumePlaybackOnStartKey, false) )
-            binder.gracefulPlay()
+        // Room serializes writes in submission order, including the snapshot taken during teardown.
+        Database.asyncTransaction {
+            queueTable.replaceAll(snapshot.map { row ->
+                val item = PersistentQueueArtwork.preserveSnapshotSource(this@PlayerServiceModern, profile, row.mediaItem)
+                QueuedMediaItem(mediaItem = item, position = row.position)
+            })
+            Timber.tag("PlayerServiceModern").d("Saved persistent queue")
+        }
     }
 
     @ExperimentalCoroutinesApi
@@ -2847,62 +2833,39 @@ class PlayerServiceModern : MediaLibraryService(),
     private fun maybeRestorePlayerQueue() {
         if (!isPersistentQueueEnabled) return
 
-        val parentalControlEnabled = preferences.getBoolean(parentalControlEnabledKey, false)
+        val profile = getActiveProfile(this)
 
-        // prepare() moves the player out of IDLE, and media3 then shows the
-        // media notification for a non-empty timeline regardless of
-//
-        // playWhenReady — so with auto-resume off the restored queue must
-        // NOT be prepared: the player stays IDLE (no notification, no
-//
-        // pre-buffer/network), the queue stays visible (setMediaItems builds
-        // the timeline). The first play recovers the IDLE state on every
-//
-        // surface: session play commands (notification, Android Auto, widget,
-        // media button) go through media3's
-//
-        // MediaSessionImpl.handleMediaControllerPlayRequest ->
-        // Util.handlePlayButtonAction, which prepares an IDLE player before
-//
-        // play() (media3 1.10.1 sources, verified), and the in-app play path
-        // (gracefulPlay) goes through AudioUtils.fadeInEffect's IDLE->prepare
-//
-        // guard.
-        val resumePlaybackOnStart = preferences.getBoolean(resumePlaybackOnStartKey, false)
+        // A recreated service must read after the previous service's final snapshot.
+        coroutineScope.launch(NzikDispatchers.DATA) {
+            val queuedSong = Database.readSavedQueue()
+            val libraryArtwork = mutableMapOf<String, String?>()
+            val restored = queuedSong.map { row ->
+                PersistentQueueArtwork.restore(this@PlayerServiceModern, profile, row.mediaItem) { songId ->
+                    if (songId !in libraryArtwork) {
+                        libraryArtwork[songId] = Database.songTable.findByIdDirect(songId)?.thumbnailUrl
+                    }
+                    libraryArtwork[songId]
+                } to row.position
+            }
 
-        Database.asyncQuery {
-            val queuedSong = queueTable.allDirect()
-
-            if (queuedSong.isEmpty()) return@asyncQuery
-
-            // Filter explicit content if parental control is enabled
-            val filteredQueuedSong = if (parentalControlEnabled) {
-                queuedSong.filter { !(it.mediaItem.mediaMetadata.title?.startsWith(EXPLICIT_PREFIX, true) ?: false) }
-            } else queuedSong
-
-            if (filteredQueuedSong.isEmpty()) return@asyncQuery
-
-            val index = filteredQueuedSong.indexOfFirst { it.position != null }.coerceAtLeast(0)
-
-            coroutineScope.launch(NzikDispatchers.UI) {
-                player.setMediaItems(
-                    filteredQueuedSong.map { mediaItem ->
-                        mediaItem.mediaItem.buildUpon()
-                            .setUri(mediaItem.mediaItem.mediaId)
-                            .setCustomCacheKey(mediaItem.mediaItem.mediaId)
-                            .build().apply {
-                                mediaMetadata.extras?.putBoolean("isFromPersistentQueue", true)
-                            }
-                    },
-                    index,
-                    filteredQueuedSong[index].position ?: C.TIME_UNSET
-                )
-                if (RestoredQueueRules.shouldPrepareRestoredQueue(resumePlaybackOnStart)) {
-                    player.prepare()
-                } else {
-                    Timber.tag("PlayerServiceModern").d(
-                        "Restored queue: prepare skipped (auto-resume off) - player stays IDLE, no media notification"
+            withContext(NzikDispatchers.UI) {
+                mediaLibrarySessionCallback.restoreStartupQueueIfUnowned restore@{
+                    if (isDestroying || !isPersistentQueueEnabled || getActiveProfile(this@PlayerServiceModern) != profile ||
+                        queuePlaylistChanged || player.mediaItemCount > 0
+                    ) return@restore
+                    val filtered = if (preferences.getBoolean(parentalControlEnabledKey, false)) {
+                        restored.filterNot { (item, _) -> item.isExplicit }
+                    } else restored
+                    if (filtered.isEmpty()) return@restore
+                    val index = filtered.indexOfFirst { (_, position) -> position != null }.coerceAtLeast(0)
+                    player.setMediaItems(
+                        filtered.map { it.first },
+                        index,
+                        filtered[index].second ?: C.TIME_UNSET
                     )
+                    if (RestoredQueueRules.shouldPrepareRestoredQueue(preferences.getBoolean(resumePlaybackOnStartKey, false))) {
+                        binder.gracefulPlay()
+                    }
                 }
             }
         }

@@ -1,6 +1,7 @@
 package app.n_zik.android.playback.services
 
 import android.app.Application
+import android.os.Bundle
 import androidx.core.net.toUri
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -9,6 +10,7 @@ import androidx.media3.common.Player
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.R
 import app.n_zik.android.appContext
+import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -73,6 +75,23 @@ class SessionArtworkPlayerTest {
         every { upstream.isCurrentMediaItemLive } returns false
         every { upstream.duration } returns C.TIME_UNSET
         return upstream
+    }
+
+    @Test
+    fun `selected custom provider cover wins over recoverable remote original`() {
+        stubAppContext()
+        val upstream = upstreamWith("Song", "Artist", "stream-abc")
+        val cover = ArtworkContentProvider.uriFor("stream-abc")
+        val metadata = upstream.mediaMetadata.buildUpon().setArtworkUri(cover).setExtras(Bundle().apply {
+            putBoolean("isCoverModified", true)
+            putString(SessionMediaItemMapper.ORIGINAL_ARTWORK_SOURCE_EXTRA, "https://img.example.com/original.jpg")
+        }).build()
+        every { upstream.mediaMetadata } returns metadata
+        every { upstream.currentMediaItem } returns MediaItem.Builder().setMediaId("stream-abc")
+            .setMediaMetadata(metadata).build()
+        val published = SessionArtworkPlayer(upstream).mediaMetadata
+        assertEquals(cover, published.artworkUri)
+        assertEquals(true, published.extras?.getBoolean("isCoverModified"))
     }
 
     @Test

@@ -42,7 +42,6 @@ import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.flow.flowOf
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -90,7 +89,7 @@ class AutoCallbackEligibilityPublicationTest {
         every { songs.findByIdDirect("selected") } returns Song("selected", "Selected", "Artist", "3:00", null)
         val queue = mockk<QueuedMediaItemTable>()
         every { Database.queueTable } returns queue
-        every { queue.all(any()) } returns flowOf(listOf(QueuedMediaItem(mediaItem = row(), position = 456L)))
+        coEvery { Database.readSavedQueue() } returns listOf(QueuedMediaItem(mediaItem = row(), position = 456L))
         check(context.preferences.edit().putBoolean(persistentQueueKey, true).commit())
         callback = AutoSessionCallback(context, Database, mockk<MyDownloadHelper>(relaxed = true))
         tree = AutoSessionCallback::class.java.getDeclaredField("autoBrowseTree").apply {

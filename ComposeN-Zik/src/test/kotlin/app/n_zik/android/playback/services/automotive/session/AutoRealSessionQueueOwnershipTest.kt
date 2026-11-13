@@ -110,7 +110,7 @@ class AutoRealSessionQueueOwnershipTest {
         mockkObject(Database)
         val queue = mockk<QueuedMediaItemTable>()
         every { Database.queueTable } returns queue
-        every { queue.all(any()) } returns flowOf(listOf(QueuedMediaItem(mediaItem = item("saved"), position = 456L)))
+        coEvery { Database.readSavedQueue() } returns listOf(QueuedMediaItem(mediaItem = item("saved"), position = 456L))
         mockkConstructor(AutoAccessPolicy::class)
         coEvery { anyConstructed<AutoAccessPolicy>().eligible(any(), any()) } coAnswers {
             val items = firstArg<List<MediaItem>>()
@@ -525,6 +525,9 @@ class AutoRealSessionQueueOwnershipTest {
     fun `pending selection shared by real consumers applies once and plays`() {
         first.setMediaItems(listOf(capturedExplicit()), 0, 999L)
         pumpUntil { entered.count == 0L }
+        var startupRestoreRan = false
+        callback.restoreStartupQueueIfUnowned { startupRestoreRan = true }
+        assertFalse(startupRestoreRan)
         second.play()
         pumpUntil { observed.resumptions.isNotEmpty() }
         assertSame(observed.selection, observed.resumptions.single())
@@ -625,6 +628,17 @@ class AutoRealSessionQueueOwnershipTest {
         } finally {
             previousPlayer.release()
         }
+    }
+
+    @Test fun `failed real explicit selection releases deferred phone startup`() {
+        failGatedSelection = true
+        first.setMediaItems(listOf(capturedExplicit()), 0, 999L)
+        pumpUntil { entered.count == 0L }
+        var restored = false
+        callback.restoreStartupQueueIfUnowned { restored = true }
+        assertFalse(restored)
+        gate.complete(Unit)
+        pumpUntil { restored }
     }
 
     @Test fun `failed real explicit selection permits next Play to recover saved history`() {

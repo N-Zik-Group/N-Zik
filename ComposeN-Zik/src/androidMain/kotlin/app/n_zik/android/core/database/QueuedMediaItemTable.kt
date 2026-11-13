@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
+import androidx.room.Transaction
 import app.it.fast4x.rimusic.models.QueuedMediaItem
 import kotlinx.coroutines.flow.Flow
 
@@ -16,13 +17,14 @@ interface QueuedMediaItemTable {
      * @return all records from this table
      */
     @Query("""
-        SELECT DISTINCT * 
+        SELECT *
         FROM QueuedMediaItem
+        ORDER BY id
         LIMIT :limit
     """)
     fun all( limit: Int = Int.MAX_VALUE ): Flow<List<QueuedMediaItem>>
 
-    @Query("SELECT DISTINCT * FROM QueuedMediaItem LIMIT :limit")
+    @Query("SELECT * FROM QueuedMediaItem ORDER BY id LIMIT :limit")
     fun allDirect( limit: Int = Int.MAX_VALUE ): List<QueuedMediaItem>
 
     /** Inserts [queuedMediaItems]; when even one element fails the whole insert (or the surrounding transaction) rolls back and the exception propagates. */
@@ -32,5 +34,11 @@ interface QueuedMediaItemTable {
 
     @Query("DELETE FROM QueuedMediaItem")
     fun deleteAll(): Int
+
+    @Transaction
+    fun replaceAll(queuedMediaItems: List<QueuedMediaItem>) {
+        deleteAll()
+        insert(queuedMediaItems)
+    }
 }
 

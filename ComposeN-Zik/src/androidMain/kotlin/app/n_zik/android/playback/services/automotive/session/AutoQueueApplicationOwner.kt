@@ -17,7 +17,7 @@ import java.util.concurrent.Executor
 
 /** Keeps request ownership through Media3's application of an asynchronous callback result. */
 @UnstableApi
-internal class AutoQueueApplicationOwner {
+internal class AutoQueueApplicationOwner(private val onOwnershipChanged: () -> Unit = {}) {
     internal class Request {
         var valid = true
         var applied = false
@@ -55,6 +55,7 @@ internal class AutoQueueApplicationOwner {
     @Synchronized fun invalidate() {
         current?.valid = false
         current = null
+        onOwnershipChanged()
     }
 
     @Synchronized fun pending(request: Request): Boolean {
@@ -91,7 +92,7 @@ internal class AutoQueueApplicationOwner {
         val request = completion.get() ?: run { invalidate(); return true }
         return synchronized(this) {
             if (!request.valid || current !== request || request.applied) false
-            else { request.applied = true; true }
+            else { request.applied = true; onOwnershipChanged(); true }
         }
     }
 
@@ -100,9 +101,15 @@ internal class AutoQueueApplicationOwner {
         // Failed data cannot ever be applied. Retire it synchronously, before another Play
         // can join it; successful data keeps ownership until actual framework application.
         delegate.addListener({
-            try { Futures.getDone(delegate) }
+            try {
+                val result = Futures.getDone(delegate)
+                if (result is androidx.media3.session.MediaSession.MediaItemsWithStartPosition && result.mediaItems.isEmpty()) {
+                    synchronized(this) { request.valid = false }
+                }
+            }
             catch (_: ExecutionException) { synchronized(this) { request.valid = false } }
             catch (_: CancellationException) { synchronized(this) { request.valid = false } }
+            onOwnershipChanged()
         }, MoreExecutors.directExecutor())
         val handler = Handler(looper)
         return object : ListenableFuture<T> by delegate {

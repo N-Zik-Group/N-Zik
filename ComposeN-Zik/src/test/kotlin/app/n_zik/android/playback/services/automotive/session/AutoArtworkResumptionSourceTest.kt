@@ -4,6 +4,7 @@ import android.app.Application
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import io.mockk.mockkObject
 import io.mockk.every
+import io.mockk.coEvery
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -33,7 +34,6 @@ import io.mockk.unmockkAll
 import io.mockk.verify
 import java.io.File
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.flow.flowOf
 import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
@@ -106,10 +106,10 @@ class AutoArtworkResumptionSourceTest {
             }
         }
         val expired = saved.map { requireNotNull(it.mediaMetadata.artworkUri) }
-        every { queue.all(any()) } returns flowOf(listOf(
+        coEvery { Database.readSavedQueue() } returns listOf(
             QueuedMediaItem(mediaItem = saved[0], position = null),
             QueuedMediaItem(mediaItem = saved[1], position = 12_345L),
-        ))
+        )
         clearSourceRegistry()
         expired.forEach(::assertExpired)
 
@@ -123,7 +123,7 @@ class AutoArtworkResumptionSourceTest {
             assertTrue(requireNotNull(item.mediaMetadata.extras).getBoolean(persistentQueueKey))
             assertFreshPixels(item, expired[index], if (index == 0) Color.RED else Color.BLUE)
         }
-        verify(exactly = 0) { songs.findById(any()) }
+        verify(exactly = 0) { songs.findByIdDirect(any()) }
         assertTrue(context.preferences.getBoolean(persistentQueueKey, false))
     }
 
@@ -138,8 +138,8 @@ class AutoArtworkResumptionSourceTest {
             mapped.mediaMetadata.buildUpon().setExtras(extras).build()).build())
         assertNull(saved.mediaMetadata.extras?.getString(SessionMediaItemMapper.ORIGINAL_ARTWORK_SOURCE_EXTRA))
         val expired = requireNotNull(saved.mediaMetadata.artworkUri)
-        every { queue.all(any()) } returns flowOf(listOf(QueuedMediaItem(mediaItem = saved, position = 7_654L)))
-        every { songs.findById(source.id) } returns flowOf(source.copy(title = "Different database title"))
+        coEvery { Database.readSavedQueue() } returns listOf(QueuedMediaItem(mediaItem = saved, position = 7_654L))
+        every { songs.findByIdDirect(source.id) } returns source.copy(title = "Different database title")
         clearSourceRegistry()
         assertExpired(expired)
 
@@ -152,7 +152,7 @@ class AutoArtworkResumptionSourceTest {
         assertEquals(source.title, item.mediaMetadata.title.toString())
         assertTrue(requireNotNull(item.mediaMetadata.extras).getBoolean(persistentQueueKey))
         assertFreshPixels(item, expired, Color.RED)
-        verify(exactly = 1) { songs.findById(source.id) }
+        verify(exactly = 1) { songs.findByIdDirect(source.id) }
     }
 
     private fun resume(): MediaSession.MediaItemsWithStartPosition = callback.onPlaybackResumption(
