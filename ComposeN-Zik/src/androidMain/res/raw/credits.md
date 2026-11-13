@@ -40,7 +40,7 @@ N-Zik is built with contributions from developers, designers, translators, and u
 - [**YouTube-Internal-Clients**](https://github.com/zerodytrash/YouTube-Internal-Clients): Script for discovering hidden YouTube API clients.
 - [**Translator**](https://github.com/therealbush/translator): Google Translate wrapper for Kotlin/JVM.
 - [**compose-markdown**](https://github.com/jeziellago/compose-markdown): Markdown rendering in app.
-- [**HypnoticCanvas**](https://mikepenz.github.io/HypnoticCanvas/): Shader effects for Compose.
+- [**HypnoticCanvas**](https://mikepenz.github.io/HypnoticCanvas/): Shader effects for Compose. The Android engine (0.6.0) is Apache 2.0. The accompanying shader collection contains CC BY-NC-SA 3.0 and MIT works.
 - [**Metrolist**](https://github.com/metrolistgroup/metrolist): Has helped a lot with bug fixes and feature expansion!
 - [**MetroServer**](https://github.com/MetrolistGroup/metroserver): Listen Together server infrastructure, with N-Zik officially supported as a hosting client.
 - [**ZemerTeam/zemer-cipher**](https://github.com/ZemerTeam/zemer-cipher): Cipher configs
@@ -91,7 +91,7 @@ N-Zik is built with contributions from developers, designers, translators, and u
 
 ### License notices
 
-N-Zik's project license is GPLv3. Third-party components retain the licenses listed in their notices. The four RiPlay-derived album and artist screens and MusicBrainz insights screens carry AGPL-3.0 notices in their source headers.
+N-Zik's project license is GPLv3. Third-party components retain the licenses listed in their notices. The four RiPlay-derived album and artist screens and MusicBrainz insights screens were adapted from RiPlay. The [RiPlay snapshot from the port date](https://github.com/fast4x/RiPlay/blob/f69d6760bd09b29e18591cdc1339d3dd8b6bdf55/LICENSE) declares GPLv3 and the compared files have no separate license header.
 
 - [N-Zik license](https://github.com/N-Zik-Group/N-Zik/blob/main/LICENSE)
 - [Square attribution notice](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/NOTICE-square.txt)

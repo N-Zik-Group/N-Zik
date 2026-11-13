@@ -332,7 +332,9 @@ New:
 [![Update Android Lockdown Countdown](https://github.com/N-Zik-Group/N-Zik/actions/workflows/update-android-lockdown-countdown.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/update-android-lockdown-countdown.yml)  
 [![Sync Listen Together proto from metroproto](https://github.com/N-Zik-Group/N-Zik/actions/workflows/sync-metroproto.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/sync-metroproto.yml)
 
-## 👥 Contributors
+# 👥 Contributors
+
+[![GitHub contributors](https://contrib.rocks/image?repo=N-Zik-Group/N-Zik)](https://github.com/N-Zik-Group/N-Zik/graphs/contributors)
 
 [![Fetch, create, and update repo's contributors](https://github.com/N-Zik-Group/N-Zik/actions/workflows/weekly-update-contributors.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/weekly-update-contributors.yaml)
 

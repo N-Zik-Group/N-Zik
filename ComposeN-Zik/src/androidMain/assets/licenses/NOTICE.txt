@@ -1,0 +1,14 @@
+N-Zik Android third-party notices
+
+RiPlay (GPLv3): N-Zik adapted Album, Artist and MusicBrainz Insights screens,
+as well as Rewind code. License reference at the date of the MusicBrainz port:
+https://github.com/fast4x/RiPlay/tree/f69d6760bd09b29e18591cdc1339d3dd8b6bdf55
+
+HypnoticCanvas 0.6.0 by Mike Penz and contributors. The engine is Apache 2.0.
+The shader collection retains its CC BY-NC-SA 3.0 and MIT notices.
+Individual shader sources, authors and original links:
+https://github.com/mikepenz/HypnoticCanvas/tree/v0.6.0/hypnoticcanvas-shaders
+
+Glass attribution and the Backdrop license are included in this directory.
+The project source and additional credits are available at:
+https://github.com/N-Zik-Group/N-Zik

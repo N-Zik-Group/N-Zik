@@ -1,4 +1,4 @@
-// Ported from RiPlay (AGPL-3.0).
+// Adapted from RiPlay (GPL-3.0, license checked at upstream revision f69d6760bd09b29e18591cdc1339d3dd8b6bdf55).
 package app.n_zik.android.components.ui.screens.album
 
 import app.n_zik.android.appTextResources
