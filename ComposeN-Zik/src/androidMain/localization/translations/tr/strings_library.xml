@@ -413,7 +413,7 @@
     <string name="metadata_file_path_unavailable">Dosya yolu çözümlenemiyor</string>
     <string name="metadata_save_failed">Meta veri kaydedilemedi</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
-    <string name="recommendations_charts_global">Global</string>
+    <string name="recommendations_charts_global">Genel</string>
     <string name="playlist_like_all_duration_confirmation_format">Tüm şarkıları beğenmek yaklaşık %1$s sürecektir. İptal etmek için uygulamayı kapatın. Devam etmek istiyor musunuz?</string>
     <string name="library_on_device_permission_request_failed">Bu cihazdaki müziklere erişim talebi gönderilemedi.</string>
     <string name="library_on_device_permission_settings_failed">İzin ayarları açılamadı.</string>

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="storage_artwork_quality_title">Aangepaste bestandskwaliteit</string>
+    <string name="storage_artwork_quality_description">Geldt voor nieuwe artwork. Originele bestanden kunnen meer opslag gebruiken.</string>
+    <string name="storage_artwork_quality_optimized">Geoptimaliseerd (1.000 px)</string>
+    <string name="storage_artwork_quality_original">Origineel</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Opslagruimte</string>
     <string name="storage_breakdown_tab_total">Totaal</string>
