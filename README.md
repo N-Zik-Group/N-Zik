@@ -311,8 +311,6 @@ New:
 - Initial release
 ```
 
-See the [N-Zik credits](ComposeN-Zik/src/androidMain/res/raw/credits.md), also available in Settings > About.
-
 # 👀 Status
 
 ## 🛠️ Build & Deployment
@@ -337,6 +335,12 @@ See the [N-Zik credits](ComposeN-Zik/src/androidMain/res/raw/credits.md), also a
 ## 👥 Contributors
 
 [![Fetch, create, and update repo's contributors](https://github.com/N-Zik-Group/N-Zik/actions/workflows/weekly-update-contributors.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/weekly-update-contributors.yaml)
+
+# 🎖️ Credits
+
+**[View N-Zik credits and licenses](ComposeN-Zik/src/androidMain/res/raw/credits.md)**
+
+In the app, open **Settings > About > Credits**.
 
 # ⚠️ Disclaimer
 

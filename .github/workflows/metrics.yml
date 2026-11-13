@@ -13,12 +13,18 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: project-stats-main
+
 jobs:
   update-card:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
 
       - name: Fetch Data and Update History
         env:
@@ -353,7 +359,31 @@ jobs:
           python3 plot_chart.py
 
       - name: Commit and Push Updates
-        uses: stefanzweifel/git-auto-commit-action@v7
-        with:
-          commit_message: "chore: update stats and chart [skip ci]"
-          file_pattern: assets/stats/download-card.svg assets/stats/download-growth.svg assets/stats/star-growth.svg assets/stats/history.json
+        run: |
+          git add -- assets/stats/download-card.svg assets/stats/download-growth.svg assets/stats/star-growth.svg assets/stats/history.json
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit --author='NEVARLeVrai <63956787+NEVARLeVrai@users.noreply.github.com>' -m 'chore: update stats and chart [skip ci]'
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git merge-base --is-ancestor HEAD^ FETCH_HEAD; then
+              echo "::error::main was rewritten while stats were being generated. Start a new run."
+              exit 1
+            fi
+
+            if ! git rebase FETCH_HEAD; then
+              git rebase --abort
+              echo "::error::Stats changed on main while this run was generating them. Start a new run."
+              exit 1
+            fi
+
+            if git push origin HEAD:refs/heads/main; then
+              exit 0
+            fi
+          done
+          exit 1
