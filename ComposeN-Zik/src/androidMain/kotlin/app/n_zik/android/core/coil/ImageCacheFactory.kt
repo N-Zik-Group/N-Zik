@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import app.n_zik.android.R
+import app.n_zik.android.components.image.keepsOriginalArtwork
 import app.n_zik.android.components.glass.glassImageRim
 import coil3.ImageLoader
 import coil3.annotation.ExperimentalCoilApi
@@ -143,7 +144,13 @@ object ImageCacheFactory {
         HIGH(1000, TimeUnit.DAYS.toMillis(14))
     }
 
-    data class DownloadDecision(val useNetwork: Boolean, val quality: NetworkQuality)
+    data class DownloadDecision(
+        val useNetwork: Boolean,
+        val quality: NetworkQuality,
+        val original: Boolean = false,
+    ) {
+        val sourceSize: Int get() = if (original) ORIGINAL_SOURCE_SIZE else quality.size
+    }
 
     private const val COOLDOWN_MS = 10 * 1000L
     private val cooldownMap = ConcurrentHashMap<String, Long>()
@@ -361,10 +368,16 @@ object ImageCacheFactory {
 
     fun getCurrentNetworkQuality(): NetworkQuality = getActualNetworkQuality()
 
+    internal fun refreshArtworkQuality() {
+        storeVersion.update { it + 1 }
+    }
+
     fun getDownloadDecision(thumbnailUrl: String?): DownloadDecision {
         if (thumbnailUrl.isNullOrBlank() || thumbnailUrl == "null") {
             return DownloadDecision(false, NetworkQuality.LOW)
         }
+
+        if (keepsOriginalArtwork(appContext())) return DownloadDecision(true, NetworkQuality.HIGH, original = true)
 
         val lastAttempt = cooldownMap[thumbnailUrl]
         val now = System.currentTimeMillis()
@@ -405,8 +418,8 @@ object ImageCacheFactory {
         val decision = getDownloadDecision(validUrl)
         val version by storeVersion.collectAsStateWithLifecycle()
         val localRevision = rememberLocalArtworkRevision(validUrl)
-        var currentUrl by remember(validUrl, version, localRevision) {
-            mutableStateOf(validUrl?.thumbnail(decision.quality.size).also { modUrl ->
+        var currentUrl by remember(validUrl, version, localRevision, decision.sourceSize) {
+            mutableStateOf(validUrl?.thumbnail(decision.sourceSize).also { modUrl ->
                 // if (validUrl != null) Timber.tag("ImageCache").d("URL: original=%s, modified=%s", validUrl, modUrl)
             })
         }
@@ -500,8 +513,8 @@ object ImageCacheFactory {
         val decision = getDownloadDecision(validUrl)
         val version by storeVersion.collectAsStateWithLifecycle()
         val localRevision = rememberLocalArtworkRevision(validUrl)
-        var currentUrl by remember(validUrl, version, localRevision) {
-            mutableStateOf(validUrl?.thumbnail(decision.quality.size).also { modUrl ->
+        var currentUrl by remember(validUrl, version, localRevision, decision.sourceSize) {
+            mutableStateOf(validUrl?.thumbnail(decision.sourceSize).also { modUrl ->
                 // if (validUrl != null) Timber.tag("ImageCache").d("URL: original=%s, modified=%s", validUrl, modUrl)
             })
         }
@@ -567,7 +580,7 @@ object ImageCacheFactory {
         // Some player backgrounds use the success callback without drawing the painter.
         val window = LocalWindowInfo.current.containerSize
         val displayEdge = maxOf(window.width, window.height).takeIf { it > 0 } ?: 1000
-        val sizedRequest = if (isFileArtwork(currentUrl)) {
+        val sizedRequest = if (isFileArtwork(currentUrl) || decision.original) {
             request.newBuilder().size(displayEdge, displayEdge).build()
         } else request
 
@@ -618,8 +631,8 @@ object ImageCacheFactory {
         val decision = getDownloadDecision(validUrl)
         val version by storeVersion.collectAsStateWithLifecycle()
         val localRevision = rememberLocalArtworkRevision(validUrl)
-        var currentUrl by remember(validUrl, version, localRevision) {
-            mutableStateOf(validUrl?.thumbnail(decision.quality.size))
+        var currentUrl by remember(validUrl, version, localRevision, decision.sourceSize) {
+            mutableStateOf(validUrl?.thumbnail(decision.sourceSize))
         }
 
         if (currentUrl == null) {
@@ -711,8 +724,8 @@ object ImageCacheFactory {
         val decision = getDownloadDecision(validUrl)
         val version by storeVersion.collectAsStateWithLifecycle()
         val localRevision = rememberLocalArtworkRevision(validUrl)
-        var currentUrl by remember(validUrl, version, localRevision) {
-            mutableStateOf(validUrl?.thumbnail(decision.quality.size).also { modUrl ->
+        var currentUrl by remember(validUrl, version, localRevision, decision.sourceSize) {
+            mutableStateOf(validUrl?.thumbnail(decision.sourceSize).also { modUrl ->
                 //if (validUrl != null) Timber.tag("ImageCache").d("URL: original=%s, modified=%s", validUrl, modUrl)
             })
         }
@@ -875,16 +888,16 @@ object ImageCacheFactory {
         val decision = qualityOverride?.let { quality ->
             defaultDecision.copy(
                 quality = quality,
+                original = false,
                 useNetwork = defaultDecision.useNetwork || quality.ordinal > defaultDecision.quality.ordinal,
             )
         } ?: defaultDecision
-        var currentUrl = url.thumbnail(decision.quality.size)
+        var currentUrl = url.thumbnail(decision.sourceSize)
         // Timber.tag("ImageCache").d("URL (loadBitmap): original=%s, modified=%s", url, currentUrl)
         var lastError: String? = null
 
         while (currentUrl != null) {
             val isLocalFile = isFileArtwork(currentUrl)
-            val maxSize = if (isLocalFile) 1000 else Int.MAX_VALUE
 
             val requestBuilder = ImageRequest.Builder(appContext())
                 .data(currentUrl)
@@ -894,7 +907,7 @@ object ImageCacheFactory {
                 .networkCachePolicy(if (cacheOnly) CachePolicy.DISABLED else CachePolicy.ENABLED)
                 .scale(if (cropToSquare) Scale.FILL else Scale.FIT)
 
-            val boundedSize = requestSize ?: maxSize.takeIf { isLocalFile }
+            val boundedSize = requestSize ?: 1000.takeIf { isLocalFile || decision.original }
             if (boundedSize != null) {
                 requestBuilder.size(boundedSize, boundedSize)
             }
@@ -955,13 +968,13 @@ object ImageCacheFactory {
         }
 
         val decision = getDownloadDecision(thumbnailUrl)
-        val finalUrl = thumbnailUrl.thumbnail(decision.quality.size)
+        val finalUrl = thumbnailUrl.thumbnail(decision.sourceSize)
         // Timber.tag("ImageCache").d("URL (preload): original=%s, modified=%s", thumbnailUrl, finalUrl)
 
         suspend fun executeWithFallback(url: String) {
             val request = ImageRequest.Builder(appContext())
                 .data(url)
-                .apply { if (isFileArtwork(url)) size(1000, 1000) }
+                .apply { if (isFileArtwork(url) || decision.original) size(1000, 1000) }
                 .diskCacheKey(generateCacheKeySync(url, decision.quality))
                 .memoryCacheKey(generateCacheKeySync(url, decision.quality))
                 .build()
@@ -1124,12 +1137,17 @@ private fun String.getYouTubeId(): String? {
     } catch (e: Exception) { null }
 }
 
+private const val ORIGINAL_SOURCE_SIZE = 0
+
 fun String?.thumbnail(size: Int): String? {
     if (this == null) return this
 
+    val original = size == ORIGINAL_SOURCE_SIZE
+    val targetSize = if (original) ImageCacheFactory.NetworkQuality.HIGH.size else size
+
     // Threshold increased from 600 to 700 to ensure HQ cache usage (Learning Mode)
     // We use >= 700 because the MEDIUM size is now 700.
-    val quality = if (size >= 700) ImageCacheFactory.NetworkQuality.HIGH else ImageCacheFactory.NetworkQuality.LOW
+    val quality = if (targetSize >= 700) ImageCacheFactory.NetworkQuality.HIGH else ImageCacheFactory.NetworkQuality.LOW
 
     if (contains("i.ytimg.com/pl_c/") || contains("i.ytimg.com/podcasts_artwork/")) {
         val id = getYouTubeId()
@@ -1168,8 +1186,8 @@ fun String?.thumbnail(size: Int): String? {
     when {
         contains("i.ytimg.com/vi/") -> {
             val suffix = when {
-                size >= 700 -> "maxresdefault.jpg" // Forcer maxres si possible
-                size > 300 -> "sddefault.jpg"
+                targetSize >= 700 -> "maxresdefault.jpg" // Forcer maxres si possible
+                targetSize > 300 -> "sddefault.jpg"
                 else -> "hqdefault.jpg"
             }
             // "Un-signing": Strip parameters and force suffix for best quality
@@ -1182,6 +1200,13 @@ fun String?.thumbnail(size: Int): String? {
 
     // googleusercontent & yt3.ggpht: modify resolution parameters safely
     if (contains("googleusercontent.com") || contains("yt3.ggpht.com")) {
+        if (original) {
+            val separator = lastIndexOf('=')
+            if (separator > lastIndexOf('/') && substring(separator + 1).matches(Regex("[swh]\\d+(?:-[a-zA-Z0-9]+)*"))) {
+                return substring(0, separator + 1) + "s0"
+            }
+            return this
+        }
         if (contains("=")) {
             val lastEquals = lastIndexOf('=')
             val base = substring(0, lastEquals)

@@ -34,11 +34,21 @@ class EditMetadataDialogDecodeCoverBitmapOffMainTest {
     fun `decodeCoverBitmap decodes the given bytes on a nzik-media thread, not the caller`() = runBlocking {
         val callerThread = Thread.currentThread()
         val bytes = byteArrayOf(9, 8, 7, 6)
-        val decoded = mockk<Bitmap>()
+        val decoded = mockk<Bitmap> {
+            every { width } returns 400
+            every { height } returns 300
+        }
         val threads = CopyOnWriteArrayList<Thread>()
         mockkStatic(BitmapFactory::class)
-        every { BitmapFactory.decodeByteArray(bytes, 0, bytes.size) } answers {
+        every { BitmapFactory.decodeByteArray(bytes, 0, bytes.size, any()) } answers {
+            val options = arg<BitmapFactory.Options>(3)
+            if (options.inJustDecodeBounds) {
+                options.outWidth = 4000
+                options.outHeight = 3000
+                return@answers null
+            }
             threads += Thread.currentThread()
+            assertTrue(options.inSampleSize > 1)
             decoded
         }
 
@@ -54,7 +64,7 @@ class EditMetadataDialogDecodeCoverBitmapOffMainTest {
     fun `decodeCoverBitmap returns null when the bytes are not an image`() = runBlocking {
         val bytes = byteArrayOf(0, 0, 0)
         mockkStatic(BitmapFactory::class)
-        every { BitmapFactory.decodeByteArray(bytes, 0, bytes.size) } returns null
+        every { BitmapFactory.decodeByteArray(bytes, 0, bytes.size, any()) } returns null
 
         assertNull(EditMetadataDialog.decodeCoverBitmap(bytes))
     }

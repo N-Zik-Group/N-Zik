@@ -239,3 +239,9 @@ Improved:
 - improve(settings): organize Data settings by profile
   - Put Backup and restore first with Import backup at the top, and keep the storage summary and cleanup together.
   - Give each profile separate Cache settings, Automatic Backup, and On device cards, with global and Data search targets.
+
+Improved:
+- improve(artwork): extend per-profile image quality
+  - Apply Original mode to online artwork, profile photos and covers embedded in local music, with bounded display decoding.
+  - Migrate the saved choice to originalImageQuality and update the translation keys and settings search.
+  - Follow-up to the Discord report about pixelated custom artwork. Exported cover example: https://media.discordapp.net/attachments/1545794303845208215/1569999573496242307/cover_0jXTOUQ4A7g.jpg

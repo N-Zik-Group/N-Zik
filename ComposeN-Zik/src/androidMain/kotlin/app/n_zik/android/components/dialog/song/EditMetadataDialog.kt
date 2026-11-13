@@ -136,6 +136,7 @@ class EditMetadataDialog internal constructor(
             }
         },
         allowRemoteImport = true,
+        savesOwnedArtwork = true,
     ) {
         @Composable
         override fun TextPlaceholder() {
@@ -258,7 +259,7 @@ class EditMetadataDialog internal constructor(
          */
         internal suspend fun decodeCoverBitmap(bytes: ByteArray): Bitmap? =
             withContext(NzikDispatchers.MEDIA) {
-                BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                app.n_zik.android.components.ui.screens.profiles.decodeLimitedBitmap(bytes, 512)
             }
     }
 

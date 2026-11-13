@@ -29,6 +29,15 @@ import org.robolectric.RuntimeEnvironment
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class OwnedImageStorageTest {
     @Test
+    fun `legacy quality moves to the new key and is removed`() {
+        val preferences = profileDataPrefs(RuntimeEnvironment.getApplication(), "default")
+        preferences.edit().putBoolean("originalCustomArtworkQuality", true).apply()
+        assertTrue(readOriginalImageQuality(preferences))
+        assertTrue(preferences.getBoolean(ORIGINAL_IMAGE_QUALITY_KEY, false))
+        assertFalse(preferences.contains("originalCustomArtworkQuality"))
+    }
+
+    @Test
     fun `original keeps source bytes while default limits the longest side`() {
         val context = RuntimeEnvironment.getApplication()
         val source = File(context.cacheDir, "large-source.png")
@@ -44,7 +53,7 @@ class OwnedImageStorageTest {
         BitmapFactory.decodeFile(optimized.path, bounds)
         assertEquals(1000, bounds.outWidth)
 
-        profileDataPrefs(context, "default").edit().putBoolean(ORIGINAL_ARTWORK_QUALITY_KEY, true).commit()
+        profileDataPrefs(context, "default").edit().putBoolean(ORIGINAL_IMAGE_QUALITY_KEY, true).commit()
         val original = requireNotNull(saveOwnedImage(context, Uri.fromFile(source), "artwork", "cover_test.png"))
         val saved = File(requireNotNull(original.path))
         assertArrayEquals(source.readBytes(), saved.readBytes())

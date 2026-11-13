@@ -19,11 +19,24 @@ import timber.log.Timber
 /** Serializes in-process cover edits, including rollback, with database backup imports. */
 internal val ownedCoverMutationMutex = Mutex()
 
-internal const val ORIGINAL_ARTWORK_QUALITY_KEY = "originalCustomArtworkQuality"
+internal const val ORIGINAL_IMAGE_QUALITY_KEY = "originalImageQuality"
+private const val LEGACY_ARTWORK_QUALITY_KEY = "originalCustomArtworkQuality"
 internal const val OWNED_COVER_EXTENSION_PATTERN = "jpg|png|webp|gif|heic|img"
 
-internal fun keepsOriginalArtwork(context: Context): Boolean =
-    profileDataPrefs(context, getActiveProfile(context)).getBoolean(ORIGINAL_ARTWORK_QUALITY_KEY, false)
+internal fun keepsOriginalArtwork(context: Context, profile: String = getActiveProfile(context)): Boolean =
+    readOriginalImageQuality(profileDataPrefs(context, profile))
+
+internal fun readOriginalImageQuality(preferences: android.content.SharedPreferences): Boolean {
+    val original = preferences.getBoolean(
+        ORIGINAL_IMAGE_QUALITY_KEY,
+        preferences.getBoolean(LEGACY_ARTWORK_QUALITY_KEY, false),
+    )
+    if (preferences.contains(LEGACY_ARTWORK_QUALITY_KEY)) {
+        preferences.edit().putBoolean(ORIGINAL_IMAGE_QUALITY_KEY, original)
+            .remove(LEGACY_ARTWORK_QUALITY_KEY).apply()
+    }
+    return original
+}
 
 /** Verifies image content with a small decode, independent of its stored dimensions. */
 internal fun validateOwnedArtwork(file: File) {

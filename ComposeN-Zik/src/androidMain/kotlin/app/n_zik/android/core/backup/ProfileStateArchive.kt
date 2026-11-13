@@ -307,7 +307,7 @@ object ProfileStateArchive {
         id.isNotBlank() && id.length <= MAX_FIELD_LENGTH && isProfileIdSafe(id) &&
             id.none { it == '\r' || it == '\n' || it == '\t' }
 
-    private fun isValidAvatar(bytes: ByteArray): Boolean {
+    internal fun isValidAvatar(bytes: ByteArray): Boolean {
         if (bytes.size > MAX_IMAGE_BYTES || !isValidImageHeader(bytes)) return false
         if (Build.VERSION.SDK_INT == 0) return true
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }

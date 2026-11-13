@@ -87,8 +87,8 @@ internal object PickedImageEditor {
     suspend fun edit(context: Context, source: Uri, originalSize: Boolean = false): PreparedImage? =
         edit(context, originalSize) { app, directory -> copyImage(app, source, directory, "input") }
 
-    suspend fun edit(context: Context, source: ByteArray): PreparedImage? =
-        edit(context) { _, directory -> copyImage(source, directory, "input") }
+    suspend fun edit(context: Context, source: ByteArray, originalSize: Boolean = false): PreparedImage? =
+        edit(context, originalSize) { _, directory -> copyImage(source, directory, "input") }
 
     /** Stages a validated source without opening the crop activity. The caller owns the result. */
     suspend fun prepareSource(context: Context, source: Uri): PreparedImage {

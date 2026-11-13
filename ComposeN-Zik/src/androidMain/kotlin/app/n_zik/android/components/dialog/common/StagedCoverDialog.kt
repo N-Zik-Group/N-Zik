@@ -296,7 +296,9 @@ abstract class StagedCoverDialog internal constructor(
         if (uri != null) startEdit(++generation) {
             PickedImageEditor.edit(context, uri, originalSize = savesOwnedArtwork && keepsOriginalArtwork(context))
         }
-        else if (bytes != null) startEdit(++generation) { PickedImageEditor.edit(context, bytes) }
+        else if (bytes != null) startEdit(++generation) {
+            PickedImageEditor.edit(context, bytes, originalSize = savesOwnedArtwork && keepsOriginalArtwork(context))
+        }
     }
 
     private fun prepareExport(launchPicker: (Intent) -> Unit) {

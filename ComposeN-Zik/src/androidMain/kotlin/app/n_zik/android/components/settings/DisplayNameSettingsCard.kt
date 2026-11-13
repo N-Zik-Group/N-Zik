@@ -38,6 +38,7 @@ import app.n_zik.android.components.image.ProfilePhotoWriteQueue
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.cancelAndJoin
 import app.n_zik.android.components.image.PickedImageEditor
+import app.n_zik.android.components.image.keepsOriginalArtwork
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -178,7 +179,12 @@ fun ProfileFaceCard(
                 if (uri == null || getActiveProfile(app) != target) return@rememberLauncherForActivityResult
                 photoJob?.cancel()
                 photoJob = scope.launch {
-                    val edited = PickedImageEditor.edit(context, uri) ?: return@launch
+                    val edited = if (keepsOriginalArtwork(context, target)) {
+                        runCatching { PickedImageEditor.prepareSource(context, uri) }
+                            .onFailure { if (it is kotlinx.coroutines.CancellationException) throw it }
+                            .getOrNull()
+                    } else PickedImageEditor.edit(context, uri)
+                    if (edited == null) return@launch
                     edited.use {
                         if (request != photoRequest || getActiveProfile(app) != target) return@launch
                         val saved = photoWrites.save(

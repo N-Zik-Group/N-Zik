@@ -3,6 +3,8 @@ package app.n_zik.android.components.ui.screens.profiles
 import app.n_zik.android.components.glass.GlassProfilePreferences
 
 import app.n_zik.android.components.image.writeOwnedImageAtomically
+import app.n_zik.android.components.image.keepsOriginalArtwork
+import app.n_zik.android.core.backup.ProfileStateArchive
 import android.content.Context
 import android.icu.text.RelativeDateTimeFormatter
 import android.content.SharedPreferences
@@ -158,10 +160,17 @@ suspend fun saveProfileAvatarFromUri(context: Context, profileId: String, uri: U
     runCatching {
         val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
             ?: throw IOException("Cannot open the picked image")
+        val file = profileAvatarFile(context, profileId)
+        if (keepsOriginalArtwork(context, profileId)) {
+            require(ProfileStateArchive.isValidAvatar(bytes)) { "Image exceeds profile backup limits or uses an unsupported format" }
+            writeOwnedImageAtomically(file) { it.write(bytes) }
+            ArtworkRevisions.invalidate()
+            profileFaceUpdateTrigger++
+            return@runCatching
+        }
         val source = decodeLimitedBitmap(bytes, AVATAR_MAX_SIDE_PX)
             ?: throw IOException("Cannot decode the picked image")
         try {
-            val file = profileAvatarFile(context, profileId)
             writeOwnedImageAtomically(file) { output ->
                 check(source.compress(Bitmap.CompressFormat.JPEG, AVATAR_JPEG_QUALITY, output))
             }

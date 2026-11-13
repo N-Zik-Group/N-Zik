@@ -28,12 +28,14 @@ import app.it.fast4x.rimusic.utils.getEnum
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.InputNumericDialog
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
-import app.n_zik.android.components.image.ORIGINAL_ARTWORK_QUALITY_KEY
+import app.n_zik.android.components.image.ORIGINAL_IMAGE_QUALITY_KEY
+import app.n_zik.android.components.image.readOriginalImageQuality
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.core.coil.PROFILE_IMAGE_CACHE_CUSTOM_MB
+import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.imageCacheCustomMb
 import app.n_zik.android.core.profiles.ProfileCacheLocationMigration
 import app.n_zik.android.core.profiles.profileDataPrefs
@@ -128,16 +130,16 @@ private fun DataCacheSettings(
     var showCoilCustomDiskCacheDialog by remember { mutableStateOf(false) }
     var coilCustomDiskCache by remember(preferences) { mutableStateOf(imageCacheCustomMb(preferences)) }
     var originalArtwork by remember(preferences) {
-        mutableStateOf(preferences.getBoolean(ORIGINAL_ARTWORK_QUALITY_KEY, false))
+        mutableStateOf(readOriginalImageQuality(preferences))
     }
     var showArtworkQualityDialog by remember(target) { mutableStateOf(false) }
-    val artworkQualityTitle = stringResource(R.string.storage_artwork_quality_title)
+    val artworkQualityTitle = stringResource(R.string.storage_image_quality_title)
     val artworkQualityLabel: @Composable (Boolean) -> String = {
-        stringResource(if (it) R.string.storage_artwork_quality_original else R.string.storage_artwork_quality_optimized)
+        stringResource(if (it) R.string.storage_image_quality_original else R.string.storage_image_quality_optimized)
     }
     OtherSettingsEntry(
         title = artworkQualityTitle,
-        text = stringResource(R.string.storage_artwork_quality_description),
+        text = stringResource(R.string.storage_image_quality_description),
         selectedValueText = artworkQualityLabel(originalArtwork),
         icon = R.drawable.cover_edit,
         modifier = Modifier.settingsSearchTarget("data.cache.artwork_quality"),
@@ -148,7 +150,12 @@ private fun DataCacheSettings(
             title = artworkQualityTitle,
             selectedValue = originalArtwork,
             values = listOf(false, true),
-            onValueSelected = { value -> save(ORIGINAL_ARTWORK_QUALITY_KEY, value) { originalArtwork = value } },
+            onValueSelected = { value ->
+                save(ORIGINAL_IMAGE_QUALITY_KEY, value) {
+                    originalArtwork = value
+                    if (isActive) ImageCacheFactory.refreshArtworkQuality()
+                }
+            },
             valueText = artworkQualityLabel,
             onDismiss = { showArtworkQualityDialog = false },
         )

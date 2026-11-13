@@ -211,7 +211,7 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget("data.title_backup_and_restore.import_backup", 4, R.string.settings_section_backup_and_restore_title, R.string.backup_action_import, listOf(R.string.backup_import_library_options_description)),
     SettingsEntryTarget("data.cache.image_cache_max_size", 4, R.string.storage_breakdown_title, R.string.settings_cache_image_size_limit_label, listOf(R.string.common_option_custom)),
     SettingsEntryTarget("data.cache.section", 4, R.string.storage_breakdown_title, R.string.storage_cache_settings_title),
-    SettingsEntryTarget("data.cache.artwork_quality", 4, R.string.storage_breakdown_title, R.string.storage_artwork_quality_title, listOf(R.string.storage_artwork_quality_original, R.string.storage_artwork_quality_optimized)),
+    SettingsEntryTarget("data.cache.artwork_quality", 4, R.string.storage_breakdown_title, R.string.storage_image_quality_title, listOf(R.string.storage_image_quality_original, R.string.storage_image_quality_optimized)),
     SettingsEntryTarget("data.cache.song_cache_max_size", 4, R.string.storage_breakdown_title, R.string.settings_cache_song_size_limit_label, listOf(R.string.common_option_custom, R.string.common_action_turn_off)),
     SettingsEntryTarget("data.cache.song_download_max_size", 4, R.string.storage_breakdown_title, R.string.settings_downloads_storage_limit_label),
     SettingsEntryTarget("data.cache.set_cache_location", 4, R.string.storage_breakdown_title, R.string.settings_cache_location_label),

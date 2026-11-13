@@ -75,7 +75,7 @@ class SettingsDetailedSearchTest {
 
     @Test fun customArtworkQualityIsSearchableGloballyAndInData() {
         val target = AllSettingsEntryTargets.single { it.id == "data.cache.artwork_quality" }
-        val labels = listOf(target.labelRes, R.string.storage_artwork_quality_optimized)
+        val labels = listOf(target.labelRes, R.string.storage_image_quality_optimized)
         for (locale in listOf(Locale.ENGLISH, Locale.FRENCH)) {
             val localized = localized(locale)
             for (label in labels) {
