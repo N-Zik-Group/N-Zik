@@ -76,6 +76,7 @@ class AutoCallbackPublicationProfileTest {
         mockkObject(Database, DislikedExclusion)
         coEvery { DislikedExclusion.excludedSongIds(any(), any()) } returns emptySet()
         every { Database.songTable } returns songs
+        every { songs.findByIdDirect(any()) } returns null
         every { Database.queueTable } returns queue
         callback = AutoSessionCallback(context, Database, mockk<MyDownloadHelper>(relaxed = true))
         tree = AutoSessionCallback::class.java.getDeclaredField("autoBrowseTree").apply {
@@ -149,10 +150,10 @@ class AutoCallbackPublicationProfileTest {
     fun `resumption rejects queue read across profile change and permits fresh queue`() {
         check(context.preferences.edit().putBoolean(persistentQueueKey, true).commit())
         val entered = CountDownLatch(1)
-        every { queue.all(any()) } returns flow {
+        coEvery { Database.readSavedQueue() } coAnswers {
             entered.countDown()
             releaseRead.await()
-            emit(listOf(QueuedMediaItem(mediaItem = row("private-A"), position = 456L)))
+            listOf(QueuedMediaItem(mediaItem = row("private-A"), position = 456L))
         }
         val pending = callback.onPlaybackResumption(mockk<MediaSession>(), mockk<MediaSession.ControllerInfo>())
         assertTrue("Resumption did not reach queue flow", entered.await(15, TimeUnit.SECONDS))
@@ -164,8 +165,8 @@ class AutoCallbackPublicationProfileTest {
         assertTrue(pending.isCancelled)
 
         check(context.preferences.edit().putBoolean(persistentQueueKey, true).commit())
-        every { queue.all(any()) } returns flow {
-            emit(listOf(QueuedMediaItem(mediaItem = row("public-B"), position = 789L)))
+        coEvery { Database.readSavedQueue() } coAnswers {
+            listOf(QueuedMediaItem(mediaItem = row("public-B"), position = 789L))
         }
         val fresh = callback.onPlaybackResumption(
             mockk<MediaSession>(), mockk<MediaSession.ControllerInfo>(),

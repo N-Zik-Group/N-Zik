@@ -29,15 +29,16 @@ fun MediaItem.artistTextWithFallback(): String {
 
 @Composable
 fun MediaItem.titleWithFallback(): String {
-    val title = mediaMetadata.title?.toString() ?: ""
-    if (title.isNotBlank() && title != "null") return title
+    displayTrackTitle(mediaMetadata.title?.toString())?.let { return it }
     val dbSong by remember(mediaId) {
         Database.songTable.findById(mediaId)
     }.collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
-    val dbTitle = dbSong?.title
-    if (!dbTitle.isNullOrBlank() && dbTitle != "null") return dbTitle
+    displayTrackTitle(dbSong?.title)?.let { return it }
     return stringResource(R.string.metadata_unknown_title)
 }
+
+internal fun displayTrackTitle(title: String?): String? =
+    title?.let { cleanPrefix(cleanPrefix(it)) }?.takeIf { it.isNotBlank() && it != "null" }
 
 @Composable
 fun MediaItem.artistIdsWithFallback(): List<Info> {

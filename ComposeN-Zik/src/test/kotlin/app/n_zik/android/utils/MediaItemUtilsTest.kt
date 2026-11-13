@@ -40,6 +40,11 @@ class TestApplication : Application()
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = TestApplication::class)
 class MediaItemUtilsTest {
+    @Test
+    fun `display title strips the explicit glyph followed by the internal prefix`() {
+        assertEquals("Cold (feat. Future)", displayTrackTitle("\uD83C\uDD74 e:Cold (feat. Future)"))
+    }
+
 
     @Before
     fun initDependencies() {

@@ -1,4 +1,10 @@
 Fixed:
+- fix(player): restore persistent queues and album artwork (issue https://github.com/N-Zik-Group/N-Zik/issues/978)
+  - Save queue snapshots atomically before player teardown and persist an empty queue when the last track is removed.
+  - Restore the saved position and resolve durable artwork sources on phone and Android Auto while respecting active selections and profile settings.
+  - Preserve custom artwork references and hide internal title prefixes while retaining the explicit badge.
+
+Fixed:
 - fix(glass): resolve interaction and rendering audit findings
   - Give the Storage info and debug badges Jelly feedback, keep searched settings below the header, and preserve native profile-action geometry.
   - Track the finger with the profile menu ripple and isolate the On and Off preview interactions while keeping both preview bars visible.

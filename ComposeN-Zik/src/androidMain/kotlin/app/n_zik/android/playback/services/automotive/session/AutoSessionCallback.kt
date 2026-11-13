@@ -1,10 +1,13 @@
 package app.n_zik.android.playback.services.automotive.session
 
 import android.content.Context
-import android.net.Uri
-import app.it.fast4x.rimusic.cleanPrefix
+import app.n_zik.android.playback.services.PersistentQueueArtwork
 import app.n_zik.android.playback.services.ArtworkContentProvider
 import android.os.Bundle
+import android.net.Uri
+import app.it.fast4x.rimusic.MODIFIED_PREFIX
+import android.os.Handler
+import android.os.Looper
 import android.service.media.MediaBrowserService.BrowserRoot
 import androidx.annotation.OptIn
 import androidx.compose.ui.util.fastFilter
@@ -92,10 +95,31 @@ class AutoSessionCallback(
     private val scope = NzikDispatchers.fireAndForget(NzikDispatchers.UI)
     private var observationJob: Job? = null
     private val selectionRequestLock = Any()
-    private val queueApplicationOwner = AutoQueueApplicationOwner()
+    private var deferredStartupRestore: (() -> Unit)? = null
+    private val startupHandler = Handler(Looper.getMainLooper())
+    private val queueApplicationOwner = AutoQueueApplicationOwner(::postDeferredStartupRestore)
     private var pendingRequest: AutoQueueApplicationOwner.Request? = null
 
     internal fun wrapPlayer(player: Player): Player = queueApplicationOwner.wrap(player)
+
+    private fun postDeferredStartupRestore() {
+        startupHandler.post {
+            synchronized(selectionRequestLock) {
+                if (pendingRequest?.let(queueApplicationOwner::pending) != true) {
+                    val restore = deferredStartupRestore
+                    deferredStartupRestore = null
+                    restore?.invoke()
+                }
+            }
+        }
+    }
+
+    internal fun restoreStartupQueueIfUnowned(restore: () -> Unit) {
+        synchronized(selectionRequestLock) {
+            if (pendingRequest?.let(queueApplicationOwner::pending) == true) deferredStartupRestore = restore
+            else restore()
+        }
+    }
     private var pendingSelection: ListenableFuture<MediaSession.MediaItemsWithStartPosition>? = null
     private val accessEpoch = java.util.concurrent.atomic.AtomicLong()
     private val browsedParents = linkedMapOf<String, Int>()
@@ -196,6 +220,7 @@ class AutoSessionCallback(
     }
 
     fun release() {
+        synchronized(selectionRequestLock) { deferredStartupRestore = null }
         synchronized(selectionRequestLock) {
             queueApplicationOwner.invalidate()
             pendingSelection?.cancel(true)
@@ -966,19 +991,36 @@ class AutoSessionCallback(
             val requestProfile = getActiveProfile(context)
             val epoch = accessEpoch.get()
             try {
-                val queued = database.queueTable.all().first()
+                val queued = database.readSavedQueue()
+                if (getActiveProfile(context) != requestProfile || epoch != accessEpoch.get()) {
+                    throw CancellationException("Automotive queue read invalidated")
+                }
                 val idx = queued.indexOfFirst { it.position != null }.coerceAtLeast(0)
                 val startPos = queued.getOrNull(idx)?.position ?: 0L
                 val mediaItems = queued.map { item ->
-                    val restored = item.mediaItem.asSong
-                    val durable = item.mediaItem.mediaMetadata.extras
-                        ?.getString(SessionMediaItemMapper.ORIGINAL_ARTWORK_SOURCE_EXTRA)
-                        ?.takeUnless(::isTransientArtworkSource)
-                    val source = durable ?: if (isTransientArtworkSource(restored.thumbnailUrl)) {
-                        database.songTable.findById(restored.id).first()?.thumbnailUrl
-                    } else null
-                    val song = if (source != null) restored.copy(thumbnailUrl = source) else restored
-                    CancellableAutoMediaItemMapper.mapSongToMediaItem(song, true, song.isLocal)
+                    val restored = PersistentQueueArtwork.restore(context, requestProfile, item.mediaItem) {
+                        database.songTable.findByIdDirect(it)?.thumbnailUrl
+                    }
+                    val original = PersistentQueueArtwork.originalSource(restored)
+                    val song = restored.asSong.let { song ->
+                        val backedCustomCover = restored.mediaMetadata.artworkUri?.authority == ArtworkContentProvider.AUTHORITY
+                        val modified = restored.mediaMetadata.extras?.getBoolean("isCoverModified") == true
+                        val coverFile = if (backedCustomCover && modified) {
+                            PersistentQueueArtwork.backingCoverFile(context, requestProfile, song.thumbnailUrl, song.id)
+                        } else null
+                        if (coverFile != null) {
+                            song.copy(thumbnailUrl = MODIFIED_PREFIX + Uri.fromFile(coverFile))
+                        } else if (backedCustomCover || modified) song else {
+                            original?.let { song.copy(thumbnailUrl = it) } ?: song
+                        }
+                    }
+                    val mapped = CancellableAutoMediaItemMapper.mapSongToMediaItem(song, true, song.isLocal)
+                    if (original == null) mapped else {
+                        val extras = Bundle(mapped.mediaMetadata.extras).apply {
+                            putString(SessionMediaItemMapper.ORIGINAL_ARTWORK_SOURCE_EXTRA, original)
+                        }
+                        mapped.buildUpon().setMediaMetadata(mapped.mediaMetadata.buildUpon().setExtras(extras).build()).build()
+                    }
                 }
                 val available = accessPolicy().eligible(mediaItems)
                 if (getActiveProfile(context) != requestProfile || epoch != accessEpoch.get()) {
@@ -998,12 +1040,6 @@ class AutoSessionCallback(
         }
     }
 
-    private fun isTransientArtworkSource(source: String?): Boolean {
-        if (source.isNullOrBlank()) return false
-        val uri = Uri.parse(cleanPrefix(source))
-        return uri.scheme == "content" && uri.authority == ArtworkContentProvider.AUTHORITY &&
-            uri.pathSegments.firstOrNull() in setOf("source", "remote")
-    }
     private fun getCountCachedSongs(): Flow<Int> = database.formatTable.allWithSongs().map { flist ->
         if (!::binder.isInitialized) return@map 0
         flist.filter { itf ->

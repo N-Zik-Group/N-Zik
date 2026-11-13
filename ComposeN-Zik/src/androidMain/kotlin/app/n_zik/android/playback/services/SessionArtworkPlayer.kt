@@ -88,12 +88,16 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
         val currentItem = currentMediaItem
         val hasLoadedTrack = currentItem != null && playbackState != Player.STATE_IDLE
         val mediaId = currentItem?.mediaId
-        val source = metadata.extras?.getString(SessionMediaItemMapper.ORIGINAL_ARTWORK_SOURCE_EXTRA)
-            ?.let(::cleanPrefix) ?: metadata.artworkUri?.toString()
+        val selectedArtwork = currentItem?.mediaMetadata?.takeIf { it.extras?.getBoolean("isCoverModified") == true }
+            ?.artworkUri
+        val source = selectedArtwork?.toString()
+            ?: metadata.extras?.getString(SessionMediaItemMapper.ORIGINAL_ARTWORK_SOURCE_EXTRA)
+                ?.let(::cleanPrefix) ?: metadata.artworkUri?.toString()
         if (now() >= expires) expires = now() + 24 * 60 * 60 * 1000L
         val providerArtworkUri = source?.takeIf { currentItem != null }?.let {
             ArtworkContentProvider.uriForRemote(it, profile, square, revision, expires)
-        } ?: metadata.artworkUri?.takeIf { it.authority == ArtworkContentProvider.AUTHORITY }
+        } ?: selectedArtwork?.takeIf { it.authority == ArtworkContentProvider.AUTHORITY }
+        ?: metadata.artworkUri?.takeIf { it.authority == ArtworkContentProvider.AUTHORITY }
         ?: mediaId?.takeIf {
             LocalArtworkRules.needsProviderArtwork(it, source, ArtworkContentProvider.AUTHORITY)
         }?.let { ArtworkContentProvider.uriFor(LocalArtworkRules.songIdOf(it)) }

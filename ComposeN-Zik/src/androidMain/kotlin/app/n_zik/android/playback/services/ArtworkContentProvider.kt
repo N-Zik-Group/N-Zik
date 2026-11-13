@@ -118,6 +118,24 @@ class ArtworkContentProvider : ContentProvider() {
             .authority(AUTHORITY)
             .appendPath(songId)
             .build()
+
+        internal fun registeredSourceFile(ctx: Context, profile: String, uri: Uri): File? {
+            if (uri.scheme != "content" || uri.authority != AUTHORITY ||
+                uri.pathSegments.size != 2 || uri.pathSegments.first() != "source"
+            ) return null
+            val source = synchronized(sources) { sources[uri.lastPathSegment] } ?: return null
+            return source.file.takeIf {
+                source.profile == profileStorageIdentity(ctx, profile) && it.isFile && it.canRead()
+            }
+        }
+
+        internal fun customCoverFile(ctx: Context, profile: String, songId: String): File? {
+            if (songId.isBlank() || songId.any { it == '/' || it == '\\' }) return null
+            val directory = ctx.filesDir.canonicalFile.resolve(coversDir(ctx, profile).name)
+            if (directory.canonicalFile != directory.absoluteFile) return null
+            val file = directory.resolve("cover_$songId.jpg")
+            return file.takeIf { it.canonicalFile == it.absoluteFile && it.isFile }
+        }
     }
 
     override fun onCreate(): Boolean = true
@@ -164,12 +182,10 @@ class ArtworkContentProvider : ContentProvider() {
     }
 
     private fun registeredSource(ctx: Context, uri: Uri): Bitmap? {
-        if (uri.pathSegments.size != 2 ||
-            !LocalArtworkRules.isTrustedCaller(runCatching { callingPackage }.getOrNull(), ctx.packageName)) return null
-        val source = synchronized(sources) { sources[uri.lastPathSegment] } ?: return null
-        if (source.profile != profileStorageIdentity(ctx, getActiveProfile(ctx))) return null
+        if (!LocalArtworkRules.isTrustedCaller(runCatching { callingPackage }.getOrNull(), ctx.packageName)) return null
+        val file = registeredSourceFile(ctx, getActiveProfile(ctx), uri) ?: return null
         val bitmap = try {
-            ArtworkBitmapDecoder.file(source.file)
+            ArtworkBitmapDecoder.file(file)
         } catch (e: IOException) {
             Timber.tag(TAG).w(e, "Registered artwork source could not be read")
             null
@@ -182,37 +198,22 @@ class ArtworkContentProvider : ContentProvider() {
 
     /** Custom cover with EXIF rotation applied, center-cropped (pre-existing behavior). */
     private fun customCover(ctx: Context, songId: String): Bitmap? {
-        if (songId.isBlank() || songId.any { it == '/' || it == '\\' }) return null
-        val directory = ctx.filesDir.canonicalFile.resolve(coversDir(ctx, getActiveProfile(ctx)).name)
-        if (directory.canonicalFile != directory.absoluteFile) return null
-        val url = if (Dependencies.isInitialized) {
-            Database.songTable.findByIdDirect(songId)?.thumbnailUrl?.let(::cleanPrefix)
-        } else null
-        val file = if (url != null) {
-            val uri = Uri.parse(url)
-            val path = when (uri.scheme) {
-                "file" -> uri.path
-                null -> url
-                else -> null
-            } ?: return null
-            File(path).takeIf {
-                it.parentFile == directory &&
-                    it.extension in OWNED_COVER_EXTENSION_PATTERN.split('|') &&
-                    it.name.startsWith("cover_")
-            } ?: return null
-        } else directory.resolve("cover_$songId.jpg")
-        if (!file.isFile || file.canonicalFile != file.absoluteFile) return null
+        val file = customCoverFile(ctx, getActiveProfile(ctx), songId) ?: return null
         return ArtworkBitmapDecoder.file(file)?.let { ArtworkBitmapDecoder.finish(it, square = true) }
     }
 
     /** Reads permission-protected album art in-process for trusted media surfaces. */
     private fun mediaStoreArtIfTrusted(ctx: Context, songId: String): Bitmap? {
-        val audioId = LocalArtworkRules.mediaStoreAudioIdOf(songId) ?: return null
         val caller = runCatching { callingPackage }.getOrNull()
         if (!LocalArtworkRules.isTrustedCaller(caller, ctx.packageName)) {
             Timber.tag(TAG).d("MediaStore art refused to untrusted caller %s", caller)
             return null
         }
+        return mediaStoreArtwork(ctx, songId)
+    }
+
+    internal fun mediaStoreArtwork(ctx: Context, songId: String): Bitmap? {
+        val audioId = LocalArtworkRules.mediaStoreAudioIdOf(songId) ?: return null
         val albumArt = albumIdOf(ctx, audioId)?.let { albumId ->
             runCatching {
                 val albumArtUri = ContentUris.withAppendedId(

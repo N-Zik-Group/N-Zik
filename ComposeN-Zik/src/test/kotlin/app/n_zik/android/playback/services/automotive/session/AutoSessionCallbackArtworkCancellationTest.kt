@@ -13,7 +13,6 @@ import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.utils.persistentQueueKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.core.database.QueuedMediaItemTable
-import kotlinx.coroutines.flow.flow
 import app.n_zik.android.appContext
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
@@ -81,7 +80,7 @@ class AutoSessionCallbackArtworkCancellationTest {
         every { Database.queueTable } returns queue
         val entered = CountDownLatch(1)
         val stopped = CountDownLatch(1)
-        every { queue.all(any()) } returns flow {
+        coEvery { Database.readSavedQueue() } coAnswers {
             entered.countDown()
             try { awaitCancellation() } finally { stopped.countDown() }
         }
