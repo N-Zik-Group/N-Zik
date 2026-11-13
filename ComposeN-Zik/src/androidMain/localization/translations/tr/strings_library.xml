@@ -407,4 +407,5 @@
     <string name="library_on_device_permission_settings_failed">İzin ayarları açılamadı.</string>
     <string name="artist_more_from_format">Daha fazla %1$s</string>
     <string name="playlist_top_show_title_format">%1$s göster</string>
+    <string name="library_on_device_no_local_playlists">No local playlists. Create a playlist or add a song to a new playlist from On device.</string>
 </resources>
