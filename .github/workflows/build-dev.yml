@@ -464,7 +464,7 @@ jobs:
     steps:
       - name: 🔨 Dev Build Notification
         env:
-          WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL_MOBILE }}
           CONTENT: |
             🔨 **||<@&1534516569240109106>|| NEW DEV BUILD v${{ needs.versioning.outputs.downstream }}-dev-${{ needs.build_time.outputs.date }}!**
 
