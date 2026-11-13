@@ -235,11 +235,16 @@
     <string name="settings_local_music_action_add_blocked_folder">Añadir carpeta</string>
     <string name="settings_local_music_blocked_folder_exists_message">La carpeta ya existe.</string>
     <string name="settings_local_music_blocked_folders_description">Editar lista negra para las canciones del dispositivo.</string>
+    <string name="settings_local_music_folder_exclusions_description">Ocultar canciones en estas carpetas y sus subcarpetas para este perfil.</string>
     <string name="settings_local_music_blocked_folders_title">Carpetas en lista negra</string>
     <string name="settings_local_music_folders_description">Mostrar carpetas en la página en el dispositivo</string>
+    <string name="settings_local_music_folder_mode_description">Navegar por carpeta cuando esté habilitado. Desactive para ver todas las canciones en el dispositivo en una lista.</string>
     <string name="settings_local_music_folders_label">Carpetas</string>
     <string name="settings_local_music_initial_folder_description">Carpeta que se mostrará al abrir la página en el dispositivo.</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">¿Seguro que quieres eliminar esta carpeta de la lista negra?</string>
+    <string name="settings_local_music_refresh_title">Actualizar música en dispositivo</string>
+    <string name="settings_local_music_refresh_description">Actualizar la lista de canciones en el dispositivo para el perfil activo.</string>
+    <string name="settings_local_music_start_folder_path_description">Introduzca una ruta de carpeta como Music/Live, o use / para iniciar en la raíz. Si la carpeta no está disponible, el navegador abre el padre más cercano disponible.</string>
     <string name="settings_local_playlist_title">Lista de reproducción local</string>
     <string name="settings_logging_disabled_label">Desactivar registros de depuración</string>
     <string name="settings_logging_error_file_description">Si está habilitado, crea un archivo de registro para resaltar errores</string>
@@ -490,4 +495,12 @@
     <string name="settings_youtube_login_enabled_label">Habilitar inicio de sesión en YouTube Music</string>
     <string name="settings_dialog_sort_title_format">%1$s: Ordenar</string>
     <string name="settings_dialog_toolbar_title_format">%1$s: Barra de herramientas</string>
+    <string name="settings_local_music_enabled_title">Activar biblioteca de dispositivos</string>
+    <string name="settings_local_music_enabled_description">Mostrar en las pestañas del dispositivo y escanear este dispositivo en busca de música.</string>
+    <string name="settings_local_music_scan_on_startup_title">Escanear al iniciar</string>
+    <string name="settings_local_music_scan_on_startup_description">Escanear música en dispositivo cuando este perfil inicie.</string>
+    <string name="settings_local_music_scan_not_run">Aún no hay resultados de escaneo</string>
+    <string name="settings_local_music_summary_title">Resumen de la biblioteca del dispositivo</string>
+    <string name="settings_local_music_summary_description">Vea la música y las carpetas detectadas para este perfil.</string>
+    <string name="settings_local_music_summary_count">%1$s: %2$d</string>
 </resources>
