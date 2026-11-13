@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="storage_artwork_quality_title">Mukautettu taideteosten laatu</string>
+    <string name="storage_artwork_quality_description">Koskee uusia mukautettuja taidetta. Alkuperäiset tiedostot voivat käyttää enemmän tallennustilaa.</string>
+    <string name="storage_artwork_quality_optimized">Optimoitu (1 000 px)</string>
+    <string name="storage_artwork_quality_original">Alkuperäinen</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Tallennustila</string>
     <string name="storage_breakdown_tab_total">Yhteensä</string>
