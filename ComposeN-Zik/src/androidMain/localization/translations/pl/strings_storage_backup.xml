@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="storage_artwork_quality_title">Niestandardowa jakość grafiki</string>
-    <string name="storage_artwork_quality_description">Dotyczy nowej grafiki niestandardowej. Oryginalne pliki mogą korzystać z większej ilości pamięci.</string>
-    <string name="storage_artwork_quality_optimized">Zoptymalizowany (1000 px)</string>
-    <string name="storage_artwork_quality_original">Oryginał</string>
+    <string name="storage_image_quality_title">Jakość obrazu</string>
+    <string name="storage_image_quality_description">Stosuje się do dzieł online i nowo dodanych okładek i zdjęć profilowych. Oryginał używa najwyższej jakości dostępnych i może korzystać z większej ilości przechowywanych danych i danych.</string>
+    <string name="storage_image_quality_optimized">Zoptymalizowany</string>
+    <string name="storage_image_quality_original">Oryginał</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Pamięć</string>
     <string name="storage_breakdown_tab_total">Łącznie</string>
