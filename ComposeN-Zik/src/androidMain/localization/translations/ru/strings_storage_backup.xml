@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="storage_artwork_quality_title">Пользовательское качество работы</string>
+    <string name="storage_artwork_quality_description">Применяется к пользовательским файлам. Исходные файлы могут использовать больше памяти.</string>
+    <string name="storage_artwork_quality_optimized">Оптимизировано (1000 px)</string>
+    <string name="storage_artwork_quality_original">Оригинал</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Хранилище</string>
     <string name="storage_breakdown_tab_total">Итого</string>
