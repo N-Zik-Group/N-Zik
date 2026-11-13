@@ -235,11 +235,16 @@
     <string name="settings_local_music_action_add_blocked_folder">Lisää kansio</string>
     <string name="settings_local_music_blocked_folder_exists_message">Tämä kansio on jo olemassa</string>
     <string name="settings_local_music_blocked_folders_description">Muokkaa mustaa listaa laitteen kappaleissa</string>
+    <string name="settings_local_music_folder_exclusions_description">Piilota kappaleet näissä kansioissa ja niiden alikansioissa tälle profiilille.</string>
     <string name="settings_local_music_blocked_folders_title">Mustalla listalla olevat kansiot</string>
     <string name="settings_local_music_folders_description">Näytä kansiot kohteessa \"laitteella\" sivulla</string>
+    <string name="settings_local_music_folder_mode_description">Selaa kansio, kun se on käytössä. Poista käytöstä nähdäksesi kaikki laitteen kappaleet yhdessä listassa.</string>
     <string name="settings_local_music_folders_label">Kansiot</string>
     <string name="settings_local_music_initial_folder_description">Laitteen kappaleissa näytetty kansio</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">Oletko varma, että haluat poistaa tämän kansion mustalta listalta?</string>
+    <string name="settings_local_music_refresh_title">Päivitä laitteen musiikki</string>
+    <string name="settings_local_music_refresh_description">Päivitä laitteen sisäinen kappalelista aktiiviselle profiilille.</string>
+    <string name="settings_local_music_start_folder_path_description">Syötä kansion polku kuten Music/Live, tai käytä / käynnistääksesi sen juuressa. Jos kansio ei ole käytettävissä, selain avaa lähimmän käytettävissä olevan vanhemman.</string>
     <string name="settings_local_playlist_title">Paikallinen Soittolista</string>
     <string name="settings_logging_disabled_label">Poista virheenkorjauslokit käytöstä</string>
     <string name="settings_logging_error_file_description">Jos käytössä, luo lokitiedoston virheiden löytämiseksi</string>
@@ -490,4 +495,12 @@
     <string name="settings_youtube_login_enabled_label">Ota YouTube-musiikin kirjautuminen käyttöön</string>
     <string name="settings_dialog_sort_title_format">%1$s: Lajittele</string>
     <string name="settings_dialog_toolbar_title_format">%1$s: Työkalurivi</string>
+    <string name="settings_local_music_enabled_title">Ota laitteen kirjasto käyttöön</string>
+    <string name="settings_local_music_enabled_description">Näytä laitteen välilehdet ja skannaa tämä laite musiikille.</string>
+    <string name="settings_local_music_scan_on_startup_title">Skannaa käynnistettäessä</string>
+    <string name="settings_local_music_scan_on_startup_description">Skannaa laitteen musiikki, kun profiili alkaa.</string>
+    <string name="settings_local_music_scan_not_run">Ei vielä skannaus tuloksia</string>
+    <string name="settings_local_music_summary_title">Laitteen kirjaston yhteenveto</string>
+    <string name="settings_local_music_summary_description">Katso tämän profiilin havaitut musiikit ja kansiot.</string>
+    <string name="settings_local_music_summary_count">%1$s: %2$d</string>
 </resources>
