@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="storage_artwork_quality_title">Tilpasset kunstverk kvalitet</string>
-    <string name="storage_artwork_quality_description">Gjelder nytt egendefinert kunstverk. Originale filer kan bruke mer lagringsplass.</string>
-    <string name="storage_artwork_quality_optimized">Optimalisert (1000 px)</string>
-    <string name="storage_artwork_quality_original">Opprinnelig</string>
+    <string name="storage_image_quality_title">Bilde kvalitet</string>
+    <string name="storage_image_quality_description">Gjelder kunstverk på nett og nylig lagt til dekker og profilbilder. Originale bruker høyeste kvalitet som er tilgjengelig og kan bruke mer lagrings- og data.</string>
+    <string name="storage_image_quality_optimized">Optimalisert</string>
+    <string name="storage_image_quality_original">Opprinnelig</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Lagring</string>
     <string name="storage_breakdown_tab_total">Totalt</string>
