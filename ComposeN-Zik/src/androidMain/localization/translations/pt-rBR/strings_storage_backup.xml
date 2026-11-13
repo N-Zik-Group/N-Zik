@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="storage_artwork_quality_title">Qualidade de arte personalizada</string>
-    <string name="storage_artwork_quality_description">Aplica-se a uma nova arte personalizada. Os arquivos originais podem usar mais armazenamento.</string>
-    <string name="storage_artwork_quality_optimized">Otimizado (1.000 px)</string>
-    <string name="storage_artwork_quality_original">Original</string>
+    <string name="storage_image_quality_title">Qualidade da imagem</string>
+    <string name="storage_image_quality_description">Aplica-se a arte online e capas recém-adicionadas e fotos de perfil. O original usa a mais alta qualidade disponível e pode usar mais dados e armazenamento.</string>
+    <string name="storage_image_quality_optimized">Otimizado</string>
+    <string name="storage_image_quality_original">Original</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Armazenamento</string>
     <string name="storage_breakdown_tab_total">Total:</string>
