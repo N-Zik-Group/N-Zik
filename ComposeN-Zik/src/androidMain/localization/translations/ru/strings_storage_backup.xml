@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="storage_artwork_quality_title">Пользовательское качество работы</string>
-    <string name="storage_artwork_quality_description">Применяется к пользовательским файлам. Исходные файлы могут использовать больше памяти.</string>
-    <string name="storage_artwork_quality_optimized">Оптимизировано (1000 px)</string>
-    <string name="storage_artwork_quality_original">Оригинал</string>
+    <string name="storage_image_quality_title">Качество изображения</string>
+    <string name="storage_image_quality_description">Применяется к онлайн-изображению и вновь добавленным обложкам и фотографиям профиля. Оригинал использует наивысшее качество доступных и может использовать больше хранилища и данных.</string>
+    <string name="storage_image_quality_optimized">Оптимизировано</string>
+    <string name="storage_image_quality_original">Оригинал</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Хранилище</string>
     <string name="storage_breakdown_tab_total">Итого</string>

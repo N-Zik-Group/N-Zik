@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="storage_artwork_quality_title">Qualità grafica personalizzata</string>
-    <string name="storage_artwork_quality_description">Si applica alla nuova grafica personalizzata. I file originali possono usare più spazio di archiviazione.</string>
-    <string name="storage_artwork_quality_optimized">Ottimizzato (1,000 px)</string>
-    <string name="storage_artwork_quality_original">Originale</string>
+    <string name="storage_image_quality_title">Qualità immagine</string>
+    <string name="storage_image_quality_description">Si applica alla grafica online e alle nuove copertine aggiunte e alle foto del profilo. Originale utilizza la massima qualità disponibile e può utilizzare più memoria e dati.</string>
+    <string name="storage_image_quality_optimized">Ottimizzato</string>
+    <string name="storage_image_quality_original">Originale</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Archiviazione</string>
     <string name="storage_breakdown_tab_total">Totale</string>

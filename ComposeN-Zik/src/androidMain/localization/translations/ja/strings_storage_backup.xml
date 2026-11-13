@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="storage_artwork_quality_title">カスタムアートワーク品質</string>
-    <string name="storage_artwork_quality_description">新しいカスタムアートワークに適用されます。オリジナルのファイルはより多くのストレージを使用できます。</string>
-    <string name="storage_artwork_quality_optimized">最適化 (1,000 px)</string>
-    <string name="storage_artwork_quality_original">オリジナル</string>
+    <string name="storage_image_quality_title">画像品質</string>
+    <string name="storage_image_quality_description">オンラインアートワークに適用され、新しく追加されたカバーやプロフィール写真. オリジナルは、利用可能な最高品質を使用し、より多くのストレージとデータを使用することができます.</string>
+    <string name="storage_image_quality_optimized">最適化</string>
+    <string name="storage_image_quality_original">オリジナル</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">ストレージ</string>
     <string name="storage_breakdown_tab_total">合計</string>

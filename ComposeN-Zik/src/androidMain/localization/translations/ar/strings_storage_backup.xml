@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="storage_artwork_quality_title">جودة العمل الفني المخصصة</string>
-    <string name="storage_artwork_quality_description">ينطبق على العمل الفني المخصص الجديد. يمكن للملفات الأصلية استخدام المزيد من التخزين.</string>
-    <string name="storage_artwork_quality_optimized">محسّن (000 1 بكس)</string>
-    <string name="storage_artwork_quality_original">الأصل</string>
+    <string name="storage_image_quality_title">جودة الصورة</string>
+    <string name="storage_image_quality_description">ينطبق على الأعمال الفنية على الإنترنت والأغلفة المضافة حديثا وصور الملف الشخصي. يستخدم الأصل أعلى جودة متاحة ويمكنه استخدام المزيد من التخزين والبيانات.</string>
+    <string name="storage_image_quality_optimized">محسّن</string>
+    <string name="storage_image_quality_original">الأصل</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">التخزين</string>
     <string name="storage_breakdown_tab_total">المجموع</string>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="storage_artwork_quality_title">Tilpasset trykfil kvalitet</string>
-    <string name="storage_artwork_quality_description">Gælder for nye brugerdefinerede illustrationer. Originale filer kan bruge mere lagring.</string>
-    <string name="storage_artwork_quality_optimized">Optimeret (1.000 px)</string>
-    <string name="storage_artwork_quality_original">Oprindelig</string>
+    <string name="storage_image_quality_title">Billede kvalitet</string>
+    <string name="storage_image_quality_description">Gælder for online illustrationer og nytilføjede omslag og profilbilleder. Original bruger den højeste kvalitet til rådighed og kan bruge mere lagring og data.</string>
+    <string name="storage_image_quality_optimized">Optimeret</string>
+    <string name="storage_image_quality_original">Oprindelig</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Lagerplads</string>
     <string name="storage_breakdown_tab_total">I Alt</string>

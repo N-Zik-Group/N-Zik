@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="storage_artwork_quality_title">自定义艺术品质量</string>
-    <string name="storage_artwork_quality_description">应用于新自定义美工。原始文件可以使用更多存储。</string>
-    <string name="storage_artwork_quality_optimized">优化(1,000px)</string>
-    <string name="storage_artwork_quality_original">原始文件</string>
+    <string name="storage_image_quality_title">图像质量</string>
+    <string name="storage_image_quality_description">应用于在线艺术作品以及新添加的封面和个人资料照片。原始使用的是现有的最高质量，可以使用更多的存储和数据。</string>
+    <string name="storage_image_quality_optimized">优化</string>
+    <string name="storage_image_quality_original">原始文件</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">存储</string>
     <string name="storage_breakdown_tab_total">总计</string>

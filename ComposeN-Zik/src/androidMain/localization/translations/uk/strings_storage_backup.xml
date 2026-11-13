@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="storage_artwork_quality_title">Власна якість завдання</string>
-    <string name="storage_artwork_quality_description">Застосовується до нової заданої роботи. Оригінальні файли можуть використовувати більше місця зберігання.</string>
-    <string name="storage_artwork_quality_optimized">Оптимізовано (1000 пікселів)</string>
-    <string name="storage_artwork_quality_original">Оригінальний</string>
+    <string name="storage_image_quality_title">Якість зображення</string>
+    <string name="storage_image_quality_description">Застосовується до онлайн та нещодавно доданих обкладинок та фотографій профілю. Оригінал використовує найбільшу якість і може використовувати більше пам’яті і даних.</string>
+    <string name="storage_image_quality_optimized">Оптимізовано</string>
+    <string name="storage_image_quality_original">Оригінальний</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Сховище</string>
     <string name="storage_breakdown_tab_total">Загальна сума замовлення</string>

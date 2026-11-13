@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="storage_artwork_quality_title">Vlastní kvalita obrazu</string>
-    <string name="storage_artwork_quality_description">Použije se na nový vlastní obrázek. Původní soubory mohou použít více úložiště.</string>
-    <string name="storage_artwork_quality_optimized">Optimalizováno (1,000 px)</string>
-    <string name="storage_artwork_quality_original">Původní</string>
+    <string name="storage_image_quality_title">Kvalita obrázku</string>
+    <string name="storage_image_quality_description">Aplikuje se na on-line umělecká díla a nově přidané obálky a profilové fotografie. Originál používá nejvyšší možnou kvalitu a může využívat více úložiště a dat.</string>
+    <string name="storage_image_quality_optimized">Optimalizováno</string>
+    <string name="storage_image_quality_original">Původní</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Úložiště</string>
     <string name="storage_breakdown_tab_total">Celkem</string>
