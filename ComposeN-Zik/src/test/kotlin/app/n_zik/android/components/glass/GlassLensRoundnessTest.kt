@@ -7,7 +7,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.styling.BoundedCornerSize
+import app.n_zik.android.ui.styling.BoundedCornerSize
 import app.n_zik.android.components.glass.backdrop.effects.lensCornerRadii
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test

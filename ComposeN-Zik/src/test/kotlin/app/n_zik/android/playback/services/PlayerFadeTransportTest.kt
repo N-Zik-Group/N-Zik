@@ -5,7 +5,7 @@ import android.content.Context
 import android.os.Looper
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import app.it.fast4x.rimusic.utils.GlobalVolume
+import app.n_zik.android.utils.GlobalVolume
 import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
 import app.n_zik.android.listentogether.listenTogetherGuestLock
 import io.mockk.every

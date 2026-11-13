@@ -16,7 +16,7 @@
 
 ## ✅ Always Do
 
-- Code → `app.n_zik.android.*` ONLY — legacy packages (`app.it.fast4x.*` — `rimusic.*` + `compose.persist.*` — / `app.kreate.android.*`) are READ-ONLY: no new files there; MODIFYING an existing legacy file is allowed ONLY when a bug fix cannot be expressed outside it AND ONLY after explicit user approval — prefer implementing the fix in `app.n_zik.android.*` (wrapper/overlay)
+- Keep app Kotlin code under `app.n_zik.android.*`. Use `app.n_zik.<module>.*` for the migrated extension modules.
 - Use Timber with tags (no println/Log.d)
 - Dispatch coroutines on `NzikDispatchers` named dispatchers only (`UI`, `PLAYBACK`, `VISUALIZER`, `MEDIA`, `DATA` + Room executors); fire-and-forget scopes via `NzikDispatchers.fireAndForget()` (see rules/CODE.md "Coroutines & Dispatchers")
 - Use version catalog refs (`libs.versions.toml`)
@@ -45,7 +45,6 @@
 
 ## 🚫 Never Do
 
-- Create files under `app.it.fast4x.*` or `app.kreate.android.*` (legacy tests go under `app.n_zik.android.legacyoffmain.*` — see rules/BUILD.md: 3 pre-existing test files live under the legacy namespace and are grandfathered, do NOT move them)
 - Edit translation values by hand (source: `ComposeN-Zik/src/androidMain/localization/source/`). Structural migration without value changes and removal of deleted source keys are allowed in the corresponding localized XML files (a dead key in a locale degrades translator context) - see rules/CODE.md "Translations"
 - Write code before completing full BMAD workflow
 - Skip BMAD workflow steps
@@ -98,8 +97,8 @@
 ```
 N-Zik/                     ← git repo root (run gradlew/git from here)
 ├── ComposeN-Zik/src/
-│   ├── androidMain/           AndroidManifest.xml + res (themes, drawables, fonts, raw, XML…) + localization/ (source/ and translations/<locale>/) + kotlin/ (app/n_zik/android/ ★ NEW code + legacy `app.it.*`/`app.kreate.*` read-only)
-│   ├── commonMain/            KMP shared logic (effectively one file — `app/it/fast4x/rimusic/Utils.kt`)
+│   ├── androidMain/           AndroidManifest.xml + res (themes, drawables, fonts, raw, XML…) + localization/ (source/ and translations/<locale>/) + kotlin/ (`app/n_zik/android/`)
+│   ├── commonMain/            KMP shared logic (effectively one file — `app/n_zik/android/Utils.kt`)
 │   ├── main/                  res (drawables, mipmap) + proto/listentogether.proto (protobuf source set for Listen Together)
 │   ├── test/                  Tests
 │   └── debug/                 Per-buildType source set — `debug` holds its own AndroidManifest.xml (the Compose test-harness activity); the other build types have no source set dir (see rules/BUILD.md)
@@ -115,7 +114,7 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 
 | What         | Where                                      |
 | ------------ | ------------------------------------------ |
-| Main code    | `app/n_zik/android/` (new — 555 .kt) + legacy `app/it/fast4x/rimusic/` (315 .kt) + `app/it/fast4x/compose/persist/` (5 .kt) & `app/kreate/android/` (21 .kt) — the legacy tree is being migrated out (READ-ONLY, see rules/CODE.md) |
+| Main code | `ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/` |
 | Database     | `app/n_zik/android/core/database/`         |
 | Repositories | collocated with their domain (e.g. `recognition/ShazamRepository.kt`) — no central `core/data/` exists |
 | DI           | no DI framework in the app module (Hilt and Koin declared in the catalog but never applied) — plain constructor injection + `object Dependencies` service locator in `MainApplication.kt` (process-lifetime `Application` access); introducing a DI framework requires user approval |
@@ -198,7 +197,7 @@ Context control takes priority over agent reuse. Delegate substantial, separable
 These files (AGENTS.md + `rules/`) are a **living document** — they evolve with the project. Keep them lean and current, not a one-off spec frozen at setup.
 
 - **Match reality.** When the codebase changes, update the rules to describe the state it is in *now*: a screen or feature lands, a tool is added (ktlint, a new build variant), the legacy→`app.n_zik.android.*` migration reaches a milestone, a convention is fixed, a build type changes.
-- **Lean & project-specific.** Short, actionable rules over prose. Add a generic explanation ONLY when it is necessary or logically required (e.g. *why* legacy packages stay READ-ONLY, *why* `NzikDispatchers` is the single threading source of truth). Cut "best-practice 101" that adds nothing project-specific.
+- **Lean & project-specific.** Short, actionable rules over prose. Add a generic explanation ONLY when it is necessary or logically required (e.g. *why* `NzikDispatchers` is the single threading source of truth). Cut "best-practice 101" that adds nothing project-specific.
 - **Delete, don't stack.** When a rule is superseded or completed (e.g. a "to be introduced" note once the tool exists; a "known flaky test" note once the test is fixed), rewrite or remove it — never leave stale notes piling up.
 - **Bump on change.** Editing any of these files → bump its `Version` and `Last updated` (patch = wording, minor = new rule/section, major = restructure).
 - **Doc-only.** Rule edits follow the "Doc-Only Exception" flow (show the diff, ask before commit) — the BMAD code workflow does not apply to rule edits.

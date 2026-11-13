@@ -2,10 +2,10 @@ package app.n_zik.android.core.profiles
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
-import app.it.fast4x.rimusic.utils.getEnum
+import app.n_zik.android.enums.ExoPlayerCacheLocation
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.exoPlayerCacheLocationKey
+import app.n_zik.android.utils.getEnum
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

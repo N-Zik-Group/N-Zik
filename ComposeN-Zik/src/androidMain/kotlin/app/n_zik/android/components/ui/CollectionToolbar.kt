@@ -13,9 +13,9 @@ import androidx.compose.ui.platform.LocalDensity
 import kotlin.math.roundToInt
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.EllipsisMenuComponent
-import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
+import app.n_zik.android.ui.components.tab.toolbar.Button
+import app.n_zik.android.ui.components.tab.toolbar.EllipsisMenuComponent
+import app.n_zik.android.ui.components.navigation.header.TabToolBar
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassStandaloneActionSize
 import app.n_zik.android.components.glass.GlassToolbarRow

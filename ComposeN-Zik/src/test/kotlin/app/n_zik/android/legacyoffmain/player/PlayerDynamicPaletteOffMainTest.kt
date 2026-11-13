@@ -5,9 +5,9 @@ import android.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils.colorToHSL
 import androidx.palette.graphics.Palette
-import app.it.fast4x.rimusic.ui.screens.player.computePlayerDynamicPalette
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
+import app.n_zik.android.ui.screens.player.computePlayerDynamicPalette
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.dynamicColorPaletteOf
 import app.n_zik.android.components.player.M3ECoverColors
 import app.n_zik.android.components.player.extractM3ECoverColors
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -27,7 +27,7 @@ import org.robolectric.annotation.Config
  * `dynamicColorPaletteOf(bitmap, ...)`, `Palette.from(bitmap).generate()`, and 6
  * `Palette.get*Color` extractions inline, on whatever dispatcher that effect resumes on (Main).
  * That whole CPU-bound sequence is now extracted, unchanged, to [computePlayerDynamicPalette]
- * (declared `internal` in `Player.kt`, `app.it.fast4x.rimusic.*`, legacy) and dispatched in one
+ * (declared `internal` in `Player.kt`, `app.n_zik.android.*`, legacy) and dispatched in one
  * `withContext(NzikDispatchers.MEDIA)` call. The extraction and the local dynamic palette now
  * delegate to the shared M3E cover extraction (`extractM3ECoverColors` +
  * `m3eDominantDynamicPaletteOf`, `app.n_zik.android.components.player`) -- RiPlay-based: capped
@@ -36,7 +36,7 @@ import org.robolectric.annotation.Config
  * the app (spec `spec-fix-palette-extractor-riplay-reference`, OQ1=A/OQ2=B).
  *
  * This test file itself lives under `app.n_zik.android.*` -- not the legacy package -- per the
- * gh-606 Lot 2 spec's "no new file under app.it.fast4x.rimusic.*" boundary; `internal` visibility
+ * gh-606 Lot 2 spec's "no new file under app.n_zik.android.*" boundary; `internal` visibility
  * is module-scoped in Kotlin, not package-scoped, so it still resolves
  * [computePlayerDynamicPalette] from here without needing to share its package.
  *

@@ -10,13 +10,13 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.FontType
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.typographyOf
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.models.Song
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.typographyOf
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.components.dialog.common.CheckboxDialog
@@ -60,7 +60,7 @@ class UpdateSongDialogConfirmationTest {
         val context = ApplicationProvider.getApplicationContext<Application>()
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { appContext() } returns context
-        mockkStatic("app.it.fast4x.rimusic.utils.ProfilePreferencesKt")
+        mockkStatic("app.n_zik.android.utils.ProfilePreferencesKt")
         every { getActiveProfile(any()) } returns "active"
         mockkStatic("app.n_zik.android.components.dialog.song.UpdateSongDialogKt")
         coEvery { runSongUpdate(any(), any(), capture(selection), any()) } returns Unit

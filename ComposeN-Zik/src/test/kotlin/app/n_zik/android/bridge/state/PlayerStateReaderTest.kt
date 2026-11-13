@@ -1,7 +1,7 @@
 package app.n_zik.android.bridge.state
 
 import android.os.Bundle
-import app.it.fast4x.rimusic.utils.EXPLICIT_BUNDLE_TAG
+import app.n_zik.android.utils.EXPLICIT_BUNDLE_TAG
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata

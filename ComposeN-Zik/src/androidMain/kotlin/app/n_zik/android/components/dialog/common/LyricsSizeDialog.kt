@@ -20,11 +20,11 @@ import androidx.compose.ui.graphics.Color
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.ui.sliders.SliderControl
 import app.n_zik.android.components.glass.GlassDialogIconButton as IconButton
-import app.it.fast4x.rimusic.ui.styling.favoritesIcon
-import app.it.fast4x.rimusic.utils.isLandscape
-import app.it.fast4x.rimusic.utils.lyricsSizeKey
-import app.it.fast4x.rimusic.utils.lyricsSizeLKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.ui.styling.favoritesIcon
+import app.n_zik.android.utils.isLandscape
+import app.n_zik.android.utils.lyricsSizeKey
+import app.n_zik.android.utils.lyricsSizeLKey
+import app.n_zik.android.utils.rememberPreference
 
 /** Lyrics size tuning dialog on the shared [DefaultDialog]: one slider in portrait, one in landscape. */
 @androidx.annotation.OptIn(UnstableApi::class)

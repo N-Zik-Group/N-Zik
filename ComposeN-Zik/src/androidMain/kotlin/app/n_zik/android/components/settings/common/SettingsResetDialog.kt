@@ -24,7 +24,7 @@ import androidx.compose.material3.Text
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.R
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.glass.rememberGlassStore
 
 private val resetScopeNames = listOf("general", "ui", "appearance", "ai", "data", "accounts", "network", "other")

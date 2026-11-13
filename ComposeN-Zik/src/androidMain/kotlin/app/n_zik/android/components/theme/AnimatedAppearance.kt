@@ -12,10 +12,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.Typography
-import app.it.fast4x.rimusic.ui.styling.lerpTo
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.Typography
+import app.n_zik.android.ui.styling.lerpTo
 
 /** Stable target that prevents scoped fades from restarting on global animation frames. */
 val LocalPaletteFadeTarget = staticCompositionLocalOf<Appearance?> { null }

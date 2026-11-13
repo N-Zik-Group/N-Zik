@@ -1,7 +1,7 @@
 package app.n_zik.android.download.utils
 
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.cleanPrefix
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.cleanPrefix
 
 private const val LABEL_SEPARATOR = " - "
 // A trailing NUL marks a display-ready label in the Media3 request's opaque data bytes.

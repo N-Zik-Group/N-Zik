@@ -8,9 +8,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.DualIcon
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
+import app.n_zik.android.ui.components.tab.toolbar.DualIcon
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 
 class HiddenSongs private constructor(
     firstIconState: MutableState<Boolean>

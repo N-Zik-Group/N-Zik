@@ -1,7 +1,7 @@
 package app.n_zik.android.extensions.musicbrainz
 
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Artist
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
 import app.n_zik.android.core.database.AlbumTable
 import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.Database

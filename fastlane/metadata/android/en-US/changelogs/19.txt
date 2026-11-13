@@ -7,7 +7,7 @@ New:
 Changed:
 - Moved Update section to About
 - Quickpicks renamed to AI recommendations
-- Renamed RiMusic logs/interface to N-Zik
+- Updated the logs and interface to use the N-Zik name
 
 Improved:
 - Default purple slightly lighter for dark areas

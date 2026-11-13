@@ -5,11 +5,11 @@ import android.os.Bundle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.EXPLICIT_PREFIX
-import app.it.fast4x.rimusic.utils.EXPLICIT_BUNDLE_TAG
-import app.it.fast4x.rimusic.utils.asSong
-import app.it.fast4x.rimusic.hasExplicitPrefix
+import app.n_zik.android.models.Song
+import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.utils.EXPLICIT_BUNDLE_TAG
+import app.n_zik.android.utils.asSong
+import app.n_zik.android.hasExplicitPrefix
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
 import io.mockk.every
 import io.mockk.mockk

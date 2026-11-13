@@ -1,8 +1,8 @@
 package app.n_zik.android.components.ui.screens.home.quickpicks
 
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.requests.HomePage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.requests.HomePage
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable

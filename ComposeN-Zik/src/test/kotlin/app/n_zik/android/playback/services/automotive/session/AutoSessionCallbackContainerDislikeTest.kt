@@ -6,9 +6,9 @@ import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionResult
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Song
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.core.database.Database

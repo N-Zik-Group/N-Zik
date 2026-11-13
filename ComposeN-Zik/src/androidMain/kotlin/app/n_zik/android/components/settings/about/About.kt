@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
-import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
+import app.n_zik.android.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.settings.common.SettingsCardSlot

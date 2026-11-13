@@ -3,7 +3,7 @@ package app.n_zik.android.components.menu.playlist
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow

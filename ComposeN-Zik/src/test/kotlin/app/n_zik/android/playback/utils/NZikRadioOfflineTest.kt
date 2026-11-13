@@ -4,11 +4,11 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.playback.services.PlayerServiceModern
-import app.it.fast4x.rimusic.utils.autoLoadSongsInQueueKey
-import app.it.fast4x.rimusic.utils.isNetworkConnected
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.autoLoadSongsInQueueKey
+import app.n_zik.android.utils.isNetworkConnected
+import app.n_zik.android.utils.preferences
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -19,8 +19,8 @@ import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.requests.nextPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.requests.nextPage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -63,7 +63,7 @@ class NZikRadioOfflineTest {
         every { binder.player } returns mockPlayer
         every { mockPlayer.currentMediaItem } returns null
 
-        mockkStatic("app.it.fast4x.rimusic.utils.PreferencesKt")
+        mockkStatic("app.n_zik.android.utils.PreferencesKt")
         every { context.preferences } returns sharedPreferences
 
         mockkObject(Toaster)
@@ -72,14 +72,14 @@ class NZikRadioOfflineTest {
         every { Toaster.noInternet() } just Runs
 
         // Offline (the subject of this file)
-        mockkStatic("app.it.fast4x.rimusic.utils.UtilsKt")
+        mockkStatic("app.n_zik.android.utils.UtilsKt")
         every { isNetworkConnected(context) } returns false
 
         // Deterministic fetch: the job runs to completion synchronously on the test thread
         // (same seam as NZikRadioTest.setupFetchHarness).
         nZikRadio = NZikRadio(context, binder, CoroutineScope(Dispatchers.Unconfined))
         nZikRadio.fetchDispatcher = UnconfinedTestDispatcher()
-        mockkStatic("it.fast4x.innertube.requests.NextPageKt")
+        mockkStatic("app.n_zik.innertube.requests.NextPageKt")
     }
 
     @AfterEach

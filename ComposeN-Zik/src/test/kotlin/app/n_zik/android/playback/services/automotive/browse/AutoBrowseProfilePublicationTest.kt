@@ -31,9 +31,9 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
-import app.it.fast4x.rimusic.utils.activeProfileKey
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.profilePreferences
+import app.n_zik.android.utils.activeProfileKey
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -41,9 +41,9 @@ import app.n_zik.android.playback.services.automotive.browse.handlers.BrowseHand
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.playback.services.automotive.session.AutoMediaIdContract
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.requests.searchPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.requests.searchPage
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
@@ -164,7 +164,7 @@ class AutoBrowseProfilePublicationTest {
     @Test
     fun `new search reset rejects late same query without replacing fresh capture or cache`() {
         tree = AutoBrowseTree(context, Database, mockk<MyDownloadHelper>(relaxed = true))
-        mockkStatic("it.fast4x.innertube.requests.SearchPageKt")
+        mockkStatic("app.n_zik.innertube.requests.SearchPageKt")
         val searchParent = "${AutoSessionConstants.ID_SEARCH_SONGS}/same/query"
         val started = CompletableDeferred<Unit>()
         val release = CompletableDeferred<Unit>()

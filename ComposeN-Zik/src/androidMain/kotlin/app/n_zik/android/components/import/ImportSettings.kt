@@ -8,7 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.CoroutineScope
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.screens.profiles.plainProfilePrefs
 import app.n_zik.android.components.ui.screens.profiles.profileSecurePrefs
@@ -24,7 +24,7 @@ import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.core.backup.SettingsPreferencesBridge
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.core.profiles.profileStorageIdentity
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 
 class ImportSettings private constructor(
     launcher: ManagedActivityResultLauncher<Array<String>, Uri?>

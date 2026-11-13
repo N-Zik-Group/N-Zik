@@ -1,6 +1,6 @@
 package app.n_zik.android.bridge.library
 
-import app.it.fast4x.rimusic.cleanPrefix
+import app.n_zik.android.cleanPrefix
 import app.n_zik.android.core.coil.thumbnail
 import kotlinx.coroutines.CancellationException
 import okhttp3.OkHttpClient

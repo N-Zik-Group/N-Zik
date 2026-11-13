@@ -10,9 +10,9 @@ import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.medium
-import app.it.fast4x.rimusic.ui.components.LocalMenuState
-import app.it.fast4x.rimusic.ui.components.MenuState
+import app.n_zik.android.utils.medium
+import app.n_zik.android.ui.components.LocalMenuState
+import app.n_zik.android.ui.components.MenuState
 
 class RetrySyncDialog(
     private val activeState: MutableState<Boolean>,

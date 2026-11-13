@@ -5,7 +5,7 @@ import android.content.Context
 import androidx.compose.runtime.State
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.preferences
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test

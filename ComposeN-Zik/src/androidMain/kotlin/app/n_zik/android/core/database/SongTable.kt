@@ -10,12 +10,12 @@ import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Update
 import androidx.room.Upsert
 import androidx.room.Transaction
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.enums.SongSortBy
-import app.it.fast4x.rimusic.enums.SortOrder
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.enums.SongSortBy
+import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
-import app.it.fast4x.rimusic.utils.durationToMillis
+import app.n_zik.android.utils.durationToMillis
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map

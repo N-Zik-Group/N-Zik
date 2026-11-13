@@ -10,7 +10,7 @@ import app.n_zik.android.components.dialog.settings.DockToolbarSettingsDialog
 import app.n_zik.android.components.dialog.settings.LocalPlaylistSortSettingsDialog
 import app.n_zik.android.components.dialog.settings.buildHomeTabDefs
 import app.n_zik.android.components.dialog.settings.buildShortcutDefs
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.preferences
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull

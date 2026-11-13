@@ -5,7 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.AtomicFile
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.components.ui.screens.profiles.decodeLimitedBitmap
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions

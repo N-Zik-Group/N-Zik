@@ -27,7 +27,7 @@ def get_latest_contributors() -> list[dict]:
     """
     Gets all the contributors of this repository via GitHub API.
 
-    Requires env GITHUB_REPOSITORY. A string in format {OWNER}/{REPO}, i.e. knighthat/Kreate
+    Requires env GITHUB_REPOSITORY. A string in format {OWNER}/{REPO}, i.e. N-Zik-Group/N-Zik
     """
 
     response: Response = get(contributors_url)

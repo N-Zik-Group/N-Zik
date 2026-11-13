@@ -7,7 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.enums.PlayerTimelineType
+import app.n_zik.android.enums.PlayerTimelineType
 
 /** The selected native track keeps its height while the player resolves its duration. */
 @Composable

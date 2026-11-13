@@ -1,7 +1,7 @@
 package app.n_zik.android.components.search
 
 import io.mockk.mockk
-import it.fast4x.innertube.Innertube
+import app.n_zik.innertube.Innertube
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

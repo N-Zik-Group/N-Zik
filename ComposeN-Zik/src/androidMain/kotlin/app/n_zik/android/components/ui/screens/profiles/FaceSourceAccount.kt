@@ -4,12 +4,12 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
-import app.it.fast4x.rimusic.utils.discordAvatarKey
-import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
-import app.it.fast4x.rimusic.utils.discordUsernameKey
-import app.it.fast4x.rimusic.utils.ytAccountNameKey
-import app.it.fast4x.rimusic.utils.ytAccountThumbnailKey
-import app.it.fast4x.rimusic.utils.ytCookieKey
+import app.n_zik.android.utils.discordAvatarKey
+import app.n_zik.android.utils.discordPersonalAccessTokenKey
+import app.n_zik.android.utils.discordUsernameKey
+import app.n_zik.android.utils.ytAccountNameKey
+import app.n_zik.android.utils.ytAccountThumbnailKey
+import app.n_zik.android.utils.ytCookieKey
 import app.n_zik.android.extensions.lastfm.lastfmAvatarUrlKey
 import app.n_zik.android.extensions.lastfm.lastfmSessionKey
 import app.n_zik.android.extensions.lastfm.lastfmUsernameKey
@@ -17,7 +17,7 @@ import app.n_zik.android.utils.FACE_SOURCE_DISCORD
 import app.n_zik.android.utils.FACE_SOURCE_LASTFM
 import app.n_zik.android.utils.FACE_SOURCE_PROFILE
 import app.n_zik.android.utils.FACE_SOURCE_YOUTUBE
-import it.fast4x.innertube.utils.parseCookieString
+import app.n_zik.innertube.utils.parseCookieString
 
 /**
  * Login state of a profile's accounts (one-shot read, per-profile secure prefs),

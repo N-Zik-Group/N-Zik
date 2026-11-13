@@ -24,23 +24,23 @@ import app.n_zik.android.R
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
-import app.it.fast4x.rimusic.enums.MaxTopPlaylistItems
-import app.it.fast4x.rimusic.enums.MenuStyle
-import app.it.fast4x.rimusic.enums.StatisticsType
+import app.n_zik.android.enums.MaxTopPlaylistItems
+import app.n_zik.android.enums.MenuStyle
+import app.n_zik.android.enums.StatisticsType
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.ui.components.LocalMenuState
-import app.it.fast4x.rimusic.ui.components.MenuState
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Menu
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.ui.components.LocalMenuState
+import app.n_zik.android.ui.components.MenuState
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
+import app.n_zik.android.ui.components.tab.toolbar.Menu
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.components.menu.ListMenu
 import androidx.compose.material3.Icon
-import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsKey
-import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsCustomValueKey
-import app.it.fast4x.rimusic.utils.Preference
-import app.it.fast4x.rimusic.utils.menuStyleKey
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.MaxTopPlaylistItemsKey
+import app.n_zik.android.utils.MaxTopPlaylistItemsCustomValueKey
+import app.n_zik.android.utils.Preference
+import app.n_zik.android.utils.menuStyleKey
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.semiBold
 import org.json.JSONArray
 
 class PeriodSelector private constructor(

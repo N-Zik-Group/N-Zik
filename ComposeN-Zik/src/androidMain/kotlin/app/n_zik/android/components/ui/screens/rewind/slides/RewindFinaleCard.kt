@@ -44,10 +44,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.it.fast4x.rimusic.enums.MenuStyle
+import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.components.glass.SampledMenuSheet
-import app.it.fast4x.rimusic.utils.menuStyleKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.menuStyleKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.ui.iconBadgeBackground

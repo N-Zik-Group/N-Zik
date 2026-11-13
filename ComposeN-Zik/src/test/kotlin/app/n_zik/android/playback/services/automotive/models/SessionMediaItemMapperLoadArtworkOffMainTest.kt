@@ -4,7 +4,7 @@ import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.appContext
 import app.n_zik.android.core.coil.ImageCacheFactory
 import coil3.ImageLoader

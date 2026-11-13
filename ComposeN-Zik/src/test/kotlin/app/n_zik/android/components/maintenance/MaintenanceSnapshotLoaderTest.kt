@@ -4,10 +4,10 @@ import android.content.Context
 import android.os.Looper
 import androidx.core.content.edit
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.logDebugEnabledKey
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.profilePreferences
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.logDebugEnabledKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.MainApplication
 import app.n_zik.android.components.ui.screens.profiles.profilePrefsFile
 import app.n_zik.android.core.backup.BackupManager

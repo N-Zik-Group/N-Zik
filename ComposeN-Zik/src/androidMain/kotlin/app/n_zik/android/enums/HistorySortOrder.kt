@@ -3,8 +3,8 @@ package app.n_zik.android.enums
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import app.n_zik.android.R
-import app.kreate.android.me.knighthat.enums.TextView
-import app.it.fast4x.rimusic.enums.Drawable
+import app.n_zik.android.core.enums.TextView
+import app.n_zik.android.enums.Drawable
 
 enum class HistorySortOrder(
     @field:StringRes override val textId: Int,

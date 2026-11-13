@@ -36,7 +36,7 @@ fun ExplicitBadge(
             modifier = modifier.clip(uiRoundnessShape()),
         )
     } else {
-        app.it.fast4x.rimusic.ui.components.themed.IconButton(
+        app.n_zik.android.ui.components.themed.IconButton(
             icon = R.drawable.explicit, color = color, onClick = {}, modifier = modifier,
         )
     }

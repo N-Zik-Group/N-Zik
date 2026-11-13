@@ -26,9 +26,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.ui.styling.ColorPalette
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.MainActivity
 import app.n_zik.android.R
 import app.n_zik.android.components.player.ArtworkColorSnapshot

@@ -1,11 +1,11 @@
 package app.n_zik.android.bridge.library
 
-import app.it.fast4x.rimusic.enums.DurationInMinutes
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.models.PlaylistPreview
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.enums.DurationInMinutes
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.PlaylistPreview
+import app.n_zik.android.models.Song
 import app.n_zik.android.bridge.PlaylistOrigin
 import app.n_zik.android.bridge.state.TrackDownloadState
 import app.n_zik.android.bridge.state.TrackLike

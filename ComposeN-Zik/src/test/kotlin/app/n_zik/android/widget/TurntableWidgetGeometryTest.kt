@@ -15,7 +15,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

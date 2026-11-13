@@ -1,14 +1,14 @@
 package app.n_zik.android.playback.services.automotive.browse.handlers
 
-import it.fast4x.innertube.requests.albumPage
-import app.it.fast4x.rimusic.utils.asSong
+import app.n_zik.innertube.requests.albumPage
+import app.n_zik.android.utils.asSong
 
 import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
 import android.content.Context
 import androidx.media3.common.MediaItem
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.asMediaItem
-import app.it.fast4x.rimusic.utils.asSong
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.asSong
 import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -18,12 +18,12 @@ import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.automotive.models.AutoSearchState
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.SongAlbumMap
-import app.kreate.android.me.knighthat.utils.PropUtils
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.YtMusic
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.SongAlbumMap
+import app.n_zik.android.core.utils.PropUtils
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.YtMusic
+import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 class AlbumDetailHandler : BrowseHandler {

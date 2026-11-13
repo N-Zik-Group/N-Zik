@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
+import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.enums.lyrics.LyricsAlignment
 import app.n_zik.android.enums.lyrics.LyricsBackground
 import app.n_zik.android.enums.lyrics.LyricsColor
@@ -21,7 +21,7 @@ import app.n_zik.android.enums.lyrics.LyricsFontSize
 import app.n_zik.android.enums.lyrics.LyricsHighlight
 import app.n_zik.android.enums.lyrics.LyricsOutline
 
-import app.it.fast4x.rimusic.utils.verticalFadingEdge
+import app.n_zik.android.utils.verticalFadingEdge
 import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
 import app.n_zik.android.components.player.lyrics.utils.HtmlDecoder

@@ -10,9 +10,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.styling.shimmer
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.thumbnailSizeDpKey
+import app.n_zik.android.ui.styling.shimmer
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.thumbnailSizeDpKey
 import app.n_zik.android.colorPalette
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.settings.DEFAULT_THUMBNAIL_SIZE_DP

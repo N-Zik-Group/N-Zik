@@ -11,11 +11,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.enums.MaxTopPlaylistItems
-import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsCustomValueKey
-import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsKey
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.showMyTopPlaylistKey
+import app.n_zik.android.enums.MaxTopPlaylistItems
+import app.n_zik.android.utils.MaxTopPlaylistItemsCustomValueKey
+import app.n_zik.android.utils.MaxTopPlaylistItemsKey
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.showMyTopPlaylistKey
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog

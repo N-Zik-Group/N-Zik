@@ -1,7 +1,7 @@
 package app.n_zik.android.playback.services
 
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Artist
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
 import app.n_zik.android.appContext
 import app.n_zik.android.core.database.AlbumTable
 import app.n_zik.android.core.database.ArtistTable
@@ -22,14 +22,14 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.YtMusic
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.models.Thumbnail
-import it.fast4x.innertube.requests.AlbumPage
-import it.fast4x.innertube.requests.artistPage
-import it.fast4x.innertube.requests.nextPage
-import it.fast4x.innertube.requests.searchPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.YtMusic
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.models.Thumbnail
+import app.n_zik.innertube.requests.AlbumPage
+import app.n_zik.innertube.requests.artistPage
+import app.n_zik.innertube.requests.nextPage
+import app.n_zik.innertube.requests.searchPage
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -91,9 +91,9 @@ class StreamResolverPageCacheTest {
         // (requests/NextPage.kt, requests/ArtistInfoPage.kt); YtMusic.getAlbum
 
         // is a member of the YtMusic object.
-        mockkStatic("it.fast4x.innertube.requests.NextPageKt")
-        mockkStatic("it.fast4x.innertube.requests.ArtistInfoPageKt")
-        mockkStatic("it.fast4x.innertube.requests.SearchPageKt")
+        mockkStatic("app.n_zik.innertube.requests.NextPageKt")
+        mockkStatic("app.n_zik.innertube.requests.ArtistInfoPageKt")
+        mockkStatic("app.n_zik.innertube.requests.SearchPageKt")
         mockkObject(YtMusic)
 
         // The video-artist fallback (triggered on the first [IDs] attempt when

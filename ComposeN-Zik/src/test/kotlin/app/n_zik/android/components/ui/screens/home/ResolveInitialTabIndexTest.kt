@@ -1,6 +1,6 @@
 package app.n_zik.android.components.ui.screens.home
 
-import app.it.fast4x.rimusic.enums.HomeScreenTabs
+import app.n_zik.android.enums.HomeScreenTabs
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue

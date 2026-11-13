@@ -8,7 +8,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.ui.styling.Dimensions
+import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.OverlayFade

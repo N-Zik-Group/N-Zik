@@ -29,11 +29,11 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.IntOffset
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.Typography
+import app.n_zik.android.enums.NavigationBarPosition
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.Typography
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.backdrop.drawPlainBackdrop
 import app.n_zik.android.components.navigation.header.UnifiedTopNavigationGlass

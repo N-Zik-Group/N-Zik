@@ -214,7 +214,7 @@ class SettingsCardResourceIdentityTest {
             R.string.player_queue_shuffled_count_format to "queue_shuffled",
             R.string.library_favorites_removed to "removed_from_favorites",
             R.string.thumbnail_remove_success to "removed_thumbnail",
-            R.string.settings_restart_required_message to "restarting_rimusic_is_required",
+            R.string.settings_restart_required_message to "settings_restart_required_message",
             R.string.rewind_error_export to "rw_error_export",
             R.string.rewind_error_export_partial to "rw_error_export_partial",
             R.string.playlist_action_save_to_youtube_library to "save_youtube_library",

@@ -2,8 +2,8 @@ package app.n_zik.android
 
 import android.content.Context
 import android.content.SharedPreferences
-import app.it.fast4x.rimusic.utils.pauseOnHeadphoneDisconnectKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.pauseOnHeadphoneDisconnectKey
+import app.n_zik.android.utils.preferences
 import io.mockk.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
@@ -23,7 +23,7 @@ class PauseOnHeadphoneDisconnectTest {
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { appContext() } returns context
 
-        mockkStatic("app.it.fast4x.rimusic.utils.PreferencesKt")
+        mockkStatic("app.n_zik.android.utils.PreferencesKt")
         every { context.preferences } returns sharedPreferences
     }
 

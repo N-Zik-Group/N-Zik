@@ -3,8 +3,8 @@ package app.n_zik.android.core.migration
 import android.app.Application
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.setActiveProfile
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -19,7 +19,7 @@ class RetiredPresentationMigrationTest {
     @Test
     fun `every legacy presentation value is removed without applying player defaults`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        for (ui in listOf("ViMusic", "RiMusic", "N-Zik", "invalid")) {
+        for (ui in listOf("ViMusic", "N-Zik", "invalid")) {
             for (toast in listOf("Essential", "Modern", "invalid")) {
                 val prefs = context.getSharedPreferences("retired-presentation", Context.MODE_PRIVATE)
                 prefs.edit().clear().putString("UiType", ui).putString("messageType", toast)

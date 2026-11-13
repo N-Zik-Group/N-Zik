@@ -13,11 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.ui.styling.primaryButton
-import app.it.fast4x.rimusic.utils.medium
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.restartActivityKey
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.ui.styling.primaryButton
+import app.n_zik.android.utils.medium
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.restartActivityKey
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette

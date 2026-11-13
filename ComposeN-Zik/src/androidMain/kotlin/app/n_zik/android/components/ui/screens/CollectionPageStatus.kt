@@ -8,7 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import app.it.fast4x.rimusic.ui.styling.Dimensions
+import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 
 /** Keeps loading and error feedback in the same scrollable safe area as collection rows. */

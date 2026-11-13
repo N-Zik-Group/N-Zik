@@ -60,12 +60,12 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.dialog.common.FfmpegPreparation
 import app.n_zik.android.modules.ModuleState
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.models.Song
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.core.utils.Toaster
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ensureActive
 import kotlin.coroutines.coroutineContext
@@ -96,7 +96,7 @@ import java.nio.ByteBuffer
 import com.arthenica.ffmpegkit.FFmpegKit
 import android.content.Context
 import android.util.Base64
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.components.dialog.common.CoverEditTarget
 import app.n_zik.android.components.dialog.common.StagedCoverDialog
 

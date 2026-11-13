@@ -2,7 +2,7 @@ package app.n_zik.android.bridge.state
 
 import androidx.media3.common.C
 import androidx.media3.common.Player
-import app.it.fast4x.rimusic.utils.EXPLICIT_BUNDLE_TAG
+import app.n_zik.android.utils.EXPLICIT_BUNDLE_TAG
 
 /** Queue item as read from the player, before its `isLiked` / `isDownloaded` flags are resolved. */
 internal data class RawItem(

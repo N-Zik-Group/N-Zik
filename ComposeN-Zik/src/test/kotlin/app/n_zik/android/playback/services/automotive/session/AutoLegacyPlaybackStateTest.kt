@@ -22,8 +22,8 @@ import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.models.Song
 import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.SongTable

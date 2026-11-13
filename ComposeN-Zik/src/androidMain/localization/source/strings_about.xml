@@ -2,6 +2,8 @@
 <resources>
 
     <!-- About -->
+    <string name="about_credits_title">Credits</string>
+    <string name="about_credits_open">View credits and licenses</string>
     <string name="about_action_report_issue">Report an issue</string>
     <string name="about_action_request_feature">Request a feature or suggest an idea</string>
     <string name="about_action_view_source">View the source code</string>

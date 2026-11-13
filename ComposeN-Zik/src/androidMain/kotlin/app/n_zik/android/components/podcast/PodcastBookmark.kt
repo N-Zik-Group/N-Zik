@@ -13,10 +13,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
-import app.it.fast4x.rimusic.ui.styling.favoritesIcon
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.ui.components.themed.HeaderIconButton
+import app.n_zik.android.ui.styling.favoritesIcon
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassToolbarRow

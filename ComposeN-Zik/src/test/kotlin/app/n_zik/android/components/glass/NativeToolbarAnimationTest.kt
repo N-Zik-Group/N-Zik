@@ -15,8 +15,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
+import app.n_zik.android.ui.components.navigation.header.TabToolBar
+import app.n_zik.android.ui.components.tab.toolbar.Button
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test

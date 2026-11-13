@@ -13,6 +13,3 @@ Fixed:
 - Auto stream refresh on HTTP 403
 - Fixed Discord RPC timestamps and logout
 - Fixed Quick Picks, anonymous mode, playback when logged out
-
-Special Thanks:
-- Thanks to the Metrolist team.

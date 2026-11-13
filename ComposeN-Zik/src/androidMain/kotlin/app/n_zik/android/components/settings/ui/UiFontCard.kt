@@ -11,11 +11,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import app.it.fast4x.rimusic.enums.FontType
-import app.it.fast4x.rimusic.utils.applyFontPaddingKey
-import app.it.fast4x.rimusic.utils.fontTypeKey
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.useSystemFontKey
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.utils.applyFontPaddingKey
+import app.n_zik.android.utils.fontTypeKey
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.useSystemFontKey
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry

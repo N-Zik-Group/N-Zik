@@ -13,6 +13,3 @@ Fixed:
 - Fixed missing UI warning messages for restricted and unplayable tracks
 - Removed obsolete newpipe-extractor dependency causing conflicts
 - Fixed Youtube login not being used on some part of the app
-
-Special Thanks:
-- https://github.com/MetrolistGroup for the Metrolist source code that help me find the problem and fix it !

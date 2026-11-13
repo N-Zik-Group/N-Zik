@@ -15,8 +15,8 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import app.it.fast4x.rimusic.utils.playerInfoShowIconsKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.playerInfoShowIconsKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassScope

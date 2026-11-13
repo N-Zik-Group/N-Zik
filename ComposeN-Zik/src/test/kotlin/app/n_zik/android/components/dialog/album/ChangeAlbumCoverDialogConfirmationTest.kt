@@ -4,11 +4,11 @@ import android.app.Application
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.models.SongAlbumMap
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Song
+import app.n_zik.android.models.SongAlbumMap
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.appContext
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.DatabaseInitializer

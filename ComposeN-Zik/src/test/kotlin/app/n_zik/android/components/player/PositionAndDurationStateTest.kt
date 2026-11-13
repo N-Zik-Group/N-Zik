@@ -7,8 +7,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import app.it.fast4x.rimusic.utils.POSITION_POLL_INTERVAL_MS
-import app.it.fast4x.rimusic.utils.positionAndDurationState
+import app.n_zik.android.utils.POSITION_POLL_INTERVAL_MS
+import app.n_zik.android.utils.positionAndDurationState
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -40,7 +40,7 @@ import org.robolectric.annotation.Config
  * Phase 3.3: the poll loop is unconditional — the sheet-visibility gate was removed because
  * the field logs (2026-10-04, FURY, OPPO / Android 15) show the bar frozen on the last seek
  * target for up to 5 s whenever gate and visible UI disagreed, while every healthy reference
- * (RiPlay/Kreate/RiMusic/Metrolist) polls regardless of sheet visibility. The listener is
+ * polls regardless of sheet visibility. The listener is
  * captured via `slot` and driven directly in the tests below.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -158,7 +158,7 @@ class PositionAndDurationStateTest {
             Player.MEDIA_ITEM_TRANSITION_REASON_SEEK,
         )
 
-        // R1: the event write lands before the next poll tick. RiMusic keeps the previously
+        // R1: the event write lands before the next poll tick. The previous implementation keeps the previously
         // cached duration so the slider range does not jump while the stream resolves.
         assertEquals(2_976L to 241_661L, state.value)
     }

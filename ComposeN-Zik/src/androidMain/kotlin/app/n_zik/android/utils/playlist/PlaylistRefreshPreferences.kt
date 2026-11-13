@@ -1,8 +1,8 @@
 package app.n_zik.android.utils.playlist
 
 import android.content.Context
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.core.database.canRefreshPlaylist
 import app.n_zik.android.core.database.isReadOnlyPlaylistSource
 

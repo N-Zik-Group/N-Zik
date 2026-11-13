@@ -4,12 +4,12 @@ import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.DislikeMode
-import app.it.fast4x.rimusic.utils.excludeDislikedAlbumsKey
-import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
-import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
-import app.it.fast4x.rimusic.utils.excludeMediaItems
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.enums.DislikeMode
+import app.n_zik.android.utils.excludeDislikedAlbumsKey
+import app.n_zik.android.utils.excludeDislikedArtistsKey
+import app.n_zik.android.utils.excludeDislikedSongsKey
+import app.n_zik.android.utils.excludeMediaItems
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.SongTable
 import io.mockk.coEvery
@@ -33,7 +33,7 @@ import org.robolectric.annotation.Config
 
 /**
  * Issue #606 (part 2, lot C) -- `Player.excludeMediaItems`
- * (`app.it.fast4x.rimusic.utils.Player.kt`, legacy) runs up to three Room reads
+ * (`app.n_zik.android.utils.Player.kt`, legacy) runs up to three Room reads
  * (`getAllDislikedIds` / `getSongsByDislikedArtists` / `getSongsByDislikedAlbums`) inside
  * `runBlocking(NzikDispatchers.DATA)`: the DB work now runs on the named dispatcher instead of
  * the caller's thread, while the public API stays synchronous (the caller waits for the

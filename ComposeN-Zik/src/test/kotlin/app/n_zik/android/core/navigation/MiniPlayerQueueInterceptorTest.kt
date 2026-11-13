@@ -2,7 +2,7 @@ package app.n_zik.android.core.navigation
 
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
-import app.it.fast4x.rimusic.enums.NavRoutes
+import app.n_zik.android.enums.NavRoutes
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just

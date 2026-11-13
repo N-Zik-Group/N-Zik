@@ -1,8 +1,8 @@
 package app.n_zik.android.core.network.client
 
 import android.content.Context
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import it.fast4x.innertube.Innertube
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.innertube.Innertube
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import okhttp3.Cache

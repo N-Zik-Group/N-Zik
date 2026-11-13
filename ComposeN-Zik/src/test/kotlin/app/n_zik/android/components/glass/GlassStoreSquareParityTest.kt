@@ -5,7 +5,7 @@ import android.app.Application
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.preferences
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertEquals

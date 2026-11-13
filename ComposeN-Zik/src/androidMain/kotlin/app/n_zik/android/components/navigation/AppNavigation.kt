@@ -103,23 +103,23 @@ import app.n_zik.android.components.navigation.header.LocalSideHeaderSearchProgr
 import app.n_zik.android.components.navigation.header.headerSearchJoinProgress
 import app.n_zik.android.core.navigation.currentSearchShortcutRoute
 import app.n_zik.android.core.navigation.shouldShowSearchShortcut
-import app.kreate.android.themed.rimusic.screen.artist.ArtistAlbums
-import app.kreate.android.themed.rimusic.screen.artist.ArtistPlaylists
-import app.kreate.android.themed.rimusic.screen.artist.ArtistVideos
+import app.n_zik.android.themed.n_zik.screen.artist.ArtistAlbums
+import app.n_zik.android.themed.n_zik.screen.artist.ArtistPlaylists
+import app.n_zik.android.themed.n_zik.screen.artist.ArtistVideos
 import app.n_zik.android.core.database.Database
-import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import app.it.fast4x.rimusic.enums.StatisticsType
-import app.it.fast4x.rimusic.enums.TransitionEffect
+import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.enums.NavigationBarPosition
+import app.n_zik.android.enums.StatisticsType
+import app.n_zik.android.enums.TransitionEffect
 import app.n_zik.android.components.ui.screens.easter.EasterScreen
 import app.n_zik.android.easter.EasterEgg
-import app.it.fast4x.rimusic.models.Mood
+import app.n_zik.android.models.Mood
 import app.n_zik.android.components.glass.CustomModalBottomSheet
 import app.n_zik.android.components.musicbrainz.insights.AlbumInsightsScreen
 import app.n_zik.android.components.musicbrainz.insights.ArtistInsightsScreen
 import app.n_zik.android.components.ui.screens.album.AlbumScreen
 import app.n_zik.android.components.ui.screens.artist.ArtistScreen
-import app.it.fast4x.rimusic.ui.screens.history.HistoryScreen
+import app.n_zik.android.ui.screens.history.HistoryScreen
 import app.n_zik.android.components.ui.screens.home.HomeScreen
 import app.n_zik.android.extensions.discord.DiscordUiState
 import app.n_zik.android.components.ui.screens.home.LocalHomeTopMiniPlayerAnchor
@@ -129,25 +129,25 @@ import app.n_zik.android.components.ui.screens.home.rememberSharedHomeHeaderGlas
 import app.n_zik.android.components.ui.screens.home.usesSharedHomeHeaderGlass
 import app.n_zik.android.components.ui.screens.listentogether.ListenTogetherScreen
 import app.n_zik.android.components.ui.screens.bridge.BridgeServerScreen
-import app.it.fast4x.rimusic.ui.screens.localplaylist.LocalPlaylistScreen
-import app.it.fast4x.rimusic.ui.screens.mood.MoodScreen
-import app.it.fast4x.rimusic.ui.screens.mood.MoodsPageScreen
-import app.it.fast4x.rimusic.ui.screens.newreleases.NewreleasesScreen
-import app.it.fast4x.rimusic.ui.screens.player.Queue
-import app.it.fast4x.rimusic.ui.screens.playlist.PlaylistScreen
-import app.it.fast4x.rimusic.ui.screens.podcast.PodcastScreen
-import app.it.fast4x.rimusic.ui.screens.search.SearchScreen
-import app.it.fast4x.rimusic.ui.screens.searchresult.SearchResultScreen
+import app.n_zik.android.ui.screens.localplaylist.LocalPlaylistScreen
+import app.n_zik.android.ui.screens.mood.MoodScreen
+import app.n_zik.android.ui.screens.mood.MoodsPageScreen
+import app.n_zik.android.ui.screens.newreleases.NewreleasesScreen
+import app.n_zik.android.ui.screens.player.Queue
+import app.n_zik.android.ui.screens.playlist.PlaylistScreen
+import app.n_zik.android.ui.screens.podcast.PodcastScreen
+import app.n_zik.android.ui.screens.search.SearchScreen
+import app.n_zik.android.ui.screens.searchresult.SearchResultScreen
 import app.n_zik.android.components.ui.screens.settings.SettingsScreen
-import app.it.fast4x.rimusic.ui.screens.statistics.StatisticsScreen
+import app.n_zik.android.ui.screens.statistics.StatisticsScreen
 import app.n_zik.android.components.ui.screens.rewind.RewindHomeScreen
 import app.n_zik.android.components.ui.screens.rewind.RewindScreen
-import app.it.fast4x.rimusic.utils.clearPreference
-import app.it.fast4x.rimusic.utils.homeScreenTabIndexKey
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.transitionEffectKey
-import app.it.fast4x.rimusic.utils.disableNavigationBackStackKey
+import app.n_zik.android.utils.clearPreference
+import app.n_zik.android.utils.homeScreenTabIndexKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.transitionEffectKey
+import app.n_zik.android.utils.disableNavigationBackStackKey
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -167,7 +167,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.animation.core.spring
 import app.n_zik.android.components.ui.screens.profiles.ProfileScreen
-import app.it.fast4x.rimusic.ui.styling.Dimensions
+import app.n_zik.android.ui.styling.Dimensions
 
 fun NavHostController.navigateClean(route: String, context: Context) {
     val disableBackStack = context.preferences.getBoolean(disableNavigationBackStackKey, false)
@@ -329,13 +329,13 @@ fun AppNavigation(
 
     // Phone in landscape on the Songs/Album/Artist/Library tabs: the app header is hidden until
     // the toggle button slides it in (and it slides out again on the next tap or scroll)
-    val isBarlessScreen = app.it.fast4x.rimusic.utils.isLandscapeBarlessScreen() && !hasSideNavBarVisible
-    val hideTopBar = app.it.fast4x.rimusic.utils.hideBarsInLandscapeMobile() && !hasSideNavBarVisible
+    val isBarlessScreen = app.n_zik.android.utils.isLandscapeBarlessScreen() && !hasSideNavBarVisible
+    val hideTopBar = app.n_zik.android.utils.hideBarsInLandscapeMobile() && !hasSideNavBarVisible
     // Kept as State objects and only read while laying out: the slide moves the content every
     // frame, and reading it here in composition would recompose the whole nav graph each frame
     val headerProgress = animateFloatAsState(
         targetValue = if (hideTopBar) 0f else 1f,
-        animationSpec = tween(app.it.fast4x.rimusic.utils.LANDSCAPE_BARS_ANIMATION_MS, easing = FastOutSlowInEasing),
+        animationSpec = tween(app.n_zik.android.utils.LANDSCAPE_BARS_ANIMATION_MS, easing = FastOutSlowInEasing),
         label = "landscapeHeaderProgress"
     )
     // Rewind is a full-screen deck: the header slides up out of the screen on a jelly spring

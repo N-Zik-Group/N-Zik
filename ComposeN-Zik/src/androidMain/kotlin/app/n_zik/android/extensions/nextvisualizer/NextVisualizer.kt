@@ -24,8 +24,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
-import app.it.fast4x.rimusic.utils.colorPaletteModeKey
+import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.utils.colorPaletteModeKey
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -58,7 +58,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
-import app.kreate.android.drawable.APP_ICON_BITMAP
+import app.n_zik.android.drawable.APP_ICON_BITMAP
 import app.n_zik.android.core.coil.resize
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
@@ -81,18 +81,18 @@ import views.VisualizerView
 import app.n_zik.android.typography
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.glass.GlassOverlayIconButton as IconButton
-import app.it.fast4x.rimusic.ui.components.themed.SecondaryTextButton
-import app.it.fast4x.rimusic.utils.DisposableListener
-import app.it.fast4x.rimusic.utils.currentVisualizerKey
-import app.it.fast4x.rimusic.utils.getBitmapFromUrl
-import app.it.fast4x.rimusic.utils.hasPermission
-import app.it.fast4x.rimusic.utils.isCompositionLaunched
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.ui.components.themed.SecondaryTextButton
+import app.n_zik.android.utils.DisposableListener
+import app.n_zik.android.utils.currentVisualizerKey
+import app.n_zik.android.utils.getBitmapFromUrl
+import app.n_zik.android.utils.hasPermission
+import app.n_zik.android.utils.isCompositionLaunched
+import app.n_zik.android.utils.rememberPreference
 
-import app.it.fast4x.rimusic.utils.semiBold
-import app.it.fast4x.rimusic.utils.showvisthumbnailKey
-import app.it.fast4x.rimusic.utils.showVisualizerButtonsKey
-import app.it.fast4x.rimusic.utils.visualizerEnabledKey
+import app.n_zik.android.utils.semiBold
+import app.n_zik.android.utils.showvisthumbnailKey
+import app.n_zik.android.utils.showVisualizerButtonsKey
+import app.n_zik.android.utils.visualizerEnabledKey
 import painters.modifier.Rotate
 import app.n_zik.android.components.glass.overlayViewportShape
 import app.n_zik.android.thumbnailShape
@@ -102,11 +102,11 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import app.n_zik.android.components.menu.visualizer.VisualizerSettingsMenu
 import app.n_zik.android.components.player.rememberArtworkDisplayColors
-import app.it.fast4x.rimusic.ui.components.LocalMenuState
+import app.n_zik.android.ui.components.LocalMenuState
 import androidx.compose.foundation.shape.CircleShape
-import app.it.fast4x.rimusic.utils.visualizerLineThicknessKey
-import app.it.fast4x.rimusic.utils.visualizerWhiteColorOptionKey
-import app.it.fast4x.rimusic.utils.visualizerCustomColorKey
+import app.n_zik.android.utils.visualizerLineThicknessKey
+import app.n_zik.android.utils.visualizerWhiteColorOptionKey
+import app.n_zik.android.utils.visualizerCustomColorKey
 
 @OptIn(UnstableApi::class)
 @Composable

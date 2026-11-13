@@ -12,9 +12,9 @@ import androidx.media3.exoplayer.offline.DefaultDownloadIndex
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.PROFILE_NAMES_FILE_NAME
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.PROFILE_NAMES_FILE_NAME
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.core.profiles.LegacyMediaAccess
 import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.Dependencies

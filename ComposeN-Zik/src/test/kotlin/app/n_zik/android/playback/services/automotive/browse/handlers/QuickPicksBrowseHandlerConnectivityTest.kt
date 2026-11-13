@@ -8,10 +8,10 @@ import android.net.NetworkCapabilities
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.offline.Download
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
-import app.it.fast4x.rimusic.utils.playEventsTypeKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.parentalControlEnabledKey
+import app.n_zik.android.utils.playEventsTypeKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
@@ -31,8 +31,8 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.requests.relatedPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.requests.relatedPage
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -84,7 +84,7 @@ class QuickPicksBrowseHandlerConnectivityTest {
         downloads.downloads = MutableStateFlow(emptyMap())
         mockkStatic("app.n_zik.android.components.settings.accounts.AccountsSettingsKt")
         every { isYouTubeLoggedIn() } returns false
-        mockkStatic("it.fast4x.innertube.requests.RelatedPageKt")
+        mockkStatic("app.n_zik.innertube.requests.RelatedPageKt")
         coEvery { Innertube.relatedPage(any(), any()) } returns emptyRelatedPage()
         coEvery {
             CancellableAutoMediaItemMapper.mapSongToMediaItem(local, AutoSessionConstants.ID_QUICK_PICKS, true)

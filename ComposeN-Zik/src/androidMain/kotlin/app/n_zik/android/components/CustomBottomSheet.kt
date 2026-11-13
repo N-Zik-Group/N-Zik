@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
+import app.n_zik.android.ui.screens.player.PlayerSheetState
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.components.glass.GlassArea

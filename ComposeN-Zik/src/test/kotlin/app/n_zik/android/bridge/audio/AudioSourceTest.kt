@@ -1,6 +1,6 @@
 package app.n_zik.android.bridge.audio
 
-import app.it.fast4x.rimusic.enums.AudioQualityFormat
+import app.n_zik.android.enums.AudioQualityFormat
 import app.n_zik.android.bridge.AudioBodyContent
 import app.n_zik.android.bridge.AudioQuality
 import androidx.annotation.OptIn

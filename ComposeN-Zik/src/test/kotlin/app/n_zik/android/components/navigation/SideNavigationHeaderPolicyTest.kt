@@ -1,7 +1,7 @@
 package app.n_zik.android.components.navigation
 
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
+import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.components.player.miniPlayerTopInset
 import app.n_zik.android.components.player.miniPlayerTopPaddingPx
 import org.junit.jupiter.api.Assertions.assertEquals

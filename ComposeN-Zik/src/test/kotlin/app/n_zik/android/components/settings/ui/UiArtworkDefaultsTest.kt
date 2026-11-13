@@ -5,10 +5,10 @@ import android.content.Context
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.setActiveProfile
-import app.it.fast4x.rimusic.utils.thumbnailSizeDpKey
-import app.it.fast4x.rimusic.utils.thumbnailSizeLDpKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.setActiveProfile
+import app.n_zik.android.utils.thumbnailSizeDpKey
+import app.n_zik.android.utils.thumbnailSizeLDpKey
 import app.n_zik.android.components.player.rememberPlayerLandscapeArtworkSize
 import org.junit.After
 import org.junit.Assert.assertEquals

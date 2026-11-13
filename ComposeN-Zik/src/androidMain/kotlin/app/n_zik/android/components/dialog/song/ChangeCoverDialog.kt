@@ -11,7 +11,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.components.dialog.common.CoverEditTarget
 import app.n_zik.android.components.dialog.common.StagedCoverDialog
 import app.n_zik.android.components.image.saveOwnedImage

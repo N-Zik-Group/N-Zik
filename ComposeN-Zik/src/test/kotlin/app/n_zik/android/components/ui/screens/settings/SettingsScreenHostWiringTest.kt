@@ -24,7 +24,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import app.n_zik.android.core.navigation.rememberAppBackAction
 import app.n_zik.android.core.navigation.ScreenTransitions
-import app.it.fast4x.rimusic.enums.TransitionEffect
+import app.n_zik.android.enums.TransitionEffect
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.assertIsFocused
@@ -44,12 +44,12 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.performTextInput
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.FontType
-import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.typographyOf
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.R
@@ -60,9 +60,9 @@ import app.n_zik.android.components.settings.common.hasAutoUpdate
 import app.n_zik.android.components.settings.common.isGlassSettingsLink
 import app.n_zik.android.components.glass.GlassStore
 import app.n_zik.android.components.glass.GlassQuality
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.updater.services.Updater
 import io.mockk.every
 import io.mockk.just
@@ -145,7 +145,7 @@ class SettingsScreenHostWiringTest {
         // (isYouTubeLoginEnabled); AndroidKeyStore is unavailable on the JVM,
         // so stub the extension away (same pattern as
         // AccountsSettingsEmbeddingWiringTest).
-        mockkStatic("app.it.fast4x.rimusic.utils.EncryptedPreferencesKt")
+        mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
         every { any<Context>().encryptedPreferences } returns mockk<SharedPreferences>(relaxed = true)
         // The host composes the global page; the debug build has
         // IS_AUTOUPDATE=false, whose blocked Update row marquee is an infinite
@@ -386,7 +386,7 @@ class SettingsScreenHostWiringTest {
     @Test
     fun disabledAnimationsDoNotAddASettingsSpecificFade() {
         context.getSharedPreferences("preferences", Context.MODE_PRIVATE).edit()
-            .putString(app.it.fast4x.rimusic.utils.transitionEffectKey, "None").commit()
+            .putString(app.n_zik.android.utils.transitionEffectKey, "None").commit()
         showHost()
         composeRule.onNodeWithTag("settings_global_category_playback").performClick()
         repeat(4) {
@@ -400,7 +400,7 @@ class SettingsScreenHostWiringTest {
     @Test
     fun forwardFadeKeepsBothPagesDuringOneTransitionThenOnlyTheCategory() {
         context.getSharedPreferences("preferences", Context.MODE_PRIVATE).edit()
-            .putString(app.it.fast4x.rimusic.utils.transitionEffectKey, "Fade").commit()
+            .putString(app.n_zik.android.utils.transitionEffectKey, "Fade").commit()
         showHost()
         composeRule.onNodeWithTag("settings_global_category_playback").performClick()
         repeat(5) {

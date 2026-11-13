@@ -3,9 +3,9 @@ package app.n_zik.android.core.coil
 import android.app.Application
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.CoilDiskCacheMaxSize
-import app.it.fast4x.rimusic.utils.coilCustomDiskCacheKey
-import app.it.fast4x.rimusic.utils.coilDiskCacheMaxSizeKey
+import app.n_zik.android.enums.CoilDiskCacheMaxSize
+import app.n_zik.android.utils.coilCustomDiskCacheKey
+import app.n_zik.android.utils.coilDiskCacheMaxSizeKey
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Test

@@ -27,9 +27,9 @@ import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.checkBetaUpdatesKey
-import app.it.fast4x.rimusic.utils.checkUpdateStateKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.checkBetaUpdatesKey
+import app.n_zik.android.utils.checkUpdateStateKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.updater.models.CheckUpdateState
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.updater.services.Updater

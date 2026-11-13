@@ -29,7 +29,7 @@ import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.IntOffset
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassIndicatorSilhouette
 import app.n_zik.android.components.glass.GlassSettings

@@ -6,9 +6,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import app.it.fast4x.rimusic.utils.logDebugEnabledKey
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.logDebugEnabledKey
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.utils.debug.purgeDebugLogs

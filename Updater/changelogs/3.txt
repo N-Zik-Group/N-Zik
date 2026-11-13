@@ -14,5 +14,5 @@ Technical Updates:
 - Enhanced error handling within search results, improving stability and user feedback.
 - New Crowdin updates by @NEVARLeVrai in #8
 - New Crowdin updates by @NEVARLeVrai in #9
-- Update from Kreate by @NEVARLeVrai in #13
+- Integrated upstream changes by @NEVARLeVrai in #13
 - New Crowdin updates by @NEVARLeVrai in #12

@@ -1,15 +1,15 @@
 package app.n_zik.android.playback.services.automotive.browse
 
 import android.content.Context
-import app.it.fast4x.rimusic.enums.PlaylistSortBy
-import app.it.fast4x.rimusic.enums.PlaylistsType
-import app.it.fast4x.rimusic.enums.SortOrder
-import app.it.fast4x.rimusic.models.PlaylistPreview
-import app.it.fast4x.rimusic.utils.Preference
-import app.it.fast4x.rimusic.utils.getEnum
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.showMonthlyPlaylistsKey
-import app.it.fast4x.rimusic.utils.showPinnedPlaylistsKey
+import app.n_zik.android.enums.PlaylistSortBy
+import app.n_zik.android.enums.PlaylistsType
+import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.models.PlaylistPreview
+import app.n_zik.android.utils.Preference
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.showMonthlyPlaylistsKey
+import app.n_zik.android.utils.showPinnedPlaylistsKey
 import app.n_zik.android.components.ui.screens.home.HomeLibraryPlaylistScope
 import app.n_zik.android.components.ui.screens.home.YouTubeLibraryFilter
 import app.n_zik.android.core.database.Database

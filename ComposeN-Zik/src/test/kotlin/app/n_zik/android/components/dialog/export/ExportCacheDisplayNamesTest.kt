@@ -7,8 +7,8 @@ import android.provider.DocumentsContract
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.Cache
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.models.Format
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Format
+import app.n_zik.android.models.Song
 import app.n_zik.android.appContext
 import app.n_zik.android.components.player.lyrics.LyricsFileCodec
 import app.n_zik.android.core.database.Database

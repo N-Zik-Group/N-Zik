@@ -14,7 +14,7 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.download.services.MyDownloadService
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.intent
+import app.n_zik.android.utils.intent
 import kotlin.system.exitProcess
 
 object RestartAppDialog: ConfirmDialog {

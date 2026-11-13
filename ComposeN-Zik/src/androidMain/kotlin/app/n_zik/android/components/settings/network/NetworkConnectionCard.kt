@@ -5,8 +5,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
-import app.it.fast4x.rimusic.utils.isConnectionMeteredEnabledKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.isConnectionMeteredEnabledKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import androidx.compose.runtime.getValue

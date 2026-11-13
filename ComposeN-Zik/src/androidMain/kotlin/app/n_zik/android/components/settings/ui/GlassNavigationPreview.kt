@@ -16,11 +16,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import app.it.fast4x.rimusic.enums.NavigationBarType
-import app.it.fast4x.rimusic.utils.enableQuickPicksPageKey
-import app.it.fast4x.rimusic.utils.homeTabsOrderKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.enums.NavigationBarPosition
+import app.n_zik.android.enums.NavigationBarType
+import app.n_zik.android.utils.enableQuickPicksPageKey
+import app.n_zik.android.utils.homeTabsOrderKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
 import app.n_zik.android.components.dialog.settings.buildHomeTabDefs

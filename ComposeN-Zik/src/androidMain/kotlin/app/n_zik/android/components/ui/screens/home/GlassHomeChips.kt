@@ -14,8 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.enums.BuiltInPlaylist
-import app.it.fast4x.rimusic.ui.components.ButtonsRow
+import app.n_zik.android.enums.BuiltInPlaylist
+import app.n_zik.android.ui.components.ButtonsRow
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassFilterChip

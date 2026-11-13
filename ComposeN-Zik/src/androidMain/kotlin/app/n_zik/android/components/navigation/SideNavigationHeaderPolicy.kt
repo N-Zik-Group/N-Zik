@@ -1,7 +1,7 @@
 package app.n_zik.android.components.navigation
 
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import app.it.fast4x.rimusic.enums.NavRoutes
+import app.n_zik.android.enums.NavigationBarPosition
+import app.n_zik.android.enums.NavRoutes
 
 /** Configured side navigation always owns the header, including routes without tabs. */
 internal fun sideNavigationOwnsHeader(

@@ -6,8 +6,8 @@ import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.runtime.MonotonicFrameClock
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
-import app.it.fast4x.rimusic.ui.screens.player.dismissedAnchor
+import app.n_zik.android.ui.screens.player.PlayerSheetState
+import app.n_zik.android.ui.screens.player.dismissedAnchor
 import app.n_zik.android.components.flingWouldDismiss
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay

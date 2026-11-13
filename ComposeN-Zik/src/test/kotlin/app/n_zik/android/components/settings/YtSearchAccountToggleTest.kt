@@ -29,14 +29,14 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-import app.it.fast4x.rimusic.enums.FontType
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.typographyOf
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.typographyOf
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.R
-import it.fast4x.innertube.Innertube
+import app.n_zik.innertube.Innertube
 
 /** Verifies account-search visibility, disabled interactions and persisted login choices. */
 @RunWith(RobolectricTestRunner::class)

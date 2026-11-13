@@ -46,7 +46,7 @@ import app.n_zik.android.core.navigation.RevealScaffoldOnPageSelection
 import app.n_zik.android.colorPalette
 import androidx.compose.ui.graphics.graphicsLayer
 import app.n_zik.android.updater.models.CheckUpdateState
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
+import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.LocalPlayerServiceBinder
 import androidx.compose.foundation.layout.WindowInsets
@@ -59,27 +59,27 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.enums.NavigationBarType
+import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.enums.NavigationBarType
 import app.n_zik.android.components.navigation.nav.AbstractNavigationBar
 import app.n_zik.android.components.navigation.nav.HorizontalNavigationBar
 import app.n_zik.android.components.navigation.nav.GlassNavigationBarHeight
 import app.n_zik.android.components.navigation.nav.GlassNavigationPlayerGap
 import app.n_zik.android.components.navigation.nav.VerticalNavigationBar
-import app.it.fast4x.rimusic.ui.styling.Dimensions
-import app.it.fast4x.rimusic.utils.checkUpdateStateKey
-import app.it.fast4x.rimusic.utils.checkBetaUpdatesKey
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.seenChangelogsVersionKey
-import app.it.fast4x.rimusic.utils.transition
+import app.n_zik.android.ui.styling.Dimensions
+import app.n_zik.android.utils.checkUpdateStateKey
+import app.n_zik.android.utils.checkBetaUpdatesKey
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.seenChangelogsVersionKey
+import app.n_zik.android.utils.transition
 import app.n_zik.android.components.dialog.updater.CheckForUpdateDialog
 import app.n_zik.android.components.dialog.updater.NewUpdateAvailableDialog
 import app.n_zik.android.components.dialog.updater.BuildTransitionWarningDialog
 import app.n_zik.android.updater.models.MajorUpdateConfig
 import app.n_zik.android.components.dialog.updater.MajorUpdateWarningDialog
 import app.n_zik.android.updater.services.Updater
-import app.it.fast4x.rimusic.utils.lastVersionCodeKey
-import app.it.fast4x.rimusic.utils.lastBuildTypeKey
+import app.n_zik.android.utils.lastVersionCodeKey
+import app.n_zik.android.utils.lastBuildTypeKey
 import androidx.compose.ui.platform.LocalDensity
 
 // THIS IS THE SCAFFOLD

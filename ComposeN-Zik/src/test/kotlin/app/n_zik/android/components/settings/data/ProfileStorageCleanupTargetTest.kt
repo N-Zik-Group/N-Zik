@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-import app.it.fast4x.rimusic.utils.PROFILE_NAMES_FILE_NAME
+import app.n_zik.android.utils.PROFILE_NAMES_FILE_NAME
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.core.profiles.invalidateProfileStorageIdentity
 import app.n_zik.android.core.profiles.profileStorageIdentity

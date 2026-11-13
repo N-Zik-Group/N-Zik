@@ -4,8 +4,8 @@ import android.app.Application
 import android.content.Context
 import android.view.WindowManager
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.privacy.blockScreenCaptureKey
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

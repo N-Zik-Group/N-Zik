@@ -4,7 +4,7 @@ import android.app.Application
 import android.os.Looper
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.test.junit4.v2.createComposeRule
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.onEach

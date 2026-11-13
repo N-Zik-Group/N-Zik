@@ -8,11 +8,11 @@ import android.os.Looper
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.activeProfileKey
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.profilePreferences
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.activeProfileKey
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.profilePreferences
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import app.n_zik.android.core.coil.ImageCacheFactory
 import io.mockk.coEvery

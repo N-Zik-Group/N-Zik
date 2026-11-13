@@ -1,6 +1,6 @@
 package app.n_zik.android.components.player.lyrics
 
-import it.fast4x.lrclib.models.Track
+import app.n_zik.lrclib.models.Track
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull

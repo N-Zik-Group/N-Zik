@@ -4,9 +4,9 @@ import android.app.ActivityManager
 import android.content.Context
 import android.os.Build
 import androidx.core.content.edit
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.it.fast4x.rimusic.utils.enableYouTubeLoginKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.utils.enableYouTubeLoginKey
 import app.n_zik.android.components.glass.GlassStore
 import app.n_zik.android.components.glass.defaultGlassQuality
 import app.n_zik.android.components.glass.glassEnabledDefault

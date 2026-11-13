@@ -6,9 +6,9 @@ import android.graphics.Bitmap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.colorPaletteModeKey
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.colorPaletteModeKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.components.player.SharedArtworkColors
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import kotlinx.coroutines.runBlocking

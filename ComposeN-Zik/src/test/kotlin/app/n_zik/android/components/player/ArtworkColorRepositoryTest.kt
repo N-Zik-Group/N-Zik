@@ -1,7 +1,7 @@
 package app.n_zik.android.components.player
 
 import androidx.compose.ui.graphics.Color
-import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
+import app.n_zik.android.ui.styling.dynamicColorPaletteOf
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async

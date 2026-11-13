@@ -11,7 +11,7 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
-import it.fast4x.innertube.models.PlayerResponse
+import app.n_zik.innertube.models.PlayerResponse
 import java.io.IOException
 import kotlinx.coroutines.CompletableDeferred
 import org.junit.jupiter.api.AfterEach

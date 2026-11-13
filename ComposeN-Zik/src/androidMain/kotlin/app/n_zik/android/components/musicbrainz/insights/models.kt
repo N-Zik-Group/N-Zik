@@ -1,8 +1,8 @@
 package app.n_zik.android.components.musicbrainz.insights
 
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Song
 import app.n_zik.android.musicbrainz.models.ExternalLink
 
 data class ArtistDetailUiState(

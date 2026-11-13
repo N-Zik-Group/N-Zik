@@ -5,9 +5,9 @@ import android.app.Application
 import android.content.Context
 import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.setActiveProfile
-import app.it.fast4x.rimusic.utils.writeProfileEntries
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.setActiveProfile
+import app.n_zik.android.utils.writeProfileEntries
 import app.n_zik.android.components.glass.GlassProfilePreferences
 import app.n_zik.android.components.glass.GlassStore
 import app.n_zik.android.components.glass.GlassArea

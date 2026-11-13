@@ -1,7 +1,7 @@
 package app.n_zik.android.components.player.lyrics
 
 import app.n_zik.android.enums.lyrics.LyricsType
-import it.fast4x.lrclib.models.Track
+import app.n_zik.lrclib.models.Track
 import kotlinx.serialization.json.JsonPrimitive
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse

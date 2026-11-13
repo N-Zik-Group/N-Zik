@@ -1,16 +1,16 @@
 package app.n_zik.android.legacyoffmain.info
 
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.SongArtistMap
-import app.it.fast4x.rimusic.ui.screens.info.loadVideoOrSongInfo
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.SongArtistMap
+import app.n_zik.android.ui.screens.info.loadVideoOrSongInfo
 import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.SongArtistMapTable
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.VideoOrSongInfo
-import it.fast4x.innertube.requests.searchPage
-import it.fast4x.innertube.requests.songInfo
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.VideoOrSongInfo
+import app.n_zik.innertube.requests.searchPage
+import app.n_zik.innertube.requests.songInfo
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
@@ -36,11 +36,11 @@ import org.junit.jupiter.api.Test
  * `LaunchedEffect(videoId)` used to run this entire sequential network+DB block inline, on
  * whatever dispatcher that effect resumes on (Main). It is now extracted, unchanged, to
  * [loadVideoOrSongInfo] (declared `internal` in `VideoOrSongInfoScreen.kt`,
- * `app.it.fast4x.rimusic.*`, legacy) and dispatched in a single `withContext(NzikDispatchers.DATA)`
+ * `app.n_zik.android.*`, legacy) and dispatched in a single `withContext(NzikDispatchers.DATA)`
  * call.
  *
  * This test file itself lives under `app.n_zik.android.*` -- not the legacy package -- per the
- * gh-606 Lot 2 spec's "no new file under app.it.fast4x.rimusic.*" boundary; `internal` visibility
+ * gh-606 Lot 2 spec's "no new file under app.n_zik.android.*" boundary; `internal` visibility
  * is module-scoped in Kotlin, not package-scoped, so it still resolves [loadVideoOrSongInfo] from
  * here without needing to share its package.
  *
@@ -60,8 +60,8 @@ class VideoOrSongInfoScreenLoadOffMainTest {
         mockkObject(Database)
         every { Database.artistTable } returns artistTable
         every { Database.songArtistMapTable } returns songArtistMapTable
-        mockkStatic("it.fast4x.innertube.requests.SongInfoKt")
-        mockkStatic("it.fast4x.innertube.requests.SearchPageKt")
+        mockkStatic("app.n_zik.innertube.requests.SongInfoKt")
+        mockkStatic("app.n_zik.innertube.requests.SearchPageKt")
     }
 
     @AfterEach

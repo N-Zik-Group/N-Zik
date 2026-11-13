@@ -19,8 +19,8 @@ import java.time.format.DateTimeFormatter
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.core.backup.SettingsPreferencesBridge
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.utils.preferences
 import androidx.compose.runtime.MutableState
 
 class ExportSettingsDialog private constructor(

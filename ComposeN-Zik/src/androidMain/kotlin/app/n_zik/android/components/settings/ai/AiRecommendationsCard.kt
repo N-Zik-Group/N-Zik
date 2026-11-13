@@ -10,9 +10,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.enums.RecommendationsNumber
-import app.it.fast4x.rimusic.utils.recommendationsNumberKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.enums.RecommendationsNumber
+import app.n_zik.android.utils.recommendationsNumberKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry

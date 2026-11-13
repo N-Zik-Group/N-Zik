@@ -27,9 +27,9 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.colorPalette
-import app.it.fast4x.rimusic.enums.NavigationBarType
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import app.it.fast4x.rimusic.ui.styling.Dimensions
+import app.n_zik.android.enums.NavigationBarType
+import app.n_zik.android.enums.NavigationBarPosition
+import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop

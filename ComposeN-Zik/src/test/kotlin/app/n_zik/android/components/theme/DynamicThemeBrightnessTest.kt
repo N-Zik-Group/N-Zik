@@ -3,7 +3,7 @@ package app.n_zik.android.components.theme
 import android.graphics.Bitmap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
+import app.n_zik.android.ui.styling.dynamicColorPaletteOf
 import app.n_zik.android.components.player.extractCoverPalette
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals

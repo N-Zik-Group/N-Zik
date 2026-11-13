@@ -1,8 +1,8 @@
 package app.n_zik.android.playback.services
 
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.models.Thumbnail
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.models.Thumbnail
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

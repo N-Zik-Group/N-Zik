@@ -33,8 +33,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
-import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.cropVideoThumbnailsKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.isVideoArtwork
 import app.n_zik.android.core.coil.rememberDisplayArtworkSource

@@ -2,10 +2,10 @@ package app.n_zik.android.components.ui.screens.home.onDevice
 
 import android.content.Context
 import android.content.ContextWrapper
-import app.it.fast4x.rimusic.enums.OnDeviceSongSortBy
-import app.it.fast4x.rimusic.enums.SortOrder
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.kreate.android.me.knighthat.utils.getLocalSongs
+import app.n_zik.android.enums.OnDeviceSongSortBy
+import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.core.utils.getLocalSongs
 import app.n_zik.android.components.ui.screens.profiles.profileDataDir
 import java.io.File
 

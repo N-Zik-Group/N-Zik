@@ -1,0 +1,112 @@
+package app.n_zik.innertube.requests
+
+import io.ktor.client.call.body
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.BrowseResponse
+import app.n_zik.innertube.models.MusicCarouselShelfRenderer
+import app.n_zik.innertube.models.MusicShelfRenderer
+import app.n_zik.innertube.models.SectionListRenderer
+import app.n_zik.innertube.utils.findSectionByTitle
+import app.n_zik.innertube.utils.from
+import app.n_zik.innertube.utils.runCatchingNonCancellable
+
+suspend fun Innertube.artistPage(browseId: String): Result<Innertube.ArtistInfoPage>? =
+    runCatchingNonCancellable {
+        val response = browse(browseId = browseId).body<BrowseResponse>()
+
+        fun findSectionByTitle(text: String): SectionListRenderer.Content? {
+            return response
+                .contents
+                ?.singleColumnBrowseResultsRenderer
+                ?.tabs
+                ?.get(0)
+                ?.tabRenderer
+                ?.content
+                ?.sectionListRenderer
+                ?.findSectionByTitle(text)
+        }
+
+        val songsSection = findSectionByTitle("Songs")?.musicShelfRenderer
+        val albumsSection = findSectionByTitle("Albums")?.musicCarouselShelfRenderer
+        val singlesSection = findSectionByTitle("Singles")?.musicCarouselShelfRenderer
+        val playlistsSection = findSectionByTitle("Playlists")?.musicCarouselShelfRenderer
+
+        Innertube.ArtistInfoPage(
+            name = response
+                .header
+                ?.musicImmersiveHeaderRenderer
+                ?.title
+                ?.text,
+            description = response
+                .header
+                ?.musicImmersiveHeaderRenderer
+                ?.description
+                ?.text,
+            subscriberCountText = response
+                .header
+                ?.musicImmersiveHeaderRenderer
+                ?.subscriptionButton
+                ?.subscribeButtonRenderer
+                ?.subscriberCountText
+                ?.text,
+            thumbnail = (response
+                .header
+                ?.musicImmersiveHeaderRenderer
+                ?.foregroundThumbnail
+                ?: response
+                    .header
+                    ?.musicImmersiveHeaderRenderer
+                    ?.thumbnail)
+                ?.musicThumbnailRenderer
+                ?.thumbnail
+                ?.thumbnails
+                ?.getBestQuality(),
+            shuffleEndpoint = response
+                .header
+                ?.musicImmersiveHeaderRenderer
+                ?.playButton
+                ?.buttonRenderer
+                ?.navigationEndpoint
+                ?.watchEndpoint,
+            radioEndpoint = response
+                .header
+                ?.musicImmersiveHeaderRenderer
+                ?.startRadioButton
+                ?.buttonRenderer
+                ?.navigationEndpoint
+                ?.watchEndpoint,
+            songs = songsSection
+                ?.contents
+                ?.mapNotNull(MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
+                ?.mapNotNull(Innertube.SongItem::from),
+            songsEndpoint = songsSection
+                ?.bottomEndpoint
+                ?.browseEndpoint,
+            albums = albumsSection
+                ?.contents
+                ?.mapNotNull(MusicCarouselShelfRenderer.Content::musicTwoRowItemRenderer)
+                ?.mapNotNull(Innertube.AlbumItem::from),
+            albumsEndpoint = albumsSection
+                ?.header
+                ?.musicCarouselShelfBasicHeaderRenderer
+                ?.moreContentButton
+                ?.buttonRenderer
+                ?.navigationEndpoint
+                ?.browseEndpoint,
+            singles = singlesSection
+                ?.contents
+                ?.mapNotNull(MusicCarouselShelfRenderer.Content::musicTwoRowItemRenderer)
+                ?.mapNotNull(Innertube.AlbumItem::from),
+            singlesEndpoint = singlesSection
+                ?.header
+                ?.musicCarouselShelfBasicHeaderRenderer
+                ?.moreContentButton
+                ?.buttonRenderer
+                ?.navigationEndpoint
+                ?.browseEndpoint,
+            playlists = playlistsSection
+                ?.contents
+                ?.mapNotNull(MusicCarouselShelfRenderer.Content::musicTwoRowItemRenderer)
+                ?.mapNotNull(Innertube.PlaylistItem::from)
+        )
+    }

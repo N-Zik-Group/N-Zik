@@ -7,7 +7,7 @@ import android.graphics.Color
 import android.net.Uri
 import app.n_zik.android.components.dialog.song.ChangeCoverDialog
 import java.io.RandomAccessFile
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.appContext
 import app.n_zik.android.playback.services.ArtworkContentProvider
 import android.content.ContentResolver
@@ -32,11 +32,11 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
-import app.it.fast4x.rimusic.EXPLICIT_PREFIX
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.utils.asMediaItem
-import app.it.fast4x.rimusic.utils.activeProfileKey
-import app.it.fast4x.rimusic.utils.profilePreferences
+import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.activeProfileKey
+import app.n_zik.android.utils.profilePreferences
 import java.util.concurrent.Executors
 import android.media.ExifInterface
 import java.io.ByteArrayOutputStream

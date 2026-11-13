@@ -42,8 +42,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import app.it.fast4x.rimusic.enums.PlayerType
-import app.it.fast4x.rimusic.enums.ThumbnailType
+import app.n_zik.android.enums.PlayerType
+import app.n_zik.android.enums.ThumbnailType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNotNull

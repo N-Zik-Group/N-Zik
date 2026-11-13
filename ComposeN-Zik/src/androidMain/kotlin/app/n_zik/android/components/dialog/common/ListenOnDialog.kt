@@ -3,8 +3,8 @@ package app.n_zik.android.components.dialog.common
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
-import app.it.fast4x.rimusic.models.Info
-import app.it.fast4x.rimusic.utils.ExternalUris
+import app.n_zik.android.models.Info
+import app.n_zik.android.utils.ExternalUris
 
 /** "Listen on" dialog: opens the current media on an external app (YouTube / YouTube Music / Invidious) via the shared [ValueSelectorDialog]. */
 @Composable

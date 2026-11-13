@@ -2,12 +2,12 @@ package app.n_zik.android.legacyoffmain.search
 
 import android.net.Uri
 import androidx.navigation.NavController
-import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.ui.screens.search.resolveGoToLink
+import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.ui.screens.search.resolveGoToLink
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.requests.playlistPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.requests.playlistPage
 import io.mockk.every
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -34,11 +34,11 @@ import org.junit.jupiter.api.Test
  * makes (`Innertube.playlistPage`, `Innertube.song`) blocked Main even though the eventual
  * `navController.navigate`/`forcePlay` calls are the only part that actually needs Main. It is now
  * extracted, unchanged, to [resolveGoToLink] (declared `internal` in `GoToLink.kt`,
- * `app.it.fast4x.rimusic.*`, legacy), launched on `NzikDispatchers.DATA`, with each
+ * `app.n_zik.android.*`, legacy), launched on `NzikDispatchers.DATA`, with each
  * `navController.navigate` call individually wrapped in `withContext(NzikDispatchers.UI)`.
  *
  * This test file itself lives under `app.n_zik.android.*` -- not the legacy package -- per the
- * gh-606 Lot 2 spec's "no new file under app.it.fast4x.rimusic.*" boundary; `internal` visibility
+ * gh-606 Lot 2 spec's "no new file under app.n_zik.android.*" boundary; `internal` visibility
  * is module-scoped in Kotlin, not package-scoped, so it still resolves [resolveGoToLink] from here.
  *
  * `Dispatchers.setMain` installs a real dedicated single thread standing in for
@@ -71,7 +71,7 @@ class GoToLinkResolveOffMainTest {
         mainThreadName = baseThreadName(
             runBlocking { withContext(mainThreadDispatcher) { Thread.currentThread().name } }
         )!!
-        mockkStatic("it.fast4x.innertube.requests.PlaylistPageKt")
+        mockkStatic("app.n_zik.innertube.requests.PlaylistPageKt")
     }
 
     @AfterEach

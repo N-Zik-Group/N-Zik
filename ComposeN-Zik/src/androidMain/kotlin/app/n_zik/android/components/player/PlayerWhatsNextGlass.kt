@@ -46,7 +46,7 @@ import app.n_zik.android.components.glass.inScope
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.uiRoundnessShape
-import app.it.fast4x.rimusic.utils.isLandscape
+import app.n_zik.android.utils.isLandscape
 
 /** Extra room around the 40 dp button is reserved only by the material plate. */
 fun playerWhatsNextGlassExtraHeight(settings: GlassSettings): Dp =

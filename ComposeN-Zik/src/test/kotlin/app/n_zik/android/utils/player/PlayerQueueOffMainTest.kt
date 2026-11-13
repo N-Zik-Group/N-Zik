@@ -3,9 +3,9 @@ package app.n_zik.android.utils.player
 import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import app.it.fast4x.rimusic.utils.addNext
-import app.it.fast4x.rimusic.utils.enqueue
-import app.it.fast4x.rimusic.utils.excludeMediaItems
+import app.n_zik.android.utils.addNext
+import app.n_zik.android.utils.enqueue
+import app.n_zik.android.utils.excludeMediaItems
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test
 
 /**
  * Issue #606 H8 (+M10 at call sites that also feed `Song.asMediaItem` through here) --
- * `Player.addNext`/`enqueue` (`app.it.fast4x.rimusic.utils.Player.kt`, legacy, out of scope for
+ * `Player.addNext`/`enqueue` (`app.n_zik.android.utils.Player.kt`, legacy, out of scope for
  * editing per AD-4 tier 1) filter the incoming list through `excludeMediaItems`, which does up to
  * 3 `runBlocking` DB reads whenever the caller passes a non-null [Context]. Every legacy caller
  * used to pass that context straight through on whatever thread it was already on -- Main, for
@@ -42,7 +42,7 @@ class PlayerQueueOffMainTest {
 
     @BeforeEach
     fun setup() {
-        mockkStatic("app.it.fast4x.rimusic.utils.PlayerKt")
+        mockkStatic("app.n_zik.android.utils.PlayerKt")
     }
 
     @AfterEach

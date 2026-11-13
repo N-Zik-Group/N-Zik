@@ -2,9 +2,9 @@ package app.n_zik.android.core.rewind
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.models.Event
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Event
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.Song
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.R

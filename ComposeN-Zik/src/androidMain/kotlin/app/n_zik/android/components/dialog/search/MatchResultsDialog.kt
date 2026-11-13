@@ -19,8 +19,8 @@ import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.cleanPrefix
+import app.n_zik.android.models.Song
+import app.n_zik.android.cleanPrefix
 
 /**
  * Centralized match results dialog: matched/failed counts and the list of failed songs

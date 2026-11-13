@@ -17,17 +17,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.utils.isProxyEnabledKey
-import app.it.fast4x.rimusic.utils.proxyHostnameKey
-import app.it.fast4x.rimusic.utils.proxyModeKey
-import app.it.fast4x.rimusic.utils.proxyPasswordEncryptedKey
-import app.it.fast4x.rimusic.utils.proxyPasswordKey
-import app.it.fast4x.rimusic.utils.proxyPasswordMigratedKey
-import app.it.fast4x.rimusic.utils.proxyPortKey
-import app.it.fast4x.rimusic.utils.proxyUsernameKey
-import app.it.fast4x.rimusic.utils.regionOverrideKey
-import app.it.fast4x.rimusic.utils.rememberEncryptedPreference
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.isProxyEnabledKey
+import app.n_zik.android.utils.proxyHostnameKey
+import app.n_zik.android.utils.proxyModeKey
+import app.n_zik.android.utils.proxyPasswordEncryptedKey
+import app.n_zik.android.utils.proxyPasswordKey
+import app.n_zik.android.utils.proxyPasswordMigratedKey
+import app.n_zik.android.utils.proxyPortKey
+import app.n_zik.android.utils.proxyUsernameKey
+import app.n_zik.android.utils.regionOverrideKey
+import app.n_zik.android.utils.rememberEncryptedPreference
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
@@ -36,7 +36,7 @@ import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.tab.Search
-import it.fast4x.innertube.Innertube
+import app.n_zik.innertube.Innertube
 import java.net.Proxy
 
 @UnstableApi

@@ -33,29 +33,29 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import app.it.fast4x.rimusic.enums.*
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.enums.*
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.Song
 import app.n_zik.android.components.glass.GlassToolbarButtons
-import app.it.fast4x.rimusic.ui.components.tab.TabHeader
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
-import app.it.fast4x.rimusic.ui.components.themed.*
-import app.it.fast4x.rimusic.utils.*
+import app.n_zik.android.ui.components.tab.TabHeader
+import app.n_zik.android.ui.components.tab.toolbar.Button
+import app.n_zik.android.ui.components.themed.*
+import app.n_zik.android.utils.*
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
-import app.it.fast4x.rimusic.enums.FilterBy
+import app.n_zik.android.enums.FilterBy
 import app.n_zik.android.components.menu.FilterMenu
-import app.it.fast4x.rimusic.utils.filterByKey
+import app.n_zik.android.utils.filterByKey
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.ui.screens.home.HomeSongs
-import app.it.fast4x.rimusic.ui.components.LocalMenuState
+import app.n_zik.android.ui.components.LocalMenuState
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.clickable
-import app.it.fast4x.rimusic.utils.importYTMLikedSongs
-import app.it.fast4x.rimusic.utils.autoSyncToolbutton
-import app.it.fast4x.rimusic.utils.autosyncLikesKey
-import app.it.fast4x.rimusic.utils.removeYTMLikedSongs
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.importYTMLikedSongs
+import app.n_zik.android.utils.autoSyncToolbutton
+import app.n_zik.android.utils.autosyncLikesKey
+import app.n_zik.android.utils.removeYTMLikedSongs
+import app.n_zik.android.core.utils.Toaster
 import org.json.JSONArray
 import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceSong
 import app.n_zik.android.LocalPlayerServiceBinder
@@ -78,8 +78,8 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.getAlbumVersionFromVideoGlobal
 import app.n_zik.android.utils.player.addNextOffMain
 import app.n_zik.android.utils.player.enqueueOffMain
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.requests.playlistPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.requests.playlistPage
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
@@ -94,24 +94,24 @@ import app.n_zik.android.components.tab.ImportSongsFromServices
 import app.n_zik.android.core.database.ImportSong
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.components.Sort
-import app.kreate.android.themed.rimusic.component.playlist.PositionLock
+import app.n_zik.android.themed.n_zik.component.playlist.PositionLock
 import app.n_zik.android.components.dialog.settings.HomeSongsToolbarSettingsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.song.UpdateSongDialog
 import app.n_zik.android.components.song.PeriodSelector
 import app.n_zik.android.components.ui.InlineCircularLoader
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.it.fast4x.rimusic.enums.SongSortBy
-import app.it.fast4x.rimusic.utils.homeSongsDownloadedToolbarOrderKey
-import app.it.fast4x.rimusic.utils.homeSongsToolbarOrderKey
-import app.it.fast4x.rimusic.utils.homeSongsFavoritesToolbarOrderKey
-import app.it.fast4x.rimusic.utils.homeSongsOnDeviceToolbarOrderKey
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.it.fast4x.rimusic.utils.homeSongsTopToolbarOrderKey
-import app.it.fast4x.rimusic.utils.homeSongsOfflineToolbarOrderKey
-import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
-import app.it.fast4x.rimusic.enums.DislikeMode
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.enums.SongSortBy
+import app.n_zik.android.utils.homeSongsDownloadedToolbarOrderKey
+import app.n_zik.android.utils.homeSongsToolbarOrderKey
+import app.n_zik.android.utils.homeSongsFavoritesToolbarOrderKey
+import app.n_zik.android.utils.homeSongsOnDeviceToolbarOrderKey
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
+import app.n_zik.android.utils.homeSongsTopToolbarOrderKey
+import app.n_zik.android.utils.homeSongsOfflineToolbarOrderKey
+import app.n_zik.android.utils.excludeDislikedSongsKey
+import app.n_zik.android.enums.DislikeMode
 import java.util.concurrent.atomic.AtomicInteger
 import android.content.Intent
 import android.net.Uri
@@ -785,12 +785,12 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                                 )
                             }
 
-                            val exoPlayerDiskCacheMaxSize by rememberPreference(app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey, app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize.`2GB`)
-                            val exoPlayerDiskDownloadCacheMaxSize by rememberPreference(app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey, app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize.`2GB`)
+                            val exoPlayerDiskCacheMaxSize by rememberPreference(app.n_zik.android.utils.exoPlayerDiskCacheMaxSizeKey, app.n_zik.android.enums.ExoPlayerDiskCacheMaxSize.`2GB`)
+                            val exoPlayerDiskDownloadCacheMaxSize by rememberPreference(app.n_zik.android.utils.exoPlayerDiskDownloadCacheMaxSizeKey, app.n_zik.android.enums.ExoPlayerDiskDownloadCacheMaxSize.`2GB`)
 
                             val showCacheIndicator = when (builtInPlaylist) {
-                                BuiltInPlaylist.Offline -> exoPlayerDiskCacheMaxSize != app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize.Unlimited
-                                BuiltInPlaylist.Downloaded -> exoPlayerDiskDownloadCacheMaxSize != app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize.Unlimited
+                                BuiltInPlaylist.Offline -> exoPlayerDiskCacheMaxSize != app.n_zik.android.enums.ExoPlayerDiskCacheMaxSize.Unlimited
+                                BuiltInPlaylist.Downloaded -> exoPlayerDiskDownloadCacheMaxSize != app.n_zik.android.enums.ExoPlayerDiskDownloadCacheMaxSize.Unlimited
                                 else -> false
                             }
 

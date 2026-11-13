@@ -7,7 +7,7 @@ import android.os.Looper
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
-import app.it.fast4x.rimusic.utils.encryptedPreferences
+import app.n_zik.android.utils.encryptedPreferences
 import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.core.maintenance.MaintenanceConvergenceState
 import app.n_zik.android.core.maintenance.MaintenanceDedupState
@@ -104,7 +104,7 @@ class MaintenanceBootChainTest {
      * so the main-thread initializer can complete without running background workers.
      */
     private fun launchApp() {
-        mockkStatic("app.it.fast4x.rimusic.utils.EncryptedPreferencesKt")
+        mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
         every { any<Context>().encryptedPreferences } returns mockk<SharedPreferences>(relaxed = true)
         mockkObject(WorkManager.Companion)
         every { WorkManager.getInstance(any()) } returns mockk<WorkManager>(relaxed = true)

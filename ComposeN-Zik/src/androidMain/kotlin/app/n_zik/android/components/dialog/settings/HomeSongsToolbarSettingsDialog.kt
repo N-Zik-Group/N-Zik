@@ -19,15 +19,15 @@ import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import timber.log.Timber
 
-import app.it.fast4x.rimusic.enums.BuiltInPlaylist
-import app.it.fast4x.rimusic.utils.homeSongsDislikedToolbarOrderKey
-import app.it.fast4x.rimusic.utils.homeSongsDownloadedToolbarOrderKey
-import app.it.fast4x.rimusic.utils.homeSongsFavoritesToolbarOrderKey
-import app.it.fast4x.rimusic.utils.homeSongsOfflineToolbarOrderKey
-import app.it.fast4x.rimusic.utils.homeSongsOnDeviceToolbarOrderKey
-import app.it.fast4x.rimusic.utils.homeSongsToolbarOrderKey
-import app.it.fast4x.rimusic.utils.homeSongsTopToolbarOrderKey
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.enums.BuiltInPlaylist
+import app.n_zik.android.utils.homeSongsDislikedToolbarOrderKey
+import app.n_zik.android.utils.homeSongsDownloadedToolbarOrderKey
+import app.n_zik.android.utils.homeSongsFavoritesToolbarOrderKey
+import app.n_zik.android.utils.homeSongsOfflineToolbarOrderKey
+import app.n_zik.android.utils.homeSongsOnDeviceToolbarOrderKey
+import app.n_zik.android.utils.homeSongsToolbarOrderKey
+import app.n_zik.android.utils.homeSongsTopToolbarOrderKey
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog

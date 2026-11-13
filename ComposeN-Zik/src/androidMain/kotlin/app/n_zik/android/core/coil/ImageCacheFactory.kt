@@ -43,18 +43,18 @@ import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.request.SuccessResult
 import coil3.toBitmap
-import it.fast4x.innertube.models.Thumbnail
+import app.n_zik.innertube.models.Thumbnail
 import app.n_zik.android.appContext
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.enums.ImageQualityFormat
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.enums.ImageQualityFormat
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 // import GlobalNetworkLogger
 import app.n_zik.android.core.network.models.NetworkQuality as NZikNetworkQuality
-import app.it.fast4x.rimusic.utils.getEnum
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.imageQualityFormatKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.imageQualityFormatKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.core.profiles.coilImageCacheDir
 import app.n_zik.android.core.profiles.ProfileDataItem

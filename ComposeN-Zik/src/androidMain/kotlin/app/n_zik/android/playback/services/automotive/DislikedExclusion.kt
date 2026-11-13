@@ -1,16 +1,16 @@
 package app.n_zik.android.playback.services.automotive
 
 import android.content.Context
-import app.it.fast4x.rimusic.enums.DislikeMode
-import app.it.fast4x.rimusic.enums.SongSortBy
-import app.it.fast4x.rimusic.enums.SortOrder
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.Preference
-import app.it.fast4x.rimusic.utils.excludeDislikedAlbumsKey
-import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
-import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
-import app.it.fast4x.rimusic.utils.getEnum
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.enums.DislikeMode
+import app.n_zik.android.enums.SongSortBy
+import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.Preference
+import app.n_zik.android.utils.excludeDislikedAlbumsKey
+import app.n_zik.android.utils.excludeDislikedArtistsKey
+import app.n_zik.android.utils.excludeDislikedSongsKey
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.core.database.Database
 import kotlinx.coroutines.flow.first
 

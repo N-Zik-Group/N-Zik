@@ -5,8 +5,8 @@ import androidx.media3.common.MediaItem
 import android.net.Uri
 import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.exoplayer.offline.Download
-import app.it.fast4x.rimusic.models.Format
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Format
+import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.FormatTable
 import app.n_zik.android.core.database.ext.FormatWithSong
 import app.n_zik.android.playback.services.PlayerServiceModern

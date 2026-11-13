@@ -1,6 +1,6 @@
 package app.n_zik.android.updater.ui
 
-import app.it.fast4x.rimusic.enums.Languages
+import app.n_zik.android.enums.Languages
 import app.n_zik.android.utils.contentTranslationLanguage
 import dev.rebelonion.translator.Language
 import java.util.Locale

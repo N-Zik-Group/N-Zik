@@ -9,14 +9,14 @@ import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Update
 import androidx.room.Upsert
-import app.it.fast4x.rimusic.PINNED_PREFIX
+import app.n_zik.android.PINNED_PREFIX
 
-import app.it.fast4x.rimusic.enums.PlaylistSortBy
-import app.it.fast4x.rimusic.enums.SortOrder
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.models.PlaylistPreview
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.enums.PlaylistSortBy
+import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.PlaylistPreview
+import app.n_zik.android.models.Song
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take

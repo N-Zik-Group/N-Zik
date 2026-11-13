@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.core.profiles.invalidateProfileStorageIdentity
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

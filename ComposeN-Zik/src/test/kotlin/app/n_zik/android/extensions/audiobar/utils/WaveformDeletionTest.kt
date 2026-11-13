@@ -15,7 +15,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.profiles.waveformsDir
 
 class WaveformDeletionTest {
@@ -26,7 +26,7 @@ class WaveformDeletionTest {
     @Before
     fun setup() {
         directory = temporary.newFolder("waveforms")
-        mockkStatic("app.it.fast4x.rimusic.utils.ProfilePreferencesKt")
+        mockkStatic("app.n_zik.android.utils.ProfilePreferencesKt")
         mockkStatic("app.n_zik.android.core.profiles.ProfileDataDirsKt")
         mockkStatic("app.n_zik.android.core.profiles.ProfileDataSharingKt")
         every { getActiveProfile(context) } returns "active"

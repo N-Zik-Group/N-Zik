@@ -32,11 +32,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import app.it.fast4x.rimusic.enums.FontType
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.typographyOf
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.R
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.core.navigation.rememberAppBackAction
@@ -279,7 +279,7 @@ class SearchBackConsumptionTest {
         assertEquals(1, parentBacks)
 
         listOf("playlist/PlaylistSongList.kt", "podcast/Podcast.kt").forEach { relativePath ->
-            val sourcePath = "src/androidMain/kotlin/app/it/fast4x/rimusic/ui/screens/$relativePath"
+            val sourcePath = "src/androidMain/kotlin/app/n_zik/android/ui/screens/$relativePath"
             val source = generateSequence(File(System.getProperty("user.dir"))) { it.parentFile }
                 .flatMap { directory -> sequenceOf(File(directory, sourcePath), File(directory, "ComposeN-Zik/$sourcePath")) }
                 .first { it.isFile }.readText()

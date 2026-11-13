@@ -5,7 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.BitmapFactory
 import android.os.ParcelFileDescriptor
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import coil3.ImageLoader
@@ -18,7 +18,7 @@ import io.mockk.spyk
 import java.io.File
 import java.io.IOException
 import app.n_zik.android.core.profiles.coversDir
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import io.mockk.mockkObject
@@ -30,8 +30,8 @@ import org.junit.Assert.assertNotNull
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
-import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.cropVideoThumbnailsKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.appContext
 import app.n_zik.android.playback.services.automotive.models.ArtworkBitmapDecoder
 import io.mockk.every

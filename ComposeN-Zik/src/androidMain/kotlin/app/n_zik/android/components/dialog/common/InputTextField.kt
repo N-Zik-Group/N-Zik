@@ -26,8 +26,8 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.semiBold
-import app.it.fast4x.rimusic.utils.textCopyFromClipboard
+import app.n_zik.android.utils.semiBold
+import app.n_zik.android.utils.textCopyFromClipboard
 
 /**
  * URL / text input content block (migrated from the legacy tree):

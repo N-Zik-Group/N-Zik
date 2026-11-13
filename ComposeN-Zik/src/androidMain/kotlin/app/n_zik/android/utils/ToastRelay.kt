@@ -6,7 +6,7 @@ import android.widget.Toast
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import java.util.concurrent.CopyOnWriteArrayList

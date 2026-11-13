@@ -8,10 +8,10 @@ import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Update
 import androidx.room.Upsert
-import app.it.fast4x.rimusic.enums.AlbumSortBy
-import app.it.fast4x.rimusic.enums.SortOrder
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.enums.AlbumSortBy
+import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Song
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take

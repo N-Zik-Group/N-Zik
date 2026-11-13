@@ -7,7 +7,7 @@ import app.n_zik.android.BuildConfig
  * download URLs, the changelog raw files (in-app updater) and the public
  * repo links (About screen).
  *
- * Migrated from the legacy `app.kreate.android.me.knighthat.utils.Repository`,
+ * Migrated from the previous update endpoint repository,
  * which has been removed.
  */
 object UpdateEndpoints {

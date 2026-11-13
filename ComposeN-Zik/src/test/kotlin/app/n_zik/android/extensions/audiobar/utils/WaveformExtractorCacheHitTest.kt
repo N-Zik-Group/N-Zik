@@ -6,7 +6,7 @@ import com.google.gson.Gson
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
-import app.it.fast4x.rimusic.utils.activeProfileKey
+import app.n_zik.android.utils.activeProfileKey
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue

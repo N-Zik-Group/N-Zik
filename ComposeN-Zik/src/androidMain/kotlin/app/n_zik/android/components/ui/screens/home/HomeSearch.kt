@@ -29,13 +29,13 @@ import app.n_zik.android.R
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.colorPalette
 import app.n_zik.android.core.network.OfflineMode
-import app.it.fast4x.rimusic.enums.SearchType
+import app.n_zik.android.enums.SearchType
 import app.n_zik.android.thumbnailShape
-import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
-import app.it.fast4x.rimusic.ui.items.PlaylistItem
-import app.it.fast4x.rimusic.ui.styling.Dimensions
-import app.it.fast4x.rimusic.ui.styling.favoritesIcon
-import app.it.fast4x.rimusic.ui.styling.px
+import app.n_zik.android.ui.components.themed.HeaderWithIcon
+import app.n_zik.android.ui.items.PlaylistItem
+import app.n_zik.android.ui.styling.Dimensions
+import app.n_zik.android.ui.styling.favoritesIcon
+import app.n_zik.android.ui.styling.px
 
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi

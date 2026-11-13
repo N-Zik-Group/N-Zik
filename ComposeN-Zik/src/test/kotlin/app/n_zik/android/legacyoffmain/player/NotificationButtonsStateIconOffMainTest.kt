@@ -2,7 +2,7 @@ package app.n_zik.android.legacyoffmain.player
 
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.offline.Download
-import app.it.fast4x.rimusic.enums.NotificationButtons
+import app.n_zik.android.enums.NotificationButtons
 import app.n_zik.android.R
 import app.n_zik.android.components.discoverButtonIconRes
 import app.n_zik.android.components.radioButtonIconRes

@@ -12,8 +12,8 @@ import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.it.fast4x.rimusic.utils.isConnectionMeteredEnabledKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.isConnectionMeteredEnabledKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.core.network.OfflineMode
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow

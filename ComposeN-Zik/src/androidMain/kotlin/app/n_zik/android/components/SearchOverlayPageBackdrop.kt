@@ -8,7 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
-import app.it.fast4x.rimusic.enums.NavRoutes
+import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.core.navigation.currentPageNavigationEntry
 

@@ -50,8 +50,8 @@ Refactor:
 - LocalPlaylistScreen now uses Skeleton like all other screens for consistent layout and mini-player positioning
 - Replaced old drag-and-drop library with sh.calvin.reorderable for local playlist songs
 - Custom sorting visibility logic applied to LocalPlaylistSongs
-- Centralized and migrated context menus and SongItem components to the new kreate architecture in Statistics, Quick Picks, and Artist Details pages
-- Moved menu directory from temporary kreate namespace to the permanent app.n_zik.android.components.menu package across the entire application
+- Centralized and migrated context menus and SongItem components to the new component architecture in Statistics, Quick Picks, and Artist Details pages
+- Moved menu directory from temporary namespace to the permanent app.n_zik.android.components.menu package across the entire application
 - Migrated the remaining screens (HistoryList, LocalSongSearch, Podcast, StatisticsPage) to use the new app.n_zik item menus
 - Migrated PlayerMenu and PlayerItemMenu to the new app.n_zik namespace, finalizing the menu architecture transition
 - Replaced temporary inline InputTextDialog logic with a modular ChangeCoverDialog for Songs and Videos across SongItemMenu, VideoItemMenu, and PlayerItemMenu
@@ -61,6 +61,6 @@ Refactor:
 
 Removed:
 - Deprecated "Fake Audio Bar" logic, fully replaced with dynamic and static Audio Waves
-- Entirely deleted old app.it.fast4x.compose.reordering package
+- Entirely deleted obsolete drag-reordering package
 - Entirely eliminated legacy item menu imports outside of their definition file (MediaItemMenu.kt)
 - Entirely deleted the legacy MediaItemMenu.kt and MediaItemGridMenu.kt files

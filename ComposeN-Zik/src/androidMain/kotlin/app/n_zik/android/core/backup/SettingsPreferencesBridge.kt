@@ -2,12 +2,12 @@ package app.n_zik.android.core.backup
 
 import android.content.Context
 import android.content.SharedPreferences
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.exoPlayerCustomCacheKey
-import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
-import app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize
-import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
-import app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.exoPlayerCustomCacheKey
+import app.n_zik.android.enums.ExoPlayerCacheLocation
+import app.n_zik.android.enums.ExoPlayerDiskDownloadCacheMaxSize
+import app.n_zik.android.utils.exoPlayerCacheLocationKey
+import app.n_zik.android.utils.exoPlayerDiskDownloadCacheMaxSizeKey
 import app.n_zik.android.components.glass.GlassProfilePreferences
 import app.n_zik.android.core.migration.RemovedSettingsMigration
 import app.n_zik.android.core.maintenance.MaintenanceStateStore

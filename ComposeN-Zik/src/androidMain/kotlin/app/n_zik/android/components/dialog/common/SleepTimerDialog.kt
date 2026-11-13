@@ -34,8 +34,8 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.ui.sliders.CircularSlider
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.formatAsDuration
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.formatAsDuration
+import app.n_zik.android.utils.semiBold
 import app.n_zik.android.uiRoundnessShape
 
 private const val MINUTES_TO_MILLIS = 60 * 1000L

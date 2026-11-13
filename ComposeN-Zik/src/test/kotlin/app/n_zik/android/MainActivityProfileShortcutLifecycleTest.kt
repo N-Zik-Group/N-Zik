@@ -3,11 +3,11 @@ package app.n_zik.android
 import android.content.Context
 import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.PROFILE_NAMES_FILE_NAME
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.profileLastUsed
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.PROFILE_NAMES_FILE_NAME
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.profileLastUsed
+import app.n_zik.android.utils.setActiveProfile
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

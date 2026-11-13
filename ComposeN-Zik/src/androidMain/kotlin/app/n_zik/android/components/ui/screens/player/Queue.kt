@@ -15,28 +15,28 @@ import androidx.media3.common.Player
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
-import app.it.fast4x.rimusic.enums.QueueLoopType
+import app.n_zik.android.enums.QueueLoopType
 import kotlinx.coroutines.CoroutineScope
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.ConfirmDialog
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.DynamicColor
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Icon
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.ui.components.tab.toolbar.ConfirmDialog
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
+import app.n_zik.android.ui.components.tab.toolbar.DynamicColor
+import app.n_zik.android.ui.components.tab.toolbar.Icon
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.models.Song
 import app.n_zik.android.components.discoverButtonIconRes
 import app.n_zik.android.components.shuffleButtonIconRes
 import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
-import app.it.fast4x.rimusic.utils.discoverKey
-import app.it.fast4x.rimusic.utils.queueLoopTypeKey
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.showButtonPlayerArrowKey
-import app.it.fast4x.rimusic.utils.shuffleQueue
-import app.it.fast4x.rimusic.utils.smoothScrollToTop
+import app.n_zik.android.utils.discoverKey
+import app.n_zik.android.utils.queueLoopTypeKey
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.showButtonPlayerArrowKey
+import app.n_zik.android.utils.shuffleQueue
+import app.n_zik.android.utils.smoothScrollToTop
 import kotlinx.coroutines.launch
-import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
+import app.n_zik.android.ui.components.navigation.header.TabToolBar
 import timber.log.Timber
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 
 @SuppressLint("ComposableNaming")
 @Composable

@@ -1,7 +1,7 @@
 package app.n_zik.android.bridge.library
 
-import app.it.fast4x.rimusic.enums.BuiltInPlaylist
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.enums.BuiltInPlaylist
+import app.n_zik.android.models.Song
 import app.n_zik.android.bridge.AuthResult
 import app.n_zik.android.bridge.BridgeJson
 import app.n_zik.android.bridge.BridgeServerCore

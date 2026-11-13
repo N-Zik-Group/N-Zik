@@ -1,7 +1,7 @@
 package app.n_zik.android.core.database
 
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.ArtistConjunctions
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.ArtistConjunctions
 
 /**
  * Resolves the display names of a YTM track list's author entries.

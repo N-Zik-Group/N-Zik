@@ -2,7 +2,7 @@ Changed:
 - Added the new N-Zik icon: Monochrome, Main, and Material You
 - Added the new banner
 - Fixed missing content in the project
-- Added new update from Kreate to N-Zik, improving stability
+- Integrated upstream updates, improving stability
 - Added missing string in `strings.xml`
 - Updated icons for Playlist, Add, Add to Queue, Featured, and Video
 - Added a warning message in Settings that appears when changing the player or UI appearance, prompting the user to restart the app

@@ -1,9 +1,9 @@
 package app.n_zik.android.components.podcast
 
 import androidx.media3.common.MediaItem
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.utils.asMediaItem
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.isPodcastBrowseId
 import app.n_zik.android.core.database.canRefreshPlaylist

@@ -1,9 +1,9 @@
 package app.n_zik.android.core.network
 
 import android.app.Application
-import app.it.fast4x.rimusic.utils.activeProfileKey
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.profilePreferences
+import app.n_zik.android.utils.activeProfileKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.profilePreferences
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runCurrent

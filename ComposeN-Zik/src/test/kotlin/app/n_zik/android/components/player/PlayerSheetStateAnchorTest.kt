@@ -5,10 +5,10 @@ import androidx.compose.animation.core.VectorConverter
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
-import app.it.fast4x.rimusic.ui.screens.player.collapsedAnchor
-import app.it.fast4x.rimusic.ui.screens.player.dismissedAnchor
-import app.it.fast4x.rimusic.ui.screens.player.expandedAnchor
+import app.n_zik.android.ui.screens.player.PlayerSheetState
+import app.n_zik.android.ui.screens.player.collapsedAnchor
+import app.n_zik.android.ui.screens.player.dismissedAnchor
+import app.n_zik.android.ui.screens.player.expandedAnchor
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals

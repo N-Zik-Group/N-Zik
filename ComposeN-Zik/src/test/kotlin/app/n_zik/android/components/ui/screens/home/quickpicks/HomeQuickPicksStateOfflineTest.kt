@@ -8,10 +8,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.media3.common.util.UnstableApi
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.Countries
-import app.it.fast4x.rimusic.enums.PlayEventsType
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.encryptedPreferences
+import app.n_zik.android.enums.Countries
+import app.n_zik.android.enums.PlayEventsType
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.encryptedPreferences
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
@@ -24,12 +24,12 @@ import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.YtMusic
-import it.fast4x.innertube.requests.chartsPageComplete
-import it.fast4x.innertube.requests.discoverPage
-import it.fast4x.innertube.requests.HomePage
-import it.fast4x.innertube.requests.relatedPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.YtMusic
+import app.n_zik.innertube.requests.chartsPageComplete
+import app.n_zik.innertube.requests.discoverPage
+import app.n_zik.innertube.requests.HomePage
+import app.n_zik.innertube.requests.relatedPage
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.withTimeout
@@ -108,11 +108,11 @@ class HomeQuickPicksStateOfflineTest {
 
         // The Innertube request functions are top-level extensions — mock them
         // through their file facades, not through the Innertube object.
-        mockkStatic("it.fast4x.innertube.requests.ChartsPageCompleteKt")
+        mockkStatic("app.n_zik.innertube.requests.ChartsPageCompleteKt")
         coEvery { Innertube.chartsPageComplete(any()) } returns offlineFailureStub(Result.failure(offlineError))
-        mockkStatic("it.fast4x.innertube.requests.DiscoverPageKt")
+        mockkStatic("app.n_zik.innertube.requests.DiscoverPageKt")
         coEvery { Innertube.discoverPage() } returns offlineFailureStub(Result.failure(offlineError))
-        mockkStatic("it.fast4x.innertube.requests.RelatedPageKt")
+        mockkStatic("app.n_zik.innertube.requests.RelatedPageKt")
         coEvery { Innertube.relatedPage(any(), any()) } returns offlineFailureStub(Result.failure(offlineError))
 
         mockkObject(YtMusic)
@@ -126,7 +126,7 @@ class HomeQuickPicksStateOfflineTest {
         every { isYouTubeLoggedIn() } returns false
         // Account identity also reads the encrypted cookie; JVM tests substitute
         // isolated preferences because AndroidKeyStore is unavailable here.
-        mockkStatic("app.it.fast4x.rimusic.utils.EncryptedPreferencesKt")
+        mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
         every { any<Context>().encryptedPreferences } returns
             app.getSharedPreferences("quick_picks_offline_auth", Context.MODE_PRIVATE)
     }

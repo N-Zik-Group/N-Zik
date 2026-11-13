@@ -3,8 +3,8 @@ package app.n_zik.android.core.profiles
 import android.content.Context
 import androidx.work.Data
 import androidx.work.workDataOf
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.isProfileIdSafe
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.isProfileIdSafe
 
 internal object ProfileWorkOwner {
     private const val PROFILE = "owner_profile"

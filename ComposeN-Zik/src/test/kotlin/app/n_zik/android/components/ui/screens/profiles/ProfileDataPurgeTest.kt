@@ -2,7 +2,7 @@ package app.n_zik.android.components.ui.screens.profiles
 
 import android.content.Context
 import android.content.SharedPreferences
-import app.it.fast4x.rimusic.utils.profilePreferences
+import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.core.profiles.profileShareKey
 import app.n_zik.android.core.profiles.profileShares

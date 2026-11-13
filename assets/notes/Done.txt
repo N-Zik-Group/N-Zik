@@ -189,7 +189,7 @@ Added:
   - Export a SQLite file for a library without custom artwork and a ZIP with the database and referenced covers otherwise.
   - Restore both formats in Settings, onboarding and Rescue, and use the same format selection and retention for automatic and pre-update backups.
   - Validate SQLite schema and artwork before replacement, rebase local cover references and recover interrupted restores from a journal before database access.
-  - Retire the legacy Kreate migration entry and its localized strings, and describe both supported backup formats in the import and export options.
+  - Retire the obsolete migration entry and its localized strings, and describe both supported backup formats in the import and export options.
 
 Fixed:
 - fix(backup): coordinate cover edits and clean abandoned backup files

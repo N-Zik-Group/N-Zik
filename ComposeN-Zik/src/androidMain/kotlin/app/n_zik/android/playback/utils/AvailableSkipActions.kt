@@ -1,8 +1,8 @@
 package app.n_zik.android.playback.utils
 
 import androidx.media3.common.Player
-import app.it.fast4x.rimusic.utils.playNext
-import app.it.fast4x.rimusic.utils.playPrevious
+import app.n_zik.android.utils.playNext
+import app.n_zik.android.utils.playPrevious
 
 /** Check before the entire seek/prepare/resume chain, including stale notification taps. */
 fun Player.playNextIfAvailable(): Boolean {

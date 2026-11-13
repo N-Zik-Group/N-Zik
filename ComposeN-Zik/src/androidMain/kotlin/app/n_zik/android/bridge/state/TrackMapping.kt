@@ -1,8 +1,8 @@
 package app.n_zik.android.bridge.state
 
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.hasExplicitPrefix
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.hasExplicitPrefix
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 
 /** Pure conversion from the phone's queue items to the contract's `Track` (§1.1). */

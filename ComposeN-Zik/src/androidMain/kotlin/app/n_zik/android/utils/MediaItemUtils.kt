@@ -7,11 +7,11 @@ import androidx.compose.runtime.remember
 import androidx.media3.common.MediaItem
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Info
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Info
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
-import app.it.fast4x.rimusic.cleanPrefix
+import app.n_zik.android.cleanPrefix
 
 // ─── Composable fallbacks (for UI) ───
 

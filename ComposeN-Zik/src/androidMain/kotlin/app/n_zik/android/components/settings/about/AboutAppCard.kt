@@ -31,9 +31,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.utils.bold
-import app.it.fast4x.rimusic.utils.secondary
-import app.kreate.android.drawable.APP_ICON_IMAGE_BITMAP
+import app.n_zik.android.utils.bold
+import app.n_zik.android.utils.secondary
+import app.n_zik.android.drawable.APP_ICON_IMAGE_BITMAP
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette

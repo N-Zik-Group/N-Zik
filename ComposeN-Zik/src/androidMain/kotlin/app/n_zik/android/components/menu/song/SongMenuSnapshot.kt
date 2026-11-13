@@ -1,7 +1,7 @@
 package app.n_zik.android.components.menu.song
 
 import androidx.compose.runtime.Composable
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.components.menu.EntityMenuSnapshot
 import app.n_zik.android.components.menu.ObserveEntityMenuSnapshot
 import app.n_zik.android.core.database.Database

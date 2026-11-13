@@ -4,7 +4,7 @@ import android.app.Application
 import android.media.MediaMetadata.METADATA_KEY_DURATION
 import android.content.Context
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.appContext
 import io.mockk.every
 import io.mockk.mockkStatic

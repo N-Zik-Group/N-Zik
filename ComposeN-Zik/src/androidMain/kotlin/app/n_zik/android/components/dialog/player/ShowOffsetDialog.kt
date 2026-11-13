@@ -40,7 +40,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.NativeSectionIconAction
 import app.n_zik.android.components.dialog.common.ButtonRow
@@ -48,9 +48,9 @@ import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.InteractiveDialog
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
-import app.it.fast4x.rimusic.utils.bold
-import app.it.fast4x.rimusic.utils.medium
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.bold
+import app.n_zik.android.utils.medium
+import app.n_zik.android.utils.semiBold
 
 class ShowOffsetDialog private constructor(
     activeState: MutableState<Boolean>,

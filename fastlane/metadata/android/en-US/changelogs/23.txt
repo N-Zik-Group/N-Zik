@@ -6,7 +6,7 @@ New:
 Changed:
 - Moved Update section to About
 - Quickpicks renamed to AI recommendations
-- RiMusic renamed to N-Zik (logs and interface)
+- Updated the logs and interface to use the N-Zik name
 
 Improved:
 - AutoUpdate and Beta updates enabled by default

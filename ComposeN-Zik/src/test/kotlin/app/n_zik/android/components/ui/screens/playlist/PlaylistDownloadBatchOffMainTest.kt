@@ -2,7 +2,7 @@ package app.n_zik.android.components.ui.screens.playlist
 
 import android.content.Context
 import androidx.media3.datasource.cache.Cache
-import app.it.fast4x.rimusic.ui.screens.playlist.processPlaylistBatch
+import app.n_zik.android.ui.screens.playlist.processPlaylistBatch
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -15,8 +15,8 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import io.mockk.verify
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.junit.After

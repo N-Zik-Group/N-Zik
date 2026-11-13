@@ -15,8 +15,8 @@ import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.currentProfileEntries
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.currentProfileEntries
 import app.n_zik.android.shortcuts.ALL_SHORTCUT_IDS
 import app.n_zik.android.shortcuts.DEFAULT_ACTIVE_SHORTCUT_IDS
 import app.n_zik.android.shortcuts.MAX_ACTIVE_SHORTCUTS
@@ -34,7 +34,7 @@ import app.n_zik.android.shortcuts.profileShortcutDisplayName
 import app.n_zik.android.shortcuts.profileShortcutId
 import app.n_zik.android.shortcuts.registerAppShortcuts
 import app.n_zik.android.shortcuts.resolveActiveShortcutIds
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
 /**

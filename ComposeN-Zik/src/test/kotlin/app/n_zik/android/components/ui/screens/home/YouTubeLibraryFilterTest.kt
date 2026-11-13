@@ -2,9 +2,9 @@ package app.n_zik.android.components.ui.screens.home
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.utils.getEnum
-import app.it.fast4x.rimusic.utils.putEnum
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.putEnum
 import app.n_zik.android.core.rewind.RewindPlaylists
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

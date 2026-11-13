@@ -1,7 +1,7 @@
 package app.n_zik.android.components.settings.common
 
-import app.it.fast4x.rimusic.enums.AnimatedGradient
-import app.it.fast4x.rimusic.enums.PlayerBackgroundColors
+import app.n_zik.android.enums.AnimatedGradient
+import app.n_zik.android.enums.PlayerBackgroundColors
 import app.n_zik.android.R
 
 /** Settings labels for persisted legacy background choices, sharing the current source names. */

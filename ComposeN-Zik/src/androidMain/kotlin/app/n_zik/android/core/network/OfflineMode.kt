@@ -3,10 +3,10 @@ package app.n_zik.android.core.network
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.compose.runtime.Composable
-import app.it.fast4x.rimusic.utils.activeProfileKey
-import app.it.fast4x.rimusic.utils.profilePreferences
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.activeProfileKey
+import app.n_zik.android.utils.profilePreferences
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.rememberPreference
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow

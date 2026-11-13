@@ -20,11 +20,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.EXPLICIT_PREFIX
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.hasExplicitPrefix
-import app.it.fast4x.rimusic.models.Song
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.hasExplicitPrefix
+import app.n_zik.android.models.Song
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.core.database.Database

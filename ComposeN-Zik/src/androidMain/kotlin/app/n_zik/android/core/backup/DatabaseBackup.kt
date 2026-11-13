@@ -6,8 +6,8 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteDatabaseLockedException
 import android.net.Uri
 import android.provider.DocumentsContract
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
 import app.n_zik.android.requireLibraryAccess
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.LibraryBackupSchema

@@ -29,7 +29,7 @@ import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.updateCancelledKey
+import app.n_zik.android.utils.updateCancelledKey
 import app.n_zik.android.appContext
 import app.n_zik.android.updater.services.Updater
 

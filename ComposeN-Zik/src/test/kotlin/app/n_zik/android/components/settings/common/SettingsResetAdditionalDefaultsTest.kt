@@ -4,18 +4,18 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.it.fast4x.rimusic.utils.checkUpdateStateKey
-import app.it.fast4x.rimusic.utils.checkBetaUpdatesKey
-import app.it.fast4x.rimusic.utils.otherLanguageAppUpdateKey
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.playbackDurationKey
-import app.it.fast4x.rimusic.utils.playbackPitchKey
-import app.it.fast4x.rimusic.utils.playbackSpeedKey
-import app.it.fast4x.rimusic.utils.playbackVolumeKey
-import app.it.fast4x.rimusic.utils.playbackDeviceVolumeKey
-import app.it.fast4x.rimusic.utils.playerBackdropKey
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.utils.checkUpdateStateKey
+import app.n_zik.android.utils.checkBetaUpdatesKey
+import app.n_zik.android.utils.otherLanguageAppUpdateKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.playbackDurationKey
+import app.n_zik.android.utils.playbackPitchKey
+import app.n_zik.android.utils.playbackSpeedKey
+import app.n_zik.android.utils.playbackVolumeKey
+import app.n_zik.android.utils.playbackDeviceVolumeKey
+import app.n_zik.android.utils.playerBackdropKey
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.core.backup.BackupManager
 import app.n_zik.android.extensions.discord.DiscordAdvancedSettings
 import app.n_zik.android.utils.DataStoreUtils
@@ -44,7 +44,7 @@ class SettingsResetAdditionalDefaultsTest {
         context.getSharedPreferences("preferences", Context.MODE_PRIVATE).edit().clear().commit()
         DataStoreUtils.prefs(context).edit().clear().commit()
         secure.edit().clear().commit()
-        mockkStatic("app.it.fast4x.rimusic.utils.EncryptedPreferencesKt")
+        mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
         every { any<Context>().encryptedPreferences } returns secure
     }
 

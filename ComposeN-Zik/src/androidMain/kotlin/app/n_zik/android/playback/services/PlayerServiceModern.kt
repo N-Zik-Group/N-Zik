@@ -5,13 +5,13 @@ import app.n_zik.android.playback.utils.playNextIfAvailable
 import app.n_zik.android.playback.utils.playPreviousIfAvailable
 import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
-import app.it.fast4x.rimusic.utils.colorPaletteModeKey
-import app.it.fast4x.rimusic.utils.activeProfileKey
-import app.it.fast4x.rimusic.utils.profilePreferences
-import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
-import app.it.fast4x.rimusic.utils.uiRoundnessDpKey
-import app.it.fast4x.rimusic.utils.thumbnailRoundnessDpKey
-import app.it.fast4x.rimusic.utils.artistThumbnailRoundnessDpKey
+import app.n_zik.android.utils.colorPaletteModeKey
+import app.n_zik.android.utils.activeProfileKey
+import app.n_zik.android.utils.profilePreferences
+import app.n_zik.android.utils.cropVideoThumbnailsKey
+import app.n_zik.android.utils.uiRoundnessDpKey
+import app.n_zik.android.utils.thumbnailRoundnessDpKey
+import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
 import app.n_zik.android.core.network.fullOfflineModeKey
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
@@ -25,7 +25,7 @@ import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
 import app.n_zik.android.listentogether.ListenTogetherManager
 import app.n_zik.android.listentogether.ListenTogetherPlayerBridge
 import app.n_zik.android.listentogether.listenTogetherGuestLock
-import app.kreate.android.me.knighthat.sync.YouTubeSync
+import app.n_zik.android.core.sync.YouTubeSync
 
 import app.n_zik.android.MainApplication
 import app.n_zik.android.awaitLibraryReady
@@ -112,29 +112,29 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaNotification.Provider
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionToken
-import app.it.fast4x.rimusic.repository.QuickPicksRepository
+import app.n_zik.android.repository.QuickPicksRepository
 import app.n_zik.android.R
 
 import com.google.common.util.concurrent.MoreExecutors
-import it.fast4x.innertube.Innertube
+import app.n_zik.innertube.Innertube
 import io.ktor.client.call.body
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.requests.nextPage
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.requests.nextPage
 import app.n_zik.android.MainActivity
 import app.n_zik.android.appContext
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.enums.AudioQualityFormat
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.enums.AudioQualityFormat
 import app.n_zik.android.enums.DownloadQualityFormat
 import app.n_zik.android.enums.downloadQualityFormatKey
-import app.it.fast4x.rimusic.enums.ImageQualityFormat
-import app.it.fast4x.rimusic.enums.DurationInMilliseconds
-import app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize
-import app.it.fast4x.rimusic.enums.ExoPlayerMinTimeForEvent
-import app.it.fast4x.rimusic.enums.NotificationButtons
-import app.it.fast4x.rimusic.enums.PresetsReverb
-import app.it.fast4x.rimusic.enums.QueueLoopType
-import app.it.fast4x.rimusic.extensions.audiovolume.AudioVolumeObserver
-import app.it.fast4x.rimusic.extensions.audiovolume.OnAudioVolumeChangedListener
+import app.n_zik.android.enums.ImageQualityFormat
+import app.n_zik.android.enums.DurationInMilliseconds
+import app.n_zik.android.enums.ExoPlayerDiskCacheMaxSize
+import app.n_zik.android.enums.ExoPlayerMinTimeForEvent
+import app.n_zik.android.enums.NotificationButtons
+import app.n_zik.android.enums.PresetsReverb
+import app.n_zik.android.enums.QueueLoopType
+import app.n_zik.android.extensions.audiovolume.AudioVolumeObserver
+import app.n_zik.android.extensions.audiovolume.OnAudioVolumeChangedListener
 import app.n_zik.android.core.maintenance.MaintenanceDownloadSelfHealState
 import app.n_zik.android.core.maintenance.MaintenanceStateStore
 import app.n_zik.android.core.notifications.channelId
@@ -151,12 +151,12 @@ import app.n_zik.android.extensions.discord.DiscordAdvancedSettings
 import app.n_zik.android.extensions.discord.DiscordPresenceManager
 import app.n_zik.android.extensions.discord.discordAdvancedSettingKeys
 import app.n_zik.android.extensions.lastfm.LastFmScrobbleManager
-import it.fast4x.lastfm.LastFm
+import app.n_zik.lastfm.LastFm
 import app.n_zik.android.isHandleAudioFocusEnabled
 import app.n_zik.android.isPauseOnHeadphoneDisconnectEnabled
-import app.it.fast4x.rimusic.models.Event
-import app.it.fast4x.rimusic.models.QueuedMediaItem
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Event
+import app.n_zik.android.models.QueuedMediaItem
+import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.diagnostics.DiagExoPlayer
 import app.n_zik.android.playback.services.diagnostics.CrossfadeAudioDiagnostics
 import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
@@ -168,65 +168,65 @@ import app.n_zik.android.download.utils.DownloadValidator
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.download.services.MyDownloadService
 import app.n_zik.android.playback.utils.SessionBitmapLoader
-import app.it.fast4x.rimusic.utils.TimerJob
-import app.it.fast4x.rimusic.utils.asMediaItem
-import app.it.fast4x.rimusic.utils.audioQualityFormatKey
-import app.it.fast4x.rimusic.utils.imageQualityFormatKey
-import app.it.fast4x.rimusic.utils.audioReverbPresetKey
-import app.it.fast4x.rimusic.utils.bassboostEnabledKey
-import app.it.fast4x.rimusic.utils.bassboostLevelKey
-import app.it.fast4x.rimusic.utils.broadCastPendingIntent
-import app.it.fast4x.rimusic.utils.closebackgroundPlayerKey
-import it.fast4x.innertube.requests.searchPage
-import it.fast4x.innertube.utils.from
-import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.it.fast4x.rimusic.utils.exoPlayerCustomCacheKey
-import app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey
-import app.it.fast4x.rimusic.utils.exoPlayerMinTimeForEventKey
-import app.it.fast4x.rimusic.utils.fadeInEffect
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.getEnum
-import app.it.fast4x.rimusic.utils.isExplicit
-import app.it.fast4x.rimusic.utils.intent
-import app.it.fast4x.rimusic.utils.isAtLeastAndroid10
-import app.it.fast4x.rimusic.utils.isAtLeastAndroid6
-import app.it.fast4x.rimusic.utils.isAtLeastAndroid7
-import app.it.fast4x.rimusic.utils.discoverKey
-import app.it.fast4x.rimusic.utils.isPauseOnVolumeZeroEnabledKey
-import app.it.fast4x.rimusic.utils.loudnessBaseGainKey
-import app.it.fast4x.rimusic.utils.manageDownload
-import app.it.fast4x.rimusic.utils.mediaItems
-import app.it.fast4x.rimusic.utils.minimumSilenceDurationKey
-import app.it.fast4x.rimusic.utils.notificationPlayerFirstIconKey
-import app.it.fast4x.rimusic.utils.notificationPlayerSecondIconKey
-import app.it.fast4x.rimusic.utils.pauseListenHistoryKey
-import app.it.fast4x.rimusic.utils.persistentQueueKey
-import app.it.fast4x.rimusic.utils.playNext
-import app.it.fast4x.rimusic.utils.playPrevious
-import app.it.fast4x.rimusic.utils.playbackFadeAudioDurationKey
-import app.it.fast4x.rimusic.utils.playbackPitchKey
-import app.it.fast4x.rimusic.utils.playbackSpeedKey
-import app.it.fast4x.rimusic.utils.playbackVolumeKey
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.syncPushHistoryKey
-import app.it.fast4x.rimusic.utils.isNetworkConnected
+import app.n_zik.android.utils.TimerJob
+import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.audioQualityFormatKey
+import app.n_zik.android.utils.imageQualityFormatKey
+import app.n_zik.android.utils.audioReverbPresetKey
+import app.n_zik.android.utils.bassboostEnabledKey
+import app.n_zik.android.utils.bassboostLevelKey
+import app.n_zik.android.utils.broadCastPendingIntent
+import app.n_zik.android.utils.closebackgroundPlayerKey
+import app.n_zik.innertube.requests.searchPage
+import app.n_zik.innertube.utils.from
+import app.n_zik.android.utils.discordPersonalAccessTokenKey
+import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.utils.exoPlayerCustomCacheKey
+import app.n_zik.android.utils.exoPlayerDiskCacheMaxSizeKey
+import app.n_zik.android.utils.exoPlayerMinTimeForEventKey
+import app.n_zik.android.utils.fadeInEffect
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.isExplicit
+import app.n_zik.android.utils.intent
+import app.n_zik.android.utils.isAtLeastAndroid10
+import app.n_zik.android.utils.isAtLeastAndroid6
+import app.n_zik.android.utils.isAtLeastAndroid7
+import app.n_zik.android.utils.discoverKey
+import app.n_zik.android.utils.isPauseOnVolumeZeroEnabledKey
+import app.n_zik.android.utils.loudnessBaseGainKey
+import app.n_zik.android.utils.manageDownload
+import app.n_zik.android.utils.mediaItems
+import app.n_zik.android.utils.minimumSilenceDurationKey
+import app.n_zik.android.utils.notificationPlayerFirstIconKey
+import app.n_zik.android.utils.notificationPlayerSecondIconKey
+import app.n_zik.android.utils.pauseListenHistoryKey
+import app.n_zik.android.utils.persistentQueueKey
+import app.n_zik.android.utils.playNext
+import app.n_zik.android.utils.playPrevious
+import app.n_zik.android.utils.playbackFadeAudioDurationKey
+import app.n_zik.android.utils.playbackPitchKey
+import app.n_zik.android.utils.playbackSpeedKey
+import app.n_zik.android.utils.playbackVolumeKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.syncPushHistoryKey
+import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
-import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
-import app.it.fast4x.rimusic.utils.putEnum
-import app.it.fast4x.rimusic.utils.queueLoopTypeKey
-import app.it.fast4x.rimusic.utils.resumePlaybackOnStartKey
-import app.it.fast4x.rimusic.utils.resumePlaybackWhenDeviceConnectedKey
-import app.it.fast4x.rimusic.utils.setGlobalVolume
-import app.it.fast4x.rimusic.utils.showDownloadButtonBackgroundPlayerKey
-import app.it.fast4x.rimusic.utils.showLikeButtonBackgroundPlayerKey
-import app.it.fast4x.rimusic.utils.skipMediaOnErrorKey
-import app.it.fast4x.rimusic.utils.skipSilenceKey
-import app.it.fast4x.rimusic.utils.timer
-import app.it.fast4x.rimusic.utils.toggleRepeatMode
-import app.it.fast4x.rimusic.utils.shuffleQueue
-import app.it.fast4x.rimusic.utils.volumeNormalizationKey
-import app.it.fast4x.rimusic.utils.volumeBoostLevelKey
+import app.n_zik.android.utils.ytCookieExpiredKey
+import app.n_zik.android.utils.putEnum
+import app.n_zik.android.utils.queueLoopTypeKey
+import app.n_zik.android.utils.resumePlaybackOnStartKey
+import app.n_zik.android.utils.resumePlaybackWhenDeviceConnectedKey
+import app.n_zik.android.utils.setGlobalVolume
+import app.n_zik.android.utils.showDownloadButtonBackgroundPlayerKey
+import app.n_zik.android.utils.showLikeButtonBackgroundPlayerKey
+import app.n_zik.android.utils.skipMediaOnErrorKey
+import app.n_zik.android.utils.skipSilenceKey
+import app.n_zik.android.utils.timer
+import app.n_zik.android.utils.toggleRepeatMode
+import app.n_zik.android.utils.shuffleQueue
+import app.n_zik.android.utils.volumeNormalizationKey
+import app.n_zik.android.utils.volumeBoostLevelKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -245,7 +245,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.distinctUntilChanged
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
@@ -255,7 +255,7 @@ import kotlin.io.path.createTempDirectory
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 import android.os.Binder as AndroidBinder
-import app.it.fast4x.rimusic.utils.isDiscordPresenceEnabledKey
+import app.n_zik.android.utils.isDiscordPresenceEnabledKey
 import app.n_zik.android.extensions.lastfm.isLastFmConfigKey
 import app.n_zik.android.extensions.lastfm.isLastFmSetupKey
 import app.n_zik.android.extensions.lastfm.isLastfmScrobblingEnabledKey
@@ -269,15 +269,15 @@ import app.n_zik.android.playback.exceptions.StreamResolutionOfflineException
 import app.n_zik.android.playback.exceptions.UnmatchedSongException
 import app.n_zik.android.playback.exceptions.UnplayableException
 import app.n_zik.android.playback.exceptions.VideoIdMismatchException
-import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
+import app.n_zik.android.utils.parentalControlEnabledKey
 import androidx.media3.datasource.HttpDataSource
-import app.it.fast4x.rimusic.utils.crossfadeGaplessKey
-import app.it.fast4x.rimusic.utils.crossfadeDurationKey
+import app.n_zik.android.utils.crossfadeGaplessKey
+import app.n_zik.android.utils.crossfadeDurationKey
 import androidx.compose.runtime.Stable
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
+import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import app.n_zik.android.widget.NZikWidgetManager
-import app.it.fast4x.rimusic.utils.crossfadeEnabledKey
+import app.n_zik.android.utils.crossfadeEnabledKey
 import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException
 
@@ -1215,7 +1215,7 @@ class PlayerServiceModern : MediaLibraryService(),
                         runCatching {
                             Timber.tag("PlayerServiceModern").d("onPlaybackStatsReady: calling Innertube.player for $songId")
                             val httpResponse = Innertube.player(videoId = songId)
-                            val playerResponse = httpResponse.body<it.fast4x.innertube.models.PlayerResponse>()
+                            val playerResponse = httpResponse.body<app.n_zik.innertube.models.PlayerResponse>()
                             val remixUrl = playerResponse.playbackTracking?.videostatsPlaybackUrl?.baseUrl
                             if (remixUrl != null) {
                                 playbackUrl = remixUrl
@@ -2500,7 +2500,7 @@ class PlayerServiceModern : MediaLibraryService(),
             // overflow buttons, and the one the media notification reads via MediaNotificationManager →
             // MediaController.getMediaButtonPreferences — so the state icons built by
 //
-            // buildCustomCommandButtons now reach both (same channel as Kreate).
+            // buildCustomCommandButtons now reach both.
             mediaSession.setMediaButtonPreferences( buildCustomCommandButtons() )
         }
 
@@ -3271,18 +3271,18 @@ class PlayerServiceModern : MediaLibraryService(),
 
         companion object {
 
-            val pause = Action("app.it.fast4x.rimusic.pause")
-            val play = Action("app.it.fast4x.rimusic.play")
-            val playPause = Action("app.it.fast4x.rimusic.playPause")
-            val next = Action("app.it.fast4x.rimusic.next")
-            val previous = Action("app.it.fast4x.rimusic.previous")
-            val like = Action("app.it.fast4x.rimusic.like")
-            val download = Action("app.it.fast4x.rimusic.download")
-            val playradio = Action("app.it.fast4x.rimusic.playradio")
-            val discover = Action("app.it.fast4x.rimusic.discover")
-            val shuffle = Action("app.it.fast4x.rimusic.shuffle")
-            val search = Action("app.it.fast4x.rimusic.search")
-            val repeat = Action("app.it.fast4x.rimusic.repeat")
+            val pause = Action("app.n_zik.android.pause")
+            val play = Action("app.n_zik.android.play")
+            val playPause = Action("app.n_zik.android.playPause")
+            val next = Action("app.n_zik.android.next")
+            val previous = Action("app.n_zik.android.previous")
+            val like = Action("app.n_zik.android.like")
+            val download = Action("app.n_zik.android.download")
+            val playradio = Action("app.n_zik.android.playradio")
+            val discover = Action("app.n_zik.android.discover")
+            val shuffle = Action("app.n_zik.android.shuffle")
+            val search = Action("app.n_zik.android.search")
+            val repeat = Action("app.n_zik.android.repeat")
 
         }
     }

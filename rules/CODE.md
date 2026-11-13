@@ -93,7 +93,7 @@ val playlist = requireNotNull(playlistDao.findById(id)) { "Playlist $id not foun
 
 ## File Placement (MANDATORY)
 
-New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app.it.fast4x.*` (legacy `rimusic.*` + `compose.persist.*`) or `app.kreate.android.*`.
+New app Kotlin files belong under `app.n_zik.android.*`. Follow the owning extension module's package layout for extension Kotlin files.
 
 | Component type                 | Location                                           |
 | ------------------------------ | -------------------------------------------------- |
@@ -255,7 +255,7 @@ Rules:
 ## UI — Jetpack Compose + Material 3
 
 - All UI in Jetpack Compose (no XML layouts)
-- Use the existing theming system — dynamic palette via legacy `app.it.fast4x.rimusic.ui.styling.ColorPalette` (`dynamicColorPaletteOf`, READ-ONLY); palette animation in `app.n_zik.android.components.theme.AnimatedAppearance`; legacy `ColorPaletteMode`/`ColorPaletteName` enums in `app.it.fast4x.rimusic.enums/`; typography via legacy `app.it.fast4x.rimusic.ui.styling.Typography` (read-only). Do NOT invent new CompositionLocals
+- Use the existing theming system. Dynamic palettes live in `app.n_zik.android.ui.styling.ColorPalette`, animation in `app.n_zik.android.components.theme.AnimatedAppearance`, palette enums in `app.n_zik.android.enums`, and typography in `app.n_zik.android.ui.styling.Typography`.
 - Animations under 300ms for snappy feel
 - Use `Modifier` for styling, chain for multiple effects
 - Keep composables small (single responsibility)
@@ -299,7 +299,7 @@ NEVER edit schema without explicit instruction. Never add, remove, or rename col
 - Use `@Query` with `Flow<T>` for reactive queries
 - Use `@Transaction` for multi-step operations — Room transactions in this app run via `Database.asyncTransaction` (`core/database/Database.kt`), which **retries 3× on `SQLiteDatabaseLockedException`** — keep that resilience when touching transaction code
 - All DAO methods `suspend` (except Flow-returning queries)
-- Migration testing required before reporting — frozen schema JSON fixtures live in `ComposeN-Zik/src/test/resources/schemas/app.n_zik.android.core.database.DatabaseInitializer/` (40-42.json, used by the `From*To*MigrationTest` suite); the LIVE Room export directory is `ComposeN-Zik/schemas/` (`schemaDirectory`) — new version JSONs land there after a DB change (the `app.n_zik.android.core.database.DatabaseInitializer/` dir now holds 1–42.json complete, incl. the once-missing `33.json`; three extra historical export dirs also exist — `database.MusicDatabase/23.json`, `database.MusicDatabaseConstructor/23.json` and `app.it.fast4x.rimusic.DatabaseInitializer/` (legacy 1–27.json) — do NOT clean or regenerate any of them without the user)
+- Migration testing required before reporting — frozen schema JSON fixtures live in `ComposeN-Zik/src/test/resources/schemas/app.n_zik.android.core.database.DatabaseInitializer/` (40-42.json, used by the `From*To*MigrationTest` suite); the LIVE Room export directory is `ComposeN-Zik/schemas/` (`schemaDirectory`) — new version JSONs land there after a DB change (the `app.n_zik.android.core.database.DatabaseInitializer/` dir now holds 1–42.json complete, incl. the once-missing `33.json`; three extra historical export dirs also exist — `database.MusicDatabase/23.json`, `database.MusicDatabaseConstructor/23.json` and `app.n_zik.android.core.database.legacy.DatabaseInitializer/` (versions 1–27.json) — do NOT clean or regenerate any of them without the user)
 
 ### Migration Safety
 
@@ -328,7 +328,7 @@ NEVER edit schema without explicit instruction. Never add, remove, or rename col
 
 - Test method names are backtick descriptive sentences (`` fun `shuffle should return list of same size`() ``) — match this style
 - **Off-main tests** (name suffix `*OffMainTest`, 29 existing): assert that offloaded work actually lands on a named `NzikDispatchers` thread (thread-name prefix assertion, e.g. `nzik-media-`). Any new work moved off the main thread gets one — this is the verification pillar of issue #606
-- Tests of legacy classes go under `app.n_zik.android.legacyoffmain.<mirror>` — never under the legacy namespace (see rules/BUILD.md, incl. the 3 grandfathered exceptions)
+- Put new tests in the package that mirrors the source (see rules/BUILD.md).
 
 ## Compose UI Testing
 
@@ -356,7 +356,7 @@ class LyricsScreenTest {
 
 ## Navigation
 
-- Routes are a legacy `enum class NavRoutes` (`app/it/fast4x/rimusic/enums/NavRoutes.kt`, READ-ONLY) plus string route helpers (e.g. `rewindDeckRoute(year, month)` in `MainActivity`) — no sealed route class exists; do NOT invent one without explicit instruction
+- Routes are a legacy `enum class NavRoutes` (`app/n_zik/android/enums/NavRoutes.kt`) plus string route helpers (e.g. `rewindDeckRoute(year, month)` in `MainActivity`) — no sealed route class exists; do NOT invent one without explicit instruction
 - `core/navigation/` holds interceptors (e.g. `MiniPlayerQueueInterceptor`), NOT route definitions
 - No deep links without validation
 

@@ -5,9 +5,9 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
 import android.net.Uri
-import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.cropVideoThumbnailsKey
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.appContext
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.network.utils.NetworkQualityHelper

@@ -4,8 +4,8 @@ import android.graphics.Bitmap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.palette.graphics.Palette
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
-import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
+import app.n_zik.android.ui.styling.ColorPalette
+import app.n_zik.android.ui.styling.dynamicColorPaletteOf
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
 

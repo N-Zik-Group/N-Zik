@@ -18,11 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import app.it.fast4x.rimusic.enums.PlayerPosition
-import app.it.fast4x.rimusic.utils.playerPositionKey
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.enums.NavigationBarPosition
+import app.n_zik.android.enums.PlayerPosition
+import app.n_zik.android.utils.playerPositionKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.playback.services.PlayerServiceModern

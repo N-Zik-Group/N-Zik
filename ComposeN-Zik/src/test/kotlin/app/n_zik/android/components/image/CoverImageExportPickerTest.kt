@@ -46,11 +46,11 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import org.robolectric.shadows.ShadowContentResolver
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.Typography
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.ColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.Typography
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.CoverEditTarget
 import app.n_zik.android.components.dialog.common.StagedCoverDialog

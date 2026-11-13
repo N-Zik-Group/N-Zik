@@ -4,8 +4,8 @@ import android.content.Context
 import android.os.Build
 import android.system.Os
 import app.n_zik.android.components.settings.data.DeferredProfileCleanup
-import app.it.fast4x.rimusic.utils.isProfileIdSafe
-import app.it.fast4x.rimusic.utils.PROFILE_NAMES_FILE_NAME
+import app.n_zik.android.utils.isProfileIdSafe
+import app.n_zik.android.utils.PROFILE_NAMES_FILE_NAME
 import app.n_zik.android.core.profiles.ProfileCacheLocationMigration
 import app.n_zik.android.core.profiles.LegacyMediaAccess
 import app.n_zik.android.core.profiles.LegacyMediaPublication

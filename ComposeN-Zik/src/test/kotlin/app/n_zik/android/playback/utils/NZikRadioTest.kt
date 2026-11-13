@@ -6,7 +6,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkInfo
 import android.net.Uri
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.SongPlaylistMapTable
@@ -14,16 +14,16 @@ import app.n_zik.android.core.database.SongTable
 import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
 import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.playback.services.PlayerServiceModern
-import app.it.fast4x.rimusic.utils.discoverKey
-import app.it.fast4x.rimusic.utils.autoLoadSongsInQueueKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.discoverKey
+import app.n_zik.android.utils.autoLoadSongsInQueueKey
+import app.n_zik.android.utils.preferences
 import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import io.mockk.*
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.requests.nextPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.requests.nextPage
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -76,7 +76,7 @@ class NZikRadioTest {
         every { networkInfo.isConnected } returns true
 
         // Mock static extension property Context.preferences
-        mockkStatic("app.it.fast4x.rimusic.utils.PreferencesKt")
+        mockkStatic("app.n_zik.android.utils.PreferencesKt")
         every { context.preferences } returns sharedPreferences
         every { sharedPreferences.edit() } returns editor
         every { editor.putBoolean(any(), any()) } returns editor
@@ -164,7 +164,7 @@ class NZikRadioTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         nZikRadio.fetchDispatcher = UnconfinedTestDispatcher()
 
-        mockkStatic("it.fast4x.innertube.requests.NextPageKt")
+        mockkStatic("app.n_zik.innertube.requests.NextPageKt")
         mockkObject(Database)
         every { Database.asyncTransaction(any(), any()) } just Runs
         every { Database.songTable } returns mockk<SongTable>(relaxed = true)

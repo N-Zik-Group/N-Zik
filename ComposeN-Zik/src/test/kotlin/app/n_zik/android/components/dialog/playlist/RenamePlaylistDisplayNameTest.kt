@@ -3,7 +3,7 @@ package app.n_zik.android.components.dialog.playlist
 import android.app.Application
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.junit4.createComposeRule
-import app.it.fast4x.rimusic.models.Playlist
+import app.n_zik.android.models.Playlist
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.PlaylistTable
 import io.mockk.every

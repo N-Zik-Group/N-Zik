@@ -2,7 +2,7 @@ package app.n_zik.android.playback.services.automotive.models
 
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
 

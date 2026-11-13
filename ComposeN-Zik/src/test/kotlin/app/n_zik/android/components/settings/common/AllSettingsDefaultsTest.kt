@@ -15,13 +15,13 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.Typography
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.Typography
+import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.R
 import app.n_zik.android.Dependencies
@@ -74,7 +74,7 @@ class AllSettingsDefaultsTest {
             .putString("ytCookie", "cookie").putString("discordPersonalAccessToken", "token")
             .putString("lastfm_session_key", "session").putString("proxyPassword", "password").commit()
         GlassStore(context).apply { setProfile(GlassQuality.Quality); setFloat(glassFilmKey, .263f) }
-        mockkStatic("app.it.fast4x.rimusic.utils.EncryptedPreferencesKt")
+        mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
         every { any<Context>().encryptedPreferences } returns secure
         mockkObject(BackupManager)
         every { BackupManager.scheduleBackup(any(), BackupManager.INTERVAL_NONE) } just Runs

@@ -19,8 +19,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.ConfirmDialog

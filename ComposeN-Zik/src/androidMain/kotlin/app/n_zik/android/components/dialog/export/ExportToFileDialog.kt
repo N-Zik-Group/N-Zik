@@ -11,7 +11,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.InputDialogConstraints
 import app.n_zik.android.components.dialog.common.TextInputDialog
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 
 abstract class ExportToFileDialog(
     valueState: MutableState<TextFieldValue>,

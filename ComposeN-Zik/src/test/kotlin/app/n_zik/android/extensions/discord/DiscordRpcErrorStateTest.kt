@@ -3,7 +3,7 @@ package app.n_zik.android.extensions.discord
 import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import com.metrolist.music.discordrpc.DiscordRpcConnection

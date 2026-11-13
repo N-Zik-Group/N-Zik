@@ -57,8 +57,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 
-import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
-import app.it.fast4x.rimusic.ui.styling.Dimensions
+import app.n_zik.android.ui.components.themed.HeaderWithIcon
+import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.DialogColorPicker

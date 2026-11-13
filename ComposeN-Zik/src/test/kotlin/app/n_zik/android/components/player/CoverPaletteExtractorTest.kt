@@ -5,10 +5,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils.colorToHSL
 import androidx.palette.graphics.Palette
-import app.it.fast4x.rimusic.ui.screens.player.computePlayerDynamicPalette
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
-import app.it.fast4x.rimusic.ui.styling.hsl
+import app.n_zik.android.ui.screens.player.computePlayerDynamicPalette
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.dynamicColorPaletteOf
+import app.n_zik.android.ui.styling.hsl
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals

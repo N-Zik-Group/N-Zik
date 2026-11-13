@@ -8,9 +8,9 @@ import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.CancellationException
 import timber.log.Timber
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.utils.ToastRelay

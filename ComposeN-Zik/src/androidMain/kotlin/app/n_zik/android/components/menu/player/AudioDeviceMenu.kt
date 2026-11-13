@@ -30,9 +30,9 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 import androidx.compose.foundation.lazy.grid.items
-import app.it.fast4x.rimusic.utils.menuStyleKey
+import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.semiBold
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -90,13 +90,13 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import app.n_zik.android.R
 import app.n_zik.android.LocalPlayerServiceBinder
-import app.it.fast4x.rimusic.enums.AudioQualityFormat
-import app.it.fast4x.rimusic.utils.audioQualityFormatKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.enums.AudioQualityFormat
+import app.n_zik.android.utils.audioQualityFormatKey
+import app.n_zik.android.utils.rememberPreference
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import app.it.fast4x.rimusic.enums.MenuStyle
+import app.n_zik.android.enums.MenuStyle
 import androidx.compose.animation.scaleOut
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.animation.fadeOut
@@ -111,7 +111,7 @@ import app.n_zik.android.utils.isCar
 import app.n_zik.android.utils.getBottomSheetDeviceIcon
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.bridge.ActiveDevice
 import app.n_zik.android.bridge.AudioOutput
 import app.n_zik.android.bridge.BridgeServerController

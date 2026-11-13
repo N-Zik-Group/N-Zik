@@ -7,4 +7,4 @@ Fixed:
 
 Refactored:
 - Renamed DataspecServices to StreamResolver and restructured the app.n_zik.android.core.playback package
-- Cleaned up project namespace from app.kreate.android to app.n_zik.android without affecting the user-facing application ID
+- Cleaned up project namespace to app.n_zik.android without affecting the user-facing application ID

@@ -5,8 +5,8 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.staticCompositionLocalOf
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import app.it.fast4x.rimusic.enums.PlayerPosition
+import app.n_zik.android.enums.NavigationBarPosition
+import app.n_zik.android.enums.PlayerPosition
 
 internal fun dockHasAttachedMini(hasMedia: Boolean, navigation: NavigationBarPosition, player: PlayerPosition): Boolean =
     hasMedia && when (navigation) {

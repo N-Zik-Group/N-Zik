@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalDensity
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
+import app.n_zik.android.enums.NavigationBarPosition
 
 /** Existing bottom anchors already reserve the system bar inset. */
 internal fun bottomNavigationImeLiftPx(

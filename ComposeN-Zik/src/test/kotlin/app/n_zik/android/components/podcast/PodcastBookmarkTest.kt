@@ -1,6 +1,6 @@
 package app.n_zik.android.components.podcast
 
-import app.it.fast4x.rimusic.models.Playlist
+import app.n_zik.android.models.Playlist
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Test

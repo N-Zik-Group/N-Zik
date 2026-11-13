@@ -151,27 +151,27 @@ import com.kieronquinn.monetcompat.interfaces.MonetColorsChangedListener
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
 import dev.kdrag0n.monet.theme.ColorScheme
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.requests.playlistPage
-import it.fast4x.innertube.requests.song
-import it.fast4x.innertube.utils.LocalePreferenceItem
-import app.it.fast4x.compose.persist.PersistMap
-import app.it.fast4x.compose.persist.PersistMapOwner
-import app.it.fast4x.compose.persist.LocalPersistMap
-import it.fast4x.innertube.utils.LocalePreferences
-import it.fast4x.innertube.utils.ProxyPreferenceItem
-import it.fast4x.innertube.utils.ProxyPreferences
-import app.it.fast4x.rimusic.enums.AnimatedGradient
-import app.it.fast4x.rimusic.enums.AudioQualityFormat
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
-import app.it.fast4x.rimusic.enums.ColorPaletteName
-import app.it.fast4x.rimusic.enums.FontType
-import app.it.fast4x.rimusic.enums.HomeScreenTabs
-import app.it.fast4x.rimusic.enums.Languages
-import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.enums.PipModule
-import app.it.fast4x.rimusic.extensions.pip.PipModuleContainer
-import app.it.fast4x.rimusic.extensions.pip.PipModuleCover
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.requests.playlistPage
+import app.n_zik.innertube.requests.song
+import app.n_zik.innertube.utils.LocalePreferenceItem
+import app.n_zik.android.compose.persist.PersistMap
+import app.n_zik.android.compose.persist.PersistMapOwner
+import app.n_zik.android.compose.persist.LocalPersistMap
+import app.n_zik.innertube.utils.LocalePreferences
+import app.n_zik.innertube.utils.ProxyPreferenceItem
+import app.n_zik.innertube.utils.ProxyPreferences
+import app.n_zik.android.enums.AnimatedGradient
+import app.n_zik.android.enums.AudioQualityFormat
+import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.enums.ColorPaletteName
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.enums.HomeScreenTabs
+import app.n_zik.android.enums.Languages
+import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.enums.PipModule
+import app.n_zik.android.extensions.pip.PipModuleContainer
+import app.n_zik.android.extensions.pip.PipModuleCover
 import app.n_zik.android.components.onboarding.OnboardingAccountsScreen
 import app.n_zik.android.components.onboarding.OnboardingImportScreen
 import app.n_zik.android.components.onboarding.OnboardingProfileScreen
@@ -199,14 +199,14 @@ import app.n_zik.android.components.navigation.sideNavigationOwnsHeader
 import app.n_zik.android.utils.appNavBarPresentForRoute
 import app.n_zik.android.utils.localeListForAppLanguage
 import app.n_zik.android.utils.shouldRecreateActivity
-import app.it.fast4x.rimusic.ui.components.LocalMenuState
-import app.it.fast4x.rimusic.ui.components.themed.CrossfadeContainer
+import app.n_zik.android.ui.components.LocalMenuState
+import app.n_zik.android.ui.components.themed.CrossfadeContainer
 import app.n_zik.android.components.navigation.AppNavigation
-import app.it.fast4x.rimusic.ui.screens.player.MiniPlayer
-import app.it.fast4x.rimusic.ui.screens.player.Player
-import app.it.fast4x.rimusic.ui.screens.player.components.YoutubePlayer
-import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
-import app.it.fast4x.rimusic.ui.screens.player.rememberPlayerSheetState
+import app.n_zik.android.ui.screens.player.MiniPlayer
+import app.n_zik.android.ui.screens.player.Player
+import app.n_zik.android.ui.screens.player.components.YoutubePlayer
+import app.n_zik.android.ui.screens.player.PlayerSheetState
+import app.n_zik.android.ui.screens.player.rememberPlayerSheetState
 import app.n_zik.android.components.CustomBottomSheet
 import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
 import app.n_zik.android.listentogether.listenTogetherInviteUri
@@ -253,95 +253,95 @@ import app.n_zik.android.components.theme.startupAppearance
 import app.n_zik.android.components.theme.DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import app.n_zik.android.components.theme.withColor
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.Dimensions
-import app.it.fast4x.rimusic.ui.styling.colorPaletteOf
-import app.it.fast4x.rimusic.ui.styling.customColorPalette
-import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
-import app.it.fast4x.rimusic.ui.styling.typographyOf
-import app.it.fast4x.rimusic.utils.InitDownloader
-import app.it.fast4x.rimusic.utils.LocalMonetCompat
-import app.it.fast4x.rimusic.utils.animatedGradientKey
-import app.it.fast4x.rimusic.utils.applyFontPaddingKey
-import app.it.fast4x.rimusic.utils.asMediaItem
-import app.it.fast4x.rimusic.utils.audioQualityFormatKey
-import app.it.fast4x.rimusic.utils.backgroundProgressKey
-import app.it.fast4x.rimusic.utils.playerPositionKey
-import app.it.fast4x.rimusic.enums.PlayerPosition
-import app.it.fast4x.rimusic.utils.closeWithBackButtonKey
-import app.it.fast4x.rimusic.utils.colorPaletteModeKey
-import app.it.fast4x.rimusic.utils.colorPaletteNameKey
-import app.it.fast4x.rimusic.utils.customColorKey
-import app.it.fast4x.rimusic.utils.customThemeDark_Background0Key
-import app.it.fast4x.rimusic.utils.customThemeDark_Background1Key
-import app.it.fast4x.rimusic.utils.customThemeDark_Background2Key
-import app.it.fast4x.rimusic.utils.customThemeDark_Background3Key
-import app.it.fast4x.rimusic.utils.customThemeDark_Background4Key
-import app.it.fast4x.rimusic.utils.customThemeDark_TextKey
-import app.it.fast4x.rimusic.utils.customThemeDark_accentKey
-import app.it.fast4x.rimusic.utils.customThemeDark_iconButtonPlayerKey
-import app.it.fast4x.rimusic.utils.customThemeDark_textDisabledKey
-import app.it.fast4x.rimusic.utils.customThemeDark_textSecondaryKey
-import app.it.fast4x.rimusic.utils.customThemeLight_Background0Key
-import app.it.fast4x.rimusic.utils.customThemeLight_Background1Key
-import app.it.fast4x.rimusic.utils.customThemeLight_Background2Key
-import app.it.fast4x.rimusic.utils.customThemeLight_Background3Key
-import app.it.fast4x.rimusic.utils.customThemeLight_Background4Key
-import app.it.fast4x.rimusic.utils.customThemeLight_TextKey
-import app.it.fast4x.rimusic.utils.customThemeLight_accentKey
-import app.it.fast4x.rimusic.utils.customThemeLight_iconButtonPlayerKey
-import app.it.fast4x.rimusic.utils.customThemeLight_textDisabledKey
-import app.it.fast4x.rimusic.utils.customThemeLight_textSecondaryKey
-import app.it.fast4x.rimusic.utils.currentMediaItemIdAsState
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.disableClosingPlayerSwipingDownKey
-import app.it.fast4x.rimusic.utils.disablePlayerHorizontalSwipeKey
-import app.it.fast4x.rimusic.utils.effectRotationKey
-import app.it.fast4x.rimusic.utils.enableQuickPicksPageKey
-import app.it.fast4x.rimusic.utils.fontTypeKey
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.forcePlay
-import app.it.fast4x.rimusic.utils.forcePlayFromBeginning
-import app.it.fast4x.rimusic.utils.getEnum
-import app.it.fast4x.rimusic.utils.homeTabsOrderKey
-import app.it.fast4x.rimusic.utils.intent
-import app.it.fast4x.rimusic.utils.invokeOnReady
-import app.it.fast4x.rimusic.utils.isAtLeastAndroid6
-import app.it.fast4x.rimusic.utils.isAtLeastAndroid8
-import app.it.fast4x.rimusic.utils.isKeepScreenOnEnabledKey
-import app.it.fast4x.rimusic.utils.isProxyEnabledKey
-import app.it.fast4x.rimusic.utils.isValidIP
-import app.it.fast4x.rimusic.utils.isVideo
-import app.it.fast4x.rimusic.utils.keepPlayerMinimizedKey
-import app.it.fast4x.rimusic.utils.languageAppKey
-import app.it.fast4x.rimusic.utils.miniPlayerTypeKey
-import app.it.fast4x.rimusic.utils.navigationBarPositionKey
-import app.it.fast4x.rimusic.utils.navigationBarTypeKey
-import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
-import app.it.fast4x.rimusic.utils.pipModuleKey
-import app.it.fast4x.rimusic.utils.playerBackgroundColorsKey
-import app.it.fast4x.rimusic.utils.playerThumbnailSizeKey
-import app.it.fast4x.rimusic.utils.playerVisualizerTypeKey
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.proxyHostnameKey
-import app.it.fast4x.rimusic.utils.proxyModeKey
-import app.it.fast4x.rimusic.utils.proxyPortKey
-import app.it.fast4x.rimusic.utils.readProfileIds
-import app.it.fast4x.rimusic.enums.TransitionEffect
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.restartActivityKey
-import app.it.fast4x.rimusic.utils.hideStatusBarKey
-import app.it.fast4x.rimusic.utils.saveProfileLastUsed
-import app.it.fast4x.rimusic.utils.setDefaultPalette
-import app.it.fast4x.rimusic.utils.showButtonPlayerVideoKey
-import app.it.fast4x.rimusic.utils.showSearchTabKey
-import app.it.fast4x.rimusic.utils.showTotalTimeQueueKey
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.Dimensions
+import app.n_zik.android.ui.styling.colorPaletteOf
+import app.n_zik.android.ui.styling.customColorPalette
+import app.n_zik.android.ui.styling.dynamicColorPaletteOf
+import app.n_zik.android.ui.styling.typographyOf
+import app.n_zik.android.utils.InitDownloader
+import app.n_zik.android.utils.LocalMonetCompat
+import app.n_zik.android.utils.animatedGradientKey
+import app.n_zik.android.utils.applyFontPaddingKey
+import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.audioQualityFormatKey
+import app.n_zik.android.utils.backgroundProgressKey
+import app.n_zik.android.utils.playerPositionKey
+import app.n_zik.android.enums.PlayerPosition
+import app.n_zik.android.utils.closeWithBackButtonKey
+import app.n_zik.android.utils.colorPaletteModeKey
+import app.n_zik.android.utils.colorPaletteNameKey
+import app.n_zik.android.utils.customColorKey
+import app.n_zik.android.utils.customThemeDark_Background0Key
+import app.n_zik.android.utils.customThemeDark_Background1Key
+import app.n_zik.android.utils.customThemeDark_Background2Key
+import app.n_zik.android.utils.customThemeDark_Background3Key
+import app.n_zik.android.utils.customThemeDark_Background4Key
+import app.n_zik.android.utils.customThemeDark_TextKey
+import app.n_zik.android.utils.customThemeDark_accentKey
+import app.n_zik.android.utils.customThemeDark_iconButtonPlayerKey
+import app.n_zik.android.utils.customThemeDark_textDisabledKey
+import app.n_zik.android.utils.customThemeDark_textSecondaryKey
+import app.n_zik.android.utils.customThemeLight_Background0Key
+import app.n_zik.android.utils.customThemeLight_Background1Key
+import app.n_zik.android.utils.customThemeLight_Background2Key
+import app.n_zik.android.utils.customThemeLight_Background3Key
+import app.n_zik.android.utils.customThemeLight_Background4Key
+import app.n_zik.android.utils.customThemeLight_TextKey
+import app.n_zik.android.utils.customThemeLight_accentKey
+import app.n_zik.android.utils.customThemeLight_iconButtonPlayerKey
+import app.n_zik.android.utils.customThemeLight_textDisabledKey
+import app.n_zik.android.utils.customThemeLight_textSecondaryKey
+import app.n_zik.android.utils.currentMediaItemIdAsState
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.disableClosingPlayerSwipingDownKey
+import app.n_zik.android.utils.disablePlayerHorizontalSwipeKey
+import app.n_zik.android.utils.effectRotationKey
+import app.n_zik.android.utils.enableQuickPicksPageKey
+import app.n_zik.android.utils.fontTypeKey
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.forcePlay
+import app.n_zik.android.utils.forcePlayFromBeginning
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.homeTabsOrderKey
+import app.n_zik.android.utils.intent
+import app.n_zik.android.utils.invokeOnReady
+import app.n_zik.android.utils.isAtLeastAndroid6
+import app.n_zik.android.utils.isAtLeastAndroid8
+import app.n_zik.android.utils.isKeepScreenOnEnabledKey
+import app.n_zik.android.utils.isProxyEnabledKey
+import app.n_zik.android.utils.isValidIP
+import app.n_zik.android.utils.isVideo
+import app.n_zik.android.utils.keepPlayerMinimizedKey
+import app.n_zik.android.utils.languageAppKey
+import app.n_zik.android.utils.miniPlayerTypeKey
+import app.n_zik.android.utils.navigationBarPositionKey
+import app.n_zik.android.utils.navigationBarTypeKey
+import app.n_zik.android.utils.parentalControlEnabledKey
+import app.n_zik.android.utils.pipModuleKey
+import app.n_zik.android.utils.playerBackgroundColorsKey
+import app.n_zik.android.utils.playerThumbnailSizeKey
+import app.n_zik.android.utils.playerVisualizerTypeKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.proxyHostnameKey
+import app.n_zik.android.utils.proxyModeKey
+import app.n_zik.android.utils.proxyPortKey
+import app.n_zik.android.utils.readProfileIds
+import app.n_zik.android.enums.TransitionEffect
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.restartActivityKey
+import app.n_zik.android.utils.hideStatusBarKey
+import app.n_zik.android.utils.saveProfileLastUsed
+import app.n_zik.android.utils.setDefaultPalette
+import app.n_zik.android.utils.showButtonPlayerVideoKey
+import app.n_zik.android.utils.showSearchTabKey
+import app.n_zik.android.utils.showTotalTimeQueueKey
 import app.n_zik.android.core.coil.resize
 import app.n_zik.android.core.coil.thumbnail
-import app.it.fast4x.rimusic.utils.thumbnailRoundnessDpKey
-import app.it.fast4x.rimusic.utils.artistThumbnailRoundnessDpKey
-import app.it.fast4x.rimusic.utils.transitionEffectKey
-import app.it.fast4x.rimusic.utils.useSystemFontKey
+import app.n_zik.android.utils.thumbnailRoundnessDpKey
+import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
+import app.n_zik.android.utils.transitionEffectKey
+import app.n_zik.android.utils.useSystemFontKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -352,16 +352,16 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.knighthat.invidious.Invidious
-import app.kreate.android.me.knighthat.utils.Toaster
-import it.fast4x.innertube.Innertube.proxy
+import app.n_zik.innertube.invidious.Invidious
+import app.n_zik.android.core.utils.Toaster
+import app.n_zik.innertube.Innertube.proxy
 import timber.log.Timber
 import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
 import app.n_zik.android.playback.services.diagnostics.UiFrameClockDiagnostics
 import java.net.Proxy
 import java.util.Locale
 import androidx.compose.foundation.shape.RoundedCornerShape
-import app.it.fast4x.rimusic.ui.styling.BoundedCornerSize
+import app.n_zik.android.ui.styling.BoundedCornerSize
 import app.n_zik.android.core.navigation.MiniPlayerQueueInterceptor
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.extensions.discord.DiscordUiState
@@ -381,10 +381,10 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.runtime.State
 import androidx.core.view.WindowInsetsControllerCompat
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
+import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.core.database.Database
 import android.Manifest
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
+import app.n_zik.android.enums.NavigationBarPosition
 import androidx.compose.foundation.layout.offset
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
@@ -1132,7 +1132,7 @@ class MainActivity :
                 val proxyPort = readProxyPort()
                 val proxyMode = getEnum(proxyModeKey, Proxy.Type.HTTP)
                 if (isValidIP(hostName) && hostName != null) {
-                    it.fast4x.innertube.utils.getProxy(ProxyPreferenceItem(hostName, proxyPort, proxyMode))
+                    app.n_zik.innertube.utils.getProxy(ProxyPreferenceItem(hostName, proxyPort, proxyMode))
                 } else {
                     Timber.w("Proxy preference is null or invalid, running without proxy")
                     null
@@ -1393,7 +1393,7 @@ class MainActivity :
                                     if (isValidIP(hostName)) {
                                         hostName?.let { hName ->
                                             ProxyPreferences.preference = ProxyPreferenceItem(hName, proxyPort, proxyMode)
-                                            proxy = ProxyPreferences.preference?.let { pref -> it.fast4x.innertube.utils.getProxy(pref) }
+                                            proxy = ProxyPreferences.preference?.let { pref -> app.n_zik.innertube.utils.getProxy(pref) }
                                         }
                                     } else {
                                         Toaster.e(R.string.network_proxy_invalid_hostname)
@@ -1613,12 +1613,12 @@ class MainActivity :
             // are hidden until the toggle button reveals them, so scroll-hide does not apply there
             val dockNavigationPosition = NavigationBarPosition.current()
             val hasSideNavigation = sideNavigationOwnsHeader(dockNavigationPosition)
-            val isLandscapeBarless = app.it.fast4x.rimusic.utils.isLandscapeBarlessScreen() && !hasSideNavigation
-            val areBarsHidden = app.it.fast4x.rimusic.utils.hideBarsInLandscapeMobile() && !hasSideNavigation
+            val isLandscapeBarless = app.n_zik.android.utils.isLandscapeBarlessScreen() && !hasSideNavigation
+            val areBarsHidden = app.n_zik.android.utils.hideBarsInLandscapeMobile() && !hasSideNavigation
 
             // Every time such a screen is entered (or left) the bars start put away again
             LaunchedEffect(isLandscapeBarless) {
-                app.it.fast4x.rimusic.utils.LandscapeBars.hide()
+                app.n_zik.android.utils.LandscapeBars.hide()
             }
             // Top navigation remains pinned while the header scrolls out.
             val topNavHeight = if (rememberGlassSettings().usesGlassMaterial(GlassArea.Nav))
@@ -1741,7 +1741,7 @@ class MainActivity :
                             homeHeaderMotionRegistry.scrollBy(deltaY, with(density) { APP_HEADER_HEIGHT.toPx() })
                         }
                         if (isLandscapeBarless && source == NestedScrollSource.UserInput) {
-                            app.it.fast4x.rimusic.utils.LandscapeBars.hide()
+                            app.n_zik.android.utils.LandscapeBars.hide()
                         }
                         return Offset.Zero
                     }
@@ -1784,7 +1784,7 @@ class MainActivity :
 
                 // Calculate player padding before initializing playerSheetState
                 val isFloatingNavBar = NavigationBarPosition.BottomFloating.isCurrent()
-                val isIconOnlyNav = app.it.fast4x.rimusic.enums.NavigationBarType.IconOnly.isCurrent()
+                val isIconOnlyNav = app.n_zik.android.enums.NavigationBarType.IconOnly.isCurrent()
                 val navBarBottomPad = Dimensions.navBarBottomPadding(isFloatingNavBar)
                 val bottomNavigationImeLift = rememberBottomNavigationImeLift(dockNavigationPosition)
                 // Route-aware: only screens that actually render the app nav bar reserve its
@@ -3106,17 +3106,17 @@ class MainActivity :
     }
 
     companion object {
-        const val action_search = "app.it.fast4x.rimusic.action.search"
-        const val action_songs = "app.it.fast4x.rimusic.action.songs"
-        const val action_albums = "app.it.fast4x.rimusic.action.albums"
-        const val actions_artists = "app.it.fast4x.rimusic.action.artists"
-        const val action_library = "app.it.fast4x.rimusic.action.library"
+        const val action_search = "app.n_zik.android.action.search"
+        const val action_songs = "app.n_zik.android.action.songs"
+        const val action_albums = "app.n_zik.android.action.albums"
+        const val actions_artists = "app.n_zik.android.action.artists"
+        const val action_library = "app.n_zik.android.action.library"
         // Profile shortcuts (spec-profile-shortcuts): the generic one opens the profiles page;
         // the direct per-profile one carries the stable profile ID in [EXTRA_PROFILE_ID] and
 //
         // launches in it (cold) or switches to it (warm).
-        const val action_profiles = "app.it.fast4x.rimusic.action.profiles"
-        const val action_profile = "app.it.fast4x.rimusic.action.profile"
+        const val action_profiles = "app.n_zik.android.action.profiles"
+        const val action_profile = "app.n_zik.android.action.profile"
 
         // Debug-only backdoor to the OTA updater screen (unreachable in debug builds, where
         // IS_AUTOUPDATE is false and the About card is not clickable):
@@ -3262,7 +3262,7 @@ val LocalIsShowingLyrics = staticCompositionLocalOf<MutableState<Boolean>> { err
 val LocalIsShowingVisualizer = staticCompositionLocalOf<MutableState<Boolean>> { error("No LocalIsShowingVisualizer provided") }
 val LocalTopBarOffset = staticCompositionLocalOf<State<Float>> { mutableStateOf(0f) }
 val LocalBottomBarOffset = staticCompositionLocalOf<State<Float>> { mutableStateOf(0f) }
-val LocalDownloadStatesMap = staticCompositionLocalOf<Map<String, app.it.fast4x.rimusic.enums.DownloadedStateMedia>> { emptyMap() }
+val LocalDownloadStatesMap = staticCompositionLocalOf<Map<String, app.n_zik.android.enums.DownloadedStateMedia>> { emptyMap() }
 
 /**
  * Routes where the full-screen sheet (mini-player included) must be hidden: the Rewind

@@ -42,9 +42,9 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.getEnum
-import app.it.fast4x.rimusic.utils.shakeSensitivityThemeKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.shakeSensitivityThemeKey
 import app.n_zik.android.enums.ShakeSensitivityTheme
 
 internal fun m3eVisibilityTarget(

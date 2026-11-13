@@ -17,9 +17,9 @@ import kotlin.math.roundToInt
 import androidx.compose.ui.graphics.toArgb
 import kotlinx.coroutines.withContext
 
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.hasExplicitPrefix
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.hasExplicitPrefix
+import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.MainActivity
 import app.n_zik.android.R
 import app.n_zik.android.utils.coroutines.NzikDispatchers

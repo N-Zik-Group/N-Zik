@@ -1,6 +1,6 @@
 package app.n_zik.android.components.ui.screens.rewind
 
-import app.it.fast4x.rimusic.models.Event
+import app.n_zik.android.models.Event
 import app.n_zik.android.core.database.EventTable
 import app.n_zik.android.core.database.ext.RewindYearMonthStat
 import app.n_zik.android.core.database.ext.RewindYearStat

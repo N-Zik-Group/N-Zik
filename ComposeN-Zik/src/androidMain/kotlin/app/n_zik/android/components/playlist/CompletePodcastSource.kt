@@ -1,12 +1,12 @@
 package app.n_zik.android.components.playlist
 
 import io.ktor.client.statement.bodyAsText
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.Thumbnail
-import it.fast4x.innertube.models.v0624.podcasts.BrowsePodcastsResponse0624
-import it.fast4x.innertube.models.v0624.podcasts.Continuation
-import it.fast4x.innertube.requests.parseContinuationPodcastEpisodes
-import it.fast4x.innertube.requests.parsePodcastData
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.Thumbnail
+import app.n_zik.innertube.models.v0624.podcasts.BrowsePodcastsResponse0624
+import app.n_zik.innertube.models.v0624.podcasts.Continuation
+import app.n_zik.innertube.requests.parseContinuationPodcastEpisodes
+import app.n_zik.innertube.requests.parsePodcastData
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.serialization.json.Json

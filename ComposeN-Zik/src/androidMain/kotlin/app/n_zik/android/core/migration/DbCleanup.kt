@@ -1,9 +1,9 @@
 package app.n_zik.android.core.migration
 
 import android.content.Context
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.models.SongArtistMap
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.models.SongArtistMap
 import app.n_zik.android.R
 import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.Database
@@ -12,7 +12,7 @@ import app.n_zik.android.core.database.SongTable
 import app.n_zik.android.core.maintenance.DbCleanupLinkRecord
 import app.n_zik.android.core.rewind.RewindPostImportRegenerationWorker
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -131,7 +131,7 @@ object DbCleanup {
      * Pure decision rule, testable without any database.
      *
      * @param artistName name of the mapped [Artist] row (may carry the `modified:` custom prefix)
-     * @param songArtistsText stored artist list of the [app.it.fast4x.rimusic.models.Song]
+     * @param songArtistsText stored artist list of the [app.n_zik.android.models.Song]
      * (may carry the `modified:` custom prefix)
      * @return true when the link should be removed
      */

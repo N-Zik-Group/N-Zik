@@ -24,14 +24,14 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.it.fast4x.rimusic.utils.medium
-import app.it.fast4x.rimusic.utils.preferences
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.utils.medium
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.glassDialogButtonBackground
@@ -46,15 +46,15 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.core.coil.ImageCacheFactory
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.requests.searchPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.requests.searchPage
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import it.fast4x.innertube.utils.*
+import app.n_zik.innertube.utils.*
 import java.util.UUID
 import app.n_zik.android.appContext
-import app.it.fast4x.rimusic.ui.components.MenuState
+import app.n_zik.android.ui.components.MenuState
 
 class ChangePlaylistBrowseIdDialog private constructor(
     activeState: MutableState<Boolean>,

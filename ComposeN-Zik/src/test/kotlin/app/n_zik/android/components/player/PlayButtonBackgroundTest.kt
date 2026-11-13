@@ -1,9 +1,9 @@
 package app.n_zik.android.components.player
 
 import androidx.compose.ui.graphics.Color
-import app.it.fast4x.rimusic.enums.ColorPaletteName
-import app.it.fast4x.rimusic.enums.PlayerPlayButtonType
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.enums.ColorPaletteName
+import app.n_zik.android.enums.PlayerPlayButtonType
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

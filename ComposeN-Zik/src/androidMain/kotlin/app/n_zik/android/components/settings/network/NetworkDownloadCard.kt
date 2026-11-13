@@ -14,10 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
-import app.it.fast4x.rimusic.utils.autoDownloadSongKey
-import app.it.fast4x.rimusic.utils.autoDownloadSongWhenAlbumBookmarkedKey
-import app.it.fast4x.rimusic.utils.autoDownloadSongWhenLikedKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.autoDownloadSongKey
+import app.n_zik.android.utils.autoDownloadSongWhenAlbumBookmarkedKey
+import app.n_zik.android.utils.autoDownloadSongWhenLikedKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import androidx.compose.runtime.getValue

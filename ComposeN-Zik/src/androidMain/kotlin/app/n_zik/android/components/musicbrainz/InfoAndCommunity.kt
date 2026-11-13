@@ -45,10 +45,10 @@ import app.n_zik.android.components.ui.screens.album.Translate
 import app.n_zik.android.components.ui.InlineCircularLoader
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.align
-import app.it.fast4x.rimusic.utils.color
-import app.it.fast4x.rimusic.utils.secondary
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.align
+import app.n_zik.android.utils.color
+import app.n_zik.android.utils.secondary
+import app.n_zik.android.utils.semiBold
 import app.n_zik.android.musicbrainz.models.ExternalLink
 import app.n_zik.android.musicbrainz.utils.cleanWikipediaText
 import dev.rebelonion.translator.Language

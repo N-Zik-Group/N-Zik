@@ -2,9 +2,9 @@ package app.n_zik.android.components.dialog.song
 
 import java.io.IOException
 
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.models.PlayerResponse
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.models.PlayerResponse
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -14,8 +14,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.asSong
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.asSong
 import app.n_zik.android.core.database.ArtistMappingReconcile
 
 /** Uses runBlocking to await suspend provider calls from synchronous JUnit tests. */

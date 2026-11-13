@@ -3,7 +3,7 @@ package app.n_zik.android.playback.services
 import android.content.Context
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSpec
-import app.it.fast4x.rimusic.enums.AudioQualityFormat
+import app.n_zik.android.enums.AudioQualityFormat
 import app.n_zik.android.appContext
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.playback.exceptions.StreamResolutionOfflineException
@@ -13,8 +13,8 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.requests.nextPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.requests.nextPage
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -40,7 +40,7 @@ class StreamResolutionFastFailCallSiteTest {
         every { appContext() } returns mockk<Context>(relaxed = true)
         mockkObject(NetworkQualityHelper)
         every { NetworkQualityHelper.isNetworkConnected(any()) } returns false
-        mockkStatic("it.fast4x.innertube.requests.NextPageKt")
+        mockkStatic("app.n_zik.innertube.requests.NextPageKt")
 
         // A bare mock receiver: the offline fast-fail path throws before it dereferences
         // the DataSpec, so no Uri/URL construction is needed (Uri.parse is unmocked on the JVM).

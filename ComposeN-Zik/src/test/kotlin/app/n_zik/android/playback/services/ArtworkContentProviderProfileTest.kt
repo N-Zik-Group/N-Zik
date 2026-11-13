@@ -5,9 +5,9 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.ParcelFileDescriptor
 import android.os.Process
-import app.it.fast4x.rimusic.utils.activeProfileKey
-import app.it.fast4x.rimusic.utils.profilePreferences
-import app.it.fast4x.rimusic.utils.writeProfileEntries
+import app.n_zik.android.utils.activeProfileKey
+import app.n_zik.android.utils.profilePreferences
+import app.n_zik.android.utils.writeProfileEntries
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertFalse

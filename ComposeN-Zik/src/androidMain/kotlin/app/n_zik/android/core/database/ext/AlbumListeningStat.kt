@@ -1,7 +1,7 @@
 package app.n_zik.android.core.database.ext
 
 import androidx.room.Embedded
-import app.it.fast4x.rimusic.models.Album
+import app.n_zik.android.models.Album
 
 data class AlbumListeningStat(
     @Embedded val album: Album,

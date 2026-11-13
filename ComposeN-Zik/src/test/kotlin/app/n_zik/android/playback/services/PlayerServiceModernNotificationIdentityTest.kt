@@ -12,11 +12,11 @@ import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.NotificationButtons
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.crossfadeDurationKey
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.manageDownload
+import app.n_zik.android.enums.NotificationButtons
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.crossfadeDurationKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.manageDownload
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
@@ -177,7 +177,7 @@ class PlayerServiceModernNotificationIdentityTest {
 
     @Test
     fun `download command captures B state instead of the stale cached A state`() {
-        mockkStatic("app.it.fast4x.rimusic.utils.DownloadUtilsKt")
+        mockkStatic("app.n_zik.android.utils.DownloadUtilsKt")
         every { manageDownload(any(), any(), any()) } just Runs
         val b = item("B")
         service.currentMediaItem.value = b

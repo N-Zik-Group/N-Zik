@@ -1,13 +1,13 @@
 package app.n_zik.android.download.utils
 
 import android.app.Application
-import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.activeProfileKey
-import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
-import app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey
-import app.it.fast4x.rimusic.utils.profilePreferences
-import app.it.fast4x.rimusic.utils.writeProfileEntries
+import app.n_zik.android.enums.ExoPlayerCacheLocation
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.activeProfileKey
+import app.n_zik.android.utils.exoPlayerCacheLocationKey
+import app.n_zik.android.utils.exoPlayerDiskDownloadCacheMaxSizeKey
+import app.n_zik.android.utils.profilePreferences
+import app.n_zik.android.utils.writeProfileEntries
 import app.n_zik.android.core.profiles.ProfileCacheLocationMigration
 import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.core.profiles.profileDataPrefs

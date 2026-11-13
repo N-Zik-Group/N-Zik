@@ -6,9 +6,9 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.requests.searchPage
-import it.fast4x.innertube.requests.searchPageContinuation
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.requests.searchPage
+import app.n_zik.innertube.requests.searchPageContinuation
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -38,7 +38,7 @@ class SearchBrowseQueryTest {
 
     @Before
     fun setUp() {
-        mockkStatic("it.fast4x.innertube.requests.SearchPageKt")
+        mockkStatic("app.n_zik.innertube.requests.SearchPageKt")
         coEvery { Innertube.searchPage<Innertube.Item>(any(), any(), any()) } returns null
     }
 
@@ -62,7 +62,7 @@ class SearchBrowseQueryTest {
 
     @Test
     fun `all seven categories load one provider batch and Suite reaches the end without accumulation`() = runTest {
-        mockkStatic("it.fast4x.innertube.requests.SearchPageKt")
+        mockkStatic("app.n_zik.innertube.requests.SearchPageKt")
         // Nullable inline Result suspend APIs need the same boxing fixture as Quick Picks.
         @Suppress("UNCHECKED_CAST")
         val first = Result.success(Result.success(Innertube.ItemsPage<Innertube.Item>(emptyList(), "next-cursor")))

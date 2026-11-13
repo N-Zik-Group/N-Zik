@@ -49,21 +49,21 @@ import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
-import app.it.fast4x.rimusic.utils.center
-import app.it.fast4x.rimusic.utils.faceAvatarSource
-import app.it.fast4x.rimusic.utils.faceNameSource
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.isProfileNameValid
-import app.it.fast4x.rimusic.utils.medium
-import app.it.fast4x.rimusic.utils.profileDisplayName
-import app.it.fast4x.rimusic.utils.readProfileIds
-import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
-import app.it.fast4x.rimusic.utils.saveFaceAvatarSource
-import app.it.fast4x.rimusic.utils.saveFaceNameSource
-import app.it.fast4x.rimusic.utils.currentProfileEntries
-import app.it.fast4x.rimusic.utils.saveProfileDisplayName
-import app.it.fast4x.rimusic.utils.writeProfileEntries
-import app.it.fast4x.rimusic.utils.takenProfileNames
+import app.n_zik.android.utils.center
+import app.n_zik.android.utils.faceAvatarSource
+import app.n_zik.android.utils.faceNameSource
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.isProfileNameValid
+import app.n_zik.android.utils.medium
+import app.n_zik.android.utils.profileDisplayName
+import app.n_zik.android.utils.readProfileIds
+import app.n_zik.android.utils.resolveProfileDisplayName
+import app.n_zik.android.utils.saveFaceAvatarSource
+import app.n_zik.android.utils.saveFaceNameSource
+import app.n_zik.android.utils.currentProfileEntries
+import app.n_zik.android.utils.saveProfileDisplayName
+import app.n_zik.android.utils.writeProfileEntries
+import app.n_zik.android.utils.takenProfileNames
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
@@ -85,7 +85,7 @@ import app.n_zik.android.utils.FaceAvatar
 import app.n_zik.android.utils.ProfileFace
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.ui.screens.profiles.loadProfileFace
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 
 /**
  * The face card at the top of the Accounts tab: the active profile's face preview,

@@ -6,8 +6,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.DatabaseInitializer
 import io.mockk.every

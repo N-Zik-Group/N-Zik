@@ -22,8 +22,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Alignment
 import app.n_zik.android.uiRoundnessShape
-import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.parentalControlEnabledKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.R

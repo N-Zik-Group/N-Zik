@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.constrainHeight
-import app.it.fast4x.rimusic.enums.PlayerType
+import app.n_zik.android.enums.PlayerType
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 

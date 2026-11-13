@@ -8,7 +8,7 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.backup.DatabaseBackup
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -21,7 +21,7 @@ import app.n_zik.android.components.image.ownedCoverMutationMutex
 import app.n_zik.android.core.rewind.RewindPostImportRegenerationWorker
 import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.core.profiles.isCurrentProcessStorageProfile
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import timber.log.Timber
 
 class ImportDatabase private constructor(

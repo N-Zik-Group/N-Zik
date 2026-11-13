@@ -2,8 +2,8 @@ package app.n_zik.android.legacyoffmain.player
 
 import android.graphics.Bitmap
 import android.graphics.Color
-import app.it.fast4x.rimusic.ui.screens.player.computeMiniPlayerPalette
-import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
+import app.n_zik.android.ui.screens.player.computeMiniPlayerPalette
+import app.n_zik.android.ui.styling.dynamicColorPaletteOf
 import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.runBlocking
@@ -22,14 +22,14 @@ import org.robolectric.annotation.Config
  * `LaunchedEffect(mediaItem.mediaId)` used to run `dynamicColorPaletteOf(bitmap, ...)`
  * (CPU-bound `Palette` extraction) inline, on whatever dispatcher that effect resumes on (Main,
  * since it follows `getBitmapFromUrl`'s suspension). That call is now extracted, unchanged, to
- * [computeMiniPlayerPalette] (declared `internal` in `MiniPlayer.kt`, `app.it.fast4x.rimusic.*`,
+ * [computeMiniPlayerPalette] (declared `internal` in `MiniPlayer.kt`, `app.n_zik.android.*`,
  * legacy) and dispatched via `withContext(NzikDispatchers.MEDIA)`. The palette is built from
  * the dominant swatch via `m3eDynamicColorPaletteOf` (shared M3E cover extraction, RiPlay-based:
  * capped 8 palette, dominant swatch, achromatic neutralization -- spec
  * `spec-fix-palette-extractor-riplay-reference`).
  *
  * This test file itself lives under `app.n_zik.android.*` -- not the legacy package -- per the
- * gh-606 Lot 2 spec's "no new file under app.it.fast4x.rimusic.*" boundary; `internal` visibility
+ * gh-606 Lot 2 spec's "no new file under app.n_zik.android.*" boundary; `internal` visibility
  * is module-scoped in Kotlin, not package-scoped, so it still resolves [computeMiniPlayerPalette]
  * from here without needing to share its package.
  *

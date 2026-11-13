@@ -15,8 +15,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.utils.center
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.center
+import app.n_zik.android.utils.semiBold
 import app.n_zik.android.typography
 
 /**

@@ -1,6 +1,6 @@
 package app.n_zik.android.legacyoffmain.player
 
-import app.kreate.android.themed.rimusic.screen.player.timeline.timeRemainingOf
+import app.n_zik.android.themed.n_zik.screen.player.timeline.timeRemainingOf
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

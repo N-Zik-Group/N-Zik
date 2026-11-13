@@ -8,8 +8,8 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import android.os.Build
 import android.service.notification.StatusBarNotification
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.profileDisplayName
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.profileDisplayName
 import app.n_zik.android.R
 import app.n_zik.android.bridge.BRIDGE_SERVER_CHANNEL_ID
 import app.n_zik.android.modules.AndroidModuleDownloadListener

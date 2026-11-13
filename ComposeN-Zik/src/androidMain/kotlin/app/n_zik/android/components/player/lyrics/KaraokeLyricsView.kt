@@ -34,7 +34,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
+import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.components.player.lyricsThemeColor
 import app.n_zik.android.enums.lyrics.LyricsBackground
 import app.n_zik.android.enums.lyrics.LyricsColor
@@ -44,13 +44,13 @@ import app.n_zik.android.enums.lyrics.LyricsOutline
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
-import app.it.fast4x.rimusic.utils.verticalFadingEdge
+import app.n_zik.android.utils.verticalFadingEdge
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.drawscope.clipRect
 import app.n_zik.android.R
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
 import kotlinx.coroutines.withContext

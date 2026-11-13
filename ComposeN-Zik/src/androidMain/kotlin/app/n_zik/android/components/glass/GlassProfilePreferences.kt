@@ -2,8 +2,8 @@ package app.n_zik.android.components.glass
 
 import android.content.Context
 import android.content.SharedPreferences
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.isProfileIdSafe
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.isProfileIdSafe
 import timber.log.Timber
 
 /** Profile-owned Glass files, seeded once from the former global configuration. */

@@ -1,9 +1,9 @@
 package app.n_zik.android.components.dialog.song
 
 import io.ktor.client.call.body
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.models.PlayerResponse
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.models.PlayerResponse
 import kotlinx.coroutines.CancellationException
 import timber.log.Timber
 

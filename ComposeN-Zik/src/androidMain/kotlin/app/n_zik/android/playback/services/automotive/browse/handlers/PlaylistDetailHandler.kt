@@ -7,15 +7,15 @@ import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
 import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.offline.Download
-import app.it.fast4x.rimusic.enums.MaxTopPlaylistItems
-import app.it.fast4x.rimusic.enums.SongSortBy
-import app.it.fast4x.rimusic.enums.SortOrder
-import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsCustomValueKey
-import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsKey
-import app.it.fast4x.rimusic.utils.Preference
-import app.it.fast4x.rimusic.utils.asSong
-import app.it.fast4x.rimusic.utils.getEnum
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.enums.MaxTopPlaylistItems
+import app.n_zik.android.enums.SongSortBy
+import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.utils.MaxTopPlaylistItemsCustomValueKey
+import app.n_zik.android.utils.MaxTopPlaylistItemsKey
+import app.n_zik.android.utils.Preference
+import app.n_zik.android.utils.asSong
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.playback.services.automotive.browse.loadAutoPlaylistSongs
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -25,14 +25,14 @@ import app.n_zik.android.playback.services.automotive.session.AutoSessionConstan
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.automotive.models.AutoSearchState
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.requests.playlistPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.requests.playlistPage
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import app.it.fast4x.rimusic.enums.OnDeviceSongSortBy
+import app.n_zik.android.enums.OnDeviceSongSortBy
 import app.n_zik.android.components.ui.screens.home.onDevice.getProfileLocalSongs
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
+import app.n_zik.android.MODIFIED_PREFIX
 
 class PlaylistDetailHandler : BrowseHandler {
     override fun handles(parentId: String): Boolean {

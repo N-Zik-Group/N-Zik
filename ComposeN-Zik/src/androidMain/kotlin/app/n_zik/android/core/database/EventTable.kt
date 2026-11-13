@@ -9,11 +9,11 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.Event
-import app.it.fast4x.rimusic.models.PlaylistPreview
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Event
+import app.n_zik.android.models.PlaylistPreview
+import app.n_zik.android.models.Song
 import kotlinx.coroutines.flow.Flow
 import app.n_zik.android.core.database.ext.AlbumListeningStat
 import app.n_zik.android.core.database.ext.ArtistListeningStat

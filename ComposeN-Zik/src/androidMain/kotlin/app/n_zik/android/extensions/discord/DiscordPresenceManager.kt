@@ -6,9 +6,9 @@ import app.n_zik.android.core.network.utils.isNetworkAvailable
 import app.n_zik.android.R
 import app.n_zik.android.utils.albumTitleOrDb
 import app.n_zik.android.utils.artistTextOrDb
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.utils.isExplicit
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.utils.isExplicit
+import app.n_zik.android.core.utils.Toaster
 import com.metrolist.music.discordrpc.DiscordRpc
 import com.metrolist.music.discordrpc.DiscordRpcConnection
 import com.metrolist.music.discordrpc.entities.Timestamps

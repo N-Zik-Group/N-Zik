@@ -8,11 +8,11 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
 import android.os.ParcelFileDescriptor
-import app.it.fast4x.rimusic.utils.activeProfileKey
-import app.it.fast4x.rimusic.utils.currentProfileEntries
-import app.it.fast4x.rimusic.utils.writeProfileEntries
-import app.it.fast4x.rimusic.utils.profilePreferences
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.utils.activeProfileKey
+import app.n_zik.android.utils.currentProfileEntries
+import app.n_zik.android.utils.writeProfileEntries
+import app.n_zik.android.utils.profilePreferences
+import app.n_zik.android.models.Song
 import app.n_zik.android.appContext
 import app.n_zik.android.core.profiles.coversDir
 import app.n_zik.android.playback.services.automotive.models.ArtworkBitmapDecoder

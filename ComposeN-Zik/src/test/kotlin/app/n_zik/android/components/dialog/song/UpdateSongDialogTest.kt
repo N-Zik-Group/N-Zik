@@ -1,8 +1,8 @@
 package app.n_zik.android.components.dialog.song
 
-import app.it.fast4x.rimusic.models.Song
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.NavigationEndpoint
+import app.n_zik.android.models.Song
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue

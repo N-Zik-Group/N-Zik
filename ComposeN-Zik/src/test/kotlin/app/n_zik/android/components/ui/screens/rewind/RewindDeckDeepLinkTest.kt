@@ -1,7 +1,7 @@
 package app.n_zik.android.components.ui.screens.rewind
 
 import android.content.Intent
-import app.it.fast4x.rimusic.enums.NavRoutes
+import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.consumeRewindDeckExtras
 import app.n_zik.android.consumeRewindPlaylistExtras
 import app.n_zik.android.core.rewind.RewindPlaylists

@@ -2,7 +2,7 @@ package app.n_zik.android.utils.player
 
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import app.it.fast4x.rimusic.utils.forcePlayAtIndex
+import app.n_zik.android.utils.forcePlayAtIndex
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.SongTable
 import app.n_zik.android.playback.services.upsertSongInfo
@@ -28,7 +28,7 @@ import java.util.concurrent.Executors
 
 /**
  * Issue #606 (VG-1) -- pins the dispatch contract of `Player.forcePlayAtIndex`
- * (`app.it.fast4x.rimusic.utils.Player.kt`) after the G4 migration: the queue conversion +
+ * (`app.n_zik.android.utils.Player.kt`) after the G4 migration: the queue conversion +
  * metadata pre-fetch body must run on `NzikDispatchers.MEDIA` (the `nzik-media` pool, formerly
  * `Dispatchers.Default`), while the playback start (`setMediaItems`/`prepare`) must run on
  * `NzikDispatchers.UI` (Main). A regression toward `Dispatchers.Main` would be caught by

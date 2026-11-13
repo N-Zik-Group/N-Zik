@@ -7,13 +7,13 @@ import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.session.MediaSession
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.SongSortBy
-import app.it.fast4x.rimusic.enums.SortOrder
-import app.it.fast4x.rimusic.models.Format
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.Preference
-import app.it.fast4x.rimusic.utils.maxSongsInQueueAndroidAutoKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.enums.SongSortBy
+import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.models.Format
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.Preference
+import app.n_zik.android.utils.maxSongsInQueueAndroidAutoKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
@@ -34,12 +34,12 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.YtMusic
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.requests.ArtistPage
-import it.fast4x.innertube.requests.ArtistSection
-import it.fast4x.innertube.requests.relatedPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.YtMusic
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.requests.ArtistPage
+import app.n_zik.innertube.requests.ArtistSection
+import app.n_zik.innertube.requests.relatedPage
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -123,7 +123,7 @@ class AutoRealHandlerSelectionTest {
         every { events.findSongsMostPlayedBetween(any(), any(), any()) } returns flowOf(emptyList())
         mockkStatic("app.n_zik.android.components.settings.accounts.AccountsSettingsKt")
         every { isYouTubeLoggedIn() } returns false
-        mockkStatic("it.fast4x.innertube.requests.RelatedPageKt")
+        mockkStatic("app.n_zik.innertube.requests.RelatedPageKt")
         val ids = listOf("related-c", "related-a", "related-b")
         val related = Innertube.RelatedPage(songs = ids.map { id ->
             Innertube.SongItem(

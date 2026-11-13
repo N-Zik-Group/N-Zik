@@ -1,9 +1,5 @@
 성능, UI/UX 개선, 기능 확장 및 장기 지원에 초점을 맞춥니다.
 
-<b>N-Zik</b>은 <a href="https://github.com/knighthat/Kreate">Kreate</a>의 오픈 소스 포크입니다.
-
-<b>참고:</b> N-Zik은 사이드 프로젝트로 시작되었습니다. 더 성숙한 대안은 <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, <a href="https://github.com/fast4x/RiPlay">RiPlay</a>를 확인해 보세요.
-
 <b>AI 사용:</b> 코드 작성을 위해 생성형 AI를 사용합니다(<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>).
 
 ✨ <b>왜 N-ZIK?</b> 광고 없음, 백그라운드 재생, 오프라인 캐싱, 맞춤 설정 가능한 UI - 항상 무료.

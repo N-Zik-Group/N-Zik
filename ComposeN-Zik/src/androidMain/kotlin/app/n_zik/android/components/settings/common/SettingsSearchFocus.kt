@@ -21,7 +21,7 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
+import app.n_zik.android.ui.components.themed.HeaderWithIcon
 
 // Online Search uses 16dp around the bar before its full-width result list.
 internal val SettingsSearchBarPadding = PaddingValues(16.dp)

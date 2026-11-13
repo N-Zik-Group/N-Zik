@@ -2,8 +2,8 @@ package app.n_zik.android.components.import
 
 import android.content.Context
 import android.content.SharedPreferences
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.ytCookieKey
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.ytCookieKey
 import app.n_zik.android.components.ui.screens.profiles.profileSecurePrefs
 import app.n_zik.android.core.migration.RemovedSettingsMigration
 import io.mockk.every

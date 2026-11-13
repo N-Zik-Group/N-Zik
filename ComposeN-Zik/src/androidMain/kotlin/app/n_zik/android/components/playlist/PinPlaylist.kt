@@ -6,11 +6,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
-import app.it.fast4x.rimusic.PINNED_PREFIX
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.DynamicColor
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.PINNED_PREFIX
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
+import app.n_zik.android.ui.components.tab.toolbar.DynamicColor
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 
 class PinPlaylist(
     val playlist: Playlist?,

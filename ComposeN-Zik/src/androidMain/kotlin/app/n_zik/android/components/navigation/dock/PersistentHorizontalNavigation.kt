@@ -28,8 +28,8 @@ import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import app.it.fast4x.rimusic.utils.LANDSCAPE_BARS_ANIMATION_MS
+import app.n_zik.android.enums.NavigationBarPosition
+import app.n_zik.android.utils.LANDSCAPE_BARS_ANIMATION_MS
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.navigation.CommittedNavigationPresentation
 import app.n_zik.android.components.navigation.navigationPresentationInput

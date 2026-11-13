@@ -11,9 +11,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import app.it.fast4x.rimusic.ui.components.themed.FloatingActions
-import app.it.fast4x.rimusic.utils.ScrollingInfo
-import app.it.fast4x.rimusic.utils.smoothScrollToTop
+import app.n_zik.android.ui.components.themed.FloatingActions
+import app.n_zik.android.utils.ScrollingInfo
+import app.n_zik.android.utils.smoothScrollToTop
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 
 /** Uses header visibility instead of item counts because settings cards can exceed a viewport. */

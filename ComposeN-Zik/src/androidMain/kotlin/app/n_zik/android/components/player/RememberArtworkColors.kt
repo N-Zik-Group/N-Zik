@@ -10,9 +10,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.profilePreferences
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.components.theme.DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers

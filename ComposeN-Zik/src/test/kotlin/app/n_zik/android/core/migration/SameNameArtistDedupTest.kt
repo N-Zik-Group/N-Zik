@@ -3,10 +3,10 @@ package app.n_zik.android.core.migration
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.models.SongArtistMap
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Song
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.models.SongArtistMap
 import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.core.maintenance.DedupGroupStatus
 import app.n_zik.android.core.maintenance.DedupSkipReason
@@ -16,11 +16,11 @@ import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.models.Thumbnail
-import it.fast4x.innertube.requests.artistPage
-import it.fast4x.innertube.requests.searchPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.models.Thumbnail
+import app.n_zik.innertube.requests.artistPage
+import app.n_zik.innertube.requests.searchPage
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -1302,8 +1302,8 @@ class SameNameArtistDedupTest {
     )
 
     private fun mockInnertubeStatics() {
-        mockkStatic("it.fast4x.innertube.requests.SearchPageKt")
-        mockkStatic("it.fast4x.innertube.requests.ArtistInfoPageKt")
+        mockkStatic("app.n_zik.innertube.requests.SearchPageKt")
+        mockkStatic("app.n_zik.innertube.requests.ArtistInfoPageKt")
     }
 
     private fun stubSongSearch(page: Result<Innertube.ItemsPage<Innertube.SongItem>?>) {

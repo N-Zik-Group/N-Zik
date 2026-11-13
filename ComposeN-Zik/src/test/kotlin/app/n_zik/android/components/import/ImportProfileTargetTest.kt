@@ -2,7 +2,7 @@ package app.n_zik.android.components.import
 
 import android.content.Context
 import android.content.SharedPreferences
-import app.it.fast4x.rimusic.utils.PROFILE_NAMES_FILE_NAME
+import app.n_zik.android.utils.PROFILE_NAMES_FILE_NAME
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll

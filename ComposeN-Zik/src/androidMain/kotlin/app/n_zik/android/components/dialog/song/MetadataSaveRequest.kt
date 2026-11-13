@@ -1,7 +1,7 @@
 package app.n_zik.android.components.dialog.song
 
 import android.net.Uri
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import java.io.File
 
 /** Immutable identity and metadata captured when the user confirms Save. */

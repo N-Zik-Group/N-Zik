@@ -23,7 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.utils.medium
+import app.n_zik.android.utils.medium
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.ButtonRow
@@ -32,7 +32,7 @@ import app.n_zik.android.components.dialog.common.InteractiveDialog
 import app.n_zik.android.components.import.ProfileTargetOption
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.semiBold
 
 /**
  * The "Import into which profile?" dialog (NZik dialog frame, like [ImportBackupDialog]):

@@ -1,7 +1,7 @@
 package app.n_zik.android.playback.services
 
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.SongArtistMap
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.SongArtistMap
 import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.SongArtistMapTable
@@ -14,10 +14,10 @@ import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.models.Thumbnail
-import it.fast4x.innertube.requests.searchPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.models.Thumbnail
+import app.n_zik.innertube.requests.searchPage
 import kotlin.coroutines.SuspendFunction1
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -56,7 +56,7 @@ class VideoArtistFallbackWriteTest {
             // transaction block is — the synchronous test thread is fine here.
             runBlocking { txBlock.captured(Database) }
         }
-        mockkStatic("it.fast4x.innertube.requests.SearchPageKt")
+        mockkStatic("app.n_zik.innertube.requests.SearchPageKt")
     }
 
     @After

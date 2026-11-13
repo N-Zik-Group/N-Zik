@@ -21,7 +21,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.semiBold
 import kotlin.math.roundToInt
 
 /**

@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.components.ui.screens.home.quickpicks.genericYtmSectionItems
-import it.fast4x.innertube.requests.HomePage
+import app.n_zik.innertube.requests.HomePage
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

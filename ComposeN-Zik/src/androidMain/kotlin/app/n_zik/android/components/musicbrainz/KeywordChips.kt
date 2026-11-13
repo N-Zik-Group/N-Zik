@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassSuggestionChip
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.semiBold
 
 /**
  * Displays genre/tag keywords as suggestion chips.

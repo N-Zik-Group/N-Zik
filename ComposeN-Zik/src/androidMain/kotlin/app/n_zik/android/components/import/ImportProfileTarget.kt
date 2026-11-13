@@ -2,17 +2,17 @@ package app.n_zik.android.components.import
 
 import android.content.Context
 import android.net.Uri
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.currentProfileEntries
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.profileDisplayName
-import app.it.fast4x.rimusic.utils.readProfileIds
-import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
-import app.it.fast4x.rimusic.utils.writeProfileEntries
-import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.currentProfileEntries
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.profileDisplayName
+import app.n_zik.android.utils.readProfileIds
+import app.n_zik.android.utils.resolveProfileDisplayName
+import app.n_zik.android.utils.writeProfileEntries
+import app.n_zik.android.utils.ytCookieExpiredKey
 import app.n_zik.android.MainApplication
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.core.database.Database

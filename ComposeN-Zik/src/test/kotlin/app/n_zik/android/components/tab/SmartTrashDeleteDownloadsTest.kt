@@ -2,7 +2,7 @@ package app.n_zik.android.components.tab
 
 import android.content.Context
 import androidx.media3.datasource.cache.Cache
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.utils.coroutines.NzikDispatchers

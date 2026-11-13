@@ -1,6 +1,6 @@
 package app.n_zik.android.utils
 
-import app.it.fast4x.rimusic.models.Info
+import app.n_zik.android.models.Info
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Test

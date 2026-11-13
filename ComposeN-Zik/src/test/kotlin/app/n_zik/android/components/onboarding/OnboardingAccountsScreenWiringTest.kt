@@ -11,14 +11,14 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.FontType
+import app.n_zik.android.enums.FontType
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.typographyOf
-import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
-import app.it.fast4x.rimusic.utils.encryptedPreferences
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.typographyOf
+import app.n_zik.android.utils.discordPersonalAccessTokenKey
+import app.n_zik.android.utils.encryptedPreferences
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.ytAccountName
@@ -86,7 +86,7 @@ class OnboardingAccountsScreenWiringTest {
         every { secure.getString(any(), any()) } answers {
             if (firstArg<String>() == discordPersonalAccessTokenKey && token.isNotEmpty()) token else null
         }
-        mockkStatic("app.it.fast4x.rimusic.utils.EncryptedPreferencesKt")
+        mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
         every { any<Context>().encryptedPreferences } returns secure
         // The one-shot state readers are appContext-backed (Dependencies is not
         // initialized on the plain test Application)

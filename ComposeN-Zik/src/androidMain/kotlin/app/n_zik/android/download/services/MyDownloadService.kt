@@ -30,8 +30,8 @@ import app.n_zik.android.download.utils.MyDownloadHelper.batchCompleted
 import app.n_zik.android.download.utils.MyDownloadHelper.incrementBatchCompleted
 import app.n_zik.android.download.utils.MyDownloadHelper.resetBatch
 import app.n_zik.android.download.utils.downloadDisplayName
-import app.kreate.android.me.knighthat.utils.Toaster
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
 import app.n_zik.android.playback.exceptions.ExplicitContentException
 import app.n_zik.android.playback.exceptions.LoginRequiredException

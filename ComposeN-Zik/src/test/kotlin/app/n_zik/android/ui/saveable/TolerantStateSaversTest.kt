@@ -1,13 +1,13 @@
 package app.n_zik.android.ui.saveable
 
-import app.it.fast4x.rimusic.enums.FontType
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.BoundedCornerSize
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.PureBlackColorPalette
-import app.it.fast4x.rimusic.ui.styling.Typography
-import app.it.fast4x.rimusic.ui.styling.typographyOf
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.BoundedCornerSize
+import app.n_zik.android.ui.styling.ColorPalette
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.PureBlackColorPalette
+import app.n_zik.android.ui.styling.Typography
+import app.n_zik.android.ui.styling.typographyOf
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.mutableStateOf

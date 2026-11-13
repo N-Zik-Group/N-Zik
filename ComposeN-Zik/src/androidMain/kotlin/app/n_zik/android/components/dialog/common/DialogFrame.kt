@@ -43,8 +43,8 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import app.it.fast4x.rimusic.utils.isLandscape
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.isLandscape
+import app.n_zik.android.utils.semiBold
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography

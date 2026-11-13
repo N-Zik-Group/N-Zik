@@ -3,7 +3,7 @@ package app.n_zik.android.components.player
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.ui.unit.Dp
-import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
+import app.n_zik.android.ui.screens.player.PlayerSheetState
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just

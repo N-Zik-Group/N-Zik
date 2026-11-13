@@ -2,11 +2,11 @@ package app.n_zik.android.playback.services.automotive.browse
 
 import android.content.Context
 import androidx.media3.exoplayer.offline.Download
-import app.it.fast4x.rimusic.enums.PlaylistSongSortBy
-import app.it.fast4x.rimusic.enums.SortOrder
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.getEnum
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.enums.PlaylistSongSortBy
+import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.download.utils.MyDownloadHelper

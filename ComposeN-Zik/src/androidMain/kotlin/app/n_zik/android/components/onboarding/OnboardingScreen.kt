@@ -49,8 +49,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.utils.hasPermission
-import app.it.fast4x.rimusic.utils.isIgnoringBatteryOptimizations
+import app.n_zik.android.utils.hasPermission
+import app.n_zik.android.utils.isIgnoringBatteryOptimizations
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography

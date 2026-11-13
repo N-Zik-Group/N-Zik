@@ -1,0 +1,632 @@
+package app.n_zik.android.ui.screens.player
+
+import app.n_zik.android.components.glass.glassGlobalIndication
+
+import app.n_zik.android.components.glass.queueToolbarBottomInset
+import app.n_zik.android.components.glass.glassQueueListBackdrop
+import app.n_zik.android.components.glass.LocalQueueRowBackdrop
+import app.n_zik.android.components.glass.LocalQueueGlassBackdrop
+import app.n_zik.android.components.glass.GlassFloatingActions
+import app.n_zik.android.components.glass.glassQueueObjectBackdrop
+import app.n_zik.android.components.glass.QueueGlassRowObjects
+import app.n_zik.android.components.glass.rememberQueueRowGlassBackdrop
+import app.n_zik.android.components.glass.glassQueueListBackground
+import app.n_zik.android.components.glass.queueContentBackground
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.GlassScope
+
+import app.n_zik.android.components.search.SearchEmptyFeedback
+import app.n_zik.android.components.search.SearchEmptySpace
+
+
+
+
+import android.annotation.SuppressLint
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.ime
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.ripple
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
+import androidx.glance.layout.Box
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.media3.common.Player
+import androidx.media3.common.Timeline
+import androidx.navigation.NavController
+import app.n_zik.android.R
+import com.valentinilk.shimmer.shimmer
+import app.n_zik.android.compose.persist.persistList
+import app.n_zik.android.compose.persist.persistMap
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
+import app.n_zik.android.LocalPlayerServiceBinder
+import app.n_zik.android.binder
+import app.n_zik.android.colorPalette
+import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.PlaylistStateManager
+import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.enums.QueueLoopType
+import app.n_zik.android.enums.QueueType
+import app.n_zik.android.models.Song
+import app.n_zik.android.playback.services.isLocal
+import app.n_zik.android.ui.components.SwipeableQueueItem
+import app.n_zik.android.ui.components.tab.toolbar.Dialog
+import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScrollToTop
+import app.n_zik.android.ui.components.themed.IconButton
+import app.n_zik.android.ui.components.themed.PlaylistsMenu
+import app.n_zik.android.ui.items.SongItemPlaceholder
+import app.n_zik.android.ui.styling.Dimensions
+import app.n_zik.android.utils.DisposableListener
+import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.autoLoadSongsInQueueKey
+import app.n_zik.android.utils.enqueue
+import app.n_zik.android.utils.isDownloadedSong
+import app.n_zik.android.utils.manageDownload
+import app.n_zik.android.utils.queueTypeKey
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.rememberQueueScrollPositionKey
+import app.n_zik.android.utils.shouldBePlaying
+import app.n_zik.android.utils.showButtonPlayerDiscoverKey
+import app.n_zik.android.utils.windows
+import app.n_zik.android.components.SongItem
+import app.n_zik.android.components.player.rememberPlayerQueueSnapshot
+import app.n_zik.android.components.player.playerQueueBulkSongs
+import app.n_zik.android.components.player.findPlayerQueueWindowIndex
+import app.n_zik.android.LocalDownloadStatesMap
+import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
+import app.n_zik.android.components.tab.ItemSelector
+import app.n_zik.android.components.tab.Locator
+import app.n_zik.android.components.tab.Search
+import app.n_zik.android.enums.DownloadedStateMedia
+import app.n_zik.android.enums.QueueSwipeAction
+import app.n_zik.android.utils.queueSwipeLeftActionKey
+import app.n_zik.android.utils.queueSwipeRightActionKey
+import androidx.compose.runtime.CompositionLocalProvider
+import app.n_zik.android.download.utils.MyDownloadHelper
+import androidx.media3.exoplayer.offline.Download
+import app.n_zik.android.components.ui.screens.player.DeleteFromQueue
+import app.n_zik.android.components.ui.screens.player.Discover
+import app.n_zik.android.listentogether.guestLockedAlpha
+import app.n_zik.android.components.ui.screens.player.QueueArrow
+import app.n_zik.android.components.ui.screens.player.Repeat
+import app.n_zik.android.components.ui.screens.player.ShuffleQueue
+import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import timber.log.Timber
+import app.n_zik.android.themed.n_zik.component.playlist.PositionLock
+import androidx.media3.common.util.UnstableApi
+import androidx.compose.runtime.DisposableEffect
+
+
+@ExperimentalTextApi
+@SuppressLint("SuspiciousIndentation")
+@ExperimentalFoundationApi
+@ExperimentalAnimationApi
+@UnstableApi
+@Composable
+fun Queue(
+    navController: NavController,
+    onDismiss: (QueueLoopType) -> Unit,
+    onDiscoverClick: () -> Unit,
+    onSearchOpened: () -> Unit = {},
+) {
+    // Essentials
+    val context = LocalContext.current
+    val windowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
+    val binder = LocalPlayerServiceBinder.current
+    val player = binder?.player ?: return
+    val coroutineScope = rememberCoroutineScope()
+    val hapticFeedback = LocalHapticFeedback.current
+
+    val rippleIndication = glassGlobalIndication(ripple(bounded = false))
+
+    // Listen Together guest lock (spec-listen-together-guest-lock-hardening): a guest in a
+    // room cannot edit the queue (reorder, remove, play-next swipe, clear) — it is host-owned.
+
+    // `by` delegation so every event-time read gets the latest lock state.
+    val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
+    val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
+
+    Box( Modifier.fillMaxSize() ) {
+        var windowsInQueue by remember {
+            mutableStateOf(player.currentTimeline.windows)
+        }
+        var pendingDragOrder by remember { mutableStateOf<List<Timeline.Window>?>(null) }
+        var isDragging by remember { mutableStateOf(false) }
+        var dragInfo by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+
+        player.DisposableListener {
+            object : Player.Listener {
+                override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+                    if (!isDragging) {
+                        windowsInQueue = timeline.windows
+                    }
+                }
+            }
+        }
+        var itemsOnDisplay by persistList<Song>( "queue/on_display" )
+
+        val rememberQueueScrollPosition by rememberPreference(rememberQueueScrollPositionKey, true)
+        val lazyListState = if (rememberQueueScrollPosition) {
+            remember {
+                context.persistMap?.getOrPut("queue/scroll_state") { LazyListState() } as? LazyListState ?: LazyListState()
+            }
+        } else {
+            rememberLazyListState(initialFirstVisibleItemIndex = binder.player.currentMediaItemIndex.coerceAtLeast(0))
+        }
+
+        val reorderableLazyListState = rememberReorderableLazyListState(
+            lazyListState = lazyListState,
+        ) { from, to ->
+            val fromIndex = windowsInQueue.indexOfFirst { it.uid.toString() == from.key }
+            val toIndex = windowsInQueue.indexOfFirst { it.uid.toString() == to.key }
+
+            // Queue reorder is host-only in a Listen Together room: a locked guest's drag
+            // snaps back instead of reordering
+            if (!listenTogetherGuestLock && fromIndex != -1 && toIndex != -1) {
+                windowsInQueue = windowsInQueue.toMutableList().apply {
+                    val currentDragInfo = dragInfo
+                    dragInfo = if (currentDragInfo == null)
+                        fromIndex to toIndex
+                    else currentDragInfo.first to toIndex
+
+                    val item = removeAt(fromIndex)
+                    add(toIndex, item)
+                }
+                pendingDragOrder = windowsInQueue
+            }
+        }
+
+        LaunchedEffect(reorderableLazyListState.isAnyItemDragging) {
+            if (reorderableLazyListState.isAnyItemDragging) {
+                isDragging = true
+            } else {
+                dragInfo?.let { (from, to) ->
+                    // Queue reorder is host-only in a Listen Together room
+                    if (!listenTogetherGuestLock) player.moveMediaItem(from, to)
+                    dragInfo = null
+                }
+                isDragging = false
+            }
+        }
+
+        val positionLock = remember { PositionLock() }
+
+        val itemSelector = ItemSelector<Song>()
+        LaunchedEffect( itemSelector.isActive ) {
+            // Setting this field to true means disable it
+            if( itemSelector.isActive )
+                positionLock.isFirstIcon = true
+        }
+
+        // Guest lock (spec-listen-together-guest-lock-hardening): while a guest is locked the
+        // reorder lock ("cadena") stays forced-on — the guest cannot unlock it to
+
+        // reorder the shared queue. The button itself is grayed + disabled by
+        // PositionLock.isEnabled.
+
+        // When the lock clears (guest leaves the room), the guest's previous setting is restored
+        // (review finding: the forced-on was never rolled back).
+        var preLockReorderLock by remember { mutableStateOf<Boolean?>(null) }
+        LaunchedEffect( listenTogetherGuestLock ) {
+            if ( listenTogetherGuestLock ) {
+                if ( preLockReorderLock == null ) preLockReorderLock = positionLock.isFirstIcon
+                positionLock.isFirstIcon = true
+            } else {
+                preLockReorderLock?.let { previous ->
+                    positionLock.isFirstIcon = previous
+                    preLockReorderLock = null
+                }
+            }
+        }
+
+        val search = Search(lazyListState)
+        LaunchedEffect(search.isVisible) {
+            if (search.isVisible) onSearchOpened()
+        }
+        val queueSnapshot = rememberPlayerQueueSnapshot(windowsInQueue, search.inputValue)
+        // Drag order must update synchronously; all metadata conversion/search stays on MEDIA.
+        val rowsOnDisplay = if ((isDragging || pendingDragOrder === windowsInQueue) && search.inputValue.isEmpty()) {
+            remember(windowsInQueue, queueSnapshot) {
+                windowsInQueue.mapNotNull { queueSnapshot.rowsByUid[it.uid] }
+            }
+        } else queueSnapshot.rows
+        val queueSearchPending = queueSnapshot.source !== windowsInQueue ||
+            queueSnapshot.input != search.inputValue
+        fun getSongs() = playerQueueBulkSongs(queueSnapshot, windowsInQueue, itemSelector.toList())
+        fun currentQueueIndex(uid: Any): Int = findPlayerQueueWindowIndex(player.currentTimeline, uid)
+
+        LaunchedEffect(queueSnapshot) {
+            itemsOnDisplay = queueSnapshot.songs
+        }
+
+        val plistName = remember { mutableStateOf("") }
+        val exportDialog = ExportSongsToCSVDialog(
+            playlistName = plistName.value,
+            songs = ::getSongs
+        )
+        val shuffle = ShuffleQueue( player, lazyListState, coroutineScope, itemSelector )
+        val isAutoFillEnabled by rememberPreference(autoLoadSongsInQueueKey, true)
+        val isDiscoverClickable = binder.service.nzikRadio.isRadioActive || isAutoFillEnabled
+        val discover = Discover( isDiscoverClickable, onDiscoverClick )
+        // Full offline mode (spec-full-offline-mode): network queue actions removed
+        val offlineMode by OfflineMode.rememberEnabled()
+        val repeat = Repeat.init()
+        val deleteDialog = DeleteFromQueue( itemSelector ) {
+            // Deleting from the queue (including "clear all") is host-only in a Listen
+            // Together room: a locked guest's confirmation is a no-op
+            if (!listenTogetherGuestLock) {
+                try {
+                    if( itemSelector.isEmpty() ) {
+                        player.stop()
+                        player.clearMediaItems()
+                        Toaster.s( R.string.common_delete_success )
+                    } else {
+                        val count = itemSelector.size
+                        val selectedIds = itemSelector.map { it.id }.toSet()
+                        // Remove from end to avoid index shift
+                        (player.mediaItemCount - 1 downTo 0)
+                            .filter { player.getMediaItemAt(it).mediaId in selectedIds }
+                            .forEach( player::removeMediaItem )
+                        Toaster.s( R.string.player_queue_deleted_item_format, formatArgs = *arrayOf( "$count" ) )
+                    }
+                } catch( e: Exception ) {
+                    Timber.tag( "Queue" ).e( e, "Failed to delete from queue" )
+                }
+            }
+
+            itemSelector.isActive = false
+
+            onDismiss()
+        }
+        val addToPlaylist = PlaylistsMenu.init(
+            navController = navController,
+            mediaItems = { getSongs().map( Song::asMediaItem ) },
+            onFailure = { throwable, preview ->
+                Timber.tag("Queue").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
+            },
+            finalAction = {
+                // Turn of selector clears the selected list
+                itemSelector.isActive = false
+            }
+        )
+        val queueArrow = QueueArrow { onDismiss( repeat.type ) }
+        val locator = Locator( lazyListState, ::getSongs )
+
+        val downloadAllDialog = app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog(::getSongs)
+        val deleteAllDownloadedDialog = app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog(::getSongs)
+
+        // Dialog renders
+        exportDialog.Render()
+        (deleteDialog as Dialog).Render()
+        (downloadAllDialog as Dialog).Render()
+        (deleteAllDownloadedDialog as Dialog).Render()
+
+        val showDiscover = rememberPreference( showButtonPlayerDiscoverKey, false ).value
+        val buttonsList = buildList {
+            add( locator )
+            add( search )
+            if( showDiscover && !offlineMode )
+                add( discover )
+            if ( !offlineMode ) add( downloadAllDialog )
+            add( deleteAllDownloadedDialog )
+            add( positionLock )
+            add( repeat )
+            add( shuffle )
+            add( itemSelector )
+            add( deleteDialog )
+            add( addToPlaylist )
+            add( exportDialog )
+        }
+
+        QueueToolBarState.mediaItemCount = player.mediaItemCount
+        QueueToolBarState.buttons = buttonsList
+        QueueToolBarState.queueArrow = queueArrow
+        QueueToolBarState.onBarClick = { onDismiss( repeat.type ) }
+        QueueToolBarState.isVisible = if (search.isVisible) 1 else 0
+
+        DisposableEffect( Unit ) {
+            onDispose { QueueToolBarState.reset() }
+        }
+
+        Box(Modifier.fillMaxSize()) {
+            val queueType by rememberPreference( queueTypeKey, QueueType.Modern )
+            val backgroundAlpha = if( queueType == QueueType.Modern ) .5f else 1f
+            val queueGlassSettings = rememberGlassSettings(GlassScope.Queue)
+            val itemBackground = queueContentBackground(
+                if (queueType == QueueType.Modern) androidx.compose.ui.graphics.Color.Transparent else colorPalette().background0,
+                queueGlassSettings,
+            )
+            val queueBackground = colorPalette().background0.copy(alpha = backgroundAlpha)
+
+            val queueSongIds = queueSnapshot.songIds
+            val likeStatesMap by remember(queueSongIds) {
+                LikeStateManager.getLikeStates(queueSongIds)
+            }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+            val playlistStatesMap by remember(queueSongIds) {
+                PlaylistStateManager.getPlaylistStates(queueSongIds)
+            }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+
+            val queueSongs = queueSnapshot.songs
+
+            // Hoisted swipe action preferences
+            val queueSwipeLeftAction by rememberPreference(queueSwipeLeftActionKey, QueueSwipeAction.RemoveFromQueue)
+            val queueSwipeRightAction by rememberPreference(queueSwipeRightActionKey, QueueSwipeAction.PlayNext)
+
+            val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
+            val downloadedIds by remember {
+                derivedStateOf {
+                    downloadsMapState.values
+                        .filter { it.state == Download.STATE_COMPLETED }
+                        .mapTo(HashSet()) { it.request.id }
+                }
+            }
+            val downloadStatesMap by remember(queueSongs) {
+                derivedStateOf {
+                    queueSongs.associate { song ->
+                        song.id to if (song.id in downloadedIds) DownloadedStateMedia.DOWNLOADED else DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
+                    }
+                }
+            }
+
+            SearchEmptyFeedback(search.inputValue, rowsOnDisplay.isEmpty(), loading = queueSearchPending)
+            CompositionLocalProvider(
+                LocalDownloadStatesMap provides downloadStatesMap,
+                LocalQueueRowBackdrop provides rememberQueueRowGlassBackdrop(queueBackground, queueGlassSettings),
+            ) {
+            LazyColumn(
+                state = lazyListState,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                contentPadding = WindowInsets(bottom = Dimensions.bottomSpacer + queueToolbarBottomInset()).asPaddingValues(),
+                modifier = Modifier.fillMaxSize()
+                                   .glassQueueListBackdrop(lazyListState)
+                                   .glassQueueListBackground(queueBackground, queueGlassSettings)
+
+            ) {
+                if (search.inputValue.isNotBlank() && !queueSearchPending && rowsOnDisplay.isEmpty()) {
+                    item(key = "search_no_results") {
+                        SearchEmptySpace(Modifier.fillParentMaxSize())
+                    }
+                }
+                itemsIndexed(
+                    items = rowsOnDisplay,
+                    key = { _, row -> row.window.uid.toString() }
+                ) { displayIndex, row ->
+                    val window = row.window
+                    val song = row.song
+
+                    val isLocal by remember(song) { derivedStateOf { song.isLocal } }
+                    val isDownloaded = isLocal || isDownloadedSong(song.id)
+
+                    val isLiked = likeStatesMap[song.id]
+                    val inPlaylist = playlistStatesMap[song.id]
+
+                    ReorderableItem(
+                        reorderableLazyListState,
+                        key = window.uid.toString()
+                    ) { isDraggingItem ->
+                        QueueGlassRowObjects(displayIndex, isDraggingItem) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth()
+                                               .animateItem()
+                        ) {
+                            // Drag anchor
+                            if ( !positionLock.isLocked() && search.inputValue.isEmpty() ) {
+                                Box(
+                                    modifier = Modifier.padding( end = 16.dp ) // Accommodate horizontal padding of SongItem
+                                        .size( 24.dp )
+                                        .zIndex( 2f )
+                                        .align( Alignment.CenterEnd )
+                                        .draggableHandle(
+                                            onDragStarted = {
+                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            },
+                                            onDragStopped = {
+                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            }
+                                        )
+                                        // Capture only this passive sibling, including its native guest opacity.
+                                        .glassQueueObjectBackdrop(isDraggingItem to guestLockAlpha)
+                                        // Reorder handle is visibly disabled for a locked guest
+                                        .alpha( guestLockAlpha ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+
+                                    IconButton(
+                                        icon = R.drawable.reorder,
+                                        color = if (isDraggingItem) colorPalette().accent else colorPalette().textDisabled,
+                                        indication = rippleIndication,
+                                        onClick = {},
+                                    )
+                                }
+                            }
+
+                            val mediaItem = song.asMediaItem
+                            SwipeableQueueItem(
+                                mediaItem = mediaItem,
+                                backgroundColor = itemBackground,
+                                skipLikeQuery = true,
+                                downloadStateParam = downloadsMapState[song.id]?.state ?: Download.STATE_STOPPED,
+                                downloadedStateMediaParam = downloadStatesMap[song.id] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
+                                swipeLeftActionParam = queueSwipeLeftAction,
+                                swipeRightActionParam = queueSwipeRightAction,
+                                onPlayNext = {
+                                    // "Play next" swipes reorder the queue: host-only in a
+                                    // Listen Together room
+                                    val index = currentQueueIndex(window.uid)
+                                    if (!listenTogetherGuestLock && index >= 0) {
+                                        val currentIndex = binder.player.currentMediaItemIndex
+                                        val targetIndex = currentIndex + 1
+                                        // if the song is already after the current, do nothing
+                                        if (index > currentIndex) {
+                                             // Only move if not already in the next position
+                                             if (index != targetIndex) {
+                                                binder.player.moveMediaItem(index, targetIndex)
+                                            }
+                                        } else {
+                                            // If it's before or in the current position, move it to the next
+                                            binder.player.moveMediaItem(index, targetIndex)
+                                        }
+                                    }
+                                },
+                                onDownload = {
+                                    binder.cache.removeResource(song.id)
+                                    if (!isLocal)
+                                        manageDownload(
+                                            context = context,
+                                            mediaItem = mediaItem,
+                                            downloadState = isDownloaded
+                                        )
+                                },
+                                onRemoveFromQueue = {
+                                    /*
+                                         Compose gotcha here, variables passed into this
+                                         block will be held through recomposition.
+
+                                         Meaning, if index at initialization is 0
+                                         then 0 will stay here through recomposition.
+
+                                         To bypass it, pass another function that requires
+                                         computation to extract data.
+                                     */
+                                    // Removing from the queue is host-only in a Listen Together room
+                                    if (!listenTogetherGuestLock) {
+                                        val actualIndex = currentQueueIndex(window.uid)
+                                        if (actualIndex >= 0 && actualIndex < player.mediaItemCount) {
+                                            try {
+                                                player.removeMediaItem( actualIndex )
+                                                Toaster.s(
+                                                    context.resources.getString(R.string.player_queue_deleted_item_format, song.cleanTitle())
+                                                )
+                                            } catch (e: IllegalArgumentException) {
+                                                // Media item may have already been removed or index is invalid
+                                                Timber.tag("Queue").e(e, "Failed to remove media item at index $actualIndex")
+                                            }
+                                        }
+                                    }
+                                },
+                                onEnqueue = {
+                                    // Enqueue swipes modify the host-owned queue: host-only
+                                    // in a Listen Together room
+                                    if (!listenTogetherGuestLock) {
+                                        binder.player.enqueue(
+                                            mediaItem,
+                                            context
+                                        )
+                                    }
+                                }
+                            ) {
+                                SongItem(
+                                    song = song,
+                                    navController = navController,
+                                    itemSelector = itemSelector,
+                                    isLiked = isLiked,
+                                    inPlaylist = inPlaylist,
+                                    backgroundColor = itemBackground,
+                                    onLongClick = null, // null triggers SongItemMenu on long press
+                                    trailingContent = {
+                                        if( !positionLock.isLocked() )
+                                        // Create a fake box to store drag anchor and checkbox
+                                            Box( Modifier.width( 24.dp ) )
+                                    },
+                                    onClick = {
+                                        val index = currentQueueIndex(window.uid)
+                                        if (index < 0) return@SongItem
+                                        if (player.currentMediaItemIndex == index) {
+                                            if(player.shouldBePlaying)
+                                                player.pause()
+                                            else
+                                                player.play()
+                                        } else {
+                                            player.seekToDefaultPosition(index)
+                                            player.prepare()
+                                            player.playWhenReady = true
+                                        }
+
+                                        /*
+                                            Due to the small size of checkboxes,
+                                            we shouldn't disable [itemSelector]
+                                         */
+
+                                        search.hideIfEmpty()
+                                    }
+                                )
+                            }
+                        }
+                        }
+                    }
+                }
+
+                if( binder.isLoadingRadio ) {
+                    item {
+                        Column( Modifier.shimmer() ) {
+                            repeat(3) { index ->
+                                SongItemPlaceholder( Modifier.alpha( 1f - index * 0.125f ) )
+                            }
+                        }
+                    }
+                }
+            }
+            }
+
+            // Search overlays the queue: opening the keyboard must not resize the list.
+            // The toolbar overlaps the panel's bottom only while the keyboard is closed.
+            val keyboardOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+            Column(
+                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+                    .padding(bottom = if (search.isVisible && !keyboardOpen) 60.dp + queueToolbarBottomInset() else 0.dp)
+                    .imePadding(),
+            ) { search.SearchBar(this) }
+        }
+
+        GlassFloatingActions(LocalQueueGlassBackdrop.current) {
+            FloatingActionsContainerWithScrollToTop(
+                lazyListState = lazyListState,
+                modifier = Modifier.padding(bottom = Dimensions.miniPlayerHeight)
+            )
+        }
+    }
+}
+
+
+
+
+
+
+
+

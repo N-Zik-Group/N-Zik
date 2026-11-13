@@ -3,7 +3,7 @@ package app.n_zik.android.components.player.lyrics
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
-import app.it.fast4x.rimusic.utils.textCopyToClipboard
+import app.n_zik.android.utils.textCopyToClipboard
 
 /**
  * Copies [text] to the clipboard exactly once per tap.

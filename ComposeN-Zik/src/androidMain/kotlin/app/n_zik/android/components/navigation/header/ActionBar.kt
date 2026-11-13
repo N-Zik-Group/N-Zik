@@ -48,9 +48,9 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.navigation.shouldShowSearchShortcut
-import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.extensions.pip.isPipSupported
-import app.it.fast4x.rimusic.extensions.pip.rememberPipHandler
+import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.extensions.pip.isPipSupported
+import app.n_zik.android.extensions.pip.rememberPipHandler
 import app.n_zik.android.components.menu.DropdownMenu
 import app.n_zik.android.components.glass.GlassActionGroup
 import app.n_zik.android.components.glass.GlassVerticalActionGroup
@@ -62,9 +62,9 @@ import androidx.compose.ui.res.painterResource
 import app.n_zik.android.components.glass.GlassMenuTriggerState
 import app.n_zik.android.components.glass.glassMenuTrigger
 import app.n_zik.android.components.glass.rememberGlassSettings
-import app.it.fast4x.rimusic.utils.enablePictureInPictureKey
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.enablePictureInPictureKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.core.network.fullOfflineModeKey
 import app.n_zik.android.shortcuts.ACTION_RESCUE
 import app.n_zik.android.utils.DataStoreUtils

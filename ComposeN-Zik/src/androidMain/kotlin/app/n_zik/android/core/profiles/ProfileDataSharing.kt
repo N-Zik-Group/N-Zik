@@ -2,9 +2,9 @@ package app.n_zik.android.core.profiles
 
 import android.content.Context
 import androidx.core.content.edit
-import app.it.fast4x.rimusic.utils.profilePreferences
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.readProfileIds
+import app.n_zik.android.utils.profilePreferences
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.readProfileIds
 import timber.log.Timber
 
 /**

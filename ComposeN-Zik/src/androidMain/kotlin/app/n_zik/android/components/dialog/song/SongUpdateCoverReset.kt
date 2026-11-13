@@ -4,8 +4,8 @@ import java.io.File
 import java.io.IOException
 import android.content.Context
 import android.net.Uri
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.components.image.OWNED_COVER_EXTENSION_PATTERN
 import app.n_zik.android.core.profiles.coversDir

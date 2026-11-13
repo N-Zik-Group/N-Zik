@@ -2,14 +2,14 @@ package app.n_zik.android.components.theme
 
 import android.content.SharedPreferences
 import androidx.compose.ui.graphics.Color
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
-import app.it.fast4x.rimusic.enums.ColorPaletteName
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
-import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
-import app.it.fast4x.rimusic.utils.colorPaletteModeKey
-import app.it.fast4x.rimusic.utils.colorPaletteNameKey
-import app.it.fast4x.rimusic.utils.getEnum
+import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.enums.ColorPaletteName
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.ColorPalette
+import app.n_zik.android.ui.styling.dynamicColorPaletteOf
+import app.n_zik.android.utils.colorPaletteModeKey
+import app.n_zik.android.utils.colorPaletteNameKey
+import app.n_zik.android.utils.getEnum
 import app.n_zik.android.components.player.ArtworkColorSnapshot
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException

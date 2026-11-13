@@ -8,10 +8,10 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Icon
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.RectShape
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.PROFILE_NAMES_FILE_NAME
-import app.it.fast4x.rimusic.utils.currentProfileEntries
-import app.it.fast4x.rimusic.utils.saveProfileDisplayName
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.PROFILE_NAMES_FILE_NAME
+import app.n_zik.android.utils.currentProfileEntries
+import app.n_zik.android.utils.saveProfileDisplayName
 import app.n_zik.android.MainActivity
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.settings.AppShortcutsSettingsDialog
@@ -87,7 +87,7 @@ class ShortcutIconSyncTest {
 
         assertEquals(R.string.profile_title, labelRes)
         assertEquals(R.drawable.shortcut_profiles, drawableRes)
-        assertEquals("app.it.fast4x.rimusic.action.profiles", action)
+        assertEquals("app.n_zik.android.action.profiles", action)
     }
 
     @Test
@@ -271,7 +271,7 @@ class ShortcutIconSyncTest {
         val context = mockk<Context> {
             every { getSharedPreferences("preferences", Context.MODE_PRIVATE) } returns prefsWithWrongType()
         }
-        mockkStatic("app.it.fast4x.rimusic.utils.ProfilePreferencesKt")
+        mockkStatic("app.n_zik.android.utils.ProfilePreferencesKt")
         every { context.currentProfileEntries() } returns emptyList()
 
         assertEquals(

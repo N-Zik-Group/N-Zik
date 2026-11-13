@@ -1,7 +1,7 @@
 package app.n_zik.android.components.dialog.song
 
 import android.net.Uri
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import io.mockk.mockk
 import java.nio.file.Files
 import org.junit.jupiter.api.Assertions.assertFalse

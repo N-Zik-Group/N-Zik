@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.R
 import app.n_zik.android.core.network.fullOfflineModeKey
 

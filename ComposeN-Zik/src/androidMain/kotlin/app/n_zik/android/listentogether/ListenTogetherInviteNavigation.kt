@@ -1,7 +1,7 @@
 package app.n_zik.android.listentogether
 
 import androidx.navigation.NavController
-import app.it.fast4x.rimusic.enums.NavRoutes
+import app.n_zik.android.enums.NavRoutes
 
 /** Opens the room screen and delivers an invitation to its existing saved-state handle. */
 internal fun openListenTogetherInvite(navController: NavController, roomCode: String) {

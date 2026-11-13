@@ -2,10 +2,10 @@ package app.n_zik.android.core.settings
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import app.it.fast4x.rimusic.utils.closeWithBackButtonKey
-import app.it.fast4x.rimusic.utils.effectRotationKey
-import app.it.fast4x.rimusic.utils.showButtonPlayerVideoKey
-import app.it.fast4x.rimusic.utils.thumbnailSizeDpKey
+import app.n_zik.android.utils.closeWithBackButtonKey
+import app.n_zik.android.utils.effectRotationKey
+import app.n_zik.android.utils.showButtonPlayerVideoKey
+import app.n_zik.android.utils.thumbnailSizeDpKey
 
 /** Shared by startup, Appearance/Interface resets and modern artwork readers. */
 internal const val DEFAULT_THUMBNAIL_SIZE_DP = 90f

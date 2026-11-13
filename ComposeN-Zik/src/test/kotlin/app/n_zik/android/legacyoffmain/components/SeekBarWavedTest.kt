@@ -1,7 +1,7 @@
 package app.n_zik.android.legacyoffmain.components
 
-import app.it.fast4x.rimusic.ui.components.WAVE_PATH_STEP_PX
-import app.it.fast4x.rimusic.ui.components.waveSampleXs
+import app.n_zik.android.ui.components.WAVE_PATH_STEP_PX
+import app.n_zik.android.ui.components.waveSampleXs
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
  * `android.graphics.Path`, unavailable outside Robolectric/instrumentation.
  *
  * This test file itself lives under `app.n_zik.android.*` -- not the legacy package -- per
- * the gh-606 spec's "no new file under app.it.fast4x.rimusic.*" boundary; `internal`
+ * the gh-606 spec's "no new file under app.n_zik.android.*" boundary; `internal`
  * visibility is module-scoped in Kotlin, not package-scoped, so it still resolves
  * [waveSampleXs]/[WAVE_PATH_STEP_PX] from here without needing to share their package
  * (same convention as `VideoOrSongInfoScreenLoadOffMainTest`/`GoToLinkResolveOffMainTest`, Lot 2).

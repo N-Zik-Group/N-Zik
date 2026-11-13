@@ -15,10 +15,10 @@ import android.os.ParcelFileDescriptor
 import androidx.media3.common.MediaItem
 import androidx.media3.session.MediaSession
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.models.QueuedMediaItem
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.persistentQueueKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.models.QueuedMediaItem
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.persistentQueueKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Converters
 import app.n_zik.android.core.database.Database

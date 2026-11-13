@@ -1,9 +1,9 @@
 package app.n_zik.android.components.navigation
 
 import androidx.compose.runtime.Composable
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import app.it.fast4x.rimusic.utils.LandscapeBarsToggleButton
-import app.it.fast4x.rimusic.utils.landscapeBarsToggleButton
+import app.n_zik.android.enums.NavigationBarPosition
+import app.n_zik.android.utils.LandscapeBarsToggleButton
+import app.n_zik.android.utils.landscapeBarsToggleButton
 
 /** A side rail remains visible in landscape, so it never needs a reveal control. */
 @Composable

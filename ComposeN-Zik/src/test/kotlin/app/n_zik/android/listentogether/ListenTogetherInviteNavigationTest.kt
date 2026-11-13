@@ -9,7 +9,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import app.it.fast4x.rimusic.enums.NavRoutes
+import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.components.ui.screens.listentogether.consumeInvitation
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

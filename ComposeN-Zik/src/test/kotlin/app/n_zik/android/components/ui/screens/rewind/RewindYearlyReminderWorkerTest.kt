@@ -1,6 +1,6 @@
 package app.n_zik.android.components.ui.screens.rewind
 
-import app.it.fast4x.rimusic.utils.writeProfileEntries
+import app.n_zik.android.utils.writeProfileEntries
 import app.n_zik.android.core.profiles.ProfileWorkOwner
 import io.mockk.every
 import android.Manifest
@@ -10,7 +10,7 @@ import android.content.Context
 import androidx.core.app.NotificationCompat
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.MainActivity
 import app.n_zik.android.R
 import app.n_zik.android.core.notifications.channelId

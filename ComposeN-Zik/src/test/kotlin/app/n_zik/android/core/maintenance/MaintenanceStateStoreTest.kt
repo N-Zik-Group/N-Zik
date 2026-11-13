@@ -5,7 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.core.migration.ConvergenceSummary
 import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.core.profiles.invalidateProfileStorageIdentity
-import app.it.fast4x.rimusic.utils.writeProfileEntries
+import app.n_zik.android.utils.writeProfileEntries
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue

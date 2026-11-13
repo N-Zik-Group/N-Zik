@@ -4,9 +4,9 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.setActiveProfile
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
@@ -48,7 +48,7 @@ class AccountsDefaultsTest {
         setActiveProfile("accounts-test", context)
         context.preferences.edit().clear().commit()
         secure.edit().clear().commit()
-        mockkStatic("app.it.fast4x.rimusic.utils.EncryptedPreferencesKt")
+        mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
         every { any<Context>().encryptedPreferences } returns secure
     }
 

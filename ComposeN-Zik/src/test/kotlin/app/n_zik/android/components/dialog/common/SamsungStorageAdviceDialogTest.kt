@@ -1,6 +1,6 @@
 package app.n_zik.android.components.dialog.common
 
-import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
+import app.n_zik.android.enums.ExoPlayerCacheLocation
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

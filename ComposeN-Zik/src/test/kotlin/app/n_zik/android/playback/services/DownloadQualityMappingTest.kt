@@ -1,6 +1,6 @@
 package app.n_zik.android.playback.services
 
-import app.it.fast4x.rimusic.enums.AudioQualityFormat
+import app.n_zik.android.enums.AudioQualityFormat
 import app.n_zik.android.enums.DownloadQualityFormat
 import com.metrolist.innertubex.extraction.AudioQuality as InnerTubeXAudioQuality
 import org.junit.jupiter.api.Assertions.assertEquals

@@ -1,7 +1,7 @@
 package app.n_zik.android.components.ui.screens.home
 
-import app.it.fast4x.rimusic.EXPLICIT_PREFIX
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.models.Song
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive

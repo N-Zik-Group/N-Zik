@@ -49,10 +49,10 @@ import app.n_zik.android.components.glass.GlassFloatingActions
 import app.n_zik.android.components.glass.glassFloatingActionContent
 import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
 import app.n_zik.android.components.pullrefresh.rememberPullRefreshOverlayInsetProvider
-import app.it.fast4x.rimusic.ui.styling.Dimensions
-import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.ui.styling.Dimensions
+import app.n_zik.android.utils.pauseSearchHistoryKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.search.SearchHistorySection
@@ -64,7 +64,7 @@ import app.n_zik.android.components.settings.accounts.AccountsSettingsContent
 import app.n_zik.android.components.settings.ai.AIRecommendationSettingsContent
 import app.n_zik.android.components.settings.appearance.AppearanceSettingsContent
 import app.n_zik.android.components.settings.data.DataSettingsContent
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.utils.coroutines.NzikDispatchers

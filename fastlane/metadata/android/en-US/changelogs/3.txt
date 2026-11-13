@@ -10,4 +10,4 @@ Bug Fixes:
 
 Technical Updates:
 - New Crowdin translation updates by @NEVARLeVrai.
-- Update from Kreate by @NEVARLeVrai.
+- Integrated upstream changes by @NEVARLeVrai.

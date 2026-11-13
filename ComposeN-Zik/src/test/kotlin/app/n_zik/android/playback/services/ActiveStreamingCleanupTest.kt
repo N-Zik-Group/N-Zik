@@ -6,7 +6,7 @@ import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.core.profiles.mediaCacheDir

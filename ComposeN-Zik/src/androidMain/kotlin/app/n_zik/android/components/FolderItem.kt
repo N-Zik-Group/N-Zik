@@ -22,7 +22,7 @@ import androidx.compose.ui.graphics.Color
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.ui.styling.Dimensions
+import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.uiRoundnessShape
 
 @Composable

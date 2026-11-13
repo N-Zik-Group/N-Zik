@@ -12,10 +12,10 @@ import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.core.notifications.channelId
 import app.n_zik.android.MainActivity
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.PlaylistPreview
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.PlaylistPreview
 
 object HomeSyncState {
     var isSyncingArtists by mutableStateOf(false)

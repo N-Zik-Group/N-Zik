@@ -17,9 +17,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import app.it.fast4x.rimusic.enums.Languages
-import app.it.fast4x.rimusic.utils.languageAppKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.enums.Languages
+import app.n_zik.android.utils.languageAppKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.utils.appLanguageForLocales

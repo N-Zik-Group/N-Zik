@@ -2,7 +2,7 @@ package app.n_zik.android.core.profiles
 
 import android.content.Context
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
 import app.n_zik.android.core.rescue.ProfileResetSnapshot
 import java.io.File
 import java.util.UUID

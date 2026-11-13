@@ -16,8 +16,8 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDeepLink
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import app.it.fast4x.rimusic.ui.styling.Dimensions
+import app.n_zik.android.enums.NavigationBarPosition
+import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.components.glass.LocalGlassScope
 import app.n_zik.android.components.glass.glassScopeForRoute

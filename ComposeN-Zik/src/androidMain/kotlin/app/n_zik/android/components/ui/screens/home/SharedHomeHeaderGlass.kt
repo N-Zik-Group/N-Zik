@@ -24,7 +24,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
+import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.core.navigation.navigationChromeTween
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassScreenEdge

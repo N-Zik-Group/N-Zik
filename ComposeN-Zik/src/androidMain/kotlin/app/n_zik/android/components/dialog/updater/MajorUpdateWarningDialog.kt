@@ -27,7 +27,7 @@ import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.semiBold
 import app.n_zik.android.BuildConfig
 
 /** Major update warning, on the shared [DialogFrame]: alert header, message and a single confirm [ButtonRow] pill. */

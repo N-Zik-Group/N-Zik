@@ -2,7 +2,7 @@ package app.n_zik.android.playback.services
 
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.LOCAL_KEY_PREFIX
+import app.n_zik.android.LOCAL_KEY_PREFIX
 import app.n_zik.android.playback.exceptions.StreamResolutionOfflineException
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

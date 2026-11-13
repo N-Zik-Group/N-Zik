@@ -3,11 +3,11 @@ package app.n_zik.android.core.profiles
 import android.content.Context
 import android.os.Build
 import android.system.Os
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.isProfileIdSafe
-import app.it.fast4x.rimusic.utils.readProfileIds
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.isProfileIdSafe
+import app.n_zik.android.utils.readProfileIds
+import app.n_zik.android.utils.setActiveProfile
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Files

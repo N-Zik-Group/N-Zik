@@ -10,8 +10,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.utils.asSong
-import app.it.fast4x.rimusic.utils.durationTextToMillis
+import app.n_zik.android.utils.asSong
+import app.n_zik.android.utils.durationTextToMillis
 import io.mockk.every
 import io.mockk.mockk
 import java.util.concurrent.CountDownLatch

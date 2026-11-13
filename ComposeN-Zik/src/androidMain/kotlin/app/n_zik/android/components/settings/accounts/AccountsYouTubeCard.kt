@@ -33,48 +33,48 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.media3.common.util.UnstableApi
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.utils.parseCookieString
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.utils.parseCookieString
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
-import app.it.fast4x.rimusic.utils.autosyncAlbumsKey
-import app.it.fast4x.rimusic.utils.autosyncArtistsKey
-import app.it.fast4x.rimusic.utils.autosyncLikesKey
-import app.it.fast4x.rimusic.utils.autosyncPlaylistsKey
-import app.it.fast4x.rimusic.utils.clearAllSyncedData
-import app.it.fast4x.rimusic.utils.enableYouTubeLoginKey
-import app.it.fast4x.rimusic.utils.enableYouTubeSyncKey
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.quickPicsDiscoverPageKey
-import app.it.fast4x.rimusic.utils.quickPicsHomePageKey
-import app.it.fast4x.rimusic.utils.quickPicsYtmQuickPicksKey
-import app.it.fast4x.rimusic.utils.rememberEncryptedPreference
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.streamClientRestartNeededKey
-import app.it.fast4x.rimusic.utils.syncImportEpisodesKey
-import app.it.fast4x.rimusic.utils.syncImportHistoryKey
-import app.it.fast4x.rimusic.utils.syncImportLibrarySongsKey
-import app.it.fast4x.rimusic.utils.syncImportUploadedAlbumsKey
-import app.it.fast4x.rimusic.utils.syncImportUploadedSongsKey
-import app.it.fast4x.rimusic.utils.syncPushAlbumBookmarkKey
-import app.it.fast4x.rimusic.utils.syncPushArtistFollowKey
-import app.it.fast4x.rimusic.utils.syncPushEpisodeKey
-import app.it.fast4x.rimusic.utils.syncPushHistoryKey
-import app.it.fast4x.rimusic.utils.syncPushPlaylistKey
-import app.it.fast4x.rimusic.utils.syncPushSongLikeKey
-import app.it.fast4x.rimusic.utils.useLoginForBrowseKey
-import app.it.fast4x.rimusic.utils.ytAccountChannelHandleKey
-import app.it.fast4x.rimusic.utils.ytAccountEmailKey
-import app.it.fast4x.rimusic.utils.ytAccountNameKey
-import app.it.fast4x.rimusic.utils.ytAccountThumbnailKey
-import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
-import app.it.fast4x.rimusic.utils.ytCookieKey
-import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
-import app.it.fast4x.rimusic.utils.ytVisitorDataKey
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.extensions.youtubelogin.YouTubeLogin
+import app.n_zik.android.utils.autosyncAlbumsKey
+import app.n_zik.android.utils.autosyncArtistsKey
+import app.n_zik.android.utils.autosyncLikesKey
+import app.n_zik.android.utils.autosyncPlaylistsKey
+import app.n_zik.android.utils.clearAllSyncedData
+import app.n_zik.android.utils.enableYouTubeLoginKey
+import app.n_zik.android.utils.enableYouTubeSyncKey
+import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.quickPicsDiscoverPageKey
+import app.n_zik.android.utils.quickPicsHomePageKey
+import app.n_zik.android.utils.quickPicsYtmQuickPicksKey
+import app.n_zik.android.utils.rememberEncryptedPreference
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.streamClientRestartNeededKey
+import app.n_zik.android.utils.syncImportEpisodesKey
+import app.n_zik.android.utils.syncImportHistoryKey
+import app.n_zik.android.utils.syncImportLibrarySongsKey
+import app.n_zik.android.utils.syncImportUploadedAlbumsKey
+import app.n_zik.android.utils.syncImportUploadedSongsKey
+import app.n_zik.android.utils.syncPushAlbumBookmarkKey
+import app.n_zik.android.utils.syncPushArtistFollowKey
+import app.n_zik.android.utils.syncPushEpisodeKey
+import app.n_zik.android.utils.syncPushHistoryKey
+import app.n_zik.android.utils.syncPushPlaylistKey
+import app.n_zik.android.utils.syncPushSongLikeKey
+import app.n_zik.android.utils.useLoginForBrowseKey
+import app.n_zik.android.utils.ytAccountChannelHandleKey
+import app.n_zik.android.utils.ytAccountEmailKey
+import app.n_zik.android.utils.ytAccountNameKey
+import app.n_zik.android.utils.ytAccountThumbnailKey
+import app.n_zik.android.utils.ytCookieExpiredKey
+import app.n_zik.android.utils.ytCookieKey
+import app.n_zik.android.utils.ytDataSyncIdKey
+import app.n_zik.android.utils.ytVisitorDataKey
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.appContext
@@ -155,7 +155,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                         isChecked = isYouTubeLoginEnabled,
                         onCheckedChange = {
                             isYouTubeLoginEnabled = it
-                            app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger++
+                            app.n_zik.android.utils.encryptedPreferencesUpdateTrigger++
                             if (!it) {
                                 // Only clear Innertube singleton (stop using account)
                                 // Keep account info so user doesn't have to reconnect
@@ -477,7 +477,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                                 visitorData = ""
                                 dataSyncId = ""
 
-                                app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger++
+                                app.n_zik.android.utils.encryptedPreferencesUpdateTrigger++
 
                                 appContext().preferences.edit().putBoolean(enableYouTubeSyncKey, false).apply()
                                 app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN

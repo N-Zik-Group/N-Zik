@@ -11,7 +11,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.automotive.session.enrichAutoQueueDurations
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import io.mockk.every

@@ -20,10 +20,10 @@ class RemovedSettingsGuardTest {
         ?: error("androidMain sources not found from ${File(".").absolutePath}")
 
     private val removedSymbols = listOf(
-        "app.it.fast4x.rimusic.enums.NotificationType",
-        "app.it.fast4x.rimusic.enums.WallpaperType",
-        "app.it.fast4x.rimusic.enums.UiType",
-        "app.it.fast4x.rimusic.enums.MessageType",
+        "app.n_zik.android.enums.NotificationType",
+        "app.n_zik.android.enums.WallpaperType",
+        "app.n_zik.android.enums.UiType",
+        "app.n_zik.android.enums.MessageType",
     )
 
     @Test

@@ -1,9 +1,9 @@
 package app.n_zik.android.extensions.lastfm
 
-import it.fast4x.lastfm.models.LastFmImage
-import it.fast4x.lastfm.models.LastFmUser
-import it.fast4x.lastfm.models.LastFmUserInfoResponse
-import it.fast4x.lastfm.models.largestImageUrl
+import app.n_zik.lastfm.models.LastFmImage
+import app.n_zik.lastfm.models.LastFmUser
+import app.n_zik.lastfm.models.LastFmUserInfoResponse
+import app.n_zik.lastfm.models.largestImageUrl
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Assertions.assertEquals

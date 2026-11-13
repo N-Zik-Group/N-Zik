@@ -25,7 +25,7 @@ import androidx.compose.ui.semantics.password
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
-import app.it.fast4x.rimusic.utils.conditional
+import app.n_zik.android.utils.conditional
 
 abstract class TextInputDialog(
     @MagicConstant(valuesFromClass = InputDialogConstraints::class)

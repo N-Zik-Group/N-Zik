@@ -18,10 +18,10 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.cropVideoThumbnailsKey
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.appContext
 import app.n_zik.android.playback.services.ArtworkContentProvider
 import coil3.ImageLoader

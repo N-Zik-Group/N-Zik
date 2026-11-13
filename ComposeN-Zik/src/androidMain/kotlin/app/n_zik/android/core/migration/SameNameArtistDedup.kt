@@ -1,9 +1,9 @@
 package app.n_zik.android.core.migration
 
 import android.content.Context
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Song
 import app.n_zik.android.R
 import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.Database
@@ -13,11 +13,11 @@ import app.n_zik.android.core.maintenance.DedupGroupStatus
 import app.n_zik.android.core.maintenance.DedupSkipReason
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.kreate.android.me.knighthat.utils.Toaster
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.requests.artistPage
-import it.fast4x.innertube.requests.searchPage
-import it.fast4x.innertube.utils.from
+import app.n_zik.android.core.utils.Toaster
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.requests.artistPage
+import app.n_zik.innertube.requests.searchPage
+import app.n_zik.innertube.utils.from
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

@@ -1,12 +1,12 @@
 package app.n_zik.android.components.menu.playlist
 
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.asMediaItem
-import app.it.fast4x.rimusic.utils.asSong
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.asSong
 import app.n_zik.android.core.database.isPodcastBrowseId
 import app.n_zik.android.components.playlist.loadCompletePodcastEpisodes
-import it.fast4x.innertube.YtMusic
+import app.n_zik.innertube.YtMusic
 import kotlinx.coroutines.CancellationException
 import timber.log.Timber
 

@@ -36,8 +36,8 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Icon
+import app.n_zik.android.ui.components.tab.toolbar.Button
+import app.n_zik.android.ui.components.tab.toolbar.Icon
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop

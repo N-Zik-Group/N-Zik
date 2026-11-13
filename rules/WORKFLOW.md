@@ -31,7 +31,7 @@ Use this format every session — keep it SHORT:
 📋 Rules loaded:
 
 [CRITICAL]
-1. Code → app.n_zik.android.* only (legacy packages READ-ONLY)
+1. Keep app Kotlin code under app.n_zik.android.*
 2. Timber with tags ONLY (no println/Log.d)
 3. Build: gradlew :ComposeN-Zik:assembleDebug (gradlew.bat on Windows)
 4. Version catalog refs only (libs.versions.toml)
@@ -289,7 +289,7 @@ Some skills use micro-file design where each step is in its own file.
 - Build: `./gradlew :ComposeN-Zik:assembleDebug` (on Windows: `gradlew.bat`)
 - Run tests (new feature/bug fix → at least one new test, per AGENTS.md: list the test file(s) added)
 - Review changes for quality
-- **Guard check (MANDATORY):** run `git diff --name-only HEAD` (staged + unstaged) AND `git status --porcelain` (includes untracked new files) from the repo root `N-Zik/`, and verify that NEITHER contains any file under `app.it.fast4x.*` or `app.kreate.android.*` nor any Crowdin-managed localized `strings_*.xml` or `plurals.xml` file - if one appears, HALT, revert it and report to the user (EXCEPTIONS: a legacy file modification explicitly approved by the user per the AGENTS.md legacy-modification rule - quote the approval in the report, the guard still applies to any NEW legacy file; and a localized XML change that only removes deleted source keys, performs an explicitly scoped structural migration with unchanged translation values, or corrects format placeholders with explicit user approval. See AGENTS.md "Always Do")
+- **Guard check (MANDATORY):** Run `git diff --name-only HEAD` and `git status --porcelain` from `N-Zik/`. Verify that new Kotlin files follow the owning source set's package layout. Crowdin-managed XML may change only for source-key removals, approved structural migrations with unchanged values, or explicitly approved format-placeholder corrections.
 - Show evidence: paste the build output tail + test results — never just claim "done"
 
 ### Step 7: Report

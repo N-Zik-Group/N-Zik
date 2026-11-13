@@ -2,7 +2,7 @@ package app.n_zik.android.playback.services.automotive.models
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import io.mockk.every

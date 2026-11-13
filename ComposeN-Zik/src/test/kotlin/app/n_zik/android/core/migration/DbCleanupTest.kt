@@ -1,8 +1,8 @@
 package app.n_zik.android.core.migration
 
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.models.SongArtistMap
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Song
+import app.n_zik.android.models.SongArtistMap
 import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.SongArtistMapTable
 import app.n_zik.android.core.database.SongTable

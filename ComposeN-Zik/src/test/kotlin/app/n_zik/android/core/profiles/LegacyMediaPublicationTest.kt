@@ -9,8 +9,8 @@ import androidx.media3.database.VersionTable
 import androidx.media3.exoplayer.offline.DefaultDownloadIndex
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadRequest
-import app.it.fast4x.rimusic.utils.profilePreferences
-import app.it.fast4x.rimusic.utils.writeProfileEntries
+import app.n_zik.android.utils.profilePreferences
+import app.n_zik.android.utils.writeProfileEntries
 import java.io.File
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals

@@ -2,7 +2,7 @@ package app.n_zik.android.components.podcast
 
 import app.n_zik.android.components.playlist.loadCompletePodcastPage
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import it.fast4x.innertube.Innertube
+import app.n_zik.innertube.Innertube
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive

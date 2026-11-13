@@ -27,7 +27,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.utils.secondary
+import app.n_zik.android.utils.secondary
 import app.n_zik.android.R
 import app.n_zik.android.typography
 

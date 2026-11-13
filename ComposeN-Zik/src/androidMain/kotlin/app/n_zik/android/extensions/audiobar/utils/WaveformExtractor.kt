@@ -19,7 +19,7 @@ import app.n_zik.android.core.profiles.isLegacyStorageShared
 import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.getActiveProfile
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

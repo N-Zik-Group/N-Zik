@@ -3,12 +3,12 @@ package app.n_zik.android.playback.services.automotive.browse.handlers
 import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import app.it.fast4x.rimusic.enums.SortOrder
-import app.it.fast4x.rimusic.utils.Preference
-import app.it.fast4x.rimusic.utils.getEnum
-import app.it.fast4x.rimusic.utils.homeArtistsOrderKey
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.showFavoritesArtistKey
+import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.utils.Preference
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.homeArtistsOrderKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.showFavoritesArtistKey
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -18,7 +18,7 @@ import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
 import kotlinx.coroutines.flow.first
-import app.it.fast4x.rimusic.enums.ArtistSortBy
+import app.n_zik.android.enums.ArtistSortBy
 
 class ArtistsBrowseHandler : BrowseHandler {
     override fun handles(parentId: String): Boolean = parentId == PlayerServiceModern.ARTIST ||

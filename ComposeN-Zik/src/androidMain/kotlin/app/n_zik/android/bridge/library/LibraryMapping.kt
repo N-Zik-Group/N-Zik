@@ -1,13 +1,13 @@
 package app.n_zik.android.bridge.library
 
-import app.it.fast4x.rimusic.EXPLICIT_PREFIX
-import app.it.fast4x.rimusic.hasExplicitPrefix
-import app.it.fast4x.rimusic.enums.DurationInMinutes
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.PlaylistPreview
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.durationTextToMillis
+import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.hasExplicitPrefix
+import app.n_zik.android.enums.DurationInMinutes
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.PlaylistPreview
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.durationTextToMillis
 import app.n_zik.android.bridge.AlbumDto
 import app.n_zik.android.bridge.ArtistDto
 import app.n_zik.android.bridge.PlaylistDto
@@ -21,8 +21,8 @@ import app.n_zik.android.bridge.state.TrackMapping
 import app.n_zik.android.core.database.PlaylistSongRef
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
-import app.it.fast4x.rimusic.MONTHLY_PREFIX
-import app.it.fast4x.rimusic.PINNED_PREFIX
+import app.n_zik.android.MONTHLY_PREFIX
+import app.n_zik.android.PINNED_PREFIX
 
 /**
  * Pure visibility and mapping rules of the library routes (contract §1.1, §10): what the

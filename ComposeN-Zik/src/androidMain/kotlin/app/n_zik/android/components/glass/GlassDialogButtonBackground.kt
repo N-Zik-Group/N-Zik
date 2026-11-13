@@ -83,7 +83,7 @@ internal fun GlassDialogIconButton(
 ) {
     val settings = rememberGlassSettings()
     if (!settings.usesGlassDialogButtonMaterial()) {
-        app.it.fast4x.rimusic.ui.components.themed.IconButton(onClick, icon, color, modifier, enabled)
+        app.n_zik.android.ui.components.themed.IconButton(onClick, icon, color, modifier, enabled)
         return
     }
     val shape = uiRoundnessShape()

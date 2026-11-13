@@ -3,8 +3,8 @@ package app.n_zik.android.components.player
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils.colorToHSL
-import app.it.fast4x.rimusic.enums.ColorPaletteName
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
+import app.n_zik.android.enums.ColorPaletteName
+import app.n_zik.android.ui.styling.ColorPalette
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Test
@@ -70,7 +70,7 @@ class CoverContrastColorsTest {
     fun `textOutlineColor is a white halo on a light tone and a black halo on a dark tone`() {
         assertEquals(Color.White.copy(alpha = 0.5f), textOutlineColor(effectiveIsDark = false, alpha = 0.5f))
         assertEquals(Color.Black.copy(alpha = 0.5f), textOutlineColor(effectiveIsDark = true, alpha = 0.5f))
-        // The call-site alpha is preserved (the kreate ActionBar uses 0.65f).
+        // The call-site alpha is preserved (the the themed ActionBar uses 0.65f).
         assertEquals(Color.White.copy(alpha = 0.65f), textOutlineColor(effectiveIsDark = false, alpha = 0.65f))
         assertEquals(Color.Black.copy(alpha = 0.65f), textOutlineColor(effectiveIsDark = true, alpha = 0.65f))
     }

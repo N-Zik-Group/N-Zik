@@ -14,7 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.test.junit4.createComposeRule
-import app.it.fast4x.rimusic.enums.NavRoutes
+import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.MainActivity
 import app.n_zik.android.components.ui.screens.home.initialShortcutAction
 import app.n_zik.android.components.ui.screens.listentogether.consumeInvitation

@@ -1,7 +1,7 @@
 package app.n_zik.android.extensions.lastfm
 
-import it.fast4x.lastfm.nowPlayingParams
-import it.fast4x.lastfm.scrobbleParams
+import app.n_zik.lastfm.nowPlayingParams
+import app.n_zik.lastfm.scrobbleParams
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test

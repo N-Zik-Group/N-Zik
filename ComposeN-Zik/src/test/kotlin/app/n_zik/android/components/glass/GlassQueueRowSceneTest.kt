@@ -38,11 +38,11 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.Typography
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.Typography
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
@@ -107,7 +107,7 @@ class GlassQueueRowSceneTest {
                         SideEffect { scene = registry; underlay = base }
                         QueueGlassRowObjects(0, elevated.value == 0) {
                             Box(Modifier.offset(140.dp, 28.dp).size(24.dp).glassQueueObjectBackdrop()) {
-                                app.it.fast4x.rimusic.ui.components.themed.IconButton(
+                                app.n_zik.android.ui.components.themed.IconButton(
                                     icon = app.n_zik.android.R.drawable.reorder, color = Color.Green, onClick = {})
                             }
                             CompositionLocalProvider(LocalQueueRowBackdrop provides base) {
@@ -120,7 +120,7 @@ class GlassQueueRowSceneTest {
                         QueueGlassRowObjects(1, elevated.value == 1) {
                             // The consuming row's sibling handle shares its exclusion owner.
                             Box(Modifier.offset(112.dp, 28.dp).size(24.dp).glassQueueObjectBackdrop()) {
-                                app.it.fast4x.rimusic.ui.components.themed.IconButton(
+                                app.n_zik.android.ui.components.themed.IconButton(
                                     icon = app.n_zik.android.R.drawable.reorder, color = Color.Cyan, onClick = {})
                             }
                             CompositionLocalProvider(LocalQueueRowBackdrop provides base) {
@@ -132,7 +132,7 @@ class GlassQueueRowSceneTest {
                         }
                         QueueGlassRowObjects(2) {
                             Box(Modifier.offset(80.dp, 28.dp).size(24.dp).glassQueueObjectBackdrop()) {
-                                app.it.fast4x.rimusic.ui.components.themed.IconButton(
+                                app.n_zik.android.ui.components.themed.IconButton(
                                     icon = app.n_zik.android.R.drawable.reorder, color = Color.Magenta, onClick = {})
                             }
                         }
@@ -240,7 +240,7 @@ class GlassQueueRowSceneTest {
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     @Test fun `normal spaced real queue row source excludes its own artwork and badge`() {
         val context = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()
-        context.preferences.edit().clear().putBoolean(app.it.fast4x.rimusic.utils.disableScrollingTextKey, true).commit()
+        context.preferences.edit().clear().putBoolean(app.n_zik.android.utils.disableScrollingTextKey, true).commit()
         val player = io.mockk.mockk<androidx.media3.common.Player>(relaxed = true)
         io.mockk.every { player.currentMediaItem } returns androidx.media3.common.MediaItem.Builder().setMediaId("local:current").build()
         val binder = io.mockk.mockk<app.n_zik.android.playback.services.PlayerServiceModern.Binder>(relaxed = true)
@@ -267,8 +267,8 @@ class GlassQueueRowSceneTest {
                             LazyColumn(Modifier.size(280.dp, 180.dp)) {
                                 items(2) { index ->
                                     app.n_zik.android.components.SongItem(
-                                        app.it.fast4x.rimusic.models.Song(if (index == 0) "local:neighbor" else "local:current",
-                                            "${app.it.fast4x.rimusic.EXPLICIT_PREFIX}Current", "Artist", "1:00", null),
+                                        app.n_zik.android.models.Song(if (index == 0) "local:neighbor" else "local:current",
+                                            "${app.n_zik.android.EXPLICIT_PREFIX}Current", "Artist", "1:00", null),
                                         showThumbnail = false, isLiked = true, inPlaylist = false,
                                         backgroundColor = Color.Transparent,
                                         thumbnailOverlay = { Box(Modifier.size(48.dp).background(Color.Green)) })

@@ -12,9 +12,9 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.work.CoroutineWorker
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
-import app.it.fast4x.rimusic.models.Event
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Event
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.Song
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainActivity
 import app.n_zik.android.MainApplication

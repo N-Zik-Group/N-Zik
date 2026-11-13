@@ -1,6 +1,6 @@
 package app.n_zik.android.playback.services.automotive.models
 
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull

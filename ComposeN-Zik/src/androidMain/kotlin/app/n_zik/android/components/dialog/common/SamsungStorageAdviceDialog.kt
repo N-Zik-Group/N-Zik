@@ -14,10 +14,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
-import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.getEnum
+import app.n_zik.android.enums.ExoPlayerCacheLocation
+import app.n_zik.android.utils.exoPlayerCacheLocationKey
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.getEnum
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette

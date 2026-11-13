@@ -24,7 +24,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import app.it.fast4x.rimusic.enums.TransitionEffect
+import app.n_zik.android.enums.TransitionEffect
 import java.io.File
 import java.time.Duration
 import org.junit.Assert.assertEquals
@@ -103,7 +103,7 @@ class PredictiveScreenTransitionsTest {
             .first { it.isDirectory }
         listOf(
             "app/n_zik/android/components/ui/screens/settings/SettingsScreen.kt",
-            "app/it/fast4x/rimusic/ui/screens/AppNavigation.kt",
+            "app/n_zik/android/ui/screens/AppNavigation.kt",
             "app/n_zik/android/components/navigation/AppNavigation.kt",
         ).forEach { path ->
             val source = File(root, path).readText()

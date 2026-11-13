@@ -20,7 +20,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.styling.BoundedCornerSize
+import app.n_zik.android.ui.styling.BoundedCornerSize
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.backdrop.drawPlainBackdrop
 import app.n_zik.android.components.glass.backdrop.effects.lensCornerRadii

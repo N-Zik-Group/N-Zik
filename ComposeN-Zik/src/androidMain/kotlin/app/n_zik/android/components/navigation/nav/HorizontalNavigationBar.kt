@@ -13,7 +13,7 @@ import app.n_zik.android.components.navigation.dock.DockToolbarTab
 import app.n_zik.android.components.navigation.dock.ClassicBottomDockNavigation
 import app.n_zik.android.components.player.TOP_NAV_BAR_HEIGHT
 import androidx.compose.runtime.CompositionLocalProvider
-import app.it.fast4x.rimusic.ui.components.navigation.nav.LocalIsManyButtons
+import app.n_zik.android.ui.components.navigation.nav.LocalIsManyButtons
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
@@ -62,20 +62,20 @@ import app.n_zik.android.core.navigation.currentSearchShortcutRoute
 import app.n_zik.android.core.navigation.shouldShowSearchShortcut
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
-import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import app.it.fast4x.rimusic.enums.NavigationBarType
+import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.enums.NavigationBarPosition
+import app.n_zik.android.enums.NavigationBarType
 import app.n_zik.android.showSearchIconInNav
 import app.n_zik.android.showStatsIconInNav
-import app.it.fast4x.rimusic.ui.components.themed.Button
-import app.it.fast4x.rimusic.ui.components.themed.TextIconButton
-import app.it.fast4x.rimusic.ui.styling.Dimensions
+import app.n_zik.android.ui.components.themed.Button
+import app.n_zik.android.ui.components.themed.TextIconButton
+import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.utils.toast.trackBottomNavigationForToasts
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.navigation.header.LocalUnifiedTopGlassSurface
 import app.n_zik.android.components.ui.screens.home.LocalSharedHomeHeaderGlass
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.semiBold
 
 /** Native Top keeps the native type scale and icon size while mirroring Bottom vertically. */
 @Composable
@@ -244,7 +244,7 @@ class HorizontalNavigationBar(
         val isIconOnly = NavigationBarType.IconOnly.isCurrent()
         val dock = app.n_zik.android.components.navigation.dock.LocalFloatingDock.current
         if (isFloating && dock?.enabled == true) {
-            val dockOrder by app.it.fast4x.rimusic.utils.rememberPreference(DockToolbarPreferences.orderKey, "")
+            val dockOrder by app.n_zik.android.utils.rememberPreference(DockToolbarPreferences.orderKey, "")
             val metadata = dockTabs.toList().toMap()
             val orderedIds = DockToolbarPreferences.orderedIds(metadata.values.map { it.id }, dockOrder)
             val orderedIndices = tabIndices.toList().sortedBy { index ->

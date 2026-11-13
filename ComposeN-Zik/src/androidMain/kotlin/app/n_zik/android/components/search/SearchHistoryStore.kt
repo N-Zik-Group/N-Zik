@@ -11,8 +11,8 @@ import androidx.compose.ui.platform.LocalContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import timber.log.Timber
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.pauseSearchHistoryKey
 
 /**
  * Per-screen search history: each screen keeps its own list of past queries

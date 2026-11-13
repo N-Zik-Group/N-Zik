@@ -5,7 +5,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 
 @Immutable
 @Entity(

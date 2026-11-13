@@ -13,12 +13,12 @@ import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.it.fast4x.rimusic.utils.asMediaItem
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.components.dialog.media.MediaDownloadDialog
 import timber.log.Timber
 
@@ -64,9 +64,9 @@ class DeleteAllDownloadedSongsDialog(
         if (count > 0) {
             super.onShortClick()
         } else {
-            app.kreate.android.me.knighthat.utils.Toaster.toast(
+            app.n_zik.android.core.utils.Toaster.toast(
                 appTextResources().getString(R.string.downloads_nothing_to_delete),
-                type = app.kreate.android.me.knighthat.utils.Toaster.Type.INFO
+                type = app.n_zik.android.core.utils.Toaster.Type.INFO
             )
         }
     }

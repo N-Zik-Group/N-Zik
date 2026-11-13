@@ -4,12 +4,12 @@ import android.content.Context
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.requests.searchPage
-import it.fast4x.innertube.requests.searchPageContinuation
-import it.fast4x.innertube.utils.from
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.requests.searchPage
+import app.n_zik.innertube.requests.searchPageContinuation
+import app.n_zik.innertube.utils.from
 
-import app.it.fast4x.rimusic.utils.asSong
+import app.n_zik.android.utils.asSong
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -20,7 +20,7 @@ import app.n_zik.android.playback.services.automotive.models.CancellableAutoMedi
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import app.n_zik.android.playback.services.isLocal
 
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.R
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.playback.services.automotive.browse.AutoSearchWindowStore

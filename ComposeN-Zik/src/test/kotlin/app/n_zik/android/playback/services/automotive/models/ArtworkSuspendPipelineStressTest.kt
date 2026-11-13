@@ -3,7 +3,7 @@ package app.n_zik.android.playback.services.automotive.models
 import android.app.Application
 import android.graphics.Bitmap
 import androidx.media3.common.MediaItem
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.appContext
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.utils.coroutines.NzikDispatchers

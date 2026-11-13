@@ -18,11 +18,11 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassToolbarIcon
 import app.n_zik.android.components.glass.GlassToolbarLoading
 import app.n_zik.android.components.ui.InlineCircularLoader
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.it.fast4x.rimusic.utils.isRecommendationEnabledKey
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.DynamicColor
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.utils.isRecommendationEnabledKey
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.ui.components.tab.toolbar.DynamicColor
 
 class SmartShuffle private constructor(
     private val isRecommendationEnabled: () -> Boolean,

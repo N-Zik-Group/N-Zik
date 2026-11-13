@@ -1,9 +1,9 @@
 package app.n_zik.android.components.ui.screens.playlist
 
-import app.it.fast4x.rimusic.ui.screens.playlist.applyFilter
-import app.it.fast4x.rimusic.utils.asMediaItem
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.NavigationEndpoint
+import app.n_zik.android.ui.screens.playlist.applyFilter
+import app.n_zik.android.utils.asMediaItem
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame

@@ -10,12 +10,12 @@ import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.appContext
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.it.fast4x.rimusic.utils.asMediaItem
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.core.network.utils.isNetworkAvailable
 import app.n_zik.android.components.dialog.media.MediaDownloadDialog
 
@@ -62,9 +62,9 @@ class DownloadAllSongsDialog(
         if (count > 0) {
             super.onShortClick()
         } else {
-            app.kreate.android.me.knighthat.utils.Toaster.toast(
+            app.n_zik.android.core.utils.Toaster.toast(
                 appTextResources().getString(R.string.downloads_empty_message),
-                type = app.kreate.android.me.knighthat.utils.Toaster.Type.INFO
+                type = app.n_zik.android.core.utils.Toaster.Type.INFO
             )
         }
     }

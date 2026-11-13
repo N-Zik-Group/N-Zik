@@ -16,8 +16,8 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
-import it.fast4x.kugou.KuGou
-import it.fast4x.lrclib.LrcLib
+import app.n_zik.kugou.KuGou
+import app.n_zik.lrclib.LrcLib
 import kotlinx.coroutines.CancellationException
 
 import kotlinx.coroutines.CoroutineDispatcher

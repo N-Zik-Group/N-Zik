@@ -1,6 +1,6 @@
 package app.n_zik.android.components.tab
 
-import app.it.fast4x.rimusic.ui.components.MenuState
+import app.n_zik.android.ui.components.MenuState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

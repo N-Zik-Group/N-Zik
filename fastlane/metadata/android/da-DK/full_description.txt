@@ -1,9 +1,5 @@
 En flersproget YouTube Music frontend til Android, fokuseret på ydeevne, UI/UX raffineringer, funktion ekspansion og langsigtet support.
 
-<b>N-Zik</b> er en open source gaffel af <a href="https://github.com/knighthat/Kreate">Kreate</a>.
-
-<b>Bemærk:</b> N-Zik startede som et sideprojekt. For mere modne alternativer, tjek <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>eller <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
-
 <b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), gennemgået og testet før afsendelse.
 
 :gnister: <b>HVORFOR N-ZIK?</b> Ingen annoncer, baggrundsafspilning, offline caching, tilpasselig UI - gratis, altid.

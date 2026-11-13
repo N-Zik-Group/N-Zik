@@ -17,7 +17,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 
-import app.it.fast4x.rimusic.utils.isLandscape
+import app.n_zik.android.utils.isLandscape
 import app.n_zik.android.components.glass.glassImageRim
 import app.n_zik.android.thumbnailShape
 

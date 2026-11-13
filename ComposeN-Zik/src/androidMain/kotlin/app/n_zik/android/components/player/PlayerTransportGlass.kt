@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.enums.PlayerPlayButtonType
+import app.n_zik.android.enums.PlayerPlayButtonType
 import app.n_zik.android.components.glass.glassButtonFeedback
 import app.n_zik.android.components.glass.usesGlassContour
 import app.n_zik.android.components.glass.GlassArea

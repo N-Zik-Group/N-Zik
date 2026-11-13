@@ -1,7 +1,7 @@
 package app.n_zik.android.legacyoffmain.utils
 
-import app.it.fast4x.rimusic.utils.parseProfileEntries
-import app.it.fast4x.rimusic.utils.parseProfileIds
+import app.n_zik.android.utils.parseProfileEntries
+import app.n_zik.android.utils.parseProfileIds
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

@@ -4,16 +4,16 @@ import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.utils.addNext
-import app.it.fast4x.rimusic.utils.enqueue
-import app.it.fast4x.rimusic.utils.excludeMediaItems
+import app.n_zik.android.utils.addNext
+import app.n_zik.android.utils.enqueue
+import app.n_zik.android.utils.excludeMediaItems
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
 
 /**
  * Issue #606 H8 (paired with M10 at the call sites that also build the list from
  * `Song.asMediaItem`) -- legacy `Player.addNext`/`Player.enqueue`
- * (`app.it.fast4x.rimusic.utils.Player.kt`) filter the incoming list through `excludeMediaItems`
+ * (`app.n_zik.android.utils.Player.kt`) filter the incoming list through `excludeMediaItems`
  * whenever the caller passes a non-null [Context] -- up to 3 `runBlocking` DB reads
  * (disliked songs/artists/albums) on whatever thread the call runs on, Main in every case this
  * lot fixes. `Player.kt` is legacy and out of scope for editing (AD-4 tier 1: fixable only from

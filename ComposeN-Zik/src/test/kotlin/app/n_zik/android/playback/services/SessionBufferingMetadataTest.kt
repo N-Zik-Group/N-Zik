@@ -27,7 +27,7 @@ import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.SongTable
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import io.mockk.every

@@ -1,6 +1,6 @@
 package app.n_zik.android.components.search
 
-import it.fast4x.innertube.Innertube
+import app.n_zik.innertube.Innertube
 
 /** A suggestions heading is meaningful only when at least one row can be rendered. */
 fun Innertube.SearchSuggestions.hasContent(): Boolean =

@@ -3,11 +3,11 @@ package app.n_zik.android.playback.services.automotive.browse
 import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.cropVideoThumbnailsKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.playback.services.ArtworkContentProvider
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.browse.handlers.AlbumDetailHandler

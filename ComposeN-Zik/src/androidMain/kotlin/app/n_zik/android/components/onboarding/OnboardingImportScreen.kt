@@ -56,9 +56,9 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.profileDisplayName
-import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.profileDisplayName
+import app.n_zik.android.utils.resolveProfileDisplayName
 import timber.log.Timber
 
 /**

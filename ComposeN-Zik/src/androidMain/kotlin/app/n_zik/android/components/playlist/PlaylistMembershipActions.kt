@@ -1,7 +1,7 @@
 package app.n_zik.android.components.playlist
 
-import app.it.fast4x.rimusic.enums.QueueSwipeAction
-import app.it.fast4x.rimusic.models.Playlist
+import app.n_zik.android.enums.QueueSwipeAction
+import app.n_zik.android.models.Playlist
 import app.n_zik.android.core.database.canEditPlaylistMembership
 
 /** Deleting the saved source is distinct from removing its selected songs. */

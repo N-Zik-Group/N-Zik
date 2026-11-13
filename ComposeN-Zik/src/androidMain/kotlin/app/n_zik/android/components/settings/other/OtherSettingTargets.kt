@@ -1,17 +1,17 @@
 package app.n_zik.android.components.settings.other
 
-import app.it.fast4x.rimusic.utils.defaultFolderKey
-import app.it.fast4x.rimusic.utils.isKeepScreenOnEnabledKey
-import app.it.fast4x.rimusic.utils.isProxyEnabledKey
-import app.it.fast4x.rimusic.utils.logDebugEnabledKey
-import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
-import app.it.fast4x.rimusic.utils.proxyHostnameKey
-import app.it.fast4x.rimusic.utils.proxyModeKey
-import app.it.fast4x.rimusic.utils.proxyPasswordEncryptedKey
-import app.it.fast4x.rimusic.utils.proxyPortKey
-import app.it.fast4x.rimusic.utils.proxyUsernameKey
-import app.it.fast4x.rimusic.utils.regionOverrideKey
-import app.it.fast4x.rimusic.utils.showFoldersOnDeviceKey
+import app.n_zik.android.utils.defaultFolderKey
+import app.n_zik.android.utils.isKeepScreenOnEnabledKey
+import app.n_zik.android.utils.isProxyEnabledKey
+import app.n_zik.android.utils.logDebugEnabledKey
+import app.n_zik.android.utils.parentalControlEnabledKey
+import app.n_zik.android.utils.proxyHostnameKey
+import app.n_zik.android.utils.proxyModeKey
+import app.n_zik.android.utils.proxyPasswordEncryptedKey
+import app.n_zik.android.utils.proxyPortKey
+import app.n_zik.android.utils.proxyUsernameKey
+import app.n_zik.android.utils.regionOverrideKey
+import app.n_zik.android.utils.showFoldersOnDeviceKey
 
 /** Stable inventory for future settings search integration. */
 internal object OtherSettingTargets {

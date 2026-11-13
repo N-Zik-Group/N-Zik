@@ -3,7 +3,7 @@ package app.n_zik.android.privacy
 import android.app.Activity
 import android.content.SharedPreferences
 import android.view.WindowManager
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.preferences
 import java.io.Closeable
 
 const val blockScreenCaptureKey = "privacyBlockScreenCapture"

@@ -1,9 +1,9 @@
 package app.n_zik.android.bridge
 
 import android.content.SharedPreferences
-import app.it.fast4x.rimusic.enums.MaxTopPlaylistItems
-import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsCustomValueKey
-import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsKey
+import app.n_zik.android.enums.MaxTopPlaylistItems
+import app.n_zik.android.utils.MaxTopPlaylistItemsCustomValueKey
+import app.n_zik.android.utils.MaxTopPlaylistItemsKey
 import kotlinx.serialization.Serializable
 
 /**

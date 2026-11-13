@@ -13,8 +13,8 @@ Changed:
 - Moved Update section to About
 - Quickpicks settings renamed to AI recommendations (now includes all AI settings)
 - Translated Easter eggs messages
-- Renamed RiMusic logs to N-Zik
-- Renamed RiMusic interface to N-Zik
+- Renamed app logs to N-Zik
+- Renamed the interface to N-Zik
 
 Improved:
 - Default purple slightly lighter for better readability on dark areas

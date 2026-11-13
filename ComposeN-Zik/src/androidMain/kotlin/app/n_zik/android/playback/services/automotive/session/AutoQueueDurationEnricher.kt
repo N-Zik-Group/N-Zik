@@ -1,7 +1,7 @@
 package app.n_zik.android.playback.services.automotive.session
 
 import androidx.media3.common.MediaItem
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.SessionDurationMetadata
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException

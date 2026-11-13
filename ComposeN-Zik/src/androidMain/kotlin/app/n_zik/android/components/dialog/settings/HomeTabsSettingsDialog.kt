@@ -12,9 +12,9 @@ import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
-import app.it.fast4x.rimusic.utils.homeTabsOrderKey
-import app.it.fast4x.rimusic.utils.enableQuickPicksPageKey
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.homeTabsOrderKey
+import app.n_zik.android.utils.enableQuickPicksPageKey
+import app.n_zik.android.core.utils.Toaster
 import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import androidx.compose.ui.platform.LocalContext

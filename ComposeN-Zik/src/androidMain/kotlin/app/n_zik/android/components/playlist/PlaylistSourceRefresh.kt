@@ -1,19 +1,19 @@
 package app.n_zik.android.components.playlist
 
 import androidx.media3.common.MediaItem
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.utils.asMediaItem
-import app.it.fast4x.rimusic.utils.asSong
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.asSong
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.canRefreshPlaylist
 import app.n_zik.android.core.database.isPodcastBrowseId
 import app.n_zik.android.core.database.isReadOnlyPlaylistSource
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.YtMusic
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.YtMusic
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first

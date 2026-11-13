@@ -1,7 +1,7 @@
 package app.n_zik.android.playback.services
 
 import android.app.Application
-import it.fast4x.innertube.models.PlayerResponse
+import app.n_zik.innertube.models.PlayerResponse
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test

@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.res.Resources
 import androidx.core.content.ContextCompat
 import android.os.SystemClock
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.utils.coroutines.NzikDispatchers

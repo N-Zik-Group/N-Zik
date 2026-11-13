@@ -1,6 +1,6 @@
 package app.n_zik.android.core.database
 
-import app.it.fast4x.rimusic.models.Playlist
+import app.n_zik.android.models.Playlist
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test

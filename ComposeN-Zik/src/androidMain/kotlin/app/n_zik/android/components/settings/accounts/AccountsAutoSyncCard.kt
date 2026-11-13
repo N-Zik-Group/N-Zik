@@ -6,11 +6,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
-import app.it.fast4x.rimusic.utils.autosyncAlbumsKey
-import app.it.fast4x.rimusic.utils.autosyncArtistsKey
-import app.it.fast4x.rimusic.utils.autosyncLikesKey
-import app.it.fast4x.rimusic.utils.autosyncPlaylistsKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.autosyncAlbumsKey
+import app.n_zik.android.utils.autosyncArtistsKey
+import app.n_zik.android.utils.autosyncLikesKey
+import app.n_zik.android.utils.autosyncPlaylistsKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.R
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard

@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.ui.graphics.Color
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.components.theme.withColor
 
 /** Scope readable foreground roles to a real Artwork Glass surface, preserving its native theme. */

@@ -29,20 +29,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.ui.components.SwipeablePlaylistItem
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
+import app.n_zik.android.ui.components.SwipeablePlaylistItem
 import app.n_zik.android.R
 import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.semiBold
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.components.glass.LocalSwipeRestingBackground
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
 
 /** Ranked rows inherit their card; only a revealed swipe paints an action surface. */
 @Composable

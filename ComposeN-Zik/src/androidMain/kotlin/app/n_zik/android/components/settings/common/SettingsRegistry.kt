@@ -1,7 +1,7 @@
 package app.n_zik.android.components.settings.common
 
 import android.content.Context
-import app.it.fast4x.rimusic.enums.NavRoutes
+import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.R
 import app.n_zik.android.components.settings.ui.glassDestinationKeywordResources
 
@@ -432,7 +432,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.about_action_request_feature,
         )),
     SettingsCardRegistryEntry(8, R.string.settings_section_contributors_title, R.drawable.people,
-        keywordRes = listOf(R.string.settings_section_contributors_title)),
+        keywordRes = listOf(R.string.settings_section_contributors_title, R.string.about_credits_title, R.string.about_credits_open)),
 )
 
 /**

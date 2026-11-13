@@ -1,7 +1,7 @@
 package app.n_zik.android.widget
 
 import androidx.compose.ui.graphics.toArgb
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
+import app.n_zik.android.ui.styling.ColorPalette
 
 /**
  * The ARGB tint for the widget's transport/control icons

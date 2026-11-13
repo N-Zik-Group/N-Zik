@@ -1,25 +1,25 @@
 {
   "repo_notes": [
-    "N-Zik is a multilingual fork of Kreate, built with Kotlin Multiplatform (KMP).",
+    "N-Zik is a multilingual Android music app, built with Kotlin Multiplatform (KMP).",
     "Prioritize documentation for 'composeApp' (UI/Core), 'modules' (Shared Logic), and 'extensions' (Data Providers).",
     "Tone: Technical yet pedagogical, suitable for contributors learning Kotlin/Compose.",
     "Extensions are mapped in settings.gradle.kts and reside in 'extensions/' and 'modules/'.",
     "Crowdin's GitHub integration uses crowdin.yml. Android reads the English XML catalogs from ComposeN-Zik/src/androidMain/localization/source/ and translations from localization/translations/<locale>/. Gradle generates the Android resource directories at build time.",
     "EXCLUDE: Do not document Desktop-specific logic or VLCJ implementations (Desktop support is out of scope).",
-    "Highlight differences with the original Kreate fork where relevant."
+    "Describe the current N-Zik implementation."
   ],
   "pages": [
     {
       "title": "Overview",
       "page_notes": [
         {
-          "content": "Introduction to N-Zik as an enhanced, multilingual fork of Kreate."
+          "content": "Introduction to N-Zik as a multilingual Android music app."
         },
         {
           "content": "Summary of core features: Modern UI, Multilingual support, Background playback."
         },
         {
-          "content": "Comparative summary: Highlight N-Zik's additions over the Kreate baseline."
+          "content": "Summarize the features maintained in N-Zik."
         }
       ]
     },
@@ -269,15 +269,6 @@
       "page_notes": [
         {
           "content": "History, context, and philosophical goals of N-Zik."
-        }
-      ]
-    },
-    {
-      "title": "N-Zik vs Kreate",
-      "parent": "Project Context",
-      "page_notes": [
-        {
-          "content": "In-depth comparison of features, stability, and design philosophy between the two forks."
         }
       ]
     },

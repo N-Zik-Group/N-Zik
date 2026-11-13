@@ -5,7 +5,7 @@ import android.app.Application
 import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.input.TextFieldValue
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.components.image.PickedImageEditor
 import app.n_zik.android.components.image.PreparedImage
 import io.mockk.coEvery

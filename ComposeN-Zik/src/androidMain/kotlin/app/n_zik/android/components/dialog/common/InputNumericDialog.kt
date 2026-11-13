@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.medium
+import app.n_zik.android.utils.medium
 
 /** Numeric input dialog on the shared [DefaultDialog]: a [TextField] (red container while invalid), the error line and a confirm / cancel [ButtonRow]. */
 @Composable

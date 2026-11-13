@@ -1,6 +1,6 @@
 Changed:
 - New N-Zik icons (Monochrome, Main, Material You)
-- Update from Kreate, improving stability
+- Integrated upstream fixes to improve stability
 - Timeline taps (single/double/long) to forward/rewind
 - More albums on the artist page
 - Documentation website and social media links in About

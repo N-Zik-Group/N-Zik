@@ -1,13 +1,13 @@
 package app.n_zik.android.legacyoffmain.utils
 
-import app.it.fast4x.rimusic.utils.splitArtistNames
-import it.fast4x.innertube.models.ArtistConjunctions
+import app.n_zik.android.utils.splitArtistNames
+import app.n_zik.innertube.models.ArtistConjunctions
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 /**
- * Contract for the legacy [splitArtistNames] (`Utils.kt`, `app.it.fast4x.rimusic.utils`) —
+ * Contract for the legacy [splitArtistNames] (`Utils.kt`, `app.n_zik.android.utils`) —
  * the string split shared by the "More of X" menus, the song info screen and the
  * import. Bug 2026-09-26 (device capture 12:02): the localized conjunction word
  * matched as a substring inside a name — "and" inside "Grand" — so

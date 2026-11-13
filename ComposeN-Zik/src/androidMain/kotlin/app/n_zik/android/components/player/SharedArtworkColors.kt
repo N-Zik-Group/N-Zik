@@ -2,7 +2,7 @@ package app.n_zik.android.components.player
 
 import android.content.Context
 import android.graphics.Bitmap
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import java.io.File

@@ -55,8 +55,8 @@ import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.SliderSettingsEntry
-import app.it.fast4x.rimusic.utils.rememberEncryptedPreference
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.rememberEncryptedPreference
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -75,7 +75,7 @@ import app.n_zik.android.extensions.lastfm.lastfmUsernameKey
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
-import it.fast4x.lastfm.LastFm
+import app.n_zik.lastfm.LastFm
 import kotlinx.coroutines.launch
 import timber.log.Timber
 

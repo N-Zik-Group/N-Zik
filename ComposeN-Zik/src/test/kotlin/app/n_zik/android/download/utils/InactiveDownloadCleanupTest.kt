@@ -9,12 +9,12 @@ import androidx.media3.database.VersionTable
 import androidx.media3.exoplayer.offline.DefaultDownloadIndex
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadRequest
-import app.it.fast4x.rimusic.utils.profilePreferences
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.profilePreferences
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.components.settings.data.CleanupAction
 import app.n_zik.android.components.settings.data.CleanupResult
 import app.n_zik.android.components.settings.data.DeferredProfileCleanup
-import app.it.fast4x.rimusic.utils.writeProfileEntries
+import app.n_zik.android.utils.writeProfileEntries
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.core.rescue.RescueFiles

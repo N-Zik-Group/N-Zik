@@ -5,9 +5,9 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.core.notifications.profileChannelIds
 import io.mockk.every
 import io.mockk.mockkStatic
@@ -40,7 +40,7 @@ class ProfileSwitchTest {
 
     @Test
     fun `switching profiles cancels the left profile notifications and ensures the incoming channels`() {
-        mockkStatic("app.it.fast4x.rimusic.utils.EncryptedPreferencesKt")
+        mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
         every { context.encryptedPreferences } returns
             context.getSharedPreferences("secure_preferences", Context.MODE_PRIVATE)
 

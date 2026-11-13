@@ -27,9 +27,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import app.it.fast4x.rimusic.utils.color
-import app.it.fast4x.rimusic.utils.secondary
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.color
+import app.n_zik.android.utils.secondary
+import app.n_zik.android.utils.semiBold
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassAreaMode

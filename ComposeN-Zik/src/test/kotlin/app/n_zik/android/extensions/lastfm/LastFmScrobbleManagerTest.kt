@@ -3,8 +3,8 @@ package app.n_zik.android.extensions.lastfm
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.media3.common.MediaItem
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.utils.albumTitleOrDb
@@ -20,8 +20,8 @@ import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
-import it.fast4x.lastfm.LastFm
-import it.fast4x.lastfm.models.LastFmApiException
+import app.n_zik.lastfm.LastFm
+import app.n_zik.lastfm.models.LastFmApiException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -79,7 +79,7 @@ class LastFmScrobbleManagerTest {
         prefs = mockk()
         prefsEditor = mockk(relaxed = true)
         every { prefs.edit() } returns prefsEditor
-        mockkStatic("app.it.fast4x.rimusic.utils.EncryptedPreferencesKt")
+        mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
         every { context.encryptedPreferences } returns prefs
 
         // Config defaults = previous hard-coded behavior

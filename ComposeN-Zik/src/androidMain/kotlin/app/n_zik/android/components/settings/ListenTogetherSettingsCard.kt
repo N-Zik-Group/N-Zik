@@ -49,12 +49,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.components.glass.SampledMenuSheet
-import app.it.fast4x.rimusic.ui.components.LocalMenuState
+import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
-import app.it.fast4x.rimusic.utils.semiBold
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.semiBold
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette

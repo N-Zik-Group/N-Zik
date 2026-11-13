@@ -17,8 +17,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-import app.it.fast4x.rimusic.enums.FontType
-import app.it.fast4x.rimusic.enums.PresetsReverb
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.enums.PresetsReverb
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 

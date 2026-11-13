@@ -1,7 +1,7 @@
 package app.n_zik.android.utils.debug
 
 import android.content.Context
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.getActiveProfile
 import java.io.File
 import java.io.IOException
 

@@ -2,20 +2,20 @@ package app.n_zik.android.playback.utils
 
 import android.content.Context
 import android.content.SharedPreferences
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.SongTable
 import app.n_zik.android.playback.services.PlayerServiceModern
-import app.it.fast4x.rimusic.enums.DislikeMode
-import app.it.fast4x.rimusic.enums.MaxSongs
-import app.it.fast4x.rimusic.utils.excludeDislikedAlbumsKey
-import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
-import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
-import app.it.fast4x.rimusic.utils.forcePlayFromBeginning
-import app.it.fast4x.rimusic.utils.maxSongsInQueueKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.enums.DislikeMode
+import app.n_zik.android.enums.MaxSongs
+import app.n_zik.android.utils.excludeDislikedAlbumsKey
+import app.n_zik.android.utils.excludeDislikedArtistsKey
+import app.n_zik.android.utils.excludeDislikedSongsKey
+import app.n_zik.android.utils.forcePlayFromBeginning
+import app.n_zik.android.utils.maxSongsInQueueKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
@@ -76,7 +76,7 @@ class ShufflerTest {
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { appContext() } returns context
 
-        mockkStatic("app.it.fast4x.rimusic.utils.PreferencesKt")
+        mockkStatic("app.n_zik.android.utils.PreferencesKt")
         every { context.preferences } returns sharedPreferences
         every { sharedPreferences.edit() } returns editor
         every { editor.putString(any(), any()) } returns editor
@@ -148,7 +148,7 @@ class ShufflerTest {
             } returns MaxSongs.`100`.name
 
             val captured = slot<List<MediaItem>>()
-            mockkStatic("app.it.fast4x.rimusic.utils.PlayerKt")
+            mockkStatic("app.n_zik.android.utils.PlayerKt")
             every { player.forcePlayFromBeginning(capture(captured)) } just Runs
 
             Shuffler.play(binder, mediaItems(150))
@@ -187,7 +187,7 @@ class ShufflerTest {
             every {
                 sharedPreferences.getString(excludeDislikedAlbumsKey, DislikeMode.Enabled.name)
             } returns DislikeMode.Disabled.name
-            mockkStatic("app.it.fast4x.rimusic.utils.PlayerKt")
+            mockkStatic("app.n_zik.android.utils.PlayerKt")
             every { player.forcePlayFromBeginning(any()) } just Runs
             var completed = false
 
@@ -207,7 +207,7 @@ class ShufflerTest {
             every {
                 sharedPreferences.getString(excludeDislikedAlbumsKey, DislikeMode.Enabled.name)
             } returns DislikeMode.Disabled.name
-            mockkStatic("app.it.fast4x.rimusic.utils.PlayerKt")
+            mockkStatic("app.n_zik.android.utils.PlayerKt")
             val events = mutableListOf<String>()
             every { binder.stopRadio() } answers { events.add("stopRadio") }
             every { player.forcePlayFromBeginning(any()) } answers { events.add("forcePlayFromBeginning") }
@@ -238,7 +238,7 @@ class ShufflerTest {
             every {
                 sharedPreferences.getString(excludeDislikedAlbumsKey, DislikeMode.Enabled.name)
             } returns DislikeMode.Disabled.name
-            mockkStatic("app.it.fast4x.rimusic.utils.PlayerKt")
+            mockkStatic("app.n_zik.android.utils.PlayerKt")
             every { player.forcePlayFromBeginning(any()) } just Runs
             var completed = false
 

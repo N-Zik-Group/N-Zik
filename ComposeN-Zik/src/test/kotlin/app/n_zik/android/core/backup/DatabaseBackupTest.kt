@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.graphics.Color
 import android.net.Uri
 import androidx.room.Room
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
+import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.core.database.LibraryBackupSchema

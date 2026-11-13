@@ -1,7 +1,7 @@
 package app.n_zik.android.components.player
 
-import app.it.fast4x.rimusic.enums.PlayerType
-import app.it.fast4x.rimusic.enums.ThumbnailType
+import app.n_zik.android.enums.PlayerType
+import app.n_zik.android.enums.ThumbnailType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame

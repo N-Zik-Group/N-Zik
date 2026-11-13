@@ -3,7 +3,7 @@ package app.n_zik.android.components.dialog.common
 import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.input.TextFieldValue
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.components.image.PickedImageEditor
 import app.n_zik.android.components.image.PreparedImage
 import app.n_zik.android.utils.coroutines.NzikDispatchers

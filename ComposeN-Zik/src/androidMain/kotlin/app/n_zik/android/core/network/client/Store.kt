@@ -1,16 +1,16 @@
 package app.n_zik.android.core.network.client
 
 import android.content.Context
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.it.fast4x.rimusic.utils.ytCookieKey
-import app.it.fast4x.rimusic.utils.ytVisitorDataKey
-import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
+import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.utils.ytCookieKey
+import app.n_zik.android.utils.ytVisitorDataKey
+import app.n_zik.android.utils.ytDataSyncIdKey
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
-import it.fast4x.innertube.Innertube
+import app.n_zik.innertube.Innertube
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex

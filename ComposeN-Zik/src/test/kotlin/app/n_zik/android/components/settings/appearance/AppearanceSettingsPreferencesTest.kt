@@ -3,8 +3,8 @@ package app.n_zik.android.components.settings.appearance
 import android.app.Application
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.setActiveProfile
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

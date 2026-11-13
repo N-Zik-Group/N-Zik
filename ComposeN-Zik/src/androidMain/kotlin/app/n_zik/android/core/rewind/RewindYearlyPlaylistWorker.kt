@@ -29,7 +29,7 @@ import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.notifications.channelId
 import app.n_zik.android.utils.DataStoreUtils
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.getActiveProfile
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import java.time.Duration

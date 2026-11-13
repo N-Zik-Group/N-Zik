@@ -16,17 +16,17 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.it.fast4x.rimusic.enums.DislikeMode
-import app.it.fast4x.rimusic.enums.SyncDirection
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
-import app.it.fast4x.rimusic.utils.getSyncDirection
-import app.it.fast4x.rimusic.utils.isNetworkConnected
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.syncPushArtistFollowKey
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.enums.DislikeMode
+import app.n_zik.android.enums.SyncDirection
+import app.n_zik.android.models.Artist
+import app.n_zik.android.ui.components.tab.toolbar.Button
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
+import app.n_zik.android.utils.excludeDislikedArtistsKey
+import app.n_zik.android.utils.getSyncDirection
+import app.n_zik.android.utils.isNetworkConnected
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.syncPushArtistFollowKey
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
@@ -44,7 +44,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import it.fast4x.innertube.YtMusic
+import app.n_zik.innertube.YtMusic
 import kotlinx.coroutines.launch
 
 /** Local and online artist action bars share the same visible footprint. */

@@ -1,7 +1,7 @@
 package app.n_zik.android.enums
 
-import app.it.fast4x.rimusic.enums.MaxStatisticsItems
-import app.it.fast4x.rimusic.enums.MaxTopPlaylistItems
+import app.n_zik.android.enums.MaxStatisticsItems
+import app.n_zik.android.enums.MaxTopPlaylistItems
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

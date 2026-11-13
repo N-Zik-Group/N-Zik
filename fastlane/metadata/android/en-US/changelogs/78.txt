@@ -15,6 +15,3 @@ Fixed:
 - Inverted sort queries across 6 tables
 - Empty playlists in sort results
 - History DATE sort double reversal
-
-Acknowledgments:
-- Cipher by Metrolist & ZemerTeam

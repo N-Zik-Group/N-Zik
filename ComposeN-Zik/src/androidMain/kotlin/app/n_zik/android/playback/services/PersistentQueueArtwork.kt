@@ -7,8 +7,8 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.cleanPrefix
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.cleanPrefix
 import app.n_zik.android.R
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
 import app.n_zik.android.playback.services.automotive.models.ArtworkBitmapDecoder

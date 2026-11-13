@@ -24,9 +24,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.utils.conditional
-import app.it.fast4x.rimusic.utils.disableScrollingTextKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.conditional
+import app.n_zik.android.utils.disableScrollingTextKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.components.settings.common.SettingsCardSurface
 import app.n_zik.android.R

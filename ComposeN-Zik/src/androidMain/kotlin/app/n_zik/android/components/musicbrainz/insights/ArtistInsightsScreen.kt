@@ -1,4 +1,4 @@
-// Ported from RiPlay (AGPL-3.0) — base: it.fast4x.riplay.extensions.musicbrainz.ui.ArtistInsightsScreen
+// Ported from RiPlay (AGPL-3.0).
 package app.n_zik.android.components.musicbrainz.insights
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -42,15 +42,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.ui.components.LocalMenuState
-import app.it.fast4x.rimusic.ui.components.tab.ItemSize
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.models.Artist
+import app.n_zik.android.ui.components.LocalMenuState
+import app.n_zik.android.ui.components.tab.ItemSize
 import app.n_zik.android.components.ui.FullPageLoader
-import app.it.fast4x.rimusic.ui.items.AlbumItem
-import app.it.fast4x.rimusic.ui.styling.Dimensions
-import app.it.fast4x.rimusic.ui.styling.onOverlay
-import app.it.fast4x.rimusic.ui.styling.overlay
+import app.n_zik.android.ui.items.AlbumItem
+import app.n_zik.android.ui.styling.Dimensions
+import app.n_zik.android.ui.styling.onOverlay
+import app.n_zik.android.ui.styling.overlay
 import app.n_zik.android.R
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.LocalPlayerServiceBinder
@@ -66,14 +66,14 @@ import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.musicbrainz.utils.toFlagEmoji
 import app.n_zik.android.typography
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.it.fast4x.rimusic.utils.addNext
-import app.it.fast4x.rimusic.utils.asMediaItem
-import app.it.fast4x.rimusic.utils.center
-import app.it.fast4x.rimusic.utils.color
-import app.it.fast4x.rimusic.utils.forcePlay
-import app.it.fast4x.rimusic.utils.secondary
-import app.it.fast4x.rimusic.utils.semiBold
-import app.it.fast4x.rimusic.utils.Preference.HOME_ALBUM_ITEM_SIZE
+import app.n_zik.android.utils.addNext
+import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.center
+import app.n_zik.android.utils.color
+import app.n_zik.android.utils.forcePlay
+import app.n_zik.android.utils.secondary
+import app.n_zik.android.utils.semiBold
+import app.n_zik.android.utils.Preference.HOME_ALBUM_ITEM_SIZE
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.uiRoundnessShape
 

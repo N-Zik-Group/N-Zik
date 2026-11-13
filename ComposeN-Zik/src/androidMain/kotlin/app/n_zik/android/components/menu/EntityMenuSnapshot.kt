@@ -11,10 +11,10 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.activeProfileKey
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.profilePreferences
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.activeProfileKey
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.Flow
 

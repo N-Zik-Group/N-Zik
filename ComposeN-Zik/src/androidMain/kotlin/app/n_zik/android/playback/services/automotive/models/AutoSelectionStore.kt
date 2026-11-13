@@ -2,7 +2,7 @@ package app.n_zik.android.playback.services.automotive.models
 
 import java.util.UUID
 import androidx.media3.common.MediaItem
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.appContext
 import app.n_zik.android.playback.services.automotive.session.AutoMediaIdContract
 

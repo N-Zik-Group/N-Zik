@@ -1,10 +1,10 @@
 package app.n_zik.android.core.coil
 
 import android.content.SharedPreferences
-import app.it.fast4x.rimusic.enums.CoilDiskCacheMaxSize
-import app.it.fast4x.rimusic.utils.coilDiskCacheMaxSizeKey
-import app.it.fast4x.rimusic.utils.exoPlayerCustomCacheKey
-import app.it.fast4x.rimusic.utils.getEnum
+import app.n_zik.android.enums.CoilDiskCacheMaxSize
+import app.n_zik.android.utils.coilDiskCacheMaxSizeKey
+import app.n_zik.android.utils.exoPlayerCustomCacheKey
+import app.n_zik.android.utils.getEnum
 
 internal const val PROFILE_IMAGE_CACHE_CUSTOM_MB = "coilCustomDiskCache"
 

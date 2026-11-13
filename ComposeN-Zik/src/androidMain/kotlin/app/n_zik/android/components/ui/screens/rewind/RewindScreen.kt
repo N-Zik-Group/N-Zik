@@ -84,7 +84,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mikepenz.hypnoticcanvas.shaderBackground
 import com.mikepenz.hypnoticcanvas.shaders.GradientFlow
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindActionFeedback
@@ -275,7 +275,7 @@ fun RewindScreen(
             }
             shareMode = false
             if (written == RewindDeckPageCount) {
-                // Kreate toaster: app-styled confirmation instead of a raw system toast.
+                // N-Zik toaster: app-styled confirmation instead of a raw system toast.
                 Toaster.done()
             } else if (written > 0) {
                 // Partial export: the user gets the pages that landed, told how many

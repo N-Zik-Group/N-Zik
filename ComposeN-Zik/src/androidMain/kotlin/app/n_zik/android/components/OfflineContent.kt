@@ -14,8 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.components.ui.FullPageLoader
-import app.it.fast4x.rimusic.utils.center
-import app.it.fast4x.rimusic.utils.secondary
+import app.n_zik.android.utils.center
+import app.n_zik.android.utils.secondary
 import app.n_zik.android.R
 import app.n_zik.android.typography
 

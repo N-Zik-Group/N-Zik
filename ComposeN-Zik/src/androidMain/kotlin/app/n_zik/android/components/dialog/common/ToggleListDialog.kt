@@ -48,9 +48,9 @@ import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.semiBold
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.ReorderableLazyListState
 

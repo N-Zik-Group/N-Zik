@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import app.it.fast4x.rimusic.enums.PlayerType
-import app.it.fast4x.rimusic.enums.ThumbnailType
+import app.n_zik.android.enums.PlayerType
+import app.n_zik.android.enums.ThumbnailType
 
 /** Hidden thumbnails and the compact Essential style use a full-background presentation. */
 fun playerLandscapeArtworkColumnVisible(

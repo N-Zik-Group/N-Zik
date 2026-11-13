@@ -7,7 +7,7 @@ import app.n_zik.android.components.settings.common.categoryId
 import app.n_zik.android.components.settings.common.settingsCardTargetId
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberUpdatedState
-import app.it.fast4x.rimusic.enums.NavRoutes
+import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.core.navigation.ScreenTransitions
 import app.n_zik.android.core.navigation.LocalSettingsBackNavigation
 import app.n_zik.android.components.search.SearchResultsViewport
@@ -28,7 +28,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import app.n_zik.android.core.navigation.RevealScaffoldOnNavigation
 import androidx.navigation.navArgument
-import app.it.fast4x.rimusic.enums.TransitionEffect
+import app.n_zik.android.enums.TransitionEffect
 import app.n_zik.android.components.settings.accounts.AccountsSettings
 import app.n_zik.android.components.settings.ai.AIRecommendationSettings
 import app.n_zik.android.components.settings.about.About
@@ -42,9 +42,9 @@ import app.n_zik.android.components.settings.common.SETTINGS_GLASS_ROUTE
 import app.n_zik.android.components.settings.common.isGlassSettingsLink
 import app.n_zik.android.components.settings.accounts.isYouTubeLoginEnabled
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
-import app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.transitionEffectKey
+import app.n_zik.android.utils.encryptedPreferencesUpdateTrigger
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.transitionEffectKey
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.components.settings.common.destinationRoute
 import app.n_zik.android.components.settings.common.SettingsGlobalPage

@@ -1,6 +1,6 @@
 package app.n_zik.android.components.ui.screens.rewind
 
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.ext.SongListeningStat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

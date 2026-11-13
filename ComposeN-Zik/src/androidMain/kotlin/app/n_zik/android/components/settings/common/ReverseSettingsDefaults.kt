@@ -2,12 +2,12 @@ package app.n_zik.android.components.settings.common
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import app.it.fast4x.rimusic.utils.Preference
-import app.it.fast4x.rimusic.utils.filterContentTypeKey
-import app.it.fast4x.rimusic.utils.floatActionIconOffsetXkey
-import app.it.fast4x.rimusic.utils.floatActionIconOffsetYkey
-import app.it.fast4x.rimusic.utils.multiFloatActionIconOffsetXkey
-import app.it.fast4x.rimusic.utils.multiFloatActionIconOffsetYkey
+import app.n_zik.android.utils.Preference
+import app.n_zik.android.utils.filterContentTypeKey
+import app.n_zik.android.utils.floatActionIconOffsetXkey
+import app.n_zik.android.utils.floatActionIconOffsetYkey
+import app.n_zik.android.utils.multiFloatActionIconOffsetXkey
+import app.n_zik.android.utils.multiFloatActionIconOffsetYkey
 
 // Selected values are independent of each menu's configurable catalogue and visibility.
 // Removing them reuses the actual readers, including context-dependent playlist defaults.

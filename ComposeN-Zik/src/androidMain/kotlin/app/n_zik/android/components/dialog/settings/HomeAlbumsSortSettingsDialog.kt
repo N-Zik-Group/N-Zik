@@ -18,10 +18,10 @@ import androidx.compose.ui.unit.dp
 import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
-import app.it.fast4x.rimusic.utils.homeAlbumsDislikedSortMenuOrderKey
-import app.it.fast4x.rimusic.utils.homeAlbumsFavoritesSortMenuOrderKey
-import app.it.fast4x.rimusic.utils.homeAlbumsLibrarySortMenuOrderKey
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.homeAlbumsDislikedSortMenuOrderKey
+import app.n_zik.android.utils.homeAlbumsFavoritesSortMenuOrderKey
+import app.n_zik.android.utils.homeAlbumsLibrarySortMenuOrderKey
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog

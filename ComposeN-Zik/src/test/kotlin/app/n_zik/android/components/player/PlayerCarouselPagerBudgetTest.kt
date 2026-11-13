@@ -37,7 +37,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import app.it.fast4x.rimusic.ui.screens.player.LaunchedEffectScrollToPage
+import app.n_zik.android.ui.screens.player.LaunchedEffectScrollToPage
 import app.n_zik.android.components.player.slide.flingBehaviorFor
 import app.n_zik.android.components.player.slide.landscapeCarouselDrag
 import app.n_zik.android.components.player.slide.slideSettledPageEffect

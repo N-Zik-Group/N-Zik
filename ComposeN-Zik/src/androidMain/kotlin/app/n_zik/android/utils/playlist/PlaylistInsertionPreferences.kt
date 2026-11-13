@@ -1,9 +1,9 @@
 package app.n_zik.android.utils.playlist
 
 import android.content.Context
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.utils.preferences
 
 /** Stable stored values independent of translated labels and display sort order. */
 enum class PlaylistInsertionPosition(val storedValue: String) {

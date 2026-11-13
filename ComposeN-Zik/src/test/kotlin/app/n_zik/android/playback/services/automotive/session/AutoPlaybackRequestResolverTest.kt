@@ -6,11 +6,11 @@ import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadRequest
-import app.it.fast4x.rimusic.EXPLICIT_PREFIX
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.maxSongsInQueueAndroidAutoKey
-import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.maxSongsInQueueAndroidAutoKey
+import app.n_zik.android.utils.parentalControlEnabledKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.SongTable
@@ -18,10 +18,10 @@ import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
 import app.n_zik.android.playback.services.automotive.models.CancellableAutoMediaItemMapper
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.requests.searchPage
-import it.fast4x.innertube.requests.song
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.requests.searchPage
+import app.n_zik.innertube.requests.song
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -57,7 +57,7 @@ class AutoPlaybackRequestResolverTest {
 
     @Before fun setup() {
         context = RuntimeEnvironment.getApplication()
-        mockkStatic("app.n_zik.android.GlobalVarsKt", "it.fast4x.innertube.requests.QueueKt", "it.fast4x.innertube.requests.SearchPageKt")
+        mockkStatic("app.n_zik.android.GlobalVarsKt", "app.n_zik.innertube.requests.QueueKt", "app.n_zik.innertube.requests.SearchPageKt")
         every { appContext() } returns context
         context.preferences.edit().clear().commit()
         mockkObject(Database, NetworkQualityHelper)

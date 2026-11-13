@@ -7,7 +7,7 @@ import androidx.annotation.DrawableRes
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.cleanPrefix
+import app.n_zik.android.cleanPrefix
 
 @UnstableApi
 object AutoMediaItemMapper {

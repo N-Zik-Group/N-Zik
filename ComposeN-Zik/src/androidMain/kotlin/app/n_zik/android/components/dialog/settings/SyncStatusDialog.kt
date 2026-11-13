@@ -30,8 +30,8 @@ import app.n_zik.android.components.dialog.common.InteractiveDialog
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.SyncStatusDetail
-import app.it.fast4x.rimusic.utils.medium
-import app.it.fast4x.rimusic.utils.syncStatus
+import app.n_zik.android.utils.medium
+import app.n_zik.android.utils.syncStatus
 
 object SyncStatusDialog : InteractiveDialog {
     override var isActive: Boolean by mutableStateOf(false)

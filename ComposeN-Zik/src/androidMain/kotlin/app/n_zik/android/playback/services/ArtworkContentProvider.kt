@@ -1,7 +1,7 @@
 package app.n_zik.android.playback.services
 
 import app.n_zik.android.components.image.OWNED_COVER_EXTENSION_PATTERN
-import app.it.fast4x.rimusic.cleanPrefix
+import app.n_zik.android.cleanPrefix
 import app.n_zik.android.Dependencies
 import app.n_zik.android.core.database.Database
 
@@ -25,7 +25,7 @@ import app.n_zik.android.R
 import app.n_zik.android.core.profiles.coversDir
 import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.core.profiles.profileStorageIdentity
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.getActiveProfile
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException

@@ -2,8 +2,8 @@ package app.n_zik.android.components.ui.screens.profiles
 
 import android.content.Context
 import android.content.SharedPreferences
-import app.it.fast4x.rimusic.utils.profileLastUsed
-import app.it.fast4x.rimusic.utils.saveProfileLastUsed
+import app.n_zik.android.utils.profileLastUsed
+import app.n_zik.android.utils.saveProfileLastUsed
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals

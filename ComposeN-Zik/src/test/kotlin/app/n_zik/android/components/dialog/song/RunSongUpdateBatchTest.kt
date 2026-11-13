@@ -1,11 +1,11 @@
 package app.n_zik.android.components.dialog.song
 
 import android.content.Context
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.models.SongArtistMap
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Song
+import app.n_zik.android.models.SongArtistMap
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.utils.ToastRelay
@@ -30,11 +30,11 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.ArtistConjunctions
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.models.Thumbnail
-import it.fast4x.innertube.requests.song
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.ArtistConjunctions
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.models.Thumbnail
+import app.n_zik.innertube.requests.song
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -149,7 +149,7 @@ class RunSongUpdateBatchTest {
     @Before
     fun setup() {
         progressCalls.clear()
-        mockkStatic("app.it.fast4x.rimusic.utils.ProfilePreferencesKt")
+        mockkStatic("app.n_zik.android.utils.ProfilePreferencesKt")
         every { getActiveProfile(any()) } returns "active"
         mockkObject(Database)
         every { Database.songTable } returns songTable
@@ -164,7 +164,7 @@ class RunSongUpdateBatchTest {
         every { internal.transactionExecutor } returns Executor { it.run() }
 
         // Innertube.song is a top-level suspend extension (requests/Queue.kt).
-        mockkStatic("it.fast4x.innertube.requests.QueueKt")
+        mockkStatic("app.n_zik.innertube.requests.QueueKt")
         mockkStatic("app.n_zik.android.components.dialog.song.SongUpdateVideoAuthorKt")
         coEvery { withVideoAuthorFallback(any(), any(), any(), any(), any()) } coAnswers {
             secondArg<Innertube.SongItem?>()

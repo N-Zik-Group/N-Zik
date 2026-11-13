@@ -1,6 +1,6 @@
 package app.n_zik.android.components.dialog.tab
 
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals

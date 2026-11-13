@@ -19,7 +19,7 @@ class BurgerMenuDeepLinkMappingTest {
 
     /** The (tab, focus) pairs the burger long-press handlers emit. */
     private fun deepLinks(): List<Pair<String, String>> {
-        val action = source("app/it/fast4x/rimusic/ui/components/navigation/header/ActionBar.kt")
+        val action = source("app/n_zik/android/ui/components/navigation/header/ActionBar.kt")
         return Regex(
             "navController\\.navigate\\(\"\\$\\{NavRoutes\\.settings\\.name\\}\\?tab=(\\d+)&focus=([a-z_]+)\"\\)"
         ).findAll(action).map { it.groupValues[1] to it.groupValues[2] }.toList()

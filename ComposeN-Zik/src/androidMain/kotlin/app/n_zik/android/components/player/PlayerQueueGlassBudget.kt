@@ -2,9 +2,9 @@ package app.n_zik.android.components.player
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import app.it.fast4x.rimusic.enums.QueueType
-import app.it.fast4x.rimusic.utils.queueTypeKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.enums.QueueType
+import app.n_zik.android.utils.queueTypeKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.components.glass.rememberGlassSettings
 
 /** Optical budget is independent of whether visible player decorations may animate. */

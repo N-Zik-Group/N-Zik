@@ -14,8 +14,8 @@ import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
-import app.it.fast4x.rimusic.utils.localPlaylistToolbarOrderKey
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.localPlaylistToolbarOrderKey
+import app.n_zik.android.core.utils.Toaster
 import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
 

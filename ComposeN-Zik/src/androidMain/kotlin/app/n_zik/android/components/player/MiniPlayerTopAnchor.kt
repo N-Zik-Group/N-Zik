@@ -2,7 +2,7 @@ package app.n_zik.android.components.player
 
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.styling.Dimensions
+import app.n_zik.android.ui.styling.Dimensions
 
 /** Height of the app header row, without the status bar (see AppHeader). */
 internal val APP_HEADER_HEIGHT: Dp = 64.dp

@@ -24,7 +24,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
+import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.components.player.lyricsThemeColor
 import app.n_zik.android.enums.lyrics.LyricsAlignment
 import app.n_zik.android.enums.lyrics.LyricsBackground
@@ -35,8 +35,8 @@ import app.n_zik.android.enums.lyrics.LyricsOutline
 import app.n_zik.android.R
 
 import app.n_zik.android.components.player.lyrics.utils.SynchronizedLyrics
-import app.it.fast4x.rimusic.utils.verticalFadingEdge
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.verticalFadingEdge
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.colorPalette
 import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator

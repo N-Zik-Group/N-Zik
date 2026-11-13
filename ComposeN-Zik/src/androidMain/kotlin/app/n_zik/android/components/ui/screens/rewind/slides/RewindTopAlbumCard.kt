@@ -33,7 +33,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.it.fast4x.rimusic.models.Album
+import app.n_zik.android.models.Album
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.screens.rewind.TopAlbum
 import app.n_zik.android.components.ui.screens.rewind.rewindAlbumLevel

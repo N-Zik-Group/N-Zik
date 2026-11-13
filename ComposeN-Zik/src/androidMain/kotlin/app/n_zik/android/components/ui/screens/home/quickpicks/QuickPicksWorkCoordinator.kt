@@ -1,6 +1,6 @@
 package app.n_zik.android.components.ui.screens.home.quickpicks
 
-import it.fast4x.innertube.utils.parseCookieString
+import app.n_zik.innertube.utils.parseCookieString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi

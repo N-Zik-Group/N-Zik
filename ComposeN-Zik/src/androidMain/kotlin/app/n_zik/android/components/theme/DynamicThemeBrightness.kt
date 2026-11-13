@@ -1,8 +1,8 @@
 package app.n_zik.android.components.theme
 
 import androidx.compose.ui.graphics.toArgb
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
-import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
+import app.n_zik.android.ui.styling.ColorPalette
+import app.n_zik.android.ui.styling.dynamicColorPaletteOf
 import app.n_zik.android.components.player.channelDelta
 
 internal const val dynamicThemeRespectBrightnessKey = "dynamicThemeRespectBrightness"

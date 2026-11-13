@@ -5,7 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.staticCompositionLocalOf
-import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
+import app.n_zik.android.ui.screens.player.PlayerSheetState
 import app.n_zik.android.components.glass.GLASS_OPTICS_FADE_MILLIS
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassRenderer

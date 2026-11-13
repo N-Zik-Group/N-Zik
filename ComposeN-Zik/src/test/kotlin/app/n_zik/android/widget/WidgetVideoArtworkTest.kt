@@ -11,8 +11,8 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.RemoteViews
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.cropVideoThumbnailsKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

@@ -4,7 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.NavRoutes
+import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.R
 import app.n_zik.android.components.settings.common.SETTINGS_GROUP_ABOUT_UPDATE
 import app.n_zik.android.components.settings.common.OrganizedSettingsCategories

@@ -32,8 +32,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.ui.styling.favoritesIcon
+import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.R
 import app.n_zik.android.LocalTopBarOffset
 import app.n_zik.android.colorPalette

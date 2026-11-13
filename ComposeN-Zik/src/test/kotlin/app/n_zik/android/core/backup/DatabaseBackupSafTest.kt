@@ -16,7 +16,7 @@ import android.provider.DocumentsContract
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.profiles.profileStorageIdentity
-import app.it.fast4x.rimusic.utils.writeProfileEntries
+import app.n_zik.android.utils.writeProfileEntries
 import app.n_zik.android.core.rescue.RescueFiles
 import java.io.File
 import java.io.RandomAccessFile

@@ -15,7 +15,7 @@ Changed:
 - All section spacing uniformized to 16dp — removed Title.kt's built-in top=5dp padding; Title calls 12dp->16dp; TitleMiniSection callers top 14dp->16dp
 
 Refactor:
-- Home Screen: moved all home screen files from app.it.fast4x.rimusic.ui.screens.home to app.n_zik.android.components.ui.screens.home
+- Home Screen: moved all home screen files to app.n_zik.android.components.ui.screens.home
 - Home Screen: split HomeQuickPicks.kt into HomeQuickPicks.kt, HomeQuickPicksState.kt, HomeQuickPicksSections.kt, HomeQuickPicksComponents.kt
 
 Improved:

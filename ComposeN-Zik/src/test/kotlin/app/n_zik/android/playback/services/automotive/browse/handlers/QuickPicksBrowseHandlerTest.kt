@@ -4,13 +4,13 @@ import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import android.content.Context
 import androidx.core.content.edit
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.EXPLICIT_PREFIX
-import app.it.fast4x.rimusic.enums.PlayEventsType
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.enums.PlayEventsType
+import app.n_zik.android.models.Song
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
-import app.it.fast4x.rimusic.utils.playEventsTypeKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.parentalControlEnabledKey
+import app.n_zik.android.utils.playEventsTypeKey
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.core.database.Database
@@ -18,9 +18,9 @@ import app.n_zik.android.core.database.EventTable
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.browse.TestApplication
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.requests.relatedPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.requests.relatedPage
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -82,7 +82,7 @@ class QuickPicksBrowseHandlerTest {
         // "logged out" so the ytm section is skipped and useLoginForBrowse
 
         // is never read (both call sites short-circuit on isYouTubeLoggedIn).
-        mockkStatic("it.fast4x.innertube.requests.RelatedPageKt")
+        mockkStatic("app.n_zik.innertube.requests.RelatedPageKt")
         mockkStatic("app.n_zik.android.components.settings.accounts.AccountsSettingsKt")
         every { isYouTubeLoggedIn() } returns false
     }

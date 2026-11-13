@@ -51,9 +51,9 @@ import app.n_zik.android.components.glass.SampledMenuSheet
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
-import app.it.fast4x.rimusic.utils.DOWNLOAD_INDICATOR_SIZE_NORMAL
-import app.it.fast4x.rimusic.utils.DOWNLOAD_INDICATOR_STROKE_WIDTH
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.DOWNLOAD_INDICATOR_SIZE_NORMAL
+import app.n_zik.android.utils.DOWNLOAD_INDICATOR_STROKE_WIDTH
+import app.n_zik.android.utils.semiBold
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette

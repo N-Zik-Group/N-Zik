@@ -2,8 +2,8 @@ package app.n_zik.android.components.player
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.buttonzoomoutKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.buttonzoomoutKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction

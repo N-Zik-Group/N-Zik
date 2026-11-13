@@ -1,11 +1,11 @@
 package app.n_zik.android.extensions.lastfm
 
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.appContext
-import it.fast4x.lastfm.LastFm
+import app.n_zik.lastfm.LastFm
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber

@@ -36,7 +36,3 @@ Refactor:
 - Completed cipher parity across all 8 cipher files
 - Replaced Pacman and Snake easter egg mini-games with static images
 - Removed hardcoded dialog strings in favor of string resources
-
-Acknowledgments:
-- Cipher pipeline improvements inspired by Metrolist (https://github.com/Metrolist/Metrolist)
-- Cipher configs sourced from ZemerTeam/zemer-cipher (https://github.com/ZemerTeam/zemer-cipher)

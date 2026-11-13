@@ -20,7 +20,7 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
-import it.fast4x.innertube.models.VideoOrSongInfo
+import app.n_zik.innertube.models.VideoOrSongInfo
 import kotlinx.coroutines.flow.flowOf
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -30,20 +30,20 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.models.PlaylistPreview
-import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
-import app.it.fast4x.rimusic.ui.screens.info.VideoOrSongInfoResult
-import app.it.fast4x.rimusic.ui.screens.info.VideoOrSongInfoScreen
-import app.it.fast4x.rimusic.ui.screens.info.loadVideoOrSongInfo
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.Typography
-import app.it.fast4x.rimusic.utils.activeProfileKey
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.profilePreferences
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.PlaylistPreview
+import app.n_zik.android.ui.components.themed.PlaylistsMenu
+import app.n_zik.android.ui.screens.info.VideoOrSongInfoResult
+import app.n_zik.android.ui.screens.info.VideoOrSongInfoScreen
+import app.n_zik.android.ui.screens.info.loadVideoOrSongInfo
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.Typography
+import app.n_zik.android.utils.activeProfileKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.profilePreferences
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.components.glass.GlassStore
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.core.database.Database
@@ -75,7 +75,7 @@ class LegacyDisplayPrefixRenderingTest {
     @Test
     fun `information rows hide local metadata prefixes without changing loader input or playback`() {
         val rawArtist = "modified:local:Test artist"
-        mockkStatic("app.it.fast4x.rimusic.ui.screens.info.VideoOrSongInfoScreenKt")
+        mockkStatic("app.n_zik.android.ui.screens.info.VideoOrSongInfoScreenKt")
         coEvery { loadVideoOrSongInfo(any(), any()) } returns VideoOrSongInfoResult(
             info = null,
             finalArtists = listOf("artist-id" to rawArtist),
@@ -107,7 +107,7 @@ class LegacyDisplayPrefixRenderingTest {
 
     @Test
     fun `information rows clean loaded titles and multiple artists while retaining ordinary colon text`() {
-        mockkStatic("app.it.fast4x.rimusic.ui.screens.info.VideoOrSongInfoScreenKt")
+        mockkStatic("app.n_zik.android.ui.screens.info.VideoOrSongInfoScreenKt")
         coEvery { loadVideoOrSongInfo(any(), any()) } returns VideoOrSongInfoResult(
             info = VideoOrSongInfo(videoId = "prefix-info-online", title = "e:modified:Online title"),
             finalArtists = listOf("one" to "modified:First artist", "two" to "Artist: second"),

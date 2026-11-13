@@ -1,0 +1,52 @@
+package app.n_zik.android.ui.screens.mood
+
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavController
+import app.n_zik.android.R
+import app.n_zik.android.compose.persist.PersistMapCleanup
+import app.n_zik.android.models.Mood
+import app.n_zik.android.components.navigation.Skeleton
+
+@ExperimentalTextApi
+@ExperimentalFoundationApi
+@ExperimentalComposeUiApi
+@ExperimentalAnimationApi
+@UnstableApi
+@Composable
+fun MoodScreen(
+    navController: NavController,
+    mood: Mood,
+    miniPlayer: @Composable () -> Unit = {},
+) {
+    val saveableStateHolder = rememberSaveableStateHolder()
+
+    PersistMapCleanup(tagPrefix = "playlist/$defaultBrowseId")
+
+            Skeleton(
+                navController,
+                topInsetHandledByContent = true,
+                navBarContent = { item ->
+                    item(0, stringResource(R.string.search_mood_title), R.drawable.album)
+                },
+                miniPlayer = miniPlayer
+            ) { currentTabIndex ->
+                saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
+                    when (currentTabIndex) {
+                        0 -> MoodList(
+                            navController = navController,
+                            mood = mood
+                        )
+                    }
+                }
+            }
+}
+
+
+

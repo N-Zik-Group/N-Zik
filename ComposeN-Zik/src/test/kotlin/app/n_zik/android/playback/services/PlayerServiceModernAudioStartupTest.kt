@@ -19,8 +19,8 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaController
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.profilePreferences
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.MainActivity
 import app.n_zik.android.MainApplication
 import app.n_zik.android.appContext

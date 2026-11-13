@@ -11,7 +11,7 @@ internal const val LIBRARY_SCHEMA_VERSION = 43
 /** Checks the staged database against exported Room schemas without starting Room in rescue. */
 internal object LibraryBackupSchema {
     const val CURRENT = "app.n_zik.android.core.database.DatabaseInitializer"
-    const val LEGACY = "app.it.fast4x.rimusic.DatabaseInitializer"
+    const val LEGACY = "app.n_zik.android.core.database.legacy.DatabaseInitializer"
     private val optionalTables = setOf(
         "android_metadata", "room_master_table", "sqlite_sequence",
         "sqlite_stat1", "sqlite_stat2", "sqlite_stat3", "sqlite_stat4",

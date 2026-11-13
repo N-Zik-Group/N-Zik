@@ -2,8 +2,8 @@ package app.n_zik.android.components.player
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
-import app.it.fast4x.rimusic.ui.styling.lerpTo
+import app.n_zik.android.ui.styling.ColorPalette
+import app.n_zik.android.ui.styling.lerpTo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue

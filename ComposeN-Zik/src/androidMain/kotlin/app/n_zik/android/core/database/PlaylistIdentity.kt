@@ -1,7 +1,7 @@
 package app.n_zik.android.core.database
 
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.MODIFIED_PREFIX
 
 enum class PlaylistLinkKind { Local, YouTubePlaylist, YouTubePodcast }
 

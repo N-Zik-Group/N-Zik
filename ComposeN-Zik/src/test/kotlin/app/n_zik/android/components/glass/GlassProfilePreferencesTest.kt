@@ -10,8 +10,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.components.ui.screens.profiles.purgeProfileData
 import app.n_zik.android.core.profiles.profileDataPrefs
 import org.junit.Assert.assertEquals

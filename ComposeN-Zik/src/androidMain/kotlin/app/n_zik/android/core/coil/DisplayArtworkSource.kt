@@ -9,10 +9,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.activeProfileKey
-import app.it.fast4x.rimusic.utils.profilePreferences
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.activeProfileKey
+import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.appContext
 import app.n_zik.android.playback.services.ArtworkContentProvider
 

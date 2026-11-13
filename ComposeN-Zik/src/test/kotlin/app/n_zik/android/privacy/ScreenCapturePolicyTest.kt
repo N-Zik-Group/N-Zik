@@ -3,8 +3,8 @@ package app.n_zik.android.privacy
 import android.app.Activity
 import android.app.Application
 import android.view.WindowManager
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.setActiveProfile
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test

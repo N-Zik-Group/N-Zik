@@ -46,9 +46,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.text.BasicText
 import app.n_zik.android.R
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.hasPermission
-import app.it.fast4x.rimusic.utils.isCompositionLaunched
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.hasPermission
+import app.n_zik.android.utils.isCompositionLaunched
+import app.n_zik.android.utils.semiBold
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp

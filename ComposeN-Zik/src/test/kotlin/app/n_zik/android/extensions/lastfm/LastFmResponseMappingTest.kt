@@ -1,7 +1,7 @@
 package app.n_zik.android.extensions.lastfm
 
-import it.fast4x.lastfm.models.LastFmApiException
-import it.fast4x.lastfm.models.LastFmResponse
+import app.n_zik.lastfm.models.LastFmApiException
+import app.n_zik.lastfm.models.LastFmResponse
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Assertions.assertEquals

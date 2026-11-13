@@ -5,13 +5,13 @@ import android.os.Build
 import androidx.compose.ui.test.hasText
 import androidx.media3.common.Player
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.PlayerTimelineType
-import app.it.fast4x.rimusic.models.ui.UiMedia
-import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
-import app.it.fast4x.rimusic.utils.DURATION_INDICATOR_HEIGHT
-import app.it.fast4x.rimusic.utils.GetSeekBar
-import app.it.fast4x.rimusic.utils.playerTimelineTypeKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.enums.PlayerTimelineType
+import app.n_zik.android.models.ui.UiMedia
+import app.n_zik.android.ui.screens.player.PlayerSheetState
+import app.n_zik.android.utils.DURATION_INDICATOR_HEIGHT
+import app.n_zik.android.utils.GetSeekBar
+import app.n_zik.android.utils.playerTimelineTypeKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.LocalPlayerSheetState
 import app.n_zik.android.R
@@ -49,12 +49,12 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.enums.FontType
-import app.it.fast4x.rimusic.enums.PlayerTimelineSize
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.typographyOf
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.enums.PlayerTimelineSize
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassAreaMode
 import app.n_zik.android.components.glass.GlassSettings
@@ -436,9 +436,9 @@ class PlayerInformationGlassBlockTest {
             CompositionLocalProvider(LocalPlayerServiceBinder provides binder, LocalPlayerSheetState provides sheet) {
             Box(Modifier.requiredWidth(width.value).testTag("viewport")) {
                 @Composable fun Metadata() {
-                    if (modern.value) app.it.fast4x.rimusic.ui.screens.player.components.controls.InfoAlbumAndArtistModern(
+                    if (modern.value) app.n_zik.android.ui.screens.player.components.controls.InfoAlbumAndArtistModern(
                         binder, nav, "album", media, media.id, "Layout title", null, null, false, "Layout artist", {}, true)
-                    else app.it.fast4x.rimusic.ui.screens.player.components.controls.InfoAlbumAndArtistEssential(
+                    else app.n_zik.android.ui.screens.player.components.controls.InfoAlbumAndArtistEssential(
                         binder, nav, "album", media, media.id, "Layout title", null, null, "Layout artist", false, {}, true)
                 }
                 @Composable fun NativeFlow() {
@@ -465,7 +465,7 @@ class PlayerInformationGlassBlockTest {
                 } else NativeFlow()
             }
         } } }
-        for (w in listOf(360.dp, 640.dp)) for (size in app.it.fast4x.rimusic.enums.PlayerTimelineSize.entries)
+        for (w in listOf(360.dp, 640.dp)) for (size in app.n_zik.android.enums.PlayerTimelineSize.entries)
             for (isModern in listOf(false, true)) for (enabled in listOf(false, true)) {
                 compose.runOnIdle {
                     width.value = w; inset.value = size.size.dp; modern.value = isModern
@@ -498,7 +498,7 @@ class PlayerInformationGlassBlockTest {
                         pane.left - viewport.left, viewport.right - pane.right, 1f)
                     val visualCapsules = listOf("player.queueDuration.material", "player.infoRail.surface", "player.skipTime.material")
                         .flatMap { tag -> compose.onAllNodes(hasTestTag(tag)).fetchSemanticsNodes().map { it.boundsInRoot } }
-                    if (size != app.it.fast4x.rimusic.enums.PlayerTimelineSize.Expanded) {
+                    if (size != app.n_zik.android.enums.PlayerTimelineSize.Expanded) {
                         val minimumOutset = with(compose.density) { 10.dp.toPx() } - 1f
                         assertTrue("At least 10dp outside every passive capsule $w $size modern=$isModern",
                             visualCapsules.all { it.left - pane.left >= minimumOutset && pane.right - it.right >= minimumOutset })

@@ -21,17 +21,17 @@ import androidx.compose.ui.graphics.Color
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.ui.sliders.SliderControl
 import app.n_zik.android.components.glass.GlassDialogIconButton as IconButton
-import app.it.fast4x.rimusic.ui.styling.favoritesIcon
-import app.it.fast4x.rimusic.utils.VinylSizeKey
-import app.it.fast4x.rimusic.utils.expandedplayerKey
-import app.it.fast4x.rimusic.utils.fadingedgeKey
-import app.it.fast4x.rimusic.utils.isLandscape
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.showCoverThumbnailAnimationKey
-import app.it.fast4x.rimusic.utils.thumbnailFadeExKey
-import app.it.fast4x.rimusic.utils.thumbnailFadeKey
-import app.it.fast4x.rimusic.utils.thumbnailSpacingKey
-import app.it.fast4x.rimusic.utils.thumbnailSpacingLKey
+import app.n_zik.android.ui.styling.favoritesIcon
+import app.n_zik.android.utils.VinylSizeKey
+import app.n_zik.android.utils.expandedplayerKey
+import app.n_zik.android.utils.fadingedgeKey
+import app.n_zik.android.utils.isLandscape
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.showCoverThumbnailAnimationKey
+import app.n_zik.android.utils.thumbnailFadeExKey
+import app.n_zik.android.utils.thumbnailFadeKey
+import app.n_zik.android.utils.thumbnailSpacingKey
+import app.n_zik.android.utils.thumbnailSpacingLKey
 
 /** Thumbnail layout tuning dialog on the shared [DefaultDialog]: image cover size, edge fade and spacing sliders. */
 @androidx.annotation.OptIn(UnstableApi::class)

@@ -45,14 +45,14 @@ import app.n_zik.android.components.glass.OverlayFade
 import app.n_zik.android.components.glass.overlayViewportShape
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.ui.components.themed.SecondaryTextButton
-import app.it.fast4x.rimusic.utils.hasPermission
-import app.it.fast4x.rimusic.utils.isCompositionLaunched
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.semiBold
-import app.it.fast4x.rimusic.utils.showvisthumbnailKey
-import app.it.fast4x.rimusic.utils.blackBackgroundForVisThumbnailKey
-import app.it.fast4x.rimusic.utils.visualizerEnabledKey
+import app.n_zik.android.ui.components.themed.SecondaryTextButton
+import app.n_zik.android.utils.hasPermission
+import app.n_zik.android.utils.isCompositionLaunched
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.semiBold
+import app.n_zik.android.utils.showvisthumbnailKey
+import app.n_zik.android.utils.blackBackgroundForVisThumbnailKey
+import app.n_zik.android.utils.visualizerEnabledKey
 import app.n_zik.android.extensions.nextvisualizer.NextVisualizer
 
 @UnstableApi

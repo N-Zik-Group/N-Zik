@@ -29,7 +29,7 @@ import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import androidx.compose.ui.text.input.TextFieldValue
-import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
+import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.filterSearchHistory
@@ -41,8 +41,8 @@ import app.n_zik.android.components.settings.common.visibleCardTitleRes
 import app.n_zik.android.components.settings.common.settingsSearchContent
 import app.n_zik.android.components.settings.common.settingsSearchDescription
 import app.n_zik.android.components.settings.common.settingsSearchTitle
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.preferences
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.LaunchedEffect

@@ -1,6 +1,6 @@
 package app.n_zik.android.extensions.lastfm
 
-import it.fast4x.lastfm.utils.LastFmAuthUtils
+import app.n_zik.lastfm.utils.LastFmAuthUtils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

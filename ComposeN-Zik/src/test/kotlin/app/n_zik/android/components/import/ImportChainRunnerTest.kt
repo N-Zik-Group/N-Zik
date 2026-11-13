@@ -28,8 +28,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-import app.it.fast4x.rimusic.utils.PROFILE_NAMES_FILE_NAME
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.PROFILE_NAMES_FILE_NAME
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.MainApplication
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.RestartAppDialog

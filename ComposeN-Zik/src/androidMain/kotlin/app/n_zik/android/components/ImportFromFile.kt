@@ -4,7 +4,7 @@ import android.content.ActivityNotFoundException
 import android.net.Uri
 import androidx.activity.compose.ManagedActivityResultLauncher
 import app.n_zik.android.R
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import timber.log.Timber
 
 abstract class ImportFromFile(

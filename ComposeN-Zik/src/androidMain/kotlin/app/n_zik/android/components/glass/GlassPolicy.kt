@@ -20,10 +20,10 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.activeProfileKey
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.profilePreferences
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.activeProfileKey
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.colorPalette
 
 val LocalGlassArtworkColor = staticCompositionLocalOf<Color?> { null }

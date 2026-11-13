@@ -1,8 +1,8 @@
 package app.n_zik.android.components.navigation.dock
 
 import androidx.compose.runtime.mutableStateOf
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import app.it.fast4x.rimusic.enums.PlayerPosition
+import app.n_zik.android.enums.NavigationBarPosition
+import app.n_zik.android.enums.PlayerPosition
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue

@@ -38,8 +38,8 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
-import app.it.fast4x.rimusic.utils.hideStatusBarKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.hideStatusBarKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.menu.CenteredMenuSheetDragHandle

@@ -1,15 +1,15 @@
 package app.n_zik.android.legacyoffmain.player
 
 import androidx.compose.ui.graphics.Color
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.DefaultLightColorPalette
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.DefaultLightColorPalette
 import app.n_zik.android.components.player.durationOutlineColorOf
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 /**
  * Pin of [durationOutlineColorOf] (spec-achromatic-ramp-luminance-cap, loopback 2, VG-3): the
- * kreate `DurationIndicator`'s outline decision was extracted into this pure helper so it can
+ * the themed `DurationIndicator`'s outline decision was extracted into this pure helper so it can
  * be pinned — it is keyed on the effective palette tone instead of `colorPaletteMode`, and the
  * legacy light-mode quirk (the opt-out ignored, `White.copy(0.5f)` returned even with
  * `textOutline=false`) is fixed.

@@ -3,9 +3,9 @@ package app.n_zik.android.components.tab
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import app.it.fast4x.rimusic.ui.components.MenuState
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.ui.components.MenuState
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.colorPalette
 
 /** Live stateful actions keep their menu open unless a one-shot action explicitly dismisses it. */

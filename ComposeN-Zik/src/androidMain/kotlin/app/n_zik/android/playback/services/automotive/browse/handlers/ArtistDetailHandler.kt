@@ -7,18 +7,18 @@ import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import io.ktor.client.call.body
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.YtMusic
-import it.fast4x.innertube.models.BrowseResponse
-import it.fast4x.innertube.models.GridRenderer
-import it.fast4x.innertube.requests.ArtistItemsPage
-import it.fast4x.innertube.utils.from
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.YtMusic
+import app.n_zik.innertube.models.BrowseResponse
+import app.n_zik.innertube.models.GridRenderer
+import app.n_zik.innertube.requests.ArtistItemsPage
+import app.n_zik.innertube.utils.from
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
 
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.utils.asSong
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.utils.asSong
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.artistEntryNames

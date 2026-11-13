@@ -18,21 +18,21 @@ import androidx.media3.datasource.cache.CacheDataSource.FLAG_IGNORE_CACHE_ON_ERR
 import app.n_zik.android.core.profiles.ReadOnlyProfileCache
 import app.n_zik.android.R
 
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.network.client.Store
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 
 import app.n_zik.android.core.security.potoken.PoTokenGenerator
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.PlayerResponse
-import it.fast4x.innertube.requests.nextPage
-import it.fast4x.innertube.requests.artistPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.PlayerResponse
+import app.n_zik.innertube.requests.nextPage
+import app.n_zik.innertube.requests.artistPage
 import app.n_zik.android.appContext
 import app.n_zik.android.enums.DownloadQualityFormat
-import app.it.fast4x.rimusic.enums.AudioQualityFormat
-import app.it.fast4x.rimusic.models.Format
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.enums.AudioQualityFormat
+import app.n_zik.android.models.Format
+import app.n_zik.android.models.Song
 import app.n_zik.android.listentogether.ListenTogetherClient
 import app.n_zik.android.listentogether.ListenTogetherPlayerBridge
 import app.n_zik.android.utils.DataStoreUtils
@@ -42,11 +42,11 @@ import app.n_zik.android.playback.exceptions.UnmatchedSongException
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
-import app.it.fast4x.rimusic.utils.isConnectionMetered
-import app.it.fast4x.rimusic.utils.okHttpDataSourceFactory
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.isConnectionMetered
+import app.n_zik.android.utils.okHttpDataSourceFactory
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.playback.exceptions.ExplicitContentException
-import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
+import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.core.database.artistEntryNames
 
 import kotlinx.coroutines.CancellationException
@@ -61,16 +61,16 @@ import java.util.Collections
 import java.net.UnknownHostException
 import io.ktor.client.call.body
 import timber.log.Timber
-import app.it.fast4x.rimusic.EXPLICIT_PREFIX
-import app.it.fast4x.rimusic.LOCAL_KEY_PREFIX
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Artist
+import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.LOCAL_KEY_PREFIX
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
 import app.n_zik.android.core.security.potoken.PoTokenResult
-import app.it.fast4x.rimusic.models.SongAlbumMap
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
+import app.n_zik.android.models.SongAlbumMap
+import app.n_zik.android.MODIFIED_PREFIX
 import java.util.concurrent.ConcurrentHashMap
-import app.kreate.android.me.knighthat.utils.PropUtils
-import it.fast4x.innertube.YtMusic
+import app.n_zik.android.core.utils.PropUtils
+import app.n_zik.innertube.YtMusic
 import android.database.sqlite.SQLiteConstraintException
 
 import okhttp3.Request

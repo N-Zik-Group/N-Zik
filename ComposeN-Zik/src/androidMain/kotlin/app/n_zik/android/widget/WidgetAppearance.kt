@@ -28,12 +28,12 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-import app.it.fast4x.rimusic.ui.styling.BoundedCornerSize
-import app.it.fast4x.rimusic.utils.artistThumbnailRoundnessDpKey
-import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.thumbnailRoundnessDpKey
-import app.it.fast4x.rimusic.utils.uiRoundnessDpKey
+import app.n_zik.android.ui.styling.BoundedCornerSize
+import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
+import app.n_zik.android.utils.cropVideoThumbnailsKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.thumbnailRoundnessDpKey
+import app.n_zik.android.utils.uiRoundnessDpKey
 import app.n_zik.android.R
 import app.n_zik.android.core.coil.isVideoArtwork
 import app.n_zik.android.core.coil.displayArtworkSource

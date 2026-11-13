@@ -8,7 +8,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
+import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.runBlocking

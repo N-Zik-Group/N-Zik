@@ -18,11 +18,11 @@ import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionError
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaSession
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.models.QueuedMediaItem
-import app.it.fast4x.rimusic.utils.persistentQueueKey
-import app.it.fast4x.rimusic.utils.fadeInEffect
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.models.Song
+import app.n_zik.android.models.QueuedMediaItem
+import app.n_zik.android.utils.persistentQueueKey
+import app.n_zik.android.utils.fadeInEffect
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
 import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.appContext
@@ -69,8 +69,8 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.LooperMode
 import java.io.File
 import java.io.IOException
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.requests.searchPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.requests.searchPage
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
@@ -370,7 +370,7 @@ class AutoRealSessionQueueOwnershipTest {
         val songs = mockk<SongTable>()
         every { Database.songTable } returns songs
         every { songs.findAllTitleArtistContains("failed voice") } returns flowOf(emptyList())
-        mockkStatic("it.fast4x.innertube.requests.SearchPageKt")
+        mockkStatic("app.n_zik.innertube.requests.SearchPageKt")
         coEvery { Innertube.searchPage<Innertube.SongItem>("failed voice", Innertube.SearchFilter.Song.value, any()) } throws IOException("provider unavailable")
         observed.selection = null
         first.setMediaItem(MediaItem.Builder().setRequestMetadata(MediaItem.RequestMetadata.Builder()

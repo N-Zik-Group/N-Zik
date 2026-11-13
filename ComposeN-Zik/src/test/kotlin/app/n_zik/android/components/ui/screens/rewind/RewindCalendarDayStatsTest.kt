@@ -1,6 +1,6 @@
 package app.n_zik.android.components.ui.screens.rewind
 
-import app.it.fast4x.rimusic.models.Event
+import app.n_zik.android.models.Event
 import java.time.LocalDate
 import java.time.ZoneId
 import org.junit.Assert.assertEquals

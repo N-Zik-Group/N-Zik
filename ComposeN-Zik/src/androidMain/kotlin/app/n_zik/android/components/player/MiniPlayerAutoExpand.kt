@@ -1,7 +1,7 @@
 package app.n_zik.android.components.player
 
 import androidx.compose.animation.core.tween
-import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
+import app.n_zik.android.ui.screens.player.PlayerSheetState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

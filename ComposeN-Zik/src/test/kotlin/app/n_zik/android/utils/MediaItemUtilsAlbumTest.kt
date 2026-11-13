@@ -2,7 +2,7 @@ package app.n_zik.android.utils
 
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import app.it.fast4x.rimusic.models.Album
+import app.n_zik.android.models.Album
 import app.n_zik.android.core.database.AlbumTable
 import app.n_zik.android.core.database.Database
 import io.mockk.every

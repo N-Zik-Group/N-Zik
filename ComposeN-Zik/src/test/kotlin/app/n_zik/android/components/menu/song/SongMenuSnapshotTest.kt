@@ -8,8 +8,8 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.SongTable
 import io.mockk.every

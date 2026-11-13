@@ -5,8 +5,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.ContextCompat
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.bridge.audio.AudioLibrary
 import app.n_zik.android.bridge.command.BridgeCommandExecutor
 import app.n_zik.android.bridge.command.ListCommandExecutor

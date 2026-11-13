@@ -75,15 +75,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.it.fast4x.rimusic.enums.MenuStyle
+import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.components.glass.SampledMenuSheet
-import app.it.fast4x.rimusic.ui.components.LocalMenuState
-import app.it.fast4x.rimusic.ui.components.themed.IconButton as ThemeIconButton
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
-import app.it.fast4x.rimusic.utils.menuStyleKey
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.semiBold
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.ui.components.LocalMenuState
+import app.n_zik.android.ui.components.themed.IconButton as ThemeIconButton
+import app.n_zik.android.ui.styling.ColorPalette
+import app.n_zik.android.utils.menuStyleKey
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.semiBold
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.InputDialog

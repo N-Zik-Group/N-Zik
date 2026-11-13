@@ -2,8 +2,8 @@ package app.n_zik.android.core.backup
 
 import android.app.Application
 import android.content.ContextWrapper
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.components.settings.data.CleanupAction
 import app.n_zik.android.components.settings.data.DeferredProfileCleanup
 import app.n_zik.android.components.settings.data.captureFiles

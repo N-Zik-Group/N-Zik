@@ -1,7 +1,7 @@
 package app.n_zik.android.utils
 
 import androidx.core.os.LocaleListCompat
-import app.it.fast4x.rimusic.enums.Languages
+import app.n_zik.android.enums.Languages
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

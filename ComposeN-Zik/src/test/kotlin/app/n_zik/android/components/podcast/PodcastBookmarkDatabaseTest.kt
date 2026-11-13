@@ -5,8 +5,8 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.utils.asMediaItem
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.components.playlist.loadCompletePodcastEpisodes
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.Database
@@ -14,7 +14,7 @@ import app.n_zik.android.core.database.DatabaseInitializer
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
-import it.fast4x.innertube.models.v0624.podcasts.BrowsePodcastsResponse0624
+import app.n_zik.innertube.models.v0624.podcasts.BrowsePodcastsResponse0624
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking

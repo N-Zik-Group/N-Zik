@@ -1,8 +1,8 @@
 package app.n_zik.android.components.theme
 
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.applyPitchBlack
+import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.applyPitchBlack
 
 /** Reapply the selected mode after initialization, restoration or dynamic palette extraction. */
 fun Appearance.forPaletteMode(mode: ColorPaletteMode): Appearance {

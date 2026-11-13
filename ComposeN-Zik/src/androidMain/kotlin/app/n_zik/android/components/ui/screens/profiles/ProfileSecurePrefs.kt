@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import java.util.concurrent.ConcurrentHashMap
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
 
 /** The per-profile secure prefs, cached per profile ID: the keystore-backed [EncryptedSharedPreferences] instance is expensive to create (MasterKey + keystore round trip), so it is built once per profile and reused from any thread (thread-safe via [ConcurrentHashMap.computeIfAbsent]). */
 private val securePrefsCache = ConcurrentHashMap<String, SharedPreferences>()

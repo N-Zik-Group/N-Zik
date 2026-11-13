@@ -1,6 +1,6 @@
 package app.n_zik.android.utils
 
-import app.it.fast4x.rimusic.enums.NavRoutes
+import app.n_zik.android.enums.NavRoutes
 
 /**
  * Whether [route] renders an app navigation bar whose space the mini-player must reserve.

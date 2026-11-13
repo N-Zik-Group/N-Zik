@@ -1,8 +1,8 @@
 package app.n_zik.android.components.player
 
 import androidx.compose.ui.graphics.Color
-import app.it.fast4x.rimusic.enums.ColorPaletteName
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
+import app.n_zik.android.enums.ColorPaletteName
+import app.n_zik.android.ui.styling.ColorPalette
 
 /**
  * The outline (halo) color for the player's title/artist text
@@ -11,7 +11,7 @@ import app.it.fast4x.rimusic.ui.styling.ColorPalette
  * system theme / `colorPaletteMode`, so the halo stays readable when a cover's tone mismatches
  * the theme (near-white cover in dark mode, or the mirror cases).
  *
- * Called from the legacy call sites (Player, Essential, Modern, kreate ActionBar, Dialog) and
+ * Called from the legacy call sites (Player, Essential, Modern, the themed ActionBar, Dialog) and
  * pinned by `CoverContrastColorsTest`.
  */
 // @PublishedApi: called from the public inline `SelectorArtistsDialog` (legacy themed Dialog.kt)
@@ -54,7 +54,7 @@ internal fun ColorPalette.m3eRecapRestoredDynamicPalette(
 }
 
 /**
- * The outline color for the player's duration indicator (kreate `DurationIndicator`,
+ * The outline color for the player's duration indicator (the themed `DurationIndicator`,
  * spec-achromatic-ramp-luminance-cap, loopback 2, VG-3, 2026-09-28): transparent when the user
  * opted out of text outlines — the legacy light-mode quirk that ignored the opt-out is fixed —
  * otherwise the effective-tone halo [textOutlineColor] at 0.5 alpha. The decision lives here

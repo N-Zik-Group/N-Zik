@@ -38,8 +38,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import app.it.fast4x.compose.persist.findActivityNullable
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.compose.persist.findActivityNullable
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.appTextResources
 import app.n_zik.android.colorPalette

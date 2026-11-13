@@ -37,41 +37,41 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.YtMusic
-import it.fast4x.innertube.requests.ArtistPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.YtMusic
+import app.n_zik.innertube.requests.ArtistPage
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.enums.DislikeMode
-import app.it.fast4x.rimusic.enums.MenuStyle
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.ui.components.LocalMenuState
-import app.it.fast4x.rimusic.ui.components.MenuState
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Clickable
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Menu
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
-import app.it.fast4x.rimusic.ui.components.themed.IconButton
-import app.it.fast4x.rimusic.ui.styling.Dimensions
-import app.it.fast4x.rimusic.ui.styling.favoritesIcon
-import app.it.fast4x.rimusic.utils.asMediaItem
-import app.it.fast4x.rimusic.utils.asSong
-import app.it.fast4x.rimusic.utils.conditional
-import app.it.fast4x.rimusic.utils.disableScrollingTextKey
-import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
-import app.it.fast4x.rimusic.utils.forcePlayAtIndex
-import app.it.fast4x.rimusic.utils.menuStyleKey
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.secondary
-import app.it.fast4x.rimusic.utils.semiBold
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.enums.DislikeMode
+import app.n_zik.android.enums.MenuStyle
+import app.n_zik.android.models.Artist
+import app.n_zik.android.ui.components.LocalMenuState
+import app.n_zik.android.ui.components.MenuState
+import app.n_zik.android.ui.components.tab.toolbar.Button
+import app.n_zik.android.ui.components.tab.toolbar.Clickable
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
+import app.n_zik.android.ui.components.tab.toolbar.Menu
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.ui.components.themed.HeaderIconButton
+import app.n_zik.android.ui.components.themed.IconButton
+import app.n_zik.android.ui.styling.Dimensions
+import app.n_zik.android.ui.styling.favoritesIcon
+import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.asSong
+import app.n_zik.android.utils.conditional
+import app.n_zik.android.utils.disableScrollingTextKey
+import app.n_zik.android.utils.excludeDislikedArtistsKey
+import app.n_zik.android.utils.forcePlayAtIndex
+import app.n_zik.android.utils.menuStyleKey
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.secondary
+import app.n_zik.android.utils.semiBold
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.appContext
@@ -286,7 +286,7 @@ class OnlineArtistItemMenu private constructor(
                         onClick = {
                             coroutineScope.launch(NzikDispatchers.DATA) {
                                 Database.artistTable.insertIgnore(
-                                    app.it.fast4x.rimusic.models.Artist(
+                                    app.n_zik.android.models.Artist(
                                         id = artist.key,
                                         name = artist.info?.name,
                                         thumbnailUrl = artist.thumbnail?.url

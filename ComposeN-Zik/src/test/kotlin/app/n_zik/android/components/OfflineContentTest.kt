@@ -28,16 +28,16 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.Countries
-import app.it.fast4x.rimusic.enums.FontType
-import app.it.fast4x.rimusic.enums.PlayEventsType
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.ui.screens.info.VideoOrSongInfoScreen
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.typographyOf
+import app.n_zik.android.enums.Countries
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.enums.PlayEventsType
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
+import app.n_zik.android.ui.screens.info.VideoOrSongInfoScreen
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.LocalPlayerAwareWindowInsets
@@ -56,12 +56,12 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.BrowseEndpoint
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.models.Thumbnail
-import it.fast4x.innertube.requests.HomePage
-import it.fast4x.innertube.requests.songInfo
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.BrowseEndpoint
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.models.Thumbnail
+import app.n_zik.innertube.requests.HomePage
+import app.n_zik.innertube.requests.songInfo
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.junit.After
@@ -469,7 +469,7 @@ class OfflineContentTest {
     @Test
     fun videoOrSongInfoSheetShowsTheOfflineBannerWhenInfoIsMissing() {
         // No network in the test: the songInfo fetch returns nothing (offline).
-        mockkStatic("it.fast4x.innertube.requests.SongInfoKt")
+        mockkStatic("app.n_zik.innertube.requests.SongInfoKt")
         coEvery { Innertube.songInfo(any()) } returns null
 
         composeRule.mainClock.autoAdvance = false

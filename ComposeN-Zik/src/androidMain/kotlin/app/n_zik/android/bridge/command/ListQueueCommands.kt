@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.utils.asMediaItem
-import app.it.fast4x.rimusic.utils.forcePlayAtIndex
+import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.forcePlayAtIndex
 import app.n_zik.android.bridge.BridgeContract
 import app.n_zik.android.bridge.BridgeJson
 import app.n_zik.android.bridge.library.LibraryLists

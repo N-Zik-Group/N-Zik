@@ -1,7 +1,7 @@
 package app.n_zik.android.utils.playlist
 
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.ImportSong
 import app.n_zik.android.core.database.canEditPlaylistMembership

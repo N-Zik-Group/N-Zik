@@ -3,10 +3,10 @@ package app.n_zik.android.core.coil
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.layout.ContentScale
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.utils.cropVideoThumbnailsKey
+import app.n_zik.android.utils.rememberPreference
 
 private val videoArtworkUrl = Regex("^https?://(?:[a-z0-9-]+\\.)?ytimg\\.com/(?:vi|vi_webp)/[^/?#]+/", RegexOption.IGNORE_CASE)
 

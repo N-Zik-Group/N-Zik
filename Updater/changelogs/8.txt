@@ -6,7 +6,7 @@ Changed:
 - Added new translations.
 - Changed the default green to purple to match the N-Zik palette.
 - Extension of the swipe gestures for stats screen and history screen
-- Reintroduced the old RiMusic local artist library system, now integrated with the new Artist UI.
+- Reintroduced the previous local artist library system, now integrated with the new Artist UI.
 
 
 Optimizations:
@@ -24,7 +24,7 @@ Bug Fixes:
 - A permission prompt for notifications now appears on first launch.
 - Added a fallback to ensure notification channels are created at app startup to prevent crashes.
 - Shortcuts (long press on app icon) are now working properly.
-- Fixes knighthat#338 - remaining time shows despite disabled.
-- Fixes knighthat#333 - forward/rewind buttons act weird after a few clicks.
+- Fixed remaining time appearing when disabled.
+- Fixed forward and rewind buttons behaving incorrectly after repeated taps.
 - Prevent remaining time from showing large negative numbers.
 - Removed player release when deleting a song from queue.

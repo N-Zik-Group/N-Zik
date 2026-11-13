@@ -4,7 +4,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.styling.BoundedCornerSize
+import app.n_zik.android.ui.styling.BoundedCornerSize
 import app.n_zik.android.components.player.miniPlayerSideInset
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

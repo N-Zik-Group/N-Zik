@@ -2,11 +2,11 @@ package app.n_zik.android.core.profiles
 
 import android.content.Context
 import android.content.SharedPreferences
-import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
-import app.it.fast4x.rimusic.utils.getEnum
-import app.it.fast4x.rimusic.utils.readProfileIds
+import app.n_zik.android.enums.ExoPlayerCacheLocation
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.exoPlayerCacheLocationKey
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.readProfileIds
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.core.rescue.ProfileResetSnapshot
 import java.io.File

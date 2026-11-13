@@ -19,15 +19,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.FontType
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.models.PlaylistPreview
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.ui.items.FOUR_CORNERS
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.typographyOf
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.PlaylistPreview
+import app.n_zik.android.models.Song
+import app.n_zik.android.ui.items.FOUR_CORNERS
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.core.database.Database
@@ -54,7 +54,7 @@ import java.time.Duration
  * user request 2026-10-24: each generated rewind-* playlist card must use the same card
  * as the library's local playlist list. This test pins what that card renders —
  * the four-track cover collage, the localized playlist name and the song-count
- * badge of the generic [app.it.fast4x.rimusic.ui.items.PlaylistItem] (the origin
+ * badge of the generic [app.n_zik.android.ui.items.PlaylistItem] (the origin
  * icon travels with the same card) — replacing the earlier album-format
  * single-cover card.
  *

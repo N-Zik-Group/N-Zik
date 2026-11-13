@@ -8,8 +8,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.cleanPrefix
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.cleanPrefix
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.song.RenameDialog
 import app.n_zik.android.core.database.Database

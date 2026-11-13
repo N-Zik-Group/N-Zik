@@ -31,8 +31,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.R
 import app.n_zik.android.components.player.GlassMiniPlayerPlayPauseButton
 import app.n_zik.android.components.ui.UiIconButton

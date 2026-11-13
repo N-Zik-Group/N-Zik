@@ -1,6 +1,6 @@
 package app.n_zik.android.core.migration
 
-import app.it.fast4x.rimusic.models.Artist
+import app.n_zik.android.models.Artist
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

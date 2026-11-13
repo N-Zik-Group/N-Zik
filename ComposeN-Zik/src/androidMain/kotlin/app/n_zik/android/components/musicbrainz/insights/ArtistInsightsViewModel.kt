@@ -5,7 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import app.it.fast4x.rimusic.models.Artist
+import app.n_zik.android.models.Artist
 import app.n_zik.android.Dependencies
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.musicbrainz.MusicBrainz

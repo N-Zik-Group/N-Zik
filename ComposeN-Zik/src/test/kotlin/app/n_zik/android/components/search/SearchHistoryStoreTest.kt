@@ -1,7 +1,7 @@
 package app.n_zik.android.components.search
 
 import android.content.SharedPreferences
-import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
+import app.n_zik.android.utils.pauseSearchHistoryKey
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals

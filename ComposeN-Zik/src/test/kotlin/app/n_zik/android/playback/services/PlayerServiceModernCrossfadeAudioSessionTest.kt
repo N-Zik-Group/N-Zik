@@ -16,9 +16,9 @@ import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.crossfadeDurationKey
-import app.it.fast4x.rimusic.utils.crossfadeEnabledKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.crossfadeDurationKey
+import app.n_zik.android.utils.crossfadeEnabledKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.appContext
 import io.mockk.every
 import io.mockk.mockk

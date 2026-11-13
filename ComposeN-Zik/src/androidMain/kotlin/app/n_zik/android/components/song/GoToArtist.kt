@@ -6,25 +6,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import app.n_zik.android.R
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.requests.nextPage
-import it.fast4x.innertube.requests.searchPage
-import it.fast4x.innertube.utils.from
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.requests.nextPage
+import app.n_zik.innertube.requests.searchPage
+import app.n_zik.innertube.utils.from
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.appContext
-import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.it.fast4x.rimusic.ui.components.MenuState
+import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.models.Song
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import timber.log.Timber
 import java.util.Optional
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
+import app.n_zik.android.MODIFIED_PREFIX
 
 class GoToArtist(
     private val navController: NavController,

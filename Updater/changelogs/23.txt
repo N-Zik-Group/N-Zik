@@ -11,8 +11,8 @@ Changed:
 - Updated dependencies
 - Moved Update section to About
 - Quickpicks settings renamed to AI recommendations (now includes all AI settings)
-- Renamed RiMusic logs → N-Zik logs
-- Renamed RiMusic interface → N-Zik
+- Renamed app logs → N-Zik logs
+- Renamed the interface → N-Zik
 - Translated Easter eggs messages
 
 Improved:
@@ -28,7 +28,7 @@ Improved:
 - Improved cache factory implementation
 - Default purple color slightly lighter for better readability in dark areas
 - Improved clarity of some Settings UI elements
-- Discord RPC now uses a new system to upload artwork → better performance (thanks to KnightHat)
+- Discord RPC now uses a new system to upload artwork → better performance
 
 Fixed:
 - Various known bugs

@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import app.it.fast4x.rimusic.models.PlaylistPreview
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.PlaylistPreview
+import app.n_zik.android.models.Song
 
 internal typealias HomeLibrarySongLoader = suspend (List<PlaylistPreview>) -> List<Song>
 

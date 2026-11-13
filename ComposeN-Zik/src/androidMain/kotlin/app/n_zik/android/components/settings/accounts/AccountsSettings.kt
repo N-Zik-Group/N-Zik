@@ -27,15 +27,15 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.utils.enableYouTubeLoginKey
-import app.it.fast4x.rimusic.utils.enableYouTubeSyncKey
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.useLoginForBrowseKey
-import app.it.fast4x.rimusic.utils.ytCookieKey
+import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.utils.enableYouTubeLoginKey
+import app.n_zik.android.utils.enableYouTubeSyncKey
+import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.utils.pauseSearchHistoryKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.useLoginForBrowseKey
+import app.n_zik.android.utils.ytCookieKey
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.appContext
@@ -55,7 +55,7 @@ import app.n_zik.android.components.settings.common.settingsSearchDescription
 import app.n_zik.android.components.settings.common.settingsSearchTitle
 import app.n_zik.android.components.settings.common.visibleCardTitleRes
 import app.n_zik.android.components.tab.Search
-import it.fast4x.innertube.utils.parseCookieString
+import app.n_zik.innertube.utils.parseCookieString
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.first
 

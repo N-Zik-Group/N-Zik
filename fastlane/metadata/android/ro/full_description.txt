@@ -1,9 +1,5 @@
 Un sistem multilingv de muzică YouTube YouTube frontend pentru Android, axat pe performanță, rafinări UI/UX, expansiunea caracteristicilor și suport pe termen lung.
 
-<b>N-Zik</b> este o furcă open-source de <a href="https://github.com/knighthat/Kreate">Kreate</a>.
-
-<b>Notă:</b> N-Zik a început ca un proiect lateral. Pentru alternative mai mature, vedeți <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, sau <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
-
 <b>Utilizare AI:</b> Folosesc AI generativ pentru cod (prin <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), verificat și testat înainte de livrare.
 
 ✨ <b>WHY N-ZIK?</b> Fără reclame, redare de fundal, caching offline, UI personalizabil - gratuit, întotdeauna.

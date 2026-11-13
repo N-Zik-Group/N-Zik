@@ -37,11 +37,11 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import app.it.fast4x.rimusic.utils.logDebugEnabledKey
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.semiBold
-import app.it.fast4x.rimusic.utils.textCopyToClipboard
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.logDebugEnabledKey
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.semiBold
+import app.n_zik.android.utils.textCopyToClipboard
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.ButtonRow

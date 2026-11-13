@@ -1,8 +1,8 @@
 package app.n_zik.android.core.migration
 
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.models.Artist
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.models.Artist
 import app.n_zik.android.core.database.AlbumTable
 import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.Database
@@ -16,8 +16,8 @@ import timber.log.Timber
  * Convergence of the denormalized artist-name copies, re-run on every app launch (offline).
  *
  * The artist's name lives in the [Artist] row (source of truth, id = browse id) AND in
- * denormalized copies that are never joined: [app.it.fast4x.rimusic.models.Song.artistsText]
- * (Home Songs list) and [app.it.fast4x.rimusic.models.Album.authorsText] (album page).
+ * denormalized copies that are never joined: [app.n_zik.android.models.Song.artistsText]
+ * (Home Songs list) and [app.n_zik.android.models.Album.authorsText] (album page).
  * After a rename (artist page, song/album author edit, dedup pin/merge) the copies stay
  * stale until the next playback reconcile. This converges them in both directions,
  * always by id/links — never by guessing:

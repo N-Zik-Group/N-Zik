@@ -2,7 +2,7 @@ package app.n_zik.android.components.player
 
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.enums.PlayerTimelineType
+import app.n_zik.android.enums.PlayerTimelineType
 
 internal val PLAYER_SEEK_OPTICAL_PANE_SIZE = 36.dp
 

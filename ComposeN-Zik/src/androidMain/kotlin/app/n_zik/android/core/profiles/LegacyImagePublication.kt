@@ -1,9 +1,9 @@
 package app.n_zik.android.core.profiles
 
 import android.content.Context
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.profilePreferences
-import app.it.fast4x.rimusic.utils.readProfileIds
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.profilePreferences
+import app.n_zik.android.utils.readProfileIds
 import app.n_zik.android.core.backup.DatabaseBackup
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.core.coil.ReadOnlyCoilCache

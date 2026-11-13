@@ -22,6 +22,3 @@ Fixed:
 - Fixed Discord Rich Presence timestamp calculations to properly sync with track playback
 - Translated some missed toaster messages
 - Fixed status bar color issues when the bottom sheet is open
-
-Special Thanks:
-- Thanks to the Metrolist source code for helping identify and resolve several of these issues: https://github.com/MetrolistGroup

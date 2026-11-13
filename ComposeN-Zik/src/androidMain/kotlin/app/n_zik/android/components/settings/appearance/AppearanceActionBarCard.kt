@@ -11,11 +11,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.settings.PlayerActionBarSettingsDialog
-import app.it.fast4x.rimusic.utils.actionspacedevenlyKey
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.swipeUpQueueKey
-import app.it.fast4x.rimusic.utils.tapqueueKey
-import app.it.fast4x.rimusic.utils.transparentBackgroundPlayerActionBarKey
+import app.n_zik.android.utils.actionspacedevenlyKey
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.swipeUpQueueKey
+import app.n_zik.android.utils.tapqueueKey
+import app.n_zik.android.utils.transparentBackgroundPlayerActionBarKey
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry

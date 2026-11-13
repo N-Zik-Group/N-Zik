@@ -5,10 +5,10 @@ import android.content.ContextWrapper
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.MainApplication
-import it.fast4x.innertube.Innertube
+import app.n_zik.innertube.Innertube
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -52,7 +52,7 @@ class StartupSearchRestoreWiringTest {
     }
 
     private fun launchApp() {
-        mockkStatic("app.it.fast4x.rimusic.utils.EncryptedPreferencesKt")
+        mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
         every { any<Context>().encryptedPreferences } returns mockk<SharedPreferences>(relaxed = true)
         ShadowProcess.setProcessName(context.packageName)
         val app = MainApplication()

@@ -1,17 +1,17 @@
 package app.n_zik.android.core.database
 
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.models.SongArtistMap
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Song
+import app.n_zik.android.models.SongArtistMap
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.ArtistConjunctions
-import it.fast4x.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.ArtistConjunctions
+import app.n_zik.innertube.models.NavigationEndpoint
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import java.util.concurrent.Executor

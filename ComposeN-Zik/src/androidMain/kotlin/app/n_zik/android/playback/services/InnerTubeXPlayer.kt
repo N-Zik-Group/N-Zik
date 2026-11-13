@@ -3,10 +3,10 @@ package app.n_zik.android.playback.services
 import android.content.Context
 import android.net.ConnectivityManager
 import app.n_zik.android.core.security.potoken.PoTokenGenerator
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.PlayerResponse
-import it.fast4x.innertube.models.Thumbnail
-import it.fast4x.innertube.models.Thumbnails
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.PlayerResponse
+import app.n_zik.innertube.models.Thumbnail
+import app.n_zik.innertube.models.Thumbnails
 import com.metrolist.innertubex.InnerTubeLogLevel
 import com.metrolist.innertubex.InnerTubeLogger
 import com.metrolist.innertubex.cipher.PlayerConfigRepository

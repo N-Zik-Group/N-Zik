@@ -9,23 +9,23 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastMap
 import app.n_zik.android.R
-import app.kreate.android.exception.InvalidHeaderException
+import app.n_zik.android.exception.InvalidHeaderException
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.appContext
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.it.fast4x.rimusic.utils.formatAsDuration
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.Song
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.utils.formatAsDuration
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.playlist.importSongsToPlaylist
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import app.n_zik.android.components.ImportFromFile
-import app.kreate.android.me.knighthat.utils.DurationUtils
-import app.kreate.android.me.knighthat.utils.Toaster
-import app.kreate.android.me.knighthat.utils.csv.SongCSV
+import app.n_zik.android.core.utils.DurationUtils
+import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.core.utils.csv.SongCSV
 import java.io.InputStream
 
 /**
@@ -57,7 +57,7 @@ class ImportSongsFromCSV(
                       }
                       .fastMap { row ->      // Experimental, revert back to [map] if needed
 
-                          // Previous version of Kreate uses "PlaylistBrowseId" as playlistId,
+                          // An older CSV format uses "PlaylistBrowseId" as playlistId,
                           // this is wrong and must be correct to empty string before inserting
 //
                           // to the database
@@ -65,8 +65,8 @@ class ImportSongsFromCSV(
                           if( browseId.toLongOrNull() != null )
                               browseId = ""
 
-                          // For backward compatibility, RiMusic exports duration
-                          // in human-readable format "00:00" while Kreate exports
+                          // For backward compatibility, one CSV format exports duration
+                          // in human-readable format "00:00" while another format exports it
 //
                           // in seconds.
                           val rawDuration = row["Duration"].orEmpty()

@@ -1,6 +1,6 @@
 package app.n_zik.android.ui.saveable
 
-import app.it.fast4x.rimusic.ui.styling.Appearance
+import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf

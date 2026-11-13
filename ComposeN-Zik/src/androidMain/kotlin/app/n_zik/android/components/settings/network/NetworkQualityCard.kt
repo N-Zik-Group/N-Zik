@@ -7,11 +7,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.enums.AudioQualityFormat
-import app.it.fast4x.rimusic.enums.ImageQualityFormat
-import app.it.fast4x.rimusic.utils.audioQualityFormatKey
-import app.it.fast4x.rimusic.utils.imageQualityFormatKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.enums.AudioQualityFormat
+import app.n_zik.android.enums.ImageQualityFormat
+import app.n_zik.android.utils.audioQualityFormatKey
+import app.n_zik.android.utils.imageQualityFormatKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog

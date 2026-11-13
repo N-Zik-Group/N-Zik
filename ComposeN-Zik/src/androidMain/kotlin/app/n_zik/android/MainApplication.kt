@@ -23,43 +23,43 @@ import coil3.SingletonImageLoader
 import java.io.File
 import timber.log.Timber
 
-import app.it.fast4x.rimusic.utils.CaptureCrash
-import app.it.fast4x.rimusic.utils.discordAvatarKey
-import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
-import app.it.fast4x.rimusic.utils.discordUsernameKey
-import app.it.fast4x.rimusic.utils.enableYouTubeLoginKey
-import app.it.fast4x.rimusic.utils.enableYouTubeSyncKey
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.getEnum
-import app.it.fast4x.rimusic.utils.isDiscordBrowsingEnabledKey
-import app.it.fast4x.rimusic.utils.isDiscordPresenceEnabledKey
-import app.it.fast4x.rimusic.utils.isProxyEnabledKey
-import app.it.fast4x.rimusic.utils.isValidIP
-import app.it.fast4x.rimusic.utils.logDebugEnabledKey
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.proxyHostnameKey
-import app.it.fast4x.rimusic.utils.proxyModeKey
-import app.it.fast4x.rimusic.utils.proxyPortKey
-import app.it.fast4x.rimusic.utils.proxyUsernameKey
-import app.it.fast4x.rimusic.utils.proxyPasswordKey
-import app.it.fast4x.rimusic.utils.regionOverrideKey
-import app.it.fast4x.rimusic.utils.saveProfileLastUsed
-import app.it.fast4x.rimusic.utils.useLoginForBrowseKey
-import app.it.fast4x.rimusic.utils.useYtLoginOnlyForBrowseKey
-import app.it.fast4x.rimusic.utils.ytAccountChannelHandleKey
-import app.it.fast4x.rimusic.utils.ytAccountEmailKey
-import app.it.fast4x.rimusic.utils.ytAccountNameKey
-import app.it.fast4x.rimusic.utils.ytAccountThumbnailKey
-import app.it.fast4x.rimusic.utils.ytCookieKey
-import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
-import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
-import app.it.fast4x.rimusic.utils.ytVisitorDataKey
+import app.n_zik.android.utils.CaptureCrash
+import app.n_zik.android.utils.discordAvatarKey
+import app.n_zik.android.utils.discordPersonalAccessTokenKey
+import app.n_zik.android.utils.discordUsernameKey
+import app.n_zik.android.utils.enableYouTubeLoginKey
+import app.n_zik.android.utils.enableYouTubeSyncKey
+import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.isDiscordBrowsingEnabledKey
+import app.n_zik.android.utils.isDiscordPresenceEnabledKey
+import app.n_zik.android.utils.isProxyEnabledKey
+import app.n_zik.android.utils.isValidIP
+import app.n_zik.android.utils.logDebugEnabledKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.proxyHostnameKey
+import app.n_zik.android.utils.proxyModeKey
+import app.n_zik.android.utils.proxyPortKey
+import app.n_zik.android.utils.proxyUsernameKey
+import app.n_zik.android.utils.proxyPasswordKey
+import app.n_zik.android.utils.regionOverrideKey
+import app.n_zik.android.utils.saveProfileLastUsed
+import app.n_zik.android.utils.useLoginForBrowseKey
+import app.n_zik.android.utils.useYtLoginOnlyForBrowseKey
+import app.n_zik.android.utils.ytAccountChannelHandleKey
+import app.n_zik.android.utils.ytAccountEmailKey
+import app.n_zik.android.utils.ytAccountNameKey
+import app.n_zik.android.utils.ytAccountThumbnailKey
+import app.n_zik.android.utils.ytCookieKey
+import app.n_zik.android.utils.ytCookieExpiredKey
+import app.n_zik.android.utils.ytDataSyncIdKey
+import app.n_zik.android.utils.ytVisitorDataKey
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.materializeImageCacheCustomMb
 import app.n_zik.android.core.profiles.profileDataPrefs
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.readProfileIds
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.readProfileIds
 import app.n_zik.android.core.maintenance.MaintenanceConvergenceState
 import app.n_zik.android.core.maintenance.MaintenanceDbCleanupState
 import app.n_zik.android.core.maintenance.MaintenanceDedupState
@@ -89,7 +89,7 @@ import app.n_zik.android.listentogether.ListenTogetherManager
 import app.n_zik.android.modules.FfmpegModule
 import app.n_zik.android.modules.ModuleDownloadCancelReceiver
 import app.n_zik.android.modules.ModuleUpdateStatus
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.debug.CRASH_CLEAN_BOOT_STREAK_KEY
 import app.n_zik.android.utils.debug.CRASH_LAST_SEEN_COUNT_KEY
@@ -99,7 +99,7 @@ import app.n_zik.android.utils.debug.diagnosticFileMutationLock
 import app.n_zik.android.utils.debug.crashLogWipeDecision
 import app.n_zik.android.utils.logging.FileLoggingTree
 import app.n_zik.android.utils.logging.flushThenDelegate
-import me.knighthat.invidious.Invidious
+import app.n_zik.innertube.invidious.Invidious
 import com.metrolist.music.betterlyrics.BetterLyrics
 import com.metrolist.music.discordrpc.DiscordRpc
 import com.metrolist.music.discordrpc.GatewayWebSocket
@@ -108,16 +108,16 @@ import app.n_zik.android.BuildConfig
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.InnerTubeXPlayer
-import it.fast4x.innertube.utils.ProxyPreferenceItem
-import it.fast4x.innertube.utils.ProxyPreferences
+import app.n_zik.innertube.utils.ProxyPreferenceItem
+import app.n_zik.innertube.utils.ProxyPreferences
 import java.net.Proxy
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.utils.InnertubeLogger
-import it.fast4x.kugou.KuGou
-import it.fast4x.lastfm.LastFm
-import it.fast4x.lrclib.LrcLib
-import it.fast4x.innertube.models.ArtistConjunctions
-import it.fast4x.invidious.utils.InvidiousLogger
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.utils.InnertubeLogger
+import app.n_zik.kugou.KuGou
+import app.n_zik.lastfm.LastFm
+import app.n_zik.lrclib.LrcLib
+import app.n_zik.innertube.models.ArtistConjunctions
+import app.n_zik.invidious.utils.InvidiousLogger
 import app.n_zik.android.extensions.musicbrainz.workers.MbBackfillWorker
 import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
 import app.n_zik.android.components.ui.screens.rewind.RewindYearlyReminderWorker
@@ -127,8 +127,8 @@ import app.n_zik.android.musicbrainz.MBCircuitBreakerPersistence
 import app.n_zik.android.musicbrainz.MBLogger
 import app.n_zik.android.musicbrainz.MBNetwork
 import app.n_zik.android.musicbrainz.MusicBrainz
-import app.it.fast4x.rimusic.utils.mbCircuitOpenUntilKey
-import app.it.fast4x.rimusic.utils.mbCircuitFailuresKey
+import app.n_zik.android.utils.mbCircuitOpenUntilKey
+import app.n_zik.android.utils.mbCircuitFailuresKey
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -410,7 +410,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 if (isValidIP(hostName)) {
                     hostName?.let { hName ->
                         ProxyPreferences.preference = ProxyPreferenceItem(hName, proxyPort, proxyMode)
-                        proxy = ProxyPreferences.preference?.let { pref -> it.fast4x.innertube.utils.getProxy(pref) }
+                        proxy = ProxyPreferences.preference?.let { pref -> app.n_zik.innertube.utils.getProxy(pref) }
                         if (!proxyUsername.isNullOrBlank() && !proxyPassword.isNullOrBlank()) {
                             Innertube.proxyAuth = "$proxyUsername:$proxyPassword"
                         }
@@ -449,8 +449,8 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             KuGou.offlineGate = NetworkGate::isOnline
             BetterLyrics.offlineGate = NetworkGate::isOnline
             GatewayWebSocket.offlineGate = NetworkGate::isOnline
-            // Fully qualified: this file also imports the unrelated me.knighthat.invidious.Invidious.
-            it.fast4x.invidious.Invidious.offlineGate = NetworkGate::isOnline
+            // Fully qualified: this file also imports the unrelated app.n_zik.innertube.invidious.Invidious.
+            app.n_zik.invidious.Invidious.offlineGate = NetworkGate::isOnline
 
             // useLoginForSearch is deliberately NOT force-disabled/persisted like
             // useLoginForBrowse in the cookie branches below: without a valid cookie both

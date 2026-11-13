@@ -1,6 +1,6 @@
 package app.n_zik.android.components.podcast
 
-import it.fast4x.innertube.Innertube
+import app.n_zik.innertube.Innertube
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.cancelAndJoin

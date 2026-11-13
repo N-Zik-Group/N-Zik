@@ -9,16 +9,16 @@ import android.database.sqlite.SQLiteOpenHelper
 import androidx.media3.database.DatabaseProvider
 import androidx.media3.database.DefaultDatabaseProvider
 import androidx.media3.database.StandaloneDatabaseProvider
-import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
-import app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize
-import app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
-import app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey
-import app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.getEnum
-import app.it.fast4x.rimusic.utils.readProfileIds
+import app.n_zik.android.enums.ExoPlayerCacheLocation
+import app.n_zik.android.enums.ExoPlayerDiskCacheMaxSize
+import app.n_zik.android.enums.ExoPlayerDiskDownloadCacheMaxSize
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.exoPlayerCacheLocationKey
+import app.n_zik.android.utils.exoPlayerDiskCacheMaxSizeKey
+import app.n_zik.android.utils.exoPlayerDiskDownloadCacheMaxSizeKey
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.readProfileIds
 import java.io.File
 
 /**

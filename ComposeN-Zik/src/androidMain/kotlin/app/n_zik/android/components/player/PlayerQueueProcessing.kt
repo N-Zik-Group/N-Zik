@@ -11,9 +11,9 @@ import androidx.compose.runtime.setValue
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.asSong
-import app.it.fast4x.rimusic.utils.durationTextToMillis
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.asSong
+import app.n_zik.android.utils.durationTextToMillis
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive

@@ -3,10 +3,10 @@ package app.n_zik.android.core.settings
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
-import app.it.fast4x.rimusic.utils.colorPaletteModeKey
-import app.it.fast4x.rimusic.utils.getEnum
-import app.it.fast4x.rimusic.utils.putEnum
+import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.utils.colorPaletteModeKey
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.putEnum
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith

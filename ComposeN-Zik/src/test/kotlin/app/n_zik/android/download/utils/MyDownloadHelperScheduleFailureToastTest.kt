@@ -4,11 +4,11 @@ import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.test.core.app.ApplicationProvider
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.R
-import app.it.fast4x.rimusic.utils.downloadSyncedLyrics
+import app.n_zik.android.utils.downloadSyncedLyrics
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.every
@@ -61,7 +61,7 @@ class MyDownloadHelperScheduleFailureToastTest {
     @Test
     fun `a failed download scheduling shows the download-domain toast`() {
         mockkObject(Toaster)
-        mockkStatic("app.it.fast4x.rimusic.utils.UtilsKt")
+        mockkStatic("app.n_zik.android.utils.UtilsKt")
         coEvery { downloadSyncedLyrics(any()) } just Runs
 
         val original = MyDownloadHelper.scheduleDownloadRequest

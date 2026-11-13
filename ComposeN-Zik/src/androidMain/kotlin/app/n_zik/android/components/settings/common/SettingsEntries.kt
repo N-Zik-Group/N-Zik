@@ -1,5 +1,8 @@
 package app.n_zik.android.components.settings.common
 
+import androidx.compose.ui.draw.rotate
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateFloatAsState
 import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -44,12 +47,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-import app.it.fast4x.rimusic.enums.ValidationType
-import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
-import app.it.fast4x.rimusic.ui.components.themed.IDialog
-import app.it.fast4x.rimusic.utils.secondary
-import app.it.fast4x.rimusic.utils.semiBold
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.enums.ValidationType
+import app.n_zik.android.ui.components.themed.HeaderIconButton
+import app.n_zik.android.ui.components.themed.IDialog
+import app.n_zik.android.utils.secondary
+import app.n_zik.android.utils.semiBold
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.DialogColorPicker
@@ -845,8 +848,19 @@ fun ModernSettingsEntry(
     text: String,
     icon: Int,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    expanded: Boolean? = null,
 ) {
+
+    val chevronRotation = if (expanded == null) {
+        0f
+    } else {
+        animateFloatAsState(
+            targetValue = if (expanded) 90f else 0f,
+            animationSpec = tween(300),
+            label = "settingsChevronRotation"
+        ).value
+    }
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -895,7 +909,7 @@ fun ModernSettingsEntry(
                     painter = painterResource(R.drawable.chevron_forward),
                     tint = colorPalette().textSecondary,
                     contentDescription = null,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(16.dp).rotate(chevronRotation)
                 )
     }
 }

@@ -2,7 +2,7 @@ package app.n_zik.android.core.migration
 
 import android.content.Context
 import android.content.SharedPreferences
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.PlaylistTable
 import app.n_zik.android.utils.coroutines.NzikDispatchers

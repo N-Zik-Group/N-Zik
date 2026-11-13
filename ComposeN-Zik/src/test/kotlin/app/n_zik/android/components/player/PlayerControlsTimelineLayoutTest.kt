@@ -36,22 +36,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.media3.common.Player
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.FontType
-import app.it.fast4x.rimusic.enums.PlayerPlayButtonType
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.typographyOf
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.enums.PlayerPlayButtonType
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.typographyOf
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.LocalPlayerSheetState
-import app.it.fast4x.rimusic.models.ui.UiMedia
-import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
-import app.it.fast4x.rimusic.enums.PlayerType
-import app.it.fast4x.rimusic.enums.PlayerInfoType
-import app.it.fast4x.rimusic.enums.PlayerTimelineSize
+import app.n_zik.android.models.ui.UiMedia
+import app.n_zik.android.ui.screens.player.PlayerSheetState
+import app.n_zik.android.enums.PlayerType
+import app.n_zik.android.enums.PlayerInfoType
+import app.n_zik.android.enums.PlayerTimelineSize
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.FormatTable
 import app.n_zik.android.core.database.SongTable
@@ -119,22 +119,22 @@ class PlayerControlsTimelineLayoutTest {
         compose.setContent { AppearanceProvider {
             Box(Modifier.requiredWidth(width.value).testTag("viewport")) {
                 Column(Modifier.padding(horizontal = inset.value)) {
-                    app.it.fast4x.rimusic.utils.GetControls(binder, { 0L }, false, false, null,
+                    app.n_zik.android.utils.GetControls(binder, { 0L }, false, false, null,
                         "transport-layout", {}, DefaultDarkColorPalette, timelineHorizontalInset = inset.value)
                 }
             }
         } }
-        for (w in listOf(360.dp, 640.dp)) for (size in app.it.fast4x.rimusic.enums.PlayerTimelineSize.entries)
-            for (variant in app.it.fast4x.rimusic.enums.PlayerControlsType.entries)
+        for (w in listOf(360.dp, 640.dp)) for (size in app.n_zik.android.enums.PlayerTimelineSize.entries)
+            for (variant in app.n_zik.android.enums.PlayerControlsType.entries)
                 for (style in PlayerPlayButtonType.entries) {
                     compose.runOnIdle {
                         width.value = w; inset.value = size.size.dp
-                        preferences.edit().putString(app.it.fast4x.rimusic.utils.playerControlsTypeKey, variant.name)
-                            .putString(app.it.fast4x.rimusic.utils.playerPlayButtonTypeKey, style.name)
+                        preferences.edit().putString(app.n_zik.android.utils.playerControlsTypeKey, variant.name)
+                            .putString(app.n_zik.android.utils.playerPlayButtonTypeKey, style.name)
                             .putBoolean(glassEnabledKey, false).commit()
                     }
                     val native = compose.onAllNodes(hasClickAction()).fetchSemanticsNodes().map { it.boundsInRoot }
-                    assertEquals(if (variant == app.it.fast4x.rimusic.enums.PlayerControlsType.Modern) 3 else 5, native.size)
+                    assertEquals(if (variant == app.n_zik.android.enums.PlayerControlsType.Modern) 3 else 5, native.size)
                     val viewport = compose.onNodeWithTag("viewport").fetchSemanticsNode().boundsInRoot
                     assertTrue("Native buttons stay visible $w $size $variant $style", native.all {
                         it.width > 0 && it.left >= viewport.left && it.right <= viewport.right
@@ -147,9 +147,9 @@ class PlayerControlsTimelineLayoutTest {
                     // centered play hit target and 54dp skip frames around 34dp targets.
                     // SpaceEvenly distributes the frames; clickable glyph gaps include
                     // their inner padding. Assert the native frames' actual arrangement.
-                    val disabledModern = variant == app.it.fast4x.rimusic.enums.PlayerControlsType.Modern &&
+                    val disabledModern = variant == app.n_zik.android.enums.PlayerControlsType.Modern &&
                         style == PlayerPlayButtonType.Disabled
-                    val essential = variant == app.it.fast4x.rimusic.enums.PlayerControlsType.Essential
+                    val essential = variant == app.n_zik.android.enums.PlayerControlsType.Essential
                     // Small Essential controls draw and accept input on 46dp canvases, but
                     // keep their original 26dp Row slots. Intrinsic fitting reserves the canvas.
                     val frameWidths = if (disabledModern) List(3) { with(compose.density) { 54.dp.toPx() } }
@@ -194,7 +194,7 @@ class PlayerControlsTimelineLayoutTest {
                 Column(Modifier.size(360.dp, panelHeight.value).playerTransportGeometryHost().testTag("short.panel")
                     .padding(top = if (playerType.value == PlayerType.Essential) 40.dp else 20.dp)) {
                     if (playerType.value == PlayerType.Modern) Spacer(Modifier.weight(1f))
-                    app.it.fast4x.rimusic.ui.screens.player.Controls(
+                    app.n_zik.android.ui.screens.player.Controls(
                         navController = nav, onCollapse = {}, onBlurScaleChange = {},
                         expandedplayer = false, titleExpanded = false, timelineExpanded = false,
                         controlsExpanded = false, isShowingLyrics = false, media = media,
@@ -223,11 +223,11 @@ class PlayerControlsTimelineLayoutTest {
                 for (enabled in listOf(false, true, false)) {
                     compose.runOnIdle {
                         panelHeight.value = height; playerType.value = type; glass.value = enabled
-                        preferences.edit().putString(app.it.fast4x.rimusic.utils.playerTypeKey, type.name)
-                            .putString(app.it.fast4x.rimusic.utils.playerInfoTypeKey, info.name)
-                            .putString(app.it.fast4x.rimusic.utils.playerTimelineSizeKey, size.name)
-                            .putString(app.it.fast4x.rimusic.utils.playerTimelineTypeKey,
-                                app.it.fast4x.rimusic.enums.PlayerTimelineType.Default.name)
+                        preferences.edit().putString(app.n_zik.android.utils.playerTypeKey, type.name)
+                            .putString(app.n_zik.android.utils.playerInfoTypeKey, info.name)
+                            .putString(app.n_zik.android.utils.playerTimelineSizeKey, size.name)
+                            .putString(app.n_zik.android.utils.playerTimelineTypeKey,
+                                app.n_zik.android.enums.PlayerTimelineType.Default.name)
                             .putBoolean(glassEnabledKey, enabled).commit()
                     }
                     val panel = compose.onNodeWithTag("short.panel").fetchSemanticsNode().boundsInRoot
@@ -291,7 +291,7 @@ class PlayerControlsTimelineLayoutTest {
                     .graphicsLayer { translationY = translation.value * 16.dp.toPx() }
                     .playerTransportGeometryHost().testTag("center.viewport")) {
                     @Composable fun RealControls() {
-                        app.it.fast4x.rimusic.ui.screens.player.Controls(
+                        app.n_zik.android.ui.screens.player.Controls(
                             navController = nav, onCollapse = {}, onBlurScaleChange = {},
                             expandedplayer = false, titleExpanded = false, timelineExpanded = false,
                             controlsExpanded = false, isShowingLyrics = false, media = media, mediaId = media.id,
@@ -318,19 +318,19 @@ class PlayerControlsTimelineLayoutTest {
         } }
         for (size in if (focused) listOf(PlayerTimelineSize.Small) else PlayerTimelineSize.entries)
             for (info in if (focused) listOf(PlayerInfoType.Essential) else PlayerInfoType.entries)
-            for (controls in if (focused) listOf(app.it.fast4x.rimusic.enums.PlayerControlsType.Modern)
-                else app.it.fast4x.rimusic.enums.PlayerControlsType.entries)
+            for (controls in if (focused) listOf(app.n_zik.android.enums.PlayerControlsType.Modern)
+                else app.n_zik.android.enums.PlayerControlsType.entries)
                 for (swapped in listOf(false, true)) for (enabled in listOf(false, true)) {
                     compose.runOnIdle {
                         glass.value = enabled
                         preferences.edit().putBoolean(glassEnabledKey, enabled)
-                            .putString(app.it.fast4x.rimusic.utils.playerTypeKey, PlayerType.Essential.name)
-                            .putString(app.it.fast4x.rimusic.utils.playerInfoTypeKey, info.name)
-                            .putString(app.it.fast4x.rimusic.utils.playerControlsTypeKey, controls.name)
-                            .putString(app.it.fast4x.rimusic.utils.playerTimelineSizeKey, size.name)
-                            .putBoolean(app.it.fast4x.rimusic.utils.playerSwapControlsWithTimelineKey, swapped)
-                            .putString(app.it.fast4x.rimusic.utils.playerTimelineTypeKey,
-                                app.it.fast4x.rimusic.enums.PlayerTimelineType.Default.name).commit()
+                            .putString(app.n_zik.android.utils.playerTypeKey, PlayerType.Essential.name)
+                            .putString(app.n_zik.android.utils.playerInfoTypeKey, info.name)
+                            .putString(app.n_zik.android.utils.playerControlsTypeKey, controls.name)
+                            .putString(app.n_zik.android.utils.playerTimelineSizeKey, size.name)
+                            .putBoolean(app.n_zik.android.utils.playerSwapControlsWithTimelineKey, swapped)
+                            .putString(app.n_zik.android.utils.playerTimelineTypeKey,
+                                app.n_zik.android.enums.PlayerTimelineType.Default.name).commit()
                     }
                     fun bounds(tag: String) = compose.onNodeWithTag(tag, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
                     val transport = bounds("player.transport.row")
@@ -371,7 +371,7 @@ class PlayerControlsTimelineLayoutTest {
                                 it.center.x >= bounds("center.viewport").left && it.center.x <= bounds("center.viewport").right
                         }
                     assertEquals("Actual transport click targets retain their configured count $context",
-                        if (controls == app.it.fast4x.rimusic.enums.PlayerControlsType.Modern) 3 else 5, transportButtons.size)
+                        if (controls == app.n_zik.android.enums.PlayerControlsType.Modern) 3 else 5, transportButtons.size)
                     val visibleCenter = (transportButtons.minOf { it.top } + transportButtons.maxOf { it.bottom }) / 2f
                     assertEquals("Actual transport glyph/button union is vertically centered $context",
                         expectedTop + transport.height / 2f, visibleCenter, 2f)
@@ -407,7 +407,7 @@ class PlayerControlsTimelineLayoutTest {
                         compose.mainClock.autoAdvance = true
                     }
                     if (size == PlayerTimelineSize.Small && info == PlayerInfoType.Essential &&
-                        controls == app.it.fast4x.rimusic.enums.PlayerControlsType.Essential && !swapped) {
+                        controls == app.n_zik.android.enums.PlayerControlsType.Essential && !swapped) {
                         val viewport = bounds("center.viewport")
                         val before = transportButtons.map { it.translate(-viewport.left, -viewport.top) }
                         for (progress in listOf(0f, .25f, .75f, 1f, .75f, .25f, 0f)) {
@@ -478,7 +478,7 @@ class PlayerControlsTimelineLayoutTest {
                                 weightedControls = weightedControls, above = {}, controls = {
                                     Box(Modifier.recordNaturalPlayerHeight { minimumControlsHeight = it }
                                         .testTag("parity.controls")) {
-                                        app.it.fast4x.rimusic.ui.screens.player.Controls(
+                                        app.n_zik.android.ui.screens.player.Controls(
                                             navController = nav, onCollapse = {}, onBlurScaleChange = {},
                                             expandedplayer = false, titleExpanded = false, timelineExpanded = false,
                                             controlsExpanded = false, isShowingLyrics = false, media = media, mediaId = media.id,
@@ -525,18 +525,18 @@ class PlayerControlsTimelineLayoutTest {
                         playerType.value = type
                         glass.value = enabled
                         preferences.edit().putBoolean(glassEnabledKey, enabled)
-                            .putString(app.it.fast4x.rimusic.utils.playerTypeKey, type.name)
-                            .putString(app.it.fast4x.rimusic.utils.playerInfoTypeKey, info.name)
-                            .putBoolean(app.it.fast4x.rimusic.utils.playerSwapControlsWithTimelineKey, swappedPreset)
+                            .putString(app.n_zik.android.utils.playerTypeKey, type.name)
+                            .putString(app.n_zik.android.utils.playerInfoTypeKey, info.name)
+                            .putBoolean(app.n_zik.android.utils.playerSwapControlsWithTimelineKey, swappedPreset)
                             .apply {
                                 if (swappedPreset) {
-                                    putString(app.it.fast4x.rimusic.utils.playerControlsTypeKey,
-                                        app.it.fast4x.rimusic.enums.PlayerControlsType.Essential.name)
-                                    putString(app.it.fast4x.rimusic.utils.playerTimelineSizeKey, PlayerTimelineSize.Expanded.name)
-                                    putString(app.it.fast4x.rimusic.utils.playerTimelineTypeKey,
-                                        app.it.fast4x.rimusic.enums.PlayerTimelineType.Default.name)
-                                    putString(app.it.fast4x.rimusic.utils.playerPlayButtonTypeKey, PlayerPlayButtonType.Disabled.name)
-                                    putBoolean(app.it.fast4x.rimusic.utils.playerInfoShowIconsKey, false)
+                                    putString(app.n_zik.android.utils.playerControlsTypeKey,
+                                        app.n_zik.android.enums.PlayerControlsType.Essential.name)
+                                    putString(app.n_zik.android.utils.playerTimelineSizeKey, PlayerTimelineSize.Expanded.name)
+                                    putString(app.n_zik.android.utils.playerTimelineTypeKey,
+                                        app.n_zik.android.enums.PlayerTimelineType.Default.name)
+                                    putString(app.n_zik.android.utils.playerPlayButtonTypeKey, PlayerPlayButtonType.Disabled.name)
+                                    putBoolean(app.n_zik.android.utils.playerInfoShowIconsKey, false)
                                 }
                             }.commit()
                         Snapshot.sendApplyNotifications()
@@ -668,16 +668,16 @@ class PlayerControlsTimelineLayoutTest {
         mockkObject(WaveformExtractor)
         coEvery { WaveformExtractor.getOrExtractWaveform(any(), any(), any()) } returns
             WaveformResult.Success(List(150) { 50 })
-        preferences.edit().putString(app.it.fast4x.rimusic.utils.playerTypeKey, PlayerType.Essential.name)
-            .putString(app.it.fast4x.rimusic.utils.playerInfoTypeKey, PlayerInfoType.Modern.name)
-            .putString(app.it.fast4x.rimusic.utils.playerControlsTypeKey,
-                app.it.fast4x.rimusic.enums.PlayerControlsType.Modern.name)
-            .putString(app.it.fast4x.rimusic.utils.playerTimelineTypeKey,
-                app.it.fast4x.rimusic.enums.PlayerTimelineType.AudioWaves.name)
-            .putString(app.it.fast4x.rimusic.utils.playerTimelineSizeKey, PlayerTimelineSize.Biggest.name)
-            .putBoolean(app.it.fast4x.rimusic.utils.showlyricsthumbnailKey, true)
-            .putBoolean(app.it.fast4x.rimusic.utils.showthumbnailKey, true)
-            .putBoolean(app.it.fast4x.rimusic.utils.playerSwapControlsWithTimelineKey, false).commit()
+        preferences.edit().putString(app.n_zik.android.utils.playerTypeKey, PlayerType.Essential.name)
+            .putString(app.n_zik.android.utils.playerInfoTypeKey, PlayerInfoType.Modern.name)
+            .putString(app.n_zik.android.utils.playerControlsTypeKey,
+                app.n_zik.android.enums.PlayerControlsType.Modern.name)
+            .putString(app.n_zik.android.utils.playerTimelineTypeKey,
+                app.n_zik.android.enums.PlayerTimelineType.AudioWaves.name)
+            .putString(app.n_zik.android.utils.playerTimelineSizeKey, PlayerTimelineSize.Biggest.name)
+            .putBoolean(app.n_zik.android.utils.showlyricsthumbnailKey, true)
+            .putBoolean(app.n_zik.android.utils.showthumbnailKey, true)
+            .putBoolean(app.n_zik.android.utils.playerSwapControlsWithTimelineKey, false).commit()
         compose.setContent { AppearanceProvider {
             val configuration = Configuration(LocalConfiguration.current).apply {
                 orientation = Configuration.ORIENTATION_PORTRAIT
@@ -705,7 +705,7 @@ class PlayerControlsTimelineLayoutTest {
                                 weightedControls = weighted, above = { Spacer(Modifier.height(10.dp)) }, controls = {
                                     Box(Modifier.recordNaturalPlayerHeight { minimumControlsHeight = it }
                                         .testTag("exact.controls")) {
-                                        app.it.fast4x.rimusic.ui.screens.player.Controls(
+                                        app.n_zik.android.ui.screens.player.Controls(
                                             navController = nav, onCollapse = {}, onBlurScaleChange = {},
                                             expandedplayer = expanded.value, titleExpanded = true, timelineExpanded = true,
                                             controlsExpanded = true, isShowingLyrics = false, media = media, mediaId = media.id,
@@ -816,14 +816,14 @@ class PlayerControlsTimelineLayoutTest {
         val showControls = mutableStateOf(true)
         val nav = mockk<androidx.navigation.NavController>(relaxed = true)
         val media = UiMedia("compact-swap", "Panel title", "Panel artist", 120_000L, true)
-        preferences.edit().putBoolean(app.it.fast4x.rimusic.utils.showlyricsthumbnailKey, false)
-            .putString(app.it.fast4x.rimusic.utils.playerTimelineTypeKey,
-                app.it.fast4x.rimusic.enums.PlayerTimelineType.Default.name).commit()
+        preferences.edit().putBoolean(app.n_zik.android.utils.showlyricsthumbnailKey, false)
+            .putString(app.n_zik.android.utils.playerTimelineTypeKey,
+                app.n_zik.android.enums.PlayerTimelineType.Default.name).commit()
         compose.setContent { AppearanceProvider {
             CompositionLocalProvider(LocalPlayerServiceBinder provides binder,
                 LocalPlayerTransportGeometry provides remember { PlayerTransportGeometry() }) {
                 Box(Modifier.size(360.dp, 420.dp).playerTransportGeometryHost()) {
-                    app.it.fast4x.rimusic.ui.screens.player.Controls(
+                    app.n_zik.android.ui.screens.player.Controls(
                         navController = nav, onCollapse = {}, onBlurScaleChange = {},
                         expandedplayer = !lyrics.value, titleExpanded = true, timelineExpanded = showTimeline.value,
                         controlsExpanded = showControls.value, isShowingLyrics = lyrics.value, media = media,
@@ -845,7 +845,7 @@ class PlayerControlsTimelineLayoutTest {
                         showTimeline.value = true
                         showControls.value = true
                         preferences.edit().putBoolean(glassEnabledKey, glass)
-                            .putBoolean(app.it.fast4x.rimusic.utils.playerSwapControlsWithTimelineKey, swapped).commit()
+                            .putBoolean(app.n_zik.android.utils.playerSwapControlsWithTimelineKey, swapped).commit()
                     }
                     if (glass) surface.assertExists() else surface.assertDoesNotExist()
                     val track = timeline.fetchSemanticsNode().boundsInRoot

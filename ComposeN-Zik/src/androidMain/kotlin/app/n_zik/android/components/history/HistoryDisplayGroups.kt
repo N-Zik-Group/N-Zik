@@ -1,6 +1,6 @@
 package app.n_zik.android.components.history
 
-import app.it.fast4x.rimusic.cleanPrefix
+import app.n_zik.android.cleanPrefix
 import app.n_zik.android.core.database.ext.EventWithSong
 
 /** Group visible names without changing the stored events used for playback or removal. */

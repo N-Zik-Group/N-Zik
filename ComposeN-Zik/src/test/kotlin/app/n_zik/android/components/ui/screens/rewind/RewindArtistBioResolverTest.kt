@@ -1,9 +1,9 @@
 package app.n_zik.android.components.ui.screens.rewind
 
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindArtistBioResolver
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.Thumbnail
-import it.fast4x.innertube.requests.ArtistPage
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.Thumbnail
+import app.n_zik.innertube.requests.ArtistPage
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

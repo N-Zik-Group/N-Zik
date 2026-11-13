@@ -15,8 +15,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 

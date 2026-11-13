@@ -11,10 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
-import app.it.fast4x.rimusic.enums.NotificationButtons
-import app.it.fast4x.rimusic.utils.notificationPlayerFirstIconKey
-import app.it.fast4x.rimusic.utils.notificationPlayerSecondIconKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.enums.NotificationButtons
+import app.n_zik.android.utils.notificationPlayerFirstIconKey
+import app.n_zik.android.utils.notificationPlayerSecondIconKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettingsEntry

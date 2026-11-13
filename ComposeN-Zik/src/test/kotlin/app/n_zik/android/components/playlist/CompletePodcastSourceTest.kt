@@ -1,6 +1,6 @@
 package app.n_zik.android.components.playlist
 
-import it.fast4x.innertube.models.v0624.podcasts.BrowsePodcastsResponse0624
+import app.n_zik.innertube.models.v0624.podcasts.BrowsePodcastsResponse0624
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json

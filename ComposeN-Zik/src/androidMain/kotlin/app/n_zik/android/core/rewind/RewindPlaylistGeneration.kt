@@ -1,6 +1,6 @@
 package app.n_zik.android.core.rewind
 
-import app.it.fast4x.rimusic.models.Playlist
+import app.n_zik.android.models.Playlist
 import app.n_zik.android.core.database.Database
 import kotlinx.coroutines.flow.first
 import timber.log.Timber

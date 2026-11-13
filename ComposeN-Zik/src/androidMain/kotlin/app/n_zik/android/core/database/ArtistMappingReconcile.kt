@@ -1,8 +1,8 @@
 package app.n_zik.android.core.database
 
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.ArtistConjunctions
-import it.fast4x.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.ArtistConjunctions
+import app.n_zik.innertube.models.NavigationEndpoint
 
 /**
  * Decision helper for `SongArtistMap` reconciliation.

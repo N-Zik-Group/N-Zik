@@ -4,8 +4,8 @@ import android.app.Application
 import android.content.Context
 import androidx.core.content.edit
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.preferences
-import it.fast4x.innertube.Innertube
+import app.n_zik.android.utils.preferences
+import app.n_zik.innertube.Innertube
 import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

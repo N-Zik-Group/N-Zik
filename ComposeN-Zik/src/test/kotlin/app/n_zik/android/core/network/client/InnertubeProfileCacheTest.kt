@@ -3,7 +3,7 @@ package app.n_zik.android.core.network.client
 import com.sun.net.httpserver.HttpServer
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
-import it.fast4x.innertube.Innertube
+import app.n_zik.innertube.Innertube
 import java.net.InetSocketAddress
 import kotlinx.coroutines.runBlocking
 import okhttp3.Cache

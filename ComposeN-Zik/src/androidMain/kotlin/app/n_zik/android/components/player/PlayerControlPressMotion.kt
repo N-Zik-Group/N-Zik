@@ -11,8 +11,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import app.it.fast4x.rimusic.utils.buttonzoomoutKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.buttonzoomoutKey
+import app.n_zik.android.utils.rememberPreference
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterIsInstance

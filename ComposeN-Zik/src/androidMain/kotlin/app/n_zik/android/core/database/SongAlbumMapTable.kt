@@ -4,9 +4,9 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Upsert
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.models.SongAlbumMap
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Song
+import app.n_zik.android.models.SongAlbumMap
 import kotlinx.coroutines.flow.Flow
 
 @Dao

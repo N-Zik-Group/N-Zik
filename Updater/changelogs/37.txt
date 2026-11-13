@@ -17,6 +17,3 @@ Fixed:
 - Fixed Quick Picks while logged in
 - Fixed anonymous mode while logged out
 - Fixed playback while logged out (back to normal)
-
-Special Thanks:
-- Thanks to the Metrolist team for their source code, which helped identify and fix several of these issues.

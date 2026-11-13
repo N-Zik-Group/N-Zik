@@ -1,6 +1,6 @@
 package app.n_zik.android.playback.services
 
-import it.fast4x.innertube.models.PlayerResponse
+import app.n_zik.innertube.models.PlayerResponse
 
 /**
  * Enriched playback data returned from stream resolution.

@@ -17,17 +17,17 @@ import androidx.core.content.edit
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.FontType
-import app.it.fast4x.rimusic.enums.PauseBetweenSongs
-import app.it.fast4x.rimusic.models.ui.UiMedia
-import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.typographyOf
-import app.it.fast4x.rimusic.utils.GetSeekBar
-import app.it.fast4x.rimusic.utils.pauseBetweenSongsKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.enums.PauseBetweenSongs
+import app.n_zik.android.models.ui.UiMedia
+import app.n_zik.android.ui.screens.player.PlayerSheetState
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.typographyOf
+import app.n_zik.android.utils.GetSeekBar
+import app.n_zik.android.utils.pauseBetweenSongsKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.LocalPlayerSheetState
 import app.n_zik.android.listentogether.listenTogetherGuestLock
@@ -247,7 +247,7 @@ class GetSeekBarPendingSeekTargetTest {
         // value (field logs 2026-10-04). Here the polled cache stays frozen at 0:30 while the
 
         // player's LIVE position converges on the 1:45 target — the hold must release on the
-        // live convergence (the player's own state, RiMusic/Kreate model) and the label must
+        // live convergence (the player's own state) and the label must
 
         // fall back to the cache, not keep holding the target.
         content()

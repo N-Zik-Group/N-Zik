@@ -2,7 +2,7 @@ package app.n_zik.android.playback.services
 
 import androidx.annotation.MainThread
 import androidx.media3.common.Player
-import app.it.fast4x.rimusic.utils.fadeOutEffect
+import app.n_zik.android.utils.fadeOutEffect
 
 /** Delivers an external Pause even when the fade helper has no active audio to fade. */
 @MainThread

@@ -32,9 +32,9 @@ import app.n_zik.android.components.settings.common.SettingsCardSlot
 import app.n_zik.android.components.settings.common.SettingsSourceFooter
 import app.n_zik.android.components.settings.common.SettingsDescription
 import androidx.compose.ui.text.input.TextFieldValue
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.pauseSearchHistoryKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.filterSearchHistory

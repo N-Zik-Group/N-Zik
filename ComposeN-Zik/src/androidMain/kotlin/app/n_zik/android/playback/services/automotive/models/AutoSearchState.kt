@@ -1,7 +1,7 @@
 package app.n_zik.android.playback.services.automotive.models
 
-import app.it.fast4x.rimusic.models.Song
-import it.fast4x.innertube.Innertube
+import app.n_zik.android.models.Song
+import app.n_zik.innertube.Innertube
 
 object AutoSearchState {
     var searchedSongs: List<Song> = emptyList()

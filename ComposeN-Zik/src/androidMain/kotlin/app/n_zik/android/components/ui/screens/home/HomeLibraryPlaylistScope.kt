@@ -1,9 +1,9 @@
 package app.n_zik.android.components.ui.screens.home
 
-import app.it.fast4x.rimusic.PINNED_PREFIX
-import app.it.fast4x.rimusic.enums.PlaylistsType
-import app.it.fast4x.rimusic.models.PlaylistPreview
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.PINNED_PREFIX
+import app.n_zik.android.enums.PlaylistsType
+import app.n_zik.android.models.PlaylistPreview
+import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.rewind.RewindPlaylists
 import kotlinx.coroutines.flow.first

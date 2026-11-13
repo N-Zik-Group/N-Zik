@@ -3,11 +3,11 @@ package app.n_zik.android.core.database
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.models.SongAlbumMap
-import app.it.fast4x.rimusic.models.SongArtistMap
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Song
+import app.n_zik.android.models.SongAlbumMap
+import app.n_zik.android.models.SongArtistMap
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.unmockkObject

@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import android.content.res.Configuration
-import app.it.fast4x.rimusic.ui.styling.Dimensions
+import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 
 /** Settings scroll owners clear the header, physical rails and the bottom player. */

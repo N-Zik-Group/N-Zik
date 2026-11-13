@@ -5,8 +5,8 @@ import android.content.ContextWrapper
 import android.database.sqlite.SQLiteDatabase
 import android.graphics.Bitmap
 import android.graphics.Color
-import app.it.fast4x.rimusic.utils.profilePreferences
-import app.it.fast4x.rimusic.utils.writeProfileEntries
+import app.n_zik.android.utils.profilePreferences
+import app.n_zik.android.utils.writeProfileEntries
 import java.io.File
 import okio.ByteString.Companion.encodeUtf8
 import org.junit.Assert.assertArrayEquals

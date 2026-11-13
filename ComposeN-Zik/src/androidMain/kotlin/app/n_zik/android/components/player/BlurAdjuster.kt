@@ -20,14 +20,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
-import app.it.fast4x.rimusic.ui.components.themed.IconButton
+import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.components.ui.sliders.SliderControl
 import app.n_zik.android.components.settings.common.SwitchSettingEntry
-import app.it.fast4x.rimusic.ui.styling.favoritesIcon
-import app.it.fast4x.rimusic.utils.blurStrengthKey
-import app.it.fast4x.rimusic.utils.playerBackdropKey
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.rotatingAlbumCoverKey
+import app.n_zik.android.ui.styling.favoritesIcon
+import app.n_zik.android.utils.blurStrengthKey
+import app.n_zik.android.utils.playerBackdropKey
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.rotatingAlbumCoverKey
 import app.n_zik.android.components.dialog.common.Dialog
 
 class BlurAdjuster private constructor(

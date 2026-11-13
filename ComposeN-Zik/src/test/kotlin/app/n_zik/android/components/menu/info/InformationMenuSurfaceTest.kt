@@ -31,22 +31,22 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
-import app.it.fast4x.rimusic.ui.screens.info.VideoOrSongInfoResult
-import app.it.fast4x.rimusic.ui.screens.info.VideoOrSongInfoScreen
-import app.it.fast4x.rimusic.ui.screens.info.loadVideoOrSongInfo
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.DefaultLightColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.PureBlackColorPalette
-import app.it.fast4x.rimusic.ui.styling.Typography
-import app.it.fast4x.rimusic.utils.activeProfileKey
-import app.it.fast4x.rimusic.utils.colorPaletteModeKey
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.profilePreferences
-import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.ui.screens.info.VideoOrSongInfoResult
+import app.n_zik.android.ui.screens.info.VideoOrSongInfoScreen
+import app.n_zik.android.ui.screens.info.loadVideoOrSongInfo
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.ColorPalette
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.DefaultLightColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.PureBlackColorPalette
+import app.n_zik.android.ui.styling.Typography
+import app.n_zik.android.utils.activeProfileKey
+import app.n_zik.android.utils.colorPaletteModeKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.profilePreferences
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.components.glass.GlassStore
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LocalGlassBackdrop
@@ -229,7 +229,7 @@ class InformationMenuSurfaceTest {
     fun `actual information menu retains local title and playback after loading`() {
         context.preferences.edit().putBoolean(glassEnabledKey, true)
             .putString(colorPaletteModeKey, ColorPaletteMode.PitchBlack.name).commit()
-        mockkStatic("app.it.fast4x.rimusic.ui.screens.info.VideoOrSongInfoScreenKt")
+        mockkStatic("app.n_zik.android.ui.screens.info.VideoOrSongInfoScreenKt")
         coEvery { loadVideoOrSongInfo(any(), any()) } returns VideoOrSongInfoResult(null, emptyList())
         var playCount = 0
         var density = 1f

@@ -2,7 +2,7 @@ package app.n_zik.android.components.player.lyrics
 
 import android.graphics.Bitmap
 import android.graphics.Color
-import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
+import app.n_zik.android.ui.styling.dynamicColorPaletteOf
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -18,7 +18,7 @@ import org.robolectric.annotation.Config
  * Issue #606 M6 — `LyricsScreen.kt`'s `LaunchedEffect(bitmapCover, lightTheme)` now wraps
  * `dynamicColorPaletteOf(...)` in `withContext(NzikDispatchers.MEDIA)` instead of running it
  * inline on the composition/Main dispatcher. `dynamicColorPaletteOf`
- * (`app.it.fast4x.rimusic.ui.styling.ColorPalette.kt`, legacy READ-ONLY) is untouched and wraps
+ * (`app.n_zik.android.ui.styling.ColorPalette.kt`, legacy READ-ONLY) is untouched and wraps
  * `Palette.from(bitmap).generate()`, which has no UI-thread dependency, so the offload must
  * change neither its result nor correctness for the same bitmap — only which thread runs it.
  *

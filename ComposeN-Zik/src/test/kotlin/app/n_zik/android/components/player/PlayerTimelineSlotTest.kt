@@ -17,7 +17,7 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.enums.PlayerTimelineType
+import app.n_zik.android.enums.PlayerTimelineType
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test

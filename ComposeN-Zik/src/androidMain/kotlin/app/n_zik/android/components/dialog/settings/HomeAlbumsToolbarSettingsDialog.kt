@@ -19,10 +19,10 @@ import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import timber.log.Timber
 
-import app.it.fast4x.rimusic.utils.homeAlbumsDislikedToolbarOrderKey
-import app.it.fast4x.rimusic.utils.homeAlbumsFavoritesToolbarOrderKey
-import app.it.fast4x.rimusic.utils.homeAlbumsLibraryToolbarOrderKey
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.homeAlbumsDislikedToolbarOrderKey
+import app.n_zik.android.utils.homeAlbumsFavoritesToolbarOrderKey
+import app.n_zik.android.utils.homeAlbumsLibraryToolbarOrderKey
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog

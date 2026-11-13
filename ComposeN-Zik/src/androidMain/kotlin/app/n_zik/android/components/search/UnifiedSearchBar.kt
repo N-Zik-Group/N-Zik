@@ -47,9 +47,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.times
 import androidx.compose.ui.zIndex
-import app.it.fast4x.rimusic.ui.styling.favoritesIcon
-import app.it.fast4x.rimusic.utils.secondary
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.ui.styling.favoritesIcon
+import app.n_zik.android.utils.secondary
+import app.n_zik.android.utils.semiBold
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.LeadingIconBadge
 import app.n_zik.android.colorPalette

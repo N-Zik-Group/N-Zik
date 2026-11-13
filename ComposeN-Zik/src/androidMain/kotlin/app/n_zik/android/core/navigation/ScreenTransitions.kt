@@ -9,7 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.navigation.NavBackStackEntry
-import app.it.fast4x.rimusic.enums.TransitionEffect
+import app.n_zik.android.enums.TransitionEffect
 
 /** The app-wide navigation policy, shared by the main host and nested Settings host. */
 class ScreenTransitions(transitionEffect: TransitionEffect) {

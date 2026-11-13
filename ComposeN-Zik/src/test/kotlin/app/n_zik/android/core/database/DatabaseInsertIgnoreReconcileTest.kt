@@ -3,10 +3,10 @@ package app.n_zik.android.core.database
 import android.os.Bundle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.models.SongArtistMap
-import app.it.fast4x.rimusic.utils.asSong
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Song
+import app.n_zik.android.models.SongArtistMap
+import app.n_zik.android.utils.asSong
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -54,7 +54,7 @@ class DatabaseInsertIgnoreReconcileTest {
         val metadata = MediaMetadata.Builder()
             .setExtras(extras)
             .build()
-        mockkStatic("app.it.fast4x.rimusic.utils.UtilsKt")
+        mockkStatic("app.n_zik.android.utils.UtilsKt")
         every { any<MediaItem>().asSong } returns existingSong()
         return MediaItem.Builder()
             .setMediaId("s1")
@@ -70,7 +70,7 @@ class DatabaseInsertIgnoreReconcileTest {
         val metadata = MediaMetadata.Builder()
             .setExtras(extras)
             .build()
-        mockkStatic("app.it.fast4x.rimusic.utils.UtilsKt")
+        mockkStatic("app.n_zik.android.utils.UtilsKt")
         every { any<MediaItem>().asSong } returns existingSong()
         return MediaItem.Builder()
             .setMediaId("s1")
@@ -148,7 +148,7 @@ class DatabaseInsertIgnoreReconcileTest {
             .setMediaId("s1")
             .setMediaMetadata(metadata)
             .build()
-        mockkStatic("app.it.fast4x.rimusic.utils.UtilsKt")
+        mockkStatic("app.n_zik.android.utils.UtilsKt")
         every { any<MediaItem>().asSong } returns existingSong()
 
         Database.insertIgnore(item, autoFix = false)
@@ -226,7 +226,7 @@ class DatabaseInsertIgnoreReconcileTest {
             .setMediaId("s1")
             .setMediaMetadata(metadata)
             .build()
-        mockkStatic("app.it.fast4x.rimusic.utils.UtilsKt")
+        mockkStatic("app.n_zik.android.utils.UtilsKt")
         every { any<MediaItem>().asSong } returns existingSong()
 
         Database.insertIgnore(item, autoFix = false)

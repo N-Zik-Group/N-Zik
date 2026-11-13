@@ -3,7 +3,7 @@ package app.n_zik.android.components.ui.screens.home.quickpicks
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
-import it.fast4x.innertube.requests.HomePage
+import app.n_zik.innertube.requests.HomePage
 
 /** Gives every generic carousel its own lazy slot so offscreen rows stay uncomposed. */
 internal fun LazyListScope.genericYtmSectionItems(

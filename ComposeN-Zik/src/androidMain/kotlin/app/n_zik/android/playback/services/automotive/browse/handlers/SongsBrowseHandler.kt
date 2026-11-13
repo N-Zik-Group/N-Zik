@@ -4,10 +4,10 @@ import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.exoplayer.offline.Download
-import app.it.fast4x.rimusic.enums.MaxTopPlaylistItems
-import app.it.fast4x.rimusic.enums.SongSortBy
-import app.it.fast4x.rimusic.enums.SortOrder
-import app.it.fast4x.rimusic.utils.*
+import app.n_zik.android.enums.MaxTopPlaylistItems
+import app.n_zik.android.enums.SongSortBy
+import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.utils.*
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -22,7 +22,7 @@ import app.n_zik.android.components.ui.screens.home.onDevice.getProfileLocalSong
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import app.it.fast4x.rimusic.enums.OnDeviceSongSortBy
+import app.n_zik.android.enums.OnDeviceSongSortBy
 
 class SongsBrowseHandler : BrowseHandler {
     override fun handles(parentId: String): Boolean = parentId == PlayerServiceModern.SONG ||

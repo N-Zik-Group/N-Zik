@@ -7,7 +7,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.media3.common.util.BitmapLoader
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.utils.CoilBitmapLoader
+import app.n_zik.android.utils.CoilBitmapLoader
 import app.n_zik.android.appContext
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper

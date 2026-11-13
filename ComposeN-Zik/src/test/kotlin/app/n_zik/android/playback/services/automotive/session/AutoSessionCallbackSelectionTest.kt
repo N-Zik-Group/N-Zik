@@ -10,21 +10,21 @@ import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.session.MediaSession
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.Format
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.models.SongArtistMap
-import app.it.fast4x.rimusic.repository.QuickPicksRepository
-import app.it.fast4x.rimusic.enums.DislikeMode
-import app.it.fast4x.rimusic.utils.excludeDislikedAlbumsKey
-import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
-import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Format
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.Song
+import app.n_zik.android.models.SongArtistMap
+import app.n_zik.android.repository.QuickPicksRepository
+import app.n_zik.android.enums.DislikeMode
+import app.n_zik.android.utils.excludeDislikedAlbumsKey
+import app.n_zik.android.utils.excludeDislikedArtistsKey
+import app.n_zik.android.utils.excludeDislikedSongsKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
-import app.kreate.android.me.knighthat.utils.getLocalSongs
+import app.n_zik.android.core.utils.getLocalSongs
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -460,7 +460,7 @@ class AutoSessionCallbackSelectionTest {
                 Database.songTable.upsert(songDis)
             }
         }
-        mockkStatic("app.kreate.android.me.knighthat.utils.OnDeviceMediaKt")
+        mockkStatic("app.n_zik.android.core.utils.OnDeviceMediaKt")
         try {
             every { any<Context>().getLocalSongs(any(), any()) } returns flowOf(mapOf(songOk to "/storage/emulated/0/Music/ok.mp3", songDis to "/storage/emulated/0/Music/dis.mp3"))
             val result = setMediaItems(AutoSessionConstants.ID_SONGS_ONDEVICE_SHUFFLE)
@@ -475,7 +475,7 @@ class AutoSessionCallbackSelectionTest {
                 context.preferences.edit().remove(excludeDislikedSongsKey).apply()
             }
         } finally {
-            unmockkStatic("app.kreate.android.me.knighthat.utils.OnDeviceMediaKt")
+            unmockkStatic("app.n_zik.android.core.utils.OnDeviceMediaKt")
         }
     }
 

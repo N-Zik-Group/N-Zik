@@ -1,9 +1,5 @@
 واجهة متعددة اللغات لـ YouTube Music على أندرويد، تركز على الأداء، تحسينال الواجهة/التجربة، توسيع الميزات والدعم طويل الأمد.
 
-<b>N-Zik</b> هو مشروع مفتوح المصدر مشتق من <a href="https://github.com/knighthat/Kreate">Kreate</a>.
-
-<b>ملاحظة:</b> بدأ N-Zik كمشروع جانبي. للبدائل الأكثر نضجاً، راجع <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>، <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> أو <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
-
 <b>استخدام الذكاء الاصطناعي:</b> أستخدم الذكاء الاصطناعي التوليدي للكود (عبر <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>)، ويُراجع ويُختبر قبل الإصدار.
 
 ✨ <b>لماذا N-ZIK؟</b> بدون إعلانات، تشغيل في الخلفية، تخزين مؤقت دون اتصال وواجهة قابلة للتخصيص - مجاني دائماً.

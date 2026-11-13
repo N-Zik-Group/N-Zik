@@ -5,8 +5,8 @@ import android.database.sqlite.SQLiteConstraintException
 import android.widget.Toast
 import androidx.media3.common.C
 import androidx.media3.common.MediaMetadata
-import app.it.fast4x.rimusic.cleanPrefix
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.enums.lyrics.LyricsType
@@ -14,10 +14,10 @@ import app.n_zik.android.models.Lyrics
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import com.metrolist.music.betterlyrics.BetterLyrics
 import com.metrolist.music.betterlyrics.TTMLParser
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.requests.lyrics
-import it.fast4x.kugou.KuGou
-import it.fast4x.lrclib.LrcLib
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.requests.lyrics
+import app.n_zik.kugou.KuGou
+import app.n_zik.lrclib.LrcLib
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.TimeoutCancellationException

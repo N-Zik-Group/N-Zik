@@ -6,7 +6,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
-import app.it.fast4x.rimusic.models.QueuedMediaItem
+import app.n_zik.android.models.QueuedMediaItem
 import kotlinx.coroutines.flow.Flow
 
 @Dao

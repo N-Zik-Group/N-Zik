@@ -1,24 +1,24 @@
 package app.n_zik.android.components.settings.ai
 
-import app.it.fast4x.rimusic.enums.LocalRecommandationsNumber
-import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsCustomValueKey
-import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsKey
-import app.it.fast4x.rimusic.utils.enableQuickPicksPageKey
-import app.it.fast4x.rimusic.utils.maxStatisticsItemsCustomValueKey
-import app.it.fast4x.rimusic.utils.maxStatisticsItemsKey
-import app.it.fast4x.rimusic.utils.playEventsTypeKey
-import app.it.fast4x.rimusic.utils.recommendationsNumberKey
-import app.it.fast4x.rimusic.utils.showChartsKey
-import app.it.fast4x.rimusic.utils.showMonthlyPlaylistInQuickPicksKey
-import app.it.fast4x.rimusic.utils.showMoodsAndGenresKey
-import app.it.fast4x.rimusic.utils.showMyTopPlaylistKey
-import app.it.fast4x.rimusic.utils.showNewAlbumsArtistsKey
-import app.it.fast4x.rimusic.utils.showNewAlbumsKey
-import app.it.fast4x.rimusic.utils.showPlaylistMightLikeKey
-import app.it.fast4x.rimusic.utils.showRelatedAlbumsKey
-import app.it.fast4x.rimusic.utils.showSimilarArtistsKey
-import app.it.fast4x.rimusic.utils.showStatsListeningTimeKey
-import app.it.fast4x.rimusic.utils.showTipsKey
+import app.n_zik.android.enums.LocalRecommandationsNumber
+import app.n_zik.android.utils.MaxTopPlaylistItemsCustomValueKey
+import app.n_zik.android.utils.MaxTopPlaylistItemsKey
+import app.n_zik.android.utils.enableQuickPicksPageKey
+import app.n_zik.android.utils.maxStatisticsItemsCustomValueKey
+import app.n_zik.android.utils.maxStatisticsItemsKey
+import app.n_zik.android.utils.playEventsTypeKey
+import app.n_zik.android.utils.recommendationsNumberKey
+import app.n_zik.android.utils.showChartsKey
+import app.n_zik.android.utils.showMonthlyPlaylistInQuickPicksKey
+import app.n_zik.android.utils.showMoodsAndGenresKey
+import app.n_zik.android.utils.showMyTopPlaylistKey
+import app.n_zik.android.utils.showNewAlbumsArtistsKey
+import app.n_zik.android.utils.showNewAlbumsKey
+import app.n_zik.android.utils.showPlaylistMightLikeKey
+import app.n_zik.android.utils.showRelatedAlbumsKey
+import app.n_zik.android.utils.showSimilarArtistsKey
+import app.n_zik.android.utils.showStatsListeningTimeKey
+import app.n_zik.android.utils.showTipsKey
 
 /** Stable local targets for future global search. */
 internal object AiSettingTargets {

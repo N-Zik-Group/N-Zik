@@ -1,16 +1,16 @@
 package app.n_zik.android.components.ui.screens.rewind
 
-import app.it.fast4x.rimusic.models.Album
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.Event
-import app.it.fast4x.rimusic.models.PlaylistPreview
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Event
+import app.n_zik.android.models.PlaylistPreview
+import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.EventTable
 import app.n_zik.android.core.database.ext.RewindYearMonthStat
 import app.n_zik.android.core.database.ext.RewindYearStat
 import app.n_zik.android.core.database.ext.SongListeningStat
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import it.fast4x.innertube.YtMusic
+import app.n_zik.innertube.YtMusic
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll

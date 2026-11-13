@@ -1,7 +1,7 @@
 package app.n_zik.android.components.history
 
-import app.it.fast4x.rimusic.models.Event
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Event
+import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.ext.EventWithSong
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame

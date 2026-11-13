@@ -2,7 +2,7 @@ package app.n_zik.android.extensions.discord
 
 import android.content.Context
 import android.content.SharedPreferences
-import app.it.fast4x.rimusic.utils.encryptedPreferences
+import app.n_zik.android.utils.encryptedPreferences
 
 /**
  * Keys of the advanced Discord presence settings (item 6).

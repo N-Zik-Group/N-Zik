@@ -26,7 +26,7 @@ import app.n_zik.android.R
 import app.n_zik.android.awaitLibraryReady
 import app.n_zik.android.core.backup.LibraryStartupException
 import app.n_zik.android.bridge.audio.PhoneAudioLibrary
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.bridge.command.BinderPhoneQueue
 import app.n_zik.android.bridge.command.LateFailureTracker
 import app.n_zik.android.bridge.command.ListQueueExecutor

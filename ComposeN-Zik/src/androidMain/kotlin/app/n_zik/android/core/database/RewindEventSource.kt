@@ -1,7 +1,7 @@
 package app.n_zik.android.core.database
 
 import androidx.room.Query
-import app.it.fast4x.rimusic.models.Event
+import app.n_zik.android.models.Event
 import app.n_zik.android.core.database.ext.RewindYearMonthStat
 import app.n_zik.android.core.database.ext.RewindYearStat
 import app.n_zik.android.core.database.ext.SongListeningStat
@@ -32,7 +32,7 @@ interface RewindEventSource {
      *
      * Songs are ranked by play count, then total play time, then id — the same
      * order the deck ranking uses — so results are deterministic. Disliked songs
-     * (mirrored in [app.it.fast4x.rimusic.models.Song.likedAt]) are excluded,
+     * (mirrored in [app.n_zik.android.models.Song.likedAt]) are excluded,
      * matching the existing top-song lists.
      */
     @Query("""

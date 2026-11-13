@@ -24,15 +24,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
+import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.components.glass.glassDialogButtonBackground
 import app.n_zik.android.components.glass.GlassDialogButtonFeedback
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import app.n_zik.android.colorPalette
 import app.n_zik.android.R
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.medium
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.medium
+import app.n_zik.android.utils.semiBold
 import app.n_zik.android.uiRoundnessShape
 
 enum class DialogButtonPlacement { Auto, Start, Center, End }

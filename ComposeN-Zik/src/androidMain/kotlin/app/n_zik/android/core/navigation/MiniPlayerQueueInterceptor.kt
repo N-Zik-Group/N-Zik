@@ -1,7 +1,7 @@
 package app.n_zik.android.core.navigation
 
 import androidx.navigation.NavController
-import app.it.fast4x.rimusic.enums.NavRoutes
+import app.n_zik.android.enums.NavRoutes
 import timber.log.Timber
 
 /**

@@ -11,9 +11,9 @@ import androidx.compose.runtime.setValue
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.PlayerServiceModern
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.ConfirmDialog
+import app.n_zik.android.ui.components.tab.toolbar.ConfirmDialog
 import timber.log.Timber
 
 @UnstableApi

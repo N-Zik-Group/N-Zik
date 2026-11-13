@@ -2,8 +2,8 @@ package app.n_zik.android.extensions.lastfm
 
 import android.content.Context
 import android.content.SharedPreferences
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import io.mockk.Runs
@@ -16,7 +16,7 @@ import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
-import it.fast4x.lastfm.LastFm
+import app.n_zik.lastfm.LastFm
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
@@ -38,7 +38,7 @@ class LastFmActionsTest {
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { appContext() } returns context
 
-        mockkStatic("app.it.fast4x.rimusic.utils.EncryptedPreferencesKt")
+        mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
         every { context.encryptedPreferences } returns prefs
 
         mockkObject(LastFm)

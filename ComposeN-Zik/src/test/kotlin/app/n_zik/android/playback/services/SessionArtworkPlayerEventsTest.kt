@@ -12,8 +12,8 @@ import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaSession
-import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.cropVideoThumbnailsKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.appContext
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import com.google.common.util.concurrent.Futures

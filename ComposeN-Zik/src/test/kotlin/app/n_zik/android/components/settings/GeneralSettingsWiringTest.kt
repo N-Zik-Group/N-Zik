@@ -6,7 +6,7 @@ import android.content.pm.PackageManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.performTouchInput
-import app.it.fast4x.compose.persist.findActivityNullable
+import app.n_zik.android.compose.persist.findActivityNullable
 import app.n_zik.android.components.settings.general.GeneralPipCard
 
 import app.n_zik.android.LocalPlayerAwareWindowInsets
@@ -36,11 +36,11 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.FontType
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.typographyOf
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.R
@@ -332,7 +332,7 @@ class GeneralSettingsWiringTest {
         clickRowByDescription(R.string.player_auto_load_songs_in_queue_description)
         composeRule.waitForIdle()
         assertTrue(!context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
-            .getBoolean(app.it.fast4x.rimusic.utils.autoLoadSongsInQueueKey, true))
+            .getBoolean(app.n_zik.android.utils.autoLoadSongsInQueueKey, true))
         assertTrue(composeRule.onAllNodesWithText(context.getString(R.string.settings_player_action_restart_service))
             .fetchSemanticsNodes().isNotEmpty())
     }
@@ -362,10 +362,10 @@ class GeneralSettingsWiringTest {
         clickRowByDescription(R.string.settings_playback_pause_at_zero_volume_description)
         clickRowByDescription(R.string.settings_playback_pause_on_headphone_disconnect_description)
         composeRule.waitForIdle()
-        assertTrue(preferences.getBoolean(app.it.fast4x.rimusic.utils.resumePlaybackWhenDeviceConnectedKey, false))
-        assertTrue(preferences.getBoolean(app.it.fast4x.rimusic.utils.skipMediaOnErrorKey, false))
-        assertTrue(preferences.getBoolean(app.it.fast4x.rimusic.utils.isPauseOnVolumeZeroEnabledKey, false))
-        assertTrue(!preferences.getBoolean(app.it.fast4x.rimusic.utils.pauseOnHeadphoneDisconnectKey, true))
+        assertTrue(preferences.getBoolean(app.n_zik.android.utils.resumePlaybackWhenDeviceConnectedKey, false))
+        assertTrue(preferences.getBoolean(app.n_zik.android.utils.skipMediaOnErrorKey, false))
+        assertTrue(preferences.getBoolean(app.n_zik.android.utils.isPauseOnVolumeZeroEnabledKey, false))
+        assertTrue(!preferences.getBoolean(app.n_zik.android.utils.pauseOnHeadphoneDisconnectKey, true))
         composeRule.onAllNodesWithText(context.getString(R.string.settings_player_action_restart_service)).assertCountEquals(1)
     }
 
@@ -380,14 +380,14 @@ class GeneralSettingsWiringTest {
         composeRule.onAllNodesWithText(resumeDescription).assertCountEquals(1)
         clickRowByDescription(R.string.settings_playback_resume_on_start_description)
         composeRule.waitForIdle()
-        assertTrue(preferences.getBoolean(app.it.fast4x.rimusic.utils.persistentQueueKey, false))
-        assertTrue(preferences.getBoolean(app.it.fast4x.rimusic.utils.resumePlaybackOnStartKey, false))
+        assertTrue(preferences.getBoolean(app.n_zik.android.utils.persistentQueueKey, false))
+        assertTrue(preferences.getBoolean(app.n_zik.android.utils.resumePlaybackOnStartKey, false))
         composeRule.onAllNodesWithText(context.getString(R.string.settings_player_action_restart_service)).assertCountEquals(1)
         clickRowByDescription(R.string.settings_player_persistent_queue_description)
         composeRule.waitForIdle()
         composeRule.onAllNodesWithText(resumeDescription).assertCountEquals(0)
-        assertTrue(!preferences.getBoolean(app.it.fast4x.rimusic.utils.persistentQueueKey, true))
-        assertTrue(preferences.getBoolean(app.it.fast4x.rimusic.utils.resumePlaybackOnStartKey, false))
+        assertTrue(!preferences.getBoolean(app.n_zik.android.utils.persistentQueueKey, true))
+        assertTrue(preferences.getBoolean(app.n_zik.android.utils.resumePlaybackOnStartKey, false))
     }
 
 }

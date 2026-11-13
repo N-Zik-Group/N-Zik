@@ -1,13 +1,13 @@
 package app.n_zik.android.playback.services
 
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.SongArtistMap
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.SongArtistMap
 import app.n_zik.android.core.database.Database
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.requests.searchPage
-import it.fast4x.innertube.utils.from
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.requests.searchPage
+import app.n_zik.innertube.utils.from
 import timber.log.Timber
 
 private const val TAG = "StreamResolver"

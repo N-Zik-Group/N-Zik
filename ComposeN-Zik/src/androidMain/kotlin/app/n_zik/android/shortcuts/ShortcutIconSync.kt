@@ -13,10 +13,10 @@ import android.graphics.drawable.Icon
 import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.currentProfileEntries
-import app.it.fast4x.rimusic.utils.profileDisplayName
-import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.currentProfileEntries
+import app.n_zik.android.utils.profileDisplayName
+import app.n_zik.android.utils.resolveProfileDisplayName
 import app.n_zik.android.MainActivity
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.screens.rescue.RescueActivity

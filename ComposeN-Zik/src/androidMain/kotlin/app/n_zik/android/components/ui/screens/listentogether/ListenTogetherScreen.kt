@@ -73,19 +73,19 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import app.it.fast4x.rimusic.ui.components.LocalMenuState
+import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.components.navigation.Skeleton
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
-import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
+import app.n_zik.android.ui.components.themed.HeaderWithIcon
 
-import app.it.fast4x.rimusic.ui.components.themed.IconButton as ThemeIconButton
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
+import app.n_zik.android.ui.components.themed.IconButton as ThemeIconButton
+import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsSectionCard
-import app.it.fast4x.rimusic.ui.styling.Dimensions
-import app.it.fast4x.rimusic.utils.semiBold
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.ui.styling.Dimensions
+import app.n_zik.android.utils.semiBold
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.R
 import app.n_zik.android.LocalPlayerServiceBinder

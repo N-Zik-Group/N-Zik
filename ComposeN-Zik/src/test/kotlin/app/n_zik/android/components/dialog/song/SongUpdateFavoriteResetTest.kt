@@ -13,8 +13,8 @@ import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.unmockkAll
 import io.mockk.verify
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.requests.song
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.requests.song
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -23,9 +23,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
-import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.DatabaseInitializer
@@ -43,9 +43,9 @@ class SongUpdateFavoriteResetTest {
     fun setup() {
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { appContext() } returns mockk<Context>(relaxed = true)
-        mockkStatic("app.it.fast4x.rimusic.utils.ProfilePreferencesKt")
+        mockkStatic("app.n_zik.android.utils.ProfilePreferencesKt")
         every { getActiveProfile(any()) } returns "active"
-        mockkStatic("it.fast4x.innertube.requests.QueueKt")
+        mockkStatic("app.n_zik.innertube.requests.QueueKt")
         coEvery { Innertube.song(any()) } returns null
         mockkObject(Database)
         every { Database.songTable } returns songTable

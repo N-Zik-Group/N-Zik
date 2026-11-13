@@ -2,7 +2,7 @@ package app.n_zik.android.utils
 
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import app.it.fast4x.rimusic.utils.isExplicit
+import app.n_zik.android.utils.isExplicit
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

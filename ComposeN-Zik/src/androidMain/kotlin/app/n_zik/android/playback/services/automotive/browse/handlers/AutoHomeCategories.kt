@@ -1,7 +1,7 @@
 package app.n_zik.android.playback.services.automotive.browse.handlers
 
 import android.content.Context
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.preferences
 import org.json.JSONArray
 
 /**

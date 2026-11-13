@@ -10,10 +10,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.R
-import it.fast4x.innertube.Innertube
+import app.n_zik.innertube.Innertube
 
 /** SharedPreferences key of the "Use account for searches" toggle (Accounts tab). */
 const val useLoginForSearchKey = "useLoginForSearch"

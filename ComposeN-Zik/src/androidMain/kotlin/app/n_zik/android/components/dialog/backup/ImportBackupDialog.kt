@@ -31,10 +31,10 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.profileDisplayName
-import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
-import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.profileDisplayName
+import app.n_zik.android.utils.resolveProfileDisplayName
+import app.n_zik.android.utils.semiBold
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.components.dialog.common.ConfirmationDialog

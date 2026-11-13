@@ -3,19 +3,11 @@
   
   <h3>🌐 <a href="https://n-zik.vercel.app/">Official Website</a></h3>
   <p>
-    <b>N-Zik</b> is a multilingual fork of <a href="https://github.com/knighthat/Kreate">Kreate</a>, 
-    built with performance improvements, UI/UX refinement, bug fixes, and new features in mind with long-term support.
+    <b>N-Zik</b> is a multilingual, open-source Android music app.
   </p>
   <p>
     A desktop companion is available: <a href="https://github.com/N-Zik-Group/N-Zik-Desktop-Compagnon">N-Zik Desktop Compagnon</a>
     controls your library and playback from a Windows or Linux PC.
-  </p>
-  <p>
-    <strong>N-Zik</strong> may not yet be as stable as the original 
-    <a href="https://github.com/knighthat/Kreate">Kreate</a>, so feel free to use it or other 
-    solid alternatives like <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, 
-    <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or 
-    <a href="https://github.com/fast4x/RiPlay">RiPlay</a> if you need a more mature option (RiPlay doesn't have download / cache feature).
   </p>
   <p>
     <strong>N-Zik</strong> is a side project I originally built for myself and friends, not chasing glory. 
@@ -181,7 +173,7 @@ Glass is optional and **disabled on fresh installations**. Enable it in Settings
   <img alt="Carousel player with Glass enabled" src="assets/design/preview/img/07.png" height="300px" />
 </div>
 
-Glass builds on [Square / Convx Project](https://github.com/Lelonio/Square) (GPL-3.0) and [Kyant0 AndroidLiquidGlass / Backdrop](https://github.com/Kyant0/AndroidLiquidGlass) (Apache-2.0). Full attribution and license notices appear under [Glass credits](#glass-credits).
+Glass builds on [Square / Convx Project](https://github.com/Lelonio/Square) (GPL-3.0) and [Kyant0 AndroidLiquidGlass / Backdrop](https://github.com/Kyant0/AndroidLiquidGlass) (Apache-2.0). Full attribution and license notices appear under [N-Zik credits](ComposeN-Zik/src/androidMain/res/raw/credits.md).
 
 # 📷 Screenshots & Videos
 
@@ -319,83 +311,7 @@ New:
 - Initial release
 ```
 
-# 🫂 Acknowledgements
-
-### 🛠 Based on / Inspired by:
-
-- [**Metrolist**](https://github.com/metrolistgroup/metrolist)
-- [**VIVImusic**](https://github.com/vivizzz007/vivi-music)
-- [**PixelPlayer**](https://github.com/PixelPlayerHQ/PixelPlayer)
-- [**RiPlay**](https://github.com/fast4x/RiPlay)
-- [**Square**](https://github.com/Lelonio/Square)
-- [**Cubic-Music**](https://github.com/cybruGhost/Cubic-Music)
-- [**Kreate**](https://github.com/knighthat/Kreate)
-- [**RiMusic**](https://github.com/fast4x/RiMusic)
-- [**ViMusic**](https://github.com/vfsfitvnm/ViMusic)
-
-
-### 🫧 Glass credits
-
-<a id="glass-credits"></a>
-
-- [**Square / Convx Project**](https://github.com/Lelonio/Square): Glass material, interaction physics and presentation adaptations, licensed under GPL-3.0. See the [Square attribution notice](ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/NOTICE-square.txt).
-- [**Kyant0 / AndroidLiquidGlass (Backdrop)**](https://github.com/Kyant0/AndroidLiquidGlass): The underlying backdrop and optical rendering sources, licensed separately under Apache-2.0. See the [Backdrop license](ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/LICENSE-backdrop.txt).
-
-### 🎨 Design & UI Contributions:
-
-- Current banner and logo [**OrangeZXZ**](https://github.com/OrangeZXZ), [**NEVARLeVrai**](https://github.com/NEVARLeVrai)
-- Player design: [**aneesh1122**](https://github.com/aneesh1122), [**OrangeZXZ**](https://github.com/OrangeZXZ), [**NEVARLeVrai**](https://github.com/NEVARLeVrai)
-- Icons: [**Ionicons**](https://github.com/ionic-team/ionicons), [**FlatIcon.com**](https://www.flaticon.com)
-
-### 🎵 Lyrics & Media:
-
-- [**KuGou**](https://www.kugou.com): Lyrics provider
-- [**LrcLib**](https://lrclib.net): Lyrics provider
-- [**Better Lyrics**](https://betterlyrics.org/): Lyrics provider
-- [**Innertube/YTB Lyrics**](https://github.com/MetrolistGroup/innertubex): Lyrics provider
-
-### 🧠 Features & Tools:
-
-- [**YouTube-Internal-Clients**](https://github.com/zerodytrash/YouTube-Internal-Clients): Script for discovering hidden YouTube API clients.
-- [**Translator**](https://github.com/therealbush/translator): Google Translate wrapper for Kotlin/JVM.
-- [**compose-markdown**](https://github.com/jeziellago/compose-markdown): Markdown rendering in app.
-- [**HypnoticCanvas**](https://mikepenz.github.io/HypnoticCanvas/): Shader effects for Compose.
-- [**Metrolist**](https://github.com/metrolistgroup/metrolist): Has helped a lot with bug fixes and feature expansion!
-- [**MetroServer**](https://github.com/MetrolistGroup/metroserver): Listen Together server infrastructure, with N-Zik officially supported as a hosting client.
-- [**ZemerTeam/zemer-cipher**](https://github.com/ZemerTeam/zemer-cipher): Cipher configs
-- [**Invidious**](https://github.com/iv-org/invidious): Alternative YouTube frontend used as a streaming source.
-
-### 📚 Libraries & Dependencies:
-
-- [**InnertubeX**](https://github.com/MetrolistGroup/innertubex): Innertube library for streaming and YouTube synchronization.
-- [**MetrolistExtractor**](https://github.com/MetrolistGroup/MetrolistExtractor): Fast and reliable data extraction library.
-- [**Media3 / ExoPlayer**](https://github.com/androidx/media): The core media player powering the audio experience.
-- [**FFmpegKit Audio**](https://github.com/maxrave-dev/ffmpeg-kit-16KB): Powerful audio processing, conversion, and metadata export.
-- [**TeamNewPipe / nanojson**](https://github.com/TeamNewPipe/nanojson): Ultra-lightweight JSON parser by the NewPipe team.
-- [**MonetCompat**](https://github.com/KieronQuinn/MonetCompat): Material You dynamic colors on older Android versions.
-- [**Coil**](https://github.com/coil-kt/coil): Image loading library for covers, artist images, and more.
-- [**Ktor**](https://github.com/ktorio/ktor): HTTP client framework for network requests.
-- [**OkHttp**](https://github.com/square/okhttp): HTTP & HTTP/2 client.
-- [**Jetpack Glance**](https://developer.android.com/develop/ui/compose/glance): Home screen widgets framework.
-- [**Android YouTube Player**](https://github.com/PierfrancescoSoffritti/android-youtube-player): Lightweight YouTube player integration.
-- [**Toasty**](https://github.com/GrenderG/Toasty): Custom styled Android toast messages.
-- [**Timber**](https://github.com/JakeWharton/timber): Extensible logging utility.
-- [**KSoup**](https://github.com/MohamedRejeb/Ksoup): Multiplatform HTML parser.
-- [**compose-shimmer**](https://github.com/valentinilk/compose-shimmer): Shimmer effect for loading states in Compose.
-- [**compose-reorderable**](https://github.com/Calvin-LL/Reorderable): Drag & drop reorderable lists in Compose.
-- [**kotlin-csv**](https://github.com/jsoizo/kotlin-csv): CSV reading/writing for playlist import/export.
-- [**Brotli**](https://github.com/google/brotli): Brotli compression for HTTP responses.
-- [**Jetpack Palette**](https://developer.android.com/develop/ui/views/graphics/palette-colors): Color extraction from album artwork.
-- [**Jetpack Navigation Compose**](https://developer.android.com/develop/ui/compose/navigation): Type-safe navigation for Compose.
-- [**Room**](https://developer.android.com/training/data-storage/room): Local database with SQLite abstraction.
-- [**mediaplayer-kmp**](https://github.com/KhubaibKhan4/MediaPlayer-KMP): Multiplatform media player.
-- [**Apache Commons Math3**](https://commons.apache.org/proper/commons-math/): Math library used for audio visualization algorithms.
-
-### 🌍 Platform & Ecosystem:
-
-- [**Kotlin**](https://kotlinlang.org/) / [**JetBrains Compose Multiplatform**](https://www.jetbrains.com/compose-multiplatform/): Language and UI framework.
-- [**Crowdin**](https://crowdin.com/): Community translation platform.
-- [**Android Open Source Project (AOSP)**](https://source.android.com/): The foundation of it all.
+See the [N-Zik credits](ComposeN-Zik/src/androidMain/res/raw/credits.md), also available in Settings > About.
 
 # 👀 Status
 
@@ -424,11 +340,8 @@ New:
 
 # ⚠️ Disclaimer
 
-This project has no relation to the original author of [Kreate](https://github.com/knighthat/Kreate).
-
-Furthermore, its contents are not affiliated with, funded, authorized, endorsed by, or in any way associated with YouTube, Google LLC, or any of its affiliates or subsidiaries.
+N-Zik and its contents are not affiliated with, funded, authorized, endorsed by, or in any way associated with YouTube, Google LLC, or any of its affiliates or subsidiaries.
 
 Any trademarks, service marks, trade names, or other intellectual property rights used in this project remain the property of their respective owners.
 
-Made with ❤️ by [NEVARLeVrai](https://github.com/NEVARLeVrai)  
 Licensed under GPLv3 - see [LICENSE](LICENSE)

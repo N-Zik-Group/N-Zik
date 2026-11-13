@@ -3,7 +3,7 @@ package app.n_zik.android.components.player
 import android.app.Application
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.ui.screens.player.LaunchedEffectScrollToPage
+import app.n_zik.android.ui.screens.player.LaunchedEffectScrollToPage
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.components.player.slide.slideSettledPageEffect
 import io.mockk.every

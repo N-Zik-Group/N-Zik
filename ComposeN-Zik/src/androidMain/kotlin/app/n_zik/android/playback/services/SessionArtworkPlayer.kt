@@ -11,10 +11,10 @@ import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.utils.cropVideoThumbnailsKey
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.R
 import app.n_zik.android.BuildConfig
 import timber.log.Timber

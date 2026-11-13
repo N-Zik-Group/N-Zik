@@ -3,7 +3,7 @@ package app.n_zik.android.components.dialog.song
 import java.io.File
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.profiles.coversDir
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
@@ -37,7 +37,7 @@ class SongUpdateCoverResetTest {
     fun setup() {
         context = ApplicationProvider.getApplicationContext()
         covers = temporary.newFolder("active-covers")
-        mockkStatic("app.it.fast4x.rimusic.utils.ProfilePreferencesKt")
+        mockkStatic("app.n_zik.android.utils.ProfilePreferencesKt")
         mockkStatic("app.n_zik.android.core.profiles.ProfileDataDirsKt")
         every { getActiveProfile(context) } returns "active"
         every { coversDir(context, "active") } returns covers

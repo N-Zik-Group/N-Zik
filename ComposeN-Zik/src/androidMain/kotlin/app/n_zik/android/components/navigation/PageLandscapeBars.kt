@@ -5,9 +5,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.it.fast4x.rimusic.utils.LandscapeBars
-import app.it.fast4x.rimusic.utils.hidesBarsInLandscape
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
+import app.n_zik.android.utils.LandscapeBars
+import app.n_zik.android.utils.hidesBarsInLandscape
+import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.core.navigation.currentPageNavigationEntry
 import app.n_zik.android.extensions.discord.DiscordUiState
 import app.n_zik.android.utils.coroutines.NzikDispatchers

@@ -36,9 +36,9 @@ import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
-import app.it.fast4x.rimusic.utils.isIgnoringBatteryOptimizations
-import app.it.fast4x.rimusic.utils.semiBold
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.isIgnoringBatteryOptimizations
+import app.n_zik.android.utils.semiBold
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.bridge.ActiveDevice
 import app.n_zik.android.bridge.AutoStopSettings

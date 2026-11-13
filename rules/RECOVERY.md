@@ -61,7 +61,7 @@ Symptom: Gradle sync or build fails before compilation with unresolved module er
 2. Rebuild
 3. If a submodule pointer itself changed unexpectedly (not by the user) → HALT, report to user
 
-> **Config caveat:** `.git/config` carries a stale `[submodule "discord"]` section that no longer exists in `.gitmodules` — `git submodule` output will show it; ignore it and do NOT delete or act on it without explicit instruction. (The legacy `upstream` remote `knighthat/Kreate` was removed on 2026-10-26 at the user's request; if it reappears, treat it as stale config and ask before acting.)
+> **Config caveat:** `.git/config` carries a stale `[submodule "discord"]` section that no longer exists in `.gitmodules` — `git submodule` output will show it; ignore it and do NOT delete or act on it without explicit instruction. (The former `upstream` remote was removed at the user's request. If it reappears, ask before acting.)
 
 ## Known Flaky Tests
 

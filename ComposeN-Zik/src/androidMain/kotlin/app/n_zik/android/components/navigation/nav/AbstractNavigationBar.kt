@@ -13,11 +13,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
-import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.ui.components.themed.Button
-import app.it.fast4x.rimusic.ui.styling.favoritesIcon
-import app.it.fast4x.rimusic.utils.disableNavigationBackStackKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.ui.components.themed.Button
+import app.n_zik.android.ui.styling.favoritesIcon
+import app.n_zik.android.utils.disableNavigationBackStackKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.tab.NavigationButtonSlots

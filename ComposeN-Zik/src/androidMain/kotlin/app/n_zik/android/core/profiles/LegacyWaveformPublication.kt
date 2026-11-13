@@ -1,8 +1,8 @@
 package app.n_zik.android.core.profiles
 
 import android.content.Context
-import app.it.fast4x.rimusic.utils.profilePreferences
-import app.it.fast4x.rimusic.utils.readProfileIds
+import app.n_zik.android.utils.profilePreferences
+import app.n_zik.android.utils.readProfileIds
 import app.n_zik.android.core.rescue.ProfileResetSnapshot
 import java.io.File
 import java.io.FileOutputStream

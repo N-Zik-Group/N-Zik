@@ -2,8 +2,8 @@ package app.n_zik.android.core.database.ext
 
 import androidx.room.Embedded
 import androidx.room.Relation
-import app.it.fast4x.rimusic.models.Event
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Event
+import app.n_zik.android.models.Song
 
 data class EventWithSong(
     @Embedded val event: Event,

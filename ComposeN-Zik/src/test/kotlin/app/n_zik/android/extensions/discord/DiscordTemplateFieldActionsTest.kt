@@ -1,7 +1,7 @@
 package app.n_zik.android.extensions.discord
 
 import androidx.compose.runtime.mutableStateOf
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import io.mockk.every
 import io.mockk.just

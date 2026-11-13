@@ -7,9 +7,9 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.thumbnailSizeDpKey
-import app.it.fast4x.rimusic.utils.thumbnailSizeLDpKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.thumbnailSizeDpKey
+import app.n_zik.android.utils.thumbnailSizeLDpKey
 
 /** An absent landscape override follows portrait without materializing a preference. */
 @Composable

@@ -40,24 +40,24 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 
-import app.it.fast4x.rimusic.enums.FontType
-import app.it.fast4x.rimusic.enums.NavRoutes
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.components.settings.accounts.AccountsSettings
-import app.it.fast4x.rimusic.ui.styling.Appearance
+import app.n_zik.android.ui.styling.Appearance
 
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.LocalAppearance
 
-import app.it.fast4x.rimusic.ui.styling.typographyOf
+import app.n_zik.android.ui.styling.typographyOf
 
-import app.it.fast4x.rimusic.utils.enableYouTubeLoginKey
+import app.n_zik.android.utils.enableYouTubeLoginKey
 
-import app.it.fast4x.rimusic.utils.encryptedPreferences
+import app.n_zik.android.utils.encryptedPreferences
 
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.preferences
 
-import app.it.fast4x.rimusic.utils.ytCookieKey
+import app.n_zik.android.utils.ytCookieKey
 
 import app.n_zik.android.MainApplication
 
@@ -65,7 +65,7 @@ import app.n_zik.android.R
 
 import app.n_zik.android.listentogether.ListenTogetherPlayerBridge
 
-import it.fast4x.innertube.Innertube
+import app.n_zik.innertube.Innertube
 
 import io.mockk.every
 
@@ -209,7 +209,7 @@ class AccountsSettingsEmbeddingWiringTest {
 
         }
 
-        mockkStatic("app.it.fast4x.rimusic.utils.EncryptedPreferencesKt")
+        mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
 
         every { any<Context>().encryptedPreferences } returns secure
 

@@ -1,7 +1,7 @@
 package app.n_zik.android
 
 import android.widget.Toast
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.download.utils.MyDownloadHelper
 import io.mockk.Runs
 import io.mockk.every

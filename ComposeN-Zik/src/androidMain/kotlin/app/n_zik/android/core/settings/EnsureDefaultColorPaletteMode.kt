@@ -2,9 +2,9 @@ package app.n_zik.android.core.settings
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
-import app.it.fast4x.rimusic.utils.colorPaletteModeKey
-import app.it.fast4x.rimusic.utils.putEnum
+import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.utils.colorPaletteModeKey
+import app.n_zik.android.utils.putEnum
 import timber.log.Timber
 
 /**

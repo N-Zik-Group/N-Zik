@@ -73,11 +73,11 @@ import app.n_zik.android.recognition.AudioRecorder
 import app.n_zik.android.recognition.RecognizedTrack
 import app.n_zik.android.recognition.ShazamRepository
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.asMediaItem
+import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.core.coil.ImageCacheFactory
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.requests.searchPage
-import it.fast4x.innertube.utils.from
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.requests.searchPage
+import app.n_zik.innertube.utils.from
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

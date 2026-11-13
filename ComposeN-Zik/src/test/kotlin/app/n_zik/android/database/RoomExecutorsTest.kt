@@ -3,7 +3,7 @@ package app.n_zik.android.database
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import org.junit.After

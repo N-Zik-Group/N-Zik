@@ -68,12 +68,12 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.components.ui.screens.profiles.profileSecurePrefs
-import app.it.fast4x.rimusic.utils.profileDisplayName
-import app.it.fast4x.rimusic.utils.readProfileIds
-import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
+import app.n_zik.android.utils.profileDisplayName
+import app.n_zik.android.utils.readProfileIds
+import app.n_zik.android.utils.resolveProfileDisplayName
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.export.rememberDatabaseExport
@@ -102,7 +102,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Scaffold
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
+import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.components.dialog.common.ButtonRow

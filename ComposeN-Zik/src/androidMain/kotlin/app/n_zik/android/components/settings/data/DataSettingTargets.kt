@@ -1,13 +1,13 @@
 package app.n_zik.android.components.settings.data
 
 import app.n_zik.android.core.coil.PROFILE_IMAGE_CACHE_CUSTOM_MB
-import app.it.fast4x.rimusic.utils.coilDiskCacheMaxSizeKey
-import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
-import app.it.fast4x.rimusic.utils.exoPlayerCustomCacheKey
-import app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey
-import app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey
-import app.it.fast4x.rimusic.utils.pauseListenHistoryKey
-import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
+import app.n_zik.android.utils.coilDiskCacheMaxSizeKey
+import app.n_zik.android.utils.exoPlayerCacheLocationKey
+import app.n_zik.android.utils.exoPlayerCustomCacheKey
+import app.n_zik.android.utils.exoPlayerDiskCacheMaxSizeKey
+import app.n_zik.android.utils.exoPlayerDiskDownloadCacheMaxSizeKey
+import app.n_zik.android.utils.pauseListenHistoryKey
+import app.n_zik.android.utils.pauseSearchHistoryKey
 
 /** Stable local card, preference and action targets for the Data page. */
 internal object DataSettingTargets {

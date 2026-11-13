@@ -10,8 +10,8 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.utils.cropVideoThumbnailsKey
+import app.n_zik.android.utils.rememberPreference
 
 /** Keeps foreground painters responsive when their Image caller uses a fixed Fit scale. */
 @Composable

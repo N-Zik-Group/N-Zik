@@ -42,21 +42,21 @@ import app.n_zik.android.playback.services.createDownloadDataSourceFactory
 
 import app.n_zik.android.enums.DownloadQualityFormat
 import app.n_zik.android.enums.downloadQualityFormatKey
-import app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize
-import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.enums.ExoPlayerDiskDownloadCacheMaxSize
+import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.isLocal
-import app.it.fast4x.rimusic.utils.asMediaItem
-import app.it.fast4x.rimusic.utils.asSong
+import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.asSong
 import app.n_zik.android.appContext
-import app.it.fast4x.rimusic.utils.autoDownloadSongKey
-import app.it.fast4x.rimusic.utils.autoDownloadSongWhenAlbumBookmarkedKey
-import app.it.fast4x.rimusic.utils.autoDownloadSongWhenLikedKey
-import app.it.fast4x.rimusic.utils.downloadSyncedLyrics
-import app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.getEnum
-import app.it.fast4x.rimusic.utils.isNetworkConnected
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.autoDownloadSongKey
+import app.n_zik.android.utils.autoDownloadSongWhenAlbumBookmarkedKey
+import app.n_zik.android.utils.autoDownloadSongWhenLikedKey
+import app.n_zik.android.utils.downloadSyncedLyrics
+import app.n_zik.android.utils.exoPlayerDiskDownloadCacheMaxSizeKey
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.isNetworkConnected
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.core.coil.thumbnail
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
@@ -72,19 +72,19 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
-import app.it.fast4x.rimusic.utils.ExternalUris
+import app.n_zik.android.utils.ExternalUris
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.notifications.channelId
 
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.asExecutor
 import timber.log.Timber
 import kotlin.io.path.createTempDirectory
-import app.it.fast4x.rimusic.EXPLICIT_PREFIX
-import app.it.fast4x.rimusic.cleanPrefix
+import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.cleanPrefix
 import app.n_zik.android.R
-import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
+import app.n_zik.android.utils.parentalControlEnabledKey
 
 @UnstableApi
 /**
@@ -671,7 +671,7 @@ object MyDownloadHelper {
 
     /**
      * @return the ids of completed downloads whose recorded download quality (see
-     * [app.it.fast4x.rimusic.models.Format.downloadQuality]) does not match the current
+     * [app.n_zik.android.models.Format.downloadQuality]) does not match the current
      * [downloadQualityFormat]. A NULL tracking value (download made before quality tracking
      * existed) counts as non-compliant.
      */

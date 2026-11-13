@@ -9,8 +9,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger
-import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.utils.encryptedPreferencesUpdateTrigger
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.screens.profiles.loadActiveProfileFace
 import app.n_zik.android.components.ui.screens.profiles.profileFaceUpdateTrigger

@@ -1,9 +1,9 @@
 package app.n_zik.android.legacyoffmain
 
-import app.it.fast4x.rimusic.utils.asMediaItem
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.ArtistConjunctions
-import it.fast4x.innertube.models.NavigationEndpoint
+import app.n_zik.android.utils.asMediaItem
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.ArtistConjunctions
+import app.n_zik.innertube.models.NavigationEndpoint
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before

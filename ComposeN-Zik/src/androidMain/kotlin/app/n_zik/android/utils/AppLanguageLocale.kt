@@ -1,7 +1,7 @@
 package app.n_zik.android.utils
 
 import androidx.core.os.LocaleListCompat
-import app.it.fast4x.rimusic.enums.Languages
+import app.n_zik.android.enums.Languages
 
 /**
  * Builds the locale list applied to the app for the selected app language.

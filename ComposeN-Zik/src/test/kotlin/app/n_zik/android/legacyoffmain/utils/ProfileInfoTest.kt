@@ -1,10 +1,10 @@
 package app.n_zik.android.legacyoffmain.utils
 
-import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.PROFILE_NAMES_FILE_NAME
-import app.it.fast4x.rimusic.utils.isProfileIdSafe
-import app.it.fast4x.rimusic.utils.parseProfileIds
-import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.PROFILE_NAMES_FILE_NAME
+import app.n_zik.android.utils.isProfileIdSafe
+import app.n_zik.android.utils.parseProfileIds
+import app.n_zik.android.utils.resolveProfileDisplayName
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue

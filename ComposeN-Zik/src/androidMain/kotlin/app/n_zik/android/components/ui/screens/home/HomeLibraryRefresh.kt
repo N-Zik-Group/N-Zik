@@ -1,7 +1,7 @@
 package app.n_zik.android.components.ui.screens.home
 
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.models.PlaylistPreview
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.components.playlist.refreshPlaylistSource
 import app.n_zik.android.core.database.PlaylistLinkKind
 import app.n_zik.android.core.database.canRefreshPlaylist

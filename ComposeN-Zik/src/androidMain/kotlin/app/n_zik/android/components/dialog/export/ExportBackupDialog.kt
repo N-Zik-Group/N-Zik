@@ -31,9 +31,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.utils.semiBold
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.semiBold
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.core.backup.DatabaseBackup
 import timber.log.Timber
 import app.n_zik.android.R

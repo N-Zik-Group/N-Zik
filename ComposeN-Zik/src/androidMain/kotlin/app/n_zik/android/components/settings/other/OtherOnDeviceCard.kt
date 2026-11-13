@@ -21,9 +21,9 @@ import app.n_zik.android.components.image.writeOwnedImageAtomically
 import app.n_zik.android.components.ui.screens.home.onDevice.blockedLocalFoldersFile
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
-import app.it.fast4x.rimusic.utils.defaultFolderKey
-import app.it.fast4x.rimusic.utils.isAtLeastAndroid10
-import app.it.fast4x.rimusic.utils.showFoldersOnDeviceKey
+import app.n_zik.android.utils.defaultFolderKey
+import app.n_zik.android.utils.isAtLeastAndroid10
+import app.n_zik.android.utils.showFoldersOnDeviceKey
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.StringListDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
