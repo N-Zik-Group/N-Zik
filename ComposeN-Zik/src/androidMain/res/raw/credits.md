@@ -1,6 +1,10 @@
 # N-Zik credits
 
-## 🛠 Based on / Inspired by:
+N-Zik is built with contributions from developers, designers, translators, and upstream projects.
+
+## Android app
+
+### Upstream projects
 
 - [**Metrolist**](https://github.com/metrolistgroup/metrolist)
 - [**VIVImusic**](https://github.com/vivizzz007/vivi-music)
@@ -13,25 +17,25 @@
 - [**ViMusic**](https://github.com/vfsfitvnm/ViMusic)
 
 
-## 🫧 Glass credits
+### 🫧 Glass credits
 
 - [**Square / Convx Project**](https://github.com/Lelonio/Square): Glass material, interaction physics and presentation adaptations, licensed under GPL-3.0. See the [Square attribution notice](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/NOTICE-square.txt).
 - [**Kyant0 / AndroidLiquidGlass (Backdrop)**](https://github.com/Kyant0/AndroidLiquidGlass): The underlying backdrop and optical rendering sources, licensed separately under Apache-2.0. See the [Backdrop license](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/LICENSE-backdrop.txt).
 
-## 🎨 Design & UI Contributions:
+### Design and icons
 
 - Current banner and logo [**OrangeZXZ**](https://github.com/OrangeZXZ), [**NEVARLeVrai**](https://github.com/NEVARLeVrai)
 - Player design: [**aneesh1122**](https://github.com/aneesh1122), [**OrangeZXZ**](https://github.com/OrangeZXZ), [**NEVARLeVrai**](https://github.com/NEVARLeVrai)
 - Icons: [**Ionicons**](https://github.com/ionic-team/ionicons), [**FlatIcon.com**](https://www.flaticon.com)
 
-## 🎵 Lyrics & Media:
+### 🎵 Lyrics & Media:
 
 - [**KuGou**](https://www.kugou.com): Lyrics provider
 - [**LrcLib**](https://lrclib.net): Lyrics provider
 - [**Better Lyrics**](https://betterlyrics.org/): Lyrics provider
 - [**Innertube/YTB Lyrics**](https://github.com/MetrolistGroup/innertubex): Lyrics provider
 
-## 🧠 Features & Tools:
+### 🧠 Features & Tools:
 
 - [**YouTube-Internal-Clients**](https://github.com/zerodytrash/YouTube-Internal-Clients): Script for discovering hidden YouTube API clients.
 - [**Translator**](https://github.com/therealbush/translator): Google Translate wrapper for Kotlin/JVM.
@@ -42,7 +46,7 @@
 - [**ZemerTeam/zemer-cipher**](https://github.com/ZemerTeam/zemer-cipher): Cipher configs
 - [**Invidious**](https://github.com/iv-org/invidious): Alternative YouTube frontend used as a streaming source.
 
-## 📚 Libraries & Dependencies:
+### 📚 Libraries & Dependencies:
 
 - [**InnertubeX**](https://github.com/MetrolistGroup/innertubex): Innertube library for streaming and YouTube synchronization.
 - [**MetrolistExtractor**](https://github.com/MetrolistGroup/MetrolistExtractor): Fast and reliable data extraction library.
@@ -68,13 +72,13 @@
 - [**mediaplayer-kmp**](https://github.com/KhubaibKhan4/MediaPlayer-KMP): Multiplatform media player.
 - [**Apache Commons Math3**](https://commons.apache.org/proper/commons-math/): Math library used for audio visualization algorithms.
 
-## 🌍 Platform & Ecosystem:
+### 🌍 Platform & Ecosystem:
 
 - [**Kotlin**](https://kotlinlang.org/) / [**JetBrains Compose Multiplatform**](https://www.jetbrains.com/compose-multiplatform/): Language and UI framework.
 - [**Crowdin**](https://crowdin.com/): Community translation platform.
 - [**Android Open Source Project (AOSP)**](https://source.android.com/): The foundation of it all.
 
-## Individual contributions
+### Individual contributions
 
 - [KnightHat](https://github.com/knighthat): Discord RPC artwork upload improvements.
 - [Hemanth Savarala](https://github.com/hemantsvr): audio volume observer, copyright 2019. The source files carry the original license notice.
@@ -85,13 +89,15 @@
 - [NEVARLeVrai](https://github.com/NEVARLeVrai): N-Zik maintainer.
 - Developers and translators are listed in the Contributors card in About.
 
-## License notices
+### License notices
 
 - [N-Zik license](https://github.com/N-Zik-Group/N-Zik/blob/main/LICENSE)
 - [Square attribution notice](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/NOTICE-square.txt)
 - [Backdrop license](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/LICENSE-backdrop.txt)
 - [Better Lyrics module license](https://github.com/N-Zik-Group/N-Zik/blob/main/modules/betterlyrics/LICENSE)
 - [Discord RPC module license](https://github.com/N-Zik-Group/N-Zik/blob/main/modules/discordrpc/LICENSE)
+
+---
 
 ## Website
 
@@ -101,6 +107,8 @@
 - [Uicons by Flaticon](https://www.flaticon.com/uicons) and [Unicons by IconScout](https://iconscout.com/unicons): website icons.
 - [Crowdin](https://crowdin.com/): community translations.
 - [Vercel](https://vercel.com/): hosting.
+
+---
 
 ## Desktop companion
 
@@ -128,6 +136,8 @@ Any file derived from Cubic Music Desktop keeps its original copyright and licen
 - **Rubik**, the phone's app font.
 
 - [Desktop companion license](https://github.com/N-Zik-Group/N-Zik-Desktop-Compagnon/blob/main/LICENSE). Shader authors, source links and license terms are listed with the individual shaders in the desktop source.
+
+---
 
 ## Android extension modules
 
