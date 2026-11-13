@@ -235,11 +235,16 @@
     <string name="settings_local_music_action_add_blocked_folder">フォルダを追加</string>
     <string name="settings_local_music_blocked_folder_exists_message">このフォルダは既に存在します</string>
     <string name="settings_local_music_blocked_folders_description">端末の曲のブラックリストを編集</string>
+    <string name="settings_local_music_folder_exclusions_description">これらのフォルダとそのサブフォルダの曲をこのプロファイルで非表示にします。</string>
     <string name="settings_local_music_blocked_folders_title">ブラックリストのフォルダ</string>
     <string name="settings_local_music_folders_description">「デバイス上」ページにフォルダを表示</string>
+    <string name="settings_local_music_folder_mode_description">フォルダごとにブラウズが有効になっています。オフにすると、デバイス上のすべての曲が一覧に表示されます。</string>
     <string name="settings_local_music_folders_label">フォルダー</string>
     <string name="settings_local_music_initial_folder_description">端末の曲に表示されるフォルダ</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">このフォルダをブラックリストから除去しますか？</string>
+    <string name="settings_local_music_refresh_title">デバイス上の音楽を更新</string>
+    <string name="settings_local_music_refresh_description">アクティブなプロファイルのデバイス上のソングリストを更新します。</string>
+    <string name="settings_local_music_start_folder_path_description">Music/Liveなどのフォルダパスを入力するか、ルートから/を使用して開始します。 フォルダが使用できない場合は、ブラウザが最も近い使用可能な親を開きます。</string>
     <string name="settings_local_playlist_title">ローカルプレイリスト</string>
     <string name="settings_logging_disabled_label">デバッグログを無効にする</string>
     <string name="settings_logging_error_file_description">有効なら、エラーに焦点を当てたログファイルを作成します</string>
@@ -490,4 +495,12 @@
     <string name="settings_youtube_login_enabled_label">YouTube音楽ログインを有効にする</string>
     <string name="settings_dialog_sort_title_format">%1$s: 並べ替え</string>
     <string name="settings_dialog_toolbar_title_format">%1$s: ツールバー</string>
+    <string name="settings_local_music_enabled_title">デバイス上のライブラリを有効にする</string>
+    <string name="settings_local_music_enabled_description">format@@0タブを表示し、このデバイスをスキャンして音楽を再生します。</string>
+    <string name="settings_local_music_scan_on_startup_title">起動時にスキャン</string>
+    <string name="settings_local_music_scan_on_startup_description">このプロファイルを開始したときにデバイス上の音楽をスキャンします。</string>
+    <string name="settings_local_music_scan_not_run">スキャン結果はまだありません</string>
+    <string name="settings_local_music_summary_title">On-device ライブラリの概要</string>
+    <string name="settings_local_music_summary_description">このプロファイルについては、検出された音楽とフォルダを参照してください。</string>
+    <string name="settings_local_music_summary_count">%1$s: %2$d</string>
 </resources>
