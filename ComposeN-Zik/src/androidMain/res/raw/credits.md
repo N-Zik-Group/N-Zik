@@ -6,18 +6,9 @@ N-Zik is built with contributions from developers, designers, translators, and u
 
 ### Upstream projects
 
-- [**Metrolist**](https://github.com/metrolistgroup/metrolist)
-- [**VIVImusic**](https://github.com/vivizzz007/vivi-music)
-- [**PixelPlayer**](https://github.com/PixelPlayerHQ/PixelPlayer)
-- [**RiPlay**](https://github.com/fast4x/RiPlay)
-- [**Square**](https://github.com/Lelonio/Square)
-- [**Cubic-Music**](https://github.com/cybruGhost/Cubic-Music)
-- [**Kreate**](https://github.com/knighthat/Kreate)
-- [**RiMusic**](https://github.com/fast4x/RiMusic)
-- [**ViMusic**](https://github.com/vfsfitvnm/ViMusic)
+[Metrolist](https://github.com/metrolistgroup/metrolist), [VIVImusic](https://github.com/vivizzz007/vivi-music), [PixelPlayer](https://github.com/PixelPlayerHQ/PixelPlayer), [RiPlay](https://github.com/fast4x/RiPlay), [Square](https://github.com/Lelonio/Square), [Cubic-Music](https://github.com/cybruGhost/Cubic-Music), [Kreate](https://github.com/knighthat/Kreate), [RiMusic](https://github.com/fast4x/RiMusic), [ViMusic](https://github.com/vfsfitvnm/ViMusic).
 
-
-### 🫧 Glass credits
+### Glass
 
 - [**Square / Convx Project**](https://github.com/Lelonio/Square): Glass material, interaction physics and presentation adaptations, licensed under GPL-3.0. See the [Square attribution notice](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/NOTICE-square.txt).
 - [**Kyant0 / AndroidLiquidGlass (Backdrop)**](https://github.com/Kyant0/AndroidLiquidGlass): The underlying backdrop and optical rendering sources, licensed separately under Apache-2.0. See the [Backdrop license](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/LICENSE-backdrop.txt).
@@ -28,62 +19,26 @@ N-Zik is built with contributions from developers, designers, translators, and u
 - Player design: [**aneesh1122**](https://github.com/aneesh1122), [**OrangeZXZ**](https://github.com/OrangeZXZ), [**NEVARLeVrai**](https://github.com/NEVARLeVrai)
 - Icons: [**Ionicons**](https://github.com/ionic-team/ionicons), [**FlatIcon.com**](https://www.flaticon.com)
 
-### 🎵 Lyrics & Media:
+### Libraries and services
 
-- [**KuGou**](https://www.kugou.com): Lyrics provider
-- [**LrcLib**](https://lrclib.net): Lyrics provider
-- [**Better Lyrics**](https://betterlyrics.org/): Lyrics provider
-- [**Innertube/YTB Lyrics**](https://github.com/MetrolistGroup/innertubex): Lyrics provider
+| Area | Projects |
+| --- | --- |
+| Playback | [Media3 / ExoPlayer](https://github.com/androidx/media), [FFmpegKit Audio](https://github.com/maxrave-dev/ffmpeg-kit-16KB), [Android YouTube Player](https://github.com/PierfrancescoSoffritti/android-youtube-player), [mediaplayer-kmp](https://github.com/KhubaibKhan4/MediaPlayer-KMP) |
+| YouTube and sync | [InnertubeX](https://github.com/MetrolistGroup/innertubex), [MetrolistExtractor](https://github.com/MetrolistGroup/MetrolistExtractor), [MetroServer](https://github.com/MetrolistGroup/metroserver), [Invidious](https://github.com/iv-org/invidious), [YouTube-Internal-Clients](https://github.com/zerodytrash/YouTube-Internal-Clients), [ZemerTeam/zemer-cipher](https://github.com/ZemerTeam/zemer-cipher) |
+| Lyrics and translation | [KuGou](https://www.kugou.com), [LrcLib](https://lrclib.net), [Better Lyrics](https://betterlyrics.org/), [Innertube/YTB Lyrics](https://github.com/MetrolistGroup/innertubex), [Translator](https://github.com/therealbush/translator) |
+| Interface | [MonetCompat](https://github.com/KieronQuinn/MonetCompat), [Coil](https://github.com/coil-kt/coil), [Jetpack Glance](https://developer.android.com/develop/ui/compose/glance), [Toasty](https://github.com/GrenderG/Toasty), [compose-markdown](https://github.com/jeziellago/compose-markdown), [compose-shimmer](https://github.com/valentinilk/compose-shimmer), [compose-reorderable](https://github.com/Calvin-LL/Reorderable), [Jetpack Palette](https://developer.android.com/develop/ui/views/graphics/palette-colors), [Jetpack Navigation Compose](https://developer.android.com/develop/ui/compose/navigation) |
+| Data and networking | [TeamNewPipe / nanojson](https://github.com/TeamNewPipe/nanojson), [Ktor](https://github.com/ktorio/ktor), [OkHttp](https://github.com/square/okhttp), [KSoup](https://github.com/MohamedRejeb/Ksoup), [kotlin-csv](https://github.com/jsoizo/kotlin-csv), [Brotli](https://github.com/google/brotli), [Room](https://developer.android.com/training/data-storage/room) |
+| Logging and audio math | [Timber](https://github.com/JakeWharton/timber), [Apache Commons Math3](https://commons.apache.org/proper/commons-math/) |
+| Platform | [Kotlin](https://kotlinlang.org/), [JetBrains Compose Multiplatform](https://www.jetbrains.com/compose-multiplatform/), [Crowdin](https://crowdin.com/), [Android Open Source Project (AOSP)](https://source.android.com/) |
 
-### 🧠 Features & Tools:
-
-- [**YouTube-Internal-Clients**](https://github.com/zerodytrash/YouTube-Internal-Clients): Script for discovering hidden YouTube API clients.
-- [**Translator**](https://github.com/therealbush/translator): Google Translate wrapper for Kotlin/JVM.
-- [**compose-markdown**](https://github.com/jeziellago/compose-markdown): Markdown rendering in app.
-- [**HypnoticCanvas**](https://mikepenz.github.io/HypnoticCanvas/): Shader effects for Compose. The Android engine (0.6.0) is Apache 2.0. The accompanying shader collection contains CC BY-NC-SA 3.0 and MIT works.
-- [**Metrolist**](https://github.com/metrolistgroup/metrolist): Has helped a lot with bug fixes and feature expansion!
-- [**MetroServer**](https://github.com/MetrolistGroup/metroserver): Listen Together server infrastructure, with N-Zik officially supported as a hosting client.
-- [**ZemerTeam/zemer-cipher**](https://github.com/ZemerTeam/zemer-cipher): Cipher configs
-- [**Invidious**](https://github.com/iv-org/invidious): Alternative YouTube frontend used as a streaming source.
-
-### 📚 Libraries & Dependencies:
-
-- [**InnertubeX**](https://github.com/MetrolistGroup/innertubex): Innertube library for streaming and YouTube synchronization.
-- [**MetrolistExtractor**](https://github.com/MetrolistGroup/MetrolistExtractor): Fast and reliable data extraction library.
-- [**Media3 / ExoPlayer**](https://github.com/androidx/media): The core media player powering the audio experience.
-- [**FFmpegKit Audio**](https://github.com/maxrave-dev/ffmpeg-kit-16KB): Powerful audio processing, conversion, and metadata export.
-- [**TeamNewPipe / nanojson**](https://github.com/TeamNewPipe/nanojson): Ultra-lightweight JSON parser by the NewPipe team.
-- [**MonetCompat**](https://github.com/KieronQuinn/MonetCompat): Material You dynamic colors on older Android versions.
-- [**Coil**](https://github.com/coil-kt/coil): Image loading library for covers, artist images, and more.
-- [**Ktor**](https://github.com/ktorio/ktor): HTTP client framework for network requests.
-- [**OkHttp**](https://github.com/square/okhttp): HTTP & HTTP/2 client.
-- [**Jetpack Glance**](https://developer.android.com/develop/ui/compose/glance): Home screen widgets framework.
-- [**Android YouTube Player**](https://github.com/PierfrancescoSoffritti/android-youtube-player): Lightweight YouTube player integration.
-- [**Toasty**](https://github.com/GrenderG/Toasty): Custom styled Android toast messages.
-- [**Timber**](https://github.com/JakeWharton/timber): Extensible logging utility.
-- [**KSoup**](https://github.com/MohamedRejeb/Ksoup): Multiplatform HTML parser.
-- [**compose-shimmer**](https://github.com/valentinilk/compose-shimmer): Shimmer effect for loading states in Compose.
-- [**compose-reorderable**](https://github.com/Calvin-LL/Reorderable): Drag & drop reorderable lists in Compose.
-- [**kotlin-csv**](https://github.com/jsoizo/kotlin-csv): CSV reading/writing for playlist import/export.
-- [**Brotli**](https://github.com/google/brotli): Brotli compression for HTTP responses.
-- [**Jetpack Palette**](https://developer.android.com/develop/ui/views/graphics/palette-colors): Color extraction from album artwork.
-- [**Jetpack Navigation Compose**](https://developer.android.com/develop/ui/compose/navigation): Type-safe navigation for Compose.
-- [**Room**](https://developer.android.com/training/data-storage/room): Local database with SQLite abstraction.
-- [**mediaplayer-kmp**](https://github.com/KhubaibKhan4/MediaPlayer-KMP): Multiplatform media player.
-- [**Apache Commons Math3**](https://commons.apache.org/proper/commons-math/): Math library used for audio visualization algorithms.
-
-### 🌍 Platform & Ecosystem:
-
-- [**Kotlin**](https://kotlinlang.org/) / [**JetBrains Compose Multiplatform**](https://www.jetbrains.com/compose-multiplatform/): Language and UI framework.
-- [**Crowdin**](https://crowdin.com/): Community translation platform.
-- [**Android Open Source Project (AOSP)**](https://source.android.com/): The foundation of it all.
+[HypnoticCanvas](https://mikepenz.github.io/HypnoticCanvas/) powers Compose shader effects. The Android engine (0.6.0) is Apache 2.0, and its shader collection contains CC BY-NC-SA 3.0 and MIT works.
 
 ### Individual contributions
 
 - [KnightHat](https://github.com/knighthat): Discord RPC artwork upload improvements.
 - [Hemanth Savarala](https://github.com/hemantsvr): audio volume observer, copyright 2019. The source files carry the original license notice.
 - [Kyant0](https://github.com/Kyant0): Capsule shapes, copyright 2025, Apache-2.0.
-- [JeffShee](https://github.com/Jeffshee): NextVisualizer, copyright 2019. See the [module license](https://github.com/N-Zik-Group/N-Zik/blob/main/modules/nextvisualizer/LICENSE).
+- [JeffShee](https://github.com/Jeffshee): NextVisualizer, copyright 2019. See the [module license](https://github.com/N-Zik-Group/Next-Visualizer/blob/main/LICENSE).
 - [RiPlay](https://github.com/fast4x/RiPlay): source for the MusicBrainz album and artist screens and the Rewind shaders and levels. The source files carry their port notices.
 - [Metrolist](https://github.com/MetrolistGroup/Metrolist): Listen Together synchronization and Discord RPC reconnection code, plus upstream fixes.
 - [NEVARLeVrai](https://github.com/NEVARLeVrai): N-Zik maintainer.
@@ -96,8 +51,8 @@ N-Zik's project license is GPLv3. Third-party components retain the licenses lis
 - [N-Zik license](https://github.com/N-Zik-Group/N-Zik/blob/main/LICENSE)
 - [Square attribution notice](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/NOTICE-square.txt)
 - [Backdrop license](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/LICENSE-backdrop.txt)
-- [Better Lyrics module license](https://github.com/N-Zik-Group/N-Zik/blob/main/modules/betterlyrics/LICENSE)
-- [Discord RPC module license](https://github.com/N-Zik-Group/N-Zik/blob/main/modules/discordrpc/LICENSE)
+- [Better Lyrics module license](https://github.com/N-Zik-Group/Better-Lyrics/blob/main/LICENSE)
+- [Discord RPC module license](https://github.com/N-Zik-Group/DiscordRPC/blob/main/LICENSE)
 
 ---
 
@@ -114,7 +69,7 @@ N-Zik's project license is GPLv3. Third-party components retain the licenses lis
 
 ## Desktop companion
 
-### 🎵 Based on / Permission:
+### Cubic Music Desktop
 
 This project may reuse code from [Cubic Music Desktop](https://github.com/cybruGhost/DESKTOP-CUBIC-MUSIC) by cybruGhost, under the GPL-3.0. Its author granted explicit permission, as recorded in the Cubic Music Desktop notice:
 
@@ -124,7 +79,7 @@ This project may reuse code from [Cubic Music Desktop](https://github.com/cybruG
 
 Any file derived from Cubic Music Desktop keeps its original copyright and license notices.
 
-### 📚 Libraries & Dependencies:
+### Desktop libraries
 
 - [**vlcj**](https://github.com/caprica/vlcj): JVM bindings to play audio with the embedded [**VLC**](https://www.videolan.org/).
 - [**Kotlin**](https://kotlinlang.org/) / [**JetBrains Compose Multiplatform**](https://www.jetbrains.com/compose-multiplatform/): Language and UI framework.
@@ -132,7 +87,7 @@ Any file derived from Cubic Music Desktop keeps its original copyright and licen
 - [**Coil**](https://github.com/coil-kt/coil): Image loading for covers and artwork.
 - [**Crowdin**](https://crowdin.com/): Community translation platform.
 
-### 🔤 Bundled fonts:
+### Bundled fonts
 
 - **Roboto** Regular and Medium, from [googlefonts/roboto](https://github.com/googlefonts/roboto) v2.138: the font Android gives the Material components, used for the same components here so they look like the phone's. Roboto is © Google and licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 - **Rubik**, the phone's app font.
