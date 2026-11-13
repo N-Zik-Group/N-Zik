@@ -342,7 +342,7 @@ New:
 
 In the app, open **Settings > About > Credits**.
 
-Made with ❤️ by the N-Zik Group community · Licensed under [GPLv3](https://www.gnu.org/licenses/gpl-3.0)
+Made with ❤️ by the N-Zik Group community · Licensed under GPLv3 - see [LICENSE](LICENSE)
 
 # ⚠️ Disclaimer
 
