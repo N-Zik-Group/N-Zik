@@ -24,10 +24,9 @@ jobs:
     # Inspired by this article https://devblog.jpcaparas.com/bulk-delete-github-actions-workflow-runs-with-a-simple-bash-function-b9105009a579
     # Each command is run on separated step for debug purpose
     steps:
-      - name: Login to Github CLI
-        run: echo "${{ secrets.HOUSE_KEEPER_WORKFLOW }}" | gh auth login --with-token
-
       - uses: actions/checkout@v7
 
       - name: Run script
+        env:
+          GH_TOKEN: ${{ secrets.HOUSE_KEEPER_WORKFLOW }}
         run: bash .github/delete_success_workflows.sh
