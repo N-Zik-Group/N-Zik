@@ -1,6 +1,6 @@
 # AGENTS.md — NZik
 
-**Version:** 1.14.0 | **Last updated:** 2026-11-13
+**Version:** 1.15.0 | **Last updated:** 2026-11-13
 
 **MANDATORY: Read this file + rules/*.md before any task.**
 
@@ -146,6 +146,8 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 > **Worktree location:** create every new N-Zik task worktree under `{project-root}/worktrees/n-zik/<task-id>/`.
 >
 > **Java cleanup:** at the end of every task, stop and verify termination of the Java processes dedicated to that task, including its Gradle and Kotlin daemons. See rules/BUILD.md.
+>
+> **Emulator cleanup:** shut down the Android emulator started for the task as soon as testing no longer needs it, and verify it has exited. See rules/BUILD.md.
 >
 > **Worktree cleanup:** after removing a task worktree, verify both that it is absent from `git worktree list` and that its directory is gone. On Windows, use `git -c core.longpaths=true worktree remove` to handle long build paths. If Git unregisters the worktree but leaves its directory, verify the absolute path and that the remaining contents belong to the task before cleaning it up. Report any residual directory that could not be removed.
 

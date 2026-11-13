@@ -1,6 +1,6 @@
 # Build & Test Rules
 
-**Version:** 1.12.0 | **Last updated:** 2026-11-13
+**Version:** 1.13.0 | **Last updated:** 2026-11-13
 
 ## Gradle Version Catalog
 
@@ -36,6 +36,11 @@ If a needed library isn't in the catalog → HALT and ask user before adding to 
 - Track the Java processes used for task builds and tests, including Gradle and Kotlin daemons. Identify them by PID and confirm ownership using the build working directory in the daemon log or the process parent chain.
 - At the end of every task, after builds and tests finish, stop the task's dedicated Java processes and verify their PIDs have exited. Clean them up after failed or cancelled tasks too.
 - Leave IDE Java processes, shared daemons, and processes used by other tasks running. Stop only verified task PIDs and avoid global commands such as `gradlew --stop` or killing Java by process name when tasks run in parallel.
+
+## Android Emulator Cleanup
+
+- Record the ADB serial of each emulator started for the task. As soon as verification no longer needs it, including after failure or cancellation, shut it down with `adb -s <serial> emu kill` and verify that its instance has exited.
+- Leave shared emulators and emulators started by the user or other tasks running.
 
 ## Verification
 
