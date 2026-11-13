@@ -209,6 +209,13 @@
     <string name="recovery_export_settings_description">Tercihleri bir CSV dosyasına kaydedin</string>
     <string name="recovery_group_app">Uygulama</string>
     <string name="recovery_group_database">Veritabanı</string>
+    <string name="recovery_legacy_media">Geçmiş depolama verilerini geri yükle</string>
+    <string name="recovery_legacy_archive_audio">Ses · %1$s</string>
+    <string name="recovery_legacy_archive_images">Resimler ve kapaklar</string>
+    <string name="recovery_legacy_media_action">Kurtarma</string>
+    <string name="recovery_legacy_media_description">Korunan depolama arşivinden doğrulanmış dosyaları seçilen profile kopyalayın.</string>
+    <string name="recovery_legacy_media_source">%1$s arşivi %2$s</string>
+    <string name="recovery_legacy_media_confirmation">%1$s arşivindeki %2$s dosyasını %3$s konumuna geri yüklemek istiyor musunuz? Arşiv kullanılabilir durumda kalır. Geri yükleme işlemi, farklı dosyaların üzerine yazılması durumunda durdurulur.</string>
     <string name="recovery_group_logs">Günlükler</string>
     <string name="recovery_group_profiles">Profiller</string>
     <string name="recovery_group_settings">Ayarlar</string>

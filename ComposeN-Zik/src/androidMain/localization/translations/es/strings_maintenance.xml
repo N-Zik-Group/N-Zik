@@ -209,6 +209,13 @@
     <string name="recovery_export_settings_description">Guarda tus preferencias en un archivo CSV</string>
     <string name="recovery_group_app">App</string>
     <string name="recovery_group_database">Base de datos</string>
+    <string name="recovery_legacy_media">Recuperar almacenamiento histórico</string>
+    <string name="recovery_legacy_archive_audio">Audio · %1$s</string>
+    <string name="recovery_legacy_archive_images">Imágenes y portadas</string>
+    <string name="recovery_legacy_media_action">Recuperar</string>
+    <string name="recovery_legacy_media_description">Copie los archivos verificados de un archivo de almacenamiento conservado en el perfil seleccionado.</string>
+    <string name="recovery_legacy_media_source">Archivo %1$s %2$s</string>
+    <string name="recovery_legacy_media_confirmation">¿Recuperar del archivo %1$s %2$s a %3$s? El archivo permanece disponible. Recovery se detiene si reemplazaría diferentes archivos.</string>
     <string name="recovery_group_logs">Registros</string>
     <string name="recovery_group_profiles">Profiles</string>
     <string name="recovery_group_settings">Ajustes</string>

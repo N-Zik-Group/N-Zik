@@ -209,6 +209,13 @@
     <string name="recovery_export_settings_description">Save your preferences to a CSV file</string>
     <string name="recovery_group_app">App</string>
     <string name="recovery_group_database">Bunachar sonraí</string>
+    <string name="recovery_legacy_media">Recover historical storage</string>
+    <string name="recovery_legacy_archive_audio">Audio · %1$s</string>
+    <string name="recovery_legacy_archive_images">Images and covers</string>
+    <string name="recovery_legacy_media_action">Recover</string>
+    <string name="recovery_legacy_media_description">Copy verified files from a preserved storage archive into the selected profile.</string>
+    <string name="recovery_legacy_media_source">%1$s archive %2$s</string>
+    <string name="recovery_legacy_media_confirmation">Recover from the %1$s archive %2$s into %3$s? The archive stays available. Recovery stops if it would replace different files.</string>
     <string name="recovery_group_logs">Logs</string>
     <string name="recovery_group_profiles">Profiles</string>
     <string name="recovery_group_settings">Settings</string>

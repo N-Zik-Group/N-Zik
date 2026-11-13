@@ -209,6 +209,13 @@
     <string name="recovery_export_settings_description">設定をCSVファイルに保存</string>
     <string name="recovery_group_app">アプリ</string>
     <string name="recovery_group_database">データベース</string>
+    <string name="recovery_legacy_media">履歴ストレージを復元する</string>
+    <string name="recovery_legacy_archive_audio">オーディオ · %1$s</string>
+    <string name="recovery_legacy_archive_images">画像とカバー</string>
+    <string name="recovery_legacy_media_action">回復</string>
+    <string name="recovery_legacy_media_description">選択したプロファイルに保存されたストレージアーカイブから検証されたファイルをコピーします。</string>
+    <string name="recovery_legacy_media_source">%1$s アーカイブ %2$s</string>
+    <string name="recovery_legacy_media_confirmation">%1$s アーカイブ %2$s から %3$sに復元しますか? アーカイブは利用可能のままです。別のファイルを置き換えると復元は停止します。</string>
     <string name="recovery_group_logs">ログ</string>
     <string name="recovery_group_profiles">Profiles</string>
     <string name="recovery_group_settings">設定</string>

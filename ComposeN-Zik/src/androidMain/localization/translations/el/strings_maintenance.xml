@@ -209,6 +209,13 @@
     <string name="recovery_export_settings_description">Αποθηκεύστε τις προτιμήσεις σας σε ένα αρχείο CSV</string>
     <string name="recovery_group_app">Εφαρμογή</string>
     <string name="recovery_group_database">Δεδομένα</string>
+    <string name="recovery_legacy_media">Ανάκτηση ιστορικού αποθήκευσης</string>
+    <string name="recovery_legacy_archive_audio">Ήχος · %1$s</string>
+    <string name="recovery_legacy_archive_images">Εικόνες και καλύμματα</string>
+    <string name="recovery_legacy_media_action">Ανάκτηση</string>
+    <string name="recovery_legacy_media_description">Αντιγραφή επαληθευμένων αρχείων από μια διατηρημένη αρχειοθήκη στο επιλεγμένο προφίλ.</string>
+    <string name="recovery_legacy_media_source">%1$s αρχειοθήκη %2$s</string>
+    <string name="recovery_legacy_media_confirmation">Ανάκτηση από το αρχείο %1$s %2$s σε %3$s? Το αρχείο παραμένει διαθέσιμο. Η ανάκτηση σταματά αν αντικαταστήσει διαφορετικά αρχεία.</string>
     <string name="recovery_group_logs">Καταγραφή</string>
     <string name="recovery_group_profiles">Profiles</string>
     <string name="recovery_group_settings">Ρυθμίσεις</string>

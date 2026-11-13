@@ -209,6 +209,13 @@
     <string name="recovery_export_settings_description">Збереження налаштувань у CSV-файлі</string>
     <string name="recovery_group_app">Застосунок</string>
     <string name="recovery_group_database">База даних</string>
+    <string name="recovery_legacy_media">Відновити історичну пам\'ять</string>
+    <string name="recovery_legacy_archive_audio">Аудіо · %1$s</string>
+    <string name="recovery_legacy_archive_images">Зображення та обкладинки</string>
+    <string name="recovery_legacy_media_action">Відновити</string>
+    <string name="recovery_legacy_media_description">Копіювати файли із збереженого архіву сховища в обраний профіль.</string>
+    <string name="recovery_legacy_media_source">%1$s archive %2$s</string>
+    <string name="recovery_legacy_media_confirmation">Recover from the %1$s archive %2$s into %3$s? The archive stays available. Recovery stops if it would replace different files.</string>
     <string name="recovery_group_logs">Логи</string>
     <string name="recovery_group_profiles">Profiles</string>
     <string name="recovery_group_settings">Налаштування</string>

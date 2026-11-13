@@ -209,6 +209,13 @@
     <string name="recovery_export_settings_description">Salva le tue preferenze in un file CSV</string>
     <string name="recovery_group_app">App</string>
     <string name="recovery_group_database">Database</string>
+    <string name="recovery_legacy_media">Recupera memoria storica</string>
+    <string name="recovery_legacy_archive_audio">Audio · %1$s</string>
+    <string name="recovery_legacy_archive_images">Immagini e copertine</string>
+    <string name="recovery_legacy_media_action">Recupera</string>
+    <string name="recovery_legacy_media_description">Copia i file verificati da un archivio conservato nel profilo selezionato.</string>
+    <string name="recovery_legacy_media_source">%1$s archivio %2$s</string>
+    <string name="recovery_legacy_media_confirmation">Recuperare dall\'archivio %1$s %2$s in %3$s? L\'archivio rimane disponibile. Recupero si ferma se sostituirebbe file diversi.</string>
     <string name="recovery_group_logs">Registri</string>
     <string name="recovery_group_profiles">Profiles</string>
     <string name="recovery_group_settings">Impostazioni</string>

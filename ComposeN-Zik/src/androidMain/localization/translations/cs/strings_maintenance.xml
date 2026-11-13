@@ -209,6 +209,13 @@
     <string name="recovery_export_settings_description">Uložte své předvolby do souboru CSV</string>
     <string name="recovery_group_app">Aplikace</string>
     <string name="recovery_group_database">Databáze</string>
+    <string name="recovery_legacy_media">Obnovit historické úložiště</string>
+    <string name="recovery_legacy_archive_audio">Zvuk · %1$s</string>
+    <string name="recovery_legacy_archive_images">Obrázky a obálky</string>
+    <string name="recovery_legacy_media_action">Obnovit</string>
+    <string name="recovery_legacy_media_description">Zkopírujte ověřené soubory z archivu uloženého do vybraného profilu.</string>
+    <string name="recovery_legacy_media_source">%1$s archiv %2$s</string>
+    <string name="recovery_legacy_media_confirmation">Obnovit z %1$s archivu %2$s do %3$s? Archiv zůstane k dispozici. Obnovení zastaví, pokud nahradí různé soubory.</string>
     <string name="recovery_group_logs">Logy</string>
     <string name="recovery_group_profiles">Profiles</string>
     <string name="recovery_group_settings">Nastavení</string>

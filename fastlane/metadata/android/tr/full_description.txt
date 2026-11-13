@@ -15,7 +15,7 @@ Android için hızlı, özelleştirilebilir ve uzun süre desteklenen çok dilli
 - Sanatçı profilleri, Keşif/ruh halleri, katlanabilir ana ekran başlıkları
 
 🫧 <b>Cam efekti (BETA, isteğe bağlı)</b>
-Yeni kurulumlarda kapalıdır. Ayarlarda kategoriye göre yerel, yalnızca kenar veya Cam ve kalite seçilir. Grafik yükü veya pil tüketimi artarsa kaliteyi düşürün ya da kapatın.
+Yeni kurulumlarda kapalıdır. Ayarlarda kategoriye göre yerel, yalnızca kenar veya Cam ve kalite seçilir. İşleme yükünü ve pil tüketimini artırabilir; kaliteyi düşürün veya kapatın.
 Cam katkıları: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Ses Deneyimi</b>
@@ -64,6 +64,6 @@ Cam katkıları: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / B
 - FOSS (`com.nevar.nzik.foss`): Otomatik güncelleyicisiz, F-Droid için (tüm mimariler)
 - Dev64/Dev32 (`com.nevar.nzik.dev`): Geliştirme yapıları, yalnızca test için
 
-FFmpeg paketlere dahil değildir. İlk kullanımda indirilir ve Ayarlar → Eklentiler bölümünden yönetilir. F-Droid'de yalnızca FOSS var.
+Hiçbir yapı FFmpeg içermez: indirilebilir bir eklentidir (ilk kullanımda kurulur, Ayarlar → Eklentiler içinde yönetilir). F-Droid'de yalnızca FOSS var.
 
 Geçmiş proje kredileri arasında ViMusic yer almaktadır.

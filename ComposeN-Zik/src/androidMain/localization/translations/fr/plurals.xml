@@ -82,20 +82,20 @@
         <item quantity="other">%1$d titres recommandés</item>
     </plurals>
     <plurals name="listen_together_blocked_user_count">
-        <item quantity="one">Utilisateur %1$d bloqué</item>
-        <item quantity="other">Utilisateurs %1$d bloqués</item>
+        <item quantity="one">%1$d utilisateur bloqué</item>
+        <item quantity="other">%1$d utilisateurs bloqués</item>
     </plurals>
     <plurals name="sync_failed_notification_artist_count">
         <item quantity="one">Échec de la synchronisation de %1$d artiste. Retournez dans l\'onglet « Artistes » pour réessayer.</item>
         <item quantity="other">Échec de la synchronisation de %1$d artistes. Retournez dans l\'onglet « Artistes » pour réessayer.</item>
     </plurals>
     <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="one">Impossible de synchroniser la liste de lecture %1$d . Retournez à l\'onglet Playlists pour réessayer.</item>
-        <item quantity="other">Impossible de synchroniser les listes de lecture %1$d . Retournez à l\'onglet Playlists pour réessayer.</item>
+        <item quantity="one">Échec de la synchronisation de %1$d playlist. Retournez dans l\'onglet « Playlists » pour réessayer.</item>
+        <item quantity="other">Échec de la synchronisation de %1$d playlists. Retournez dans l\'onglet « Playlists » pour réessayer.</item>
     </plurals>
     <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">Voulez-vous essayer à nouveau la synchronisation de l\'élément %1$d en échec ?</item>
-        <item quantity="other">Voulez-vous essayer à nouveau de synchroniser les éléments %1$d échoués ?</item>
+        <item quantity="one">Souhaitez-vous réessayer de synchroniser l\'élément %1$d dont la synchronisation a échoué ?</item>
+        <item quantity="other">Souhaitez-vous réessayer de synchroniser les %1$d éléments pour lesquels la synchronisation a échoué ?</item>
     </plurals>
     <plurals name="sync_progress_artist_count">
         <item quantity="one">Synchronisation de l\'artiste... (%1$d/%2$d)</item>
@@ -110,12 +110,12 @@
         <item quantity="other">Impossible de trouver %1$d artistes, nouvelle tentative</item>
     </plurals>
     <plurals name="sync_progress_album_count">
-        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
+        <item quantity="one">Synchronisation de l\'album... (%1$d/%2$d)</item>
         <item quantity="other">Synchronisation des albums... (%1$d/%2$d)</item>
     </plurals>
     <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">Actualisation de l\'album %1$d</item>
-        <item quantity="other">Rafraîchissement des albums %1$d</item>
+        <item quantity="one">Actualisation de %1$d album</item>
+        <item quantity="other">Actualisation de %1$d albums</item>
     </plurals>
     <plurals name="library_sync_album_retry_count">
         <item quantity="one">Impossible de trouver l\'album %1$d , nouvelle tentative</item>

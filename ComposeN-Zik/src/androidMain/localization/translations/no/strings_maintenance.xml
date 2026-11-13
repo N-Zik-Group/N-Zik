@@ -209,6 +209,13 @@
     <string name="recovery_export_settings_description">Lagre innstillingene til en CSV-fil</string>
     <string name="recovery_group_app">App</string>
     <string name="recovery_group_database">Databasen</string>
+    <string name="recovery_legacy_media">Gjenopprett historisk lagring</string>
+    <string name="recovery_legacy_archive_audio">Lyd · %1$s</string>
+    <string name="recovery_legacy_archive_images">Bilder som dekker</string>
+    <string name="recovery_legacy_media_action">Gjenopprett</string>
+    <string name="recovery_legacy_media_description">Kopier bekreftede filer fra et arkiv for lagring inn i den valgte profilen.</string>
+    <string name="recovery_legacy_media_source">%1$s arkiv %2$s</string>
+    <string name="recovery_legacy_media_confirmation">Recover from the %1$s archive %2$s into %3$s? The archive stays available. Recovery stops if it would replace different files.</string>
     <string name="recovery_group_logs">Logger</string>
     <string name="recovery_group_profiles">Profiles</string>
     <string name="recovery_group_settings">Innstillinger</string>

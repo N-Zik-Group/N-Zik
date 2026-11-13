@@ -209,6 +209,13 @@
     <string name="recovery_export_settings_description">Spara dina inställningar till en CSV-fil</string>
     <string name="recovery_group_app">App</string>
     <string name="recovery_group_database">Databas</string>
+    <string name="recovery_legacy_media">Återställ historisk lagring</string>
+    <string name="recovery_legacy_archive_audio">Ljud · %1$s</string>
+    <string name="recovery_legacy_archive_images">Bilder och omslag</string>
+    <string name="recovery_legacy_media_action">Återställ</string>
+    <string name="recovery_legacy_media_description">Kopiera verifierade filer från ett bevarat lagringsarkiv till den valda profilen.</string>
+    <string name="recovery_legacy_media_source">%1$s arkiv %2$s</string>
+    <string name="recovery_legacy_media_confirmation">Återställning från %1$s -arkivet %2$s till %3$s? Arkivet förblir tillgängligt. Återställning stoppas om det skulle ersätta olika filer.</string>
     <string name="recovery_group_logs">Loggar</string>
     <string name="recovery_group_profiles">Profiles</string>
     <string name="recovery_group_settings">Inställningar</string>

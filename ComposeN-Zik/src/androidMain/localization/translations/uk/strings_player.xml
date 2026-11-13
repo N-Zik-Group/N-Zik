@@ -80,6 +80,14 @@
     <string name="lyrics_debug_interval_progress">LyricsIntervalProgress</string>
     <string name="lyrics_display_section_title">Відображати</string>
     <string name="lyrics_editor_title">Введіть текст пісні</string>
+    <string name="lyrics_editor_modify_text">Змінити текст</string>
+    <string name="lyrics_editor_import_file">Імпорт Lyricsfile</string>
+    <string name="lyrics_editor_import_preview">Попередній перегляд імпорту · %1$s</string>
+    <string name="lyrics_editor_import_preview_note">N-Zik зберігає цю версію. Якщо файл також містить окрему версію текстового формату, ця версія залишиться в оригінальному файлі.</string>
+    <string name="lyrics_editor_import_saved_other_mode">Імпорт збережено як %1$s. Виберіть цю опцію в налаштуваннях режиму текстів пісень, щоб переглянути її.</string>
+    <string name="lyrics_editor_export_file">Експорт файлу Lyricsfile</string>
+    <string name="lyrics_editor_import_error">Не вдалося прочитати цей Lyricsfile.</string>
+    <string name="lyrics_editor_export_error">Не вдалося експортувати файл Lyricsfile.</string>
     <string name="lyrics_empty">Немає текстів пісень</string>
     <string name="lyrics_fetch_error_message">Виникла помилка при завантаженні текстів пісень</string>
     <string name="lyrics_provider_fetch_error_message">Не вдалося отримати тексти пісень з %1$s</string>
@@ -106,6 +114,11 @@
     <string name="lyrics_not_available">Немає доступних текстів. Будь ласка, спробуйте ще раз або введіть їх вручну.</string>
     <string name="lyrics_offset">Зміщення текстів</string>
     <string name="lyrics_popup_messages_description">Показувати зринаючі повідомлення, пов\'язані з текстом та програвача.</string>
+    <string name="lyrics_provider_settings_title">Постачальники текстів</string>
+    <string name="lyrics_provider_minimum_one">Зберігайте принаймні одного постачальника активним для кожного режиму.</string>
+    <string name="lyrics_provider_format_word_timed">Слово за словом</string>
+    <string name="lyrics_provider_format_line_timed">Рядок до рядка</string>
+    <string name="lyrics_provider_format_plain_text">Простий текст</string>
     <string name="lyrics_provider_betterlyrics_karaoke_label">%1$s (караоке)</string>
     <string name="lyrics_provider_betterlyrics_synced_label">%1$s (синхронізовано)</string>
     <string name="lyrics_provider_found_format">Текст пісні знайдено на %s</string>
