@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="storage_artwork_quality_title">Calidad de diseño personalizado</string>
+    <string name="storage_artwork_quality_description">Se aplica a un nuevo diseño personalizado. Los archivos originales pueden usar más almacenamiento.</string>
+    <string name="storage_artwork_quality_optimized">Optimizado (1.000 px)</string>
+    <string name="storage_artwork_quality_original">Original</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Almacenamiento</string>
     <string name="storage_breakdown_tab_total">Total</string>
