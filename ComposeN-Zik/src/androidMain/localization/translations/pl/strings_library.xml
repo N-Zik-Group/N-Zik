@@ -407,4 +407,5 @@
     <string name="library_on_device_permission_settings_failed">Nie można otworzyć ustawień uprawnień.</string>
     <string name="artist_more_from_format">Więcej od %1$s</string>
     <string name="playlist_top_show_title_format">Pokaż %1$s</string>
+    <string name="library_on_device_no_local_playlists">Brak lokalnych list odtwarzania. Utwórz playlistę lub dodaj utwór do nowej listy odtwarzania z urządzenia.</string>
 </resources>
