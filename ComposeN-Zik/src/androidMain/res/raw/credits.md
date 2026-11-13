@@ -91,6 +91,8 @@ N-Zik is built with contributions from developers, designers, translators, and u
 
 ### License notices
 
+N-Zik's project license is GPLv3. Third-party components retain the licenses listed in their notices. The four RiPlay-derived album and artist screens and MusicBrainz insights screens carry AGPL-3.0 notices in their source headers.
+
 - [N-Zik license](https://github.com/N-Zik-Group/N-Zik/blob/main/LICENSE)
 - [Square attribution notice](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/NOTICE-square.txt)
 - [Backdrop license](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/LICENSE-backdrop.txt)
@@ -135,11 +137,13 @@ Any file derived from Cubic Music Desktop keeps its original copyright and licen
 - **Roboto** Regular and Medium, from [googlefonts/roboto](https://github.com/googlefonts/roboto) v2.138: the font Android gives the Material components, used for the same components here so they look like the phone's. Roboto is © Google and licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 - **Rubik**, the phone's app font.
 
-- [Desktop companion license](https://github.com/N-Zik-Group/N-Zik-Desktop-Compagnon/blob/main/LICENSE). Shader authors, source links and license terms are listed with the individual shaders in the desktop source.
+- [Desktop companion license](https://github.com/N-Zik-Group/N-Zik-Desktop-Compagnon/blob/main/LICENSE). Desktop also bundles libVLC under LGPL-2.1-or-later and plugins under their respective licenses. Several shaders declare CC BY-NC-SA 3.0; see the individual shader sources for authors, links and license terms.
 
 ---
 
 ## Android extension modules
 
 - Better Lyrics and Discord RPC build on implementations from [Metrolist](https://github.com/MetrolistGroup/Metrolist).
-- Next Visualizer builds on [NextGenVisualizer](https://github.com/jeffshee/NextGenVisualizer) by JeffShee.
+- [Next Visualizer is licensed under Apache 2.0](https://github.com/N-Zik-Group/Next-Visualizer/blob/main/LICENSE) and builds on [NextGenVisualizer](https://github.com/jeffshee/NextGenVisualizer) by JeffShee.
+
+- [Better Lyrics](https://github.com/N-Zik-Group/Better-Lyrics/blob/main/LICENSE) and [Discord RPC](https://github.com/N-Zik-Group/DiscordRPC/blob/main/LICENSE) are licensed under GPLv3.

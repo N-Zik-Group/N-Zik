@@ -340,7 +340,7 @@ New:
 
 **[View N-Zik credits and licenses](ComposeN-Zik/src/androidMain/res/raw/credits.md)**
 
-Made with ❤️ by the N-Zik Group community · Licensed under GPLv3 - see [LICENSE](LICENSE)
+Made with ❤️ by the N-Zik Group community · Project license: GPLv3 - see [LICENSE](LICENSE)
 
 In the app, open **Settings > About > Credits**.
 
