@@ -490,7 +490,7 @@ jobs:
     steps:
       - name: 🚀 Stable Release Notification
         env:
-          WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL_MOBILE }}
           CONTENT: |
             ✨ **||<@&1345079801324634195>|| NEW STABLE RELEASE v${{ needs.versioning.outputs.downstream }}!**
             
