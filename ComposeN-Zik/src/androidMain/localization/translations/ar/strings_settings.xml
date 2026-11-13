@@ -235,11 +235,16 @@
     <string name="settings_local_music_action_add_blocked_folder">إضافة مجلد</string>
     <string name="settings_local_music_blocked_folder_exists_message">This folder already exists.</string>
     <string name="settings_local_music_blocked_folders_description">Edit blacklist for on device songs.</string>
+    <string name="settings_local_music_folder_exclusions_description">إخفاء الأغاني في هذه المجلدات والمجلدات الفرعية لهذا الملف الشخصي.</string>
     <string name="settings_local_music_blocked_folders_title">مجلدات القائمة السوداء</string>
     <string name="settings_local_music_folders_description">Show folders in On Device page</string>
+    <string name="settings_local_music_folder_mode_description">تصفح حسب المجلد عند التمكين. قم بإيقاف التشغيل لمشاهدة جميع الأغاني على الجهاز في قائمة واحدة.</string>
     <string name="settings_local_music_folders_label">مجلدات</string>
     <string name="settings_local_music_initial_folder_description">Folder that will show when you open On device page.</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">هل أنت متأكد من أنك تريد إزالة هذا المجلد من القائمة السوداء؟</string>
+    <string name="settings_local_music_refresh_title">تحديث الموسيقى على الجهاز</string>
+    <string name="settings_local_music_refresh_description">تحديث قائمة الأغاني على الجهاز للملف الشخصي النشط.</string>
+    <string name="settings_local_music_start_folder_path_description">أدخل مسار مجلد مثل Music/Live، أو استخدم/ للبدء في الجذر. إذا كان المجلد غير متوفر، يفتح المتصفح أقرب والد متوفر.</string>
     <string name="settings_local_playlist_title">قائمة التشغيل المحلية</string>
     <string name="settings_logging_disabled_label">تعطيل سجلات التصحيح</string>
     <string name="settings_logging_error_file_description">إذا تم تفعيله، قم بإنشاء ملف سجل لإبراز الأخطاء</string>
@@ -490,4 +495,12 @@
     <string name="settings_youtube_login_enabled_label">Enable YouTube Music Login</string>
     <string name="settings_dialog_sort_title_format">%1$s: Sort</string>
     <string name="settings_dialog_toolbar_title_format">%1$s: شريط الأدوات</string>
+    <string name="settings_local_music_enabled_title">تمكين المكتبة على الجهاز</string>
+    <string name="settings_local_music_enabled_description">إظهار علامات التبويب على الجهاز ومسح هذا الجهاز للموسيقى.</string>
+    <string name="settings_local_music_scan_on_startup_title">فحص عند بدء التشغيل</string>
+    <string name="settings_local_music_scan_on_startup_description">فحص الموسيقى على الجهاز عند بدء تشغيل هذا الملف الشخصي.</string>
+    <string name="settings_local_music_scan_not_run">لا توجد نتيجة مسح حتى الآن</string>
+    <string name="settings_local_music_summary_title">ملخص مكتبة على الجهاز</string>
+    <string name="settings_local_music_summary_description">شاهد الموسيقى والمجلدات المكتشفة لهذا الملف الشخصي.</string>
+    <string name="settings_local_music_summary_count">%1$s: %2$d</string>
 </resources>
