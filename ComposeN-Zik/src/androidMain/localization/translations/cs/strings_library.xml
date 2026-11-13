@@ -407,4 +407,5 @@
     <string name="library_on_device_permission_settings_failed">Nelze otevřít nastavení oprávnění.</string>
     <string name="artist_more_from_format">Více z %1$s</string>
     <string name="playlist_top_show_title_format">Zobrazit %1$s</string>
+    <string name="library_on_device_no_local_playlists">Žádné místní seznamy skladeb. Vytvořte seznam skladeb nebo přidejte skladbu do nového seznamu skladeb z zařízení.</string>
 </resources>
