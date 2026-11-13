@@ -407,4 +407,5 @@
     <string name="library_on_device_permission_settings_failed">تعذر فتح إعدادات الإذن.</string>
     <string name="artist_more_from_format">المزيد من %1$s</string>
     <string name="playlist_top_show_title_format">إظهار %1$s</string>
+    <string name="library_on_device_no_local_playlists">لا توجد قوائم تشغيل محلية. أنشئ قائمة تشغيل أو أضف أغنية إلى قائمة تشغيل جديدة من الجهاز.</string>
 </resources>

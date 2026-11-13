@@ -236,11 +236,16 @@ Volume BAS : titre précédent</string>
     <string name="settings_local_music_action_add_blocked_folder">Ajouter un dossier</string>
     <string name="settings_local_music_blocked_folder_exists_message">Ce dossier existe déjà.</string>
     <string name="settings_local_music_blocked_folders_description">Éditer la liste noire pour les titres de l\'appareil.</string>
+    <string name="settings_local_music_folder_exclusions_description">Cacher les chansons dans ces dossiers et leurs sous-dossiers pour ce profil.</string>
     <string name="settings_local_music_blocked_folders_title">Dossiers sur la liste noire</string>
     <string name="settings_local_music_folders_description">Afficher les dossiers sur la page de l\'appareil</string>
+    <string name="settings_local_music_folder_mode_description">Naviguer par dossier quand activé. Désactiver pour voir toutes les chansons sur l\'appareil dans une seule liste.</string>
     <string name="settings_local_music_folders_label">Dossiers</string>
     <string name="settings_local_music_initial_folder_description">Dossier affiché pour les titres stockés sur l\'appareil</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">Êtes-vous sûr de vouloir supprimer ce dossier de la liste noire ?</string>
+    <string name="settings_local_music_refresh_title">Rafraîchir la musique sur l\'appareil</string>
+    <string name="settings_local_music_refresh_description">Mettre à jour la liste des chansons sur le périphérique pour le profil actif.</string>
+    <string name="settings_local_music_start_folder_path_description">Entrez un chemin de dossier tel que Musique/Live, ou utilisez / pour commencer à la racine. Si le dossier n\'est pas disponible, le navigateur ouvre le parent disponible le plus proche.</string>
     <string name="settings_local_playlist_title">Playlist locale</string>
     <string name="settings_logging_disabled_label">Désactiver les journaux de débogage</string>
     <string name="settings_logging_error_file_description">Si activé, créez un fichier journal pour mettre en surbrillance les erreurs</string>
@@ -491,4 +496,12 @@ Volume BAS : titre précédent</string>
     <string name="settings_youtube_login_enabled_label">Activer la connexion à YouTube Music</string>
     <string name="settings_dialog_sort_title_format">%1$s : Trier</string>
     <string name="settings_dialog_toolbar_title_format">%1$s : Barre d\'outils</string>
+    <string name="settings_local_music_enabled_title">Activer la bibliothèque sur le périphérique</string>
+    <string name="settings_local_music_enabled_description">Afficher sur les onglets de l\'appareil et scanner cet appareil pour trouver de la musique.</string>
+    <string name="settings_local_music_scan_on_startup_title">Scanner au démarrage</string>
+    <string name="settings_local_music_scan_on_startup_description">Scanner la musique sur l\'appareil au démarrage de ce profil.</string>
+    <string name="settings_local_music_scan_not_run">Aucun résultat de scan pour le moment</string>
+    <string name="settings_local_music_summary_title">Résumé de la bibliothèque sur le périphérique</string>
+    <string name="settings_local_music_summary_description">Voir la musique et les dossiers détectés pour ce profil.</string>
+    <string name="settings_local_music_summary_count">%1$s : %2$d</string>
 </resources>

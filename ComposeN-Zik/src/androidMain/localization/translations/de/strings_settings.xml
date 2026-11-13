@@ -235,11 +235,16 @@
     <string name="settings_local_music_action_add_blocked_folder">Ordner hinzufügen</string>
     <string name="settings_local_music_blocked_folder_exists_message">Dieser Ordner existiert bereits.</string>
     <string name="settings_local_music_blocked_folders_description">Blacklist für Geräte-Songs editieren.</string>
+    <string name="settings_local_music_folder_exclusions_description">Lieder in diesen Ordnern und deren Unterordner für dieses Profil ausblenden.</string>
     <string name="settings_local_music_blocked_folders_title">Blacklist-Ordner</string>
     <string name="settings_local_music_folders_description">Zeige Ordner unter \"Lokal\" im Register \"Bibliothek\" an</string>
+    <string name="settings_local_music_folder_mode_description">Durchsuchen nach Ordner, wenn aktiviert. Deaktivieren Sie, um alle On-Device-Lieder in einer Liste zu sehen.</string>
     <string name="settings_local_music_folders_label">Ordner</string>
     <string name="settings_local_music_initial_folder_description">Ordner, der auf der Seite \"Lokal\" angezeigt werden soll.</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">Sind Sie sicher, dass Sie diesen Ordner von der Blacklist entfernen möchten?</string>
+    <string name="settings_local_music_refresh_title">Aktualisiere Musik auf Gerät</string>
+    <string name="settings_local_music_refresh_description">Aktualisieren Sie die Liedliste auf dem Gerät für das aktive Profil.</string>
+    <string name="settings_local_music_start_folder_path_description">Geben Sie einen Ordnerpfad wie Music/Live ein, oder verwenden Sie / um am Root zu starten. Wenn der Ordner nicht verfügbar ist, öffnet der Browser den nächstliegenden übergeordneten Ordner.</string>
     <string name="settings_local_playlist_title">Lokale Playlist</string>
     <string name="settings_logging_disabled_label">Debug-Logs deaktivieren</string>
     <string name="settings_logging_error_file_description">Wenn aktiviert, erzeuge eine Protokolldatei für auftretende Fehler</string>
@@ -490,4 +495,12 @@
     <string name="settings_youtube_login_enabled_label">YouTube Music Login aktivieren</string>
     <string name="settings_dialog_sort_title_format">%1$s: Sortieren</string>
     <string name="settings_dialog_toolbar_title_format">%1$s: Werkzeugleiste</string>
+    <string name="settings_local_music_enabled_title">On-Device-Bibliothek aktivieren</string>
+    <string name="settings_local_music_enabled_description">Zeige auf Geräte-Registerkarten und scanne dieses Gerät nach Musik.</string>
+    <string name="settings_local_music_scan_on_startup_title">Beim Start suchen</string>
+    <string name="settings_local_music_scan_on_startup_description">Scanne Musik auf dem Gerät, wenn dieses Profil gestartet wird.</string>
+    <string name="settings_local_music_scan_not_run">Noch kein Scanergebnis</string>
+    <string name="settings_local_music_summary_title">Zusammenfassung der Gerätebibliothek</string>
+    <string name="settings_local_music_summary_description">Sehen Sie sich Musik und Ordner für dieses Profil an.</string>
+    <string name="settings_local_music_summary_count">%1$s: %2$d</string>
 </resources>

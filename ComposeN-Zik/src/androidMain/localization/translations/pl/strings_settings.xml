@@ -235,11 +235,16 @@
     <string name="settings_local_music_action_add_blocked_folder">Dodaj folder</string>
     <string name="settings_local_music_blocked_folder_exists_message">Ten folder już istnieje</string>
     <string name="settings_local_music_blocked_folders_description">Edytuj czarną listę piosenek urządzenia</string>
+    <string name="settings_local_music_folder_exclusions_description">Ukryj utwory w tych folderach i ich podfolderach dla tego profilu.</string>
     <string name="settings_local_music_blocked_folders_title">Foldery na czarnej liście</string>
     <string name="settings_local_music_folders_description">Pokaż foldery na stronie \"Na urządzeniu\"</string>
+    <string name="settings_local_music_folder_mode_description">Przeglądaj po folderze, gdy włączone. Wyłącz aby zobaczyć wszystkie piosenki na urządzeniu w jednej liście.</string>
     <string name="settings_local_music_folders_label">Foldery</string>
     <string name="settings_local_music_initial_folder_description">Folder wyświetlany na utworach urządzenia</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">Czy na pewno chcesz usunąć ten folder z czarnej listy?</string>
+    <string name="settings_local_music_refresh_title">Odśwież muzykę na urządzeniu</string>
+    <string name="settings_local_music_refresh_description">Aktualizuj listę utworów na urządzeniu dla aktywnego profilu.</string>
+    <string name="settings_local_music_start_folder_path_description">Wprowadź ścieżkę folderu taką jak Music/Live, lub użyj / aby zacząć u roota. Jeśli folder jest niedostępny, przeglądarka otwiera najbliższą dostępną pozycję nadrzędną.</string>
     <string name="settings_local_playlist_title">Lokalna lista odtwarzania</string>
     <string name="settings_logging_disabled_label">Wyłącz logi debugowania</string>
     <string name="settings_logging_error_file_description">Jeśli włączone, utwórz plik dziennika, aby wyróżnić błędy</string>
@@ -490,4 +495,12 @@
     <string name="settings_youtube_login_enabled_label">Włącz logowanie do YouTube Music</string>
     <string name="settings_dialog_sort_title_format">%1$s: Sortuj</string>
     <string name="settings_dialog_toolbar_title_format">%1$s: Pasek narzędzi</string>
+    <string name="settings_local_music_enabled_title">Włącz bibliotekę na urządzeniu</string>
+    <string name="settings_local_music_enabled_description">Pokaż na karcie urządzenia i zeskanuj to urządzenie w poszukiwaniu muzyki.</string>
+    <string name="settings_local_music_scan_on_startup_title">Skanuj przy starcie</string>
+    <string name="settings_local_music_scan_on_startup_description">Zeskanuj muzykę na urządzeniu po uruchomieniu tego profilu.</string>
+    <string name="settings_local_music_scan_not_run">Brak wyników skanowania</string>
+    <string name="settings_local_music_summary_title">Podsumowanie biblioteki na urządzeniach</string>
+    <string name="settings_local_music_summary_description">Zobacz muzykę i foldery dla tego profilu.</string>
+    <string name="settings_local_music_summary_count">%1$s: %2$d</string>
 </resources>

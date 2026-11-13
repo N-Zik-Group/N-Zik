@@ -407,4 +407,5 @@
     <string name="library_on_device_permission_settings_failed">Αδύνατο το άνοιγμα των ρυθμίσεων δικαιωμάτων.</string>
     <string name="artist_more_from_format">Περισσότερα από %1$s</string>
     <string name="playlist_top_show_title_format">Εμφάνιση %1$s</string>
+    <string name="library_on_device_no_local_playlists">Δεν υπάρχουν τοπικές λίστες αναπαραγωγής. Δημιουργήστε μια λίστα αναπαραγωγής ή προσθέστε ένα τραγούδι σε μια νέα λίστα αναπαραγωγής από την On device.</string>
 </resources>

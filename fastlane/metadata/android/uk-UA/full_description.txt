@@ -1,5 +1,9 @@
 Багатомовний YouTube інтерфейс для Android, зосереджений на швидкодії, утилізаціях, розширенні функцій та довгостроковій підтримці.
 
+<b>N-Zik</b> є відкритим вихідним форком <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+
+<b>Примітка:</b> N-Zik запущено як сторонній проект. For more mature alternatives, check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+
 <b>Використання AI:</b> я використовую генеративний AI код (через <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD метод</a>), перегляд та тестування перед доставкою.
 
 ✨ <b>WHY N-ZIK?</b> Без реклами, фонові відтворення в автономному режимі кешування, настроювані інтерфейсу - безкоштовні завжди.

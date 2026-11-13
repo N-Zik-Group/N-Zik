@@ -407,4 +407,5 @@
     <string name="library_on_device_permission_settings_failed">Kunde inte öppna behörighetsinställningar.</string>
     <string name="artist_more_from_format">Mer från %1$s</string>
     <string name="playlist_top_show_title_format">Visa %1$s</string>
+    <string name="library_on_device_no_local_playlists">Inga lokala spellistor. Skapa en spellista eller lägg till en låt till en ny spellista från På enhet.</string>
 </resources>

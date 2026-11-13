@@ -235,11 +235,16 @@
     <string name="settings_local_music_action_add_blocked_folder">Aggiungi cartella</string>
     <string name="settings_local_music_blocked_folder_exists_message">Questa cartella esiste già</string>
     <string name="settings_local_music_blocked_folders_description">Modifica blacklist per i brani del dispositivo</string>
+    <string name="settings_local_music_folder_exclusions_description">Nascondi i brani in queste cartelle e le loro sottocartelle per questo profilo.</string>
     <string name="settings_local_music_blocked_folders_title">Cartelle in blacklist</string>
     <string name="settings_local_music_folders_description">Mostra le cartelle in \"Sul dispositivo\" pagina</string>
+    <string name="settings_local_music_folder_mode_description">Sfoglia per cartella quando abilitata. Disattiva per vedere tutti i brani sul dispositivo in un elenco.</string>
     <string name="settings_local_music_folders_label">Cartelle</string>
     <string name="settings_local_music_initial_folder_description">Cartella mostrata sui brani del dispositivo</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">Sei sicuro di voler rimuovere questa voce dalla scaletta?</string>
+    <string name="settings_local_music_refresh_title">Aggiorna musica sul dispositivo</string>
+    <string name="settings_local_music_refresh_description">Aggiorna l\'elenco dei brani sul dispositivo per il profilo attivo.</string>
+    <string name="settings_local_music_start_folder_path_description">Inserisci un percorso di cartella come Music/Live, o usa / per iniziare alla radice. Se la cartella non è disponibile, il browser apre il genitore più vicino disponibile.</string>
     <string name="settings_local_playlist_title">Scaletta Locale</string>
     <string name="settings_logging_disabled_label">Disabilita i log di debug</string>
     <string name="settings_logging_error_file_description">Se abilitato, crea un file di registro per evidenziare gli errori</string>
@@ -490,4 +495,12 @@
     <string name="settings_youtube_login_enabled_label">Abilita l\'accesso a YouTube Music</string>
     <string name="settings_dialog_sort_title_format">%1$s: Ordina</string>
     <string name="settings_dialog_toolbar_title_format">%1$s: Barra Degli Strumenti</string>
+    <string name="settings_local_music_enabled_title">Abilita libreria on-device</string>
+    <string name="settings_local_music_enabled_description">Mostra sulle schede del dispositivo e scansiona questo dispositivo per la musica.</string>
+    <string name="settings_local_music_scan_on_startup_title">Scansiona all\'avvio</string>
+    <string name="settings_local_music_scan_on_startup_description">Scansiona la musica sul dispositivo all\'avvio di questo profilo.</string>
+    <string name="settings_local_music_scan_not_run">Ancora nessun risultato di scansione</string>
+    <string name="settings_local_music_summary_title">Riepilogo librerie On-device</string>
+    <string name="settings_local_music_summary_description">Vedi la musica e le cartelle rilevate per questo profilo.</string>
+    <string name="settings_local_music_summary_count">%1$s: %2$d</string>
 </resources>

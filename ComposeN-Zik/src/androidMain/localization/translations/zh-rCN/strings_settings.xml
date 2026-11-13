@@ -235,11 +235,16 @@
     <string name="settings_local_music_action_add_blocked_folder">新增文件夹</string>
     <string name="settings_local_music_blocked_folder_exists_message">该文件夹已存在</string>
     <string name="settings_local_music_blocked_folders_description">编辑设备上歌曲的黑名单</string>
+    <string name="settings_local_music_folder_exclusions_description">在此配置文件中隐藏这些文件夹中的歌曲及其子文件夹。</string>
     <string name="settings_local_music_blocked_folders_title">列入黑名单的文件夹</string>
     <string name="settings_local_music_folders_description">在设备页面显示文件夹</string>
+    <string name="settings_local_music_folder_mode_description">启用时按文件夹浏览。关闭以在一个列表中查看所有设备上的歌曲。</string>
     <string name="settings_local_music_folders_label">文件夹</string>
     <string name="settings_local_music_initial_folder_description">打开本地歌曲页面时显示的文件夹。</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">您确定要将此文件夹从黑名单中删除吗？</string>
+    <string name="settings_local_music_refresh_title">在设备上刷新音乐</string>
+    <string name="settings_local_music_refresh_description">更新在设备上的歌曲列表以获取活动情景。</string>
+    <string name="settings_local_music_start_folder_path_description">输入一个 Music/Live 等文件夹路径，或使用 / 启动根目录. 如果文件夹不可用，浏览器会打开最近可用的父文件夹。</string>
     <string name="settings_local_playlist_title">本地播放列表</string>
     <string name="settings_logging_disabled_label">禁用调试日志</string>
     <string name="settings_logging_error_file_description">如果启用，将会创建一个日志文件来突出显示错误</string>
@@ -490,4 +495,12 @@
     <string name="settings_youtube_login_enabled_label">启用YouTube音乐登录</string>
     <string name="settings_dialog_sort_title_format">%1$s：排序</string>
     <string name="settings_dialog_toolbar_title_format">%1$s：工具栏</string>
+    <string name="settings_local_music_enabled_title">启用设备库</string>
+    <string name="settings_local_music_enabled_description">在设备标签上显示并扫描此设备用于音乐。</string>
+    <string name="settings_local_music_scan_on_startup_title">启动时扫描</string>
+    <string name="settings_local_music_scan_on_startup_description">当此配置文件开始时扫描设备上的音乐</string>
+    <string name="settings_local_music_scan_not_run">尚未扫描结果</string>
+    <string name="settings_local_music_summary_title">设备上的书库摘要</string>
+    <string name="settings_local_music_summary_description">查看检测到的音乐和文件夹。</string>
+    <string name="settings_local_music_summary_count">%1$s： %2$d</string>
 </resources>

@@ -407,4 +407,5 @@
     <string name="library_on_device_permission_settings_failed">Не удалось открыть настройки разрешений.</string>
     <string name="artist_more_from_format">Ещё от %1$s</string>
     <string name="playlist_top_show_title_format">Показать %1$s</string>
+    <string name="library_on_device_no_local_playlists">Нет локальных плейлистов. Создайте плейлист или добавьте песню в новый список воспроизведения на устройстве.</string>
 </resources>

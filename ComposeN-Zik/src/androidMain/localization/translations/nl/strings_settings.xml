@@ -235,11 +235,16 @@
     <string name="settings_local_music_action_add_blocked_folder">Map toevoegen</string>
     <string name="settings_local_music_blocked_folder_exists_message">Deze map bestaat al</string>
     <string name="settings_local_music_blocked_folders_description">Bewerk de blacklist voor toestelnummers</string>
+    <string name="settings_local_music_folder_exclusions_description">Verberg nummers in deze mappen en hun submappen voor dit profiel.</string>
     <string name="settings_local_music_blocked_folders_title">Geblackliste mappen</string>
     <string name="settings_local_music_folders_description">Mappen weergeven in \"Op apparaat\" pagina</string>
+    <string name="settings_local_music_folder_mode_description">Bladeren per map wanneer ingeschakeld. Schakel dit uit om alle on-apparaat nummers in één lijst te zien.</string>
     <string name="settings_local_music_folders_label">Mappen</string>
     <string name="settings_local_music_initial_folder_description">Map getoond voor nummers van het apparaat</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">Weet je zeker dat je deze map af de blacklist wil halen?</string>
+    <string name="settings_local_music_refresh_title">Herlaad muziek op apparaat</string>
+    <string name="settings_local_music_refresh_description">Werk de on-apparaat songlijst bij voor het actieve profiel.</string>
+    <string name="settings_local_music_start_folder_path_description">Voer een mappad in zoals Music/Live, of gebruik / om te beginnen in de root knop. Als de map niet beschikbaar is, opent de browser de dichtstbijzijnde beschikbare ouder.</string>
     <string name="settings_local_playlist_title">Lokale afspeellijst</string>
     <string name="settings_logging_disabled_label">Debug logs uitschakelen</string>
     <string name="settings_logging_error_file_description">Maak een logbestand aan om fouten te markeren</string>
@@ -490,4 +495,12 @@
     <string name="settings_youtube_login_enabled_label">YouTube-muziek-login inschakelen</string>
     <string name="settings_dialog_sort_title_format">%1$s: Sorteren</string>
     <string name="settings_dialog_toolbar_title_format">%1$s: Werkbalk</string>
+    <string name="settings_local_music_enabled_title">On-device bibliotheek inschakelen</string>
+    <string name="settings_local_music_enabled_description">Toon op apparaat tabbladen en scan dit apparaat voor muziek.</string>
+    <string name="settings_local_music_scan_on_startup_title">Bij opstarten scannen</string>
+    <string name="settings_local_music_scan_on_startup_description">Scan muziek op apparaat wanneer dit profiel wordt gestart.</string>
+    <string name="settings_local_music_scan_not_run">Nog geen scanresultaat</string>
+    <string name="settings_local_music_summary_title">Overzicht bibliotheek van apparaten</string>
+    <string name="settings_local_music_summary_description">Zie gedetecteerde muziek en mappen voor dit profiel.</string>
+    <string name="settings_local_music_summary_count">%1$s: %2$d</string>
 </resources>

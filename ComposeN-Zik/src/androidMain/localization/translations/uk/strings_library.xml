@@ -407,4 +407,5 @@
     <string name="library_on_device_permission_settings_failed">Не вдалося відкрити налаштування дозволів.</string>
     <string name="artist_more_from_format">Більше з %1$s</string>
     <string name="playlist_top_show_title_format">Показати %1$s</string>
+    <string name="library_on_device_no_local_playlists">Немає локальних списків відтворення. Створіть список відтворення або додайте пісню до нового списку відтворення з пристрою.</string>
 </resources>

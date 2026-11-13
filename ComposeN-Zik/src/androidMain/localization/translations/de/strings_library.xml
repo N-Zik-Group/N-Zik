@@ -407,4 +407,5 @@
     <string name="library_on_device_permission_settings_failed">Konnte die Berechtigungseinstellungen nicht öffnen.</string>
     <string name="artist_more_from_format">Mehr von %1$s</string>
     <string name="playlist_top_show_title_format">Zeige %1$s</string>
+    <string name="library_on_device_no_local_playlists">Keine lokalen Wiedergabelisten. Erstellen Sie eine Wiedergabeliste oder fügen Sie einen Titel einer neuen Wiedergabeliste von On hinzu.</string>
 </resources>

@@ -235,11 +235,16 @@
     <string name="settings_local_music_action_add_blocked_folder">Adaugă un dosar</string>
     <string name="settings_local_music_blocked_folder_exists_message">Acest dosar există deja.</string>
     <string name="settings_local_music_blocked_folders_description">Editează lista neagră pentru melodiile de pe dispozitiv.</string>
+    <string name="settings_local_music_folder_exclusions_description">Ascunde melodiile în aceste dosare și subdosarele lor pentru acest profil.</string>
     <string name="settings_local_music_blocked_folders_title">Dosare pe lista neagră</string>
     <string name="settings_local_music_folders_description">Afișează dosarele în pagina „Pe dispozitiv”</string>
+    <string name="settings_local_music_folder_mode_description">Răsfoiți după folder atunci când este activat. Dezactivați pentru a vedea toate melodiile de pe dispozitiv într-o singură listă.</string>
     <string name="settings_local_music_folders_label">Dosare</string>
     <string name="settings_local_music_initial_folder_description">Dosar afișat pentru melodiile de pe dispozitiv.</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">Ești sigur că vrei să elimini acest dosar din lista neagră?</string>
+    <string name="settings_local_music_refresh_title">Reîmprospătează muzica pe dispozitiv</string>
+    <string name="settings_local_music_refresh_description">Actualizează lista de melodii pe dispozitiv pentru profilul activ.</string>
+    <string name="settings_local_music_start_folder_path_description">Introduceți o cale de dosar cum ar fi Music/Live, sau folosiți / pentru a începe de la rădăcină. Dacă folderul nu este disponibil, browserul deschide cel mai apropiat parinte disponibil.</string>
     <string name="settings_local_playlist_title">Playlist local</string>
     <string name="settings_logging_disabled_label">Dezactivează jurnalele de depanare</string>
     <string name="settings_logging_error_file_description">Dacă este activat, creează un fișier jurnal pentru a evidenția erorile</string>
@@ -490,4 +495,12 @@
     <string name="settings_youtube_login_enabled_label">Activează conectarea la YouTube Music</string>
     <string name="settings_dialog_sort_title_format">%1$s: Sortare</string>
     <string name="settings_dialog_toolbar_title_format">%1$s: Bară de instrumente</string>
+    <string name="settings_local_music_enabled_title">Activează biblioteca on-device</string>
+    <string name="settings_local_music_enabled_description">Arată pe tab-urile dispozitivului și scanează acest dispozitiv pentru muzică.</string>
+    <string name="settings_local_music_scan_on_startup_title">Scanare la pornire</string>
+    <string name="settings_local_music_scan_on_startup_description">Scanează muzica de pe dispozitiv atunci când acest profil începe.</string>
+    <string name="settings_local_music_scan_not_run">Niciun rezultat scanat încă</string>
+    <string name="settings_local_music_summary_title">Sumar librarie pe dispozitiv</string>
+    <string name="settings_local_music_summary_description">Vezi muzica și dosarele detectate pentru acest profil.</string>
+    <string name="settings_local_music_summary_count">%1$s: %2$d</string>
 </resources>

@@ -235,11 +235,16 @@
     <string name="settings_local_music_action_add_blocked_folder">Legg til mappe</string>
     <string name="settings_local_music_blocked_folder_exists_message">Denne mappen finnes allerede</string>
     <string name="settings_local_music_blocked_folders_description">Rediger svarteliste for på enhetens sanger</string>
+    <string name="settings_local_music_folder_exclusions_description">Skjul sanger i disse mappene og deres undermapper for denne profilen.</string>
     <string name="settings_local_music_blocked_folders_title">Svartelistede mapper</string>
     <string name="settings_local_music_folders_description">Vis mapper på \"På enhet\"-siden</string>
+    <string name="settings_local_music_folder_mode_description">Surf etter at den er aktivert. Slå av for å se alle sanger på enheten i én liste.</string>
     <string name="settings_local_music_folders_label">Mapper</string>
     <string name="settings_local_music_initial_folder_description">Mappe vist for enhetssanger</string>
     <string name="settings_local_music_remove_blocked_folder_confirmation">Er du sikker på at du vil fjerne denne mappen fra svartelisten?</string>
+    <string name="settings_local_music_refresh_title">Oppdater musikk på enheten</string>
+    <string name="settings_local_music_refresh_description">Oppdater sanglisten for på enheten for den aktive profilen.</string>
+    <string name="settings_local_music_start_folder_path_description">Skriv inn en mappebane som for eksempel Musikk/Live, eller bruk / for å starte på root. Hvis mappen er utilgjengelig, åpner nettleseren den nærmeste tilgjengelige overordnet.</string>
     <string name="settings_local_playlist_title">Lokal Spilleliste</string>
     <string name="settings_logging_disabled_label">Deaktiver feilsøkingslogger</string>
     <string name="settings_logging_error_file_description">Hvis aktivert, opprett en loggfil for å utheve feil</string>
@@ -490,4 +495,12 @@
     <string name="settings_youtube_login_enabled_label">Aktiver YouTube musikkinnlogging</string>
     <string name="settings_dialog_sort_title_format">%1$s: Sorter</string>
     <string name="settings_dialog_toolbar_title_format">%1$s: Verktøylinje</string>
+    <string name="settings_local_music_enabled_title">Aktiver bibliotek på enheten</string>
+    <string name="settings_local_music_enabled_description">Vis på enhetsfaner og skann denne enheten for musikk.</string>
+    <string name="settings_local_music_scan_on_startup_title">Skann ved oppstart</string>
+    <string name="settings_local_music_scan_on_startup_description">Skann påloggingsmusikken når denne profilen starter.</string>
+    <string name="settings_local_music_scan_not_run">Ingen skann-resultat ennå</string>
+    <string name="settings_local_music_summary_title">Sammendrag av brukerbibliotek</string>
+    <string name="settings_local_music_summary_description">Se oppdagede musikk og mapper for denne profilen.</string>
+    <string name="settings_local_music_summary_count">%1$s: %2$d</string>
 </resources>
