@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">平均分布间距</string>
     <string name="settings_player_album_cover_visible_label">显示专辑封面</string>
     <string name="settings_player_appearance_page_description">外观部分包含播放器视觉外观设置</string>
-    <string name="settings_player_appearance_presets_preview_description">预览会以较低质量</string>
-    <string name="settings_player_appearance_presets_title">预设外观</string>
     <string name="settings_player_artwork_animation_enabled_label">显示封面缩略图动画</string>
     <string name="settings_player_artwork_animation_style_label">封面动画类型</string>
     <string name="settings_player_artwork_carousel_label">轮播视图</string>
