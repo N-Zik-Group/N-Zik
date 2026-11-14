@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_inbox_title">Ειδοποιήσεις</string>
+    <string name="notification_inbox_empty">Δεν υπάρχουν ειδοποιήσεις</string>
+    <string name="notification_inbox_open">Άνοιγμα</string>
+    <string name="notification_inbox_unread">Μη αναγνωσμένες ειδοποιήσεις: %1$d</string>
+    <string name="notification_inbox_clear_all">Εκκαθάριση όλων</string>
+</resources>
