@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">Gelijk gespaard</string>
     <string name="settings_player_album_cover_visible_label">Toon albumhoes</string>
     <string name="settings_player_appearance_page_description">De weergavesectie bevat instellingen voor het uiterlijk van de speler</string>
-    <string name="settings_player_appearance_presets_preview_description">Previews zullen in lage kwaliteit zijn</string>
-    <string name="settings_player_appearance_presets_title">Voorkeursinstellingen Uiterlijk</string>
     <string name="settings_player_artwork_animation_enabled_label">Toon thumbnail animatie over cover</string>
     <string name="settings_player_artwork_animation_style_label">Cover animatie type</string>
     <string name="settings_player_artwork_carousel_label">Carrousel weergave</string>
