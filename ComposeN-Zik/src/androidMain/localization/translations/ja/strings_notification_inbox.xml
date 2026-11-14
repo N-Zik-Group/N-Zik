@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_inbox_title">通知</string>
+    <string name="notification_inbox_empty">通知なし</string>
+    <string name="notification_inbox_open">開く</string>
+    <string name="notification_inbox_unread">未読の通知： %1$d</string>
+    <string name="notification_inbox_clear_all">すべてクリア</string>
+</resources>
