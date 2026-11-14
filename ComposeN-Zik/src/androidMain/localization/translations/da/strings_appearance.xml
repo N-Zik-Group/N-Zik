@@ -245,4 +245,6 @@
     <string name="glass_effect_rendering_quality">Rendering kvalitet</string>
     <string name="image_editor_original">Oprindeligt forhold</string>
     <string name="image_editor_apply">Brug billede</string>
+    <string name="theme_store_title">Tema Butik</string>
+    <string name="theme_store_preview_description">Opdag, anvend og del temaer for at personliggøre N-Zik.</string>
 </resources>
