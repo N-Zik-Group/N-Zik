@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_preview_gallery_description">Se hvordan temaet ditt ser ut i overkant av N-Zik med normale og Glass-forhåndsvisninger.</string>
+    <string name="theme_store_preview_section">Forhåndsvisninger av tema</string>
+    <string name="theme_preview_generate">Generer forhåndsvisningsbilder</string>
+    <string name="theme_preview_replace">Erstatt bilde</string>
+    <string name="theme_preview_scene_failed">Kunne ikke fange %1$s.</string>
+    <string name="theme_preview_replacement_failed">Velg et gyldig portrettbilde opptil 16 megapiksler.</string>
+</resources>
