@@ -245,4 +245,6 @@
     <string name="glass_effect_rendering_quality">Ποιότητα απόδοσης</string>
     <string name="image_editor_original">Αρχικός λόγος</string>
     <string name="image_editor_apply">Χρήση εικόνας</string>
+    <string name="theme_store_title">Κατάστημα Θεμάτων</string>
+    <string name="theme_store_preview_description">Ανακαλύψτε, εφαρμόστε και μοιραστείτε θέματα για να προσωποποιήσετε το N-Zik.</string>
 </resources>

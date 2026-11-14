@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_preview_gallery_description">Veja como o seu tema fica em N-Zik com pré-visualizações Normal e Vidro.</string>
+    <string name="theme_store_preview_section">Pré-visualizações de tema</string>
+    <string name="theme_preview_generate">Gerar imagens de pré-visualização</string>
+    <string name="theme_preview_replace">Substituir imagem</string>
+    <string name="theme_preview_scene_failed">Impossível capturar %1$s.</string>
+    <string name="theme_preview_replacement_failed">Escolha uma imagem de retrato válida até 16 megapixels.</string>
+</resources>

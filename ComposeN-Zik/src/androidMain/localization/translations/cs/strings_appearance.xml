@@ -245,4 +245,6 @@
     <string name="glass_effect_rendering_quality">Kvalita vykreslování</string>
     <string name="image_editor_original">Původní poměr</string>
     <string name="image_editor_apply">Použít obrázek</string>
+    <string name="theme_store_title">Obchod s motivy</string>
+    <string name="theme_store_preview_description">Objevte, používejte a sdílejte motivy pro přizpůsobení N-Zik.</string>
 </resources>

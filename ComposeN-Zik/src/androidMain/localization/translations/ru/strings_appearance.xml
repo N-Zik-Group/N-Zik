@@ -245,4 +245,6 @@
     <string name="glass_effect_rendering_quality">Качество рендеринга</string>
     <string name="image_editor_original">Исходное соотношение</string>
     <string name="image_editor_apply">Использовать изображение</string>
+    <string name="theme_store_title">Магазин тем</string>
+    <string name="theme_store_preview_description">Откройте, примените и поделитесь темами для персонализации N-Zik.</string>
 </resources>

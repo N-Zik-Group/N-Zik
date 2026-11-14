@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_preview_gallery_description">Zobacz, jak Twój szablon wygląda na N-Zik z podglądem normalnym i szklanym.</string>
+    <string name="theme_store_preview_section">Podgląd motywu</string>
+    <string name="theme_preview_generate">Generuj obrazy podglądu</string>
+    <string name="theme_preview_replace">Zastąp obraz</string>
+    <string name="theme_preview_scene_failed">Nie można przechwycić %1$s.</string>
+    <string name="theme_preview_replacement_failed">Wybierz poprawny obraz portretowy do 16 megapikseli.</string>
+</resources>

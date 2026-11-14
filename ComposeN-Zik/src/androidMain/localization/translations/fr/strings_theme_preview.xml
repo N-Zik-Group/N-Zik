@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_preview_gallery_description">Découvrez le rendu de votre thème sur N-Zik grâce aux aperçus « Normal » et « Glass ».</string>
+    <string name="theme_store_preview_section">Aperçus des thèmes</string>
+    <string name="theme_preview_generate">Générer des images d\'aperçu</string>
+    <string name="theme_preview_replace">Remplacer l\'image</string>
+    <string name="theme_preview_scene_failed">Impossible de capturer %1$s.</string>
+    <string name="theme_preview_replacement_failed">Choisissez une photo de profil valide ne dépassant pas 16 mégapixels.</string>
+</resources>

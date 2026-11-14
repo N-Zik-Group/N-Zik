@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_inbox_title">Сповіщення</string>
+    <string name="notification_inbox_empty">Немає сповіщень</string>
+    <string name="notification_inbox_open">Відкриті</string>
+    <string name="notification_inbox_unread">Непрочитані сповіщення: %1$d</string>
+    <string name="notification_inbox_clear_all">Очистити все</string>
+</resources>

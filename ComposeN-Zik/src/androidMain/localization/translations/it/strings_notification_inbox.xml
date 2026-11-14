@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_inbox_title">Notifiche</string>
+    <string name="notification_inbox_empty">Nessuna notifica</string>
+    <string name="notification_inbox_open">Apri</string>
+    <string name="notification_inbox_unread">Notifiche non lette: %1$d</string>
+    <string name="notification_inbox_clear_all">Cancella tutto</string>
+</resources>

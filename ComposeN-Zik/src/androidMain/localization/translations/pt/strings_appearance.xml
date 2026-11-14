@@ -245,4 +245,6 @@
     <string name="glass_effect_rendering_quality">Qualidade de renderização</string>
     <string name="image_editor_original">Proporção original</string>
     <string name="image_editor_apply">Usar imagem</string>
+    <string name="theme_store_title">Loja de Temas</string>
+    <string name="theme_store_preview_description">Descubra, aplique e compartilhe temas para personalizar o N-Zik.</string>
 </resources>

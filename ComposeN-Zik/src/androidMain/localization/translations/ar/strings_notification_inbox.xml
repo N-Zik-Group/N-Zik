@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_inbox_title">الإشعارات</string>
+    <string name="notification_inbox_empty">لا توجد إشعارات</string>
+    <string name="notification_inbox_open">فتح</string>
+    <string name="notification_inbox_unread">إشعارات غير مقروءة: %1$d</string>
+    <string name="notification_inbox_clear_all">مسح الكل</string>
+</resources>

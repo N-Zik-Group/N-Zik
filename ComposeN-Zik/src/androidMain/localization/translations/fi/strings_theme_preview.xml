@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_preview_gallery_description">Katso, miten teemasi näyttää läpi N-Zikin normaalien ja lasisten esikatselujen avulla.</string>
+    <string name="theme_store_preview_section">Teeman esikatselut</string>
+    <string name="theme_preview_generate">Luo esikatselu kuvia</string>
+    <string name="theme_preview_replace">Korvaa kuva</string>
+    <string name="theme_preview_scene_failed">%1$s ei voitu kaapata.</string>
+    <string name="theme_preview_replacement_failed">Valitse kelvollinen muotokuva enintään 16 megapikseliä.</string>
+</resources>

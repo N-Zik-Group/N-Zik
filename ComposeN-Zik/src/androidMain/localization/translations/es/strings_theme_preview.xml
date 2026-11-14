@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_preview_gallery_description">Mira cómo se ve tu tema a través de N-Zik con vistas previas Normal y Cristal.</string>
+    <string name="theme_store_preview_section">Previsualizaciones del tema</string>
+    <string name="theme_preview_generate">Generar imágenes de vista previa</string>
+    <string name="theme_preview_replace">Reemplazar imagen</string>
+    <string name="theme_preview_scene_failed">No se pudo capturar %1$s.</string>
+    <string name="theme_preview_replacement_failed">Elija una imagen de retrato válida de hasta 16 megapixels.</string>
+</resources>

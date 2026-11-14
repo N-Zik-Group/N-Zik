@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_inbox_title">Oznámení</string>
+    <string name="notification_inbox_empty">Žádná oznámení</string>
+    <string name="notification_inbox_open">Otevřít</string>
+    <string name="notification_inbox_unread">Nepřečtená oznámení: %1$d</string>
+    <string name="notification_inbox_clear_all">Vymazat vše</string>
+</resources>

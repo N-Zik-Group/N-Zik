@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_inbox_title">Varsler</string>
+    <string name="notification_inbox_empty">Ingen varsler</string>
+    <string name="notification_inbox_open">Åpne</string>
+    <string name="notification_inbox_unread">Uleste varsler: %1$d</string>
+    <string name="notification_inbox_clear_all">Fjern alle</string>
+</resources>

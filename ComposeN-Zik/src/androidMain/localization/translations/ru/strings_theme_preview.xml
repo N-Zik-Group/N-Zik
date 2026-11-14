@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_preview_gallery_description">Посмотрите, как выглядит ваша тема N-Zik с предпросмотрами в обычном и стеклянном.</string>
+    <string name="theme_store_preview_section">Предпросмотр темы</string>
+    <string name="theme_preview_generate">Генерировать превью</string>
+    <string name="theme_preview_replace">Заменить изображение</string>
+    <string name="theme_preview_scene_failed">Не удалось захватить %1$s.</string>
+    <string name="theme_preview_replacement_failed">Выберите корректное портретное изображение до 16 мегапикселей.</string>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_inbox_title">Aviseringar</string>
+    <string name="notification_inbox_empty">Inga aviseringar</string>
+    <string name="notification_inbox_open">Öppna</string>
+    <string name="notification_inbox_unread">Olästa meddelanden: %1$d</string>
+    <string name="notification_inbox_clear_all">Rensa alla</string>
+</resources>

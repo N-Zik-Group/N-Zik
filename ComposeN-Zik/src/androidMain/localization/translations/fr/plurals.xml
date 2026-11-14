@@ -162,8 +162,8 @@
         <item quantity="other">%1$s jours sans écouter de musique.</item>
     </plurals>
     <plurals name="rewind_loader_status_day_count">
-        <item quantity="one">%1$s JOUR DE LA LISTE</item>
-        <item quantity="other">%1$s JOURS DE LISTENTION</item>
+        <item quantity="one">%1$s JOURNÉE D\'ÉCOUTE</item>
+        <item quantity="other">%1$s JOURNÉES D\'ÉCOUTE</item>
     </plurals>
     <plurals name="rewind_loader_status_minute_count">
         <item quantity="one">%1$s MINUTE</item>
@@ -190,7 +190,7 @@
         <item quantity="other">%1$d TITRES.\nUN SEUL GAGNANT.</item>
     </plurals>
     <plurals name="maintenance_abnormal_job_count">
-        <item quantity="one">%1$d Tâche non terminée</item>
-        <item quantity="other">%1$d Tâches non terminées</item>
+        <item quantity="one">%1$d tâche non terminée</item>
+        <item quantity="other">%1$d tâches non terminées</item>
     </plurals>
 </resources>

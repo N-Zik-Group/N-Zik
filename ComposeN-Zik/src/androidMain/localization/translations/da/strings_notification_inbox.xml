@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_inbox_title">Notifikationer</string>
+    <string name="notification_inbox_empty">Ingen notifikationer</string>
+    <string name="notification_inbox_open">Åbn</string>
+    <string name="notification_inbox_unread">Ulæste notifikationer: %1$d</string>
+    <string name="notification_inbox_clear_all">Ryd alle</string>
+</resources>

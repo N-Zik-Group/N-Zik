@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_preview_gallery_description">Δείτε πώς φαίνεται το θέμα σας σε N-Zik με Κανονικές και Γυάλινες προεπισκοπήσεις.</string>
+    <string name="theme_store_preview_section">Προεπισκοπήσεις θεμάτων</string>
+    <string name="theme_preview_generate">Δημιουργία εικόνων προεπισκόπησης</string>
+    <string name="theme_preview_replace">Αντικατάσταση εικόνας</string>
+    <string name="theme_preview_scene_failed">Δεν ήταν δυνατή η καταγραφή %1$s.</string>
+    <string name="theme_preview_replacement_failed">Επιλέξτε μια έγκυρη εικόνα πορτρέτου έως 16 megapixels.</string>
+</resources>

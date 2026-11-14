@@ -245,4 +245,6 @@
     <string name="glass_effect_rendering_quality">جودة العرض</string>
     <string name="image_editor_original">النسبة الأصلية</string>
     <string name="image_editor_apply">استخدام الصورة</string>
+    <string name="theme_store_title">متجر السمة</string>
+    <string name="theme_store_preview_description">اكتشف، تطبيق، مشاركة السمات لتخصيص N-Zik.</string>
 </resources>

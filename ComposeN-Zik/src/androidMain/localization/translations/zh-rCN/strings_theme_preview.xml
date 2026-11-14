@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_preview_gallery_description">看看你的主题如何使用 N-Zik 预览普通和玻璃预览。</string>
+    <string name="theme_store_preview_section">主题预览</string>
+    <string name="theme_preview_generate">生成预览图像</string>
+    <string name="theme_preview_replace">替换图像</string>
+    <string name="theme_preview_scene_failed">无法获取 %1$s。</string>
+    <string name="theme_preview_replacement_failed">选择一个最多16兆字节的有效竖直图像。</string>
+</resources>

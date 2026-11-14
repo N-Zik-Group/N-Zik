@@ -407,5 +407,5 @@
     <string name="library_on_device_permission_settings_failed">Impossible d\'ouvrir les paramètres d\'autorisation.</string>
     <string name="artist_more_from_format">Plus de %1$s</string>
     <string name="playlist_top_show_title_format">Afficher %1$s</string>
-    <string name="library_on_device_no_local_playlists">Aucune playlist locale. Créez une playlist ou ajoutez une chanson à une nouvelle playlist à partir du périphérique On.</string>
+    <string name="library_on_device_no_local_playlists">Aucune playlist locale. Créez une playlist ou ajoutez un morceau à une nouvelle playlist depuis l\'appareil.</string>
 </resources>

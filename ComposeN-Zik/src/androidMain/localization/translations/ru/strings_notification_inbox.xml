@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_inbox_title">Уведомления</string>
+    <string name="notification_inbox_empty">Нет уведомлений</string>
+    <string name="notification_inbox_open">Открыть</string>
+    <string name="notification_inbox_unread">Непрочитанные уведомления: %1$d</string>
+    <string name="notification_inbox_clear_all">Очистить все</string>
+</resources>
