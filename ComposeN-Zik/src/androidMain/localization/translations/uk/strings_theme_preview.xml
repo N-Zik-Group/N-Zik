@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_preview_gallery_description">Подивіться, як виглядає ваша тема через N-Zik з нормальними попередніми переглядами і скла.</string>
+    <string name="theme_store_preview_section">Попередній перегляд теми</string>
+    <string name="theme_preview_generate">Згенерувати попередній перегляд</string>
+    <string name="theme_preview_replace">Замінити зображення</string>
+    <string name="theme_preview_scene_failed">Не вдалося зробити запис %1$s.</string>
+    <string name="theme_preview_replacement_failed">Виберіть дійсне портретне зображення до 16 мегапікселів.</string>
+</resources>
