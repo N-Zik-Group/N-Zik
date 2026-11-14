@@ -245,4 +245,6 @@
     <string name="glass_effect_rendering_quality">Calitate randare</string>
     <string name="image_editor_original">Raportul original</string>
     <string name="image_editor_apply">Utilizare imagine</string>
+    <string name="theme_store_title">Magazin teme</string>
+    <string name="theme_store_preview_description">Descoperă, aplică și partajează teme pentru a personaliza N-Zik.</string>
 </resources>
