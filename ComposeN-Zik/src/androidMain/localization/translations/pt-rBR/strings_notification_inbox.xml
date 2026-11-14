@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_inbox_title">notificações</string>
+    <string name="notification_inbox_empty">Sem Notificações</string>
+    <string name="notification_inbox_open">Abertas</string>
+    <string name="notification_inbox_unread">Notificações não lidas: %1$d</string>
+    <string name="notification_inbox_clear_all">Limpar tudo</string>
+</resources>
