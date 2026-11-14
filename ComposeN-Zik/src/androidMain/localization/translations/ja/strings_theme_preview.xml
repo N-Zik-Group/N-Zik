@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_preview_gallery_description">ノーマルプレビューとグラスプレビューでN-Zikのテーマがどのように見えるかをご覧ください。</string>
+    <string name="theme_store_preview_section">テーマのプレビュー</string>
+    <string name="theme_preview_generate">プレビュー画像を生成する</string>
+    <string name="theme_preview_replace">画像を置き換え</string>
+    <string name="theme_preview_scene_failed">%1$s をキャプチャできませんでした。</string>
+    <string name="theme_preview_replacement_failed">16メガピクセルまでの有効なポートレート画像を選択してください。</string>
+</resources>
