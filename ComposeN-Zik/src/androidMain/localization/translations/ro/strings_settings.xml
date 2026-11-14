@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">Distanță uniform</string>
     <string name="settings_player_album_cover_visible_label">Afișează coperta albumului</string>
     <string name="settings_player_appearance_page_description">Secțiunea de aspect conține setări pentru aspectul vizual al jucătorului</string>
-    <string name="settings_player_appearance_presets_preview_description">Previzualizările vor fi de slabă calitate</string>
-    <string name="settings_player_appearance_presets_title">Presetări de aspect</string>
     <string name="settings_player_artwork_animation_enabled_label">Afișează animația miniaturii</string>
     <string name="settings_player_artwork_animation_style_label">Tip animație copertă</string>
     <string name="settings_player_artwork_carousel_label">Vizualizare carusel</string>
