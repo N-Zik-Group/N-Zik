@@ -245,4 +245,6 @@
     <string name="glass_effect_rendering_quality">Render kvalitet</string>
     <string name="image_editor_original">Opprinnelig forhold</string>
     <string name="image_editor_apply">Bruk bilde</string>
+    <string name="theme_store_title">Tema Butikk</string>
+    <string name="theme_store_preview_description">Discoder, appliserer og del temaer for å tilpasse N-zik.</string>
 </resources>
