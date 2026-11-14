@@ -245,4 +245,6 @@
     <string name="glass_effect_rendering_quality">Renderar kvalitet</string>
     <string name="image_editor_original">Ursprungligt förhållande</string>
     <string name="image_editor_apply">Använd bild</string>
+    <string name="theme_store_title">Butik för tema</string>
+    <string name="theme_store_preview_description">Upptäck, applicera och dela teman för att anpassa N-Zik.</string>
 </resources>
