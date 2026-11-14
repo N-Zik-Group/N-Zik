@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="theme_preview_gallery_description">See how your theme looks across N-Zik with Normal and Glass previews.</string>
+    <string name="theme_store_preview_section">Theme previews</string>
     <string name="theme_preview_generate">Generate preview images</string>
     <string name="theme_preview_replace">Replace image</string>
     <string name="theme_preview_scene_failed">Could not capture %1$s.</string>

@@ -214,7 +214,7 @@ internal fun GlassSettingsContent(
                         Column {
                             HeaderWithIcon(
                                 title = stringResource(R.string.glass_effect_title),
-                                iconId = R.drawable.color_palette,
+                                iconId = R.drawable.droplet,
                                 enabled = false,
                                 showIcon = true,
                                 modifier = Modifier,

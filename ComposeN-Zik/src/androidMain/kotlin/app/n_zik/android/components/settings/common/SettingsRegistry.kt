@@ -36,7 +36,7 @@ val SettingsUpdateItem = SettingsPageItem(
 /** Dedicated Glass destination in the same Global group as Theme and Interface. */
 val SettingsGlassItem = SettingsPageItem(
     labelRes = R.string.glass_effect_title,
-    iconRes = R.drawable.color_palette,
+    iconRes = R.drawable.droplet,
     descriptionRes = R.string.glass_effect_summary,
     group = 3,
     route = SETTINGS_GLASS_ROUTE,

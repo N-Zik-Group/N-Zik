@@ -26,6 +26,13 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.navigation.NavController
+import app.n_zik.android.components.navigation.Skeleton
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+import androidx.compose.ui.text.style.TextAlign
+import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.SettingsSectionCard
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -147,6 +154,39 @@ open class ThemePreviewActivity : ComponentActivity() {
 
         fun intent(context: Context, document: String? = null): Intent =
             Intent(context, ThemePreviewActivity::class.java).putExtra(Document, document)
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class, ExperimentalTextApi::class, ExperimentalComposeUiApi::class)
+@androidx.annotation.OptIn(UnstableApi::class)
+@Composable
+internal fun ThemeStoreScreen(navController: NavController, miniPlayer: @Composable () -> Unit) {
+    val context = LocalContext.current
+    val title = stringResource(R.string.theme_store_title)
+    val floating = NavigationBarPosition.BottomFloating.isCurrent()
+    val bottom = Dimensions.navBarBottomPadding(floating) + if (floating) 10.dp else 15.dp
+    Skeleton(navController = navController, topInsetHandledByContent = true, miniPlayer = miniPlayer,
+        navBarContent = { item -> item(0, title, R.drawable.ui) }) { _ ->
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = bottom))) {
+            item {
+                app.n_zik.android.ui.components.themed.HeaderWithIcon(
+                    title = title, iconId = R.drawable.color_palette, enabled = false, modifier = Modifier, onClick = {},
+                )
+                SettingsDescription(
+                    text = stringResource(R.string.theme_store_preview_description),
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                )
+            }
+            item {
+                app.n_zik.android.components.settings.common.OtherSettingsEntry(
+                    title = stringResource(R.string.theme_store_preview_section),
+                    text = "",
+                    icon = R.drawable.ui,
+                    onClick = { context.startActivity(ThemePreviewActivity.intent(context)) },
+                )
+            }
+        }
     }
 }
 
@@ -462,7 +502,7 @@ private fun GalleryActions(
     }
 
     LazyColumn(
-        Modifier.fillMaxSize().appearanceBackground().statusBarsPadding().navigationBarsPadding().padding(horizontal = 16.dp),
+        Modifier.fillMaxSize().appearanceBackground().statusBarsPadding().navigationBarsPadding(),
     ) {
         item {
             app.n_zik.android.ui.components.themed.HeaderWithIcon(
@@ -473,9 +513,22 @@ private fun GalleryActions(
                 modifier = Modifier,
                 onClick = {},
             )
-            UiButton(onClick = onGenerate) { PreviewText(stringResource(R.string.theme_preview_generate)) }
-            if (failed != null) PreviewText(stringResource(R.string.theme_preview_scene_failed, failed.name))
-            if (replacementFailed) PreviewText(stringResource(R.string.theme_preview_replacement_failed))
+            SettingsDescription(
+                text = stringResource(R.string.theme_preview_gallery_description),
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+            )
+        }
+        item {
+            SettingsSectionCard(
+                title = stringResource(R.string.theme_store_preview_section),
+                icon = R.drawable.color_palette,
+                content = {
+                    UiButton(onClick = onGenerate) { PreviewText(stringResource(R.string.theme_preview_generate)) }
+                    if (failed != null) PreviewText(stringResource(R.string.theme_preview_scene_failed, failed.name))
+                    if (replacementFailed) PreviewText(stringResource(R.string.theme_preview_replacement_failed))
+                },
+            )
         }
         items(gallery.entries.toList(), key = { it.key.name }) { (target, file) ->
             var bitmap by remember(file, file.lastModified()) { mutableStateOf<Bitmap?>(null) }
@@ -485,7 +538,7 @@ private fun GalleryActions(
                     android.graphics.BitmapFactory.decodeFile(file.path, options)
                 }
             }
-            Column {
+            Column(Modifier.padding(horizontal = 16.dp)) {
                 PreviewText(target.name)
                 bitmap?.let { Image(it.asImageBitmap(), target.name, Modifier.fillMaxWidth().height(260.dp)) }
                 UiButton(onClick = {

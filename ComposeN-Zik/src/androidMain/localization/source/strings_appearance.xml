@@ -255,5 +255,5 @@
     <string name="image_editor_original">Original ratio</string>
     <string name="image_editor_apply">Use image</string>
     <string name="theme_store_title">Theme Store</string>
-    <string name="theme_store_preview_description">Preview themes on real N-Zik screens with demo content</string>
+    <string name="theme_store_preview_description">Discover, apply, and share themes to personalize N-Zik.</string>
 </resources>

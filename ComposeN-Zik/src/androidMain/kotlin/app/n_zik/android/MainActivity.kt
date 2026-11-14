@@ -3272,13 +3272,13 @@ val LocalBottomBarOffset = staticCompositionLocalOf<State<Float>> { mutableState
 val LocalDownloadStatesMap = staticCompositionLocalOf<Map<String, app.n_zik.android.enums.DownloadedStateMedia>> { emptyMap() }
 
 /**
- * Routes where the full-screen sheet (mini-player included) must be hidden: the Rewind
- * deck (plain or with a query prefix) and the OTA updater screen. Pure function of the
- * current back-stack route so it can be tested without a nav host.
+ * Routes where the player sheet and mini-player slide out of view.
  */
 internal fun isMiniplayerHiddenRoute(currentRoute: String?): Boolean =
     currentRoute?.let { route ->
         route == NavRoutes.rewind.name ||
             route.startsWith("${NavRoutes.rewind.name}?") ||
-            route == NavRoutes.updater.name
+            route == NavRoutes.updater.name ||
+            route == NavRoutes.notifications.name ||
+            route == NavRoutes.themeStore.name
     } ?: false

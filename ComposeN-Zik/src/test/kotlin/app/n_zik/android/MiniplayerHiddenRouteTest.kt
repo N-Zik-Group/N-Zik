@@ -25,6 +25,8 @@ class MiniplayerHiddenRouteTest {
     @Test
     fun `updater route hides the miniplayer`() {
         assertTrue(isMiniplayerHiddenRoute(NavRoutes.updater.name))
+        assertTrue(isMiniplayerHiddenRoute(NavRoutes.notifications.name))
+        assertTrue(isMiniplayerHiddenRoute(NavRoutes.themeStore.name))
     }
 
     @Test

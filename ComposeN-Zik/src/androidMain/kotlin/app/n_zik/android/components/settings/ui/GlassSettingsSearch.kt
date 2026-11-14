@@ -13,7 +13,7 @@ internal data class GlassSearchOption(
     val fallback: String? = null,
 )
 
-internal val GlassSearchParent = SettingsCardRegistryEntry(1, R.string.glass_effect_title, R.drawable.color_palette, "glass")
+internal val GlassSearchParent = SettingsCardRegistryEntry(1, R.string.glass_effect_title, R.drawable.droplet, "glass")
 
 internal val GlassSearchOptions: List<GlassSearchOption> = buildList {
     fun option(name: String, label: Int, section: String, sectionTitle: Int,

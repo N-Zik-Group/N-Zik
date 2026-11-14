@@ -267,3 +267,11 @@ Fixed:
 - fix(navigation): keep Home toolbars above the AppHeader Glass during transitions
   - Slide and fade the title, toolbar and chips from the AppHeader edge while keeping the page reflection live.
   - Keep the backdrop available when filters reload and prevent a render loop between the page and toolbar.
+
+Added:
+- feat(themes): add Normal and Glass preview capture with demo content for 12 N-Zik views.
+- feat(notifications): add an in-app inbox with an unread badge, Android actions, details and progress.
+
+Improved:
+- improve(notifications): preload existing notifications, animate arrivals and dismissals, and support swipe and Clear all.
+- improve(navigation): reuse the Rewind mini-player transition for Notifications and Theme Store, and restore the app header after Clear all.

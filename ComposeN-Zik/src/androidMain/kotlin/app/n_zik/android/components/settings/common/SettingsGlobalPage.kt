@@ -251,17 +251,22 @@ internal fun GlobalPageItemRow(
     testTag: String = if (item == SettingsUpdateItem) "settings_global_update" else "settings_global_category_${item.categoryId ?: item.route ?: item.tab}",
 ) {
     if (item != SettingsUpdateItem) {
+        val betaTag = when (item) {
+            SettingsGlassItem -> "settings.glass.beta"
+            SettingsThemeStoreItem -> "settings.theme_store.beta"
+            else -> null
+        }
         OtherSettingsEntry(
             title = stringResource(item.labelRes),
             text = "",
             icon = item.iconRes,
             modifier = Modifier.clip(uiRoundnessShape()).testTag(testTag),
             onClick = { onItemSelected(item) },
-            titlePrefix = if (item == SettingsGlassItem) ({
+            titlePrefix = betaTag?.let { tag -> {
                 HeaderBadgeBox(stringResource(R.string.updates_build_beta_label), colorPalette().accent,
-                    modifier = Modifier.testTag("settings.glass.beta"),
+                    modifier = Modifier.testTag(tag),
                     glassSettings = app.n_zik.android.components.glass.rememberGlassSettings())
-            }) else null,
+            } },
         )
     } else {
         UpdateRow(item = item, onItemSelected = onItemSelected, testTag = testTag)

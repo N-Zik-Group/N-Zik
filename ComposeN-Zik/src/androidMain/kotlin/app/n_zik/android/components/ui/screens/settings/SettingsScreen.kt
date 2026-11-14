@@ -38,7 +38,6 @@ import app.n_zik.android.components.settings.network.NetworkSettings
 import app.n_zik.android.components.settings.other.OtherSettings
 import app.n_zik.android.components.settings.ui.UiSettings
 import app.n_zik.android.components.settings.ui.GlassSettingsPage
-import app.n_zik.android.components.settings.appearance.preview.ThemePreviewActivity
 import app.n_zik.android.components.settings.common.SETTINGS_GLASS_ROUTE
 import app.n_zik.android.components.settings.common.SETTINGS_THEME_STORE_ROUTE
 import app.n_zik.android.components.settings.common.isGlassSettingsLink
@@ -151,7 +150,7 @@ fun SettingsScreen(
                         } ?: item.route?.let { route ->
                             when (route) {
                                 SETTINGS_GLASS_ROUTE -> innerNavController.navigate(route)
-                                SETTINGS_THEME_STORE_ROUTE -> context.startActivity(ThemePreviewActivity.intent(context))
+                                SETTINGS_THEME_STORE_ROUTE -> navController.navigate(app.n_zik.android.enums.NavRoutes.themeStore.name)
                                 else -> navController.navigate(route)
                             }
                         }

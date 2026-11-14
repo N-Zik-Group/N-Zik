@@ -5,7 +5,7 @@ internal fun pageOwnsChromeInsets(route: String?): Boolean =
     route?.substringBefore('/')?.substringBefore('?') in scrollInsetRoutes
 
 private val scrollInsetRoutes = setOf(
-    "home", "settings", "bridgeServer", "listenTogether", "profiles",
+    "home", "settings", "bridgeServer", "listenTogether", "profiles", "notifications", "themeStore",
     "artistInsights", "albumInsights",
     "album", "artist", "playlist", "localPlaylist", "podcast", "mood", "moodsPage",
     "newAlbums", "artistAlbums", "artistPlaylists", "artistVideos",

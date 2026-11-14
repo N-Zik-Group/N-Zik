@@ -4,6 +4,25 @@ import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.usesGlassMaterial
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.zIndex
+import android.app.NotificationManager
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.offset
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import app.n_zik.android.typography
+import app.n_zik.android.components.ui.screens.notifications.InboxPreferences
+import app.n_zik.android.components.ui.screens.notifications.InboxReadKey
+import app.n_zik.android.components.ui.screens.notifications.inboxEntries
+import app.n_zik.android.components.ui.screens.notifications.inboxIdentity
+import kotlinx.coroutines.delay
 
 import android.content.Intent
 import androidx.compose.ui.res.stringResource
@@ -365,6 +384,51 @@ fun ActionBar(
     val showHeaderSearch = shouldShowSearchShortcut(currentRoute)
     val sideSearchProgress = LocalSideHeaderSearchProgress.current ?: headerSearchJoinProgress(showHeaderSearch)
     val hasSearchCell = sideSearchProgress.value > 0f
+    val profileIndex = if (hasSearchCell) 2 else 1
+    val context = LocalContext.current
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    var unread by remember { mutableStateOf(0) }
+    val isPreview = app.n_zik.android.components.settings.appearance.preview.LocalThemePreview.current != null
+    LaunchedEffect(context, lifecycle, isPreview) {
+        if (!isPreview) lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            val manager = context.getSystemService(NotificationManager::class.java)
+            val preferences = context.getSharedPreferences(InboxPreferences, 0)
+            while (true) {
+                val read = preferences.getStringSet(InboxReadKey, emptySet()).orEmpty()
+                unread = manager.activeNotifications.toList().inboxEntries().count { it.inboxIdentity() !in read }
+                delay(1_000)
+            }
+        }
+    }
+    val openNotifications: () -> Unit = {
+        navController.navigate(NavRoutes.notifications.name) { launchSingleTop = true }
+    }
+    val notificationIcon: @Composable () -> Unit = {
+        val palette = colorPalette()
+        val iconSize = if (glass.usesGlassMaterial(GlassArea.Header)) GlassActionIconSize else 24.dp
+        Box(Modifier.size(HeaderActionCanvasSize), contentAlignment = Alignment.Center) {
+            Icon(painterResource(R.drawable.notification2), stringResource(R.string.notification_inbox_title),
+                modifier = Modifier.size(iconSize))
+            if (unread > 0) {
+                val label = stringResource(R.string.notification_inbox_unread, unread)
+                BasicText(
+                    text = if (unread > 99) "99+" else unread.toString(),
+                    modifier = Modifier.align(Alignment.TopEnd)
+                        .offset(x = (-5).dp, y = 5.dp)
+                        .zIndex(1f)
+                        .defaultMinSize(minWidth = 14.dp)
+                        .background(palette.accent, CircleShape)
+                        .padding(horizontal = 3.dp)
+                        .semantics { contentDescription = label },
+                    style = typography().xxs.copy(color = palette.onAccent, textAlign = androidx.compose.ui.text.style.TextAlign.Center),
+                )
+            }
+        }
+    }
+    val notificationAction: @Composable () -> Unit = {
+        GlassActionGroupItem(onClick = openNotifications, groupIndex = 0,
+            nativeIndication = !glass.usesGlassMaterial(GlassArea.Header)) { notificationIcon() }
+    }
     val profileContent: @Composable () -> Unit = {
         val face = activeFace
         ProfileAvatarFrame(size = 28.dp, area = GlassArea.Header, settings = glass) {
@@ -377,8 +441,8 @@ fun ActionBar(
     CompositionLocalProvider(LocalGlassActionCellSize provides DpSize(HeaderActionCanvasSize, HeaderActionCanvasSize)) {
     if (vertical) {
         GlassVerticalActionGroup(glass, GlassArea.Header, trailingTrigger = menuTrigger,
-            actionCount = if (sideSearchProgress.value > 0f) 2 else 1,
-            leadingActionJoinProgress = sideSearchProgress.value) {
+            actionCount = profileIndex + 1) {
+            notificationAction()
             VerticalHeaderSearchVisibility(sideSearchProgress, fade = !glass.usesGlassMaterial(GlassArea.Header)) {
                 GlassActionGroupItem(onClick = { navController.navigate(NavRoutes.search.name) },
                     nativeIndication = !glass.usesGlassMaterial(GlassArea.Header)) {
@@ -394,33 +458,34 @@ fun ActionBar(
     } else if (glass.usesGlassMaterial(GlassArea.Header)) {
         GlassActionGroup(
             glass, GlassArea.Header, trailingTrigger = menuTrigger,
-            menuActionCount = if (hasSearchCell) 2 else 1,
-            menuTriggerIndex = if (hasSearchCell) 1 else 0,
-            leadingActionJoinProgress = sideSearchProgress.value,
+            menuActionCount = profileIndex + 1,
+            menuTriggerIndex = profileIndex,
             filmColor = surfaceColor(colorPalette().background1),
         ) {
+            notificationAction()
             HorizontalHeaderSearchVisibility(sideSearchProgress) {
                 GlassActionGroupItem(
                     onClick = { navController.navigate(NavRoutes.search.name) },
-                    groupIndex = 0,
+                    groupIndex = 1,
                 ) {
                     Icon(painterResource(R.drawable.search), stringResource(R.string.search_title), modifier = Modifier.size(GlassActionIconSize))
                 }
             }
-            GlassActionGroupItem(onClick = { expanded = !expanded }, menuTrigger = menuTrigger, groupIndex = if (hasSearchCell) 1 else 0) {
+            GlassActionGroupItem(onClick = { expanded = !expanded }, menuTrigger = menuTrigger, groupIndex = profileIndex) {
                 profileContent()
             }
         }
     } else {
         GlassActionGroup(glass, GlassArea.Header, trailingTrigger = menuTrigger,
-            menuActionCount = if (hasSearchCell) 2 else 1,
-            menuTriggerIndex = if (hasSearchCell) 1 else 0, drawSurface = false) {
+            menuActionCount = profileIndex + 1,
+            menuTriggerIndex = profileIndex, drawSurface = false) {
+            GlassActionGroupNativeItem(0) { notificationAction() }
             HorizontalHeaderSearchVisibility(sideSearchProgress, fade = true) {
-                GlassActionGroupNativeItem(0) {
-                    HeaderIcon(R.drawable.search, modifier = Modifier.padding(end = 8.dp)) { navController.navigate(NavRoutes.search.name) }
+                GlassActionGroupNativeItem(1) {
+                    HeaderIcon(R.drawable.search) { navController.navigate(NavRoutes.search.name) }
                 }
             }
-            GlassActionGroupNativeItem(if (hasSearchCell) 1 else 0) {
+            GlassActionGroupNativeItem(profileIndex) {
                 val sourceShape = uiRoundnessShape()
                 SideEffect {
                     menuTrigger.content = profileContent

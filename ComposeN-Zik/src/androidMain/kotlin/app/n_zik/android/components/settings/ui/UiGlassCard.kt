@@ -25,7 +25,7 @@ internal fun UiGlassCard() {
     var showPerformanceWarning by rememberSaveable(store.profileId) { mutableStateOf(false) }
     val label = stringResource(R.string.glass_effect_title)
     val enabledLabel = stringResource(R.string.glass_effect_enabled_title)
-    SettingsSectionCard(title = label, icon = R.drawable.color_palette, content = {
+    SettingsSectionCard(title = label, icon = R.drawable.droplet, content = {
         OtherSwitchSettingEntry(
             title = enabledLabel,
             modifier = Modifier.testTag("settings.glass.master").settingsSearchTarget("glass.master"),
@@ -34,7 +34,7 @@ internal fun UiGlassCard() {
             onCheckedChange = { requested ->
                 if (requested) showPerformanceWarning = true else enabled = false
             },
-            icon = R.drawable.color_palette,
+            icon = R.drawable.droplet,
         )
     })
     DialogPresence(showPerformanceWarning) {

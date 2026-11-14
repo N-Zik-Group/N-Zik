@@ -32,6 +32,8 @@ enum class NavRoutes {
     artistPlaylists,
     profiles,
     listenTogether,
+    notifications,
+    themeStore,
     bridgeServer,
     updater;
 

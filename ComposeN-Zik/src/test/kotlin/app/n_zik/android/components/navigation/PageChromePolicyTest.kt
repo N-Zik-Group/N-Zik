@@ -6,7 +6,7 @@ import org.junit.Test
 
 class PageChromePolicyTest {
     @Test fun migratedPagesOwnInsetsAndScrollWithOptionalArguments() {
-        for (route in listOf("home", "settings", "bridgeServer", "listenTogether", "profiles",
+        for (route in listOf("home", "settings", "bridgeServer", "listenTogether", "profiles", "notifications",
             "artistInsights/{id}", "albumInsights/album?source=home",
             "album/{id}", "artist/{id}", "playlist/{id}", "localPlaylist/{id}",
             "podcast/{id}", "mood/{id}", "moodsPage", "newAlbums", "artistAlbums/{id}",

@@ -57,6 +57,7 @@ internal fun HeaderIcon(
             imageVector = ImageVector.vectorResource(iconId),
             contentDescription = stringResource(when (iconId) {
                 R.drawable.search -> R.string.search_title
+                R.drawable.notification2 -> R.string.notification_inbox_title
                 R.drawable.chevron_back -> R.string.glass_effect_back
                 else -> R.string.common_menu_label
             }),

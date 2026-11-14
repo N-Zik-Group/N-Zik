@@ -779,6 +779,13 @@ fun AppNavigation(
             )
         }
 
+        chromeComposable(route = NavRoutes.notifications.name) {
+            app.n_zik.android.components.ui.screens.notifications.NotificationsScreen(navController, miniPlayer)
+        }
+        chromeComposable(route = NavRoutes.themeStore.name) {
+            app.n_zik.android.components.settings.appearance.preview.ThemeStoreScreen(navController, miniPlayer)
+        }
+
         // Local PC bridge server page
         chromeComposable(route = NavRoutes.bridgeServer.name) {
             BridgeServerScreen(

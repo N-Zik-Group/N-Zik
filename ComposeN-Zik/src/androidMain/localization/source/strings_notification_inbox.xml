@@ -1,0 +1,7 @@
+<resources>
+    <string name="notification_inbox_title">Notifications</string>
+    <string name="notification_inbox_empty">No notifications</string>
+    <string name="notification_inbox_open">Open</string>
+    <string name="notification_inbox_unread">Unread notifications: %1$d</string>
+    <string name="notification_inbox_clear_all">Clear all</string>
+</resources>
