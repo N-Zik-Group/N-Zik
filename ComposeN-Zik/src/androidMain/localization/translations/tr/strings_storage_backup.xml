@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="storage_image_quality_title">Image quality</string>
-    <string name="storage_image_quality_description">Applies to online artwork and newly added covers and profile photos. Original uses the highest quality available and can use more storage and data.</string>
-    <string name="storage_image_quality_optimized">Optimized</string>
-    <string name="storage_image_quality_original">Original</string>
+    <string name="storage_image_quality_title">Resim kalitesi</string>
+    <string name="storage_image_quality_description">Çevrimiçi görseller ile yeni eklenen kapak resimleri ve profil fotoğrafları için geçerlidir. Orijinal seçeneği mevcut en yüksek kaliteyi kullanır ve daha fazla depolama alanı ile veri tüketebilir.</string>
+    <string name="storage_image_quality_optimized">Optimize edildi</string>
+    <string name="storage_image_quality_original">Orijinal</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Depolama</string>
     <string name="storage_breakdown_tab_total">Toplam</string>
