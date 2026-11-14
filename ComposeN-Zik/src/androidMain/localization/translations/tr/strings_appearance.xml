@@ -245,6 +245,6 @@
     <string name="glass_effect_rendering_quality">İşleme kalitesi</string>
     <string name="image_editor_original">Orijinal oran</string>
     <string name="image_editor_apply">Resim Kullan</string>
-    <string name="theme_store_title">Theme Store</string>
-    <string name="theme_store_preview_description">Discover, apply, and share themes to personalize N-Zik.</string>
+    <string name="theme_store_title">Tema Mağazası</string>
+    <string name="theme_store_preview_description">N-Zik’i kişiselleştirmek için temaları keşfedin, uygulayın ve paylaşın.</string>
 </resources>
