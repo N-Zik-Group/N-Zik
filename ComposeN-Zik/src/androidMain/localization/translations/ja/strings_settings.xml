@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">均等に広がります</string>
     <string name="settings_player_album_cover_visible_label">アルバムカバーを表示</string>
     <string name="settings_player_appearance_page_description">外観セクションにはプレイヤーの視覚的な外観の設定が含まれています</string>
-    <string name="settings_player_appearance_presets_preview_description">プレビューは低品質になります</string>
-    <string name="settings_player_appearance_presets_title">外観のプリセット</string>
     <string name="settings_player_artwork_animation_enabled_label">カバーサムネイルのアニメーションを表示</string>
     <string name="settings_player_artwork_animation_style_label">カバーアニメーションの種類</string>
     <string name="settings_player_artwork_carousel_label">カルーセルビュー</string>
