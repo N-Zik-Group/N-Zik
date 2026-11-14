@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">Spaced Evenly</string>
     <string name="settings_player_album_cover_visible_label">Show Album Cover</string>
     <string name="settings_player_appearance_page_description">Η ενότητα εμφάνισης περιέχει ρυθμίσεις για την οπτική εμφάνιση του παίκτη</string>
-    <string name="settings_player_appearance_presets_preview_description">Οι προεπισκοπήσεις θα είναι χαμηλής ποιότητας</string>
-    <string name="settings_player_appearance_presets_title">Προεπιλογές Εμφάνισης</string>
     <string name="settings_player_artwork_animation_enabled_label">Εμφάνιση εφέ επισκόπησης εξώφυλλου</string>
     <string name="settings_player_artwork_animation_style_label">Τύπος κίνησης κάλυψης</string>
     <string name="settings_player_artwork_carousel_label">Carousel View</string>
