@@ -245,4 +245,6 @@
     <string name="glass_effect_rendering_quality">Якість візуалізації</string>
     <string name="image_editor_original">Початкове співвідношення</string>
     <string name="image_editor_apply">Використовувати зображення</string>
+    <string name="theme_store_title">Магазин тем</string>
+    <string name="theme_store_preview_description">Виявлення, застосовуються та поширюються теми, щоб персоналізувати N-Zk.</string>
 </resources>
