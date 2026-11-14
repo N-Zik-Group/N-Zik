@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">Rymd jämnt</string>
     <string name="settings_player_album_cover_visible_label">Visa skivomslag</string>
     <string name="settings_player_appearance_page_description">Avsnittet utseende innehåller inställningar för spelarens visuella utseende</string>
-    <string name="settings_player_appearance_presets_preview_description">Förhandsvisningar kommer att vara i låg kvalitet</string>
-    <string name="settings_player_appearance_presets_title">Förinställningar för utseende</string>
     <string name="settings_player_artwork_animation_enabled_label">Visa miniatyrbildsanimering för omslag</string>
     <string name="settings_player_artwork_animation_style_label">Typ av omslagsanimering</string>
     <string name="settings_player_artwork_carousel_label">Karusell vy</string>
