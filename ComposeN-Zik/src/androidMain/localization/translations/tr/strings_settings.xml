@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">Eşit aralıklı</string>
     <string name="settings_player_album_cover_visible_label">Albüm kapağını göster</string>
     <string name="settings_player_appearance_page_description">Görünüm bölümü, oynatıcının görsel görünümüyle ilgili ayarları içerir</string>
-    <string name="settings_player_appearance_presets_preview_description">Önizlemeler düşük kalitede olacak</string>
-    <string name="settings_player_appearance_presets_title">Görünüm Ön Ayarları</string>
     <string name="settings_player_artwork_animation_enabled_label">Kapak küçük resim animasyonunu göster</string>
     <string name="settings_player_artwork_animation_style_label">Kapak animasyon türü</string>
     <string name="settings_player_artwork_carousel_label">Döngüsel (Carousel) görünüm</string>
