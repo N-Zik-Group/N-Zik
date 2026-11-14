@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">Gleichmäßiger Abstand</string>
     <string name="settings_player_album_cover_visible_label">Albumcover anzeigen</string>
     <string name="settings_player_appearance_page_description">Der Aussehen Bereich enthält Einstellungen für das Aussehen des Spielers</string>
-    <string name="settings_player_appearance_presets_preview_description">Vorschau in niedriger Qualität</string>
-    <string name="settings_player_appearance_presets_title">Erscheinungsbild Voreinstellungen</string>
     <string name="settings_player_artwork_animation_enabled_label">Animation der Miniaturansichten anzeigen</string>
     <string name="settings_player_artwork_animation_style_label">Art der Miniaturansicht-Animation</string>
     <string name="settings_player_artwork_carousel_label">Karussellansicht</string>
