@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_preview_gallery_description">شاهد كيف يبدو السمة الخاصة بك عبر N-Zik مع المعاينات العادية والزجاجية.</string>
+    <string name="theme_store_preview_section">معاينات السمة</string>
+    <string name="theme_preview_generate">إنشاء صور المعاينة</string>
+    <string name="theme_preview_replace">استبدال الصورة</string>
+    <string name="theme_preview_scene_failed">تعذر التقاط %1$s.</string>
+    <string name="theme_preview_replacement_failed">اختر صورة عمودية صالحة تصل إلى 16 ميغابيكسل.</string>
+</resources>
