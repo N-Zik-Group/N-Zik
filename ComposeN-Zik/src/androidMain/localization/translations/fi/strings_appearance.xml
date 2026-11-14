@@ -245,4 +245,6 @@
     <string name="glass_effect_rendering_quality">Laadun tekeminen</string>
     <string name="image_editor_original">Alkuperäinen suhde</string>
     <string name="image_editor_apply">Käytä kuvaa</string>
+    <string name="theme_store_title">Teeman Kauppa</string>
+    <string name="theme_store_preview_description">Löydä, soveltaa ja jakaa teemoja personoida N-Zik.</string>
 </resources>
