@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">Шифрований вечір</string>
     <string name="settings_player_album_cover_visible_label">Показати обкладинку альбому</string>
     <string name="settings_player_appearance_page_description">Зовнішній інтерфейс містить налаштування зовнішнього вигляду гравця</string>
-    <string name="settings_player_appearance_presets_preview_description">Попередній перегляд буде в низькій якості</string>
-    <string name="settings_player_appearance_presets_title">Пресети зовнішнього вигляду</string>
     <string name="settings_player_artwork_animation_enabled_label">Показувати анімацію мініатюр обкладинки</string>
     <string name="settings_player_artwork_animation_style_label">Тип анімації обкладинки</string>
     <string name="settings_player_artwork_carousel_label">Карусель впрод</string>
