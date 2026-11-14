@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">Tasainen väli</string>
     <string name="settings_player_album_cover_visible_label">Näytä albumin kansi</string>
     <string name="settings_player_appearance_page_description">Ulkonäkö osio sisältää asetukset pelaajan visuaaliselle ulkonäölle</string>
-    <string name="settings_player_appearance_presets_preview_description">Esikatselut ovat heikkolaatuisia</string>
-    <string name="settings_player_appearance_presets_title">Oletusulkonäkö</string>
     <string name="settings_player_artwork_animation_enabled_label">Näytä kannen pienoiskuvan animaatio</string>
     <string name="settings_player_artwork_animation_style_label">Kansianimaation tyyli</string>
     <string name="settings_player_artwork_carousel_label">Karusellin näkymä</string>
