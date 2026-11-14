@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">Mellomrom jevnt</string>
     <string name="settings_player_album_cover_visible_label">Vis albumomslag</string>
     <string name="settings_player_appearance_page_description">Utseendet inneholder innstillinger for spillerens visuelle utseende</string>
-    <string name="settings_player_appearance_presets_preview_description">Forhåndsvisninger vil bli i lav kvalitet</string>
-    <string name="settings_player_appearance_presets_title">Forhåndsinstillinger for utseende</string>
     <string name="settings_player_artwork_animation_enabled_label">Vis cover miniatyrbilde animasjon</string>
     <string name="settings_player_artwork_animation_style_label">Cover animasjonstype</string>
     <string name="settings_player_artwork_carousel_label">Karusellvisning</string>
