@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_preview_gallery_description">Vezi cum arată tema ta prin N-Zik cu previzualizări normale şi de sticlă.</string>
+    <string name="theme_store_preview_section">Previzualizări temă</string>
+    <string name="theme_preview_generate">Generează imagini de previzualizare</string>
+    <string name="theme_preview_replace">Înlocuiește imaginea</string>
+    <string name="theme_preview_scene_failed">Nu s-a putut captura %1$s.</string>
+    <string name="theme_preview_replacement_failed">Alegeți o imagine de portret validă de până la 16 megapixeli.</string>
+</resources>
