@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_preview_generate">Generate preview images</string>
+    <string name="theme_preview_replace">Replace image</string>
+    <string name="theme_preview_scene_failed">Could not capture %1$s.</string>
+    <string name="theme_preview_replacement_failed">Choose a valid portrait image up to 16 megapixels.</string>
+</resources>

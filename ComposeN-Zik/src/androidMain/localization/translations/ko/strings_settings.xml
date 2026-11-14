@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">Spaced evenly</string>
     <string name="settings_player_album_cover_visible_label">Show album cover</string>
     <string name="settings_player_appearance_page_description">The appearance section contains settings for the player\'s visual appearance</string>
-    <string name="settings_player_appearance_presets_preview_description">미리보기는 낮은 품질로 보입니다</string>
-    <string name="settings_player_appearance_presets_title">디자인 프리셋</string>
     <string name="settings_player_artwork_animation_enabled_label">커버 썸네일 애니메이션 표시</string>
     <string name="settings_player_artwork_animation_style_label">커버 애니메이션 유형</string>
     <string name="settings_player_artwork_carousel_label">Carousel view</string>

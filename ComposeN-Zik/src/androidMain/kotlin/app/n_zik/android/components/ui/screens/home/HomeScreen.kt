@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.screens.home
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import android.app.Activity
 import android.os.Build
 import androidx.activity.compose.BackHandler
@@ -208,6 +209,7 @@ fun HomeScreen(
     shortcutDelivery: Long = 0L,
     onShortcutConsumed: (Long) -> Unit = {},
 ) {
+    val preview = LocalThemePreview.current
     val saveableStateHolder = rememberSaveableStateHolder()
 
     val preferences = LocalContext.current.preferences
@@ -248,7 +250,8 @@ fun HomeScreen(
 
     // Check if services are ready
     val binder = LocalPlayerServiceBinder.current
-    val isReady by rememberHomeEntranceReady(binder)
+    val servicesReady by rememberHomeEntranceReady(binder)
+    val isReady = preview != null || servicesReady
 
     // The search shortcut is not a tab: open the search screen on top of the home tab.
     // Home can leave composition between deliveries. Save which request it already handled.
@@ -329,7 +332,7 @@ fun HomeScreen(
     val drawHomeGlassPane = LocalDrawHomeGlassPane.current
     val selectedHomeTab = activeTabs.getOrNull(tabIndex)
     LaunchedEffect(selectedHomeTab) {
-        app.n_zik.android.extensions.discord.DiscordUiState.currentHomeTab.value = selectedHomeTab
+        if (preview == null) app.n_zik.android.extensions.discord.DiscordUiState.currentHomeTab.value = selectedHomeTab
     }
     Box(
         modifier = Modifier

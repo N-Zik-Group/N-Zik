@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">Uniformemente Espaçado</string>
     <string name="settings_player_album_cover_visible_label">Mostrar capa do álbum</string>
     <string name="settings_player_appearance_page_description">A seção de aparência contém configurações para a aparência visual do jogador</string>
-    <string name="settings_player_appearance_presets_preview_description">Pré-visualizações estarão em baixa qualidade</string>
-    <string name="settings_player_appearance_presets_title">Predefinições de Aparência</string>
     <string name="settings_player_artwork_animation_enabled_label">Mostrar animação de miniatura da capa</string>
     <string name="settings_player_artwork_animation_style_label">Animação da capa</string>
     <string name="settings_player_artwork_carousel_label">Visão de carrossel</string>

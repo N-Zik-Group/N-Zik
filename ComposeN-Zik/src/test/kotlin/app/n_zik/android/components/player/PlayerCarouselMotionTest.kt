@@ -191,10 +191,10 @@ class PlayerCarouselMotionTest {
                     if (stacked) (-180).dp else 10.dp, stacked)
                 pager = rememberPagerState(initialPage = 2) { 5 }
                 if (landscape.value) {
-                    pager.LaunchedEffectScrollToPage(binder, 0, 2, false)
+                    pager.LaunchedEffectScrollToPage(binder.player, 0, 2, false)
                     pager.slideSettledPageEffect({ 2 }, { playbackRequests.add(it) })
                 } else {
-                    pager.LaunchedEffectScrollToPage(binder, 0, 2, false)
+                    pager.LaunchedEffectScrollToPage(binder.player, 0, 2, false)
                     pager.slideSettledPageEffect({ 2 }, { playbackRequests.add(it) })
                 }
                 VerticalPager(
@@ -245,7 +245,7 @@ class PlayerCarouselMotionTest {
         compose.mainClock.autoAdvance = false
         compose.setContent {
             pager = rememberPagerState(initialPage = 0) { 5 }
-            pager.LaunchedEffectScrollToPage(binder, 0, index.value, false)
+            pager.LaunchedEffectScrollToPage(binder.player, 0, index.value, false)
             VerticalPager(state = pager, modifier = Modifier.size(240.dp, 400.dp).testTag("syncPager")) {
                 Box(Modifier.fillMaxSize())
             }

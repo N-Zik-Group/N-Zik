@@ -1,5 +1,7 @@
 package app.n_zik.android.ui.screens.search
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.navigation.TopOverlayContentPadding
 import app.n_zik.android.components.navigation.LocalSideRailContentInsets
@@ -110,8 +112,11 @@ fun LocalSongSearch(
     // Keyed by the current text: without a key the remember keeps the first
     // flow, so the query stays frozen on the initial (empty) text and typing
     // never updates the results
-    val queryResults by remember(textFieldValue.text) {
-        Database.songTable
+    val preview = LocalThemePreview.current
+    val queryResults by remember(textFieldValue.text, preview) {
+        if (preview != null) kotlinx.coroutines.flow.flowOf(textFieldValue.text to ThemePreviewDemo.songs.filter {
+            it.title.contains(textFieldValue.text, ignoreCase = true)
+        }) else Database.songTable
                 .findAllTitleArtistContains( textFieldValue.text )
                 .distinctUntilChanged()
                 .map { textFieldValue.text to it }
@@ -168,10 +173,10 @@ fun LocalSongSearch(
 
     val songIds = remember(items) { items.map { it.id } }
     val likeStatesMap by remember(songIds) {
-        LikeStateManager.getLikeStates(songIds)
+        if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else LikeStateManager.getLikeStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
     val playlistStatesMap by remember(songIds) {
-        PlaylistStateManager.getPlaylistStates(songIds)
+        if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else PlaylistStateManager.getPlaylistStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     // Download state cache

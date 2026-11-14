@@ -105,6 +105,8 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.enums.PlaylistSongSortBy
 import app.n_zik.android.enums.RecommendationsNumber
 import app.n_zik.android.models.Song
+import app.n_zik.android.models.Playlist
+import androidx.compose.ui.res.pluralStringResource
 import app.n_zik.android.models.SongPlaylistMap
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.isUnmatched
@@ -304,25 +306,29 @@ fun LocalPlaylistSongs(
 
     // Non-vital
 
-    val thumbnailUrl = remember(playlistId) { mutableStateOf("") }
-
-    val playlist by remember(playlistId) {
-        Database.playlistTable
+    val preview = app.n_zik.android.components.settings.appearance.preview.LocalThemePreview.current
+    val thumbnailUrl = remember(playlistId, preview) {
+        mutableStateOf(if (preview == null) "" else "file:///android_asset/theme-preview/tide.jpg")
+    }
+    val playlist by remember(playlistId, preview) {
+        if (preview != null) kotlinx.coroutines.flow.flowOf(Playlist(id = playlistId, name = "Sunday Headphones"))
+        else Database.playlistTable
                 .findById( playlistId )
     }.collectAsStateWithLifecycle( null, context = NzikDispatchers.DATA )
 
     // Spec 2: generated `rewind-*` playlists are protected (Spotify principle) and get
     // the "Rewind Top" sort option; declared before the sort wiring that consumes it
     val membershipEditable by rememberUpdatedState(!forceOnDevice && playlist?.let(::canEditPlaylistMembership) == true)
-    if (!onDeviceOnly) RefreshPlaylistOnOpening(playlistId, playlist, offlineMode)
+    if (preview == null && !onDeviceOnly) RefreshPlaylistOnOpening(playlistId, playlist, offlineMode)
     val refreshOnOpen = playlistRefreshOnOpenAction(playlist)
 
     val isRewindPlaylist = playlist?.name?.let { RewindPlaylists.isRewind(it) } == true
 
     val sort = PlaylistSongsSort(playlistId, isRewind = isRewindPlaylist)
 
-    val loadedItems by remember( sort.sortBy, sort.sortOrder ) {
-        if (sort.sortBy == PlaylistSongSortBy.Downloaded) {
+    val loadedItems by remember( sort.sortBy, sort.sortOrder, preview ) {
+        if (preview != null) kotlinx.coroutines.flow.flowOf(app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo.queue)
+        else if (sort.sortBy == PlaylistSongSortBy.Downloaded) {
             val downloaded: List<String> = MyDownloadHelper.downloads
                                                            .value
                                                            .values
@@ -1087,6 +1093,7 @@ fun LocalPlaylistSongs(
         loading = loadedItems == null || filteredQuery != search.inputValue
     )
     LaunchedEffect( playlistId, playlist?.name ) {
+        if (preview != null) return@LaunchedEffect
         val thumbnailName = "thumbnail/playlist_${playlistId}"
         val presentThumbnailUrl: String? = checkFileExists(context, thumbnailName)
         if (presentThumbnailUrl != null) {
@@ -1237,7 +1244,7 @@ fun LocalPlaylistSongs(
                             disableScrollingText = disableScrollingText,
                             thumbnailUrl = thumbnailUrl.value.takeIf(String::isNotEmpty),
                             coverOverlay = {
-                                if (!it.isYoutubePlaylist || onDeviceOnly) {
+                                if (preview == null && (!it.isYoutubePlaylist || onDeviceOnly)) {
                                     OnDeviceCoverBadge(Modifier.align(Alignment.TopEnd))
                                 }
                             },
@@ -1260,7 +1267,8 @@ fun LocalPlaylistSongs(
                             items.size
                         }
                         IconInfo(
-                            title = totalSongs.toString(),
+                            title = if (preview == null) totalSongs.toString()
+                                else pluralStringResource(R.plurals.library_song_count, totalSongs, totalSongs),
                             icon = painterResource(R.drawable.musical_notes)
                         )
                         Spacer(modifier = Modifier.height(5.dp))
@@ -1367,7 +1375,7 @@ fun LocalPlaylistSongs(
 
                 val toolbarOrderPref by rememberPreference(localPlaylistToolbarOrderKey, "")
 
-                val hasUnmatchedSongs = remember(items) { items.any { (it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L)) && !it.id.startsWith(LOCAL_KEY_PREFIX) } }
+                val hasUnmatchedSongs = remember(items, preview) { preview == null && items.any { it.isUnmatched } }
 
                 val order = LocalPlaylistToolbarSettingsDialog.parseOrder(toolbarOrderPref)
 
@@ -1447,7 +1455,7 @@ fun LocalPlaylistSongs(
 
                 }
 
-                if (!forceOnDevice) GlassHomeChips(
+                if (preview == null && !forceOnDevice) GlassHomeChips(
                     chips = listOf(
                         false to stringResource(R.string.common_option_all),
                         true to stringResource(R.string.library_on_device_title),
@@ -1568,7 +1576,7 @@ fun LocalPlaylistSongs(
                             modifier = Modifier,
 
                             trailingContent = {
-                                if ((song.id.length != 11 || (song.durationText == "00:00" && song.totalPlayTimeMs == 1L)) && !song.id.startsWith(LOCAL_KEY_PREFIX)) {
+                                if (preview == null && song.isUnmatched) {
                                     Icon(
                                         painter = painterResource(R.drawable.alert),
                                         contentDescription = stringResource(R.string.song_matching_unmatched_label),

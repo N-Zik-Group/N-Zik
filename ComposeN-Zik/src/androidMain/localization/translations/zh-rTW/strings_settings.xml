@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">平均間隔</string>
     <string name="settings_player_album_cover_visible_label">顯示專輯封面</string>
     <string name="settings_player_appearance_page_description">The appearance section contains settings for the player\'s visual appearance</string>
-    <string name="settings_player_appearance_presets_preview_description">Previews will be in low quality</string>
-    <string name="settings_player_appearance_presets_title">Appearance Presets</string>
     <string name="settings_player_artwork_animation_enabled_label">Show cover thumbnail animation</string>
     <string name="settings_player_artwork_animation_style_label">Cover animation type</string>
     <string name="settings_player_artwork_carousel_label">Carousel View</string>

@@ -1,5 +1,7 @@
 package app.n_zik.android.components.player.lyrics
 
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,6 +63,13 @@ internal fun LyricsFetcher(
     enabledProviders: Set<LyricsProvider>,
     onProviderSelectionChanged: () -> Unit
 ) {
+    if (LocalThemePreview.current != null) {
+        LaunchedEffect(mediaId) {
+            onLyricsUpdated(Lyrics(mediaId, LyricsType.Synced.name, ThemePreviewDemo.lyrics))
+            onFetchingStateChanged(false)
+        }
+        return
+    }
     val context = LocalContext.current
     var previousLyricsType by remember { mutableStateOf(lyricsType) }
     var previousCheckLyrics by remember { mutableStateOf(checkLyrics) }

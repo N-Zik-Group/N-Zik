@@ -1,6 +1,8 @@
 @file:Suppress("OPT_IN_USAGE", "OPT_IN_USAGE_ERROR")
 package app.n_zik.android.components.ui.screens.home.quickpicks
 
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -96,9 +98,10 @@ fun HomeQuickPicks(
     onSettingsClick: () -> Unit,
     topContentInsetProvider: () -> Dp = { 0.dp },
 ) {
+    val preview = LocalThemePreview.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
     val context = LocalContext.current
-    val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
+    val isOnline = if (preview != null) true else NetworkQualityHelper.isNetworkAvailableComposable(context).value
 
     var playEventType by rememberPreference(playEventsTypeKey, PlayEventsType.MostPlayed)
     var selectedCountryCode by rememberPreference(selectedCountryCodeKey, Countries.ZZ)
@@ -120,7 +123,7 @@ fun HomeQuickPicks(
     var lastSelectedCountry by rememberSaveable { mutableStateOf(selectedCountryCode) }
     var currentYouTubeLoggedIn by rememberSaveable { mutableStateOf(false) }
 
-    QuickPicksInitialLoadEffect(
+    if (preview == null) QuickPicksInitialLoadEffect(
         stateKey = state,
         resolveLoggedIn = { withContext(NzikDispatchers.DATA) { isYouTubeLoggedIn() } },
         onLoggedInResolved = { currentYouTubeLoggedIn = it },
@@ -219,13 +222,13 @@ fun HomeQuickPicks(
     OfflineGatedPullRefresh(
         isOnline = isOnline,
         isRefreshing = state.refreshing.value,
-        onRefresh = { state.refresh() }
+        onRefresh = { if (preview == null) state.refresh() }
     ) {
         HomeQuickPicksContent(
             state = state,
             scrollState = scrollState,
             isOnline = isOnline,
-            refresh = { state.refresh() },
+            refresh = { if (preview == null) state.refresh() },
             navController = navController,
             onAlbumClick = onAlbumClick,
             onArtistClick = onArtistClick,
@@ -276,6 +279,7 @@ fun HomeQuickPicksContent(
     windowInsets: WindowInsets,
     topContentInsetProvider: () -> Dp = { 0.dp },
 ) {
+    val preview = LocalThemePreview.current
     val binder = LocalPlayerServiceBinder.current
     val scope = rememberCoroutineScope()
     var isQuickPicksLoading by remember { mutableStateOf(false) }
@@ -323,7 +327,7 @@ fun HomeQuickPicksContent(
             }
 
             val artistsState = persistList<Artist>("home/quickpicks/local/artists")
-            val artists by remember { Database.artistTable.sortFollowingByName().distinctUntilChanged() }.collectAsStateWithLifecycle(artistsState.value, context = NzikDispatchers.DATA)
+            val artists by remember { if (preview != null) kotlinx.coroutines.flow.flowOf(emptyList()) else Database.artistTable.sortFollowingByName().distinctUntilChanged() }.collectAsStateWithLifecycle(artistsState.value, context = NzikDispatchers.DATA)
             LaunchedEffect(artists) { artistsState.value = artists }
 
             val newReleaseAlbumsFiltered = remember(state.discoverPageInit.value, artists) {
@@ -335,7 +339,7 @@ fun HomeQuickPicksContent(
             val maxTopPlaylistItems by rememberPreference(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`)
             val maxTopPlaylistItemsCustomValue by rememberPreference(MaxTopPlaylistItemsCustomValueKey, 10)
             val myTopSongsState = persistList<Song>("home/quickpicks/local/myTopSongs")
-            val myTopSongs by remember { Database.eventTable.findSongsMostPlayedBetween(from = 0L, limit = maxTopPlaylistItems.toInt(maxTopPlaylistItemsCustomValue)) }.collectAsStateWithLifecycle(myTopSongsState.value, context = NzikDispatchers.DATA)
+            val myTopSongs by remember { if (preview != null) kotlinx.coroutines.flow.flowOf(ThemePreviewDemo.songs.take(8)) else Database.eventTable.findSongsMostPlayedBetween(from = 0L, limit = maxTopPlaylistItems.toInt(maxTopPlaylistItemsCustomValue)) }.collectAsStateWithLifecycle(myTopSongsState.value, context = NzikDispatchers.DATA)
             LaunchedEffect(myTopSongs) { myTopSongsState.value = myTopSongs }
 
             // Spec 2: local rewind-* playlists for the Quick Picks "Rewind" section —
@@ -344,7 +348,7 @@ fun HomeQuickPicksContent(
             // showMonthlyPlaylistsKey (spec 1 kept the persisted user preference).
             val showRewind by rememberPreference(showMonthlyPlaylistsKey, true)
             val rewindPlaylists by remember {
-                Database.playlistTable
+                if (preview != null) kotlinx.coroutines.flow.flowOf(emptyList()) else Database.playlistTable
                     .sortPreviewsByName()
                     .map { list ->
                         list.filter { preview ->

@@ -355,7 +355,7 @@ internal fun rememberGlassEnabled(store: GlassStore): MutableState<Boolean> =
 
 @Composable
 fun rememberGlassSettings(scope: GlassScope = LocalGlassScope.current): GlassSettings {
-    LocalGlassPreviewSettings.current?.let { return it }
+    LocalGlassPreviewSettings.current?.let { return it.copy(scope = scope) }
     val store = rememberGlassStore()
     var settings by remember(store) { mutableStateOf(store.read()) }
     val enabled by rememberGlassEnabled(store)

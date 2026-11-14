@@ -119,7 +119,7 @@ class PlayerControlsTimelineLayoutTest {
         compose.setContent { AppearanceProvider {
             Box(Modifier.requiredWidth(width.value).testTag("viewport")) {
                 Column(Modifier.padding(horizontal = inset.value)) {
-                    app.n_zik.android.utils.GetControls(binder, { 0L }, false, false, null,
+                    app.n_zik.android.utils.GetControls(binder, binder.player, { 0L }, false, false, null,
                         "transport-layout", {}, DefaultDarkColorPalette, timelineHorizontalInset = inset.value)
                 }
             }

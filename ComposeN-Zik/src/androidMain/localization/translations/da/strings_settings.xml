@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">Jævnt fordelt</string>
     <string name="settings_player_album_cover_visible_label">Vis albumcover</string>
     <string name="settings_player_appearance_page_description">Afsnittet udseende indeholder indstillinger for spillerens visuelle udseende</string>
-    <string name="settings_player_appearance_presets_preview_description">Forhåndsvisninger vil være i lav kvalitet</string>
-    <string name="settings_player_appearance_presets_title">Forudindstillinger for udseende</string>
     <string name="settings_player_artwork_animation_enabled_label">Vis animation af coverminiaturebillede</string>
     <string name="settings_player_artwork_animation_style_label">Animationstype af cover</string>
     <string name="settings_player_artwork_carousel_label">Karruselvisning</string>

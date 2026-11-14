@@ -1,5 +1,6 @@
 package app.n_zik.android.ui.screens.search
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.navigation.rememberTopContentInsetProvider
 
 import app.n_zik.android.privacy.PermissionFeature
@@ -63,10 +64,11 @@ fun SearchScreen(
     onViewPlaylist: (String) -> Unit,
     onDismiss: (() -> Unit)? = null,
 ) {
+    val preview = LocalThemePreview.current
     val saveableStateHolder = rememberSaveableStateHolder()
 
     val (tabIndex, onTabChanged) = rememberSaveable {
-        mutableStateOf(0)
+        mutableStateOf(if (preview == null) 0 else 1)
     }
 
     val (textFieldValue, onTextFieldValueChanged) = rememberSaveable(
@@ -153,7 +155,7 @@ fun SearchScreen(
 
     PersistMapCleanup(tagPrefix = "search/")
 
-    VoiceSearchState.isActive = (!isCancelling && (isListening || errorMessage != null)) || isFindActive
+    if (preview == null) VoiceSearchState.isActive = (!isCancelling && (isListening || errorMessage != null)) || isFindActive
 
     Box(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.fillMaxSize()) {

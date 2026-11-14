@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">Rozmieszczenie równomiernie</string>
     <string name="settings_player_album_cover_visible_label">Pokaż okładkę albumu</string>
     <string name="settings_player_appearance_page_description">Sekcja wyglądu zawiera ustawienia wyglądu gracza</string>
-    <string name="settings_player_appearance_presets_preview_description">Podglądy będą w niskiej jakości</string>
-    <string name="settings_player_appearance_presets_title">Ustawienia wyglądu</string>
     <string name="settings_player_artwork_animation_enabled_label">Pokaż animację miniaturki okładki</string>
     <string name="settings_player_artwork_animation_style_label">Typ animacji okładki</string>
     <string name="settings_player_artwork_carousel_label">Widok karuzeli</string>

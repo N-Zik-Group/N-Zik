@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.screens.home.quickpicks
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.glass.GlassActionGroup
 import app.n_zik.android.components.glass.NativeIconActionSize
 import app.n_zik.android.components.glass.NativeSectionIconAction
@@ -239,14 +240,15 @@ fun QuickPicksGrid(
     onSongClick: (Song) -> Unit,
     scrollToStartTrigger: Int = 0
 ) {
+    val preview = LocalThemePreview.current
     val quickPicksLazyGridState = rememberLazyGridState()
 
     val songIds = remember(recommendations) { recommendations.map { it.id } }
     val likeStatesMap by remember(songIds) {
-        LikeStateManager.getLikeStates(songIds)
+        if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else LikeStateManager.getLikeStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
     val playlistStatesMap by remember(songIds) {
-        PlaylistStateManager.getPlaylistStates(songIds)
+        if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else PlaylistStateManager.getPlaylistStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     // Download state cache

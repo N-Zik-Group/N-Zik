@@ -38,7 +38,9 @@ import app.n_zik.android.components.settings.network.NetworkSettings
 import app.n_zik.android.components.settings.other.OtherSettings
 import app.n_zik.android.components.settings.ui.UiSettings
 import app.n_zik.android.components.settings.ui.GlassSettingsPage
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewActivity
 import app.n_zik.android.components.settings.common.SETTINGS_GLASS_ROUTE
+import app.n_zik.android.components.settings.common.SETTINGS_THEME_STORE_ROUTE
 import app.n_zik.android.components.settings.common.isGlassSettingsLink
 import app.n_zik.android.components.settings.accounts.isYouTubeLoginEnabled
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
@@ -147,8 +149,11 @@ fun SettingsScreen(
                         } ?: item.tab?.let { tab ->
                             innerNavController.navigate(settingsTabRoute(tab, ""))
                         } ?: item.route?.let { route ->
-                            if (route == SETTINGS_GLASS_ROUTE) innerNavController.navigate(route)
-                            else navController.navigate(route)
+                            when (route) {
+                                SETTINGS_GLASS_ROUTE -> innerNavController.navigate(route)
+                                SETTINGS_THEME_STORE_ROUTE -> context.startActivity(ThemePreviewActivity.intent(context))
+                                else -> navController.navigate(route)
+                            }
                         }
                     },
                     onCardSelected = { tab, cardFocus ->

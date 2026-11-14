@@ -1,5 +1,6 @@
 package app.n_zik.android.themed.n_zik.screen.player
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.core.database.*
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.core.network.OfflineMode
@@ -187,10 +188,12 @@ fun BoxScope.ActionBar(
 ) {
     // Essentials
     val context = LocalContext.current
-    val binder = LocalPlayerServiceBinder.current ?: return
+    val preview = LocalThemePreview.current
+    val binder = LocalPlayerServiceBinder.current
+    val player = preview?.player ?: binder?.player ?: return
     val menuState = LocalMenuState.current
 
-    val mediaItem = binder.player.currentMediaItem ?: return
+    val mediaItem = player.currentMediaItem ?: return
 
     val playerBackgroundColors by rememberPreference( playerBackgroundColorsKey, PlayerBackgroundColors.AnimatedGradient )
     val blackGradient by rememberPreference( blackgradientKey, false )
@@ -210,7 +213,7 @@ fun BoxScope.ActionBar(
     // toolbar controls (discover / loop / shuffle / radio / queue editing) are non-interactive
 
     // AND visibly disabled (grayed out) for a guest — the host owns those states.
-    val ltGuestLocked = rememberListenTogetherGuestLock()
+    val ltGuestLocked = preview == null && rememberListenTogetherGuestLock()
     val guestLockAlpha = guestLockedAlpha(ltGuestLocked)
 
     // Full offline mode (spec-full-offline-mode): the network player actions
@@ -263,17 +266,17 @@ fun BoxScope.ActionBar(
                         .padding(horizontal = 12.dp)
                         .fillMaxWidth()
                 ) {
-                    var currentIndex by remember { mutableIntStateOf( binder.player.currentMediaItemIndex ) }
-                    var nextIndex by remember { mutableIntStateOf( binder.player.nextMediaItemIndex ) }
+                    var currentIndex by remember { mutableIntStateOf( player.currentMediaItemIndex ) }
+                    var nextIndex by remember { mutableIntStateOf( player.nextMediaItemIndex ) }
                     val mediaItems = remember { mutableStateListOf<MediaItem>() }
 
                     val pagerStateQueue = rememberPagerState( pageCount = { mediaItems.size } )
 
-                    binder.player.DisposableListener {
+                    player.DisposableListener {
                         object : Player.Listener {
                             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                                currentIndex = binder.player.currentMediaItemIndex
-                                nextIndex = binder.player.nextMediaItemIndex
+                                currentIndex = player.currentMediaItemIndex
+                                nextIndex = player.nextMediaItemIndex
                             }
 
                             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
@@ -281,16 +284,16 @@ fun BoxScope.ActionBar(
                                 for (i in 0 until timeline.windowCount) {
                                     mediaItems.add(timeline.getWindow(i, Timeline.Window()).mediaItem)
                                 }
-                                currentIndex = binder.player.currentMediaItemIndex
-                                nextIndex = binder.player.nextMediaItemIndex
+                                currentIndex = player.currentMediaItemIndex
+                                nextIndex = player.nextMediaItemIndex
                             }
                         }
                     }
 
                     // Instant update and snap when the queue itself changes
-                    LaunchedEffect( binder.player.mediaItems ) {
+                    LaunchedEffect( player.mediaItems ) {
                         mediaItems.clear()
-                        mediaItems.addAll( binder.player.mediaItems )
+                        mediaItems.addAll( player.mediaItems )
 
                         val targetPage = nextIndex.coerceIn( 0, pagerStateQueue.pageCount.coerceAtLeast(1) - 1 )
                         pagerStateQueue.requestScrollToPage(targetPage)
@@ -338,7 +341,7 @@ fun BoxScope.ActionBar(
                             modifier = Modifier
                                 .clip(uiRoundnessShape()).combinedClickable(
                                     onClick = {
-                                        binder.player.playAtIndex(index)
+                                        player.playAtIndex(index)
                                     },
                                     onLongClick = {
                                         if ( index < mediaItems.size ) {
@@ -346,7 +349,7 @@ fun BoxScope.ActionBar(
                                             // blocks it (and toasts); the fake "added next" toast
 
                                             // must not fire for a blocked attempt.
-                                            binder.player.addNext( mediaItemAtIndex )
+                                            player.addNext( mediaItemAtIndex )
                                             if ( !ltGuestLocked ) Toaster.s( R.string.player_queue_added_next_message )
                                         }
                                     }
@@ -457,7 +460,7 @@ fun BoxScope.ActionBar(
                             // Guest lock: queue editing is host-only (blocked + grayed)
                             enabled = !ltGuestLocked,
                             onClick = {
-                                binder.player.removeMediaItem( nextIndex )
+                                player.removeMediaItem( nextIndex )
                             },
                             modifier = Modifier
                                 .weight(.07f)
@@ -498,7 +501,7 @@ fun BoxScope.ActionBar(
                                     enabled = !ltGuestLocked,
                                     onClick = {
                                         if (!ltGuestLocked) {
-                                            binder.gracefulPause()
+                                            if (binder == null) player.pause() else binder.gracefulPause()
                                             showSearchEntityState.value = true
                                         }
                                     },
@@ -511,7 +514,7 @@ fun BoxScope.ActionBar(
                         val isAutoFillEnabled by rememberPreference(autoLoadSongsInQueueKey, true)
                         if (showButtonPlayerDiscover && !offlineMode) {
                             var discoverIsEnabled by discoverState
-                            val isDiscoverClickable = binder.service.nzikRadio.isRadioActive || isAutoFillEnabled
+                            val isDiscoverClickable = binder?.service?.nzikRadio?.isRadioActive == true || isAutoFillEnabled
                             playerActions.add(PlayerActionSlot(buttonId) {
                                 PlayerActionIcon(
                                     // Issue #866 (gh-866): state icon — discover_stop while
@@ -521,7 +524,7 @@ fun BoxScope.ActionBar(
                                     // Guest lock: Discover is a stateful ON/OFF control owned by the
                                     // host — blocked in NZikRadio.toggleDiscover + grayed here
                                     enabled = !ltGuestLocked,
-                                    onClick = { binder.service.nzikRadio.toggleDiscover() },
+                                    onClick = { binder?.service?.nzikRadio?.toggleDiscover() },
                                     onLongClick = { Toaster.i(R.string.queue_discover_description) },
                                     modifier = Modifier
                                         .size(24.dp)
@@ -566,7 +569,7 @@ fun BoxScope.ActionBar(
                             val showPlaylistIndicator by rememberPreference( playlistindicatorKey, false )
                             val color = colorPalette()
                             val isSongMappedToPlaylist by remember( mediaItem.mediaId ) {
-                                Database.songPlaylistMapTable.isMapped( mediaItem.mediaId )
+                                if (preview != null) flowOf(false) else Database.songPlaylistMapTable.isMapped( mediaItem.mediaId )
                             }.collectAsStateWithLifecycle(false, context = NzikDispatchers.DATA)
                             playerActions.add(PlayerActionSlot(buttonId) {
                                 PlayerActionIcon(
@@ -578,7 +581,7 @@ fun BoxScope.ActionBar(
                                                 navController = navController,
                                                 onDismiss = menuState::hide,
                                                 mediaItem = mediaItem,
-                                                binder = binder,
+                                                binder = binder ?: return@display,
                                                 onClosePlayer = onDismiss,
                                             )
                                         }
@@ -631,7 +634,7 @@ fun BoxScope.ActionBar(
                                     // Guest lock: shuffle is host-only — blocked by the central
                                     // guard (queue ops) + grayed here
                                     enabled = !ltGuestLocked,
-                                    onClick = { if ( !ltGuestLocked ) { binder.player.shuffleQueue(); binder.triggerShuffleOkFlash() } },
+                                    onClick = { if ( !ltGuestLocked ) { player.shuffleQueue(); binder?.triggerShuffleOkFlash() } },
                                     modifier = Modifier
                                         .size( 24.dp )
                                         .alpha(guestLockAlpha)
@@ -681,7 +684,7 @@ fun BoxScope.ActionBar(
                         val showButtonPlayerSleepTimer by rememberPreference( showButtonPlayerSleepTimerKey, false )
                         if (showButtonPlayerSleepTimer) {
                             val sleepTimerMillisLeft: Long? by
-                                (binder.sleepTimerMillisLeft ?: flowOf(null)).collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
+                                (binder?.sleepTimerMillisLeft ?: flowOf(null)).collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
                             playerActions.add(PlayerActionSlot(buttonId) {
                                 PlayerActionIcon(
                                     icon = R.drawable.sleep,
@@ -733,7 +736,7 @@ fun BoxScope.ActionBar(
                                                 Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
                                                     putExtra(
                                                         AudioEffect.EXTRA_AUDIO_SESSION,
-                                                        binder.player.audioSessionId
+                                                        player.audioSessionId
                                                     )
                                                     putExtra(
                                                         AudioEffect.EXTRA_PACKAGE_NAME,
@@ -777,12 +780,12 @@ fun BoxScope.ActionBar(
                                     // Issue #866 (gh-866): state icon — radio_stop while the radio is
                                     // active (the state change is the press feedback).
                                     icon = radioButtonIcon(),
-                                    color = if (binder.isRadioActive) colorPalette().accent else Color.Gray,
+                                    color = if (binder?.isRadioActive == true) colorPalette().accent else Color.Gray,
                                     // Guest lock: Radio is a stateful ON/OFF control owned by the
                                     // host — blocked in NZikRadio.startRadio + grayed here
                                     enabled = !ltGuestLocked,
                                     onClick = {
-                                        binder.startRadio( mediaItem, false, null, true )
+                                        binder?.startRadio( mediaItem, false, null, true )
                                     },
                                     modifier = Modifier
                                         .size( 24.dp )
@@ -799,14 +802,14 @@ fun BoxScope.ActionBar(
                                     icon = R.drawable.ellipsis_vertical,
                                     color = colorPalette().accent,
                                     onClick = {
-                                        val currentMediaItem = binder.player.currentMediaItem
+                                        val currentMediaItem = player.currentMediaItem
                                         if (currentMediaItem != null) {
                                             menuState.display {
                                                 PlayerMenu(
                                                     navController = navController,
                                                     onDismiss = menuState::hide,
                                                     mediaItem = currentMediaItem,
-                                                    binder = binder,
+                                                    binder = binder ?: return@display,
                                                     onClosePlayer = onDismiss,
                                                     onShowSleepTimer = {
                                                         showSleepTimerState.value = true

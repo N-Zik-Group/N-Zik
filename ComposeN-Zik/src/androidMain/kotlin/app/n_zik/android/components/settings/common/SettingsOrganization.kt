@@ -2,6 +2,7 @@ package app.n_zik.android.components.settings.common
 
 import app.n_zik.android.R
 
+const val SETTINGS_THEME_STORE_ROUTE = "settingsThemeStore"
 const val SETTINGS_GLASS_ROUTE = "settingsGlass"
 
 /** Legacy settings links still open the dedicated Glass destination. */

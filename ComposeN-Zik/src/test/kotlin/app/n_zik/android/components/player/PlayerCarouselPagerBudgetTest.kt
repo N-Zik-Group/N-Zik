@@ -93,7 +93,7 @@ class PlayerCarouselPagerBudgetTest {
         compose.setContent {
             touchSlop = LocalViewConfiguration.current.touchSlop
             pager = rememberPagerState(initialPage = 500) { 1_000 }
-            pager.LaunchedEffectScrollToPage(binder, 0, playingIndex.value, false)
+            pager.LaunchedEffectScrollToPage(binder.player, 0, playingIndex.value, false)
             pager.slideSettledPageEffect(
                 currentMediaItemIndex = { playingIndex.value },
                 playAtIndex = { playingIndex.value = it; playbackRequests.add(it) },
@@ -167,7 +167,7 @@ class PlayerCarouselPagerBudgetTest {
             density = LocalDensity.current.density
             touchSlop = LocalViewConfiguration.current.touchSlop
             pager = rememberPagerState(initialPage = 2) { 5 }
-            pager.LaunchedEffectScrollToPage(binder, 0, playingIndex.value, false)
+            pager.LaunchedEffectScrollToPage(binder.player, 0, playingIndex.value, false)
             pager.slideSettledPageEffect(
                 currentMediaItemIndex = { playingIndex.value },
                 playAtIndex = {
@@ -336,7 +336,7 @@ class PlayerCarouselPagerBudgetTest {
         lateinit var pager: PagerState
         compose.setContent {
             pager = rememberPagerState(initialPage = 2, initialPageOffsetFraction = .2f) { 5 }
-            pager.LaunchedEffectScrollToPage(binder, 0, 2, false)
+            pager.LaunchedEffectScrollToPage(binder.player, 0, 2, false)
             VerticalPager(state = pager, modifier = Modifier.size(240.dp, 320.dp)) {
                 Box(Modifier.fillMaxSize())
             }

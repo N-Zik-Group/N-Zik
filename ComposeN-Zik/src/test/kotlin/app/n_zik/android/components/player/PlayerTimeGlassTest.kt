@@ -111,7 +111,7 @@ class PlayerTimeGlassTest {
                 CompositionLocalProvider(LocalGlassContainerBackdrop provides scene) {
                     Box(Modifier.size(320.dp, 80.dp).testTag("tinySeekScene"), contentAlignment = Alignment.Center) {
                         Box(Modifier.requiredWidth(280.dp)) {
-                            DurationIndicator(binder, null, 20_000L, 100_000L,
+                            DurationIndicator(binder.player, null, 20_000L, 100_000L,
                                 onSeekIssued = {}, seekBasePosition = { 20_000L })
                         }
                     }
@@ -167,7 +167,7 @@ class PlayerTimeGlassTest {
         compose.setContent {
             AppearanceProvider {
                 Box(Modifier.requiredWidth(300.dp).testTag("metadata.host")) {
-                    DurationIndicator(binder, null, 20_000L, 100_000L,
+                    DurationIndicator(binder.player, null, 20_000L, 100_000L,
                         onSeekIssued = { issued = it }, seekBasePosition = { 20_000L })
                 }
             }

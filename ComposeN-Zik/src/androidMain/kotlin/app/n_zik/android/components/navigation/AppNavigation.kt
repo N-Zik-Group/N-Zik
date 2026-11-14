@@ -1,5 +1,6 @@
 package app.n_zik.android.components.navigation
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.glassNativeSurfaceTint
@@ -215,6 +216,7 @@ fun AppNavigation(
     hasSideNavBarVisible: Boolean = false,
     hasPageNavBar: Boolean = false,
 ) {
+    val preview = LocalThemePreview.current
     val pendingShortcutTab by rememberUpdatedState(openTabFromShortcut)
     val pendingShortcutDelivery by rememberUpdatedState(shortcutDelivery)
     val acknowledgeShortcut by rememberUpdatedState(onShortcutConsumed)
@@ -249,7 +251,7 @@ fun AppNavigation(
     val playerGeneration by binder?.playerUpdateTrigger?.collectAsStateWithLifecycle(0)
         ?: remember { mutableStateOf(0) }
     // Crossfade replaces the player facade without replacing the service binder.
-    val player = remember(binder, playerGeneration) { binder?.player }
+    val player = remember(binder, playerGeneration, preview) { preview?.player ?: binder?.player }
     val artworkDisplay = rememberGlassArtworkDisplayColors(
         player, glassSettings.enabled || glassMenuHost.standaloneSettings, colorPalette().isDark,
     )
@@ -287,7 +289,7 @@ fun AppNavigation(
     // Clearing homeScreenTabIndex in opening app.
     val context = LocalContext.current
     LaunchedEffect(Unit) {
-        clearPreference(context, homeScreenTabIndexKey)
+        if (preview == null) clearPreference(context, homeScreenTabIndexKey)
     }
 
     val transitions = remember(transitionEffect) { ScreenTransitions(transitionEffect) }
@@ -303,7 +305,8 @@ fun AppNavigation(
     }
     val isHome = currentEntry?.destination?.route?.startsWith(NavRoutes.home.name) ?: true
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val currentHomeTab by DiscordUiState.currentHomeTab.collectAsStateWithLifecycle()
+    val currentHomeTab by if (preview == null) DiscordUiState.currentHomeTab.collectAsStateWithLifecycle()
+        else remember(preview) { mutableStateOf(if (preview.scene.fileName == "navigation") "songs" else "quickpicks") }
     val isQuickPicks = isHome && (currentHomeTab == null || currentHomeTab == "quickpicks")
     val useSharedHomeGlass = usesSharedHomeHeaderGlass(isHome, currentHomeTab, navigationPosition, glassSettings)
     val keepHeaderSurface = navigationPosition.isHorizontal && glassSettings.usesGlassMaterial(GlassArea.Header)

@@ -253,7 +253,7 @@ class PlayerInfoGlassRailTest {
         compose.setContent {
             AppearanceProvider {
                 Box(Modifier.requiredWidth(width.value).testTag("infoWidth")) {
-                    InfoAlbumAndArtistModern(binder = binder, navController = nav,
+                    InfoAlbumAndArtistModern(player = binder.player, navController = nav,
                         media = UiMedia("id", "Title", "Artist", 0L, true), albumId = "album",
                         mediaId = "id", title = "Title", likedAt = null,
                         artistIds = listOf(Info("artist", "Artist")), isExplicit = false,
@@ -487,7 +487,7 @@ class PlayerInfoGlassRailTest {
                             Box(if (nativeClip.value) Modifier.animateContentSize()
                                 else Modifier.playerInfoAwareContentSize(modern.value)) {
                                 Box(Modifier.requiredHeight(height.value)) {
-                                    InfoAlbumAndArtistModern(binder = binder, navController = nav,
+                                    InfoAlbumAndArtistModern(player = binder.player, navController = nav,
                                         media = UiMedia("id", "Title", "Artist", 0L, true), albumId = "album",
                                         mediaId = "id", title = "Title", likedAt = null,
                                         artistIds = listOf(Info("artist", "Artist")), isExplicit = false,

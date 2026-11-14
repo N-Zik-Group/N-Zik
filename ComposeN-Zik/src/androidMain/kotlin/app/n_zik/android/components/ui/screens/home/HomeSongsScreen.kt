@@ -1,6 +1,9 @@
 package app.n_zik.android.components.ui.screens.home
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 
+
+import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.appTextResources
 import app.n_zik.android.components.navigation.FloatingActionSiblingSpace
@@ -129,6 +132,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 @ExperimentalFoundationApi
 @Composable
 fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () -> androidx.compose.ui.unit.Dp = { 0.dp }, scrollContentInsetProvider: () -> androidx.compose.ui.unit.Dp = topContentInsetProvider) {
+    val isThemePreview = LocalThemePreview.current != null
+    val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val lazyListState = rememberLazyListState()
 
@@ -570,7 +575,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                 BuiltInPlaylist.Disliked -> "disliked"
                 else -> "x"
             }}_ts_$id"
-            val isEnabled = appContext().preferences.getBoolean(toggleKey, true)
+            val isEnabled = context.preferences.getBoolean(toggleKey, true)
             if (!isEnabled) return@forEach
 
             when (id) {
@@ -606,7 +611,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                     }
                 )
                 "smart_trash" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( smartTrash )
-                "match" -> if ( !offlineMode && hasUnmatchedSongs && builtInPlaylist != BuiltInPlaylist.OnDevice ) add( localMatchButton )
+                "match" -> if ( !isThemePreview && !offlineMode && hasUnmatchedSongs && builtInPlaylist != BuiltInPlaylist.OnDevice ) add( localMatchButton )
             }
         }
     }

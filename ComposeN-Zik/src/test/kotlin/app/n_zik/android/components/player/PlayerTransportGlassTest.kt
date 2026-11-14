@@ -144,9 +144,9 @@ class PlayerTransportGlassTest {
                         contentAlignment = Alignment.Center) {
                         Row(Modifier.width(560.dp), horizontalArrangement = Arrangement.SpaceEvenly,
                             verticalAlignment = Alignment.CenterVertically) {
-                            if (modern.value) ControlsModern(binder, { 0L }, 1f, false, false,
+                            if (modern.value) ControlsModern(binder.player, binder, { 0L }, 1f, false, false,
                                 style.value, false, {}, palette)
-                            else ControlsEssential(binder, { 0L }, 1f, false, null, "transport-test",
+                            else ControlsEssential(binder.player, binder, { 0L }, 1f, false, null, "transport-test",
                                 style.value, false, false, {}, palette)
                         }
                     }
@@ -228,9 +228,9 @@ class PlayerTransportGlassTest {
             AppearanceProvider {
                 Row(Modifier.width(360.dp), horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically) {
-                    if (modern.value) ControlsModern(binder, { 0L }, 1.5f, true, buffering.value,
+                    if (modern.value) ControlsModern(binder.player, binder, { 0L }, 1.5f, true, buffering.value,
                         style.value, false, { holds++ }, DefaultDarkColorPalette)
-                    else ControlsEssential(binder, { 0L }, 1.5f, true, null, "transport-test",
+                    else ControlsEssential(binder.player, binder, { 0L }, 1.5f, true, null, "transport-test",
                         style.value, buffering.value, false, { holds++ }, DefaultDarkColorPalette)
                 }
             }
@@ -273,7 +273,7 @@ class PlayerTransportGlassTest {
         compose.setContent {
             AppearanceProvider {
                 Row(Modifier.width(360.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    ControlsEssential(binder, { 0L }, 1f, false, null, "transport-test",
+                    ControlsEssential(binder.player, binder, { 0L }, 1f, false, null, "transport-test",
                         PlayerPlayButtonType.Default, false, false, {}, DefaultDarkColorPalette)
                 }
             }
@@ -297,9 +297,9 @@ class PlayerTransportGlassTest {
         compose.setContent {
             AppearanceProvider {
                 Row {
-                    if (modern.value) ControlsModern(binder, { 0L }, 1f, false, false,
+                    if (modern.value) ControlsModern(binder.player, binder, { 0L }, 1f, false, false,
                         PlayerPlayButtonType.Default, false, {}, DefaultDarkColorPalette)
-                    else ControlsEssential(binder, { 0L }, 1f, false, null, "transport-test",
+                    else ControlsEssential(binder.player, binder, { 0L }, 1f, false, null, "transport-test",
                         PlayerPlayButtonType.Default, false, false, {}, DefaultDarkColorPalette)
                 }
             }
@@ -327,9 +327,9 @@ class PlayerTransportGlassTest {
         compose.setContent {
             AppearanceProvider {
                 Row {
-                    if (modern.value) ControlsModern(binder, { position }, 1f, false, false,
+                    if (modern.value) ControlsModern(binder.player, binder, { position }, 1f, false, false,
                         PlayerPlayButtonType.Default, false, {}, DefaultDarkColorPalette)
-                    else ControlsEssential(binder, { position }, 1f, false, null, "transport-test",
+                    else ControlsEssential(binder.player, binder, { position }, 1f, false, null, "transport-test",
                         PlayerPlayButtonType.Default, false, false, {}, DefaultDarkColorPalette)
                 }
             }
@@ -350,7 +350,7 @@ class PlayerTransportGlassTest {
         compose.setContent {
             AppearanceProvider {
                 Row(Modifier.background(Color.Black)) {
-                    ControlsModern(binder, { 0L }, 1f, false, false,
+                    ControlsModern(binder.player, binder, { 0L }, 1f, false, false,
                         PlayerPlayButtonType.CircularRibbed, false, {}, DefaultDarkColorPalette)
                 }
             }
@@ -462,7 +462,7 @@ class PlayerTransportGlassTest {
                         GlassAreaMode.GlassOnly))
                 CompositionLocalProvider(LocalGlassPreviewSettings provides settings) {
                     Row(Modifier.background(Color.White)) {
-                        ControlsModern(binder, { 0L }, 1f, false, false,
+                        ControlsModern(binder.player, binder, { 0L }, 1f, false, false,
                             PlayerPlayButtonType.CircularRibbed, false, {}, DefaultDarkColorPalette)
                     }
                 }

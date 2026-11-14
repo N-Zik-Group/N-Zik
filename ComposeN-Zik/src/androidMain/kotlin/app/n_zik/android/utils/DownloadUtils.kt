@@ -1,4 +1,5 @@
 package app.n_zik.android.utils
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.LocalDownloadHelper
 
 import app.n_zik.android.core.database.*
@@ -48,6 +49,7 @@ fun InitDownloader() {
 @UnstableApi
 @Composable
 fun downloadedStateMedia(mediaId: String): DownloadedStateMedia {
+    if (LocalThemePreview.current != null) return DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
     val binder = LocalPlayerServiceBinder.current
 
     val cachedBytes = remember(mediaId) {
@@ -129,6 +131,7 @@ fun manageDownload(
 @UnstableApi
 @Composable
 fun getDownloadState(mediaId: String): Int {
+    if (LocalThemePreview.current != null) return Download.STATE_COMPLETED
     val context = LocalContext.current
     val downloader = LocalDownloadHelper.current
     if (!isNetworkAvailableComposable()) return 3
@@ -141,6 +144,7 @@ fun getDownloadState(mediaId: String): Int {
 @UnstableApi
 @Composable
 fun getDownloadProgress(mediaId: String): Float {
+    if (LocalThemePreview.current != null) return 0f
     val downloader = LocalDownloadHelper.current
     return downloader.progresses.collectAsStateWithLifecycle().value[mediaId] ?: 0f
 }

@@ -1,5 +1,6 @@
 package app.n_zik.android.ui.screens.player
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.glass.glassGlobalIndication
 
 import app.n_zik.android.components.glass.queueToolbarBottomInset
@@ -75,7 +76,6 @@ import app.n_zik.android.compose.persist.persistMap
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import app.n_zik.android.LocalPlayerServiceBinder
-import app.n_zik.android.binder
 import app.n_zik.android.colorPalette
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
@@ -148,8 +148,9 @@ fun Queue(
     // Essentials
     val context = LocalContext.current
     val windowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
+    val preview = LocalThemePreview.current
     val binder = LocalPlayerServiceBinder.current
-    val player = binder?.player ?: return
+    val player = preview?.player ?: binder?.player ?: return
     val coroutineScope = rememberCoroutineScope()
     val hapticFeedback = LocalHapticFeedback.current
 
@@ -159,7 +160,8 @@ fun Queue(
     // room cannot edit the queue (reorder, remove, play-next swipe, clear) — it is host-owned.
 
     // `by` delegation so every event-time read gets the latest lock state.
-    val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
+    val serviceGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
+    val listenTogetherGuestLock = LocalThemePreview.current == null && serviceGuestLock
     val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
 
     Box( Modifier.fillMaxSize() ) {
@@ -187,7 +189,7 @@ fun Queue(
                 context.persistMap?.getOrPut("queue/scroll_state") { LazyListState() } as? LazyListState ?: LazyListState()
             }
         } else {
-            rememberLazyListState(initialFirstVisibleItemIndex = binder.player.currentMediaItemIndex.coerceAtLeast(0))
+            rememberLazyListState(initialFirstVisibleItemIndex = player.currentMediaItemIndex.coerceAtLeast(0))
         }
 
         val reorderableLazyListState = rememberReorderableLazyListState(
@@ -282,7 +284,7 @@ fun Queue(
         )
         val shuffle = ShuffleQueue( player, lazyListState, coroutineScope, itemSelector )
         val isAutoFillEnabled by rememberPreference(autoLoadSongsInQueueKey, true)
-        val isDiscoverClickable = binder.service.nzikRadio.isRadioActive || isAutoFillEnabled
+        val isDiscoverClickable = binder?.service?.nzikRadio?.isRadioActive == true || isAutoFillEnabled
         val discover = Discover( isDiscoverClickable, onDiscoverClick )
         // Full offline mode (spec-full-offline-mode): network queue actions removed
         val offlineMode by OfflineMode.rememberEnabled()
@@ -376,10 +378,10 @@ fun Queue(
 
             val queueSongIds = queueSnapshot.songIds
             val likeStatesMap by remember(queueSongIds) {
-                LikeStateManager.getLikeStates(queueSongIds)
+                if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else LikeStateManager.getLikeStates(queueSongIds)
             }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
             val playlistStatesMap by remember(queueSongIds) {
-                PlaylistStateManager.getPlaylistStates(queueSongIds)
+                if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else PlaylistStateManager.getPlaylistStates(queueSongIds)
             }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
             val queueSongs = queueSnapshot.songs
@@ -431,7 +433,7 @@ fun Queue(
                     val song = row.song
 
                     val isLocal by remember(song) { derivedStateOf { song.isLocal } }
-                    val isDownloaded = isLocal || isDownloadedSong(song.id)
+                    val isDownloaded = isLocal || preview == null && isDownloadedSong(song.id)
 
                     val isLiked = likeStatesMap[song.id]
                     val inPlaylist = playlistStatesMap[song.id]
@@ -490,22 +492,22 @@ fun Queue(
                                     // Listen Together room
                                     val index = currentQueueIndex(window.uid)
                                     if (!listenTogetherGuestLock && index >= 0) {
-                                        val currentIndex = binder.player.currentMediaItemIndex
+                                        val currentIndex = player.currentMediaItemIndex
                                         val targetIndex = currentIndex + 1
                                         // if the song is already after the current, do nothing
                                         if (index > currentIndex) {
                                              // Only move if not already in the next position
                                              if (index != targetIndex) {
-                                                binder.player.moveMediaItem(index, targetIndex)
+                                                player.moveMediaItem(index, targetIndex)
                                             }
                                         } else {
                                             // If it's before or in the current position, move it to the next
-                                            binder.player.moveMediaItem(index, targetIndex)
+                                            player.moveMediaItem(index, targetIndex)
                                         }
                                     }
                                 },
                                 onDownload = {
-                                    binder.cache.removeResource(song.id)
+                                    binder?.cache?.removeResource(song.id)
                                     if (!isLocal)
                                         manageDownload(
                                             context = context,
@@ -544,7 +546,7 @@ fun Queue(
                                     // Enqueue swipes modify the host-owned queue: host-only
                                     // in a Listen Together room
                                     if (!listenTogetherGuestLock) {
-                                        binder.player.enqueue(
+                                        player.enqueue(
                                             mediaItem,
                                             context
                                         )
@@ -592,7 +594,7 @@ fun Queue(
                     }
                 }
 
-                if( binder.isLoadingRadio ) {
+                if( binder?.isLoadingRadio == true ) {
                     item {
                         Column( Modifier.shimmer() ) {
                             repeat(3) { index ->

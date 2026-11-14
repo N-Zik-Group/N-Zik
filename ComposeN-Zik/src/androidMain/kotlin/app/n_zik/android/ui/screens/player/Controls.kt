@@ -1,5 +1,7 @@
 package app.n_zik.android.ui.screens.player
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
 import app.n_zik.android.components.player.PlayerInformationGlassBlock
 import app.n_zik.android.components.player.PlayerInformationGlassRegion
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
@@ -161,11 +163,13 @@ fun Controls(
     dynamicColorPalette: ColorPalette,
     modifier: Modifier = Modifier
 ) {
+    val preview = LocalThemePreview.current
     val binder = LocalPlayerServiceBinder.current
-    binder?.player ?: return
+    val player = preview?.player ?: binder?.player ?: return
 
-    val currentSong by remember {
-        Database.songTable
+    val currentSong by remember(mediaId, preview) {
+        if (preview != null) kotlinx.coroutines.flow.flowOf(ThemePreviewDemo.songs.firstOrNull { it.id == mediaId })
+        else Database.songTable
                 .findById( mediaId )
                 .distinctUntilChanged()
     }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
@@ -178,7 +182,7 @@ fun Controls(
         mutableStateOf(false)
     }
 
-    isDownloaded = isDownloadedSong(mediaId)
+    isDownloaded = preview == null && isDownloadedSong(mediaId)
 
     var showSelectDialog by remember { mutableStateOf(false) }
 
@@ -221,7 +225,7 @@ fun Controls(
                     if (playerInfoType == PlayerInfoType.Modern)
                         PlayerInformationGlassRegion("info", horizontalContentInset = 10.dp) {
                             InfoAlbumAndArtistModern(
-                                binder = binder,
+                                player = player,
                                 navController = navController,
                                 media = media,
                                 title = title,
@@ -239,7 +243,7 @@ fun Controls(
                     if (playerInfoType == PlayerInfoType.Essential)
                         PlayerInformationGlassRegion("info", vertical = true, horizontalContentInset = 10.dp) {
                             InfoAlbumAndArtistEssential(
-                                binder = binder,
+                                player = player,
                                 navController = navController,
                                 media = media,
                                 title = title,
@@ -278,6 +282,7 @@ fun Controls(
                         timelineHorizontalInset = playerTimelineSize.size.dp,
                         dynamicColorPalette = dynamicColorPalette,
                         binder = binder,
+                        player = player,
                         position = position,
                         shouldBePlaying = shouldBePlaying,
                         isBuffering = isBuffering,
@@ -324,7 +329,7 @@ fun Controls(
                 if (playerInfoType == PlayerInfoType.Modern)
                     PlayerInformationGlassRegion("info", horizontalContentInset = 10.dp) {
                         InfoAlbumAndArtistModern(
-                            binder = binder,
+                            player = player,
                             navController = navController,
                             media = media,
                             title = title,
@@ -342,7 +347,7 @@ fun Controls(
                 if (playerInfoType == PlayerInfoType.Essential)
                     PlayerInformationGlassRegion("info", vertical = true, horizontalContentInset = 10.dp) {
                         InfoAlbumAndArtistEssential(
-                            binder = binder,
+                            player = player,
                             navController = navController,
                             media = media,
                             title = title,
@@ -381,6 +386,7 @@ fun Controls(
                         timelineHorizontalInset = playerTimelineSize.size.dp,
                         dynamicColorPalette = dynamicColorPalette,
                         binder = binder,
+                        player = player,
                         position = position,
                         shouldBePlaying = shouldBePlaying,
                         isBuffering = isBuffering,
@@ -397,6 +403,7 @@ fun Controls(
                         timelineHorizontalInset = playerTimelineSize.size.dp,
                         dynamicColorPalette = dynamicColorPalette,
                         binder = binder,
+                        player = player,
                         position = position,
                         shouldBePlaying = shouldBePlaying,
                         isBuffering = isBuffering,
@@ -439,7 +446,7 @@ fun Controls(
             if (playerInfoType == PlayerInfoType.Modern)
                 PlayerInformationGlassRegion("info", horizontalContentInset = 10.dp) {
                     InfoAlbumAndArtistModern(
-                        binder = binder,
+                        player = player,
                         navController = navController,
                         media = media,
                         title = title,
@@ -457,7 +464,7 @@ fun Controls(
             if (playerInfoType == PlayerInfoType.Essential)
                 PlayerInformationGlassRegion("info", vertical = true, horizontalContentInset = 10.dp) {
                     InfoAlbumAndArtistEssential(
-                        binder = binder,
+                        player = player,
                         navController = navController,
                         media = media,
                         title = title,
@@ -498,6 +505,7 @@ fun Controls(
                     timelineHorizontalInset = playerTimelineSize.size.dp,
                     dynamicColorPalette = dynamicColorPalette,
                     binder = binder,
+                        player = player,
                     position = position,
                     shouldBePlaying = shouldBePlaying, isBuffering = isBuffering,
                     likedAt = currentSong?.likedAt,
@@ -515,6 +523,7 @@ fun Controls(
                     timelineHorizontalInset = playerTimelineSize.size.dp,
                     dynamicColorPalette = dynamicColorPalette,
                     binder = binder,
+                        player = player,
                     position = position,
                     shouldBePlaying = shouldBePlaying, isBuffering = isBuffering,
                     likedAt = currentSong?.likedAt,

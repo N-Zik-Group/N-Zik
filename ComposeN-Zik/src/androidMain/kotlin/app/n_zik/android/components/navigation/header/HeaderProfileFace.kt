@@ -1,5 +1,6 @@
 package app.n_zik.android.components.navigation.header
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,6 +29,7 @@ internal fun initialHeaderProfileFace(defaultName: String): ProfileFace =
 
 @Composable
 internal fun rememberHeaderProfileFace(): ProfileFace {
+    if (LocalThemePreview.current != null) return initialHeaderProfileFace("Mira")
     val context = LocalContext.current
     val defaultName = stringResource(R.string.profile_base_name)
     val activeProfile = getActiveProfile(context)

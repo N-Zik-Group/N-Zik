@@ -1,6 +1,7 @@
 @file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.n_zik.android.ui.screens.player
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
 
 import android.graphics.Bitmap
@@ -252,8 +253,9 @@ private fun MiniPlayerContent(
     val isCompact = compactProgress > 0.01f
     val expandedMiniHeight = if (dockPresentation) app.n_zik.android.components.navigation.dock.FloatingDockDimensions.expandedMiniHeight.dp else Dimensions.miniPlayerHeight
     val miniContentHeight = expandedMiniHeight * (1f - compactProgress) + app.n_zik.android.components.navigation.dock.FloatingDockDimensions.compactHeight.dp * compactProgress
+    val preview = LocalThemePreview.current
     val binder = LocalPlayerServiceBinder.current
-    binder?.player ?: return
+    val player = preview?.player ?: binder?.player ?: return
 
     val context = LocalContext.current
     val menuState = LocalMenuState.current
@@ -261,37 +263,37 @@ private fun MiniPlayerContent(
     val pendingMiniPlayerAction = LocalPendingMiniPlayerAction.current
     val requestQueue = LocalMiniPlayerQueueRequest.current
     
-    val playerUpdateTrigger by binder.playerUpdateTrigger.collectAsStateWithLifecycle(0, context = NzikDispatchers.DATA)
+    val playerUpdateTrigger by (binder?.playerUpdateTrigger?.collectAsStateWithLifecycle(0, context = NzikDispatchers.DATA) ?: remember { mutableStateOf(0) })
 
     var nullableMediaItem by remember(playerUpdateTrigger) {
         mutableStateOf(
-            binder.player.currentMediaItem,
+            player.currentMediaItem,
             neverEqualPolicy()
         )
     }
-    var shouldBePlaying by remember(playerUpdateTrigger) { mutableStateOf(binder.player.shouldBePlaying) }
+    var shouldBePlaying by remember(playerUpdateTrigger) { mutableStateOf(player.shouldBePlaying) }
     val hapticFeedback = LocalHapticFeedback.current
 
     var playerError by remember(playerUpdateTrigger) {
-        mutableStateOf<PlaybackException?>(binder.player.playerError)
+        mutableStateOf<PlaybackException?>(player.playerError)
     }
     var isBuffering by remember(playerUpdateTrigger) {
-        mutableStateOf(binder.player.playbackState == Player.STATE_BUFFERING)
+        mutableStateOf(player.playbackState == Player.STATE_BUFFERING)
     }
 
-    binder.player.DisposableListener(playerUpdateTrigger) {
+    player.DisposableListener(playerUpdateTrigger) {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 nullableMediaItem = mediaItem
             }
 
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-                shouldBePlaying = if (playerError == null) binder.player.shouldBePlaying else false
+                shouldBePlaying = if (playerError == null) player.shouldBePlaying else false
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
-                playerError = binder.player.playerError
-                shouldBePlaying = if (playerError == null) binder.player.shouldBePlaying else false
+                playerError = player.playerError
+                shouldBePlaying = if (playerError == null) player.shouldBePlaying else false
                 isBuffering = playbackState == Player.STATE_BUFFERING
             }
 
@@ -303,8 +305,8 @@ private fun MiniPlayerContent(
 
     val mediaItem = nullableMediaItem ?: return
 
-    val likeState by remember( mediaItem.mediaId ) {
-        Database.songTable
+    val likeState by remember( mediaItem.mediaId, preview ) {
+        if (preview != null) kotlinx.coroutines.flow.flowOf(null) else Database.songTable
                 .likeState( mediaItem.mediaId )
                 .distinctUntilChanged()
     }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
@@ -448,7 +450,7 @@ private fun MiniPlayerContent(
     // gate left the cache frozen whenever gate and visible UI disagreed.
 
     // See positionAndDurationState KDoc in PlayerState.kt.
-    val positionAndDurationState = binder.player.positionAndDurationState(playerUpdateTrigger)
+    val positionAndDurationState = player.positionAndDurationState(playerUpdateTrigger)
     val durationState = remember(positionAndDurationState) {
         derivedStateOf { positionAndDurationState.value.second }
     }
@@ -460,7 +462,7 @@ private fun MiniPlayerContent(
     // when the swipe happens (issue #816: swipe-to-like liked the first song of the queue).
     val swipeSheetState by rememberUpdatedState(playerSheetState)
     val swipeMiniPlayerType by rememberUpdatedState(miniPlayerType)
-    val swipeBinder by rememberUpdatedState(binder)
+    val swipePlayer by rememberUpdatedState(player)
     val swipeContext by rememberUpdatedState(context)
     // The callback is called again on every drag delta once the finger reaches the end anchor (it
     // never settles, as it answers false): run the action once per gesture (issue #818)
@@ -476,7 +478,7 @@ private fun MiniPlayerContent(
 
             val action = miniPlayerSwipeAction(value, swipeMiniPlayerType == MiniPlayerType.Essential)
             if (action != null && swipeActionLatch.tryFire()) {
-                val player = swipeBinder.player
+                val player = swipePlayer
                 when (action) {
                     MiniPlayerSwipeAction.LikeCurrentSong -> player.currentMediaItem?.let { current ->
                         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
@@ -725,7 +727,7 @@ private fun MiniPlayerContent(
                             scaleX = scale
                             scaleY = scale
                         }) {
-                            NowPlayingSongIndicator(mediaItem.mediaId, binder.player, containerSize = 48.dp)
+                            NowPlayingSongIndicator(mediaItem.mediaId, player, containerSize = 48.dp)
                         }
                     }
 
@@ -794,9 +796,9 @@ private fun MiniPlayerContent(
                         GlassMiniPlayerPlayPauseButton(
                             onClick = {
                                 if (shouldBePlaying) {
-                                    binder.gracefulPause()
+                                    binder?.gracefulPause()
                                 } else {
-                                    binder.gracefulPlay()
+                                    binder?.gracefulPlay()
                                 }
                                 if (effectRotationEnabled) isRotated = !isRotated
                             },
@@ -873,6 +875,7 @@ private fun MiniPlayerContent(
                             onShowPlayer = showPlayer,
                             mediaItem = mediaItem,
                             context = context,
+                            player = player,
                             binder = binder,
                             effectRotationEnabled = effectRotationEnabled,
                             isRotated = isRotated,
@@ -909,7 +912,8 @@ private fun MiniPlayerSlotButton(
     onShowPlayer: () -> Unit,
     mediaItem: MediaItem?,
     context: Context,
-    binder: PlayerServiceModern.Binder,
+    player: Player,
+    binder: PlayerServiceModern.Binder?,
     effectRotationEnabled: Boolean,
     isRotated: Boolean,
     onRotatedChange: (Boolean) -> Unit,
@@ -926,7 +930,7 @@ private fun MiniPlayerSlotButton(
     val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
     // Locked controls are also visibly disabled (spec-listen-together-guest-lock-hardening)
     val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
-    val skipAvailability by rememberPlayerSkipAvailability(binder.player)
+    val skipAvailability by rememberPlayerSkipAvailability(player)
 
 
     when (button) {
@@ -937,7 +941,7 @@ private fun MiniPlayerSlotButton(
                 contentDescription = stringResource(button.labelRes),
                 enabled = !listenTogetherGuestLock && skipAvailability.previous,
                 onClick = {
-                    if (!listenTogetherGuestLock && binder.player.seekPreviousIfAvailable()) {
+                    if (!listenTogetherGuestLock && player.seekPreviousIfAvailable()) {
                         if (effectRotationEnabled) onRotatedChange(!isRotated)
                     }
                 },
@@ -953,7 +957,7 @@ private fun MiniPlayerSlotButton(
                 enabled = !listenTogetherGuestLock && skipAvailability.next,
                 onClick = {
                     if (!listenTogetherGuestLock) {
-                        binder.player.playNextIfAvailable()
+                        player.playNextIfAvailable()
                         if (effectRotationEnabled) onRotatedChange(!isRotated)
                     }
                 },
@@ -971,8 +975,8 @@ private fun MiniPlayerSlotButton(
                 enabled = !listenTogetherGuestLock,
                 onClick = {
                     if (!listenTogetherGuestLock) {
-                        binder.player.shuffleQueue()
-                        binder.triggerShuffleOkFlash()
+                        player.shuffleQueue()
+                        binder?.triggerShuffleOkFlash()
                         if (effectRotationEnabled) onRotatedChange(!isRotated)
                     }
                 },
@@ -981,7 +985,7 @@ private fun MiniPlayerSlotButton(
             )
         }
         MiniPlayerButton.Repeat -> {
-            var currentRepeatMode by remember { mutableIntStateOf(binder.player.repeatMode) }
+            var currentRepeatMode by remember { mutableIntStateOf(player.repeatMode) }
             val queueLoopType = QueueLoopType.from(currentRepeatMode)
             GlassMiniPlayerIconButton(
                 contentDescription = stringResource(button.labelRes),
@@ -992,7 +996,7 @@ private fun MiniPlayerSlotButton(
                 onClick = {
                     if (!listenTogetherGuestLock) {
                         val next = queueLoopType.next()
-                        binder.player.repeatMode = next.type
+                        player.repeatMode = next.type
                         currentRepeatMode = next.type
                         if (effectRotationEnabled) onRotatedChange(!isRotated)
                     }
@@ -1030,7 +1034,7 @@ private fun MiniPlayerSlotButton(
                             navController = navController ?: return@display,
                             onDismiss = menuState::hide,
                             mediaItem = mediaItem ?: return@display,
-                            binder = binder,
+                            binder = binder ?: return@display,
                             onClosePlayer = onClosePlayer
                         )
                     }
@@ -1073,7 +1077,7 @@ private fun MiniPlayerSlotButton(
             )
         }
         MiniPlayerButton.Radio -> {
-            val isRadioActive = binder.isRadioActive
+            val isRadioActive = binder?.isRadioActive == true
             GlassMiniPlayerIconButton(
                 contentDescription = stringResource(button.labelRes),
                 preserveNativeGeometry = true,
@@ -1085,7 +1089,7 @@ private fun MiniPlayerSlotButton(
                 // (blocked centrally in NZikRadio.startRadio + grayed here).
                 enabled = !listenTogetherGuestLock,
                 onClick = {
-                    if (!listenTogetherGuestLock) mediaItem?.let { binder.startRadio(it, false, null, true) }
+                    if (!listenTogetherGuestLock) mediaItem?.let { binder?.startRadio(it, false, null, true) }
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
                 rotationAngle = rotationAngle,
@@ -1241,7 +1245,7 @@ private fun MiniPlayerSlotButton(
         MiniPlayerButton.Discover -> {
             val discoverIsEnabled by rememberPreference(discoverKey, false)
             val isAutoFillEnabled by rememberPreference(autoLoadSongsInQueueKey, true)
-            val isDiscoverClickable = binder.service.nzikRadio.isRadioActive || isAutoFillEnabled
+            val isDiscoverClickable = binder?.service?.nzikRadio?.isRadioActive == true || isAutoFillEnabled
 
             GlassMiniPlayerIconButton(
                 contentDescription = stringResource(button.labelRes),
@@ -1254,7 +1258,7 @@ private fun MiniPlayerSlotButton(
                 // (blocked centrally in NZikRadio.toggleDiscover + grayed here).
                 enabled = !listenTogetherGuestLock,
                 onClick = {
-                    if (!listenTogetherGuestLock) binder.service.nzikRadio.toggleDiscover()
+                    if (!listenTogetherGuestLock) binder?.service?.nzikRadio?.toggleDiscover()
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
                 onLongClick = { Toaster.i(R.string.queue_discover_description) },

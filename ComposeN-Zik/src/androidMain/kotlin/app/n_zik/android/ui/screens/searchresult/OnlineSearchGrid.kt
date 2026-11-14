@@ -1,5 +1,7 @@
 package app.n_zik.android.ui.screens.searchresult
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
+import app.n_zik.android.components.settings.appearance.preview.themePreviewSearchPage
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.unit.Dp
@@ -101,6 +103,7 @@ fun OnlineSearchGrid(
     }
     val thumbnailSizePx = thumbnailSizeDp.px
 
+    val preview = LocalThemePreview.current != null
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
@@ -118,7 +121,7 @@ fun OnlineSearchGrid(
         ) {
             when (item) {
                 is Innertube.SongItem -> {
-                    val isDownloaded = isDownloadedSong(item.asMediaItem.mediaId)
+                    val isDownloaded = !preview && isDownloadedSong(item.asMediaItem.mediaId)
                     SwipeablePlaylistItem(
                         mediaItem = item.asMediaItem,
                         onPlayNext = { binder?.player?.addNext(item.asMediaItem) },
@@ -360,7 +363,9 @@ fun OnlineSearchGrid(
         filterContentType = filterContentType,
         tag = "searchResults/$query/${getTabName(tabIndex)}",
         itemsPageProvider = { continuation ->
-            if (continuation == null) {
+            if (preview) {
+                Result.success(themePreviewSearchPage(tabIndex, continuation))
+            } else if (continuation == null) {
                 Innertube.searchPage(
                     query = query,
                     params = getSearchParams(tabIndex),

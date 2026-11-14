@@ -2,6 +2,7 @@
 
 package app.n_zik.android.utils
 
+import androidx.media3.common.Player
 import androidx.annotation.OptIn
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -36,7 +37,8 @@ import app.n_zik.android.ui.styling.ColorPalette
 
 @Composable
 fun GetControls(
-    binder: PlayerServiceModern.Binder,
+    binder: PlayerServiceModern.Binder?,
+    player: Player,
     position: () -> Long,
     shouldBePlaying: Boolean,
     isBuffering: Boolean,
@@ -73,17 +75,17 @@ fun GetControls(
     val menuStyle = rememberPreference(menuStyleKey, MenuStyle.List)
 
     val playbackSettingsMenu = remember(binder, menuState, menuStyle) {
-        PlaybackSettingsMenu.create(
+        binder?.let { PlaybackSettingsMenu.create(
             binder = binder,
             menuState = menuState,
             styleState = menuStyle,
             onDismiss = { menuState.hide() },
             onBlurScaleChange = onBlurScaleChange
-        )
+        ) }
     }
 
 
-        MedleyMode(
+        if (binder != null) MedleyMode(
             binder = binder,
             seconds = if (playbackDuration < 1f) 0 else playbackDuration.roundToInt()
         )
@@ -100,6 +102,7 @@ fun GetControls(
         if (playerControlsType == PlayerControlsType.Essential)
             ControlsEssential(
                 binder = binder,
+                player = player,
                 position = position,
                 playbackSpeed = playbackSpeed,
                 shouldBePlaying = shouldBePlaying,
@@ -108,20 +111,21 @@ fun GetControls(
                 mediaId = mediaId,
                 playerPlayButtonType = playerPlayButtonType,
                 isGradientBackgroundEnabled = isGradientBackgroundEnabled,
-                onShowSpeedPlayerDialog = { menuState.display { playbackSettingsMenu.MenuComponent() } },
+                onShowSpeedPlayerDialog = { playbackSettingsMenu?.let { menuState.display { it.MenuComponent() } } },
                 dynamicColorPalette = dynamicColorPalette
             )
 
         if (playerControlsType == PlayerControlsType.Modern)
             ControlsModern(
                 binder = binder,
+                player = player,
                 position = position,
                 playbackSpeed = playbackSpeed,
                 shouldBePlaying = shouldBePlaying,
                 isBuffering = isBuffering,
                 playerPlayButtonType = playerPlayButtonType,
                 isGradientBackgroundEnabled = isGradientBackgroundEnabled,
-                onShowSpeedPlayerDialog = { menuState.display { playbackSettingsMenu.MenuComponent() } },
+                onShowSpeedPlayerDialog = { playbackSettingsMenu?.let { menuState.display { it.MenuComponent() } } },
                 dynamicColorPalette = dynamicColorPalette
             )
     }

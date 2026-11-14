@@ -1,5 +1,8 @@
 package app.n_zik.android.components.ui.screens.home.quickpicks
 
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
+import app.n_zik.android.components.settings.appearance.preview.themePreviewQuickPicksPage
 import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -308,7 +311,9 @@ fun rememberHomeQuickPicksState(
     parentalControlEnabled: Boolean,
     localCount: Int
 ): HomeQuickPicksState {
-    val trendingList = persistList<Song>("home/quickpicks/trending_list")
+    val preview = LocalThemePreview.current
+    val trendingList = if (preview == null) persistList<Song>("home/quickpicks/trending_list")
+        else remember { mutableStateOf(ThemePreviewDemo.songs.take(8)) }
     val trending = persist<Song?>("home/quickpicks/trending")
     val trendingInit = persist<Song?>(tag = "home/quickpicks/trending_init").value
 
@@ -319,17 +324,19 @@ fun rememberHomeQuickPicksState(
 
     val homePageResult = persist<Result<HomePage?>?>("home/quickpicks/homePageResult")
     // Background loads and later page instances must share the same cache.
-    val homePageInit = persist<HomePage>(tag = "home/quickpicks/homePageInit")
+    val homePageInit = if (preview == null) persist<HomePage>(tag = "home/quickpicks/homePageInit")
+        else remember { mutableStateOf<HomePage?>(themePreviewQuickPicksPage()) }
 
     val ytmQuickPicks = persistList<Song>("home/quickpicks/ytmQuickPicks")
 
     val chartsPageResult = persist<Result<Innertube.ChartsPage?>?>("home/quickpicks/chartsPageResult")
     val chartsPageInit = persist<Innertube.ChartsPage?>("home/quickpicks/chartsPageInit")
 
-    val loadedQuickPicks = persist("home/quickpicks/loadedQuickPicks", false)
-    val loadedData = persist("home/quickpicks/loadedData", false)
+    val loadedQuickPicks = persist("home/quickpicks/loadedQuickPicks", preview != null)
+    val loadedData = persist("home/quickpicks/loadedData", preview != null)
     
-    val recommendations = persistList<Song>("home/quickpicks/recommendations_list")
+    val recommendations = if (preview == null) persistList<Song>("home/quickpicks/recommendations_list")
+        else remember { mutableStateOf(ThemePreviewDemo.songs.take(8)) }
     val refreshing = remember { mutableStateOf(false) }
     val refreshKey = remember { mutableIntStateOf(0) }
 

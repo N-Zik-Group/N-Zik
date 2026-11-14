@@ -1,6 +1,7 @@
 @file:kotlin.OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.n_zik.android.components
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.glass.glassGlobalIndication
 
 import app.n_zik.android.core.database.*
@@ -206,6 +207,7 @@ fun SongItem(
     onClick: () -> Unit = {}
 ) {
     // Essentials
+    val preview = LocalThemePreview.current
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val disableScrollingText by rememberPreference( disableScrollingTextKey, false )
@@ -215,17 +217,17 @@ fun SongItem(
     val playerGeneration by binder?.playerUpdateTrigger?.collectAsStateWithLifecycle(0)
         ?: remember { mutableStateOf(0) }
     // Crossfade swaps the player without replacing the binder. Reset the remembered ID too.
-    val player = remember(binder, playerGeneration) { binder?.player }
+    val player = remember(binder, playerGeneration, preview) { preview?.player ?: binder?.player }
     val currentMediaId by (player?.currentMediaItemIdAsState(player) ?: remember { mutableStateOf<String?>(null) })
     val isPlaying = currentMediaId == song.id
     val rowShape = uiRoundnessShape()
 
-    val storedSongs = remember(song.id) {
-        Database.songTable.findById(song.id).distinctUntilChanged()
+    val storedSongs = remember(song.id, preview) {
+        if (preview != null) kotlinx.coroutines.flow.flowOf(null) else Database.songTable.findById(song.id).distinctUntilChanged()
     }
     val displaySong = rememberSongDisplayMetadata(song, storedSongs)
 
-    val menu = if( navController != null && onLongClick == null ) SongItemMenu( navController, displaySong ) else null
+    val menu = if( preview == null && navController != null && onLongClick == null ) SongItemMenu( navController, displaySong ) else null
     GlassSongRowSurface(backgroundColor, if (isPlaying) colorPalette.favoritesOverlay else null, rowShape) { rowBackground ->
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -280,7 +282,7 @@ fun SongItem(
             thumbnailOverlay()
 
             // Use pre-computed like state if provided, otherwise query database
-            val likeState by if (isLiked != null) {
+            val likeState by if (preview != null || isLiked != null) {
                 remember(isLiked) { mutableStateOf(isLiked) }
             } else {
                 remember( displaySong.id ) {
@@ -320,7 +322,7 @@ fun SongItem(
                 val isInPlaylistScreen = navController != null && NavRoutes.localPlaylist.isHere( navController )
                 // Show icon if song belongs to a playlist,
                 // except when in playlist.
-                if( showInPlaylistIndicator && !isInPlaylistScreen ) {
+                if( preview == null && showInPlaylistIndicator && !isInPlaylistScreen ) {
 
                     // Use pre-computed playlist state if provided, otherwise query database
                     val isExistedInAPlaylist by if (inPlaylist != null) {

@@ -1,5 +1,6 @@
 package app.n_zik.android.themed.n_zik.screen.player.timeline
 
+import androidx.media3.common.Player
 import app.n_zik.android.components.player.PlayerSkipTimeGlass
 import app.n_zik.android.components.player.durationOutlineColorOf
 import app.n_zik.android.components.player.displayedTimeRemainingOf
@@ -42,7 +43,6 @@ import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.colorPalette
 import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.enums.PauseBetweenSongs
-import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
 import timber.log.Timber
 import app.n_zik.android.typography
@@ -68,7 +68,7 @@ import app.n_zik.android.utils.showSkipTimeButtonsKey
 @UnstableApi
 @Composable
 private fun RowScope.SkipTimeButton(
-    binder: PlayerServiceModern.Binder,
+    player: Player,
     // Issue #881 (gh-881), Phase 3.1: base and bound are read at TAP time — a composed value
     // can be stale when the player UI stops recomposing (screen-off track change, field logs
 
@@ -107,7 +107,7 @@ private fun RowScope.SkipTimeButton(
         // at 0, so only the forward tap can ever produce a negative target here.
         if ( newPosition < 0 ) return
         if ( !ltGuestLocked ) onSeekIssued( newPosition )
-        binder.player.seekTo( newPosition )
+        player.seekTo( newPosition )
     }
 
     PlayerSkipTimeGlass(
@@ -184,7 +184,7 @@ internal fun timeRemainingOf(duration: Long, position: Long): Long =
 @UnstableApi
 @Composable
 fun DurationIndicator(
-    binder: PlayerServiceModern.Binder,
+    player: Player,
     scrubbingPosition: Long?,
     position: Long,
     duration: Long,
@@ -206,7 +206,7 @@ fun DurationIndicator(
         val showSkipTimeButtons by rememberPreference( showSkipTimeButtonsKey, true )
         if (showSkipTimeButtons) {
             SkipTimeButton(
-                binder, seekBasePosition, position, Long::minus, ::maxOf, { 0L }, stringResource(R.string.rewind_title), stringResource(R.string.player_seek_backward_five_seconds), stringResource(R.string.player_seek_backward_thirty_seconds), Modifier.rotate( 180f ), onSeekIssued = onSeekIssued
+                player, seekBasePosition, position, Long::minus, ::maxOf, { 0L }, stringResource(R.string.rewind_title), stringResource(R.string.player_seek_backward_five_seconds), stringResource(R.string.player_seek_backward_thirty_seconds), Modifier.rotate( 180f ), onSeekIssued = onSeekIssued
             )
 
             Spacer( Modifier.width( 5.dp ) )
@@ -250,7 +250,7 @@ fun DurationIndicator(
                 // visibility gate froze this cache whenever gate and visible UI disagreed
 
                 // (see positionAndDurationState KDoc in PlayerState.kt).
-                val positionAndDurationState = binder.player.positionAndDurationState()
+                val positionAndDurationState = player.positionAndDurationState()
                 val timeRemainingState = remember {
                     derivedStateOf {
                         timeRemainingOf(
@@ -274,9 +274,9 @@ fun DurationIndicator(
                     LaunchedEffect(timeRemaining) {
                         if(timeRemaining >= 0 && timeRemaining < 500) {
                             isPaused = true
-                            binder.player.pause()
+                            player.pause()
                             delay(pauseBetweenSongs.asMillis)
-                            binder.player.play()
+                            player.play()
                             isPaused = false
                         }
                     }
@@ -312,7 +312,7 @@ fun DurationIndicator(
             Spacer( Modifier.width( 5.dp ) )
 
             SkipTimeButton(
-                binder, seekBasePosition, position, Long::plus, ::minOf, { binder.player.duration }, stringResource(R.string.player_action_seek_forward), stringResource(R.string.player_action_seek_forward_5_seconds), stringResource(R.string.player_action_seek_forward_30_seconds), onSeekIssued = onSeekIssued
+                player, seekBasePosition, position, Long::plus, ::minOf, { player.duration }, stringResource(R.string.player_action_seek_forward), stringResource(R.string.player_action_seek_forward_5_seconds), stringResource(R.string.player_action_seek_forward_30_seconds), onSeekIssued = onSeekIssued
             )
         }
     }

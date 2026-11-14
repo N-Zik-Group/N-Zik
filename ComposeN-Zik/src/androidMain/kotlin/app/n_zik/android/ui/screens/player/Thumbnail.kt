@@ -1,5 +1,6 @@
 package app.n_zik.android.ui.screens.player
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import androidx.compose.runtime.CompositionLocalProvider
 import app.n_zik.android.components.glass.LocalGlassOverlayArtworkBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
@@ -122,7 +123,7 @@ fun Thumbnail(
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val playerUpdateTrigger by binder?.playerUpdateTrigger?.collectAsStateWithLifecycle(0, context = NzikDispatchers.DATA) ?: remember { mutableStateOf(0) }
-    val player = binder?.player ?: return
+    val player = LocalThemePreview.current?.player ?: binder?.player ?: return
 
     val (thumbnailSizeDp, thumbnailSizePx) = Dimensions.thumbnails.player.song.let {
         it to (it - 64.dp).px
@@ -174,7 +175,7 @@ fun Thumbnail(
 
             override fun onPlayerError(playbackException: PlaybackException) {
                 error = playbackException
-                binder.stopRadio()
+                binder?.stopRadio()
                 //context.stopService(context.intent<PlayerService>())
                 //context.stopService(context.intent<MyDownloadService>())
             }

@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">Пробел ровно</string>
     <string name="settings_player_album_cover_visible_label">Показать обложку альбома</string>
     <string name="settings_player_appearance_page_description">Раздел внешнего вида содержит настройки внешнего вида игрока</string>
-    <string name="settings_player_appearance_presets_preview_description">Предпросмотр будет в низком качестве</string>
-    <string name="settings_player_appearance_presets_title">Пресеты внешнего вида</string>
     <string name="settings_player_artwork_animation_enabled_label">Показывать анимацию миниатюр обложки</string>
     <string name="settings_player_artwork_animation_style_label">Тип анимации обложки</string>
     <string name="settings_player_artwork_carousel_label">Вид Карусель</string>

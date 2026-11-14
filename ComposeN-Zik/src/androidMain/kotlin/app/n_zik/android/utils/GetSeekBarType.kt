@@ -1,5 +1,6 @@
 package app.n_zik.android.utils
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import android.os.SystemClock
 import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.Spacer
@@ -65,7 +66,7 @@ fun GetSeekBar(
     isBuffering: Boolean,
 ) {
     val binder = LocalPlayerServiceBinder.current
-    binder?.player ?: return
+    val player = LocalThemePreview.current?.player ?: binder?.player ?: return
     val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
     val seekDuration = duration()
     // Native handlers must be recreated together; their cancelled callbacks cannot target a new track.
@@ -95,7 +96,7 @@ fun GetSeekBar(
         while (pendingSeekTarget == target) {
             if (shouldReleasePendingSeekPosition(
                     target,
-                    binder.player.currentPosition,
+                    player.currentPosition,
                     SystemClock.elapsedRealtime() - startedAtMs,
                 )
             ) {
@@ -137,7 +138,7 @@ fun GetSeekBar(
                         if (range > 0) (scrubbingPosition ?: pendingSeekTarget ?: position()).toFloat() / range else 0f
                     },
                 ) { glassThumb ->
-                    val isActuallyPlaying = rememberPlayerSeekIsPlaying(binder)
+                    val isActuallyPlaying = rememberPlayerSeekIsPlaying(player)
                     if (playerTimelineType != PlayerTimelineType.Default
                         && playerTimelineType != PlayerTimelineType.Wavy
                         && playerTimelineType != PlayerTimelineType.AudioWaves
@@ -173,7 +174,7 @@ fun GetSeekBar(
                                     scrubbingPosition?.let {
                                         val target = it.coerceIn(0L, seekDuration)
                                         holdSeekTarget(target)
-                                        binder.player.seekTo(target)
+                                        player.seekTo(target)
                                     }
                                 }
                                 scrubbingPosition = null
@@ -211,7 +212,7 @@ fun GetSeekBar(
                                     scrubbingPosition?.let {
                                         val target = it.coerceIn(0L, seekDuration)
                                         holdSeekTarget(target)
-                                        binder.player.seekTo(target)
+                                        player.seekTo(target)
                                     }
                                 }
                                 scrubbingPosition = null
@@ -249,7 +250,7 @@ fun GetSeekBar(
                                     scrubbingPosition?.let {
                                         val target = it.coerceIn(0L, seekDuration)
                                         holdSeekTarget(target)
-                                        binder.player.seekTo(target)
+                                        player.seekTo(target)
                                     }
                                 }
                                 scrubbingPosition = null
@@ -287,7 +288,7 @@ fun GetSeekBar(
                                     scrubbingPosition?.let {
                                         val target = it.coerceIn(0L, seekDuration)
                                         holdSeekTarget(target)
-                                        binder.player.seekTo(target)
+                                        player.seekTo(target)
                                     }
                                 }
                                 scrubbingPosition = null
@@ -302,7 +303,7 @@ fun GetSeekBar(
                     if (playerTimelineType == PlayerTimelineType.VisualizerBar) {
                         SeekBarVisualizer(
                             glassThumb = glassThumb,
-                            audioSessionIdProvider = { try { binder.player.audioSessionId } catch (e: Exception) { null } },
+                            audioSessionIdProvider = { try { player.audioSessionId } catch (e: Exception) { null } },
                             isPlaying = isActuallyPlaying,
                             progressPercentage = {
                                 val held = pendingSeekTarget ?: position()
@@ -316,7 +317,7 @@ fun GetSeekBar(
                                 } else {
                                     val target = (it.value * seekDuration.toFloat()).toLong().coerceIn(0L, seekDuration)
                                     holdSeekTarget(target)
-                                    binder.player.seekTo(target)
+                                    player.seekTo(target)
                                 }
                             },
                             modifier = Modifier
@@ -346,12 +347,12 @@ fun GetSeekBar(
                                     scrubbingPosition?.let {
                                         val target = it.coerceIn(0L, seekDuration)
                                         holdSeekTarget(target)
-                                        binder.player.seekTo(target)
+                                        player.seekTo(target)
                                     }
                                 }
                                 scrubbingPosition = null
                             },
-                            audioSessionId = { try { binder.player.audioSessionId } catch (e: Exception) { -1 } },
+                            audioSessionId = { try { player.audioSessionId } catch (e: Exception) { -1 } },
                             unplayedColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary.copy(alpha = 0.3f),
                             modifier = Modifier.fillMaxWidth().height(40.dp)
                         )
@@ -385,7 +386,7 @@ fun GetSeekBar(
                                     scrubbingPosition?.let {
                                         val target = it.coerceIn(0L, seekDuration)
                                         holdSeekTarget(target)
-                                        binder.player.seekTo(target)
+                                        player.seekTo(target)
                                     }
                                 }
                                 scrubbingPosition = null
@@ -403,7 +404,7 @@ fun GetSeekBar(
 
     PlayerDurationBounds {
         DurationIndicator(
-            binder,
+            player,
             scrubbingPosition ?: pendingSeekTarget,
             scrubbingPosition ?: pendingSeekTarget ?: position(),
             duration(),
@@ -413,7 +414,7 @@ fun GetSeekBar(
                     scrubbingMs = scrubbingPosition,
                     pendingTargetMs = pendingSeekTarget,
                     pendingHeldForMs = SystemClock.elapsedRealtime() - pendingSeekIssuedAtMs,
-                    livePlayerPositionMs = binder.player.currentPosition,
+                    livePlayerPositionMs = player.currentPosition,
                 )
             },
         )

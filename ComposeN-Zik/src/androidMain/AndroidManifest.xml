@@ -68,6 +68,7 @@
         tools:targetApi="tiramisu">
 
 
+        <activity android:name="app.n_zik.android.components.settings.appearance.preview.ThemePreviewActivity" android:exported="false" android:screenOrientation="portrait" />
         <activity
             android:name="app.n_zik.android.components.image.PickedImageEditorActivity"
             android:exported="false"

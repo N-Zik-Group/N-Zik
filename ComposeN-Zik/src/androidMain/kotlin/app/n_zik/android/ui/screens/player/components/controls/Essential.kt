@@ -1,6 +1,7 @@
 @file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.n_zik.android.ui.screens.player.components.controls
 
+import androidx.media3.common.Player
 import app.n_zik.android.components.player.PlayerInformationFavoriteAction
 import app.n_zik.android.components.player.PlayerInformationFavoriteBackdrop
 import app.n_zik.android.components.glass.GlassStandaloneActionSize
@@ -131,7 +132,7 @@ import app.n_zik.android.components.player.textOutlineColor
 @ExperimentalFoundationApi
 @Composable
 fun InfoAlbumAndArtistEssential(
-    binder: PlayerServiceModern.Binder,
+    player: Player,
     navController: NavController,
     albumId: String?,
     media: UiMedia,
@@ -150,7 +151,7 @@ fun InfoAlbumAndArtistEssential(
     var showSelectDialog by remember { mutableStateOf(false) }
     var textoutline by rememberPreference(textoutlineKey, false)
     val buttonState by rememberPreference(buttonStateKey, ButtonState.Idle)
-    val currentMediaItem = binder.player.currentMediaItem
+    val currentMediaItem = player.currentMediaItem
 
     PlayerInformationFavoriteBackdrop(playerControlsType == PlayerControlsType.Modern) { titleBackdrop, favoriteBackdrop ->
     Row(
@@ -391,7 +392,8 @@ fun InfoAlbumAndArtistEssential(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ControlsEssential(
-    binder: PlayerServiceModern.Binder,
+    player: Player,
+    binder: PlayerServiceModern.Binder?,
     position: () -> Long,
     playbackSpeed: Float,
     shouldBePlaying: Boolean,
@@ -417,7 +419,7 @@ fun ControlsEssential(
     // Locked controls are non-interactive and visibly disabled.
     val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
     val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
-    val skipAvailability by rememberPlayerSkipAvailability(binder.player)
+    val skipAvailability by rememberPlayerSkipAvailability(player)
     val previousEnabled = !listenTogetherGuestLock && skipAvailability.previous
     val nextEnabled = !listenTogetherGuestLock && skipAvailability.next
     val context = LocalContext.current
@@ -441,7 +443,7 @@ fun ControlsEssential(
     var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
     val playerBackgroundColors by rememberPreference(playerBackgroundColorsKey,PlayerBackgroundColors.AnimatedGradient)
     var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
-    val currentMediaItem = binder.player.currentMediaItem
+    val currentMediaItem = player.currentMediaItem
 
     val likeInteraction = remember { MutableInteractionSource() }
     val repeatInteraction = remember { MutableInteractionSource() }
@@ -492,10 +494,10 @@ fun ControlsEssential(
                 onClick = {
                     if (previousEnabled) {
                         if (jumpPrevious == "") jumpPrevious = "0"
-                        if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && binder.player.currentPosition > jumpPrevious.toInt()*1000)){
-                            binder.player.seekTo(0)
+                        if(!player.hasPreviousMediaItem() || (jumpPrevious != "0" && player.currentPosition > jumpPrevious.toInt()*1000)){
+                            player.seekTo(0)
                         }
-                        else binder.player.playPrevious()
+                        else player.playPrevious()
                         if (effectRotationEnabled) isRotated = !isRotated
                     }
                 },
@@ -518,9 +520,9 @@ fun ControlsEssential(
                 interactionSource = playInteraction,
                 onClick = {
                     if (shouldBePlaying) {
-                        binder.gracefulPause()
+                        if (binder == null) player.pause() else binder.gracefulPause()
                     } else {
-                        binder.gracefulPlay()
+                        if (binder == null) player.play() else binder.gracefulPlay()
                     }
                     if (effectRotationEnabled) isRotated = !isRotated
                 },
@@ -631,7 +633,7 @@ fun ControlsEssential(
                 enabled = nextEnabled,
                 onClick = {
                     if (nextEnabled) {
-                        if (binder.player.playNextIfAvailable() && effectRotationEnabled) isRotated = !isRotated
+                        if (player.playNextIfAvailable() && effectRotationEnabled) isRotated = !isRotated
                     }
                 },
                 onLongClick = {}

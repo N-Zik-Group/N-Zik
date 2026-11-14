@@ -1,5 +1,6 @@
 package app.n_zik.android.components.navigation
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.GlassRenderer
@@ -97,6 +98,7 @@ fun Skeleton(
     suppressTabTransition: (Int, Int) -> Boolean = { _, _ -> false },
     content: @Composable AnimatedVisibilityScope.(Int) -> Unit
 ) {
+    val preview = LocalThemePreview.current
     val navigationBarPosition = NavigationBarPosition.current()
     val tabTransition = transition()
     val glassSettings = rememberGlassSettings()
@@ -107,7 +109,7 @@ fun Skeleton(
     val isIconOnly = NavigationBarType.IconOnly.isCurrent()
     RevealScaffoldOnPageSelection(tabIndex)
     val binder = LocalPlayerServiceBinder.current
-    val isMiniPlayerActive = binder?.player?.currentMediaItem != null
+    val isMiniPlayerActive = (preview?.player ?: binder?.player)?.currentMediaItem != null
     val currentInsets = LocalPlayerAwareWindowInsets.current
 
     val density = LocalDensity.current
@@ -244,6 +246,7 @@ fun Skeleton(
 
             }
         }
+        if (preview == null) {
         NewUpdateAvailableDialog.Render(
             onNavigateToUpdater = { navController.navigate(NavRoutes.updater.name) }
         )
@@ -320,6 +323,7 @@ fun Skeleton(
             if (seenChangelogs.value != BuildConfig.VERSION_NAME) {
                 seenChangelogs.value = BuildConfig.VERSION_NAME
             }
+        }
         }
     }
 }

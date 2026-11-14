@@ -1,6 +1,8 @@
 // Adapted from RiPlay (GPL-3.0, license checked at upstream revision f69d6760bd09b29e18591cdc1339d3dd8b6bdf55).
 package app.n_zik.android.components.ui.screens.album
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
 import app.n_zik.android.appTextResources
 import app.n_zik.android.components.ui.screens.CollectionArtworkHeader
 import app.n_zik.android.components.ui.screens.CollectionPageStatus
@@ -209,21 +211,25 @@ fun AlbumScreen(
     val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Fade)
     val playerPosition by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
 
-    var album by persist<Album?>("album/$browseId")
+    val preview = LocalThemePreview.current
+    var storedAlbum by persist<Album?>("album/$browseId")
+    val album = if (preview != null) ThemePreviewDemo.albums.firstOrNull { it.id == browseId } else storedAlbum
     var mbSyncing by remember { mutableStateOf(false) }
     var mbPausedSeconds by remember { mutableStateOf(0L) }
     LaunchedEffect(Unit) {
+        if (preview != null) return@LaunchedEffect
         Database.albumTable
             .findById(browseId)
             .flowOn(NzikDispatchers.DATA)
             .distinctUntilChanged()
-            .collect { album = it }
+            .collect { storedAlbum = it }
     }
 
     var alternatives by persistList<Innertube.AlbumItem>("album/$browseId/alternatives")
     var description by rememberSaveable { mutableStateOf("") }
     var loadedSongsCount by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) {
+        if (preview != null) return@LaunchedEffect
         val cleanedBrowseId = browseId.removePrefix(MODIFIED_PREFIX)
 
         withContext(NzikDispatchers.DATA) {
@@ -298,6 +304,7 @@ fun AlbumScreen(
     }
 
     LaunchedEffect(album?.id) {
+        if (preview != null) return@LaunchedEffect
         val albumEntity = album ?: return@LaunchedEffect
         mbSyncing = true
         try {
@@ -465,8 +472,10 @@ fun AlbumDetails(
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
-    val rawItems by remember {
-        Database.songAlbumMapTable
+    val preview = LocalThemePreview.current
+    val rawItems by remember(browseId, preview) {
+        if (preview != null) kotlinx.coroutines.flow.flowOf(ThemePreviewDemo.songsForAlbum(browseId))
+        else Database.songAlbumMapTable
             .allSongsOf(browseId)
             .distinctUntilChanged()
     }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
@@ -597,10 +606,10 @@ fun AlbumDetails(
             } else {
                 val albumSongIds = remember(items) { items.map { it.id } }
                 val likeStatesMap by remember(albumSongIds) {
-                    LikeStateManager.getLikeStates(albumSongIds)
+                    if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else LikeStateManager.getLikeStates(albumSongIds)
                 }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
                 val playlistStatesMap by remember(albumSongIds) {
-                    PlaylistStateManager.getPlaylistStates(albumSongIds)
+                    if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else PlaylistStateManager.getPlaylistStates(albumSongIds)
                 }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
                 val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)

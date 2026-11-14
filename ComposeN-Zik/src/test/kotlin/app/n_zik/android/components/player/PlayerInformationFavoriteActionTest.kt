@@ -601,9 +601,9 @@ class PlayerInformationFavoriteActionTest {
 
     @Composable private fun ActualInformation(essential: Boolean, explicit: Boolean = false, scrolling: Boolean = false, onCollapse: () -> Unit) {
         val media = UiMedia("information-favorite", "Title", "Artist", 120_000L, true)
-        if (essential) InfoAlbumAndArtistEssential(binder, nav, "album", media, media.id, media.title,
+        if (essential) InfoAlbumAndArtistEssential(binder.player, nav, "album", media, media.id, media.title,
             null, null, "Artist", explicit, onCollapse, disableScrollingText = !scrolling)
-        else InfoAlbumAndArtistModern(binder, nav, "album", media, media.id, media.title,
+        else InfoAlbumAndArtistModern(binder.player, nav, "album", media, media.id, media.title,
             null, null, explicit, "Artist", onCollapse, disableScrollingText = !scrolling)
     }
 

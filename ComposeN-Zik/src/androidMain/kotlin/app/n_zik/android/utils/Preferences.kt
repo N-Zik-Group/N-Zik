@@ -567,7 +567,7 @@ inline fun <reified T : Enum<T>> SharedPreferences.Editor.putEnum(
     putString(key, value.name)
 
 val Context.preferences: SharedPreferences
-    get() = getSharedPreferences(getActiveProfile(applicationContext).let { profile ->
+    get() = (this as? app.n_zik.android.components.settings.appearance.preview.ThemePreviewContext)?.previewPreferences ?: getSharedPreferences(getActiveProfile(applicationContext).let { profile ->
         "preferences${if (profile != "default") "_$profile" else ""}"
     }, Context.MODE_PRIVATE).also { RemovedSettingsMigration.run(it) }
 

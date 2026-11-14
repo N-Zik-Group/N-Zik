@@ -55,6 +55,14 @@ val SettingsGlassItem = SettingsPageItem(
     ) + glassDestinationKeywordResources(),
 )
 
+val SettingsThemeStoreItem = SettingsPageItem(
+    R.string.theme_store_title,
+    R.drawable.color_palette,
+    R.string.theme_store_preview_description,
+    group = 3,
+    route = SETTINGS_THEME_STORE_ROUTE,
+)
+
 val SettingsCategories: List<SettingsPageItem> = listOf(
     SettingsPageItem(R.string.settings_general_title, R.drawable.ic_launcher_monochrome, R.string.settings_general_page_description, SETTINGS_GROUP_CATEGORIES, tab = 0),
     SettingsPageItem(R.string.settings_interface_page_title, R.drawable.ui, R.string.settings_interface_page_description, SETTINGS_GROUP_CATEGORIES, tab = 1),
@@ -83,7 +91,7 @@ val SettingsPageItems: List<SettingsPageItem> = OrganizedSettingsCategories.map 
 }.flatMap { item ->
     when (item.categoryId) {
         "about" -> listOf(item, SettingsUpdateItem)
-        "interface" -> listOf(item, SettingsGlassItem)
+        "interface" -> listOf(item, SettingsThemeStoreItem, SettingsGlassItem)
         else -> listOf(item)
     }
 }
@@ -192,7 +200,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     // Tab 2 - Appearance
     SettingsCardRegistryEntry(2, R.string.player_presets_and_layout, R.drawable.images_sharp,
         keywordRes = listOf(
-            R.string.player_presets_and_layout, R.string.settings_player_appearance_presets_title, R.string.settings_player_appearance_presets_preview_description,
+            R.string.player_presets_and_layout,
             R.string.player_type, R.string.settings_player_queue_style_label, R.string.settings_player_artwork_style_label, R.string.settings_player_header_style_label,
             R.string.settings_player_header_album_artist_description, R.string.settings_player_header_icons_visible_label, R.string.settings_player_controls_style_label,
             )),

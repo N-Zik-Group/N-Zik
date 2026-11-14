@@ -197,6 +197,7 @@ fun ArtistScreen(
     modifier: Modifier = Modifier,
     miniPlayer: @Composable () -> Unit = {}
 ) {
+    val preview = app.n_zik.android.components.settings.appearance.preview.LocalThemePreview.current
     PersistMapCleanup("artist/$browseId/")
 
     val saveableStateHolder = rememberSaveableStateHolder()
@@ -210,6 +211,7 @@ fun ArtistScreen(
     var mbSyncing by remember { mutableStateOf(false) }
     var mbPausedSeconds by remember { mutableStateOf(0L) }
     LaunchedEffect(Unit) {
+        if (preview != null) return@LaunchedEffect
         Database.artistTable
             .findById(browseId)
             .flowOn(NzikDispatchers.DATA)
@@ -217,7 +219,9 @@ fun ArtistScreen(
             .collect { localArtist = it }
     }
 
-    var artistPage: ArtistPage? by remember { mutableStateOf(null) }
+    var artistPage: ArtistPage? by remember(preview) {
+        mutableStateOf(preview?.let { app.n_zik.android.components.settings.appearance.preview.themePreviewArtistPage() })
+    }
 
     val context = LocalContext.current
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
@@ -302,7 +306,7 @@ fun ArtistScreen(
     // Refetch when full offline mode turns off (overview becomes visible again);
     // never triggers while the mode is on.
     LaunchedEffect(offlineMode) {
-        if (!offlineMode) fetchArtistPage()
+        if (preview == null && !offlineMode) fetchArtistPage()
     }
 
     LaunchedEffect(localArtist?.id) {
@@ -325,7 +329,9 @@ fun ArtistScreen(
         }
     }
 
-    val thumbnailPainter = ImageCacheFactory.Painter(localArtist?.thumbnailUrl)
+    val thumbnailPainter = ImageCacheFactory.Painter(
+        if (preview != null) artistPage?.artist?.thumbnail?.url else localArtist?.thumbnailUrl,
+    )
 
     val topContentInset = rememberTopContentInsetProvider(hasNavBar = !offlineMode)
 
@@ -434,6 +440,14 @@ fun ArtistOverview(
     fun getMediaItems() = getSongs().map(Song::asMediaItem)
 
     val followButton = localArtist?.let { artist -> FollowButton { artist } }
+    val isPreview = app.n_zik.android.components.settings.appearance.preview.LocalThemePreview.current != null
+    val followAction: @Composable () -> Unit = {
+        if (isPreview) {
+            app.n_zik.android.components.artist.ArtistFollowButton(likeState = null, onClick = {})
+        } else {
+            followButton?.ToolBarButton()
+        }
+    }
     val shuffler = object : MenuIcon, Descriptive {
         // Issue #866 (gh-866): app-wide shuffle confirmation flash — the icon follows the
         // binder's flash state (shuffle_ok ~1 s), triggered in onShortClick below.
@@ -607,7 +621,7 @@ fun ArtistOverview(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 8.dp),
                                 ) {
-                                    followButton?.ToolBarButton()
+                                    followAction()
                                     Box(Modifier.size(176.dp, 40.dp),
                                         contentAlignment = Alignment.Center) {
                                         InlineCircularLoader(
@@ -619,7 +633,7 @@ fun ArtistOverview(
                                 }
                             } else {
                                 CollectionButtonToolbar(
-                                    bookmark = { followButton?.ToolBarButton() },
+                                    bookmark = followAction,
                                     buttons = listOf(shuffler, playNext, enqueue, radio, itemSelector,
                                         downloadAllDialog, deleteAllDownloadsDialog),
                                     bookmarkWidth = 100.dp,

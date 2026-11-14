@@ -85,7 +85,7 @@ import app.n_zik.android.utils.visualizerCustomColorKey
 /** Stable local inventory; global search activation is a separate change. */
 internal object AppearanceSettingTargets {
     val cards = listOf(
-        AppearanceCardTargets("appearance.card.presets", listOf(playerTypeKey, queueTypeKey, thumbnailTypeKey, playerInfoTypeKey, playerInfoShowIconsKey, playerControlsTypeKey, iconLikeTypeKey), listOf("appearancePreset")),
+        AppearanceCardTargets("appearance.card.presets", listOf(playerTypeKey, queueTypeKey, thumbnailTypeKey, playerInfoTypeKey, playerInfoShowIconsKey, playerControlsTypeKey, iconLikeTypeKey), emptyList()),
         AppearanceCardTargets("appearance.card.cover", listOf(showthumbnailKey, thumbnailSizeDpKey, thumbnailSizeLDpKey, thumbnailRoundnessDpKey, artistThumbnailRoundnessDpKey, uiRoundnessDpKey, thumbnailpauseKey, cropVideoThumbnailsKey, statsfornerdsKey, noblurKey, fadingedgeKey, carouselKey, carouselSizeKey, showCoverThumbnailAnimationKey, coverThumbnailAnimationKey, swipeAnimationsNoThumbnailKey), listOf()),
         AppearanceCardTargets("appearance.card.timeline", listOf(transparentbarKey, playerPlayButtonTypeKey, playerTimelineTypeKey, playerTimelineSizeKey, playerControlsColorsKey, iconLikeTypeKey, playerSwapControlsWithTimelineKey, buttonzoomoutKey), listOf("MiniPlayerButtonsSettingsDialog")),
         AppearanceCardTargets("appearance.card.colors", listOf(blackgradientKey, bottomgradientKey, textoutlineKey, showTotalTimeQueueKey, showRemainingSongTimeKey, showSkipTimeButtonsKey, playerBackgroundColorsKey, animatedGradientKey, shakeSensitivityThemeKey, albumCoverRotationKey), listOf()),

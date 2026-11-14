@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.screens.album
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.core.database.*
 
 import app.n_zik.android.components.glass.GlassDescriptionTranslate
@@ -91,13 +92,14 @@ fun AlbumBookmark(
     albumId: String,
     localOnly: Boolean = false,
 ): MenuIcon = object : MenuIcon, Descriptive, DualIcon {
-    val likeState by remember(albumId) {
-        Database.albumTable.likeState( albumId )
+    val preview = LocalThemePreview.current
+    val likeState by remember(albumId, preview) {
+        if (preview != null) kotlinx.coroutines.flow.flowOf(null) else Database.albumTable.likeState( albumId )
             .distinctUntilChanged()
     }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
 
-    val album by remember(albumId) {
-        Database.albumTable.findById( albumId )
+    val album by remember(albumId, preview) {
+        if (preview != null) kotlinx.coroutines.flow.flowOf(null) else Database.albumTable.findById( albumId )
             .distinctUntilChanged()
     }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
 

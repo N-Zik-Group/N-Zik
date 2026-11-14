@@ -1,5 +1,7 @@
 package app.n_zik.android.components.ui.screens.home
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchNoResults
@@ -141,7 +143,8 @@ fun HomeSongs(
     var filterBy by rememberPreference(filterByKey, FilterBy.All)
     val showDislikedPlaylist by rememberPreference(excludeDislikedSongsKey, DislikeMode.Enabled)
 
-    var items by remember { mutableStateOf(emptyList<Song>()) }
+    val preview = LocalThemePreview.current
+    var items by remember(preview) { mutableStateOf(if (preview != null) ThemePreviewDemo.songs else emptyList()) }
 
     val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
     val downloadedIds by remember {
@@ -234,6 +237,10 @@ fun HomeSongs(
     var isRecommendationsLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect( builtInPlaylist, topPlaylists.period, songSort.sortBy, songSort.sortOrder, hiddenSongs.isFirstIcon, refreshKey, filterBy ) {
+        if (preview != null) {
+            isLoading = false
+            return@LaunchedEffect
+        }
         isLoading = true
 
         val retrievedSongs = when( builtInPlaylist ) {
@@ -532,10 +539,10 @@ fun HomeSongs(
 
     val songIds = remember(itemsOnDisplay) { itemsOnDisplay.map { it.id } }
     val likeStatesMap by remember(songIds) {
-        LikeStateManager.getLikeStates(songIds)
+        if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else LikeStateManager.getLikeStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
     val playlistStatesMap by remember(songIds) {
-        PlaylistStateManager.getPlaylistStates(songIds)
+        if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else PlaylistStateManager.getPlaylistStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     // Hoisted swipe action preferences
@@ -607,7 +614,7 @@ fun HomeSongs(
                                     isRecommended = isRecommended,
                                     modifier = Modifier.animateItem(),
                                     trailingContent = {
-                                        if ((song.id.length != 11 || (song.durationText == "00:00" && song.totalPlayTimeMs == 1L)) && !song.id.startsWith(LOCAL_KEY_PREFIX)) {
+                                        if (preview == null && song.isUnmatched) {
                                             Icon(
                                                 painter = painterResource(R.drawable.alert),
                                                 contentDescription = stringResource(R.string.song_matching_unmatched_label),
@@ -653,7 +660,7 @@ fun HomeSongs(
                                     },
                                     onClick = {
                                         search.hideIfEmpty()
-                                        if (song.isUnmatched) {
+                                        if (preview == null && song.isUnmatched) {
                                             Toaster.w(R.string.player_matching_required_message)
                                         } else {
                                             binder?.stopRadio()

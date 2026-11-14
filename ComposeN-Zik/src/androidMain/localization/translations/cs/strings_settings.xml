@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">Rovnoměrné rozložení</string>
     <string name="settings_player_album_cover_visible_label">Zobrazit obal alba</string>
     <string name="settings_player_appearance_page_description">Sekce vzhledu obsahuje nastavení vizuálního vzhledu hráče</string>
-    <string name="settings_player_appearance_presets_preview_description">Náhledy budou v nízké kvalitě</string>
-    <string name="settings_player_appearance_presets_title">Předvolby vzhledu</string>
     <string name="settings_player_artwork_animation_enabled_label">Zobrazit animaci miniatur obalu</string>
     <string name="settings_player_artwork_animation_style_label">Typ animace obalu</string>
     <string name="settings_player_artwork_carousel_label">Zobrazit karusel</string>

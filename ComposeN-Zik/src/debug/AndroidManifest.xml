@@ -5,6 +5,7 @@
      has to land in the app's debug manifest (works around robolectric PR #4736). -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
+        <activity android:name="app.n_zik.android.components.settings.appearance.preview.DebugThemePreviewActivity" android:exported="true" android:screenOrientation="portrait" />
         <activity
             android:name="androidx.activity.ComponentActivity"
             android:exported="false" />

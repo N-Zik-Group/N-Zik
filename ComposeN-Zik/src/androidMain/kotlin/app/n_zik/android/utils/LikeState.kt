@@ -1,5 +1,6 @@
 package app.n_zik.android.utils
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.core.database.*
 
 import androidx.compose.runtime.Composable
@@ -16,6 +17,7 @@ import timber.log.Timber
 
 @Composable
 fun getLikeState(mediaId: String): Int {
+    if (LocalThemePreview.current != null) return getUnlikedIcon()
     val songLikeState by remember( mediaId ) {
         Database.songTable
                 .likeState( mediaId )

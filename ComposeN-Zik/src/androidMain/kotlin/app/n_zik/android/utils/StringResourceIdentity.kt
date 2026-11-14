@@ -1908,8 +1908,6 @@ internal object StringResourceIdentity {
         "settings_player_actions_spaced_evenly_label" to "actionspacedevenly",
         "settings_player_album_cover_visible_label" to "showalbumcover",
         "settings_player_appearance_page_description" to "appearance_settings_description",
-        "settings_player_appearance_presets_preview_description" to "appearancepresetssecondary",
-        "settings_player_appearance_presets_title" to "appearancepresets",
         "settings_player_artwork_animation_enabled_label" to "show_cover_thumbnail_animation",
         "settings_player_artwork_animation_style_label" to "cover_thumbnail_animation_type",
         "settings_player_artwork_carousel_label" to "carousel",

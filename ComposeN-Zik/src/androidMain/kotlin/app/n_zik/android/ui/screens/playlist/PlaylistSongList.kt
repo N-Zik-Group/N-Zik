@@ -210,6 +210,7 @@ fun PlaylistSongList(
     browseId: String,
 ) {
     // Context
+    val preview = app.n_zik.android.components.settings.appearance.preview.LocalThemePreview.current
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
     val menuState = LocalMenuState.current
@@ -246,6 +247,13 @@ fun PlaylistSongList(
     }
 
     LaunchedEffect( browseId ) {
+        if (preview != null) {
+            val demo = app.n_zik.android.components.settings.appearance.preview.themePreviewOnlinePlaylist()
+            playlistPage = demo
+            playlistSongs = demo.songs
+            loadedSongsCount = demo.songs.size
+            return@LaunchedEffect
+        }
         loadedSongsCount = 0
         if (playlistPage == null) {
             withContext(NzikDispatchers.DATA) {

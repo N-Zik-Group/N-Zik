@@ -1,6 +1,7 @@
 @file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.n_zik.android.ui.screens.player.components.controls
 
+import androidx.media3.common.Player
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.CircularWavyProgressIndicator
 import app.n_zik.android.components.dialog.common.DialogPresence
@@ -122,7 +123,7 @@ import app.n_zik.android.components.player.textOutlineColor
 @ExperimentalFoundationApi
 @Composable
 fun InfoAlbumAndArtistModern(
-    binder: PlayerServiceModern.Binder,
+    player: Player,
     navController: NavController,
     albumId: String?,
     media: UiMedia,
@@ -140,7 +141,7 @@ fun InfoAlbumAndArtistModern(
     var showthumbnail by rememberPreference(showthumbnailKey, true)
     var showSelectDialog by remember { mutableStateOf(false) }
     val playerInfoShowIcon by rememberPreference(playerInfoShowIconsKey, true)
-    val currentMediaItem = binder.player.currentMediaItem
+    val currentMediaItem = player.currentMediaItem
 
     PlayerInfoGlassRail(iconsVisible = playerInfoShowIcon) {
     PlayerInformationFavoriteBackdrop(playerControlsType == PlayerControlsType.Modern) { titleBackdrop, favoriteBackdrop ->
@@ -389,7 +390,8 @@ fun InfoAlbumAndArtistModern(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ControlsModern(
-    binder: PlayerServiceModern.Binder,
+    player: Player,
+    binder: PlayerServiceModern.Binder?,
     position: () -> Long,
     playbackSpeed: Float,
     shouldBePlaying: Boolean,
@@ -435,7 +437,7 @@ fun ControlsModern(
     val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
     val context = LocalContext.current
     val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
-    val skipAvailability by rememberPlayerSkipAvailability(binder.player)
+    val skipAvailability by rememberPlayerSkipAvailability(player)
     val previousEnabled = !listenTogetherGuestLock && skipAvailability.previous
     val nextEnabled = !listenTogetherGuestLock && skipAvailability.next
 
@@ -447,10 +449,10 @@ fun ControlsModern(
           onClick = {
               if (previousEnabled) {
                   if (jumpPrevious == "") jumpPrevious = "0"
-                  if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && binder.player.currentPosition > jumpPrevious.toInt()*1000)){
-                      binder.player.seekTo(0)
+                  if(!player.hasPreviousMediaItem() || (jumpPrevious != "0" && player.currentPosition > jumpPrevious.toInt()*1000)){
+                      player.seekTo(0)
                   }
-                  else binder.player.playPrevious()
+                  else player.playPrevious()
                   if (effectRotationEnabled) isRotated = !isRotated
               }
           },
@@ -483,9 +485,9 @@ fun ControlsModern(
                      interactionSource = playInteraction,
                      onClick = {
                          if (shouldBePlaying) {
-                             binder.gracefulPause()
+                             if (binder == null) player.pause() else binder.gracefulPause()
                          } else {
-                             binder.gracefulPlay()
+                             if (binder == null) player.play() else binder.gracefulPlay()
                          }
                          if (effectRotationEnabled) isRotated = !isRotated
                      },
@@ -562,9 +564,9 @@ fun ControlsModern(
               backgroundColor = playerTransportNativeFill(transportFilm, transportSettings),
               onClick = {
                   if (shouldBePlaying) {
-                      binder.gracefulPause()
+                      if (binder == null) player.pause() else binder.gracefulPause()
                   } else {
-                      binder.gracefulPlay()
+                      if (binder == null) player.play() else binder.gracefulPlay()
                   }
                   if (effectRotationEnabled) isRotated = !isRotated
               },
@@ -633,7 +635,7 @@ if (isBuffering && shouldBePlaying) {
         backgroundColor = playerTransportNativeFill(transportFilm, transportSettings),
         onClick = {
             if (nextEnabled) {
-                binder.player.playNextIfAvailable()
+                player.playNextIfAvailable()
                 if (effectRotationEnabled) isRotated = !isRotated
             }
         },
@@ -693,10 +695,10 @@ if (isBuffering && shouldBePlaying) {
                           onClick = {
                               if (previousEnabled) {
                                   if (jumpPrevious == "") jumpPrevious = "0"
-                                  if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && binder.player.currentPosition > jumpPrevious.toInt()*1000)){
-                                      binder.player.seekTo(0)
+                                  if(!player.hasPreviousMediaItem() || (jumpPrevious != "0" && player.currentPosition > jumpPrevious.toInt()*1000)){
+                                      player.seekTo(0)
                                   }
-                                  else binder.player.playPrevious()
+                                  else player.playPrevious()
                                   if (effectRotationEnabled) isRotated = !isRotated
                               }
                           },
@@ -731,9 +733,9 @@ if (isBuffering && shouldBePlaying) {
                           indication = null,
                           onClick = {
                               if (shouldBePlaying) {
-                                  binder.gracefulPause()
+                                  if (binder == null) player.pause() else binder.gracefulPause()
                               } else {
-                                  binder.gracefulPlay()
+                                  if (binder == null) player.play() else binder.gracefulPlay()
                               }
                               if (effectRotationEnabled) isRotated = !isRotated
                           },
@@ -774,7 +776,7 @@ if (isBuffering && shouldBePlaying) {
                           enabled = nextEnabled,
                           onClick = {
                               if (nextEnabled) {
-                                  binder.player.playNextIfAvailable()
+                                  player.playNextIfAvailable()
                                   if (effectRotationEnabled) isRotated = !isRotated
                               }
                           },

@@ -340,8 +340,6 @@ Volume BAS : titre précédent</string>
     <string name="settings_player_actions_spaced_evenly_label">Espacement sévère</string>
     <string name="settings_player_album_cover_visible_label">Afficher la pochette de l\'album</string>
     <string name="settings_player_appearance_page_description">La section « Apparence » contient les paramètres relatifs à l\'apparence visuelle du lecteur.</string>
-    <string name="settings_player_appearance_presets_preview_description">Les aperçus seront en basse qualité</string>
-    <string name="settings_player_appearance_presets_title">Préréglages d\'apparence</string>
     <string name="settings_player_artwork_animation_enabled_label">Afficher l\'animation de la miniature de la pochette</string>
     <string name="settings_player_artwork_animation_style_label">Type d\'animation de couverture</string>
     <string name="settings_player_artwork_carousel_label">Vue Carrousel</string>

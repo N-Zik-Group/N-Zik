@@ -1,5 +1,9 @@
 package app.n_zik.android.ui.screens.searchresult
 
+import androidx.media3.exoplayer.offline.Download as OfflineDownload
+import kotlinx.coroutines.flow.flowOf
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
+import app.n_zik.android.components.settings.appearance.preview.themePreviewSearchPage
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.unit.Dp
@@ -114,6 +118,7 @@ fun OnlineSearchList(
         else -> Dimensions.thumbnails.playlist + 8.dp
     }
 
+    val preview = LocalThemePreview.current != null
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
@@ -144,20 +149,22 @@ fun OnlineSearchList(
     }
 
     val albumBookmarkStatesMap by remember(albumKeys) {
-        BookmarkStateManager.getAlbumBookmarkStates(albumKeys)
+        if (preview) flowOf(emptyMap()) else BookmarkStateManager.getAlbumBookmarkStates(albumKeys)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
     val artistBookmarkStatesMap by remember(artistKeys) {
-        BookmarkStateManager.getArtistBookmarkStates(artistKeys)
+        if (preview) flowOf(emptyMap()) else BookmarkStateManager.getArtistBookmarkStates(artistKeys)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
     val playlistBookmarkStatesMap by remember(playlistKeys) {
-        BookmarkStateManager.getPlaylistBookmarkStates(playlistKeys)
+        if (preview) flowOf(emptyMap()) else BookmarkStateManager.getPlaylistBookmarkStates(playlistKeys)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
     val videoLikeStatesMap by remember(videoKeys) {
-        LikeStateManager.getLikeStates(videoKeys)
+        if (preview) flowOf(emptyMap()) else LikeStateManager.getLikeStates(videoKeys)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     // Hoisted download states
-    val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
+    val downloads by if (preview) remember { androidx.compose.runtime.mutableStateOf(emptyMap<String, OfflineDownload>()) }
+    else MyDownloadHelper.downloads.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
+    val downloadsMapState = downloads
     val downloadStatesMap = remember(downloadsMapState) {
         downloadsMapState.mapValues { (_, download) ->
             if (download.state == Download.STATE_COMPLETED) DownloadedStateMedia.DOWNLOADED
@@ -172,7 +179,7 @@ fun OnlineSearchList(
     val itemContent: @Composable LazyItemScope.(Innertube.Item) -> Unit = { item ->
         when (item) {
             is Innertube.SongItem -> {
-                val isDownloaded = isDownloadedSong(item.asMediaItem.mediaId)
+                val isDownloaded = !preview && isDownloadedSong(item.asMediaItem.mediaId)
                 SwipeablePlaylistItem(
                     mediaItem = item.asMediaItem,
                     onPlayNext = { binder?.player?.addNext(item.asMediaItem) },
@@ -450,7 +457,9 @@ fun OnlineSearchList(
         filterContentType = filterContentType,
         tag = "searchResults/$query/${getTabName(tabIndex)}",
         itemsPageProvider = { continuation ->
-            if (continuation == null) {
+            if (preview) {
+                Result.success(themePreviewSearchPage(tabIndex, continuation))
+            } else if (continuation == null) {
                 Innertube.searchPage(
                     query = query,
                     params = getSearchParams(tabIndex),

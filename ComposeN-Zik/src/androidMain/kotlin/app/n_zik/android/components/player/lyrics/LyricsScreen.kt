@@ -1,5 +1,6 @@
 package app.n_zik.android.components.player.lyrics
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.player.LocalPlayerCoverOverlay
 import app.n_zik.android.components.player.PlayerTransportControlMotion
 import app.n_zik.android.components.player.playerTransportFeedback
@@ -114,6 +115,7 @@ fun LyricsScreen(
         val menuState = LocalMenuState.current
         val currentView = LocalView.current
         val binder = LocalPlayerServiceBinder.current
+        val playback = LocalThemePreview.current?.player ?: binder?.player
 
         val savedLyricsOnCover by rememberPreference(showlyricsthumbnailKey, true)
         val showlyricsthumbnail = onCover ?: (LocalPlayerCoverOverlay.current || savedLyricsOnCover)
@@ -368,9 +370,9 @@ fun LyricsScreen(
                         actualLyricsType == LyricsType.Karaoke && hasWordTimings -> {
                             KaraokeLyricsView(
                                 text = text,
-                                currentPositionProvider = { (binder?.player?.currentPosition ?: 0L) + lyricsOffsetState.value },
-                                isPlayingProvider = { binder?.player?.isPlaying == true },
-                                onSeekTo = { binder?.player?.seekTo(it) },
+                                currentPositionProvider = { (playback?.currentPosition ?: 0L) + lyricsOffsetState.value },
+                                isPlayingProvider = { playback?.isPlaying == true },
+                                onSeekTo = { playback?.seekTo(it) },
                                 showlyricsthumbnail = showlyricsthumbnail,
                                 isLandscape = isLandscape,
                                 trailingContent = trailingContent,
@@ -409,8 +411,8 @@ fun LyricsScreen(
                         actualLyricsType == LyricsType.Synced || (actualLyricsType == LyricsType.Karaoke && !hasWordTimings) -> {
                             SyncedLyricsView(
                                 text = text,
-                                currentPositionProvider = { (binder?.player?.currentPosition ?: 0L) + lyricsOffsetState.value },
-                                onSeekTo = { binder?.player?.seekTo(it) },
+                                currentPositionProvider = { (playback?.currentPosition ?: 0L) + lyricsOffsetState.value },
+                                onSeekTo = { playback?.seekTo(it) },
                                 showlyricsthumbnail = showlyricsthumbnail,
                                 isLandscape = isLandscape,
                                 trailingContent = trailingContent,
@@ -588,11 +590,11 @@ fun LyricsScreen(
                                 interactionSource = previousInteraction,
                                 onClick = {
                                     if (jumpPrevious == "") jumpPrevious = "0"
-                                    if(binder?.player?.hasPreviousMediaItem() == false || (jumpPrevious != "0" && (binder?.player?.currentPosition ?: 0) > jumpPrevious.toInt() * 1000)
+                                    if(playback?.hasPreviousMediaItem() == false || (jumpPrevious != "0" && (playback?.currentPosition ?: 0) > jumpPrevious.toInt() * 1000)
                                     ){
-                                        binder?.player?.seekTo(0)
+                                        playback?.seekTo(0)
                                     }
-                                    else binder?.player?.playPrevious()
+                                    else playback?.playPrevious()
                                     if (effectRotationEnabled) isRotated = !isRotated
                                 }
                             )
@@ -608,7 +610,7 @@ fun LyricsScreen(
                             .playerTransportFilledBackground(colorPalette().accent)
                         ){}
                         Image(
-                            painter = painterResource(if (binder?.player?.isPlaying == true) R.drawable.pause else R.drawable.play),
+                            painter = painterResource(if (playback?.isPlaying == true) R.drawable.pause else R.drawable.play),
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(if (colorPaletteName == ColorPaletteName.PureBlack) Color.Black else colorPalette().text),
                             modifier = Modifier
@@ -617,10 +619,10 @@ fun LyricsScreen(
                                     indication = playerTransportIndication(nativeControlIndication()),
                                     interactionSource = playInteraction,
                                     onClick = {
-                                        if (binder?.player?.isPlaying == true) {
-                                            binder.gracefulPause()
+                                        if (playback?.isPlaying == true) {
+                                            binder?.gracefulPause()
                                         } else {
-                                            binder?.player?.play()
+                                            playback?.play()
                                         }
                                     },
                                 )
@@ -641,7 +643,7 @@ fun LyricsScreen(
                                 indication = playerTransportIndication(nativeControlIndication()),
                                 interactionSource = nextInteraction,
                                 onClick = {
-                                    binder?.player?.playNext()
+                                    playback?.playNext()
                                     if (effectRotationEnabled) isRotated = !isRotated
                                 }
                             )

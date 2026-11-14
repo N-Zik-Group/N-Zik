@@ -177,7 +177,6 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget("appearance.txt_lyrics.player_enable_lyrics_popup_message", 2, R.string.lyrics_title, R.string.player_enable_lyrics_popup_message),
     SettingsEntryTarget("appearance.notification_player.notificationPlayerFirstIcon", 2, R.string.settings_section_notification_player_title, R.string.player_notification_first_action),
     SettingsEntryTarget("appearance.notification_player.notificationPlayerSecondIcon", 2, R.string.settings_section_notification_player_title, R.string.player_notification_second_action),
-    SettingsEntryTarget("appearance.player_presets_and_layout.appearancepresets", 2, R.string.player_presets_and_layout, R.string.settings_player_appearance_presets_title, listOf(R.string.settings_player_appearance_presets_preview_description)),
     SettingsEntryTarget("appearance.player_presets_and_layout.playertype", 2, R.string.player_presets_and_layout, R.string.player_type),
     SettingsEntryTarget("appearance.player_presets_and_layout.queuetype", 2, R.string.player_presets_and_layout, R.string.settings_player_queue_style_label),
     SettingsEntryTarget("appearance.player_presets_and_layout.thumbnailtype", 2, R.string.player_presets_and_layout, R.string.settings_player_artwork_style_label),

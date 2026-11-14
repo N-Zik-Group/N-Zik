@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">Espaciats uniformement</string>
     <string name="settings_player_album_cover_visible_label">Mostra la portada de l\'àlbum</string>
     <string name="settings_player_appearance_page_description">The appearance section contains settings for the player\'s visual appearance</string>
-    <string name="settings_player_appearance_presets_preview_description">Les previsualitzacions seran de baixa qualitat</string>
-    <string name="settings_player_appearance_presets_title">Presets d\'aparença</string>
     <string name="settings_player_artwork_animation_enabled_label">Mostra l\'animació de la miniatura de la portada</string>
     <string name="settings_player_artwork_animation_style_label">Tipus d\'animació de portada</string>
     <string name="settings_player_artwork_carousel_label">Vista de carrusel</string>

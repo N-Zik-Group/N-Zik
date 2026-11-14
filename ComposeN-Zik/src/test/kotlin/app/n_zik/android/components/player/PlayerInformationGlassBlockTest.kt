@@ -437,9 +437,9 @@ class PlayerInformationGlassBlockTest {
             Box(Modifier.requiredWidth(width.value).testTag("viewport")) {
                 @Composable fun Metadata() {
                     if (modern.value) app.n_zik.android.ui.screens.player.components.controls.InfoAlbumAndArtistModern(
-                        binder, nav, "album", media, media.id, "Layout title", null, null, false, "Layout artist", {}, true)
+                        binder.player, nav, "album", media, media.id, "Layout title", null, null, false, "Layout artist", {}, true)
                     else app.n_zik.android.ui.screens.player.components.controls.InfoAlbumAndArtistEssential(
-                        binder, nav, "album", media, media.id, "Layout title", null, null, "Layout artist", false, {}, true)
+                        binder.player, nav, "album", media, media.id, "Layout title", null, null, "Layout artist", false, {}, true)
                 }
                 @Composable fun NativeFlow() {
                     Column(Modifier.padding(horizontal = inset.value).testTag("metadata.flow"),
