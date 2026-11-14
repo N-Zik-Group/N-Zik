@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_preview_gallery_description">Sehen Sie, wie Ihr Theme über N-Zik mit einer Vorschau auf Normal und Glas aussieht.</string>
+    <string name="theme_store_preview_section">Theme-Vorschau</string>
+    <string name="theme_preview_generate">Vorschaubilder erstellen</string>
+    <string name="theme_preview_replace">Bild ersetzen</string>
+    <string name="theme_preview_scene_failed">Konnte %1$s nicht erfassen.</string>
+    <string name="theme_preview_replacement_failed">Wählen Sie ein gültiges Porträtbild bis 16 Megapixel.</string>
+</resources>
