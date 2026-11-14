@@ -339,8 +339,6 @@
     <string name="settings_player_actions_spaced_evenly_label">Spaced Evenly</string>
     <string name="settings_player_album_cover_visible_label">Show Album Cover</string>
     <string name="settings_player_appearance_page_description">قسم المظهر يحتوي على إعدادات لمظهر اللاعب البصري</string>
-    <string name="settings_player_appearance_presets_preview_description">المعاينات ستكون بجودة منخفضة</string>
-    <string name="settings_player_appearance_presets_title">الإعداد المسبق للمظهر</string>
     <string name="settings_player_artwork_animation_enabled_label">إظهار صورة الصورة المصغرة للغلاف</string>
     <string name="settings_player_artwork_animation_style_label">نوع الرسوم المتحركة للتغطية</string>
     <string name="settings_player_artwork_carousel_label">Carousel View</string>
