@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_preview_gallery_description">Podívejte se, jak vaše šablona vypadá napříč N-Zik s náhledem Normální a skleněné.</string>
+    <string name="theme_store_preview_section">Náhled motivu</string>
+    <string name="theme_preview_generate">Generovat náhled obrázků</string>
+    <string name="theme_preview_replace">Nahradit obrázek</string>
+    <string name="theme_preview_scene_failed">Nelze zachytit %1$s.</string>
+    <string name="theme_preview_replacement_failed">Vyberte platný obraz na výšku do 16 megapixelů.</string>
+</resources>
