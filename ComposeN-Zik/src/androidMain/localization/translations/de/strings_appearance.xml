@@ -264,6 +264,14 @@
     <string name="theme_store_choose_revision">Version auswählen</string>
     <string name="theme_store_published_on">Veröffentlicht auf %1$s</string>
     <string name="theme_store_compatibility">N-Zik Kompatibilität</string>
+    <string name="theme_store_submission_minimum_version">Minimale N-Zik Version</string>
+    <string name="theme_store_submission_minimum_description">Die älteste Version, die dieses Theme anwenden kann. Neue Themes standardmäßig auf Versionscode %3$d. Sie verwenden N-Zik %1$s (Versionscode %2$d).</string>
+    <string name="theme_store_submission_version_code_label">Minimaler Versionscode</string>
+    <string name="theme_store_submission_find_version_code">N-Zik-Versionen und -Codes finden</string>
+    <string name="theme_store_submission_version_with_code">%1$s (Code %2$d)</string>
+    <string name="theme_store_submission_version_code">Versionscode %1$d</string>
+    <string name="theme_store_submission_version_required">Gib den Versionscode %1$d ein.</string>
+    <string name="theme_store_submission_version_range">Gib einen Versionscode zwischen %1$d und %2$d ein.</string>
     <string name="theme_store_revision">Revision %1$d</string>
     <string name="theme_store_authors">Urheber</string>
     <string name="theme_store_author_theme_count">Themen: %1$d</string>
@@ -433,6 +441,7 @@
     <string name="theme_store_preview_import_requirements">Vorschauen sind öffentlich. Persönliche Informationen nicht aus Screenshots. PNG, JPEG oder WebP · 4 MB pro Bild.</string>
     <string name="theme_store_preview_import_error">Dieses Bild konnte nicht importiert werden. Wählen Sie ein PNG, JPEG oder WebP Bild unter 4 MB.</string>
     <string name="theme_store_submission_included">Inklusive Einstellungen</string>
+    <string name="theme_store_submission_unsupported_categories">Diese Gruppen enthalten Einstellungen, die nicht in einem Theme geteilt werden können: %1$s.</string>
     <string name="theme_store_submission_sending">Senden zur Prüfung…</string>
     <string name="theme_store_report_theme">Thema melden</string>
     <string name="theme_store_report_review">Bewertung melden</string>
