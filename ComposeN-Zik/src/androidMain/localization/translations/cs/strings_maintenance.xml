@@ -323,4 +323,9 @@
     <string name="updates_check_failed">Nelze zkontrolovat aktualizace.</string>
     <string name="updates_install_generic_error">Aktualizace se nepodařilo nainstalovat.</string>
     <string name="updates_channel_available_format">Aktualizace %1$s je k dispozici</string>
+    <string name="recovery_theme_backup_title">Motivy</string>
+    <string name="recovery_theme_backup_no_match">Zde lze obnovit pouze motivy z profilů dostupných v tomto zobrazení.</string>
+    <string name="recovery_theme_backup_operation_failed">Nelze dokončit operaci zálohování šablony.</string>
+    <string name="recovery_theme_backup_restore_action">Obnovit motivy</string>
+    <string name="recovery_theme_backup_restore_description">Otevřete poslední zálohu šablony použité pro tento profil.</string>
 </resources>
