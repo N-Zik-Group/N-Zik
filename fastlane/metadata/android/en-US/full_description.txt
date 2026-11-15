@@ -1,9 +1,5 @@
 A multilingual YouTube Music frontend for Android, focused on performance, UI/UX refinements, feature expansion, and long-term support.
 
-<b>N-Zik</b> is an open-source fork of <a href="https://github.com/knighthat/Kreate">Kreate</a>.
-
-<b>Note:</b> N-Zik started as a side project. For more mature alternatives, check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
-
 <b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), reviewed and tested before shipping.
 
 ✨ <b>WHY N-ZIK?</b> No ads, background playback, offline caching, customizable UI - free, always.
@@ -13,6 +9,10 @@ A multilingual YouTube Music frontend for Android, focused on performance, UI/UX
 - Themes: AMOLED, Deep Dark, Crisp Light + tinted accents
 - 3D Carousel Player, home widgets, unified player and mini-player
 - Artist profiles, Discovery and moods, collapsible home headers
+
+🎨 <b>Theme Store</b>
+- Browse and download community themes, preview them in Normal and Glass, and choose which appearance settings to apply.
+- Create local themes or share your designs with the community. Import and export themes as ZIP files.
 
 🫧 <b>Glass Effect (BETA, optional)</b>
 Disabled on fresh installs. Enable in Settings: native, contour-only or Glass by category, with adjustable quality. May increase rendering work and battery use; reduce quality or disable if needed.
