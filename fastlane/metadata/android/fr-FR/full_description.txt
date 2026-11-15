@@ -11,7 +11,7 @@ Un frontend multilingue YouTube Music pour Android, axé sur les performances, l
 - Profils d'artistes, Discovery et ambiances, en-têtes pliables
 
 🎨 <b>Magasin de Thèmes</b>
-- Parcourez et téléchargez les thèmes de la communauté, prévisualisez-les en mode Normal et Verre et choisissez les paramètres d'apparence à appliquer.
+- Parcourez et téléchargez les thèmes de la communauté, prévisualisez-les dans les styles « Normal » et « Glass », puis choisissez les paramètres d'apparence à appliquer.
 - Créez des thèmes locaux ou partagez vos designs avec la communauté. Importer et exporter des thèmes sous forme de fichiers ZIP.
 
 🫧 <b>Effet Glass (BETA, facultatif)</b>
