@@ -275,3 +275,20 @@ Added:
 Improved:
 - improve(notifications): preload existing notifications, animate arrivals and dismissals, and support swipe and Clear all.
 - improve(navigation): reuse the Rewind mini-player transition for Notifications and Theme Store, and restore the app header after Clear all.
+
+Added:
+- feat(theme-store): browse, preview, apply and share community themes
+  - Include a Stock theme, Normal and Glass previews, profile-specific downloads and local themes, and GitHub submissions with withdrawal support.
+- feat(backup): add theme archives and a selectable automatic backup
+  - Import and export theme ZIP files with the existing backup categories. Rescue opens the picker directly and restores themes under their original profile.
+  - Add an off-by-default switch that pauses automatic backup while retaining the selected folder, categories and timing.
+
+Improved:
+- improve(storage): account for themes and lyrics and consolidate cleanup
+  - Show separate usage rows and group cleanup choices into caches and explicitly removable data.
+  - Confirm the selected categories and profile, preserve custom data, and report a successful cleanup with a toast.
+- improve(settings): index storage cleanup and automatic backup in global and page search.
+
+Fixed:
+- fix(glass): refine dialog controls, loading indicators and navigation surfaces
+  - Keep previews, artwork and headers legible during interaction and transitions.
