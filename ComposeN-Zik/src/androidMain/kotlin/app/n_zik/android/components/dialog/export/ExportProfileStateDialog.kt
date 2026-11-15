@@ -29,13 +29,16 @@ class ExportProfileStateDialog private constructor(
 ) {
     companion object {
         @Composable
-        operator fun invoke(context: Context): ExportProfileStateDialog {
+        operator fun invoke(context: Context, onPickerFinished: () -> Unit = {}): ExportProfileStateDialog {
             return ExportProfileStateDialog(
                 context,
                 rememberLauncherForActivityResult(
                     ActivityResultContracts.CreateDocument("text/plain")
                 ) { uri ->
-                    uri ?: return@rememberLauncherForActivityResult
+                    if (uri == null) {
+                        onPickerFinished()
+                        return@rememberLauncherForActivityResult
+                    }
                     NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                         val result = RescueFiles.exportProfileState(context, uri)
                         withContext(NzikDispatchers.UI) {
@@ -50,6 +53,7 @@ class ExportProfileStateDialog private constructor(
                             }
                         }
                     }
+                    onPickerFinished()
                 }
             )
         }

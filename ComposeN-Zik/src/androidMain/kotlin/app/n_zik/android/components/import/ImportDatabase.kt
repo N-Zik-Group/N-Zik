@@ -69,14 +69,18 @@ class ImportDatabase private constructor(
         operator fun invoke(
             context: Context,
             onImportComplete: (() -> Unit)? = null,
-            onFilePicked: ((Uri) -> Unit)? = null
+            onFilePicked: ((Uri) -> Unit)? = null,
+            onCancelled: () -> Unit = {}
         ): ImportDatabase =
             ImportDatabase(
                 rememberLauncherForActivityResult(
                     ActivityResultContracts.OpenDocument()
                 ) { uri ->
                     Timber.tag("ImportDatabase").d("File picker callback received, uri: $uri")
-                    uri ?: return@rememberLauncherForActivityResult
+                    if (uri == null) {
+                        onCancelled()
+                        return@rememberLauncherForActivityResult
+                    }
 
                     // Deferred mode: the caller keeps the URI and runs the import later,
                     // into the profile picked in the target dialog.

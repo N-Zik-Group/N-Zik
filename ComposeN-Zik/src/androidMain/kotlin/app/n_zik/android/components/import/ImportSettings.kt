@@ -78,7 +78,8 @@ class ImportSettings private constructor(
         operator fun invoke(
             context: Context,
             onImportComplete: (() -> Unit)? = null,
-            onFilePicked: ((Uri) -> Unit)? = null
+            onFilePicked: ((Uri) -> Unit)? = null,
+            onCancelled: () -> Unit = {}
         ): ImportSettings {
             val coroutineScope = rememberCoroutineScope()
             return ImportSettings(
@@ -86,7 +87,10 @@ class ImportSettings private constructor(
                     ActivityResultContracts.OpenDocument()
                 ) { uri ->
                     Timber.tag("ImportSettings").d("File picker callback received, uri: $uri")
-                    uri ?: return@rememberLauncherForActivityResult
+                    if (uri == null) {
+                        onCancelled()
+                        return@rememberLauncherForActivityResult
+                    }
 
                     // Deferred mode: the caller keeps the URI and runs the import later,
                     // into the profile picked in the target dialog.

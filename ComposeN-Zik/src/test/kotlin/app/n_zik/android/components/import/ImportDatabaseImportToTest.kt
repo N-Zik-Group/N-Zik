@@ -10,6 +10,7 @@ import app.n_zik.android.components.image.ownedCoverMutationMutex
 import app.n_zik.android.core.backup.backupJpeg
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.backup.openBackupFixture
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.core.rewind.RewindPostImportRegenerationWorker
 import io.mockk.Runs
 import io.mockk.every
@@ -99,7 +100,7 @@ class ImportDatabaseImportToTest {
         every { Database.checkpoint() } returns 0
         every { Database.close() } just Runs
         mockkObject(RewindPostImportRegenerationWorker)
-        every { RewindPostImportRegenerationWorker.schedule(any()) } just Runs
+        every { RewindPostImportRegenerationWorker.schedule(any(), any()) } just Runs
     }
 
     @After
@@ -144,7 +145,7 @@ class ImportDatabaseImportToTest {
         // The running database is not checkpointed, closed, nor regenerated.
         verify(exactly = 0) { Database.checkpoint() }
         verify(exactly = 0) { Database.close() }
-        verify(exactly = 0) { RewindPostImportRegenerationWorker.schedule(any()) }
+        verify(exactly = 0) { RewindPostImportRegenerationWorker.schedule(any(), any()) }
     }
 
     @Test
@@ -159,7 +160,7 @@ class ImportDatabaseImportToTest {
         assertFalse(baseWal.exists())
         verify(exactly = 1) { Database.checkpoint() }
         verify(exactly = 1) { Database.close() }
-        verify(exactly = 1) { RewindPostImportRegenerationWorker.schedule(context) }
+        verify(exactly = 1) { RewindPostImportRegenerationWorker.schedule(context, ProfileStorageIdentity("default", "legacy")) }
     }
 
     @Test

@@ -29,7 +29,8 @@ class ExportSettingsDialog private constructor(
     private val includeYtbState: MutableState<Boolean>,
     private val includeDiscordState: MutableState<Boolean>,
     private val includeLastfmState: MutableState<Boolean>,
-    private val includeProxyState: MutableState<Boolean>
+    private val includeProxyState: MutableState<Boolean>,
+    private val includeGitHubState: MutableState<Boolean>
 ) {
     companion object {
         private fun onExport(
@@ -38,7 +39,7 @@ class ExportSettingsDialog private constructor(
             includeYtb: Boolean,
             includeDiscord: Boolean,
             includeLastfm: Boolean,
-            includeProxy: Boolean
+            includeProxy: Boolean, includeGitHub: Boolean
         ) = NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
             runCatching {
                 Timber.tag("ExportSettingsDialog").d("Starting settings export...")
@@ -52,7 +53,7 @@ class ExportSettingsDialog private constructor(
                         includeYtb,
                         includeDiscord,
                         includeLastfm,
-                        includeProxy
+                        includeProxy, includeGitHub
                     )
                 )
 
@@ -81,6 +82,7 @@ class ExportSettingsDialog private constructor(
             val includeYtbState = rememberSaveable { mutableStateOf(false) }
             val includeDiscordState = rememberSaveable { mutableStateOf(false) }
             val includeLastfmState = rememberSaveable { mutableStateOf(false) }
+            val includeGitHubState = rememberSaveable { mutableStateOf(false) }
             val includeProxyState = rememberSaveable { mutableStateOf(false) }
             val launcher = rememberLauncherForActivityResult(
                 ActivityResultContracts.CreateDocument( "text/csv" )
@@ -94,20 +96,21 @@ class ExportSettingsDialog private constructor(
                 val discord = includeDiscordState.value
                 val lastfm = includeLastfmState.value
                 val proxy = includeProxyState.value
-                onExport(uri, context, ytb, discord, lastfm, proxy)
+                onExport(uri, context, ytb, discord, lastfm, proxy, includeGitHubState.value)
                 onPickerFinished()
             }
             return remember(launcher, context) {
-                ExportSettingsDialog(launcher, context, includeYtbState, includeDiscordState, includeLastfmState, includeProxyState)
+                ExportSettingsDialog(launcher, context, includeYtbState, includeDiscordState, includeLastfmState, includeProxyState, includeGitHubState)
             }
         }
     }
 
-    fun export(includeYtb: Boolean = false, includeDiscord: Boolean = false, includeLastfm: Boolean = false, includeProxy: Boolean = false) {
+    fun export(includeYtb: Boolean = false, includeDiscord: Boolean = false, includeLastfm: Boolean = false, includeProxy: Boolean = false, includeGitHub: Boolean = false) {
         includeYtbState.value = includeYtb
         includeDiscordState.value = includeDiscord
         includeLastfmState.value = includeLastfm
         includeProxyState.value = includeProxy
+        includeGitHubState.value = includeGitHub
         val date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
         val fileName = "${BuildConfig.APP_NAME} $date Settings"
         Timber.tag("ExportSettingsDialog").d("Launching file picker with name: $fileName.csv")

@@ -2,9 +2,7 @@ package app.n_zik.android.components.onboarding
 
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,13 +11,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -31,18 +25,21 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.dialog.backup.BackupContent
+import app.n_zik.android.components.dialog.backup.ImportBackupContentOptions
 import app.n_zik.android.components.dialog.backup.ImportTargetProfileDialog
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.components.import.ImportChainRunner
@@ -50,9 +47,9 @@ import app.n_zik.android.components.import.ImportDatabase
 import app.n_zik.android.components.import.ImportProfileState
 import app.n_zik.android.components.import.ImportSettings
 import app.n_zik.android.components.import.buildProfileTargetOptions
+import app.n_zik.android.components.settings.appearance.preview.rememberThemeCollectionBackup
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.typography
-import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -85,14 +82,12 @@ fun OnboardingImportScreen(
 ) {
     val context = LocalContext.current
 
-    // Default to restoring both — the most useful outcome for a first-launch restore.
-    // rememberSaveable: a rotation mid-flow must keep the chosen option, the import
-//
-    // mode and the picked files of the deferred chain (a late picker result is
-    // evaluated against them)
-    var selectedOption by rememberSaveable { mutableIntStateOf(2) }
-    // 0 = single option, 1 = both (database -> settings), 2 = all (database -> settings -> profile state)
-    var importMode by rememberSaveable { mutableIntStateOf(0) }
+    // Preserve the default first-launch database and settings restore.
+    var selectedOptions by rememberSaveable {
+        mutableIntStateOf(BackupContent.Database.flag or BackupContent.Settings.flag)
+    }
+    var regularOptions by rememberSaveable { mutableIntStateOf(0) }
+    var pendingThemeRestore by remember { mutableStateOf<((() -> Unit) -> Unit)?>(null) }
     var pendingDb by rememberSaveable { mutableStateOf<Uri?>(null) }
     var pendingSettings by rememberSaveable { mutableStateOf<Uri?>(null) }
     var pendingState by rememberSaveable { mutableStateOf<Uri?>(null) }
@@ -130,23 +125,33 @@ fun OnboardingImportScreen(
         pendingDb = null
         pendingSettings = null
         pendingState = null
+        pendingThemeRestore = null
     }
 
     fun startImportChain(target: String) {
+        val restoreThemes = pendingThemeRestore
+        if (BackupContent.Themes.isSelected(selectedOptions) && restoreThemes == null) {
+            abortChain()
+            return
+        }
         val db = pendingDb
         val settings = pendingSettings
         val state = pendingState
         pendingDb = null
         pendingSettings = null
         pendingState = null
-        ImportChainRunner.start(
-            context = context,
-            target = target,
-            databaseUri = db,
-            settingsUri = settings,
-            stateUri = state,
-            onCompleted = { onComplete() }
-        )
+        pendingThemeRestore = null
+        val runImport = {
+            ImportChainRunner.start(
+                context = context,
+                target = target,
+                databaseUri = db,
+                settingsUri = settings,
+                stateUri = state,
+                onCompleted = { onComplete() }
+            )
+        }
+        if (restoreThemes == null) runImport() else restoreThemes(runImport)
     }
 
     fun showTargetDialog(preselect: String?, imported: List<Pair<String, String>>) {
@@ -233,37 +238,47 @@ fun OnboardingImportScreen(
         }
     ) { _, _ -> }
 
-    // Settings pick: in the all chain the state picker runs next, otherwise the
-    // target-profile question.
-    val importSettings = ImportSettings(context, onFilePicked = { uri ->
+    val importSettings = ImportSettings(context, onCancelled = ::abortChain, onFilePicked = { uri ->
         pendingSettings = uri
-        if (importMode == 2) {
-            Timber.tag("Onboarding").d("Chaining the profile state pick (all mode)")
+        if (BackupContent.Profiles.isSelected(regularOptions)) {
             importProfileStateDeferred.onShortClick()
         } else {
             openTargetDialog()
         }
     })
 
-    // Database pick: in the both/all chain the settings picker runs next,
-    // otherwise the target-profile question.
-    val importDatabase = ImportDatabase(context, onFilePicked = { uri ->
+    val importDatabase = ImportDatabase(context, onCancelled = ::abortChain, onFilePicked = { uri ->
         pendingDb = uri
-        if (importMode == 1 || importMode == 2) {
-            Timber.tag("Onboarding").d("Chaining the settings pick (mode: $importMode)")
-            importSettings.onShortClick()
-        } else {
-            openTargetDialog()
+        when {
+            BackupContent.Settings.isSelected(regularOptions) -> importSettings.onShortClick()
+            BackupContent.Profiles.isSelected(regularOptions) -> importProfileStateDeferred.onShortClick()
+            else -> openTargetDialog()
         }
     })
 
-    val options = listOf(
-        Triple(0, stringResource(R.string.backup_target_database_label), stringResource(R.string.backup_import_database_with_covers_description)),
-        Triple(1, stringResource(R.string.settings_title), stringResource(R.string.backup_import_settings_description)),
-        Triple(2, stringResource(R.string.backup_target_database_and_settings_label), stringResource(R.string.backup_import_database_with_covers_and_settings_description)),
-        // The profile state option (the list + every face) — "Profiles", not the login accounts
-        Triple(3, stringResource(R.string.profile_title), stringResource(R.string.backup_import_accounts_description)),
-        Triple(4, stringResource(R.string.backup_import_all), stringResource(R.string.backup_import_all_with_covers_description))
+    fun startRegularImport() {
+        when {
+            BackupContent.Database.isSelected(regularOptions) -> importDatabase.onShortClick()
+            BackupContent.Settings.isSelected(regularOptions) -> importSettings.onShortClick()
+            BackupContent.Profiles.isSelected(regularOptions) -> {
+                if (pendingThemeRestore != null) importProfileStateDeferred.onShortClick()
+                else importProfileState.onShortClick()
+            }
+            else -> onComplete()
+        }
+    }
+
+    val includeThemes = BackupContent.Themes.isSelected(selectedOptions)
+    val themeBackup = rememberThemeCollectionBackup(
+        export = false,
+        selected = includeThemes,
+        onComplete = { onComplete() },
+        onImportPrepared = if (selectedOptions and BackupContent.Themes.flag.inv() != 0) {
+            { restore ->
+                pendingThemeRestore = restore
+                startRegularImport()
+            }
+        } else null,
     )
 
     Column(
@@ -313,70 +328,33 @@ fun OnboardingImportScreen(
         OnboardingActionCard(
             icon = R.drawable.server,
             title = stringResource(R.string.backup_action_import),
-            description = stringResource(R.string.backup_import_library_options_description),
+            description = stringResource(R.string.backup_import_with_themes_description),
             extraContent = {
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // The restore options — same layout as ImportBackupDialog
-                options.forEach { (index, optionTitle, optionDescription) ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(uiRoundnessShape())
-                            .clickable { selectedOption = index }
-                            .padding(vertical = 8.dp, horizontal = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = selectedOption == index,
-                            onClick = { selectedOption = index },
-                            colors = RadioButtonDefaults.colors(
-                                selectedColor = colorPalette().text,
-                                unselectedColor = colorPalette().textSecondary
-                            ),
-                            modifier = Modifier.size(20.dp)
-                        )
+                ImportBackupContentOptions(selectedOptions, { selectedOptions = it }) { themeBackup.Content() }
 
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = optionTitle,
-                                style = typography().xs,
-                                fontWeight = FontWeight.SemiBold,
-                                color = colorPalette().text
-                            )
-                            Text(
-                                text = optionDescription,
-                                style = typography().xxs,
-                                color = colorPalette().textSecondary
-                            )
-                        }
-                    }
-                }
-
-                OnboardingPrimaryButton(
-                    onClick = {
-                        importMode = when (selectedOption) {
-                            2 -> 1
-                            4 -> 2
-                            else -> 0
-                        }
-                        Timber.tag("Onboarding").d("Restore started, option: $selectedOption (importMode: $importMode)")
-                        when (selectedOption) {
-                            0 -> importDatabase.onShortClick()
-                            1 -> importSettings.onShortClick()
-                            2 -> importDatabase.onShortClick()
-                            3 -> importProfileState.onShortClick()
-                            4 -> importDatabase.onShortClick()
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 12.dp)
-                ) {
-                    Text(stringResource(R.string.common_action_import))
-                }
+                Spacer(modifier = Modifier.height(12.dp))
+                ButtonRow(listOf(
+                    DialogButton(
+                        text = stringResource(R.string.common_action_cancel),
+                        onClick = {
+                            abortChain()
+                            selectedOptions = 0
+                        },
+                        danger = true,
+                    ),
+                    DialogButton(
+                        text = stringResource(if (includeThemes) themeBackup.primaryLabelRes else R.string.common_action_import),
+                        onClick = {
+                            abortChain()
+                            regularOptions = selectedOptions and BackupContent.Themes.flag.inv()
+                            if (includeThemes) themeBackup.submit() else startRegularImport()
+                        },
+                        primary = true,
+                        enabled = selectedOptions != 0 && (!includeThemes || themeBackup.canSubmit),
+                    ),
+                ))
             }
         )
 
