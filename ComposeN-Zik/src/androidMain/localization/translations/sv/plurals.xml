@@ -193,4 +193,8 @@
         <item quantity="one">%1$d jobb är inte klart</item>
         <item quantity="other">%1$d jobb är inte färdiga</item>
     </plurals>
+    <plurals name="theme_store_settings_count">
+        <item quantity="one">%d inställning</item>
+        <item quantity="other">%d inställningar</item>
+    </plurals>
 </resources>
