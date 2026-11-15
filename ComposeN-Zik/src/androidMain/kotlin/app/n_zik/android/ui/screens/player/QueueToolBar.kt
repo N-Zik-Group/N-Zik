@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -71,12 +72,13 @@ fun QueueToolBar(
     modifier: Modifier = Modifier
 ) {
     val bottomInset = queueToolbarBottomInset()
+    val toolbarHeight = 60.dp
 
     GlassQueueToolbar(
         modifier = modifier
             .fillMaxWidth()
             .clickable { QueueToolBarState.onBarClick() }
-            .height(60.dp + bottomInset)
+            .height(toolbarHeight + bottomInset)
     ) {
         if (!isLandscape) {
             val miniPlayerOffset = Dimensions.miniPlayerHeight
@@ -92,6 +94,8 @@ fun QueueToolBar(
             Box(
                 Modifier.offset(0.dp, yOffset)
                     .align(Alignment.TopCenter)
+                    // The Glass navigation strip extends the surface, not the mini-player slot.
+                    .heightIn(max = toolbarHeight)
             ) { QueueEmbeddedMini { MiniPlayer({}, {}) } }
         }
 
