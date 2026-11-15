@@ -4,7 +4,17 @@ Fixed:
   - Restore the saved position and resolve durable artwork sources on phone and Android Auto while respecting active selections and profile settings.
   - Preserve custom artwork references and hide internal title prefixes while retaining the explicit badge.
 
+- improve(theme-store): show a store-style review card and inspect included settings
+  - Share the preview frame and summary across local creation, local editing, publishing and online editing.
+  - Show the preview details, saved content and expandable setting lists before saving or submitting.
+
 Fixed:
+- fix(theme-store): preserve portable appearance across theme export, import and demo
+  - Preserve palettes, lyrics, Glass, player controls, navigation, nested layouts, indicators and visual settings.
+  - Use Stock defaults for missing demo settings and keep omitted fields untouched when applying an existing theme.
+  - Refresh notification buttons immediately when applying or undoing a theme.
+- fix(about): animate the Credits section
+  - Match the fade and scale transitions of the other About sections.
 - fix(glass): resolve interaction and rendering audit findings
   - Give the Storage info and debug badges Jelly feedback, keep searched settings below the header, and preserve native profile-action geometry.
   - Track the finger with the profile menu ripple and isolate the On and Off preview interactions while keeping both preview bars visible.

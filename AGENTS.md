@@ -1,6 +1,6 @@
 # AGENTS.md — NZik
 
-**Version:** 1.15.0 | **Last updated:** 2026-11-13
+**Version:** 1.16.0 | **Last updated:** 2026-11-15
 
 **MANDATORY: Read this file + rules/*.md before any task.**
 
@@ -192,6 +192,12 @@ Context control takes priority over agent reuse. Delegate substantial, separable
 | `rules/BMAD-TOOLS.md` | IDE skill directories reference                       |
 
 ---
+
+## Theme Store catalog and portable appearance
+
+- The public catalog is in `N-Zik-Group/N-Zik-Theme-Store`, under `catalog/themes`, `catalog/creators`, and `catalog/schemas`.
+- When changing a user-facing Customize option, check whether it belongs in portable appearance. Update the typed allowlist in `ThemePreviewFormat.kt`, the matching catalog schema, and the demo renderer when it uses a separate settings reader.
+- Verify an export from default preferences, a customized export/import round trip, and an existing catalog document. Check local Create and Edit, online Publish and Edit, and regenerate previews after renderer changes. Keep account, library, and runtime state out of appearance documents.
 
 ## Rules Maintenance & Evolution
 
