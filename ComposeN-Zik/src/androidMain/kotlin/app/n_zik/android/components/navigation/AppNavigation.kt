@@ -25,6 +25,8 @@ import app.n_zik.android.components.glass.GlassDialogOverlayHost
 import app.n_zik.android.components.glass.GlassModalContent
 import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.GlassNavigationContent
+import app.n_zik.android.enums.PlayerPosition
+import app.n_zik.android.utils.playerPositionKey
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.rememberGlassArtworkDisplayColors
@@ -239,6 +241,12 @@ fun AppNavigation(
     val currentEntry by navController.currentBackStackEntryAsState()
     val route = currentEntry?.destination?.route
     val captureGlass = glassSettings.enabled && glassRenderer(glassSettings) != GlassRenderer.Tint
+    val playerPosition by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
+    // The bottom dock and mini-player can both sample the page directly. Recording
+    // the dock in a second full-screen source also records its optical panes again
+    // on every fold frame.
+    val captureMiniChrome = captureGlass && playerPosition == PlayerPosition.Top &&
+        glassSettings.usesGlassMaterial(GlassArea.MiniPlayer)
     val captureNavigationOverlay = captureGlass && parentGlassHost?.sceneBackdrop == null
     SideEffect {
         glassMenuHost.backdrop = if (captureGlass) pageBackdrop else null
@@ -444,7 +452,7 @@ fun AppNavigation(
     ) {
     androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) {
     GlassModalContent(glassMenuHost, manageFocus = parentGlassHost == null, focusSessionKey = currentEntry?.id) {
-    GlassNavigationContent(glassMenuHost, enabled = captureGlass, modifier = Modifier.appearanceBackground()) {
+    GlassNavigationContent(glassMenuHost, enabled = captureMiniChrome, modifier = Modifier.appearanceBackground()) {
     AppHeaderOverlay(
         // The page-only capture cannot cover the header: a fully expanded menu would
         // sample transparent pixels over the header and expose its unblurred icons.
@@ -785,13 +793,7 @@ fun AppNavigation(
         }
 
         chromeComposable(route = NavRoutes.notifications.name) {
-            val backdropColor = colorPalette().background0
-            val backdrop = app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop {
-                drawRect(backdropColor)
-            }
-            CompositionLocalProvider(app.n_zik.android.components.glass.LocalIndependentGlassBackdrop provides backdrop) {
-                app.n_zik.android.components.ui.screens.notifications.NotificationsScreen(navController, miniPlayer)
-            }
+            app.n_zik.android.components.ui.screens.notifications.NotificationsScreen(navController, miniPlayer)
         }
         chromeComposable(route = NavRoutes.themeStore.name) {
             app.n_zik.android.components.settings.appearance.preview.ThemeStoreScreen(navController, miniPlayer)
@@ -815,13 +817,7 @@ fun AppNavigation(
         ) { entry ->
             val themeId = entry.arguments?.getString("themeId") ?: return@chromeComposable
             val revision = entry.arguments?.getInt("revision") ?: return@chromeComposable
-            val backdropColor = colorPalette().background0
-            val backdrop = app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop {
-                drawRect(backdropColor)
-            }
-            CompositionLocalProvider(app.n_zik.android.components.glass.LocalIndependentGlassBackdrop provides backdrop) {
-                app.n_zik.android.components.settings.appearance.preview.ThemeStoreDetailScreen(navController, miniPlayer, themeId, revision)
-            }
+            app.n_zik.android.components.settings.appearance.preview.ThemeStoreDetailScreen(navController, miniPlayer, themeId, revision)
         }
 
         chromeComposable(
@@ -842,13 +838,7 @@ fun AppNavigation(
             arguments = listOf(navArgument("themeId") { type = NavType.StringType }),
         ) { entry ->
             val themeId = entry.arguments?.getString("themeId") ?: return@chromeComposable
-            val backdropColor = colorPalette().background0
-            val backdrop = app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop {
-                drawRect(backdropColor)
-            }
-            CompositionLocalProvider(app.n_zik.android.components.glass.LocalIndependentGlassBackdrop provides backdrop) {
-                app.n_zik.android.components.settings.appearance.preview.ThemeSubmissionPage(navController, miniPlayer, themeId)
-            }
+            app.n_zik.android.components.settings.appearance.preview.ThemeSubmissionPage(navController, miniPlayer, themeId)
         }
 
         chromeComposable(route = NavRoutes.bridgeServer.name) {

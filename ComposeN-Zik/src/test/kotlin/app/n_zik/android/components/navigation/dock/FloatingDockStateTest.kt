@@ -10,6 +10,14 @@ import org.junit.jupiter.api.Test
 
 class FloatingDockStateTest {
     @Test
+    fun `tab optical surface has no visible consumer after the first third of the fold`() {
+        assertEquals(1f, floatingDockTabsAlpha(0f))
+        assertEquals(.25f, floatingDockTabsAlpha(.25f))
+        assertEquals(0f, floatingDockTabsAlpha(1f / 3f))
+        assertEquals(0f, floatingDockTabsAlpha(1f))
+    }
+
+    @Test
     fun `floating navigation follows fold clock with no attached mini while classics keep their attachment policy`() {
         val state = FloatingDockState().apply { foldTarget = 1f }
         val clock = mutableStateOf(.6f)

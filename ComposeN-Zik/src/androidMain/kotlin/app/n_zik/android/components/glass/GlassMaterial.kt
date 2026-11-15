@@ -268,6 +268,7 @@ fun Modifier.glassMaterial(
     customLens: (BackdropEffectScope.(height: Float, amount: Float) -> Unit)? = null,
     // Overlay film and blur policy also serve floating dialogs with a complete perimeter.
     excludeBottomRim: Boolean = menu,
+    foldInProgress: (() -> Boolean)? = null,
 ): Modifier {
     if (!settings.enabled) return this
     val independentBackdrop = LocalIndependentGlassBackdrop.current
@@ -399,6 +400,8 @@ fun Modifier.glassMaterial(
         liveFrame = liveFrame,
         layerBlock = layerBlock,
         exportedBackdrop = exportedBackdrop,
+        frozen = foldInProgress ?: { false },
+        heldWhileMoving = foldInProgress ?: { false },
     ).then(if (exportedBackdrop == null && opticsProgress < 1f) {
         val rim = SolidColor(rimColor.copy(alpha = rimAlpha * (1f - opticsProgress)))
         if (excludeBottomRim) Modifier.glassMenuRim(shape, rim) else Modifier.border(GlassRimWidth, rim, shape)

@@ -403,7 +403,7 @@ fun CustomBottomSheet(
                 }
             }
     ) {
-        if (miniPlayerGlass) PlayerDeployGlassSurface(
+        if (miniPlayerGlass && !state.isCollapsed && !state.isDismissed) PlayerDeployGlassSurface(
             progress = { state.progress }, collapsedHeight = collapsedHeight(),
             startInset = leftInset(), endInset = rightInset(),
             horizontalPadding = horizontalPadding(),
@@ -450,13 +450,19 @@ fun CustomBottomSheet(
                     }
                 }
                 .graphicsLayer {
-                    alpha = playerContentFade(state.progress)
-                    val p = state.progress.coerceIn(0f, 1f)
-                    val corner = collapsedCardCornerPx(baseShape, size, collapsedHeight().toPx(),
-                        horizontalPadding().toPx(), leftInset().toPx(), rightInset().toPx(), this)
-                    shape = CardClipShape(computeCardGeometry(p, size, collapsedHeight().toPx(),
-                        horizontalPadding().toPx(), corner, 28.dp.toPx(), leftInset().toPx(), rightInset().toPx()))
-                    clip = true
+                    val progress = state.progress
+                    val fraction = playerContentFade(progress)
+                    alpha = fraction
+                    clip = progress >= .3f && fraction > .01f
+                    if (clip) {
+                        val height = collapsedHeight().toPx()
+                        val padding = horizontalPadding().toPx()
+                        val left = leftInset().toPx()
+                        val right = rightInset().toPx()
+                        val corner = collapsedCardCornerPx(baseShape, size, height, padding, left, right, this)
+                        shape = CardClipShape(computeCardGeometry(progress.coerceIn(0f, 1f), size,
+                            height, padding, corner, 28.dp.toPx(), left, right))
+                    }
                 },
             content = content
         )

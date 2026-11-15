@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.captureToImage
@@ -297,6 +298,28 @@ class GlassOverlayHostTest {
         assertEquals(68, shared.offset.y)
         val constrained = placeGlassMenu(anchor, IntSize(153, 640), IntSize(360, 640), 48, anchorAligned = true)
         assertEquals(0, constrained.offset.y)
+    }
+
+    @Test fun `RTL menu opens toward the center from a leading physical edge`() {
+        val host = GlassMenuHostState()
+        val trigger = GlassMenuTriggerState()
+        compose.setContent {
+            TestTheme {
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                    GlassOverlayHost(host)
+                }
+            }
+        }
+        compose.runOnIdle {
+            trigger.bounds = Rect(32f, 20f, 80f, 68f)
+            host.show(GlassMenuEntry(
+                id = "rtl-menu", anchor = trigger.bounds, trigger = trigger,
+                settings = GlassSettings(enabled = false), onDismiss = {}, shape = RectangleShape,
+                content = { Box(Modifier.size(120.dp, 48.dp).testTag("rtl-menu-body")) },
+            ))
+        }
+        val entry = compose.onNodeWithTag("rtl-menu-body").assertIsDisplayed().fetchSemanticsNode()
+        assertEquals(32f, entry.boundsInRoot.left, 1f)
     }
 
     @Test

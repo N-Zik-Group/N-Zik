@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertWidthIsAtLeast
@@ -124,6 +125,18 @@ class FloatingDockNavigationTest {
         compose.runOnIdle {
             assertEquals(2, searches)
             assertEquals(0f, state.foldTarget)
+        }
+    }
+
+    @Test fun transparentTabsAreUnplacedDuringExpansionAndKeepTheirComposition() {
+        render(bottomMini = true)
+        compose.runOnIdle { clock.value = .5f }
+        compose.onNodeWithText("Registered songs tab").assertIsNotDisplayed()
+        compose.runOnIdle { clock.value = .25f }
+        compose.onNodeWithText("Registered songs tab").assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(1, tabCompositions)
+            assertEquals(0, tabDisposals)
         }
     }
 

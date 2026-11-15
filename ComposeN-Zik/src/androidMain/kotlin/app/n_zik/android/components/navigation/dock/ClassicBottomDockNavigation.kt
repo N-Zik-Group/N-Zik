@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,20 +69,25 @@ internal fun ClassicBottomDockNavigation(
     val unifiedSurface = (LocalSharedHomeHeaderGlass.current
         ?.takeIf { it.topNavigation && it.owner != null }?.surface
         ?: LocalUnifiedTopGlassSurface.current).takeIf { top && glass }
+    val folding = remember(dock) { { dock.navigationProgress.let { it > 0f && it < 1f } } }
     val surface = if (unifiedSurface != null) Modifier
         else if (glass) Modifier.extendGlassPastScreenEdge(if (top) GlassScreenEdge.Top else GlassScreenEdge.Bottom)
-            .glassMaterial(settings.forArea(GlassArea.Nav), shape, filmColor = color)
+            .glassMaterial(settings.forArea(GlassArea.Nav), shape, filmColor = color,
+                foldInProgress = folding.takeUnless { top })
         else Modifier.background(color, shape).glassAreaContour(settings, GlassArea.Nav, shape)
     val ownBackdrop = rememberLayerBackdrop()
     val backdrop = unifiedSurface ?: ownBackdrop
+    val tabSurfaceUnused = remember(dock) { { floatingDockTabsAlpha(dock.navigationProgress) == 0f } }
     val folded = dock.navigationFolded
     Layout(
         modifier = modifier.fillMaxWidth().navigationGestureScrollBoundary()
             .trackToastObstruction(enabled = !top),
         content = {
             // Bottom includes the Android navigation area; Top owns only its control row.
-            Box((if (unifiedSurface == null) Modifier.layerBackdrop(ownBackdrop) else Modifier).then(surface))
-            Box(Modifier.graphicsLayer { alpha = (1f - dock.navigationProgress * 3f).coerceIn(0f, 1f) }
+            val capture = if (unifiedSurface == null) Modifier.layerBackdrop(ownBackdrop, frozen = tabSurfaceUnused)
+                else Modifier
+            Box(capture.then(surface))
+            Box(Modifier.graphicsLayer { alpha = floatingDockTabsAlpha(dock.navigationProgress) }
                 .drawWithContent {
                     val p = dock.navigationProgress
                     if (p == 0f) drawContent() else {
@@ -121,11 +127,11 @@ internal fun ClassicBottomDockNavigation(
         val sourceX = inset + slot * (selectedIndex + .5f) - compact / 2f
         val homeX = lerp(sourceX, FloatingDockDimensions.outerMargin.dp.toPx(), p).roundToInt()
         val surfacePlaceable = children[0].measure(Constraints.fixed(width, row + bottom))
-        val tabPlaceable = children[1].measure(Constraints.fixed(width, row))
+        val tabPlaceable = if (floatingDockTabsAlpha(p) > 0f) children[1].measure(Constraints.fixed(width, row)) else null
         val home = children[2].measure(Constraints.fixed(compact, compact))
         layout(width, row + bottom) {
             surfacePlaceable.placeRelative(0, 0)
-            if (p < 1f) tabPlaceable.placeRelative(0, 0)
+            tabPlaceable?.placeRelative(0, 0)
             if (p > 0f) home.placeRelative(homeX, (row - compact) / 2)
         }
     }

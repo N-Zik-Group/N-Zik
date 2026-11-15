@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -70,10 +71,12 @@ internal fun FloatingDockNavigation(
     val shape = uiRoundnessShape()
     val nativeColor = surfaceColor(colorPalette().background1)
     val useGlass = settings.usesGlassMaterial(GlassArea.Nav)
+    val folding = remember(dock) { { dock.navigationProgress.let { it > 0f && it < 1f } } }
     val surface = if (useGlass)
-        Modifier.glassMaterial(settings.forArea(GlassArea.Nav), shape, filmColor = nativeColor)
+        Modifier.glassMaterial(settings.forArea(GlassArea.Nav), shape, filmColor = nativeColor, foldInProgress = folding)
     else Modifier.background(nativeColor, shape).glassAreaContour(settings, GlassArea.Nav, shape)
     val surfaceBackdrop = rememberLayerBackdrop()
+    val tabSurfaceUnused = remember(dock) { { floatingDockTabsAlpha(dock.navigationProgress) == 0f } }
     val folded = dock.navigationFolded
     val bottomMiniFraction by animateFloatAsState(
         targetValue = if (dock.hasBottomMini) 1f else 0f,
@@ -88,9 +91,9 @@ internal fun FloatingDockNavigation(
             .padding(bottom = bottomPadding),
         content = {
             // Surface alone changes width. The selector samples this sibling, never itself.
-            Box(Modifier.layerBackdrop(surfaceBackdrop).then(surface))
+            Box(Modifier.layerBackdrop(surfaceBackdrop, frozen = tabSurfaceUnused).then(surface))
             Box(Modifier.graphicsLayer {
-                alpha = (1f - dock.navigationProgress * 3f).coerceIn(0f, 1f)
+                alpha = floatingDockTabsAlpha(dock.navigationProgress)
             }.drawWithContent {
                 val p = dock.navigationProgress
                 if (p == 0f) drawContent() else {
@@ -140,23 +143,26 @@ internal fun FloatingDockNavigation(
         val selectedX = geometry.selectedX + navX
         val nav = children[0].measure(Constraints.fixed(navWidth, height))
         // Width never collapses, preventing slot churn and preserving the liquid drag state.
-        val tabs = children[1].measure(Constraints.fixed(width, height))
+        val tabs = if (floatingDockTabsAlpha(p) > 0f) children[1].measure(Constraints.fixed(width, height)) else null
         val home = children[2].measure(Constraints.fixed(circle, height))
         val searchSurface = children.getOrNull(3)?.measure(Constraints.fixed(circle, height))
         val searchControl = children.getOrNull(4)?.measure(Constraints.fixed(circle, height))
         layout(width, height) {
             nav.placeRelative(navX, 0)
-            if (p < 1f) tabs.placeRelative(0, 0)
+            tabs?.placeRelative(0, 0)
             // Invisible detached controls must not enter hit testing over the resting tabs.
             // A disabled clickable still owns pointer input and would shield the selector.
             if (p > 0f) {
                 home.placeRelative(selectedX, 0)
-                searchSurface?.placeRelative(searchX, 0)
+                if (bottomMiniFraction > 0f) searchSurface?.placeRelative(searchX, 0)
                 searchControl?.placeRelative(searchX, 0)
             }
         }
     }
 }
+
+// The optical selector is no longer visible after the first third of a fold.
+internal fun floatingDockTabsAlpha(progress: Float): Float = (1f - progress * 3f).coerceIn(0f, 1f)
 
 internal fun floatingDockClipPath(shape: Shape, size: Size, left: Float, direction: LayoutDirection, density: Density): Path =
     Path().apply {

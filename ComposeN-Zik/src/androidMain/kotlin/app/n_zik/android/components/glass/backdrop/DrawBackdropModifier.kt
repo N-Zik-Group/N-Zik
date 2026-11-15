@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.fastCoerceIn
 import androidx.compose.ui.unit.toSize
 import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.opticalRecordingCoordinates
 import app.n_zik.android.components.glass.backdrop.highlight.Highlight
 import app.n_zik.android.components.glass.backdrop.highlight.HighlightElement
 import app.n_zik.android.components.glass.backdrop.internal.ShapeProvider
@@ -453,6 +454,10 @@ private class DrawBackdropNode(
         exportedBackdrop?.materialChanged()
         invalidateDraw()
     })
+    private val sourceObserver = delegate(MaterialObserverNode {
+        exportedBackdrop?.materialChanged()
+        invalidateDraw()
+    })
     private var exportedOutline: Outline? = null
     private var exportedHighlight: Any? = null
     private var exportedShadow: Any? = null
@@ -537,14 +542,21 @@ private class DrawBackdropNode(
                 (effectScope.size.width + padding * 2f) / scale,
                 (effectScope.size.height + padding * 2f) / scale,
             )
-            onDrawBackdrop {
-                with(backdrop) {
-                    drawBackdrop(
-                        density = effectScope,
-                        coordinates = layoutCoordinates,
-                        layerBlock = layerBlock
-                    )
+            val coordinates = layoutCoordinates
+            val previousRecording = opticalRecordingCoordinates.get()
+            opticalRecordingCoordinates.set(coordinates)
+            try {
+                onDrawBackdrop {
+                    with(backdrop) {
+                        drawBackdrop(
+                            density = effectScope,
+                            coordinates = coordinates,
+                            layerBlock = layerBlock
+                        )
+                    }
                 }
+            } finally {
+                opticalRecordingCoordinates.set(previousRecording)
             }
         } finally {
             drawContext.size = recordedSize
@@ -629,8 +641,8 @@ private class DrawBackdropNode(
         if (bucket != null) {
             return@drawBackdropLayer drawBucketedLayer(bucket)
         }
-        val layer = graphicsLayer
-        if (layer != null) {
+        val previousLayer = graphicsLayer
+        if (previousLayer != null) {
             val padding = padding
             val scale = backdropScale
             val recordSize = IntSize(
@@ -685,7 +697,8 @@ private class DrawBackdropNode(
             // nothing at the end big enough to see.
             val now = System.nanoTime()
             val heldLongEnough = (now - lastRecordedAt) / 1_000_000f >= HoldRefreshMillis
-            val holding = !live && frozen() &&
+            val inMotion = !live && frozen()
+            val holding = inMotion &&
                 hasRecording &&
                 !heldLongEnough &&
                 (!geometryChanged || heldWhileMoving())
@@ -714,17 +727,17 @@ private class DrawBackdropNode(
             // over it. Only after a hold — an ordinary re-record during a scroll
             // is a small change from the frame before it, and crossing them
             // would only cost an extra layer for nothing.
-            val endingHold = refreshAfterHold && !live
-            if (endingHold) {
-                val keeper = handoverLayer
-                    ?: requireGraphicsContext().createGraphicsLayer().also { handoverLayer = it }
-                // A copy of what is on screen right now, to fade out from.
-                recordLayer(this@DrawBackdropNode, keeper, size = recordedBackdropSize) {
-                    drawLayer(layer)
-                }
-                keeper.renderEffect = null
-                handoverStartedAt = System.nanoTime()
-            }
+            val endingHold = refreshAfterHold && !live && !inMotion
+            val layer = if (endingHold) {
+                val context = requireGraphicsContext()
+                val next = handoverLayer ?: context.createGraphicsLayer()
+                next.alpha = 1f
+                next.renderEffect = effectScope.renderEffect
+                handoverLayer = previousLayer
+                graphicsLayer = next
+                handoverStartedAt = now
+                next
+            } else previousLayer
             wasHolding = holding
 
             if (needsRecord) {
@@ -888,12 +901,10 @@ private class DrawBackdropNode(
     }
 
     private fun observeDependencies() {
-        observeReads {
-            // A retained child layer may not redraw merely because its enclosing
-            // material does. Subscribe this node itself to the source's input revision.
-            backdrop.contentVersion
-            updateEffects()
-        }
+        // The source can change on every squeeze frame. Refresh the sampled pixels
+        // without rebuilding the blur and shader chain for controls of unchanged size.
+        sourceObserver.observeMaterial { backdrop.contentVersion }
+        observeReads { updateEffects() }
     }
 
     private fun updateEffects() {

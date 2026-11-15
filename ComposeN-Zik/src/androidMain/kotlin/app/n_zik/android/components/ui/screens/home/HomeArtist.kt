@@ -55,8 +55,6 @@ import app.n_zik.android.core.ondevice.scanDeviceLibrary
 import app.n_zik.android.utils.getActiveProfile
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.ui.draw.scale
 import sh.calvin.reorderable.rememberReorderableLazyGridState
 import sh.calvin.reorderable.ReorderableItem

@@ -1661,11 +1661,14 @@ class MainActivity :
             val floatingDockClock = remember { Animatable(0f) }
             val floatingDockProgress = floatingDockClock.asState()
             val dockMotionBlocked = !miniPlayerFoldEligible(isPlayerSheetExpanded.value, showQueueOverlay, glassMenuHost.hasOverlays)
-            LaunchedEffect(floatingDockState.foldTarget, dockMotionBlocked) {
-                if (!dockMotionBlocked) floatingDockClock.animateTo(
-                    floatingDockState.foldTarget,
-                    tween(320, easing = CubicBezierEasing(0.2f, 0f, 0f, 1f)),
-                )
+            // Observing the target in composition invalidates the entire activity
+            // right as the dock starts moving and the foreground list is scrolling.
+            LaunchedEffect(floatingDockState, dockMotionBlocked) {
+                if (!dockMotionBlocked) {
+                    snapshotFlow { floatingDockState.foldTarget }.collectLatest { target ->
+                        floatingDockClock.animateTo(target, tween(320, easing = CubicBezierEasing(0.2f, 0f, 0f, 1f)))
+                    }
+                }
             }
             val floatingDock = remember(floatingDockState, floatingDockPageKey, floatingDockEnabled, classicDock, topDock, dockNavigationPosition,
                 floatingDockProgress, dockMediaId, dockPlayerPosition) {
@@ -1913,13 +1916,18 @@ class MainActivity :
                 val homeTopMiniGap = rememberUpdatedState(
                     if (areBarsHidden || hasSideNavBarVisible) 0.dp else MINI_PLAYER_TOP_GAP
                 )
-                val miniBeforeHomeHeader = rememberUpdatedState(
-                    dockGeometry().miniHeight.dp.takeIf {
-                        dockMediaId != null && app.n_zik.android.components.ui.screens.home.miniPrecedesHomeHeader(
-                            retainTopMiniBelowNavigation, areBarsHidden
+                val miniBeforeHomeHeaderHeight = rememberUpdatedState<(() -> Dp)?>(
+                    if (dockMediaId != null && app.n_zik.android.components.ui.screens.home.miniPrecedesHomeHeader(
+                            retainTopMiniBelowNavigation, areBarsHidden,
                         )
-                    }
+                    ) {
+                        { dockGeometry().miniHeight.dp }
+                    } else null
                 )
+                // Read the fold clock where the header uses the height, outside the root composition.
+                val miniBeforeHomeHeader = remember {
+                    derivedStateOf { miniBeforeHomeHeaderHeight.value?.invoke() }
+                }
                 val homeTopMiniAnchor = remember {
                     HomeTopMiniPlayerAnchorState(homeTopMiniBase, homeTopMiniGap, miniBeforeHomeHeader)
                 }

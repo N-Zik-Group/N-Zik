@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertWidthIsEqualTo
@@ -38,6 +39,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.LayoutDirection
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
@@ -62,6 +64,41 @@ import org.robolectric.annotation.GraphicsMode
 // API 32 exercises native geometry without Robolectric's unsupported API 33 AGSL color layout.
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassActionGroupTest {
+    @Test fun leftToRightAndMirroredMenuMotionUseOppositePhysicalOffsets() {
+        assertEquals(-12, glassGroupPhysicalOffset(-12.4f, mirrored = false))
+        assertEquals(12, glassGroupPhysicalOffset(-12.4f, mirrored = true))
+        assertEquals(-18, glassGroupPhysicalOffset(18f, mirrored = true))
+    }
+
+    @Test fun `RTL middle action leaves material behind both mirrored neighbors only`() {
+        val trigger = GlassMenuTriggerState()
+        val owner = Any()
+        compose.setContent {
+            AppearanceProvider {
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                    Box(Modifier.background(Color.Red).testTag("rtl.group")) {
+                        GlassActionGroup(GlassSettings(quality = GlassQuality.Performance, film = 1f),
+                            GlassArea.ActionButtons, trailingTrigger = trigger, menuActionCount = 3,
+                            menuTriggerIndex = 1, filmColor = Color.Blue) {
+                            repeat(3) { index ->
+                                GlassActionGroupItem({}, menuTrigger = trigger.takeIf { index == 1 }, groupIndex = index) {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        compose.runOnIdle {
+            trigger.claim(owner)
+            trigger.updateMenuBounds(owner, trigger.bounds)
+        }
+        val pixels = compose.onNodeWithTag("rtl.group").captureToImage().toPixelMap()
+        val middle = pixels.height / 2
+        assertNotEquals(Color.Red, pixels[pixels.width / 6, middle])
+        assertEquals(Color.Red, pixels[pixels.width / 2, middle])
+        assertNotEquals(Color.Red, pixels[pixels.width * 5 / 6, middle])
+    }
+
     @get:Rule val compose = createComposeRule()
 
     @Test fun `native vertical header cells let their parent scroll while glass cells retain drags`() {

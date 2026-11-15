@@ -83,7 +83,8 @@ internal class QueueRowScene {
         // Cut every old cross-row RenderNode edge before an order reversal can create a cycle.
         rows.forEach { row ->
             row.material?.let { material ->
-                if (material.hasRecording) material.graphicsLayer.record(
+                // An active export is already replacing its display list.
+                if (material.hasRecording && !material.isRecording) material.graphicsLayer.record(
                     density = Density(1f), layoutDirection = LayoutDirection.Ltr,
                     size = material.graphicsLayer.size,
                 ) {}
@@ -201,7 +202,6 @@ private class QueueRowBackdrop(
 
     override val contentVersion: Int?
         get() {
-            scene.prepareMaterials()
             val underlayVersion = underlay.contentVersion
             var version = underlayVersion ?: 0
             version = 31 * version + scene.topology().hashCode()

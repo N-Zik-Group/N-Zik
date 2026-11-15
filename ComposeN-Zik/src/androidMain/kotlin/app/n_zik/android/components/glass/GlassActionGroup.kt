@@ -37,6 +37,7 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
@@ -60,16 +61,20 @@ private data class GlassGroupMenuMotion(
     val shift: Float,
     val middle: Boolean,
     val rightShift: Float,
+    val mirrored: Boolean,
 ) {
     fun offset(index: Int? = null): Int {
         if (index == triggerIndex) return 0
         val anchor = trigger.bounds
         val cell = anchor.width
-        if (middle && index != null) return (if (index < triggerIndex) shift else rightShift).roundToInt()
+        if (middle && index != null) return glassGroupPhysicalOffset(if (index < triggerIndex) shift else rightShift, mirrored)
         val slotShift = if (index != null && index > triggerIndex) -cell else 0f
-        return (shift + slotShift * compact).roundToInt()
+        return glassGroupPhysicalOffset(shift + slotShift * compact, mirrored)
     }
 }
+
+internal fun glassGroupPhysicalOffset(logical: Float, mirrored: Boolean): Int =
+    if (mirrored) -logical.roundToInt() else logical.roundToInt()
 
 private val LocalGlassGroupMenuMotion = staticCompositionLocalOf<GlassGroupMenuMotion?> { null }
 
@@ -109,13 +114,16 @@ fun GlassActionGroup(
     val joinProgress = if (leadingJoin) leadingActionJoinProgress ?: progress else progress
     val joining = joinProgress < 1f
     var rootWidth by remember { mutableIntStateOf(0) }
+    val mirrored = LocalLayoutDirection.current == LayoutDirection.Rtl
     val targetShift = trailingTrigger?.let { trigger ->
         val anchor = trigger.bounds
         val count = menuActionCount ?: 2
-        val groupLeft = anchor.left - menuTriggerIndex * anchor.width
+        val anchorStart = if (mirrored) rootWidth - anchor.right else anchor.left
+        val groupLeft = anchorStart - menuTriggerIndex * anchor.width
         val packedRight = groupLeft + (count - 1) * anchor.width
         trigger.menuBounds?.let { menu ->
-            val requested = if (middleTrigger) menu.left - anchor.left else menu.left - packedRight
+            val menuStart = if (mirrored) rootWidth - menu.right else menu.left
+            val requested = if (middleTrigger) menuStart - anchorStart else menuStart - packedRight
             // A neighbor acknowledges the opening; it must not travel around the whole menu.
             requested.coerceIn(-minOf(anchor.width / 4f, groupLeft.coerceAtLeast(0f)), 0f)
         } ?: 0f
@@ -123,8 +131,10 @@ fun GlassActionGroup(
     val targetRightShift = if (middleTrigger) trailingTrigger?.let { trigger ->
         trigger.menuBounds?.let { menu ->
             val anchor = trigger.bounds
-            val groupRight = anchor.right + ((menuActionCount ?: 2) - menuTriggerIndex - 1) * anchor.width
-            (menu.right - anchor.right).coerceIn(0f,
+            val anchorEnd = if (mirrored) rootWidth - anchor.left else anchor.right
+            val menuEnd = if (mirrored) rootWidth - menu.left else menu.right
+            val groupRight = anchorEnd + ((menuActionCount ?: 2) - menuTriggerIndex - 1) * anchor.width
+            (menuEnd - anchorEnd).coerceIn(0f,
                 minOf(anchor.width / 4f, (rootWidth - groupRight).coerceAtLeast(0f)))
         }
     } ?: 0f else 0f
@@ -153,7 +163,7 @@ fun GlassActionGroup(
     }
     val menuMotion = if (trailingTrigger != null && menuActionCount != null)
         GlassGroupMenuMotion(trailingTrigger, menuTriggerIndex, 1f - rejoin.value,
-            neighborShift.value, middleTrigger, rightShift.value) else null
+            neighborShift.value, middleTrigger, rightShift.value, mirrored) else null
     val cellWidthPx = with(LocalDensity.current) { cellSize.width.toPx() }
     val joinShape = remember(shape, cellWidthPx, joinProgress, leadingJoin) {
         if (leadingJoin) glassActionJoinShape(shape, cellWidthPx, joinProgress, fixedTrailingCell = true)
@@ -171,7 +181,7 @@ fun GlassActionGroup(
             repeat(menuActionCount ?: 0) { index ->
                 if (index != menuTriggerIndex || !transferred) {
                     val cellSurface = Modifier.absoluteOffset {
-                        IntOffset((index * cellWidthPx).roundToInt() + (menuMotion?.offset(index) ?: 0), 0)
+                        IntOffset(glassGroupPhysicalOffset(index * cellWidthPx, mirrored) + (menuMotion?.offset(index) ?: 0), 0)
                     }.size(cellSize.width, cellSize.height).clip(shape)
                     Box(if (settings.usesGlassMaterial(area)) cellSurface.glassMaterial(
                         settings.forArea(area), shape, ownBackdrop = backdrop, filmColor = actionFilm)
@@ -182,7 +192,7 @@ fun GlassActionGroup(
         // The menu owns the trailing cell while transferred. Keep its layout slot but
         // remove that part of the resting surface, including its rim and capture.
         val surface = Modifier.matchParentSize().absoluteOffset {
-            IntOffset(menuMotion?.offset() ?: neighborShift.value.roundToInt(), 0)
+            IntOffset(menuMotion?.offset() ?: glassGroupPhysicalOffset(neighborShift.value, mirrored), 0)
         }.layout { measurable, constraints ->
             val cellWidth = cellSize.width.roundToPx()
             val restingWidth = if (menuActionCount != null) constraints.maxWidth - cellWidth else cellWidth

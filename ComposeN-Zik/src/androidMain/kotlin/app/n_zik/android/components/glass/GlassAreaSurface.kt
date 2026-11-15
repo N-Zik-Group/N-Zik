@@ -100,6 +100,7 @@ fun Modifier.glassMiniPlayerBackground(
     progressFraction: () -> Float = { 0f },
     exportedBackdrop: LayerBackdrop? = null,
     motionOptimized: Boolean = false,
+    foldInProgress: (() -> Boolean)? = null,
 ): Modifier {
     if (!settings.usesGlassMaterial(GlassArea.MiniPlayer)) {
         if (exportedBackdrop != null) {
@@ -127,6 +128,7 @@ fun Modifier.glassMiniPlayerBackground(
         applyEdgeEffects = !motionOptimized,
         backdropScale = if (motionOptimized) .5f else null,
         drawShadow = !motionOptimized,
+        foldInProgress = foldInProgress,
         onDrawTint = {
             val fraction = progressFraction().let { if (it.isFinite()) it.coerceIn(0f, 1f) else 0f }
             val split = size.width * fraction

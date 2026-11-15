@@ -32,6 +32,9 @@ import app.n_zik.android.components.glass.backdrop.internal.InverseLayerScope
 
 private val DefaultOnDraw: ContentDrawScope.() -> Unit = { drawContent() }
 
+// A coordinate argument can describe the sampling origin without owning the destination.
+internal val opticalRecordingCoordinates = ThreadLocal<LayoutCoordinates?>()
+
 @Composable
 fun rememberLayerBackdrop(
     graphicsLayer: GraphicsLayer = rememberGraphicsLayer(),
@@ -87,6 +90,7 @@ class LayerBackdrop internal constructor(
 
     // NZik: never let a descendant put this RenderNode into its own display list.
     internal var isRecording: Boolean = false
+    internal var capturesSubtree: Boolean = false
 
     /** Called by the recording node after a successful record. */
     internal fun contentRecorded() {
@@ -135,8 +139,12 @@ class LayerBackdrop internal constructor(
         layerBlock: (GraphicsLayerScope.() -> Unit)?
     ) {
         if (isRecording) return
-        val coordinates = coordinates ?: return
-        val layerCoordinates = layerCoordinates ?: return
+        val coordinates = coordinates?.takeIf { it.isAttached } ?: return
+        val layerCoordinates = layerCoordinates?.takeIf { it.isAttached } ?: return
+        // Even a retained child draw that runs outside the parent record must never
+        // capture the parent display list. HWUI replays these layers by reference.
+        if (capturesSubtree && generateSequence(opticalRecordingCoordinates.get()) { it.parentCoordinates }
+                .any { it === layerCoordinates }) return
         withTransform({
             if (layerBlock != null) {
                 with(obtainInverseLayerScope()) { inverseTransform(density, layerBlock) }

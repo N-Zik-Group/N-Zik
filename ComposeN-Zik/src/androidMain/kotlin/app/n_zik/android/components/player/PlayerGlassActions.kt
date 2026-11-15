@@ -258,7 +258,10 @@ fun PlayerActionToolbar(
                 val previous = bounds[separatorIndex - 1]
                 val trailing = bounds[separatorIndex]
                 val boundary = if (previous != null && trailing != null)
-                    with(LocalDensity.current) { ((previous.right + trailing.left) / 2f).toDp() } +
+                    with(LocalDensity.current) {
+                        val (left, right) = if (previous.center.x <= trailing.center.x) previous to trailing else trailing to previous
+                        ((left.right + right.left) / 2f).toDp()
+                    } +
                         ((48.dp - actions.first().nativeHeight) / 2).coerceAtLeast(0.dp) else 0.dp
                 GlassActionGroupMotionHost(glass && isGlassMotionAllowed(), glassRowModifier.height(PlayerActionToolbarHeight)) {
                     Box(Modifier.matchParentSize().requiredHeight(PlayerActionToolbarHeight)
@@ -267,7 +270,8 @@ fun PlayerActionToolbar(
                         .glassMaterial(settings.forArea(GlassArea.ActionButtons), uiRoundnessShape(),
                             ownBackdrop = LocalGlassContainerBackdrop.current)
                         .glassActionGroupSeparators(settings, GlassArea.ActionButtons, boundary,
-                            separatorBefore = if (boundary > 0.dp) setOf(1) else emptySet()))
+                            separatorBefore = if (boundary > 0.dp) setOf(1) else emptySet(),
+                            fromPhysicalLeft = true))
                     GlassActionGroup(settings, GlassArea.ActionButtons, modifier = Modifier.fillMaxWidth(),
                         separatorBefore = emptySet(), drawSurface = false) {
                         Row(Modifier.fillMaxWidth().height(PlayerActionToolbarHeight).then(cellPadding).testTag("player.actionToolbar.row"), horizontalArrangement = arrangement,
@@ -320,9 +324,9 @@ private fun PlayerActionCell(
     val next = style.bounds[index + 1]
     val requested = if (style.surfaceEnabled && style.single) PlayerActionToolbarHeight else 48.dp
     val width = with(density) {
-        val leftSpace = if (own != null && previous != null) (own.center.x - previous.center.x) else Float.POSITIVE_INFINITY
-        val rightSpace = if (own != null && next != null) (next.center.x - own.center.x) else Float.POSITIVE_INFINITY
-        minOf(requested.toPx(), leftSpace, rightSpace).toDp().coerceAtLeast(nativeSize)
+        val precedingSpace = if (own != null && previous != null) kotlin.math.abs(own.center.x - previous.center.x) else Float.POSITIVE_INFINITY
+        val followingSpace = if (own != null && next != null) kotlin.math.abs(next.center.x - own.center.x) else Float.POSITIVE_INFINITY
+        minOf(requested.toPx(), precedingSpace, followingSpace).toDp().coerceAtLeast(nativeSize)
     }
     val cell: @Composable () -> Unit = {
         // The row still measures its original glyph slots. Only the interaction

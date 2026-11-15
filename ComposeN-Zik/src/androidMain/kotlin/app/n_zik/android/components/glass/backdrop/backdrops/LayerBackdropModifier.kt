@@ -125,6 +125,7 @@ private class LayerBackdropNode(
 
     override fun onGloballyPositioned(coordinates: LayoutCoordinates) {
         if (coordinates.isAttached) {
+            backdrop.capturesSubtree = true
             backdrop.layerCoordinates = coordinates
         }
     }

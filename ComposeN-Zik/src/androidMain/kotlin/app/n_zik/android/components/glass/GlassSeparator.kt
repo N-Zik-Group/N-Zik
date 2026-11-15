@@ -13,6 +13,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
@@ -46,6 +47,7 @@ internal fun Modifier.glassActionGroupSeparators(
     progress: () -> Float = { 1f },
     transferred: () -> Boolean = { false },
     separatorBefore: Set<Int>? = null,
+    fromPhysicalLeft: Boolean = false,
 ): Modifier {
     if (!settings.usesGlassSeparator(area)) return this
     // A contour gradient stretched along a hairline fades almost to nothing in
@@ -54,6 +56,7 @@ internal fun Modifier.glassActionGroupSeparators(
         .copy(alpha = settings.rim.coerceIn(0f, 1f) * .65f)
     return drawWithContent {
         drawContent()
+        val mirrored = !fromPhysicalLeft && layoutDirection == LayoutDirection.Rtl
         if (!transferred()) {
             val height = glassActionSeparatorHeight(size.height, 20.dp.toPx())
             val alpha = progress().coerceIn(0f, 1f)
@@ -64,7 +67,8 @@ internal fun Modifier.glassActionGroupSeparators(
                 while (boundary < size.width) {
                     if (separatorBefore == null || index in separatorBefore) {
                         val width = 1.dp.toPx().roundToInt().coerceAtLeast(1).toFloat()
-                        val left = (boundary - width / 2f).roundToInt().toFloat()
+                        val x = if (mirrored) size.width - boundary else boundary
+                        val left = (x - width / 2f).roundToInt().toFloat()
                         val top = (size.height - height) / 2f
                         drawRoundRect(color, Offset(left, top), Size(width, height),
                             CornerRadius(width / 2f), alpha = alpha)

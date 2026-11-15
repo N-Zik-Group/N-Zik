@@ -50,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.focus.FocusRequester
@@ -176,7 +177,8 @@ fun placeGlassMenu(
     val edgeX = if (anchor.center.x < window.width / 2) 0 else window.width - menu.width
     val candidatesX = if (layoutDirection == LayoutDirection.Ltr) listOf(left, right, edgeX)
         else listOf(right, left, edgeX)
-    val fraction = if (anchorFraction.isFinite()) anchorFraction.coerceIn(0f, 1f) else 1f
+    val logicalFraction = if (anchorFraction.isFinite()) anchorFraction.coerceIn(0f, 1f) else 1f
+    val fraction = if (layoutDirection == LayoutDirection.Rtl) 1f - logicalFraction else logicalFraction
     val alignedX = (anchor.left + (anchor.width - menu.width) * fraction).roundToInt() + anchorOffsetX
     val x = if (anchorAligned) alignedX.coerceIn(0, (window.width - menu.width).coerceAtLeast(0))
         else candidatesX.firstOrNull { it >= 0 && it + menu.width <= window.width }
@@ -322,10 +324,15 @@ private fun GlassOverlayEntry(host: GlassMenuHostState, entry: GlassMenuEntry) {
             interactionSource = remember { MutableInteractionSource() },
             onClick = { if (entry.visible) dismiss() },
         ).clearAndSetSemantics { })
-        BoxWithConstraints(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing.union(WindowInsets.ime)).onGloballyPositioned {
-            val position = it.positionInRoot()
-            rootOffset = IntOffset(position.x.roundToInt(), position.y.roundToInt())
-        }) {
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing.union(WindowInsets.ime))
+                .onGloballyPositioned {
+                    val position = it.positionInRoot()
+                    rootOffset = IntOffset(position.x.roundToInt(), position.y.roundToInt())
+                },
+            // Frame bounds and absoluteOffset both use physical coordinates.
+            contentAlignment = AbsoluteAlignment.TopLeft,
+        ) {
             val density = LocalDensity.current
             val window = with(density) { IntSize(maxWidth.roundToPx(), maxHeight.roundToPx()) }
             val margin = with(density) { 48.dp.roundToPx() }
@@ -340,11 +347,12 @@ private fun GlassOverlayEntry(host: GlassMenuHostState, entry: GlassMenuEntry) {
             val isRightRailTrigger = sharedTrigger && navigationPosition == NavigationBarPosition.Right &&
                 localAnchor.left >= window.width - railWidth
             val railOffset = localAnchor.width.roundToInt() + with(density) { 4.dp.roundToPx() }
+            val direction = LocalLayoutDirection.current
             val placement = placeGlassMenu(
-                localAnchor, menuSize, window, margin, LocalLayoutDirection.current, sharedTrigger,
+                localAnchor, menuSize, window, margin, direction, sharedTrigger,
                 anchorFraction = when {
-                    isLeftRailTrigger -> 0f
-                    isRightRailTrigger -> 1f
+                    isLeftRailTrigger -> if (direction == LayoutDirection.Rtl) 1f else 0f
+                    isRightRailTrigger -> if (direction == LayoutDirection.Rtl) 0f else 1f
                     else -> entry.trigger?.menuAnchorFraction ?: 1f
                 },
                 anchorOffsetX = when {

@@ -44,7 +44,7 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgress
@@ -90,6 +90,14 @@ import app.n_zik.android.utils.showVisualizerStateKey
 import app.n_zik.android.utils.saveLyricsStateKey
 import app.n_zik.android.utils.saveVisualizerStateKey
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.constrainHeight
+import androidx.compose.ui.unit.constrainWidth
+import androidx.compose.ui.unit.offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -232,27 +240,14 @@ fun MiniPlayer(
     hidePlayer: () -> Unit,
     navController: NavController? = null,
 ) {
-    val progress = app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgressProvider.current
-    androidx.compose.runtime.CompositionLocalProvider(
-        LocalCompactMiniPlayerProgress provides (progress?.invoke() ?: LocalCompactMiniPlayerProgress.current),
-    ) {
-        MiniPlayerContent(showPlayer, hidePlayer, navController)
+    val progressProvider = app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgressProvider.current
+    val dockPresentation = progressProvider != null
+    val defaultProgress = LocalCompactMiniPlayerProgress.current
+    val foldProgress = remember(progressProvider, defaultProgress) {
+        { (progressProvider?.invoke() ?: defaultProgress).coerceIn(0f, 1f) }
     }
-}
-
-@androidx.annotation.OptIn(UnstableApi::class)
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
-@Composable
-private fun MiniPlayerContent(
-    showPlayer: () -> Unit,
-    hidePlayer: () -> Unit,
-    navController: NavController?,
-) {
-    val compactProgress = LocalCompactMiniPlayerProgress.current.coerceIn(0f, 1f)
-    val dockPresentation = app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgressProvider.current != null
-    val isCompact = compactProgress > 0.01f
+    val folding = remember(foldProgress) { { foldProgress().let { it > 0f && it < 1f } } }
     val expandedMiniHeight = if (dockPresentation) app.n_zik.android.components.navigation.dock.FloatingDockDimensions.expandedMiniHeight.dp else Dimensions.miniPlayerHeight
-    val miniContentHeight = expandedMiniHeight * (1f - compactProgress) + app.n_zik.android.components.navigation.dock.FloatingDockDimensions.compactHeight.dp * compactProgress
     val preview = LocalThemePreview.current
     val binder = LocalPlayerServiceBinder.current
     val player = preview?.player ?: binder?.player ?: return
@@ -563,7 +558,9 @@ private fun MiniPlayerContent(
         it.miniPlayerBackdrop ?: it.backdrop
     }
     val controlsBackdrop = rememberLayerBackdrop()
-    val miniBodyProgress = { if (inQueue) 0f else playerSheetState.progress }
+    val miniBodyProgress = remember(inQueue, playerSheetState) {
+        { if (inQueue) 0f else playerSheetState.progress }
+    }
     val controlMaterial = rememberMiniPlayerControlBackdrop(
         if (useGlass) parentMaterial else null, controlsBackdrop, miniBodyProgress,
     )
@@ -572,14 +569,50 @@ private fun MiniPlayerContent(
     val controlSource = if (!useGlass) controlMaterial
         else if (glassBackdrop === parentMaterial) LocalGlassMaterialSource.current ?: glassBackdrop
         else glassBackdrop
+    // Some controls need the rendered body when the body is native or the film is
+    // zero. Otherwise they sample the independent scene directly.
+    val exportControlBody = !useGlass || glass.film <= 0f || controlSource == null
     val visibleMiniPlayerBackdrop = rememberLayerBackdrop()
+    val miniOverlayBackdrop = glassSceneOverlayBackdrop(visibleMiniPlayerBackdrop)
     val shape = uiRoundnessShape()
+    val density = LocalDensity.current
+    var measuredWidth by remember { mutableIntStateOf(Int.MAX_VALUE) }
+    val showArtwork by remember(foldProgress, density) {
+        derivedStateOf { foldProgress() <= .01f || with(density) { measuredWidth >= 156.dp.roundToPx() } }
+    }
+    val showSongInfo by remember(foldProgress, density) {
+        derivedStateOf { foldProgress() <= .01f || with(density) { measuredWidth > 96.dp.roundToPx() } }
+    }
+    // Keep the composition stable while the dock remeasures the miniplayer each frame.
+    val contentHeight = remember(foldProgress, expandedMiniHeight) {
+        {
+            val progress = foldProgress()
+            expandedMiniHeight * (1f - progress) +
+                app.n_zik.android.components.navigation.dock.FloatingDockDimensions.compactHeight.dp * progress
+        }
+    }
+    val bodySpacing = remember(foldProgress) { miniFoldSpacing(12.dp, foldProgress) }
+    val controlsSpacing = remember(useGlass, foldProgress) {
+        miniFoldSpacing(miniPlayerButtonSpacing(useGlass), foldProgress)
+    }
+    val bodyPadding = remember(dockPresentation, foldProgress) {
+        if (!dockPresentation) PaddingValues(0.dp) else miniFoldPadding { PaddingValues(horizontal = 10.dp * foldProgress()) }
+    }
+    val artworkPadding = remember(dockPresentation, foldProgress) {
+        if (!dockPresentation) PaddingValues(0.dp) else miniFoldPadding { PaddingValues(end = 8.dp * foldProgress()) }
+    }
 
     // The swipe waits for twice the usual movement, so the vertical open gesture wins on a slow diagonal drag
     WithDoubledTouchSlop {
     SwipeToDismissBox(
         modifier = Modifier
-            .padding(horizontal = 16.dp * (1f - compactProgress))
+            .layout { measurable, constraints ->
+                val margin = (16.dp * (1f - foldProgress())).roundToPx()
+                val child = measurable.measure(constraints.offset(horizontal = -2 * margin))
+                layout(constraints.constrainWidth(child.width + 2 * margin), child.height) {
+                    child.placeRelative(margin, 0)
+                }
+            }
             .shadow(elevation = if (isFloating && !useGlass) 8.dp else 0.dp, shape = shape),
         enableDismissFromStartToEnd = sheetGestureState.isAtRest,
         enableDismissFromEndToStart = sheetGestureState.isAtRest,
@@ -648,9 +681,12 @@ private fun MiniPlayerContent(
         }
     ) {
         val colorPalette = colorPalette()
-        BoxWithConstraints(
+        Box(
             modifier = Modifier
-                .layerBackdrop(visibleMiniPlayerBackdrop)
+                .then(
+                    if (miniOverlayBackdrop === visibleMiniPlayerBackdrop) Modifier.layerBackdrop(visibleMiniPlayerBackdrop)
+                    else Modifier,
+                )
                 .combinedClickable(
                     onLongClick = {
                         requestQueue?.invoke() ?: navController?.navigate(NavRoutes.queue.name)
@@ -664,14 +700,15 @@ private fun MiniPlayerContent(
                     }
                 )
                 .fillMaxWidth()
+                .onSizeChanged { measuredWidth = it.width }
         ) {
-            val availableMiniWidth = maxWidth
             Box(Modifier.matchParentSize()
                 .clip(shape)
                 .glassMiniPlayerBodyVisibility(glass, miniBodyProgress)
                 .glassMiniPlayerBackground(
                     glass, shape, glassBackdrop, surfaceColor(colorPalette.background2),
-                    exportedBackdrop = controlsBackdrop,
+                    exportedBackdrop = controlsBackdrop.takeIf { exportControlBody },
+                    foldInProgress = folding.takeIf { isFloating || NavigationBarPosition.Bottom.isCurrent() },
                     progressColor = colorPalette.favoritesOverlay,
                     progressFraction = {
                         if (backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.MiniPlayer)
@@ -682,26 +719,26 @@ private fun MiniPlayerContent(
                 )
             )
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp * (1f - compactProgress)),
+                horizontalArrangement = bodySpacing,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
-                    .padding(horizontal = if (dockPresentation) 10.dp * compactProgress else 0.dp),
+                    .padding(bodyPadding),
             ) {
             // Export only the rendered body, never the cover or these controls themselves.
             CompositionLocalProvider(
                 LocalGlassBackdrop provides controlMaterial,
                 LocalGlassContainerBackdrop provides controlMaterial,
                 LocalGlassMaterialSource provides controlSource,
-                LocalGlassOverlayBackdrop provides glassSceneOverlayBackdrop(visibleMiniPlayerBackdrop),
+                LocalGlassOverlayBackdrop provides miniOverlayBackdrop,
             ) {
             Spacer(
-                modifier = Modifier.width(2.dp * (1f - compactProgress))
+                modifier = Modifier.miniFoldSize(width = { 2.dp * (1f - foldProgress()) })
             )
 
-            if (!isCompact || availableMiniWidth >= 156.dp) Box(
+            if (showArtwork) Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.height(miniContentHeight)
-                    .padding(end = if (dockPresentation) 8.dp * compactProgress else 0.dp)
+                modifier = Modifier.miniFoldSize(height = contentHeight)
+                    .padding(artworkPadding)
             ) {
                 val artworkUrl = mediaItem.mediaMetadata.artworkUri?.toString()
                 val isCustomImage = artworkUrl?.let {
@@ -709,7 +746,7 @@ private fun MiniPlayerContent(
                 } == true
 
                 Box(
-                    modifier = Modifier.size(48.dp - 12.dp * compactProgress)
+                    modifier = Modifier.miniFoldSize(width = { 48.dp - 12.dp * foldProgress() }, square = true)
                 ) {
                     ImageCacheFactory.Thumbnail(
                         shape = thumbnailShape(),
@@ -723,7 +760,7 @@ private fun MiniPlayerContent(
                     // together with the artwork instead of squeezing a fixed-width row.
                     Box(Modifier.matchParentSize(), contentAlignment = Alignment.Center) {
                         Box(Modifier.requiredSize(48.dp).graphicsLayer {
-                            val scale = 1f - .25f * compactProgress
+                            val scale = 1f - .25f * foldProgress()
                             scaleX = scale
                             scaleY = scale
                         }) {
@@ -744,10 +781,10 @@ private fun MiniPlayerContent(
             }
 
 
-            if (!isCompact || availableMiniWidth > 96.dp) Column(
+            if (showSongInfo) Column(
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier
-                    .height(miniContentHeight)
+                    .miniFoldSize(height = contentHeight)
                     .weight(1f)
             ) {
                 Row(
@@ -781,15 +818,14 @@ private fun MiniPlayerContent(
             }
 
             Spacer(
-                modifier = Modifier.width(2.dp * (1f - compactProgress))
+                modifier = Modifier.miniFoldSize(width = { 2.dp * (1f - foldProgress()) })
             )
 
-            val buttonSpacing = miniPlayerButtonSpacing(useGlass)
             Row(
-                horizontalArrangement = Arrangement.spacedBy(buttonSpacing * (1f - compactProgress)),
+                horizontalArrangement = controlsSpacing,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .height(miniContentHeight)
+                    .miniFoldSize(height = contentHeight)
             ) {
                 activeButtons.forEach { button ->
                     if (button == MiniPlayerButton.PlayPause) {
@@ -890,13 +926,47 @@ private fun MiniPlayerContent(
             }
 
             Spacer(
-                modifier = Modifier.width(2.dp * (1f - compactProgress))
+                modifier = Modifier.miniFoldSize(width = { 2.dp * (1f - foldProgress()) })
             )
             }
         }
         }
     }
     }
+}
+
+private fun miniFoldSpacing(resting: Dp, progress: () -> Float): Arrangement.Horizontal =
+    object : Arrangement.Horizontal {
+        override val spacing: Dp get() = resting * (1f - progress())
+
+        override fun Density.arrange(totalSize: Int, sizes: IntArray, layoutDirection: LayoutDirection, outPositions: IntArray) {
+            with(Arrangement.spacedBy(spacing)) { arrange(totalSize, sizes, layoutDirection, outPositions) }
+        }
+    }
+
+private fun miniFoldPadding(values: () -> PaddingValues): PaddingValues = object : PaddingValues {
+    override fun calculateLeftPadding(layoutDirection: LayoutDirection) = values().calculateLeftPadding(layoutDirection)
+    override fun calculateTopPadding() = values().calculateTopPadding()
+    override fun calculateRightPadding(layoutDirection: LayoutDirection) = values().calculateRightPadding(layoutDirection)
+    override fun calculateBottomPadding() = values().calculateBottomPadding()
+}
+
+private fun Modifier.miniFoldSize(
+    width: (() -> Dp)? = null,
+    height: (() -> Dp)? = null,
+    square: Boolean = false,
+): Modifier = layout { measurable, constraints ->
+    val widthPx = width?.invoke()?.roundToPx()
+    val heightPx = if (square) widthPx else height?.invoke()?.roundToPx()
+    val fittedWidth = widthPx?.let(constraints::constrainWidth)
+    val fittedHeight = heightPx?.let(constraints::constrainHeight)
+    val child = measurable.measure(constraints.copy(
+        minWidth = fittedWidth ?: constraints.minWidth,
+        maxWidth = fittedWidth ?: constraints.maxWidth,
+        minHeight = fittedHeight ?: constraints.minHeight,
+        maxHeight = fittedHeight ?: constraints.maxHeight,
+    ))
+    layout(child.width, child.height) { child.placeRelative(0, 0) }
 }
 
 @androidx.annotation.OptIn(UnstableApi::class)
