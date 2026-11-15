@@ -264,6 +264,14 @@
     <string name="theme_store_choose_revision">リビジョンを選択</string>
     <string name="theme_store_published_on">%1$sに公開</string>
     <string name="theme_store_compatibility">N-Zik 対応</string>
+    <string name="theme_store_submission_minimum_version">最小値 N-Zik バージョン</string>
+    <string name="theme_store_submission_minimum_description">このテーマを適用できる最も古いバージョンです。新しいテーマはデフォルトでバージョンコード %3$dに設定されています。N-Zik %1$s (バージョンコード %2$d ) を使用しています。</string>
+    <string name="theme_store_submission_version_code_label">最小バージョンコード</string>
+    <string name="theme_store_submission_find_version_code">N-Zik のバージョンとコードを検索</string>
+    <string name="theme_store_submission_version_with_code">%1$s (code %2$d)</string>
+    <string name="theme_store_submission_version_code">バージョンコード %1$d</string>
+    <string name="theme_store_submission_version_required">バージョンコード「 %1$d」を入力してください。</string>
+    <string name="theme_store_submission_version_range">%1$d と %2$d の間にバージョンコードを入力してください。</string>
     <string name="theme_store_revision">Revision %1$d</string>
     <string name="theme_store_authors">クリエイター</string>
     <string name="theme_store_author_theme_count">テーマ: %1$d</string>
@@ -433,6 +441,7 @@
     <string name="theme_store_preview_import_requirements">プレビューは公開されています。PNG、JPEGまたはWebP・4MBのスクリーンショットから個人情報を保存してください。</string>
     <string name="theme_store_preview_import_error">この画像をインポートできませんでした。PNG、JPEG、WebP画像を4MB以下で選択してください。</string>
     <string name="theme_store_submission_included">含まれる設定</string>
+    <string name="theme_store_submission_unsupported_categories">これらのグループには、テーマで共有できない設定が含まれています： %1$s。</string>
     <string name="theme_store_submission_sending">Sending for review…</string>
     <string name="theme_store_report_theme">テーマを報告</string>
     <string name="theme_store_report_review">レビューを報告</string>
