@@ -8,7 +8,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,6 +30,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import app.n_zik.android.components.ui.FullPageLoader
 import androidx.compose.material3.ButtonDefaults
@@ -53,9 +53,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -63,7 +60,6 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -674,20 +670,11 @@ private fun ThemePreviewGallery(theme: StoreTheme, catalog: ThemeStoreCatalog, r
                     textAlign = TextAlign.Center,
                 )
                 if (previews.size > 1) {
-                    Canvas(Modifier.fillMaxWidth(.55f).height(4.dp)) {
-                        val radius = CornerRadius(size.height / 2)
-                        drawRoundRect(Color.White.copy(alpha = .22f), cornerRadius = radius)
-                        val thumb = (size.width / previews.size).coerceIn(16.dp.toPx().coerceAtMost(size.width), size.width)
-                        val page = (pager.currentPage + pager.currentPageOffsetFraction)
-                            .coerceIn(0f, previews.lastIndex.toFloat())
-                        val travel = size.width - thumb
-                        val offset = travel * page / previews.lastIndex
-                        drawRoundRect(
-                            palette.accent,
-                            topLeft = Offset(if (layoutDirection == LayoutDirection.Rtl) travel - offset else offset, 0f),
-                            size = Size(thumb, size.height),
-                            cornerRadius = radius,
-                        )
+                    Row(Modifier.fillMaxWidth(.75f), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        repeat(previews.size) { index ->
+                            val color = if (index == pager.currentPage) palette.accent else Color.White.copy(alpha = .22f)
+                            Box(Modifier.weight(1f).height(3.dp).background(color, RoundedCornerShape(percent = 50)))
+                        }
                     }
                 }
                 val galleryBackdrop = rememberCanvasBackdrop { drawRect(Color.Black) }
