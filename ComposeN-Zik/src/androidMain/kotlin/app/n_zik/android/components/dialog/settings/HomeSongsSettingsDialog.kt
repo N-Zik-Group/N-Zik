@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.settings
 
+import app.n_zik.android.utils.preferences
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,7 +28,15 @@ import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import android.content.Context
 
-private val songsDefaultOrder = listOf("all", "favorites", "disliked", "cached", "downloaded", "top", "on_device")
+internal val songsDefaultOrder = listOf("all", "favorites", "disliked", "cached", "downloaded", "top", "on_device")
+
+internal val songsThemeToggleKeys = mapOf(
+    "favorites" to showFavoritesPlaylistKey,
+    "cached" to showCachedPlaylistKey,
+    "downloaded" to showDownloadedPlaylistKey,
+    "top" to showMyTopPlaylistKey,
+    "on_device" to showOnDevicePlaylistKey
+)
 
 object HomeSongsSettingsDialog : ContentFramedDialog {
 
@@ -55,16 +64,10 @@ object HomeSongsSettingsDialog : ContentFramedDialog {
     @Composable
     override fun DialogBody() {
         val ctx = LocalContext.current
-        val prefs = remember { ctx.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
+        val prefs = remember { ctx.preferences }
         var workingOrder by remember { mutableStateOf(parseOrder(prefs.getString(homeSongsOrderKey, "") ?: "").toMutableList()) }
 
-        val prefKeys = mapOf(
-            "favorites" to showFavoritesPlaylistKey,
-            "cached" to showCachedPlaylistKey,
-            "downloaded" to showDownloadedPlaylistKey,
-            "top" to showMyTopPlaylistKey,
-            "on_device" to showOnDevicePlaylistKey
-        )
+        val prefKeys = songsThemeToggleKeys
 
         var workingToggles by remember {
             mutableStateOf(
@@ -141,7 +144,7 @@ object HomeSongsSettingsDialog : ContentFramedDialog {
     }
 
     fun reset(context: Context) {
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val prefs = context.preferences
         prefs.edit()
             .putString(homeSongsOrderKey, serializeOrder(songsDefaultOrder))
             .putBoolean(showFavoritesPlaylistKey, true)

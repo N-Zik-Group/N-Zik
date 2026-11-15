@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.settings
 
+import app.n_zik.android.utils.preferences
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -114,7 +115,7 @@ object HomeTabsSettingsDialog : ContentFramedDialog {
     @Composable
     override fun DialogBody() {
         val context = LocalContext.current
-        val prefs = remember { context.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
+        val prefs = remember { context.preferences }
         val tabDefs = remember { buildHomeTabDefs() }
 
         val initial = remember { loadPrefs(prefs) }
@@ -185,7 +186,7 @@ object HomeTabsSettingsDialog : ContentFramedDialog {
         )
     }
     fun reset(context: Context) {
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val prefs = context.preferences
         val defaultToggles = buildHomeTabDefs().mapValues { it.value.defaultValue }
         savePrefs(prefs, defaultHomeTabsOrder, defaultToggles)
     }

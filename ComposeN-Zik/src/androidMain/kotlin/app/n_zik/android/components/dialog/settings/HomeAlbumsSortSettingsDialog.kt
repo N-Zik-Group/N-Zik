@@ -1,5 +1,7 @@
 package app.n_zik.android.components.dialog.settings
 
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.components.settings.appearance.preview.PortableControlList
 import android.content.Context
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -52,6 +54,11 @@ object HomeAlbumsSortSettingsDialog : ContentFramedDialog {
     }
 
     private val tabs = AlbumTab.entries
+
+    internal fun portableLists(): Map<String, PortableControlList> = tabs.associate { tab ->
+        val prefix = getTabPrefix(tab)
+        prefix to PortableControlList(getSortOrderKey(tab), tab.availableIds, "${prefix}_sort_", "_visible")
+    }
 
     override val dialogTitle: String @Composable get() = stringResource(R.string.settings_dialog_sort_title_format, stringResource(R.string.home_albums_settings))
     override var isActive: Boolean by mutableStateOf(false)
@@ -119,7 +126,7 @@ object HomeAlbumsSortSettingsDialog : ContentFramedDialog {
     @Composable
     override fun DialogBody() {
         val ctx = LocalContext.current
-        val prefs = remember { ctx.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
+        val prefs = remember { ctx.preferences }
 
         var selectedTabIndex by remember { mutableStateOf(0) }
 
@@ -199,7 +206,7 @@ object HomeAlbumsSortSettingsDialog : ContentFramedDialog {
     }
 
     fun reset(context: Context) {
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val prefs = context.preferences
         val edit = prefs.edit()
         tabs.forEach { tab ->
             val prefix2 = getTabPrefix(tab)

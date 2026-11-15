@@ -34,14 +34,14 @@ class ThemeSubmissionRegressionTest {
     }
 
     @Test
-    fun currentAppearanceLeavesUnsupportedGroupsOutOfPortableDocument() {
+    fun currentAppearancePreservesCustomColorAndGlassCategories() {
         val glass = mapOf(glassTintSourceKey to GlassTintSource.Custom.name)
         for (palette in listOf(ColorPaletteName.Customized, ColorPaletteName.CustomColor)) {
             val plain = mapOf(colorPaletteNameKey to palette.name)
-            assertTrue(runCatching { encodeThemeV1(plain, glass) }.exceptionOrNull() is IllegalArgumentException)
-            val document = encodeThemeV1(plain, glass, omitUnsupportedCategories = true)
-            val portable = parseThemeV1(document)
-            assertEquals(setOf(ThemeCategory.PLAYER_AND_QUEUE, ThemeCategory.NAVIGATION), portable.keys)
+            val portable = parseThemeV1(encodeThemeV1(plain, glass))
+            assertEquals(ThemeCategory.entries.toSet(), portable.keys)
+            assertEquals(palette.name, portable.getValue(ThemeCategory.COLORS).plain[colorPaletteNameKey])
+            assertEquals(GlassTintSource.Custom.name, portable.getValue(ThemeCategory.GLASS).glass[glassTintSourceKey])
         }
     }
 

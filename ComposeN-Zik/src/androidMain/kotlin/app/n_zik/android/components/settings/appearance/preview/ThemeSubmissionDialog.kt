@@ -166,9 +166,12 @@ internal fun ThemeSubmissionPage(navController: NavController, miniPlayer: @Comp
             ThemeSubmissionForm(existing, loaded, padding, localOnly, localTheme,
                 initialAppearance = localTheme?.document ?: initial?.getOrNull(), currentAppearance = {
                 encodeThemeV1(
-                    context.preferences.all,
+                    context.preferences.all + app.n_zik.android.utils.DataStoreUtils.prefs(context).all.filterKeys { it in portableBurgerKeys },
                     GlassProfilePreferences.preferences(context, profileId).all,
-                    omitUnsupportedCategories = true,
+                    defaultGlassQuality = app.n_zik.android.components.glass.defaultGlassQuality(
+                        android.os.Build.VERSION.SDK_INT,
+                        context.getSystemService(android.app.ActivityManager::class.java)?.isLowRamDevice == true,
+                    ),
                 )
             }, onLocalSaved = { saved ->
                 check(getActiveProfile(context) == profileId &&
@@ -285,6 +288,7 @@ private fun ThemeSubmissionForm(
     val availableSettings = remember(fullAppearance) { parseThemeV1(fullAppearance, allowEmptyCategories = true) }
     val availableCategories = availableSettings.keys
     var expandedCategory by rememberSaveable(key) { mutableStateOf<ThemeCategory?>(null) }
+    var expandedReviewCategory by rememberSaveable(key) { mutableStateOf<ThemeCategory?>(null) }
     var selection by rememberSaveable(key) {
         mutableIntStateOf(draft?.optInt("categorySelection", -1) ?: -1)
     }
@@ -417,7 +421,6 @@ private fun ThemeSubmissionForm(
             emptyMap()
         }
     }
-    val categories = included.map { stringResource(it.submissionLabel()) }
     val sections = listOf("Information", "Previews", "Review")
     fun saveDraft() {
         val previous = draftPreviewUris(drafts.getString(key, null))
@@ -683,7 +686,7 @@ private fun ThemeSubmissionForm(
                             })
                             SettingsSectionCard(stringResource(R.string.theme_store_submission_included), R.drawable.ui,
                                 bottomSpacing = 0.dp, content = {
-                                    if (localTheme != null) {
+                                    if (initialAppearance != null) {
                                         OtherSettingsEntry(
                                             title = stringResource(R.string.theme_store_local_use_current),
                                             text = stringResource(R.string.theme_store_local_use_current_description),
@@ -706,14 +709,8 @@ private fun ThemeSubmissionForm(
                                     }
                                     availableCategories.forEach { category ->
                                         val checked = category in included
-                                        val icon = when (category) {
-                                            ThemeCategory.COLORS -> R.drawable.color_palette
-                                            ThemeCategory.PLAYER_AND_QUEUE -> R.drawable.musical_notes
-                                            ThemeCategory.NAVIGATION -> R.drawable.arrow_forward
-                                            ThemeCategory.GLASS -> R.drawable.sparkles
-                                        }
                                         ThemeSettingsCategoryRow(
-                                            category.submissionLabel(), icon, availableSettings.getValue(category),
+                                            category.submissionLabel(), category.submissionIcon(), availableSettings.getValue(category),
                                             checked, expandedCategory == category,
                                             onExpand = { expandedCategory = if (expandedCategory == category) null else category },
                                             onCheckedChange = {
@@ -813,23 +810,38 @@ private fun ThemeSubmissionForm(
                             })
                         }
                         2 -> {
-                            SettingsSectionCard(title, R.drawable.ui, bottomSpacing = 0.dp, content = {
-                                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    val cover = previews["player-normal"]?.let(android.net.Uri::parse)
-                                    if (cover != null) {
-                                        ImageCacheFactory.LocalAsyncImage(model = cover, contentDescription = null,
-                                            modifier = Modifier.width(52.dp).aspectRatio(9f / 20f).clip(uiRoundnessShape()),
-                                            contentScale = ContentScale.Crop)
+                            val configurationSize = android.text.format.Formatter.formatShortFileSize(
+                                context, appearance.encodeToByteArray().size.toLong(),
+                            )
+                            val summarySlot = if (rememberGlassSettings().enabled && "player-glass" in readyPreviews) {
+                                "player-glass"
+                            } else "player-normal"
+                            val localCover = previews[summarySlot]?.let(android.net.Uri::parse)?.path?.let(::File)
+                            val previous = publishedPreviews[summarySlot]
+                            val remoteCover = if (localCover == null && existing != null && previous != null) {
+                                rememberStorePreview(existing, previous, catalog, 0)?.file
+                            } else null
+                            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                ThemeCardSurface(Modifier.widthIn(max = 208.dp)) {
+                                    Box(Modifier.fillMaxWidth().aspectRatio(StorePreviewAspectRatio)) {
+                                        StorePreviewImage(
+                                            localCover ?: remoteCover,
+                                            captionFor(summarySlot).ifBlank { submissionPreviewLabel(summarySlot) },
+                                            showImageRim = false,
+                                            fitPortraitFrame = true,
+                                        )
                                     }
-                                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Text(description, style = typography().xs, color = colorPalette().textSecondary)
-                                        if (!localOnly) SubmissionAuthor(login)
+                                    Column(Modifier.fillMaxWidth().padding(12.dp)) {
+                                        ThemeCardIdentity(title, localCreator ?: login, official = !localOnly && canUseReservedTags)
+                                        SettingsDescription(description, Modifier.padding(top = 8.dp))
+                                        Box(Modifier.fillMaxWidth().padding(top = 8.dp), contentAlignment = Alignment.CenterEnd) {
+                                            StoreText(configurationSize, secondary = true, style = typography().xxs)
+                                        }
                                     }
                                 }
-                            })
+                            }
                             SettingsSectionCard("Submission summary", R.drawable.ui, bottomSpacing = 0.dp, content = {
-                                val size = android.text.format.Formatter.formatShortFileSize(context, appearance.encodeToByteArray().size.toLong())
-                                SubmissionSummaryRow("Configuration", size)
+                                SubmissionSummaryRow("Configuration", configurationSize)
                                 SettingsCardSectionDivider()
                                 val count = readyPreviews.size
                                 val sizes = previewSizes
@@ -843,7 +855,7 @@ private fun ThemeSubmissionForm(
                                 for (slot in gallerySlots.filterNot { it in automaticPreviews }) {
                                     val sizeLabel = sizes?.get(slot)?.let {
                                         android.text.format.Formatter.formatShortFileSize(context, it)
-                                    } ?: "—"
+                                    } ?: "-"
                                     SubmissionSummaryRow(captionFor(slot).ifBlank { submissionPreviewLabel(slot) }, sizeLabel)
                                 }
                                 SettingsCardSectionDivider()
@@ -851,11 +863,23 @@ private fun ThemeSubmissionForm(
                                 SubmissionSummaryRow(stringResource(R.string.theme_store_submission_minimum_version), minimumVersionLabel)
                             })
                             SettingsSectionCard(stringResource(R.string.theme_store_submission_included), R.drawable.ui, bottomSpacing = 0.dp, content = {
-                                SubmissionCategoryChips(categories)
+                                included.forEach { category ->
+                                    ThemeSettingsCategoryRow(
+                                        label = category.submissionLabel(),
+                                        icon = category.submissionIcon(),
+                                        settings = availableSettings.getValue(category),
+                                        checked = true,
+                                        isExpanded = expandedReviewCategory == category,
+                                        onExpand = {
+                                            expandedReviewCategory = category.takeUnless { it == expandedReviewCategory }
+                                        },
+                                    )
+                                }
+                                Spacer(Modifier.height(8.dp))
+                                SettingsDescription(stringResource(R.string.theme_store_submission_saved_content))
                             })
                             if (!localOnly) SettingsSectionCard("Before submitting", R.drawable.information, bottomSpacing = 0.dp, content = {
                                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Text("Your accounts, audio and library stay on this device.", style = typography().xs)
                                     Text("GitHub creates or updates a pull request for review. Explicit content will be rejected and may result in a ban.", style = typography().xs)
                                     Row(
                                         Modifier.fillMaxWidth().toggleable(rights, enabled = !busy,
@@ -989,9 +1013,11 @@ private fun prepareSubmissionPreview(context: android.content.Context, source: F
     }
 }
 
-@Composable
-private fun SubmissionCategoryChips(categories: List<String>) {
-    GlassHomeChips<String?>(categories.map { it to it }, currentValue = null, onValueUpdate = {})
+private fun ThemeCategory.submissionIcon(): Int = when (this) {
+    ThemeCategory.COLORS -> R.drawable.color_palette
+    ThemeCategory.PLAYER_AND_QUEUE -> R.drawable.musical_notes
+    ThemeCategory.NAVIGATION -> R.drawable.arrow_forward
+    ThemeCategory.GLASS -> R.drawable.sparkles
 }
 
 @Composable

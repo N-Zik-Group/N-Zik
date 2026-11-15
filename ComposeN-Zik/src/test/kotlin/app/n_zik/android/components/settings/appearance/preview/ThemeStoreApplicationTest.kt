@@ -9,6 +9,9 @@ import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.utils.animatedGradientKey
 import app.n_zik.android.utils.colorPaletteModeKey
 import app.n_zik.android.utils.fontTypeKey
+import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.utils.homeTabsOrderKey
+import app.n_zik.android.utils.thumbnailSizeLDpKey
 import app.n_zik.android.utils.hideStatusBarKey
 import app.n_zik.android.utils.navigationBarPositionKey
 import app.n_zik.android.utils.showButtonPlayerLyricsKey
@@ -86,6 +89,45 @@ class ThemeStoreApplicationTest {
         assertEquals(beforePlain + (colorPaletteModeKey to "Edited afterwards"), target.all)
         assertFalse(target.contains(glassEnabledKey))
         assertEquals(beforeGlass, glass.all)
+    }
+
+
+    @Test
+    fun customizeRoutesAndUndoesAppMenuSettingsSeparatelyFromProfile() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val profile = context.getSharedPreferences("theme-test-profile", Context.MODE_PRIVATE)
+        val appSettings = DataStoreUtils.prefs(context)
+        val glass = GlassProfilePreferences.preferences(context, "work")
+        val menuKey = DataStoreUtils.burgerMenuToggleKey("history")
+        appSettings.edit().putBoolean(menuKey, true).putString("unrelated", "keep").apply()
+        val values = mapOf(menuKey to false, homeTabsOrderKey to """["songs"]""")
+        val settings = parseThemeV1(encodeThemeV1(values, emptyMap<String, Any>()))
+            .toStoreGroups().getValue(StoreGroup.Navigation)
+
+        val undo = settings.applyTo(profile, glass, appSettings)
+        assertFalse(appSettings.getBoolean(menuKey, true))
+        assertFalse(profile.contains(menuKey))
+        assertEquals("keep", appSettings.getString("unrelated", null))
+        assertEquals(values[homeTabsOrderKey], profile.getString(homeTabsOrderKey, null))
+
+        undo()
+        assertEquals(true, appSettings.getBoolean(menuKey, false))
+        assertFalse(profile.contains(homeTabsOrderKey))
+    }
+
+
+    @Test
+    fun importedLandscapeInheritanceClearsAnOverrideAndUndoRestoresIt() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val profile = context.getSharedPreferences("theme-landscape-profile", Context.MODE_PRIVATE)
+        val glass = GlassProfilePreferences.preferences(context, "landscape")
+        profile.edit().putFloat(thumbnailSizeLDpKey, 61f).apply()
+        val settings = parseThemeV1(exported).toStoreGroups().getValue(StoreGroup.PlayerAndQueue)
+
+        val undo = settings.applyTo(profile, glass)
+        assertFalse(profile.contains(thumbnailSizeLDpKey))
+        undo()
+        assertEquals(61f, profile.getFloat(thumbnailSizeLDpKey, 0f))
     }
 
     private fun ownerOf(key: String): StoreGroup = appearance.groups.entries.single { key in it.value.plain }.key

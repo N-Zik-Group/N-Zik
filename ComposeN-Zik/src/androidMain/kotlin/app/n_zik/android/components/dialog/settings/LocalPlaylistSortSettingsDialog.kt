@@ -1,5 +1,7 @@
 package app.n_zik.android.components.dialog.settings
 
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.components.settings.appearance.preview.PortableControlList
 import android.content.Context
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
@@ -36,6 +38,9 @@ object LocalPlaylistSortSettingsDialog : ContentFramedDialog {
         "PlayCount", "PlayTime", "RelativePlayTime", "DateAdded",
         "DatePlayed", "DateLiked", "AlbumYear", "Downloaded", "Custom"
     )
+
+    internal fun portableList(): PortableControlList =
+        PortableControlList(localPlaylistSortMenuOrderKey, sortIds, "pl_sort_", "_visible")
 
     override val dialogTitle: String @Composable get() = stringResource(R.string.settings_dialog_sort_title_format, stringResource(R.string.settings_local_playlist_title))
     override var isActive: Boolean by mutableStateOf(false)
@@ -94,7 +99,7 @@ object LocalPlaylistSortSettingsDialog : ContentFramedDialog {
     @Composable
     override fun DialogBody() {
         val ctx = LocalContext.current
-        val prefs = remember { ctx.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
+        val prefs = remember { ctx.preferences }
 
         var workingOrder by remember { mutableStateOf(parseOrder(prefs.getString(localPlaylistSortMenuOrderKey, "") ?: "").toMutableList()) }
         var workingToggles by remember {
@@ -139,7 +144,7 @@ object LocalPlaylistSortSettingsDialog : ContentFramedDialog {
     }
 
     fun reset(context: Context) {
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val prefs = context.preferences
         val edit = prefs.edit()
         sortIds.forEach { id -> edit.putBoolean("pl_sort_${id}_visible", true) }
         edit.putString(localPlaylistSortMenuOrderKey, serializeOrder(sortIds))

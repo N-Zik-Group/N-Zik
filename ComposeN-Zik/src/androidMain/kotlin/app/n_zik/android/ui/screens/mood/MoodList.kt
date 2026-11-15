@@ -1,5 +1,6 @@
 package app.n_zik.android.ui.screens.mood
 
+import app.n_zik.android.utils.showButtonPlayerVideoDefault
 import app.n_zik.android.components.ui.screens.CollectionPageStatus
 import androidx.compose.foundation.layout.PaddingValues
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
@@ -131,7 +132,7 @@ fun MoodList(
     val hapticFeedback = LocalHapticFeedback.current
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
-    val isVideoEnabled = remember { context.preferences.getBoolean(showButtonPlayerVideoKey, false) }
+    val isVideoEnabled = remember { context.preferences.getBoolean(showButtonPlayerVideoKey, showButtonPlayerVideoDefault) }
 
     Column (
         modifier = Modifier

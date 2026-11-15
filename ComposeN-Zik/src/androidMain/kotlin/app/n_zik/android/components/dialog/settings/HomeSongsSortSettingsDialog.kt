@@ -1,5 +1,7 @@
 package app.n_zik.android.components.dialog.settings
 
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.components.settings.appearance.preview.PortableControlList
 import android.content.Context
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -84,6 +86,11 @@ object HomeSongsSortSettingsDialog : ContentFramedDialog {
         else -> homeSongsAllSortMenuOrderKey
     }
 
+    internal fun portableLists(): Map<String, PortableControlList> = tabAvailableIds.entries.associate { (tab, ids) ->
+        val prefix = getTabPrefix(tab)
+        prefix to PortableControlList(getSortOrderKey(tab), ids, "${prefix}_sort_", "_visible")
+    }
+
     override val dialogTitle: String @Composable get() = stringResource(R.string.settings_dialog_sort_title_format, stringResource(R.string.home_songs_settings))
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -160,7 +167,7 @@ object HomeSongsSortSettingsDialog : ContentFramedDialog {
     @Composable
     override fun DialogBody() {
         val ctx = LocalContext.current
-        val prefs = remember { ctx.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
+        val prefs = remember { ctx.preferences }
 
         val tabs = listOf(
             BuiltInPlaylist.All,
@@ -267,7 +274,7 @@ object HomeSongsSortSettingsDialog : ContentFramedDialog {
     }
 
     fun reset(context: Context) {
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val prefs = context.preferences
         val edit = prefs.edit()
         val tabs = listOf(
             BuiltInPlaylist.All, BuiltInPlaylist.Favorites, BuiltInPlaylist.Disliked,

@@ -951,12 +951,8 @@ private fun ThemeStoreCard(
             StorePreviewImage(image?.file, imageDescription, showImageRim = false, fitPortraitFrame = true)
         }
         Column(Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = if (open == null) 10.dp else 0.dp)) {
-            StoreText(theme.title, style = typography().xs.copy(fontWeight = FontWeight.SemiBold), marquee = true)
-            Row(Modifier.padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                val author = if (showLocalCreator) localThemeCreatorName(theme) else theme.author.login
-                Box(Modifier.weight(1f, fill = false)) { StoreText(author, secondary = true, style = typography().xxs, marquee = true) }
-                OfficialCreatorBadge(official)
-            }
+            val author = if (showLocalCreator) localThemeCreatorName(theme) else theme.author.login
+            ThemeCardIdentity(theme.title, author, official)
             if (blocked) {
                 StoreText(stringResource(R.string.theme_store_report_theme_suspended), secondary = true)
             } else if (showCatalogInfo) {
@@ -985,6 +981,21 @@ private fun ThemeStoreCard(
         } else if (open != null) {
             StoreCardSeeAction(open, Modifier.padding(end = 4.dp, bottom = 10.dp), onWithdraw.takeUnless { offline })
         }
+    }
+}
+
+@Composable
+internal fun ThemeCardIdentity(title: String, author: String, official: Boolean) {
+    StoreText(title, style = typography().xs.copy(fontWeight = FontWeight.SemiBold), marquee = true)
+    Row(
+        Modifier.fillMaxWidth().padding(top = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.weight(1f, fill = false)) {
+            StoreText(author, secondary = true, style = typography().xxs, marquee = true)
+        }
+        OfficialCreatorBadge(official)
     }
 }
 

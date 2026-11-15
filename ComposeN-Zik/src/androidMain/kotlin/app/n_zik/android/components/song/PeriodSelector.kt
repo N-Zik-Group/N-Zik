@@ -1,6 +1,6 @@
 package app.n_zik.android.components.song
 
-import android.content.Context
+import app.n_zik.android.utils.preferences
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -96,7 +96,7 @@ class PeriodSelector private constructor(
             return StatisticsType.entries
         }
         val ctx = LocalContext.current
-        val prefs = remember(ctx) { ctx.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
+        val prefs = ctx.preferences
         val savedOrderJson = remember(prefs, sortMenuOrderKey) {
             prefs.getString(sortMenuOrderKey, "") ?: ""
         }

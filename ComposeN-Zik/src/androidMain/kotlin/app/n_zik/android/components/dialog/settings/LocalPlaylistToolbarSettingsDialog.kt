@@ -1,5 +1,7 @@
 package app.n_zik.android.components.dialog.settings
 
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.components.settings.appearance.preview.PortableControlList
 import android.content.Context
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
@@ -62,6 +64,9 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
         "thumbnail_picker", "reset_thumbnail", "update"
     )
 
+    internal fun portableList(): PortableControlList =
+        PortableControlList(localPlaylistToolbarOrderKey, allButtonIds, "pl_ts_", "")
+
     override val dialogTitle: String @Composable get() =
         stringResource(R.string.settings_local_playlist_title) + " - " + stringResource(R.string.settings_library_toolbar_title)
     override var isActive: Boolean by mutableStateOf(false)
@@ -91,7 +96,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
     @Composable
     override fun DialogBody() {
         val ctx = LocalContext.current
-        val prefs = remember { ctx.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
+        val prefs = remember { ctx.preferences }
 
         var workingOrder by remember { mutableStateOf(parseOrder(prefs.getString(localPlaylistToolbarOrderKey, "") ?: "").toMutableList()) }
         var workingToggles by remember {
@@ -194,7 +199,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
     }
 
     fun reset(context: Context) {
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val prefs = context.preferences
         val edit = prefs.edit()
         allButtonIds.forEach { id -> edit.putBoolean("pl_ts_$id", true) }
         edit.putString(localPlaylistToolbarOrderKey, serializeOrder(allButtonIds))

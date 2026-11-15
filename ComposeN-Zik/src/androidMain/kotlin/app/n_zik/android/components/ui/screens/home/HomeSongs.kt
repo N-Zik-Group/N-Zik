@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.screens.home
 
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
@@ -215,7 +216,7 @@ fun HomeSongs(
                 else -> ""
             }
             if (prefix.isNotEmpty()) {
-                val prefs = context.getSharedPreferences("preferences", android.content.Context.MODE_PRIVATE)
+                val prefs = context.preferences
                 prefs.edit().putBoolean("${prefix}_sort_Downloaded_visible", false).apply()
             }
         }

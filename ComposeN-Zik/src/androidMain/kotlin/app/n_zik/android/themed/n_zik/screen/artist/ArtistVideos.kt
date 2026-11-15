@@ -1,5 +1,6 @@
 package app.n_zik.android.themed.n_zik.screen.artist
 
+import app.n_zik.android.utils.showButtonPlayerVideoDefault
 import app.n_zik.android.ui.styling.Dimensions
 import androidx.compose.foundation.layout.PaddingValues
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
@@ -70,7 +71,7 @@ fun ArtistVideos(
     val context = LocalContext.current
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
-    val isVideoEnabled = context.preferences.getBoolean(showButtonPlayerVideoKey, false)
+    val isVideoEnabled = context.preferences.getBoolean(showButtonPlayerVideoKey, showButtonPlayerVideoDefault)
 
     val thumbnailHeightDp = 72.dp
     val thumbnailWidthDp = 128.dp

@@ -1380,11 +1380,12 @@ fun LocalPlaylistSongs(
 
                 val order = LocalPlaylistToolbarSettingsDialog.parseOrder(toolbarOrderPref)
 
+                val toolbarPreferences = LocalContext.current.preferences
                 val toolbarButtons = buildList {
                     order.forEach { id ->
                         // Check toggle state - if disabled, skip this button
                         val toggleKey = "pl_ts_$id"
-                        val isEnabled = appContext().preferences.getBoolean(toggleKey, true)
+                        val isEnabled = toolbarPreferences.getBoolean(toggleKey, true)
                         if (!isEnabled) return@forEach
 
                         when (id) {

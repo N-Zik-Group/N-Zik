@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.utils.effectRotationDefault
 import android.content.Context
 import androidx.compose.ui.graphics.Color
 import androidx.core.content.edit
@@ -241,7 +242,7 @@ internal fun applyUiDefaults(context: Context) {
         putBoolean(showNextSongsInPlayerKey, false)
         putBoolean(showRemainingSongTimeKey, true)
         putBoolean(disableScrollingTextKey, false)
-        putBoolean(effectRotationKey, false)
+        putBoolean(effectRotationKey, effectRotationDefault)
         putBoolean(thumbnailTapEnabledKey, true)
         putBoolean(clickOnLyricsTextKey, true)
         putEnum(backgroundProgressKey, BackgroundProgress.MiniPlayer)

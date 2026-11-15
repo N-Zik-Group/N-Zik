@@ -5,6 +5,10 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.components.glass.glassBlurKey
+import app.n_zik.android.utils.Preference
+import app.n_zik.android.utils.lyricsSizeKey
+import app.n_zik.android.utils.nowPlayingIndicatorKey
 import app.n_zik.android.core.profiles.profileDataPrefs
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.runBlocking
@@ -134,6 +138,35 @@ class ThemeCollectionArchiveTest {
             restoreThemeCollection(context, backup.inputStream(), library, setOf(single.id)),
         )
         assertEquals(single, library.download(single.id))
+    }
+
+
+    @Test
+    fun zipRoundTripKeepsExpandedAppearanceAndAppliesIt() = runBlocking {
+        val plain = mapOf(
+            Preference.SEARCH_RESULT_GRID_STATES.key to "1101010",
+            Preference.HOME_LIBRARY_ITEM_SIZE.key to "BIG",
+            lyricsSizeKey to 38f,
+            nowPlayingIndicatorKey to "CrazyBars",
+        )
+        val document = encodeThemeV1(plain, mapOf(glassBlurKey to 7f))
+        val original = theme("12345678-1111-2222-3333-123456789022")
+        val manifest = requireNotNull(original.theme).let { current ->
+            current.copy(appearance = current.appearance.copy(sha256 = document.encodeToByteArray().sha256()))
+        }
+        val saved = original.copy(document = document, theme = manifest)
+        val backup = export(saved)
+        assertEquals(ThemeCollectionResult(1, 0),
+            restoreThemeCollection(context, backup.inputStream(), library, setOf(saved.id)))
+
+        val restored = requireNotNull(library.download(saved.id))
+        assertEquals(document, restored.document)
+        val settings = parseThemeV1(restored.document).toStoreGroups().values
+        val profile = context.getSharedPreferences("zip-customization-test", Context.MODE_PRIVATE)
+        val glass = context.getSharedPreferences("zip-customization-glass-test", Context.MODE_PRIVATE)
+        settings.forEach { it.applyTo(profile, glass) }
+        assertEquals(plain, profile.all.filterKeys { it in plain })
+        assertEquals(7f, glass.getFloat(glassBlurKey, -1f))
     }
 
     @Test

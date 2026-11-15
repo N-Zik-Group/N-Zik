@@ -24,7 +24,14 @@ import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import android.content.Context
 import app.n_zik.android.utils.preferences
-private val playlistsDefaultOrder = listOf("all", "pinned_playlists", "rewind", "yt_playlists", "on_device")
+internal val playlistsDefaultOrder = listOf("all", "pinned_playlists", "rewind", "yt_playlists", "on_device")
+
+internal val playlistsThemeToggleKeys = mapOf(
+    "yt_playlists" to showYtPlaylistsKey,
+    "on_device" to showOnDevicePlaylistsKey,
+    "pinned_playlists" to showPinnedPlaylistsKey,
+    "rewind" to showMonthlyPlaylistsKey
+)
 
 object HomePlaylistsSettingsDialog : ContentFramedDialog {
 
@@ -53,12 +60,7 @@ object HomePlaylistsSettingsDialog : ContentFramedDialog {
         val prefs = remember { ctx.preferences }
         var workingOrder by remember { mutableStateOf(parseOrder(prefs.getString(homePlaylistsOrderKey, "") ?: "").toMutableList()) }
 
-        val prefKeys = mapOf(
-            "yt_playlists" to showYtPlaylistsKey,
-            "on_device" to showOnDevicePlaylistsKey,
-            "pinned_playlists" to showPinnedPlaylistsKey,
-            "rewind" to showMonthlyPlaylistsKey
-        )
+        val prefKeys = playlistsThemeToggleKeys
 
         var workingToggles by remember {
             mutableStateOf(

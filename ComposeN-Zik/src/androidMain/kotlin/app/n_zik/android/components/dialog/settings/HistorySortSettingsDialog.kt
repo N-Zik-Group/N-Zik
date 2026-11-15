@@ -1,5 +1,7 @@
 package app.n_zik.android.components.dialog.settings
 
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.components.settings.appearance.preview.PortableControlList
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,6 +28,9 @@ object HistorySortSettingsDialog : ContentFramedDialog {
 
 
     private val sortIds = listOf("DATE", "ALPHABETICAL", "ARTIST")
+
+    internal fun portableList(): PortableControlList =
+        PortableControlList(historySortMenuOrderKey, sortIds, "hist_sort_", "_visible")
 
     override val dialogTitle: String @Composable get() = stringResource(R.string.library_history_title)
     override var isActive: Boolean by mutableStateOf(false)
@@ -60,7 +65,7 @@ object HistorySortSettingsDialog : ContentFramedDialog {
     @Composable
     override fun DialogBody() {
         val ctx = LocalContext.current
-        val prefs = remember { ctx.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
+        val prefs = remember { ctx.preferences }
 
         var workingOrder by remember { mutableStateOf(parseOrder(prefs.getString(historySortMenuOrderKey, "") ?: "").toMutableList()) }
         var workingToggles by remember {
@@ -106,7 +111,7 @@ object HistorySortSettingsDialog : ContentFramedDialog {
 
     /** Restores the same order and visibility as a fresh history sort menu. */
     fun reset(context: Context) {
-        context.getSharedPreferences("preferences", Context.MODE_PRIVATE).edit().apply {
+        context.preferences.edit().apply {
             putString(historySortMenuOrderKey, serializeOrder(sortIds))
             sortIds.forEach { id -> putBoolean("hist_sort_${id}_visible", true) }
         }.apply()

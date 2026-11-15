@@ -1,5 +1,6 @@
 package app.n_zik.android
 
+import app.n_zik.android.utils.showButtonPlayerVideoDefault
 import android.content.Context
 import android.content.res.Resources
 import androidx.core.content.ContextCompat
@@ -116,7 +117,7 @@ fun context(): Context = Dependencies.application
 // display-name consumers (Rewind deck, onboarding, Accounts card) expect a String
 fun ytAccountName(): String = appContext().encryptedPreferences.getString(ytAccountNameKey, "").orEmpty()
 fun ytAccountThumbnail() = appContext().encryptedPreferences.getString(ytAccountThumbnailKey, "")
-fun isVideoEnabled() = appContext().preferences.getBoolean(showButtonPlayerVideoKey, true)
+fun isVideoEnabled() = appContext().preferences.getBoolean(showButtonPlayerVideoKey, showButtonPlayerVideoDefault)
 
 fun isConnectionMeteredEnabled() = appContext().preferences.getBoolean(isConnectionMeteredEnabledKey, false)
 fun isHandleAudioFocusEnabled() = appContext().preferences.getBoolean(handleAudioFocusEnabledKey, true)

@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.utils.effectRotationDefault
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
@@ -80,7 +81,7 @@ internal fun AppearanceBehaviorCard(search: Search) {
         visualizerLineThicknessKey,
         6f
     )
-    var effectRotationEnabled by rememberPreference(effectRotationKey, false)
+    var effectRotationEnabled by rememberPreference(effectRotationKey, effectRotationDefault)
     var backgroundProgress by rememberPreference(
         backgroundProgressKey,
         BackgroundProgress.MiniPlayer

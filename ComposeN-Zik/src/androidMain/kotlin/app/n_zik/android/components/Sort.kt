@@ -1,5 +1,6 @@
 package app.n_zik.android.components
 
+import app.n_zik.android.utils.preferences
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -48,7 +49,6 @@ import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.scaleIn
-import android.content.Context
 
 open class Sort<T> (
     override val menuState: MenuState,
@@ -106,7 +106,7 @@ open class Sort<T> (
             return getEnumConstants()
         }
         val ctx = LocalContext.current
-        val prefs = remember(ctx) { ctx.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
+        val prefs = ctx.preferences
         val savedOrderJson = remember(prefs, sortMenuOrderKey) {
             prefs.getString(sortMenuOrderKey, "") ?: ""
         }

@@ -222,6 +222,60 @@ internal fun validGlassPreferenceValue(key: String, value: Any): Boolean = when 
     }
 }
 
+internal fun glassSettingsFromPreferences(
+    preferences: Map<String, *>,
+    defaultQuality: GlassQuality,
+): GlassSettings {
+    val quality = GlassQuality.entries.firstOrNull { it.name == preferences[glassQualityKey] } ?: defaultQuality
+    val base = glassProfileDefaults(quality)
+    fun value(key: String, fallback: Float) = clampGlassValue(key, preferences[key] as? Float ?: fallback)
+    fun flag(key: String, fallback: Boolean) = preferences[key] as? Boolean ?: fallback
+    return base.copy(
+        source = GlassTintSource.entries.firstOrNull { it.name == preferences[glassTintSourceKey] } ?: GlassTintSource.None,
+        customColor = preferences[glassCustomColorKey] as? Int ?: base.customColor,
+        tintStrength = value(glassTintStrengthKey, base.tintStrength),
+        vibrancy = value(glassVibrancyKey, base.vibrancy),
+        blur = value(glassBlurKey, base.blur),
+        film = value(glassFilmKey, base.film),
+        indicatorOpacity = value(glassIndicatorOpacityKey, base.indicatorOpacity),
+        dialogDimming = value(glassDialogDimmingKey, base.dialogDimming),
+        menuDimming = value(glassMenuDimmingKey, base.menuDimming),
+        rim = value(glassRimKey, base.rim),
+        depth = value(glassDepthKey, base.depth),
+        amount = value(glassAmountKey, base.amount),
+        dispersion = flag(glassDispersionKey, base.dispersion),
+        depthEffect = flag(glassDepthEffectKey, base.depthEffect),
+        rippleEnabled = flag(glassRippleEnabledKey, true),
+        rippleIntensity = value(glassRippleIntensityKey, 1f),
+        rippleSize = value(glassRippleSizeKey, 1f),
+        jellyEnabled = flag(glassJellyEnabledKey, true),
+        jellyIntensity = value(glassJellyIntensityKey, 1f),
+        header = flag(glassHeaderKey, true),
+        nav = flag(glassNavKey, true),
+        menus = flag(glassMenusKey, true),
+        miniPlayer = flag(glassMiniPlayerKey, true),
+        dropdowns = flag(glassDropdownsKey, true),
+        dialogs = flag(glassDialogsKey, true),
+        dialogButtons = flag(glassDialogButtonsKey, true),
+        nowPlaying = flag(glassNowPlayingKey, true),
+        imageRims = flag(glassImageRimsKey, true),
+        settingsCardRims = flag(glassSettingsCardRimsKey, true),
+        settingsCards = flag(glassSettingsCardsKey, true),
+        searchBars = flag(glassSearchBarsKey, true),
+        actionButtons = flag(glassActionButtonsKey, true),
+        optimizationEnabled = flag(glassOptimizationEnabledKey, true),
+        contextModes = GlassScope.entries.flatMap { scope -> scope.areas.mapNotNull { area ->
+            val key = GlassContextArea(scope, area)
+            val saved = preferences[key.preferenceKey]
+            GlassAreaMode.entries.firstOrNull { it.name == saved }?.let { key to it }
+        } }.toMap(),
+        areaModes = GlassArea.entries.mapNotNull { area ->
+            val saved = preferences[area.preferenceKey]
+            GlassAreaMode.entries.firstOrNull { it.name == saved }?.let { area to it }
+        }.toMap(),
+    )
+}
+
 /** Captures one app profile; destination policies survive optical quality changes. */
 class GlassStore(context: Context, val profileId: String = getActiveProfile(context)) {
     private val preferences = GlassProfilePreferences.preferences(context, profileId)
@@ -240,55 +294,7 @@ class GlassStore(context: Context, val profileId: String = getActiveProfile(cont
         }
     }
 
-    fun read(): GlassSettings {
-        val quality = GlassQuality.entries.firstOrNull { it.name == preferences.getString(glassQualityKey, null) } ?: defaultQuality
-        val base = glassProfileDefaults(quality)
-        fun value(key: String, fallback: Float) = clampGlassValue(key, preferences.getFloat(key, fallback))
-        return base.copy(
-            source = GlassTintSource.entries.firstOrNull { it.name == preferences.getString(glassTintSourceKey, null) } ?: GlassTintSource.None,
-            customColor = preferences.getInt(glassCustomColorKey, base.customColor),
-            tintStrength = value(glassTintStrengthKey, base.tintStrength),
-            vibrancy = value(glassVibrancyKey, base.vibrancy),
-            blur = value(glassBlurKey, base.blur),
-            film = value(glassFilmKey, base.film),
-            indicatorOpacity = value(glassIndicatorOpacityKey, base.indicatorOpacity),
-            dialogDimming = value(glassDialogDimmingKey, base.dialogDimming),
-            menuDimming = value(glassMenuDimmingKey, base.menuDimming),
-            rim = value(glassRimKey, base.rim),
-            depth = value(glassDepthKey, base.depth),
-            amount = value(glassAmountKey, base.amount),
-            dispersion = preferences.getBoolean(glassDispersionKey, base.dispersion),
-            depthEffect = preferences.getBoolean(glassDepthEffectKey, base.depthEffect),
-            rippleEnabled = preferences.getBoolean(glassRippleEnabledKey, true),
-            rippleIntensity = value(glassRippleIntensityKey, 1f),
-            rippleSize = value(glassRippleSizeKey, 1f),
-            jellyEnabled = preferences.getBoolean(glassJellyEnabledKey, true),
-            jellyIntensity = value(glassJellyIntensityKey, 1f),
-            header = preferences.getBoolean(glassHeaderKey, true),
-            nav = preferences.getBoolean(glassNavKey, true),
-            menus = preferences.getBoolean(glassMenusKey, true),
-            miniPlayer = preferences.getBoolean(glassMiniPlayerKey, true),
-            dropdowns = preferences.getBoolean(glassDropdownsKey, true),
-            dialogs = preferences.getBoolean(glassDialogsKey, true),
-            dialogButtons = preferences.getBoolean(glassDialogButtonsKey, true),
-            nowPlaying = preferences.getBoolean(glassNowPlayingKey, true),
-            imageRims = preferences.getBoolean(glassImageRimsKey, true),
-            settingsCardRims = preferences.getBoolean(glassSettingsCardRimsKey, true),
-            settingsCards = preferences.getBoolean(glassSettingsCardsKey, true),
-            searchBars = preferences.getBoolean(glassSearchBarsKey, true),
-            actionButtons = preferences.getBoolean(glassActionButtonsKey, true),
-            optimizationEnabled = preferences.getBoolean(glassOptimizationEnabledKey, true),
-            contextModes = GlassScope.entries.flatMap { scope -> scope.areas.mapNotNull { area ->
-                val key = GlassContextArea(scope, area)
-                val saved = preferences.getString(key.preferenceKey, null)
-                GlassAreaMode.entries.firstOrNull { it.name == saved }?.let { key to it }
-            } }.toMap(),
-            areaModes = GlassArea.entries.mapNotNull { area ->
-                val saved = preferences.getString(area.preferenceKey, null)
-                GlassAreaMode.entries.firstOrNull { it.name == saved }?.let { area to it }
-            }.toMap(),
-        )
-    }
+    fun read(): GlassSettings = glassSettingsFromPreferences(preferences.all, defaultQuality)
 
     fun setProfile(profile: GlassQuality) {
         if (read().quality == profile) return

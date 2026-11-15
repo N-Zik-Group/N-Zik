@@ -6,10 +6,34 @@ import org.junit.Assert.assertThrows
 import org.junit.Test
 
 import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassQuality
+import app.n_zik.android.components.glass.glassProfileDefaults
+import app.n_zik.android.components.glass.glassSettingsFromPreferences
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.utils.colorPaletteModeKey
 import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.utils.hideStatusBarKey
+import app.n_zik.android.utils.customThemeDark_Background0Key
+import app.n_zik.android.utils.lyricsFontSizeKey
+import app.n_zik.android.utils.lyricsSizeKey
+import app.n_zik.android.utils.lyricsTypeKey
+import app.n_zik.android.utils.miniPlayerButtonOrderKey
+import app.n_zik.android.utils.nowPlayingIndicatorKey
+import app.n_zik.android.utils.playlistindicatorKey
+import app.n_zik.android.utils.Preference
+import app.n_zik.android.utils.playerBackdropKey
+import app.n_zik.android.utils.floatActionIconOffsetXkey
+import app.n_zik.android.utils.showMiniPlayerAudioOutputKey
+import app.n_zik.android.utils.uiRoundnessDpKey
+import app.n_zik.android.utils.homeTabsOrderKey
+import app.n_zik.android.utils.homeSongsOrderKey
+import app.n_zik.android.utils.playerActionBarButtonOrderKey
+import app.n_zik.android.utils.thumbnailSizeDpKey
+import app.n_zik.android.utils.thumbnailSizeLDpKey
+import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.components.navigation.dock.DockToolbarPreferences
+import app.n_zik.android.components.glass.glassBlurKey
+import app.n_zik.android.components.glass.glassJellyEnabledKey
 import app.n_zik.android.utils.navigationBarPositionKey
 
 class ThemePreviewFormatTest {
@@ -58,5 +82,102 @@ class ThemePreviewFormatTest {
         assertEquals(plain + (glassEnabledKey to true), glass.plain)
         assertEquals(optics, normal.glass)
         assertEquals(optics, glass.glass)
+    }
+
+    @Test
+    fun `empty preferences export creates an importable default theme`() {
+        val document = encodeThemeV1(emptyMap<String, Any>(), emptyMap<String, Any>())
+        val groups = parseThemeV1(document).toStoreGroups()
+        assertEquals(StoreGroup.entries.toSet(), groups.keys)
+        assertEquals("System", groups.getValue(StoreGroup.Colors).plain[colorPaletteModeKey])
+        assertEquals(25f, groups.getValue(StoreGroup.PageLayout).plain[uiRoundnessDpKey])
+        assertEquals("Auto", groups.getValue(StoreGroup.Lyrics).plain[lyricsTypeKey])
+        assertEquals(true, groups.getValue(StoreGroup.PlayerAndQueue).plain[showMiniPlayerAudioOutputKey])
+    }
+
+    @Test
+    fun `customization round trips through the same document used for previews`() {
+        val plain = mapOf(
+            colorPaletteNameKey to "Customized",
+            customThemeDark_Background0Key to -101,
+            uiRoundnessDpKey to 26f,
+            nowPlayingIndicatorKey to "CrazyBars",
+            playlistindicatorKey to true,
+            playerBackdropKey to 32f,
+            floatActionIconOffsetXkey to -63.25f,
+            Preference.HOME_ARTIST_ITEM_SIZE.key to "BIG",
+            Preference.SEARCH_RESULT_GRID_STATES.key to "1010101",
+            lyricsFontSizeKey to "Medium",
+            lyricsSizeKey to 42f,
+            lyricsTypeKey to "Karaoke",
+            miniPlayerButtonOrderKey to """["lyrics","play_pause"]""",
+            showMiniPlayerAudioOutputKey to false,
+            "githubAccessToken" to "not-a-theme-setting",
+        )
+        val glass = mapOf(
+            glassBlurKey to 11f,
+            glassJellyEnabledKey to false,
+            GlassArea.Header.preferenceKey to "ContourOnly",
+        )
+        val document = encodeThemeV1(plain, glass)
+        val preview = themePreviewPreferences(document, glass = true)
+        assertEquals(plain - "githubAccessToken", preview.plain.filterKeys { it in plain })
+        assertEquals(glass, preview.glass.filterKeys { it in glass })
+        assertFalse(document.contains("not-a-theme-setting"))
+        assertEquals(plain.filterKeys { it in setOf(lyricsFontSizeKey, lyricsSizeKey, lyricsTypeKey) },
+            parseThemeV1(document).toStoreGroups().getValue(StoreGroup.Lyrics).plain.filterKeys { it in plain })
+    }
+
+    @Test
+    fun `landscape cover follows portrait until explicitly customized`() {
+        fun decode(plain: Map<String, Any>) =
+            parseThemeV1(encodeThemeV1(plain, emptyMap<String, Any>()))
+                .getValue(ThemeCategory.PLAYER_AND_QUEUE).plain
+
+        assertEquals(UseThemeDefault, decode(mapOf(thumbnailSizeDpKey to 83f))[thumbnailSizeLDpKey])
+        assertEquals(52f, decode(mapOf(thumbnailSizeDpKey to 83f, thumbnailSizeLDpKey to 52f))[thumbnailSizeLDpKey])
+    }
+
+    @Test
+    fun `nested orders preserve app identifiers and repeated menu separators`() {
+        val plain = mapOf(
+            homeTabsOrderKey to """["playlists","songs"]""",
+            DockToolbarPreferences.orderKey to """["musical_notes","cloud_download","time_outline"]""",
+            homeSongsOrderKey to """["on_device","downloaded"]""",
+            playerActionBarButtonOrderKey to """["add_to_playlist","lyrics"]""",
+            DataStoreUtils.KEY_BURGER_MENU_ORDER to """["history","separator","profiles","separator","settings"]""",
+            DataStoreUtils.burgerMenuToggleKey("history") to false,
+        )
+        val document = encodeThemeV1(plain, emptyMap<String, Any>())
+        assertEquals(plain, themePreviewPreferences(document, false).plain.filterKeys { it in plain })
+    }
+
+    @Test
+    fun `sparse previews fill from Stock without adding settings to import`() {
+        val partial = """{"schemaVersion":1,"categories":{"colors":{"palette":"dynamic","mode":"light"}}}"""
+        val imported = parseThemeV1(partial)
+        val demo = themePreviewPreferences(partial, glass = true)
+
+        assertEquals(setOf(ThemeCategory.COLORS), imported.keys)
+        assertEquals("Light", demo.plain[colorPaletteModeKey])
+        assertEquals(25f, demo.plain[uiRoundnessDpKey])
+        assertEquals("1111111", demo.plain[Preference.SEARCH_RESULT_GRID_STATES.key])
+        assertEquals("Auto", demo.plain[lyricsTypeKey])
+        assertEquals(true, demo.plain[glassEnabledKey])
+        assertEquals(emptyMap<String, Any>(), demo.glass)
+    }
+
+    @Test
+    fun `sparse Glass previews keep the chosen quality defaults`() {
+        val partial = """
+            {"schemaVersion":1,"categories":{"glass":{"enabled":true,"tintSource":"none",
+                "navigation":"glass-and-contour","miniPlayer":"glass-and-contour",
+                "nowPlaying":"glass-and-contour","quality":"quality"}}}
+        """.trimIndent()
+        val demo = themePreviewPreferences(partial, glass = true)
+        val settings = glassSettingsFromPreferences(demo.glass, GlassQuality.Balanced)
+
+        assertEquals(GlassQuality.Quality, settings.quality)
+        assertEquals(glassProfileDefaults(GlassQuality.Quality).blur, settings.blur)
     }
 }

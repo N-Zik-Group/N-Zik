@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.settings
 
+import app.n_zik.android.utils.preferences
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -88,7 +89,7 @@ private val defaultSectionOrder = listOf(
     "charts"
 )
 
-private data class QuickPicksSectionDef(
+internal data class QuickPicksSectionDef(
     val id: String,
     val preferenceKey: String,
     val iconRes: Int,
@@ -96,7 +97,7 @@ private data class QuickPicksSectionDef(
     val defaultValue: Boolean
 )
 
-private fun buildSectionDefs(): Map<String, QuickPicksSectionDef> = mapOf(
+internal fun buildSectionDefs(): Map<String, QuickPicksSectionDef> = mapOf(
     "tips" to QuickPicksSectionDef("tips", showTipsKey, R.drawable.person, R.string.recommendations_for_you_title, true),
     "charts" to QuickPicksSectionDef("charts", showChartsKey, R.drawable.trending, R.string.recommendations_charts_title, true),
     "related_albums" to QuickPicksSectionDef("related_albums", showRelatedAlbumsKey, R.drawable.album, R.string.album_related_title, true),
@@ -192,7 +193,7 @@ object QuickPicksContentSettingsDialog : ContentFramedDialog {
     @Composable
     override fun DialogBody() {
         val context = LocalContext.current
-        val prefs = remember { context.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
+        val prefs = remember { context.preferences }
         val sectionDefs = remember { buildSectionDefs() }
 
         val initial = remember { loadPrefs(prefs) }
@@ -263,7 +264,7 @@ object QuickPicksContentSettingsDialog : ContentFramedDialog {
         )
     }
     fun reset(context: Context) {
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val prefs = context.preferences
         val defaultToggles = buildSectionDefs().mapValues { it.value.defaultValue }
         savePrefs(prefs, defaultSectionOrder, defaultToggles)
     }

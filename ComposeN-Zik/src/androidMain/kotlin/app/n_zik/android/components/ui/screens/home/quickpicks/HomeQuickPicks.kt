@@ -1,6 +1,7 @@
 @file:Suppress("OPT_IN_USAGE", "OPT_IN_USAGE_ERROR")
 package app.n_zik.android.components.ui.screens.home.quickpicks
 
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import android.annotation.SuppressLint
@@ -790,7 +791,7 @@ private val defaultQuickPicksSectionOrder = listOf(
 private fun rememberQuickPicksSectionOrder(): List<String> {
     val context = LocalContext.current
     return remember {
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val prefs = context.preferences
         val orderSerialized = prefs.getString(quickPicksSectionOrderKey, "") ?: ""
         if (orderSerialized.isBlank()) {
             defaultQuickPicksSectionOrder

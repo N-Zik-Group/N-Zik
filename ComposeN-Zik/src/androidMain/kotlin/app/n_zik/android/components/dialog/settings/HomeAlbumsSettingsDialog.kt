@@ -26,7 +26,12 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 import android.content.Context
 import app.n_zik.android.utils.preferences
 
-private val albumsDefaultOrder = listOf("all", "favorites", "disliked", "on_device")
+internal val albumsDefaultOrder = listOf("all", "favorites", "disliked", "on_device")
+
+internal val albumsThemeToggleKeys = mapOf(
+    "favorites" to showFavoritesAlbumKey,
+    "on_device" to showOnDeviceAlbumsKey
+)
 
 object HomeAlbumsSettingsDialog : ContentFramedDialog {
 
@@ -54,10 +59,7 @@ object HomeAlbumsSettingsDialog : ContentFramedDialog {
         val prefs = remember { ctx.preferences }
         var workingOrder by remember { mutableStateOf(parseOrder(prefs.getString(homeAlbumsOrderKey, "") ?: "").toMutableList()) }
 
-        val prefKeys = mapOf(
-            "favorites" to showFavoritesAlbumKey,
-            "on_device" to showOnDeviceAlbumsKey
-        )
+        val prefKeys = albumsThemeToggleKeys
 
         var workingToggles by remember {
             mutableStateOf(

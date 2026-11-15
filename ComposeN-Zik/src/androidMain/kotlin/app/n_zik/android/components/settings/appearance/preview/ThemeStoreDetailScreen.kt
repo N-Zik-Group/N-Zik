@@ -299,7 +299,11 @@ private fun ThemeStoreDetailContent(
     val apply: (Set<StoreGroup>) -> Unit = { groups ->
         if (getActiveProfile(context) == profileId) {
             appearance?.selectedSettings(theme.compatibility, appVersion, groups)?.let { settings ->
-                undo = settings.applyTo(context.preferences, GlassProfilePreferences.preferences(context, profileId))
+                undo = settings.applyTo(
+                    context.preferences,
+                    GlassProfilePreferences.preferences(context, profileId),
+                    app.n_zik.android.utils.DataStoreUtils.prefs(context),
+                )
                 Toaster.i(R.string.theme_store_applied)
             }
         }
@@ -1061,7 +1065,7 @@ internal fun ThemeSettingsCategoryRow(
     settings: ThemeSettings?,
     checked: Boolean,
     isExpanded: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
+    onCheckedChange: ((Boolean) -> Unit)? = null,
     onExpand: () -> Unit,
 ) {
     val enabled = settings != null
@@ -1100,16 +1104,25 @@ internal fun ThemeSettingsCategoryRow(
         enter = fadeIn(navigationChromeTween()) + expandVertically(navigationChromeTween()),
         exit = fadeOut(navigationChromeTween()) + shrinkVertically(navigationChromeTween()),
     ) {
-        Column(Modifier.padding(start = 64.dp, end = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            (settings.plain + settings.glass).forEach { (key, value) ->
+        val values = remember(settings) { (settings.plain + settings.glass).toList() }
+        LazyColumn(
+            Modifier.fillMaxWidth().heightIn(max = 240.dp).padding(start = 64.dp, end = 12.dp),
+            contentPadding = PaddingValues(vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(values, key = { it.first }) { (key, value) ->
                 val name = (themeSettingNames[key] ?: key).readableThemeValue()
                 val detail = when (value) {
                     true -> stringResource(R.string.theme_store_setting_on)
                     false -> stringResource(R.string.theme_store_setting_off)
+                    UseThemeDefault -> stringResource(R.string.common_option_default)
                     is String -> value.readableThemeValue()
                     else -> value.toString()
                 }
-                StoreText(stringResource(R.string.theme_store_setting_detail, name, detail), secondary = true)
+                BasicText(
+                    stringResource(R.string.theme_store_setting_detail, name, detail),
+                    style = typography().xxs.copy(color = colorPalette().textSecondary),
+                )
             }
         }
     }

@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.settings
 
+import app.n_zik.android.utils.preferences
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,6 +39,8 @@ private val defaultButtonOrder = listOf(
     "shuffle", "loop", "lyrics", "visualizer", "expanded_player",
     "sleep_timer", "equalizer", "arrow", "menu"
 )
+
+internal fun playerActionBarThemeIds(): Set<String> = defaultButtonOrder.toSet()
 
 private data class ButtonDef(
     val id: String,
@@ -104,7 +107,7 @@ object PlayerActionBarSettingsDialog : ContentFramedDialog {
     @Composable
     override fun DialogBody() {
         val context = LocalContext.current
-        val prefs = remember { context.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
+        val prefs = remember { context.preferences }
         val buttonDefs = remember { buildButtonDefs() }
 
         val initial = remember {
@@ -184,7 +187,7 @@ object PlayerActionBarSettingsDialog : ContentFramedDialog {
     }
 
     fun reset(context: Context) {
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val prefs = context.preferences
         val editor = prefs.edit()
         editor.putString(playerActionBarButtonOrderKey, serializeOrder(defaultButtonOrder))
         buildButtonDefs().forEach { (_, def) ->

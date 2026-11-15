@@ -1417,7 +1417,8 @@ class PlayerServiceModern : MediaLibraryService(),
 //
             // showReminderIfNeeded auto-correction all write it in-process, so one listener keeps
             // the discover command button icon (discover / discover_stop) in sync on every path.
-            discoverKey -> updateDefaultNotification()
+            discoverKey, notificationPlayerFirstIconKey, notificationPlayerSecondIconKey ->
+                updateDefaultNotification()
 
             persistentQueueKey -> if (sharedPreferences != null) {
                 isPersistentQueueEnabled =

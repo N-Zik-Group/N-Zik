@@ -9,7 +9,9 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.core.content.edit
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.models.Album
+import app.n_zik.android.models.Lyrics
 import app.n_zik.android.models.Song
 import app.n_zik.android.utils.asMediaItem
 
@@ -72,18 +74,43 @@ internal object ThemePreviewDemo {
             .build()
     }
 
-    val lyrics = """
-        [00:43.00]Fold the map along the river
-        [00:49.00]Leave the names out in the rain
-        [00:55.00]Every road remembers daylight
-        [01:01.00]Every window holds a flame
-        [01:07.00]If the morning finds us wandering
-        [01:13.00]We can follow where it goes
-        [01:19.00]Through the towns that never knew us
-        [01:25.00]To the coast the sparrow knows
-        [01:31.00]Write a letter to the weather
-        [01:37.00]Leave it underneath the stone
-    """.trimIndent()
+    private val lyricLines = listOf(
+        "Fold the map along the river",
+        "Leave the names out in the rain",
+        "Every road remembers daylight",
+        "Every window holds a flame",
+        "If the morning finds us wandering",
+        "We can follow where it goes",
+        "Through the towns that never knew us",
+        "To the coast the sparrow knows",
+        "Write a letter to the weather",
+        "Leave it underneath the stone",
+    )
+
+    private val syncedLyrics = timedLyrics(withWordTimings = false)
+    private val karaokeLyrics = timedLyrics(withWordTimings = true)
+
+    fun lyrics(mediaId: String, mode: LyricsType): Lyrics = when (mode) {
+        LyricsType.Unsynced -> Lyrics(mediaId, LyricsType.Unsynced.name, lyricLines.joinToString("\n"))
+        LyricsType.Karaoke -> Lyrics(mediaId, LyricsType.Karaoke.name, karaokeLyrics)
+        LyricsType.Synced, LyricsType.Auto -> Lyrics(mediaId, LyricsType.Synced.name, syncedLyrics)
+    }
+
+    private fun timedLyrics(withWordTimings: Boolean): String = buildString {
+        lyricLines.forEachIndexed { lineIndex, line ->
+            val startSecond = 43 + lineIndex * 6
+            val minutes = (startSecond / 60).toString().padStart(2, '0')
+            val seconds = (startSecond % 60).toString().padStart(2, '0')
+            appendLine("[$minutes:$seconds.00]$line")
+            if (withWordTimings) {
+                val words = line.split(' ').mapIndexed { wordIndex, word ->
+                    val start = startSecond + wordIndex * 0.5
+                    "$word:$start:${start + 0.5}"
+                }
+                appendLine(words.joinToString("|", "<", ">"))
+            }
+        }
+    }.trimEnd()
 }
 
 internal enum class ThemePreviewScene(val fileName: String, val searchTab: Int? = null, val playing: Boolean = false) {
@@ -116,6 +143,7 @@ internal class ThemePreviewContext(base: Context, val previewPreferences: Shared
                         is Int -> putInt(key, value)
                         is Float -> putFloat(key, value)
                         is String -> putString(key, value)
+                        UseThemeDefault -> Unit
                         else -> error("Invalid preview setting $key")
                     }
                 }

@@ -12,27 +12,32 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.withContext
-import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.glass.GlassAreaMode
+import app.n_zik.android.components.glass.GlassQuality
 import app.n_zik.android.components.glass.GlassSettings
-import app.n_zik.android.components.glass.GlassTintSource
 import app.n_zik.android.components.glass.glassEnabledKey
-import app.n_zik.android.components.glass.glassTintSourceKey
+import app.n_zik.android.components.glass.glassSettingsFromPreferences
 import app.n_zik.android.components.theme.forPaletteMode
+import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
+import app.n_zik.android.components.player.analyzeArtworkColors
+import app.n_zik.android.core.settings.DefaultColorPaletteMode
 import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.BoundedCornerSize
 import app.n_zik.android.ui.styling.colorPaletteOf
+import app.n_zik.android.ui.styling.customColorPalette
+import app.n_zik.android.utils.customColorKey
 import app.n_zik.android.ui.styling.dynamicColorPaletteOf
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.utils.applyFontPaddingKey
+import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
 import app.n_zik.android.utils.colorPaletteModeKey
 import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.fontTypeKey
 import app.n_zik.android.utils.thumbnailRoundnessDpKey
+import app.n_zik.android.utils.uiRoundnessDpKey
 import app.n_zik.android.utils.useSystemFontKey
 import com.kieronquinn.monetcompat.core.MonetCompat
 import timber.log.Timber
@@ -43,11 +48,17 @@ internal data class ThemePreviewAppearance(
     val glass: GlassSettings,
 )
 
+private val themePreviewDefaultPreferences by lazy {
+    parseThemeV1(defaultThemeAppearanceDocument()).values
+        .flatMap { it.plain.entries }.associate { it.toPair() }
+}
+
 internal fun themePreviewPreferences(document: String?, glass: Boolean): ThemeSettings {
     val categories = document?.let(::parseThemeV1).orEmpty()
     val preferences = categories.values.flatMap { it.plain.entries }.associate { it.toPair() }
-    // The two captures differ by the master switch only, including for a theme that disables Glass.
-    return ThemeSettings(preferences + (glassEnabledKey to glass), categories[ThemeCategory.GLASS]?.glass.orEmpty())
+    // Stock defaults belong to the demo. Applying an older theme still leaves omitted keys alone.
+    val plain = themePreviewDefaultPreferences + preferences + (glassEnabledKey to glass)
+    return ThemeSettings(plain, categories[ThemeCategory.GLASS]?.glass.orEmpty())
 }
 
 @Composable
@@ -58,25 +69,41 @@ internal fun rememberThemePreviewAppearance(document: String?, glass: Boolean): 
     val glassPreferences = settings.glass
     val systemDark = isSystemInDarkTheme()
     val paletteName = preferences.option(colorPaletteNameKey, ColorPaletteName.Dynamic)
-    val paletteMode = preferences.option(colorPaletteModeKey, ColorPaletteMode.Dark)
+    val paletteMode = preferences.option(colorPaletteModeKey, DefaultColorPaletteMode)
     val dark = paletteMode != ColorPaletteMode.Light && (paletteMode != ColorPaletteMode.System || systemDark)
-    val base = remember(context, paletteName, paletteMode, systemDark) {
+    val base = remember(context, paletteName, paletteMode, systemDark, preferences) {
         val fallback = colorPaletteOf(paletteName, paletteMode, systemDark)
-        if (paletteName != ColorPaletteName.MaterialYou) fallback else try {
-            dynamicColorPaletteOf(Color(MonetCompat.setup(context).getAccentColor(context)), dark)
-        } catch (error: IllegalStateException) {
-            Timber.tag("ThemePreview").w(error, "Material You palette is unavailable")
-            fallback
+        when (paletteName) {
+            ColorPaletteName.CustomColor ->
+                dynamicColorPaletteOf(Color(preferences[customColorKey] as? Int ?: Color.Green.hashCode()), dark)
+            ColorPaletteName.Customized -> customColorPalette(fallback, paletteMode, systemDark) { key, default ->
+                preferences[key] as? Int ?: default
+            }
+            ColorPaletteName.MaterialYou -> try {
+                dynamicColorPaletteOf(Color(MonetCompat.setup(context).getAccentColor(context)), dark)
+            } catch (error: IllegalStateException) {
+                Timber.tag("ThemePreview").w(error, "Material You palette is unavailable")
+                fallback
+            }
+            else -> fallback
         }
     }
-    val artworkPalette by produceState(base, context, paletteName, dark, base) {
+    val artworkPalette by produceState(base, context, paletteName, dark, base, preferences[dynamicThemeRespectBrightnessKey]) {
         if (paletteName == ColorPaletteName.Dynamic) value = withContext(NzikDispatchers.DATA) {
             val bitmap = BitmapFactory.decodeFile(ThemePreviewAssets.file(context, "atlas.jpg").path)
-            try { bitmap?.let { dynamicColorPaletteOf(it, dark) } ?: base } finally { bitmap?.recycle() }
+            try {
+                bitmap?.let { analyzeArtworkColors(it).display(
+                    dark, preferences[dynamicThemeRespectBrightnessKey] == true,
+                ).palette } ?: base
+            } finally {
+                bitmap?.recycle()
+            }
         } else value = base
     }
-    val radius = preferences[thumbnailRoundnessDpKey] as? Float ?: 12f
-    val appearance = remember(artworkPalette, preferences, paletteMode, radius) {
+    val appearance = remember(artworkPalette, preferences, paletteMode) {
+        val radius = preferences[thumbnailRoundnessDpKey] as? Float ?: 12f
+        val uiRadius = preferences[uiRoundnessDpKey] as? Float ?: 25f
+        val artistRadius = preferences[artistThumbnailRoundnessDpKey] as? Float ?: 48f
         Appearance(
             colorPalette = artworkPalette,
             typography = typographyOf(
@@ -86,19 +113,12 @@ internal fun rememberThemePreviewAppearance(document: String?, glass: Boolean): 
                 preferences.option(fontTypeKey, FontType.Rubik),
             ),
             thumbnailShape = if (radius >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(radius.dp, 0.25f)),
-            uiRoundnessShape = RoundedCornerShape(BoundedCornerSize(25.dp, 0.4f)),
-            artistThumbnailShape = CircleShape,
+            uiRoundnessShape = RoundedCornerShape(BoundedCornerSize(uiRadius.dp, 0.4f)),
+            artistThumbnailShape = if (artistRadius >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(artistRadius.dp, 0.25f)),
         ).forPaletteMode(paletteMode)
     }
     val glassSettings = remember(glass, glassPreferences) {
-        GlassSettings(
-            enabled = glass,
-            source = glassPreferences.option(glassTintSourceKey, GlassTintSource.None),
-            areaModes = GlassArea.entries.mapNotNull { area ->
-                val mode = glassPreferences[area.preferenceKey] as? String
-                GlassAreaMode.entries.firstOrNull { it.name == mode }?.let { area to it }
-            }.toMap(),
-        )
+        glassSettingsFromPreferences(glassPreferences, GlassQuality.Balanced).copy(enabled = glass)
     }
     return ThemePreviewAppearance(preferences, appearance, glassSettings)
 }

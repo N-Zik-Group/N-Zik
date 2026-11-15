@@ -1,5 +1,7 @@
 package app.n_zik.android.components.dialog.settings
 
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.components.settings.appearance.preview.PortableControlList
 import android.content.Context
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -119,20 +121,27 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
 
     private fun serializeOrder(order: List<String>): String { val a = JSONArray(); order.forEach { a.put(it) }; return a.toString() }
 
+    private val toolbarTabs = listOf(
+        BuiltInPlaylist.All to homeSongsToolbarOrderKey,
+        BuiltInPlaylist.Favorites to homeSongsFavoritesToolbarOrderKey,
+        BuiltInPlaylist.Disliked to homeSongsDislikedToolbarOrderKey,
+        BuiltInPlaylist.Offline to homeSongsOfflineToolbarOrderKey,
+        BuiltInPlaylist.Downloaded to homeSongsDownloadedToolbarOrderKey,
+        BuiltInPlaylist.Top to homeSongsTopToolbarOrderKey,
+        BuiltInPlaylist.OnDevice to homeSongsOnDeviceToolbarOrderKey
+    )
+
+    internal fun portableLists(): Map<String, PortableControlList> = toolbarTabs.associate { (tab, key) ->
+        val prefix = getTabPrefix(tab)
+        prefix to PortableControlList(key, tabAvailableIds.getValue(tab), "${prefix}_ts_", "")
+    }
+
     @Composable
     override fun DialogBody() {
         val ctx = LocalContext.current
-        val prefs = remember { ctx.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
+        val prefs = remember { ctx.preferences }
 
-        val tabs = listOf(
-            BuiltInPlaylist.All to homeSongsToolbarOrderKey,
-            BuiltInPlaylist.Favorites to homeSongsFavoritesToolbarOrderKey,
-            BuiltInPlaylist.Disliked to homeSongsDislikedToolbarOrderKey,
-            BuiltInPlaylist.Offline to homeSongsOfflineToolbarOrderKey,
-            BuiltInPlaylist.Downloaded to homeSongsDownloadedToolbarOrderKey,
-            BuiltInPlaylist.Top to homeSongsTopToolbarOrderKey,
-            BuiltInPlaylist.OnDevice to homeSongsOnDeviceToolbarOrderKey
-        )
+        val tabs = toolbarTabs
 
         var selectedTabIndex by remember { mutableStateOf(0) }
 
@@ -280,7 +289,7 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
     }
 
     fun reset(context: Context) {
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val prefs = context.preferences
         val edit = prefs.edit()
         val tabs = listOf(
             BuiltInPlaylist.All to homeSongsToolbarOrderKey,

@@ -69,7 +69,7 @@ fun SearchYoutubeEntity (
             modifier = Modifier.padding(bottom = 12.dp)
         )
     }
-    val isVideoEnabled = LocalContext.current.preferences.getBoolean(showButtonPlayerVideoKey, false)
+    val isVideoEnabled = LocalContext.current.preferences.getBoolean(showButtonPlayerVideoKey, showButtonPlayerVideoDefault)
 
     Box(
         modifier = Modifier

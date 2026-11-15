@@ -85,6 +85,12 @@ import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.LocalGlassPlayerOverlayActive
 import app.n_zik.android.components.glass.LocalGlassPreviewSettings
 import app.n_zik.android.components.navigation.AppNavigation
+import app.n_zik.android.components.player.APP_HEADER_HEIGHT
+import app.n_zik.android.components.player.MINI_PLAYER_TOP_GAP
+import app.n_zik.android.components.player.miniPlayerTopInset
+import app.n_zik.android.enums.PlayerPosition
+import app.n_zik.android.ui.components.InterfaceLayoutDirection
+import app.n_zik.android.utils.playerPositionKey
 import app.n_zik.android.components.navigation.dock.FloatingDockDimensions
 import app.n_zik.android.components.navigation.dock.FloatingDockEnvironment
 import app.n_zik.android.components.navigation.dock.FloatingDockState
@@ -294,7 +300,7 @@ private fun CaptureGallery(
                 )
             }
             CompositionLocalProvider(LocalContext provides previewContext) {
-                PreviewPage(ThemePreviewSession(frame.scene, player), theme)
+                InterfaceLayoutDirection { PreviewPage(ThemePreviewSession(frame.scene, player), theme) }
             }
             Box(Modifier.fillMaxSize().pointerInput(Unit) {
                 awaitEachGesture {
@@ -397,11 +403,12 @@ private fun PreviewPage(session: ThemePreviewSession, theme: ThemePreviewAppeara
         NavigationBarPosition.entries.firstOrNull { it.name == position }
     } ?: NavigationBarPosition.BottomFloating
 
+    val topPlayer = theme.preferences[playerPositionKey] == PlayerPosition.Top.name
     val dockState = remember { FloatingDockState() }
     val dockProgress = remember { mutableStateOf(0f) }
     val hasTabs = session.scene !in setOf(ThemePreviewScene.ALBUM, ThemePreviewScene.ARTIST, ThemePreviewScene.PLAYLIST, ThemePreviewScene.LOCAL_PLAYLIST)
-    val dock = FloatingDockEnvironment(dockState, null, navPosition.isHorizontal, dockProgress, navPosition.isBottomType,
-        classic = navPosition == NavigationBarPosition.Bottom, floating = navPosition.isFloating)
+    val dock = FloatingDockEnvironment(dockState, null, navPosition.isHorizontal, dockProgress, navPosition.isBottomType && !topPlayer,
+        classic = navPosition == NavigationBarPosition.Bottom && !topPlayer, floating = navPosition.isFloating && !topPlayer)
     val glassNav = theme.glass.usesGlassMaterial(GlassArea.Nav)
     val navBottomPadding = Dimensions.navBarBottomPadding(navPosition.isFloating)
     val navClearance = when {
@@ -416,7 +423,18 @@ private fun PreviewPage(session: ThemePreviewSession, theme: ThemePreviewAppeara
         val safePadding = safeInsets.asPaddingValues()
         val sheet = rememberPlayerSheetState(0.dp, maxHeight, miniHeight + safePadding.calculateBottomPadding(),
             if (fullPlayer) expandedAnchor else collapsedAnchor)
-        val windowInsets = safeInsets.add(WindowInsets(bottom = if (fullPlayer) 0.dp else miniHeight))
+        val windowInsets = safeInsets.add(WindowInsets(
+            top = if (!fullPlayer && topPlayer) miniHeight else 0.dp,
+            bottom = if (!fullPlayer && !topPlayer) miniHeight else 0.dp,
+        ))
+        val topInset = miniPlayerTopInset(
+            statusBarTop = safePadding.calculateTopPadding(),
+            barsHidden = false,
+            hasTopNavBar = hasTabs && navPosition == NavigationBarPosition.Top,
+            headerHeight = if (navPosition.isHorizontal) APP_HEADER_HEIGHT else 0.dp,
+            topNavBarHeight = if (glassNav) GlassNavigationBarHeight else Dimensions.standardNavBarHeight,
+            gap = if (navPosition.isHorizontal) MINI_PLAYER_TOP_GAP else 0.dp,
+        )
 
         CompositionLocalProvider(
             LocalAppearance provides theme.appearance,
@@ -463,7 +481,9 @@ private fun PreviewPage(session: ThemePreviewSession, theme: ThemePreviewAppeara
                     CustomBottomSheet(
                         state = sheet,
                         modifier = Modifier.fillMaxWidth(),
-                        bottomPadding = { navClearance + standaloneBottomMargin },
+                        bottomPadding = { if (topPlayer) 5.dp else navClearance + standaloneBottomMargin },
+                        topPadding = if (topPlayer) ({ topInset }) else null,
+                        placementKey = topPlayer,
                         collapsedStartInset = safePadding.calculateStartPadding(layoutDirection) + if (if (rtl) rightRail else leftRail) sideWidth else 0.dp,
                         collapsedEndInset = safePadding.calculateEndPadding(layoutDirection) + if (if (rtl) leftRail else rightRail) sideWidth else 0.dp,
                         collapsedContentHeight = miniHeight,

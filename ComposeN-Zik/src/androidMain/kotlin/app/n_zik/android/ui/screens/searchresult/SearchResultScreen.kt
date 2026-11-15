@@ -1,4 +1,5 @@
 package app.n_zik.android.ui.screens.searchresult
+import app.n_zik.android.utils.showButtonPlayerVideoDefault
 import app.n_zik.android.components.navigation.rememberTopContentInsetProvider
 
 import app.n_zik.android.components.search.SearchResultHeaderActions
@@ -79,7 +80,7 @@ fun SearchResultScreen(
 
     val hapticFeedback = LocalHapticFeedback.current
 
-    val isVideoEnabled = LocalContext.current.preferences.getBoolean(showButtonPlayerVideoKey, false)
+    val isVideoEnabled = LocalContext.current.preferences.getBoolean(showButtonPlayerVideoKey, showButtonPlayerVideoDefault)
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)

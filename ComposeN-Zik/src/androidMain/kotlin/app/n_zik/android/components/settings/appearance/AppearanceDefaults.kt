@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.utils.effectRotationDefault
+import app.n_zik.android.utils.showButtonPlayerVideoDefault
 import android.content.Context
 import androidx.core.content.edit
 import app.n_zik.android.enums.AnimatedGradient
@@ -173,7 +175,7 @@ internal fun applyAppearanceDefaults(context: Context) {
         putFloat(thumbnailSizeDpKey, DEFAULT_THUMBNAIL_SIZE_DP)
         remove(thumbnailSizeLDpKey)
         putEnum(playerTimelineSizeKey, PlayerTimelineSize.Biggest)
-        putBoolean(effectRotationKey, false)
+        putBoolean(effectRotationKey, effectRotationDefault)
         putBoolean(thumbnailTapEnabledKey, true)
         putBoolean(showButtonPlayerAddToPlaylistKey, true)
         putBoolean(showButtonPlayerArrowKey, true)
@@ -187,7 +189,7 @@ internal fun applyAppearanceDefaults(context: Context) {
         putBoolean(showButtonPlayerStartRadioKey, false)
         putBoolean(showButtonPlayerSystemEqualizerKey, false)
         putBoolean(showButtonPlayerDiscoverKey, false)
-        putBoolean(showButtonPlayerVideoKey, true)
+        putBoolean(showButtonPlayerVideoKey, showButtonPlayerVideoDefault)
         putBoolean(showTotalTimeQueueKey, true)
         putEnum(backgroundProgressKey, BackgroundProgress.MiniPlayer)
         putBoolean(showNextSongsInPlayerKey, false)

@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.settings
 
+import app.n_zik.android.utils.preferences
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -159,7 +160,7 @@ object MiniPlayerButtonsSettingsDialog : ContentFramedDialog {
     @Composable
     override fun DialogBody() {
         val context = LocalContext.current
-        val prefs = remember { context.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
+        val prefs = remember { context.preferences }
         val buttonDefs = remember { buildButtonDefs() }
         val maxChecked = 4
 
@@ -233,7 +234,7 @@ object MiniPlayerButtonsSettingsDialog : ContentFramedDialog {
         )
     }
     fun reset(context: Context) {
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val prefs = context.preferences
         val defaultToggles = buildButtonDefs().mapValues { it.value.defaultValue }
         savePrefs(prefs, defaultButtonOrder, defaultToggles)
     }

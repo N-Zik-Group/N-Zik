@@ -64,8 +64,8 @@ internal fun LyricsFetcher(
     onProviderSelectionChanged: () -> Unit
 ) {
     if (LocalThemePreview.current != null) {
-        LaunchedEffect(mediaId) {
-            onLyricsUpdated(Lyrics(mediaId, LyricsType.Synced.name, ThemePreviewDemo.lyrics))
+        LaunchedEffect(mediaId, lyricsType) {
+            onLyricsUpdated(ThemePreviewDemo.lyrics(mediaId, lyricsType))
             onFetchingStateChanged(false)
         }
         return

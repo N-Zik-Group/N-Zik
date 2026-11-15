@@ -1,5 +1,7 @@
 package app.n_zik.android.themed.n_zik.screen.player
 
+import app.n_zik.android.utils.effectRotationDefault
+import app.n_zik.android.utils.showButtonPlayerVideoDefault
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.core.database.*
 import app.n_zik.android.uiRoundnessShape
@@ -488,7 +490,7 @@ fun BoxScope.ActionBar(
             buttonOrder.forEach { buttonId ->
                 when (buttonId) {
                     "video" -> {
-                        val showButtonPlayerVideo by rememberPreference( showButtonPlayerVideoKey, true )
+                        val showButtonPlayerVideo by rememberPreference( showButtonPlayerVideoKey, showButtonPlayerVideoDefault )
                         if (showButtonPlayerVideo && !offlineMode)
                             playerActions.add(PlayerActionSlot(buttonId) {
                                 PlayerActionIcon(
@@ -599,7 +601,7 @@ fun BoxScope.ActionBar(
                         val showButtonPlayerLoop by rememberPreference( showButtonPlayerLoopKey, false )
                         if (showButtonPlayerLoop) {
                             var queueLoopType by queueLoopState
-                            val effectRotationEnabled by rememberPreference( effectRotationKey, true )
+                            val effectRotationEnabled by rememberPreference( effectRotationKey, effectRotationDefault )
                             playerActions.add(PlayerActionSlot(buttonId) {
                                 PlayerActionIcon(
                                     icon = queueLoopType.iconId,

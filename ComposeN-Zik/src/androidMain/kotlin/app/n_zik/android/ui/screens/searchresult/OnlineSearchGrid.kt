@@ -1,5 +1,6 @@
 package app.n_zik.android.ui.screens.searchresult
 
+import app.n_zik.android.utils.showButtonPlayerVideoDefault
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.settings.appearance.preview.themePreviewSearchPage
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
@@ -108,7 +109,7 @@ fun OnlineSearchGrid(
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
     val hapticFeedback = LocalHapticFeedback.current
-    val isVideoEnabled = remember { context.preferences.getBoolean(showButtonPlayerVideoKey, false) }
+    val isVideoEnabled = remember { context.preferences.getBoolean(showButtonPlayerVideoKey, showButtonPlayerVideoDefault) }
 
     val itemContent: @Composable LazyGridItemScope.(Innertube.Item) -> Unit = { item ->
         Column(

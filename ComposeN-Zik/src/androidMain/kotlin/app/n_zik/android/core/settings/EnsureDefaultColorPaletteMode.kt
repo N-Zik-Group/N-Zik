@@ -7,6 +7,8 @@ import app.n_zik.android.utils.colorPaletteModeKey
 import app.n_zik.android.utils.putEnum
 import timber.log.Timber
 
+internal val DefaultColorPaletteMode = ColorPaletteMode.System
+
 /**
  * Seeds the theme-mode default (spec-achromatic-ramp-luminance-cap, scope extension
  * 2026-09-28): the user-facing default is "Theme mode" ([ColorPaletteMode.System]), but
@@ -21,6 +23,6 @@ import timber.log.Timber
  */
 internal fun ensureDefaultColorPaletteMode(prefs: SharedPreferences) {
     if (prefs.contains(colorPaletteModeKey)) return
-    prefs.edit { putEnum(colorPaletteModeKey, ColorPaletteMode.System) }
+    prefs.edit { putEnum(colorPaletteModeKey, DefaultColorPaletteMode) }
     Timber.tag("DefaultColorPaletteMode").d("seeded colorPaletteMode default = System (theme mode)")
 }

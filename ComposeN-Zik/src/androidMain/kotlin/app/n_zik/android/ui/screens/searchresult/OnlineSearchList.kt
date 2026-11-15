@@ -1,5 +1,6 @@
 package app.n_zik.android.ui.screens.searchresult
 
+import app.n_zik.android.utils.showButtonPlayerVideoDefault
 import androidx.media3.exoplayer.offline.Download as OfflineDownload
 import kotlinx.coroutines.flow.flowOf
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
@@ -123,7 +124,7 @@ fun OnlineSearchList(
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
     val hapticFeedback = LocalHapticFeedback.current
-    val isVideoEnabled = remember { context.preferences.getBoolean(showButtonPlayerVideoKey, false) }
+    val isVideoEnabled = remember { context.preferences.getBoolean(showButtonPlayerVideoKey, showButtonPlayerVideoDefault) }
 
     val loadedItems = remember { androidx.compose.runtime.mutableStateOf<List<Innertube.Item>>(emptyList()) }
 

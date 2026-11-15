@@ -1,5 +1,7 @@
 package app.n_zik.android.components.dialog.settings
 
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.components.settings.appearance.preview.PortableControlList
 import android.content.Context
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -62,6 +64,21 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
         LibraryTab.Rewind -> "lib_rw"
     }
 
+    private fun getSortOrderKey(tab: LibraryTab): String = when (tab) {
+        LibraryTab.Playlist -> homeLibraryPlaylistSortMenuOrderKey
+        LibraryTab.OnDevice -> homeLibraryOnDeviceSortMenuOrderKey
+        LibraryTab.YTPlaylist -> homeLibraryYTPlaylistSortMenuOrderKey
+        LibraryTab.PinnedPlaylist -> homeLibraryPinnedPlaylistSortMenuOrderKey
+        LibraryTab.Rewind -> homeLibraryMonthlyPlaylistSortMenuOrderKey
+    }
+
+
+
+    internal fun portableLists(): Map<String, PortableControlList> = tabs.associate { tab ->
+        val prefix = getPrefix(tab)
+        prefix to PortableControlList(getSortOrderKey(tab), tab.availableIds, "${prefix}_sort_", "_visible")
+    }
+
     override val dialogTitle: String @Composable get() = stringResource(R.string.settings_dialog_sort_title_format, stringResource(R.string.library_title))
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -101,20 +118,11 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
     @Composable
     override fun DialogBody() {
         val ctx = LocalContext.current
-        val prefs = remember { ctx.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
+        val prefs = remember { ctx.preferences }
         var selectedTabIndex by remember { mutableStateOf(0) }
 
-        fun getKey(tab: LibraryTab): String = when (tab) {
-            LibraryTab.Playlist -> homeLibraryPlaylistSortMenuOrderKey
-            LibraryTab.OnDevice -> homeLibraryOnDeviceSortMenuOrderKey
-            LibraryTab.YTPlaylist -> homeLibraryYTPlaylistSortMenuOrderKey
-            LibraryTab.PinnedPlaylist -> homeLibraryPinnedPlaylistSortMenuOrderKey
-            LibraryTab.Rewind -> homeLibraryMonthlyPlaylistSortMenuOrderKey
-        }
-
-
         var workingOrders by remember {
-            mutableStateOf(tabs.associate { tab -> tab to parseOrder(prefs.getString(getKey(tab), "") ?: "", tab.availableIds).toMutableList() }.toMutableMap())
+            mutableStateOf(tabs.associate { tab -> tab to parseOrder(prefs.getString(getSortOrderKey(tab), "") ?: "", tab.availableIds).toMutableList() }.toMutableMap())
         }
         var workingToggles by remember {
             mutableStateOf(
@@ -163,7 +171,7 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
             onConfirm = {
                 val edit = prefs.edit()
                 tabs.forEach { tab ->
-                    val p = getPrefix(tab); val key = getKey(tab)
+                    val p = getPrefix(tab); val key = getSortOrderKey(tab)
                     (workingToggles[tab] ?: emptyMap()).forEach { (id, isChecked) -> edit.putBoolean("${p}_sort_${id}_visible", isChecked) }
                     edit.putString(key, serializeOrder((workingOrders[tab] ?: emptyList()).filter { id -> (workingToggles[tab] ?: emptyMap())[id] == true }))
                 }
@@ -173,7 +181,7 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
     }
 
     fun reset(context: Context) {
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val prefs = context.preferences
         val edit = prefs.edit()
         tabs.forEach { tab ->
             val p = when (tab) {
