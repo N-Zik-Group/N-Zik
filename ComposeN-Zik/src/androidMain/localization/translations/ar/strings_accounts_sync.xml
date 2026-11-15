@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">توصيل GitHub</string>
+    <string name="github_account_logout">قطع اتصال GitHub</string>
+    <string name="github_account_description">استخدم حسابك في GitHub في متجر السمة.</string>
+    <string name="github_account_offline">اتصل بالإنترنت للاتصال بـ GitHub.</string>
+    <string name="github_account_code">أدخل %1$s على GitHub لإنهاء تسجيل الدخول.</string>
+    <string name="github_account_code_copied">تم نسخ رمز GitHub إلى الحافظة.</string>
+    <string name="github_account_login_failed">تعذر الاتصال بـ GitHub. حاول مرة أخرى.</string>
+    <string name="github_account_connected">GitHub متصل.</string>
     <!-- Account -->
     <string name="account_action_login">تسجيل الدخول</string>
     <string name="account_action_logout">إيقاف التشغيل</string>
