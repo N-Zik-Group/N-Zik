@@ -264,6 +264,14 @@
     <string name="theme_store_choose_revision">Alege o revizie</string>
     <string name="theme_store_published_on">Publicat pe %1$s</string>
     <string name="theme_store_compatibility">Compatibilitate N-Zik</string>
+    <string name="theme_store_submission_minimum_version">Versiunea minimă N-Zik</string>
+    <string name="theme_store_submission_minimum_description">Cea mai veche versiune care poate aplica această temă. Teme noi sunt implicite pentru versiunea %3$d. Utilizați N-Zik %1$s (codul versiunii %2$d).</string>
+    <string name="theme_store_submission_version_code_label">Codul minim al versiunii</string>
+    <string name="theme_store_submission_find_version_code">Găsește versiunile și codurile N-Zik</string>
+    <string name="theme_store_submission_version_with_code">%1$s (cod %2$d)</string>
+    <string name="theme_store_submission_version_code">Cod Versiune %1$d</string>
+    <string name="theme_store_submission_version_required">Introdu codul versiunii %1$d.</string>
+    <string name="theme_store_submission_version_range">Introduceți un cod de versiune între %1$d și %2$d.</string>
     <string name="theme_store_revision">Revizuirea %1$d</string>
     <string name="theme_store_authors">Creatori</string>
     <string name="theme_store_author_theme_count">Teme: %1$d</string>
@@ -433,6 +441,7 @@
     <string name="theme_store_preview_import_requirements">Previzualizările sunt publice. Păstrați informațiile personale în afara capturii de ecran. PNG, JPEG sau WebP · 4 MB per imagine.</string>
     <string name="theme_store_preview_import_error">Nu s-a putut importa această imagine. Alegeți o imagine PNG, JPEG sau WebP sub 4 MB.</string>
     <string name="theme_store_submission_included">Setări incluse</string>
+    <string name="theme_store_submission_unsupported_categories">Aceste grupuri conțin setări care nu pot fi partajate într-o temă: %1$s.</string>
     <string name="theme_store_submission_sending">Se trimite pentru revizuire…</string>
     <string name="theme_store_report_theme">Tema raportului</string>
     <string name="theme_store_report_review">Evaluare raport</string>
