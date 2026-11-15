@@ -299,9 +299,9 @@
     <string name="listen_together_log_event_session_expired_on_server">La session a expiré sur le serveur</string>
     <string name="listen_together_log_event_skipping_buffer_ready">Ignorer le tampon prêt</string>
     <string name="listen_together_log_event_skipping_persisted_session_restore">Ignorer la restauration persistante de la session</string>
-    <string name="listen_together_log_event_successfully_reconnected_to_room">Reconnecté avec succès au salon</string>
+    <string name="listen_together_log_event_successfully_reconnected_to_room">Reconnexion à la salle réussie</string>
     <string name="listen_together_log_event_suggestion_approved">Suggestion approuvée</string>
-    <string name="listen_together_log_event_suggestion_from_blocked_user_ignored">Suggestion d\'un utilisateur bloqué ignoré</string>
+    <string name="listen_together_log_event_suggestion_from_blocked_user_ignored">Suggestion d\'un utilisateur bloqué ignorée</string>
     <string name="listen_together_log_event_suggestion_received">Suggestion reçue</string>
     <string name="listen_together_log_event_suggestion_rejected">Suggestion rejetée</string>
     <string name="listen_together_log_event_sync_state_received">État de synchronisation reçu</string>
