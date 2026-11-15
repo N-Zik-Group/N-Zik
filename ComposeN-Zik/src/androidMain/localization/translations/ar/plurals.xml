@@ -385,4 +385,12 @@
         <item quantity="many">وظائف %1$d لم تنته</item>
         <item quantity="other">وظائف %1$d لم تنته</item>
     </plurals>
+    <plurals name="theme_store_settings_count">
+        <item quantity="zero">إعدادات %d</item>
+        <item quantity="one">إعدادات %d</item>
+        <item quantity="two">إعدادات %d</item>
+        <item quantity="few">إعدادات %d</item>
+        <item quantity="many">إعدادات %d</item>
+        <item quantity="other">إعدادات %d</item>
+    </plurals>
 </resources>
