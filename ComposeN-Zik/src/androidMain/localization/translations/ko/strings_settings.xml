@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">기본 페이지</string>
     <string name="settings_interface_corner_radius_label">UI Roundness</string>
     <string name="settings_interface_hide_status_bar_label">Hide status bar</string>
+    <string name="settings_interface_right_to_left_label">Right-to-left layout</string>
+    <string name="settings_interface_right_to_left_description">Mirror the interface independently of the app language.</string>
     <string name="settings_interface_page_description">The user interface section contains settings to modify the global interface and navigation</string>
     <string name="settings_interface_page_title">UI</string>
     <string name="settings_interface_title">사용자 인터페이스</string>
