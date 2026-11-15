@@ -323,4 +323,9 @@
     <string name="updates_check_failed">Kon niet controleren op updates.</string>
     <string name="updates_install_generic_error">Update kan niet worden geïnstalleerd.</string>
     <string name="updates_channel_available_format">%1$s update beschikbaar</string>
+    <string name="recovery_theme_backup_title">Thema’s</string>
+    <string name="recovery_theme_backup_no_match">Hier kunnen alleen thema\'s van profielen in deze weergave worden hersteld.</string>
+    <string name="recovery_theme_backup_operation_failed">De back-up van het thema kon niet worden voltooid.</string>
+    <string name="recovery_theme_backup_restore_action">Herstel thema\'s</string>
+    <string name="recovery_theme_backup_restore_description">Open de laatste thema backup voor dit profiel.</string>
 </resources>
