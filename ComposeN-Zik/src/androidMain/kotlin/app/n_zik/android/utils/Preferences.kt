@@ -545,6 +545,7 @@ const val thumbnailRoundnessDpKey = "thumbnailRoundnessDpKey"
 const val artistThumbnailRoundnessDpKey = "artistThumbnailRoundnessDpKey"
 const val uiRoundnessDpKey = "uiRoundnessDpKey"
 const val hideStatusBarKey = "hideStatusBarKey"
+const val rightToLeftInterfaceKey = "rightToLeftInterface"
 
 const val visualizerLineThicknessKey = "visualizerLineThickness"
 

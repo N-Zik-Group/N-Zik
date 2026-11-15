@@ -4,6 +4,7 @@ import app.n_zik.android.privacy.JournalPermission
 import app.n_zik.android.privacy.PermissionEventKind
 import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.ui.components.applyInterfaceLayoutDirection
 import com.journeyapps.barcodescanner.CameraPreview
 import com.journeyapps.barcodescanner.CaptureActivity
 import com.journeyapps.barcodescanner.DecoratedBarcodeView
@@ -26,6 +27,7 @@ class PairingCaptureActivity : CaptureActivity() {
     }
 
     override fun initializeContent(): DecoratedBarcodeView = super.initializeContent().also {
+        window.decorView.applyInterfaceLayoutDirection()
         it.barcodeView.addStateListener(cameraStateListener)
     }
 }

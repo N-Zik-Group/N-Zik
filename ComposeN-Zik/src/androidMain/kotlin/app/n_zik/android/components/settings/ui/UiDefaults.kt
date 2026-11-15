@@ -73,6 +73,7 @@ import app.n_zik.android.utils.expandedplayertoggleKey
 import app.n_zik.android.utils.fadingedgeKey
 import app.n_zik.android.utils.fontTypeKey
 import app.n_zik.android.utils.hideStatusBarKey
+import app.n_zik.android.utils.rightToLeftInterfaceKey
 import app.n_zik.android.utils.iconLikeTypeKey
 import app.n_zik.android.utils.indexNavigationTabKey
 import app.n_zik.android.utils.isSwipeToActionEnabledKey
@@ -168,6 +169,7 @@ internal fun applyUiDefaults(context: Context) {
     context.preferences.edit().remove(app.n_zik.android.components.navigation.dock.DockToolbarPreferences.orderKey).apply()
     context.preferences.edit {
         putBoolean(hideStatusBarKey, false)
+        putBoolean(rightToLeftInterfaceKey, false)
         putBoolean(keepPlayerMinimizedKey, true)
         putBoolean(disableIconButtonOnTopKey, false)
         putEnum(lastPlayerTimelineTypeKey, PlayerTimelineType.Default)

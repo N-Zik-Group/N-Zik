@@ -273,6 +273,36 @@ class GlassSwitchTest {
         assertEquals(1, calls)
     }
 
+    @Test fun `RTL mirrors the resting thumb in both classic and glass switches`() {
+        val checked = mutableStateOf(false)
+        val thumbColor = Color.Magenta
+        compose.setContent { Theme {
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                Switch(checked.value, null, Modifier.testTag("mirror-thumb"),
+                    checkedThumbColor = thumbColor, uncheckedThumbColor = thumbColor)
+            }
+        } }
+        val switch = compose.onNodeWithTag("mirror-thumb")
+        for (glass in listOf(false, true)) {
+            compose.runOnIdle {
+                settings.value = settings.value.copy(enabled = glass)
+                checked.value = false
+            }
+            val expectedColor = if (glass) Color.White else thumbColor
+            fun assertThumbOnRight(onRight: Boolean) {
+                compose.waitForIdle()
+                val pixels = switch.captureToImage().toPixelMap()
+                val left = pixels[(pixels.width * .27f).toInt(), pixels.height / 2]
+                val right = pixels[(pixels.width * .73f).toInt(), pixels.height / 2]
+                assertEquals(expectedColor, if (onRight) right else left)
+                assertNotEquals(expectedColor, if (onRight) left else right)
+            }
+            assertThumbOnRight(true)
+            compose.runOnIdle { checked.value = true }
+            assertThumbOnRight(false)
+        }
+    }
+
     @Test fun `passive switch leaves gestures and accessibility to its owner row`() {
         val checked = mutableStateOf(false)
         var calls = 0

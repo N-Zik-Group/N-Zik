@@ -251,6 +251,7 @@ import app.n_zik.android.components.theme.DynamicPaletteArtworkListener
 import app.n_zik.android.components.theme.appearanceBackground
 import app.n_zik.android.components.theme.startupAppearance
 import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.components.InterfaceLayoutDirection
 import app.n_zik.android.components.theme.DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import app.n_zik.android.components.theme.withColor
@@ -909,7 +910,7 @@ class MainActivity :
             waitingColdLaunch = true
         }
         awaitingDeferredNavigation = true
-        setContent {
+        setInterfaceContent {
             val state by startup.state.collectAsStateWithLifecycle()
             CompositionLocalProvider(LocalAppearance provides configuredAppearance(isSystemInDarkTheme())) {
                 LibraryStartupScreen(state, startup::start, useAppAppearance = true)
@@ -1152,7 +1153,7 @@ class MainActivity :
             Innertube.proxy = proxy
         }
 
-        setContent {
+        setInterfaceContent {
             // Issue #881 (gh-881), Phase 3.1: lifecycle + first-frame probe (frozen UI after wake).
             UiFrameClockDiagnostics()
             val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
@@ -3048,6 +3049,10 @@ class MainActivity :
     }
 
     private var lastSystemBarIsDark: Boolean? = null
+
+    private fun setInterfaceContent(content: @Composable () -> Unit) {
+        setContent { InterfaceLayoutDirection(content) }
+    }
 
     private fun configuredAppearance(isSystemInDarkTheme: Boolean): Appearance = with(preferences) {
         val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)

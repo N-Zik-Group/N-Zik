@@ -27,10 +27,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.utils.bold
@@ -48,6 +51,7 @@ fun Title(
     onClick: (() -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
 ) {
+    val titleAlignment = if (LocalLayoutDirection.current == LayoutDirection.Rtl) TextAlign.Right else TextAlign.Left
     GlassTitleActionRow(
         modifier = modifier.fillMaxWidth(),
         verticalPadding = verticalPadding,
@@ -60,7 +64,8 @@ fun Title(
                 fontSize = typography().l.semiBold.fontSize,
                 fontWeight = typography().l.semiBold.fontWeight,
                 color = colorPalette().text,
-                textAlign = TextAlign.Start
+                textAlign = titleAlignment,
+                textDirection = TextDirection.Content,
             ),
             modifier = Modifier.weight(1f)
 

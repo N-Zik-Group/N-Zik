@@ -124,6 +124,19 @@ class SettingsDetailedSearchTest {
             }
     }
 
+    @Test fun rightToLeftLayoutSearchTargetsTheInterfaceSwitch() {
+        val target = AllSettingsEntryTargets.single { it.id == "ui.user_interface.right_to_left" }
+        assertEquals(R.string.settings_interface_title, target.cardTitleRes)
+        for (resource in listOf(R.string.settings_interface_right_to_left_label, R.string.settings_interface_right_to_left_description)) {
+            val query = context.getString(resource)
+            assertTrue(target in searchSettingsEntries(context, query))
+            assertTrue(target.cardTitleRes in visibleCardTitleRes(context, target.tab, query))
+        }
+        val route = Uri.parse(target.destinationRoute(context))
+        assertEquals("settingsCategory/interface", route.path)
+        assertEquals(target.id, route.getQueryParameter("target"))
+    }
+
     @Test fun everyRegisteredOptionIsSearchableInEnglishAndFrenchInItsOrganizedSection() {
         listOf(Locale.ENGLISH, Locale.FRENCH).forEach { locale ->
             val localized = localized(locale)

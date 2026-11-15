@@ -68,7 +68,7 @@ import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 
-/** One round action bubble rendered on the right of the shrunken bar (voice, audio search, clear). */
+/** One round action bubble rendered at the trailing edge of the shrunken bar. */
 data class SearchBarBubble(
     val iconRes: Int,
     val contentDescriptionRes: Int,
@@ -121,7 +121,7 @@ fun UnifiedSearchBar(
         animationSpec = if (isFocused) tween(200) else tween(200, delayMillis = 250),
         label = "unifiedSearchBarBubbleArea"
     )
-    // Bubbles travel from below and off-screen right in both directions.
+    // Bubbles travel from below and beyond the trailing edge.
     val bubbleEntryY = 64.dp
     val bubbleSlide by animateDpAsState(
         targetValue = if (isFocused) 0.dp else bubbleAreaTarget,

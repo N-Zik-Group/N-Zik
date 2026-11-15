@@ -21,11 +21,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.ui.components.themed.TitleMiniSection
 import app.n_zik.android.utils.secondary
@@ -56,6 +59,7 @@ fun SearchHistorySection(
 ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
+    val queryAlignment = if (LocalLayoutDirection.current == LayoutDirection.Rtl) TextAlign.Right else TextAlign.Left
     val searchHistoryIconPainter = painterResource(R.drawable.search_circle)
     val displayedQueries = rememberSearchHistoryRows(queries)
     val glassSettings = rememberGlassSettings()
@@ -113,7 +117,7 @@ fun SearchHistorySection(
 
                         BasicText(
                             text = query,
-                            style = typography().s.secondary,
+                            style = typography().s.secondary.copy(textAlign = queryAlignment),
                             modifier = Modifier
                                 .padding(horizontal = 8.dp)
                                 .weight(1f)

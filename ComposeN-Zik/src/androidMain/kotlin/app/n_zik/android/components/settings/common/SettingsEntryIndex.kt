@@ -61,6 +61,7 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget("ui.settings_use_font_type.use_system_font", 1, R.string.settings_use_font_type, R.string.settings_font_use_system_label, listOf(R.string.settings_font_use_system_description)),
     SettingsEntryTarget("ui.settings_use_font_type.apply_font_padding", 1, R.string.settings_use_font_type, R.string.settings_font_include_padding_label, listOf(R.string.settings_font_include_padding_description)),
     SettingsEntryTarget("ui.settings_use_font_type.hide_status_bar", 1, R.string.settings_interface_title, R.string.settings_interface_hide_status_bar_label),
+    SettingsEntryTarget("ui.user_interface.right_to_left", 1, R.string.settings_interface_title, R.string.settings_interface_right_to_left_label, listOf(R.string.settings_interface_right_to_left_description)),
     SettingsEntryTarget("ui.home_tabs_settings.quick_picks", 1, R.string.home_tabs_settings, R.string.recommendations_title, listOf(R.string.settings_library_sections_visibility_description)),
     SettingsEntryTarget("ui.home_tabs_settings.songs", 1, R.string.home_tabs_settings, R.string.library_songs_title, listOf(R.string.settings_library_sections_visibility_description)),
     SettingsEntryTarget("ui.home_tabs_settings.artists", 1, R.string.home_tabs_settings, R.string.library_artists_title, listOf(R.string.settings_library_sections_visibility_description)),

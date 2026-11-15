@@ -169,6 +169,7 @@ class UiSettingsPreferencesTest {
         "showFavoritesArtist" to true,
         "showYtPlaylists" to true,
         "showOnDeviceArtists" to true,
+        "rightToLeftInterface" to false,
     )
 
     @Test fun `full reset restores baseline profile values and store boundaries`() {
@@ -236,7 +237,7 @@ class UiSettingsPreferencesTest {
 
     @Test fun `target inventory covers ten cards and stable unique setting and action identities`() {
         assertEquals(listOf("theme", "interface", "font", "swipe", "home-tabs", "sort-menus", "floating-dock", "toolbars", "burger", "reset"), UiSettingTargets.cards.map { it.id.removePrefix("ui.card.") })
-        assertEquals(listOf(24, 10, 4, 7, 0, 0, 1, 0, 0, 0), UiSettingTargets.cards.map { it.preferenceKeys.size })
+        assertEquals(listOf(24, 11, 4, 7, 0, 0, 1, 0, 0, 0), UiSettingTargets.cards.map { it.preferenceKeys.size })
         assertEquals(listOf(2, 2, 0, 0, 5, 6, 1, 5, 1, 1), UiSettingTargets.cards.map { it.actions.size })
         assertEquals(UiSettingTargets.ids.size, UiSettingTargets.ids.toSet().size)
         assertTrue(UiSettingTargets.ids.none { it.contains(' ') })

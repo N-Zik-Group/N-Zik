@@ -29,6 +29,7 @@ import app.n_zik.android.utils.customThemeLight_textSecondaryKey
 import app.n_zik.android.utils.disableNavigationBackStackKey
 import app.n_zik.android.utils.fontTypeKey
 import app.n_zik.android.utils.hideStatusBarKey
+import app.n_zik.android.utils.rightToLeftInterfaceKey
 import app.n_zik.android.utils.indexNavigationTabKey
 import app.n_zik.android.utils.isSwipeToActionEnabledKey
 import app.n_zik.android.utils.menuStyleKey
@@ -83,6 +84,7 @@ internal object UiSettingTargets {
         ),
         UiCardTargets("ui.card.interface",
             preferenceKeys = listOf(
+                rightToLeftInterfaceKey,
                 navigationBarPositionKey,
                 navigationBarTypeKey,
                 playerPositionKey,

@@ -11,6 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import java.time.Duration
 import android.app.Application
 import android.content.Context
@@ -57,6 +60,8 @@ import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.utils.hideStatusBarKey
+import app.n_zik.android.utils.rightToLeftInterfaceKey
+import app.n_zik.android.ui.components.InterfaceLayoutDirection
 import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.components.dialog.common.RestartAppDialog
@@ -139,6 +144,21 @@ class UiSettingsWiringTest {
         composeRule.onNodeWithTag("ui.card.reset", useUnmergedTree = true).assertDoesNotExist()
     }
 
+    @Test fun interfaceDirectionOverridesLocaleAndUpdatesLive() {
+        val preferences = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        composeRule.setContent {
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                InterfaceLayoutDirection { BasicText(LocalLayoutDirection.current.name) }
+            }
+        }
+
+        composeRule.onNodeWithText("Ltr").assertIsDisplayed()
+        composeRule.runOnIdle { preferences.edit().putBoolean(rightToLeftInterfaceKey, true).apply() }
+        composeRule.onNodeWithText("Rtl").assertIsDisplayed()
+        composeRule.runOnIdle { preferences.edit().putBoolean(rightToLeftInterfaceKey, false).apply() }
+        composeRule.onNodeWithText("Ltr").assertIsDisplayed()
+    }
+
     @Test fun `unfiltered cards retain order and opening writes no preferences`() {
         show()
         val cards = composeRule.onAllNodes(SemanticsMatcher("Interface card") {
@@ -172,6 +192,19 @@ class UiSettingsWiringTest {
         composeRule.onNode(hasText(context.getString(R.string.settings_home_default_page_label)) and !isEditable()).performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithTag("ui.card.interface", useUnmergedTree = true).assertExists()
         composeRule.onNodeWithTag("ui.card.theme", useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    @Test fun `page search by layout direction description exposes the actual switch`() {
+        show()
+        val title = context.getString(R.string.settings_interface_right_to_left_label)
+        val description = context.getString(R.string.settings_interface_right_to_left_description)
+        composeRule.onNode(isEditable()).performTextInput(description)
+        composeRule.waitForIdle()
+        composeRule.onNode(hasText(title) and !isEditable()).performScrollTo().assertIsDisplayed().performClick()
+        composeRule.runOnIdle {
+            assertTrue(context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+                .getBoolean(rightToLeftInterfaceKey, false))
+        }
     }
 
     @Test fun `dynamic brightness switch is searchable defaults off and updates live appearance`() {

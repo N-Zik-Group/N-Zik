@@ -27,6 +27,7 @@ import app.n_zik.android.utils.navigationBarTypeKey
 import app.n_zik.android.utils.playerPositionKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.rememberQueueScrollPositionKey
+import app.n_zik.android.utils.rightToLeftInterfaceKey
 import app.n_zik.android.utils.searchDisplayOrderKey
 import app.n_zik.android.utils.showFloatingIconKey
 import app.n_zik.android.utils.transitionEffectKey
@@ -45,6 +46,12 @@ import app.n_zik.android.R
 @Composable
 internal fun UiInterfaceCard(search: Search) {
     var hideStatusBar by rememberPreference(hideStatusBarKey, false)
+    var rightToLeft by rememberPreference(rightToLeftInterfaceKey, false)
+    val layoutDirectionTitle = stringResource(R.string.settings_interface_right_to_left_label)
+    val layoutDirectionDescription = stringResource(R.string.settings_interface_right_to_left_description)
+    val layoutDirectionMatches = search.inputValue.isBlank() ||
+        layoutDirectionTitle.contains(search.inputValue, ignoreCase = true) ||
+        layoutDirectionDescription.contains(search.inputValue, ignoreCase = true)
     var indexNavigationTab by rememberPreference(
         indexNavigationTabKey,
         HomeScreenTabs.Default
@@ -58,7 +65,7 @@ internal fun UiInterfaceCard(search: Search) {
     var playerPosition by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
     var searchDisplayOrder by rememberPreference(searchDisplayOrderKey, SearchDisplayOrder.SuggestionsFirst)
 
-    val navSearchContextMatch = search.inputValue.isBlank() ||
+    val navSearchContextMatch = layoutDirectionMatches ||
         stringResource(R.string.settings_interface_hide_status_bar_label).contains(search.inputValue, true) ||
         stringResource(R.string.search_history_pages).contains(search.inputValue, true) ||
         stringResource(R.string.search_history_pages_description).contains(search.inputValue, true) ||
@@ -89,6 +96,17 @@ internal fun UiInterfaceCard(search: Search) {
                         isChecked = hideStatusBar,
                         onCheckedChange = { hideStatusBar = it },
                         icon = R.drawable.eye_off
+                    )
+                }
+
+                if (layoutDirectionMatches) {
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.user_interface.right_to_left"),
+                        title = layoutDirectionTitle,
+                        text = layoutDirectionDescription,
+                        icon = R.drawable.reorder,
+                        isChecked = rightToLeft,
+                        onCheckedChange = { rightToLeft = it },
                     )
                 }
 

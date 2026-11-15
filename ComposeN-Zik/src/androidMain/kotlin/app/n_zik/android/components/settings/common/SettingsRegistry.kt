@@ -169,6 +169,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(1, R.string.settings_interface_title, R.drawable.ui,
         keywordRes = listOf(
             R.string.settings_interface_hide_status_bar_label,
+            R.string.settings_interface_right_to_left_label, R.string.settings_interface_right_to_left_description,
             R.string.search_display_order, R.string.search_history_pages, R.string.search_history_pages_description, R.string.settings_navigation_position_label,
             R.string.settings_navigation_style_label, R.string.player_position, R.string.settings_menu_style_label,
             R.string.home_tabs_settings, R.string.settings_home_default_page_label,
