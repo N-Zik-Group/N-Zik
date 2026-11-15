@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="backup_export_themes_description">Sauvegarder les thèmes téléchargés et locaux dans un ZIP</string>
+    <string name="backup_import_themes_description">Restaurer les thèmes téléchargés et locaux à partir d’un ZIP</string>
+    <string name="backup_export_select_all_description">Sélectionner tous les types de données à exporter</string>
+    <string name="backup_import_select_all_description">Sélectionner tous les types de données à importer</string>
+    <string name="backup_include_github_identity_credentials">Inclure les identifiants du compte GitHub</string>
     <string name="storage_image_quality_title">Qualité d\'image</string>
     <string name="storage_image_quality_description">S\'applique aux illustrations en ligne ainsi qu\'aux nouvelles couvertures et photos de profil. L\'option « Original » utilise la meilleure qualité disponible et peut nécessiter davantage d\'espace de stockage et de données.</string>
     <string name="storage_image_quality_optimized">Optimisé</string>
@@ -116,9 +121,9 @@
     <string name="backup_before_update_failed">Échec de la sauvegarde préalable à l\'installation</string>
     <string name="backup_before_update_running_message">Sauvegarder les données avant l\'installation…</string>
     <string name="backup_before_update_running_title">Sauvegarde en cours</string>
-    <string name="backup_excluded_preferences_and_cache_description">Les préférences personnelles (c.-à-d. le mode du thème) et le cache sont exclus.</string>
-    <string name="backup_export_library_options_description">Exporter la base de données avec ses couvertures personnalisées, ses paramètres ou ses profils</string>
-    <string name="backup_import_library_options_description">Restaurer une sauvegarde de base de données SQLite ou ZIP, des paramètres ou des profils</string>
+    <string name="backup_export_separate_files_description">Chaque catégorie sélectionnée est exportée vers un fichier séparé. Les fichiers de cache et le thème de stock sont exclus.</string>
+    <string name="backup_export_with_themes_description">Exporter la base de données avec ses pochettes personnalisées, les paramètres, les thèmes ou les profils</string>
+    <string name="backup_import_with_themes_description">Restaurer une sauvegarde de base de données SQLite ou ZIP, des paramètres, des thèmes ou des profils</string>
     <string name="backup_include_discord_credentials">Ajouter les identifiants de votre compte Discord</string>
     <string name="backup_include_lastfm_credentials">Ajouter les identifiants Last.fm</string>
     <string name="backup_include_proxy_password">Indiquez le mot de passe du proxy</string>
@@ -251,4 +256,34 @@
     <string name="export_cached_songs_generic_error">L\'exportation a échoué</string>
     <string name="backup_startup_preparing_library">Préparation de votre bibliothèque…</string>
     <string name="backup_startup_recovery_failed">Impossible de terminer la restauration de votre bibliothèque.</string>
+    <string name="storage_breakdown_themes">Thèmes</string>
+    <string name="storage_info_themes">Enregistrements de thème sauvegardés et actifs partagés de la boutique de thèmes, aperçus et brouillons.</string>
+    <string name="storage_breakdown_lyrics">Paroles</string>
+    <string name="storage_info_lyrics">Octets de texte des paroles téléchargées et personnalisées stockées dans la base de données du profil.</string>
+    <string name="storage_cleanup_clear_theme_cache">Vider le cache du magasin de thèmes</string>
+    <string name="storage_cleanup_theme_cache_description">Supprime les métadonnées partagées du catalogue. Les thèmes enregistrés, les brouillons et leurs aperçus sont conservés.</string>
+    <string name="storage_cleanup_clear_lyrics">Effacer les paroles récupérées</string>
+    <string name="storage_cleanup_lyrics_description">Supprime automatiquement les paroles récupérées. Les paroles personnalisées sont conservées. Les pages libérées peuvent être réutilisées par la base de données de la bibliothèque.</string>
+    <string name="backup_auto_enabled_title">Activer la sauvegarde automatique</string>
+    <string name="backup_auto_enabled_description">Suspendre les sauvegardes automatiques et conserver vos paramètres de sauvegarde.</string>
+    <string name="storage_cleanup_picker_title">Nettoyer le stockage</string>
+    <string name="storage_cleanup_picker_description">Choisissez les fichiers et les données à effacer pour ce périmètre.</string>
+    <string name="storage_cleanup_select_caches">Sélectionner les caches</string>
+    <string name="storage_cleanup_select_caches_description">Sélectionnez les caches et les fichiers temporaires.</string>
+    <string name="storage_cleanup_select_everything">Tout sélectionner</string>
+    <string name="storage_cleanup_select_everything_description">Sélectionnez les caches et les données, y compris les téléchargements hors ligne.</string>
+    <string name="storage_cleanup_cache_group">Caches et fichiers temporaires</string>
+    <string name="storage_cleanup_delete_group">Données à supprimer</string>
+    <string name="storage_cleanup_review_selection">Évaluer</string>
+    <string name="storage_cleanup_selected_confirmation">Effacer les éléments sélectionnés dans ce périmètre ?</string>
+    <string name="storage_cleanup_option_cached_images">Images mises en cache</string>
+    <string name="storage_cleanup_option_streamed_audio">Audio en streaming</string>
+    <string name="storage_cleanup_option_waveforms">Formes d\'onde</string>
+    <string name="storage_cleanup_option_network_cache">Cache réseau</string>
+    <string name="storage_cleanup_option_diagnostic_logs">Journaux de diagnostic</string>
+    <string name="storage_cleanup_option_temporary_files">Fichiers temporaires</string>
+    <string name="storage_cleanup_option_theme_catalog">Cache du magasin de thèmes</string>
+    <string name="storage_cleanup_option_fetched_lyrics">Paroles récupérées automatiquement</string>
+    <string name="storage_cleanup_option_offline_downloads">Audio téléchargé</string>
+    <string name="storage_cleanup_completed">Nettoyage terminé.</string>
 </resources>
