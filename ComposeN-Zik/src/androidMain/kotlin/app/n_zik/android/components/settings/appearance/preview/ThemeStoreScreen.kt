@@ -800,7 +800,7 @@ private fun ThemeStoreCreator(onEditCreator: () -> Unit, refreshVersion: Int, th
     var editPicker by rememberSaveable { mutableStateOf(false) }
     var editLocalPicker by rememberSaveable { mutableStateOf(false) }
     Column {
-        app.n_zik.android.components.settings.accounts.GitHubAccountCard(horizontalPadding = 0.dp)
+        app.n_zik.android.components.settings.accounts.GitHubAccountCard(horizontalPadding = 0.dp, showAppInstallation = true)
         CreatorProfileSettingsEntry(onEditCreator) {
             if (ownId != null) {
                 OtherSettingsEntry(

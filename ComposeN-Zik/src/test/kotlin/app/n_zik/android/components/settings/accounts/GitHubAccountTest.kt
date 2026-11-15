@@ -6,6 +6,18 @@ import org.junit.Test
 
 class GitHubAccountTest {
     @Test
+    fun installationConfirmationRequiresTheGitHubSuccessNotice() {
+        val personal = "https://github.com/settings/installations/42"
+        val organization = "https://github.com/organizations/N-Zik-Group/settings/installations/42"
+        val notice = "Okay, N-Zik Sign In was installed on the @creator account."
+        assertEquals("creator", confirmedGitHubInstallationAccount(personal, notice))
+        assertEquals("N-Zik-Group", confirmedGitHubInstallationAccount(organization, notice.replace("@creator", "@N-Zik-Group")))
+        assertNull(confirmedGitHubInstallationAccount(personal, "Installed now"))
+        assertNull(confirmedGitHubInstallationAccount("https://github.com/apps/n-zik-sign-in/installations/new", notice))
+        assertNull(confirmedGitHubInstallationAccount("https://example.com/settings/installations/42", notice))
+    }
+
+    @Test
     fun onlyRetryableResponsesContinuePolling() {
         assertEquals(5, nextGitHubPoll(5, "authorization_pending"))
         assertEquals(10, nextGitHubPoll(5, "slow_down"))

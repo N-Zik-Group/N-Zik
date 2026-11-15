@@ -366,7 +366,13 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.sync_push_playlist, R.string.sync_push_episode,
         )),
     SettingsCardRegistryEntry(5, R.string.common_brand_github, R.drawable.github_icon,
-        keywordRes = listOf(R.string.github_account_login, R.string.github_account_description)),
+        keywordRes = listOf(
+            R.string.github_account_login,
+            R.string.github_account_logout,
+            R.string.github_account_description,
+            R.string.github_app_installation,
+            R.string.github_app_installation_description,
+        )),
     SettingsCardRegistryEntry(5, R.string.settings_discord_title, R.drawable.logo_discord,
         keywordRes = listOf(
             R.string.settings_discord_title, R.string.updates_build_beta_label, R.string.discord_enable_rich_presence,

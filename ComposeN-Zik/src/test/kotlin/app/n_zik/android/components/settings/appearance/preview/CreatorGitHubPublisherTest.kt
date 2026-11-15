@@ -22,6 +22,49 @@ import org.robolectric.annotation.Config
 @Config(sdk = [32], application = Application::class)
 class CreatorGitHubPublisherTest {
     @Test
+    fun installationLookupRequiresTheCreatorsActualThemeStoreFork() = runBlocking {
+        fun http(status: Int, body: String) = OkHttpClient.Builder().addInterceptor { chain ->
+            val request = chain.request()
+            assertEquals("/repos/creator/N-Zik-Theme-Store", request.url.encodedPath)
+            Response.Builder().code(status).request(request).protocol(Protocol.HTTP_1_1).message("Stub")
+                .body(body.toResponseBody("application/json".toMediaType())).build()
+        }.build()
+
+        val fork = """{"owner":{"id":123},"parent":{"full_name":"N-Zik-Group/N-Zik-Theme-Store"}}"""
+        assertTrue(creatorThemeStoreForkExists(123, "creator", null, http(200, fork)))
+        assertFalse(creatorThemeStoreForkExists(456, "creator", null, http(200, fork)))
+        assertFalse(creatorThemeStoreForkExists(123, "creator", null, http(404, "{}")))
+        assertFalse(creatorThemeStoreForkExists(123, "creator", null, http(200, fork.replace(upstream, "other/catalog"))))
+    }
+
+    @Test
+    fun creatorSetupOnlyCreatesTheForkWhenItDoesNotExist() = runBlocking {
+        for (exists in listOf(false, true)) {
+            var forkReady = exists
+            var creations = 0
+            val http = OkHttpClient.Builder().addInterceptor { chain ->
+                val request = chain.request()
+                val (status, body) = when (request.url.encodedPath) {
+                    "/repos/creator/N-Zik-Theme-Store" -> if (forkReady) {
+                        200 to """{"parent":{"full_name":"N-Zik-Group/N-Zik-Theme-Store"}}"""
+                    } else 404 to "{}"
+                    "/repos/$upstream/forks" -> {
+                        assertEquals("POST", request.method)
+                        creations++
+                        forkReady = true
+                        202 to "{}"
+                    }
+                    else -> error("Unexpected request")
+                }
+                Response.Builder().code(status).request(request).protocol(Protocol.HTTP_1_1).message("Stub")
+                    .body(body.toResponseBody("application/json".toMediaType())).build()
+            }.build()
+            prepareCreatorThemeStoreFork("creator", "test-token", http)
+            assertEquals(if (exists) 0 else 1, creations)
+        }
+    }
+
+    @Test
     fun submissionHistoryReadsAllPagesAndDeduplicatesPulls() = runBlocking {
         fun pull(number: Int, account: Long = 123) = """
             {"number":$number,"user":{"id":$account},"head":{"ref":"nzik/creator-profile-123"},

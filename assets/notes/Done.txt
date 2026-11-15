@@ -345,3 +345,9 @@ Fixed:
   - Scope ancestry checks to optical recordings and keep the live background behind Theme Store details and notifications.
 - fix(theme-store): describe removal of withdrawn theme revisions
   - Update the withdrawal pull request text to match the moderation workflow, which removes published theme files from the current catalog after acceptance.
+- fix(theme-store): complete GitHub setup after personal app installation
+  - Keep the setup session in memory until confirmation, reuse existing installations, and index the GitHub controls in Settings search.
+- fix(accounts): improve scrolling in sign-in WebViews
+  - Let the embedded browser handle vertical gestures while preserving the sheet drag handle.
+- fix(youtube): remove redundant stream client notifications
+  - Remove the preferred-client and Web Remix messages and their unused translation keys.

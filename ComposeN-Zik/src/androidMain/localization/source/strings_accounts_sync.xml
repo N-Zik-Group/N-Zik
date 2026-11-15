@@ -8,6 +8,14 @@
     <string name="github_account_code_copied">GitHub code copied to clipboard.</string>
     <string name="github_account_login_failed">Could not connect to GitHub. Try again.</string>
     <string name="github_account_connected">GitHub connected.</string>
+    <string name="github_account_finishing_connection">Finishing GitHub connection…</string>
+    <string name="github_app_installation_instructions">Choose @%1$s and grant access only to your N-Zik-Theme-Store fork to finish setup.</string>
+    <string name="github_app_installation">App installation</string>
+    <string name="github_app_installation_confirmed">GitHub confirmed the app installation.</string>
+    <string name="github_app_installation_other_account">App installed on @%1$s. Select your own account to enable fork cleanup.</string>
+    <string name="github_app_installation_description">Manage or revoke N-Zik Sign In access in your personal GitHub settings.</string>
+    <string name="github_app_installation_needs_fork">Submit a theme or creator profile first to create your Theme Store fork.</string>
+    <string name="github_app_installation_fork_lookup_failed">Could not check your Theme Store fork. Try again.</string>
 
     <!-- Account -->
     <string name="account_action_login">Log in</string>

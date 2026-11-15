@@ -20,6 +20,76 @@ import org.json.JSONObject
 private const val repo = "N-Zik-Group/N-Zik-Theme-Store"
 private val client = OkHttpClient.Builder().followRedirects(false).followSslRedirects(false).build()
 
+internal suspend fun creatorThemeStoreForkExists(
+    accountId: Long,
+    login: String,
+    token: String?,
+    http: OkHttpClient = client,
+): Boolean = withContext(NzikDispatchers.DATA) {
+    require(login.matches(Regex("[A-Za-z0-9-]{1,39}")))
+    val request = Request.Builder()
+        .url("https://api.github.com/repos/$login/N-Zik-Theme-Store")
+        .header("Accept", "application/vnd.github+json")
+        .apply { if (token != null) header("Authorization", "Bearer $token") }
+        .build()
+    http.newCall(request).execute().use { response ->
+        if (response.code == 404) return@use false
+        check(response.isSuccessful) { "GitHub fork lookup HTTP ${response.code}" }
+        val fork = JSONObject(checkNotNull(response.body).string())
+        fork.optJSONObject("owner")?.optLong("id") == accountId &&
+            fork.optJSONObject("parent")?.optString("full_name").equals(repo, ignoreCase = true)
+    }
+}
+
+// The caller supplies the login and token already verified by the current OAuth attempt.
+internal suspend fun prepareCreatorThemeStoreFork(
+    login: String,
+    token: String,
+    http: OkHttpClient = client,
+) = withContext(NzikDispatchers.DATA) {
+    fun request(path: String, body: JSONObject?, missing: Boolean): String? {
+        val request = Request.Builder().url("https://api.github.com/$path")
+            .header("Accept", "application/vnd.github+json")
+            .header("Authorization", "Bearer $token")
+            .apply { if (body != null) post(body.toString().toRequestBody("application/json".toMediaType())) }
+            .build()
+        return http.newCall(request).execute().use { response ->
+            if (missing && response.code == 404) return@use null
+            if (!response.isSuccessful) throw CreatorPublicationHttpError(response.code, "prepare Theme Store fork")
+            checkNotNull(response.body).string()
+        }
+    }
+    check(login.matches(Regex("[A-Za-z0-9-]{1,39}")))
+    creatorPublicationMutex.withLock {
+        ensureCreatorThemeStoreFork(login, ::request)
+    }
+}
+
+private suspend fun ensureCreatorThemeStoreFork(
+    login: String,
+    request: (String, JSONObject?, Boolean) -> String?,
+) {
+    val fork = "repos/$login/N-Zik-Theme-Store"
+    var forkInfo = request(fork, null, true)
+    val creatingFork = forkInfo == null
+    if (creatingFork) {
+        try {
+            request("repos/$repo/forks", JSONObject().put("default_branch_only", true), false)
+            forkInfo = request(fork, null, true)
+        } catch (error: CreatorPublicationHttpError) {
+            if (error.status !in setOf(409, 422)) throw error
+            forkInfo = request(fork, null, true)
+            if (forkInfo == null && error.status == 422) throw error
+        }
+    }
+    for (attempt in 0 until 14) {
+        if (forkInfo != null) break
+        delay(2000)
+        forkInfo = request(fork, null, true)
+    }
+    check(JSONObject(checkNotNull(forkInfo)).getJSONObject("parent").getString("full_name").equals(repo, true))
+}
+
 internal data class CreatorSubmission(val number: Int, val title: String, val state: String, val reason: String? = null, val stateDate: String = "")
 
 internal suspend fun creatorSubmissions(
@@ -300,23 +370,7 @@ internal suspend fun submitCreatorProfile(
         ))).optJSONObject(0)
         val existing = findOpen()
         val fork = "repos/$login/N-Zik-Theme-Store"
-        var forkInfo = api(fork, missing = true)
-        val creatingFork = forkInfo == null
-        if (creatingFork) {
-            try {
-                obj("$upstream/forks", JSONObject().put("default_branch_only", true))
-            } catch (error: CreatorPublicationHttpError) {
-                if (error.status !in setOf(409, 422)) throw error
-                forkInfo = api(fork, missing = true)
-                if (forkInfo == null && error.status == 422) throw error
-            }
-        }
-        for (attempt in 0 until 14) {
-            if (forkInfo != null) break
-            delay(2000)
-            forkInfo = api(fork, missing = true)
-        }
-        check(JSONObject(checkNotNull(forkInfo)).getJSONObject("parent").getString("full_name").equals(repo, true))
+        ensureCreatorThemeStoreFork(login) { path, body, missing -> api(path, body, missing) }
         val latest = obj("$upstream/branches/main").getJSONObject("commit")
         val baseSha = latest.getString("sha")
         // The fork network exposes upstream Git objects even when the fork's main has
