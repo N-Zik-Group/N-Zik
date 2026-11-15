@@ -22,6 +22,7 @@ import app.n_zik.android.utils.currentMediaItemIdAsState
 import app.n_zik.android.utils.playerPositionKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.LocalPlayerServiceBinder
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
@@ -89,7 +90,7 @@ internal fun rememberTopContentInsetProvider(
     val navigationPosition = NavigationBarPosition.current()
     val glass = rememberGlassSettings().usesGlassMaterial(GlassArea.Nav)
     val position by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
-    val player = LocalPlayerServiceBinder.current?.player
+    val player = LocalThemePreview.current?.player ?: LocalPlayerServiceBinder.current?.player
     val mediaId by (player?.currentMediaItemIdAsState() ?: remember { mutableStateOf<String?>(null) })
     val density = LocalDensity.current
     val hideNavBar = if (stableHomeScroll) {

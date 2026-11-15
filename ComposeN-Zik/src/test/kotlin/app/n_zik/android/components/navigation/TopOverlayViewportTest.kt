@@ -18,11 +18,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.click
@@ -31,7 +33,24 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.LocalPlayerServiceBinder
+import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.LocalGlassPreviewSettings
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewContext
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewScene
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewSession
 import app.n_zik.android.components.player.topMiniPlayerStackReservePx
+import app.n_zik.android.ui.styling.Dimensions
+import app.n_zik.android.utils.navigationBarPositionKey
+import app.n_zik.android.utils.playerPositionKey
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -46,6 +65,52 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class TopOverlayViewportTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun previewPlayerReservesTopSpaceWithoutAServiceBinder() {
+        val context = ThemePreviewContext.create(ApplicationProvider.getApplicationContext<Application>(),
+            mapOf(playerPositionKey to "Top", navigationBarPositionKey to "Top"), ThemePreviewScene.HOME)
+        val player = mockk<Player>(relaxed = true)
+        val listener = slot<Player.Listener>()
+        every { player.currentMediaItem } returns MediaItem.Builder().setMediaId("demo").build()
+        every { player.addListener(capture(listener)) } returns Unit
+        var inset: (() -> Dp)? = null
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalContext provides context,
+                LocalPlayerServiceBinder provides null,
+                LocalThemePreview provides ThemePreviewSession(ThemePreviewScene.HOME, player),
+                LocalGlassPreviewSettings provides GlassSettings(enabled = false),
+                LocalAppHeaderContentInset provides { 88.dp },
+            ) {
+                inset = rememberTopContentInsetProvider(hasNavBar = true)
+            }
+        }
+        compose.runOnIdle { assertEquals(228.dp, inset?.invoke()) }
+        compose.runOnIdle { listener.captured.onMediaItemTransition(null, Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) }
+        compose.waitForIdle()
+        compose.runOnIdle { assertEquals(147.dp, inset?.invoke()) }
+    }
+
+    @Test fun previewPlayerReservesTheFloatingBottomContentSpace() {
+        val context = ThemePreviewContext.create(ApplicationProvider.getApplicationContext<Application>(),
+            mapOf(navigationBarPositionKey to "BottomFloating"), ThemePreviewScene.HOME)
+        val player = mockk<Player>(relaxed = true)
+        every { player.currentMediaItem } returns MediaItem.Builder().setMediaId("demo").build()
+        val session = mutableStateOf<ThemePreviewSession?>(null)
+        var bottom = 0.dp
+        compose.setContent {
+            CompositionLocalProvider(LocalContext provides context, LocalPlayerServiceBinder provides null,
+                LocalThemePreview provides session.value) {
+                bottom = Dimensions.bottomSpacer
+            }
+        }
+        var withoutMini = 0.dp
+        compose.runOnIdle {
+            withoutMini = bottom
+            session.value = ThemePreviewSession(ThemePreviewScene.HOME, player)
+        }
+        compose.runOnIdle { assertEquals(withoutMini + 72.dp, bottom) }
+    }
 
     @Test fun nativeTopOverlayRevealsTheActualPage() = verifyOverlay(59f)
     @Test fun glassHeightTopOverlayRevealsTheActualPage() = verifyOverlay(64f)

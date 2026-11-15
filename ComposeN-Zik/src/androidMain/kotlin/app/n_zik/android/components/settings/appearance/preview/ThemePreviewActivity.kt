@@ -43,11 +43,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -56,17 +58,20 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import app.n_zik.android.LocalIsShowingLyrics
 import app.n_zik.android.LocalIsShowingVisualizer
 import app.n_zik.android.LocalPendingMiniPlayerAction
@@ -87,6 +92,8 @@ import app.n_zik.android.components.glass.LocalGlassPreviewSettings
 import app.n_zik.android.components.navigation.AppNavigation
 import app.n_zik.android.components.player.APP_HEADER_HEIGHT
 import app.n_zik.android.components.player.MINI_PLAYER_TOP_GAP
+import app.n_zik.android.components.player.TOP_NAV_BAR_HEIGHT
+import app.n_zik.android.components.player.miniPlayerSideInset
 import app.n_zik.android.components.player.miniPlayerTopInset
 import app.n_zik.android.enums.PlayerPosition
 import app.n_zik.android.ui.components.InterfaceLayoutDirection
@@ -94,11 +101,16 @@ import app.n_zik.android.utils.playerPositionKey
 import app.n_zik.android.components.navigation.dock.FloatingDockDimensions
 import app.n_zik.android.components.navigation.dock.FloatingDockEnvironment
 import app.n_zik.android.components.navigation.dock.FloatingDockState
+import app.n_zik.android.components.navigation.dock.classicDockGeometry
+import app.n_zik.android.components.navigation.dock.dockHasAttachedMini
+import app.n_zik.android.components.navigation.dock.floatingDockGeometry
 import app.n_zik.android.components.navigation.nav.GlassNavigationBarHeight
 import app.n_zik.android.components.navigation.nav.GlassNavigationPlayerGap
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.rememberGlassArtworkDisplayColors
 import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.ui.screens.home.HomeTopMiniPlayerAnchorState
+import app.n_zik.android.components.ui.screens.home.LocalHomeTopMiniPlayerAnchor
 import app.n_zik.android.components.theme.appearanceBackground
 import app.n_zik.android.compose.persist.LocalPersistMap
 import app.n_zik.android.enums.HomeScreenTabs
@@ -406,21 +418,45 @@ private fun PreviewPage(session: ThemePreviewSession, theme: ThemePreviewAppeara
     val topPlayer = theme.preferences[playerPositionKey] == PlayerPosition.Top.name
     val dockState = remember { FloatingDockState() }
     val dockProgress = remember { mutableStateOf(0f) }
-    val hasTabs = session.scene !in setOf(ThemePreviewScene.ALBUM, ThemePreviewScene.ARTIST, ThemePreviewScene.PLAYLIST, ThemePreviewScene.LOCAL_PLAYLIST)
-    val dock = FloatingDockEnvironment(dockState, null, navPosition.isHorizontal, dockProgress, navPosition.isBottomType && !topPlayer,
-        classic = navPosition == NavigationBarPosition.Bottom && !topPlayer, floating = navPosition.isFloating && !topPlayer)
+    val currentEntry by nav.currentBackStackEntryAsState()
+    val hasTabs = !fullPlayer && dockState.hasDock(currentEntry?.id)
+    val topDock = navPosition == NavigationBarPosition.Top
+    val classicDock = navPosition == NavigationBarPosition.Bottom || topDock
+    val dock = FloatingDockEnvironment(
+        dockState, currentEntry?.id, navPosition.isHorizontal, dockProgress, !topPlayer,
+        classic = classicDock,
+        floating = navPosition.isFloating,
+        attachedMini = dockHasAttachedMini(true, navPosition, if (topPlayer) PlayerPosition.Top else PlayerPosition.Bottom),
+    )
     val glassNav = theme.glass.usesGlassMaterial(GlassArea.Nav)
     val navBottomPadding = Dimensions.navBarBottomPadding(navPosition.isFloating)
-    val navClearance = when {
-        fullPlayer || !hasTabs || !navPosition.isBottomType -> 0.dp
-        navPosition.isFloating -> (FloatingDockDimensions.expandedHeight + FloatingDockDimensions.componentGap).dp
-        glassNav -> GlassNavigationBarHeight + GlassNavigationPlayerGap
-        else -> Dimensions.standardNavBarHeight + 4.dp
-    }
     BoxWithConstraints(Modifier.fillMaxSize()) {
+        val density = LocalDensity.current
         val miniHeight = Dimensions.collapsedPlayer
         val safeInsets = WindowInsets.safeDrawing
         val safePadding = safeInsets.asPaddingValues()
+        val topNavHeight = if (glassNav) GlassNavigationBarHeight else TOP_NAV_BAR_HEIGHT
+        val safeWidth = maxWidth - with(density) {
+            (safeInsets.getLeft(this, androidx.compose.ui.unit.LayoutDirection.Ltr) +
+                safeInsets.getRight(this, androidx.compose.ui.unit.LayoutDirection.Ltr)).toDp()
+        }
+        val dockGeometry = if (classicDock) {
+            classicDockGeometry(
+                safeWidth.value,
+                (if (topDock) topNavHeight else if (glassNav) GlassNavigationBarHeight else Dimensions.navigationBarHeight - 10.dp).value,
+                FloatingDockDimensions.expandedMiniHeight,
+                dock.hasAttachedMini, 0f,
+                expandedGap = if (glassNav) GlassNavigationPlayerGap.value else FloatingDockDimensions.componentGap,
+            )
+        } else {
+            floatingDockGeometry(safeWidth.value, FloatingDockDimensions.expandedHeight,
+                FloatingDockDimensions.expandedMiniHeight, dock.hasBottomMini, 0f, hasSearch = false)
+        }
+        val bottomPadding = when {
+            topPlayer -> 5.dp
+            navPosition.isBottomType -> navBottomPadding + if (hasTabs) dockGeometry.miniBottomOffset.dp else 0.dp
+            else -> navBottomPadding + 5.dp
+        }
         val sheet = rememberPlayerSheetState(0.dp, maxHeight, miniHeight + safePadding.calculateBottomPadding(),
             if (fullPlayer) expandedAnchor else collapsedAnchor)
         val windowInsets = safeInsets.add(WindowInsets(
@@ -432,9 +468,23 @@ private fun PreviewPage(session: ThemePreviewSession, theme: ThemePreviewAppeara
             barsHidden = false,
             hasTopNavBar = hasTabs && navPosition == NavigationBarPosition.Top,
             headerHeight = if (navPosition.isHorizontal) APP_HEADER_HEIGHT else 0.dp,
-            topNavBarHeight = if (glassNav) GlassNavigationBarHeight else Dimensions.standardNavBarHeight,
+            topNavBarHeight = topNavHeight,
             gap = if (navPosition.isHorizontal) MINI_PLAYER_TOP_GAP else 0.dp,
         )
+        val baseTopInset = rememberUpdatedState<(() -> Dp)?>(if (topPlayer) ({ topInset }) else null)
+        val topGap = rememberUpdatedState(if (navPosition.isHorizontal) MINI_PLAYER_TOP_GAP else 0.dp)
+        val retainTopMiniBelowNavigation = topDock && hasTabs
+        val miniBeforeHeader = rememberUpdatedState<Dp?>(dockGeometry.miniHeight.dp.takeIf { retainTopMiniBelowNavigation })
+        val homeAnchor = remember { HomeTopMiniPlayerAnchorState(baseTopInset, topGap, miniBeforeHeader) }
+        val homePlacement by remember(homeAnchor) { derivedStateOf { homeAnchor.placementKey() } }
+        val sideHomeGap = if (navPosition.isHorizontal) 0.dp else MINI_PLAYER_TOP_GAP
+        val homeMiniTopInset = remember(homeAnchor, homePlacement, sideHomeGap) {
+            homeAnchor.miniTopInsetProvider(sideHomeGap)
+        }
+        val isHome = currentEntry?.destination?.route?.startsWith(NavRoutes.home.name) == true
+        val topPadding: (() -> Dp)? = if (topPlayer) ({
+            if (isHome && !retainTopMiniBelowNavigation) homeMiniTopInset() ?: topInset else topInset
+        }) else null
 
         CompositionLocalProvider(
             LocalAppearance provides theme.appearance,
@@ -442,6 +492,7 @@ private fun PreviewPage(session: ThemePreviewSession, theme: ThemePreviewAppeara
             LocalGlassPreviewSettings provides theme.glass,
             LocalGlassMenuHost provides host,
             LocalGlassArtworkColor provides artworkColor,
+            LocalHomeTopMiniPlayerAnchor provides homeAnchor,
             app.n_zik.android.components.navigation.dock.LocalFloatingDock provides dock,
             LocalGlassPlayerOverlayActive provides fullPlayer,
             LocalPlayerAwareWindowInsets provides windowInsets,
@@ -473,21 +524,26 @@ private fun PreviewPage(session: ThemePreviewSession, theme: ThemePreviewAppeara
                             }
                     }
                     val layoutDirection = LocalLayoutDirection.current
-                    val standaloneBottomMargin = if (navPosition.isFloating) navBottomPadding else navBottomPadding + 5.dp
-                    val sideWidth = if (hasTabs) Dimensions.navigationRailWidth else 0.dp
                     val leftRail = navPosition == NavigationBarPosition.Left
                     val rightRail = navPosition == NavigationBarPosition.Right
                     val rtl = layoutDirection == androidx.compose.ui.unit.LayoutDirection.Rtl
                     CustomBottomSheet(
                         state = sheet,
                         modifier = Modifier.fillMaxWidth(),
-                        bottomPadding = { if (topPlayer) 5.dp else navClearance + standaloneBottomMargin },
-                        topPadding = if (topPlayer) ({ topInset }) else null,
-                        placementKey = topPlayer,
-                        collapsedStartInset = safePadding.calculateStartPadding(layoutDirection) + if (if (rtl) rightRail else leftRail) sideWidth else 0.dp,
-                        collapsedEndInset = safePadding.calculateEndPadding(layoutDirection) + if (if (rtl) leftRail else rightRail) sideWidth else 0.dp,
+                        bottomPadding = { bottomPadding },
+                        topPadding = topPadding,
+                        placementKey = listOf(currentEntry?.id, topPlayer, navPosition, hasTabs, topInset,
+                            homePlacement.takeIf { isHome && topPlayer && !retainTopMiniBelowNavigation }),
+                        collapsedStartInset = miniPlayerSideInset(
+                            railWidth = if (if (rtl) rightRail else leftRail) Dimensions.navigationRailWidth else 0.dp,
+                            safeInset = safePadding.calculateStartPadding(layoutDirection),
+                        ),
+                        collapsedEndInset = miniPlayerSideInset(
+                            railWidth = if (if (rtl) leftRail else rightRail) Dimensions.navigationRailWidth else 0.dp,
+                            safeInset = safePadding.calculateEndPadding(layoutDirection),
+                        ),
                         collapsedContentHeight = miniHeight,
-                        collapsedHeightProvider = { FloatingDockDimensions.expandedMiniHeight.dp },
+                        collapsedHeightProvider = { dockGeometry.miniHeight.dp },
                         disableDismiss = true,
                         collapsedContent = { MiniPlayer(showPlayer = {}, hidePlayer = {}, navController = nav) },
                     ) {

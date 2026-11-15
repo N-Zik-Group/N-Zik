@@ -3,6 +3,7 @@ package app.n_zik.android.ui.styling
 import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.enums.NavigationBarType
 import app.n_zik.android.LocalPlayerServiceBinder
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.systemBars
@@ -62,8 +63,8 @@ object Dimensions {
         get() {
             val isFloating = NavigationBarPosition.BottomFloating.isCurrent()
             val isIconOnly = NavigationBarType.IconOnly.isCurrent()
-            val binder = LocalPlayerServiceBinder.current
-            val isMiniPlayerActive = binder?.player?.currentMediaItem != null
+            val player = LocalThemePreview.current?.player ?: LocalPlayerServiceBinder.current?.player
+            val isMiniPlayerActive = player?.currentMediaItem != null
 
             return if (isFloating) {
                 val barHeight = if (isIconOnly) floatingNavBarIconOnlyHeight else floatingNavBarHeight
