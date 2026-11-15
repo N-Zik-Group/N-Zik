@@ -28,6 +28,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.LocalPlayerServiceBinder
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.enums.MusicAnimationType
 import app.n_zik.android.utils.DisposableListener
 import app.n_zik.android.utils.mediaItems
@@ -47,9 +48,9 @@ fun MusicAnimation(
 ) {
     //if (!show) return
 
-    val binder = LocalPlayerServiceBinder.current
-    var isPlayRunning by remember { mutableStateOf(binder?.player?.isPlaying) }
-    binder?.player?.DisposableListener {
+    val player = LocalThemePreview.current?.player ?: LocalPlayerServiceBinder.current?.player
+    var isPlayRunning by remember(player) { mutableStateOf(player?.isPlaying) }
+    player?.DisposableListener {
         object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 isPlayRunning = isPlaying

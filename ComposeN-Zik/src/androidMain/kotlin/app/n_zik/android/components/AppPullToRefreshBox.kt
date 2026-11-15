@@ -48,6 +48,7 @@ fun AppPullToRefreshBox(
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
+    useLiveGlassBackdrop: Boolean = true,
     content: @Composable BoxScope.() -> Unit
 ) {
     val pullRefreshState = rememberPullToRefreshState()
@@ -73,7 +74,7 @@ fun AppPullToRefreshBox(
             val area = GlassArea.PullToRefresh
             if (settings.usesGlassMaterial(area) || settings.usesGlassContour(area)) {
                 StyledPullRefreshIndicator(
-                    pullRefreshState, isRefreshing, settings, colorPalette.accent, nativeColor, placement,
+                    pullRefreshState, isRefreshing, settings, colorPalette.accent, nativeColor, placement, useLiveGlassBackdrop,
                 )
             } else {
                 PullToRefreshDefaults.LoadingIndicator(
@@ -97,11 +98,12 @@ private fun StyledPullRefreshIndicator(
     nativeFill: Color,
     nativeColor: Color,
     modifier: Modifier,
+    useLiveGlassBackdrop: Boolean,
 ) {
     val area = GlassArea.PullToRefresh
     val shape = PullToRefreshDefaults.indicatorShape
     val material = settings.usesGlassMaterial(area)
-    val plate = if (material) {
+    val plate = if (material && useLiveGlassBackdrop) {
         val backdrop = rememberInlineGlassBackdrop(LocalAppearance.current.colorPalette.background0)
         Modifier.glassMaterial(
             settings.forArea(area), shape, ownBackdrop = backdrop, filmColor = nativeFill, drawShadow = false,

@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -19,10 +18,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.LargeLoaderGlyph
+import app.n_zik.android.components.ui.InlineLoader
 import app.n_zik.android.core.backup.LibraryStartupState
 
 @Composable
-internal fun LibraryStartupScreen(state: LibraryStartupState, retry: () -> Unit) {
+internal fun LibraryStartupScreen(state: LibraryStartupState, retry: () -> Unit, useAppAppearance: Boolean = false) {
     MaterialTheme(colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()) {
         Surface(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -39,7 +40,8 @@ internal fun LibraryStartupScreen(state: LibraryStartupState, retry: () -> Unit)
                         Text(stringResource(R.string.common_action_retry))
                     }
                 } else {
-                    CircularProgressIndicator()
+                    if (useAppAppearance) InlineLoader()
+                    else LargeLoaderGlyph(color = MaterialTheme.colorScheme.primary)
                 }
             }
         }

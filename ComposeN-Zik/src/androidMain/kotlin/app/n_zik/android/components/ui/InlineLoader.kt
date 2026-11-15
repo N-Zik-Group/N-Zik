@@ -29,8 +29,14 @@ internal fun InlineLoader(modifier: Modifier = Modifier, size: Dp = 100.dp) {
     GlassIndicatorSilhouette(
         rememberGlassSettings(), GlassArea.LoadingIndicators, accent, modifier,
     ) { glyph ->
-        LoadingIndicator(color = accent, modifier = glyph.size(size))
+        LargeLoaderGlyph(color = accent, modifier = glyph, size = size)
     }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+internal fun LargeLoaderGlyph(color: Color, modifier: Modifier = Modifier, size: Dp = 100.dp) {
+    LoadingIndicator(color = color, modifier = modifier.size(size))
 }
 
 /** Adapts the Material spinner without changing its native animation or dimensions. */
