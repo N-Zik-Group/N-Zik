@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="backup_export_themes_description">ダウンロードしたテーマとローカルテーマをZIPバックアップに保存する</string>
+    <string name="backup_import_themes_description">ZIPバックアップからダウンロードしたテーマとローカルテーマを復元</string>
+    <string name="backup_export_select_all_description">エクスポートするすべての種類のデータを選択します</string>
+    <string name="backup_import_select_all_description">インポートするデータの種類を選択してください</string>
+    <string name="backup_include_github_identity_credentials">GitHub の ID 資格情報を含める</string>
     <string name="storage_image_quality_title">画像品質</string>
     <string name="storage_image_quality_description">オンラインアートワークに適用され、新しく追加されたカバーやプロフィール写真. オリジナルは、利用可能な最高品質を使用し、より多くのストレージとデータを使用することができます.</string>
     <string name="storage_image_quality_optimized">最適化</string>
@@ -116,9 +121,9 @@
     <string name="backup_before_update_failed">インストール前のバックアップに失敗しました</string>
     <string name="backup_before_update_running_message">Backing up data before installation…</string>
     <string name="backup_before_update_running_title">バックアップ中</string>
-    <string name="backup_excluded_preferences_and_cache_description">個人設定 (テーマの種類など) とキャッシュは含まれません。</string>
-    <string name="backup_export_library_options_description">カスタムカバー、設定、またはプロファイルを含むデータベースをエクスポート</string>
-    <string name="backup_import_library_options_description">SQLite または ZIP データベースのバックアップ、設定、またはプロファイルを復元する</string>
+    <string name="backup_export_separate_files_description">選択された各カテゴリは別のファイルにエクスポートされます。キャッシュファイルとストックテーマは除外されます。</string>
+    <string name="backup_export_with_themes_description">カスタムカバー、設定、テーマ、またはプロファイルを含むデータベースをエクスポート</string>
+    <string name="backup_import_with_themes_description">SQLiteまたはZIPデータベースのバックアップ、設定、テーマ、プロファイルを復元する</string>
     <string name="backup_include_discord_credentials">DiscordのID認証情報を含める</string>
     <string name="backup_include_lastfm_credentials">Last.fm ID 資格情報を含める</string>
     <string name="backup_include_proxy_password">プロキシパスワードを含める</string>
@@ -251,4 +256,34 @@
     <string name="export_cached_songs_generic_error">エクスポートに失敗しました</string>
     <string name="backup_startup_preparing_library">Preparing your library…</string>
     <string name="backup_startup_recovery_failed">ライブラリの復元を完了できませんでした。</string>
+    <string name="storage_breakdown_themes">テーマ</string>
+    <string name="storage_info_themes">テーマレコードと共有テーマストアのアセット、プレビューとドラフトを保存しました。</string>
+    <string name="storage_breakdown_lyrics">歌詞</string>
+    <string name="storage_info_lyrics">ダウンロードしたテキストバイトとプロファイルデータベースに保存されたカスタム歌詞。</string>
+    <string name="storage_cleanup_clear_theme_cache">テーマストアのキャッシュをクリア</string>
+    <string name="storage_cleanup_theme_cache_description">共有されたカタログメタデータを削除します。保存されたテーマ、下書き、プレビューは保持されます。</string>
+    <string name="storage_cleanup_clear_lyrics">フェッチされた歌詞をクリア</string>
+    <string name="storage_cleanup_lyrics_description">自動的に歌詞を取得します。カスタム歌詞は保持されます。無料ページはライブラリデータベースで再利用できます。</string>
+    <string name="backup_auto_enabled_title">自動バックアップを有効にする</string>
+    <string name="backup_auto_enabled_description">自動バックアップを一時停止し、バックアップ設定を維持します。</string>
+    <string name="storage_cleanup_picker_title">ストレージを消去</string>
+    <string name="storage_cleanup_picker_description">このスコープをクリアするファイルとデータを選択します。</string>
+    <string name="storage_cleanup_select_caches">キャッシュを選択</string>
+    <string name="storage_cleanup_select_caches_description">キャッシュと一時ファイルを選択します。</string>
+    <string name="storage_cleanup_select_everything">すべてを選択</string>
+    <string name="storage_cleanup_select_everything_description">オフラインダウンロードを含むキャッシュとデータを選択します。</string>
+    <string name="storage_cleanup_cache_group">キャッシュと一時ファイル</string>
+    <string name="storage_cleanup_delete_group">削除するデータ</string>
+    <string name="storage_cleanup_review_selection">レビュー</string>
+    <string name="storage_cleanup_selected_confirmation">このスコープ内の選択したアイテムをクリアしますか？</string>
+    <string name="storage_cleanup_option_cached_images">キャッシュされた画像</string>
+    <string name="storage_cleanup_option_streamed_audio">ストリーミングオーディオ</string>
+    <string name="storage_cleanup_option_waveforms">波形</string>
+    <string name="storage_cleanup_option_network_cache">ネットワークキャッシュ</string>
+    <string name="storage_cleanup_option_diagnostic_logs">診断ログ</string>
+    <string name="storage_cleanup_option_temporary_files">一時ファイル</string>
+    <string name="storage_cleanup_option_theme_catalog">テーマストアキャッシュ</string>
+    <string name="storage_cleanup_option_fetched_lyrics">自動的に歌詞を取得</string>
+    <string name="storage_cleanup_option_offline_downloads">ダウンロードしたオーディオ</string>
+    <string name="storage_cleanup_completed">クリーンアップが完了しました</string>
 </resources>
