@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="github_account_login">Connect GitHub</string>
-    <string name="github_account_logout">Disconnect GitHub</string>
-    <string name="github_account_description">Use your GitHub account in the Theme Store.</string>
-    <string name="github_account_offline">Go online to connect GitHub.</string>
-    <string name="github_account_code">Enter %1$s on GitHub to finish signing in.</string>
-    <string name="github_account_code_copied">GitHub code copied to clipboard.</string>
-    <string name="github_account_login_failed">Could not connect to GitHub. Try again.</string>
-    <string name="github_account_connected">GitHub connected.</string>
+    <string name="github_account_login">GitHub\'a bağlan</string>
+    <string name="github_account_logout">GitHub bağlantısını kes</string>
+    <string name="github_account_description">Tema Mağazası\'nda GitHub hesabınızı kullanın.</string>
+    <string name="github_account_offline">GitHub\'ı bağlamak için çevrimiçi olun.</string>
+    <string name="github_account_code">GitHub\'da %1$s yazarak oturum açma işlemini tamamlayın.</string>
+    <string name="github_account_code_copied">GitHub kodu panoya kopyalandı.</string>
+    <string name="github_account_login_failed">GitHub\'a bağlanılamadı. Lütfen tekrar deneyin.</string>
+    <string name="github_account_connected">GitHub\'a bağlandı.</string>
     <!-- Account -->
     <string name="account_action_login">Giriş yap</string>
     <string name="account_action_logout">Oturumu kapat</string>
