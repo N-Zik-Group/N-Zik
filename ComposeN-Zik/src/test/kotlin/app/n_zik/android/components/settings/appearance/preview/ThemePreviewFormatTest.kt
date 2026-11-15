@@ -1,5 +1,11 @@
 package app.n_zik.android.components.settings.appearance.preview
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.ui.styling.typographyOf
+import app.n_zik.android.utils.fontTypeKey
+import app.n_zik.android.utils.useSystemFontKey
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
@@ -39,6 +45,22 @@ import app.n_zik.android.components.glass.glassJellyEnabledKey
 import app.n_zik.android.utils.navigationBarPositionKey
 
 class ThemePreviewFormatTest {
+    @Test
+    fun `system font preference delegates font choice to Android`() {
+        val document = encodeThemeV1(
+            mapOf(useSystemFontKey to true, fontTypeKey to FontType.Poppins.name),
+            emptyMap<String, Any>(),
+        )
+        for (glass in listOf(false, true)) {
+            val preferences = themePreviewPreferences(document, glass).plain
+            val systemFont = preferences.getValue(useSystemFontKey) as Boolean
+            val selectedFont = FontType.valueOf(preferences.getValue(fontTypeKey) as String)
+            assertTrue(systemFont)
+            assertEquals(FontType.Poppins, selectedFont)
+            assertEquals(FontFamily.Default, typographyOf(Color.White, systemFont, false, selectedFont).m.fontFamily)
+        }
+    }
+
     @Test
     fun `v1 appearance maps to isolated preview values`() {
         val theme = parseThemeV1("""

@@ -296,6 +296,7 @@ private fun CaptureGallery(
                         transitionEffectKey to "None",
                         pauseSearchHistoryKey to true,
                     ) + (frame.scene.searchTab?.let { mapOf(searchResultScreenTabIndexKey to it) }.orEmpty()),
+                    frame.scene,
                 )
             }
             CompositionLocalProvider(LocalContext provides previewContext) {

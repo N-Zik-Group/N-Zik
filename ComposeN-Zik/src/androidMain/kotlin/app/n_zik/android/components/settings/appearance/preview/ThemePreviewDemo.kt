@@ -14,6 +14,7 @@ import app.n_zik.android.models.Album
 import app.n_zik.android.models.Lyrics
 import app.n_zik.android.models.Song
 import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.saveLyricsStateKey
 
 internal object ThemePreviewDemo {
     const val positionMs = 68_000L
@@ -133,10 +134,12 @@ internal class ThemePreviewContext(base: Context, val previewPreferences: Shared
         previewPreferences
 
     companion object {
-        fun create(base: Context, values: Map<String, Any>): ThemePreviewContext {
+        fun create(base: Context, values: Map<String, Any>, scene: ThemePreviewScene): ThemePreviewContext {
             val preferences = base.getSharedPreferences("theme-preview-session", Context.MODE_PRIVATE)
             preferences.edit(commit = true) {
                 clear()
+                // The player can restore the last overlay state when it opens.
+                putBoolean(saveLyricsStateKey, scene == ThemePreviewScene.LYRICS)
                 values.forEach { (key, value) ->
                     when (value) {
                         is Boolean -> putBoolean(key, value)
