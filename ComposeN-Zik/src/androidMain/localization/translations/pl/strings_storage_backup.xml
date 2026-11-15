@@ -3,6 +3,7 @@
     <string name="backup_export_themes_description">Zapisz pobrane i lokalne motywy do kopii zapasowej ZIP</string>
     <string name="backup_import_themes_description">Przywróć pobrane i lokalne motywy z kopii zapasowej ZIP</string>
     <string name="backup_export_select_all_description">Wybierz każdy typ danych do eksportu</string>
+    <string name="backup_import_already_running">Import kopii zapasowej jest już w toku.</string>
     <string name="backup_import_select_all_description">Wybierz każdy typ danych do zaimportowania</string>
     <string name="backup_include_github_identity_credentials">Dołącz dane logowania GitHub</string>
     <string name="storage_image_quality_title">Jakość obrazu</string>
