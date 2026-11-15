@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">Oletussivu</string>
     <string name="settings_interface_corner_radius_label">Käyttöliittymän Ääni</string>
     <string name="settings_interface_hide_status_bar_label">Piilota tilarivi</string>
+    <string name="settings_interface_right_to_left_label">Oikealta vasemmalle -asettelu</string>
+    <string name="settings_interface_right_to_left_description">Peilaa käyttöliittymä sovelluksen kielestä riippumatta.</string>
     <string name="settings_interface_page_description">Käyttöliittymäosiossa on asetuksia globaalin käyttöliittymän ja navigoinnin muokkaamiseen</string>
     <string name="settings_interface_page_title">Käyttöliittymä</string>
     <string name="settings_interface_title">Käyttöliittymä</string>
