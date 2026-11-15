@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">Verbind GitHub</string>
+    <string name="github_account_logout">GitHub loskoppelen</string>
+    <string name="github_account_description">Gebruik uw GitHub account in de Theme Store.</string>
+    <string name="github_account_offline">Ga online om verbinding te maken met GitHub.</string>
+    <string name="github_account_code">Voer %1$s in op GitHub om aan te melden.</string>
+    <string name="github_account_code_copied">Github code gekopieerd naar klembord.</string>
+    <string name="github_account_login_failed">Kan geen verbinding maken met GitHub. Probeer het opnieuw.</string>
+    <string name="github_account_connected">GitHub verbonden.</string>
     <!-- Account -->
     <string name="account_action_login">Log in</string>
     <string name="account_action_logout">Log uit</string>
