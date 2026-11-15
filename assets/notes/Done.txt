@@ -292,3 +292,32 @@ Improved:
 Fixed:
 - fix(glass): refine dialog controls, loading indicators and navigation surfaces
   - Keep previews, artwork and headers legible during interaction and transitions.
+
+Added:
+- feat(interface): add an optional right-to-left layout
+  - Apply the profile preference to app, Rescue and image editor layouts. Keep the language in control of text direction and expose the option in both settings searches.
+  - Align search text to the interface start and use the logical action order for Glass groups, detached buttons and dividers.
+
+- feat(theme-store): let creators choose the minimum supported app version
+  - Keep the existing compatibility value when editing. Store the selected minimum in drafts, submission manifests and local theme packages.
+  - Link the form to the version code and version name in the Android repository. Add a swipe position indicator and an accent Glass action to the full-size preview gallery.
+
+Improved:
+- improve(theme-store): refresh creator submissions and theme notifications
+  - Check eligible subscriptions and pending submissions during foreground and scheduled work. Bind checks and downloads to their originating profile.
+  - Normalize preview geometry and language, reuse the image crop editor, and preserve captions and preview assets through publication, restore and download.
+
+- improve(player): reduce work during the miniplayer squeeze
+  - Observe the dock target outside activity composition and apply animated spacing and sizing in layout.
+  - Skip hidden expanded-player Glass geometry and redundant optical exports. Stop encoding a legacy widget PNG each second during playback.
+
+- improve(theme-store): refresh the bundled Stock preview gallery
+  - Replace the Normal and Glass preview assets, including playing player and miniplayer scenes, and refresh their manifest hashes.
+
+Fixed:
+- fix(backup): validate the receiving profile before restoring selected categories
+  - Share the destination and picker flow across Settings and onboarding, preserve imported theme identities, and keep Rescue archives scoped to their profile.
+  - Respect the automatic backup switch in the updater and preserve protected lyric edits during storage cleanup.
+- fix(glass): make queue backdrop recording safe during preview generation
+  - Keep queue version reads free of recording side effects and prevent re-entry into an active material capture.
+  - Scope ancestry checks to optical recordings and keep the live background behind Theme Store details and notifications.
