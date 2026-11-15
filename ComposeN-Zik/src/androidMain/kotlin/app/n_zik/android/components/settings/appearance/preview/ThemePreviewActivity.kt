@@ -241,16 +241,15 @@ private fun CaptureGallery(
     onCaptured: ((List<File>) -> Unit)? = null,
 ) {
     val host = LocalContext.current
-    val requestedScene = if (automation) {
-        (host as? ComponentActivity)?.intent?.getStringExtra("scene")?.let { requested ->
+    val intent = (host as? ComponentActivity)?.intent
+    val requestedScenes = if (automation) {
+        intent?.getStringExtra("scene")?.split(',')?.mapNotNull { requested ->
             ThemePreviewScene.entries.firstOrNull { it.fileName == requested }
-        }
-    } else null
-    val inspectOnly = requestedScene != null &&
-        (host as? ComponentActivity)?.intent?.getBooleanExtra("inspectOnly", false) == true
-    val playbackOnly = automation && (host as? ComponentActivity)?.intent?.getBooleanExtra("playbackOnly", false) == true
-    val scenes = requestedScene?.let(::listOf)
-        ?: ThemePreviewScene.entries.filter { !playbackOnly || it.playing }
+        }?.distinct().orEmpty()
+    } else emptyList()
+    val inspectOnly = requestedScenes.size == 1 && intent?.getBooleanExtra("inspectOnly", false) == true
+    val playbackOnly = automation && intent?.getBooleanExtra("playbackOnly", false) == true
+    val scenes = requestedScenes.ifEmpty { ThemePreviewScene.entries.filter { !playbackOnly || it.playing } }
     val normal = rememberThemePreviewAppearance(document, false)
     val glass = rememberThemePreviewAppearance(document, true)
     val frames = remember(scenes) {

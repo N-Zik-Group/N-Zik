@@ -3,6 +3,7 @@ package app.n_zik.android.components.settings.appearance.preview
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 import app.n_zik.android.components.glass.GlassArea
@@ -28,6 +29,7 @@ import app.n_zik.android.utils.uiRoundnessDpKey
 import app.n_zik.android.utils.homeTabsOrderKey
 import app.n_zik.android.utils.homeSongsOrderKey
 import app.n_zik.android.utils.playerActionBarButtonOrderKey
+import app.n_zik.android.themed.n_zik.screen.player.resolvePlayerActionBarOrder
 import app.n_zik.android.utils.thumbnailSizeDpKey
 import app.n_zik.android.utils.thumbnailSizeLDpKey
 import app.n_zik.android.utils.DataStoreUtils
@@ -179,5 +181,16 @@ class ThemePreviewFormatTest {
 
         assertEquals(GlassQuality.Quality, settings.quality)
         assertEquals(glassProfileDefaults(GlassQuality.Quality).blur, settings.blur)
+    }
+
+    @Test
+    fun `default exported action order retains the live player toolbar`() {
+        val partial = """{"schemaVersion":1,"categories":{"colors":{"palette":"dynamic","mode":"light"}}}"""
+        val preview = themePreviewPreferences(partial, glass = true)
+        val serialized = preview.plain.getValue(playerActionBarButtonOrderKey) as String
+
+        assertEquals(resolvePlayerActionBarOrder(""), resolvePlayerActionBarOrder(serialized))
+        assertTrue("add_to_playlist" in resolvePlayerActionBarOrder(serialized))
+        assertEquals(listOf("lyrics", "shuffle"), resolvePlayerActionBarOrder("""["lyrics","shuffle"]"""))
     }
 }

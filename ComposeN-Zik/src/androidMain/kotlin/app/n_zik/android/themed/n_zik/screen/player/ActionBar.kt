@@ -155,7 +155,9 @@ import kotlinx.coroutines.launch
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.utils.Toaster
 import androidx.compose.ui.res.stringResource
-import org.json.JSONArray
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonPrimitive
 
 private class PagerViewPort(
     private val showSongsState: MutableState<SongsNumber>,
@@ -476,16 +478,7 @@ fun BoxScope.ActionBar(
 
             val actionsSpaceEvenly by rememberPreference( actionspacedevenlyKey, true )
             val buttonOrderSerialized by rememberPreference( playerActionBarButtonOrderKey, "" )
-            val buttonOrder = remember(buttonOrderSerialized) {
-                try {
-                    val arr = JSONArray(buttonOrderSerialized)
-                    val list = mutableListOf<String>()
-                    for (i in 0 until arr.length()) list.add(arr.getString(i))
-                    list
-                } catch (_: Exception) {
-                    listOf("video", "discover", "download", "add_to_playlist", "loop", "shuffle", "lyrics", "visualizer", "expanded_player", "sleep_timer", "equalizer", "arrow", "start_radio", "menu")
-                }
-            }
+            val buttonOrder = remember(buttonOrderSerialized) { resolvePlayerActionBarOrder(buttonOrderSerialized) }
             val playerActions = mutableListOf<PlayerActionSlot>()
             buttonOrder.forEach { buttonId ->
                 when (buttonId) {
@@ -843,3 +836,12 @@ fun BoxScope.ActionBar(
 
 
 
+
+private val defaultPlayerActionBarOrder = listOf(
+    "video", "discover", "download", "add_to_playlist", "loop", "shuffle", "lyrics", "visualizer",
+    "expanded_player", "sleep_timer", "equalizer", "arrow", "start_radio", "menu",
+)
+
+internal fun resolvePlayerActionBarOrder(serialized: String): List<String> =
+    runCatching { Json.parseToJsonElement(serialized).jsonArray.map { it.jsonPrimitive.content } }
+        .getOrNull().orEmpty().ifEmpty { defaultPlayerActionBarOrder }
