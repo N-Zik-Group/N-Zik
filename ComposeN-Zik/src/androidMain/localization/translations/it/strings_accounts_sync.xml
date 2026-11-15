@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">Connetti GitHub</string>
+    <string name="github_account_logout">Disconnetti GitHub</string>
+    <string name="github_account_description">Usa il tuo account GitHub nel Theme Store.</string>
+    <string name="github_account_offline">Vai online per connettere GitHub.</string>
+    <string name="github_account_code">Inserisci %1$s su GitHub per completare l\'accesso.</string>
+    <string name="github_account_code_copied">Codice GitHub copiato negli appunti.</string>
+    <string name="github_account_login_failed">Impossibile connettersi a GitHub. Riprova.</string>
+    <string name="github_account_connected">GitHub connesso.</string>
     <!-- Account -->
     <string name="account_action_login">Log in</string>
     <string name="account_action_logout">Log off</string>
