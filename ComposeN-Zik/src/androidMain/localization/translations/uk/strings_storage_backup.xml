@@ -3,6 +3,7 @@
     <string name="backup_export_themes_description">Зберегти звантажені і локальні теми в резервну копію ZIP</string>
     <string name="backup_import_themes_description">Відновити звантажені та локальні теми з резервної копії ZIP</string>
     <string name="backup_export_select_all_description">Вибрати кожен тип даних для експорту</string>
+    <string name="backup_import_already_running">Виконується імпорт резервної копії.</string>
     <string name="backup_import_select_all_description">Виберіть кожен тип даних для імпорту</string>
     <string name="backup_include_github_identity_credentials">Включіть облікові дані для ідентифікації GitHub</string>
     <string name="storage_image_quality_title">Якість зображення</string>
