@@ -299,8 +299,8 @@ Added:
   - Align search text to the interface start and use the logical action order for Glass groups, detached buttons and dividers.
 
 - feat(theme-store): let creators choose the minimum supported app version
-  - Keep the existing compatibility value when editing. Store the selected minimum in drafts, submission manifests and local theme packages.
-  - Link the form to the version code and version name in the Android repository. Add a swipe position indicator and an accent Glass action to the full-size preview gallery.
+  - Default to version code 96 and keep the existing compatibility value when editing. Store the minimum in drafts, submission manifests and local packages.
+  - Link the form to the updater guide for current and historical version codes. Add a segmented swipe position indicator and an accent Glass action to the full-size preview gallery.
 
 Improved:
 - improve(theme-store): refresh creator submissions and theme notifications
@@ -319,5 +319,5 @@ Fixed:
   - Share the destination and picker flow across Settings and onboarding, preserve imported theme identities, and keep Rescue archives scoped to their profile.
   - Respect the automatic backup switch in the updater and preserve protected lyric edits during storage cleanup.
 - fix(glass): make queue backdrop recording safe during preview generation
-  - Keep queue version reads free of recording side effects and prevent re-entry into an active material capture.
+  - Preserve queue invalidation order and prevent re-entry into an active material capture.
   - Scope ancestry checks to optical recordings and keep the live background behind Theme Store details and notifications.
