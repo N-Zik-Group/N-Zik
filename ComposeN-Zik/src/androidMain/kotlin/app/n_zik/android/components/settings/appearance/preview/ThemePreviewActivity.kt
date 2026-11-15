@@ -311,8 +311,9 @@ private fun CaptureGallery(
                     frame.scene,
                 )
             }
+            val session = remember(frame, player) { ThemePreviewSession(frame.scene, player) }
             CompositionLocalProvider(LocalContext provides previewContext) {
-                InterfaceLayoutDirection { PreviewPage(ThemePreviewSession(frame.scene, player), theme) }
+                InterfaceLayoutDirection { PreviewPage(session, theme) }
             }
             Box(Modifier.fillMaxSize().pointerInput(Unit) {
                 awaitEachGesture {

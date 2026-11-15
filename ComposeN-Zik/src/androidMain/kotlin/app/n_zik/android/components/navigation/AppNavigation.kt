@@ -316,7 +316,7 @@ fun AppNavigation(
     val isHome = currentEntry?.destination?.route?.startsWith(NavRoutes.home.name) ?: true
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val currentHomeTab by if (preview == null) DiscordUiState.currentHomeTab.collectAsStateWithLifecycle()
-        else remember(preview) { mutableStateOf(if (preview.scene.fileName == "navigation") "songs" else "quickpicks") }
+        else preview.homeTab
     val isQuickPicks = isHome && (currentHomeTab == null || currentHomeTab == "quickpicks")
     val useSharedHomeGlass = usesSharedHomeHeaderGlass(isHome, currentHomeTab, navigationPosition, glassSettings)
     val keepHeaderSurface = navigationPosition.isHorizontal && glassSettings.usesGlassMaterial(GlassArea.Header)

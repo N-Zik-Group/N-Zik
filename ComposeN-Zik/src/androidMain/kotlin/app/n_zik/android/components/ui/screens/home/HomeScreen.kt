@@ -331,8 +331,9 @@ fun HomeScreen(
     val sharedHomeGlass = LocalSharedHomeHeaderGlass.current
     val drawHomeGlassPane = LocalDrawHomeGlassPane.current
     val selectedHomeTab = activeTabs.getOrNull(tabIndex)
-    LaunchedEffect(selectedHomeTab) {
+    LaunchedEffect(preview, selectedHomeTab) {
         if (preview == null) app.n_zik.android.extensions.discord.DiscordUiState.currentHomeTab.value = selectedHomeTab
+        else preview.homeTab.value = selectedHomeTab
     }
     Box(
         modifier = Modifier

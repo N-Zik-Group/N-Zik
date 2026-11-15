@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.edit
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -136,7 +137,9 @@ internal enum class ThemePreviewScene(val fileName: String, val searchTab: Int? 
 internal class ThemePreviewSession(
     val scene: ThemePreviewScene,
     val player: Player,
-)
+) {
+    val homeTab = mutableStateOf<String?>(null)
+}
 
 internal val LocalThemePreview = staticCompositionLocalOf<ThemePreviewSession?> { null }
 
