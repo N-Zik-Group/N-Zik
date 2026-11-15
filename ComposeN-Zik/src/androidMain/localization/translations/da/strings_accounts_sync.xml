@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">Tilslut GitHub</string>
+    <string name="github_account_logout">Afbryd GitHub</string>
+    <string name="github_account_description">Brug din GitHub konto i Tema Butik.</string>
+    <string name="github_account_offline">Gå online for at forbinde GitHub.</string>
+    <string name="github_account_code">Indtast %1$s på GitHub for at afslutte logningen.</string>
+    <string name="github_account_code_copied">GitHub kode kopieret til udklipsholder.</string>
+    <string name="github_account_login_failed">Kunne ikke forbinde til GitHub. Prøv igen.</string>
+    <string name="github_account_connected">GitHub tilsluttet.</string>
     <!-- Account -->
     <string name="account_action_login">Log ind</string>
     <string name="account_action_logout">Log af</string>
