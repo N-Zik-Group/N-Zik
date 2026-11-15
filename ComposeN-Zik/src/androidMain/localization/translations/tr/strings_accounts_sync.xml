@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">Connect GitHub</string>
+    <string name="github_account_logout">Disconnect GitHub</string>
+    <string name="github_account_description">Use your GitHub account in the Theme Store.</string>
+    <string name="github_account_offline">Go online to connect GitHub.</string>
+    <string name="github_account_code">Enter %1$s on GitHub to finish signing in.</string>
+    <string name="github_account_code_copied">GitHub code copied to clipboard.</string>
+    <string name="github_account_login_failed">Could not connect to GitHub. Try again.</string>
+    <string name="github_account_connected">GitHub connected.</string>
     <!-- Account -->
     <string name="account_action_login">Giriş yap</string>
     <string name="account_action_logout">Oturumu kapat</string>
