@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">الصفحة الافتراضية</string>
     <string name="settings_interface_corner_radius_label">موجة واجهة المستخدم</string>
     <string name="settings_interface_hide_status_bar_label">إخفاء شريط الحالة</string>
+    <string name="settings_interface_right_to_left_label">تخطيط من اليمين إلى اليسار</string>
+    <string name="settings_interface_right_to_left_description">عكس الواجهة بشكل مستقل عن لغة التطبيق.</string>
     <string name="settings_interface_page_description">قسم واجهة المستخدم يحتوي على إعدادات لتعديل الواجهة العالمية والملاحة</string>
     <string name="settings_interface_page_title">واجهة المستخدم</string>
     <string name="settings_interface_title">واجهة المستخدم</string>
