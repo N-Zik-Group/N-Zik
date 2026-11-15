@@ -1,9 +1,5 @@
 Ett flerspråkigt YouTube Music-skal för Android, fokuserat på prestanda, UI/UX-förbättringar, funktionsexpansion och långsiktigt stöd.
 
-<b>N-Zik</b> är en öppen källkodsgaffel för <a href="https://github.com/knighthat/Kreate">Kreate</a>.
-
-<b>Obs:</b> N-Zik startade som ett sidoprojekt. För mer mogna alternativ, se <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, eller <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
-
 <b>AI-användning:</b> Jag använder generativ AI för kod (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD metod</a>), granskas och testas innan frakt.
 
 ✨ <b>VARFÖR N-ZIK?</b> Inga annonser, bakgrundsuppspelning, offline caching, anpassningsbart gränssnitt - gratis, alltid.
@@ -13,6 +9,10 @@ Ett flerspråkigt YouTube Music-skal för Android, fokuserat på prestanda, UI/U
 - Teman: AMOLED, Deep Dark, Crisp Light + tonade accenter
 - 3D Carousel Player, hemwidgets, enhetlig spelare och minispelare
 - Konstnärsprofiler, Upptäckt och stämningar, kollapsbara hem rubriker
+
+🎨 <b>Temabutik</b>
+- Bläddra bland och ladda ner gemenskapsteman, förhandsgranska dem i Normal och Glas, och välj vilka inställningar för utseende som ska tillämpas.
+- Skapa lokala teman eller dela din design med gemenskapen. Importera och exportera teman som ZIP-filer.
 
 :bubblor: <b>Glaseffekt (BETA, valfritt)</b>
 Inaktiverad vid nya installationer. Aktivera i Inställningar: inföding, endast kontur eller glas per kategori, med justerbar kvalitet. Kan öka rendering arbete och batterianvändning; minska kvaliteten eller inaktivera om det behövs.
