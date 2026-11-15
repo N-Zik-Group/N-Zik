@@ -6,10 +6,17 @@ import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.os.Build
 import android.util.Base64
 import android.view.PixelCopy
 import android.view.Window
+import android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+import android.window.OnBackInvokedCallback
+import android.window.OnBackInvokedDispatcher
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.OnBackPressedDispatcherOwner
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -43,6 +50,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -71,6 +79,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import app.n_zik.android.LocalIsShowingLyrics
@@ -138,9 +147,15 @@ import java.util.Locale
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
@@ -199,6 +214,7 @@ open class ThemePreviewActivity : ComponentActivity() {
             if (ready) {
                 CaptureGallery(document, player, automation || submissionCapture, window, filesDir,
                     progressNotification = progressNotification,
+                    onCancel = if (submissionCapture) ({ finish() }) else null,
                     onCaptured = if (submissionCapture) { files ->
                         setResult(RESULT_OK, Intent().putStringArrayListExtra(CapturedFiles, ArrayList(files.map(File::getAbsolutePath))))
                         finish()
@@ -253,6 +269,7 @@ private data class CaptureFrame(val scene: ThemePreviewScene, val glass: Boolean
 private fun CaptureGallery(
     document: String?, player: ExoPlayer, automation: Boolean, window: Window, filesDir: File,
     progressNotification: ThemePreviewProgressNotification? = null,
+    onCancel: (() -> Unit)? = null,
     onCaptured: ((List<File>) -> Unit)? = null,
 ) {
     val host = LocalContext.current
@@ -275,6 +292,35 @@ private fun CaptureGallery(
     var frameIndex by remember { mutableStateOf(if (automation) 0 else -1) }
     var failed by remember { mutableStateOf<CaptureFrame?>(null) }
     val frame = frames.getOrNull(frameIndex)
+    val captureJob = remember { java.util.concurrent.atomic.AtomicReference<Job?>() }
+    val cancelCapture by rememberUpdatedState {
+        captureJob.getAndSet(null)?.cancel()
+        player.pause()
+        progressNotification?.cancel()
+        frameIndex = -1
+        onCancel?.invoke()
+        Unit
+    }
+    if (frame != null) {
+        DisposableEffect(window, inspectOnly) {
+            val alreadyKeptAwake = window.attributes.flags and FLAG_KEEP_SCREEN_ON != 0
+            val keepAwake = !inspectOnly && !alreadyKeptAwake
+            if (keepAwake) window.addFlags(FLAG_KEEP_SCREEN_ON)
+            val backCallback = if (Build.VERSION.SDK_INT >= 33) {
+                OnBackInvokedCallback { cancelCapture() }.also {
+                    window.onBackInvokedDispatcher.registerOnBackInvokedCallback(
+                        OnBackInvokedDispatcher.PRIORITY_OVERLAY, it,
+                    )
+                }
+            } else null
+            onDispose {
+                if (Build.VERSION.SDK_INT >= 33 && backCallback != null) {
+                    window.onBackInvokedDispatcher.unregisterOnBackInvokedCallback(backCallback)
+                }
+                if (keepAwake) window.clearFlags(FLAG_KEEP_SCREEN_ON)
+            }
+        }
+    }
     val visibleTheme = if (frame?.glass == true) glass else normal
     val dark = visibleTheme.appearance.colorPalette.isDark
     val hideStatusBar = frame != null && visibleTheme.preferences[hideStatusBarKey] == true
@@ -291,18 +337,26 @@ private fun CaptureGallery(
         }
     }
     val completionKey = document?.let { Base64.encodeToString(it.toByteArray(), Base64.NO_WRAP) }.orEmpty()
-    val working = remember { File(filesDir, "theme-preview-working") }
     val output = remember {
         File(filesDir, if (onCaptured == null) "theme-preview-output" else "theme-submission-previews/${java.util.UUID.randomUUID()}")
     }
 
-    BackHandler(frame != null) {
-        player.pause()
-        progressNotification?.cancel()
-        frameIndex = -1
+    val working = remember(output) {
+        if (onCaptured == null) File(filesDir, "theme-preview-working")
+        else File(filesDir, "theme-preview-working-${output.name}")
     }
+
+    BackHandler(frame != null && Build.VERSION.SDK_INT < 33, onBack = cancelCapture)
     if (frame != null) {
         val theme = visibleTheme
+        val lifecycleOwner = LocalLifecycleOwner.current
+        val previewBackOwner = remember(lifecycleOwner) {
+            // Demo destinations can install back handlers without handling activity navigation.
+            object : OnBackPressedDispatcherOwner {
+                override val lifecycle = lifecycleOwner.lifecycle
+                override val onBackPressedDispatcher = OnBackPressedDispatcher()
+            }
+        }
         key(frame) {
             val previewContext = remember {
                 ThemePreviewContext.create(
@@ -315,7 +369,10 @@ private fun CaptureGallery(
                 )
             }
             val session = remember(frame, player) { ThemePreviewSession(frame.scene, player) }
-            CompositionLocalProvider(LocalContext provides previewContext) {
+            CompositionLocalProvider(
+                LocalContext provides previewContext,
+                LocalOnBackPressedDispatcherOwner provides previewBackOwner,
+            ) {
                 InterfaceLayoutDirection { PreviewPage(session, theme) }
             }
             Box(Modifier.fillMaxSize().pointerInput(Unit) {
@@ -334,9 +391,12 @@ private fun CaptureGallery(
                 }
                 if (inspectOnly) return@LaunchedEffect
                 progressNotification?.show(frameIndex, frames.size)
+                val job = currentCoroutineContext().job
+                captureJob.set(job)
+                val captureIndex = frameIndex
                 try {
-                    if (frameIndex == 0) withContext(NzikDispatchers.DATA) {
-                        resetCaptureFolder(working)
+                    if (captureIndex == 0) withContext(NzikDispatchers.DATA) {
+                        previewCaptureFiles.withLock { resetCaptureFolder(working) }
                         staging.clear()
                     }
                     withTimeoutOrNull(5_000) {
@@ -356,20 +416,24 @@ private fun CaptureGallery(
                     try {
                         val destination = File(working, "${frame.name}.webp")
                         withContext(NzikDispatchers.DATA) {
-                            destination.outputStream().use { stream ->
-                                @Suppress("DEPRECATION")
-                                check(bitmap.compress(Bitmap.CompressFormat.WEBP, 92, stream))
-                            }
-                            staging[frame] = destination
-                            if (frameIndex == frames.lastIndex) {
-                                File(working, "complete").writeText(completionKey)
+                            previewCaptureFiles.withLock {
+                                destination.outputStream().use { stream ->
+                                    @Suppress("DEPRECATION")
+                                    check(bitmap.compress(Bitmap.CompressFormat.WEBP, 92, stream))
+                                }
+                                staging[frame] = destination
+                                if (captureIndex == frames.lastIndex) {
+                                    File(working, "complete").writeText(completionKey)
+                                }
                             }
                         }
                     } finally {
                         bitmap.recycle()
                     }
-                    if (frameIndex == frames.lastIndex) {
-                        gallery = withContext(NzikDispatchers.DATA) { publishCapture(working, output, staging) }
+                    if (captureIndex == frames.lastIndex) {
+                        gallery = withContext(NzikDispatchers.DATA) {
+                            previewCaptureFiles.withLock { publishCapture(working, output, staging) }
+                        }
                         player.pause()
                         progressNotification?.cancel()
                         onCaptured?.invoke(gallery.values.toList())
@@ -378,17 +442,22 @@ private fun CaptureGallery(
                         frameIndex++
                     }
                 } catch (cancelled: CancellationException) {
+                    if (onCaptured != null) withContext(NonCancellable + NzikDispatchers.DATA) {
+                        working.deleteRecursively()
+                        output.deleteRecursively()
+                    }
                     throw cancelled
                 } catch (error: Exception) {
                     Timber.tag("ThemePreview").e(error, "Capture failed for %s", frame.name)
                     progressNotification?.cancel()
                     failed = frame
                     frameIndex = -1
+                } finally {
+                    captureJob.compareAndSet(job, null)
                 }
             }
         }
     } else {
-        LaunchedEffect(Unit) { withContext(NzikDispatchers.DATA) { resetCaptureFolder(working) } }
         CompositionLocalProvider(LocalAppearance provides normal.appearance) {
             GalleryActions(
                 gallery,
@@ -579,6 +648,8 @@ private suspend fun Window.captureFrame(): Bitmap = suspendCancellableCoroutine 
         }
     }, view.handler)
 }
+
+private val previewCaptureFiles = Mutex()
 
 private fun resetCaptureFolder(folder: File) {
     folder.listFiles()?.filter { it.isFile }?.forEach { check(it.delete()) }

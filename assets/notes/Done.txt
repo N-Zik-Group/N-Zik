@@ -1,4 +1,7 @@
 Fixed:
+- fix(theme-store): keep preview capture awake and support back cancellation
+  - Keep the capture screen awake until generation finishes or is canceled.
+  - Give the capture flow priority over back actions from the previewed screen, then return to the submission when canceled.
 - fix(theme-store): isolate demo data and align theme previews with the app
   - Use demo albums, artists, playlists and covers in generated previews.
   - Reserve the correct space for the navigation bars and mini-player. Keep the queue mini-player aligned in Normal and Glass.
