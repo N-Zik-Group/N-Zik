@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">连接 GitHub</string>
+    <string name="github_account_logout">断开连接 GitHub</string>
+    <string name="github_account_description">在主题商店使用您的 GitHub 帐户。</string>
+    <string name="github_account_offline">上线以连接 GitHub</string>
+    <string name="github_account_code">在 GitHub 上输入 %1$s 以完成登录。</string>
+    <string name="github_account_code_copied">GitHub 代码已复制到剪贴板。</string>
+    <string name="github_account_login_failed">无法连接到 GitHub ，请重试。</string>
+    <string name="github_account_connected">GitHub 已连接。</string>
     <!-- Account -->
     <string name="account_action_login">登录</string>
     <string name="account_action_logout">注销</string>
