@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,6 +20,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.NzikCheckbox
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DefaultDialog
@@ -129,15 +128,10 @@ private fun ProviderCheckbox(
             )
             .padding(vertical = 8.dp)
     ) {
-        Checkbox(
+        NzikCheckbox(
             checked = checked,
             onCheckedChange = null,
             enabled = enabled,
-            colors = CheckboxDefaults.colors(
-                checkedColor = palette.accent,
-                uncheckedColor = palette.textSecondary,
-                disabledCheckedColor = palette.textSecondary
-            ),
             modifier = Modifier.padding(end = 12.dp)
         )
         Column {

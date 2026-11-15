@@ -53,7 +53,8 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity, pageEntryTa
         .filter { it.startsWith("embedded.auto_backup.") }
         .map { it.substringAfterLast('.') }
 
-    var autoBackupEnabled by rememberBackupPreference(context, target, BackupManager.PREF_ENABLED, false)
+    val legacyEnabled = remember(context, target) { BackupManager.isEnabled(profileDataPrefs(context, target.id)) }
+    var autoBackupEnabled by rememberBackupPreference(context, target, BackupManager.PREF_ENABLED, legacyEnabled)
     var autoBackupInterval by rememberBackupPreference(context, target, BackupManager.PREF_INTERVAL, BackupManager.INTERVAL_NONE)
     var autoBackupOnDbChange by rememberBackupPreference(context, target, BackupManager.PREF_DB_CHANGE, false)
     var autoBackupUri by rememberBackupPreference(context, target, BackupManager.PREF_URI, "")

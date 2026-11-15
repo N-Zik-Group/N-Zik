@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -17,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.profileDisplayName
@@ -36,6 +37,7 @@ import app.n_zik.android.components.import.ImportDatabase
 import app.n_zik.android.components.import.ImportProfileState
 import app.n_zik.android.components.import.ImportSettings
 import app.n_zik.android.components.import.buildProfileTargetOptions
+import app.n_zik.android.components.settings.appearance.preview.ThemeCollectionImport
 import app.n_zik.android.components.settings.appearance.preview.rememberThemeCollectionBackup
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -58,7 +60,9 @@ object ImportBackupDialog : ContentFramedDialog {
         // the user's selections.
         var selectedOptions by rememberSaveable { mutableIntStateOf(BackupContent.Database.flag) }
         var regularOptions by rememberSaveable { mutableIntStateOf(0) }
-        var pendingThemeRestore by remember { mutableStateOf<((() -> Unit) -> Unit)?>(null) }
+        var pendingThemeRestore by rememberSaveable(stateSaver = ThemeCollectionImport.Saver) {
+            mutableStateOf<ThemeCollectionImport?>(null)
+        }
 
         // A picked file tagged with a profile other than its import target: confirm
         // before importing it. Saveable DATA (tag + target id), not a lambda: the
@@ -77,6 +81,8 @@ object ImportBackupDialog : ContentFramedDialog {
 
         // Deferred per-profile chain: the picked files wait for the target-profile
         // choice before anything is written (ImportChainRunner).
+        var choosingTarget by rememberSaveable { mutableStateOf(false) }
+        var targetSelection by rememberSaveable { mutableStateOf<String?>(null) }
         var pendingDb by rememberSaveable { mutableStateOf<Uri?>(null) }
         var pendingSettings by rememberSaveable { mutableStateOf<Uri?>(null) }
         var pendingState by rememberSaveable { mutableStateOf<Uri?>(null) }
@@ -92,32 +98,25 @@ object ImportBackupDialog : ContentFramedDialog {
             pendingSettings = null
             pendingState = null
             pendingThemeRestore = null
+            choosingTarget = false
+            targetSelection = null
         }
 
         fun startImportChain(target: String) {
-            val restoreThemes = pendingThemeRestore
-            if (BackupContent.Themes.isSelected(selectedOptions) && restoreThemes == null) {
-                abortChain()
-                return
-            }
+            val themes = pendingThemeRestore
             val db = pendingDb
             val settings = pendingSettings
             val state = pendingState
-            pendingDb = null
-            pendingSettings = null
-            pendingState = null
-            pendingThemeRestore = null
-            val runImport = {
-                ImportChainRunner.start(
-                    context = context,
-                    target = target,
-                    databaseUri = db,
-                    settingsUri = settings,
-                    stateUri = state,
-                    onCompleted = { hideDialog() }
-                )
-            }
-            if (restoreThemes == null) runImport() else restoreThemes(runImport)
+            abortChain()
+            ImportChainRunner.start(
+                context = context,
+                target = target,
+                databaseUri = db,
+                settingsUri = settings,
+                stateUri = state,
+                onCompleted = { hideDialog() },
+                themes = themes,
+            )
         }
 
         fun showTargetDialog(preselect: String?, imported: List<Pair<String, String>>) {
@@ -127,8 +126,11 @@ object ImportBackupDialog : ContentFramedDialog {
                     imported,
                     context.getString(R.string.profile_base_name)
                 ),
-                preselectedId = preselect,
+                preselectedId = targetSelection ?: preselect,
+                onSelectionChanged = { targetSelection = it },
                 onTarget = { target ->
+                    choosingTarget = false
+                    targetSelection = null
                     // The all chain's state file must carry a tag matching the chosen
                     // target — otherwise confirm first (the state is global, so mixing
 
@@ -144,41 +146,24 @@ object ImportBackupDialog : ContentFramedDialog {
             )
         }
 
-        // Every per-profile import (database / settings / both / all) asks where it
-        // lands before anything is written — the restart only applies when the chosen
-
-        // target is the active profile. In all mode the state file's profile list is
-        // read first so the dialog offers every profile the bundle carries.
-        fun openTargetDialog() {
+        // Rebuild the target dialog from the saved picks after recreation.
+        DisposableEffect(Unit) {
+            onDispose { ImportTargetProfileDialog.clear() }
+        }
+        LaunchedEffect(choosingTarget) {
+            if (!choosingTarget) return@LaunchedEffect
             val stateUri = pendingState
-            if (stateUri == null) {
-                // Single / both: the database (else settings) file tag is the only
-                // imported profile — show the question right away.
-                val preselect = (pendingDb ?: pendingSettings)?.let { profileTagOf(it) }
-                showTargetDialog(preselect, preselect?.let { listOf(it to it) } ?: emptyList())
-            } else {
-                // All: read the state file to offer the profiles it carries (plus the
-                // database tag when the list omits it).
-                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                    val preselect = (pendingDb ?: pendingSettings)?.let { profileTagOf(it) }
-                    val imported = RescueFiles.readProfileStateEntries(context, stateUri)
-                    val withTag = if (preselect != null && imported.none { it.first == preselect }) {
-                        listOf(preselect to preselect) + imported
-                    } else {
-                        imported
-                    }
-                    withContext(NzikDispatchers.UI) {
-                        // The host may have been dismissed while the state file was
-                        // being read: its Render() is no longer composed, so the target
-
-                        // dialog must not be flipped on behind its back (a stale
-                        // isActive would surface on the next composition).
-                        if (isActive) {
-                            showTargetDialog(preselect, withTag)
-                        }
-                    }
-                }
+            val taggedUri = pendingDb ?: pendingSettings
+            val (preselect, imported) = withContext(NzikDispatchers.DATA) {
+                taggedUri?.let(::profileTagOf) to
+                    stateUri?.let { RescueFiles.readProfileStateEntries(context, it) }.orEmpty()
             }
+            val withTag = if (preselect != null && imported.none { it.first == preselect }) {
+                listOf(preselect to preselect) + imported
+            } else {
+                imported
+            }
+            showTargetDialog(preselect, withTag)
         }
 
         // Profiles only — the global profile state (list + faces): no target-profile
@@ -198,7 +183,7 @@ object ImportBackupDialog : ContentFramedDialog {
             context,
             onFilePicked = { uri ->
                 pendingState = uri
-                openTargetDialog()
+                choosingTarget = true
             },
             onCancelled = {
                 // The state pick was skipped: nothing was written, the chain restarts.
@@ -211,7 +196,7 @@ object ImportBackupDialog : ContentFramedDialog {
             if (BackupContent.Profiles.isSelected(regularOptions)) {
                 importProfileStateDeferred.onShortClick()
             } else {
-                openTargetDialog()
+                choosingTarget = true
             }
         })
 
@@ -220,7 +205,7 @@ object ImportBackupDialog : ContentFramedDialog {
             when {
                 BackupContent.Settings.isSelected(regularOptions) -> importSettings.onShortClick()
                 BackupContent.Profiles.isSelected(regularOptions) -> importProfileStateDeferred.onShortClick()
-                else -> openTargetDialog()
+                else -> choosingTarget = true
             }
         })
 

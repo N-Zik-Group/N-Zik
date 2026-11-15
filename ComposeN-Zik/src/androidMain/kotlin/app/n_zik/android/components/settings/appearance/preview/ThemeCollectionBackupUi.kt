@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.appearance.preview
 
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -13,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -23,6 +26,7 @@ import app.n_zik.android.R
 import app.n_zik.android.components.dialog.export.BackupDetailOption
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.getActiveProfile
@@ -31,6 +35,24 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+
+internal data class ThemeCollectionImport(val source: Uri, val ids: Set<String>) {
+    companion object {
+        val Saver = listSaver<ThemeCollectionImport?, String>(
+            save = { selection -> selection?.let { listOf(it.source.toString()) + it.ids } ?: emptyList() },
+            restore = { values -> values.firstOrNull()?.let { ThemeCollectionImport(Uri.parse(it), values.drop(1).toSet()) } },
+        )
+    }
+}
+
+internal fun restoreSelectedThemeCollection(
+    context: Context,
+    target: String,
+    selection: ThemeCollectionImport,
+): ThemeCollectionResult =
+    checkNotNull(context.contentResolver.openInputStream(selection.source)).use {
+        restoreThemeCollection(context, it, ThemeStoreLibrary(profileDataPrefs(context, target)), selection.ids)
+    }
 
 internal class ThemeCollectionBackupState(
     val canSubmit: Boolean,
@@ -49,7 +71,7 @@ internal fun rememberThemeCollectionBackup(
     export: Boolean,
     selected: Boolean,
     onComplete: () -> Unit,
-    onImportPrepared: (((() -> Unit) -> Unit) -> Unit)? = null,
+    onImportPrepared: ((ThemeCollectionImport) -> Unit)? = null,
 ): ThemeCollectionBackupState {
     val context = LocalContext.current
     val profile = getActiveProfile(context)
@@ -98,6 +120,11 @@ internal fun rememberThemeCollectionBackup(
 
     val filePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) {
+            try {
+                context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            } catch (error: SecurityException) {
+                Timber.tag("ThemeStore").d(error, "Theme archive provider did not grant persistent read access")
+            }
             selection = null
             entries = null
             source = uri
@@ -116,7 +143,7 @@ internal fun rememberThemeCollectionBackup(
                 try {
                     withContext(NzikDispatchers.DATA) {
                         check(getActiveProfile(context) == profile)
-                        checkNotNull(context.contentResolver.openOutputStream(uri, "wt")).use {
+                        writeStagedThemeArchive(context, uri) {
                             writeThemeCollectionArchive(context, it, themes, catalog, allowNetwork = !offline)
                         }
                     }
@@ -134,18 +161,16 @@ internal fun rememberThemeCollectionBackup(
         }
     }
 
-    fun restore(uri: Uri, ids: Set<String>, onRestored: () -> Unit) {
+    fun restore(selection: ThemeCollectionImport) {
         busy = true
         scope.launch {
             try {
                 val result = withContext(NzikDispatchers.DATA) {
                     check(getActiveProfile(context) == profile)
-                    checkNotNull(context.contentResolver.openInputStream(uri)).use {
-                        restoreThemeCollection(context, it, library, ids)
-                    }
+                    restoreSelectedThemeCollection(context, profile, selection)
                 }
                 Toaster.s(context.getString(R.string.theme_backup_import_success, result.imported, result.skipped))
-                onRestored()
+                complete()
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
@@ -174,9 +199,9 @@ internal fun rememberThemeCollectionBackup(
                 export && checked.isNotEmpty() -> outputPicker.launch("n-zik-themes.zip")
                 !export && source == null -> filePicker.launch(arrayOf("application/zip", "application/octet-stream"))
                 !export && entries != null && checked.isNotEmpty() -> {
-                    val uri = checkNotNull(source)
-                    if (onImportPrepared == null) restore(uri, checked, complete)
-                    else onImportPrepared { onRestored -> restore(uri, checked, onRestored) }
+                    val selection = ThemeCollectionImport(checkNotNull(source), checked)
+                    if (onImportPrepared == null) restore(selection)
+                    else onImportPrepared(selection)
                 }
             }
         },

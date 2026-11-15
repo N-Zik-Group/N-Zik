@@ -9,6 +9,12 @@ import android.os.Looper
 import android.os.Process
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.MainApplication
+
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockkObject
+import io.mockk.Runs
+import io.mockk.unmockkObject
 import app.n_zik.android.components.ui.screens.rescue.RescueActivity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -107,7 +113,15 @@ class RescueKillWiringTest {
             .getDeclaredMethod("attachBaseContext", Context::class.java)
             .apply { isAccessible = true }
             .invoke(app, context)
-        app.onCreate()
+        // The stale flag must allow normal startup, but the real recovery posts AndroidKeyStore
+        // initialization to the Robolectric looper and can leak into the next test.
+        mockkObject(app.libraryStartup)
+        try {
+            every { app.libraryStartup.start() } just Runs
+            app.onCreate()
+        } finally {
+            unmockkObject(app.libraryStartup)
+        }
 
         assertFalse(
             "a stale leftover flag must not self-kill the first launch after an upgrade",

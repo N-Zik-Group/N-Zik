@@ -17,6 +17,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -47,11 +48,11 @@ import app.n_zik.android.components.import.ImportDatabase
 import app.n_zik.android.components.import.ImportProfileState
 import app.n_zik.android.components.import.ImportSettings
 import app.n_zik.android.components.import.buildProfileTargetOptions
+import app.n_zik.android.components.settings.appearance.preview.ThemeCollectionImport
 import app.n_zik.android.components.settings.appearance.preview.rememberThemeCollectionBackup
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.typography
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.profileDisplayName
@@ -87,7 +88,11 @@ fun OnboardingImportScreen(
         mutableIntStateOf(BackupContent.Database.flag or BackupContent.Settings.flag)
     }
     var regularOptions by rememberSaveable { mutableIntStateOf(0) }
-    var pendingThemeRestore by remember { mutableStateOf<((() -> Unit) -> Unit)?>(null) }
+    var pendingThemeRestore by rememberSaveable(stateSaver = ThemeCollectionImport.Saver) {
+        mutableStateOf<ThemeCollectionImport?>(null)
+    }
+    var choosingTarget by rememberSaveable { mutableStateOf(false) }
+    var targetSelection by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingDb by rememberSaveable { mutableStateOf<Uri?>(null) }
     var pendingSettings by rememberSaveable { mutableStateOf<Uri?>(null) }
     var pendingState by rememberSaveable { mutableStateOf<Uri?>(null) }
@@ -108,13 +113,6 @@ fun OnboardingImportScreen(
     // file — no saveable state needed. Triple: (tag, target profile ID, proceed).
     var stateCrossProfilePending by remember { mutableStateOf<Triple<String, String, () -> Unit>?>(null) }
 
-    // Flips off when the screen leaves the composition: a target dialog must never be
-    // flipped on by a read that finishes after the user left the step (its Render()
-//
-    // would not be composed, and the stale state would surface on the next entry).
-    var screenActive by remember { mutableStateOf(true) }
-    DisposableEffect(Unit) { onDispose { screenActive = false } }
-
     // The profile tag carried by a picked file name (null when untagged / unreadable).
     fun profileTagOf(uri: Uri): String? =
         RescueFiles.documentDisplayName(context, uri)
@@ -126,32 +124,25 @@ fun OnboardingImportScreen(
         pendingSettings = null
         pendingState = null
         pendingThemeRestore = null
+        choosingTarget = false
+        targetSelection = null
     }
 
     fun startImportChain(target: String) {
-        val restoreThemes = pendingThemeRestore
-        if (BackupContent.Themes.isSelected(selectedOptions) && restoreThemes == null) {
-            abortChain()
-            return
-        }
+        val themes = pendingThemeRestore
         val db = pendingDb
         val settings = pendingSettings
         val state = pendingState
-        pendingDb = null
-        pendingSettings = null
-        pendingState = null
-        pendingThemeRestore = null
-        val runImport = {
-            ImportChainRunner.start(
-                context = context,
-                target = target,
-                databaseUri = db,
-                settingsUri = settings,
-                stateUri = state,
-                onCompleted = { onComplete() }
-            )
-        }
-        if (restoreThemes == null) runImport() else restoreThemes(runImport)
+        abortChain()
+        ImportChainRunner.start(
+            context = context,
+            target = target,
+            databaseUri = db,
+            settingsUri = settings,
+            stateUri = state,
+            onCompleted = { onComplete() },
+            themes = themes,
+        )
     }
 
     fun showTargetDialog(preselect: String?, imported: List<Pair<String, String>>) {
@@ -161,8 +152,11 @@ fun OnboardingImportScreen(
                 imported,
                 context.getString(R.string.profile_base_name)
             ),
-            preselectedId = preselect,
+            preselectedId = targetSelection ?: preselect,
+            onSelectionChanged = { targetSelection = it },
             onTarget = { target ->
+                choosingTarget = false
+                targetSelection = null
                 // The all chain's state file must carry a tag matching the chosen
                 // target — otherwise confirm first (the state is global, so mixing
 //
@@ -178,36 +172,24 @@ fun OnboardingImportScreen(
         )
     }
 
-    // Every per-profile restore (database / settings / both / all) asks where it
-    // lands before anything is written — the restart only applies when the chosen
-//
-    // target is the active profile. In all mode the state file's profile list is
-    // read first so the dialog offers every profile the bundle carries.
-    fun openTargetDialog() {
+    // Rebuild the target dialog from the saved picks after recreation.
+    DisposableEffect(Unit) {
+        onDispose { ImportTargetProfileDialog.clear() }
+    }
+    LaunchedEffect(choosingTarget) {
+        if (!choosingTarget) return@LaunchedEffect
         val stateUri = pendingState
-        if (stateUri == null) {
-            // Single / both: the database (else settings) file tag is the only
-            // imported profile — show the question right away.
-            val preselect = (pendingDb ?: pendingSettings)?.let { profileTagOf(it) }
-            showTargetDialog(preselect, preselect?.let { listOf(it to it) } ?: emptyList())
-        } else {
-            // All: read the state file to offer the profiles it carries (plus the
-            // database tag when the list omits it).
-            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                val preselect = (pendingDb ?: pendingSettings)?.let { profileTagOf(it) }
-                val imported = RescueFiles.readProfileStateEntries(context, stateUri)
-                val withTag = if (preselect != null && imported.none { it.first == preselect }) {
-                    listOf(preselect to preselect) + imported
-                } else {
-                    imported
-                }
-                withContext(NzikDispatchers.UI) {
-                    if (screenActive) {
-                        showTargetDialog(preselect, withTag)
-                    }
-                }
-            }
+        val taggedUri = pendingDb ?: pendingSettings
+        val (preselect, imported) = withContext(NzikDispatchers.DATA) {
+            taggedUri?.let(::profileTagOf) to
+                stateUri?.let { RescueFiles.readProfileStateEntries(context, it) }.orEmpty()
         }
+        val withTag = if (preselect != null && imported.none { it.first == preselect }) {
+            listOf(preselect to preselect) + imported
+        } else {
+            imported
+        }
+        showTargetDialog(preselect, withTag)
     }
 
     // Accounts only — the global profile state (list + faces): no target-profile
@@ -230,7 +212,7 @@ fun OnboardingImportScreen(
         context,
         onFilePicked = { uri ->
             pendingState = uri
-            openTargetDialog()
+            choosingTarget = true
         },
         onCancelled = {
             // The state pick was skipped: nothing was written, the chain restarts.
@@ -243,7 +225,7 @@ fun OnboardingImportScreen(
         if (BackupContent.Profiles.isSelected(regularOptions)) {
             importProfileStateDeferred.onShortClick()
         } else {
-            openTargetDialog()
+            choosingTarget = true
         }
     })
 
@@ -252,7 +234,7 @@ fun OnboardingImportScreen(
         when {
             BackupContent.Settings.isSelected(regularOptions) -> importSettings.onShortClick()
             BackupContent.Profiles.isSelected(regularOptions) -> importProfileStateDeferred.onShortClick()
-            else -> openTargetDialog()
+            else -> choosingTarget = true
         }
     })
 

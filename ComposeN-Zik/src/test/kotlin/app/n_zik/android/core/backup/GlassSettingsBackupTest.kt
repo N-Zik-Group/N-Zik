@@ -40,6 +40,42 @@ class GlassSettingsBackupTest {
         RescueFiles.setRescueProfile("default")
     }
 
+    @Test fun `legacy theme download rows stay outside settings export and restore`() {
+        val key = "themeStore.download.theme:1"
+        val mode = "themeStore.updateMode.theme"
+        plain.edit().putString(key, "local download").putString(mode, "Notify").commit()
+
+        val exportedKeys = SettingsPreferencesBridge.export(context, plain).map { it.second }
+        assertFalse(key in exportedKeys)
+        assertTrue(mode in exportedKeys)
+
+        val editor = plain.edit()
+        RescueFiles.applySettingRows(
+            listOf(Triple("String", key, "legacy download"), Triple("String", mode, "Off")),
+            editor,
+            encryptedEditor = null,
+        )
+        assertTrue(editor.commit())
+        assertEquals("local download", plain.getString(key, null))
+        assertEquals("Off", plain.getString(mode, null))
+    }
+
+    @Test fun `master backup switch keeps legacy schedules and explicit pauses`() {
+        assertFalse(BackupManager.isEnabled(plain))
+        plain.edit().putInt(BackupManager.PREF_INTERVAL, BackupManager.INTERVAL_DAILY).commit()
+        assertFalse(BackupManager.isEnabled(plain))
+
+        plain.edit().putString(BackupManager.PREF_URI, "content://backups").commit()
+        assertTrue(BackupManager.isEnabled(plain))
+        plain.edit().putBoolean(BackupManager.PREF_ENABLED, false).commit()
+        assertFalse(BackupManager.isEnabled(plain))
+        plain.edit().remove(BackupManager.PREF_ENABLED)
+            .putInt(BackupManager.PREF_INTERVAL, BackupManager.INTERVAL_NONE)
+            .putBoolean(BackupManager.PREF_PRE_INSTALL, true)
+            .commit()
+        assertTrue(BackupManager.isEnabled(plain))
+    }
+
     @Test fun `imported storage location is staged without switching the effective root`() {
         val file = File(context.cacheDir, "location.csv")
         file.writeText("Type,Key,Value\nString,$exoPlayerCacheLocationKey,Private\n")

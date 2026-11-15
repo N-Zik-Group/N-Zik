@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Process
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import app.n_zik.android.ui.components.InterfaceLayoutDirection
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -100,21 +101,23 @@ class RescueActivity : AppCompatActivity() {
 
         val startup = (application as? MainApplication)?.libraryStartup
         setContent {
-            if (startup != null) {
-                val state by startup.state.collectAsStateWithLifecycle()
-                if (state != LibraryStartupState.Ready) {
-                    LibraryStartupScreen(state, startup::start)
-                    return@setContent
+            InterfaceLayoutDirection {
+                if (startup != null) {
+                    val state by startup.state.collectAsStateWithLifecycle()
+                    if (state != LibraryStartupState.Ready) {
+                        LibraryStartupScreen(state, startup::start)
+                        return@InterfaceLayoutDirection
+                    }
                 }
-            }
-            val systemDark = isSystemInDarkTheme()
-            // Resolved once per system theme, never on recomposition: it reads preferences and may
-            // set up MonetCompat.
-            val (appearance, colorScheme) = remember(systemDark) { resolveRescueTheme(systemDark) }
+                val systemDark = isSystemInDarkTheme()
+                // Resolved once per system theme, never on recomposition: it reads preferences and may
+                // set up MonetCompat.
+                val (appearance, colorScheme) = remember(systemDark) { resolveRescueTheme(systemDark) }
 
-            MaterialTheme(colorScheme = colorScheme) {
-                CompositionLocalProvider(LocalAppearance provides appearance) {
-                    RescueScreen()
+                MaterialTheme(colorScheme = colorScheme) {
+                    CompositionLocalProvider(LocalAppearance provides appearance) {
+                        RescueScreen()
+                    }
                 }
             }
         }

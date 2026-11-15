@@ -9,6 +9,7 @@ import app.n_zik.android.enums.ExoPlayerDiskDownloadCacheMaxSize
 import app.n_zik.android.utils.exoPlayerCacheLocationKey
 import app.n_zik.android.utils.exoPlayerDiskDownloadCacheMaxSizeKey
 import app.n_zik.android.components.glass.GlassProfilePreferences
+import app.n_zik.android.components.settings.appearance.preview.ThemeStoreLibrary
 import app.n_zik.android.core.migration.RemovedSettingsMigration
 import app.n_zik.android.core.maintenance.MaintenanceStateStore
 import app.n_zik.android.core.coil.PROFILE_IMAGE_CACHE_CUSTOM_MB
@@ -27,7 +28,7 @@ internal object SettingsPreferencesBridge {
     fun export(context: Context, plain: SharedPreferences, profileId: String = getActiveProfile(context)): MutableList<Triple<String, String, Any>> {
         val entries = plain.all.mapNotNull { (key, value) ->
             if (RemovedSettingsMigration.isRemovedKey(key) || ProfileCacheLocationMigration.isRequestKey(key) ||
-                MaintenanceStateStore.isStorageCleanupKey(key)
+                MaintenanceStateStore.isStorageCleanupKey(key) || ThemeStoreLibrary.isDownloadPreference(key)
             ) return@mapNotNull null
             value?.let { Triple(it::class.simpleName ?: "null", key, it) }
         }.toMutableList()
@@ -106,6 +107,7 @@ internal object SettingsPreferencesBridge {
     fun normalizeStorageRows(rows: List<Triple<String, String, String>>): List<Triple<String, String, String>> {
         val accepted = rows.filterNot { (_, key) ->
             ProfileCacheLocationMigration.isRequestKey(key) || MaintenanceStateStore.isStorageCleanupKey(key) ||
+                ThemeStoreLibrary.isDownloadPreference(key) ||
                 key.startsWith("downloads_paused_") ||
                 key.startsWith("share_downloads_") || key.startsWith("share_media_cache_") ||
                 key.startsWith("share_images_") || key.startsWith("share_waveforms_")

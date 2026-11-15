@@ -3,6 +3,9 @@ package app.n_zik.android.components.settings.appearance.preview
 import android.app.Application
 import android.content.Context
 import android.graphics.Bitmap
+import android.net.Uri
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.core.profiles.profileDataPrefs
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -17,6 +20,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.util.zip.ZipInputStream
 
 @RunWith(RobolectricTestRunner::class)
@@ -64,6 +68,36 @@ class ThemeCollectionArchiveTest {
         assertEquals(1, bindRestoredStoreThemes(library, listOf(onlineTheme)))
         assertEquals(online, library.download(online.id))
         assertNull(library.download(onlineCopyId))
+    }
+
+    @Test
+    fun collectionRoundTripsMoreThanSixtyFourThemes() = runBlocking {
+        val themes = (1..65).map { number ->
+            theme("12345678-1111-2222-3333-" + number.toString().padStart(12, '0'))
+        }
+        val bytes = export(*themes.toTypedArray())
+
+        val entries = readThemeCollectionIndex(context, bytes.inputStream())
+        assertEquals(themes.map { it.id }.toSet(), entries.map { it.id }.toSet())
+        val restored = restoreThemeCollection(context, bytes.inputStream(), library, setOf(themes.last().id))
+        assertEquals(ThemeCollectionResult(imported = 1, skipped = 0), restored)
+    }
+
+    @Test
+    fun selectedCollectionRestoresIntoChosenProfileOnly() = runBlocking {
+        val target = "theme-restore-test-profile"
+        val active = getActiveProfile(context)
+        val saved = theme("12345678-1111-2222-3333-123456789015")
+        val archive = kotlin.io.path.createTempFile(context.cacheDir.toPath(), suffix = ".zip").toFile()
+        try {
+            archive.writeBytes(export(saved))
+            val restored = restoreSelectedThemeCollection(context, target, ThemeCollectionImport(Uri.fromFile(archive), setOf(saved.id)))
+            assertEquals(ThemeCollectionResult(1, 0), restored)
+            assertEquals(saved.id, ThemeStoreLibrary(profileDataPrefs(context, target)).download(saved.id)?.id)
+            assertNull(ThemeStoreLibrary(profileDataPrefs(context, active)).download(saved.id))
+        } finally {
+            archive.delete()
+        }
     }
 
     @Test
@@ -145,6 +179,41 @@ class ThemeCollectionArchiveTest {
         }
         assertTrue(library.downloads().isEmpty())
         assertTrue(other.downloads().isEmpty())
+    }
+
+    @Test
+    fun rescueAcceptsOrdinaryBackupIntoTheExplicitProfile() = runBlocking {
+        val first = theme("12345678-1111-2222-3333-123456789012")
+        val second = theme("12345678-1111-2222-3333-123456789013")
+        val backup = export(first, second)
+        val target = rescueLibrary("work")
+
+        val index = readRescueThemeArchive(context, backup.inputStream(), ordinaryTarget = "work")
+        assertEquals(setOf(first.id, second.id), index.getValue("work").map { it.id }.toSet())
+        assertThrows(IllegalArgumentException::class.java) {
+            readRescueThemeArchive(context, backup.inputStream())
+        }
+        assertEquals(
+            ThemeCollectionResult(imported = 1, skipped = 0),
+            restoreRescueThemeArchive(context, backup.inputStream(), mapOf("work" to target), mapOf("work" to setOf(second.id))),
+        )
+        assertEquals(second, target.download(second.id))
+        assertNull(target.download(first.id))
+        assertTrue(library.downloads().isEmpty())
+    }
+
+    @Test
+    fun failedArchiveGenerationDoesNotReplaceAnExistingDestination() {
+        val destination = File(context.cacheDir, "existing.zip").apply { writeText("previous backup") }
+        assertThrows(IllegalStateException::class.java) {
+            runBlocking {
+                writeStagedThemeArchive(context, Uri.fromFile(destination)) { output ->
+                    output.write("partial archive".encodeToByteArray())
+                    error("missing preview")
+                }
+            }
+        }
+        assertEquals("previous backup", destination.readText())
     }
 
     private fun rescueLibrary(name: String): ThemeStoreLibrary =

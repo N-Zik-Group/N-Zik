@@ -105,6 +105,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.ui.text.style.TextAlign
 import app.n_zik.android.core.backup.BackupManager
+import app.n_zik.android.utils.preferences
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import app.n_zik.android.utils.lastUpdateCheckKey
@@ -152,7 +153,7 @@ private fun UpdateScreenContent(navController: NavController) {
     var showInstallWarningDialog by remember { mutableStateOf(false) }
     var apkPathToInstall by remember { mutableStateOf<String?>(null) }
     var isPreInstallBackupRunning by remember { mutableStateOf(false) }
-    val autoBackupEnabled by rememberPreference(BackupManager.PREF_ENABLED, false)
+    val autoBackupEnabled = BackupManager.isEnabled(context.preferences)
     val preInstallBackupEnabled by rememberPreference(BackupManager.PREF_PRE_INSTALL, false)
     val preInstallBackupUri by rememberPreference(BackupManager.PREF_URI, "")
     val preInstallCoroutineScope = rememberCoroutineScope()

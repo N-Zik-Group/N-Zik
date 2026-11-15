@@ -16,9 +16,12 @@ import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.components.settings.appearance.preview.ThemeCollectionImport
+import app.n_zik.android.components.settings.appearance.preview.restoreSelectedThemeCollection
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
@@ -104,17 +107,27 @@ fun buildProfileTargetOptions(
  * confirmation toast is shown instead.
  */
 object ImportChainRunner {
+    private val importLock = Mutex()
 
-    fun start(
+    internal fun start(
         context: Context,
         target: String,
         databaseUri: Uri?,
         settingsUri: Uri?,
         stateUri: Uri?,
         onCompleted: () -> Unit,
+        themes: ThemeCollectionImport? = null,
     ) {
         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-            runChain(context, target, databaseUri, settingsUri, stateUri, onCompleted)
+            if (!importLock.tryLock()) {
+                withContext(NzikDispatchers.UI) { Toaster.i(R.string.backup_import_already_running) }
+                return@launch
+            }
+            try {
+                runChain(context, target, databaseUri, settingsUri, stateUri, onCompleted, themes)
+            } finally {
+                importLock.unlock()
+            }
         }
     }
 
@@ -126,10 +139,40 @@ object ImportChainRunner {
         settingsUri: Uri?,
         stateUri: Uri?,
         onCompleted: () -> Unit,
+        themes: ThemeCollectionImport? = null,
     ) {
         val importDb = databaseUri != null
         val importSettingsPart = settingsUri != null
         val isActive = target == getActiveProfile(context)
+
+        fun registerTargetIfMissing() {
+            if (target != DEFAULT_PROFILE_ID && target !in context.readProfileIds()) {
+                context.writeProfileEntries(
+                    context.currentProfileEntries() + (target to context.profileDisplayName(target).orEmpty())
+                )
+            }
+        }
+
+        if (themes != null) {
+            var restored = false
+            runGuardedImport(
+                onFailure = { error ->
+                    Timber.tag("ImportChain").e(error, "Theme import failed (target: %s)", target)
+                    withContext(NzikDispatchers.UI) { Toaster.e(R.string.theme_backup_restore_error) }
+                },
+                isDatabaseClosed = { false },
+                showRestartPrompt = {},
+            ) {
+                val result = restoreSelectedThemeCollection(context, target, themes)
+                restored = true
+                withContext(NzikDispatchers.UI) {
+                    Toaster.s(context.getString(R.string.theme_backup_import_success, result.imported, result.skipped))
+                }
+            }
+            if (!restored) return
+            // A file-only target needs to exist before settings and storage imports can resolve it.
+            registerTargetIfMissing()
+        }
 
         // The flag is set synchronously by the guarded block's onFailure handler (same
         // coroutine, same dispatcher), so it is final when the block returns.
@@ -154,20 +197,7 @@ object ImportChainRunner {
         // retry, so onCompleted must never be reached past a failed db/settings step.
         if (dbSettingsFailed) return
 
-        // A target that only exists in the picked file(s) is not in the local profile
-        // list yet: register it, so the data just written into it is not orphaned (the
-//
-        // all-mode state import carries the full list anyway — this only matters for
-        // the database/settings-only chains).
-        if ((importDb || importSettingsPart) &&
-            target != DEFAULT_PROFILE_ID &&
-            context.readProfileIds().none { it == target }
-        ) {
-            context.writeProfileEntries(
-                context.currentProfileEntries() +
-                    (target to context.profileDisplayName(target).orEmpty())
-            )
-        }
+        if (importDb || importSettingsPart) registerTargetIfMissing()
 
         // The profile state reports through a Result (it never throws): a failure
         // keeps the host open for a retry, and the restart prompt still applies

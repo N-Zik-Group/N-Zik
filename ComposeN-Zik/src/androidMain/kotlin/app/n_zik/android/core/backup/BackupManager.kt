@@ -7,6 +7,7 @@ import app.n_zik.android.components.settings.appearance.preview.themeStoreCatalo
 import app.n_zik.android.components.settings.appearance.preview.writeThemeCollectionArchive
 import app.n_zik.android.core.network.fullOfflineModeKey
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
 import android.provider.DocumentsContract
 import androidx.work.ExistingWorkPolicy
@@ -71,6 +72,14 @@ object BackupManager {
 
     private const val WORK_NAME = "AutoBackupWorker"
 
+    internal fun isEnabled(preferences: SharedPreferences): Boolean {
+        if (preferences.contains(PREF_ENABLED)) return preferences.getBoolean(PREF_ENABLED, false)
+        // Legacy backups were implicitly enabled by a destination and an active trigger.
+        return !preferences.getString(PREF_URI, null).isNullOrBlank() &&
+            (preferences.getInt(PREF_INTERVAL, INTERVAL_NONE) != INTERVAL_NONE ||
+                preferences.getBoolean(PREF_PRE_INSTALL, false))
+    }
+
     fun scheduleBackup(context: Context, interval: Int) {
         val owner = ProfileWorkOwner.capture(context) ?: return
         scheduleBackup(context, interval, owner)
@@ -83,7 +92,7 @@ object BackupManager {
         val workName = ProfileWorkOwner.name(WORK_NAME, owner)
         workManager.cancelUniqueWork(WORK_NAME)
         val prefs = profileDataPrefs(context, owner.id)
-        if (interval == INTERVAL_NONE || !prefs.getBoolean(PREF_ENABLED, false) || prefs.getString(PREF_URI, "").isNullOrBlank()) {
+        if (interval == INTERVAL_NONE || !isEnabled(prefs) || prefs.getString(PREF_URI, "").isNullOrBlank()) {
             workManager.cancelUniqueWork(workName)
             return
         }
@@ -161,7 +170,7 @@ object BackupManager {
         val interval = prefs.getInt(PREF_INTERVAL, INTERVAL_NONE)
         if (interval == INTERVAL_NONE) return
 
-        val enabled = prefs.getBoolean(PREF_ENABLED, false) && prefs.getBoolean(PREF_DB_CHANGE, false)
+        val enabled = isEnabled(prefs) && prefs.getBoolean(PREF_DB_CHANGE, false)
 
         if (!enabled) return
 
@@ -182,7 +191,7 @@ object BackupManager {
         val owner = ProfileWorkOwner.capture(context) ?: return false
         if (!ProfileWorkOwner.isBound(context, owner)) return false
         val prefs = profileDataPrefs(context, owner.id)
-        val enabled = prefs.getBoolean(PREF_ENABLED, false) && prefs.getBoolean(PREF_PRE_INSTALL, false)
+        val enabled = isEnabled(prefs) && prefs.getBoolean(PREF_PRE_INSTALL, false)
         if (!enabled) return true
 
         val uriString = prefs.getString(PREF_URI, "") ?: ""

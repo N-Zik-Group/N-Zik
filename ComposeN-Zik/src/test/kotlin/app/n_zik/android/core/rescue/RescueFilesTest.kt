@@ -236,7 +236,10 @@ class RescueFilesTest {
         val proxyOnly = RescueFiles.buildCredentialExport(allKeys, false, false, false, true).map { it.second }.toSet()
         assertEquals(RescueFiles.PROXY_KEYS.toSet(), proxyOnly)
 
-        val all = RescueFiles.buildCredentialExport(allKeys, true, true, true, true).map { it.second }.toSet()
+        val githubOnly = RescueFiles.buildCredentialExport(allKeys, false, false, false, includeGitHub = true)
+        assertEquals(listOf("githubBackupIdentity"), githubOnly.map { it.second })
+
+        val all = RescueFiles.buildCredentialExport(allKeys, true, true, true, true, includeGitHub = true).map { it.second }.toSet()
         assertEquals(RescueFiles.ALL_ENCRYPTED_KEYS.toSet(), all)
     }
 
@@ -366,7 +369,7 @@ class RescueFilesTest {
     @Test
     fun `ALL_ENCRYPTED_KEYS is the union of the credential groups and the app-owned encrypted settings`() {
         val expected = (
-            RescueFiles.YTB_KEYS + RescueFiles.DISCORD_KEYS + RescueFiles.LASTFM_KEYS + RescueFiles.PROXY_KEYS
+            RescueFiles.YTB_KEYS + RescueFiles.DISCORD_KEYS + RescueFiles.LASTFM_KEYS + RescueFiles.PROXY_KEYS + "githubBackupIdentity"
             ).toSet()
         assertEquals(expected, RescueFiles.ALL_ENCRYPTED_KEYS.toSet())
     }
@@ -610,8 +613,8 @@ class RescueFilesTest {
         val samples: Map<String, Any> = RescueFiles.ALL_ENCRYPTED_KEYS.associateWith { "sample-value" }
 
         // The export assembly every export path (settings dialog, rescue, auto-backup) builds:
-        // the credential groups plus the app-owned proxy key.
-        val exported = RescueFiles.buildCredentialExport(samples, true, true, true, true)
+        // the credential groups plus the app-owned proxy key and the optional GitHub identity.
+        val exported = RescueFiles.buildCredentialExport(samples, true, true, true, true, includeGitHub = true)
 
         assertEquals(RescueFiles.ALL_ENCRYPTED_KEYS.size, exported.size, "every encrypted key must be exported")
         assertEquals(RescueFiles.ALL_ENCRYPTED_KEYS.toSet(), exported.map { it.second }.toSet())

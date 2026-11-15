@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings.appearance.preview
 
 import android.content.Context
+import android.net.Uri
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -11,9 +12,10 @@ import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
 private const val CollectionIndexPath = "collection.json"
-private const val CollectionThemeLimit = 64
+private const val CollectionThemeLimit = 512
+private const val CollectionIndexLimit = 256 * 1024
 private const val CollectionBytesLimit = 512L * 1024 * 1024
-private const val CollectionZipLimit = CollectionBytesLimit + 2 * 1024 * 1024
+internal const val CollectionZipLimit = CollectionBytesLimit + 8 * 1024 * 1024
 private const val CollectionEntryLimit = 1 + CollectionThemeLimit * (36 + 3)
 private val collectionIdPattern = Regex("[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}:[1-9][0-9]{0,9}")
 private val collectionHashPattern = Regex("[0-9a-f]{64}")
@@ -63,6 +65,8 @@ internal suspend fun writeThemeCollectionArchive(
         CollectionExport(saved, ThemeCollectionRecord(id, bytes.sha256(), origin), bytes)
     }.distinctBy { it.record.id }
     val index = ThemeCollectionIndex(1, exports.map { it.record })
+    val indexBytes = Json.encodeToString(index).encodeToByteArray()
+    require(indexBytes.size <= CollectionIndexLimit)
     var written = 0L
     ZipOutputStream(output).use { zip ->
         fun put(path: String, bytes: ByteArray) {
@@ -72,7 +76,7 @@ internal suspend fun writeThemeCollectionArchive(
             zip.write(bytes)
             zip.closeEntry()
         }
-        put(CollectionIndexPath, Json.encodeToString(index).encodeToByteArray())
+        put(CollectionIndexPath, indexBytes)
         for ((saved, record, metadata) in exports) {
             val theme = checkNotNull(saved.theme)
             val appearance = saved.document.encodeToByteArray()
@@ -99,9 +103,10 @@ internal suspend fun writeThemeCollectionArchive(
 }
 
 internal fun readThemeCollectionIndex(context: Context, source: InputStream): List<ThemeCollectionEntry> =
-    withThemeCollection(context, source) { zip ->
-        readCollectionThemes(zip).map { entry -> ThemeCollectionEntry(entry.id, entry.theme.title) }
-    }
+    withThemeCollection(context, source, block = ::readThemeCollectionIndex)
+
+internal fun readThemeCollectionIndex(zip: ZipFile): List<ThemeCollectionEntry> =
+    readCollectionThemes(zip).map { entry -> ThemeCollectionEntry(entry.id, entry.theme.title) }
 
 internal fun restoreThemeCollection(
     context: Context,
@@ -120,6 +125,15 @@ internal fun prepareThemeCollectionRestore(
     library: ThemeStoreLibrary,
     selectedIds: Set<String>,
 ): List<SavedTheme> = withThemeCollection(context, source) { zip ->
+    prepareThemeCollectionRestore(context, zip, library, selectedIds)
+}
+
+internal fun prepareThemeCollectionRestore(
+    context: Context,
+    zip: ZipFile,
+    library: ThemeStoreLibrary,
+    selectedIds: Set<String>,
+): List<SavedTheme> {
     val available = readCollectionThemes(zip)
     require(available.map(CollectionTheme::id).containsAll(selectedIds)) { "Selected themes are missing from the collection" }
     val pending = available.filter { it.id in selectedIds && library.download(it.id) == null }
@@ -134,7 +148,7 @@ internal fun prepareThemeCollectionRestore(
     pending.forEach { (_, directory, theme) ->
         cacheThemeArchivePreviews(context, theme) { zip.read(directory + it, SubmissionPreviewLimit) }
     }
-    validated
+    return validated
 }
 
 /** Only catalog-verified revisions can replace restored local copies with Store downloads. */
@@ -149,6 +163,7 @@ private data class CollectionTheme(
 )
 
 private fun readCollectionThemes(zip: ZipFile): List<CollectionTheme> {
+    require(File(zip.name).length() <= CollectionZipLimit) { "Theme collection exceeded its byte limit" }
     require(zip.size() in 1..CollectionEntryLimit)
     val seen = mutableSetOf<String>()
     var size = 0L
@@ -166,7 +181,7 @@ private fun readCollectionThemes(zip: ZipFile): List<CollectionTheme> {
         return listOf(CollectionTheme("${local.themeId}:${local.revision}", "", local))
     }
     val index = Json.decodeFromString<ThemeCollectionIndex>(
-        zip.read(CollectionIndexPath, ThemeDocumentLimit).decodeToString(throwOnInvalidSequence = true)
+        zip.read(CollectionIndexPath, CollectionIndexLimit).decodeToString(throwOnInvalidSequence = true)
     )
     require(index.schemaVersion == 1 && index.themes.size in 1..CollectionThemeLimit)
     require(index.themes.distinctBy { it.id }.size == index.themes.size)
@@ -201,6 +216,22 @@ private fun ZipFile.read(path: String, limit: Int): ByteArray {
     require(entry.size in 1..limit.toLong())
     return getInputStream(entry).use { it.readThemeBytes(limit) }.also {
         require(it.size.toLong() == entry.size)
+    }
+}
+
+internal suspend fun writeStagedThemeArchive(
+    context: Context,
+    destination: Uri,
+    write: suspend (OutputStream) -> Unit,
+) {
+    val staged = File.createTempFile("theme-export-", ".zip", context.cacheDir)
+    try {
+        staged.outputStream().use { write(it) }
+        checkNotNull(context.contentResolver.openOutputStream(destination, "wt")).use { output ->
+            staged.inputStream().use { source -> source.copyTo(output) }
+        }
+    } finally {
+        staged.delete()
     }
 }
 

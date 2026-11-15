@@ -54,17 +54,20 @@ object ImportTargetProfileDialog : InteractiveDialog {
     private var options: List<ProfileTargetOption> by mutableStateOf(emptyList())
     private var selectedId: String? by mutableStateOf(null)
     private var onTarget: ((String) -> Unit)? by mutableStateOf(null)
+    private var onSelectionChanged: ((String) -> Unit)? = null
     private var onDismiss: (() -> Unit)? by mutableStateOf(null)
 
     /** Shows the dialog. [onDismiss] fires when it is cancelled (outside tap). */
     fun show(
         options: List<ProfileTargetOption>,
         preselectedId: String?,
+        onSelectionChanged: (String) -> Unit,
         onTarget: (String) -> Unit,
         onDismiss: () -> Unit,
     ) {
         this.options = options
         selectedId = preselectedId
+        this.onSelectionChanged = onSelectionChanged
         this.onTarget = onTarget
         this.onDismiss = onDismiss
         isActive = true
@@ -73,8 +76,23 @@ object ImportTargetProfileDialog : InteractiveDialog {
     // The framework calls hideDialog() on the outside tap — report the cancel so the
     // host can abort the pending chain.
     override fun hideDialog() {
+        val action = onDismiss
+        clear()
+        action?.invoke()
+    }
+
+    fun clear() {
         isActive = false
-        onDismiss?.invoke()
+        options = emptyList()
+        selectedId = null
+        onTarget = null
+        onDismiss = null
+        onSelectionChanged = null
+    }
+
+    private fun select(id: String) {
+        selectedId = id
+        onSelectionChanged?.invoke(id)
     }
 
     @Composable
@@ -86,13 +104,13 @@ object ImportTargetProfileDialog : InteractiveDialog {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(uiRoundnessShape())
-                        .clickable { selectedId = option.id }
+                        .clickable { select(option.id) }
                         .padding(vertical = 8.dp, horizontal = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
                         selected = selectedId == option.id,
-                        onClick = { selectedId = option.id },
+                        onClick = { select(option.id) },
                         colors = RadioButtonDefaults.colors(
                             selectedColor = colorPalette().text,
                             unselectedColor = colorPalette().textSecondary
@@ -137,7 +155,7 @@ object ImportTargetProfileDialog : InteractiveDialog {
                     val id = selectedId
                     if (id != null) {
                         val action = onTarget
-                        isActive = false
+                        clear()
                         action?.invoke(id)
                     }
                 },

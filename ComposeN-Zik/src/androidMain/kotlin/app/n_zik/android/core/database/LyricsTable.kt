@@ -35,7 +35,7 @@ interface LyricsTable {
     @Upsert
     fun upsert( lyrics: Lyrics ): Long
 
-    @Query("DELETE FROM Lyrics WHERE isEdited = 0 AND lastFetchedAt <= :through")
+    @Query("DELETE FROM Lyrics WHERE isEdited = 0 AND (lastFetchedAt IS NULL OR lastFetchedAt <= :through)")
     fun deleteFetchedLyrics(through: Long): Int
 
     /**

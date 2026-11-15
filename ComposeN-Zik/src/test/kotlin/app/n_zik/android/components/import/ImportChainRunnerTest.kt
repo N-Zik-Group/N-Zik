@@ -14,6 +14,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
@@ -34,6 +35,9 @@ import app.n_zik.android.MainApplication
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.components.settings.appearance.preview.ThemeCollectionImport
+import app.n_zik.android.components.settings.appearance.preview.ThemeCollectionResult
+import app.n_zik.android.components.settings.appearance.preview.restoreSelectedThemeCollection
 import app.n_zik.android.core.rescue.RescueFiles
 
 // runBlocking preserves the real NzikDispatchers worker hops used by the import chain.
@@ -90,6 +94,26 @@ class ImportChainRunnerTest {
     }
 
     private fun mockUri(): Uri = mockk()
+
+    @Test
+    fun combinedImportSendsTheSelectedThemesAndSettingsToTheSameInactiveProfile() = runBlocking {
+        val settings = mockUri()
+        val selection = ThemeCollectionImport(mockUri(), setOf("selected:1"))
+        mockkStatic(::restoreSelectedThemeCollection)
+        every { restoreSelectedThemeCollection(context, "work", selection) } returns ThemeCollectionResult(1, 0)
+        every { Toaster.s(any<String>()) } just Runs
+        every { context.getString(R.string.theme_backup_import_success, 1, 0) } returns "Themes restored"
+        every { context.getString(R.string.profile_base_name) } returns "Default"
+        every { context.getString(R.string.backup_import_completed_profile, any<String>()) } returns "Import complete"
+        coEvery { ImportSettings.importFile(context, settings, "work") } just Runs
+
+        ImportChainRunner.runChain(context, "work", null, settings, null, onCompleted, themes = selection)
+
+        verify(exactly = 1) { restoreSelectedThemeCollection(context, "work", selection) }
+        coVerify(exactly = 1) { ImportSettings.importFile(context, settings, "work") }
+        verify(exactly = 1) { onCompleted() }
+        assertFalse(RestartAppDialog.isActive)
+    }
 
     @Test
     fun aDatabaseFailureStopsTheChainBeforeAnythingElseIsWritten() = runBlocking {

@@ -1,6 +1,13 @@
 package app.n_zik.android.database
 
 import android.content.Context
+import android.database.sqlite.SQLiteDatabase
+import app.n_zik.android.components.settings.data.CleanupResult
+import app.n_zik.android.components.settings.data.captureFetchedLyrics
+import app.n_zik.android.components.settings.data.clearFetchedLyrics
+import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.profiles.profileStorageIdentity
+import app.n_zik.android.utils.writeProfileEntries
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.models.Song
@@ -132,6 +139,57 @@ class LyricsTableTest {
         val reset = lyricsDao.findBySongIdAndType(mediaId, LyricsType.Karaoke.name).first()
         assertNull(reset?.lastFetchedAt)
         assertNull(reset?.data)
+    }
+
+    @Test
+    fun `cleanup includes legacy lyrics and preserves edits and newer fetches`() = runBlocking {
+        val types = LyricsType.entries
+        for ((index, type) in types.withIndex()) {
+            val mediaId = "legacy_lyrics_$index"
+            insertSong(mediaId)
+            lyricsDao.upsert(Lyrics(songId = mediaId, type = type.name, data = "legacy"))
+        }
+        insertSong("protected")
+        lyricsDao.upsert(Lyrics(songId = "protected", type = LyricsType.Synced.name, data = "edited", isEdited = true))
+        lyricsDao.upsert(Lyrics(songId = "protected", type = LyricsType.Karaoke.name, data = "newer", lastFetchedAt = 101))
+        lyricsDao.upsert(Lyrics(songId = "protected", type = LyricsType.Unsynced.name, data = "old", lastFetchedAt = 100))
+
+        lyricsDao.deleteFetchedLyrics(100L)
+
+        for (index in types.indices) {
+            assertEquals(emptyList<Lyrics>(), lyricsDao.findAllBySongId("legacy_lyrics_$index").first())
+        }
+        assertEquals(setOf("edited", "newer"), lyricsDao.findAllBySongId("protected").first().map { it.data }.toSet())
+    }
+
+    @Test
+    fun `inactive profile cleanup detects and deletes legacy rows through SQLite`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val profile = "lyrics-cleanup-work"
+        assertTrue(context.writeProfileEntries(listOf(profile to "Work")))
+        val owner = checkNotNull(profileStorageIdentity(context, profile))
+        val path = context.getDatabasePath(Database.fileNameForProfile(profile))
+        path.parentFile?.mkdirs()
+        try {
+            SQLiteDatabase.openOrCreateDatabase(path, null).use { database ->
+                database.execSQL("CREATE TABLE Lyrics (data TEXT, isEdited INTEGER, lastFetchedAt INTEGER)")
+                database.execSQL("INSERT INTO Lyrics VALUES ('legacy', 0, NULL), ('edited', 1, NULL)")
+            }
+            val cleanup = checkNotNull(captureFetchedLyrics(context, owner))
+            SQLiteDatabase.openDatabase(path.path, null, SQLiteDatabase.OPEN_READWRITE).use { database ->
+                database.execSQL("INSERT INTO Lyrics VALUES ('newer', 0, ?)", arrayOf(cleanup.cutoff + 1))
+            }
+            assertEquals(CleanupResult.COMPLETED, clearFetchedLyrics(context, cleanup))
+            SQLiteDatabase.openDatabase(path.path, null, SQLiteDatabase.OPEN_READONLY).use { database ->
+                database.rawQuery("SELECT data FROM Lyrics ORDER BY data", null).use { rows ->
+                    assertEquals(listOf("edited", "newer"), buildList {
+                        while (rows.moveToNext()) add(rows.getString(0))
+                    })
+                }
+            }
+        } finally {
+            context.deleteDatabase(path.name)
+        }
     }
 
     @Test

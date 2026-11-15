@@ -43,8 +43,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -76,6 +74,7 @@ import app.n_zik.android.utils.readProfileIds
 import app.n_zik.android.utils.resolveProfileDisplayName
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.NzikCheckbox
 import app.n_zik.android.components.dialog.export.rememberDatabaseExport
 import app.n_zik.android.core.backup.DatabaseBackup
 import app.n_zik.android.core.backup.ProfileStateArchive
@@ -102,7 +101,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Scaffold
-import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.components.dialog.common.ButtonRow
@@ -606,23 +604,23 @@ fun RescueScreen() {
         ) {
             val palette = colorPalette()
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = includeYtb, onCheckedChange = { includeYtb = it }, colors = palette.checkboxColors())
+                NzikCheckbox(checked = includeYtb, onCheckedChange = { includeYtb = it })
                 Text(stringResource(R.string.recovery_include_youtube_credentials), color = palette.text)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = includeDiscord, onCheckedChange = { includeDiscord = it }, colors = palette.checkboxColors())
+                NzikCheckbox(checked = includeDiscord, onCheckedChange = { includeDiscord = it })
                 Text(stringResource(R.string.recovery_include_discord_credentials), color = palette.text)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = includeLastfm, onCheckedChange = { includeLastfm = it }, colors = palette.checkboxColors())
+                NzikCheckbox(checked = includeLastfm, onCheckedChange = { includeLastfm = it })
                 Text(stringResource(R.string.recovery_include_lastfm_credentials), color = palette.text)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = includeGitHub, onCheckedChange = { includeGitHub = it }, colors = palette.checkboxColors())
+                NzikCheckbox(checked = includeGitHub, onCheckedChange = { includeGitHub = it })
                 Text(stringResource(R.string.backup_include_github_identity_credentials), color = palette.text)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = includeProxy, onCheckedChange = { includeProxy = it }, colors = palette.checkboxColors())
+                NzikCheckbox(checked = includeProxy, onCheckedChange = { includeProxy = it })
                 Text(stringResource(R.string.backup_include_proxy_password), color = palette.text)
             }
         }
@@ -708,7 +706,7 @@ fun RescueScreen() {
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Checkbox(
+                        NzikCheckbox(
                             checked = deleteSelection.contains(option.id),
                             onCheckedChange = { checked ->
                                 deleteSelection = if (checked)
@@ -716,7 +714,6 @@ fun RescueScreen() {
                                 else
                                     deleteSelection - option.id
                             },
-                            colors = palette.checkboxColors()
                         )
                         Text(
                             text = option.label,
@@ -800,7 +797,7 @@ fun RescueScreen() {
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Checkbox(
+                        NzikCheckbox(
                             checked = resetSelection.contains(option.id),
                             onCheckedChange = { checked ->
                                 resetSelection = if (checked)
@@ -808,7 +805,6 @@ fun RescueScreen() {
                                 else
                                     resetSelection - option.id
                             },
-                            colors = palette.checkboxColors(),
                             modifier = Modifier.testTag("resetProfilesCheckbox_${option.id}")
                         )
                         Text(
@@ -902,7 +898,7 @@ fun RescueScreen() {
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Checkbox(
+                        NzikCheckbox(
                             checked = restoreSelection.contains(option.id),
                             onCheckedChange = { checked ->
                                 restoreSelection = if (checked)
@@ -910,7 +906,6 @@ fun RescueScreen() {
                                 else
                                     restoreSelection - option.id
                             },
-                            colors = palette.checkboxColors()
                         )
                         Text(
                             text = option.label,
@@ -1826,13 +1821,3 @@ fun RescueConfirmationDialog(
         confirmText = confirmText
     )
 }
-
-/** Palette-driven checkbox colors for the rescue selection dialogs. */
-@Composable
-private fun ColorPalette.checkboxColors() = CheckboxDefaults.colors(
-    checkedColor = accent,
-    checkmarkColor = onAccent,
-    uncheckedColor = textSecondary,
-    disabledCheckedColor = textDisabled,
-    disabledUncheckedColor = textDisabled
-)

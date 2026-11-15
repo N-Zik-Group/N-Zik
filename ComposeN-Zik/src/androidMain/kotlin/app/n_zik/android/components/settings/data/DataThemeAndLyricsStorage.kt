@@ -61,7 +61,7 @@ internal fun captureFetchedLyrics(context: Context, owner: ProfileStorageIdentit
         val cutoff = System.currentTimeMillis()
         openLyricsDatabase(file, SQLiteDatabase.OPEN_READONLY).use { database ->
             database.rawQuery(
-                "SELECT 1 FROM Lyrics WHERE isEdited = 0 AND lastFetchedAt <= ? LIMIT 1",
+                "SELECT 1 FROM Lyrics WHERE isEdited = 0 AND (lastFetchedAt IS NULL OR lastFetchedAt <= ?) LIMIT 1",
                 arrayOf(cutoff.toString()),
             ).use { rows ->
                 if (rows.moveToFirst()) FetchedLyricsCleanup(owner, cutoff, stat.st_dev, stat.st_ino) else null
@@ -84,7 +84,7 @@ internal fun clearFetchedLyrics(context: Context, target: FetchedLyricsCleanup):
             Database.lyricsTable.deleteFetchedLyrics(target.cutoff)
         } else {
             openLyricsDatabase(file, SQLiteDatabase.OPEN_READWRITE).use { database ->
-                database.delete("Lyrics", "isEdited = 0 AND lastFetchedAt <= ?", arrayOf(target.cutoff.toString()))
+                database.delete("Lyrics", "isEdited = 0 AND (lastFetchedAt IS NULL OR lastFetchedAt <= ?)", arrayOf(target.cutoff.toString()))
             }
         }
         CleanupResult.COMPLETED

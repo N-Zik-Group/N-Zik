@@ -36,6 +36,7 @@ import app.n_zik.android.components.settings.appearance.preview.readRescueThemeA
 import app.n_zik.android.components.settings.appearance.preview.restoreRescueThemeArchive
 import app.n_zik.android.components.settings.appearance.preview.themeStoreCatalog
 import app.n_zik.android.components.settings.appearance.preview.writeRescueThemeArchive
+import app.n_zik.android.components.settings.appearance.preview.writeStagedThemeArchive
 import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.network.fullOfflineModeKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -177,7 +178,9 @@ private fun RescueThemesDialog(
         selectOptions(emptyMap())
         perform {
             val entries = withContext(NzikDispatchers.DATA) {
-                checkNotNull(context.contentResolver.openInputStream(uri)).use { readRescueThemeArchive(context, it) }
+                checkNotNull(context.contentResolver.openInputStream(uri)).use {
+                    readRescueThemeArchive(context, it, ordinaryTarget = profiles.keys.singleOrNull())
+                }
             }
             source = uri
             selectOptions(entries)
@@ -197,7 +200,7 @@ private fun RescueThemesDialog(
                         val themes = picks.mapValues { (profile, ids) ->
                             ids.map { checkNotNull(libraries.getValue(profile).download(it)) }
                         }
-                        checkNotNull(context.contentResolver.openOutputStream(uri, "wt")).use {
+                        writeStagedThemeArchive(context, uri) {
                             val networkProfiles = picks.keys.filterNot { profile ->
                                 profileDataPrefs(context, profile).getBoolean(fullOfflineModeKey, false)
                             }.toSet()

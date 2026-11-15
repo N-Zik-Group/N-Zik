@@ -17,7 +17,7 @@ class AutoBackupWorker(
         if (!applicationContext.awaitLibraryReadyForWork()) return Result.retry()
         if (!ProfileWorkOwner.exists(applicationContext, owner)) return Result.success()
         val preferences = profileDataPrefs(applicationContext, owner.id)
-        if (!preferences.getBoolean(BackupManager.PREF_ENABLED, false)) return Result.success()
+        if (!BackupManager.isEnabled(preferences)) return Result.success()
         Timber.tag("AutoBackup").d("AutoBackupWorker started")
         val uriString = preferences.getString(BackupManager.PREF_URI, "") ?: ""
             

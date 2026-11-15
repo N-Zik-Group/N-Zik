@@ -13,7 +13,6 @@ import java.util.zip.ZipOutputStream
 
 private const val RescueThemeIndexPath = "rescue-themes.json"
 private const val RescueThemeProfileLimit = 128
-private const val RescueThemeCollectionLimit = 514L * 1024 * 1024
 private const val RescueThemeBytesLimit = 1024L * 1024 * 1024
 private const val RescueThemeZipLimit = RescueThemeBytesLimit + 2 * 1024 * 1024
 
@@ -49,7 +48,7 @@ internal suspend fun writeRescueThemeArchive(
                 collection.outputStream().use {
                     writeThemeCollectionArchive(context, it, themes, catalog, allowNetwork = profile in networkProfiles)
                 }
-                require(collection.length() in 1..RescueThemeCollectionLimit)
+                require(collection.length() in 1..CollectionZipLimit)
                 totalSize += collection.length()
                 require(totalSize <= RescueThemeBytesLimit) { "Theme backup exceeded its byte limit" }
                 zip.putNextEntry(ZipEntry(rescueThemeCollectionPath(position)))
@@ -65,41 +64,48 @@ internal suspend fun writeRescueThemeArchive(
 internal fun readRescueThemeArchive(
     context: Context,
     source: InputStream,
-): Map<String, List<ThemeCollectionEntry>> =
-    withRescueThemeArchive(context, source) { zip, collections ->
-        collections.mapValues { (_, entry) ->
+    ordinaryTarget: String? = null,
+): Map<String, List<ThemeCollectionEntry>> = withThemeCollection(context, source, RescueThemeZipLimit) { zip ->
+    if (zip.getEntry(RescueThemeIndexPath) == null) {
+        val target = requireNotNull(ordinaryTarget) { "Select one profile for an unscoped theme archive" }
+        mapOf(target to readThemeCollectionIndex(zip))
+    } else {
+        readRescueThemeCollections(zip).mapValues { (_, entry) ->
             zip.getInputStream(entry).use { readThemeCollectionIndex(context, it) }
         }
     }
+}
 
 internal fun restoreRescueThemeArchive(
     context: Context,
     source: InputStream,
     libraries: Map<String, ThemeStoreLibrary>,
     selected: Map<String, Set<String>>,
-): ThemeCollectionResult =
-    withRescueThemeArchive(context, source) { zip, collections ->
-        val selection = selected.filterValues { it.isNotEmpty() }
-        require(collections.keys.containsAll(selection.keys) && libraries.keys.containsAll(selection.keys)) {
-            "Theme backup selection contains an unknown profile"
-        }
+): ThemeCollectionResult = withThemeCollection(context, source, RescueThemeZipLimit) { zip ->
+    val selection = selected.filterValues { it.isNotEmpty() }
+    require(libraries.keys.containsAll(selection.keys)) { "Theme backup selection contains an unknown profile" }
+
+    val prepared = if (zip.getEntry(RescueThemeIndexPath) == null) {
+        val target = requireNotNull(libraries.keys.singleOrNull()) { "Select one profile for an unscoped theme archive" }
+        val ids = selection[target].orEmpty()
+        mapOf(target to prepareThemeCollectionRestore(context, zip, libraries.getValue(target), ids))
+    } else {
+        val collections = readRescueThemeCollections(zip)
+        require(collections.keys.containsAll(selection.keys)) { "Theme backup selection contains an unknown profile" }
         // Validate every chosen profile before saving anything to profile preferences.
-        val prepared = selection.mapValues { (profile, ids) ->
+        selection.mapValues { (profile, ids) ->
             zip.getInputStream(collections.getValue(profile)).use {
                 prepareThemeCollectionRestore(context, it, libraries.getValue(profile), ids)
             }
         }
-        val imported = prepared.entries.sumOf { (profile, themes) ->
-            libraries.getValue(profile).restoreImported(themes)
-        }
-        ThemeCollectionResult(imported, selection.values.sumOf { it.size } - imported)
     }
+    val imported = prepared.entries.sumOf { (profile, themes) ->
+        libraries.getValue(profile).restoreImported(themes)
+    }
+    ThemeCollectionResult(imported, selection.values.sumOf { it.size } - imported)
+}
 
-private inline fun <T> withRescueThemeArchive(
-    context: Context,
-    source: InputStream,
-    block: (ZipFile, Map<String, ZipEntry>) -> T,
-): T = withThemeCollection(context, source, RescueThemeZipLimit) { zip ->
+private fun readRescueThemeCollections(zip: ZipFile): Map<String, ZipEntry> {
     require(zip.size() in 2..(RescueThemeProfileLimit + 1))
     val indexEntry = requireNotNull(zip.getEntry(RescueThemeIndexPath))
     require(indexEntry.size in 1..ThemeDocumentLimit.toLong())
@@ -115,15 +121,14 @@ private inline fun <T> withRescueThemeArchive(
     var totalSize = 0L
     for (entry in zip.entries().asSequence()) {
         require(!entry.isDirectory && entry.name in expectedPaths && seen.add(entry.name))
-        require(entry.size in 1..RescueThemeCollectionLimit)
+        require(entry.size in 1..CollectionZipLimit)
         totalSize += entry.size
         require(totalSize <= RescueThemeBytesLimit) { "Theme backup exceeded its byte limit" }
     }
     require(seen == expectedPaths)
-    val collections = index.profiles.mapIndexed { position, id ->
+    return index.profiles.mapIndexed { position, id ->
         id to requireNotNull(zip.getEntry(rescueThemeCollectionPath(position)))
     }.toMap()
-    block(zip, collections)
 }
 
 private fun checkRescueThemeProfiles(profiles: List<String>) {
