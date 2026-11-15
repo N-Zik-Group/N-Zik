@@ -240,7 +240,7 @@ private fun ThemeSubmissionForm(
     val currentVersionCode = BuildConfig.VERSION_CODE
     var minimumVersionInput by rememberSaveable(key) {
         mutableStateOf(draft?.takeIf { it.has("minVersionCode") }?.optString("minVersionCode")
-            ?: (previousMinimum ?: currentVersionCode).toString())
+            ?: (previousMinimum ?: FirstThemeStoreVersionCode).toString())
     }
     val minimumVersionCode = submissionMinimumVersionCode(minimumVersionInput, currentVersionCode, previousMinimum)
     val minimumVersionLabel = when (minimumVersionCode) {
@@ -645,7 +645,7 @@ private fun ThemeSubmissionForm(
                             val minimumLabel = stringResource(R.string.theme_store_submission_minimum_version)
                             SettingsSectionCard(minimumLabel, R.drawable.information, bottomSpacing = 0.dp, content = {
                                 SettingsDescription(stringResource(R.string.theme_store_submission_minimum_description,
-                                    BuildConfig.VERSION_NAME.substringBefore('-'), currentVersionCode))
+                                    BuildConfig.VERSION_NAME.substringBefore('-'), currentVersionCode, FirstThemeStoreVersionCode))
                                 TextField(
                                     value = minimumVersionInput,
                                     onValueChange = { value ->
@@ -663,7 +663,7 @@ private fun ThemeSubmissionForm(
                                 Text(
                                     text = buildAnnotatedString {
                                         withLink(LinkAnnotation.Url(
-                                            url = UpdateEndpoints.REPO_URL + "/blob/main/gradle/libs.versions.toml#L23-L24",
+                                            url = UpdateEndpoints.REPO_URL + "/blob/main/Updater/README.md",
                                             styles = TextLinkStyles(style = SpanStyle(
                                                 color = linkColor, textDecoration = TextDecoration.Underline,
                                             )),
@@ -671,7 +671,7 @@ private fun ThemeSubmissionForm(
                                             append(versionCodeLink)
                                         }
                                     },
-                                    modifier = Modifier.padding(top = 8.dp),
+                                    modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp),
                                 )
                                 if (minimumVersionCode == null) {
                                     SettingsDescription(stringResource(

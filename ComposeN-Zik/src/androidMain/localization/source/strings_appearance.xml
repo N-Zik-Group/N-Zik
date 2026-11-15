@@ -274,9 +274,9 @@
     <string name="theme_store_published_on">Published on %1$s</string>
     <string name="theme_store_compatibility">N-Zik compatibility</string>
     <string name="theme_store_submission_minimum_version">Minimum N-Zik version</string>
-    <string name="theme_store_submission_minimum_description">The oldest version that can apply this theme. You are using N-Zik %1$s (version code %2$d).</string>
+    <string name="theme_store_submission_minimum_description">The oldest version that can apply this theme. New themes default to version code %3$d. You are using N-Zik %1$s (version code %2$d).</string>
     <string name="theme_store_submission_version_code_label">Minimum version code</string>
-    <string name="theme_store_submission_find_version_code">Find N-Zik version codes on GitHub</string>
+    <string name="theme_store_submission_find_version_code">Find N-Zik versions and codes</string>
     <string name="theme_store_submission_version_with_code">%1$s (code %2$d)</string>
     <string name="theme_store_submission_version_code">Version code %1$d</string>
     <string name="theme_store_submission_version_required">Enter version code %1$d.</string>
