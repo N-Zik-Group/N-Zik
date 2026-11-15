@@ -410,7 +410,7 @@
     <string name="theme_store_offline_unavailable">Cette page n\'est pas disponible en mode hors ligne.</string>
     <string name="theme_store_preview_replace_selected">Remplacer %1$s de la galerie</string>
     <string name="theme_store_preview_choose_selected">Choisissez %1$s dans la galerie</string>
-    <string name="theme_store_caption_for">%1$s · Optional caption</string>
+    <string name="theme_store_caption_for">%1$s · Légende facultative</string>
     <string name="theme_store_preview_size_loading">Images %1$d · Calcul de la taille…</string>
     <string name="theme_store_preview_size_unavailable">Images %1$d · Taille indisponible</string>
     <string name="theme_store_preview_size_total">%1$d images · %2$s</string>
