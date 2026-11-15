@@ -443,7 +443,6 @@
     <string name="settings_service_keep_screen_on_label">Ekranı açık tut</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Sistemin oynatmayı kesme olasılığını azaltmak için arka planda sınırsız çalışmasına izin verin.</string>
     <string name="settings_stream_disabled_clients_title">Devre Dışı Bırakılmış Akış İstemcileri</string>
-    <string name="settings_stream_preferred_client_changed_message">Tercih edilen istemci değişti. Bir sonraki parçada uygulanacak.</string>
     <string name="settings_stream_preferred_client_title">Tercih Edilen Akış İstemcisi</string>
     <string name="settings_swipe_actions_description">Dikey şarkı listesinde bir şarkıyı sola veya sağa kaydırarak işlemleri gerçekleştirin</string>
     <string name="settings_swipe_actions_title">İşlem için kaydır</string>

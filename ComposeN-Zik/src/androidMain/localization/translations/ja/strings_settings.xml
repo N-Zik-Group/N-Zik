@@ -443,7 +443,6 @@
     <string name="settings_service_keep_screen_on_label">画面を常時点灯</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">バックグラウンド操作を無制限に許可することで、システムが再生を中断する可能性が低くなります。</string>
     <string name="settings_stream_disabled_clients_title">無効なストリームクライアント</string>
-    <string name="settings_stream_preferred_client_changed_message">優先クライアントが変更されました。次のトラックに適用されます。</string>
     <string name="settings_stream_preferred_client_title">優先ストリームクライアント</string>
     <string name="settings_swipe_actions_description">曲の垂直リスト内の曲を左右にスワイプして操作を実行</string>
     <string name="settings_swipe_actions_title">スワイプしてアクション</string>

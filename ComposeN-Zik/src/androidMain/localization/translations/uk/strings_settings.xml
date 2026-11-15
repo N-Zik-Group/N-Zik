@@ -443,7 +443,6 @@
     <string name="settings_service_keep_screen_on_label">Не вимикати екран</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Дозволити необмежені фонові операції, тому система буде рідше переривати відтворення.</string>
     <string name="settings_stream_disabled_clients_title">Вимкнені потокові клієнти</string>
-    <string name="settings_stream_preferred_client_changed_message">Бажаний клієнт змінився. Буде застосовано при наступному треку.</string>
     <string name="settings_stream_preferred_client_title">Бажаний поштовий клієнт</string>
     <string name="settings_swipe_actions_description">Виконайте дії проводячи пальцем вліво або вправо, пісні у вертикальному списку пісень</string>
     <string name="settings_swipe_actions_title">Свайп для дії</string>

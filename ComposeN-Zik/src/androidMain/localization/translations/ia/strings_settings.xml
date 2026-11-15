@@ -443,7 +443,6 @@
     <string name="settings_service_keep_screen_on_label">Mantener le schermo active</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Allow unrestricted background operation so the system is less likely to interrupt playback.</string>
     <string name="settings_stream_disabled_clients_title">Disabled Stream Clients</string>
-    <string name="settings_stream_preferred_client_changed_message">Preferred client changed. Will apply on next track.</string>
     <string name="settings_stream_preferred_client_title">Preferred Stream Client</string>
     <string name="settings_swipe_actions_description">Perform actions by swiping left or right on a song within vertical list of songs</string>
     <string name="settings_swipe_actions_title">Swipe for action</string>

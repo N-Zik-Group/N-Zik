@@ -443,7 +443,6 @@
     <string name="settings_service_keep_screen_on_label">Behold skjermen på</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Tillat ubegrenset bakgrunns-operasjon så systemet er mindre sannsynlig å avbryte avspillingen.</string>
     <string name="settings_stream_disabled_clients_title">Deaktivert Stream-klienter</string>
-    <string name="settings_stream_preferred_client_changed_message">Foretrukket klient endret. Blir gjeldende på neste spor.</string>
     <string name="settings_stream_preferred_client_title">Foretrukket stream-klient</string>
     <string name="settings_swipe_actions_description">Utfør handlinger ved å sveipe til venstre eller høyre på en sang i en loddrett liste over sanger</string>
     <string name="settings_swipe_actions_title">Sveip for handling</string>

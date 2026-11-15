@@ -443,7 +443,6 @@
     <string name="settings_service_keep_screen_on_label">Mantén la pantalla encesa</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Allow unrestricted background operation so the system is less likely to interrupt playback.</string>
     <string name="settings_stream_disabled_clients_title">Disabled Stream Clients</string>
-    <string name="settings_stream_preferred_client_changed_message">Preferred client changed. Will apply on next track.</string>
     <string name="settings_stream_preferred_client_title">Preferred Stream Client</string>
     <string name="settings_swipe_actions_description">Activa el menú d\'acció fent lliscar la cançó cap a l\'esquerra o cap a la dreta</string>
     <string name="settings_swipe_actions_title">Acció en lliscar</string>

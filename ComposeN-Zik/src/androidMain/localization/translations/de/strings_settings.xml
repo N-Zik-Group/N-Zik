@@ -443,7 +443,6 @@
     <string name="settings_service_keep_screen_on_label">Bildschirm eingeschaltet lassen</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Erlaube uneingeschränkten Hintergrundbetrieb, so dass das System die Wiedergabe weniger unterbrechen kann.</string>
     <string name="settings_stream_disabled_clients_title">Deaktivierte Stream-Clients</string>
-    <string name="settings_stream_preferred_client_changed_message">Bevorzugter Client geändert. Wird für den nächsten Track angewendet.</string>
     <string name="settings_stream_preferred_client_title">Bevorzugter Stream Client</string>
     <string name="settings_swipe_actions_description">Wischen nach links oder rechts eines Songs in einer vertikalen Liste führt Aktionen aus</string>
     <string name="settings_swipe_actions_title">Wischgesten</string>

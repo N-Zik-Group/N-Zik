@@ -181,7 +181,6 @@
     <string name="network_stream_client_ios">iOS</string>
     <string name="network_stream_client_ipados">iPadOS</string>
     <string name="network_stream_client_mobile">Mobile</string>
-    <string name="network_stream_client_redownload_recommendation">Şarkıları yeni kalitede yeniden indirin (özellikle Web Remix/YTB Premium hesabıyla)</string>
     <string name="network_stream_client_tv_embedded">TV Embedded</string>
     <string name="network_stream_client_tv_html5">TV HTML5</string>
     <string name="network_stream_client_tv_simply">TV Simply</string>

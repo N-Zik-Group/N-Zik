@@ -443,7 +443,6 @@
     <string name="settings_service_keep_screen_on_label">保持屏幕常亮</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">允许不受限制的后台操作，这样系统就不会中断播放。</string>
     <string name="settings_stream_disabled_clients_title">已禁用流客户端</string>
-    <string name="settings_stream_preferred_client_changed_message">首选客户端已更改。将在下一个轨道上应用。</string>
     <string name="settings_stream_preferred_client_title">首选流客户端</string>
     <string name="settings_swipe_actions_description">通过向左或向右滑动歌曲来激活操作菜单</string>
     <string name="settings_swipe_actions_title">滑动操作</string>

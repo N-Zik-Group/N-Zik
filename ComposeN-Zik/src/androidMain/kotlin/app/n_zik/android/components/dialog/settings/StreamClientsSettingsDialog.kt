@@ -30,7 +30,6 @@ import app.n_zik.android.utils.streamClientRestartNeededKey
 import app.n_zik.android.utils.streamClientsOrderKey
 import app.n_zik.android.playback.services.clearStreamCaches
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.n_zik.android.core.utils.Toaster
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -200,8 +199,6 @@ object StreamClientsSettingsDialog : ContentFramedDialog {
                     NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                         clearAudioCache(binder?.cache)
                     }
-                    Toaster.i(R.string.settings_stream_preferred_client_changed_message)
-                    Toaster.w(R.string.network_stream_client_redownload_recommendation)
                 }
                 editor.apply()
                 hideDialog()

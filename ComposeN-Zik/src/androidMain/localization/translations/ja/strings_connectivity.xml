@@ -181,7 +181,6 @@
     <string name="network_stream_client_ios">iOS</string>
     <string name="network_stream_client_ipados">iPadOS</string>
     <string name="network_stream_client_mobile">モバイル</string>
-    <string name="network_stream_client_redownload_recommendation">新しい品質の楽曲を再ダウンロードします（特にWeb Remix/YTB Premiumアカウントで）</string>
     <string name="network_stream_client_tv_embedded">テレビの埋め込み</string>
     <string name="network_stream_client_tv_html5">TV HTML5</string>
     <string name="network_stream_client_tv_simply">単純なテレビ</string>

@@ -181,7 +181,6 @@
     <string name="network_stream_client_ios">iOS</string>
     <string name="network_stream_client_ipados">iPadOS</string>
     <string name="network_stream_client_mobile">Komórka</string>
-    <string name="network_stream_client_redownload_recommendation">Pobierz ponownie piosenki dla nowej jakości (szczególnie z kontem Web Remix/YTB Premium)</string>
     <string name="network_stream_client_tv_embedded">Wbudowany TV</string>
     <string name="network_stream_client_tv_html5">TV HTML5</string>
     <string name="network_stream_client_tv_simply">Telewizor po prostu</string>

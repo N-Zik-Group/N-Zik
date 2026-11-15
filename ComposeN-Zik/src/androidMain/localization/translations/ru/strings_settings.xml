@@ -443,7 +443,6 @@
     <string name="settings_service_keep_screen_on_label">Не выключать экран</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Разрешить неограниченные фоновые операции, так что система реже прерывает воспроизведение.</string>
     <string name="settings_stream_disabled_clients_title">Отключенные клиенты потока</string>
-    <string name="settings_stream_preferred_client_changed_message">Предпочтительный клиент изменился. Будет применяться на следующем треке.</string>
     <string name="settings_stream_preferred_client_title">Предпочитаемый клиент потока</string>
     <string name="settings_swipe_actions_description">Выполнять действия, свайпом влево или вправо на песню из вертикального списка песен</string>
     <string name="settings_swipe_actions_title">Свайп для действия</string>

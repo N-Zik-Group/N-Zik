@@ -181,7 +181,6 @@
     <string name="network_stream_client_ios">iOS</string>
     <string name="network_stream_client_ipados">iPadOS</string>
     <string name="network_stream_client_mobile">الجوال</string>
-    <string name="network_stream_client_redownload_recommendation">إعادة تنزيل الأغاني بجودة جديدة (خاصة مع حساب ويب ريمكس/YTB المتميز)</string>
     <string name="network_stream_client_tv_embedded">تم تضمين التلفزيون</string>
     <string name="network_stream_client_tv_html5">تلفزيون HTML5</string>
     <string name="network_stream_client_tv_simply">التلفاز ببساطة</string>

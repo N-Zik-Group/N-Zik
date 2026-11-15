@@ -443,7 +443,6 @@
     <string name="settings_service_keep_screen_on_label">Mantieni lo schermo acceso</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Consenti operazioni in background senza limitazioni in modo che il sistema possa interrompere la riproduzione.</string>
     <string name="settings_stream_disabled_clients_title">Client Stream Disabilitati</string>
-    <string name="settings_stream_preferred_client_changed_message">Cliente preferito modificato. Si applicherà alla traccia successiva.</string>
     <string name="settings_stream_preferred_client_title">Client Stream Preferito</string>
     <string name="settings_swipe_actions_description">Esegue azioni scorrendo a sinistra o a destra su un brano all\'interno di un elenco verticale di canzoni</string>
     <string name="settings_swipe_actions_title">Scorri per l\'azione</string>

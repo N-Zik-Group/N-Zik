@@ -443,7 +443,6 @@
     <string name="settings_service_keep_screen_on_label">Hold skærmen tændt</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Tillad uindskrænket baggrundshandling, så systemet er mindre tilbøjeligt til at afbryde afspilningen.</string>
     <string name="settings_stream_disabled_clients_title">Deaktiverede Streamklienter</string>
-    <string name="settings_stream_preferred_client_changed_message">Foretrukken klient ændret. Vil gælde på næste spor.</string>
     <string name="settings_stream_preferred_client_title">Foretrukken Streamklient</string>
     <string name="settings_swipe_actions_description">Aktivér handlingsmenuen ved at stryge sangen til venstre eller højre</string>
     <string name="settings_swipe_actions_title">Stryg for handling</string>

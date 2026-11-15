@@ -220,8 +220,6 @@ internal fun AccountsYouTubeCard(search: Search) {
                             NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                                 clearAudioCache(binder?.cache)
                             }
-                            Toaster.i(R.string.settings_stream_preferred_client_changed_message)
-                            Toaster.w(R.string.network_stream_client_redownload_recommendation)
                         },
                         icon = R.drawable.ytmusic
                     )
@@ -369,7 +367,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                             shape = uiRoundnessShape(),
                             dragHandle = {
-                                MenuSheetDragHandle()
+                                MenuSheetDragHandle(minTouchHeight = 48.dp)
                             }
                         ) {
                             YouTubeLogin(

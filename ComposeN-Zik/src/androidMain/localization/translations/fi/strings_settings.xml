@@ -443,7 +443,6 @@
     <string name="settings_service_keep_screen_on_label">Pidä näyttö päällä</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Salli rajoittamaton taustatoiminto, joten järjestelmä ei todennäköisesti keskeytä toistoa.</string>
     <string name="settings_stream_disabled_clients_title">Käytöstä Poistetut Stream-Asiakkaat</string>
-    <string name="settings_stream_preferred_client_changed_message">Ensisijainen asiakas muuttui. Koskee seuraavaa kappaletta.</string>
     <string name="settings_stream_preferred_client_title">Ensisijainen Stream-asiakas</string>
     <string name="settings_swipe_actions_description">Suorita toiminnot pyyhkäisemällä kappale vasemmalle tai oikealle pystysuoran kappaleiden listan sisällä</string>
     <string name="settings_swipe_actions_title">Pyyhkäise toimintoa varten</string>

@@ -444,7 +444,6 @@ Volume BAS : titre précédent</string>
     <string name="settings_service_keep_screen_on_label">Garder l\'écran allumé</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Autoriser le fonctionnement en arrière-plan sans restriction afin que le système soit moins susceptible d\'interrompre la lecture.</string>
     <string name="settings_stream_disabled_clients_title">Clients de streaming désactivés</string>
-    <string name="settings_stream_preferred_client_changed_message">Le client privilégié a changé. Ce changement s\'appliquera au titre suivant.</string>
     <string name="settings_stream_preferred_client_title">Client de Streaming Préféré</string>
     <string name="settings_swipe_actions_description">Activer le menu d\'action en faisant glisser le titre vers la gauche ou la droite</string>
     <string name="settings_swipe_actions_title">Action associée au balayage</string>
