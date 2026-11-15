@@ -198,7 +198,7 @@
         <item quantity="other">%1$d işler tamamlanmadı</item>
     </plurals>
     <plurals name="theme_store_settings_count">
-        <item quantity="one">%d setting</item>
-        <item quantity="other">%d settings</item>
+        <item quantity="one">%d ayar</item>
+        <item quantity="other">%d ayarlar</item>
     </plurals>
 </resources>
