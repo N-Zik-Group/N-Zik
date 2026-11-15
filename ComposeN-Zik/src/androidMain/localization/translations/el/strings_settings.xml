@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">Προεπιλεγμένη σελίδα</string>
     <string name="settings_interface_corner_radius_label">Στρογγυλό UI</string>
     <string name="settings_interface_hide_status_bar_label">Απόκρυψη γραμμής κατάστασης</string>
+    <string name="settings_interface_right_to_left_label">Δεξιά-προς-αριστερά διάταξη</string>
+    <string name="settings_interface_right_to_left_description">Κατοπτρισμός της διεπαφής ανεξάρτητα από τη γλώσσα εφαρμογής.</string>
     <string name="settings_interface_page_description">Η ενότητα διασύνδεσης χρήστη περιέχει ρυθμίσεις για την τροποποίηση της καθολικής διεπαφής και πλοήγησης</string>
     <string name="settings_interface_page_title">Διεπαφή</string>
     <string name="settings_interface_title">Διεπαφή</string>
