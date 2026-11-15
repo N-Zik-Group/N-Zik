@@ -2,6 +2,8 @@
 package app.n_zik.android.components.ui.screens.home
 
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
 import app.n_zik.android.components.ui.screens.home.onDevice.DeviceLibraryPullRefresh
 import app.n_zik.android.components.navigation.FloatingActionSiblingSpace
 import app.n_zik.android.components.search.SearchEmptyFeedback
@@ -344,13 +346,14 @@ fun HomeArtists(
     }
 
     val context = LocalContext.current
+    val preview = LocalThemePreview.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val profile = getActiveProfile(context)
     var eligibleDeviceGroups by remember(profile) {
-        mutableStateOf(DeviceLibraryResults.current(profile)?.artistIds)
+        mutableStateOf(if (preview == null) DeviceLibraryResults.current(profile)?.artistIds else emptySet())
     }
     LaunchedEffect(context, lifecycleOwner, artistType) {
-        if (artistType != ArtistsType.OnDevice) return@LaunchedEffect
+        if (preview != null || artistType != ArtistsType.OnDevice) return@LaunchedEffect
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             context.observeDeviceLibrary().collect { eligibleDeviceGroups = it.artistIds }
         }
@@ -361,6 +364,15 @@ fun HomeArtists(
     var completedSearchQuery by remember(artistType, sort.sortBy, sort.sortOrder, groupsReady) { mutableStateOf<String?>(null) }
     val gridReady = searchDataReady && groupsReady && completedSearchQuery == search.inputValue
     LaunchedEffect( Unit, sort.sortBy, sort.sortOrder, artistType ) {
+        if (preview != null) {
+            val demoItems = ThemePreviewDemo.artists
+            itemsToFilter = sort.sortOrder.applyTo(when (sort.sortBy) {
+                ArtistSortBy.Name -> demoItems.sortedBy { it.name.orEmpty() }
+                else -> demoItems
+            })
+            searchDataReady = true
+            return@LaunchedEffect
+        }
         when( artistType ) {
             ArtistsType.Favorites -> Database.artistTable.sortFollowing( sort.sortBy, sort.sortOrder )
             ArtistsType.Library -> Database.artistTable.sortInLibrary( sort.sortBy, sort.sortOrder )
@@ -403,6 +415,7 @@ fun HomeArtists(
 
     if (items.any{it.thumbnailUrl == null}) {
         LaunchedEffect(Unit) {
+            if (preview != null) return@LaunchedEffect
             withContext(NzikDispatchers.DATA) {
                 items.filter { it.thumbnailUrl == null && !isDeviceArtistId(it.id) }.forEach { artist ->
                     coroutineScope.launch(NzikDispatchers.DATA) {
@@ -426,7 +439,7 @@ fun HomeArtists(
 
 
     LaunchedEffect(justSynced, doAutoSync) {
-        if (!justSynced && importYTMSubscribedChannels())
+        if (preview == null && !justSynced && importYTMSubscribedChannels())
                 justSynced = true
     }
 
@@ -688,7 +701,7 @@ fun HomeArtists(
                                                 )
                                             }
                                         } else if (sort.sortBy == ArtistSortBy.PlayCount) {
-                                            val playCount by Database.eventTable.getArtistPlayCount(artist.id).collectAsStateWithLifecycle(initialValue = 0, context = NzikDispatchers.DATA)
+                                            val playCount by (if (preview == null) Database.eventTable.getArtistPlayCount(artist.id) else kotlinx.coroutines.flow.flowOf(0)).collectAsStateWithLifecycle(initialValue = 0, context = NzikDispatchers.DATA)
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize()
@@ -704,7 +717,7 @@ fun HomeArtists(
                                                 )
                                             }
                                         } else if (sort.sortBy == ArtistSortBy.ListeningTime) {
-                                            val playTime by Database.eventTable.getArtistTotalPlayTime(artist.id).collectAsStateWithLifecycle(initialValue = 0L, context = NzikDispatchers.DATA)
+                                            val playTime by (if (preview == null) Database.eventTable.getArtistTotalPlayTime(artist.id) else kotlinx.coroutines.flow.flowOf(0L)).collectAsStateWithLifecycle(initialValue = 0L, context = NzikDispatchers.DATA)
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize()

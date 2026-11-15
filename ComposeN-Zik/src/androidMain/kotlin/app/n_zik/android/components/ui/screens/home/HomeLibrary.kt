@@ -2,6 +2,8 @@
 package app.n_zik.android.components.ui.screens.home
 
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
 import app.n_zik.android.core.database.isYouTubePlaylistSource
 import app.n_zik.android.core.ondevice.scanDeviceLibrary
 import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceCoverBadge
@@ -254,6 +256,7 @@ fun HomeLibrary(
 
     var itemsOnDisplay by key(playlistType) { persistList<PlaylistPreview>("home/playlists/$playlistType/on_display") }
 
+    val previewSession = LocalThemePreview.current
     val search = Search(lazyGridState)
     val itemSelector = ItemSelector<PlaylistPreview>()
     val showPinnedPlaylists by rememberPreference(showPinnedPlaylistsKey, true)
@@ -268,7 +271,10 @@ fun HomeLibrary(
         playlistType, youtubeLibraryFilter, search.inputValue, showRewind, showPinnedPlaylists,
         rewindMonthlyPlaylistEnabled, rewindYearlyPlaylistEnabled, rewindPlaylistsFilter,
     )
-    val devicePlaylistIds by remember { Database.songPlaylistMapTable.onDeviceOnlyPlaylistIds() }
+    val devicePlaylistIds by remember(previewSession) {
+        if (previewSession != null) kotlinx.coroutines.flow.flowOf(emptyList())
+        else Database.songPlaylistMapTable.onDeviceOnlyPlaylistIds()
+    }
         .collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
     val filteredItems = devicePlaylistIds?.let { ids ->
         val deviceIds = ids.toHashSet()
@@ -419,6 +425,16 @@ fun HomeLibrary(
     var completedSearchQuery by remember(playlistType, sort.sortBy, sort.sortOrder) { mutableStateOf<String?>(null) }
     val gridReady = searchDataReady && devicePlaylistIds != null && completedSearchQuery == search.inputValue
     LaunchedEffect( playlistType, sort.sortBy, sort.sortOrder ) {
+        if (previewSession != null) {
+            val demoPlaylists = ThemePreviewDemo.playlists
+            items = sort.sortOrder.applyTo(when (sort.sortBy) {
+                PlaylistSortBy.Name -> demoPlaylists.sortedBy { it.playlist.name }
+                PlaylistSortBy.SongCount -> demoPlaylists.sortedBy { it.songCount }
+                else -> demoPlaylists
+            })
+            searchDataReady = true
+            return@LaunchedEffect
+        }
         Database.playlistTable
                 .sortPreviews( sort.sortBy, sort.sortOrder )
                 .distinctUntilChanged()
@@ -505,7 +521,7 @@ fun HomeLibrary(
 
     // START: Import YTM playlists
     LaunchedEffect(justSynced, doAutoSync) {
-        if (!justSynced && importYTMPlaylists())
+        if (previewSession == null && !justSynced && importYTMPlaylists())
             justSynced = true
     }
     // END: Import YTM playlists
@@ -840,7 +856,7 @@ fun HomeLibrary(
                                                 )
                                             }
                                         } else if (sort.sortBy == PlaylistSortBy.PlayCount) {
-                                            val playCount by Database.eventTable.getPlaylistPlayCount(preview.playlist.id).collectAsStateWithLifecycle(initialValue = 0, context = NzikDispatchers.DATA)
+                                            val playCount by (if (previewSession == null) Database.eventTable.getPlaylistPlayCount(preview.playlist.id) else kotlinx.coroutines.flow.flowOf(0)).collectAsStateWithLifecycle(initialValue = 0, context = NzikDispatchers.DATA)
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize()
@@ -856,7 +872,7 @@ fun HomeLibrary(
                                                 )
                                             }
                                         } else if (sort.sortBy == PlaylistSortBy.ListeningTime) {
-                                            val playTime by Database.eventTable.getPlaylistTotalPlayTime(preview.playlist.id).collectAsStateWithLifecycle(initialValue = 0L, context = NzikDispatchers.DATA)
+                                            val playTime by (if (previewSession == null) Database.eventTable.getPlaylistTotalPlayTime(preview.playlist.id) else kotlinx.coroutines.flow.flowOf(0L)).collectAsStateWithLifecycle(initialValue = 0L, context = NzikDispatchers.DATA)
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize()

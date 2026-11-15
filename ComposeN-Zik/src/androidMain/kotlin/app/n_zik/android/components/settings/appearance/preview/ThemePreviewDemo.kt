@@ -11,6 +11,9 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.models.Lyrics
 import app.n_zik.android.models.Song
 import app.n_zik.android.utils.asMediaItem
@@ -51,6 +54,15 @@ internal object ThemePreviewDemo {
             Song("${album.id}-$index", title, album.authorsText, "5:00", album.thumbnailUrl)
         }
     } }
+
+    val artists by lazy { albums.map { album ->
+        Artist("${album.id}-artist", album.authorsText, album.thumbnailUrl)
+    } }
+    val playlists by lazy { albums.mapIndexed { index, album ->
+        PlaylistPreview(Playlist(id = -1L - index, name = "${album.title} Mix"), songsForAlbum(album.id).size)
+    } }
+    fun playlistCover(id: Long): String? =
+        playlists.indexOfFirst { it.playlist.id == id }.let { albums.getOrNull(it)?.thumbnailUrl }
 
     val songs by lazy { albumTracks.values.flatten() }
     val queue by lazy { listOf(songs[0], songs[4], songs[7], songs[10], songs[1], songs[5], songs[8], songs[11], songs[13]) }

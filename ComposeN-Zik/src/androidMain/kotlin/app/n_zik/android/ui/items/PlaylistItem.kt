@@ -1,5 +1,7 @@
 package app.n_zik.android.ui.items
 
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
 import app.n_zik.android.core.database.*
 import app.n_zik.android.uiRoundnessShape
 
@@ -176,7 +178,9 @@ fun PlaylistItem(
 ) {
     val context = LocalContext.current
 
-    val thumbnails by remember {
+    val preview = LocalThemePreview.current
+    val thumbnails by remember(playlist.playlist.id, preview) {
+        if (preview != null) return@remember flowOf(listOfNotNull(ThemePreviewDemo.playlistCover(playlist.playlist.id)))
         val customThumbnail = checkFileExists( context, "thumbnail/playlist_${playlist.playlist.id}" )
 
         if( customThumbnail != null )

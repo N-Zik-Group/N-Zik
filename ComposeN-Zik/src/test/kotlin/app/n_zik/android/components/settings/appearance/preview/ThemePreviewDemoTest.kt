@@ -39,6 +39,18 @@ class ThemePreviewDemoTest {
     }
 
     @Test
+    fun demoLibraryUsesItsOwnArtistsPlaylistsAndCovers() {
+        val albums = ThemePreviewDemo.albums
+        assertEquals(albums.map { "${it.id}-artist" }, ThemePreviewDemo.artists.map { it.id })
+        assertEquals(albums.map { it.authorsText }, ThemePreviewDemo.artists.map { it.name })
+        assertEquals(albums.map { ThemePreviewDemo.songsForAlbum(it.id).size },
+            ThemePreviewDemo.playlists.map { it.songCount })
+        assertTrue(ThemePreviewDemo.playlists.all { it.playlist.id < 0 })
+        assertEquals(albums.map { it.thumbnailUrl },
+            ThemePreviewDemo.playlists.map { ThemePreviewDemo.playlistCover(it.playlist.id) })
+    }
+
+    @Test
     fun queueAndSearchOnlyUseBundledSongs() {
         val tracks = ThemePreviewDemo.albums.flatMap { ThemePreviewDemo.songsForAlbum(it.id) }
         assertEquals(tracks.size, tracks.distinctBy { it.id }.size)
