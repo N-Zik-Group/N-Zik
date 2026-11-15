@@ -3,6 +3,7 @@
     <string name="backup_export_themes_description">将下载的主题和本地主题保存到ZIP备份</string>
     <string name="backup_import_themes_description">从ZIP备份恢复下载和本地主题</string>
     <string name="backup_export_select_all_description">选择要导出的每一种数据</string>
+    <string name="backup_import_already_running">备份导入已在进行中。</string>
     <string name="backup_import_select_all_description">选择要导入的每一种数据</string>
     <string name="backup_include_github_identity_credentials">包含 GitHub 身份凭据</string>
     <string name="storage_image_quality_title">图像质量</string>
