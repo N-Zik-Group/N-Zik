@@ -200,6 +200,11 @@ internal fun AccountsSettingsContent(
                 AccountsResetCard(search)
             }
         }
+        if (selectedCards == null || R.string.common_brand_github in selectedCards) {
+            SettingsCardSlot(R.string.common_brand_github, order = 10, modifier = { cardModifier(R.string.common_brand_github) }) {
+                GitHubAccountCard()
+            }
+        }
     }
 }
 

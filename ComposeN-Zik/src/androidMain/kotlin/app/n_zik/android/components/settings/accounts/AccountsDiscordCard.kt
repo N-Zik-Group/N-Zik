@@ -30,7 +30,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.OutlinedTextField
+import app.n_zik.android.components.glass.GlassOutlinedTextField as OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -1073,8 +1073,7 @@ private fun DiscordTemplateFieldDialog(
                     ),
                     DialogButton(
                         text = stringResource(R.string.common_action_cancel),
-                        textColor = palette.red.copy(alpha = 0.3f),
-                        onClick = onDismiss
+                        onClick = onDismiss, danger = true
                     ),
                     DialogButton(
                         text = stringResource(R.string.common_action_ok),

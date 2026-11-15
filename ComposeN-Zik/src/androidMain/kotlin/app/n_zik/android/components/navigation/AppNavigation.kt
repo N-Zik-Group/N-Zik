@@ -89,6 +89,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
+import app.n_zik.android.components.settings.appearance.preview.ThemeStoreSection
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
@@ -235,6 +236,8 @@ fun AppNavigation(
     val pageBackdrop = rememberLayerBackdrop()
     val overlayBackdrop = rememberLayerBackdrop()
     val unifiedTopBackdrop = rememberLayerBackdrop()
+    val currentEntry by navController.currentBackStackEntryAsState()
+    val route = currentEntry?.destination?.route
     val captureGlass = glassSettings.enabled && glassRenderer(glassSettings) != GlassRenderer.Tint
     val captureNavigationOverlay = captureGlass && parentGlassHost?.sceneBackdrop == null
     SideEffect {
@@ -295,7 +298,6 @@ fun AppNavigation(
     val transitions = remember(transitionEffect) { ScreenTransitions(transitionEffect) }
 
     val disableBackStack by rememberPreference(disableNavigationBackStackKey, false)
-    val currentEntry by navController.currentBackStackEntryAsState()
     val expectsDestinationTabs = hasPageNavBar && currentEntry?.let { entry ->
         !entry.destination.route.orEmpty().startsWith("${NavRoutes.artist.name}/") ||
             !isDeviceArtistId(entry.arguments?.getString("id").orEmpty())
@@ -551,7 +553,10 @@ fun AppNavigation(
         },
         // Side rails own the controls; horizontal headers keep their layout-only scroll motion.
         header = {
-            if (!hasSideNavBarVisible) CompositionLocalProvider(LocalTopBarOffset provides topBarOffsetState, LocalGlassBackdrop provides pageBackdrop.takeIf { captureGlass }) {
+            if (!hasSideNavBarVisible) CompositionLocalProvider(
+                LocalTopBarOffset provides topBarOffsetState,
+                LocalGlassBackdrop provides pageBackdrop.takeIf { captureGlass },
+            ) {
                 AppHeader(navController).Draw(
                     backgroundOverride = navStatusColor.takeIf { hasTopNavBarVisible },
                     statusBackgroundVisible = hasTopNavBarVisible,
@@ -780,13 +785,72 @@ fun AppNavigation(
         }
 
         chromeComposable(route = NavRoutes.notifications.name) {
-            app.n_zik.android.components.ui.screens.notifications.NotificationsScreen(navController, miniPlayer)
+            val backdropColor = colorPalette().background0
+            val backdrop = app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop {
+                drawRect(backdropColor)
+            }
+            CompositionLocalProvider(app.n_zik.android.components.glass.LocalIndependentGlassBackdrop provides backdrop) {
+                app.n_zik.android.components.ui.screens.notifications.NotificationsScreen(navController, miniPlayer)
+            }
         }
         chromeComposable(route = NavRoutes.themeStore.name) {
             app.n_zik.android.components.settings.appearance.preview.ThemeStoreScreen(navController, miniPlayer)
         }
 
+        chromeComposable(
+            route = "${NavRoutes.themeStoreNew.name}?section={section}",
+            arguments = listOf(navArgument("section") { type = NavType.StringType; defaultValue = "new" }),
+        ) { entry ->
+            val section = ThemeStoreSection.entries.firstOrNull { it.routeKey == entry.arguments?.getString("section") }
+                ?: ThemeStoreSection.New
+            app.n_zik.android.components.settings.appearance.preview.ThemeStoreScreen(navController, miniPlayer, section)
+        }
+
+        chromeComposable(
+            route = "${NavRoutes.themeStoreDetail.name}/{themeId}/{revision}",
+            arguments = listOf(
+                navArgument("themeId") { type = NavType.StringType },
+                navArgument("revision") { type = NavType.IntType },
+            ),
+        ) { entry ->
+            val themeId = entry.arguments?.getString("themeId") ?: return@chromeComposable
+            val revision = entry.arguments?.getInt("revision") ?: return@chromeComposable
+            val backdropColor = colorPalette().background0
+            val backdrop = app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop {
+                drawRect(backdropColor)
+            }
+            CompositionLocalProvider(app.n_zik.android.components.glass.LocalIndependentGlassBackdrop provides backdrop) {
+                app.n_zik.android.components.settings.appearance.preview.ThemeStoreDetailScreen(navController, miniPlayer, themeId, revision)
+            }
+        }
+
+        chromeComposable(
+            route = "${NavRoutes.themeStoreCreator.name}/{creatorId}",
+            arguments = listOf(navArgument("creatorId") { type = NavType.LongType }),
+        ) { entry ->
+            val creatorId = entry.arguments?.getLong("creatorId") ?: return@chromeComposable
+            app.n_zik.android.components.settings.appearance.preview.ThemeStoreScreen(navController, miniPlayer, creatorId = creatorId)
+        }
+
         // Local PC bridge server page
+        chromeComposable(route = NavRoutes.themeStoreCreatorSettings.name) {
+            app.n_zik.android.components.settings.appearance.preview.CreatorProfileSettings(navController, miniPlayer)
+        }
+
+        chromeComposable(
+            route = "${NavRoutes.themeStoreSubmission.name}/{themeId}",
+            arguments = listOf(navArgument("themeId") { type = NavType.StringType }),
+        ) { entry ->
+            val themeId = entry.arguments?.getString("themeId") ?: return@chromeComposable
+            val backdropColor = colorPalette().background0
+            val backdrop = app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop {
+                drawRect(backdropColor)
+            }
+            CompositionLocalProvider(app.n_zik.android.components.glass.LocalIndependentGlassBackdrop provides backdrop) {
+                app.n_zik.android.components.settings.appearance.preview.ThemeSubmissionPage(navController, miniPlayer, themeId)
+            }
+        }
+
         chromeComposable(route = NavRoutes.bridgeServer.name) {
             BridgeServerScreen(
                 navController = navController,

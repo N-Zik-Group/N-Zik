@@ -10,7 +10,6 @@ import android.app.Application
 
 import android.content.Context
 
-import android.content.ContextWrapper
 
 import android.content.SharedPreferences
 
@@ -59,27 +58,30 @@ import app.n_zik.android.utils.preferences
 
 import app.n_zik.android.utils.ytCookieKey
 
+import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 
 import app.n_zik.android.R
+import app.n_zik.android.listentogether.ListenTogetherManager
+import app.n_zik.android.listentogether.RoomRole
 
-import app.n_zik.android.listentogether.ListenTogetherPlayerBridge
 
 import app.n_zik.innertube.Innertube
 
 import io.mockk.every
-
 import io.mockk.just
+import io.mockk.runs
+
 
 import io.mockk.mockk
 
-import io.mockk.mockkObject
 
+import io.mockk.mockkObject
 import io.mockk.mockkStatic
 
-import io.mockk.runs
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
 
 import org.junit.After
 
@@ -95,7 +97,6 @@ import org.robolectric.RobolectricTestRunner
 
 import org.robolectric.annotation.Config
 
-import org.robolectric.shadows.ShadowProcess
 
 
 
@@ -123,18 +124,10 @@ import org.robolectric.shadows.ShadowProcess
 
  *
 
- * Harness: the real [MainApplication] booted under Robolectric (the
-
- * [StartupSearchRestoreWiringTest] / `MaintenanceBootChainTest.launchApp` template) so
-
- * `appContext()` / `Dependencies` resolve; the keystore-backed [encryptedPreferences] is
-
- * stubbed (a JVM has no keystore) with the cookie / login-enabled values per test —
-
- * `onCreate()` reads the cookie through it to settle [MainApplication.cookieStatus], and
-
- * the screen reads its login state the same way.
-
+ * The host supplies the authenticated state independently of the asynchronous library startup.
+ * Its keystore-backed preferences are stubbed because this wiring test exercises the real
+ * Accounts screen without the device keystore.
+ *
  */
 
 @RunWith(RobolectricTestRunner::class)
@@ -195,6 +188,11 @@ class AccountsSettingsEmbeddingWiringTest {
     /** Stubs the keystore-backed prefs: [cookie] under [ytCookieKey] ("" = logged out), [loginEnabled] under [enableYouTubeLoginKey], everything else absent (visitorData, dataSyncId, sync toggle, …). */
     private fun mockEncryptedPrefs(cookie: String, loginEnabled: Boolean) {
 
+        val application = mockk<MainApplication>()
+        every { application.applicationContext } returns context
+        Dependencies.init(application)
+        MainApplication.cookieStatus = if (cookie.isBlank()) MainApplication.CookieStatus.NOT_LOGGED_IN
+            else MainApplication.CookieStatus.VALID
         val secure = mockk<SharedPreferences>(relaxed = true)
 
         every { secure.getString(any(), any()) } answers {
@@ -212,64 +210,6 @@ class AccountsSettingsEmbeddingWiringTest {
         mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
 
         every { any<Context>().encryptedPreferences } returns secure
-
-    }
-
-
-
-    /** Boots the real MainApplication (see StartupSearchRestoreWiringTest.launchApp). */
-
-    private fun launchApp() {
-
-        // onCreate initializes the Listen Together manager, which binds the player
-
-        // service. Robolectric's bindService shadow later delivers onServiceConnected
-
-
-        // with a null ComponentName, which the bridge's non-null parameter turns into
-
-        // an NPE the first time the main looper idles (composeRule). The bridge is
-
-
-        // irrelevant to this wiring test — stub the bind out.
-
-        mockkObject(ListenTogetherPlayerBridge)
-
-        every { ListenTogetherPlayerBridge.ensureBound(any()) } just runs
-
-        // encryptedPreferences is already stubbed by mockEncryptedPrefs():
-
-        // onCreate reads the cookie through it to settle MainApplication.cookieStatus
-
-
-        // (SAPISID present + not expired -> VALID, absent -> NOT_LOGGED_IN).
-
-        ShadowProcess.setProcessName(context.packageName)
-
-        val app = MainApplication()
-
-        ContextWrapper::class.java
-
-            .getDeclaredMethod("attachBaseContext", Context::class.java)
-
-            .apply { isAccessible = true }
-
-            .invoke(app, context)
-
-        try {
-
-            app.onCreate()
-
-        } catch (e: Exception) {
-
-            // Expected under Robolectric: post-restore init fails (WorkManager not
-
-            // initialized). Everything the assertions below depend on (cookie
-
-
-            // status, the useLoginForSearch restore) lands before that point.
-
-        }
 
     }
 
@@ -301,8 +241,6 @@ class AccountsSettingsEmbeddingWiringTest {
 
         mockEncryptedPrefs(cookie = "SAPISID=test", loginEnabled = true)
 
-        launchApp()
-
         showScreen()
 
         composeRule.waitForIdle()
@@ -320,8 +258,6 @@ class AccountsSettingsEmbeddingWiringTest {
     fun `a logged-out row shows the connect-first hint and a click writes nothing`() {
 
         mockEncryptedPrefs(cookie = "", loginEnabled = true)
-
-        launchApp()
 
         showScreen()
 
@@ -374,8 +310,6 @@ class AccountsSettingsEmbeddingWiringTest {
 
         mockEncryptedPrefs(cookie = "SAPISID=test", loginEnabled = true)
 
-        launchApp()
-
         showScreen()
 
         composeRule.waitForIdle()
@@ -407,7 +341,6 @@ class AccountsSettingsEmbeddingWiringTest {
     @Test
     fun theProfilesOpenRowNavigatesToTheProfilesScreen() {
         mockEncryptedPrefs(cookie = "SAPISID=test", loginEnabled = true)
-        launchApp()
         showScreen()
         composeRule.waitForIdle()
 
@@ -424,7 +357,14 @@ class AccountsSettingsEmbeddingWiringTest {
     @Test
     fun theListenTogetherOpenRowNavigatesToTheListenTogetherScreen() {
         mockEncryptedPrefs(cookie = "SAPISID=test", loginEnabled = true)
-        launchApp()
+        val manager = mockk<ListenTogetherManager>()
+        mockkObject(ListenTogetherManager.Companion)
+        every { ListenTogetherManager.getInstance() } returns manager
+        every { manager.roomState } returns MutableStateFlow(null)
+        every { manager.role } returns MutableStateFlow(RoomRole.NONE)
+        every { manager.logs } returns MutableStateFlow(emptyList())
+        every { manager.blockedUsernames } returns MutableStateFlow(emptySet())
+        every { manager.syncHostVolumeEnabled } returns MutableStateFlow(true)
         showScreen()
         composeRule.waitForIdle()
 

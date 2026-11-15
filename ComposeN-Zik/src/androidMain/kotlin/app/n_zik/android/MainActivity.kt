@@ -250,6 +250,7 @@ import app.n_zik.android.components.theme.DynamicAppearanceOwner
 import app.n_zik.android.components.theme.DynamicPaletteArtworkListener
 import app.n_zik.android.components.theme.appearanceBackground
 import app.n_zik.android.components.theme.startupAppearance
+import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.components.theme.DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import app.n_zik.android.components.theme.withColor
@@ -910,7 +911,9 @@ class MainActivity :
         awaitingDeferredNavigation = true
         setContent {
             val state by startup.state.collectAsStateWithLifecycle()
-            LibraryStartupScreen(state, startup::start)
+            CompositionLocalProvider(LocalAppearance provides configuredAppearance(isSystemInDarkTheme())) {
+                LibraryStartupScreen(state, startup::start, useAppAppearance = true)
+            }
         }
         lifecycleScope.launch(NzikDispatchers.UI) {
             startup.state.first { it == LibraryStartupState.Ready }
@@ -1196,53 +1199,7 @@ class MainActivity :
 
             preferences.getEnum(audioQualityFormatKey, AudioQualityFormat.Auto)
 
-            fun computeAppearance(): Appearance = with(preferences) {
-                val colorPaletteName =
-                    getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
-                val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
-                val paletteIsDark = colorPaletteMode == ColorPaletteMode.Dark ||
-                    colorPaletteMode == ColorPaletteMode.PitchBlack ||
-                    (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
-                val thumbnailRoundnessDp = getFloat(thumbnailRoundnessDpKey, 12f)
-                val artistThumbnailRoundnessDp = getFloat(artistThumbnailRoundnessDpKey, 48f)
-                val uiRoundnessDp = getFloat("uiRoundnessDpKey", 25f)
-                val useSystemFont = getBoolean(useSystemFontKey, false)
-                val applyFontPadding = getBoolean(applyFontPaddingKey, false)
-
-                var colorPalette =
-                    colorPaletteOf(colorPaletteName, colorPaletteMode, isSystemInDarkTheme)
-
-                val fontType = getEnum(fontTypeKey, FontType.Rubik)
-
-                if (colorPaletteName == ColorPaletteName.MaterialYou) {
-                    colorPalette = dynamicColorPaletteOf(
-                        Color(monet.getAccentColor(this@MainActivity)),
-                        paletteIsDark
-                    )
-                }
-                if (colorPaletteName == ColorPaletteName.CustomColor) {
-                    colorPalette = dynamicColorPaletteOf(
-                        Color(getInt(customColorKey, Color.Green.hashCode())),
-                        paletteIsDark
-                    )
-                }
-
-                if (colorPaletteName == ColorPaletteName.Customized) {
-                    colorPalette = customColorPalette(colorPalette, this@MainActivity, isSystemInDarkTheme)
-                }
-                Appearance(
-                    colorPalette = colorPalette,
-                    typography = typographyOf(
-                        colorPalette.text,
-                        useSystemFont,
-                        applyFontPadding,
-                        fontType
-                    ),
-                    thumbnailShape = if (thumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(thumbnailRoundnessDp.dp, 0.25f)),
-                    uiRoundnessShape = RoundedCornerShape(BoundedCornerSize(uiRoundnessDp.dp, 0.4f)),
-                    artistThumbnailShape = if (artistThumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(artistThumbnailRoundnessDp.dp, 0.25f))
-                ).forPaletteMode(colorPaletteMode)
-            }
+            fun computeAppearance(): Appearance = configuredAppearance(isSystemInDarkTheme)
 
             // The saved palette contains only accent + darkness. Reconcile it with the
             // current theme before the first frame, including after activity recreation.
@@ -2849,6 +2806,19 @@ class MainActivity :
 
     @OptIn(UnstableApi::class)
     private suspend fun openLibraryUri(navController: NavController, uri: Uri) {
+        if (uri.scheme == "nzik" && uri.host == "theme") {
+            val segments = uri.pathSegments
+            val id = segments.firstOrNull()
+            val revision = segments.getOrNull(1)?.toIntOrNull()
+            if (segments.size == 2 && id != null && revision != null && revision > 0 &&
+                runCatching { java.util.UUID.fromString(id).toString() == id }.getOrDefault(false)
+            ) {
+                navController.navigate("${NavRoutes.themeStoreDetail.name}/$id/$revision") {
+                    launchSingleTop = true
+                }
+            }
+            return
+        }
         parseListenTogetherInvite(uri)?.let { roomCode ->
             openListenTogetherInvite(navController, roomCode)
             return
@@ -3079,6 +3049,59 @@ class MainActivity :
 
     private var lastSystemBarIsDark: Boolean? = null
 
+    private fun configuredAppearance(isSystemInDarkTheme: Boolean): Appearance = with(preferences) {
+        val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
+        val thumbnailRoundnessDp = getFloat(thumbnailRoundnessDpKey, 12f)
+        val artistThumbnailRoundnessDp = getFloat(artistThumbnailRoundnessDpKey, 48f)
+        val uiRoundnessDp = getFloat("uiRoundnessDpKey", 25f)
+        val useSystemFont = getBoolean(useSystemFontKey, false)
+        val applyFontPadding = getBoolean(applyFontPaddingKey, false)
+
+        val colorPalette = configuredPalette(isSystemInDarkTheme)
+        val fontType = getEnum(fontTypeKey, FontType.Rubik)
+        Appearance(
+            colorPalette = colorPalette,
+            typography = typographyOf(
+                colorPalette.text,
+                useSystemFont,
+                applyFontPadding,
+                fontType
+            ),
+            thumbnailShape = if (thumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(thumbnailRoundnessDp.dp, 0.25f)),
+            uiRoundnessShape = RoundedCornerShape(BoundedCornerSize(uiRoundnessDp.dp, 0.4f)),
+            artistThumbnailShape = if (artistThumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(artistThumbnailRoundnessDp.dp, 0.25f))
+        ).forPaletteMode(colorPaletteMode)
+    }
+
+    private fun configuredPalette(isSystemInDarkTheme: Boolean) = with(preferences) {
+        val colorPaletteName =
+            getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
+        val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
+        val paletteIsDark = colorPaletteMode == ColorPaletteMode.Dark ||
+            colorPaletteMode == ColorPaletteMode.PitchBlack ||
+            (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
+        var colorPalette =
+            colorPaletteOf(colorPaletteName, colorPaletteMode, isSystemInDarkTheme)
+
+        if (colorPaletteName == ColorPaletteName.MaterialYou) {
+            colorPalette = dynamicColorPaletteOf(
+                Color(monet.getAccentColor(this@MainActivity)),
+                paletteIsDark
+            )
+        }
+        if (colorPaletteName == ColorPaletteName.CustomColor) {
+            colorPalette = dynamicColorPaletteOf(
+                Color(getInt(customColorKey, Color.Green.hashCode())),
+                paletteIsDark
+            )
+        }
+
+        if (colorPaletteName == ColorPaletteName.Customized) {
+            colorPalette = customColorPalette(colorPalette, this@MainActivity, isSystemInDarkTheme)
+        }
+        colorPalette
+    }
+
     private fun setSystemBarAppearance(isDark: Boolean) {
         // The bars only depend on the light/dark state; re-applying the same
         // state on every track change costs a window-level insets update
@@ -3280,5 +3303,10 @@ internal fun isMiniplayerHiddenRoute(currentRoute: String?): Boolean =
             route.startsWith("${NavRoutes.rewind.name}?") ||
             route == NavRoutes.updater.name ||
             route == NavRoutes.notifications.name ||
-            route == NavRoutes.themeStore.name
+            route == NavRoutes.themeStore.name ||
+            route.substringBefore('?') == NavRoutes.themeStoreNew.name ||
+            route.substringBefore('/') == NavRoutes.themeStoreDetail.name ||
+            route.substringBefore('/') == NavRoutes.themeStoreCreator.name ||
+            route == NavRoutes.themeStoreCreatorSettings.name ||
+            route.substringBefore('/') == NavRoutes.themeStoreSubmission.name
     } ?: false

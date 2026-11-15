@@ -34,6 +34,11 @@ enum class NavRoutes {
     listenTogether,
     notifications,
     themeStore,
+    themeStoreNew,
+    themeStoreDetail,
+    themeStoreCreator,
+    themeStoreCreatorSettings,
+    themeStoreSubmission,
     bridgeServer,
     updater;
 
