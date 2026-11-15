@@ -67,7 +67,6 @@ import app.n_zik.android.enums.PlayerTimelineType
 import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.enums.PlayerVisualizerType
 import app.n_zik.android.enums.PlaylistSwipeAction
-import app.n_zik.android.enums.PrevNextSongs
 import app.n_zik.android.enums.QueueSwipeAction
 import app.n_zik.android.enums.QueueType
 import app.n_zik.android.enums.SearchDisplayOrder
@@ -184,7 +183,6 @@ import app.n_zik.android.utils.playerTypeKey
 import app.n_zik.android.utils.playerVisualizerTypeKey
 import app.n_zik.android.utils.playlistSwipeLeftActionKey
 import app.n_zik.android.utils.playlistSwipeRightActionKey
-import app.n_zik.android.utils.prevNextSongsKey
 import app.n_zik.android.utils.queueDurationExpandedKey
 import app.n_zik.android.utils.queueSwipeLeftActionKey
 import app.n_zik.android.utils.queueSwipeRightActionKey
@@ -599,7 +597,6 @@ private fun ThemeFields.player() {
     optional("cropVideoThumbnails") { flag("cropVideoThumbnails", cropVideoThumbnailsKey, true) }
     optional("showsongs") { option<SongsNumber>("showsongs", showsongsKey, SongsNumber.`2`) }
     optional("showalbumcover") { flag("showalbumcover", showalbumcoverKey, true) }
-    optional("prevNextSongs") { option<PrevNextSongs>("prevNextSongs", prevNextSongsKey, PrevNextSongs.twosongs) }
     optional("tapqueue") { flag("tapqueue", tapqueueKey, true) }
     optional("swipeUpQueue") { flag("swipeUpQueue", swipeUpQueueKey, true) }
     optional("statsfornerds") { flag("statsfornerds", statsfornerdsKey, false) }

@@ -1,6 +1,7 @@
 package app.n_zik.android.ui.screens.player
 
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
+import app.n_zik.android.utils.actionExpandedKey
 import app.n_zik.android.components.player.extractCoverPalette
 
 import android.graphics.Bitmap
@@ -1232,6 +1233,7 @@ fun Player(
     )
     val isShowingStandaloneLyrics = playerStandaloneLyricsVisible(
         showthumbnail, isShowingLyrics, coverOverlayPolicy.lyricsOnCover)
+    val showActionsInFullscreenLyrics by rememberPreference(actionExpandedKey, true)
     val landscapeStandaloneVisualizer = playerStandaloneVisualizerVisible(
         showthumbnail, isShowingVisualizer, coverOverlayPolicy.visualizerOnCover)
     val landscapeModernVisualizerState = rememberOverlayTransition(isLandscape && showLandscapeArtworkColumn &&
@@ -1366,6 +1368,7 @@ fun Player(
     ) {
         @Composable
         fun ActionsBar() {
+            if (isShowingStandaloneLyrics && !showActionsInFullscreenLyrics) return
             if (glassSettings.enabled) {
                 Box(Modifier.align(if (isLandscape) Alignment.BottomEnd else Alignment.BottomCenter)) { ActionBar(
             navController,

@@ -5,6 +5,8 @@ import androidx.compose.ui.text.font.FontFamily
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.utils.fontTypeKey
+import app.n_zik.android.utils.actionExpandedKey
+import app.n_zik.android.utils.showNextSongsInPlayerKey
 import app.n_zik.android.utils.useSystemFontKey
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -134,9 +136,12 @@ class ThemePreviewFormatTest {
             lyricsFontSizeKey to "Medium",
             lyricsSizeKey to 42f,
             lyricsTypeKey to "Karaoke",
+            actionExpandedKey to false,
+            showNextSongsInPlayerKey to true,
             miniPlayerButtonOrderKey to """["lyrics","play_pause"]""",
             showMiniPlayerAudioOutputKey to false,
             "githubAccessToken" to "not-a-theme-setting",
+            "prevNextSongs" to "onesong",
         )
         val glass = mapOf(
             glassBlurKey to 11f,
@@ -145,10 +150,10 @@ class ThemePreviewFormatTest {
         )
         val document = encodeThemeV1(plain, glass)
         val preview = themePreviewPreferences(document, glass = true)
-        assertEquals(plain - "githubAccessToken", preview.plain.filterKeys { it in plain })
+        assertEquals(plain - setOf("githubAccessToken", "prevNextSongs"), preview.plain.filterKeys { it in plain })
         assertEquals(glass, preview.glass.filterKeys { it in glass })
         assertFalse(document.contains("not-a-theme-setting"))
-        assertEquals(plain.filterKeys { it in setOf(lyricsFontSizeKey, lyricsSizeKey, lyricsTypeKey) },
+        assertEquals(plain.filterKeys { it in setOf(lyricsFontSizeKey, lyricsSizeKey, lyricsTypeKey, actionExpandedKey) },
             parseThemeV1(document).toStoreGroups().getValue(StoreGroup.Lyrics).plain.filterKeys { it in plain })
     }
 
