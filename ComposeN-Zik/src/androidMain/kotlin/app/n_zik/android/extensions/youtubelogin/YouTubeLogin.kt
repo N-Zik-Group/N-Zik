@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import app.n_zik.android.components.ui.AccountSheetWebView
 import androidx.navigation.NavController
 import app.n_zik.innertube.Innertube
 import app.n_zik.android.R
@@ -77,7 +78,7 @@ fun YouTubeLogin(
                 .fillMaxWidth()
                 .weight(1f),
             factory = { context ->
-                WebView(context).apply {
+                AccountSheetWebView(context).apply {
                     var hasCompletedLogin = false
                     webViewClient = object : WebViewClient() {
                         override fun doUpdateVisitedHistory(view: WebView, url: String, isReload: Boolean) {

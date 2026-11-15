@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,6 +23,7 @@ import androidx.compose.ui.semantics.collapse
 import androidx.compose.ui.semantics.dismiss
 import androidx.compose.ui.semantics.expand
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
@@ -35,9 +37,13 @@ private const val DRAG_HANDLE_CORNER_RADIUS = 2
 
 /** Shared appearance for visible menu handles in both native and shared hosts. */
 @Composable
-internal fun MenuSheetDragHandle(color: Color = Color.White) {
+internal fun MenuSheetDragHandle(color: Color = Color.White, minTouchHeight: Dp = 0.dp) {
     CenteredMenuSheetDragHandle {
-        Box(Modifier.padding(top = DRAG_HANDLE_TOP_PADDING.dp, bottom = DRAG_HANDLE_BOTTOM_PADDING.dp)) {
+        Box(
+            Modifier.heightIn(min = minTouchHeight)
+                .padding(top = DRAG_HANDLE_TOP_PADDING.dp, bottom = DRAG_HANDLE_BOTTOM_PADDING.dp),
+            contentAlignment = Alignment.Center,
+        ) {
             MenuDragHandleBar(color)
         }
     }

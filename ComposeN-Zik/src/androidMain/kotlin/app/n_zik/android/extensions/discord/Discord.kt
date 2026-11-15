@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import app.n_zik.android.components.ui.AccountSheetWebView
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -113,7 +114,7 @@ fun DiscordLoginAndGetToken(
                 .fillMaxWidth()
                 .weight(1f),
             factory = { context ->
-                WebView(context).apply {
+                AccountSheetWebView(context).apply {
                     layoutParams = ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT

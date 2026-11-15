@@ -463,7 +463,7 @@ internal fun AccountsDiscordCard(search: Search) {
                                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                                 shape = uiRoundnessShape(),
                                 dragHandle = {
-                                    MenuSheetDragHandle()
+                                    MenuSheetDragHandle(minTouchHeight = 48.dp)
                                 }
                             ) {
                                 DiscordLoginAndGetToken(
