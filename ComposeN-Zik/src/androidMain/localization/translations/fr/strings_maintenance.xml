@@ -323,4 +323,9 @@
     <string name="updates_check_failed">Impossible de vérifier les mises à jour.</string>
     <string name="updates_install_generic_error">Impossible d\'installer la mise à jour.</string>
     <string name="updates_channel_available_format">Mise à jour %1$s disponible</string>
+    <string name="recovery_theme_backup_title">Thèmes</string>
+    <string name="recovery_theme_backup_no_match">Seuls les thèmes appartenant aux profils disponibles dans cette vue peuvent être restaurés ici.</string>
+    <string name="recovery_theme_backup_operation_failed">Impossible de terminer l\'opération de sauvegarde du thème.</string>
+    <string name="recovery_theme_backup_restore_action">Restaurer les thèmes</string>
+    <string name="recovery_theme_backup_restore_description">Ouvrir la dernière sauvegarde de thème utilisée pour ce profil.</string>
 </resources>
