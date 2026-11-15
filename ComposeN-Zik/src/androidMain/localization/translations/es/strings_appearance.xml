@@ -264,6 +264,14 @@
     <string name="theme_store_choose_revision">Elija una revisión</string>
     <string name="theme_store_published_on">Publicado en %1$s</string>
     <string name="theme_store_compatibility">Compatibilidad con N-Zik</string>
+    <string name="theme_store_submission_minimum_version">Versión N-Zik mínima</string>
+    <string name="theme_store_submission_minimum_description">La versión más antigua que puede aplicar este tema. Los nuevos temas predeterminan el código de versión %3$d. Estás usando N-Zik %1$s (código de versión %2$d).</string>
+    <string name="theme_store_submission_version_code_label">Código de versión mínimo</string>
+    <string name="theme_store_submission_find_version_code">Buscar versiones y códigos N-Zik</string>
+    <string name="theme_store_submission_version_with_code">%1$s (código %2$d)</string>
+    <string name="theme_store_submission_version_code">Código de versión %1$d</string>
+    <string name="theme_store_submission_version_required">Introduzca el código de versión %1$d.</string>
+    <string name="theme_store_submission_version_range">Introduzca un código de versión entre %1$d y %2$d.</string>
     <string name="theme_store_revision">Revisión %1$d</string>
     <string name="theme_store_authors">Creadores</string>
     <string name="theme_store_author_theme_count">Temas: %1$d</string>
@@ -433,6 +441,7 @@
     <string name="theme_store_preview_import_requirements">Las vistas previas son públicas. Mantenga la información personal fuera de las capturas de pantalla. PNG, JPEG o WebP · 4 MB por imagen.</string>
     <string name="theme_store_preview_import_error">No se pudo importar esta imagen. Elija una imagen PNG, JPEG o WebP de menos de 4 MB.</string>
     <string name="theme_store_submission_included">Ajustes incluidos</string>
+    <string name="theme_store_submission_unsupported_categories">Estos grupos contienen ajustes que no pueden ser compartidos en un tema: %1$s.</string>
     <string name="theme_store_submission_sending">Enviando para revisión…</string>
     <string name="theme_store_report_theme">Reportar tema</string>
     <string name="theme_store_report_review">Reseña del informe</string>
