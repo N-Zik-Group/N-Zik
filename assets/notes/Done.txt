@@ -364,3 +364,7 @@ Fixed:
   - Restore the GitHub identity with its profile credentials, allow login-only profile updates, and recognize saved repository-wide installations.
 - fix(theme-store): keep theme details attached to restored downloads
   - Follow a verified restored theme onto its Store revision and prevent recreating the old local copy.
+- fix(theme-store): restore GitHub accounts in the selected profile
+  - Reconcile identities and invalidate the old publication session in both settings import paths.
+- fix(theme-store): preserve edits while restored themes reconnect
+  - Save explicit edits to an independent local copy and keep the verified Store version intact.

@@ -443,9 +443,9 @@ object RescueFiles {
             check(editor.commit()) { "Could not save the settings" }
             check(encEditor?.commit() ?: true) { "Could not save the credentials" }
             check(glassEditor?.commit() ?: true) { "Could not save the Glass settings" }
-            if (encEditor != null && getActiveProfile(context) == profile) {
-                rows.lastOrNull { it.second == "githubBackupIdentity" }?.third?.let { identity ->
-                    app.n_zik.android.components.settings.accounts.GitHubAccount.restoreIdentity(context, identity)
+            if (encEditor != null) {
+                rows.lastOrNull { it.second == "githubBackupIdentity" && it.first.equals("string", ignoreCase = true) }?.third?.let { identity ->
+                    app.n_zik.android.components.settings.accounts.GitHubAccount.restoreIdentity(context, identity, profile)
                 }
             }
             Timber.tag(TAG).i(

@@ -96,6 +96,27 @@ internal class ThemeStoreLibrary(private val preferences: SharedPreferences) {
         }
     }
 
+    fun saveLocalEdit(original: SavedTheme, edited: SavedTheme): SavedTheme = synchronized(downloadMutationLock) {
+        val before = requireNotNull(original.theme)
+        val after = requireNotNull(edited.theme)
+        require(original.imported && edited.imported && original.id == edited.id && before.themeId != BundledThemeId)
+        val unchanged = before.title == after.title && before.description == after.description &&
+            before.tags == after.tags && before.compatibility == after.compatibility && before.previews == after.previews &&
+            Json.parseToJsonElement(original.document) == Json.parseToJsonElement(edited.document)
+        val current = download(original.id)
+        val local = edited.copy(storeOrigin = null)
+        if (current != null) {
+            check(current.imported && (current == original || current == local)) { "The local theme changed while editing" }
+            if (unchanged || current == local) return@synchronized current
+        } else {
+            val restored = checkNotNull(original.restoredStoreDownload(downloads())) { "The local theme was removed" }
+            if (unchanged) return@synchronized restored
+        }
+        // An explicit local edit becomes its own copy; the verified Store revision stays immutable.
+        save(local)
+        local
+    }
+
     fun recentlySavedFirst(themes: List<SavedTheme>, catalog: List<StoreTheme>): List<SavedTheme> {
         val catalogOrder = catalog.mapIndexed { index, theme -> theme.themeId to index }.toMap()
         val dated = themes.map { saved ->
@@ -155,7 +176,7 @@ internal class ThemeStoreLibrary(private val preferences: SharedPreferences) {
         bound
     }
 
-    fun removeDownload(id: String) {
+    fun removeDownload(id: String) = synchronized(downloadMutationLock) {
         preferences.edit {
             remove(downloadPrefix + id)
             remove(savedTimePrefix + id)

@@ -59,10 +59,10 @@ internal class GitHubAccountStorage(
         return true
     }
 
-    fun clearPublicationToken() {
-        cachedSession = null
-        identityStore(activeProfile()).edit().putBoolean("publicationTokenInvalidated", true).apply()
-        runCatching { encryptedStore(activeProfile()).edit().remove("githubPublicationSession").apply() }
+    fun clearPublicationToken(profile: String = activeProfile()) {
+        if (cachedSession?.profile == profile) cachedSession = null
+        identityStore(profile).edit().putBoolean("publicationTokenInvalidated", true).apply()
+        runCatching { encryptedStore(profile).edit().remove("githubPublicationSession").apply() }
     }
 
     fun needsWorkflow(id: Long): Boolean = identityStore(activeProfile()).getBoolean("publicationWorkflowScope:$id", false)
@@ -81,10 +81,12 @@ internal class GitHubAccountStorage(
     }
 
     /** An explicit backup import may restore identity, but never reuses an old publication token. */
-    fun restoreIdentity(value: String) {
+    fun restoreIdentity(value: String, profile: String = activeProfile()) {
         val identity = parseIdentity(value) ?: return
-        clearPublicationToken()
-        identityStore(activeProfile()).edit().putString("identity", identity.toString()).remove("signedOut").apply()
+        clearPublicationToken(profile)
+        check(identityStore(profile).edit().putString("identity", identity.toString()).remove("signedOut").commit()) {
+            "Could not restore the GitHub account identity"
+        }
     }
 
     private fun parseIdentity(value: String?): JSONObject? = runCatching {

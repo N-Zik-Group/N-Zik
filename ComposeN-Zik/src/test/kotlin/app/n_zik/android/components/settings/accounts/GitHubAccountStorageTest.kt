@@ -111,4 +111,25 @@ class GitHubAccountStorageTest {
         assertFalse(accounts.needsWorkflow(123))
         assertEquals("second-token", accounts.tokenFor(123))
     }
+
+    @Test
+    fun restoringAnInactiveAccountInvalidatesItsCachedTokenAndSurvivesStoreRestart() {
+        val accounts = storage()
+        accounts.save(123, "creator", "first-token", 9000)
+        profile = "second"
+        accounts.save(456, "active", "second-token", 9000)
+        profile = "first"
+        accounts.save(123, "creator", "cached-first-token", 9000)
+        profile = "second"
+
+        accounts.restoreIdentity("""{"id":123,"login":"restored"}""", "first")
+
+        assertEquals(456L, accounts.userId())
+        assertEquals("second-token", accounts.tokenFor(456))
+        profile = "first"
+        assertEquals("restored", accounts.login())
+        assertNull(accounts.tokenFor(123))
+        assertNull(storage().tokenFor(123))
+        assertFalse(secrets("first").contains("githubPublicationSession"))
+    }
 }

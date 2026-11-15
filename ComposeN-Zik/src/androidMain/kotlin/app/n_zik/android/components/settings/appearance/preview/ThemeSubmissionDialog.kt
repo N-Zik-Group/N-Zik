@@ -110,7 +110,14 @@ internal fun ThemeSubmissionPage(navController: NavController, miniPlayer: @Comp
     val profileId = getActiveProfile(context)
     val localKey = themeId.takeIf { it.startsWith("local:") }?.removePrefix("local:")
     val library = remember(context, profileId) { ThemeStoreLibrary(context.preferences) }
-    val localTheme = remember(library, localKey) { localKey?.let(library::download)?.takeIf { it.imported } }
+    val localThemeSnapshot by rememberSaveable(profileId, localKey) {
+        mutableStateOf(localKey?.let(library::download)?.takeIf { it.imported }?.let {
+            Json.encodeToString(SavedTheme.serializer(), it)
+        })
+    }
+    val localTheme = remember(localThemeSnapshot) {
+        localThemeSnapshot?.let { Json.decodeFromString(SavedTheme.serializer(), it) }
+    }
     val creatingLocal = themeId == "local-new"
     val localOnly = creatingLocal || localKey != null
     val catalog = remember(context, localOnly) { themeStoreCatalog(context, localOnly) }
@@ -175,9 +182,9 @@ internal fun ThemeSubmissionPage(navController: NavController, miniPlayer: @Comp
                     ),
                 )
             }, onLocalSaved = { saved ->
-                check(getActiveProfile(context) == profileId &&
-                    (creatingLocal || (localKey != null && library.download(localKey)?.imported == true)))
-                library.save(saved)
+                check(getActiveProfile(context) == profileId)
+                if (creatingLocal) library.save(saved)
+                else library.saveLocalEdit(checkNotNull(localTheme), saved)
             }, dismiss = { navController.popBackStack() })
         } else {
             Text(stringResource(R.string.theme_store_catalog_unavailable), Modifier.padding(padding))

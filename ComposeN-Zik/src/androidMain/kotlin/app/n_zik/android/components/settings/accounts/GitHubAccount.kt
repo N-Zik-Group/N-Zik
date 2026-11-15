@@ -41,12 +41,11 @@ import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.settings.appearance.preview.prepareCreatorThemeStoreFork
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.ui.screens.profiles.profileSecurePrefs
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.getActiveProfile
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import java.net.URI
 import java.net.URL
 import android.content.ClipData
@@ -187,24 +186,10 @@ internal object GitHubAccount {
     private fun storage(context: Context): GitHubAccountStorage {
         val app = context.applicationContext
         accountStorage?.let { (owner, storage) -> if (owner === app) return storage }
-        val encryptedStores = mutableMapOf<String, android.content.SharedPreferences>()
         return GitHubAccountStorage(
             activeProfile = { getActiveProfile(app) },
             identityStore = { app.getSharedPreferences("github_account_profile_$it", Context.MODE_PRIVATE) },
-            encryptedStore = { profile ->
-                synchronized(encryptedStores) {
-                    encryptedStores.getOrPut(profile) {
-                        EncryptedSharedPreferences.create(
-                            app,
-                            "secure_preferences" + if (profile == "default") "" else "_$profile",
-                            MasterKey.Builder(app, MasterKey.DEFAULT_MASTER_KEY_ALIAS)
-                                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-                            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-                        )
-                    }
-                }
-            },
+            encryptedStore = { profile -> profileSecurePrefs(app, profile) },
             legacyIdentityStore = app.getSharedPreferences("github_account", Context.MODE_PRIVATE),
         ).also { accountStorage = app to it }
     }
@@ -219,10 +204,10 @@ internal object GitHubAccount {
         login.value = storage(context).login()
     }
 
-    fun restoreIdentity(context: Context, identity: String) {
-        cancel()
-        storage(context).restoreIdentity(identity)
-        read(context)
+    fun restoreIdentity(context: Context, identity: String, profile: String = getActiveProfile(context)) {
+        if (getActiveProfile(context) == profile) cancel()
+        storage(context).restoreIdentity(identity, profile)
+        if (getActiveProfile(context) == profile) read(context)
     }
 
     internal class SetupSession(val id: Long, val login: String, val token: String, val expires: Long, val profile: String = "default")

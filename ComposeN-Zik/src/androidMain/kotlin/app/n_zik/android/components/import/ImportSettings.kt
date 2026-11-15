@@ -19,6 +19,7 @@ import timber.log.Timber
 import java.io.InputStream
 
 import app.n_zik.android.components.ImportFromFile
+import app.n_zik.android.components.settings.accounts.GitHubAccount
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.core.backup.SettingsPreferencesBridge
@@ -53,6 +54,8 @@ class ImportSettings private constructor(
                 check(editor.commit()) { "Could not save the settings" }
                 check(encryptedEditor.commit()) { "Could not save the credentials" }
                 check(glassEditor?.commit() ?: true) { "Could not save the Glass settings" }
+                rows.lastOrNull { it.second == "githubBackupIdentity" && it.first.equals("string", ignoreCase = true) }
+                    ?.third?.let { GitHubAccount.restoreIdentity(context, it, profile) }
             }
             Timber.tag("ImportSettings").d("Settings import complete")
         }
