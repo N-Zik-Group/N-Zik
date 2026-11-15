@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="backup_export_themes_description">Spara hämtade och lokala teman till en ZIP-säkerhetskopia</string>
+    <string name="backup_import_themes_description">Återställ hämtade och lokala teman från en ZIP-säkerhetskopia</string>
+    <string name="backup_export_select_all_description">Välj varje typ av data att exportera</string>
+    <string name="backup_import_select_all_description">Välj varje typ av data att importera</string>
+    <string name="backup_include_github_identity_credentials">Inkludera GitHub-identitetsuppgifter</string>
     <string name="storage_image_quality_title">Bildens kvalitet</string>
     <string name="storage_image_quality_description">Gäller för online-konstverk och nytillagda omslag och profilbilder. Original använder högsta möjliga kvalitet och kan använda mer lagring och data.</string>
     <string name="storage_image_quality_optimized">Optimerad</string>
@@ -116,9 +121,9 @@
     <string name="backup_before_update_failed">Säkerhetskopiering före installation misslyckades</string>
     <string name="backup_before_update_running_message">Säkerhetskopierar data före installation…</string>
     <string name="backup_before_update_running_title">Säkerhetskopiering pågår</string>
-    <string name="backup_excluded_preferences_and_cache_description">Personliga inställningar (dvs. temaläget) och cachen är uteslutna.</string>
-    <string name="backup_export_library_options_description">Exportera databasen med sina egna omslag, inställningar eller profiler</string>
-    <string name="backup_import_library_options_description">Återställ en SQLite-eller ZIP-databas backup, inställningar eller profiler</string>
+    <string name="backup_export_separate_files_description">Varje vald kategori exporteras till en separat fil. Cache-filer och Stock-temat är uteslutet.</string>
+    <string name="backup_export_with_themes_description">Exportera databasen med sina egna omslag, inställningar, teman eller profiler</string>
+    <string name="backup_import_with_themes_description">Återställ en SQLite-eller ZIP-databas säkerhetskopiering, inställningar, teman eller profiler</string>
     <string name="backup_include_discord_credentials">Inkludera Discords identitetsuppgifter</string>
     <string name="backup_include_lastfm_credentials">Inkludera Last.fm identitetsuppgifter</string>
     <string name="backup_include_proxy_password">Inkludera proxylösenordet</string>
@@ -251,4 +256,34 @@
     <string name="export_cached_songs_generic_error">Exporten misslyckades</string>
     <string name="backup_startup_preparing_library">Förbereder ditt bibliotek…</string>
     <string name="backup_startup_recovery_failed">Kunde inte slutföra återställningen av ditt bibliotek.</string>
+    <string name="storage_breakdown_themes">Teman</string>
+    <string name="storage_info_themes">Sparade tema poster och delade Tema Store tillgångar, förhandsvisningar och utkast.</string>
+    <string name="storage_breakdown_lyrics">Låttext</string>
+    <string name="storage_info_lyrics">Textbyte för hämtade och anpassade låttexter lagrade i profildatabasen.</string>
+    <string name="storage_cleanup_clear_theme_cache">Rensa temacache</string>
+    <string name="storage_cleanup_theme_cache_description">Tar bort delad katalog metadata. Sparade teman, utkast och deras förhandsvisningar behålls.</string>
+    <string name="storage_cleanup_clear_lyrics">Rensa hämtade låttexter</string>
+    <string name="storage_cleanup_lyrics_description">Tar bort automatiskt hämtade låttexter. Anpassade låttexter behålls. Fria sidor kan återanvändas av biblioteksdatabasen.</string>
+    <string name="backup_auto_enabled_title">Aktivera automatisk säkerhetskopiering</string>
+    <string name="backup_auto_enabled_description">Pausa automatiska säkerhetskopior och behåll dina säkerhetskopieringsinställningar.</string>
+    <string name="storage_cleanup_picker_title">Ren förvaring</string>
+    <string name="storage_cleanup_picker_description">Välj vilka filer och data som ska rensas för detta omfång.</string>
+    <string name="storage_cleanup_select_caches">Välj cacher</string>
+    <string name="storage_cleanup_select_caches_description">Välj cacher och temporära filer.</string>
+    <string name="storage_cleanup_select_everything">Välj allt</string>
+    <string name="storage_cleanup_select_everything_description">Välj cacher och data, inklusive offline nedladdningar.</string>
+    <string name="storage_cleanup_cache_group">Cacher och temporära filer</string>
+    <string name="storage_cleanup_delete_group">Data att ta bort</string>
+    <string name="storage_cleanup_review_selection">Granska</string>
+    <string name="storage_cleanup_selected_confirmation">Rensa de markerade objekten i denna omfattning?</string>
+    <string name="storage_cleanup_option_cached_images">Cachade bilder</string>
+    <string name="storage_cleanup_option_streamed_audio">Strömmat ljud</string>
+    <string name="storage_cleanup_option_waveforms">Vågform</string>
+    <string name="storage_cleanup_option_network_cache">Nätverkscache</string>
+    <string name="storage_cleanup_option_diagnostic_logs">Diagnostiska loggar</string>
+    <string name="storage_cleanup_option_temporary_files">Tillfälliga filer</string>
+    <string name="storage_cleanup_option_theme_catalog">Tema Butik cache</string>
+    <string name="storage_cleanup_option_fetched_lyrics">Hämtade låttexter automatiskt</string>
+    <string name="storage_cleanup_option_offline_downloads">Nedladdat ljud</string>
+    <string name="storage_cleanup_completed">Rensningen är klar.</string>
 </resources>
