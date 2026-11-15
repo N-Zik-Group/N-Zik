@@ -248,7 +248,6 @@ import androidx.compose.runtime.snapshotFlow
 import app.n_zik.android.core.utils.Toaster
 import timber.log.Timber
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import java.util.IdentityHashMap
 import kotlin.io.path.createTempDirectory
@@ -2580,12 +2579,6 @@ class PlayerServiceModern : MediaLibraryService(),
             binder.player.isPlaying
         )
 
-        val actions = Triple(
-            if( status.third ) binder::gracefulPause else binder::gracefulPlay,
-            binder.player::seekToPrevious,
-            binder.player::seekToNext
-        )
-
         val playerDuration = binder.player.duration.coerceAtLeast(0)
         val playerPosition = binder.player.currentPosition.coerceAtLeast(0)
         val currentBitmap = bitmapProvider.bitmap
@@ -2593,12 +2586,6 @@ class PlayerServiceModern : MediaLibraryService(),
             ?: binder.player.currentMediaItem?.mediaMetadata?.artworkUri)?.toString()
 
         widgetRenderJob = coroutineScope.launch(NzikDispatchers.DATA) {
-            // Save bitmap to file for backward compatibility or other widgets
-            val file = File( cacheDir, "widget_thumbnail.png" )
-            FileOutputStream(file).use { outStream ->
-                currentBitmap.compress( Bitmap.CompressFormat.PNG, 50, outStream )
-            }
-            
             // New Widget architecture (NZik)
             val songId = currentMediaId?.split("/")?.lastOrNull() ?: currentMediaId
             val currentSong = if (songId != null) Database.songTable.findByIdDirect(songId) else null
@@ -2615,9 +2602,6 @@ class PlayerServiceModern : MediaLibraryService(),
                 currentPosition = playerPosition,
                 artworkUri = artworkUri,
             )
-
-            // Remove old widget update calls when deleting old widgets.
-            // (Widget.Horizontal and Widget.Vertical were deleted)
         }
     }
 
