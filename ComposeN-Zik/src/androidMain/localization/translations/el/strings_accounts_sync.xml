@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">Σύνδεση Στο GitHub</string>
+    <string name="github_account_logout">Αποσύνδεση Του GitHub</string>
+    <string name="github_account_description">Χρησιμοποιήστε τον λογαριασμό σας GitHub στο Κατάστημα Θεμάτων.</string>
+    <string name="github_account_offline">Συνδεθείτε για να συνδεθείτε στο GitHub.</string>
+    <string name="github_account_code">Εισάγετε το %1$s στο GitHub για να ολοκληρώσετε την σύνδεση.</string>
+    <string name="github_account_code_copied">Ο κωδικός GitHub αντιγράφηκε στο πρόχειρο.</string>
+    <string name="github_account_login_failed">Δεν ήταν δυνατή η σύνδεση με το GitHub. Δοκιμάστε ξανά.</string>
+    <string name="github_account_connected">Το GitHub συνδέθηκε.</string>
     <!-- Account -->
     <string name="account_action_login">Σύνδεση</string>
     <string name="account_action_logout">Αποσύνδεση</string>
