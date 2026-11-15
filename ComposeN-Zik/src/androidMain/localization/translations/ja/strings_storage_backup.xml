@@ -3,6 +3,7 @@
     <string name="backup_export_themes_description">ダウンロードしたテーマとローカルテーマをZIPバックアップに保存する</string>
     <string name="backup_import_themes_description">ZIPバックアップからダウンロードしたテーマとローカルテーマを復元</string>
     <string name="backup_export_select_all_description">エクスポートするすべての種類のデータを選択します</string>
+    <string name="backup_import_already_running">バックアップのインポートは既に進行中です。</string>
     <string name="backup_import_select_all_description">インポートするデータの種類を選択してください</string>
     <string name="backup_include_github_identity_credentials">GitHub の ID 資格情報を含める</string>
     <string name="storage_image_quality_title">画像品質</string>
