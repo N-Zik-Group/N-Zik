@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.offline.Download
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.components.song.EmptySongMetadataRule
 import app.n_zik.android.enums.DownloadedStateMedia
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.enums.PlaylistSwipeAction
@@ -72,7 +73,8 @@ import java.util.concurrent.TimeUnit
 @Config(sdk = [32], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassRippleProviderTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule(order = 0) val songMetadata = EmptySongMetadataRule()
+    @get:Rule(order = 1) val compose = createComposeRule()
 
     @Test fun `nested panes use their own ripple settings and off restores native locals`() {
         val nativeConfiguration = RippleConfiguration(Color.Black)
@@ -261,6 +263,7 @@ class GlassRippleProviderTest {
     @OptIn(ExperimentalFoundationApi::class)
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     @Test fun `real song in swipeable playlist and real playlist item inherit glass hold without changing callbacks`() {
+        songMetadata.stub()
         val context: Context = ApplicationProvider.getApplicationContext()
         setActiveProfile("default", context)
         context.preferences.edit().clear().putBoolean(disableScrollingTextKey, true)

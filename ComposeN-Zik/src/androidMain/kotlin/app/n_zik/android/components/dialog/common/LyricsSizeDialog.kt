@@ -48,7 +48,7 @@ fun LyricsSizeDialog(
                 sizeValue(lyricsSize)
                 sizeValueL(lyricsSizeL)
                 onDismiss()
-            })))
+            }, danger = true)))
         }
     ) {
 

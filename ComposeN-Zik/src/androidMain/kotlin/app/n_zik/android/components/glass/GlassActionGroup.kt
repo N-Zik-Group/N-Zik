@@ -86,6 +86,7 @@ fun GlassActionGroup(
     drawSurface: Boolean = true,
     leadingActionJoinProgress: Float? = null,
     filmColor: Color? = null,
+    detachRemainingActionsOnMenu: Boolean = false,
     content: @Composable RowScope.() -> Unit,
 ) {
     val cellSize = LocalGlassActionCellSize.current
@@ -164,7 +165,7 @@ fun GlassActionGroup(
         modifier = modifier.onGloballyPositioned { rootWidth = it.findRootCoordinates().size.width },
     ) {
         val returning = !transferred && rejoin.value < 1f
-        val separated = menuActionCount != null && (middleTrigger && transferred || returning &&
+        val separated = menuActionCount != null && ((middleTrigger || detachRemainingActionsOnMenu) && transferred || returning &&
             (kotlin.math.abs(neighborShift.value) > .5f || kotlin.math.abs(rightShift.value) > .5f))
         if (separated && drawSurface) {
             repeat(menuActionCount ?: 0) { index ->

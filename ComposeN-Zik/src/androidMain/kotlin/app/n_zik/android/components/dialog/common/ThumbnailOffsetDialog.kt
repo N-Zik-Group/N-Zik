@@ -73,7 +73,7 @@ fun ThumbnailOffsetDialog(
                 fadeValueEx(thumbnailFadeEx)
                 imageCoverSizeValue(imageCoverSize)
                 onDismiss()
-            })))
+            }, danger = true)))
         }
     ) {
         if (showCoverThumbnailAnimation) {

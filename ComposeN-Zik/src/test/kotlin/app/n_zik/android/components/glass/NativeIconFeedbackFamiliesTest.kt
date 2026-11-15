@@ -10,7 +10,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertWidthIsEqualTo
 import androidx.compose.ui.test.click
@@ -18,7 +17,6 @@ import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
@@ -119,18 +117,19 @@ class NativeIconFeedbackFamiliesTest {
                 LocalGlassPreviewSettings provides GlassSettings(enabled = false)) {
                 Row {
                     DownloadStateIconButton({ clicks[0]++ }, { error("Idle must not cancel") },
-                        R.drawable.download, Color.Blue, Modifier.testTag("download.idle").padding(11.dp).size(20.dp),
+                        R.drawable.download, Color.Blue, Modifier.padding(11.dp).size(20.dp),
                         downloadState = Download.STATE_STOPPED)
                     DownloadStateIconButton({ error("Queued must cancel") }, { clicks[1]++ },
-                        R.drawable.download, Color.Blue, Modifier.testTag("download.queued").padding(11.dp).size(20.dp),
+                        R.drawable.download, Color.Blue, Modifier.padding(11.dp).size(20.dp),
                         downloadState = Download.STATE_QUEUED)
                 }
             }
         }
-        listOf("download.idle", "download.queued").forEach { tag ->
-            val node = compose.onNodeWithTag(tag)
-            node.assertWidthIsEqualTo(42.dp).assertHeightIsEqualTo(42.dp)
-            node.performTouchInput { click(Offset(1f, center.y)) }
+        val owners = compose.onAllNodes(hasClickAction() and !hasAnyDescendant(hasClickAction()), useUnmergedTree = true)
+        assertEquals(2, owners.fetchSemanticsNodes().size)
+        repeat(2) { index ->
+            owners[index].assertWidthIsEqualTo(42.dp).assertHeightIsEqualTo(42.dp)
+                .performTouchInput { click(Offset(1f, center.y)) }
         }
         compose.runOnIdle { assertEquals(listOf(1, 1), clicks.toList()) }
     }

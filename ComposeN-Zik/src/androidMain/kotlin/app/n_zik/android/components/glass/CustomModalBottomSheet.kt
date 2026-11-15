@@ -67,6 +67,7 @@ fun CustomModalBottomSheet(
         MenuSheetDragHandle()
     },
     contentWindowInsets: @Composable () -> WindowInsets = { WindowInsets.ime },
+    useSharedHost: Boolean = true,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val sheetShape = remember(shape) { straightBottomMenuShape(shape) }
@@ -77,7 +78,7 @@ fun CustomModalBottomSheet(
     val glassSheet = glass.usesGlassMaterial(GlassArea.Menus) && containerColor != Color.Transparent
     val host = LocalGlassMenuHost.current
     val sameWindow = host?.dialogs?.windowRoot === LocalView.current.rootView
-    if (canHostGlassMenuSheet(glass, glassRenderer(glass),
+    if (useSharedHost && canHostGlassMenuSheet(glass, glassRenderer(glass),
             sameWindow && currentGlassOverlayBackdrop() != null)) {
         SharedGlassMenuSheet(
             showSheet = showSheet,

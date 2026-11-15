@@ -65,7 +65,7 @@ inline fun SelectorArtistsDialog(
         title = title,
         modifier = modifier,
         footer = {
-            ButtonRow(listOf(DialogButton(stringResource(R.string.common_action_close), onClick = onDismiss)))
+            ButtonRow(listOf(DialogButton(stringResource(R.string.common_action_close), onClick = onDismiss, danger = true)))
         }
     ) {
         Box(

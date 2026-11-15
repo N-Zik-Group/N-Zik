@@ -69,7 +69,7 @@ fun DialogColorPicker(
         onDismiss = onDismiss,
         footer = {
             ButtonRow(listOf(
-                DialogButton(text = stringResource(R.string.common_action_cancel), icon = R.drawable.close, onClick = onDismiss),
+                DialogButton(text = stringResource(R.string.common_action_cancel), icon = R.drawable.close, onClick = onDismiss, danger = true),
                 DialogButton(text = stringResource(R.string.common_action_apply), icon = R.drawable.checkmark, primary = true, onClick = {
                     onColorSelected(backgroundColor.value)
                     onDismiss()

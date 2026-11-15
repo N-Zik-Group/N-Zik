@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.components.song.EmptySongMetadataRule
 import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.SwipeableContent
 import app.n_zik.android.ui.styling.Appearance
@@ -56,7 +57,8 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [32], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassQueueSwipeUnderlayTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule(order = 0) val songMetadata = EmptySongMetadataRule()
+    @get:Rule(order = 1) val compose = createComposeRule()
     private val context get() = ApplicationProvider.getApplicationContext<Application>()
 
     @After fun clearPreferences() {
@@ -66,6 +68,7 @@ class GlassQueueSwipeUnderlayTest {
     @OptIn(ExperimentalFoundationApi::class)
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     @Test fun `partially swiped real current row samples underlying swipe film and glyph without its own foreground`() {
+        songMetadata.stub()
         context.preferences.edit().clear().putBoolean(disableScrollingTextKey, true).commit()
         val player = mockk<Player>(relaxed = true)
         every { player.currentMediaItem } returns MediaItem.Builder().setMediaId("local:current").build()

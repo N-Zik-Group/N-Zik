@@ -41,7 +41,7 @@ internal fun GlassDialogButtonFeedback(
     content: @Composable (Modifier, MutableInteractionSource?) -> Unit,
 ) {
     PageButtonFeedback(settings.usesGlassDialogButtonMaterial(), enabled, shape,
-        interactionSource, settings, content = content)
+        interactionSource, settings, animateContentLayer = true, content = content)
 }
 
 /** Material icon geometry and input remain native; the caller's material is inside the motion. */

@@ -38,6 +38,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.song.EmptySongMetadataRule
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
@@ -86,7 +87,8 @@ class GlassQueueRowSceneTest {
             }
         }
     }
-    @get:Rule(order = 1) val compose = createComposeRule()
+    @get:Rule(order = 1) val songMetadata = EmptySongMetadataRule()
+    @get:Rule(order = 2) val compose = createComposeRule()
 
     @Test fun `queue scene excludes its own handle and front peers while retaining objects behind it`() {
         var scene: QueueRowScene? = null
@@ -239,6 +241,7 @@ class GlassQueueRowSceneTest {
     @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     @Test fun `normal spaced real queue row source excludes its own artwork and badge`() {
+        songMetadata.stub()
         val context = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()
         context.preferences.edit().clear().putBoolean(app.n_zik.android.utils.disableScrollingTextKey, true).commit()
         val player = io.mockk.mockk<androidx.media3.common.Player>(relaxed = true)

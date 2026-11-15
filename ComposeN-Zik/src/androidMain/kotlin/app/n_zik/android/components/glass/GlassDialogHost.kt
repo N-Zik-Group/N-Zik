@@ -164,7 +164,7 @@ internal fun GlassDialogWindow(
     val currentDismiss = rememberUpdatedState(onDismissRequest)
     val currentProperties = rememberUpdatedState(properties)
     val currentEdgeToEdge = rememberUpdatedState(edgeToEdge)
-    val currentBackdrop = rememberUpdatedState(currentGlassOverlayBackdrop())
+    val currentBackdrop = rememberUpdatedState(currentGlassOverlayBackdrop() ?: LocalIndependentGlassBackdrop.current)
     val currentDropdownOwner = rememberUpdatedState(LocalGlassDropdownBackdropOwner.current)
     val currentPresentation = rememberUpdatedState(presentation)
     DisposableEffect(host, id) {
@@ -284,6 +284,7 @@ fun GlassDialogOverlayHost(host: GlassMenuHostState) {
                         entry.contentAlpha() * dialogFadeAlpha(entry.exposure.value)
                     },
                     LocalGlassBackdrop provides dimmedSource,
+                    LocalIndependentGlassBackdrop provides null,
                     LocalGlassMaterialSource provides dimmedSource,
                     LocalGlassOverlayBackdrop provides completedBackdrop,
                     LocalGlassDropdownBackdropOwner provides null,

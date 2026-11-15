@@ -174,7 +174,7 @@ inline fun StringListDialog(
             title = stringResource(R.string.common_validation_name_in_use),
             onDismiss = { errorDialog = false },
             footer = {
-                ButtonRow(listOf(DialogButton(stringResource(R.string.common_action_close), onClick = { errorDialog = false })))
+                ButtonRow(listOf(DialogButton(stringResource(R.string.common_action_close), onClick = { errorDialog = false }, danger = true)))
             }
         ) {
             BasicText(text = conflictTitle, style = typography().s.copy(color = colorPalette().text))

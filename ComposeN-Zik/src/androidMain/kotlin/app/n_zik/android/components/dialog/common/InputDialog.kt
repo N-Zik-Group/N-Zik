@@ -2,7 +2,7 @@ package app.n_zik.android.components.dialog.common
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.TextField
+import app.n_zik.android.components.glass.GlassTextField as TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable

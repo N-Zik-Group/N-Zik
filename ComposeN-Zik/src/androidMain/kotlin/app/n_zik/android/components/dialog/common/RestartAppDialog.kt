@@ -45,7 +45,7 @@ object RestartAppDialog: ConfirmDialog {
             DialogButton(
                 text = stringResource(R.string.common_action_close_app),
                 onClick = ::onConfirm,
-                primary = true
+                danger = true
             )
         )
     )

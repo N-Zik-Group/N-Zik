@@ -17,8 +17,8 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.background
+import androidx.compose.ui.draw.shadow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -55,8 +55,9 @@ import app.n_zik.android.components.glass.GlassDialogWindow
 import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.canHostGlassDialog
 import app.n_zik.android.components.glass.glassRenderer
-import app.n_zik.android.components.glass.GlassMaterialContainerColumn
+import app.n_zik.android.components.glass.GlassMaterialContainerScope
 import app.n_zik.android.components.glass.LocalGlassBackdrop
+import app.n_zik.android.components.glass.LocalIndependentGlassBackdrop
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.usesGlassMaterial
@@ -86,7 +87,8 @@ fun DialogFrame(
     val glassHost = LocalGlassMenuHost.current
     val sameWindow = glassHost?.dialogs?.windowRoot === LocalView.current.rootView
     val useGlass = glass.usesGlassMaterial(GlassArea.Dialogs)
-    val useSharedHost = canHostGlassDialog(glass, glassRenderer(glass), sameWindow && glassHost?.modalBackdrop != null)
+    val hasBackdrop = LocalIndependentGlassBackdrop.current != null || glassHost?.modalBackdrop != null
+    val useSharedHost = canHostGlassDialog(glass, glassRenderer(glass), sameWindow && hasBackdrop)
     val shape = uiRoundnessShape()
     val surface = surfaceColor(colorPalette().background1)
     val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
@@ -130,7 +132,7 @@ fun DialogFrame(
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Card(
+                Box(
                     modifier = modifier
                         .testTag("dialogFrameCard")
                         .onGloballyPositioned { cardBounds.value = it.boundsInParent() }
@@ -157,17 +159,13 @@ fun DialogFrame(
                             scaleX = dialogScale(motion)
                             scaleY = scaleX
                         }
-                        .then(if (useGlass) Modifier else Modifier.glassAreaContour(glass, GlassArea.Dialogs, shape)),
-                    shape = shape,
-                    colors = CardDefaults.cardColors(
-                        // Elevated surface: dark gray in pitch black instead of pure black
-                        containerColor = if (useGlass) Color.Transparent else surface
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = if (useGlass) 0.dp else 8.dp)
+                        .then(if (useGlass) Modifier else Modifier
+                            .shadow(8.dp, shape, clip = false)
+                            .background(surface, shape)
+                            .glassAreaContour(glass, GlassArea.Dialogs, shape)),
                 ) {
-                    GlassMaterialContainerColumn(
-                        modifier = Modifier.fillMaxWidth().testTag(if (useGlass) "dialogFrameGlass" else "dialogFrameNative")
-                            .glassOverlayPaint(if (useGlass) glass.forArea(GlassArea.Dialogs).film else surface.alpha),
+                    GlassMaterialContainerScope(
+                        modifier = Modifier,
                         sectionFilm = if (useGlass) null else surface,
                         materialSource = if (useGlass) materialSource else null,
                         material = if (useGlass) ({ exported -> Modifier.glassMaterial(
@@ -176,7 +174,12 @@ fun DialogFrame(
                             excludeBottomRim = false,
                             exportedBackdrop = exported,
                         ) }) else null,
-                    ) {
+                    ) { plate ->
+                        // The plate owns its clip; the footer can stretch past it during Jelly.
+                        Box(Modifier.matchParentSize()
+                            .glassOverlayPaint(if (useGlass) glass.forArea(GlassArea.Dialogs).film else surface.alpha)
+                            .then(plate))
+                        Column(Modifier.fillMaxWidth().testTag(if (useGlass) "dialogFrameGlass" else "dialogFrameNative")) {
                         // Shared-window actions sample the child-free visible plate. Native
                         // windows retain direct alpha compositing: sampling their transparent
                         // tint export again would apply that same parent film twice.
@@ -221,6 +224,7 @@ fun DialogFrame(
                                     content = it
                                 )
                             }
+                        }
                         }
                     }
                 }

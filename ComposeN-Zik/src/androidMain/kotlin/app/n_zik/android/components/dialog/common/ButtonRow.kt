@@ -56,7 +56,7 @@ internal fun DialogActionList(title: String, onDismiss: () -> Unit, actions: Lis
     DefaultDialog(
         onDismiss = onDismiss,
         title = title,
-        footer = { ButtonRow(listOf(DialogButton(stringResource(R.string.common_action_cancel), onDismiss))) }
+        footer = { ButtonRow(listOf(DialogButton(stringResource(R.string.common_action_cancel), onDismiss, danger = true))) }
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             actions.forEach { action -> ButtonRow(listOf(action)) }
@@ -161,7 +161,8 @@ private fun pillModifier(button: DialogButton, palette: ColorPalette, modifier: 
         .fillMaxWidth()
         .clip(shape)
         .glassDialogButtonBackground(
-            if (button.primary) palette.accent
+            if (!button.enabled) palette.background2
+            else if (button.primary) palette.accent
             else if (button.danger) palette.red
             else palette.background2,
             shape = shape,

@@ -66,7 +66,7 @@ fun <T> ValueSelectorDialog(
                     DialogButton(
                         text = stringResource(R.string.common_action_close),
                         onClick = onDismiss,
-                        primary = true
+                        danger = true
                     )
                 )
             )

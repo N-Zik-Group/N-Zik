@@ -34,6 +34,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.components.song.EmptySongMetadataRule
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.models.Song
 import app.n_zik.android.ui.styling.Appearance
@@ -65,9 +66,11 @@ import java.io.File
 @Config(sdk = [32], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class SongThumbnailOverlayTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule(order = 0) val songMetadata = EmptySongMetadataRule()
+    @get:Rule(order = 1) val compose = createComposeRule()
 
     @Test fun `real song retains native thumbnail overlay and offset like pixels in both glass modes`() {
+        songMetadata.stub()
         val context = ApplicationProvider.getApplicationContext<Context>()
         context.preferences.edit().clear().putBoolean(disableScrollingTextKey, true).commit()
         val glass = mutableStateOf(false)

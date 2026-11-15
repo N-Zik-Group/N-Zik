@@ -64,6 +64,7 @@ import app.n_zik.android.components.glass.backdrop.highlight.HighlightStyle
 import app.n_zik.android.components.glass.backdrop.shadow.Shadow
 
 val LocalGlassBackdrop = staticCompositionLocalOf<Backdrop?> { null }
+internal val LocalIndependentGlassBackdrop = staticCompositionLocalOf<Backdrop?> { null }
 internal val GlassRimWidth = 0.8.dp
 
 /** Draws a fallback menu rim without laying out, masking, or moving the glass underneath. */
@@ -269,7 +270,8 @@ fun Modifier.glassMaterial(
     excludeBottomRim: Boolean = menu,
 ): Modifier {
     if (!settings.enabled) return this
-    val backdrop = when {
+    val independentBackdrop = LocalIndependentGlassBackdrop.current
+    val backdrop = independentBackdrop ?: when {
         ownBackdrop is RenderedMaterialBackdrop -> ownBackdrop
         ownBackdrop != null && ownBackdrop === LocalGlassContainerBackdrop.current ->
             LocalGlassMaterialSource.current ?: ownBackdrop
