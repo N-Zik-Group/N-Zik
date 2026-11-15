@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">דף ברירת מחדל</string>
     <string name="settings_interface_corner_radius_label">UI Roundness</string>
     <string name="settings_interface_hide_status_bar_label">Hide status bar</string>
+    <string name="settings_interface_right_to_left_label">Right-to-left layout</string>
+    <string name="settings_interface_right_to_left_description">Mirror the interface independently of the app language.</string>
     <string name="settings_interface_page_description">The user interface section contains settings to modify the global interface and navigation</string>
     <string name="settings_interface_page_title">מצב ממשק</string>
     <string name="settings_interface_title">ממשק משתמש</string>
