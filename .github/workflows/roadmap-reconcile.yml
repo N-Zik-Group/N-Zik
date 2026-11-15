@@ -1,0 +1,24 @@
+name: Reconcile the N-Zik Roadmap
+
+on:
+  schedule:
+    - cron: '8,23,38,53 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Show planned transitions without changing GitHub or saving state
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+jobs:
+  reconcile:
+    uses: N-Zik-Group/N-Zik-Theme-Store/.github/workflows/roadmap-reconcile-shared.yml@main
+    with:
+      dry_run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+    secrets:
+      ROADMAP_TOKEN: ${{ secrets.ROADMAP_TOKEN }}

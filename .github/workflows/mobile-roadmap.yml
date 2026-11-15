@@ -1,0 +1,30 @@
+name: N-Zik Roadmap
+
+on:
+  issues:
+    types: [opened, closed, reopened]
+  pull_request_target:
+    types: [opened, closed, reopened]
+  workflow_dispatch:
+    inputs:
+      number:
+        description: Issue or pull request number (optional for a read-only verification)
+        type: string
+      dry_run:
+        description: Verify and show planned actions without changing GitHub
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  roadmap:
+    uses: N-Zik-Group/N-Zik-Theme-Store/.github/workflows/roadmap-shared.yml@main
+    with:
+      number: ${{ inputs.number || '' }}
+      dry_run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+    secrets:
+      ROADMAP_TOKEN: ${{ secrets.ROADMAP_TOKEN }}

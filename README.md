@@ -332,6 +332,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, verification and pull requests
 [![Update Android Lockdown Countdown](https://github.com/N-Zik-Group/N-Zik/actions/workflows/update-android-lockdown-countdown.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/update-android-lockdown-countdown.yml)  
 [![Sync Listen Together proto from metroproto](https://github.com/N-Zik-Group/N-Zik/actions/workflows/sync-metroproto.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/sync-metroproto.yml)  
 [![Add labels](https://github.com/N-Zik-Group/N-Zik/actions/workflows/add-labels.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/add-labels.yaml)  
+[![N-Zik Roadmap](https://github.com/N-Zik-Group/N-Zik/actions/workflows/mobile-roadmap.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/mobile-roadmap.yml) [N-Zik roadmap](https://github.com/orgs/N-Zik-Group/projects/1) <br />
 [![Auto-assign issues](https://github.com/N-Zik-Group/N-Zik/actions/workflows/auto-assign-issues.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/auto-assign-issues.yml)  
 [![CodeQL](https://github.com/N-Zik-Group/N-Zik/actions/workflows/codeql.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/codeql.yml)  
 [![Label automation tests](https://github.com/N-Zik-Group/N-Zik/actions/workflows/label-automation-tests.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/label-automation-tests.yml)  
