@@ -116,9 +116,6 @@
     <string name="backup_before_update_failed">Pre-install backup failed</string>
     <string name="backup_before_update_running_message">Backing up data before installation…</string>
     <string name="backup_before_update_running_title">Backup in progress</string>
-    <string name="backup_excluded_preferences_and_cache_description">העדפות אישיות (כלומר ערכת הנושא) והמטמון אינם נכללים.</string>
-    <string name="backup_export_library_options_description">Export the database with its custom covers, settings, or profiles</string>
-    <string name="backup_import_library_options_description">Restore a SQLite or ZIP database backup, settings, or profiles</string>
     <string name="backup_include_discord_credentials">Include Discord identity credentials</string>
     <string name="backup_include_lastfm_credentials">Include Last.fm identity credentials</string>
     <string name="backup_include_proxy_password">Include the proxy password</string>

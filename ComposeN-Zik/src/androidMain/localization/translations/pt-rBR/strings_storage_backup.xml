@@ -116,9 +116,6 @@
     <string name="backup_before_update_failed">Falha no backup de pré-instalação</string>
     <string name="backup_before_update_running_message">Fazendo backup dos dados antes da instalação…</string>
     <string name="backup_before_update_running_title">Backup em andamento</string>
-    <string name="backup_excluded_preferences_and_cache_description">Preferências pessoais (ou seja, o modo de tema) e o cache são excluídos.</string>
-    <string name="backup_export_library_options_description">Exportar o banco de dados com suas capas, configurações ou perfis personalizados</string>
-    <string name="backup_import_library_options_description">Restaurar um backup de banco de dados SQLite ou ZIP, configurações ou perfis</string>
     <string name="backup_include_discord_credentials">Incluir credenciais de identidade do Discord</string>
     <string name="backup_include_lastfm_credentials">Incluir credenciais de identidade Last.fm</string>
     <string name="backup_include_proxy_password">Incluir a senha do proxy</string>

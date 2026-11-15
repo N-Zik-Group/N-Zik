@@ -116,9 +116,6 @@
     <string name="backup_before_update_failed">فشل النسخ الاحتياطي للتثبيت</string>
     <string name="backup_before_update_running_message">جارٍ النسخ الاحتياطي للبيانات قبل التثبيت…</string>
     <string name="backup_before_update_running_title">جارٍ النسخ الاحتياطي</string>
-    <string name="backup_excluded_preferences_and_cache_description">يتم استبعاد التفضيلات الشخصية (أي وضع الثيم) وذاكرة التخزين المؤقت.</string>
-    <string name="backup_export_library_options_description">تصدير قاعدة البيانات مع غلاف مخصص أو إعدادات أو ملفات شخصية</string>
-    <string name="backup_import_library_options_description">استعادة نسخة احتياطية لقاعدة بيانات SQLite أو ZIP أو الإعدادات أو الملفات الشخصية</string>
     <string name="backup_include_discord_credentials">تضمين بيانات اعتماد هوية ديسكورد</string>
     <string name="backup_include_lastfm_credentials">قم بتضمين بيانات اعتماد هوية Last.fm</string>
     <string name="backup_include_proxy_password">تضمين كلمة مرور الوكيل</string>

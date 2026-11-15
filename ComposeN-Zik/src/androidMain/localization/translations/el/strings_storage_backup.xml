@@ -116,9 +116,6 @@
     <string name="backup_before_update_failed">Αποτυχία προεγκατάστασης αντιγράφου ασφαλείας</string>
     <string name="backup_before_update_running_message">Δημιουργία αντιγράφων ασφαλείας δεδομένων πριν από την εγκατάσταση…</string>
     <string name="backup_before_update_running_title">Αντίγραφο ασφαλείας σε εξέλιξη</string>
-    <string name="backup_excluded_preferences_and_cache_description">Εξαιρούνται οι προτιμήσεις (π.χ. η λειτουργία θέματος) και η κρυφή μνήμη.</string>
-    <string name="backup_export_library_options_description">Εξαγωγή της βάσης δεδομένων με προσαρμοσμένα καλύμματα, ρυθμίσεις ή προφίλ</string>
-    <string name="backup_import_library_options_description">Επαναφορά αντιγράφου ασφαλείας βάσης δεδομένων SQLite ή ZIP, ρυθμίσεων ή προφίλ</string>
     <string name="backup_include_discord_credentials">Συμπερίληψη διαπιστευτηρίων ταυτότητας Discord</string>
     <string name="backup_include_lastfm_credentials">Συμπερίληψη διαπιστευτηρίων ταυτότητας Last.fm</string>
     <string name="backup_include_proxy_password">Συμπερίληψη του κωδικού πρόσβασης διαμεσολαβητή</string>

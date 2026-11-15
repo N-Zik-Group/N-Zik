@@ -116,9 +116,6 @@
     <string name="backup_before_update_failed">Передінсталяція резервної копії зазнала невдачі</string>
     <string name="backup_before_update_running_message">Backing up data before installation…</string>
     <string name="backup_before_update_running_title">Виконується резервне копіювання</string>
-    <string name="backup_excluded_preferences_and_cache_description">Особисті налаштування (тобто режим теми) і кеш не враховуються.</string>
-    <string name="backup_export_library_options_description">Експортувати базу даних з користувальницькими обкладинками, параметрами або профілями</string>
-    <string name="backup_import_library_options_description">Відновлення резервної копії бази даних SQLite або ZIP-архівів, налаштувань або профілів</string>
     <string name="backup_include_discord_credentials">Включіть облікові дані особи Discord</string>
     <string name="backup_include_lastfm_credentials">Включати облікові дані ідентифікації Last.fm</string>
     <string name="backup_include_proxy_password">Включати пароль проксі-сервера</string>

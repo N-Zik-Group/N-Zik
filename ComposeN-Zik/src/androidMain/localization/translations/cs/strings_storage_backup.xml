@@ -116,9 +116,6 @@
     <string name="backup_before_update_failed">Předinstalování zálohy se nezdařilo</string>
     <string name="backup_before_update_running_message">Zálohování dat před instalací…</string>
     <string name="backup_before_update_running_title">Probíhá zálohování</string>
-    <string name="backup_excluded_preferences_and_cache_description">Osobní předvolby (tj. režim tématu) a mezipaměť jsou vynechány.</string>
-    <string name="backup_export_library_options_description">Exportovat databázi s jejími vlastními obálkami, nastaveními nebo profily</string>
-    <string name="backup_import_library_options_description">Obnovit zálohu, nastavení nebo profily SQLite nebo ZIP databáze</string>
     <string name="backup_include_discord_credentials">Zahrnout Discord identitu</string>
     <string name="backup_include_lastfm_credentials">Zahrnout údaje o identitě Last.fm</string>
     <string name="backup_include_proxy_password">Zahrnout heslo proxy serveru</string>

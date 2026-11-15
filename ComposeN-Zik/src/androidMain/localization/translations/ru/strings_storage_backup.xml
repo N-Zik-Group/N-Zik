@@ -116,9 +116,6 @@
     <string name="backup_before_update_failed">Ошибка предварительной установки резервной копии</string>
     <string name="backup_before_update_running_message">Резервное копирование данных перед установкой…</string>
     <string name="backup_before_update_running_title">Идёт резервное копирование</string>
-    <string name="backup_excluded_preferences_and_cache_description">Личные настройки (например, режим темы) и кэш исключены.</string>
-    <string name="backup_export_library_options_description">Экспортировать базу данных с ее обложками, настройками или профилями</string>
-    <string name="backup_import_library_options_description">Восстановить резервную копию базы данных SQLite или ZIP, настройки или профили</string>
     <string name="backup_include_discord_credentials">Включить учетные данные Discord</string>
     <string name="backup_include_lastfm_credentials">Включить учетные данные Last.fm</string>
     <string name="backup_include_proxy_password">Включить пароль прокси-сервера</string>

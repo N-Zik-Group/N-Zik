@@ -116,9 +116,6 @@
     <string name="backup_before_update_failed">Backup pre-instalare eșuat</string>
     <string name="backup_before_update_running_message">Se salvează datele înainte de instalarea…</string>
     <string name="backup_before_update_running_title">Backup în curs</string>
-    <string name="backup_excluded_preferences_and_cache_description">Preferințele personale (de exemplu, modul tematic) și memoria cache sunt excluse.</string>
-    <string name="backup_export_library_options_description">Exportă baza de date cu copertele, setările sau profilurile sale personalizate</string>
-    <string name="backup_import_library_options_description">Restaurează o copie de rezervă a bazei de date SQLite sau ZIP</string>
     <string name="backup_include_discord_credentials">Include acreditările de identitate Discord</string>
     <string name="backup_include_lastfm_credentials">Include acreditările de identitate Last.fm</string>
     <string name="backup_include_proxy_password">Include parola proxy</string>

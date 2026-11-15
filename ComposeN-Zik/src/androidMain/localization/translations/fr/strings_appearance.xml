@@ -247,4 +247,14 @@
     <string name="image_editor_apply">Utiliser l\'image</string>
     <string name="theme_store_title">Magasin de Thèmes</string>
     <string name="theme_store_preview_description">Découvrez, appliquez et partagez des thèmes pour personnaliser N-Zik.</string>
+    <string name="theme_backup_choose_zip">Choisir un ZIP de thèmes</string>
+    <string name="theme_backup_export_selection">Exporter les thèmes sélectionnés</string>
+    <string name="theme_backup_import_selection">Restaurer les thèmes sélectionnés</string>
+    <string name="theme_backup_no_downloads">Aucun thème à sauvegarder pour le moment.</string>
+    <string name="theme_backup_select_all">Sélectionner tous les thèmes</string>
+    <string name="theme_backup_export_success">Sauvegarde des thèmes exportée.</string>
+    <string name="theme_backup_import_success">Thèmes restaurés : %1$d. Déjà dans votre collection : %2$d.</string>
+    <string name="theme_backup_archive_error">Impossible de lire la sauvegarde des thèmes.</string>
+    <string name="theme_backup_write_error">Impossible d’exporter les thèmes sélectionnés.</string>
+    <string name="theme_backup_restore_error">Impossible de restaurer les thèmes sélectionnés.</string>
 </resources>

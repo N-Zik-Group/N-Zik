@@ -116,9 +116,6 @@
     <string name="backup_before_update_failed">Backup fehlgeschlagen</string>
     <string name="backup_before_update_running_message">Daten vor der Installation sichern…</string>
     <string name="backup_before_update_running_title">Sicherung läuft</string>
-    <string name="backup_excluded_preferences_and_cache_description">Persönliche Einstellungen (z.B. das Farbschema) und der Cache sind ausgeschlossen.</string>
-    <string name="backup_export_library_options_description">Exportieren Sie die Datenbank mit ihren individuellen Covers, Einstellungen oder Profilen</string>
-    <string name="backup_import_library_options_description">SQLite- oder ZIP-Datenbank-Backup, Einstellungen oder Profile wiederherstellen</string>
     <string name="backup_include_discord_credentials">Discord-Zugangsdaten einbeziehen</string>
     <string name="backup_include_lastfm_credentials">Last.fm Identitätsnachweis einbeziehen</string>
     <string name="backup_include_proxy_password">Das Proxy-Passwort einfügen</string>

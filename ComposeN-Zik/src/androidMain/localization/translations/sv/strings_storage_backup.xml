@@ -116,9 +116,6 @@
     <string name="backup_before_update_failed">Säkerhetskopiering före installation misslyckades</string>
     <string name="backup_before_update_running_message">Säkerhetskopierar data före installation…</string>
     <string name="backup_before_update_running_title">Säkerhetskopiering pågår</string>
-    <string name="backup_excluded_preferences_and_cache_description">Personliga inställningar (dvs. temaläget) och cachen är uteslutna.</string>
-    <string name="backup_export_library_options_description">Exportera databasen med sina egna omslag, inställningar eller profiler</string>
-    <string name="backup_import_library_options_description">Återställ en SQLite-eller ZIP-databas backup, inställningar eller profiler</string>
     <string name="backup_include_discord_credentials">Inkludera Discords identitetsuppgifter</string>
     <string name="backup_include_lastfm_credentials">Inkludera Last.fm identitetsuppgifter</string>
     <string name="backup_include_proxy_password">Inkludera proxylösenordet</string>

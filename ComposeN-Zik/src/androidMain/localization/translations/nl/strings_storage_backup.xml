@@ -116,9 +116,6 @@
     <string name="backup_before_update_failed">Back-up vooraf installeren mislukt</string>
     <string name="backup_before_update_running_message">Gegevens back-uppen voor installatie…</string>
     <string name="backup_before_update_running_title">Bezig met back-up</string>
-    <string name="backup_excluded_preferences_and_cache_description">Persoonlijke voorkeuren (b.v.b. de themamodus) en de cache zijn uitgesloten.</string>
-    <string name="backup_export_library_options_description">Exporteer de database met aangepaste covers, instellingen of profielen</string>
-    <string name="backup_import_library_options_description">Herstel een SQLite of ZIP database back-up, instellingen of profielen</string>
     <string name="backup_include_discord_credentials">Voeg Discord identiteitsgegevens toe</string>
     <string name="backup_include_lastfm_credentials">Inclusief Last.fm identiteitsgegevens</string>
     <string name="backup_include_proxy_password">Voeg het proxywachtwoord toe</string>

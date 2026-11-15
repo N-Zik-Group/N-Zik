@@ -116,9 +116,6 @@
     <string name="backup_before_update_failed">インストール前のバックアップに失敗しました</string>
     <string name="backup_before_update_running_message">Backing up data before installation…</string>
     <string name="backup_before_update_running_title">バックアップ中</string>
-    <string name="backup_excluded_preferences_and_cache_description">個人設定 (テーマの種類など) とキャッシュは含まれません。</string>
-    <string name="backup_export_library_options_description">カスタムカバー、設定、またはプロファイルを含むデータベースをエクスポート</string>
-    <string name="backup_import_library_options_description">SQLite または ZIP データベースのバックアップ、設定、またはプロファイルを復元する</string>
     <string name="backup_include_discord_credentials">DiscordのID認証情報を含める</string>
     <string name="backup_include_lastfm_credentials">Last.fm ID 資格情報を含める</string>
     <string name="backup_include_proxy_password">プロキシパスワードを含める</string>

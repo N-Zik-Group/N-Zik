@@ -116,9 +116,6 @@
     <string name="backup_before_update_failed">Forhåndsinstallasjon av sikkerhetskopi mislyktes</string>
     <string name="backup_before_update_running_message">Sikkerhetskopierer data før installasjon…</string>
     <string name="backup_before_update_running_title">Sikkerhetskopiering pågår</string>
-    <string name="backup_excluded_preferences_and_cache_description">Personlige innstillinger (f.eks. temamodus) og mellomlager er ekskludert.</string>
-    <string name="backup_export_library_options_description">Eksporter databasen med egendefinerte omslag, innstillinger eller profiler</string>
-    <string name="backup_import_library_options_description">Gjenopprett en SQLite eller ZIP database sikkerhetskopiering, innstillinger eller profiler</string>
     <string name="backup_include_discord_credentials">Inkluder Discord identitetsopplysninger</string>
     <string name="backup_include_lastfm_credentials">Inkluder Last.fm identitet påloggingsinformasjon</string>
     <string name="backup_include_proxy_password">Oppgi proxypassordet</string>

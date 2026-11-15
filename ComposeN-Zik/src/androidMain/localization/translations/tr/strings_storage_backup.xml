@@ -116,9 +116,6 @@
     <string name="backup_before_update_failed">Kurulum öncesi yedekleme başarısız oldu</string>
     <string name="backup_before_update_running_message">Kurulumdan önce verileri yedekleme…</string>
     <string name="backup_before_update_running_title">Yedekleme devam ediyor</string>
-    <string name="backup_excluded_preferences_and_cache_description">Kişisel tercihler (örneğin tema modu) ve önbellek hariç tutulur.</string>
-    <string name="backup_export_library_options_description">Özel kapakları, ayarları veya profillerle birlikte veritabanını dışa aktarın.</string>
-    <string name="backup_import_library_options_description">Bir SQLite veya ZIP veritabanı yedeğini, ayarları veya profilleri geri yükleme</string>
     <string name="backup_include_discord_credentials">Discord kimlik bilgilerini ekleyin</string>
     <string name="backup_include_lastfm_credentials">Last.fm kimlik bilgilerini ekleyin</string>
     <string name="backup_include_proxy_password">Proxy şifresini ekleyin</string>

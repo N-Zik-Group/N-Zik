@@ -116,9 +116,6 @@
     <string name="backup_before_update_failed">预安装备份失败</string>
     <string name="backup_before_update_running_message">安装前备份数据…</string>
     <string name="backup_before_update_running_title">正在备份</string>
-    <string name="backup_excluded_preferences_and_cache_description">个人偏好（例如主题模式）和缓存被排除在外。</string>
-    <string name="backup_export_library_options_description">用自定义封面、设置或配置文件导出数据库</string>
-    <string name="backup_import_library_options_description">还原SQLite 或 ZIP 数据库备份、设置或配置文件</string>
     <string name="backup_include_discord_credentials">包含Discord身份凭据</string>
     <string name="backup_include_lastfm_credentials">包含 Last.fm 身份认证</string>
     <string name="backup_include_proxy_password">包含代理密码</string>

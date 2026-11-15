@@ -116,9 +116,6 @@
     <string name="backup_before_update_failed">Tworzenie kopii zapasowej przed instalacją nie powiodło się</string>
     <string name="backup_before_update_running_message">Tworzenie kopii zapasowej danych przed instalacją…</string>
     <string name="backup_before_update_running_title">Kopia zapasowa w toku</string>
-    <string name="backup_excluded_preferences_and_cache_description">Preferencje osobiste (np. wariant motywu) i pamięć podręczna zostaną pominięte.</string>
-    <string name="backup_export_library_options_description">Eksportuj bazę danych za pomocą własnych okładek, ustawień lub profili</string>
-    <string name="backup_import_library_options_description">Przywróć kopię zapasową bazy danych SQLite lub ZIP lub ustawienia lub profile</string>
     <string name="backup_include_discord_credentials">Dołącz dane logowania Discorda</string>
     <string name="backup_include_lastfm_credentials">Dołącz dane logowania Last.fm</string>
     <string name="backup_include_proxy_password">Dołącz hasło proxy</string>

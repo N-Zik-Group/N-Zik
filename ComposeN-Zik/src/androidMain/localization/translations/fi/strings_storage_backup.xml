@@ -116,9 +116,6 @@
     <string name="backup_before_update_failed">Varmuuskopion ennakkoasennus epäonnistui</string>
     <string name="backup_before_update_running_message">Varmuuskopioidaan tietoja ennen asennusta…</string>
     <string name="backup_before_update_running_title">Varmuuskopiointi käynnissä</string>
-    <string name="backup_excluded_preferences_and_cache_description">Henkilökohtaiset asetukset (esim. teematila) ja välimuisti eivät sisälly.</string>
-    <string name="backup_export_library_options_description">Vie tietokanta mukautetuilla kansilla, asetuksilla tai profiileilla</string>
-    <string name="backup_import_library_options_description">Palauta SQLite tai ZIP tietokannan varmuuskopiointi, asetukset tai profiilit</string>
     <string name="backup_include_discord_credentials">Sisällytä Discordin henkilöllisyystiedot</string>
     <string name="backup_include_lastfm_credentials">Sisällytä Last.fm henkilöllisyystiedot</string>
     <string name="backup_include_proxy_password">Sisällytä välityspalvelimen salasana</string>
