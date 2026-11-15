@@ -46,6 +46,8 @@ class SettingsDetailedSearchTest {
             R.string.storage_breakdown_subtitle, R.string.storage_cleanup_profile_title,
             R.string.storage_cleanup_diagnostic_logs, R.string.storage_cleanup_clear_temporary_files,
             R.string.storage_cleanup_all, R.string.storage_cleanup_clear_network_cache,
+            R.string.storage_cleanup_picker_title, R.string.storage_cleanup_select_caches,
+            R.string.storage_cleanup_option_theme_catalog, R.string.storage_cleanup_option_fetched_lyrics,
         )
         for (locale in listOf(Locale.ENGLISH, Locale.FRENCH)) {
             val localized = localized(locale)
@@ -90,7 +92,7 @@ class SettingsDetailedSearchTest {
         val entries = AllSettingsEntryTargets.filter {
             it.id.startsWith("embedded.auto_backup.") || it.id.startsWith("other.on_device.")
         }
-        assertEquals(22, entries.size)
+        assertEquals(24, entries.size)
         for (locale in listOf(Locale.ENGLISH, Locale.FRENCH)) {
             val localized = localized(locale)
             for (entry in entries) {

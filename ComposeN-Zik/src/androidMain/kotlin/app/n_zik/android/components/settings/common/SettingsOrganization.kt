@@ -48,7 +48,8 @@ fun SettingsCardRegistryEntry.categoryId(): String = when {
     tab == 4 -> "data"
     tab == 5 -> when (titleRes) {
         R.string.profile_face -> "profiles"
-        R.string.settings_discord_title, R.string.settings_lastfm_title, R.string.listen_together_title -> "services"
+        R.string.settings_discord_title, R.string.settings_lastfm_title, R.string.listen_together_title,
+        R.string.common_brand_github -> "services"
         else -> "youtube"
     }
     tab == 6 -> if (titleRes == R.string.downloads_title || titleRes == R.string.settings_download_quality) "downloads" else "network"

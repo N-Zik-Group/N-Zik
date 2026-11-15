@@ -10,6 +10,8 @@ import app.n_zik.android.compose.persist.findActivityNullable
 import app.n_zik.android.components.settings.general.GeneralPipCard
 
 import app.n_zik.android.LocalPlayerAwareWindowInsets
+import app.n_zik.android.LocalPlayerServiceBinder
+import app.n_zik.android.playback.services.PlayerServiceModern
 
 import app.n_zik.android.components.settings.general.GeneralSettingsContent
 import app.n_zik.android.components.tab.Search
@@ -47,6 +49,7 @@ import app.n_zik.android.R
 import app.n_zik.android.components.settings.general.GeneralSettings
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -99,9 +102,13 @@ class GeneralSettingsWiringTest {
         Dependencies.init(mainApplication)
     }
 
-    private fun showGeneralTab(focus: String = "") {
+    private fun showGeneralTab(focus: String = "", binder: PlayerServiceModern.Binder? = null) {
         composeRule.setContent {
-            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
+            CompositionLocalProvider(
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+                LocalPlayerServiceBinder provides binder,
+                LocalAppearance provides appearance,
+            ) {
                 GeneralSettings(focus = focus)
             }
         }
@@ -273,7 +280,8 @@ class GeneralSettingsWiringTest {
 
     @Test
     fun togglingASettingShowsTheRestartBarAndRestartingClearsIt() {
-        showGeneralTab()
+        val binder = mockk<PlayerServiceModern.Binder>(relaxed = true)
+        showGeneralTab(binder = binder)
 
         // The auto-load entry sets restartService when toggled.
         clickRowByDescription(R.string.player_auto_load_songs_in_queue_description)
@@ -292,6 +300,7 @@ class GeneralSettingsWiringTest {
             .performSemanticsAction(SemanticsActions.OnClick)
         composeRule.waitForIdle()
 
+        verify(exactly = 1) { binder.restartForegroundOrStop() }
         assertTrue(
             "restarting must clear the restart bar",
             composeRule
