@@ -1,7 +1,5 @@
 package app.n_zik.android.components.settings.accounts
 
-import android.webkit.CookieManager
-import android.webkit.WebStorage
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Box
@@ -19,6 +17,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -34,11 +33,13 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.innertube.Innertube
-import app.n_zik.innertube.utils.parseCookieString
+import app.n_zik.innertube.hasYouTubeAuthCookie
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 import app.n_zik.android.extensions.youtubelogin.YouTubeLogin
+import app.n_zik.android.extensions.youtubelogin.clearSavedYouTubeSession
+import app.n_zik.android.core.network.client.Store
 import app.n_zik.android.utils.autosyncAlbumsKey
 import app.n_zik.android.utils.autosyncArtistsKey
 import app.n_zik.android.utils.autosyncLikesKey
@@ -72,8 +73,7 @@ import app.n_zik.android.utils.ytAccountNameKey
 import app.n_zik.android.utils.ytAccountThumbnailKey
 import app.n_zik.android.utils.ytCookieExpiredKey
 import app.n_zik.android.utils.ytCookieKey
-import app.n_zik.android.utils.ytDataSyncIdKey
-import app.n_zik.android.utils.ytVisitorDataKey
+import app.n_zik.android.utils.encryptedPreferencesUpdateTrigger
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
@@ -97,6 +97,7 @@ import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.playback.services.clearStreamCaches
+import app.n_zik.innertube.YouTubeSession
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
@@ -109,21 +110,13 @@ internal fun AccountsYouTubeCard(search: Search) {
     val context = LocalContext.current
     var showClearSyncDialog by remember { mutableStateOf(false) }
 
-    var visitorData by rememberEncryptedPreference(key = ytVisitorDataKey, defaultValue = "")
-    var dataSyncId by rememberEncryptedPreference(key = ytDataSyncIdKey, defaultValue = "")
-    var cookie by rememberEncryptedPreference(key = ytCookieKey, defaultValue = "")
-
-    var accountName by rememberEncryptedPreference(key = ytAccountNameKey, defaultValue = "")
-    var accountEmail by rememberEncryptedPreference(key = ytAccountEmailKey, defaultValue = "")
-    var accountChannelHandle by rememberEncryptedPreference(key = ytAccountChannelHandleKey, defaultValue = "")
-    var accountThumbnail by rememberEncryptedPreference(key = ytAccountThumbnailKey, defaultValue = "")
-    var isLoggedIn = remember(cookie, app.n_zik.android.MainApplication.cookieStatus) {
-        "SAPISID" in parseCookieString(cookie) || app.n_zik.android.MainApplication.cookieStatus in listOf(
-            app.n_zik.android.MainApplication.CookieStatus.VALID,
-            app.n_zik.android.MainApplication.CookieStatus.INVALID,
-            app.n_zik.android.MainApplication.CookieStatus.EXPIRED
-        )
-    }
+    val accountPreferences = remember(context, encryptedPreferencesUpdateTrigger) { context.encryptedPreferences }
+    val cookie = accountPreferences.getString(ytCookieKey, null)
+    val accountName = accountPreferences.getString(ytAccountNameKey, "").orEmpty()
+    val accountEmail = accountPreferences.getString(ytAccountEmailKey, "").orEmpty()
+    val accountChannelHandle = accountPreferences.getString(ytAccountChannelHandleKey, "").orEmpty()
+    val accountThumbnail = accountPreferences.getString(ytAccountThumbnailKey, "").orEmpty()
+    val isLoggedIn = !cookie.isNullOrBlank()
 
     // YouTube Music Section
     AnimatedVisibility(
@@ -137,8 +130,11 @@ internal fun AccountsYouTubeCard(search: Search) {
             content = {
                 // rememberEncryptedPreference only works correct with API 24 and up
                 var isYouTubeLoginEnabled by rememberEncryptedPreference(enableYouTubeLoginKey, false)
-                var isYouTubeSyncEnabled by rememberEncryptedPreference(enableYouTubeSyncKey, false)
+                var isYouTubeSyncEnabled by key(encryptedPreferencesUpdateTrigger) {
+                    rememberEncryptedPreference(enableYouTubeSyncKey, false)
+                }
                 var loginYouTube by remember { mutableStateOf(false) }
+                var changingAccount by remember { mutableStateOf(false) }
                 val binder = LocalPlayerServiceBinder.current
 
                 LaunchedEffect(isYouTubeLoginEnabled) {
@@ -159,9 +155,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                             if (!it) {
                                 // Only clear Innertube singleton (stop using account)
                                 // Keep account info so user doesn't have to reconnect
-                                Innertube.cookie = null
-                                Innertube.dataSyncId = null
-                                Innertube.visitorData = Innertube.DEFAULT_VISITOR_DATA
+                                Store.setSession(YouTubeSession(null, null, null, null))
                                 Innertube.useLoginForBrowse = false
                                 // Reset cookie status
                                 app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
@@ -200,11 +194,9 @@ internal fun AccountsYouTubeCard(search: Search) {
                                 // Re-enable: restore Innertube from saved preferences
                                 val savedCookie = appContext().encryptedPreferences.getString(ytCookieKey, "") ?: ""
                                 if (savedCookie.isNotEmpty()) {
-                                    Innertube.cookie = savedCookie
-                                    Innertube.dataSyncId = appContext().encryptedPreferences.getString(ytDataSyncIdKey, null)
-                                    Innertube.visitorData = appContext().encryptedPreferences.getString(ytVisitorDataKey, null) ?: Innertube.DEFAULT_VISITOR_DATA
+                                    Store.initSession(context)
                                     // Only activate browse if we have real credentials
-                                    if ("SAPISID" in parseCookieString(savedCookie)) {
+                                    if (hasYouTubeAuthCookie(savedCookie)) {
                                         appContext().preferences.edit().putBoolean(useLoginForBrowseKey, true).apply()
                                         Innertube.useLoginForBrowse = true
                                     }
@@ -350,8 +342,27 @@ internal fun AccountsYouTubeCard(search: Search) {
                                     if (isLoggedIn) {
                                         showClearSyncDialog = true
                                     } else {
+                                        changingAccount = false
                                         loginYouTube = true
                                     }
+                                }
+                            )
+                        }
+
+                        val changeAccountLabel = stringResource(R.string.account_youtube_change_account)
+                        val changeAccountDescription = stringResource(R.string.account_youtube_change_account_description)
+                        if (isLoggedIn && (search.inputValue.isBlank() ||
+                                changeAccountLabel.contains(search.inputValue, ignoreCase = true) ||
+                                changeAccountDescription.contains(search.inputValue, ignoreCase = true))
+                        ) {
+                            OtherSettingsEntry(
+                                modifier = Modifier.settingsSearchTarget("accounts.youtube_music.change_account"),
+                                title = changeAccountLabel,
+                                text = changeAccountDescription,
+                                icon = R.drawable.person,
+                                onClick = {
+                                    changingAccount = true
+                                    loginYouTube = true
                                 }
                             )
                         }
@@ -371,25 +382,22 @@ internal fun AccountsYouTubeCard(search: Search) {
                             }
                         ) {
                             YouTubeLogin(
-                                onLogin = { cookieRetrieved ->
-                                    if (cookieRetrieved.contains("SAPISID")) {
-                                        isLoggedIn = true
-                                        loginYouTube = false
-                                        // Clear expired flag on fresh login
-                                        appContext().preferences.edit().putBoolean(ytCookieExpiredKey, false).apply()
-                                        app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.VALID
-                                        // Re-enable useLoginForBrowse since we now have valid credentials
-                                        appContext().preferences.edit().putBoolean(useLoginForBrowseKey, true).apply()
-                                        Innertube.useLoginForBrowse = true
-                                        // Force re-read account info from encrypted prefs (YouTubeLogin saved them)
-                                        val ep = appContext().encryptedPreferences
-                                        accountName = ep.getString(ytAccountNameKey, "") ?: ""
-                                        accountEmail = ep.getString(ytAccountEmailKey, "") ?: ""
-                                        accountChannelHandle = ep.getString(ytAccountChannelHandleKey, "") ?: ""
-                                        accountThumbnail = ep.getString(ytAccountThumbnailKey, "") ?: ""
-                                        Toaster.i( context.getString(R.string.account_youtube_login_success) )
+                                onLogin = {
+                                    loginYouTube = false
+                                    context.preferences.edit {
+                                        putBoolean(ytCookieExpiredKey, false)
+                                        if (!changingAccount) putBoolean(useLoginForBrowseKey, true)
+                                        remove(quickPicsHomePageKey)
+                                        remove(quickPicsYtmQuickPicksKey)
+                                        remove(quickPicsDiscoverPageKey)
                                     }
-                                }
+                                    app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.VALID
+                                    if (!changingAccount) Innertube.useLoginForBrowse = true
+                                    Toaster.i(context.getString(R.string.account_youtube_login_success))
+                                },
+                                onCancel = { loginYouTube = false },
+                                changingAccount = changingAccount,
+                                isActive = { loginYouTube },
                             )
                         }
 
@@ -457,35 +465,10 @@ internal fun AccountsYouTubeCard(search: Search) {
                         dialogCoroutineScope.launch(NzikDispatchers.DATA) {
                             val cleared = runCatching { clearAllSyncedData() }.getOrElse { false }
                             withContext(NzikDispatchers.UI) {
-                                val ep = appContext().encryptedPreferences
-                                ep.edit().putString(ytCookieKey, "").apply()
-                                ep.edit().putString(ytAccountNameKey, "").apply()
-                                ep.edit().putString(ytAccountChannelHandleKey, "").apply()
-                                ep.edit().putString(ytAccountEmailKey, "").apply()
-                                ep.edit().putString(ytAccountThumbnailKey, "").apply()
-                                ep.edit().putString(ytVisitorDataKey, "").apply()
-                                ep.edit().putString(ytDataSyncIdKey, "").apply()
-
-                                // Manually update states to force UI recomposition
-                                cookie = ""
-                                accountName = ""
-                                accountEmail = ""
-                                accountChannelHandle = ""
-                                accountThumbnail = ""
-                                visitorData = ""
-                                dataSyncId = ""
-
-                                app.n_zik.android.utils.encryptedPreferencesUpdateTrigger++
-
-                                appContext().preferences.edit().putBoolean(enableYouTubeSyncKey, false).apply()
+                                clearSavedYouTubeSession(context.encryptedPreferences, clearWebSignIn = true)
                                 app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
                                 appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
-                                clearStreamCaches()
                                 appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, true).apply()
-                                val cookieManager = CookieManager.getInstance()
-                                cookieManager.removeAllCookies(null)
-                                cookieManager.flush()
-                                WebStorage.getInstance().deleteAllData()
                                 if (cleared) {
                                     Toaster.s(R.string.account_action_logout)
                                 } else {

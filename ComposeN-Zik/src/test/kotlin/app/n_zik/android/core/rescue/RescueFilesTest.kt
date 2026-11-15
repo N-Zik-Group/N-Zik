@@ -22,6 +22,8 @@ import app.n_zik.android.utils.discordUsernameKey
 import app.n_zik.android.utils.isDiscordBrowsingEnabledKey
 import app.n_zik.android.utils.isDiscordPresenceEnabledKey
 import app.n_zik.android.utils.proxyPasswordEncryptedKey
+import app.n_zik.android.utils.ytAuthUserKey
+import app.n_zik.android.utils.ytCookieKey
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -44,6 +46,16 @@ import java.io.File
  * file-based cores of the destructive actions (clear cache, delete downloads) on temp dirs.
  */
 class RescueFilesTest {
+
+    @Test
+    fun `importing a legacy YouTube cookie clears the previous auth user`() {
+        val plain = mockk<SharedPreferences.Editor>(relaxed = true)
+        val encrypted = mockk<SharedPreferences.Editor>(relaxed = true)
+        RescueFiles.applySettingRows(listOf(Triple("String", ytCookieKey, "SAPISID=fixture")), plain, encrypted)
+
+        verify { encrypted.remove(ytAuthUserKey) }
+        verify(exactly = 0) { plain.remove(ytAuthUserKey) }
+    }
 
     /**
      * File names are profile-aware (Profiles feature), so the file-based

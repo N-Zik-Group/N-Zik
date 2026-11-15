@@ -54,6 +54,9 @@ import app.n_zik.android.utils.ytAccountThumbnailKey
 import app.n_zik.android.utils.ytCookieKey
 import app.n_zik.android.utils.ytCookieExpiredKey
 import app.n_zik.android.utils.ytDataSyncIdKey
+import app.n_zik.android.utils.ytAuthUserKey
+import app.n_zik.innertube.hasYouTubeAuthCookie
+import app.n_zik.innertube.YouTubeSession
 import app.n_zik.android.utils.ytVisitorDataKey
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.materializeImageCacheCustomMb
@@ -465,16 +468,17 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 //
             // ON and OFF send guest requests, and a persisted OFF must survive (re)login
             // (spec matrix "OFF then login" — the Accounts screen never resets it either).
-            val savedCookie = encryptedPreferences.getString(ytCookieKey, "")
+            if (encryptedPreferences.getBoolean(enableYouTubeLoginKey, true)) {
+                Store.initSession(this@MainApplication)
+            } else {
+                Store.setSession(YouTubeSession(null, null, null, null))
+            }
+            val savedCookie = Innertube.cookie
             if (!savedCookie.isNullOrBlank()) {
-                Innertube.cookie = savedCookie
-                Innertube.visitorData = encryptedPreferences.getString(ytVisitorDataKey, null)?.takeIf { it.isNotBlank() }
-                Innertube.dataSyncId = encryptedPreferences.getString(ytDataSyncIdKey, null)?.takeIf { it.isNotBlank() }
-
-                val hasSAPISID = savedCookie.contains("SAPISID")
+                val hasAuthCookie = hasYouTubeAuthCookie(savedCookie)
                 val hasLoginInfo = savedCookie.contains("LOGIN_INFO")
                 val wasExpired = preferences.getBoolean(ytCookieExpiredKey, false)
-                if (!hasSAPISID && !hasLoginInfo) {
+                if (!hasAuthCookie && !hasLoginInfo) {
                     Timber.tag("MainApplication").w("YouTube cookie present but missing SAPISID/LOGIN_INFO — session may be expired, disabling useLoginForBrowse")
                     cookieStatus = CookieStatus.INVALID
                     Innertube.useLoginForBrowse = false
@@ -485,7 +489,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                     Innertube.useLoginForBrowse = false
                     preferences.edit().putBoolean(useLoginForBrowseKey, false).apply()
                 } else {
-                    Timber.tag("MainApplication").d("YouTube cookie loaded (SAPISID=$hasSAPISID, LOGIN_INFO=$hasLoginInfo)")
+                    Timber.tag("MainApplication").d("YouTube cookie loaded")
                     cookieStatus = CookieStatus.VALID
                 }
             } else {
@@ -495,8 +499,6 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 preferences.edit().putBoolean(useLoginForBrowseKey, false).apply()
             }
 
-            // Initialize Store session (like Metrolist's DataStore pattern)
-            Store.initSession(this@MainApplication)
             Store.prefetchCookie()
 
         } finally {
@@ -616,7 +618,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 
     private fun migrateCredentialsToEncrypted() {
         val keysToMigrateString = listOf(
-            ytCookieKey, ytVisitorDataKey, ytDataSyncIdKey, ytAccountNameKey, ytAccountEmailKey,
+            ytCookieKey, ytVisitorDataKey, ytDataSyncIdKey, ytAuthUserKey, ytAccountNameKey, ytAccountEmailKey,
             ytAccountChannelHandleKey, ytAccountThumbnailKey, discordPersonalAccessTokenKey,
             discordAvatarKey, discordUsernameKey
         )

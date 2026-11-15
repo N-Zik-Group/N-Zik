@@ -9,16 +9,16 @@ import app.n_zik.android.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.setValue
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.utils.enableYouTubeLoginKey
 import app.n_zik.android.utils.enableYouTubeSyncKey
+import app.n_zik.android.utils.encryptedPreferencesUpdateTrigger
 import app.n_zik.android.utils.rememberEncryptedPreference
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.useLoginForBrowseKey
 import app.n_zik.android.components.settings.common.SettingsCardSlot
-import app.n_zik.android.components.settings.common.settingsCardEnter
-import app.n_zik.android.components.settings.common.settingsCardExit
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
@@ -33,15 +33,24 @@ internal fun AccountsSyncCards(
     }) return
 
     val useLoginForBrowseSync by rememberPreference(useLoginForBrowseKey, true)
-    val isYouTubeLoginActive by rememberEncryptedPreference(enableYouTubeLoginKey, false)
+    val isYouTubeLoginActive by key(encryptedPreferencesUpdateTrigger) {
+        rememberEncryptedPreference(enableYouTubeLoginKey, false)
+    }
+    val isSyncBuild = isYouTubeSyncBuild()
+    val isLoggedIn = isYouTubeLoggedIn()
+    val canEnableSync = isSyncBuild && isYouTubeLoginActive && isLoggedIn && useLoginForBrowseSync
+    val disabledReason = when {
+        !isSyncBuild -> R.string.account_youtube_sync_build_required
+        !isYouTubeLoginActive || !isLoggedIn -> R.string.settings_youtube_connection_required_description
+        !useLoginForBrowseSync -> R.string.account_youtube_sync_browse_required
+        else -> null
+    }
 
-    AnimatedVisibility(
-        visible = useLoginForBrowseSync && isYouTubeLoginActive,
-        enter = settingsCardEnter,
-        exit = settingsCardExit
-    ) {
-        var isYouTubeSyncEnabled by rememberEncryptedPreference(enableYouTubeSyncKey, false)
-        val isSyncEnabled = isYouTubeSyncEnabled && useLoginForBrowseSync
+    Column {
+        var isYouTubeSyncEnabled by key(encryptedPreferencesUpdateTrigger) {
+            rememberEncryptedPreference(enableYouTubeSyncKey, false)
+        }
+        val isSyncEnabled = isYouTubeSyncEnabled && canEnableSync
 
         // Re-sync state when Login for Browse changes (prefs reset externally)
         LaunchedEffect(useLoginForBrowseSync) {
@@ -53,7 +62,7 @@ internal fun AccountsSyncCards(
         Column {
             if (selectedCards == null || R.string.sync_data_with_ytm_account in selectedCards) {
                 SettingsCardSlot(R.string.sync_data_with_ytm_account, order = 2, modifier = { cardModifier(R.string.sync_data_with_ytm_account) }) {
-                    AccountsSyncOverviewCard(isYouTubeSyncEnabled, isSyncEnabled) { isYouTubeSyncEnabled = it }
+                    AccountsSyncOverviewCard(isSyncEnabled, disabledReason) { isYouTubeSyncEnabled = it }
                 }
             }
 

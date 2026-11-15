@@ -37,7 +37,6 @@ import app.n_zik.android.utils.syncPushPlaylistKey
 import app.n_zik.android.utils.syncPushSongLikeKey
 import app.n_zik.android.utils.syncShowDetailsKey
 import app.n_zik.android.utils.syncStatus
-import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.components.dialog.settings.SyncStatusDialog
@@ -51,7 +50,7 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 /** Owns the SyncOverviewCard controls. */
 @Composable
-internal fun AccountsSyncOverviewCard(isYouTubeSyncEnabled: Boolean, isSyncEnabled: Boolean, onEnabledChange: (Boolean) -> Unit) {
+internal fun AccountsSyncOverviewCard(isSyncEnabled: Boolean, disabledReason: Int?, onEnabledChange: (Boolean) -> Unit) {
     var syncDirection by rememberPreference(syncDirectionKey, SyncDirection.TWO_WAY)
     val syncStatusState by syncStatus.collectAsStateWithLifecycle(initialValue = SyncStatus(), context = NzikDispatchers.DATA)
     SettingsSectionCard(
@@ -61,9 +60,9 @@ internal fun AccountsSyncOverviewCard(isYouTubeSyncEnabled: Boolean, isSyncEnabl
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("accounts.sync_data_with_ytm_account.sync_data_with_ytm_account"),
                 title = stringResource(R.string.sync_data_with_ytm_account),
-                text = stringResource(R.string.settings_youtube_library_sync_content_description),
-                isChecked = isYouTubeSyncEnabled,
-                enabled = BuildConfig.BUILD_TYPE in listOf("debug", "dev64", "dev32", "beta64", "beta32"),
+                text = stringResource(disabledReason ?: R.string.settings_youtube_library_sync_content_description),
+                isChecked = isSyncEnabled,
+                enabled = disabledReason == null,
                 onCheckedChange = {
                     onEnabledChange(it)
                     if (!it) {

@@ -1,10 +1,11 @@
 package app.n_zik.android.core.network.client
 
 import android.content.Context
+import app.n_zik.android.extensions.youtubelogin.putYouTubeSession
+import app.n_zik.android.extensions.youtubelogin.readYouTubeSession
 import app.n_zik.android.utils.encryptedPreferences
-import app.n_zik.android.utils.ytCookieKey
 import app.n_zik.android.utils.ytVisitorDataKey
-import app.n_zik.android.utils.ytDataSyncIdKey
+import app.n_zik.innertube.YouTubeSession
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.statement.bodyAsText
@@ -41,31 +42,24 @@ object Store {
     private var ghostResponseBody: String? = null
     private var cookie: String? = null
 
-    private var iosVisitorData: String? = null
+    @Volatile
+    private var iosVisitorData: Pair<YouTubeSession, String>? = null
+
+    private fun cachedVisitorData(): String? =
+        iosVisitorData?.takeIf { it.first == Innertube.youtubeSessionSnapshot() }?.second
 
     /**
      * Initialize session from EncryptedSharedPreferences (like Metrolist's DataStore pattern).
      * Should be called once at app startup.
      */
     fun initSession(context: Context) {
-        val prefs = context.encryptedPreferences
-        val savedCookie = prefs.getString(ytCookieKey, null)
-        val savedVisitorData = prefs.getString(ytVisitorDataKey, null)
-        val savedDataSyncId = prefs.getString(ytDataSyncIdKey, null)
+        val session = context.encryptedPreferences.readYouTubeSession()
+        setSession(session)
+    }
 
-        if (!savedCookie.isNullOrBlank()) {
-            Innertube.cookie = savedCookie
-            Timber.tag("Store").d("initSession: restored cookie from preferences (length=${savedCookie.length})")
-        }
-        if (!savedVisitorData.isNullOrBlank()) {
-            Innertube.visitorData = savedVisitorData
-            iosVisitorData = savedVisitorData
-            Timber.tag("Store").d("initSession: restored visitor data from preferences")
-        }
-        if (!savedDataSyncId.isNullOrBlank()) {
-            Innertube.dataSyncId = savedDataSyncId
-            Timber.tag("Store").d("initSession: restored dataSyncId from preferences")
-        }
+    internal fun setSession(session: YouTubeSession) {
+        Innertube.replaceYouTubeSession(session)
+        iosVisitorData = null
     }
 
     /**
@@ -74,9 +68,7 @@ object Store {
     fun saveSession(context: Context) {
         val prefs = context.encryptedPreferences
         prefs.edit().apply {
-            Innertube.cookie?.let { putString(ytCookieKey, it) }
-            Innertube.visitorData?.let { putString(ytVisitorDataKey, it) }
-            Innertube.dataSyncId?.let { putString(ytDataSyncIdKey, it) }
+            putYouTubeSession(Innertube.youtubeSessionSnapshot())
         }.apply()
         Timber.tag("Store").d("saveSession: persisted session to preferences")
     }
@@ -85,17 +77,15 @@ object Store {
      * Auto-fetch and persist visitor data if missing (like Metrolist).
      */
     suspend fun ensureVisitorData(context: Context): String? {
-        iosVisitorData?.let { return it }
+        cachedVisitorData()?.let { return it }
 
         Innertube.visitorData?.takeIf { it.isNotBlank() }?.let {
-            iosVisitorData = it
             return it
         }
 
         val prefs = context.encryptedPreferences
         val savedVisitorData = prefs.getString(ytVisitorDataKey, null)
         if (!savedVisitorData.isNullOrBlank() && savedVisitorData != "null") {
-            iosVisitorData = savedVisitorData
             Innertube.visitorData = savedVisitorData
             Timber.tag("Store").d("ensureVisitorData: restored from preferences")
             return savedVisitorData
@@ -117,15 +107,9 @@ object Store {
      */
     fun clearSession(context: Context) {
         val prefs = context.encryptedPreferences
-        prefs.edit().apply {
-            remove(ytCookieKey)
-            remove(ytVisitorDataKey)
-            remove(ytDataSyncIdKey)
-        }.apply()
-
-        Innertube.cookie = null
-        Innertube.visitorData = null
-        Innertube.dataSyncId = null
+        val guest = YouTubeSession(null, null, null, null)
+        prefs.edit().apply { putYouTubeSession(guest) }.apply()
+        Innertube.replaceYouTubeSession(guest)
         cookie = null
         iosVisitorData = null
         ghostResponseHeaders = null
@@ -179,19 +163,22 @@ object Store {
      * Retrieves visitor data via InnerTubeX's fetchFreshVisitorData().
      */
     suspend fun getIosVisitorData(): String? {
-        iosVisitorData?.let {
+        Innertube.visitorData?.takeIf(String::isNotBlank)?.let { return it }
+        cachedVisitorData()?.let {
             Timber.tag("Store").d("getIosVisitorData: returning cached visitor data")
             return it
         }
 
         return try {
             visitorMutex.withLock {
-                iosVisitorData?.let {
+                Innertube.visitorData?.takeIf(String::isNotBlank)?.let { return@withLock it }
+                cachedVisitorData()?.let {
                     Timber.tag("Store").d("getIosVisitorData: returning cached visitor data (after lock)")
                     return@withLock it
                 }
 
                 Timber.tag("Store").d("getIosVisitorData: fetching fresh visitor data from InnerTubeX...")
+                val requestedSession = Innertube.youtubeSessionSnapshot()
                 val data = try {
                     val result = Innertube.extractionTransport().innerTube.fetchFreshVisitorData()
                     Timber.tag("Store").d("getIosVisitorData: success, data length=${result?.length ?: 0}")
@@ -202,8 +189,12 @@ object Store {
                     Timber.tag("Store").d("getIosVisitorData: retry success, data length=${result?.length ?: 0}")
                     result
                 }
-                iosVisitorData = data
-                data
+                if (Innertube.youtubeSessionSnapshot() == requestedSession) {
+                    iosVisitorData = data?.let { requestedSession to it }
+                    data
+                } else {
+                    Innertube.visitorData
+                }
             }
         } catch (e: CancellationException) {
             Timber.tag("Store").w("getIosVisitorData: fetch cancelled after retry, returning null")

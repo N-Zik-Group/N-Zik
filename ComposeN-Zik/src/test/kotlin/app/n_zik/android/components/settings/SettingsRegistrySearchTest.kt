@@ -20,6 +20,8 @@ import app.n_zik.android.components.settings.common.SettingsThemeStoreItem
 import app.n_zik.android.components.settings.common.SETTINGS_GLASS_ROUTE
 import app.n_zik.android.components.settings.common.isGlassSettingsLink
 import app.n_zik.android.components.settings.common.searchSettingsCards
+import app.n_zik.android.components.settings.common.searchSettingsEntries
+import app.n_zik.android.components.settings.common.parentCard
 import app.n_zik.android.components.settings.common.searchSettingsPageItems
 import app.n_zik.android.components.settings.common.visibleCardTitleRes
 import app.n_zik.android.components.settings.ui.glassDestinationKeywordResources
@@ -37,6 +39,24 @@ import org.robolectric.annotation.Config
 class SettingsRegistrySearchTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
+
+    @Test
+    fun youtubeAccountAndSyncDescriptionsFindTheirEntriesAndPage() {
+        val english = context.createConfigurationContext(
+            Configuration(context.resources.configuration).apply { setLocale(Locale.ENGLISH) },
+        )
+        val entries = mapOf(
+            R.string.account_youtube_change_account_description to R.string.account_youtube_change_account,
+            R.string.account_youtube_sync_build_required to R.string.sync_data_with_ytm_account,
+        )
+        entries.forEach { (description, title) ->
+            val query = english.getString(description)
+            assertTrue("$query should find a YouTube card globally", searchSettingsCards(english, query).any { it.categoryId() == "youtube" })
+            val inYouTubePage = searchSettingsEntries(english, query)
+                .filter { it.parentCard().categoryId() == "youtube" }
+            assertTrue("$query should find the corresponding entry on the YouTube page", inYouTubePage.any { it.labelRes == title })
+        }
+    }
 
     @Test
     fun theGlobalPageListsAboutThenUpdateAndThematicDestinations() {

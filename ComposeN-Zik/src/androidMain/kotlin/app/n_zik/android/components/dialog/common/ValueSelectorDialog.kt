@@ -106,18 +106,13 @@ fun <T> ValueSelectorDialog(
                         .alpha(if (isLocked && lockedLabel != null) 0.4f else 1f)
                         .padding(vertical = 8.dp, horizontal = 12.dp)
                 ) {
-                    RadioButton(
+                    SettingsChoiceRadio(
                         selected = selectedValue == value,
                         enabled = !isLocked,
                         onClick = {
                             onDismiss()
                             onValueSelected(value)
                         },
-                        colors = RadioButtonDefaults.colors(
-                            selectedColor = palette.text,
-                            unselectedColor = palette.textSecondary
-                        ),
-                        modifier = Modifier.size(20.dp)
                     )
 
                     Spacer(modifier = Modifier.width(12.dp))
@@ -145,4 +140,17 @@ fun <T> ValueSelectorDialog(
             }
         }
     }
+}
+
+/** Radio indicator shared by settings selection lists. */
+@Composable
+internal fun SettingsChoiceRadio(selected: Boolean, onClick: (() -> Unit)? = null, enabled: Boolean = true) {
+    val palette = colorPalette()
+    RadioButton(
+        selected = selected,
+        onClick = onClick,
+        enabled = enabled,
+        colors = RadioButtonDefaults.colors(selectedColor = palette.text, unselectedColor = palette.textSecondary),
+        modifier = Modifier.size(20.dp),
+    )
 }

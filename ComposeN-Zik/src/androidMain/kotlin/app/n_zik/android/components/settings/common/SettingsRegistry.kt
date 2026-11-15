@@ -344,12 +344,15 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
         keywordRes = listOf(
             R.string.settings_youtube_music_title, R.string.settings_youtube_login_enabled_label, R.string.settings_youtube_authenticated_browsing_label,
             R.string.settings_youtube_authenticated_search_label,
+            R.string.account_youtube_change_account, R.string.account_youtube_change_account_description,
         )),
     SettingsCardRegistryEntry(5, R.string.sync_data_with_ytm_account, R.drawable.sync,
         keywordRes = listOf(
             R.string.sync_data_with_ytm_account, R.string.sync_status_detail, R.string.sync_now,
             R.string.sync_direction, R.string.sync_cooldown, R.string.sync_show_details,
             R.string.sync_background_guard,
+            R.string.settings_youtube_library_sync_content_description,
+            R.string.account_youtube_sync_build_required, R.string.account_youtube_sync_browse_required,
         )),
     SettingsCardRegistryEntry(5, R.string.sync_imported_playlists_automatic_title, R.drawable.playlist,
         keywordRes = listOf(R.string.sync_imported_playlists_automatic_title, R.string.sync_channels, R.string.sync_albums, R.string.sync_likes)),

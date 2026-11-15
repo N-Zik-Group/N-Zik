@@ -48,7 +48,7 @@ import java.io.File
 import java.io.IOException
 import java.util.Date
 import timber.log.Timber
-import app.n_zik.innertube.utils.parseCookieString
+import app.n_zik.innertube.hasYouTubeAuthCookie
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.utils.DEFAULT_PROFILE_ID
 import app.n_zik.android.utils.discordAvatarKey
@@ -273,7 +273,7 @@ fun loadProfileFace(context: Context, profileId: String, defaultName: String): P
 
     val secure = runCatching { profileSecurePrefs(app, profileId) }.getOrNull()
     val ytLoggedIn = runCatching {
-        secure?.let { parseCookieString(it.getString(ytCookieKey, "") ?: "") }?.contains("SAPISID") == true
+        hasYouTubeAuthCookie(secure?.getString(ytCookieKey, ""))
     }.getOrDefault(false)
     val ytName = secure?.getString(ytAccountNameKey, "").orEmpty()
     val ytAvatar = secure?.getString(ytAccountThumbnailKey, "")?.takeIf { it.isNotBlank() }.orEmpty()

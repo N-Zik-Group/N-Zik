@@ -134,7 +134,8 @@ Join the N-Zik Discord:
 - ✏️ **Metadata Editor**: Edit song metadata (title, artist, album, genre, year, cover art, and more) directly in-app. Supports both AAC and Opus codecs with automatic cover art embedding.
 - ⚙️ **Settings & Database Auto-Backup**: Save, restore, and automatically back up your complete app configuration and database with customizable intervals, retention limits, and optional YouTube/Discord/Last.fm credential inclusion.
 - 📡 **Offline First**: Enjoy your music library even without an internet connection.
-- 🔁 **YouTube Sync**: Recommendations and profile-related content are synchronized from your YouTube account, plus a new two-way sync engine (experimental - currently enabled in debug/dev builds) that keeps your likes and synced items aligned between N-Zik and YouTube Music.
+- 🎵 **YouTube Music accounts and channels**: Switch between Google accounts and YouTube channels, including channels managed by the same account. Each N-Zik profile has one active YouTube Music channel for personalized browsing and recommendations.
+- 🔁 **YouTube Music sync (experimental)**: Debug and Dev builds can sync likes and library items both ways with the active channel.
 - 🔄 **Auto-Resume on Device Connect**: Automatically resume playback when Bluetooth headphones or speakers connect.
 - 💾 **Persistent Queue**: Your queue is saved and restored across app sessions.
 - 🔀 **Auto-fill Queue**: Automatically adds more songs when the queue is nearly empty.

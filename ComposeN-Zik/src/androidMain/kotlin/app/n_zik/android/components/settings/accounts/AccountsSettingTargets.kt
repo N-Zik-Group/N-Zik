@@ -33,6 +33,7 @@ import app.n_zik.android.utils.ytAccountNameKey
 import app.n_zik.android.utils.ytAccountThumbnailKey
 import app.n_zik.android.utils.ytCookieKey
 import app.n_zik.android.utils.ytDataSyncIdKey
+import app.n_zik.android.utils.ytAuthUserKey
 import app.n_zik.android.utils.ytVisitorDataKey
 import app.n_zik.android.components.settings.useLoginForSearchKey
 import app.n_zik.android.extensions.discord.discordAdvancedActivityTypeKey
@@ -76,8 +77,8 @@ internal object AccountsSettingTargets {
             actions = listOf("editFace", "openProfiles"),
         ),
         AccountsCardTargets("accounts.card.youtube",
-            preferenceKeys = listOf(ytVisitorDataKey, ytDataSyncIdKey, ytCookieKey, ytAccountNameKey, ytAccountEmailKey, ytAccountChannelHandleKey, ytAccountThumbnailKey, enableYouTubeLoginKey, enableYouTubeSyncKey, streamClientRestartNeededKey, useLoginForBrowseKey, useLoginForSearchKey),
-            actions = listOf("connect", "disconnect", "clearSyncedData"),
+            preferenceKeys = listOf(ytVisitorDataKey, ytDataSyncIdKey, ytAuthUserKey, ytCookieKey, ytAccountNameKey, ytAccountEmailKey, ytAccountChannelHandleKey, ytAccountThumbnailKey, enableYouTubeLoginKey, enableYouTubeSyncKey, streamClientRestartNeededKey, useLoginForBrowseKey, useLoginForSearchKey),
+            actions = listOf("connect", "changeAccount", "disconnect", "clearSyncedData"),
         ),
         AccountsCardTargets("accounts.card.sync",
             preferenceKeys = listOf(enableYouTubeSyncKey, syncDirectionKey, syncCooldownKey, syncShowDetailsKey, syncBackgroundGuardKey),

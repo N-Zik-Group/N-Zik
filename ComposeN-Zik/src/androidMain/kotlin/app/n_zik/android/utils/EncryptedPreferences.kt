@@ -56,6 +56,7 @@ const val ytAccountThumbnailKey = "ytAccountThumbnail"
 const val discordAvatarKey = "discord_avatar"
 const val discordUsernameKey = "discord_username"
 const val ytDataSyncIdKey = "ytDataSyncId"
+const val ytAuthUserKey = "ytAuthUser"
 const val ytCookieExpiredKey = "ytCookieExpired"
 
 // Proxy password encrypted key (migrated from regular preferences)

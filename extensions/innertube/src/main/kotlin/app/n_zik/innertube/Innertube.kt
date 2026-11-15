@@ -8,11 +8,13 @@ import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import io.ktor.http.userAgent
@@ -32,6 +34,7 @@ import app.n_zik.innertube.utils.InnertubeLogger
 import app.n_zik.innertube.utils.ProxyPreferences
 import app.n_zik.innertube.utils.getProxy
 import app.n_zik.innertube.utils.parseCookieString
+import app.n_zik.innertube.utils.sha1
 import kotlin.concurrent.Volatile
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -287,6 +290,94 @@ object Innertube {
         }
 
     var cookieMap = emptyMap<String, String>()
+
+    @Synchronized
+    fun youtubeSessionSnapshot(): YouTubeSession = innerTubeX.sessionSnapshot().let { session ->
+        YouTubeSession(session.cookie, session.visitorData, session.dataSyncId, session.authUser)
+    }
+
+    @Synchronized
+    fun replaceYouTubeSession(session: YouTubeSession) {
+        innerTubeX.replaceSession(
+            cookie = session.cookie,
+            visitorData = session.visitorData,
+            dataSyncId = session.dataSyncId,
+            authUser = session.authUser ?: "0",
+            useLoginForBrowse = innerTubeX.useLoginForBrowse,
+        )
+        cookieMap = session.cookie?.let(::parseCookieString).orEmpty()
+    }
+
+    @Synchronized
+    private fun isolatedYouTubeSession(session: YouTubeSession) =
+        innerTubeX.createIsolatedSession(includeAccount = false).apply {
+            replaceSession(
+                cookie = session.cookie,
+                visitorData = session.visitorData,
+                dataSyncId = session.dataSyncId,
+                authUser = session.authUser ?: "0",
+                useLoginForBrowse = true,
+            )
+        }
+
+    suspend fun discoverYouTubeChannels(session: YouTubeSession): List<YouTubeChannel> {
+        val candidate = isolatedYouTubeSession(session)
+        try {
+            val response = candidate.accountsList(com.metrolist.innertubex.models.YouTubeClient.WEB)
+            val body = response.bodyAsText()
+            if (!response.status.isSuccess()) throw InnertubeHttpException("accountsList", response.status)
+            return parseYouTubeChannels(body)
+        } finally {
+            candidate.close()
+        }
+    }
+
+    suspend fun verifyYouTubeSession(session: YouTubeSession): YouTubeAccountDetails? {
+        val candidate = isolatedYouTubeSession(session)
+        try {
+            if (!candidate.hasSapCookieAuth(candidate.sessionSnapshot())) return null
+            val response = candidate.accountMenu(com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX)
+            val body = response.bodyAsText()
+            if (!response.status.isSuccess()) return null
+            return parseYouTubeAccountDetails(body)
+        } finally {
+            candidate.close()
+        }
+    }
+
+    suspend fun fetchYouTubeChannelEmail(session: YouTubeSession, account: YouTubeAccountDetails): String? =
+        fetchYouTubeAccountSwitcher(session)?.channelEmail(account.channelId, account.info.channelHandle)
+
+    suspend fun fetchYouTubeChannelEmails(session: YouTubeSession, channels: List<YouTubeChannel>): List<YouTubeChannel> {
+        if (channels.all { it.email != null }) return channels
+        val accounts = fetchYouTubeAccountSwitcher(session) ?: return channels
+        return fillYouTubeChannelEmails(channels, accounts)
+    }
+
+    private suspend fun fetchYouTubeAccountSwitcher(session: YouTubeSession): List<YouTubeChannel>? {
+        val cookie = session.cookie ?: return null
+        val cookieValues = parseCookieString(cookie)
+        val sapisid = cookieValues["SAPISID"] ?: cookieValues["__Secure-3PAPISID"]
+            ?: cookieValues["__Secure-1PAPISID"] ?: return null
+        val origin = "https://$YOUTUBE_MUSIC_HOST"
+        val seconds = System.currentTimeMillis() / 1000
+        val hash = sha1("$seconds $sapisid $origin")
+        val requestClient = client.config { followRedirects = false }
+        try {
+            val response = requestClient.get("$origin/getAccountSwitcherEndpoint") {
+                header(HttpHeaders.Cookie, cookie)
+                header(HttpHeaders.Authorization, "SAPISIDHASH ${seconds}_$hash")
+                header(HttpHeaders.Origin, origin)
+                header(HttpHeaders.CacheControl, "no-store")
+                header("X-Goog-AuthUser", session.authUser ?: "0")
+            }
+            return if (response.status.isSuccess()) {
+                parseYouTubeChannels(response.bodyAsText())
+            } else null
+        } finally {
+            requestClient.close()
+        }
+    }
 
     // YouTube Music supported countries (same as Metrolist's CountryCodeToName)
     // ISO-valid but YT-unsupported regions (e.g. MM) cause 400 errors

@@ -17,7 +17,7 @@ import app.n_zik.android.utils.FACE_SOURCE_DISCORD
 import app.n_zik.android.utils.FACE_SOURCE_LASTFM
 import app.n_zik.android.utils.FACE_SOURCE_PROFILE
 import app.n_zik.android.utils.FACE_SOURCE_YOUTUBE
-import app.n_zik.innertube.utils.parseCookieString
+import app.n_zik.innertube.hasYouTubeAuthCookie
 
 /**
  * Login state of a profile's accounts (one-shot read, per-profile secure prefs),
@@ -47,7 +47,7 @@ fun loadAccountLoginState(app: Context, profileId: String): AccountLoginState {
     val secure = runCatching { profileSecurePrefs(app, profileId) }.getOrNull()
     return AccountLoginState(
         youtube = runCatching {
-            parseCookieString(secure?.getString(ytCookieKey, "") ?: "").contains("SAPISID")
+            hasYouTubeAuthCookie(secure?.getString(ytCookieKey, ""))
         }.getOrDefault(false),
         ytName = runCatching { secure?.getString(ytAccountNameKey, "") }.getOrNull()?.trim().orEmpty(),
         ytAvatar = runCatching { secure?.getString(ytAccountThumbnailKey, "") }

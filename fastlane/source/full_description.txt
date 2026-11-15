@@ -33,7 +33,8 @@ Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Bac
 - Auto-backup with custom intervals and retention
 
 🔗 <b>Integrations</b>
-- YouTube sign-in for recommendations and video playback, plus an experimental two-way sync engine
+- Switch between Google accounts and YouTube channels. Each N-Zik profile uses one active YouTube Music channel for recommendations and playback.
+- Experimental two-way YouTube Music library sync in Debug and Dev builds.
 - Last.fm scrobbling with Now Playing and love/unlove
 - MusicBrainz artist and album insights
 - Discord Rich Presence, including advanced mode with live preview

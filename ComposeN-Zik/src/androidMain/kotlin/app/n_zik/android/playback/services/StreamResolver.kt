@@ -25,6 +25,7 @@ import app.n_zik.android.core.network.utils.NetworkQualityHelper
 
 import app.n_zik.android.core.security.potoken.PoTokenGenerator
 import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.hasYouTubeAuthCookie
 import app.n_zik.innertube.models.PlayerResponse
 import app.n_zik.innertube.requests.nextPage
 import app.n_zik.innertube.requests.artistPage
@@ -799,6 +800,7 @@ private suspend fun resolveStreamUriViaInnerTubeX(
     var lastCancellation: CancellationException? = null
     for (attempt in 0..1) {
         try {
+            val session = Innertube.youtubeSessionSnapshot()
             val connectivityManager = appContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
             val audioQuality = audioQualityToInnerTubeX(audioQualityFormat, connectionMetered)
 
@@ -817,6 +819,10 @@ private suspend fun resolveStreamUriViaInnerTubeX(
 
             return result.fold(
                 onSuccess = { playbackData ->
+                    val current = Innertube.youtubeSessionSnapshot()
+                    if (session.cookie != current.cookie || session.dataSyncId != current.dataSyncId ||
+                        session.authUser != current.authUser
+                    ) return@fold null
                     Timber.tag(TAG).d("InnerTubeX success for $videoId (client=${playbackData.streamClient})")
 
                     // Cache PlaybackData for metadata access
@@ -1076,7 +1082,7 @@ fun DataSpec.process(
     }
     return try {
         runBlocking(NzikDispatchers.DATA) {
-            val isLoggedIn = !Innertube.cookie.isNullOrBlank() && Innertube.cookie?.contains("SAPISID") == true
+            val isLoggedIn = hasYouTubeAuthCookie(Innertube.cookie)
             Timber.tag(TAG).d("Resolving stream for videoId=$videoId, isLoggedIn=$isLoggedIn")
 
             val parentalControlEnabled = appContext().preferences.getBoolean(parentalControlEnabledKey, false)

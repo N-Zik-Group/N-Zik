@@ -44,22 +44,15 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 import app.n_zik.android.extensions.youtubelogin.YouTubeLogin
+import app.n_zik.android.extensions.youtubelogin.clearSavedYouTubeSession
 import app.n_zik.android.utils.discordAvatarKey
 import app.n_zik.android.utils.discordPersonalAccessTokenKey
 import app.n_zik.android.utils.discordUsernameKey
 import app.n_zik.android.utils.encryptedPreferences
-import app.n_zik.android.utils.encryptedPreferencesUpdateTrigger
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.rememberEncryptedPreference
 import app.n_zik.android.utils.useLoginForBrowseKey
-import app.n_zik.android.utils.ytAccountChannelHandleKey
-import app.n_zik.android.utils.ytAccountEmailKey
-import app.n_zik.android.utils.ytAccountNameKey
-import app.n_zik.android.utils.ytAccountThumbnailKey
 import app.n_zik.android.utils.ytCookieExpiredKey
-import app.n_zik.android.utils.ytCookieKey
-import app.n_zik.android.utils.ytDataSyncIdKey
-import app.n_zik.android.utils.ytVisitorDataKey
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.MainApplication
@@ -175,19 +168,9 @@ fun OnboardingAccountsScreen(
 //
     // is nothing synced to wipe
     fun logOffYouTube() {
-        val ep = appContext().encryptedPreferences
-        ep.edit().putString(ytCookieKey, "").apply()
-        ep.edit().putString(ytAccountNameKey, "").apply()
-        ep.edit().putString(ytAccountChannelHandleKey, "").apply()
-        ep.edit().putString(ytAccountEmailKey, "").apply()
-        ep.edit().putString(ytAccountThumbnailKey, "").apply()
-        ep.edit().putString(ytVisitorDataKey, "").apply()
-        ep.edit().putString(ytDataSyncIdKey, "").apply()
-        // Force recomposition of every encrypted-prefs observer (Accounts tab pattern)
-        encryptedPreferencesUpdateTrigger++
+        clearSavedYouTubeSession(appContext().encryptedPreferences)
         appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
         appContext().preferences.edit().putBoolean(useLoginForBrowseKey, false).apply()
-        Innertube.useLoginForBrowse = false
         MainApplication.cookieStatus = MainApplication.CookieStatus.NOT_LOGGED_IN
         ytLoggedIn = false
         ytName = ""
@@ -380,21 +363,20 @@ fun OnboardingAccountsScreen(
         }
     ) {
         YouTubeLogin(
-            onLogin = { cookieRetrieved ->
-                if (cookieRetrieved.contains("SAPISID")) {
-                    loginYoutube = false
-                    // Same side effects as the Accounts tab login — the cookie is
-                    // live immediately, so the card updates without a restart
-                    appContext().preferences.edit().putBoolean(ytCookieExpiredKey, false).apply()
-                    MainApplication.cookieStatus = MainApplication.CookieStatus.VALID
-                    appContext().preferences.edit().putBoolean(useLoginForBrowseKey, true).apply()
-                    Innertube.useLoginForBrowse = true
-                    ytLoggedIn = true
-                    ytName = ytAccountName()
-                    Timber.tag("Onboarding").i("YouTube account connected from onboarding")
-                    Toaster.i(R.string.account_youtube_login_success)
-                }
-            }
+            onLogin = {
+                loginYoutube = false
+                appContext().preferences.edit()
+                    .remove(ytCookieExpiredKey)
+                    .putBoolean(useLoginForBrowseKey, true)
+                    .apply()
+                MainApplication.cookieStatus = MainApplication.CookieStatus.VALID
+                Innertube.useLoginForBrowse = true
+                ytLoggedIn = true
+                ytName = ytAccountName()
+                Toaster.i(R.string.account_youtube_login_success)
+            },
+            onCancel = { loginYoutube = false },
+            isActive = { loginYoutube },
         )
     }
 

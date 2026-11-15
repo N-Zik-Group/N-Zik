@@ -368,3 +368,11 @@ Fixed:
   - Reconcile identities and invalidate the old publication session in both settings import paths.
 - fix(theme-store): preserve edits while restored themes reconnect
   - Save explicit edits to an independent local copy and keep the verified Store version intact.
+
+Added:
+- feat(youtube): support multiple Google accounts and YouTube Music channels
+  - Group channels by Google account in the channel picker, display the account email once and preserve the order in which accounts were added.
+  - Open newly added accounts in isolated WebView profiles on supported devices, preserve sessions when the sheet is dismissed and confirm per-account sign-out.
+  - Resume the Google sign-in flow after device verification and validate the selected channel and sign-in data before replacing the active YouTube Music session.
+  - Store verified credentials and the local account roster in encrypted profile preferences. Include the active account index in optional YouTube CSV exports and clear a stale index when importing a legacy cookie.
+  - Keep the sync card visible and allow synchronization in Debug and Dev builds when authenticated browsing is enabled.

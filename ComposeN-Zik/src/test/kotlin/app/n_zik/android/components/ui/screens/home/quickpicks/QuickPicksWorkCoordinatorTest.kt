@@ -20,7 +20,7 @@ class QuickPicksWorkCoordinatorTest {
     @Test
     fun `authenticated startup shares one fetch and manual refresh and account switch still fetch`() = runTest {
         val coordinator = QuickPicksLoadCoordinator(backgroundScope)
-        val firstAccount = quickPicksAccountIdentity("SAPISID=test-account-a; VISITOR_INFO1_LIVE=first", true)
+        val firstAccount = quickPicksAccountIdentity("SAPISID=test-account-a; VISITOR_INFO1_LIVE=first", true, "personal", "0")
         val firstFinished = CompletableDeferred<Unit>()
         var cached = false
         var fetches = 0
@@ -36,7 +36,7 @@ class QuickPicksWorkCoordinatorTest {
         runCurrent()
         repeat(3) {
             // Visitor metadata and repeated authenticated emissions do not change the account.
-            val sameAccount = quickPicksAccountIdentity("VISITOR_INFO1_LIVE=$it; SAPISID=test-account-a", true)
+            val sameAccount = quickPicksAccountIdentity("VISITOR_INFO1_LIVE=$it; SAPISID=test-account-a", true, "personal", "0")
             coordinator.request(sameAccount) { fetch(it) }
         }
         firstFinished.complete(Unit)
@@ -49,7 +49,7 @@ class QuickPicksWorkCoordinatorTest {
         coordinator.request(firstAccount, refresh = true) { fetch(it) }
         runCurrent()
         assertEquals(2, fetches)
-        val secondAccount = quickPicksAccountIdentity("SAPISID=test-account-b", true)
+        val secondAccount = quickPicksAccountIdentity("SAPISID=test-account-a", true, "brand", "0")
         coordinator.request(secondAccount) { force -> assertTrue(force); fetch(force) }
         runCurrent()
         assertEquals(3, fetches)

@@ -44,6 +44,7 @@ import app.n_zik.android.utils.ytAccountNameKey
 import app.n_zik.android.utils.ytAccountThumbnailKey
 import app.n_zik.android.utils.ytCookieKey
 import app.n_zik.android.utils.ytDataSyncIdKey
+import app.n_zik.android.utils.ytAuthUserKey
 import app.n_zik.android.utils.ytVisitorDataKey
 import app.n_zik.android.appContext
 import app.n_zik.android.core.backup.DatabaseBackup
@@ -168,7 +169,7 @@ object RescueFiles {
 //
     // truth — BackupManager and ExportSettingsDialog must reference them, never re-declare.
     internal val YTB_KEYS = listOf(
-        ytCookieKey, ytVisitorDataKey, ytDataSyncIdKey,
+        ytCookieKey, ytVisitorDataKey, ytDataSyncIdKey, ytAuthUserKey,
         ytAccountNameKey, ytAccountEmailKey, ytAccountChannelHandleKey,
         ytAccountThumbnailKey, enableYouTubeLoginKey, enableYouTubeSyncKey,
         useYtLoginOnlyForBrowseKey
@@ -473,10 +474,13 @@ object RescueFiles {
         var imported = 0
         var encryptedSkipped = 0
         RemovedSettingsMigration.stageRemoval(plainEditor)
+        val importedStrings = rows.filter { it.first.equals("string", ignoreCase = true) }.map { it.second }.toSet()
+        val sessionRoutingKeys = setOf(ytDataSyncIdKey, ytAuthUserKey)
 
         SettingsPreferencesBridge.normalizeStorageRows(rows).forEach { (type, key, value) ->
             if (SettingsPreferencesBridge.isGlassRecord(type)) return@forEach
             if (RemovedSettingsMigration.isRemovedKey(key)) return@forEach
+            if (key in sessionRoutingKeys && ytCookieKey !in importedStrings) return@forEach
             if (SettingsPreferencesBridge.isStorageSetting(key)) {
                 stageStorage(key, value)
                 imported++
@@ -495,7 +499,14 @@ object RescueFiles {
 
             runCatching {
                 when (type.lowercase()) {
-                    "string" -> targetEditor.putString(key, value)
+                    "string" -> {
+                        if (key == ytCookieKey) {
+                            (sessionRoutingKeys + ytVisitorDataKey)
+                                .filterNot(importedStrings::contains)
+                                .forEach(targetEditor::remove)
+                        }
+                        targetEditor.putString(key, value)
+                    }
                     "int", "integer" -> targetEditor.putInt(key, value.toInt())
                     "long" -> targetEditor.putLong(key, value.toLong())
                     "float" -> targetEditor.putFloat(key, value.toFloat())

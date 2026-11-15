@@ -55,7 +55,7 @@ import app.n_zik.android.components.settings.common.settingsSearchDescription
 import app.n_zik.android.components.settings.common.settingsSearchTitle
 import app.n_zik.android.components.settings.common.visibleCardTitleRes
 import app.n_zik.android.components.tab.Search
-import app.n_zik.innertube.utils.parseCookieString
+import app.n_zik.innertube.hasYouTubeAuthCookie
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.first
 
@@ -213,9 +213,11 @@ fun isYouTubeLoginEnabled(): Boolean {
     return isYouTubeLoginEnabled
 }
 
+internal fun isYouTubeSyncBuild(buildType: String = BuildConfig.BUILD_TYPE): Boolean =
+    buildType == "debug" || buildType == "dev64" || buildType == "dev32"
+
 fun isYouTubeSyncEnabled(): Boolean {
-    val isDevBuild = BuildConfig.BUILD_TYPE in listOf("debug", "dev64", "dev32", "beta64", "beta32")
-    if (!isDevBuild) return false
+    if (!isYouTubeSyncBuild()) return false
     val isYouTubeSyncEnabled = appContext().encryptedPreferences.getBoolean(enableYouTubeSyncKey, false)
     val useLoginForBrowse = appContext().preferences.getBoolean(useLoginForBrowseKey, true)
     return isYouTubeSyncEnabled && isYouTubeLoggedIn() && isYouTubeLoginEnabled() && useLoginForBrowse
@@ -223,6 +225,5 @@ fun isYouTubeSyncEnabled(): Boolean {
 
 fun isYouTubeLoggedIn(): Boolean {
     val cookie = appContext().encryptedPreferences.getString(ytCookieKey, "")
-    val isLoggedIn = cookie?.let { parseCookieString(it) }?.contains("SAPISID") == true
-    return isLoggedIn
+    return hasYouTubeAuthCookie(cookie)
 }

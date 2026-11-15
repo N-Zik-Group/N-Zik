@@ -15,12 +15,22 @@ import kotlinx.coroutines.withContext
 internal data class QuickPicksAccountIdentity(
     private val session: String?,
     val useLoginForBrowse: Boolean,
+    private val channel: String?,
+    private val authUser: String?,
 ) {
     override fun toString(): String = "QuickPicksAccountIdentity(redacted)"
 }
 
-internal fun quickPicksAccountIdentity(cookie: String, useLoginForBrowse: Boolean) =
-    QuickPicksAccountIdentity(parseCookieString(cookie)["SAPISID"], useLoginForBrowse)
+internal fun quickPicksAccountIdentity(
+    cookie: String,
+    useLoginForBrowse: Boolean,
+    channel: String? = null,
+    authUser: String? = null,
+): QuickPicksAccountIdentity {
+    val cookies = parseCookieString(cookie)
+    val session = cookies["SAPISID"] ?: cookies["__Secure-3PAPISID"] ?: cookies["__Secure-1PAPISID"]
+    return QuickPicksAccountIdentity(session, useLoginForBrowse, channel, authUser)
+}
 
 /** Reentry shares work; refresh and changed request parameters queue the latest load. */
 internal class QuickPicksLoadCoordinator(private val scope: CoroutineScope) {

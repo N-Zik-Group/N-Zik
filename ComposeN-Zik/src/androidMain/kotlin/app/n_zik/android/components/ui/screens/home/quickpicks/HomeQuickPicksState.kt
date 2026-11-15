@@ -17,8 +17,6 @@ import app.n_zik.android.enums.Countries
 import app.n_zik.android.enums.PlayEventsType
 import app.n_zik.android.models.Song
 import app.n_zik.android.utils.asSong
-import app.n_zik.android.utils.encryptedPreferences
-import app.n_zik.android.utils.ytCookieKey
 import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
@@ -80,16 +78,18 @@ class HomeQuickPicksState(
         val account: QuickPicksAccountIdentity,
     )
 
-    private fun loadIdentity() = LoadIdentity(
-        playEventType, selectedCountryCode,
-        quickPicksAccountIdentity(
-            appContext().encryptedPreferences.getString(ytCookieKey, "").orEmpty(),
-            Innertube.useLoginForBrowse,
-        ),
-    )
+    private fun accountIdentity(): QuickPicksAccountIdentity {
+        val session = Innertube.youtubeSessionSnapshot()
+        return quickPicksAccountIdentity(
+            session.cookie.orEmpty(), Innertube.useLoginForBrowse, session.dataSyncId, session.authUser,
+        )
+    }
+
+    private fun loadIdentity() = LoadIdentity(playEventType, selectedCountryCode, accountIdentity())
 
     @SuppressLint("SuspiciousIndentation")
     suspend fun loadData(force: Boolean = false): Boolean {
+        val account = accountIdentity()
         observeLocalData()
         if (!force && shouldSkipQuickPicksLoad(loadedData.value, homePageInit.value != null)) {
             // Repair an early-ready cache whose local loaded flag was lost.
@@ -142,7 +142,7 @@ class HomeQuickPicksState(
 
                 runCatching { quickPicksDeferred.await() }
                     .onSuccess { items ->
-                        if (items != null && items.isNotEmpty()) {
+                        if (items != null && items.isNotEmpty() && account == accountIdentity()) {
                             ytmQuickPicks.value = items.map { it.asSong }
                             Timber.tag("HomeQuickPicksState").d("Lightweight Quick Picks loaded (${items.size} items)")
                         }
@@ -158,6 +158,7 @@ class HomeQuickPicksState(
                 var cumulativeChips = homePageInit.value?.chips.orEmpty()
                 loadQuickPicksHomeAttempts {
                     val result = YtMusic.getHomePage(setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)
+                    if (account != accountIdentity()) throw CancellationException("YouTube account changed")
                     result.getOrNull()?.let { page ->
                         val newSections = mutableListOf<HomePage.Section>()
                         val existingSections = cumulativeSections.toMutableList()
