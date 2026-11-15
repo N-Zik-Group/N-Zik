@@ -96,6 +96,7 @@ internal val playbackPreviews = listOf("player-playing", "miniplayer-playing")
     .flatMap { listOf("$it-normal", "$it-glass") }
 internal val automaticPreviews = requiredPreviews + playbackPreviews
 internal const val SubmissionPreviewLimit = 4 * 1024 * 1024
+private val SubmissionPreviewMimeTypes = arrayOf("image/png", "image/jpeg", "image/webp", "image/gif")
 private const val FirstThemeStoreVersionCode = 96
 
 internal fun submissionMinimumVersionCode(input: String, current: Int, previous: Int?): Int? =
@@ -337,10 +338,19 @@ private fun ThemeSubmissionForm(
             scope.launch {
                 var staged: File? = null
                 try {
-                    val edited = PickedImageEditor.edit(context, uri) ?: return@launch
-                    val file = edited.use { image ->
-                        withContext(NzikDispatchers.DATA) {
-                            prepareSubmissionPreview(context, image.file).also { staged = it }
+                    val gif = withContext(NzikDispatchers.DATA) {
+                        val source = checkNotNull(context.contentResolver.openInputStream(uri))
+                        source.use { it.readSubmissionGifOrNull() }?.let { bytes ->
+                            requireDecodableSubmissionGif(bytes)
+                            writeSubmissionPreview(context, "gif", bytes).also { staged = it }
+                        }
+                    }
+                    val file = gif ?: run {
+                        val edited = PickedImageEditor.edit(context, uri) ?: return@launch
+                        edited.use { image ->
+                            withContext(NzikDispatchers.DATA) {
+                                prepareSubmissionPreview(context, image.file).also { staged = it }
+                            }
                         }
                     }
                     replacePreviews(JSONObject(previewState).put(slot, android.net.Uri.fromFile(file).toString()))
@@ -452,7 +462,14 @@ private fun ThemeSubmissionForm(
             }
             val uri = android.net.Uri.parse(previews.getValue(slot))
             val resolver = context.contentResolver
-            val extension = when (if (uri.scheme == "file") "image/webp" else resolver.getType(uri)) {
+            val mimeType = if (uri.scheme == "file") {
+                when (File(checkNotNull(uri.path)).extension) {
+                    "gif" -> "image/gif"
+                    "webp" -> "image/webp"
+                    else -> error("Unsupported preview image")
+                }
+            } else resolver.getType(uri)
+            val extension = when (mimeType) {
                 "image/jpeg" -> "jpg"
                 "image/png" -> "png"
                 "image/webp" -> "webp"
@@ -686,16 +703,19 @@ private fun ThemeSubmissionForm(
                             })
                             SettingsSectionCard(stringResource(R.string.theme_store_submission_included), R.drawable.ui,
                                 bottomSpacing = 0.dp, content = {
-                                    if (initialAppearance != null) {
+                                    if (initialAppearance != null || draft != null) {
                                         OtherSettingsEntry(
                                             title = stringResource(R.string.theme_store_local_use_current),
                                             text = stringResource(R.string.theme_store_local_use_current_description),
                                             icon = R.drawable.ui,
                                             onClick = {
-                                                fullAppearance = currentAppearance()
-                                                usingCurrentAppearance = true
-                                                selection = -1
-                                                invalidateGeneratedPreviews()
+                                                val updated = currentAppearance()
+                                                if (updated != fullAppearance) {
+                                                    fullAppearance = updated
+                                                    usingCurrentAppearance = true
+                                                    if (initialAppearance != null) selection = -1
+                                                    invalidateGeneratedPreviews()
+                                                }
                                             },
                                         )
                                     }
@@ -782,7 +802,7 @@ private fun ThemeSubmissionForm(
                                         enabled = !importingPreview,
                                         onClick = {
                                             picking = selected
-                                            picker.launch(arrayOf("image/png", "image/jpeg", "image/webp"))
+                                            picker.launch(SubmissionPreviewMimeTypes)
                                         },
                                     ) {
                                         Text(stringResource(if (selected in readyPreviews) R.string.theme_store_preview_replace_selected
@@ -793,10 +813,10 @@ private fun ThemeSubmissionForm(
                                         enabled = !importingPreview && gallerySlots.size < 36,
                                         onClick = {
                                             picking = "extra-${UUID.randomUUID()}$suffix"
-                                            picker.launch(arrayOf("image/png", "image/jpeg", "image/webp"))
+                                            picker.launch(SubmissionPreviewMimeTypes)
                                         },
                                     ) { Text(stringResource(R.string.theme_store_preview_add_extra)) }
-                                    SettingsDescription(stringResource(R.string.theme_store_preview_import_requirements))
+                                    SettingsDescription(stringResource(R.string.theme_store_preview_import_requirements_with_gif))
                                     if (selected in readyPreviews) {
                                         SubmissionField(captionFor(selected), { caption ->
                                             if (caption.themeTextLength <= 160) {
@@ -994,7 +1014,7 @@ private fun prepareSubmissionPreview(context: android.content.Context, source: F
     android.graphics.BitmapFactory.decodeFile(source.path, options)
     require(options.outWidth > 0 && options.outHeight > 0)
     options.inJustDecodeBounds = false
-    while (maxOf(options.outWidth, options.outHeight) / options.inSampleSize.coerceAtLeast(1) > 1920) {
+    while (maxOf(options.outWidth, options.outHeight) / options.inSampleSize.coerceAtLeast(1) > SubmissionPreviewMaxEdge) {
         options.inSampleSize = options.inSampleSize.coerceAtLeast(1) * 2
     }
     val bitmap = checkNotNull(android.graphics.BitmapFactory.decodeFile(source.path, options))
@@ -1003,14 +1023,18 @@ private fun prepareSubmissionPreview(context: android.content.Context, source: F
         @Suppress("DEPRECATION")
         check(bitmap.compress(android.graphics.Bitmap.CompressFormat.WEBP, 85, buffer))
         require(buffer.size() in 1..SubmissionPreviewLimit)
-        val folder = File(context.filesDir, "theme-submission-imports")
-        check(folder.isDirectory || folder.mkdirs())
-        val file = android.util.AtomicFile(File(folder, "${UUID.randomUUID()}.webp"))
-        writeThemeFile(file, buffer.toByteArray())
-        return file.baseFile
+        return writeSubmissionPreview(context, "webp", buffer.toByteArray())
     } finally {
         bitmap.recycle()
     }
+}
+
+private fun writeSubmissionPreview(context: android.content.Context, extension: String, bytes: ByteArray): File {
+    val folder = File(context.filesDir, "theme-submission-imports")
+    check(folder.isDirectory || folder.mkdirs() || folder.isDirectory)
+    val file = android.util.AtomicFile(File(folder, "${UUID.randomUUID()}.$extension"))
+    writeThemeFile(file, bytes)
+    return file.baseFile
 }
 
 private fun ThemeCategory.submissionIcon(): Int = when (this) {

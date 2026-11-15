@@ -449,6 +449,7 @@ private fun CaptureGallery(
                     throw cancelled
                 } catch (error: Exception) {
                     Timber.tag("ThemePreview").e(error, "Capture failed for %s", frame.name)
+                    player.pause()
                     progressNotification?.cancel()
                     failed = frame
                     frameIndex = -1
@@ -587,7 +588,11 @@ private fun PreviewPage(session: ThemePreviewSession, theme: ThemePreviewAppeara
                     if (!fullPlayer) {
                             AppNavigation(
                                 navController = nav,
-                                openTabFromShortcut = if (session.scene == ThemePreviewScene.NAVIGATION) HomeScreenTabs.Songs.index else -1,
+                                openTabFromShortcut = when (session.scene) {
+                                    ThemePreviewScene.HOME -> HomeScreenTabs.QuickPics.index
+                                    ThemePreviewScene.NAVIGATION -> HomeScreenTabs.Songs.index
+                                    else -> -1
+                                },
                                 hasTopNavBarVisible = navPosition == NavigationBarPosition.Top,
                                 hasSideNavBarVisible = !navPosition.isHorizontal,
                                 hasPageNavBar = hasTabs,

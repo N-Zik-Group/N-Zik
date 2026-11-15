@@ -160,6 +160,7 @@ okhttp3-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-
 # Coil
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil3" }
 coil-compose-core = { group = "io.coil-kt.coil3", name = "coil-compose-core", version.ref = "coil3" }
+coil-gif = { group = "io.coil-kt.coil3", name = "coil-gif", version.ref = "coil3" }
 coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil3" }
 coil-mp = { module = "io.coil-kt.coil3:coil", version.ref = "coil3" }
 

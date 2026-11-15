@@ -44,7 +44,7 @@ class ThemeStoreDownloadTest {
         )
         var queueResponse = "corrupt".encodeToByteArray()
         val onlineStore = ThemeStoreCatalog(folder.root) { path, _ ->
-            when (path.removePrefix(theme.directory)) {
+            when (path.substringBefore('?').removePrefix(theme.directory)) {
                 theme.appearance.path -> appearance
                 theme.previews[0].path -> cover
                 theme.previews[1].path -> queueResponse

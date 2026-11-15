@@ -447,7 +447,7 @@
     <string name="theme_store_draft_resume">Continue draft</string>
     <string name="theme_store_preview_add_extra">Add an extra preview</string>
     <string name="theme_store_preview_extra_title">Preview title</string>
-    <string name="theme_store_preview_import_requirements">Previews are public. Keep personal information out of screenshots. PNG, JPEG or WebP · 4 MB per image.</string>
+    <string name="theme_store_preview_import_requirements_with_gif">Previews are public. Keep personal information out of screenshots. PNG, JPEG, WebP or GIF · 4 MB per image. GIFs keep their original size and must fit within 1920 × 1920.</string>
     <string name="theme_store_preview_import_error">Could not import this image. Choose a PNG, JPEG or WebP image under 4 MB.</string>
     <string name="theme_store_submission_included">Included settings</string>
     <string name="theme_store_submission_saved_content">The theme saves the selected appearance and interface settings, plus the previews and their captions. Your accounts, music, playlists, and listening history stay on this device.</string>

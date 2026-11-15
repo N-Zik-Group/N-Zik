@@ -52,6 +52,7 @@ kotlin {
         }
 
         androidMain.dependencies {
+            implementation(libs.coil.gif)
             implementation(libs.media3.session)
             implementation(libs.kotlinx.coroutines.guava)
             implementation(libs.extractor)

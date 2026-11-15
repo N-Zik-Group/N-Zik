@@ -257,7 +257,9 @@ internal class ThemeStoreCatalog(
         val entries = parseCatalogIndex(index).themes
         var remainingBytes = CatalogSnapshotLimit - indexBytes.size
         val manifests = entries.map { entry ->
-            val bytes = fetch("catalog/themes/${entry.themeId}/${entry.revision}/manifest.json", ThemeMetadataLimit)
+            // Moderation can update a manifest's publication date within the same revision.
+            val path = "catalog/themes/${entry.themeId}/${entry.revision}/manifest.json?sha=${entry.manifestSha256}"
+            val bytes = fetch(path, ThemeMetadataLimit)
             require(bytes.size <= remainingBytes) { "Catalog manifests exceeded the total byte limit" }
             remainingBytes -= bytes.size
             bytes.decodeToString(throwOnInvalidSequence = true)
@@ -292,7 +294,7 @@ internal class ThemeStoreCatalog(
         return try {
             val cached = if (file.isFile) file.inputStream().use { it.readThemeBytes(PreviewLimit) } else null
             if (cached?.sha256() != preview.sha256) {
-                val bytes = fetch(theme.directory + preview.path, PreviewLimit)
+                val bytes = fetch("${theme.directory}${preview.path}?sha=${preview.sha256}", PreviewLimit)
                 require(bytes.sha256() == preview.sha256)
                 check(directory.isDirectory || directory.mkdirs() || directory.isDirectory)
                 writeThemeFile(AtomicFile(file), bytes)
@@ -402,7 +404,7 @@ internal fun themeStoreCatalog(context: android.content.Context, offline: Boolea
     ThemeStoreCatalog(File(context.filesDir, "theme-store-catalog")) { path, limit ->
         val bundledPrefix = "catalog/themes/$BundledThemeId/1/"
         if (path.startsWith(bundledPrefix)) {
-            context.assets.open("theme-store-default/" + path.removePrefix(bundledPrefix)).use { it.readThemeBytes(limit) }
+            context.assets.open("theme-store-default/" + path.substringBefore('?').removePrefix(bundledPrefix)).use { it.readThemeBytes(limit) }
         } else {
             if (offline || app.n_zik.android.core.network.OfflineMode.enabled(context)) {
                 throw java.io.IOException("Theme Store is offline")
@@ -441,12 +443,16 @@ internal fun fetchStoreFile(path: String, limit: Int): ByteArray =
         storeReads.get(path)?.takeIf { now - it.loadedAt < StoreReadTtlMs }?.let {
             return@synchronized it.bytes?.also { bytes -> require(bytes.size <= limit) } ?: throw StoreFileNotFound()
         }
+        val expectedHash = path.substringAfter("?sha=", "").takeIf { hash.matches(it) }
         try {
-            fetchStoreFileFromNetwork(path, limit).also {
-                storeReads.put(path, CachedStoreFile(it, android.os.SystemClock.elapsedRealtime()))
+            fetchStoreFileFromNetwork(path, limit).also { bytes ->
+                require(expectedHash == null || bytes.sha256() == expectedHash)
+                storeReads.put(path, CachedStoreFile(bytes, android.os.SystemClock.elapsedRealtime()))
             }
         } catch (missing: StoreFileNotFound) {
-            storeReads.put(path, CachedStoreFile(null, android.os.SystemClock.elapsedRealtime()))
+            if (expectedHash == null) {
+                storeReads.put(path, CachedStoreFile(null, android.os.SystemClock.elapsedRealtime()))
+            }
             throw missing
         }
     }

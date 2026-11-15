@@ -2,13 +2,48 @@ package app.n_zik.android.components.settings.appearance.preview
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import java.io.DataInputStream
+import java.io.EOFException
 import java.io.File
+import java.io.InputStream
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import timber.log.Timber
+
+internal const val SubmissionPreviewMaxEdge = 1920
+
+/** Identifies GIF by its header because document providers can report a generic MIME type. */
+internal fun InputStream.readSubmissionGifOrNull(): ByteArray? {
+    val source = buffered()
+    val signature = ByteArray(6)
+    source.mark(signature.size)
+    try {
+        DataInputStream(source).readFully(signature)
+    } catch (_: EOFException) {
+        return null
+    }
+    if (signature.decodeToString() !in listOf("GIF87a", "GIF89a")) return null
+    source.reset()
+    val bytes = source.readThemeBytes(SubmissionPreviewLimit)
+    require(bytes.size >= 14 && bytes.last() == 0x3b.toByte())
+    fun dimension(offset: Int) =
+        (bytes[offset].toInt() and 0xff) or ((bytes[offset + 1].toInt() and 0xff) shl 8)
+    require(dimension(6) in 1..SubmissionPreviewMaxEdge && dimension(8) in 1..SubmissionPreviewMaxEdge)
+    return bytes
+}
+
+/** Decode a small sample to reject containers that have no image before keeping their original bytes. */
+internal fun requireDecodableSubmissionGif(bytes: ByteArray) {
+    val options = BitmapFactory.Options().apply { inSampleSize = 16 }
+    val bitmap = requireNotNull(BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)) {
+        "Preview GIF has no decodable image"
+    }
+    bitmap.recycle()
+}
 
 internal fun submissionPreviewUris(previews: JSONObject?): Set<String> =
     previews?.keys()?.asSequence()?.mapNotNull { previews.opt(it) as? String }?.toSet().orEmpty()
@@ -56,9 +91,9 @@ internal fun pruneSubmissionPreviewFiles(filesDir: File, candidates: Iterable<Fi
     for (candidate in candidates) {
         val file = candidate.canonicalFile
         val parent = file.parentFile ?: continue
-        if (file in protectedPaths || file.extension != "webp" || !file.isFile ||
-            (parent != imports && parent.parentFile != captures)
-        ) continue
+        val managedImport = parent == imports && file.extension in setOf("webp", "gif")
+        val managedCapture = parent.parentFile == captures && file.extension == "webp"
+        if (file in protectedPaths || !file.isFile || (!managedImport && !managedCapture)) continue
         if (file.delete() && parent.parentFile == captures) {
             val remaining = parent.listFiles()
             if (remaining?.size == 1 && remaining.single().name == "complete") remaining.single().delete()

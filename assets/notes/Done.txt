@@ -1,4 +1,8 @@
 Fixed:
+- fix(theme-store): refresh catalog assets and preserve animated previews
+  - Fetch indexed manifests and previews by content hash to avoid stale downloads.
+  - Keep animated GIF previews, refresh the appearance of resumed theme drafts, and capture Quick Picks for Home previews.
+  - Stop demo playback when preview capture fails.
 - fix(theme-store): keep preview capture awake and support back cancellation
   - Keep the capture screen awake until generation finishes or is canceled.
   - Give the capture flow priority over back actions from the previewed screen, then return to the submission when canceled.

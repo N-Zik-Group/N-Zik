@@ -69,6 +69,27 @@ class ThemeStoreCacheTest {
     }
 
     @Test
+    fun refreshReadsTheNewManifestWhenPublicationMetadataChangesInPlace() = runTest {
+        var theme = StoreTheme(
+            1, "99edc843-6a9b-5753-8e76-cc11fe9b3295", 1, "Blurred Cover", "Theme",
+            StoreAuthor(1, "N-Zik-Group"), emptyList(),
+            StoreCompatibility(null), StoreFile("appearance.json", "a".repeat(64)), emptyList(),
+        )
+        val manifestCache = mutableMapOf<String, ByteArray>()
+        val store = ThemeStoreCatalog(folder.root) { path, _ ->
+            val bytes = Json.encodeToString(theme).encodeToByteArray()
+            if (path == "catalog/themes/index.json") {
+                """{"schemaVersion":1,"themes":[{"themeId":"${theme.themeId}","revision":1,"manifestSha256":"${bytes.sha256()}"}]}""".encodeToByteArray()
+            } else manifestCache.getOrPut(path) { bytes }
+        }
+
+        assertEquals(listOf(theme), store.refresh())
+        theme = theme.copy(publishedOn = "2026-11-15")
+        assertEquals(listOf(theme), store.refresh())
+        assertEquals(2, manifestCache.size)
+    }
+
+    @Test
     fun newProfileHasNoDownloadsOrFollows() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val library = ThemeStoreLibrary(context.getSharedPreferences("emptyStore", Context.MODE_PRIVATE))
