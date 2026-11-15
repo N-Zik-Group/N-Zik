@@ -204,7 +204,7 @@ private fun ThemeSubmissionForm(
     val login = account?.takeIf { id > 0 } ?: if (localOnly) "local" else return
     val localCreator = if (localOnly) {
         account?.takeIf { id > 0 }
-            ?: app.n_zik.android.components.navigation.header.rememberHeaderProfileFace().name.take(100)
+            ?: app.n_zik.android.components.navigation.header.rememberHeaderProfileFace().name.takeThemeText(100)
     } else null
     val scope = rememberCoroutineScope()
     val drafts = remember { context.getSharedPreferences("theme_submission_drafts", 0) }
@@ -269,7 +269,7 @@ private fun ThemeSubmissionForm(
     val hasDuplicateTags = submissionTags.size != rawTags.size
     val hasReservedTags = !localOnly && !canUseReservedTags && submissionTags.any { it in reservedStoreTags }
     val validTags = !hasDuplicateTags && !hasReservedTags && submissionTags.size <= 8 &&
-        submissionTags.all { it.length <= 30 }
+        submissionTags.all { it.themeTextLength <= 30 }
     val tagQuery = canonicalStoreTag(tags.substringAfterLast(','))
     val enteredTags = (if (',' in tags) tags.substringBeforeLast(',').split(',') else emptyList()).canonicalStoreTags()
     val suggestedTags = catalogTags.filter { tag ->
@@ -622,8 +622,8 @@ private fun ThemeSubmissionForm(
                         0 -> {
                             SettingsSectionCard("Theme information", R.drawable.ui, bottomSpacing = 0.dp, content = {
                                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    SubmissionField(title, { if (it.length <= 100) title = it }, "Theme title")
-                                    SubmissionField(description, { if (it.length <= 1000) description = it }, "Description", 3)
+                                    SubmissionField(title, { if (it.themeTextLength <= 100) title = it }, "Theme title")
+                                    SubmissionField(description, { if (it.themeTextLength <= 1000) description = it }, "Description", 3)
                                     SubmissionField(tags, { tags = it }, stringResource(R.string.theme_store_tags_entry))
                                     if (hasDuplicateTags || hasReservedTags) {
                                         SettingsDescription(stringResource(
@@ -799,7 +799,7 @@ private fun ThemeSubmissionForm(
                                     SettingsDescription(stringResource(R.string.theme_store_preview_import_requirements))
                                     if (selected in readyPreviews) {
                                         SubmissionField(captionFor(selected), { caption ->
-                                            if (caption.length <= 160) {
+                                            if (caption.themeTextLength <= 160) {
                                                 captionState = JSONObject(captionState).put(selected, caption).toString()
                                             }
                                         }, if (selected in requiredPreviews) stringResource(R.string.theme_store_caption_for, selectedLabel)

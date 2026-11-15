@@ -57,7 +57,7 @@ internal suspend fun writeThemeCollectionArchive(
             theme.copy(themeId = localThemeArchiveId(Json.encodeToString(theme).encodeToByteArray()))
         }
         val bytes = Json.encodeToString(localTheme).encodeToByteArray()
-        require(bytes.size <= ThemeDocumentLimit)
+        require(bytes.size <= ThemeMetadataLimit)
         parseStoreTheme(bytes.decodeToString(), allowLocalAuthor = true)
         themeArchivePaths(localTheme)
         val id = "${localTheme.themeId}:${localTheme.revision}"
@@ -173,7 +173,7 @@ private fun readCollectionThemes(zip: ZipFile): List<CollectionTheme> {
         size += entry.size
     }
     if (CollectionIndexPath !in seen) {
-        val bytes = zip.read("manifest.json", ThemeDocumentLimit)
+        val bytes = zip.read("manifest.json", ThemeMetadataLimit)
         val theme = parseStoreTheme(bytes.decodeToString(throwOnInvalidSequence = true), allowLocalAuthor = true)
         require(theme.themeId != BundledThemeId && seen == themeArchivePaths(theme))
         checkCollectionThemeFileSizes(zip, "", theme)
@@ -188,7 +188,7 @@ private fun readCollectionThemes(zip: ZipFile): List<CollectionTheme> {
     val expected = mutableSetOf(CollectionIndexPath)
     val themes = index.themes.map { record ->
         require(collectionIdPattern.matches(record.id) && collectionHashPattern.matches(record.manifestSha256))
-        val bytes = zip.read(record.directory + "manifest.json", ThemeDocumentLimit)
+        val bytes = zip.read(record.directory + "manifest.json", ThemeMetadataLimit)
         require(bytes.sha256() == record.manifestSha256)
         val theme = parseStoreTheme(bytes.decodeToString(throwOnInvalidSequence = true), allowLocalAuthor = true)
         require(theme.themeId != BundledThemeId && "${theme.themeId}:${theme.revision}" == record.id)
@@ -206,7 +206,11 @@ private fun readCollectionThemes(zip: ZipFile): List<CollectionTheme> {
 private fun checkCollectionThemeFileSizes(zip: ZipFile, directory: String, theme: StoreTheme): List<String> =
     themeArchivePaths(theme).map { path ->
         val entry = directory + path
-        val limit = if (path.startsWith("previews/")) SubmissionPreviewLimit else ThemeDocumentLimit
+        val limit = when {
+            path.startsWith("previews/") -> SubmissionPreviewLimit
+            path == "appearance.json" -> ThemeDocumentLimit
+            else -> ThemeMetadataLimit
+        }
         require(checkNotNull(zip.getEntry(entry)).size in 1..limit.toLong())
         entry
     }

@@ -865,7 +865,7 @@ private fun ThemeReviewsDialog(theme: StoreTheme, reviews: StoreReviewSummary?, 
                         }
                     }
                 }
-                TextField(comment, { if (it.length <= 2000) comment = it },
+                TextField(comment, { if (it.themeTextLength <= 2000) comment = it },
                     Modifier.fillMaxWidth(), enabled = !busy, minLines = 3, maxLines = 5,
                     label = { Text(stringResource(R.string.theme_store_review_comment)) },
                     shape = uiRoundnessShape(), colors = InputDialog.defaultTextFieldColors())
@@ -994,7 +994,7 @@ internal fun ThemeReportDialog(theme: StoreTheme, review: StoreReview?, allRevie
     }) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             SettingsDescription(stringResource(R.string.theme_store_report_public_notice))
-            TextField(reason, { if (it.length <= 2000) reason = it },
+            TextField(reason, { if (it.themeTextLength <= 2000) reason = it },
                 Modifier.fillMaxWidth(), enabled = !sending && !awaiting, minLines = 3, maxLines = 5,
                 label = { Text(stringResource(R.string.theme_store_report_reason)) },
                 shape = uiRoundnessShape(), colors = InputDialog.defaultTextFieldColors())

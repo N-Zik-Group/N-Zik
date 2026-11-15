@@ -22,6 +22,25 @@ class ThemeStoreCacheTest {
     @get:Rule val folder = TemporaryFolder()
 
     @Test
+    fun creatorMetadataUsesTheSchemaUnicodeLimits() = runTest {
+        val symbol = "\uD83C\uDFB5"
+        var profile = CreatorProfile(1, 1, "Creator", symbol.repeat(60), symbol.repeat(280),
+            CreatorMedia("github"), CreatorMedia("generated"))
+        val store = ThemeStoreCatalog(folder.root) { path, _ ->
+            val bytes = Json.encodeToString(profile).encodeToByteArray()
+            if (path == "catalog/creators/index.json") {
+                """{"schemaVersion":1,"creators":[{"githubId":1,"profileSha256":"${bytes.sha256()}"}]}""".encodeToByteArray()
+            } else bytes
+        }
+        assertEquals(listOf(profile), store.creators())
+        val valid = profile
+        profile = valid.copy(displayName = valid.displayName + symbol)
+        assertTrue(runCatching { store.creators() }.exceptionOrNull() is IllegalArgumentException)
+        profile = valid.copy(bio = valid.bio + symbol)
+        assertTrue(runCatching { store.creators() }.exceptionOrNull() is IllegalArgumentException)
+    }
+
+    @Test
     fun rejectedRefreshDoesNotReplaceValidatedCatalog() = runTest {
         val theme = StoreTheme(
             1, "99edc843-6a9b-5753-8e76-cc11fe9b3295", 1, "Blurred Cover", "Theme",

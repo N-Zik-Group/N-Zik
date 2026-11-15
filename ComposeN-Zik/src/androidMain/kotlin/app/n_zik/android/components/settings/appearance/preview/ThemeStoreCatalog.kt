@@ -20,7 +20,7 @@ import timber.log.Timber
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 private const val CatalogBase = "https://raw.githubusercontent.com/N-Zik-Group/N-Zik-Theme-Store/refs/heads/main/"
-private const val CatalogLimit = 512 * 1024
+internal const val ThemeMetadataLimit = 512 * 1024
 private const val CatalogSnapshotLimit = 16 * 1024 * 1024
 private val catalogSnapshotLock = Any()
 internal const val ThemeDocumentLimit = 128 * 1024
@@ -156,7 +156,7 @@ internal fun parseStoreReviews(source: String): StoreReviewSummary {
     require(document.reviews.distinctBy { it.author.githubId }.size == document.reviews.size)
     require(document.reviews.all {
         it.author.githubId > 0 && login.matches(it.author.login) && it.kind in setOf("maintainer", "community") &&
-            it.rating in 1..5 && it.comment.isNotBlank() && it.comment.length <= 2000
+            it.rating in 1..5 && it.comment.isNotBlank() && it.comment.themeTextLength <= 2000
     })
     return StoreReviewSummary(document.reviews)
 }
@@ -171,6 +171,11 @@ private val hash = Regex("[0-9a-f]{64}")
 private val login = Regex("[A-Za-z0-9][A-Za-z0-9-]{0,38}")
 private val creatorAssetPath = Regex("[a-z0-9][a-z0-9_-]{0,63}[.](webp|png|jpg)")
 private val previewPath = Regex("previews/[a-z0-9][a-z0-9_-]{0,79}[.](jpg|png|webp|gif)")
+
+internal val String.themeTextLength: Int get() = codePointCount(0, length)
+
+internal fun String.takeThemeText(limit: Int): String =
+    substring(0, offsetByCodePoints(0, minOf(limit, themeTextLength)))
 
 private fun parseCatalogIndex(source: String): CatalogIndex =
     Json.decodeFromString<CatalogIndex>(source).also { index ->
@@ -193,18 +198,18 @@ private fun validateCatalog(snapshot: CatalogSnapshot): List<StoreTheme> {
 internal fun parseStoreTheme(manifest: String, allowLocalAuthor: Boolean = false): StoreTheme =
     Json.decodeFromJsonElement(StoreTheme.serializer(), JsonObject(Json.parseToJsonElement(manifest).jsonObject - "license")).also { theme ->
         require(theme.schemaVersion == 1 && uuid.matches(theme.themeId) && theme.revision > 0)
-        require(theme.title.length in 1..100 && theme.description.length in 1..1000)
-        require(theme.localCreatorName == null || allowLocalAuthor && theme.localCreatorName.length in 1..100)
+        require(theme.title.themeTextLength in 1..100 && theme.description.themeTextLength in 1..1000)
+        require(theme.localCreatorName == null || allowLocalAuthor && theme.localCreatorName.themeTextLength in 1..100)
         require((theme.author.githubId > 0 || allowLocalAuthor && theme.author == StoreAuthor(0, "local")) &&
             login.matches(theme.author.login))
-        require(theme.tags.size <= 8 && theme.tags.distinct() == theme.tags && theme.tags.all { it.length in 1..30 })
+        require(theme.tags.size <= 8 && theme.tags.distinct() == theme.tags && theme.tags.all { it.themeTextLength in 1..30 })
         require(theme.compatibility.minVersionCode?.let { it > 0 } != false)
         require(theme.appearance.path == "appearance.json" && hash.matches(theme.appearance.sha256))
         require(theme.previews.size <= 36 && theme.previews.distinctBy { it.path }.size == theme.previews.size)
         require(theme.previews.all { preview ->
             previewPath.matches(preview.path) && hash.matches(preview.sha256) &&
                 preview.role in setOf("player", "queue", "navigation", "other") &&
-                preview.caption?.length?.let { it in 1..160 } != false
+                preview.caption?.themeTextLength?.let { it in 1..160 } != false
         })
     }
 
@@ -240,19 +245,19 @@ internal class ThemeStoreCatalog(
         runInterruptible(NzikDispatchers.DATA) {
             require(revision in 1..theme.revision)
             if (revision == theme.revision) return@runInterruptible theme
-            val manifest = fetch("catalog/themes/${theme.themeId}/$revision/manifest.json", CatalogLimit)
+            val manifest = fetch("catalog/themes/${theme.themeId}/$revision/manifest.json", ThemeMetadataLimit)
             val previous = parseStoreTheme(manifest.decodeToString(throwOnInvalidSequence = true))
             require(previous.themeId == theme.themeId && previous.revision == revision)
             previous
         }
 
     suspend fun refreshState(): ThemeCatalogState = runInterruptible(NzikDispatchers.DATA) {
-        val indexBytes = fetch("catalog/themes/index.json", CatalogLimit)
+        val indexBytes = fetch("catalog/themes/index.json", ThemeMetadataLimit)
         val index = indexBytes.decodeToString(throwOnInvalidSequence = true)
         val entries = parseCatalogIndex(index).themes
         var remainingBytes = CatalogSnapshotLimit - indexBytes.size
         val manifests = entries.map { entry ->
-            val bytes = fetch("catalog/themes/${entry.themeId}/${entry.revision}/manifest.json", CatalogLimit)
+            val bytes = fetch("catalog/themes/${entry.themeId}/${entry.revision}/manifest.json", ThemeMetadataLimit)
             require(bytes.size <= remainingBytes) { "Catalog manifests exceeded the total byte limit" }
             remainingBytes -= bytes.size
             bytes.decodeToString(throwOnInvalidSequence = true)
@@ -309,10 +314,10 @@ internal class ThemeStoreCatalog(
             return document.githubIds.toSet().also { require(it.size == document.githubIds.size) }
         }
         val bytes = try {
-            fetch("catalog/creators/verified.json", CatalogLimit)
+            fetch("catalog/creators/verified.json", ThemeMetadataLimit)
         } catch (error: java.io.IOException) {
             if (!disk.baseFile.isFile) throw error
-            return@runInterruptible validated(disk.openRead().use { it.readThemeBytes(CatalogLimit) })
+            return@runInterruptible validated(disk.openRead().use { it.readThemeBytes(ThemeMetadataLimit) })
         }
         validated(bytes).also {
             if (!disk.baseFile.isFile || !disk.readFully().contentEquals(bytes)) writeThemeFile(disk, bytes)
@@ -321,16 +326,16 @@ internal class ThemeStoreCatalog(
 
     suspend fun creators(): List<CreatorProfile> = runInterruptible(NzikDispatchers.DATA) {
         val index = Json.decodeFromString<CreatorIndex>(
-            fetch("catalog/creators/index.json", CatalogLimit).decodeToString(throwOnInvalidSequence = true),
+            fetch("catalog/creators/index.json", ThemeMetadataLimit).decodeToString(throwOnInvalidSequence = true),
         )
         require(index.schemaVersion == 1 && index.creators.distinctBy { it.githubId }.size == index.creators.size)
         index.creators.map { entry ->
             require(entry.githubId > 0 && hash.matches(entry.profileSha256))
-            val bytes = fetch("catalog/creators/${entry.githubId}/profile.json?sha=${entry.profileSha256}", CatalogLimit)
+            val bytes = fetch("catalog/creators/${entry.githubId}/profile.json?sha=${entry.profileSha256}", ThemeMetadataLimit)
             require(bytes.sha256() == entry.profileSha256)
             Json.decodeFromString<CreatorProfile>(bytes.decodeToString(throwOnInvalidSequence = true)).also {
                 require(it.schemaVersion == 1 && it.githubId == entry.githubId && login.matches(it.login))
-                require(it.displayName.isNotBlank() && it.displayName.length <= 60 && it.bio.length <= 280)
+                require(it.displayName.isNotBlank() && it.displayName.themeTextLength <= 60 && it.bio.themeTextLength <= 280)
             }
         }
     }
@@ -352,7 +357,7 @@ internal class ThemeStoreCatalog(
 
     suspend fun reviews(theme: StoreTheme): StoreReviewSummary? = try {
         runInterruptible(NzikDispatchers.DATA) {
-            val bytes = fetch(theme.directory + "reviews.json", CatalogLimit)
+            val bytes = fetch(theme.directory + "reviews.json", ThemeMetadataLimit)
             parseStoreReviews(bytes.decodeToString(throwOnInvalidSequence = true))
         }
     } catch (_: StoreFileNotFound) {

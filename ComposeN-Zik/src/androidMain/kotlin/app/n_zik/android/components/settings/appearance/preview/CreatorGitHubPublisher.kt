@@ -134,7 +134,7 @@ internal suspend fun submitThemeReport(
     token: String, accountId: Long, theme: StoreTheme, review: StoreReview?, allReviews: Boolean, reason: String,
 ): ThemeReportResult = withContext(NzikDispatchers.DATA) {
     reportMutex.withLock {
-        require(reason.isNotBlank() && reason.length <= 2000)
+        require(reason.isNotBlank() && reason.themeTextLength <= 2000)
         fun api(path: String, payload: JSONObject? = null): String {
             val request = Request.Builder().url("https://api.github.com/$path")
                 .header("Authorization", "Bearer $token")

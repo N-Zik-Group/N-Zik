@@ -120,6 +120,26 @@ class ThemeCollectionArchiveTest {
     }
 
     @Test
+    fun singleArchiveAcceptsCatalogMetadataSizesThroughBothImportPaths() = runBlocking {
+        val saved = theme("12345678-1111-2222-3333-123456789018")
+        val symbol = "\uD83C\uDFB5"
+        val theme = requireNotNull(saved.theme).copy(title = symbol.repeat(100))
+        val files = mutableMapOf(
+            "manifest.json" to Json.encodeToString(theme).padEnd(ThemeDocumentLimit + 1).encodeToByteArray(),
+            "appearance.json" to saved.document.encodeToByteArray(),
+            "reviews.json" to """{"schemaVersion":1,"reviews":[]}""".padEnd(ThemeDocumentLimit + 1).encodeToByteArray(),
+        )
+        theme.previews.forEach { files[it.path] = preview }
+        val archive = ByteArrayOutputStream().also { writeThemeArchive(it, files) }.toByteArray()
+        val imported = readThemeArchive(context, archive.inputStream())
+        assertEquals(theme.title, imported.name)
+        assertEquals(imported.id, readThemeCollectionIndex(context, archive.inputStream()).single().id)
+        assertEquals(ThemeCollectionResult(1, 0),
+            restoreThemeCollection(context, archive.inputStream(), library, setOf(imported.id)))
+        assertEquals(theme.title, library.download(imported.id)?.name)
+    }
+
+    @Test
     fun singleArchiveUsesTheSameLocalIdentityThroughEitherImportPath() = runBlocking {
         val saved = theme("12345678-1111-2222-3333-123456789012")
         val theme = requireNotNull(saved.theme)

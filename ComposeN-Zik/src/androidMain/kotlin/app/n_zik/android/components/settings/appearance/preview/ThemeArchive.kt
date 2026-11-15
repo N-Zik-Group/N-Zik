@@ -38,7 +38,7 @@ internal fun readThemeArchive(context: Context, source: InputStream): SavedTheme
         return ZipFile(archive).use { zip ->
             fun read(path: String, limit: Int) =
                 zip.getInputStream(checkNotNull(zip.getEntry(path))).use { it.readThemeBytes(limit) }
-            val manifest = read("manifest.json", ThemeDocumentLimit)
+            val manifest = read("manifest.json", ThemeMetadataLimit)
             val theme = parseStoreTheme(manifest.decodeToString(throwOnInvalidSequence = true), allowLocalAuthor = true)
             val expected = themeArchivePaths(theme)
             require(zip.size() == expected.size && zip.entries().asSequence().all { !it.isDirectory && it.name in expected })
@@ -67,7 +67,7 @@ internal fun validateThemeArchiveDocuments(theme: StoreTheme, read: (String, Int
     require(appearance.sha256() == theme.appearance.sha256)
     val document = appearance.decodeToString(throwOnInvalidSequence = true)
     parseThemeV1(document)
-    parseStoreReviews(read("reviews.json", ThemeDocumentLimit).decodeToString(throwOnInvalidSequence = true))
+    parseStoreReviews(read("reviews.json", ThemeMetadataLimit).decodeToString(throwOnInvalidSequence = true))
     return document
 }
 

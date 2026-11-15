@@ -286,12 +286,12 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
         content = {
             Column(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 TextField(
-                    displayName, { if (it.length <= 60) name = it }, Modifier.fillMaxWidth(),
+                    displayName, { if (it.themeTextLength <= 60) name = it }, Modifier.fillMaxWidth(),
                     label = { Text(stringResource(R.string.theme_store_creator_display_name)) },
                     singleLine = true, shape = uiRoundnessShape(), colors = creatorFieldColors(),
                 )
                 TextField(
-                    description, { if (it.length <= 280) bio = it }, Modifier.fillMaxWidth(),
+                    description, { if (it.themeTextLength <= 280) bio = it }, Modifier.fillMaxWidth(),
                     label = { Text(stringResource(R.string.theme_store_creator_bio)) },
                     minLines = 2, maxLines = 5, shape = uiRoundnessShape(), colors = creatorFieldColors(),
                 )

@@ -1,6 +1,8 @@
 package app.n_zik.android.components.settings.appearance.preview
 
+import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -9,6 +11,41 @@ class ThemeStoreCatalogTest {
     private val waves = theme("Audio Waves", "N-Zik-Group", "dark")
     private val night = theme("Night Art", "Indigo", "dark")
     private val catalog = listOf(blur, waves, night)
+
+    @Test
+    fun metadataLimitsCountUnicodeCodePointsLikeTheCatalogSchema() {
+        val symbol = "\uD83C\uDFB5"
+        val published = blur.copy(
+            title = symbol.repeat(100),
+            description = symbol.repeat(1000),
+            tags = listOf(symbol.repeat(30)),
+            previews = listOf(StorePreview("previews/player-normal.webp", "player", "a".repeat(64), symbol.repeat(160))),
+        )
+        assertEquals(published, parseStoreTheme(Json.encodeToString(published)))
+        val invalid = listOf(
+            published.copy(title = published.title + symbol),
+            published.copy(description = published.description + symbol),
+            published.copy(tags = listOf(published.tags.single() + symbol)),
+            published.copy(previews = listOf(published.previews.single().copy(caption = symbol.repeat(161)))),
+        )
+        invalid.forEach { theme ->
+            assertThrows(IllegalArgumentException::class.java) { parseStoreTheme(Json.encodeToString(theme)) }
+        }
+        val local = published.copy(author = StoreAuthor(0, "local"), localCreatorName = symbol.repeat(100))
+        assertEquals(local, parseStoreTheme(Json.encodeToString(local), allowLocalAuthor = true))
+        assertEquals(symbol.repeat(100), (symbol.repeat(101) + "name").takeThemeText(100))
+    }
+
+    @Test
+    fun reviewLimitAcceptsSupplementaryCharactersWithoutDoublingTheirLength() {
+        val symbol = "\uD83C\uDFB5"
+        fun document(comment: String) = Json.encodeToString(StoreReviewDocument(1, listOf(
+            StoreReview(StoreAuthor(1, "Reviewer"), "community", 5, comment),
+        )))
+        val comment = symbol.repeat(2000)
+        assertEquals(comment, parseStoreReviews(document(comment)).comments.single().comment)
+        assertThrows(IllegalArgumentException::class.java) { parseStoreReviews(document(comment + symbol)) }
+    }
 
     @Test
     fun exploreOrdersLatestRevisionsFirstAndUsesIndexOrderWithinADay() {
