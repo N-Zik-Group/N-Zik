@@ -323,4 +323,9 @@
     <string name="updates_check_failed">Could not check for updates.</string>
     <string name="updates_install_generic_error">Could not install the update.</string>
     <string name="updates_channel_available_format">%1$s update available</string>
+    <string name="recovery_theme_backup_title">Themes</string>
+    <string name="recovery_theme_backup_no_match">Only themes belonging to profiles available in this view can be restored here.</string>
+    <string name="recovery_theme_backup_operation_failed">Could not complete the theme backup operation.</string>
+    <string name="recovery_theme_backup_restore_action">Restore themes</string>
+    <string name="recovery_theme_backup_restore_description">Open the last theme backup used for this profile.</string>
 </resources>
