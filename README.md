@@ -152,7 +152,8 @@ Join the N-Zik Discord:
 - 🚫 **Dislike System**: Dislike songs, artists, and albums to keep them out of your recommendations, with dedicated "Disliked" tabs.
 - ⏯️ **Unified Player**: The full player and the mini-player are one experience; long-press the mini-player to open the in-app queue overlay.
 - 🗓️ **Rewind**: Yearly and monthly listening recaps ("My Rewind"), auto-generated Rewind playlists, background music, and deck image export.
-- 🚑 **Rescue Center**: Recover your app even if it won't start: a dedicated launcher shortcut exports and restores your database and settings.
+- 🎨 **[Theme Store](https://github.com/N-Zik-Group/N-Zik-Theme-Store)**: Browse community themes, preview them in Normal or Glass, and apply the parts you want. Create your own themes, share them as ZIP files, or submit them to the catalog.
+- 🚑 **Rescue Center**: Use the dedicated launcher shortcut to recover your database, settings, and themes by profile.
 - 🛠️ **Maintenance Screen**: Inspect the app state and its live subsystems, and export logs or crash reports.
 - 🚪 **First-Launch Onboarding**: A guided 4-step flow (display name, playlist import, account setup).
 - ⚡ **App Shortcuts**: Dynamically registered home-screen shortcuts (search, albums, artists, library, rescue).
