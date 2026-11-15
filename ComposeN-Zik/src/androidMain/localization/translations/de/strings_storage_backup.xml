@@ -3,6 +3,7 @@
     <string name="backup_export_themes_description">Heruntergeladene und lokale Themen in einem ZIP-Backup speichern</string>
     <string name="backup_import_themes_description">Heruntergeladene und lokale Themes aus einem ZIP-Backup wiederherstellen</string>
     <string name="backup_export_select_all_description">Wählen Sie jeden zu exportierenden Datentyp</string>
+    <string name="backup_import_already_running">Ein Sicherungsimport ist bereits im Gange.</string>
     <string name="backup_import_select_all_description">Wählen Sie jeden zu importierenden Datentyp</string>
     <string name="backup_include_github_identity_credentials">GitHub Identitätsdaten einbeziehen</string>
     <string name="storage_image_quality_title">Bildqualität</string>
