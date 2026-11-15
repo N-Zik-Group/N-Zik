@@ -58,6 +58,10 @@ Attempt 2 → Research error → Fix → Rebuild
 Attempt 3 → HALT → Report to user with error log
 ```
 
+### Release version reference
+
+For each stable Android release, update the [version table](../Updater/README.md). Insert the newest version at the top, use the Android version code from the release tag, and link the release and its numbered updater changelog. If the tag and published version differ, use the published APK manifest for the version code.
+
 ### Done.txt Format
 
 File: `N-Zik/assets/notes/Done.txt` — repo root (NOT an Android `assets/` source set); same folder holds `Changelog_Template.txt`

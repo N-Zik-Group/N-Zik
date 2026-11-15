@@ -34,6 +34,7 @@
 - Keep shared domain labels in their owning catalog. Use common catalogs for truly cross-feature copy such as Cancel or Close. Before merging keys, check the existing translations and any published Bridge identity or runtime lookup. Preserve protocol keys and alias compatibility.
 - Gradle generates Android `values/` and `values-*/` from `localization/source/` and `localization/translations/<locale>/` under `ComposeN-Zik/build/generated/localizedResources/<variant>/`. Treat those generated files as build outputs. Add or change source copy in the thematic XML and manage translated values through Crowdin.
 - Edit the English Fastlane listing sources (`title.txt`, `short_description.txt`, `full_description.txt`) in `fastlane/source/`. The single `/fastlane/source/*.txt` rule in `crowdin.yml` exports the listing files by their original names to `fastlane/metadata/android/<locale>/`, including English. Use 30, 80, and 4,000 characters respectively. Release changelogs live in `fastlane/metadata/android/en-US/changelogs/` and are managed by the release workflow.
+- When publishing a stable Android release, update the version table in `Updater/README.md` with the release tag, the Android version code from that tag, and the matching updater changelog. Keep the link to the version catalog as the reference for the current source version.
 
 ## ⚠️ Ask First
 
