@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">Conectar ao GitHub</string>
+    <string name="github_account_logout">Desconectar do GitHub</string>
+    <string name="github_account_description">Use sua conta do GitHub na Loja de Temas.</string>
+    <string name="github_account_offline">Conecte-se para conectar ao GitHub.</string>
+    <string name="github_account_code">Insira %1$s no GitHub para finalizar o login.</string>
+    <string name="github_account_code_copied">Código do GitHub copiado para área de transferência.</string>
+    <string name="github_account_login_failed">Não foi possível conectar ao GitHub. Tente novamente.</string>
+    <string name="github_account_connected">GitHub conectado.</string>
     <!-- Account -->
     <string name="account_action_login">Efetuar Login</string>
     <string name="account_action_logout">Terminar sessão</string>
