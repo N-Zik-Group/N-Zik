@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">Conectează GitHub</string>
+    <string name="github_account_logout">Deconectare GitHub</string>
+    <string name="github_account_description">Utilizați contul GitHub în Magazinul Temelor.</string>
+    <string name="github_account_offline">Mergeți online pentru a conecta GitHub.</string>
+    <string name="github_account_code">Introdu %1$s pe GitHub pentru a finaliza conectarea.</string>
+    <string name="github_account_code_copied">Codul GitHub a fost copiat în clipboard.</string>
+    <string name="github_account_login_failed">Nu s-a putut conecta la GitHub. Încercați din nou.</string>
+    <string name="github_account_connected">GitHub este conectat.</string>
     <!-- Account -->
     <string name="account_action_login">Autentificare</string>
     <string name="account_action_logout">Deconectare</string>
