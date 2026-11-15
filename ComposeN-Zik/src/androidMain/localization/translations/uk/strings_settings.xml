@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">Сторінка за замовчуванням</string>
     <string name="settings_interface_corner_radius_label">Об’єм інтерфейсу</string>
     <string name="settings_interface_hide_status_bar_label">Приховувати рядок стану</string>
+    <string name="settings_interface_right_to_left_label">Розташування справа на ліву</string>
+    <string name="settings_interface_right_to_left_description">Безпосередньо віддзеркалювати інтерфейс із мови програми.</string>
     <string name="settings_interface_page_description">Розділ інтерфейсу користувача містить параметри для зміни глобального інтерфейсу та навігації</string>
     <string name="settings_interface_page_title">Інтерфейс</string>
     <string name="settings_interface_title">Інтерфейс користувача</string>
