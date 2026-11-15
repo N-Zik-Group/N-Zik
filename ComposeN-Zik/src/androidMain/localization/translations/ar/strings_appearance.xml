@@ -264,6 +264,14 @@
     <string name="theme_store_choose_revision">اختر مراجعة</string>
     <string name="theme_store_published_on">نشر على %1$s</string>
     <string name="theme_store_compatibility">توافق N-Zik</string>
+    <string name="theme_store_submission_minimum_version">الحد الأدنى لإصدار N-Zik</string>
+    <string name="theme_store_submission_minimum_description">أقدم إصدار يمكن تطبيق هذا الموضوع. السمات الجديدة الافتراضية إلى رمز الإصدار %3$d. أنت تستخدم N-Zik %1$s (رمز الإصدار %2$d).</string>
+    <string name="theme_store_submission_version_code_label">رمز الإصدار الأدنى</string>
+    <string name="theme_store_submission_find_version_code">العثور على إصدارات أكواد N-Zik</string>
+    <string name="theme_store_submission_version_with_code">%1$s (الرمز %2$d)</string>
+    <string name="theme_store_submission_version_code">رمز الإصدار %1$d</string>
+    <string name="theme_store_submission_version_required">أدخل رمز الإصدار %1$d.</string>
+    <string name="theme_store_submission_version_range">أدخل رمز الإصدار بين %1$d و %2$d.</string>
     <string name="theme_store_revision">مراجعة %1$d</string>
     <string name="theme_store_authors">المنشئون</string>
     <string name="theme_store_author_theme_count">السمات: %1$d</string>
@@ -433,6 +441,7 @@
     <string name="theme_store_preview_import_requirements">المعاينات عامة. إبقاء المعلومات الشخصية خارج لقطات الشاشة. PNG، JPEG أو WebP · 4 ميغابايت لكل صورة.</string>
     <string name="theme_store_preview_import_error">تعذر استيراد هذه الصورة. اختر PNG، JPEG أو صورة WebP تحت 4 ميغابايت.</string>
     <string name="theme_store_submission_included">الإعدادات المضمنة</string>
+    <string name="theme_store_submission_unsupported_categories">تحتوي هذه المجموعات على إعدادات لا يمكن مشاركتها في الموضوع: %1$s.</string>
     <string name="theme_store_submission_sending">إرسال للمراجعة…</string>
     <string name="theme_store_report_theme">موضوع التقرير</string>
     <string name="theme_store_report_review">استعراض التقرير</string>
