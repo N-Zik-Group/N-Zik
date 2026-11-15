@@ -2,145 +2,145 @@
   {
     "path": "previews/album-glass.webp",
     "role": "other",
-    "sha256": "2be994f7b2635191b30b24448c8fe9bb7d0282d1dcb35f1b115fb2b42fda4eb3"
+    "sha256": "8f4e425a8cf2e58fe693a7aa2cb3bbde32642eebba074992f7507486159b39b1"
   },
   {
     "path": "previews/album-normal.webp",
     "role": "other",
-    "sha256": "441d0619effc33c07936ac2e2bad88c8478bf6b19c0d77e9e64e7aa7b6166892"
+    "sha256": "ee5f76d3f7f9dd8f39b8e8c3447f0924c5a50779144102286949f18546e5d230"
   },
   {
     "path": "previews/artist-glass.webp",
     "role": "other",
-    "sha256": "57c1efa80b454be3a9e09dc7e5802a1c98034100a076e0fcdff6a49656024971"
+    "sha256": "5df47509d12ca4f44b26bdbe851bf7c3ddb54b9e414fca273a1436be0f10c4ab"
   },
   {
     "path": "previews/artist-normal.webp",
     "role": "other",
-    "sha256": "466d0c2a082fec5d3aadb336f24756034c953649a55c5b020efd760f6e37aee4"
+    "sha256": "0e6b3a6f020929d2451b49834c1de89fa57a8648bdad8cc8787fee096c570eba"
   },
   {
     "path": "previews/home-glass.webp",
     "role": "other",
-    "sha256": "a276a6deb8752478da1b06c40ffd0b8ca42ab66a7bc7a85a4908fba65a62144c"
+    "sha256": "dfd554d2aba2b5a2bc7e0379e401d2ead6ce128f50f450114365fc323ed32691"
   },
   {
     "path": "previews/home-normal.webp",
     "role": "other",
-    "sha256": "8421647405a3bc997e1412ee8cf52432a144572eb2948d59ed63ac4e0908bfda"
+    "sha256": "390827824d3b424dd3a14ff74f357992dbdece61457a09ddffe37b4d522e446c"
   },
   {
     "path": "previews/local-playlist-glass.webp",
     "role": "other",
-    "sha256": "22d70748ae6d9f68016e54e55a61dadba36746be7dc63431f79ac0577f8a1577"
+    "sha256": "ab3d9d43e17af702ede84ba23e211b8535d82a3e25b650f95d4646b28570e3f8"
   },
   {
     "path": "previews/local-playlist-normal.webp",
     "role": "other",
-    "sha256": "c6d431acac33e7e6570599dac3bdc4718345f82f1bd16ec8861a8514b03d174a"
+    "sha256": "34022c36c73bc5e6bec0c76dc2ad879d5ff3791460129384e4cafdd8e5b90fde"
   },
   {
     "path": "previews/lyrics-glass.webp",
     "role": "other",
-    "sha256": "0ba945fdfac8ced297b1eb39550abddce70e2f858be70bab95f58535c701dfc1"
+    "sha256": "4aab95790813b2f4df9a255a4476f7a14bfe80719c03b0d55e92963e3ff70077"
   },
   {
     "path": "previews/lyrics-normal.webp",
     "role": "other",
-    "sha256": "e66e9800d3d5eddcb6988e4336d2caf601d7cfbb2b65a841ffb5d831bb7dc463"
+    "sha256": "a3aaea7136a73f1cbac88baafafdaac570d89c6fbc6765023fbfc2c2d112ce94"
   },
   {
     "path": "previews/navigation-glass.webp",
     "role": "navigation",
-    "sha256": "71ae98e1c15125a7f475d74a7dbbb9dc254c74bdb499cc457bb364649f97837f"
+    "sha256": "c6608909255e937f61b53cf9cca1d6bacae34bfcbbf1d13e7a934270befebb69"
   },
   {
     "path": "previews/navigation-normal.webp",
     "role": "navigation",
-    "sha256": "b5e79b61a275020d1a2d540fd1299edd863ff6432ec3ca7a923ed23270c55b84"
+    "sha256": "1f6c0329ad2e7af4a28f628ff71f6dc176134465ebf0a072a411dd67ae52deaa"
   },
   {
     "path": "previews/player-glass.webp",
     "role": "player",
-    "sha256": "039ce9782496deec93eca3edaba41012345702ddd0eca9f5d560d6d606db69ff"
+    "sha256": "e278a5606dbc0b7fedc889a0d8af18ee02596d798c473425dbc54bb33ecf0925"
   },
   {
     "path": "previews/player-normal.webp",
     "role": "player",
-    "sha256": "84ea6c992c79b0dd980fa165e607b9cf060b11a0defec32221fa5f92dc5440b1"
+    "sha256": "db7595a3a7e58a3d36220dc0922e721d5d256ea132a47c01d5ddd92011af27d3"
   },
   {
     "path": "previews/playlist-glass.webp",
     "role": "other",
-    "sha256": "5df5f156d8dd11498cf85cc2da4bac4f4b346665ec02251cab3b445eb21c25fc"
+    "sha256": "a20c265acf86942d56355577f83e9d327e7406a4e1077dbf1931e37b55d8e3f3"
   },
   {
     "path": "previews/playlist-normal.webp",
     "role": "other",
-    "sha256": "b78d2b40554a86c572e06c39a02d855e15e85c7add2d6d52de6bdc94e914dbcd"
+    "sha256": "92df9d7c7873bd116d4510ebf5f422c1df3b132514fa0f77a00394efcfe79d45"
   },
   {
     "path": "previews/queue-glass.webp",
     "role": "queue",
-    "sha256": "f772277733c1bb802b4b15911af8652fd070584e9485d48f138a504b41efe6b8"
+    "sha256": "17259b493c58ba26520b7990ef3dd4c7db469594e182fa4cbdd90904bfbf9c5e"
   },
   {
     "path": "previews/queue-normal.webp",
     "role": "queue",
-    "sha256": "7e4101c217724df218424068b608ba3d77b1a3e4b90855c7f965a1fc70b332cd"
+    "sha256": "71595d3efe0690a7b7c94a5a0e60bd82cfe67749209a02485b138aa10b2006bb"
   },
   {
     "path": "previews/search-albums-glass.webp",
     "role": "other",
-    "sha256": "8df311db2bb1a80a8cfc77fcc2eb9fc5849e41416f9f66b62aa25b255cbcd34a"
+    "sha256": "036259dc75cce4edfbf58981a5c7fd80d944cb15c33302c1ec0836be85146982"
   },
   {
     "path": "previews/search-albums-normal.webp",
     "role": "other",
-    "sha256": "b89ba75435a63b2593acfdffcedfa0d74519c23f17e1afb53a6482f1b7fce2e8"
+    "sha256": "25585bce78d0a928dac8fdeedbdf549802f24949c9780aa1240749a920796cb5"
   },
   {
     "path": "previews/search-artists-glass.webp",
     "role": "other",
-    "sha256": "cfbcf321d688cd09352bbf43724ef2d5a8bd2e4a0c06fc6fbc5a08c6df142372"
+    "sha256": "80bf4c14f65822c29b54f43cdeb33f2fcca52b811e54a94cca39ab57d4d548ca"
   },
   {
     "path": "previews/search-artists-normal.webp",
     "role": "other",
-    "sha256": "7ea6927f5a9e4b86e9ce08c168d6b899a90cd50b35fdb4688e2111a2f5fd7066"
+    "sha256": "2013b6884a810dc550c0586a8cd4f35b9e25e3876f40add7c65e6540157a16ad"
   },
   {
     "path": "previews/search-glass.webp",
     "role": "other",
-    "sha256": "57ba46d4c23b18da2737a4f3bdcd070b9ad16dd46251dbe6bb0d86733847d724"
+    "sha256": "5009c8a8904f0fc0f50e54f1f37aa127146429e0a0d1a016e68aaf3a74607f16"
   },
   {
     "path": "previews/search-normal.webp",
     "role": "other",
-    "sha256": "dcfe2ed116bd36c6e6faa27bb99625ee1bce470df31b2387af348ea35923cc04"
+    "sha256": "b19c71eea809355cfd0d8159feb6c75eb57e3d9f9d12bebd08f54ea2b8208840"
   },
   {
     "path": "previews/player-playing-normal.webp",
     "role": "other",
-    "caption": "Player playing \u00b7 Normal",
-    "sha256": "43096eb3ae3c21fec403e88e3621d20418dbb1bd46e61eb24b76b67c2e87db57"
+    "caption": "Player playing · Normal",
+    "sha256": "2182d2d08a97fb286dd85e4475ed2bbd0e10755f8577dce1bb1731f6f7c56068"
   },
   {
     "path": "previews/player-playing-glass.webp",
     "role": "other",
-    "caption": "Player playing \u00b7 Glass",
-    "sha256": "26795de19bb4687debf8d11dbf1eccafe9df5a50eec9a4781c5aca6395e816f2"
+    "caption": "Player playing · Glass",
+    "sha256": "6b85ad0b6175ac6df30d0516c359ab41fd02440decd002ed42236b4bfefc28c2"
   },
   {
     "path": "previews/miniplayer-playing-normal.webp",
     "role": "other",
-    "caption": "Mini-player playing \u00b7 Normal",
-    "sha256": "8b87c94b804cb678740d6b4265bae19eabca7bd62a2e5846a8193e35865e0a9a"
+    "caption": "Mini-player playing · Normal",
+    "sha256": "2ae8d82726e6ad0c00ca4b0d93746b3ccc8ec03b02ec4c70b8920fc439cd6487"
   },
   {
     "path": "previews/miniplayer-playing-glass.webp",
     "role": "other",
-    "caption": "Mini-player playing \u00b7 Glass",
-    "sha256": "7244a424165c7b4a8a89b15bb86e513af0537a6ca431daa91ba07bba4e6af1fd"
+    "caption": "Mini-player playing · Glass",
+    "sha256": "80bbe11ff58fc4f73ec951f78ccf2262479b0036e84e7a792e81de7d1745d62d"
   }
 ]
