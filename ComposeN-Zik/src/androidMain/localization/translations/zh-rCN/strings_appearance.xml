@@ -438,7 +438,7 @@
     <string name="theme_store_draft_resume">继续草稿</string>
     <string name="theme_store_preview_add_extra">添加额外预览</string>
     <string name="theme_store_preview_extra_title">预览标题</string>
-    <string name="theme_store_preview_import_requirements">预览是公开的。将个人信息排除在屏幕截图之外。PNG、JPEG或WebP ·每张图像4MB。</string>
+    <string name="theme_store_preview_import_requirements_with_gif">预览是公开的。请在屏幕截图之外保留个人信息。 PNG, JPEG, WebP 或 GIF · 4MB 每张图像。GIF 保持原始大小，必须在1920 × 1920范围内。</string>
     <string name="theme_store_preview_import_error">无法导入此图像。请选择一个 PNG，JPEG 或 WebP 图像在 4 MB 之下。</string>
     <string name="theme_store_submission_included">包含的设置</string>
     <string name="theme_store_submission_saved_content">主题保存选中的外观和接口设置，加上预览和标题。 您的帐户、音乐、播放列表和监听历史都保存在此设备上。</string>
