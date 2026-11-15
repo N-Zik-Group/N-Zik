@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">Połącz GitHub</string>
+    <string name="github_account_logout">Odłącz GitHub</string>
+    <string name="github_account_description">Użyj swojego konta GitHub w Sklepie Motywów.</string>
+    <string name="github_account_offline">Przejdź do trybu online, aby połączyć GitHub.</string>
+    <string name="github_account_code">Wprowadź %1$s na GitHubie, aby zakończyć logowanie.</string>
+    <string name="github_account_code_copied">Kod GitHub skopiowany do schowka.</string>
+    <string name="github_account_login_failed">Nie można połączyć się z GitHub. Spróbuj ponownie.</string>
+    <string name="github_account_connected">GitHub połączony.</string>
     <!-- Account -->
     <string name="account_action_login">Zaloguj się</string>
     <string name="account_action_logout">Wyloguj</string>
