@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">Připojit GitHub</string>
+    <string name="github_account_logout">Odpojit GitHub</string>
+    <string name="github_account_description">Použijte svůj GitHub účet v obchodu s šablonami.</string>
+    <string name="github_account_offline">Připojte se k GitHub.</string>
+    <string name="github_account_code">Pro dokončení přihlášení zadejte %1$s na GitHubu.</string>
+    <string name="github_account_code_copied">GitHub kód zkopírován do schránky.</string>
+    <string name="github_account_login_failed">Nelze se připojit k GitHubu. Zkuste to znovu.</string>
+    <string name="github_account_connected">GitHub připojen.</string>
     <!-- Account -->
     <string name="account_action_login">Přihlásit se</string>
     <string name="account_action_logout">Odhlásit se</string>
