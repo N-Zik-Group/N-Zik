@@ -193,4 +193,8 @@
         <item quantity="one">Η εργασία %1$d δεν ολοκληρώθηκε</item>
         <item quantity="other">Οι εργασίες %1$d δεν τελείωσαν</item>
     </plurals>
+    <plurals name="theme_store_settings_count">
+        <item quantity="one">%d ρύθμιση</item>
+        <item quantity="other">%d ρυθμίσεις</item>
+    </plurals>
 </resources>
