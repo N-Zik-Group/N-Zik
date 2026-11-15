@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="backup_export_themes_description">Bewaar gedownloade en lokale thema\'s in een ZIP back-up</string>
+    <string name="backup_import_themes_description">Herstel gedownloade en lokale thema\'s van een ZIP back-up</string>
+    <string name="backup_export_select_all_description">Selecteer elk type gegevens om te exporteren</string>
+    <string name="backup_import_select_all_description">Selecteer elk type gegevens om te importeren</string>
+    <string name="backup_include_github_identity_credentials">Voeg GitHub identiteitsgegevens toe</string>
     <string name="storage_image_quality_title">Kwaliteit van afbeelding</string>
     <string name="storage_image_quality_description">Geldt voor online bestanden en pas toegevoegde foto\'s en foto\'s. Origineel gebruikt de hoogst beschikbare kwaliteit en kan meer opslag en gegevens gebruiken.</string>
     <string name="storage_image_quality_optimized">Geoptimaliseerd</string>
@@ -116,9 +121,9 @@
     <string name="backup_before_update_failed">Back-up vooraf installeren mislukt</string>
     <string name="backup_before_update_running_message">Gegevens back-uppen voor installatie…</string>
     <string name="backup_before_update_running_title">Bezig met back-up</string>
-    <string name="backup_excluded_preferences_and_cache_description">Persoonlijke voorkeuren (b.v.b. de themamodus) en de cache zijn uitgesloten.</string>
-    <string name="backup_export_library_options_description">Exporteer de database met aangepaste covers, instellingen of profielen</string>
-    <string name="backup_import_library_options_description">Herstel een SQLite of ZIP database back-up, instellingen of profielen</string>
+    <string name="backup_export_separate_files_description">Elke geselecteerde categorie wordt geëxporteerd naar een apart bestand. Cachebestanden en het standaard thema zijn uitgesloten.</string>
+    <string name="backup_export_with_themes_description">Exporteer de database met aangepaste covers, instellingen, thema\'s of profielen</string>
+    <string name="backup_import_with_themes_description">Herstel een SQLite of ZIP database back-up, instellingen, thema\'s of profielen</string>
     <string name="backup_include_discord_credentials">Voeg Discord identiteitsgegevens toe</string>
     <string name="backup_include_lastfm_credentials">Inclusief Last.fm identiteitsgegevens</string>
     <string name="backup_include_proxy_password">Voeg het proxywachtwoord toe</string>
@@ -251,4 +256,34 @@
     <string name="export_cached_songs_generic_error">Exporteren mislukt</string>
     <string name="backup_startup_preparing_library">Je bibliotheek voorbereiden…</string>
     <string name="backup_startup_recovery_failed">Kan het herstellen van je bibliotheek niet voltooien.</string>
+    <string name="storage_breakdown_themes">Thema’s</string>
+    <string name="storage_info_themes">Opgeslagen thema records en gedeelde thema winkel assets, previews en concepten.</string>
+    <string name="storage_breakdown_lyrics">Songteksten</string>
+    <string name="storage_info_lyrics">Tekstbytes van gedownloade en aangepaste songteksten opgeslagen in de profieldatabase.</string>
+    <string name="storage_cleanup_clear_theme_cache">Wis Thema Winkelcache</string>
+    <string name="storage_cleanup_theme_cache_description">Verwijdert gedeelde catalogus metadata. Opgeslagen thema\'s, concepten en hun voorbeelden worden bewaard.</string>
+    <string name="storage_cleanup_clear_lyrics">Verwijder opgehaalde songteksten</string>
+    <string name="storage_cleanup_lyrics_description">Verwijdert automatisch opgehaalde songteksten. Aangepaste songteksten worden bewaard. Vrijgemaakte pagina\'s kunnen opnieuw worden gebruikt door de bibliotheek database.</string>
+    <string name="backup_auto_enabled_title">Automatische back-up inschakelen</string>
+    <string name="backup_auto_enabled_description">Pauzeer automatische back-ups en houd uw reservekopie-instellingen.</string>
+    <string name="storage_cleanup_picker_title">Opslag opschonen</string>
+    <string name="storage_cleanup_picker_description">Kies de bestanden en gegevens om dit bereik te wissen.</string>
+    <string name="storage_cleanup_select_caches">Selecteer caches</string>
+    <string name="storage_cleanup_select_caches_description">Selecteer caches en tijdelijke bestanden.</string>
+    <string name="storage_cleanup_select_everything">Alles selecteren</string>
+    <string name="storage_cleanup_select_everything_description">Selecteer caches en gegevens, inclusief offline downloads.</string>
+    <string name="storage_cleanup_cache_group">Caches en tijdelijke bestanden</string>
+    <string name="storage_cleanup_delete_group">Gegevens om te verwijderen</string>
+    <string name="storage_cleanup_review_selection">Beoordelen</string>
+    <string name="storage_cleanup_selected_confirmation">De geselecteerde items in dit bereik wissen?</string>
+    <string name="storage_cleanup_option_cached_images">Gebufferde afbeeldingen</string>
+    <string name="storage_cleanup_option_streamed_audio">Gestroomde audio</string>
+    <string name="storage_cleanup_option_waveforms">Golfvormen</string>
+    <string name="storage_cleanup_option_network_cache">Netwerk cache</string>
+    <string name="storage_cleanup_option_diagnostic_logs">Diagnostische logs</string>
+    <string name="storage_cleanup_option_temporary_files">Tijdelijke bestanden</string>
+    <string name="storage_cleanup_option_theme_catalog">Thema winkelcache</string>
+    <string name="storage_cleanup_option_fetched_lyrics">Automatisch songteksten ophalen</string>
+    <string name="storage_cleanup_option_offline_downloads">Gedownloade audio</string>
+    <string name="storage_cleanup_completed">Opschonen voltooid.</string>
 </resources>
