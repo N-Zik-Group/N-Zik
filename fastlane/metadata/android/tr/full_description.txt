@@ -10,9 +10,9 @@ Android için hızlı, özelleştirilebilir ve uzun süre desteklenen çok dilli
 - 3D Karusel Oynatıcı, ana sayfa widget'ları, birleştirilmiş oynatıcı ve mini oynatıcı
 - Sanatçı profilleri, Keşif/ruh halleri, katlanabilir ana ekran başlıkları
 
-🎨 <b>Theme Store</b>
-- Browse and download community themes, preview them in Normal and Glass, and choose which appearance settings to apply.
-- Create local themes or share your designs with the community. Import and export themes as ZIP files.
+🎨 <b>Theme Mağazası</b>
+- Topluluk temalarını inceleyin ve indirin, bunları Normal ve Cam modlarında önizleyin ve hangi görünüm ayarlarını uygulayacağınızı seçin.
+- Yerel temalar oluşturun veya tasarımlarınızı toplulukla paylaşın. Temaları ZIP dosyaları olarak içe ve dışa aktarın.
 
 🫧 <b>Cam efekti (BETA, isteğe bağlı)</b>
 Yeni kurulumlarda kapalıdır. Ayarlarda kategoriye göre yerel, yalnızca kenar veya Cam ve kalite seçilir. İşleme yükünü ve pil tüketimini artırabilir; kaliteyi düşürün veya kapatın.
