@@ -337,7 +337,7 @@ internal suspend fun submitCreatorProfile(
         } else null
         val withdrawalTitle = withdrawal?.let { "Withdraw theme: ${it.title}" }
         val body = if (withdrawal != null) {
-            "The creator requested to withdraw this theme from the Theme Store catalog. Published revisions are preserved."
+            "The creator requested removal of this theme and all its published revisions from the Theme Store catalog."
         } else if (review != null) "Review submitted from N-Zik for revision ${review.theme.revision}." else if (theme != null) "Theme submission from N-Zik. Revision ${theme.revision}." else creatorProfilePullBody(published, JSONObject(files.getValue(profilePath).decodeToString()))
             ?: if (existing == null) throw CreatorPublicationUnchanged()
             else "## Creator profile update\n\nThe profile fields match the currently published version."

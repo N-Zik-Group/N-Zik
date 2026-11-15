@@ -321,3 +321,5 @@ Fixed:
 - fix(glass): make queue backdrop recording safe during preview generation
   - Preserve queue invalidation order and prevent re-entry into an active material capture.
   - Scope ancestry checks to optical recordings and keep the live background behind Theme Store details and notifications.
+- fix(theme-store): describe removal of withdrawn theme revisions
+  - Update the withdrawal pull request text to match the moderation workflow, which removes published theme files from the current catalog after acceptance.
