@@ -19,7 +19,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardOptions
 import app.n_zik.android.components.ui.sliders.SliderControl
-import androidx.compose.material3.TextField
+import app.n_zik.android.components.glass.GlassTextField as TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -266,7 +266,7 @@ class ShowOffsetDialog private constructor(
             DialogButton(
                 text = stringResource(R.string.common_action_close),
                 onClick = ::hideDialog,
-                primary = true
+                danger = true
             )
         )
     )

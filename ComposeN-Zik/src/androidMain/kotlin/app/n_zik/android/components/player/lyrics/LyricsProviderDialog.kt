@@ -47,7 +47,7 @@ internal fun LyricsProviderDialog(
         footer = {
             ButtonRow(
                 buttons = listOf(
-                    DialogButton(stringResource(R.string.common_action_cancel), onClick = onDismiss),
+                    DialogButton(stringResource(R.string.common_action_cancel), onClick = onDismiss, danger = true),
                     DialogButton(stringResource(R.string.common_action_apply), onClick = { onApply(draft) }, primary = true),
                 )
             )

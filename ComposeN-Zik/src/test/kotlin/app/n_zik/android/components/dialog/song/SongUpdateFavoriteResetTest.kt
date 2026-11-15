@@ -23,7 +23,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
+import app.n_zik.android.R
 import app.n_zik.android.models.Song
+import app.n_zik.android.utils.ToastRelay
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.appContext
@@ -65,7 +67,8 @@ class SongUpdateFavoriteResetTest {
             assertTrue("Song changes must share the database transaction", inTransaction)
             writtenRows.add(firstArg())
         }
-        mockkObject(Toaster)
+        mockkObject(Toaster, ToastRelay)
+        every { ToastRelay.successWithPlural(any(), any(), any()) } just runs
         every { Toaster.done() } just runs
         every { Toaster.s(any(), any<Long>()) } just runs
         every { Toaster.e(any<Int>(), any<Int>()) } just runs
@@ -141,6 +144,9 @@ class SongUpdateFavoriteResetTest {
         assertEquals(listOf(liked.copy(likedAt = null), disliked.copy(likedAt = null)), writtenRows)
         assertEquals(listOf(liked.playCount, disliked.playCount), writtenRows.map { it.playCount })
         assertEquals(listOf(1 to 2, 2 to 2), progress)
+        verify(exactly = 1) {
+            ToastRelay.successWithPlural(R.plurals.song_metadata_updated_song_count, R.string.song_metadata_updated_count, 2)
+        }
         coVerify(exactly = 0) { Innertube.song(any()) }
     }
 

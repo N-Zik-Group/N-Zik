@@ -157,6 +157,18 @@ class UiSettingsPreferencesTest {
         "disableNavigationBackStack" to false,
         "showCachedPlaylist" to true,
         "rememberQueueScrollPosition" to true,
+        "showMonthlyPlaylists" to true,
+        "showOnDevicePlaylists" to true,
+        "homeArtistsOrder" to """["all","favorites","disliked","on_device"]""",
+        "homeAlbumsOrder" to """["all","favorites","disliked","on_device"]""",
+        "homePlaylistsOrder" to """["all","pinned_playlists","rewind","yt_playlists","on_device"]""",
+        "excludeDislikedAlbums" to "Enabled",
+        "excludeDislikedArtists" to "Enabled",
+        "showOnDeviceAlbums" to true,
+        "showFavoritesAlbum" to true,
+        "showFavoritesArtist" to true,
+        "showYtPlaylists" to true,
+        "showOnDeviceArtists" to true,
     )
 
     @Test fun `full reset restores baseline profile values and store boundaries`() {

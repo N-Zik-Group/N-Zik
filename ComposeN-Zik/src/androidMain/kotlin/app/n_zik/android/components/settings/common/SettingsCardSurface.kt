@@ -41,34 +41,41 @@ internal fun SettingsCardSurface(
     shadowColor: Color,
     shadowElevation: Dp = 4.dp,
     settings: GlassSettings = rememberGlassSettings(),
+    foregroundRim: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val surfaceSettings = if (foregroundRim) settings.copy(rim = 0f) else settings
     val sourceBackdrop = rememberInlineGlassBackdrop(backgroundColor)
     if (settings.usesGlassMaterial(GlassArea.ActionButtons) || settings.enabled && settings.mode(GlassArea.Switches) != GlassAreaMode.Disabled) {
         val glassCard = settings.usesGlassMaterial(GlassArea.SettingsCards)
         GlassMaterialContainerScope(
             modifier = Modifier,
             materialSource = sourceBackdrop.takeIf { glassCard },
-            sectionFilm = if (glassCard) null else containerColor.compositeOver(backgroundColor),
-            material = if (glassCard) { exported ->
+            sectionFilm = if (glassCard && !foregroundRim) null else containerColor.compositeOver(backgroundColor),
+            material = if (glassCard && !foregroundRim) { exported ->
                 Modifier.clip(shape).glassSettingsCardBackground(
-                    backgroundColor, containerColor, shape, settings, exported, sourceBackdrop)
+                    backgroundColor, containerColor, shape, surfaceSettings, exported, sourceBackdrop)
             } else null,
         ) { material ->
             GlassControlOverflowSurface(modifier, shape, surface = {
                 if (settings.usesGlassMaterial(GlassArea.SettingsCards)) {
-                    Box(Modifier.matchParentSize().then(material))
+                    Box(Modifier.matchParentSize().then(
+                        if (foregroundRim) Modifier.clip(shape).glassSettingsCardBackground(
+                            backgroundColor, containerColor, shape, surfaceSettings, sourceBackdrop = sourceBackdrop,
+                        ) else material,
+                    ))
                 } else {
                     val tint = if (settings.usesGlassContour(GlassArea.SettingsCards)) glassTint(settings) else Color.Unspecified
                     Card(Modifier.matchParentSize()
                         .shadow(elevation = shadowElevation, shape = shape, spotColor = shadowColor)
-                        .glassSettingsCardRim(settings, shape, tint),
+                        .glassSettingsCardRim(surfaceSettings, shape, tint),
                         shape = shape,
                         colors = CardDefaults.cardColors(containerColor = containerColor),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)) { }
                 }
             }, content = {
-                CompositionLocalProvider(LocalGlassMaterialSource provides LocalGlassContainerBackdrop.current) {
+                val controlSource = if (foregroundRim) sourceBackdrop else LocalGlassContainerBackdrop.current
+                CompositionLocalProvider(LocalGlassMaterialSource provides controlSource) {
                     content()
                 }
             })
@@ -79,7 +86,7 @@ internal fun SettingsCardSurface(
         Column(
             modifier = modifier
                 .clip(shape)
-                .glassSettingsCardBackground(backgroundColor, containerColor, shape, settings, sourceBackdrop = sourceBackdrop),
+                .glassSettingsCardBackground(backgroundColor, containerColor, shape, surfaceSettings, sourceBackdrop = sourceBackdrop),
             content = content,
         )
     } else {
@@ -87,7 +94,7 @@ internal fun SettingsCardSurface(
         Card(
             modifier = modifier
                 .shadow(elevation = shadowElevation, shape = shape, spotColor = shadowColor)
-                .glassSettingsCardRim(settings, shape, tint),
+                .glassSettingsCardRim(surfaceSettings, shape, tint),
             shape = shape,
             colors = CardDefaults.cardColors(containerColor = containerColor),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),

@@ -49,7 +49,8 @@ fun MatchResultsDialog(
                         add(
                             DialogButton(
                                 text = stringResource(R.string.library_matching_action_retry),
-                                onClick = onRetry
+                                onClick = onRetry,
+                                primary = true,
                             )
                         )
                     }
@@ -57,7 +58,7 @@ fun MatchResultsDialog(
                         DialogButton(
                             text = stringResource(R.string.common_action_close),
                             onClick = onDismiss,
-                            primary = true
+                            danger = true
                         )
                     )
                 }

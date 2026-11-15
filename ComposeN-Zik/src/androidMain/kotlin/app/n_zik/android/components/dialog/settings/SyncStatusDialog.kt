@@ -144,7 +144,7 @@ object SyncStatusDialog : InteractiveDialog {
             DialogButton(
                 text = stringResource(R.string.common_action_close),
                 onClick = { hideDialog() },
-                primary = true
+                danger = true
             )
         )
     )

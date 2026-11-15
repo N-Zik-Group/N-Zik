@@ -752,8 +752,7 @@ class PlaybackSettingsMenu private constructor(
                         DialogButton(
                             text = stringResource(R.string.common_action_close),
                             icon = R.drawable.checkmark,
-                            textColor = colorPalette().accent,
-                            onClick = onDismiss
+                            onClick = onDismiss, danger = true
                         )
                     )
                 )

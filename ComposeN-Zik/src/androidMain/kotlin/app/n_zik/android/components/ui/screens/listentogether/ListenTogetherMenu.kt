@@ -54,7 +54,7 @@ import androidx.compose.material3.Icon
 import app.n_zik.android.components.ui.UiIconButton as IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import app.n_zik.android.components.glass.GlassTextField as TextField
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

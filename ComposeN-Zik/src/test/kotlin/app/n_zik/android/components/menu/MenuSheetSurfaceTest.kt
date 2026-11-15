@@ -240,6 +240,8 @@ class MenuSheetSurfaceTest {
     }
 
     @Test
+    // Exercise real blur and menu geometry without Robolectric's API 33 RuntimeShader compiler.
+    @Config(sdk = [32])
     fun `audio device loading and error keep the shared glass menu and retry`() {
         val error = mutableStateOf<String?>(null)
         val backdrop = Color(0xFF00C853)

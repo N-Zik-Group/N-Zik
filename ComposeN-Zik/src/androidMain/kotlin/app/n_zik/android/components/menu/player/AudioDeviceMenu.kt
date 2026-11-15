@@ -1102,8 +1102,7 @@ private fun VolumeDialog(
                     DialogButton(
                         text = stringResource(R.string.common_action_close),
                         icon = R.drawable.close,
-                        textColor = colorPalette().textSecondary,
-                        onClick = onDismiss
+                        onClick = onDismiss, danger = true
                     )
                 )
             )

@@ -70,6 +70,8 @@ fun SettingsSectionCard(
     onHeaderClick: (() -> Unit)? = null,
     headerModifier: Modifier = Modifier,
     headerAction: (@Composable () -> Unit)? = null,
+    horizontalPadding: androidx.compose.ui.unit.Dp = 16.dp,
+    bottomSpacing: androidx.compose.ui.unit.Dp = 16.dp,
 ) {
     val context = LocalContext.current
     val highlighted = LocalSettingsTargets.current?.highlighted
@@ -104,7 +106,7 @@ fun SettingsSectionCard(
                 SettingsCardSurface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                        .padding(horizontal = horizontalPadding),
                     shape = uiRoundnessShape(),
                     containerColor = containerColor,
                     backgroundColor = colorPalette().background0,
@@ -190,7 +192,7 @@ fun SettingsSectionCard(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(bottomSpacing))
             }
         }
     }

@@ -427,7 +427,7 @@ fun ProfileFaceCard(
                             buttons = listOf(
                                 DialogButton(
                                     text = stringResource(R.string.common_action_close),
-                                    primary = true,
+                                    danger = true,
                                     onClick = {
                                         showErrorPopup = false
                                     }

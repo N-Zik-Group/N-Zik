@@ -373,12 +373,14 @@ private fun MarketplaceModuleCard(
                     onClick = { scope.launch { manager.ensureReady(def) } },
                 )
 
-                is ModuleState.FAILED -> OtherSettingsEntry(
-                    title = stringResource(R.string.modules_retry),
-                    text = state.message,
-                    icon = R.drawable.refresh,
-                    onClick = { scope.launch { manager.ensureReady(def) } },
-                )
+                is ModuleState.FAILED -> {
+                    Text(state.message)
+                    app.n_zik.android.components.ui.UiButton(
+                        onClick = { scope.launch { manager.ensureReady(def) } },
+                    ) {
+                        Text(stringResource(R.string.modules_retry))
+                    }
+                }
 
                 ModuleState.READY -> DisabledSettingsEntry(
                     title = stringResource(R.string.modules_already_installed),

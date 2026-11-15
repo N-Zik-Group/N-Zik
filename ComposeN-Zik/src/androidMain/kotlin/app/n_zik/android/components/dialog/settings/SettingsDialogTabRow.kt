@@ -1,7 +1,10 @@
 package app.n_zik.android.components.dialog.settings
 
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
@@ -21,6 +24,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.settings.common.LocalSettingsTargets
 
@@ -32,6 +36,7 @@ internal fun SettingsDialogTabRow(
     containerTestTag: String = "settingsDialogTabContainer",
     equalWidthWhenFitting: Boolean = false,
     followNestedTarget: Boolean = true,
+    fittingLabelPadding: Dp = 16.dp,
     onTabSelected: (Int) -> Unit,
 ) {
     val target = LocalSettingsTargets.current?.nestedTarget.takeIf { followNestedTarget }
@@ -46,7 +51,7 @@ internal fun SettingsDialogTabRow(
     val naturalWidths = labels.map { label ->
         val textWidth = textMeasurer.measure(label, style = textStyle, softWrap = false).size.width
         with(density) {
-            (textWidth + 2 * 16.dp.roundToPx()).toDp()
+            (textWidth + 2 * fittingLabelPadding.roundToPx()).toDp()
         }
     }
     val tabWidths = naturalWidths.map { it.coerceAtLeast(TabRowDefaults.ScrollableTabRowMinTabWidth) }
@@ -63,7 +68,19 @@ internal fun SettingsDialogTabRow(
     val tabs: @Composable (Boolean) -> Unit = { equalWidth ->
         labels.forEachIndexed { index, label ->
             val width = if (equalWidth) Modifier else Modifier.width(tabWidths[index])
-            Tab(
+            if (equalWidth && fittingLabelPadding != 16.dp) {
+                Tab(
+                    selected = selectedTabIndex == index,
+                    onClick = { onTabSelected(index) },
+                    modifier = width.testTag("settingsDialogTab$index"),
+                    selectedContentColor = colorPalette().accent,
+                    unselectedContentColor = colorPalette().textSecondary,
+                ) {
+                    Box(Modifier.heightIn(min = 48.dp).padding(horizontal = fittingLabelPadding), contentAlignment = Alignment.Center) {
+                        Text(label, style = textStyle, softWrap = false, maxLines = 1)
+                    }
+                }
+            } else Tab(
                 selected = selectedTabIndex == index,
                 onClick = { onTabSelected(index) },
                 modifier = width.testTag("settingsDialogTab$index"),

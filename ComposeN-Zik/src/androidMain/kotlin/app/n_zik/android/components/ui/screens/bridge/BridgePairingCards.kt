@@ -195,8 +195,8 @@ internal fun PairPcCard(running: BridgeState.Running, code: PairingCode?) {
                                 )
                                 PairingButton(
                                     text = stringResource(R.string.common_action_close),
-                                    containerColor = palette.background2,
-                                    contentColor = palette.text,
+                                    containerColor = palette.red,
+                                    contentColor = androidx.compose.ui.graphics.Color.White,
                                     modifier = Modifier.weight(1f),
                                     onClick = {
                                         message = null

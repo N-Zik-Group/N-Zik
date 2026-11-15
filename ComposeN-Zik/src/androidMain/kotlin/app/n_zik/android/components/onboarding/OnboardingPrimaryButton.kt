@@ -20,6 +20,7 @@ import app.n_zik.android.uiRoundnessShape
 internal fun OnboardingPrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     content: @Composable RowScope.() -> Unit,
 ) {
     val palette = colorPalette()
@@ -35,6 +36,7 @@ internal fun OnboardingPrimaryButton(
     PageButton(
         onClick = onClick,
         modifier = modifier,
+        enabled = enabled,
         colors = ButtonDefaults.buttonColors(
             containerColor = palette.accent,
             contentColor = foreground,

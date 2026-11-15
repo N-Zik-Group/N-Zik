@@ -91,7 +91,7 @@ private fun PermissionUsageDialog(onDismiss: () -> Unit) {
                     onClick = { confirmClear = true },
                     danger = true,
                 ),
-                DialogButton(text = stringResource(R.string.common_action_close), onClick = onDismiss, primary = true),
+                DialogButton(text = stringResource(R.string.common_action_close), onClick = onDismiss, danger = true),
             ))
         }
     ) {

@@ -253,9 +253,11 @@ fun PlayerActionToolbar(
                 Row(glassRowModifier.height(PlayerActionToolbarHeight),
                     horizontalArrangement = arrangement, verticalAlignment = Alignment.CenterVertically) { content() }
             } else {
-                val previous = bounds[actions.lastIndex - 1]
-                val trailing = bounds[actions.lastIndex]
-                val boundary = if (actions.last().id in setOf("menu", "arrow") && previous != null && trailing != null)
+                val menuIndex = actions.indexOfFirst { it.id == "menu" }
+                val separatorIndex = if (menuIndex >= 0) menuIndex else actions.lastIndex.takeIf { actions.last().id == "arrow" } ?: 0
+                val previous = bounds[separatorIndex - 1]
+                val trailing = bounds[separatorIndex]
+                val boundary = if (previous != null && trailing != null)
                     with(LocalDensity.current) { ((previous.right + trailing.left) / 2f).toDp() } +
                         ((48.dp - actions.first().nativeHeight) / 2).coerceAtLeast(0.dp) else 0.dp
                 GlassActionGroupMotionHost(glass && isGlassMotionAllowed(), glassRowModifier.height(PlayerActionToolbarHeight)) {
@@ -264,7 +266,8 @@ fun PlayerActionToolbar(
                         .testTag("player.actionToolbar.material")
                         .glassMaterial(settings.forArea(GlassArea.ActionButtons), uiRoundnessShape(),
                             ownBackdrop = LocalGlassContainerBackdrop.current)
-                        .glassActionGroupSeparators(settings, GlassArea.ActionButtons, boundary, separatorBefore = setOf(1)))
+                        .glassActionGroupSeparators(settings, GlassArea.ActionButtons, boundary,
+                            separatorBefore = if (boundary > 0.dp) setOf(1) else emptySet()))
                     GlassActionGroup(settings, GlassArea.ActionButtons, modifier = Modifier.fillMaxWidth(),
                         separatorBefore = emptySet(), drawSurface = false) {
                         Row(Modifier.fillMaxWidth().height(PlayerActionToolbarHeight).then(cellPadding).testTag("player.actionToolbar.row"), horizontalArrangement = arrangement,

@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import app.n_zik.android.components.song.EmptySongMetadataRule
 import app.n_zik.android.models.Song
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.ui.styling.Appearance
@@ -64,11 +65,13 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [32], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class InsightsCardTemplateTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule(order = 0) val songMetadata = EmptySongMetadataRule()
+    @get:Rule(order = 1) val compose = createComposeRule()
 
     @OptIn(ExperimentalFoundationApi::class)
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     @Test fun `ranked songs have no selected tile and highlight only the current media ID`() {
+        songMetadata.stub()
         val context: Context = ApplicationProvider.getApplicationContext()
         setActiveProfile("default", context)
         context.preferences.edit().clear()
