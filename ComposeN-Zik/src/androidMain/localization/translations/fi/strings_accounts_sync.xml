@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">Yhdistä GitHub</string>
+    <string name="github_account_logout">Katkaise GitHub-yhteys</string>
+    <string name="github_account_description">Käytä GitHub tiliäsi teemakaupassa.</string>
+    <string name="github_account_offline">Mene online-tilaan yhdistääksesi GitHub.</string>
+    <string name="github_account_code">Anna %1$s GitHubissa lopettaaksesi kirjautumisen sisään.</string>
+    <string name="github_account_code_copied">GitHub koodi kopioitu leikepöydälle.</string>
+    <string name="github_account_login_failed">Ei voitu yhdistää GitHubiin. Yritä uudelleen.</string>
+    <string name="github_account_connected">GitHub yhdistetty.</string>
     <!-- Account -->
     <string name="account_action_login">Kirjaudu sisään</string>
     <string name="account_action_logout">Kirjaudu pois</string>
