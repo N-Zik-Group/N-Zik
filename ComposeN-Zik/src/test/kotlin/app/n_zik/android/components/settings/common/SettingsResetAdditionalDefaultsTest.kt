@@ -134,8 +134,8 @@ class SettingsResetAdditionalDefaultsTest {
         assertEquals("saved-journal", prefs.getString("permissionUsageJournalEvents", null))
         assertEquals("saved-cursor", prefs.getString("syncSessionCursor", null))
         assertTrue(principal.getBoolean("privacyBlockScreenCapture", false))
-        assertFalse(principal.contains(BackupManager.PREF_INTERVAL))
-        assertFalse(principal.contains(BackupManager.PREF_DB_CHANGE))
+        assertEquals(BackupManager.INTERVAL_DAILY, principal.getInt(BackupManager.PREF_INTERVAL, -1))
+        assertTrue(principal.getBoolean(BackupManager.PREF_DB_CHANGE, false))
         assertEquals("content://shared-backup-folder", principal.getString(BackupManager.PREF_URI, null))
     }
 

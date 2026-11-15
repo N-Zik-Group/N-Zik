@@ -22,6 +22,7 @@ import app.n_zik.android.ui.styling.Typography
 import app.n_zik.android.utils.encryptedPreferences
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
+import app.n_zik.android.utils.writeProfileEntries
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.R
 import app.n_zik.android.Dependencies
@@ -62,6 +63,7 @@ class AllSettingsDefaultsTest {
         val application = mockk<MainApplication>()
         every { application.applicationContext } returns context
         Dependencies.init(application)
+        check(context.writeProfileEntries(listOf("all-settings" to "All settings", "untouched" to "Untouched")))
         setActiveProfile("all-settings", context)
         context.preferences.edit().clear().putBoolean("pauseOnHeadphoneDisconnect", false)
             .putString("navigationBarPosition", "Left").putString("colorPaletteMode", "Light")

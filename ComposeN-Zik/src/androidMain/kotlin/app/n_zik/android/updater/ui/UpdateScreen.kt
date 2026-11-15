@@ -152,6 +152,7 @@ private fun UpdateScreenContent(navController: NavController) {
     var showInstallWarningDialog by remember { mutableStateOf(false) }
     var apkPathToInstall by remember { mutableStateOf<String?>(null) }
     var isPreInstallBackupRunning by remember { mutableStateOf(false) }
+    val autoBackupEnabled by rememberPreference(BackupManager.PREF_ENABLED, false)
     val preInstallBackupEnabled by rememberPreference(BackupManager.PREF_PRE_INSTALL, false)
     val preInstallBackupUri by rememberPreference(BackupManager.PREF_URI, "")
     val preInstallCoroutineScope = rememberCoroutineScope()
@@ -299,7 +300,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                     UpdaterActionCard(
                                         onClick = {
                                                 val apkPath = state.filePath
-                                                if (preInstallBackupEnabled && preInstallBackupUri.isNotEmpty() && !isPreInstallBackupRunning) {
+                                                if (autoBackupEnabled && preInstallBackupEnabled && preInstallBackupUri.isNotEmpty() && !isPreInstallBackupRunning) {
                                                     apkPathToInstall = apkPath
                                                     isPreInstallBackupRunning = true
                                                     preInstallCoroutineScope.launch {

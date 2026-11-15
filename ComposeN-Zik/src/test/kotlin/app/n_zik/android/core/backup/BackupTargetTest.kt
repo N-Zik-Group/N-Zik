@@ -1,5 +1,6 @@
 package app.n_zik.android.core.backup
 
+import app.n_zik.android.components.dialog.backup.BackupContent
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -10,6 +11,14 @@ import org.junit.jupiter.api.Test
  * target falls back to the stored default (database).
  */
 class BackupTargetTest {
+
+    @Test
+    fun `custom settings and themes selection round trips without selecting other parts`() {
+        val selection = BackupContent.Settings.flag or BackupContent.Themes.flag
+        val target = encodeAutoBackupSelection(selection)
+        assertEquals(selection, autoBackupSelection(target))
+        assertEquals(BackupParts(false, true, false, true), backupPartsOf(target))
+    }
 
     @Test
     fun `database only targets the database`() {

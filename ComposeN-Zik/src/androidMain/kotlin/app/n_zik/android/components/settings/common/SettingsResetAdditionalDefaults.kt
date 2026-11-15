@@ -64,12 +64,12 @@ private val additionalProfileSettingKeys = setOf(
 // AutoBackupSettingsBlock is the canonical reader. Keep PREF_URI and the SAF grant:
 // resetting the schedule must not disconnect a chosen destination or delete a backup.
 private val additionalBackupSettingKeys = setOf(
-    BackupManager.PREF_INTERVAL, BackupManager.PREF_DB_CHANGE, BackupManager.PREF_MAX_BACKUPS,
+    BackupManager.PREF_ENABLED, BackupManager.PREF_INTERVAL, BackupManager.PREF_DB_CHANGE, BackupManager.PREF_MAX_BACKUPS,
     BackupManager.PREF_CUSTOM_INTERVAL_VALUE, BackupManager.PREF_CUSTOM_INTERVAL_UNIT,
     BackupManager.PREF_SCHEDULE_HOUR, BackupManager.PREF_SCHEDULE_DAY_OF_WEEK,
     BackupManager.PREF_SCHEDULE_DAY_OF_MONTH, BackupManager.PREF_TARGET,
     BackupManager.PREF_INCLUDE_YTB, BackupManager.PREF_INCLUDE_DISCORD,
-    BackupManager.PREF_INCLUDE_LASTFM, BackupManager.PREF_INCLUDE_PROXY, BackupManager.PREF_PRE_INSTALL,
+    BackupManager.PREF_INCLUDE_LASTFM, BackupManager.PREF_INCLUDE_PROXY, BackupManager.PREF_INCLUDE_GITHUB, BackupManager.PREF_PRE_INSTALL,
 )
 
 // LastFmSettingsCard owns behavior; Last.fm session, username and avatar remain untouched.

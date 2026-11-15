@@ -1,5 +1,11 @@
 package app.n_zik.android.core.backup
 
+import app.n_zik.android.components.dialog.backup.BackupContent
+import app.n_zik.android.components.settings.appearance.preview.BundledThemeId
+import app.n_zik.android.components.settings.appearance.preview.ThemeStoreLibrary
+import app.n_zik.android.components.settings.appearance.preview.themeStoreCatalog
+import app.n_zik.android.components.settings.appearance.preview.writeThemeCollectionArchive
+import app.n_zik.android.core.network.fullOfflineModeKey
 import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
@@ -35,10 +41,12 @@ object BackupManager {
     const val PREF_SCHEDULE_HOUR = "autoBackupScheduleHourKey"
     const val PREF_SCHEDULE_DAY_OF_WEEK = "autoBackupScheduleDayOfWeekKey"
     const val PREF_SCHEDULE_DAY_OF_MONTH = "autoBackupScheduleDayOfMonthKey"
+    const val PREF_ENABLED = "autoBackupEnabledKey"
     const val PREF_TARGET = "autoBackupTargetKey"
     const val PREF_INCLUDE_YTB = "autoBackupIncludeYtbKey"
     const val PREF_INCLUDE_DISCORD = "autoBackupIncludeDiscordKey"
     const val PREF_INCLUDE_LASTFM = "autoBackupIncludeLastfmKey"
+    const val PREF_INCLUDE_GITHUB = "autoBackupIncludeGitHubKey"
     const val PREF_INCLUDE_PROXY = "autoBackupIncludeProxyKey"
     const val PREF_PRE_INSTALL = "autoBackupPreInstallKey"
 
@@ -74,12 +82,12 @@ object BackupManager {
         val workManager = WorkManager.getInstance(context)
         val workName = ProfileWorkOwner.name(WORK_NAME, owner)
         workManager.cancelUniqueWork(WORK_NAME)
-        if (interval == INTERVAL_NONE) {
+        val prefs = profileDataPrefs(context, owner.id)
+        if (interval == INTERVAL_NONE || !prefs.getBoolean(PREF_ENABLED, false) || prefs.getString(PREF_URI, "").isNullOrBlank()) {
             workManager.cancelUniqueWork(workName)
             return
         }
 
-        val prefs = profileDataPrefs(context, owner.id)
         val now = LocalDateTime.now()
         var targetTime = now
 
@@ -153,7 +161,7 @@ object BackupManager {
         val interval = prefs.getInt(PREF_INTERVAL, INTERVAL_NONE)
         if (interval == INTERVAL_NONE) return
 
-        val enabled = prefs.getBoolean(PREF_DB_CHANGE, false)
+        val enabled = prefs.getBoolean(PREF_ENABLED, false) && prefs.getBoolean(PREF_DB_CHANGE, false)
 
         if (!enabled) return
 
@@ -174,7 +182,7 @@ object BackupManager {
         val owner = ProfileWorkOwner.capture(context) ?: return false
         if (!ProfileWorkOwner.isBound(context, owner)) return false
         val prefs = profileDataPrefs(context, owner.id)
-        val enabled = prefs.getBoolean(PREF_PRE_INSTALL, false)
+        val enabled = prefs.getBoolean(PREF_ENABLED, false) && prefs.getBoolean(PREF_PRE_INSTALL, false)
         if (!enabled) return true
 
         val uriString = prefs.getString(PREF_URI, "") ?: ""
@@ -204,6 +212,7 @@ object BackupManager {
                 val includeYtb = prefs.getBoolean(PREF_INCLUDE_YTB, false)
                 val includeDiscord = prefs.getBoolean(PREF_INCLUDE_DISCORD, false)
                 val includeLastfm = prefs.getBoolean(PREF_INCLUDE_LASTFM, false)
+                val includeGitHub = prefs.getBoolean(PREF_INCLUDE_GITHUB, false)
                 val includeProxy = prefs.getBoolean(PREF_INCLUDE_PROXY, false)
                 Timber.tag("AutoBackup").d("executeBackup settings: Target=$target, IncludeYtb=$includeYtb, IncludeDiscord=$includeDiscord, IncludeLastfm=$includeLastfm, IncludeProxy=$includeProxy")
                 
@@ -256,7 +265,7 @@ object BackupManager {
                         context.contentResolver, docUri, "text/csv", fileName
                     )
                     if (newDocUri != null) {
-                        exportSettings(context, newDocUri, owner, includeYtb, includeDiscord, includeLastfm, includeProxy)
+                        exportSettings(context, newDocUri, owner, includeYtb, includeDiscord, includeLastfm, includeProxy, includeGitHub)
                         outputs += OwnedAutoBackupRetention.Output(newDocUri, AutoBackupKind.SETTINGS)
                         Timber.tag("AutoBackup").i("Settings backup successful to $fileName")
                     } else {
@@ -264,6 +273,38 @@ object BackupManager {
                         success = false
                     }
 
+                }
+
+                if (parts.themes) {
+                    val themes = ThemeStoreLibrary(prefs).downloads().filter {
+                        it.theme != null && it.theme.themeId != BundledThemeId
+                    }
+                    if (themes.isNotEmpty()) {
+                        val staged = java.io.File.createTempFile("theme-autobackup-", ".zip", context.cacheDir)
+                        try {
+                            val offline = prefs.getBoolean(fullOfflineModeKey, false)
+                            staged.outputStream().use {
+                                writeThemeCollectionArchive(context, it, themes, themeStoreCatalog(context, offline), !offline)
+                            }
+                            check(ProfileWorkOwner.exists(context, owner))
+                            val resolver = context.contentResolver
+                            val parent = DocumentsContract.buildDocumentUriUsingTree(treeUri, DocumentsContract.getTreeDocumentId(treeUri))
+                            val name = autoBackupFileName(BuildConfig.APP_NAME, profile, date, AutoBackupKind.THEMES)
+                            val document = checkNotNull(DocumentsContract.createDocument(resolver, parent, "application/zip", name))
+                            var written = false
+                            try {
+                                checkNotNull(resolver.openOutputStream(document)).use { output ->
+                                    staged.inputStream().use { it.copyTo(output) }
+                                }
+                                outputs += OwnedAutoBackupRetention.Output(document, AutoBackupKind.THEMES)
+                                written = true
+                            } finally {
+                                if (!written) runCatching { DocumentsContract.deleteDocument(resolver, document) }
+                            }
+                        } finally {
+                            staged.delete()
+                        }
+                    }
                 }
 
                 if (parts.profileState) {
@@ -309,11 +350,12 @@ object BackupManager {
         includeDiscord: Boolean,
         includeLastfm: Boolean,
         includeProxy: Boolean,
+        includeGitHub: Boolean,
     ) {
         val (entries, credentials) = DatabaseRestoreJournal.withProfileStorageMutation(context) {
             check(ProfileWorkOwner.exists(context, owner))
             val settings = SettingsPreferencesBridge.export(context, profileDataPrefs(context, owner.id), owner.id)
-            val secrets = if (includeYtb || includeDiscord || includeLastfm || includeProxy) {
+            val secrets = if (includeYtb || includeDiscord || includeLastfm || includeProxy || includeGitHub) {
                 profileSecurePrefs(context, owner.id).all
             } else emptyMap()
             settings to secrets
@@ -329,7 +371,7 @@ object BackupManager {
                 includeYtb,
                 includeDiscord,
                 includeLastfm,
-                includeProxy
+                includeProxy, includeGitHub
             )
         )
 
@@ -409,7 +451,8 @@ object BackupManager {
 internal enum class AutoBackupKind(val infix: String, val extension: String) {
     DATABASE("", "sqlite"),
     SETTINGS("_Settings", "csv"),
-    PROFILE_STATE("_Profiles", "txt");
+    PROFILE_STATE("_Profiles", "txt"),
+    THEMES("_Themes", "zip");
 }
 
 /**
@@ -436,6 +479,7 @@ internal fun autoBackupKindOf(displayName: String): AutoBackupKind? {
     return when {
         isDatabaseAutoBackup(displayName) -> AutoBackupKind.DATABASE
         displayName.endsWith("Settings_AutoBackup.csv") -> AutoBackupKind.SETTINGS
+        displayName.endsWith("Themes_AutoBackup.zip") -> AutoBackupKind.THEMES
         displayName.endsWith("Profiles_AutoBackup.txt") -> AutoBackupKind.PROFILE_STATE
         displayName.endsWith("Face_AutoBackup.jpg") -> AutoBackupKind.PROFILE_STATE
         else -> null
@@ -448,24 +492,36 @@ private fun isDatabaseAutoBackup(displayName: String): Boolean {
     return if (profile.isEmpty()) match.groupValues[2].equals("sqlite", ignoreCase = true) else isProfileIdSafe(profile)
 }
 
-/** The backup parts a target covers: the database, the settings CSV, the profile state. */
+/** Persist new checkbox selections above the range of the original radio values. */
+private const val BackupSelectionMarker = 16
+
+internal fun encodeAutoBackupSelection(selection: Int): Int {
+    require(selection != 0 && selection and BackupContent.all == selection)
+    return BackupSelectionMarker + selection
+}
+
+internal fun autoBackupSelection(target: Int): Int = when (target) {
+    BackupManager.TARGET_SETTINGS -> BackupContent.Settings.flag
+    BackupManager.TARGET_BOTH -> BackupContent.Database.flag or BackupContent.Settings.flag
+    BackupManager.TARGET_ACCOUNTS -> BackupContent.Profiles.flag
+    BackupManager.TARGET_ALL -> BackupContent.all xor BackupContent.Themes.flag
+    in (BackupSelectionMarker + 1)..(BackupSelectionMarker + BackupContent.all) -> target - BackupSelectionMarker
+    else -> BackupContent.Database.flag
+}
+
 internal data class BackupParts(
     val database: Boolean,
     val settings: Boolean,
-    val profileState: Boolean
+    val profileState: Boolean,
+    val themes: Boolean = false,
 )
 
-/**
- * The parts backed up for [target] (pure, unit-tested without Android): Database and Settings
- * stay separate, Both keeps its database + settings scope, Accounts archives only the profile
- * state (the list and the face of every profile that has one), All adds it to database +
- * settings. An unknown target falls back to the stored default.
- */
-internal fun backupPartsOf(target: Int): BackupParts = when (target) {
-    BackupManager.TARGET_DATABASE -> BackupParts(true, false, false)
-    BackupManager.TARGET_SETTINGS -> BackupParts(false, true, false)
-    BackupManager.TARGET_BOTH -> BackupParts(true, true, false)
-    BackupManager.TARGET_ACCOUNTS -> BackupParts(false, false, true)
-    BackupManager.TARGET_ALL -> BackupParts(true, true, true)
-    else -> BackupParts(true, false, false)
+internal fun backupPartsOf(target: Int): BackupParts {
+    val selection = autoBackupSelection(target)
+    return BackupParts(
+        database = BackupContent.Database.isSelected(selection),
+        settings = BackupContent.Settings.isSelected(selection),
+        profileState = BackupContent.Profiles.isSelected(selection),
+        themes = BackupContent.Themes.isSelected(selection),
+    )
 }
