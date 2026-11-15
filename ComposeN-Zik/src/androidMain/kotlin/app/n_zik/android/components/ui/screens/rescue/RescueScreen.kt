@@ -189,6 +189,7 @@ fun RescueScreen() {
     var includeYtb by remember { mutableStateOf(false) }
     var includeDiscord by remember { mutableStateOf(false) }
     var includeLastfm by remember { mutableStateOf(false) }
+    var includeGitHub by remember { mutableStateOf(false) }
     var includeProxy by remember { mutableStateOf(false) }
     var showCredentialToggles by remember { mutableStateOf(false) }
 
@@ -461,11 +462,11 @@ fun RescueScreen() {
         uri ?: return@rememberLauncherForActivityResult
         scope.launch {
             val result = withContext(NzikDispatchers.DATA) {
-                val wantsCredentials = includeYtb || includeDiscord || includeLastfm || includeProxy
+                val wantsCredentials = includeYtb || includeDiscord || includeLastfm || includeProxy || includeGitHub
                 RescueFiles.exportSettings(
                     context, uri,
                     if (wantsCredentials) encryptedPrefs.await() else null,
-                    includeYtb, includeDiscord, includeLastfm, includeProxy
+                    includeYtb, includeDiscord, includeLastfm, includeProxy, includeGitHub
                 )
             }
             showSettingsResult(result)
@@ -615,6 +616,10 @@ fun RescueScreen() {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(checked = includeLastfm, onCheckedChange = { includeLastfm = it }, colors = palette.checkboxColors())
                 Text(stringResource(R.string.recovery_include_lastfm_credentials), color = palette.text)
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(checked = includeGitHub, onCheckedChange = { includeGitHub = it }, colors = palette.checkboxColors())
+                Text(stringResource(R.string.backup_include_github_identity_credentials), color = palette.text)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(checked = includeProxy, onCheckedChange = { includeProxy = it }, colors = palette.checkboxColors())
@@ -1084,6 +1089,11 @@ fun RescueScreen() {
                         }
                     }
                 }
+
+                RescueThemesCard(
+                    profiles = profileOptions.filter { it.id == targetProfile }.associate { it.id to it.label },
+                    guardWrite = ::guardWrite,
+                )
 
                 // Database — the target profile's database (export / import / reset / restore)
                 RescueSectionCard(
@@ -1584,7 +1594,7 @@ private fun RescueCategoryChip(
  * app-wide helpers (theme prefs, …) or it risks crashing there.
  */
 @Composable
-private fun RescueSectionCard(
+internal fun RescueSectionCard(
     title: String,
     iconRes: Int,
     content: @Composable ColumnScope.() -> Unit
@@ -1638,7 +1648,7 @@ private fun RescueSectionCard(
 }
 
 @Composable
-private fun RescueActionCard(
+internal fun RescueActionCard(
     iconRes: Int,
     title: String,
     description: String,

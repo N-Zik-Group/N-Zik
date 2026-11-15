@@ -193,7 +193,7 @@ object RescueFiles {
     internal val PROXY_KEYS = listOf(proxyPasswordEncryptedKey)
     // Every key that lives in the encrypted prefs: import routing must send each one to the
     // encrypted editor, never to the plain preferences.
-    internal val ALL_ENCRYPTED_KEYS = YTB_KEYS + DISCORD_KEYS + LASTFM_KEYS + PROXY_KEYS
+    internal val ALL_ENCRYPTED_KEYS = YTB_KEYS + DISCORD_KEYS + LASTFM_KEYS + PROXY_KEYS + listOf("githubBackupIdentity")
 
     fun initialize(context: Context) {
         if (rescueProfile != null) return
@@ -247,14 +247,15 @@ object RescueFiles {
         includeYtb: Boolean,
         includeDiscord: Boolean,
         includeLastfm: Boolean,
-        includeProxy: Boolean = false
+        includeProxy: Boolean = false, includeGitHub: Boolean = false
     ): List<Triple<String, String, Any>> {
-        if (!includeYtb && !includeDiscord && !includeLastfm && !includeProxy) return emptyList()
+        if (!includeYtb && !includeDiscord && !includeLastfm && !includeProxy && !includeGitHub) return emptyList()
         val keys = mutableListOf<String>()
         if (includeYtb) keys.addAll(YTB_KEYS)
         if (includeDiscord) keys.addAll(DISCORD_KEYS)
         if (includeLastfm) keys.addAll(LASTFM_KEYS)
         if (includeProxy) keys.addAll(PROXY_KEYS)
+        if (includeGitHub) keys.add("githubBackupIdentity")
         return keys.mapNotNull { key ->
             val value = encryptedPrefs[key] ?: return@mapNotNull null
             val type = value::class.simpleName ?: "null"
@@ -356,7 +357,7 @@ object RescueFiles {
         includeYtb: Boolean = false,
         includeDiscord: Boolean = false,
         includeLastfm: Boolean = false,
-        includeProxy: Boolean = false
+        includeProxy: Boolean = false, includeGitHub: Boolean = false
     ): Result<SettingsOutcome> = runCatching {
         val profile = rescueTargetProfile()
         val prefs = profileDataPrefs(context, profile)
@@ -364,11 +365,11 @@ object RescueFiles {
 
         // Encrypted credentials (optional, may fail)
         var encryptedSkipped = false
-        if (includeYtb || includeDiscord || includeLastfm || includeProxy) {
+        if (includeYtb || includeDiscord || includeLastfm || includeProxy || includeGitHub) {
             val encPrefs = encryptedPrefsResult?.getOrNull()
             if (encPrefs != null) {
                 // Single source of truth: the selected groups plus, when checked, the proxy key.
-                entries.addAll(buildCredentialExport(encPrefs.all, includeYtb, includeDiscord, includeLastfm, includeProxy))
+                entries.addAll(buildCredentialExport(encPrefs.all, includeYtb, includeDiscord, includeLastfm, includeProxy, includeGitHub))
             } else {
                 encryptedSkipped = true
                 Timber.tag(TAG).w("Cannot access encrypted preferences; exporting without credentials")
