@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">Подключить GitHub</string>
+    <string name="github_account_logout">Отключить GitHub</string>
+    <string name="github_account_description">Используйте свою учетную запись GitHub в магазине тем.</string>
+    <string name="github_account_offline">Перейдите в сеть, чтобы подключить GitHub.</string>
+    <string name="github_account_code">Чтобы завершить вход, войдите в %1$s на GitHub.</string>
+    <string name="github_account_code_copied">Код GitHub скопирован в буфер обмена.</string>
+    <string name="github_account_login_failed">Не удалось подключиться к GitHub. Попробуйте еще раз.</string>
+    <string name="github_account_connected">GitHub подключен.</string>
     <!-- Account -->
     <string name="account_action_login">Вход</string>
     <string name="account_action_logout">Выход</string>
