@@ -3,6 +3,7 @@
     <string name="backup_export_themes_description">Salvați temele descărcate și locale într-o copie de rezervă ZIP</string>
     <string name="backup_import_themes_description">Restaurează temele descărcate și cele locale dintr-o copie de rezervă ZIP</string>
     <string name="backup_export_select_all_description">Selectați fiecare tip de date de exportat</string>
+    <string name="backup_import_already_running">Un import de rezervă este deja în desfășurare.</string>
     <string name="backup_import_select_all_description">Selectați fiecare tip de date pentru import</string>
     <string name="backup_include_github_identity_credentials">Include acreditările de identitate GitHub</string>
     <string name="storage_image_quality_title">Calitatea imaginii</string>
