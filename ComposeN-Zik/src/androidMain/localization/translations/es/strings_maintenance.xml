@@ -323,4 +323,9 @@
     <string name="updates_check_failed">No se pudo comprobar si hay actualizaciones.</string>
     <string name="updates_install_generic_error">No se pudo instalar la actualización.</string>
     <string name="updates_channel_available_format">Actualización %1$s disponible</string>
+    <string name="recovery_theme_backup_title">Temas</string>
+    <string name="recovery_theme_backup_no_match">Sólo los temas pertenecientes a perfiles disponibles en esta vista pueden ser restaurados aquí.</string>
+    <string name="recovery_theme_backup_operation_failed">No se pudo completar la operación de copia de seguridad del tema.</string>
+    <string name="recovery_theme_backup_restore_action">Restaurar temas</string>
+    <string name="recovery_theme_backup_restore_description">Abre la última copia de seguridad del tema usada para este perfil.</string>
 </resources>
