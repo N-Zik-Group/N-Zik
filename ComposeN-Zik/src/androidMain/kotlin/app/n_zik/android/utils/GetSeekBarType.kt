@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.enums.PlayerTimelineType
@@ -51,6 +52,7 @@ import app.n_zik.android.extensions.audiobar.views.SeekBarVisualizer
 import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
 import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.delay
 
 const val DURATION_INDICATOR_HEIGHT = 20
@@ -65,21 +67,25 @@ fun GetSeekBar(
     shouldBePlaying: Boolean,
     isBuffering: Boolean,
 ) {
-    val binder = LocalPlayerServiceBinder.current
-    val player = LocalThemePreview.current?.player ?: binder?.player ?: return
+    val player = LocalThemePreview.current?.player ?: run {
+        val binder = LocalPlayerServiceBinder.current ?: return
+        // Crossfade can replace the player's instance without changing the track.
+        val generation by binder.playerUpdateTrigger.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
+        remember(binder, generation) { binder.player }
+    }
     val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
     val seekDuration = duration()
-    // Native handlers must be recreated together; their cancelled callbacks cannot target a new track.
-    val gestureBoundary = Triple(mediaId, seekDuration, playerTimelineType)
+    // Cancelled native handlers must not target a new player or track.
+    val gestureBoundary = player to Triple(mediaId, seekDuration, playerTimelineType)
     val currentGestureBoundary by rememberUpdatedState(gestureBoundary)
     val isCurrentGesture = { currentGestureBoundary == gestureBoundary }
     var scrubbingPosition by remember(gestureBoundary) {
         mutableStateOf<Long?>(null)
     }
-    var pendingSeekTarget by remember(mediaId, seekDuration) {
+    var pendingSeekTarget by remember(player, mediaId, seekDuration) {
         mutableStateOf<Long?>(null)
     }
-    var pendingSeekIssuedAtMs by remember(mediaId, seekDuration) {
+    var pendingSeekIssuedAtMs by remember(player, mediaId, seekDuration) {
         mutableLongStateOf(0L)
     }
     fun holdSeekTarget(target: Long) {
@@ -90,7 +96,7 @@ fun GetSeekBar(
     val ltGuestLocked = rememberListenTogetherGuestLock()
     val ltContext = LocalContext.current
 
-    LaunchedEffect(pendingSeekTarget) {
+    LaunchedEffect(player, pendingSeekTarget) {
         val target = pendingSeekTarget ?: return@LaunchedEffect
         val startedAtMs = SystemClock.elapsedRealtime()
         while (pendingSeekTarget == target) {
