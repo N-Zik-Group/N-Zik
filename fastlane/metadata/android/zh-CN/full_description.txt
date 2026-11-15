@@ -1,9 +1,5 @@
 Android的多语言YouTube音乐前端，侧重于性能，UI/UX精炼，功能扩展和长期支持。
 
-<b>N-Zik</b> 是 <a href="https://github.com/knighthat/Kreate">Kreate</a> 的开源叉。
-
-<b>注意：</b> N-Zik开始作为一个侧边项目。更成熟的替代品，请检查 <a href="https://github.com/MetrolistGroup/Metrolist">计量列表</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI 音乐</a>, 或 <a href="https://github.com/fast4x/RiPlay">RiPlay</a>。
-
 <b>AI 用法：</b> 我使用生成的 AI 代码(通过 <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD 方法</a>)，在发货前经过审查和测试。
 
 ✨ <b>是什么是 N-ZIK?</b> 没有广告, 背景播放, 脱机缓存, 可定制界面界面-一律免费。
@@ -13,6 +9,10 @@ Android的多语言YouTube音乐前端，侧重于性能，UI/UX精炼，功能�
 - 主题: AMOLEDD, 深深暗，Crisp Light + 细分的音调
 - 3D 旋转滚珠、家居小部件、统一玩家和小型播放器
 - 艺术家的简档、发现和心情，可折叠的主页头
+
+:artis_调色板: <b>主题商店</b>
+- 浏览和下载社区主题，预览普通主题和玻璃，并选择要应用的外观设置。
+- 创建本地主题或与社区分享您的设计。导入并导出主题为 ZIP 文件。
 
 :bubles: <b>玻璃效果 (BETA, 可选)</b>
 在新安装上禁用。在设置中启用：按类别开列，只等距或玻璃，有可调整的质量。可能会增加渲染工作和电池使用量；降低质量或在需要时禁用。
