@@ -10,6 +10,10 @@ A multilingual YouTube Music frontend for Android, focused on performance, UI/UX
 - 3D Carousel Player, home widgets, unified player and mini-player
 - Artist profiles, Discovery and moods, collapsible home headers
 
+🎨 <b>Theme Store</b>
+- Browse and download community themes, preview them in Normal and Glass, and choose which appearance settings to apply.
+- Create local themes or share your designs with the community. Import and export themes as ZIP files.
+
 🫧 <b>Glass Effect (BETA, optional)</b>
 Disabled on fresh installs. Enable in Settings: native, contour-only or Glass by category, with adjustable quality. May increase rendering work and battery use; reduce quality or disable if needed.
 Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
