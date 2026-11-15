@@ -100,6 +100,7 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.MONTHLY_PREFIX
 
 import app.n_zik.android.appContext
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewAssets
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.colorPalette
 import app.n_zik.android.enums.PlaylistSongSortBy
@@ -308,7 +309,7 @@ fun LocalPlaylistSongs(
 
     val preview = app.n_zik.android.components.settings.appearance.preview.LocalThemePreview.current
     val thumbnailUrl = remember(playlistId, preview) {
-        mutableStateOf(if (preview == null) "" else "file:///android_asset/theme-preview/tide.jpg")
+        mutableStateOf(if (preview == null) "" else android.net.Uri.fromFile(ThemePreviewAssets.file(appContext(), "tide.jpg")).toString())
     }
     val playlist by remember(playlistId, preview) {
         if (preview != null) kotlinx.coroutines.flow.flowOf(Playlist(id = playlistId, name = "Sunday Headphones"))

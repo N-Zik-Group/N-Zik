@@ -52,7 +52,7 @@ internal fun rememberThemePreviewAppearance(document: String?, glass: Boolean): 
     val base = colorPaletteOf(paletteName, paletteMode, systemDark)
     val artworkPalette by produceState(base, context, paletteName, dark, base) {
         if (paletteName == ColorPaletteName.Dynamic) value = withContext(NzikDispatchers.DATA) {
-            val bitmap = context.assets.open("theme-preview/atlas.jpg").use(BitmapFactory::decodeStream)
+            val bitmap = BitmapFactory.decodeFile(ThemePreviewAssets.file(context, "atlas.jpg").path)
             try { bitmap?.let { dynamicColorPaletteOf(it, dark) } ?: base } finally { bitmap?.recycle() }
         } else value = base
     }

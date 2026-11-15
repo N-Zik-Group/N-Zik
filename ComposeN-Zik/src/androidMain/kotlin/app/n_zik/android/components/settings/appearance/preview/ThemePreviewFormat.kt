@@ -83,6 +83,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 internal enum class ThemeCategory { COLORS, PLAYER_AND_QUEUE, NAVIGATION, GLASS }
 internal data class ThemeSettings(val plain: Map<String, Any>, val glass: Map<String, Any> = emptyMap())
@@ -104,6 +106,49 @@ internal fun parseThemeV1(source: String): Map<ThemeCategory, ThemeSettings> {
             ?: error("Unknown theme category $name")
         category to fields.readCategory(category)
     }.toMap()
+}
+
+internal fun encodeThemeV1(plain: Map<String, *>, glass: Map<String, *>): String =
+    buildJsonObject {
+        put("schemaVersion", 1)
+        put("categories", buildJsonObject {
+            ThemeCategory.entries.forEach { category ->
+                val fields = ExportThemeFields(if (category == ThemeCategory.GLASS) glass + plain else plain)
+                fields.fields(category)
+                put(category.wireKey, JsonObject(fields.values))
+            }
+        })
+    }.toString()
+
+private class ExportThemeFields(private val preferences: Map<String, *>) : ThemeFields {
+    val values = mutableMapOf<String, JsonElement>()
+
+    override fun flag(field: String, key: String, default: Boolean) {
+        values[field] = JsonPrimitive(preferences[key] as? Boolean ?: default)
+    }
+
+    override fun number(field: String, key: String, range: ClosedFloatingPointRange<Double>, default: Float) {
+        val value = (preferences[key] as? Number)?.toDouble() ?: default.toDouble()
+        require(value in range) { "Number outside portable range for $field" }
+        values[field] = JsonPrimitive(value)
+    }
+
+    override fun option(field: String, key: String, default: String, values: Set<String>) {
+        val name = preferences[key] as? String ?: default
+        require(name in values) { "Unsupported portable value for $field" }
+        this.values[field] = JsonPrimitive(wireName(name))
+    }
+
+    override fun group(field: String, block: ThemeFields.() -> Unit) {
+        values[field] = JsonObject(ExportThemeFields(preferences).apply(block).values)
+    }
+}
+
+internal fun selectThemeV1Categories(source: String, included: Set<ThemeCategory>): String {
+    val root = Json.parseToJsonElement(source) as JsonObject
+    val categories = root.getValue("categories") as JsonObject
+    val keys = included.map(ThemeCategory::wireKey).toSet()
+    return JsonObject(root + ("categories" to JsonObject(categories.filterKeys { it in keys }))).toString()
 }
 
 private val ThemeCategory.wireKey: String get() = when (this) {
@@ -205,6 +250,29 @@ private interface ThemeFields {
     fun number(field: String, key: String, range: ClosedFloatingPointRange<Double>, default: Float)
     fun option(field: String, key: String, default: String, values: Set<String>)
     fun group(field: String, block: ThemeFields.() -> Unit)
+}
+
+internal val themeSettingNames: Map<String, String> by lazy {
+    val names = mutableMapOf<String, String>()
+    val collector = object : ThemeFields {
+        override fun flag(field: String, key: String, default: Boolean) {
+            names[key] = field
+        }
+
+        override fun number(field: String, key: String, range: ClosedFloatingPointRange<Double>, default: Float) {
+            names[key] = field
+        }
+
+        override fun option(field: String, key: String, default: String, values: Set<String>) {
+            names[key] = field
+        }
+
+        override fun group(field: String, block: ThemeFields.() -> Unit) {
+            block()
+        }
+    }
+    ThemeCategory.entries.forEach { collector.fields(it) }
+    names
 }
 
 private inline fun <reified T : Enum<T>> ThemeFields.option(

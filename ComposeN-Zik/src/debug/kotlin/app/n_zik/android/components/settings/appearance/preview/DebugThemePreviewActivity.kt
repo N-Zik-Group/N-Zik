@@ -11,6 +11,34 @@ class DebugThemePreviewActivity : ThemePreviewActivity() {
     override val automation = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (intent.getBooleanExtra("postThemeUpdateAndDownloadExamples", false)) {
+            intent.removeExtra("postThemeUpdateAndDownloadExamples")
+            val manager = getSystemService(NotificationManager::class.java)
+            val channel = NotificationChannel("debug_theme_store_examples", "Theme Store examples", NotificationManager.IMPORTANCE_LOW)
+            manager.createNotificationChannel(channel)
+            val openPreviews = PendingIntent.getActivity(
+                this, 20, ThemePreviewActivity.intent(this), PendingIntent.FLAG_IMMUTABLE,
+            )
+            val examples = listOf(
+                "Theme update available • demo" to "Artwork Gradient · Revision 2",
+                "Theme downloaded • demo" to "Artwork Gradient is ready in Downloaded.",
+            )
+            examples.forEachIndexed { index, (title, message) ->
+                val builder = Notification.Builder(this, channel.id)
+                    .setSmallIcon(R.drawable.notification2)
+                    .setContentTitle(title)
+                    .setContentText(message)
+                    .setContentIntent(openPreviews)
+                    .setAutoCancel(true)
+                if (index == 0) {
+                    builder.addAction(R.drawable.download, "Download update", DebugThemeDownloadActions.action(this, "update"))
+                } else {
+                    builder.addAction(R.drawable.ui, "Open preview", openPreviews)
+                }
+                manager.notify("theme-store-example", index, builder.build())
+            }
+            DebugThemeDownloadActions.post(this, "Carousel")
+        }
         if (intent.getBooleanExtra("postNotificationSuite", false)) {
             intent.removeExtra("postNotificationSuite")
             postNotificationSuite()

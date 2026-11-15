@@ -26,10 +26,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.navigation.NavController
-import app.n_zik.android.components.navigation.Skeleton
-import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.text.style.TextAlign
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsSectionCard
@@ -61,6 +57,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
@@ -122,28 +119,79 @@ import timber.log.Timber
 
 open class ThemePreviewActivity : ComponentActivity() {
     private lateinit var player: ExoPlayer
+    private var progressNotification: ThemePreviewProgressNotification? = null
 
     /** Only the debug manifest exposes the automated catalog capture activity. */
     protected open val automation = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        val document = intent.getStringExtra(Document)
-            ?: if (automation) intent.getStringExtra(EncodedDocument)?.let {
-                String(Base64.decode(it, Base64.DEFAULT), Charsets.UTF_8)
-            } else null
-        player = ExoPlayer.Builder(this).build().apply {
-            volume = 0f
-            setMediaItems(ThemePreviewDemo.mediaItems, 0, ThemePreviewDemo.positionMs)
-            prepare()
+        enableEdgeToEdge(
+            navigationBarStyle = androidx.activity.SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+        )
+        if (android.os.Build.VERSION.SDK_INT >= 29) {
+            window.isNavigationBarContrastEnforced = false
         }
+        val submissionCapture = intent.getBooleanExtra(SubmissionCapture, false)
+        if (submissionCapture) progressNotification = ThemePreviewProgressNotification(this)
+        val document = intent.getStringExtra(Document)
+            ?: if (automation) {
+                if (intent.getBooleanExtra("useDefaultTheme", false)) defaultThemeAppearanceDocument()
+                else intent.getStringExtra(EncodedDocument)?.let { String(Base64.decode(it, Base64.DEFAULT), Charsets.UTF_8) }
+            } else null
         setContent {
-            CaptureGallery(document, player, automation, window, filesDir)
+            var ready by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+            var failed by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+            var attempt by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
+            LaunchedEffect(attempt) {
+                failed = false
+                progressNotification?.show()
+                try {
+                    ThemePreviewAssets.prepare(applicationContext)
+                    ThemePreviewDemo.useAssets(applicationContext)
+                    player = ExoPlayer.Builder(this@ThemePreviewActivity).build().apply {
+                        volume = 0f
+                        setMediaItems(ThemePreviewDemo.mediaItems, 0, ThemePreviewDemo.positionMs)
+                        prepare()
+                    }
+                    ready = true
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    Timber.tag("ThemePreview").w(error, "Could not load demo assets")
+                    progressNotification?.cancel()
+                    failed = true
+                }
+            }
+            if (ready) {
+                CaptureGallery(document, player, automation || submissionCapture, window, filesDir,
+                    progressNotification = progressNotification,
+                    onCaptured = if (submissionCapture) { files ->
+                        setResult(RESULT_OK, Intent().putStringArrayListExtra(CapturedFiles, ArrayList(files.map(File::getAbsolutePath))))
+                        finish()
+                    } else null)
+            } else {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    if (failed) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            BasicText(stringResource(R.string.theme_store_catalog_unavailable))
+                            UiButton(onClick = { attempt++ }) {
+                                androidx.compose.material3.Text(stringResource(R.string.common_action_retry))
+                            }
+                        }
+                    } else {
+                        val appearance = rememberThemePreviewAppearance(document, false)
+                        CompositionLocalProvider(LocalAppearance provides appearance.appearance) {
+                            app.n_zik.android.components.ui.InlineLoader()
+                        }
+                    }
+                }
+            }
         }
     }
 
     override fun onDestroy() {
+        progressNotification?.cancel()
         if (::player.isInitialized) player.release()
         super.onDestroy()
     }
@@ -151,42 +199,14 @@ open class ThemePreviewActivity : ComponentActivity() {
     companion object {
         private const val Document = "themeDocument"
         private const val EncodedDocument = "themeDocumentBase64"
+        private const val SubmissionCapture = "submissionCapture"
+        internal const val CapturedFiles = "capturedFiles"
+
+        fun submissionIntent(context: Context, document: String): Intent =
+            intent(context, document).putExtra(SubmissionCapture, true)
 
         fun intent(context: Context, document: String? = null): Intent =
             Intent(context, ThemePreviewActivity::class.java).putExtra(Document, document)
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class, ExperimentalTextApi::class, ExperimentalComposeUiApi::class)
-@androidx.annotation.OptIn(UnstableApi::class)
-@Composable
-internal fun ThemeStoreScreen(navController: NavController, miniPlayer: @Composable () -> Unit) {
-    val context = LocalContext.current
-    val title = stringResource(R.string.theme_store_title)
-    val floating = NavigationBarPosition.BottomFloating.isCurrent()
-    val bottom = Dimensions.navBarBottomPadding(floating) + if (floating) 10.dp else 15.dp
-    Skeleton(navController = navController, topInsetHandledByContent = true, miniPlayer = miniPlayer,
-        navBarContent = { item -> item(0, title, R.drawable.ui) }) { _ ->
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = bottom))) {
-            item {
-                app.n_zik.android.ui.components.themed.HeaderWithIcon(
-                    title = title, iconId = R.drawable.color_palette, enabled = false, modifier = Modifier, onClick = {},
-                )
-                SettingsDescription(
-                    text = stringResource(R.string.theme_store_preview_description),
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                )
-            }
-            item {
-                app.n_zik.android.components.settings.common.OtherSettingsEntry(
-                    title = stringResource(R.string.theme_store_preview_section),
-                    text = "",
-                    icon = R.drawable.ui,
-                    onClick = { context.startActivity(ThemePreviewActivity.intent(context)) },
-                )
-            }
-        }
     }
 }
 
@@ -197,7 +217,11 @@ private data class CaptureFrame(val scene: ThemePreviewScene, val glass: Boolean
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class, ExperimentalTextApi::class, ExperimentalComposeUiApi::class)
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
-private fun CaptureGallery(document: String?, player: ExoPlayer, automation: Boolean, window: Window, filesDir: File) {
+private fun CaptureGallery(
+    document: String?, player: ExoPlayer, automation: Boolean, window: Window, filesDir: File,
+    progressNotification: ThemePreviewProgressNotification? = null,
+    onCaptured: ((List<File>) -> Unit)? = null,
+) {
     val host = LocalContext.current
     val requestedScene = if (automation) {
         (host as? ComponentActivity)?.intent?.getStringExtra("scene")?.let { requested ->
@@ -206,7 +230,9 @@ private fun CaptureGallery(document: String?, player: ExoPlayer, automation: Boo
     } else null
     val inspectOnly = requestedScene != null &&
         (host as? ComponentActivity)?.intent?.getBooleanExtra("inspectOnly", false) == true
-    val scenes = requestedScene?.let(::listOf) ?: ThemePreviewScene.entries
+    val playbackOnly = automation && (host as? ComponentActivity)?.intent?.getBooleanExtra("playbackOnly", false) == true
+    val scenes = requestedScene?.let(::listOf)
+        ?: ThemePreviewScene.entries.filter { !playbackOnly || it.playing }
     val normal = rememberThemePreviewAppearance(document, false)
     val glass = rememberThemePreviewAppearance(document, true)
     val frames = remember(scenes) {
@@ -219,9 +245,13 @@ private fun CaptureGallery(document: String?, player: ExoPlayer, automation: Boo
     val frame = frames.getOrNull(frameIndex)
     val completionKey = document?.let { Base64.encodeToString(it.toByteArray(), Base64.NO_WRAP) }.orEmpty()
     val working = remember { File(filesDir, "theme-preview-working") }
-    val output = remember { File(filesDir, "theme-preview-output") }
+    val output = remember {
+        File(filesDir, if (onCaptured == null) "theme-preview-output" else "theme-submission-previews/${java.util.UUID.randomUUID()}")
+    }
 
     BackHandler(frame != null) {
+        player.pause()
+        progressNotification?.cancel()
         frameIndex = -1
     }
     if (frame != null) {
@@ -249,7 +279,12 @@ private fun CaptureGallery(document: String?, player: ExoPlayer, automation: Boo
                 }
             })
             LaunchedEffect(frame) {
+                player.playWhenReady = frame.scene.playing
+                if (!frame.scene.playing || player.currentPosition > ThemePreviewDemo.positionMs + 3_000) {
+                    player.seekTo(0, ThemePreviewDemo.positionMs)
+                }
                 if (inspectOnly) return@LaunchedEffect
+                progressNotification?.show(frameIndex, frames.size)
                 try {
                     if (frameIndex == 0) withContext(NzikDispatchers.DATA) {
                         resetCaptureFolder(working)
@@ -264,6 +299,7 @@ private fun CaptureGallery(document: String?, player: ExoPlayer, automation: Boo
                     }
                     check(player.duration > 0) { "Preview audio did not load" }
                     delay(2200)
+                    if (frame.scene.playing) check(player.isPlaying) { "Preview playback did not start" }
                     withFrameNanos { }
                     val bitmap = window.captureFrame()
                     try {
@@ -283,6 +319,9 @@ private fun CaptureGallery(document: String?, player: ExoPlayer, automation: Boo
                     }
                     if (frameIndex == frames.lastIndex) {
                         gallery = withContext(NzikDispatchers.DATA) { publishCapture(working, output, staging) }
+                        player.pause()
+                        progressNotification?.cancel()
+                        onCaptured?.invoke(gallery.values.toList())
                         frameIndex = -1
                     } else {
                         frameIndex++
@@ -291,6 +330,7 @@ private fun CaptureGallery(document: String?, player: ExoPlayer, automation: Boo
                     throw cancelled
                 } catch (error: Exception) {
                     Timber.tag("ThemePreview").e(error, "Capture failed for %s", frame.name)
+                    progressNotification?.cancel()
                     failed = frame
                     frameIndex = -1
                 }
@@ -323,7 +363,9 @@ private fun PreviewPage(session: ThemePreviewSession, theme: ThemePreviewAppeara
     val pending = remember { mutableStateOf(if (session.scene == ThemePreviewScene.QUEUE) PendingMiniPlayerAction.Queue else null) }
     val persistMap = remember { hashMapOf<String, Any?>() }
     val menu = remember { MenuState() }
-    val fullPlayer = session.scene in setOf(ThemePreviewScene.PLAYER, ThemePreviewScene.QUEUE, ThemePreviewScene.LYRICS)
+    val fullPlayer = session.scene in setOf(
+        ThemePreviewScene.PLAYER, ThemePreviewScene.PLAYER_PLAYING, ThemePreviewScene.QUEUE, ThemePreviewScene.LYRICS,
+    )
     val navPosition = (theme.preferences[navigationBarPositionKey] as? String)?.let { position ->
         NavigationBarPosition.entries.firstOrNull { it.name == position }
     } ?: NavigationBarPosition.BottomFloating
@@ -430,6 +472,7 @@ private fun resetCaptureFolder(folder: File) {
 }
 
 private fun publishCapture(staging: File, output: File, frames: Map<CaptureFrame, File>): Map<CaptureFrame, File> {
+    check(output.parentFile?.let { it.isDirectory || it.mkdirs() } == true)
     val previous = File(output.parentFile, "theme-preview-previous")
     resetCaptureFolder(previous)
     check(previous.delete())

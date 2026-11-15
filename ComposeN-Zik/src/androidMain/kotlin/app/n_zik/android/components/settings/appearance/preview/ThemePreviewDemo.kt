@@ -19,30 +19,38 @@ internal object ThemePreviewDemo {
     const val searchQuery = "tide"
     const val firstAlbumId = "theme-preview-atlas"
 
-    private fun cover(name: String) = "file:///android_asset/theme-preview/$name.jpg"
+    private var assetDirectory: java.io.File? = null
 
-    val albums = listOf(
+    fun useAssets(context: Context) {
+        assetDirectory = ThemePreviewAssets.file(context, "atlas.jpg").parentFile
+    }
+
+    private fun cover(name: String) = java.io.File(assetDirectory, "$name.jpg").toURI().toString()
+
+    val albums by lazy { listOf(
         Album(firstAlbumId, "Paper Atlas", cover("atlas"), "2025", "Mira Vale"),
         Album("theme-preview-signal", "Night Signal", cover("signal"), "2025", "Lantern Coast"),
         Album("theme-preview-tide", "Silver Tide", cover("tide"), "2026", "Iona Drift"),
         Album("theme-preview-violet", "Violet Hour", cover("violet"), "2026", "Orchard Echo"),
-    )
+        Album("theme-preview-ember", "Ember Lines", cover("ember"), "2026", "Sable Loop"),
+    ) }
 
     private val trackTitles = listOf(
         listOf("Maps of Morning", "Glass Harbor", "Fold the Horizon", "The Quiet North"),
         listOf("Night Signal", "Last Train Home", "City Without Clocks"),
         listOf("Silver Tide", "Tidepool Lanterns", "Low Tide Letters"),
         listOf("Violet Hour", "Orchard After Rain", "The Light We Leave"),
+        listOf("Ember Lines", "After the Glow", "Last Light Station"),
     )
 
-    private val albumTracks = albums.zip(trackTitles).associate { (album, titles) ->
+    private val albumTracks by lazy { albums.zip(trackTitles).associate { (album, titles) ->
         album.id to titles.mapIndexed { index, title ->
             Song("${album.id}-$index", title, album.authorsText, "5:00", album.thumbnailUrl)
         }
-    }
+    } }
 
-    val songs = albumTracks.values.flatten()
-    val queue = listOf(songs[0], songs[4], songs[7], songs[10], songs[1], songs[5], songs[8], songs[11])
+    val songs by lazy { albumTracks.values.flatten() }
+    val queue by lazy { listOf(songs[0], songs[4], songs[7], songs[10], songs[1], songs[5], songs[8], songs[11], songs[13]) }
 
     fun songsForAlbum(id: String): List<Song> = albumTracks[id].orEmpty()
 
@@ -59,7 +67,7 @@ internal object ThemePreviewDemo {
             .setArtworkUri(Uri.parse(album.thumbnailUrl))
             .build()
         MediaItem.Builder().setMediaId(song.id)
-            .setUri(Uri.parse("asset:///theme-preview/silence.mp3"))
+            .setUri(Uri.fromFile(java.io.File(checkNotNull(assetDirectory), "silence.mp3")))
             .setMediaMetadata(metadata)
             .build()
     }
@@ -78,10 +86,11 @@ internal object ThemePreviewDemo {
     """.trimIndent()
 }
 
-internal enum class ThemePreviewScene(val fileName: String, val searchTab: Int? = null) {
+internal enum class ThemePreviewScene(val fileName: String, val searchTab: Int? = null, val playing: Boolean = false) {
     PLAYER("player"), QUEUE("queue"), NAVIGATION("navigation"), HOME("home"),
     SEARCH("search", 0), SEARCH_ALBUMS("search-albums", 1), SEARCH_ARTISTS("search-artists", 2),
-    ALBUM("album"), LYRICS("lyrics"), ARTIST("artist"), PLAYLIST("playlist"), LOCAL_PLAYLIST("local-playlist");
+    ALBUM("album"), LYRICS("lyrics"), ARTIST("artist"), PLAYLIST("playlist"), LOCAL_PLAYLIST("local-playlist"),
+    PLAYER_PLAYING("player-playing", playing = true), MINIPLAYER_PLAYING("miniplayer-playing", playing = true);
 }
 
 internal class ThemePreviewSession(
