@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">Varsayılan sayfa</string>
     <string name="settings_interface_corner_radius_label">Kullanıcı Arayüzü Yuvarlaklığı</string>
     <string name="settings_interface_hide_status_bar_label">Durum çubuğunu gizle</string>
+    <string name="settings_interface_right_to_left_label">Right-to-left layout</string>
+    <string name="settings_interface_right_to_left_description">Mirror the interface independently of the app language.</string>
     <string name="settings_interface_page_description">Kullanıcı arayüzü bölümü, genel arayüzü ve gezinme yapısını değiştirmek için gerekli ayarları içerir</string>
     <string name="settings_interface_page_title">UI</string>
     <string name="settings_interface_title">Kullanıcı arayüzü</string>
