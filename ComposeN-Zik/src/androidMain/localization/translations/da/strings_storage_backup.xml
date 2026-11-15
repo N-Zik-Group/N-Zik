@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="backup_export_themes_description">Gem downloadede og lokale temaer til en ZIP-backup</string>
+    <string name="backup_import_themes_description">Gendan downloadede og lokale temaer fra en ZIP-backup</string>
+    <string name="backup_export_select_all_description">Vælg hver type data der skal eksporteres</string>
+    <string name="backup_import_select_all_description">Vælg hver type data der skal importeres</string>
+    <string name="backup_include_github_identity_credentials">Inkluder GitHub identitetsoplysninger</string>
     <string name="storage_image_quality_title">Billede kvalitet</string>
     <string name="storage_image_quality_description">Gælder for online illustrationer og nytilføjede omslag og profilbilleder. Original bruger den højeste kvalitet til rådighed og kan bruge mere lagring og data.</string>
     <string name="storage_image_quality_optimized">Optimeret</string>
@@ -116,9 +121,9 @@
     <string name="backup_before_update_failed">Sikkerhedskopiering af præinstallation mislykkedes</string>
     <string name="backup_before_update_running_message">Sikkerhedskopierer data før installation…</string>
     <string name="backup_before_update_running_title">Sikkerhedskopiering i gang</string>
-    <string name="backup_excluded_preferences_and_cache_description">Personlige præferencer (dvs. tematilstand) og cachen ekskluderes.</string>
-    <string name="backup_export_library_options_description">Eksporter databasen med sine brugerdefinerede omslag, indstillinger eller profiler</string>
-    <string name="backup_import_library_options_description">Gendan en SQLite eller ZIP database backup, indstillinger eller profiler</string>
+    <string name="backup_export_separate_files_description">Hver valgt kategori eksporteres til en separat fil. Cache filer og Stock temaet er ekskluderet.</string>
+    <string name="backup_export_with_themes_description">Eksporter databasen med sine brugerdefinerede omslag, indstillinger, temaer eller profiler</string>
+    <string name="backup_import_with_themes_description">Gendan en SQLite eller ZIP-database backup, indstillinger, temaer eller profiler</string>
     <string name="backup_include_discord_credentials">Inkludér Discord identitetsoplysninger</string>
     <string name="backup_include_lastfm_credentials">Inkluder Last.fm identitetsoplysninger</string>
     <string name="backup_include_proxy_password">Inkludér proxyadgangskoden</string>
@@ -251,4 +256,34 @@
     <string name="export_cached_songs_generic_error">Eksport mislykkedes</string>
     <string name="backup_startup_preparing_library">Forbereder dit bibliotek…</string>
     <string name="backup_startup_recovery_failed">Kunne ikke fuldføre gendannelse af dit bibliotek.</string>
+    <string name="storage_breakdown_themes">Temaer</string>
+    <string name="storage_info_themes">Gemte tema optegnelser og delte tema Store aktiver, forhåndsvisninger og kladder.</string>
+    <string name="storage_breakdown_lyrics">Sangtekster</string>
+    <string name="storage_info_lyrics">Tekst bytes af downloadede og brugerdefinerede sangtekster gemt i profildatabasen.</string>
+    <string name="storage_cleanup_clear_theme_cache">Ryd temabutik cache</string>
+    <string name="storage_cleanup_theme_cache_description">Fjerner det delte katalog metadata. Gemte temaer, kladder og deres forhåndsvisninger bibeholdes.</string>
+    <string name="storage_cleanup_clear_lyrics">Ryd hentede sangtekster</string>
+    <string name="storage_cleanup_lyrics_description">Fjerner automatisk hentede sangtekster. Brugerdefinerede sangtekster opbevares. Frigjorte sider kan genbruges af biblioteksdatabasen.</string>
+    <string name="backup_auto_enabled_title">Aktiver automatisk backup</string>
+    <string name="backup_auto_enabled_description">Sæt automatiske sikkerhedskopier på pause og behold dine backupindstillinger.</string>
+    <string name="storage_cleanup_picker_title">Rens lagerplads</string>
+    <string name="storage_cleanup_picker_description">Vælg de filer og data, der skal ryddes for dette anvendelsesområde.</string>
+    <string name="storage_cleanup_select_caches">Vælg cacher</string>
+    <string name="storage_cleanup_select_caches_description">Vælg caches og midlertidige filer.</string>
+    <string name="storage_cleanup_select_everything">Vælg alt</string>
+    <string name="storage_cleanup_select_everything_description">Vælg caches og data, herunder offline downloads.</string>
+    <string name="storage_cleanup_cache_group">Cacher og midlertidige filer</string>
+    <string name="storage_cleanup_delete_group">Data der skal slettes</string>
+    <string name="storage_cleanup_review_selection">Revision</string>
+    <string name="storage_cleanup_selected_confirmation">Ryd de markerede elementer i dette anvendelsesområde?</string>
+    <string name="storage_cleanup_option_cached_images">Cachelagrede billeder</string>
+    <string name="storage_cleanup_option_streamed_audio">Streaming af lyd</string>
+    <string name="storage_cleanup_option_waveforms">Bølgeformer</string>
+    <string name="storage_cleanup_option_network_cache">Netværks cache</string>
+    <string name="storage_cleanup_option_diagnostic_logs">Diagnostiske logfiler</string>
+    <string name="storage_cleanup_option_temporary_files">Midlertidige filer</string>
+    <string name="storage_cleanup_option_theme_catalog">Tema butik cache</string>
+    <string name="storage_cleanup_option_fetched_lyrics">Hent automatisk sangtekster</string>
+    <string name="storage_cleanup_option_offline_downloads">Downloadet lyd</string>
+    <string name="storage_cleanup_completed">Oprydning fuldført.</string>
 </resources>
