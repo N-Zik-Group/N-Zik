@@ -18,10 +18,6 @@ import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
 import androidx.compose.ui.graphics.toArgb
-import coil3.ImageLoader
-import coil3.request.ImageRequest
-import coil3.request.allowHardware
-import coil3.toBitmap
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -72,22 +68,17 @@ object PlaylistWidgetManager {
             val pending = PendingIntent.getActivity(context, requestCode, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             val artwork = if (entry.target == PlaylistQuickPickSource.Target.Favorites)
-                getLikedBitmap(context, accentArgb) else loadBitmap(context, entry.artworkSource)
+                getLikedBitmap(context, accentArgb) else loadBitmap(entry.artworkSource)
             QuickPick(entry.title, artwork, pending, entry.target is PlaylistQuickPickSource.Target.Artist, entry.artworkSource)
         }
         quickPickCache = QuickPickCache(selection, picks)
         picks
     }
 
-    private suspend fun loadBitmap(context: Context, url: String?): Bitmap? {
+    private suspend fun loadBitmap(url: String?): Bitmap? {
         if (url.isNullOrEmpty()) return null
         return try {
-            val request = ImageRequest.Builder(context)
-                .data(url)
-                .allowHardware(false)
-                .build()
-            val result = getImageLoader().execute(request)
-            result.image?.toBitmap()
+            ImageCacheFactory.loadBitmap(url)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -116,8 +107,6 @@ object PlaylistWidgetManager {
         }
         return bitmap
     }
-
-    private fun getImageLoader(): ImageLoader = ImageCacheFactory.LOADER
 
     @Volatile
     private var lastWidgetState: WidgetState? = null

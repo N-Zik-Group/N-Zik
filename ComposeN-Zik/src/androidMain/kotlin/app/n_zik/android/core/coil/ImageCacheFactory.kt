@@ -831,19 +831,21 @@ object ImageCacheFactory {
         modifier: Modifier = Modifier,
         cacheKey: String? = null,
         @DrawableRes placeholder: Int = R.drawable.loader,
-        @DrawableRes fallback: Int = R.drawable.ic_launcher_box,
+        @DrawableRes fallback: Int? = R.drawable.ic_launcher_box,
         fallbackDelayMs: Long = 4_000L,
-        shape: Shape = RectangleShape,
+        shape: Shape? = RectangleShape,
+        onSuccess: ((State.Success) -> Unit)? = null,
     ) {
-        val imageModifier = modifier.glassImageRim(shape)
+        val imageModifier = if (shape == null) modifier else modifier.glassImageRim(shape)
         if (model == null) {
             var showFallback by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) {
                 kotlinx.coroutines.delay(fallbackDelayMs)
                 showFallback = true
             }
-            Image(
-                painter = painterResource(if (showFallback) fallback else placeholder),
+            val drawable = if (showFallback) fallback else placeholder
+            if (drawable != null) Image(
+                painter = painterResource(drawable),
                 contentDescription = contentDescription,
                 modifier = imageModifier.fillMaxSize(),
                 contentScale = contentScale
@@ -863,7 +865,8 @@ object ImageCacheFactory {
             contentScale = contentScale,
             modifier = imageModifier,
             placeholder = painterResource(placeholder),
-            error = painterResource(fallback)
+            error = fallback?.let { painterResource(it) },
+            onSuccess = onSuccess,
         )
     }
 
