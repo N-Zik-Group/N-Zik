@@ -264,6 +264,14 @@
     <string name="theme_store_choose_revision">Выберите версию</string>
     <string name="theme_store_published_on">Опубликовано на %1$s</string>
     <string name="theme_store_compatibility">Совместимость с N-Zik</string>
+    <string name="theme_store_submission_minimum_version">Минимальная версия N-Zik</string>
+    <string name="theme_store_submission_minimum_description">Старая версия, которая может применить эту тему. По умолчанию новые темы для кода версии %3$d. Вы используете N-Zik %1$s (код версии %2$d).</string>
+    <string name="theme_store_submission_version_code_label">Минимальная версия кода</string>
+    <string name="theme_store_submission_find_version_code">Найти версии и коды N-Zik</string>
+    <string name="theme_store_submission_version_with_code">%1$s (код %2$d)</string>
+    <string name="theme_store_submission_version_code">Код версии %1$d</string>
+    <string name="theme_store_submission_version_required">Введите код версии %1$d.</string>
+    <string name="theme_store_submission_version_range">Введите код версии между %1$d и %2$d.</string>
     <string name="theme_store_revision">Версия %1$d</string>
     <string name="theme_store_authors">Создатели</string>
     <string name="theme_store_author_theme_count">Темы: %1$d</string>
@@ -433,6 +441,7 @@
     <string name="theme_store_preview_import_requirements">Предварительные просмотры являются общедоступными. Сохранять личную информацию вне снимков. PNG, JPEG или WebP · 4 МБ за изображение.</string>
     <string name="theme_store_preview_import_error">Не удалось импортировать это изображение. Выберите изображение PNG, JPEG или WebP не более 4 МБ.</string>
     <string name="theme_store_submission_included">Включенные настройки</string>
+    <string name="theme_store_submission_unsupported_categories">Эти группы содержат настройки, которые нельзя поделиться в теме: %1$s.</string>
     <string name="theme_store_submission_sending">Отправка на обзор…</string>
     <string name="theme_store_report_theme">Тема отчета</string>
     <string name="theme_store_report_review">Жалоба на отзыв</string>
