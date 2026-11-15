@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">GitHub verbinden</string>
+    <string name="github_account_logout">GitHub trennen</string>
+    <string name="github_account_description">Verwenden Sie Ihr GitHub Konto im Theme Store.</string>
+    <string name="github_account_offline">Geh online um GitHub zu verbinden.</string>
+    <string name="github_account_code">Gib %1$s auf GitHub ein, um die Anmeldung abzuschließen.</string>
+    <string name="github_account_code_copied">GitHub-Code in die Zwischenablage kopiert.</string>
+    <string name="github_account_login_failed">Keine Verbindung zu GitHub möglich. Versuchen Sie es erneut.</string>
+    <string name="github_account_connected">GitHub verbunden.</string>
     <!-- Account -->
     <string name="account_action_login">Anmelden</string>
     <string name="account_action_logout">Abmelden</string>
