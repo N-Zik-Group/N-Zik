@@ -323,4 +323,9 @@
     <string name="updates_check_failed">تعذر التحقق من وجود تحديثات.</string>
     <string name="updates_install_generic_error">تعذر تثبيت التحديث.</string>
     <string name="updates_channel_available_format">يتوفر تحديث %1$s</string>
+    <string name="recovery_theme_backup_title">السمات</string>
+    <string name="recovery_theme_backup_no_match">يمكن استعادة المواضيع التي تنتمي إلى الملفات الشخصية المتاحة في هذا العرض هنا.</string>
+    <string name="recovery_theme_backup_operation_failed">تعذر إكمال عملية النسخ الاحتياطي للثيم.</string>
+    <string name="recovery_theme_backup_restore_action">استعادة السمات</string>
+    <string name="recovery_theme_backup_restore_description">افتح النسخة الاحتياطية للموضوع الأخير المستخدمة لهذا الملف الشخصي.</string>
 </resources>
