@@ -202,6 +202,7 @@ private class QueueRowBackdrop(
 
     override val contentVersion: Int?
         get() {
+            scene.prepareMaterials()
             val underlayVersion = underlay.contentVersion
             var version = underlayVersion ?: 0
             version = 31 * version + scene.topology().hashCode()

@@ -454,10 +454,6 @@ private class DrawBackdropNode(
         exportedBackdrop?.materialChanged()
         invalidateDraw()
     })
-    private val sourceObserver = delegate(MaterialObserverNode {
-        exportedBackdrop?.materialChanged()
-        invalidateDraw()
-    })
     private var exportedOutline: Outline? = null
     private var exportedHighlight: Any? = null
     private var exportedShadow: Any? = null
@@ -901,10 +897,11 @@ private class DrawBackdropNode(
     }
 
     private fun observeDependencies() {
-        // The source can change on every squeeze frame. Refresh the sampled pixels
-        // without rebuilding the blur and shader chain for controls of unchanged size.
-        sourceObserver.observeMaterial { backdrop.contentVersion }
-        observeReads { updateEffects() }
+        observeReads {
+            // A retained child layer may not redraw when its enclosing material does.
+            backdrop.contentVersion
+            updateEffects()
+        }
     }
 
     private fun updateEffects() {
