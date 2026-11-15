@@ -6,6 +6,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertTrue
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -13,6 +14,15 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class DataStorageBreakdownTest {
+    @Test
+    fun nestedThemeAndLyricsPayloadCannotDoubleCountPhysicalStorage() {
+        assertEquals(2048L, storagePayloadBytes(4096L, 2048L))
+        assertEquals(4096L, storagePayloadBytes(4096L, 8192L))
+        assertEquals(0L, storagePayloadBytes(4096L, -1L))
+        assertTrue(StorageCategory.THEMES in storageAppCategories(isProfile = true))
+        assertTrue(StorageCategory.LYRICS in storageAppCategories(isProfile = true))
+    }
+
     @Test
     fun profileChartOnlyUsesAllocatedAppCategories() {
         val volume = requireNotNull(partitionStorage(

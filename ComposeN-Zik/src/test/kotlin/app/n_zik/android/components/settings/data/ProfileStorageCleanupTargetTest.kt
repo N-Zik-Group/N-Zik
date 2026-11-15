@@ -27,6 +27,23 @@ class ProfileStorageCleanupTargetTest {
     lateinit var files: File
 
     @Test
+    fun `theme cleanup only removes catalog metadata and keeps preview files`() {
+        val context = storageContext()
+        val directory = context.filesDir.resolve("theme-store-catalog").apply { mkdirs() }
+        val snapshot = directory.resolve("catalog-v1.json").apply { writeText("catalog") }
+        val verified = directory.resolve("verified-creators.json").apply { writeText("creators") }
+        val preview = directory.resolve("${"a".repeat(64)}.webp").apply { writeText("preview") }
+        val draft = context.filesDir.resolve("theme-submission-preview.webp").apply { writeText("draft") }
+
+        val confirmed = checkNotNull(captureFiles(context, null, CleanupAction.THEMES))
+        assertEquals(CleanupResult.COMPLETED, cleanConfirmedFiles(context, confirmed))
+        assertFalse(snapshot.exists())
+        assertFalse(verified.exists())
+        assertTrue(preview.isFile)
+        assertTrue(draft.isFile)
+    }
+
+    @Test
     fun `confirmation for a previous generation leaves the recreated profile untouched`() {
         val context = mockk<Context>()
         every { context.filesDir } returns files

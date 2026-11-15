@@ -111,7 +111,7 @@ class DataSettingsWiringTest {
         uiRoundnessShape = CircleShape,
         artistThumbnailShape = CircleShape,
     )
-    private val cardIds = listOf("storage", "backup", "auto-backup", "history", "reset")
+    private val cardIds = listOf("backup", "storage", "history", "reset")
 
     @Before fun setUp() {
         searchMessages.clear()

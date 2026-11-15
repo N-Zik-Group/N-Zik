@@ -78,6 +78,7 @@ import app.n_zik.android.utils.profileDisplayName
 import app.n_zik.android.utils.resolveProfileDisplayName
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.R
+import app.n_zik.android.core.database.Database
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.RestartAppDialog
@@ -118,11 +119,21 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 
+internal val themeStorageDirectories = setOf(
+    "theme-store-catalog", "theme-preview-v1", "theme-preview-working",
+    "theme-preview-output", "theme-submission-previews", "theme-submission-imports",
+)
+
+internal fun storagePayloadBytes(allocated: Long, logical: Long): Long =
+    logical.coerceIn(0L, allocated)
+
 internal enum class StorageCategory(val label: Int, val description: Int, val color: Color) {
     IMAGES(R.string.storage_breakdown_cached_images, R.string.storage_info_images, Color(0xFFE09B40)),
     STREAMING(R.string.storage_breakdown_streamed_audio, R.string.storage_info_streaming, Color(0xFF9B70D0)),
     DOWNLOADS(R.string.storage_breakdown_downloaded_audio, R.string.storage_info_downloads, Color(0xFF43A064)),
     WAVEFORMS(R.string.storage_breakdown_waveforms, R.string.storage_info_waveforms, Color(0xFF44A9A7)),
+    THEMES(R.string.storage_breakdown_themes, R.string.storage_info_themes, Color(0xFF8A77DD)),
+    LYRICS(R.string.storage_breakdown_lyrics, R.string.storage_info_lyrics, Color(0xFF56A7DB)),
     COVERS(R.string.storage_breakdown_custom_covers, R.string.storage_info_covers, Color(0xFFCA6A96)),
     NETWORK(R.string.storage_breakdown_network, R.string.storage_info_network, Color(0xFF6B9AC0)),
     DIAGNOSTICS(R.string.storage_breakdown_diagnostics, R.string.storage_info_diagnostics, Color(0xFFC7789D)),
@@ -161,7 +172,8 @@ internal fun StorageBreakdown.appChartFor(profile: ProfileStorageIdentity?): Sto
 
 private val displayCategories = listOf(
     StorageCategory.DOWNLOADS, StorageCategory.STREAMING, StorageCategory.WAVEFORMS,
-    StorageCategory.IMAGES, StorageCategory.NETWORK, StorageCategory.DIAGNOSTICS, StorageCategory.TEMPORARY,
+    StorageCategory.IMAGES, StorageCategory.THEMES, StorageCategory.LYRICS, StorageCategory.NETWORK,
+    StorageCategory.DIAGNOSTICS, StorageCategory.TEMPORARY,
     StorageCategory.OTHER_NZIK, StorageCategory.INSTALLATION, StorageCategory.COVERS,
     StorageCategory.HISTORICAL, StorageCategory.MIGRATION,
 )
@@ -399,6 +411,9 @@ internal suspend fun measureStorage(context: Context): StorageBreakdown? = withC
                 return StorageAllocation(StorageCategory.MIGRATION)
             }
             val parentFile = file.parentFile
+            if (parentFile == files && name in themeStorageDirectories) {
+                return StorageAllocation(StorageCategory.THEMES)
+            }
             if (parentFile == cache && name == ScopedTemporaryFiles.PUBLIC_ARTWORK) {
                 return StorageAllocation(StorageCategory.TEMPORARY)
             }
@@ -491,10 +506,23 @@ internal suspend fun measureStorage(context: Context): StorageBreakdown? = withC
                 allocation.owner?.let(volume.ownersWithFiles::add)
             }
             val category = storageAllocationCategory(allocation.category, file.name, directory)
-            add(volume.bytes, category, allocated)
-            allocation.owner?.let { owner ->
+            val owner = allocation.owner
+            val nestedPayload = when {
+                directory || owner == null || category != StorageCategory.OTHER_NZIK -> null
+                file == prefs.resolve("preferences${if (owner == DEFAULT_PROFILE_ID) "" else "_$owner"}.xml") ->
+                    StorageCategory.THEMES to themeProfilePayloadBytes(context, owner)
+                file == databases.resolve(Database.fileNameForProfile(owner)) ->
+                    StorageCategory.LYRICS to measureLyricsTextBytes(file)
+                else -> null
+            }
+            val payload = storagePayloadBytes(allocated, nestedPayload?.second ?: 0L)
+            add(volume.bytes, category, allocated - payload)
+            if (nestedPayload != null) add(volume.bytes, nestedPayload.first, payload)
+            owner?.let {
                 val key = physical.identity to owner
-                add(profileUsage.getOrPut(key) { mutableMapOf() }, category, allocated)
+                val profileBytes = profileUsage.getOrPut(key) { mutableMapOf() }
+                add(profileBytes, category, allocated - payload)
+                if (nestedPayload != null) add(profileBytes, nestedPayload.first, payload)
                 if (!directory && isMeasuredCleanupPayload(allocation.category, file, stat.st_size)) {
                     profileFileCategories.getOrPut(key) { mutableSetOf() }.add(allocation.category)
                 }

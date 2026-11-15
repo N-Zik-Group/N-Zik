@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Looper
 import androidx.core.content.edit
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.utils.debug.profileDiagnosticsDir
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.logDebugEnabledKey
 import app.n_zik.android.utils.preferences
@@ -99,7 +100,7 @@ class MaintenanceSnapshotLoaderTest {
     }
 
     private fun seedCrashLog() {
-        val logsDir = File(context.filesDir, "logs")
+        val logsDir = profileDiagnosticsDir(context)
         logsDir.mkdirs()
         fun block(timestamp: String, stackLine: String) = buildString {
             appendLine(timestamp)

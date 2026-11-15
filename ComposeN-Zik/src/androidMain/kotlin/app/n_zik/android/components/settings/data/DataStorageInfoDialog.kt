@@ -35,7 +35,7 @@ internal fun DataStorageInfoDialog(
         onDismiss = onDismiss,
         title = stringResource(if (sectionTitle != null) R.string.storage_breakdown_info_title else R.string.storage_breakdown_secondary_volumes),
         footer = {
-            ButtonRow(listOf(DialogButton(stringResource(R.string.common_action_close), onDismiss, primary = true)))
+            ButtonRow(listOf(DialogButton(stringResource(R.string.common_action_close), onDismiss, danger = true)))
         },
     ) {
         Column(

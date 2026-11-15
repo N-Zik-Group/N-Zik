@@ -11,7 +11,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.BasicText
+import app.n_zik.android.components.dialog.backup.BackupContentOption
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -33,6 +37,7 @@ import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.components.image.PickedImageEditor
 import app.n_zik.android.components.ui.screens.rewind.isExpiredRewindCapture
@@ -114,12 +119,37 @@ internal enum class CleanupAction(
         R.string.storage_cleanup_temporary_action_description,
         R.string.storage_cleanup_clear_temporary_files,
     ),
+    THEMES(
+        R.string.storage_cleanup_clear_theme_cache,
+        R.drawable.ui,
+        R.string.storage_cleanup_theme_cache_description,
+        R.string.storage_cleanup_clear_theme_cache,
+    ),
+    LYRICS(
+        R.string.storage_cleanup_clear_lyrics,
+        R.drawable.song_lyrics,
+        R.string.storage_cleanup_lyrics_description,
+        R.string.storage_cleanup_clear_lyrics,
+    ),
     ALL(
         R.string.storage_cleanup_all,
         R.drawable.trash,
         R.string.storage_cleanup_all_confirmed_description,
         R.string.storage_cleanup_all,
     ),
+}
+
+private fun CleanupAction.selectionLabel(): Int = when (this) {
+    CleanupAction.IMAGES -> R.string.storage_cleanup_option_cached_images
+    CleanupAction.STREAMING -> R.string.storage_cleanup_option_streamed_audio
+    CleanupAction.WAVEFORMS -> R.string.storage_cleanup_option_waveforms
+    CleanupAction.NETWORK -> R.string.storage_cleanup_option_network_cache
+    CleanupAction.DIAGNOSTIC_LOGS -> R.string.storage_cleanup_option_diagnostic_logs
+    CleanupAction.TEMPORARY_FILES -> R.string.storage_cleanup_option_temporary_files
+    CleanupAction.THEMES -> R.string.storage_cleanup_option_theme_catalog
+    CleanupAction.LYRICS -> R.string.storage_cleanup_option_fetched_lyrics
+    CleanupAction.DOWNLOADS -> R.string.storage_cleanup_option_offline_downloads
+    CleanupAction.ALL -> R.string.storage_cleanup_picker_title
 }
 
 private fun CleanupAction.category(): StorageCategory = when (this) {
@@ -130,6 +160,8 @@ private fun CleanupAction.category(): StorageCategory = when (this) {
     CleanupAction.NETWORK -> StorageCategory.NETWORK
     CleanupAction.DIAGNOSTIC_LOGS -> StorageCategory.DIAGNOSTICS
     CleanupAction.TEMPORARY_FILES -> StorageCategory.TEMPORARY
+    CleanupAction.THEMES -> StorageCategory.THEMES
+    CleanupAction.LYRICS -> StorageCategory.LYRICS
     CleanupAction.ALL -> StorageCategory.OTHER_NZIK
 }
 
@@ -247,13 +279,22 @@ internal fun captureFiles(
 ): List<WaveformCleanupTarget>? {
     if (identity != null && profileStorageIdentity(context, identity.id) != identity) return null
     val cache = context.cacheDir.canonicalFile
-    if (identity == null) {
-        if (action != CleanupAction.TEMPORARY_FILES) return null
-        return listOf(captureFileSet(null, action, cache, ScopedTemporaryFiles.publicArtwork(context), presenceOnly = presenceOnly) {
-            ScopedTemporaryFiles.isExpiredArtwork(it)
-        })
-    }
     val files = context.filesDir.canonicalFile
+    if (identity == null) {
+        return when (action) {
+            CleanupAction.TEMPORARY_FILES -> listOf(
+                captureFileSet(null, action, cache, ScopedTemporaryFiles.publicArtwork(context), presenceOnly = presenceOnly) {
+                    ScopedTemporaryFiles.isExpiredArtwork(it)
+                }
+            )
+            CleanupAction.THEMES -> listOf(
+                captureFileSet(null, action, files, files.resolve("theme-store-catalog"), presenceOnly = presenceOnly) {
+                    it.name in setOf("catalog-v1.json", "verified-creators.json")
+                }
+            )
+            else -> null
+        }
+    }
     val active = isProcessStorageProfile(context, identity.id)
     return when (action) {
         CleanupAction.WAVEFORMS -> {
@@ -387,7 +428,7 @@ private fun cleanLiveFiles(context: Context, confirmed: List<WaveformCleanupTarg
 
 private val verifiedActions = setOf(
     CleanupAction.IMAGES, CleanupAction.STREAMING, CleanupAction.DOWNLOADS, CleanupAction.WAVEFORMS, CleanupAction.DIAGNOSTIC_LOGS,
-    CleanupAction.TEMPORARY_FILES, CleanupAction.NETWORK,
+    CleanupAction.TEMPORARY_FILES, CleanupAction.NETWORK, CleanupAction.LYRICS,
 )
 
 private sealed interface ConfirmedStorageTarget {
@@ -399,6 +440,10 @@ private sealed interface ConfirmedStorageTarget {
 
     data class LiveFiles(val target: List<WaveformCleanupTarget>, val imageRevision: Long? = null) : ConfirmedStorageTarget {
         override val files get() = target.flatMap { root -> root.files.map { "${root.directory.name}/${it.name}" } }
+    }
+
+    data class Lyrics(val target: FetchedLyricsCleanup) : ConfirmedStorageTarget {
+        override val files get() = listOf(target.owner.id)
     }
 
     data class InactiveMedia(val target: InactiveDownloadCleanup.Target) : ConfirmedStorageTarget {
@@ -424,9 +469,9 @@ private data class CleanupPlanItem(
 )
 
 private data class StorageCleanupPlan(
-    val action: CleanupAction,
     val targets: List<CleanupPlanItem>,
     val scopeLabel: String,
+    val actions: Set<CleanupAction>,
 )
 
 @UnstableApi
@@ -440,6 +485,10 @@ internal fun DataStorageCleanup(
     val scope = if (selected == null) profiles else listOf(selected)
     val binder = LocalPlayerServiceBinder.current
     val planningScope = rememberCoroutineScope()
+    var choosing by remember(selected?.identity) { mutableStateOf(false) }
+    val eligibleActions = CleanupAction.entries.filter { it != CleanupAction.ALL && (it != CleanupAction.THEMES || selected == null) }
+    val cacheActions = eligibleActions.filterNot { it == CleanupAction.DOWNLOADS || it == CleanupAction.DIAGNOSTIC_LOGS }.toSet()
+    var choices by remember(selected?.identity) { mutableStateOf(emptySet<CleanupAction>()) }
     var planning by remember { mutableStateOf(false) }
     var confirmation by remember { mutableStateOf<StorageCleanupPlan?>(null) }
     var incompleteResult by remember { mutableStateOf<String?>(null) }
@@ -557,55 +606,119 @@ internal fun DataStorageCleanup(
         }
     }
 
-    for (action in CleanupAction.entries) {
-        val rowTarget = when (action) {
-            CleanupAction.IMAGES -> "data.cache.clear-images"
-            CleanupAction.STREAMING -> "data.cache.clear-songs"
-            CleanupAction.DOWNLOADS -> "data.cache.clear-downloads"
-            CleanupAction.WAVEFORMS -> "data.storage.clear-waveforms"
-            CleanupAction.ALL -> "data.storage.clear-all"
-            else -> "data.storage.cleanup." + action.name.lowercase()
-        }
-        OtherSettingsEntry(
-            title = stringResource(action.label),
-            text = stringResource(action.description),
-            icon = action.icon,
-            modifier = Modifier.testTag("data.storage.cleanup." + action.name.lowercase()).settingsSearchTarget(rowTarget),
-            onClick = {
-                if (planning || cleanupInProgress.value) return@OtherSettingsEntry
-                val profilesAtClick = scope.toList()
-                val globalAtClick = selected == null
-                val scopeLabel = selected?.label ?: context.getString(R.string.storage_cleanup_all_profiles)
-                planning = true
-                planningScope.launch {
-                    try {
-                        val actions = if (action == CleanupAction.ALL) verifiedActions else setOf(action)
-                        val confirmed = profilesAtClick.flatMap { profile ->
-                            actions.mapNotNull { category ->
-                                val candidate = inspect(profile, category) ?: return@mapNotNull null
-                                if (candidate.blockedReason != null) candidate else capture(profile, category)
-                            }
-                        }
-                        val installation = if (globalAtClick && CleanupAction.TEMPORARY_FILES in actions) {
-                            withContext(NzikDispatchers.DATA) {
-                                DatabaseRestoreJournal.withProfileStorageMutation(context) {
-                                    runCatching { captureFiles(context, null, CleanupAction.TEMPORARY_FILES) }
-                                        .onFailure { Timber.tag("DataStorageCleanup").w(it, "Could not confirm installation cleanup") }
-                                        .getOrNull()
-                                        ?.let { ConfirmedStorageTarget.FileSet(it) }
-                                        ?.takeIf { it.files.isNotEmpty() }
-                                        ?.let { CleanupPlanItem(null, CleanupAction.TEMPORARY_FILES, it) }
+    fun planCleanup(actions: Set<CleanupAction>) {
+        val profilesAtClick = scope.toList()
+        val globalAtClick = selected == null
+        val scopeLabel = selected?.label ?: context.getString(R.string.storage_cleanup_all_profiles)
+        choosing = false
+        planning = true
+        planningScope.launch {
+            try {
+                val confirmed = profilesAtClick.flatMap { profile ->
+                    actions.mapNotNull { category ->
+                        if (category == CleanupAction.THEMES) return@mapNotNull null
+                        if (category == CleanupAction.LYRICS) {
+                            return@mapNotNull withContext(NzikDispatchers.DATA) {
+                                try {
+                                    captureFetchedLyrics(context, profile.identity)?.let {
+                                        CleanupPlanItem(profile, category, ConfirmedStorageTarget.Lyrics(it))
+                                    }
+                                } catch (cancelled: CancellationException) {
+                                    throw cancelled
+                                } catch (error: Exception) {
+                                    Timber.tag("DataStorageCleanup").w(error, "Could not verify fetched lyrics")
+                                    CleanupPlanItem(profile, category, null, R.string.storage_cleanup_unverified)
                                 }
                             }
-                        } else null
-                        val targets = confirmed + listOfNotNull(installation)
-                        confirmation = StorageCleanupPlan(action, targets, scopeLabel)
-                    } finally {
-                        planning = false
+                        }
+                        val candidate = inspect(profile, category) ?: return@mapNotNull null
+                        if (candidate.blockedReason != null) candidate else capture(profile, category)
                     }
                 }
+                val sharedActions = if (globalAtClick) {
+                    actions.intersect(setOf(CleanupAction.TEMPORARY_FILES, CleanupAction.THEMES))
+                } else emptySet()
+                val installation = sharedActions.mapNotNull { category ->
+                    withContext(NzikDispatchers.DATA) {
+                        DatabaseRestoreJournal.withProfileStorageMutation(context) {
+                            runCatching { captureFiles(context, null, category) }
+                                .onFailure { Timber.tag("DataStorageCleanup").w(it, "Could not confirm installation cleanup") }
+                                .getOrNull()
+                                ?.let { ConfirmedStorageTarget.FileSet(it) }
+                                ?.takeIf { it.files.isNotEmpty() }
+                                ?.let { CleanupPlanItem(null, category, it) }
+                        }
+                    }
+                }
+                val targets = confirmed + installation
+                confirmation = StorageCleanupPlan(targets, scopeLabel, actions)
+            } finally {
+                planning = false
+            }
+        }
+    }
+
+    val searchAnchors = listOf(
+        "data.cache.clear-images", "data.cache.clear-songs", "data.cache.clear-downloads",
+        "data.storage.clear-waveforms", "data.storage.clear-all",
+        "data.storage.cleanup.themes", "data.storage.cleanup.lyrics", "data.storage.cleanup.network",
+        "data.storage.cleanup.diagnostic_logs", "data.storage.cleanup.temporary_files",
+    ).fold(Modifier.testTag("data.storage.cleanup.all")) { modifier, id -> modifier.settingsSearchTarget(id) }
+    OtherSettingsEntry(
+        title = stringResource(R.string.storage_cleanup_picker_title),
+        text = stringResource(R.string.storage_cleanup_picker_description),
+        icon = R.drawable.trash,
+        modifier = searchAnchors,
+        onClick = {
+            if (!planning && !cleanupInProgress.value) {
+                choices = emptySet()
+                choosing = true
+            }
+        },
+    )
+
+    DialogPresence(visible = choosing) {
+        DialogFrame(
+            title = stringResource(R.string.storage_cleanup_picker_title),
+            onDismiss = { choosing = false },
+            footer = {
+                ButtonRow(listOf(
+                    DialogButton(stringResource(R.string.common_action_cancel), { choosing = false }, danger = true),
+                    DialogButton(
+                        text = stringResource(R.string.storage_cleanup_review_selection),
+                        onClick = { planCleanup(choices) },
+                        enabled = choices.isNotEmpty(), primary = true,
+                    ),
+                ))
             },
-        )
+        ) {
+            Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
+                BackupContentOption(
+                    R.string.storage_cleanup_select_caches, R.string.storage_cleanup_select_caches_description,
+                    selected = choices.containsAll(cacheActions),
+                ) {
+                    choices = if (choices.containsAll(cacheActions)) choices - cacheActions else choices + cacheActions
+                }
+                BackupContentOption(
+                    R.string.storage_cleanup_select_everything, R.string.storage_cleanup_select_everything_description,
+                    selected = choices.containsAll(eligibleActions),
+                ) {
+                    choices = if (choices.containsAll(eligibleActions)) emptySet() else eligibleActions.toSet()
+                }
+                CardCategoryLabel(stringResource(R.string.storage_cleanup_cache_group))
+                for (action in eligibleActions.filter { it in cacheActions }) {
+                    BackupContentOption(action.selectionLabel(), action.description, action in choices) {
+                        choices = if (action in choices) choices - action else choices + action
+                    }
+                }
+                CardCategoryLabel(stringResource(R.string.storage_cleanup_delete_group))
+                for (action in eligibleActions.filterNot { it in cacheActions }) {
+                    BackupContentOption(action.selectionLabel(), action.description, action in choices) {
+                        choices = if (action in choices) choices - action else choices + action
+                    }
+                }
+            }
+        }
     }
 
     DialogPresence(target = confirmation) { plan ->
@@ -614,24 +727,25 @@ internal fun DataStorageCleanup(
         val description = when {
             blocked -> stringResource(R.string.storage_cleanup_dialog_unavailable)
             plan.targets.none { it.target != null } -> stringResource(R.string.storage_cleanup_no_files)
-            plan.action == CleanupAction.ALL -> stringResource(R.string.storage_cleanup_dialog_all)
-            else -> stringResource(plan.action.description)
+            else -> stringResource(R.string.storage_cleanup_selected_confirmation)
         }
         val containsDownloads = plan.targets.any { it.action == CleanupAction.DOWNLOADS && it.target != null }
         val details = buildString {
             append(context.getString(R.string.storage_cleanup_dialog_scope, plan.scopeLabel, description))
+            append("\n\n")
+            append(plan.actions.joinToString("\n") { context.getString(it.selectionLabel()) })
             if (containsDownloads) {
                 append(' ')
                 append(context.getString(R.string.storage_cleanup_downloads_warning))
             }
         }
-        if (blocked) {
+        if (plan.targets.none { it.target != null }) {
             DialogFrame(
                 onDismiss = { confirmation = null },
-                title = stringResource(plan.action.dialogTitle),
+                title = stringResource(R.string.storage_cleanup_picker_title),
                 footer = {
                     ButtonRow(listOf(DialogButton(
-                        stringResource(R.string.common_action_close), { confirmation = null }, primary = true,
+                        stringResource(R.string.common_action_close), { confirmation = null }, danger = true,
                     )))
                 },
             ) {
@@ -641,7 +755,7 @@ internal fun DataStorageCleanup(
                 )
             }
         } else ConfirmationDialog(
-            title = stringResource(plan.action.dialogTitle),
+            title = stringResource(R.string.storage_cleanup_picker_title),
             confirmText = stringResource(
                 R.string.common_action_clear,
             ),
@@ -664,6 +778,7 @@ internal fun DataStorageCleanup(
                                             } else cleanConfirmedFiles(context, target.target)
                                         }
                                         is ConfirmedStorageTarget.LiveFiles -> cleanLiveFiles(context, target.target, target.imageRevision)
+                                        is ConfirmedStorageTarget.Lyrics -> clearFetchedLyrics(context, target.target)
                                         is ConfirmedStorageTarget.InactiveMedia -> {
                                             if (InactiveDownloadCleanup.execute(context, target.target)) CleanupResult.COMPLETED
                                             else CleanupResult.SKIPPED
@@ -697,6 +812,8 @@ internal fun DataStorageCleanup(
                                 outcomes.count { it == CleanupResult.SKIPPED },
                                 outcomes.count { it == CleanupResult.FAILED },
                             )
+                        } else if (outcomes.any { it == CleanupResult.COMPLETED }) {
+                            Toaster.s(R.string.storage_cleanup_completed)
                         }
                         WaveformExtractor.refreshSignal.tryEmit(System.currentTimeMillis())
                     } finally {
@@ -713,7 +830,7 @@ internal fun DataStorageCleanup(
             title = stringResource(R.string.storage_breakdown_title),
             footer = {
                 ButtonRow(listOf(DialogButton(
-                    stringResource(R.string.common_action_close), { incompleteResult = null }, primary = true,
+                    stringResource(R.string.common_action_close), { incompleteResult = null }, danger = true,
                 )))
             },
         ) {

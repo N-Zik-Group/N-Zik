@@ -35,6 +35,9 @@ interface LyricsTable {
     @Upsert
     fun upsert( lyrics: Lyrics ): Long
 
+    @Query("DELETE FROM Lyrics WHERE isEdited = 0 AND lastFetchedAt <= :through")
+    fun deleteFetchedLyrics(through: Long): Int
+
     /**
      * Reset the lyrics fetch TTL for every row of the song
      * ([Lyrics.lastFetchedAt] → NULL) so the lyrics are fetched again. Called
