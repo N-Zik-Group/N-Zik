@@ -3,6 +3,7 @@
     <string name="backup_export_themes_description">حفظ السمات المحملة والمحلية إلى النسخة الاحتياطية المضغوطة</string>
     <string name="backup_import_themes_description">استعادة التحميل والسمات المحلية من نسخة ZIP احتياطية</string>
     <string name="backup_export_select_all_description">حدد كل نوع من البيانات للتصدير</string>
+    <string name="backup_import_already_running">جارٍ بالفعل استيراد النسخة الاحتياطية.</string>
     <string name="backup_import_select_all_description">حدد كل نوع من البيانات لاستيرادها</string>
     <string name="backup_include_github_identity_credentials">تضمين بيانات اعتماد هوية GitHub</string>
     <string name="storage_image_quality_title">جودة الصورة</string>
