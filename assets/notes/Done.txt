@@ -12,6 +12,7 @@ Fixed:
 - fix(theme-store): preserve portable appearance across theme export, import and demo
   - Preserve palettes, lyrics, Glass, player controls, navigation, nested layouts, indicators and visual settings.
   - Use Stock defaults for missing demo settings and keep omitted fields untouched when applying an existing theme.
+  - Restore the native player toolbar and regenerate the Stock previews in Normal and Glass.
   - Refresh notification buttons immediately when applying or undoing a theme.
 - fix(about): animate the Credits section
   - Match the fade and scale transitions of the other About sections.
