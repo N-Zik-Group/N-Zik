@@ -3,6 +3,7 @@
     <string name="backup_export_themes_description">Spara hämtade och lokala teman till en ZIP-säkerhetskopia</string>
     <string name="backup_import_themes_description">Återställ hämtade och lokala teman från en ZIP-säkerhetskopia</string>
     <string name="backup_export_select_all_description">Välj varje typ av data att exportera</string>
+    <string name="backup_import_already_running">En säkerhetskopia är redan på gång.</string>
     <string name="backup_import_select_all_description">Välj varje typ av data att importera</string>
     <string name="backup_include_github_identity_credentials">Inkludera GitHub-identitetsuppgifter</string>
     <string name="storage_image_quality_title">Bildens kvalitet</string>
