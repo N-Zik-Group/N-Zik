@@ -58,7 +58,7 @@ import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.components.navigation.Skeleton
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.settings.accounts.GitHubAccount
-import app.n_zik.android.components.settings.accounts.GitHubLoginWebView
+import app.n_zik.android.components.settings.accounts.rememberGitHubPublicationAuthorization
 import app.n_zik.android.components.settings.accounts.githubContributionBlock
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsDescription
@@ -331,14 +331,58 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
             ) { Text(stringResource(R.string.theme_store_creator_save_draft)) }
         },
     )
+    val authPending by GitHubAccount.awaiting.collectAsStateWithLifecycle()
     PageButton(
         modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
-        enabled = !offline && !packaging && displayName.isNotBlank() && hasPublicationChanges,
+        enabled = !offline && !packaging && !authPending && displayName.isNotBlank() && hasPublicationChanges,
         onClick = { confirmPublish = true },
     ) { Text(stringResource(R.string.theme_store_creator_publish)) }
-    var reauthorizing by remember { mutableStateOf(false) }
-    val authPending by GitHubAccount.awaiting.collectAsStateWithLifecycle()
-    val authCode by GitHubAccount.code.collectAsStateWithLifecycle()
+    val submit: () -> Unit = {
+        packaging = true
+        Toaster.i(R.string.theme_store_submission_sending)
+        Toaster.i(R.string.theme_store_creator_submitting)
+        scope.launch {
+            try {
+                val message = githubContributionBlock(id)
+                if (message == null) {
+                    val files = prepareCreatorSubmission(context, catalog, publicProfile, id, login, displayName.trim(), description, avatar, banner)
+                    val token = checkNotNull(GitHubAccount.tokenFor(context, id))
+                    pullUrl = submitCreatorProfile(token, id, files)
+                    val number = pullUrl?.substringAfterLast('/')?.toIntOrNull()
+                    if (number != null) {
+                        context.getSharedPreferences("theme_creator_submissions", android.content.Context.MODE_PRIVATE)
+                            .edit().putString("$id:$number", "open").apply()
+                        notifyCreatorSubmissionSent(context, id, number)
+                    }
+                    Toaster.s(R.string.theme_store_creator_pr_submitted)
+                } else {
+                    GitHubAccount.disconnect(context)
+                    Toaster.e(message, android.widget.Toast.LENGTH_LONG)
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (blocked: CreatorPublicationBlocked) {
+                GitHubAccount.disconnect(context)
+                Toaster.e(blocked.publicMessage, android.widget.Toast.LENGTH_LONG)
+            } catch (_: CreatorPublicationAccountMismatch) {
+                Toaster.e(R.string.theme_store_creator_publisher_account)
+            } catch (_: CreatorPublicationUnchanged) {
+                Toaster.i(R.string.theme_store_creator_unchanged)
+            } catch (_: CreatorPublicationWorkflowPermission) {
+                GitHubAccount.requireWorkflowAuthorization(context)
+                Toaster.i(R.string.theme_store_creator_workflow_authorization)
+            } catch (_: CreatorPublicationSessionExpired) {
+                GitHubAccount.clearPublicationToken(context)
+                Toaster.i(R.string.theme_store_creator_session_expired)
+            } catch (error: Exception) {
+                timber.log.Timber.tag("CreatorProfile").w(error, "Profile submission failed")
+                Toaster.e(R.string.theme_store_creator_publish_error)
+            } finally {
+                packaging = false
+            }
+        }
+    }
+    val authorizePublication = rememberGitHubPublicationAuthorization(submit)
     DialogPresence(visible = confirmPublish) {
         DefaultDialog(
             title = stringResource(R.string.theme_store_creator_publish),
@@ -348,63 +392,15 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
                     DialogButton(stringResource(R.string.common_action_cancel), { confirmPublish = false }, danger = true),
                     DialogButton(stringResource(R.string.theme_store_creator_continue_publish), {
                         confirmPublish = false
-                        val submit: () -> Unit = {
-                            packaging = true
-                            Toaster.i(R.string.theme_store_submission_sending)
-                            Toaster.i(R.string.theme_store_creator_submitting)
-                            scope.launch {
-                            try {
-                                val message = githubContributionBlock(id)
-                                if (message == null) {
-                                    val files = prepareCreatorSubmission(context, catalog, publicProfile, id, login, displayName.trim(), description, avatar, banner)
-                                    val token = checkNotNull(GitHubAccount.tokenFor(context, id))
-                                    pullUrl = submitCreatorProfile(token, id, files)
-                                    val number = pullUrl?.substringAfterLast('/')?.toIntOrNull()
-                                    if (number != null) {
-                                        context.getSharedPreferences("theme_creator_submissions", android.content.Context.MODE_PRIVATE)
-                                            .edit().putString("$id:$number", "open").apply()
-                                        notifyCreatorSubmissionSent(context, id, number)
-                                    }
-                                    Toaster.s(R.string.theme_store_creator_pr_submitted)
-                                }
-                                else {
-                                    GitHubAccount.disconnect(context)
-                                    Toaster.e(message, android.widget.Toast.LENGTH_LONG)
-                                }
-                            } catch (cancelled: CancellationException) {
-                                throw cancelled
-                            } catch (blocked: CreatorPublicationBlocked) {
-                                GitHubAccount.disconnect(context)
-                                Toaster.e(blocked.publicMessage, android.widget.Toast.LENGTH_LONG)
-                            } catch (_: CreatorPublicationAccountMismatch) {
-                                Toaster.e(R.string.theme_store_creator_publisher_account)
-                            } catch (_: CreatorPublicationUnchanged) {
-                                Toaster.i(R.string.theme_store_creator_unchanged)
-                            } catch (_: CreatorPublicationWorkflowPermission) {
-                                GitHubAccount.requireWorkflowAuthorization(context)
-                                Toaster.i(R.string.theme_store_creator_workflow_authorization)
-                            } catch (_: CreatorPublicationSessionExpired) {
-                                GitHubAccount.clearPublicationToken(context)
-                                Toaster.i(R.string.theme_store_creator_session_expired)
-                            } catch (error: Exception) {
-                                timber.log.Timber.tag("CreatorProfile").w(error, "Profile submission failed")
-                                Toaster.e(R.string.theme_store_creator_publish_error)
-                            } finally {
-                                packaging = false
-                            }
-                            }
-                        }
                         if (GitHubAccount.tokenFor(context, id) != null) submit() else {
-                            reauthorizing = true
                             Toaster.i(R.string.theme_store_creator_authorizing)
-                            GitHubAccount.start(context, id, submit)
+                            authorizePublication(id)
                         }
                     }),
                 ))
             },
         ) { StoreText(stringResource(R.string.theme_store_creator_publish_warning)) }
     }
-    if (reauthorizing && authPending) authCode?.let { code -> GitHubLoginWebView(code) { GitHubAccount.cancel() } }
     DialogPresence(visible = pullUrl != null) {
         DialogActionList(
             title = stringResource(R.string.theme_store_creator_pr_submitted),

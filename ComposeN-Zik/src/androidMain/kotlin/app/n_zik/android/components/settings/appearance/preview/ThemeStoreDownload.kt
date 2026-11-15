@@ -2,12 +2,42 @@ package app.n_zik.android.components.settings.appearance.preview
 
 import android.content.Context
 import app.n_zik.android.BuildConfig
+import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 private val automaticDownloadLock = Mutex()
+
+/** Restored Store downloads regain update eligibility only after verifying their original revision. */
+internal suspend fun ThemeStoreCatalog.bindRestoredDownloads(
+    library: ThemeStoreLibrary,
+    themes: List<StoreTheme>,
+    mayBind: () -> Boolean,
+): Boolean {
+    val indexed = themes.associateBy { it.themeId }
+    val olderRevisions = mutableListOf<StoreTheme>()
+    var successful = true
+    for (origin in library.restoredStoreOrigins()) {
+        if (!mayBind()) return successful
+        val latest = indexed[origin.themeId] ?: continue
+        if (origin.revision >= latest.revision) continue
+        try {
+            olderRevisions += publishedRevision(latest, origin.revision)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            Timber.tag("ThemeStore").w(error, "Could not verify restored theme revision")
+            successful = false
+        }
+    }
+    withContext(NzikDispatchers.DATA) {
+        if (mayBind()) bindRestoredStoreThemes(library, themes + olderRevisions)
+    }
+    return successful
+}
 
 /** Shares update downloads between the Store screen and scheduled checks. */
 internal suspend fun ThemeStoreCatalog.downloadAutomaticUpdates(

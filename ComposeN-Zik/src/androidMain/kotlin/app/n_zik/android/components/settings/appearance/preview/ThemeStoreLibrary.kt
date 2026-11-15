@@ -6,6 +6,11 @@ import kotlinx.serialization.Serializable
 import java.time.LocalDate
 import java.time.ZoneOffset
 import kotlinx.serialization.json.Json
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Serializable
 internal data class ThemeStoreOrigin(val themeId: String, val revision: Int)
@@ -44,6 +49,30 @@ internal class ThemeStoreLibrary(private val preferences: SharedPreferences) {
         preferences.getString(downloadPrefix + id, null)?.let { raw ->
             runCatching { Json.decodeFromString<SavedTheme>(raw) }.getOrNull()
         }
+
+    fun observeDownloads(): Flow<List<SavedTheme>> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == null || key.startsWith(downloadPrefix)) trySend(downloads())
+        }
+        preferences.registerOnSharedPreferenceChangeListener(listener)
+        trySend(downloads())
+        awaitClose { preferences.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.conflate().distinctUntilChanged()
+
+    fun restoredStoreOrigins(): List<ThemeStoreOrigin> = downloads().mapNotNull { saved ->
+        saved.storeOrigin?.takeIf { origin ->
+            saved.imported && saved.theme != null && saved.theme.themeId != origin.themeId &&
+                origin.themeId != BundledThemeId
+        }
+    }.distinct()
+
+    fun hasRestoredStoreUpdates(notificationsEnabled: Boolean): Boolean = restoredStoreOrigins().any { origin ->
+        when (updateMode(origin.themeId)) {
+            ThemeUpdateMode.AutoDownload -> true
+            ThemeUpdateMode.Notify -> notificationsEnabled
+            ThemeUpdateMode.Off -> false
+        }
+    }
 
     fun save(theme: SavedTheme) = synchronized(downloadMutationLock) {
         preferences.edit {

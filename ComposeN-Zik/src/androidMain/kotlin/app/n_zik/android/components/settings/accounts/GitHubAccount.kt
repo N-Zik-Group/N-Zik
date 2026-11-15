@@ -44,7 +44,9 @@ import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.utils.getActiveProfile
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import java.net.URI
 import java.net.URL
 import android.content.ClipData
@@ -66,7 +68,6 @@ import org.json.JSONObject
 import timber.log.Timber
 
 private const val clientId = "Ov23lidRTeOCWplQz9iZ"
-private const val identityKey = "identity"
 private const val githubDevicePage = "https://github.com/login/device"
 private const val githubPersonalInstallationsPage = "https://github.com/settings/installations"
 private const val githubAppInstallationPage = "https://github.com/apps/n-zik-sign-in/installations/new"
@@ -155,72 +156,80 @@ internal object GitHubAccount {
     val login = MutableStateFlow<String?>(null)
     val awaiting = MutableStateFlow(false)
     val code = MutableStateFlow<String?>(null)
-    private data class PublicationSession(val id: Long, val token: String, val expires: Long)
-    private var publicationToken: PublicationSession? = null
-    fun tokenFor(context: Context, id: Long): String? {
-        if (userId(context) != id) return null
-        return publicationToken?.takeIf { it.id == id && it.expires > System.currentTimeMillis() }?.token ?: runCatching {
-            val session = JSONObject(context.encryptedPreferences.getString("githubPublicationSession", null) ?: return null)
-            session.getString("token").takeIf {
-                session.getLong("id") == id && session.getLong("expires") > System.currentTimeMillis()
-            }
-        }.getOrNull()
+    val publicationAuthorization = GitHubPublicationAuthorization()
+    private var accountStorage: Pair<Context, GitHubAccountStorage>? = null
+
+    @Synchronized
+    private fun storage(context: Context): GitHubAccountStorage {
+        val app = context.applicationContext
+        accountStorage?.let { (owner, storage) -> if (owner === app) return storage }
+        val encryptedStores = mutableMapOf<String, android.content.SharedPreferences>()
+        return GitHubAccountStorage(
+            activeProfile = { getActiveProfile(app) },
+            identityStore = { app.getSharedPreferences("github_account_profile_$it", Context.MODE_PRIVATE) },
+            encryptedStore = { profile ->
+                synchronized(encryptedStores) {
+                    encryptedStores.getOrPut(profile) {
+                        EncryptedSharedPreferences.create(
+                            app,
+                            "secure_preferences" + if (profile == "default") "" else "_$profile",
+                            MasterKey.Builder(app, MasterKey.DEFAULT_MASTER_KEY_ALIAS)
+                                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+                            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+                        )
+                    }
+                }
+            },
+            legacyIdentityStore = app.getSharedPreferences("github_account", Context.MODE_PRIVATE),
+        ).also { accountStorage = app to it }
     }
 
-    fun clearPublicationToken(context: Context) {
-        publicationToken = null
-        runCatching { context.encryptedPreferences.edit().remove("githubPublicationSession").apply() }
-    }
-
-    fun requireWorkflowAuthorization(context: Context) {
-        val id = userId(context) ?: return
-        store(context).edit().putBoolean("publicationWorkflowScope:$id", true).apply()
-        clearPublicationToken(context)
-    }
-
-    private fun store(context: Context) =
-        context.applicationContext.getSharedPreferences("github_account", Context.MODE_PRIVATE)
-
-    fun userId(context: Context): Long? = store(context).getString(identityKey, null)
-        ?.let { runCatching { JSONObject(it).getLong("id") }.getOrNull() }
-
-    fun accountLogin(context: Context): String? = store(context).getString(identityKey, null)
-        ?.let { runCatching { JSONObject(it).getString("login") }.getOrNull() }
+    fun tokenFor(context: Context, id: Long): String? = storage(context).tokenFor(id)
+    fun clearPublicationToken(context: Context) = storage(context).clearPublicationToken()
+    fun requireWorkflowAuthorization(context: Context) = storage(context).requireWorkflow()
+    fun userId(context: Context): Long? = storage(context).userId()
+    fun accountLogin(context: Context): String? = storage(context).login()
 
     fun read(context: Context) {
-        login.value = store(context).getString(identityKey, null)
-            .let { current ->
-                current ?: runCatching { context.encryptedPreferences.getString("githubBackupIdentity", null) }.getOrNull()
-                    ?.takeIf { restored -> runCatching {
-                        val identity = JSONObject(restored)
-                        identity.getLong("id") > 0 && identity.getString("login").matches(Regex("[A-Za-z0-9-]{1,39}"))
-                    }.getOrDefault(false) }
-                    ?.also { store(context).edit().putString(identityKey, it).apply() }
-            }
-            ?.let { runCatching { JSONObject(it).getString("login") }.getOrNull() }
+        login.value = storage(context).login()
     }
 
-    internal class SetupSession(val id: Long, val login: String, val token: String, val expires: Long)
+    fun restoreIdentity(context: Context, identity: String) {
+        cancel()
+        storage(context).restoreIdentity(identity)
+        read(context)
+    }
 
-    fun start(context: Context, expectedId: Long? = null, onAuthorized: (() -> Unit)? = null) =
-        authorize(context, expectedId, onSetup = null, onAuthorized = onAuthorized)
+    internal class SetupSession(val id: Long, val login: String, val token: String, val expires: Long, val profile: String = "default")
+
+    fun start(context: Context, expectedId: Long? = null) =
+        authorize(context, expectedId, onSetup = null)
 
     fun startSetup(context: Context) =
-        authorize(context, expectedId = null, onSetup = installation::prepare, onAuthorized = null)
+        authorize(context, expectedId = null, onSetup = installation::prepare)
+
+    fun startPublicationAuthorization(context: Context, expectedId: Long?): String? {
+        if (!canAuthorize(context)) return null
+        val key = publicationAuthorization.begin(getActiveProfile(context))
+        authorize(context, expectedId, onSetup = null, publicationRequest = key)
+        return key
+    }
+
+    private fun canAuthorize(context: Context): Boolean =
+        !awaiting.value && !installation.state.value.preparing && installation.state.value.session == null &&
+            !OfflineMode.enabled(context)
 
     private fun authorize(
         context: Context,
         expectedId: Long?,
         onSetup: ((SetupSession) -> Unit)?,
-        onAuthorized: (() -> Unit)?,
+        publicationRequest: String? = null,
     ) {
-        if (awaiting.value || installation.state.value.preparing || installation.state.value.session != null ||
-            OfflineMode.enabled(context)
-        ) return
+        if (!canAuthorize(context)) return
         val app = context.applicationContext
-        val needsWorkflow = (expectedId ?: userId(app))?.let { id ->
-            store(app).getBoolean("publicationWorkflowScope:$id", false)
-        } == true
+        val profileId = getActiveProfile(app)
+        val needsWorkflow = (expectedId ?: userId(app))?.let { storage(app).needsWorkflow(it) } == true
         val requestedScopes = if (needsWorkflow) "public_repo workflow" else "public_repo"
         awaiting.value = true
         attempt = scope.launch {
@@ -237,7 +246,7 @@ internal object GitHubAccount {
                 code.value = userCode
                 while (true) {
                     delay((nextPollAt - SystemClock.elapsedRealtime()).coerceAtLeast(0L))
-                    check(SystemClock.elapsedRealtime() < deadline && !OfflineMode.enabled(app))
+                    check(SystemClock.elapsedRealtime() < deadline && !OfflineMode.enabled(app) && getActiveProfile(app) == profileId)
                     val pollStartedAt = SystemClock.elapsedRealtime()
                     val result = withContext(NzikDispatchers.DATA) {
                         request("https://github.com/login/oauth/access_token", mapOf(
@@ -269,6 +278,7 @@ internal object GitHubAccount {
                     val handle = profile.getString("login")
                     check(id > 0 && handle.matches(Regex("[A-Za-z0-9-]{1,39}")))
                     val blockedMessage = githubContributionBlock(id)
+                    check(getActiveProfile(app) == profileId)
                     if (blockedMessage != null) {
                         disconnect(app)
                         Toaster.e(blockedMessage, android.widget.Toast.LENGTH_LONG)
@@ -276,13 +286,15 @@ internal object GitHubAccount {
                     }
                     val expiresIn = result.optLong("expires_in", 0)
                     val expires = if (expiresIn > 0) System.currentTimeMillis() + expiresIn * 1000L else Long.MAX_VALUE
-                    val session = SetupSession(id, handle, token, expires)
+                    currentCoroutineContext().ensureActive()
+                    check(getActiveProfile(app) == profileId)
+                    val session = SetupSession(id, handle, token, expires, profileId)
                     if (onSetup != null) {
                         onSetup(session)
                     } else {
                         saveSession(app, session)
                         Toaster.s(R.string.github_account_connected)
-                        onAuthorized?.invoke()
+                        publicationRequest?.let { publicationAuthorization.authorize(it, profileId) }
                     }
                     break
                 }
@@ -293,40 +305,33 @@ internal object GitHubAccount {
             } finally {
                 code.value = null
                 awaiting.value = false
+                publicationRequest?.let(publicationAuthorization::finish)
             }
         }
     }
 
     fun completeSetup(context: Context, session: SetupSession): Boolean {
         if (!installation.consume(session)) return false
+        if (getActiveProfile(context) != session.profile) return false
         saveSession(context.applicationContext, session)
         return true
     }
 
     private fun saveSession(context: Context, session: SetupSession) {
-        val identity = JSONObject().put("id", session.id).put("login", session.login).toString()
-        val credentials = JSONObject().put("id", session.id).put("token", session.token).put("expires", session.expires)
-        runCatching {
-            context.encryptedPreferences.edit()
-                .putString("githubPublicationSession", credentials.toString())
-                .putString("githubBackupIdentity", identity)
-                .apply()
-        }
-        store(context).edit().putString(identityKey, identity).apply()
-        publicationToken = PublicationSession(session.id, session.token, session.expires)
+        check(getActiveProfile(context) == session.profile)
+        check(storage(context).save(session.id, session.login, session.token, session.expires, session.profile))
         read(context)
     }
 
     fun cancel() {
         attempt?.cancel()
         installation.cancel()
+        publicationAuthorization.cancel()
     }
 
     fun disconnect(context: Context) {
         cancel()
-        clearPublicationToken(context)
-        runCatching { context.encryptedPreferences.edit().remove("githubBackupIdentity").apply() }
-        store(context).edit().clear().apply()
+        storage(context).disconnect()
         read(context)
     }
 

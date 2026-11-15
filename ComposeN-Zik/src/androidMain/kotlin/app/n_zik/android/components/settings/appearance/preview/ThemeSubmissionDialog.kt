@@ -71,7 +71,7 @@ import app.n_zik.android.components.glass.GlassProfilePreferences
 import app.n_zik.android.components.navigation.Skeleton
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.settings.accounts.GitHubAccount
-import app.n_zik.android.components.settings.accounts.GitHubLoginWebView
+import app.n_zik.android.components.settings.accounts.rememberGitHubPublicationAuthorization
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
@@ -388,10 +388,7 @@ private fun ThemeSubmissionForm(
     var step by rememberSaveable { mutableIntStateOf(0) }
     var rights by rememberSaveable { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
-    var authorizing by remember { mutableStateOf(false) }
     val awaiting by GitHubAccount.awaiting.collectAsStateWithLifecycle()
-    val deviceCode by GitHubAccount.code.collectAsStateWithLifecycle()
-    if (authorizing && awaiting) deviceCode?.let { GitHubLoginWebView(it) { GitHubAccount.cancel() } }
     val revision = localTheme?.theme?.revision ?: ((existing?.revision ?: 0) + 1)
     val publishedPreviews = existing?.previews.orEmpty()
         .filter { reusePublishedPreviews || it.path.substringAfterLast('/').substringBeforeLast('.') !in automaticPreviews }
@@ -442,6 +439,7 @@ private fun ThemeSubmissionForm(
             .put("usingCurrentAppearance", usingCurrentAppearance)
             .put("reusePublishedPreviews", reusePublishedPreviews)
         drafts.edit().putString(key, data.toString()).apply()
+        useDraft = true
         removeUnusedSubmissionPreviews(context, drafts, previous)
     }
     suspend fun packageTheme(): Pair<StoreTheme, Map<String, ByteArray>> = withContext(NzikDispatchers.DATA) {
@@ -512,46 +510,44 @@ private fun ThemeSubmissionForm(
             }
         }
     }
+    val submit = {
+        busy = true
+        Toaster.i(R.string.theme_store_submission_sending)
+        scope.launch {
+            try {
+                val token = checkNotNull(GitHubAccount.tokenFor(context, id))
+                val (theme, files) = packageTheme()
+                val url = submitCreatorProfile(token, id, files.mapKeys { theme.directory + it.key }, theme)
+                val number = url.substringAfterLast('/').toInt()
+                context.getSharedPreferences("theme_creator_submissions", 0).edit().putString("$id:$number", "open").apply()
+                discardDraft(JSONObject(previewState))
+                notifyCreatorSubmissionSent(context, id, number, R.string.theme_store_theme_submitted)
+                Toaster.s(R.string.theme_store_theme_submitted)
+                dismiss()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (blocked: CreatorPublicationBlocked) {
+                Toaster.e(blocked.publicMessage, android.widget.Toast.LENGTH_LONG)
+            } catch (_: CreatorPublicationWorkflowPermission) {
+                GitHubAccount.requireWorkflowAuthorization(context)
+                Toaster.i(R.string.theme_store_creator_workflow_authorization)
+            } catch (expired: CreatorPublicationSessionExpired) {
+                GitHubAccount.clearPublicationToken(context)
+                Toaster.i(R.string.theme_store_creator_session_expired)
+            } catch (error: Exception) {
+                timber.log.Timber.tag("ThemeStore").w(error, "Theme submission failed")
+                Toaster.e(R.string.theme_store_theme_submit_error)
+            } finally {
+                busy = false
+            }
+        }
+        Unit
+    }
+    val authorizePublication = rememberGitHubPublicationAuthorization(submit)
     fun publish() {
         saveDraft()
-        val submit = {
-            busy = true
-            Toaster.i(R.string.theme_store_submission_sending)
-            scope.launch {
-                try {
-                    val token = checkNotNull(GitHubAccount.tokenFor(context, id))
-                    val (theme, files) = packageTheme()
-                    val url = submitCreatorProfile(token, id, files.mapKeys { theme.directory + it.key }, theme)
-                    val number = url.substringAfterLast('/').toInt()
-                    context.getSharedPreferences("theme_creator_submissions", 0).edit().putString("$id:$number", "open").apply()
-                    discardDraft(JSONObject(previewState))
-                    notifyCreatorSubmissionSent(context, id, number, R.string.theme_store_theme_submitted)
-                    Toaster.s(R.string.theme_store_theme_submitted)
-                    dismiss()
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (blocked: CreatorPublicationBlocked) {
-                    Toaster.e(blocked.publicMessage, android.widget.Toast.LENGTH_LONG)
-                } catch (_: CreatorPublicationWorkflowPermission) {
-                    GitHubAccount.requireWorkflowAuthorization(context)
-                    Toaster.i(R.string.theme_store_creator_workflow_authorization)
-                } catch (expired: CreatorPublicationSessionExpired) {
-                    GitHubAccount.clearPublicationToken(context)
-                    Toaster.i(R.string.theme_store_creator_session_expired)
-                } catch (error: Exception) {
-                    timber.log.Timber.tag("ThemeStore").w(error, "Theme submission failed")
-                    Toaster.e(R.string.theme_store_theme_submit_error)
-                } finally {
-                    busy = false
-                }
-            }
-            Unit
-        }
         if (GitHubAccount.tokenFor(context, id) != null) submit()
-        else {
-            authorizing = true
-            GitHubAccount.start(context, id, submit)
-        }
+        else authorizePublication(id)
     }
     val informationValid = title.isNotBlank() && description.isNotBlank() && included.isNotEmpty() && validTags &&
         minimumVersionCode != null
@@ -606,7 +602,7 @@ private fun ThemeSubmissionForm(
                             enabled = when (step) {
                                 0 -> informationValid
                                 1 -> !importingPreview && readyPreviews.containsAll(requiredPreviews)
-                                else -> informationValid && !busy && !(authorizing && awaiting) && (localOnly || rights)
+                                else -> informationValid && !busy && !awaiting && (localOnly || rights)
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = palette.accent, contentColor = palette.onAccent),
                         ) {

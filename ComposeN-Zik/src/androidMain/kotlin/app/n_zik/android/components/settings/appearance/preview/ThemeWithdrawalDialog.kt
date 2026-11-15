@@ -17,7 +17,7 @@ import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DefaultDialog
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.settings.accounts.GitHubAccount
-import app.n_zik.android.components.settings.accounts.GitHubLoginWebView
+import app.n_zik.android.components.settings.accounts.rememberGitHubPublicationAuthorization
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -28,10 +28,8 @@ internal fun ThemeWithdrawalDialog(theme: StoreTheme, profileId: String, dismiss
     val scope = rememberCoroutineScope()
     val accountId = theme.author.githubId
     var sending by remember { mutableStateOf(false) }
-    var authorizing by remember { mutableStateOf(false) }
     val awaiting by GitHubAccount.awaiting.collectAsStateWithLifecycle()
-    val code by GitHubAccount.code.collectAsStateWithLifecycle()
-    val close = { if (!sending && !(authorizing && awaiting)) dismiss() }
+    val close = { if (!sending && !awaiting) dismiss() }
     val submit: () -> Unit = {
         sending = true
         Toaster.i(R.string.theme_store_submission_sending)
@@ -69,6 +67,7 @@ internal fun ThemeWithdrawalDialog(theme: StoreTheme, profileId: String, dismiss
             }
         }
     }
+    val authorizePublication = rememberGitHubPublicationAuthorization(submit)
 
     DefaultDialog(
         title = stringResource(R.string.theme_store_withdraw),
@@ -78,15 +77,11 @@ internal fun ThemeWithdrawalDialog(theme: StoreTheme, profileId: String, dismiss
                 DialogButton(stringResource(R.string.common_action_cancel), close, danger = true, enabled = !sending && !awaiting),
                 DialogButton(stringResource(R.string.theme_store_withdraw_submit), {
                     if (GitHubAccount.tokenFor(context, accountId) != null) submit()
-                    else {
-                        authorizing = true
-                        GitHubAccount.start(context, accountId, submit)
-                    }
+                    else authorizePublication(accountId)
                 }, primary = true, enabled = !sending && !awaiting),
             ))
         },
     ) {
         SettingsDescription(stringResource(R.string.theme_store_withdraw_confirm, theme.title))
     }
-    if (authorizing && awaiting) code?.let { GitHubLoginWebView(it) { GitHubAccount.cancel() } }
 }

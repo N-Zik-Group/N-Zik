@@ -3,6 +3,7 @@ package app.n_zik.android.components.settings.appearance.preview
 import android.app.Application
 import android.util.Base64
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
@@ -113,10 +114,10 @@ class CreatorGitHubPublisherTest {
                 "catalog/creators/123/profile.json" to """{"githubId":123,"displayName":"Creator","bio":""}""".encodeToByteArray(),
             )),
             Submission("nzik/theme-$themeId", theme = theme, alreadyPublished = false, files = mapOf(
-                theme.directory + "manifest.json" to "{}".encodeToByteArray(),
+                theme.directory + "manifest.json" to """{"author":{"githubId":123,"login":"creator"}}""".encodeToByteArray(),
             )),
             Submission("nzik/theme-$themeId", theme = updated, files = mapOf(
-                updated.directory + "manifest.json" to "{}".encodeToByteArray(),
+                updated.directory + "manifest.json" to """{"author":{"githubId":123,"login":"creator"}}""".encodeToByteArray(),
             )),
             Submission("nzik/review-$themeId-1-123", review = ThemeReviewSubmission(theme, 5, "Test")),
             Submission("nzik/withdraw-$themeId", withdrawal = theme),
@@ -187,6 +188,49 @@ class CreatorGitHubPublisherTest {
         assertEquals(null, fork.pull)
     }
 
+    @Test
+    fun renamedAccountUpdatesAuthoredDocumentsBeforeTheirIndexHashesAreCalculated() = runTest {
+        val theme = StoreTheme(
+            1, themeId, 1, "Preview", "A test theme", StoreAuthor(123, "old-login"), emptyList(),
+            StoreCompatibility(null), StoreFile("appearance.json", "a".repeat(64)), emptyList(),
+        )
+        for (submittedTheme in listOf(null, theme)) {
+            val fork = OutdatedFork(alreadyPublished = false)
+            val path = submittedTheme?.let { it.directory + "manifest.json" } ?: "catalog/creators/123/profile.json"
+            val document = if (submittedTheme == null) {
+                """{"githubId":123,"login":"old-login","displayName":"Creator","bio":""}"""
+            } else """{"author":{"githubId":123,"login":"old-login"}}"""
+            submitCreatorProfile("test-token", 123, mapOf(path to document.encodeToByteArray()), submittedTheme,
+                requestClient = fork.client, contributionBlock = { null })
+
+            val entries = checkNotNull(fork.tree).getJSONArray("tree")
+            fun content(file: String): ByteArray {
+                val entry = (0 until entries.length()).map(entries::getJSONObject).single { it.getString("path") == file }
+                return fork.blobs.getValue(entry.getString("sha"))
+            }
+            val bytes = content(path)
+            val authored = JSONObject(bytes.decodeToString()).let { if (submittedTheme == null) it else it.getJSONObject("author") }
+            assertEquals("creator", authored.getString("login"))
+            val indexPath = if (submittedTheme == null) "catalog/creators/index.json" else "catalog/themes/index.json"
+            val indexKey = if (submittedTheme == null) "creators" else "themes"
+            val hashKey = if (submittedTheme == null) "profileSha256" else "manifestSha256"
+            assertEquals(bytes.sha256(), JSONObject(content(indexPath).decodeToString()).getJSONArray(indexKey).getJSONObject(0).getString(hashKey))
+        }
+    }
+
+    @Test
+    fun refreshingAHandleNeverReattributesAnotherAccountsDocument() = runTest {
+        val fork = OutdatedFork(alreadyPublished = false)
+        val result = runCatching {
+            submitCreatorProfile("test-token", 123, mapOf("catalog/creators/123/profile.json" to
+                """{"githubId":456,"login":"old-login"}""".encodeToByteArray()),
+                requestClient = fork.client, contributionBlock = { null })
+        }
+        assertTrue(result.exceptionOrNull() is CreatorPublicationAccountMismatch)
+        assertTrue(fork.blobs.isEmpty())
+        assertEquals(null, fork.pull)
+    }
+
     private data class Submission(
         val branch: String,
         val files: Map<String, ByteArray> = emptyMap(),
@@ -206,6 +250,7 @@ class CreatorGitHubPublisherTest {
         var pull: JSONObject? = null
         var commit: JSONObject? = null
         var tree: JSONObject? = null
+        val blobs = mutableMapOf<String, ByteArray>()
 
         val client = OkHttpClient.Builder().addInterceptor { chain ->
             val request = chain.request()
@@ -234,7 +279,11 @@ class CreatorGitHubPublisherTest {
                 path.endsWith("/manifest.json") -> 200 to contents("""{"author":{"githubId":123}}""")
                 path.endsWith("/reviews.json") -> 404 to "{}"
                 path.contains("/git/ref/heads/") -> 404 to "{}"
-                path.endsWith("/git/blobs") -> 201 to """{"sha":"blob"}"""
+                path.endsWith("/git/blobs") -> {
+                    val sha = "blob-${blobs.size}"
+                    blobs[sha] = Base64.decode(checkNotNull(body).getString("content"), Base64.DEFAULT)
+                    201 to """{"sha":"$sha"}"""
+                }
                 path.endsWith("/git/trees") -> {
                     tree = body
                     201 to """{"sha":"new-tree"}"""

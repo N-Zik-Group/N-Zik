@@ -46,7 +46,7 @@ class ThemeStorePublicationTest {
     @Test
     fun staleOpenSnapshotCannotRearmAnAcceptedSubmission() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        context.getSharedPreferences("github_account", Context.MODE_PRIVATE).edit()
+        context.getSharedPreferences("github_account_profile_default", Context.MODE_PRIVATE).edit()
             .putString("identity", """{"id":42,"login":"creator"}""").apply()
         val preferences = context.getSharedPreferences("theme_creator_submissions", Context.MODE_PRIVATE)
         preferences.edit().putString("42:123", "open").apply()

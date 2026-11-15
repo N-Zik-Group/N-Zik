@@ -81,7 +81,7 @@ import app.n_zik.android.components.glass.PageButton
 import app.n_zik.android.components.glass.PageIconButton
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.settings.accounts.GitHubAccount
-import app.n_zik.android.components.settings.accounts.GitHubLoginWebView
+import app.n_zik.android.components.settings.accounts.rememberGitHubPublicationAuthorization
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.components.dialog.settings.SettingsDialogTabRow
 import app.n_zik.android.components.ui.screens.home.GlassHomeChips
@@ -260,9 +260,11 @@ private fun ThemeStoreDetailContent(
         value = catalog.reviews(theme)
     }
     val id = "${theme.themeId}:${theme.revision}"
-    var downloaded by remember(theme.appearance) { mutableStateOf(builtIn ?: library.download(id)) }
+    val downloads by remember(library) { library.observeDownloads() }
+        .collectAsStateWithLifecycle(initialValue = library.downloads())
+    val downloaded = builtIn ?: downloads.firstOrNull { it.id == id }
     var appearance by remember(theme.appearance) { mutableStateOf<StoreAppearance?>(null) }
-    LaunchedEffect(theme, catalog, retry) {
+    LaunchedEffect(theme, catalog, retry, downloaded) {
         appearance = loadDetail("appearance") { catalog.appearance(theme, downloaded) } ?: appearance
     }
     var downloading by remember { mutableStateOf(false) }
@@ -278,9 +280,9 @@ private fun ThemeStoreDetailContent(
                 ?: if (offline) null else loadDetail("first publication date") { catalog.firstPublicationDate(theme) }
         }
     }
-    val revisions by produceState(listOf(theme), catalog, library, theme, retry, publicationCatalog) {
+    val revisions by produceState(listOf(theme), catalog, theme, retry, publicationCatalog, downloads) {
         val indexed = if (offline) emptyList() else publicationCatalog.orEmpty().filter { it.themeId == theme.themeId }
-        val saved = library.downloads().mapNotNull { it.theme?.takeIf { savedTheme -> savedTheme.themeId == theme.themeId } }
+        val saved = downloads.mapNotNull { it.theme?.takeIf { savedTheme -> savedTheme.themeId == theme.themeId } }
         value = (listOf(theme) + indexed + saved).distinctBy { it.revision }.sortedByDescending { it.revision }
     }
     var selectedTag by rememberSaveable { mutableStateOf<String?>(null) }
@@ -365,7 +367,6 @@ private fun ThemeStoreDetailContent(
                     DialogButton(stringResource(R.string.common_action_delete), {
                         if (getActiveProfile(context) == profileId) {
                             library.removeDownload(id)
-                            downloaded = null
                             Toaster.s(R.string.theme_store_remove_done)
                             if (localPackage) onRemoved()
                         }
@@ -549,7 +550,6 @@ private fun ThemeStoreDetailContent(
                                         val saved = SavedTheme(theme.title, parsed.document, theme)
                                         library.save(saved)
                                         appearance = parsed
-                                        downloaded = saved
                                         Toaster.s(R.string.theme_store_download_saved)
                                         notification.show(result = true)
                                     } else {
@@ -802,54 +802,53 @@ private fun ThemeReviewsDialog(theme: StoreTheme, reviews: StoreReviewSummary?, 
         return
     }
     val awaiting by GitHubAccount.awaiting.collectAsStateWithLifecycle()
-    val code by GitHubAccount.code.collectAsStateWithLifecycle()
     val existing = reviews?.comments?.firstOrNull { it.author.githubId == authorId }
     var rating by rememberSaveable(authorId, existing) { mutableIntStateOf(existing?.rating ?: 0) }
     var comment by rememberSaveable(authorId, existing) { mutableStateOf(existing?.comment.orEmpty()) }
     if (editing && authorId != null) {
-        val back = { if (!busy) editing = false }
+        val submit: () -> Unit = {
+            busy = true
+            scope.launch {
+                try {
+                    val token = checkNotNull(GitHubAccount.tokenFor(context, authorId))
+                    val url = submitCreatorProfile(token, authorId, emptyMap(),
+                        review = ThemeReviewSubmission(theme, rating, comment))
+                    val number = url.substringAfterLast('/').toInt()
+                    context.getSharedPreferences("theme_creator_submissions", 0).edit()
+                        .putString("$authorId:$number", "open").apply()
+                    notifyCreatorSubmissionSent(context, authorId, number, R.string.theme_store_review_sent)
+                    Toaster.s(R.string.theme_store_review_sent)
+                    editing = false
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (blocked: CreatorPublicationBlocked) {
+                    Toaster.e(blocked.publicMessage, android.widget.Toast.LENGTH_LONG)
+                } catch (_: CreatorPublicationUnchanged) {
+                    Toaster.i(R.string.theme_store_review_unchanged)
+                } catch (_: CreatorPublicationWorkflowPermission) {
+                    GitHubAccount.requireWorkflowAuthorization(context)
+                    Toaster.i(R.string.theme_store_creator_workflow_authorization)
+                } catch (_: CreatorPublicationSessionExpired) {
+                    GitHubAccount.clearPublicationToken(context)
+                    Toaster.i(R.string.theme_store_creator_session_expired)
+                } catch (error: Exception) {
+                    Timber.tag("ThemeStore").w(error, "Review submission failed")
+                    Toaster.e(R.string.theme_store_review_error)
+                } finally {
+                    busy = false
+                }
+            }
+        }
+        val authorize = rememberGitHubPublicationAuthorization(submit)
+        val back = { if (!busy && !awaiting) editing = false }
         DefaultDialog(
             title = stringResource(R.string.theme_store_review_write), onDismiss = back,
             footer = {
                 ButtonRow(listOf(
-                    DialogButton(stringResource(R.string.common_action_cancel), back, danger = true, enabled = !busy),
+                    DialogButton(stringResource(R.string.common_action_cancel), back, danger = true, enabled = !busy && !awaiting),
                     DialogButton(stringResource(R.string.theme_store_review_send), {
-                        val submit = {
-                            busy = true
-                            scope.launch {
-                                try {
-                                    val token = checkNotNull(GitHubAccount.tokenFor(context, authorId))
-                                    val url = submitCreatorProfile(token, authorId, emptyMap(),
-                                        review = ThemeReviewSubmission(theme, rating, comment))
-                                    val number = url.substringAfterLast('/').toInt()
-                                    context.getSharedPreferences("theme_creator_submissions", 0).edit()
-                                        .putString("$authorId:$number", "open").apply()
-                                    notifyCreatorSubmissionSent(context, authorId, number, R.string.theme_store_review_sent)
-                                    Toaster.s(R.string.theme_store_review_sent)
-                                    editing = false
-                                } catch (cancelled: CancellationException) {
-                                    throw cancelled
-                                } catch (blocked: CreatorPublicationBlocked) {
-                                    Toaster.e(blocked.publicMessage, android.widget.Toast.LENGTH_LONG)
-                                } catch (_: CreatorPublicationUnchanged) {
-                                    Toaster.i(R.string.theme_store_review_unchanged)
-                                } catch (_: CreatorPublicationWorkflowPermission) {
-                                    GitHubAccount.requireWorkflowAuthorization(context)
-                                    Toaster.i(R.string.theme_store_creator_workflow_authorization)
-                                } catch (_: CreatorPublicationSessionExpired) {
-                                    GitHubAccount.clearPublicationToken(context)
-                                    Toaster.i(R.string.theme_store_creator_session_expired)
-                                } catch (error: Exception) {
-                                    Timber.tag("ThemeStore").w(error, "Review submission failed")
-                                    Toaster.e(R.string.theme_store_review_error)
-                                } finally {
-                                    busy = false
-                                }
-                            }
-                            Unit
-                        }
                         if (GitHubAccount.tokenFor(context, authorId) != null) submit()
-                        else GitHubAccount.start(context, authorId, submit)
+                        else authorize(authorId)
                     }, primary = true, enabled = rating in 1..5 && comment.isNotBlank() && !busy && !awaiting)
                 ))
             },
@@ -871,7 +870,6 @@ private fun ThemeReviewsDialog(theme: StoreTheme, reviews: StoreReviewSummary?, 
                     shape = uiRoundnessShape(), colors = InputDialog.defaultTextFieldColors())
             }
         }
-        if (awaiting) code?.let { GitHubLoginWebView(it) { GitHubAccount.cancel() } }
         return
     }
     DefaultDialog(
@@ -935,60 +933,56 @@ internal fun ThemeReportDialog(theme: StoreTheme, review: StoreReview?, allRevie
     val accountId = signedInCreatorId()
     var reason by rememberSaveable { mutableStateOf("") }
     var sending by remember { mutableStateOf(false) }
-    var authorizing by remember { mutableStateOf(false) }
     val awaiting by GitHubAccount.awaiting.collectAsStateWithLifecycle()
-    val code by GitHubAccount.code.collectAsStateWithLifecycle()
     val title = stringResource(when {
         review != null -> R.string.theme_store_report_review
         allReviews -> R.string.theme_store_report_all_reviews
         else -> R.string.theme_store_report_theme
     })
     val close = { if (!sending && !awaiting) dismiss() }
+    val submit: () -> Unit = {
+        val submittedReason = reason.trim()
+        sending = true
+        scope.launch {
+            try {
+                val id = checkNotNull(GitHubAccount.userId(context))
+                val token = checkNotNull(GitHubAccount.tokenFor(context, id))
+                val result = submitThemeReport(token, id, theme, review, allReviews, submittedReason)
+                val message = if (result.updated) R.string.theme_store_report_updated else R.string.theme_store_report_sent
+                Toaster.s(context.getString(message, result.number))
+                if (result.pending) {
+                    val target = when {
+                        review != null -> "review:${theme.revision}:${review.author.githubId}"
+                        allReviews -> "reviews:${theme.revision}"
+                        else -> "theme"
+                    }
+                    val reports = pendingReportsByAccount.value
+                    pendingReportsByAccount.value = reports +
+                        (id to (reports[id].orEmpty() + "${theme.themeId}:$target"))
+                }
+                dismiss()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (blocked: CreatorPublicationBlocked) {
+                Toaster.e(blocked.publicMessage)
+            } catch (_: CreatorPublicationSessionExpired) {
+                GitHubAccount.clearPublicationToken(context)
+                Toaster.i(R.string.theme_store_creator_session_expired)
+            } catch (error: Exception) {
+                Timber.tag("ThemeStore").w(error, "Could not submit report")
+                Toaster.e(R.string.theme_store_report_error)
+            } finally {
+                sending = false
+            }
+        }
+    }
+    val authorize = rememberGitHubPublicationAuthorization(submit)
     DefaultDialog(title = title, onDismiss = close, footer = {
         ButtonRow(listOf(
             DialogButton(stringResource(R.string.common_action_cancel), close, danger = true, enabled = !sending && !awaiting),
             DialogButton(stringResource(R.string.theme_store_report_send), {
-                val submittedReason = reason.trim()
-                val submit: () -> Unit = {
-                    sending = true
-                    scope.launch {
-                        try {
-                            val id = checkNotNull(GitHubAccount.userId(context))
-                            val token = checkNotNull(GitHubAccount.tokenFor(context, id))
-                            val result = submitThemeReport(token, id, theme, review, allReviews, submittedReason)
-                            val message = if (result.updated) R.string.theme_store_report_updated else R.string.theme_store_report_sent
-                            Toaster.s(context.getString(message, result.number))
-                            if (result.pending) {
-                                val target = when {
-                                    review != null -> "review:${theme.revision}:${review.author.githubId}"
-                                    allReviews -> "reviews:${theme.revision}"
-                                    else -> "theme"
-                                }
-                                val reports = pendingReportsByAccount.value
-                                pendingReportsByAccount.value = reports +
-                                    (id to (reports[id].orEmpty() + "${theme.themeId}:$target"))
-                            }
-                            dismiss()
-                        } catch (cancelled: CancellationException) {
-                            throw cancelled
-                        } catch (blocked: CreatorPublicationBlocked) {
-                            Toaster.e(blocked.publicMessage)
-                        } catch (_: CreatorPublicationSessionExpired) {
-                            GitHubAccount.clearPublicationToken(context)
-                            Toaster.i(R.string.theme_store_creator_session_expired)
-                        } catch (error: Exception) {
-                            Timber.tag("ThemeStore").w(error, "Could not submit report")
-                            Toaster.e(R.string.theme_store_report_error)
-                        } finally {
-                            sending = false
-                        }
-                    }
-                }
                 if (accountId != null && GitHubAccount.tokenFor(context, accountId) != null) submit()
-                else {
-                    authorizing = true
-                    GitHubAccount.start(context, accountId, submit)
-                }
+                else authorize(accountId)
             }, primary = true, enabled = reason.isNotBlank() && !sending && !awaiting),
         ))
     }) {
@@ -1000,7 +994,6 @@ internal fun ThemeReportDialog(theme: StoreTheme, review: StoreReview?, allRevie
                 shape = uiRoundnessShape(), colors = InputDialog.defaultTextFieldColors())
         }
     }
-    if (authorizing && awaiting) code?.let { GitHubLoginWebView(it) { GitHubAccount.cancel() } }
 }
 
 @Composable

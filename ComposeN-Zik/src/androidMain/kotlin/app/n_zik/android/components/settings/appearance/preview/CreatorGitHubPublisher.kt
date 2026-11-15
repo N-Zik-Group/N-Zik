@@ -313,6 +313,9 @@ internal suspend fun submitCreatorProfile(
         check(login.matches(Regex("[A-Za-z0-9-]{1,39}")))
         val upstream = "repos/$repo"
         require(withdrawal == null || (theme == null && review == null && files.isEmpty()))
+        val submittedFiles = if (review == null && withdrawal == null) {
+            authenticatedCreatorFiles(files, theme, id, login)
+        } else files
         val branch = when {
             withdrawal != null -> "nzik/withdraw-${withdrawal.themeId}"
             review != null -> "nzik/review-${review.theme.themeId}-${review.theme.revision}-$id"
@@ -347,7 +350,7 @@ internal suspend fun submitCreatorProfile(
         val withdrawalTitle = withdrawal?.let { "Withdraw theme: ${it.title}" }
         val body = if (withdrawal != null) {
             "The creator requested removal of this theme and all its published revisions from the Theme Store catalog."
-        } else if (review != null) "Review submitted from N-Zik for revision ${review.theme.revision}." else if (theme != null) "Theme submission from N-Zik. Revision ${theme.revision}." else creatorProfilePullBody(published, JSONObject(files.getValue(profilePath).decodeToString()))
+        } else if (review != null) "Review submitted from N-Zik for revision ${review.theme.revision}." else if (theme != null) "Theme submission from N-Zik. Revision ${theme.revision}." else creatorProfilePullBody(published, JSONObject(submittedFiles.getValue(profilePath).decodeToString()))
             ?: if (existing == null) throw CreatorPublicationUnchanged()
             else "## Creator profile update\n\nThe profile fields match the currently published version."
         val contributionFiles = if (withdrawal != null) {
@@ -397,9 +400,9 @@ internal suspend fun submitCreatorProfile(
             val indexKey = if (theme == null) "creators" else "themes"
             val original = index.getJSONArray(indexKey)
             val creators = JSONArray()
-            val updatedEntry = if (theme == null) JSONObject().put("githubId", id).put("profileSha256", files.getValue(profilePath).sha256())
+            val updatedEntry = if (theme == null) JSONObject().put("githubId", id).put("profileSha256", submittedFiles.getValue(profilePath).sha256())
             else JSONObject().put("themeId", theme.themeId).put("revision", theme.revision)
-                .put("manifestSha256", files.getValue(theme.directory + "manifest.json").sha256())
+                .put("manifestSha256", submittedFiles.getValue(theme.directory + "manifest.json").sha256())
             var indexed = false
             for (position in 0 until original.length()) {
                 val entry = original.getJSONObject(position)
@@ -421,7 +424,7 @@ internal suspend fun submitCreatorProfile(
             if (!indexed) check(theme == null || theme.revision == 1)
             if (theme != null || !indexed) creators.put(updatedEntry)
             index.put(indexKey, creators)
-            files + (indexPath to (index.toString(2) + "\n").encodeToByteArray())
+            submittedFiles + (indexPath to (index.toString(2) + "\n").encodeToByteArray())
         }
         // Each submission replaces the generated branch with one commit on current main.
         val baseTree = latest.getJSONObject("commit").getJSONObject("tree").getString("sha")
@@ -431,7 +434,7 @@ internal suspend fun submitCreatorProfile(
                 .put("content", Base64.encodeToString(bytes, Base64.NO_WRAP)))
             entries.put(JSONObject().put("path", path).put("mode", "100644").put("type", "blob").put("sha", blob.getString("sha")))
         }
-        for (path in supersededCreatorAssets(published, id, files.keys)) {
+        for (path in supersededCreatorAssets(published, id, submittedFiles.keys)) {
             entries.put(JSONObject().put("path", path).put("mode", "100644")
                 .put("type", "blob").put("sha", JSONObject.NULL))
         }
@@ -500,6 +503,19 @@ internal suspend fun submitCreatorProfile(
         }
         creatorPullUrl(number)
     }
+}
+
+/** Account handles can change while an OAuth token and an editor draft remain valid. */
+private fun authenticatedCreatorFiles(files: Map<String, ByteArray>, theme: StoreTheme?, id: Long, login: String): Map<String, ByteArray> {
+    val path = theme?.let { it.directory + "manifest.json" } ?: "catalog/creators/$id/profile.json"
+    val document = JSONObject(files.getValue(path).decodeToString())
+    val author = if (theme == null) document else document.getJSONObject("author")
+    if (author.getLong("githubId") != id || (theme != null && theme.author.githubId != id)) {
+        throw CreatorPublicationAccountMismatch()
+    }
+    if (author.optString("login") == login) return files
+    author.put("login", login)
+    return files + (path to document.toString(2).encodeToByteArray())
 }
 
 private fun supersededCreatorAssets(profile: JSONObject?, id: Long, submittedPaths: Set<String>): Set<String> {

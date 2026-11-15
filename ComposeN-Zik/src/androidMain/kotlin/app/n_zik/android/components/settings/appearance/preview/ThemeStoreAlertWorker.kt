@@ -41,7 +41,7 @@ internal class ThemeStoreAlertWorker internal constructor(
         val notificationsEnabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
         val id = GitHubAccount.userId(context).takeIf { notificationsEnabled }
         val library = ThemeStoreLibrary(preferences)
-        val needsCatalog = library.hasAutomaticDownloads() ||
+        val needsCatalog = library.hasAutomaticDownloads() || library.hasRestoredStoreUpdates(notificationsEnabled) ||
             (notificationsEnabled && library.hasNotificationSubscriptions()) || id != null
         val hasPending = id != null && hasPendingCreatorDecisions(context, id)
         val now = System.currentTimeMillis()
@@ -65,6 +65,7 @@ internal class ThemeStoreAlertWorker internal constructor(
             expireThemeStoreIndex()
             val themes = catalog.refresh()
             if (mayCheck()) {
+                if (!catalog.bindRestoredDownloads(library, themes, ::mayCheck)) failed = true
                 if (!catalog.downloadAutomaticUpdates(context, library, themes, ::mayCheck)) failed = true
                 if (notificationsEnabled && mayCheck()) notifyThemeStoreAlerts(context, library, themes)
             }

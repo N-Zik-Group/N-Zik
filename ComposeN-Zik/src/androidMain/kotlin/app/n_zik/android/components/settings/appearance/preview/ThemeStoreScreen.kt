@@ -273,23 +273,8 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
             val current = catalog.refreshState()
             themes = current.themes
             lastSync = current.syncedAt
-            val indexed = current.themes.associateBy { it.themeId }
-            val olderRestores = library.downloads().mapNotNull { it.storeOrigin }.distinct().mapNotNull { origin ->
-                val latest = indexed[origin.themeId] ?: return@mapNotNull null
-                if (origin.revision >= latest.revision) return@mapNotNull null
-                try {
-                    catalog.publishedRevision(latest, origin.revision)
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (error: Exception) {
-                    Timber.tag("ThemeStore").w(error, "Could not verify restored theme revision")
-                    null
-                }
-            }
-            if (getActiveProfile(context) == profileId) {
-                withContext(NzikDispatchers.DATA) {
-                    bindRestoredStoreThemes(library, current.themes + olderRestores)
-                }
+            catalog.bindRestoredDownloads(library, current.themes) {
+                owner != null && ProfileWorkOwner.isBound(context, owner) && !OfflineMode.enabled(context)
             }
             if (getActiveProfile(context) == profileId) notifyThemeStoreAlerts(context, library, current.themes)
             launch {

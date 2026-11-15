@@ -111,10 +111,117 @@ class ThemeStoreAlertWorkerTest {
         assertEquals(document, library.download("${update.themeId}:2")?.document)
     }
 
+    @Test
+    fun restoredStoreDownloadResumesAutomaticUpdatesWithoutOpeningTheStore() = runTest {
+        val restored = restoreOriginal()
+
+        val result = worker(catalog()).doWork()
+
+        assertTrue(result is ListenableWorker.Result.Success)
+        assertNull(library.download(restored.id))
+        assertEquals(false, library.download("${update.themeId}:1")?.imported)
+        assertEquals(document, library.download("${update.themeId}:2")?.document)
+    }
+
+    @Test
+    fun restoredLatestRevisionIsBoundWithoutDownloadingItAgain() = runTest {
+        val restored = restoreOriginal(update)
+
+        val result = worker(catalog { error("The restored appearance is already available") }).doWork()
+
+        assertTrue(result is ListenableWorker.Result.Success)
+        assertNull(library.download(restored.id))
+        assertEquals(false, library.download("${update.themeId}:2")?.imported)
+        assertEquals(document, library.download("${update.themeId}:2")?.document)
+    }
+
+    @Test
+    fun restoredStoreDownloadResumesUpdateNotifications() = runTest {
+        val restored = restoreOriginal()
+        library.setUpdateMode(update.themeId, ThemeUpdateMode.Notify)
+        val manager = checkNotNull(context.getSystemService(NotificationManager::class.java))
+        shadowOf(manager).setNotificationsEnabled(true)
+
+        val result = worker(catalog()).doWork()
+
+        assertTrue(result is ListenableWorker.Result.Success)
+        assertNull(library.download(restored.id))
+        assertEquals(false, library.download("${update.themeId}:1")?.imported)
+        assertNull(library.download("${update.themeId}:2"))
+        assertEquals(2, preferences.getInt("themeStore.updateSeen.${update.themeId}", 0))
+        assertTrue(manager.activeNotifications.any { it.tag == "theme-store-update:${update.themeId}" })
+    }
+
+    @Test
+    fun modifiedRestoredThemeCannotAcquireAStoreOriginOrAutomaticUpdates() = runTest {
+        val restored = restoreOriginal(update.copy(revision = 1, title = "Edited after export"))
+
+        val result = worker(catalog()).doWork()
+
+        assertTrue(result is ListenableWorker.Result.Success)
+        assertEquals(restored, library.download(restored.id))
+        assertNull(library.download("${update.themeId}:1"))
+        assertNull(library.download("${update.themeId}:2"))
+    }
+
+    @Test
+    fun failedRestoredRevisionVerificationRetriesWithoutBinding() = runTest {
+        val restored = restoreOriginal()
+
+        val result = worker(catalog(readOriginal = { error("Network unavailable") })).doWork()
+
+        assertTrue(result is ListenableWorker.Result.Retry)
+        assertEquals(restored, library.download(restored.id))
+        assertNull(library.download("${update.themeId}:2"))
+        assertFalse(preferences.contains("themeStore.alerts.lastCheck"))
+    }
+
+    @Test
+    fun profileChangeWhileVerifyingRestoredRevisionPreventsBinding() = runTest {
+        val restored = restoreOriginal()
+
+        val result = worker(catalog(readOriginal = {
+            setActiveProfile("other", context)
+            Json.encodeToString(update.copy(revision = 1)).encodeToByteArray()
+        })).doWork()
+
+        assertTrue(result is ListenableWorker.Result.Success)
+        assertEquals(restored, library.download(restored.id))
+        assertNull(library.download("${update.themeId}:1"))
+        assertNull(library.download("${update.themeId}:2"))
+        assertFalse(preferences.contains("themeStore.alerts.lastCheck"))
+    }
+
+    @Test
+    fun restoredThemesWithUpdatesDisabledDoNotStartNetworkChecks() = runTest {
+        val restored = restoreOriginal()
+        library.setUpdateMode(update.themeId, ThemeUpdateMode.Off)
+
+        val result = worker(ThemeStoreCatalog(folder.newFolder()) { _, _ -> error("No network expected") }).doWork()
+
+        assertTrue(result is ListenableWorker.Result.Success)
+        assertEquals(restored, library.download(restored.id))
+        assertFalse(preferences.contains("themeStore.alerts.lastCheck"))
+    }
+
+    private fun restoreOriginal(original: StoreTheme = update.copy(revision = 1)): SavedTheme {
+        library.removeDownload("${update.themeId}:1")
+        val local = original.copy(themeId = localThemeArchiveId(Json.encodeToString(original).encodeToByteArray()))
+        val restored = SavedTheme(
+            original.title, document, local, imported = true,
+            storeOrigin = ThemeStoreOrigin(original.themeId, original.revision),
+        )
+        assertEquals(1, library.restoreImported(listOf(restored)))
+        return restored
+    }
+
     private fun worker(catalog: ThemeStoreCatalog) =
         ThemeStoreAlertWorker(context, mockk<WorkerParameters>(relaxed = true), catalog)
 
-    private fun catalog(readAppearance: () -> ByteArray = { document.encodeToByteArray() }): ThemeStoreCatalog {
+    private fun catalog(
+        readOriginal: () -> ByteArray = { Json.encodeToString(update.copy(revision = 1)).encodeToByteArray() },
+        readAppearance: () -> ByteArray = { document.encodeToByteArray() },
+    ): ThemeStoreCatalog {
         val manifest = Json.encodeToString(StoreTheme.serializer(), update).encodeToByteArray()
         val index = """{"schemaVersion":1,"themes":[{"themeId":"${update.themeId}","revision":2,"manifestSha256":"${manifest.sha256()}"}]}"""
         return ThemeStoreCatalog(folder.newFolder()) { path, _ ->
@@ -122,6 +229,7 @@ class ThemeStoreAlertWorkerTest {
                 "catalog/themes/index.json" -> index.encodeToByteArray()
                 update.directory + "manifest.json" -> manifest
                 update.directory + "appearance.json" -> readAppearance()
+                update.copy(revision = 1).directory + "manifest.json" -> readOriginal()
                 else -> error("Unexpected path $path")
             }
         }

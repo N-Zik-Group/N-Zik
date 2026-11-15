@@ -441,6 +441,11 @@ object RescueFiles {
             check(editor.commit()) { "Could not save the settings" }
             check(encEditor?.commit() ?: true) { "Could not save the credentials" }
             check(glassEditor?.commit() ?: true) { "Could not save the Glass settings" }
+            if (encEditor != null && getActiveProfile(context) == profile) {
+                rows.lastOrNull { it.second == "githubBackupIdentity" }?.third?.let { identity ->
+                    app.n_zik.android.components.settings.accounts.GitHubAccount.restoreIdentity(context, identity)
+                }
+            }
             Timber.tag(TAG).i(
                 "Settings imported: %d entries (%d encrypted keys skipped)",
                 stats.imported, stats.encryptedSkipped
@@ -901,7 +906,7 @@ object RescueFiles {
         // (secure_preferences — the account credentials). Mirrors PREFS_NAME /
 //
         // ENCRYPTED_PREFS_NAME, computed for [profileId] instead of the active profile.
-        listOf("preferences$suffix", "secure_preferences$suffix").forEach { name ->
+        listOf("preferences$suffix", "secure_preferences$suffix", "github_account_profile_$profileId").forEach { name ->
             // deleteSharedPreferences (API 24+) removes the shared_prefs XML from disk.
             if (!context.deleteSharedPreferences(name)) {
                 Timber.tag(TAG).w("Could not delete %s.xml (it may be missing)", name)
@@ -1292,6 +1297,7 @@ object RescueFiles {
         check(editor.commit()) { "Could not clear normal preferences" }
         Timber.tag(TAG).i("Normal preferences cleared")
         check(glass.edit().clear().commit()) { "Could not clear Glass settings" }
+        context.deleteSharedPreferences("github_account_profile_${rescueTargetProfile()}")
 
         // Clear encrypted preferences
         val encPrefs = encryptedPrefsResult?.getOrNull()

@@ -356,3 +356,7 @@ Fixed:
   - Resume app installation after Android recreates the screen without saving provisional credentials.
 - fix(theme-store): download selected theme updates in the background
   - Share scheduled and on-screen downloads and recheck profile ownership before saving.
+- fix(theme-store): restore profile-scoped GitHub sessions and follow-up actions
+  - Keep credentials and account state scoped to the active profile, resume publication authorization, and refresh the GitHub login used in submissions.
+- fix(theme-store): resume updates for restored themes and refresh theme details
+  - Verify restored Store origins before scheduled updates and reflect downloads saved in the background.
