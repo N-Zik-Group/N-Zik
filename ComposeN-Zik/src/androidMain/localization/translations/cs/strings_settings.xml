@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">Výchozí stránka</string>
     <string name="settings_interface_corner_radius_label">Kolo UI</string>
     <string name="settings_interface_hide_status_bar_label">Skrýt stavový řádek</string>
+    <string name="settings_interface_right_to_left_label">Rozložení zprava doleva</string>
+    <string name="settings_interface_right_to_left_description">Zrcadlí rozhraní nezávisle na jazyku aplikace.</string>
     <string name="settings_interface_page_description">Sekce uživatelského rozhraní obsahuje nastavení pro změnu globálního rozhraní a navigace</string>
     <string name="settings_interface_page_title">UI</string>
     <string name="settings_interface_title">Uživatelské prostředí</string>
