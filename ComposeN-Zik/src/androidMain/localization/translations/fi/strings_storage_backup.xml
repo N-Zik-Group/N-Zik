@@ -3,6 +3,7 @@
     <string name="backup_export_themes_description">Tallenna ladatut ja paikalliset teemat ZIP varmuuskopioon</string>
     <string name="backup_import_themes_description">Palauta ladattu ja paikallinen teemat ZIP varmuuskopiosta</string>
     <string name="backup_export_select_all_description">Valitse kaikki vietävät tiedot</string>
+    <string name="backup_import_already_running">Varmuuskopion tuonti on jo käynnissä.</string>
     <string name="backup_import_select_all_description">Valitse kaikki tuotavat tiedot</string>
     <string name="backup_include_github_identity_credentials">Sisällytä GitHub henkilöllisyystiedot</string>
     <string name="storage_image_quality_title">Kuvan laatu</string>
