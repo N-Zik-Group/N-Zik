@@ -17,24 +17,46 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.PressGestureScope
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import androidx.media3.common.PlaybackParameters
+import kotlinx.coroutines.coroutineScope
+import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
+import app.n_zik.android.utils.holdToSpeedUpKey
+import app.n_zik.android.utils.holdToSpeedUpRateKey
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -247,8 +269,85 @@ fun Thumbnail(
 
         val thumbnailType by rememberPreference(thumbnailTypeKey, ThumbnailType.Modern)
         val cropVideoThumbnails by rememberPreference(cropVideoThumbnailsKey, true)
+        val holdToSpeedUp by rememberPreference(holdToSpeedUpKey, true)
+        val holdToSpeedUpRate by rememberPreference(holdToSpeedUpRateKey, 2f)
+        val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
+        val haptic = LocalHapticFeedback.current
+
+        var isHoldingToSpeedUp by remember { mutableStateOf(false) }
+        var originalPlaybackSpeed by remember { mutableFloatStateOf(1f) }
+
+        val startSpeedBoost = remember(player, listenTogetherGuestLock, holdToSpeedUpRate, context) {
+            {
+                if (listenTogetherGuestLock) {
+                    ListenTogetherGuestGuardPlayer.reportUiBlockedOp(context)
+                } else if (player.isPlaying) {
+                    val currentSpeed = player.playbackParameters.speed
+                    originalPlaybackSpeed = if (currentSpeed > 0f) currentSpeed else 1f
+                    val targetSpeed = if (holdToSpeedUpRate > 0f) holdToSpeedUpRate else 2f
+                    player.playbackParameters = PlaybackParameters(targetSpeed, player.playbackParameters.pitch)
+                    isHoldingToSpeedUp = true
+                    try {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    } catch (_: Exception) {}
+                }
+            }
+        }
+
+        val stopSpeedBoost = remember(player) {
+            {
+                if (isHoldingToSpeedUp) {
+                    isHoldingToSpeedUp = false
+                    player.playbackParameters = PlaybackParameters(originalPlaybackSpeed, player.playbackParameters.pitch)
+                }
+            }
+        }
+
+        DisposableEffect(player) {
+            onDispose {
+                stopSpeedBoost()
+            }
+        }
 
         val coverPressFeedback = rememberGlassRawPressFeedback()
+
+        val handleArtworkPress: suspend PressGestureScope.(Offset) -> Unit = { offset ->
+            val pressScope = this
+            coroutineScope {
+                launch { coverPressFeedback.onPress(pressScope, offset) }
+                try {
+                    tryAwaitRelease()
+                } finally {
+                    stopSpeedBoost()
+                }
+            }
+        }
+
+        val handleArtworkLongPress = {
+            if (holdToSpeedUp && player.isPlaying && !listenTogetherGuestLock) {
+                startSpeedBoost()
+            } else if (listenTogetherGuestLock) {
+                ListenTogetherGuestGuardPlayer.reportUiBlockedOp(context)
+            } else {
+                onShowStatsForNerds(true)
+            }
+        }
+
+        val handleArtworkTap = if (thumbnailTapEnabledKey) {
+            {
+                if (!isHoldingToSpeedUp) {
+                    onShowLyrics(true)
+                    onShowEqualizer(false)
+                }
+            }
+        } else null
+
+        val handleArtworkDoubleTap = {
+            if (!isHoldingToSpeedUp) {
+                onDoubleTap()
+            }
+        }
+
         val overlayArtworkBackdrop = rememberLayerBackdrop()
         var modifierUiType = modifier
 
@@ -291,17 +390,12 @@ fun Thumbnail(
                                 modifier = Modifier
                                     .glassImageRim(CircleShape)
                                     .then(coverPressFeedback.modifier())
-                                    .pointerInput(Unit) {
+                                    .pointerInput(thumbnailTapEnabledKey, holdToSpeedUp, player.isPlaying) {
                                         detectTapGestures(
-                                            onPress = { coverPressFeedback.onPress(this, it) },
-                                            onLongPress = { onShowStatsForNerds(true) },
-                                            onTap = if (thumbnailTapEnabledKey) {
-                                                {
-                                                    onShowLyrics(true)
-                                                    onShowEqualizer(false)
-                                                }
-                                            } else null,
-                                            onDoubleTap = { onDoubleTap() }
+                                            onPress = handleArtworkPress,
+                                            onLongPress = { handleArtworkLongPress() },
+                                            onTap = handleArtworkTap?.let { tap -> { tap() } },
+                                            onDoubleTap = { handleArtworkDoubleTap() }
                                         )
 
                                     },
@@ -314,17 +408,12 @@ fun Thumbnail(
                                 contentScale = if (cropVideoThumbnails) ContentScale.Crop else ContentScale.Fit,
                                 modifier = Modifier
                                     .then(coverPressFeedback.modifier())
-                                    .pointerInput(Unit) {
+                                    .pointerInput(thumbnailTapEnabledKey, holdToSpeedUp, player.isPlaying) {
                                         detectTapGestures(
-                                            onPress = { coverPressFeedback.onPress(this, it) },
-                                            onLongPress = { onShowStatsForNerds(true) },
-                                            onTap = if (thumbnailTapEnabledKey) {
-                                                {
-                                                    onShowLyrics(true)
-                                                    onShowEqualizer(false)
-                                                }
-                                            } else null,
-                                            onDoubleTap = { onDoubleTap() }
+                                            onPress = handleArtworkPress,
+                                            onLongPress = { handleArtworkLongPress() },
+                                            onTap = handleArtworkTap?.let { tap -> { tap() } },
+                                            onDoubleTap = { handleArtworkDoubleTap() }
                                         )
 
                                     }
@@ -338,17 +427,12 @@ fun Thumbnail(
                             painter = painterResource(R.drawable.ic_launcher_box),
                             modifier = Modifier
                                 .then(coverPressFeedback.modifier())
-                                .pointerInput(Unit) {
+                                .pointerInput(thumbnailTapEnabledKey, holdToSpeedUp, player.isPlaying) {
                                     detectTapGestures(
-                                        onPress = { coverPressFeedback.onPress(this, it) },
-                                        onLongPress = { onShowStatsForNerds(true) },
-                                        onTap = if (thumbnailTapEnabledKey) {
-                                            {
-                                                onShowLyrics(true)
-                                                onShowEqualizer(false)
-                                            }
-                                        } else null,
-                                        onDoubleTap = { onDoubleTap() }
+                                        onPress = handleArtworkPress,
+                                        onLongPress = { handleArtworkLongPress() },
+                                        onTap = handleArtworkTap?.let { tap -> { tap() } },
+                                        onDoubleTap = { handleArtworkDoubleTap() }
                                     )
 
                                 }
@@ -387,6 +471,44 @@ fun Thumbnail(
                     isDisplayed = isShowingStatsForNerds && error == null,
                     onDismiss = { onShowStatsForNerds(false) }
                 )
+
+                AnimatedVisibility(
+                    visible = isHoldingToSpeedUp,
+                    enter = fadeIn(animationSpec = tween(150)) + scaleIn(initialScale = 0.85f, animationSpec = tween(150)),
+                    exit = fadeOut(animationSpec = tween(150)) + scaleOut(targetScale = 0.85f, animationSpec = tween(150)),
+                    modifier = Modifier.align(Alignment.Center)
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = Color.Black.copy(alpha = 0.75f),
+                        shadowElevation = 8.dp,
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.play_forward),
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            BasicText(
+                                text = stringResource(
+                                    R.string.player_playback_speed_value,
+                                    if (holdToSpeedUpRate > 0f) holdToSpeedUpRate else 2f
+                                ),
+                                style = TextStyle(
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp
+                                )
+                            )
+                        }
+                    }
+                }
                 if (showvisthumbnail) {
                     CompositionLocalProvider(LocalGlassOverlayArtworkBackdrop provides overlayArtworkBackdrop) {
                         NextVisualizer(isDisplayed = isShowingVisualizer)
