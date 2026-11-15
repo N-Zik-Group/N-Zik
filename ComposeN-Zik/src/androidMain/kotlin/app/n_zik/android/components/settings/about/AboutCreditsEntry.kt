@@ -1,5 +1,11 @@
 package app.n_zik.android.components.settings.about
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,19 +36,22 @@ internal fun AboutCreditsEntry() {
         expanded = expanded,
         onClick = { expanded = !expanded }
     )
-    if (expanded) {
-        val resources = LocalContext.current.resources
-        val credits by produceState("", resources) {
-            value = withContext(NzikDispatchers.DATA) {
-                resources.openRawResource(R.raw.credits).bufferedReader().use { it.readText() }
-            }
+    val resources = LocalContext.current.resources
+    val credits by produceState("", resources) {
+        value = withContext(NzikDispatchers.DATA) {
+            resources.openRawResource(R.raw.credits).bufferedReader().use { it.readText() }
+                .removePrefix("# N-Zik credits").trimStart()
         }
-        if (credits.isNotEmpty()) {
-            MarkdownText(
-                markdown = credits.removePrefix("# N-Zik credits").trimStart(),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp).padding(top = 8.dp),
-                style = TextStyle(color = colorPalette().text)
-            )
-        }
+    }
+    AnimatedVisibility(
+        visible = expanded && credits.isNotEmpty(),
+        enter = fadeIn(tween(300)) + scaleIn(tween(300), initialScale = 0.95f),
+        exit = fadeOut(tween(200)) + scaleOut(tween(200), targetScale = 0.95f),
+    ) {
+        MarkdownText(
+            markdown = credits,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp).padding(top = 8.dp),
+            style = TextStyle(color = colorPalette().text),
+        )
     }
 }
