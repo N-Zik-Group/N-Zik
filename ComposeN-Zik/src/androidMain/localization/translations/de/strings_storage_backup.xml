@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="backup_export_themes_description">Heruntergeladene und lokale Themen in einem ZIP-Backup speichern</string>
+    <string name="backup_import_themes_description">Heruntergeladene und lokale Themes aus einem ZIP-Backup wiederherstellen</string>
+    <string name="backup_export_select_all_description">Wählen Sie jeden zu exportierenden Datentyp</string>
+    <string name="backup_import_select_all_description">Wählen Sie jeden zu importierenden Datentyp</string>
+    <string name="backup_include_github_identity_credentials">GitHub Identitätsdaten einbeziehen</string>
     <string name="storage_image_quality_title">Bildqualität</string>
     <string name="storage_image_quality_description">Gilt für Online-Kunstwerke und neu hinzugefügte Cover und Profilfotos. Original verwendet die höchste verfügbare Qualität und kann mehr Speicherplatz und Daten verwenden.</string>
     <string name="storage_image_quality_optimized">Optimiert</string>
@@ -116,9 +121,9 @@
     <string name="backup_before_update_failed">Backup fehlgeschlagen</string>
     <string name="backup_before_update_running_message">Daten vor der Installation sichern…</string>
     <string name="backup_before_update_running_title">Sicherung läuft</string>
-    <string name="backup_excluded_preferences_and_cache_description">Persönliche Einstellungen (z.B. das Farbschema) und der Cache sind ausgeschlossen.</string>
-    <string name="backup_export_library_options_description">Exportieren Sie die Datenbank mit ihren individuellen Covers, Einstellungen oder Profilen</string>
-    <string name="backup_import_library_options_description">SQLite- oder ZIP-Datenbank-Backup, Einstellungen oder Profile wiederherstellen</string>
+    <string name="backup_export_separate_files_description">Jede ausgewählte Kategorie wird in eine separate Datei exportiert. Cache-Dateien und das Stock Template sind ausgeschlossen.</string>
+    <string name="backup_export_with_themes_description">Exportieren Sie die Datenbank mit ihren individuellen Covers, Einstellungen, Themes oder Profilen</string>
+    <string name="backup_import_with_themes_description">SQLite- oder ZIP-Datenbank-Backup, Einstellungen, Themes oder Profile wiederherstellen</string>
     <string name="backup_include_discord_credentials">Discord-Zugangsdaten einbeziehen</string>
     <string name="backup_include_lastfm_credentials">Last.fm Identitätsnachweis einbeziehen</string>
     <string name="backup_include_proxy_password">Das Proxy-Passwort einfügen</string>
@@ -251,4 +256,34 @@
     <string name="export_cached_songs_generic_error">Export fehlgeschlagen</string>
     <string name="backup_startup_preparing_library">Bibliothek wird vorbereitet…</string>
     <string name="backup_startup_recovery_failed">Wiederherstellung Ihrer Bibliothek konnte nicht abgeschlossen werden.</string>
+    <string name="storage_breakdown_themes">Themes</string>
+    <string name="storage_info_themes">Gespeicherte Theme-Einträge und freigegebene Theme-Shop-Assets, Vorschau und Entwürfe.</string>
+    <string name="storage_breakdown_lyrics">Songtext</string>
+    <string name="storage_info_lyrics">Textbytes von heruntergeladenen und benutzerdefinierten Songtexten in der Profildatenbank gespeichert.</string>
+    <string name="storage_cleanup_clear_theme_cache">Theme Store Cache leeren</string>
+    <string name="storage_cleanup_theme_cache_description">Entfernt freigegebene Katalog-Metadaten. Gespeicherte Themen, Entwürfe und ihre Vorschau werden beibehalten.</string>
+    <string name="storage_cleanup_clear_lyrics">Abgerufene Songtexte löschen</string>
+    <string name="storage_cleanup_lyrics_description">Entfernt automatisch Liedtexte abgerufen. Eigene Songtexte werden beibehalten. Freed Seiten können von der Bibliotheksdatenbank wiederverwendet werden.</string>
+    <string name="backup_auto_enabled_title">Automatische Sicherung aktivieren</string>
+    <string name="backup_auto_enabled_description">Automatische Sicherungen pausieren und die Sicherungseinstellungen behalten.</string>
+    <string name="storage_cleanup_picker_title">Speicher bereinigen</string>
+    <string name="storage_cleanup_picker_description">Wählen Sie die Dateien und Daten, die für diesen Bereich gelöscht werden sollen.</string>
+    <string name="storage_cleanup_select_caches">Caches auswählen</string>
+    <string name="storage_cleanup_select_caches_description">Caches und temporäre Dateien auswählen.</string>
+    <string name="storage_cleanup_select_everything">Alles auswählen</string>
+    <string name="storage_cleanup_select_everything_description">Wählen Sie Caches und Daten, einschließlich Offline-Downloads.</string>
+    <string name="storage_cleanup_cache_group">Caches und temporäre Dateien</string>
+    <string name="storage_cleanup_delete_group">Zu löschende Daten</string>
+    <string name="storage_cleanup_review_selection">Überprüfen</string>
+    <string name="storage_cleanup_selected_confirmation">Ausgewählte Elemente in diesem Bereich löschen?</string>
+    <string name="storage_cleanup_option_cached_images">Cache-Bilder</string>
+    <string name="storage_cleanup_option_streamed_audio">Gestrahlter Ton</string>
+    <string name="storage_cleanup_option_waveforms">Wellenformen</string>
+    <string name="storage_cleanup_option_network_cache">Netzwerk-Cache</string>
+    <string name="storage_cleanup_option_diagnostic_logs">Diagnoseprotokolle</string>
+    <string name="storage_cleanup_option_temporary_files">Temporäre Dateien</string>
+    <string name="storage_cleanup_option_theme_catalog">Theme Store Cache</string>
+    <string name="storage_cleanup_option_fetched_lyrics">Songtexte automatisch abgerufen</string>
+    <string name="storage_cleanup_option_offline_downloads">Heruntergeladene Audio</string>
+    <string name="storage_cleanup_completed">Bereinigung abgeschlossen.</string>
 </resources>
