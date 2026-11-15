@@ -368,6 +368,9 @@ Fixed:
   - Reconcile identities and invalidate the old publication session in both settings import paths.
 - fix(theme-store): preserve edits while restored themes reconnect
   - Save explicit edits to an independent local copy and keep the verified Store version intact.
+- fix(rescue): keep profile settings safe during reset and restore
+  - Keep the selected profile after recreation and bind credential access to that profile.
+  - Serialize settings changes with app startup, block stale writes after restore, and flush the outgoing profile before switching.
 
 Added:
 - feat(youtube): support multiple Google accounts and YouTube Music channels

@@ -529,13 +529,13 @@ internal fun executeProfileSwitch(profile: String, context: Context) {
     val leftProfile = getActiveProfile(context)
     cancelProfileNotifications(context, leftProfile)
 
+    // Flush the outgoing profile while both accessors still resolve its stores.
+    context.preferences.edit().commit()
+    context.encryptedPreferences.edit().commit()
+
     // The switched profile counts as used from now on (spec: written at switch).
     context.saveProfileLastUsed(profile, System.currentTimeMillis())
     setActiveProfile(profile, context)
-
-    // Save all settings (the outgoing profile's stores, still cached under its file name).
-    context.preferences.edit().commit()
-    context.encryptedPreferences.edit().commit()
 
     context.stopService( context.intent<PlayerServiceModern>() )
     context.stopService( context.intent<MyDownloadService>() )

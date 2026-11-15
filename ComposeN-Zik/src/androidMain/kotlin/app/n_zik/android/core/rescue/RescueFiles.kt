@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import app.n_zik.android.core.backup.SettingsPreferencesBridge
 import app.n_zik.android.components.glass.GlassProfilePreferences
 import app.n_zik.android.components.ui.screens.profiles.evictProfileSecurePrefs
+import app.n_zik.android.utils.clearEncryptedPreferencesCache
 import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.migration.RemovedSettingsMigration
 import android.content.Context
@@ -116,6 +117,18 @@ object RescueFiles {
     @Volatile
     private var rescueProfile: String? = null
 
+    @Volatile
+    private var settingsReloadRequired = false
+
+    /** Called under the journal lock before replacing settings files in the Rescue process. */
+    internal fun requireSettingsReload() {
+        settingsReloadRequired = true
+    }
+
+    private fun checkSettingsCurrent() {
+        check(!settingsReloadRequired) { "Reopen Rescue after restoring settings" }
+    }
+
     private val profileSuffix: String
         get() {
             val profile = checkNotNull(rescueProfile) {
@@ -136,11 +149,6 @@ object RescueFiles {
     private const val STREAMING_CACHE_DIR = "exoplayer"
     private const val IMAGE_CACHE_DIR = "coil"
 
-    private val PREFS_NAME: String
-        get() = "preferences$profileSuffix"
-
-    private val ENCRYPTED_PREFS_NAME: String
-        get() = "secure_preferences$profileSuffix"
     /**
      * The directory holding every SharedPreferences XML of the app — ALWAYS the plain
      * `shared_prefs` dir: the profile suffix lives in the FILE name
@@ -148,11 +156,12 @@ object RescueFiles {
      * exist on Android, which would silently back up (and restore) nothing.
      */
     private const val SHARED_PREFS_DIR = "shared_prefs"
-    private val SETTINGS_FILE_NAMES: List<String>
-        get() = listOf("$PREFS_NAME.xml", "$ENCRYPTED_PREFS_NAME.xml",
-            "${GlassProfilePreferences.fileName(rescueTargetProfile())}.xml",
-            "github_account_profile_${rescueTargetProfile()}.xml",
-            "github_account_profile_${rescueTargetProfile()}.xml.bak")
+    private fun settingsFileNames(profile: String = rescueTargetProfile()): List<String> {
+        val suffix = if (profile == DEFAULT_PROFILE_ID) "" else "_$profile"
+        return listOf("preferences$suffix.xml", "secure_preferences$suffix.xml",
+            "${GlassProfilePreferences.fileName(profile)}.xml",
+            "github_account_profile_$profile.xml", "github_account_profile_$profile.xml.bak")
+    }
 
     /** Suffixes of the files that make up one SQLite database, main file first. */
     private val DB_FILE_SUFFIXES = listOf("", "-wal", "-shm", "-journal")
@@ -360,9 +369,9 @@ object RescueFiles {
         includeYtb: Boolean = false,
         includeDiscord: Boolean = false,
         includeLastfm: Boolean = false,
-        includeProxy: Boolean = false, includeGitHub: Boolean = false
+        includeProxy: Boolean = false, includeGitHub: Boolean = false,
+        profile: String = rescueTargetProfile(),
     ): Result<SettingsOutcome> = runCatching {
-        val profile = rescueTargetProfile()
         val prefs = profileDataPrefs(context, profile)
         val entries = SettingsPreferencesBridge.export(context, prefs, profile)
 
@@ -415,9 +424,10 @@ object RescueFiles {
     fun importSettings(
         context: Context,
         uri: Uri,
-        encryptedPrefsResult: Result<SharedPreferences>? = null
+        encryptedPrefsResult: Result<SharedPreferences>? = null,
+        profile: String = rescueTargetProfile(),
+        openEncryptedPreferences: () -> Result<SharedPreferences>? = { encryptedPrefsResult },
     ): Result<SettingsOutcome> = runCatching {
-        val profile = rescueTargetProfile()
         val target = checkNotNull(profileStorageIdentity(context, profile))
         val rows = context.contentResolver.openInputStream(uri)?.use { inStream ->
             readSettingsCsv(inStream)
@@ -426,9 +436,10 @@ object RescueFiles {
         if (rows.isEmpty()) error("Empty settings file")
 
         DatabaseRestoreJournal.withProfileStorageMutation(context) {
+            checkSettingsCurrent()
             check(profileStorageIdentity(context, profile) == target) { "The profile changed during settings import" }
             val editor = profileDataPrefs(context, profile).edit()
-            val encEditor = encryptedPrefsResult?.getOrNull()?.edit()
+            val encEditor = openEncryptedPreferences()?.getOrNull()?.edit()
             val glassEditor = SettingsPreferencesBridge.stageGlass(context, rows, profile)
             val stats = applySettingRows(rows, editor, encEditor) { key, value ->
                 SettingsPreferencesBridge.stageStorageRow(context, target, editor, key, value)
@@ -648,7 +659,6 @@ object RescueFiles {
         val paths = profileDeletionPaths(context, id)
         paths.forEach(ProfileResetSnapshot::validateTree)
         deleteProfileSettingsFiles(context, id)
-        evictProfileSecurePrefs(id)
         paths.forEach(ProfileResetSnapshot::deleteVerifiedTree)
         context.clearProfileShareFlags(id)
         context.clearProfileFaceEntries(id)
@@ -892,12 +902,17 @@ object RescueFiles {
      *
      * Returns the number of profiles actually restored.
      */
-    internal fun restoreProfiles(context: Context, ids: List<String>): Result<Int> =
+    internal fun restoreProfiles(
+        context: Context,
+        ids: List<String>,
+        beforeRestore: () -> Unit = {},
+    ): Result<Int> =
         runRescueMutation(context) {
             val toRestore = ids.distinct()
                 .filter { hasProfileBackup(context, it) }
-            toRestore.forEach { id -> restoreProfileData(context, id) }
             if (toRestore.isNotEmpty()) {
+                beforeRestore()
+                toRestore.forEach { id -> restoreProfileData(context, id) }
                 // The restored display names are back in the store: mirror them again
                 // in the names file.
                 if (!context.writeProfileEntries(context.currentProfileEntries())) {
@@ -924,17 +939,20 @@ object RescueFiles {
      * not an error: the profile may have never written settings.
      */
     private fun deleteProfileSettingsFiles(context: Context, profileId: String) {
-        GlassProfilePreferences.delete(context, profileId)
-        val suffix = if (profileId == DEFAULT_PROFILE_ID) "" else "_$profileId"
-        // The same names the app itself uses: plain settings + encrypted settings
-        // (secure_preferences — the account credentials). Mirrors PREFS_NAME /
-//
-        // ENCRYPTED_PREFS_NAME, computed for [profileId] instead of the active profile.
-        listOf("preferences$suffix", "secure_preferences$suffix", "github_account_profile_$profileId").forEach { name ->
-            // deleteSharedPreferences (API 24+) removes the shared_prefs XML from disk.
-            if (!context.deleteSharedPreferences(name)) {
-                Timber.tag(TAG).w("Could not delete %s.xml (it may be missing)", name)
+        try {
+            GlassProfilePreferences.delete(context, profileId)
+            val suffix = if (profileId == DEFAULT_PROFILE_ID) "" else "_$profileId"
+            // The same names the app itself uses: plain settings + encrypted settings
+            // (secure_preferences — the account credentials) for the selected profile.
+            listOf("preferences$suffix", "secure_preferences$suffix", "github_account_profile_$profileId").forEach { name ->
+                // deleteSharedPreferences (API 24+) removes the shared_prefs XML from disk.
+                if (!context.deleteSharedPreferences(name)) {
+                    Timber.tag(TAG).w("Could not delete %s.xml (it may be missing)", name)
+                }
             }
+        } finally {
+            evictProfileSecurePrefs(profileId)
+            clearEncryptedPreferencesCache()
         }
     }
 
@@ -1306,25 +1324,29 @@ object RescueFiles {
      */
     fun resetSettings(
         context: Context,
-        encryptedPrefsResult: Result<SharedPreferences>? = null
-    ): Result<Unit> = runCatching {
-        val glass = GlassProfilePreferences.preferences(context, rescueTargetProfile())
+        encryptedPrefsResult: Result<SharedPreferences>? = null,
+        profile: String = rescueTargetProfile(),
+        openEncryptedPreferences: () -> Result<SharedPreferences>? = { encryptedPrefsResult },
+    ): Result<Unit> = runRescueMutation(context) {
+        val suffix = if (profile == DEFAULT_PROFILE_ID) "" else "_$profile"
+        val glass = GlassProfilePreferences.preferences(context, profile)
         check(glass.edit().commit()) { "Could not flush Glass settings" }
         backupSettingsFiles(
             sharedPrefsDir = File(context.applicationInfo.dataDir, SHARED_PREFS_DIR),
-            backupDir = File(context.filesDir, RESCUE_BACKUPS_DIR)
+            backupDir = File(context.filesDir, RESCUE_BACKUPS_DIR),
+            profile = profile
         )
 
-        val plain = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val plain = context.getSharedPreferences("preferences$suffix", Context.MODE_PRIVATE)
         val editor = plain.edit()
         plain.all.keys.filterNot(::isSettingsOnlyStorageKey).forEach(editor::remove)
         check(editor.commit()) { "Could not clear normal preferences" }
         Timber.tag(TAG).i("Normal preferences cleared")
         check(glass.edit().clear().commit()) { "Could not clear Glass settings" }
-        context.deleteSharedPreferences("github_account_profile_${rescueTargetProfile()}")
+        context.deleteSharedPreferences("github_account_profile_$profile")
 
         // Clear encrypted preferences
-        val encPrefs = encryptedPrefsResult?.getOrNull()
+        val encPrefs = openEncryptedPreferences()?.getOrNull()
         if (encPrefs != null) {
             encPrefs.edit().clear().commit()
             Timber.tag(TAG).i("Encrypted preferences cleared")
@@ -1332,7 +1354,7 @@ object RescueFiles {
             // If keystore is broken, try to delete the file directly
             runCatching {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    context.deleteSharedPreferences(ENCRYPTED_PREFS_NAME)
+                    context.deleteSharedPreferences("secure_preferences$suffix")
                     Timber.tag(TAG).i("Encrypted preferences file deleted (keystore unavailable)")
                 } else {
                     Timber.tag(TAG).w("Cannot clear encrypted preferences: keystore unavailable and API < 24")
@@ -1352,15 +1374,22 @@ object RescueFiles {
      * back over the restored file. The caller must therefore end the `:rescue` process right
      * after a successful restore.
      */
-    fun restoreSettings(context: Context): Result<Unit> = runCatching {
+    fun restoreSettings(
+        context: Context,
+        profile: String = rescueTargetProfile(),
+        beforeRestore: () -> Unit = {},
+    ): Result<Unit> = runRescueMutation(context) {
+        val names = settingsFileNames(profile)
+        val plainFileName = names.first()
         val backupDir = File(context.filesDir, RESCUE_BACKUPS_DIR)
-        if (SETTINGS_FILE_NAMES.none { File(backupDir, it).exists() }) {
+        if (names.none { File(backupDir, it).exists() }) {
             error("No settings backup to restore")
         }
 
         val sharedPrefsDir = File(context.applicationInfo.dataDir, SHARED_PREFS_DIR)
-        preserveSettingsOnlyStorage(sharedPrefsDir.resolve("$PREFS_NAME.xml"), backupDir.resolve("$PREFS_NAME.xml"))
-        swapSettingsFiles(sharedPrefsDir, backupDir)
+        preserveSettingsOnlyStorage(sharedPrefsDir.resolve(plainFileName), backupDir.resolve(plainFileName))
+        beforeRestore()
+        swapSettingsFiles(sharedPrefsDir, backupDir, profile)
         Timber.tag(TAG).i("Settings restored from backup")
     }
 
@@ -1407,9 +1436,9 @@ object RescueFiles {
      * Copies the settings XML files of [sharedPrefsDir] into [backupDir], replacing the previous
      * backup. A settings file that does not exist leaves no stale copy behind.
      */
-    internal fun backupSettingsFiles(sharedPrefsDir: File, backupDir: File) {
+    internal fun backupSettingsFiles(sharedPrefsDir: File, backupDir: File, profile: String = rescueTargetProfile()) {
         backupDir.mkdirs()
-        SETTINGS_FILE_NAMES.forEach { name ->
+        settingsFileNames(profile).forEach { name ->
             val source = File(sharedPrefsDir, name)
             val backup = File(backupDir, name)
             if (source.exists()) source.copyTo(backup, overwrite = true) else backup.delete()
@@ -1421,9 +1450,13 @@ object RescueFiles {
      * becomes live and the file that was live becomes the new backup. The live file is parked
      * first, so no step removes the last good copy.
      */
-    internal fun swapSettingsFiles(sharedPrefsDir: File, backupDir: File) {
+    internal fun swapSettingsFiles(
+        sharedPrefsDir: File,
+        backupDir: File,
+        profile: String = rescueTargetProfile(),
+    ) {
         sharedPrefsDir.mkdirs()
-        SETTINGS_FILE_NAMES.forEach { name ->
+        settingsFileNames(profile).forEach { name ->
             val live = File(sharedPrefsDir, name)
             val backup = File(backupDir, name)
             val parked = File(backupDir, "$name.swap")
@@ -1440,12 +1473,17 @@ object RescueFiles {
      */
     fun hasSettingsBackup(context: Context): Boolean {
         val backupDir = File(context.filesDir, RESCUE_BACKUPS_DIR)
-        return SETTINGS_FILE_NAMES.any { File(backupDir, it).exists() }
+        return settingsFileNames().any { File(backupDir, it).exists() }
     }
 
     /** Serializes rescue file changes with imports and main-process startup. */
     private fun <T> runRescueMutation(context: Context, action: () -> T): Result<T> =
-        runCatching { DatabaseRestoreJournal.withRescueMutation(context, action) }
+        runCatching {
+            DatabaseRestoreJournal.withRescueMutation(context) {
+                checkSettingsCurrent()
+                action()
+            }
+        }
 
     /** Deletes all backups (database, settings and the profile reset backups) from the rescue_backups directory. */
     fun deleteBackups(context: Context): Result<Unit> = runRescueMutation(context) {

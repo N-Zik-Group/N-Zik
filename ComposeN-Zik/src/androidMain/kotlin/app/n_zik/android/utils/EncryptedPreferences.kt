@@ -18,27 +18,19 @@ import timber.log.Timber
 var encryptedPreferencesUpdateTrigger by mutableStateOf(0)
 
 @Volatile
-private var cachedEncryptedPreferences: SharedPreferences? = null
+private var cachedEncryptedPreferences: Pair<String, SharedPreferences>? = null
 
 @Synchronized
 private fun getOrCreateEncryptedPreferences(context: Context): SharedPreferences {
-    return cachedEncryptedPreferences ?: run {
-        val prefs = context.getEncryptedSharedPreferencesResult().onFailure {
-            Timber.tag("EncryptedPreferences").w("Cannot retrieve preferences encrypted with current master key. Deleting and recreating.")
-            if (isAtLeastAndroid7) {
-                runCatching {
-                    context.deleteSharedPreferences("secure_preferences")
-                }.onFailure {
-                    Timber.tag("EncryptedPreferences").e(it, "Error while deleting encrypted preferences")
-                }
-            }
-        }.getOrThrow()
-        cachedEncryptedPreferences = prefs
-        prefs
-    }
+    val app = context.applicationContext
+    val profile = getActiveProfile(app)
+    cachedEncryptedPreferences?.takeIf { it.first == profile }?.let { return it.second }
+    val preferences = app.getEncryptedSharedPreferencesResult(profile).onFailure {
+        Timber.tag("EncryptedPreferences").w(it, "Could not open encrypted preferences; preserving the stored credentials")
+    }.getOrThrow()
+    cachedEncryptedPreferences = profile to preferences
+    return preferences
 }
-
-
 
 const val discordPersonalAccessTokenKey = "DiscordPersonalAccessToken"
 const val isDiscordPresenceEnabledKey = "isDiscordPresenceEnabled"
@@ -84,19 +76,19 @@ inline fun <reified T : Enum<T>> EncryptedSharedPreferences.getEnum(
 val Context.encryptedPreferences: SharedPreferences
     get() = getOrCreateEncryptedPreferences(this)
 
-fun Context.getEncryptedSharedPreferencesResult(): Result<SharedPreferences> = runCatching {
-        EncryptedSharedPreferences.create(
-            applicationContext,
-            getActiveProfile(applicationContext).let { profile ->
-                "secure_preferences${if (profile != "default") "_$profile" else ""}"
-            },
-            MasterKey.Builder(applicationContext, MasterKey.DEFAULT_MASTER_KEY_ALIAS)
-                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                .build(),
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
-    }
+fun Context.getEncryptedSharedPreferencesResult(
+    profile: String = getActiveProfile(applicationContext),
+): Result<SharedPreferences> = runCatching {
+    val app = applicationContext
+    val suffix = if (profile == DEFAULT_PROFILE_ID) "" else "_$profile"
+    EncryptedSharedPreferences.create(
+        app,
+        "secure_preferences$suffix",
+        MasterKey.Builder(app, MasterKey.DEFAULT_MASTER_KEY_ALIAS).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+    )
+}
 
 @Composable
 fun rememberEncryptedPreference(key: String, defaultValue: Boolean): MutableState<Boolean> {

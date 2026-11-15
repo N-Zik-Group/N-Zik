@@ -41,8 +41,13 @@ class ProfileSwitchTest {
     @Test
     fun `switching profiles cancels the left profile notifications and ensures the incoming channels`() {
         mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
-        every { context.encryptedPreferences } returns
-            context.getSharedPreferences("secure_preferences", Context.MODE_PRIVATE)
+        val openedProfiles = mutableListOf<String>()
+        every { context.encryptedPreferences } answers {
+            val activeProfile = getActiveProfile(context)
+            openedProfiles += activeProfile
+            context.getSharedPreferences("secure_preferences_$activeProfile", Context.MODE_PRIVATE)
+        }
+        openedProfiles.clear()
 
         val nm = context.getSystemService(NotificationManager::class.java)
         nm.createNotificationChannels(
@@ -59,6 +64,7 @@ class ProfileSwitchTest {
 
         executeProfileSwitch("home", context)
 
+        assertEquals(listOf("work"), openedProfiles)
         // The "work" notification is gone; the base one survives.
         assertEquals(setOf(2), nm.activeNotifications.orEmpty().map { it.id }.toSet())
         // The active slot moved to the destination…

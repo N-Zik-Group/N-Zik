@@ -4,13 +4,17 @@ import android.app.Application
 import android.content.Context
 import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
+import androidx.security.crypto.MasterKey
 import app.n_zik.android.components.import.ImportSettings
 import app.n_zik.android.components.ui.screens.profiles.profileSecurePrefs
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.clearEncryptedPreferencesCache
+import app.n_zik.android.utils.encryptedPreferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.utils.writeProfileEntries
 import io.mockk.every
+import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import java.io.File
@@ -51,7 +55,21 @@ class GitHubSettingsImportTest {
     @After
     fun teardown() {
         GitHubAccount.cancel()
+        clearEncryptedPreferencesCache()
         unmockkAll()
+    }
+
+    @Test
+    fun secondaryProfileKeystoreFailurePreservesTheDefaultPreferencesFile() {
+        val base = context.getSharedPreferences("secure_preferences", Context.MODE_PRIVATE)
+        assertTrue(base.edit().putString("sentinel", "kept").commit())
+        setActiveProfile("work", context)
+        clearEncryptedPreferencesCache()
+        mockkConstructor(MasterKey.Builder::class)
+        every { anyConstructed<MasterKey.Builder>().build() } throws IllegalStateException("Unavailable test key")
+
+        assertTrue(runCatching { context.encryptedPreferences }.isFailure)
+        assertEquals("kept", context.getSharedPreferences("secure_preferences", Context.MODE_PRIVATE).getString("sentinel", null))
     }
 
     @Test
@@ -83,6 +101,36 @@ class GitHubSettingsImportTest {
     @Test
     fun rescueImportRestoresAnInactiveSignedOutAccount() {
         assertInactiveImport(rescue = true, signedOut = true)
+    }
+
+    @Test
+    fun rescueImportKeepsTheCapturedProfileAfterTheSelectorChanges() {
+        val captured = RescueFiles.rescueTargetProfile()
+        val credentials = secrets(captured)
+        RescueFiles.setRescueProfile("default")
+
+        RescueFiles.importSettings(context, Uri.fromFile(identityCsv()), Result.success(credentials), captured).getOrThrow()
+
+        assertEquals(456L, GitHubAccount.userId(context))
+        assertEquals("default-token", GitHubAccount.tokenFor(context, 456))
+        setActiveProfile("work", context)
+        assertRestoredAccount()
+    }
+
+    @Test
+    fun rescueExportKeepsTheCapturedProfileAfterTheSelectorChanges() {
+        val captured = RescueFiles.rescueTargetProfile()
+        val credentials = secrets(captured)
+        RescueFiles.setRescueProfile("default")
+        val target = File(context.cacheDir, "github-settings-export.csv")
+
+        RescueFiles.exportSettings(
+            context, Uri.fromFile(target), Result.success(credentials), includeGitHub = true, profile = captured,
+        ).getOrThrow()
+
+        val restored = target.inputStream().use(RescueFiles::readSettingsCsv)
+            .single { it.second == "githubBackupIdentity" }
+        assertEquals(123L, JSONObject(restored.third).getLong("id"))
     }
 
     @Test

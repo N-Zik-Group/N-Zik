@@ -80,9 +80,7 @@ import app.n_zik.android.core.backup.DatabaseBackup
 import app.n_zik.android.core.backup.ProfileStateArchive
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.core.rescue.RescueProcess
-import kotlinx.coroutines.CoroutineStart
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -110,6 +108,7 @@ import app.n_zik.android.components.dialog.common.DialogFrame
 
 /** Time left to read the confirmation toast before the `:rescue` process is ended. */
 private const val PROCESS_EXIT_DELAY_MS = 1_500L
+private var restoreExitPending = false
 
 /**
  * MIME types accepted by the Rescue "Import settings" picker.
@@ -161,21 +160,8 @@ fun RescueScreen() {
 //
     // not open, so writing its files directly is safe). In-memory only: the app's
     // active profile is never switched from here.
-    var targetProfile by remember { mutableStateOf(getActiveProfile(context)) }
+    var targetProfile by remember { mutableStateOf(RescueFiles.rescueTargetProfile()) }
     var profileOptions by remember { mutableStateOf<List<ProfileOption>>(emptyList()) }
-
-    // The rescue TARGET's per-profile secure prefs — never the active profile's:
-    // per-profile settings actions operate on the selected profile, whose
-//
-    // credentials live in its own encrypted store. Opened lazily, off the main
-//
-    // thread, only when an action awaits it (keystore work must not run in
-    // composition; database/log actions never need it).
-    val encryptedPrefs = remember(scope, targetProfile) {
-        scope.async(NzikDispatchers.DATA, start = CoroutineStart.LAZY) {
-            runCatching { profileSecurePrefs(context, targetProfile) }
-        }
-    }
 
     // State for confirmation dialogs
     var confirmAction by remember { mutableStateOf<ConfirmAction?>(null) }
@@ -215,7 +201,6 @@ fun RescueScreen() {
     var rescueCategory by remember { mutableStateOf(RescueCategory.ALL) }
 
     // Set once restored settings are waiting for this process to end: no other write may run.
-    var exitPending by remember { mutableStateOf(false) }
 
     // Which actions are available depends on files on disk (logs, backups). Read off the main
     // thread and re-read after every action so the cards never stay stale.
@@ -370,10 +355,42 @@ fun RescueScreen() {
         }
     }
 
+    fun <T> restoreAndExit(
+        restore: (() -> Unit) -> Result<T>,
+        successMessage: (T) -> String? = { null },
+    ) {
+        if (restoreExitPending) return
+        restoreExitPending = true
+        NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+            var restoreStarted = false
+            try {
+                val result = withContext(NzikDispatchers.DATA) {
+                    restore {
+                        RescueFiles.requireSettingsReload()
+                        restoreStarted = true
+                    }
+                }
+                showResult(result, result.getOrNull()?.let(successMessage))
+            } finally {
+                if (restoreStarted) {
+                    // SharedPreferences must be reopened even if a restore fails after replacing a file.
+                    delay(PROCESS_EXIT_DELAY_MS)
+                    try {
+                        (context as? Activity)?.finishAndRemoveTask()
+                    } finally {
+                        Process.killProcess(Process.myPid())
+                    }
+                } else {
+                    restoreExitPending = false
+                }
+            }
+        }
+    }
+
     // Helper to check main process before write actions
     fun guardWrite(action: () -> Unit) {
         // A write now would commit this process's stale in-memory preferences over the restored files.
-        if (exitPending) return
+        if (restoreExitPending) return
         // Likely-alive, not raw probe: from 31 on the probe is restricted to the calling
         // process and would always say "not running", letting a live main process through. The
 //
@@ -457,14 +474,20 @@ fun RescueScreen() {
     val exportSettingsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("text/csv")
     ) { uri: Uri? ->
-        uri ?: return@rememberLauncherForActivityResult
+        if (uri == null || restoreExitPending) return@rememberLauncherForActivityResult
+        val profile = targetProfile
+        val exportYouTube = includeYtb
+        val exportDiscord = includeDiscord
+        val exportLastFm = includeLastfm
+        val exportProxy = includeProxy
+        val exportGitHub = includeGitHub
         scope.launch {
             val result = withContext(NzikDispatchers.DATA) {
-                val wantsCredentials = includeYtb || includeDiscord || includeLastfm || includeProxy || includeGitHub
+                val wantsCredentials = exportYouTube || exportDiscord || exportLastFm || exportProxy || exportGitHub
                 RescueFiles.exportSettings(
                     context, uri,
-                    if (wantsCredentials) encryptedPrefs.await() else null,
-                    includeYtb, includeDiscord, includeLastfm, includeProxy, includeGitHub
+                    if (wantsCredentials) runCatching { profileSecurePrefs(context, profile) } else null,
+                    exportYouTube, exportDiscord, exportLastFm, exportProxy, exportGitHub, profile = profile
                 )
             }
             showSettingsResult(result)
@@ -475,11 +498,14 @@ fun RescueScreen() {
         ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri ?: return@rememberLauncherForActivityResult
+        val profile = targetProfile
         withCrossProfileGuard(uri) {
             guardWrite {
                 scope.launch {
                     val result = withContext(NzikDispatchers.DATA) {
-                        RescueFiles.importSettings(context, uri, encryptedPrefs.await())
+                        RescueFiles.importSettings(context, uri, profile = profile) {
+                            runCatching { profileSecurePrefs(context, profile) }
+                        }
                     }
                     showSettingsResult(result)
                 }
@@ -553,7 +579,7 @@ fun RescueScreen() {
             onConfirm = {
                 val action = confirmAction
                 confirmAction = null
-                action?.onConfirm?.invoke()
+                if (!restoreExitPending) action?.onConfirm?.invoke()
             }
         )
     }
@@ -572,7 +598,7 @@ fun RescueScreen() {
             onConfirm = {
                 val action = crossProfilePending
                 crossProfilePending = null
-                action?.onConfirm?.invoke()
+                if (!restoreExitPending) action?.onConfirm?.invoke()
             }
         )
     }
@@ -864,17 +890,12 @@ fun RescueScreen() {
                                     // The selection is the informed choice; the standard
                                     // confirmation states what the restore replaces.
                                     confirmAction = ConfirmAction(R.string.recovery_confirm_restore_profiles) {
-                                        scope.launch {
-                                            val result = withContext(NzikDispatchers.DATA) {
-                                                RescueFiles.restoreProfiles(context, selected.toList())
-                                            }
-                                            showResult(
-                                                result,
-                                                result.getOrNull()?.let {
-                                                    context.resources.getQuantityString(R.plurals.recovery_profile_restored_count, it, it)
-                                                }
-                                            )
-                                        }
+                                        restoreAndExit(
+                                            restore = { RescueFiles.restoreProfiles(context, selected.toList(), it) },
+                                            successMessage = {
+                                                context.resources.getQuantityString(R.plurals.recovery_profile_restored_count, it, it)
+                                            },
+                                        )
                                     }
                                 }
                             }
@@ -1223,10 +1244,13 @@ fun RescueScreen() {
                                 } else {
                                     R.string.recovery_confirm_reset_settings
                                 }
+                                val profile = targetProfile
                                 confirmAction = ConfirmAction(message) {
                                     scope.launch {
                                         val result = withContext(NzikDispatchers.DATA) {
-                                            RescueFiles.resetSettings(context, encryptedPrefs.await())
+                                            RescueFiles.resetSettings(context, profile = profile) {
+                                                runCatching { profileSecurePrefs(context, profile) }
+                                            }
                                         }
                                         showResult(result)
                                     }
@@ -1244,33 +1268,9 @@ fun RescueScreen() {
                         disabledReason = stringResource(R.string.recovery_no_settings_backup),
                         onClick = {
                             guardWrite {
+                                val profile = targetProfile
                                 confirmAction = ConfirmAction(R.string.recovery_confirm_restore_settings) {
-                                    scope.launch {
-                                        val result = withContext(NzikDispatchers.DATA) {
-                                            RescueFiles.restoreSettings(context)
-                                        }
-                                        showResult(result)
-                                        if (result.isSuccess) {
-                                            // The XML files were swapped behind this process's in-memory
-                                            // SharedPreferences: a later commit() would write the stale map
-//
-                                            // back over them. End the :rescue process so nothing does. Armed
-                                            // on the main looper, not in the composition scope: leaving the
-//
-                                            // screen or recreating the activity cannot cancel it.
-                                            exitPending = true
-                                            NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                                                delay(PROCESS_EXIT_DELAY_MS)
-                                                // The kill must run even if finishing the task throws: the
-                                                // old Handler runnable ended the process on any exception.
-                                                try {
-                                                    (context as? Activity)?.finishAndRemoveTask()
-                                                } finally {
-                                                    Process.killProcess(Process.myPid())
-                                                }
-                                            }
-                                        }
-                                    }
+                                    restoreAndExit(restore = { RescueFiles.restoreSettings(context, profile, it) })
                                 }
                             }
                         }

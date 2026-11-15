@@ -149,7 +149,7 @@ class RescueFilesProfileOpsTest {
     }
 
     @Test
-    fun `rescue database and profile mutations are rejected while main holds the lease`() {
+    fun `rescue database, profile and settings mutations are rejected while main holds the lease`() {
         seedBaseFiles()
         seedProfileFiles("work", "data_work.db")
         val backup = File(filesDir, "rescue_backups/data.db").apply {
@@ -163,6 +163,8 @@ class RescueFilesProfileOpsTest {
             { RescueFiles.resetProfiles(context, listOf("work")) },
             { RescueFiles.restoreProfiles(context, listOf("work")) },
             { RescueFiles.deleteBackups(context) },
+            { RescueFiles.resetSettings(context) },
+            { RescueFiles.restoreSettings(context) },
         )
 
         RandomAccessFile(filesDir.resolve("database-main.lock"), "rw").use { handle ->

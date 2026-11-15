@@ -82,7 +82,7 @@ class RescueScreenResetSettingsTargetTest {
     }
 
     @Test
-    fun `reset settings on a non-active target clears the target secure store not the active one`() {
+    fun `reset settings after recreation still clears the selected non-active target`() {
         val workEditor = mockk<SharedPreferences.Editor>(relaxed = true)
         val workSecure = mockk<SharedPreferences>()
         every { workSecure.edit() } returns workEditor
@@ -115,6 +115,11 @@ class RescueScreenResetSettingsTargetTest {
         }
         composeRule.onNodeWithText("work").assertIsDisplayed()
         composeRule.onNodeWithText("work").performClick()
+        composeRule.waitForIdle()
+
+        composeRule.activityRule.scenario.recreate()
+        composeRule.onNodeWithText(context.getString(R.string.recovery_category_profile)).performClick()
+        composeRule.mainClock.advanceTimeBy(500)
         composeRule.waitForIdle()
 
         composeRule
