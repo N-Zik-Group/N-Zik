@@ -264,6 +264,14 @@
     <string name="theme_store_choose_revision">Escolher uma revisão</string>
     <string name="theme_store_published_on">Publicado em %1$s</string>
     <string name="theme_store_compatibility">Compatibilidade N-Zik</string>
+    <string name="theme_store_submission_minimum_version">Versão mínima de N-Zik</string>
+    <string name="theme_store_submission_minimum_description">The oldest version that can apply this theme. New themes default to version code %3$d. You are using N-Zik %1$s (version code %2$d).</string>
+    <string name="theme_store_submission_version_code_label">Código mínimo de versão</string>
+    <string name="theme_store_submission_find_version_code">Encontre versões e códigos N-Zik</string>
+    <string name="theme_store_submission_version_with_code">%1$s (código %2$d)</string>
+    <string name="theme_store_submission_version_code">Código da versão %1$d</string>
+    <string name="theme_store_submission_version_required">Insira o código da versão %1$d.</string>
+    <string name="theme_store_submission_version_range">Insira um código de versão entre %1$d e %2$d.</string>
     <string name="theme_store_revision">Revisão %1$d</string>
     <string name="theme_store_authors">Criadores</string>
     <string name="theme_store_author_theme_count">Temas: %1$d</string>
@@ -433,6 +441,7 @@
     <string name="theme_store_preview_import_requirements">As pré-visualizações são públicas. Mantenha informações pessoais fora das capturas de tela. PNG, JPEG ou WebP · 4 MB por imagem.</string>
     <string name="theme_store_preview_import_error">Não foi possível importar esta imagem. Escolha uma imagem PNG, JPEG ou WebP com menos de 4 MB.</string>
     <string name="theme_store_submission_included">Configurações incluídas</string>
+    <string name="theme_store_submission_unsupported_categories">Estes grupos contêm configurações que não podem ser compartilhadas em um tema: %1$s.</string>
     <string name="theme_store_submission_sending">Enviando para revisão…</string>
     <string name="theme_store_report_theme">Reportar tema</string>
     <string name="theme_store_report_review">Denunciar revisão</string>
