@@ -87,6 +87,18 @@ internal fun signedInCreatorId(): Long? {
     return remember(context, login) { GitHubAccount.userId(context) }
 }
 
+internal fun hasCreatorPublicationChanges(
+    published: CreatorProfile?,
+    login: String,
+    displayName: String,
+    description: String,
+    avatar: String?,
+    banner: String?,
+): Boolean = published == null || published.login != login ||
+    displayName.trim() != published.displayName || description != published.bio ||
+    (avatar != null && (avatar.isNotEmpty() || published.avatar.source != "github")) ||
+    (banner != null && (banner.isNotEmpty() || published.banner.source != "generated"))
+
 @Composable
 internal fun CreatorProfileSettingsEntry(
     onClick: () -> Unit,
@@ -194,13 +206,9 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
     val displayName = name ?: publicProfile?.displayName ?: login
     val description = bio ?: publicProfile?.bio.orEmpty()
     val published = publicProfile
-    val hasPublicationChanges = catalogLoaded && (
-        published == null ||
-            displayName.trim() != published.displayName ||
-            description != published.bio ||
-            (avatar != null && (avatar!!.isNotEmpty() || published.avatar.source != "github")) ||
-            (banner != null && (banner!!.isNotEmpty() || published.banner.source != "generated"))
-        )
+    val hasPublicationChanges = catalogLoaded && hasCreatorPublicationChanges(
+        published, login, displayName, description, avatar, banner,
+    )
     val avatarImage by produceState<Any?>(null, catalog, publicProfile, avatar) {
         val profile = publicProfile
         value = if (avatar != null) avatar?.takeIf(String::isNotEmpty)?.let(Uri::parse)

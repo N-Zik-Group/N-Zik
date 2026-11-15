@@ -219,6 +219,44 @@ class CreatorGitHubPublisherTest {
     }
 
     @Test
+    fun renamedPublishedProfileCanBeSubmittedWithoutOtherChanges() = runTest {
+        val before = """{"githubId":123,"login":"old-login","displayName":"Creator","bio":""}"""
+        val fork = OutdatedFork(alreadyPublished = false, publishedProfile = before)
+        val path = "catalog/creators/123/profile.json"
+
+        val url = submitCreatorProfile("test-token", 123, mapOf(path to before.encodeToByteArray()),
+            requestClient = fork.client, contributionBlock = { null })
+
+        assertEquals("https://github.com/$upstream/pull/400", url)
+        assertEquals("## Creator profile update\n\n- GitHub username updated.", checkNotNull(fork.pull).getString("body"))
+        val entries = checkNotNull(fork.tree).getJSONArray("tree")
+        val profile = (0 until entries.length()).map(entries::getJSONObject).single { it.getString("path") == path }
+        assertEquals("creator", JSONObject(fork.blobs.getValue(profile.getString("sha")).decodeToString()).getString("login"))
+    }
+
+    @Test
+    fun unchangedPublishedProfileStillDoesNotOpenAPull() = runTest {
+        val before = """{"githubId":123,"login":"creator","displayName":"Creator","bio":""}"""
+        val fork = OutdatedFork(alreadyPublished = false, publishedProfile = before)
+
+        val result = runCatching {
+            submitCreatorProfile("test-token", 123, mapOf("catalog/creators/123/profile.json" to before.encodeToByteArray()),
+                requestClient = fork.client, contributionBlock = { null })
+        }
+
+        assertTrue(result.exceptionOrNull() is CreatorPublicationUnchanged)
+        assertEquals(null, fork.pull)
+    }
+
+    @Test
+    fun profileEditorEnablesPublishingWhenOnlyTheGitHubLoginChanged() {
+        val published = CreatorProfile(1, 123, "old-login", "Creator", "Bio", CreatorMedia("github"), CreatorMedia("generated"))
+
+        assertFalse(hasCreatorPublicationChanges(published, "old-login", "Creator", "Bio", null, null))
+        assertTrue(hasCreatorPublicationChanges(published, "creator", "Creator", "Bio", null, null))
+    }
+
+    @Test
     fun refreshingAHandleNeverReattributesAnotherAccountsDocument() = runTest {
         val fork = OutdatedFork(alreadyPublished = false)
         val result = runCatching {
@@ -244,6 +282,7 @@ class CreatorGitHubPublisherTest {
         private val alreadyPublished: Boolean,
         private val refStatus: Int = 201,
         private val closingPull: Boolean = false,
+        private val publishedProfile: String? = null,
     ) {
         val calls = mutableListOf<String>()
         var ref: JSONObject? = null
@@ -271,7 +310,7 @@ class CreatorGitHubPublisherTest {
                 path == "/repos/$upstream/branches/main" -> 200 to
                     """{"commit":{"sha":"$mainSha","commit":{"tree":{"sha":"$mainTree"}}}}"""
                 path == "/repos/creator/N-Zik-Theme-Store/git/commits/$mainSha" -> 200 to "{}"
-                path.endsWith("/creators/123/profile.json") -> 404 to "{}"
+                path.endsWith("/creators/123/profile.json") -> publishedProfile?.let { 200 to contents(it) } ?: (404 to "{}")
                 path.endsWith("/creators/index.json") -> 200 to contents("""{"creators":[]}""")
                 path.endsWith("/themes/index.json") -> 200 to contents(
                     if (alreadyPublished) """{"themes":[{"themeId":"$themeId","revision":1}]}""" else """{"themes":[]}""",

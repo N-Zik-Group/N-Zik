@@ -149,7 +149,9 @@ object RescueFiles {
     private const val SHARED_PREFS_DIR = "shared_prefs"
     private val SETTINGS_FILE_NAMES: List<String>
         get() = listOf("$PREFS_NAME.xml", "$ENCRYPTED_PREFS_NAME.xml",
-            "${GlassProfilePreferences.fileName(rescueTargetProfile())}.xml")
+            "${GlassProfilePreferences.fileName(rescueTargetProfile())}.xml",
+            "github_account_profile_${rescueTargetProfile()}.xml",
+            "github_account_profile_${rescueTargetProfile()}.xml.bak")
 
     /** Suffixes of the files that make up one SQLite database, main file first. */
     private val DB_FILE_SUFFIXES = listOf("", "-wal", "-shm", "-journal")
@@ -750,7 +752,8 @@ object RescueFiles {
         }
         val sharedPrefsDir = File(context.applicationInfo.dataDir, SHARED_PREFS_DIR).canonicalFile
         val suffix = if (profileId == DEFAULT_PROFILE_ID) "" else "_$profileId"
-        listOf("preferences$suffix", "secure_preferences$suffix", GlassProfilePreferences.fileName(profileId)).forEach { name ->
+        listOf("preferences$suffix", "secure_preferences$suffix", GlassProfilePreferences.fileName(profileId),
+            "github_account_profile_$profileId").forEach { name ->
             put("$name.xml", sharedPrefsDir.resolve("$name.xml"))
             put("$name.xml.bak", sharedPrefsDir.resolve("$name.xml.bak"))
         }
@@ -791,7 +794,10 @@ object RescueFiles {
         }
 
         if (ProfileResetSnapshot.isVerifiedSnapshot(backup) || ProfileResetSnapshot.hasInterruptedRestore(backup)) {
-            ProfileResetSnapshot(backup).restore(profileResetPaths(context, profileId), { faceEntries(context, profileId) }) {
+            ProfileResetSnapshot(backup).restore(
+                profileResetPaths(context, profileId), { faceEntries(context, profileId) },
+                missingAsAbsent = setOf("github_account_profile_$profileId.xml", "github_account_profile_$profileId.xml.bak"),
+            ) {
                 restoreFaceEntries(context, profileId, it)
                 check(context.writeProfileEntries(context.currentProfileEntries())) {
                     "Could not update the profile registry after restore"
@@ -815,6 +821,13 @@ object RescueFiles {
         listOf("preferences$suffix", "secure_preferences$suffix", GlassProfilePreferences.fileName(profileId)).forEach { name ->
             val src = File(backup, "$name.xml")
             if (src.exists()) moveReplacing(src, File(sharedPrefsDir, "$name.xml"))
+        }
+        // Older snapshots omitted the identity; let the restored encrypted account rebuild it.
+        listOf(".xml", ".xml.bak").forEach { extension ->
+            val name = "github_account_profile_$profileId$extension"
+            val source = File(backup, name)
+            val target = File(sharedPrefsDir, name)
+            if (source.exists()) moveReplacing(source, target) else ProfileResetSnapshot.deleteVerifiedTree(target)
         }
 
         // The face files: the backed-up dir replaces the live one.

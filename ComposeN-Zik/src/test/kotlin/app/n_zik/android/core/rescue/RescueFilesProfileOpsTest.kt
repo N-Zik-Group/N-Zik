@@ -546,6 +546,69 @@ class RescueFilesProfileOpsTest {
     }
 
     @Test
+    fun profileRestoreSwapsGitHubIdentityAndCredentialsTogether() {
+        File(filesDir, "Profiles_names.txt").writeText("work\n")
+        seedProfileFiles("work", "data_work.db")
+        val identity = File(sharedPrefsDir, "github_account_profile_work.xml").apply { writeText("identity A, invalidated token") }
+        val identityBackup = File(sharedPrefsDir, "github_account_profile_work.xml.bak").apply { writeText("identity A, signed out") }
+        val credentials = File(sharedPrefsDir, "secure_preferences_work.xml").apply { writeText("credentials A") }
+        RescueFiles.resetProfiles(context, listOf("work")).getOrThrow()
+        assertFalse(identity.exists())
+        assertFalse(identityBackup.exists())
+        identity.writeText("identity B")
+        credentials.writeText("credentials B")
+
+        RescueFiles.restoreProfiles(context, listOf("work")).getOrThrow()
+
+        assertEquals("identity A, invalidated token", identity.readText())
+        assertEquals("identity A, signed out", identityBackup.readText())
+        assertEquals("credentials A", credentials.readText())
+        RescueFiles.restoreProfiles(context, listOf("work")).getOrThrow()
+        assertEquals("identity B", identity.readText())
+        assertFalse(identityBackup.exists())
+        assertEquals("credentials B", credentials.readText())
+    }
+
+    @Test
+    fun olderVerifiedProfileSnapshotClearsTheNewerIdentityAndKeepsItForRollback() {
+        File(filesDir, "Profiles_names.txt").writeText("work\n")
+        seedProfileFiles("work", "data_work.db")
+        val credentials = File(sharedPrefsDir, "secure_preferences_work.xml").apply { writeText("credentials A") }
+        RescueFiles.resetProfiles(context, listOf("work")).getOrThrow()
+        val manifest = File(backupDir("work"), ".verified-reset")
+        manifest.writeText(manifest.readLines().filterNot { " github_account_profile_work.xml" in it }.joinToString("\n"))
+        val identity = File(sharedPrefsDir, "github_account_profile_work.xml").apply { writeText("identity B") }
+        val identityBackup = File(sharedPrefsDir, "github_account_profile_work.xml.bak").apply { writeText("identity B backup") }
+        credentials.writeText("credentials B")
+
+        RescueFiles.restoreProfiles(context, listOf("work")).getOrThrow()
+
+        assertFalse(identity.exists())
+        assertFalse(identityBackup.exists())
+        assertEquals("credentials A", credentials.readText())
+        assertEquals("identity B", File(backupDir("work"), identity.name).readText())
+        RescueFiles.restoreProfiles(context, listOf("work")).getOrThrow()
+        assertEquals("identity B", identity.readText())
+        assertEquals("identity B backup", identityBackup.readText())
+        assertEquals("credentials B", credentials.readText())
+    }
+
+    @Test
+    fun legacyProfileBackupCannotLeaveANewerGitHubIdentityOverRestoredCredentials() {
+        File(filesDir, "Profiles_names.txt").writeText("work\n")
+        backupDir("work").mkdirs()
+        File(backupDir("work"), "secure_preferences_work.xml").writeText("credentials A")
+        val identity = File(sharedPrefsDir, "github_account_profile_work.xml").apply { writeText("identity B") }
+        val identityBackup = File(sharedPrefsDir, "github_account_profile_work.xml.bak").apply { writeText("identity B backup") }
+
+        RescueFiles.restoreProfiles(context, listOf("work")).getOrThrow()
+
+        assertFalse(identity.exists())
+        assertFalse(identityBackup.exists())
+        assertEquals("credentials A", File(sharedPrefsDir, "secure_preferences_work.xml").readText())
+    }
+
+    @Test
     fun restoreProfilesParksTheFreshDatabaseAsTheNewBackup() {
         File(filesDir, "Profiles_names.txt").writeText("work\n")
         seedProfileFiles("work", "data_work.db")

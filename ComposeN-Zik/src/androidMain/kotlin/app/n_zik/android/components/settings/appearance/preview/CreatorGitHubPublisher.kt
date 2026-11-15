@@ -535,6 +535,7 @@ private fun creatorProfilePullBody(before: JSONObject?, after: JSONObject): Stri
         else -> "none"
     }
     val changes = buildList {
+        if (before != null && before.optString("login") != after.optString("login")) add("- GitHub username updated.")
         if (before?.optString("displayName") != after.getString("displayName")) add("- Public name updated.")
         if (before?.optString("bio").orEmpty() != after.getString("bio")) add("- Bio updated.")
         for ((field, label) in listOf("avatar" to "Profile photo", "banner" to "Banner")) {

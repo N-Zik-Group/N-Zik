@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.NzikCheckbox
@@ -97,6 +98,7 @@ import app.n_zik.android.components.ui.UiButton
 import app.n_zik.android.components.ui.UiTextButton
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.core.navigation.currentPageNavigationEntry
 import app.n_zik.android.core.navigation.navigationChromeTween
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.NavigationBarPosition
@@ -121,8 +123,38 @@ internal fun ThemeStoreDetailScreen(
     val profileId = rememberGlassStore().profileId
     val preferences = remember(context, profileId) { context.preferences }
     val library = remember(preferences) { ThemeStoreLibrary(preferences) }
+    val downloads by key(library) {
+        remember(library) { library.observeDownloads() }
+            .collectAsStateWithLifecycle(initialValue = library.downloads())
+    }
+    val initialDownload = remember(library, themeId, revision) {
+        downloads.firstOrNull { it.id == "$themeId:$revision" }
+    }
     val builtIn = remember(context, themeId) { if (themeId == BundledThemeId) bundledDefaultTheme(context) else null }
-    val localPackage = remember(library, themeId, revision, builtIn) { builtIn != null || library.download("$themeId:$revision")?.imported == true }
+    val localPackage = builtIn != null || initialDownload?.imported == true
+    val removedLocal = initialDownload?.takeIf { saved -> saved.imported && downloads.none { it.id == saved.id } }
+    val replacement = removedLocal?.restoredStoreDownload(downloads)
+    val detailEntry = currentPageNavigationEntry()
+        ?: remember(navController, themeId, revision) { navController.currentBackStackEntry }
+    val currentEntry by navController.currentBackStackEntryAsState()
+    fun leaveDetail() {
+        if (navController.currentBackStackEntry !== detailEntry) return
+        val previous = navController.previousBackStackEntry?.destination?.route
+        if (navController.popBackStack() && previous?.startsWith(NavRoutes.themeStore.name) == true) return
+        navController.navigate(NavRoutes.themeStore.name) { launchSingleTop = true }
+    }
+    LaunchedEffect(removedLocal, replacement, currentEntry) {
+        if (removedLocal == null || detailEntry == null || currentEntry !== detailEntry) return@LaunchedEffect
+        if (replacement != null) {
+            val restored = checkNotNull(replacement.theme)
+            navController.navigate("${NavRoutes.themeStoreDetail.name}/${restored.themeId}/${restored.revision}") {
+                popUpTo(detailEntry.destination.id) { inclusive = true }
+                launchSingleTop = true
+            }
+        } else {
+            leaveDetail()
+        }
+    }
     val catalog = remember(context, offline, localPackage) { themeStoreCatalog(context, offline || localPackage) }
     val title = stringResource(R.string.theme_store_details)
     var retry by remember { mutableIntStateOf(0) }
@@ -184,15 +216,11 @@ internal fun ThemeStoreDetailScreen(
             modifier = Modifier.fillMaxSize(),
         ) {
             val selected = theme
-            if (selected != null) {
+            if (removedLocal != null) {
+                FullPageLoader(modifier = Modifier.fillMaxSize().padding(padding))
+            } else if (selected != null) {
                 key(profileId, selected.themeId, selected.revision) {
-                    ThemeStoreDetailContent(selected, catalog, library, retry, padding, profileId, lastSync, localPackage, builtIn, onRemoved = {
-                        val previous = navController.previousBackStackEntry?.destination?.route
-                        if (navController.popBackStack() && previous?.startsWith(NavRoutes.themeStore.name) == true) {
-                            return@ThemeStoreDetailContent
-                        }
-                        navController.navigate(NavRoutes.themeStore.name) { launchSingleTop = true }
-                    }, onRevision = { target ->
+                    ThemeStoreDetailContent(selected, catalog, library, downloads, retry, padding, profileId, lastSync, localPackage, builtIn, onRemoved = ::leaveDetail, onRevision = { target ->
                         navController.navigate("${NavRoutes.themeStoreDetail.name}/${selected.themeId}/$target")
                     }) {
                         if (offline) Toaster.e(R.string.theme_store_offline_unavailable)
@@ -221,6 +249,7 @@ private fun ThemeStoreDetailContent(
     theme: StoreTheme,
     catalog: ThemeStoreCatalog,
     library: ThemeStoreLibrary,
+    downloads: List<SavedTheme>,
     retry: Int,
     padding: PaddingValues,
     profileId: String,
@@ -260,8 +289,6 @@ private fun ThemeStoreDetailContent(
         value = catalog.reviews(theme)
     }
     val id = "${theme.themeId}:${theme.revision}"
-    val downloads by remember(library) { library.observeDownloads() }
-        .collectAsStateWithLifecycle(initialValue = library.downloads())
     val downloaded = builtIn ?: downloads.firstOrNull { it.id == id }
     var appearance by remember(theme.appearance) { mutableStateOf<StoreAppearance?>(null) }
     LaunchedEffect(theme, catalog, retry, downloaded) {
@@ -532,7 +559,7 @@ private fun ThemeStoreDetailContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                if (downloaded == null) {
+                if (downloaded == null && !localPackage) {
                     ButtonRow(listOf(DialogButton(
                         stringResource(when {
                             downloading -> R.string.theme_store_downloading
@@ -570,7 +597,7 @@ private fun ThemeStoreDetailContent(
                         enabled = !downloading,
                         primary = true,
                     )))
-                } else {
+                } else if (downloaded != null) {
                     if (updateTarget != null) ButtonRow(listOf(DialogButton(
                         stringResource(R.string.common_action_update),
                         { onRevision(updateTarget) },

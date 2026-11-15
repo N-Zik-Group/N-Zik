@@ -360,3 +360,7 @@ Fixed:
   - Keep credentials and account state scoped to the active profile, resume publication authorization, and refresh the GitHub login used in submissions.
 - fix(theme-store): resume updates for restored themes and refresh theme details
   - Verify restored Store origins before scheduled updates and reflect downloads saved in the background.
+- fix(theme-store): reconcile account restoration and existing installations
+  - Restore the GitHub identity with its profile credentials, allow login-only profile updates, and recognize saved repository-wide installations.
+- fix(theme-store): keep theme details attached to restored downloads
+  - Follow a verified restored theme onto its Store revision and prevent recreating the old local copy.

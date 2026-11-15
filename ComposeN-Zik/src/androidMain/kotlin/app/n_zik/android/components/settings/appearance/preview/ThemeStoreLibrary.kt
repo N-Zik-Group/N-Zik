@@ -27,6 +27,21 @@ internal data class SavedTheme(
         ?: document.encodeToByteArray().sha256()
 }
 
+/** Resolves an open restored detail only after its local copy has been bound to a verified Store revision. */
+internal fun SavedTheme.restoredStoreDownload(downloads: List<SavedTheme>): SavedTheme? {
+    if (!imported || downloads.any { it.id == id }) return null
+    val local = theme ?: return null
+    val origin = storeOrigin ?: return null
+    if (local.themeId == origin.themeId || origin.themeId == BundledThemeId) return null
+    val appearanceHash = document.encodeToByteArray().sha256()
+    return downloads.firstOrNull { saved ->
+        val trusted = saved.theme
+        !saved.imported && trusted != null && trusted.themeId == origin.themeId && trusted.revision == origin.revision &&
+            local.copy(themeId = trusted.themeId, publishedOn = trusted.publishedOn) == trusted &&
+            appearanceHash == trusted.appearance.sha256 && saved.document == document
+    }
+}
+
 internal enum class ThemeUpdateMode { AutoDownload, Notify, Off }
 
 internal class ThemeStoreLibrary(private val preferences: SharedPreferences) {

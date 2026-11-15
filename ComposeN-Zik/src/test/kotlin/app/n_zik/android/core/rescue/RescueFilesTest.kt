@@ -557,6 +557,46 @@ class RescueFilesTest {
     }
 
     @Test
+    fun `settings restore swaps the GitHub identity and logout markers with its credentials`(@TempDir tmp: File) {
+        val prefsDir = File(tmp, "shared_prefs").apply { mkdirs() }
+        val backupDir = File(tmp, "backups")
+        val identity = File(prefsDir, "github_account_profile_default.xml")
+        val identityBackup = File(prefsDir, "github_account_profile_default.xml.bak")
+        val credentials = File(prefsDir, "secure_preferences.xml")
+        identity.writeText("account A, token invalidated")
+        identityBackup.writeText("account A, signed out")
+        credentials.writeText("credentials A")
+        RescueFiles.backupSettingsFiles(prefsDir, backupDir)
+        identity.writeText("account B")
+        identityBackup.delete()
+        credentials.writeText("credentials B")
+
+        RescueFiles.swapSettingsFiles(prefsDir, backupDir)
+
+        assertEquals("account A, token invalidated", identity.readText())
+        assertEquals("account A, signed out", identityBackup.readText())
+        assertEquals("credentials A", credentials.readText())
+        RescueFiles.swapSettingsFiles(prefsDir, backupDir)
+        assertEquals("account B", identity.readText())
+        assertFalse(identityBackup.exists())
+        assertEquals("credentials B", credentials.readText())
+    }
+
+    @Test
+    fun `older settings backup clears and preserves the newer GitHub identity for rollback`(@TempDir tmp: File) {
+        val prefsDir = File(tmp, "shared_prefs").apply { mkdirs() }
+        val backupDir = File(tmp, "backups").apply { mkdirs() }
+        File(backupDir, "secure_preferences.xml").writeText("credentials A")
+        val identity = File(prefsDir, "github_account_profile_default.xml").apply { writeText("account B") }
+
+        RescueFiles.swapSettingsFiles(prefsDir, backupDir)
+
+        assertFalse(identity.exists())
+        assertEquals("account B", File(backupDir, identity.name).readText())
+        assertEquals("credentials A", File(prefsDir, "secure_preferences.xml").readText())
+    }
+
+    @Test
     fun `backing up settings leaves no stale copy of a file that no longer exists`(@TempDir tmp: File) {
         val prefsDir = File(tmp, "shared_prefs").apply { mkdirs() }
         val backupDir = File(tmp, "backups").apply { mkdirs() }

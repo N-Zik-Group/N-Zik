@@ -88,6 +88,30 @@ private fun isPersonalInstallationPage(url: String): Boolean {
         Regex("/settings/installations/[0-9]+/?").matches(location.path.orEmpty())
 }
 
+/** Reads saved repository access, excluding an unsaved change to the installation form. */
+internal fun githubInstallationAccessScript(expectedLogin: String): String = """
+    (() => {
+        const login = document.querySelector('meta[name="user-login"]')?.content?.toLowerCase();
+        const main = document.querySelector('main') || document.body;
+        const lines = main.innerText.toLowerCase().split(/\n/).map(line => line.trim());
+        const allRepositories = Array.from(main.querySelectorAll('input[type="radio"][value="all"]'))
+            .some(input => input.checked && input.defaultChecked);
+        return {
+            login: login || '',
+            application: lines.includes('n-zik sign in'),
+            fork: lines.includes(${JSONObject.quote(expectedLogin.lowercase() + "/n-zik-theme-store")}),
+            allRepositories
+        };
+    })()
+""".trimIndent()
+
+internal fun confirmedGitHubInstallationAccess(url: String, expectedLogin: String, pageState: String): String? {
+    if (!isPersonalInstallationPage(url)) return null
+    val state = runCatching { JSONObject(pageState) }.getOrNull() ?: return null
+    if (!state.optString("login").equals(expectedLogin, ignoreCase = true) || !state.optBoolean("application")) return null
+    return expectedLogin.takeIf { state.optBoolean("fork") || state.optBoolean("allRepositories") }
+}
+
 internal fun nextGitHubPoll(interval: Int, error: String): Int? = when (error) {
     "authorization_pending" -> interval
     "slow_down" -> interval + 5
@@ -630,20 +654,11 @@ private fun GitHubWebView(
 
                                 private fun checkConfiguredFork(view: WebView, pageUrl: String) {
                                     val login = expectedInstallationLogin ?: return
-                                    val expected = JSONObject.quote(login.lowercase())
                                     view.evaluateJavascript(
-                                        """
-                                        (() => {
-                                            const login = document.querySelector('meta[name="user-login"]')?.content?.toLowerCase();
-                                            if (login !== $expected) return false;
-                                            const main = document.querySelector('main') || document.body;
-                                            const lines = main.innerText.toLowerCase().split(/\n/).map(line => line.trim());
-                                            return lines.includes('n-zik sign in') &&
-                                                lines.includes(login + '/n-zik-theme-store');
-                                        })()
-                                        """.trimIndent(),
+                                        githubInstallationAccessScript(login),
                                     ) { configured ->
-                                        if (view.url == pageUrl && expectedInstallationLogin == login && configured == "true" &&
+                                        if (view.url == pageUrl && expectedInstallationLogin == login &&
+                                            confirmedGitHubInstallationAccess(pageUrl, login, configured.orEmpty()) != null &&
                                             active.compareAndSet(true, false)
                                         ) confirmation?.invoke(login)
                                     }

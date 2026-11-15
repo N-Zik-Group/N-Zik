@@ -56,7 +56,13 @@ internal class ProfileResetSnapshot(private val backup: File) {
         deleteVerifiedTree(previous)
     }
 
-    fun restore(paths: Map<String, File>, faceEntries: () -> String, finish: (File) -> Unit) {
+    fun restore(
+        paths: Map<String, File>,
+        faceEntries: () -> String,
+        missingAsAbsent: Set<String> = emptySet(),
+        finish: (File) -> Unit,
+    ) {
+        require(missingAsAbsent.all { it in paths })
         check(!pending && !stage.resolve(PENDING).isFile) { "Finish the pending profile reset before restoring" }
         val ready = rollback.resolve(".restore-ready")
         if (restored.exists()) {
@@ -68,7 +74,10 @@ internal class ProfileResetSnapshot(private val backup: File) {
             return
         }
         val included = verify(backup, paths, allowSubset = true).keys
-        val confirmed = paths.filterKeys { it in included }
+        val absent = missingAsAbsent - included
+        check(absent.all { !backup.resolve(it).exists() }) { "Unverified file in the restore snapshot" }
+        // Capture current identity files in the rollback even when an older snapshot omitted them.
+        val confirmed = paths.filterKeys { it in included || it in absent }
         if (!ready.isFile) {
             ProfileResetSnapshot(rollback).reset(confirmed, faceEntries) { writeSynced(ready, "") }
         }
@@ -117,7 +126,10 @@ internal class ProfileResetSnapshot(private val backup: File) {
             }
             val expected = paths.keys + FACE_ENTRIES
             check(FACE_ENTRIES in records &&
-                (allowSubset || (expected - records.keys).all { it == "coil" || it == "coil-private" }) &&
+                (allowSubset || (expected - records.keys).all {
+                    it == "coil" || it == "coil-private" ||
+                        it.startsWith("github_account_profile_") && (it.endsWith(".xml") || it.endsWith(".xml.bak"))
+                }) &&
                 records.keys.all { it in expected }
             ) { "Reset storage layout changed" }
             check(backup.canonicalFile == backup.absoluteFile) { "Unexpected snapshot path" }
