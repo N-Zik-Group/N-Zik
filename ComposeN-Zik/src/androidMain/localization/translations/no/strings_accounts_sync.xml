@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">Koble til GitHub</string>
+    <string name="github_account_logout">Koble fra GitHub</string>
+    <string name="github_account_description">Bruk GitHub-kontoen din i Tema Store.</string>
+    <string name="github_account_offline">Gå på nettet for å koble til GitHub.</string>
+    <string name="github_account_code">Legg inn %1$s på GitHub for å fullføre innloggingen.</string>
+    <string name="github_account_code_copied">GitHub kode kopiert til utklippstavlen.</string>
+    <string name="github_account_login_failed">Kunne ikke koble til GitHub. Prøv igjen.</string>
+    <string name="github_account_connected">GitHub er tilkoblet.</string>
     <!-- Account -->
     <string name="account_action_login">Logg inn</string>
     <string name="account_action_logout">Logg av</string>
