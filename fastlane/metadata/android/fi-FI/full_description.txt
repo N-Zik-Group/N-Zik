@@ -1,9 +1,5 @@
 Monikielinen YouTube-musiikkikonsertti Androidille, joka keskittyy suorituskykyyn, UI/UX-ominaisuuksiin, laajenemiseen ja pitkäaikaiseen tukeen.
 
-<b>N-Zik</b> on <a href="https://github.com/knighthat/Kreate">Kreate</a> -luokan avoimen lähdekoodin haarukka.
-
-<b>Huomautus:</b> N-Zik alkoi sivuprojektina. Jos haluat lisää kypsiä vaihtoehtoja, tarkista <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, tai <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
-
 <b>tekoälyn käyttö:</b> Käytän generatiivista tekoälyn koodin ( <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD-menetelmän</a>kautta), tarkistetaan ja testataan ennen toimitusta.
 
 ✨ <b>MITÄ N-ZIK?</b> Ei mainoksia, taustan toisto, offline välimuisti, muokattavissa oleva UI - ilmaiseksi, aina.
@@ -13,6 +9,10 @@ Monikielinen YouTube-musiikkikonsertti Androidille, joka keskittyy suorituskykyy
 - Teemat: AMOLED, Syvä Tumma, Crisp Light + sävytetyt aksentit
 - 3D Carousel Player, koti-widgetit, yhtenäinen pelaaja ja mini-soitin
 - Taiteilijan profiilit, löytö ja tunnelmat, kodin kodin otsikot
+
+🎨 <b>Teemakauppa</b>
+- Selaa ja lataa yhteisön teemoja, esikatsele niitä Normaalissa ja lasissa ja valitse mitä ulkoasuasetuksia käytetään.
+- Luo paikallisia teemoja tai jaa suunnitelmasi yhteisön kanssa. Tuo ja vie teemoja ZIP-tiedostoiksi.
 
 🫧 <b>lasitefektit (BETA, valinnainen)</b>
 Poistettu käytöstä tuoreissa asennuksissa. Ota käyttöön asetukset: natiivinen, ääriviivat tai lasi luokittain säädettävällä laadulla. Voi lisätä renderointityötä ja akun käyttöä; vähentää laatua tai poistaa käytöstä tarvittaessa.
