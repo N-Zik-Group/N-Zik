@@ -193,4 +193,8 @@
         <item quantity="one">%1$d job ikke afsluttet</item>
         <item quantity="other">%1$d jobs ikke færdige</item>
     </plurals>
+    <plurals name="theme_store_settings_count">
+        <item quantity="one">%d indstilling</item>
+        <item quantity="other">%d indstillinger</item>
+    </plurals>
 </resources>
