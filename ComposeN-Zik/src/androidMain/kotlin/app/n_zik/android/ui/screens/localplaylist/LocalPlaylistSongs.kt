@@ -1,5 +1,7 @@
 package app.n_zik.android.ui.screens.localplaylist
 
+import androidx.compose.ui.layout.onGloballyPositioned
+
 import app.n_zik.android.core.ondevice.DeviceLibraryResults
 import app.n_zik.android.core.ondevice.observeDeviceLibrary
 import app.n_zik.android.utils.getActiveProfile
@@ -1497,6 +1499,9 @@ fun LocalPlaylistSongs(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .zIndex(2f)
+                                .then(if (preview != null && index == 0) {
+                                    Modifier.onGloballyPositioned { preview.previewRowsPlaced.value = it.size.height > 0 }
+                                } else Modifier)
                         ) {
                             val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
 

@@ -1,6 +1,7 @@
 package app.n_zik.android.ui.screens.player
 
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
+import androidx.compose.ui.layout.onGloballyPositioned
 import app.n_zik.android.components.glass.glassGlobalIndication
 
 import app.n_zik.android.components.glass.queueToolbarBottomInset
@@ -446,6 +447,9 @@ fun Queue(
                         Box(
                             modifier = Modifier.fillMaxWidth()
                                                .animateItem()
+                                               .then(if (preview != null && displayIndex == 0) {
+                                                   Modifier.onGloballyPositioned { preview.previewRowsPlaced.value = it.size.height > 0 }
+                                               } else Modifier)
                         ) {
                             // Drag anchor
                             if ( !positionLock.isLocked() && search.inputValue.isEmpty() ) {

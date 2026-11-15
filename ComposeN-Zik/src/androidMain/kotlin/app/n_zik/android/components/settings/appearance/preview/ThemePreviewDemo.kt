@@ -139,6 +139,7 @@ internal class ThemePreviewSession(
     val player: Player,
 ) {
     val homeTab = mutableStateOf<String?>(null)
+    val previewRowsPlaced = mutableStateOf(false)
 }
 
 internal val LocalThemePreview = staticCompositionLocalOf<ThemePreviewSession?> { null }

@@ -51,6 +51,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -138,8 +139,10 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
 
 open class ThemePreviewActivity : ComponentActivity() {
@@ -336,10 +339,16 @@ private fun CaptureGallery(
                         resetCaptureFolder(working)
                         staging.clear()
                     }
-                    kotlinx.coroutines.withTimeoutOrNull(5_000) {
+                    withTimeoutOrNull(5_000) {
                         while (player.duration <= 0 && player.playerError == null) delay(50)
                     }
                     check(player.duration > 0) { "Preview audio did not load" }
+                    if (frame.scene == ThemePreviewScene.QUEUE || frame.scene == ThemePreviewScene.LOCAL_PLAYLIST) {
+                        val rowsPlaced = withTimeoutOrNull(10_000) {
+                            snapshotFlow { session.previewRowsPlaced.value }.first { it }
+                        }
+                        check(rowsPlaced == true) { "Preview list did not render" }
+                    }
                     delay(2200)
                     if (frame.scene.playing) check(player.isPlaying) { "Preview playback did not start" }
                     withFrameNanos { }
