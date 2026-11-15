@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">GitHub に接続</string>
+    <string name="github_account_logout">GitHubの切断</string>
+    <string name="github_account_description">Theme Store で GitHub アカウントを使用します。</string>
+    <string name="github_account_offline">オンラインで GitHub に接続します。</string>
+    <string name="github_account_code">GitHubで %1$s を入力してサインインを完了します。</string>
+    <string name="github_account_code_copied">GitHub コードをクリップボードにコピーしました。</string>
+    <string name="github_account_login_failed">GitHub に接続できませんでした。もう一度やり直してください。</string>
+    <string name="github_account_connected">GitHub が接続されました。</string>
     <!-- Account -->
     <string name="account_action_login">ログイン</string>
     <string name="account_action_logout">ログオフ</string>
