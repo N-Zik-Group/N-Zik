@@ -65,7 +65,7 @@ class AppHeader(
     }
 
     @Composable
-    fun Draw(backgroundOverride: Color? = null, statusBackgroundVisible: Boolean = false) {
+    fun Draw(backgroundOverride: Color? = null, statusBackgroundVisible: Boolean = false, glassBaseColor: Color = Color.Transparent) {
         val glassSettings = rememberGlassSettings()
         val glassEnabled = glassSettings.usesGlassMaterial(GlassArea.Header)
         val onAppBack = rememberAppBackAction(navController)
@@ -154,6 +154,7 @@ class AppHeader(
                 settings = glassSettings,
                 filmColor = headerColor,
                 pageBackdrop = LocalGlassBackdrop.current,
+                baseColor = glassBaseColor,
                 statusBarTopPx = statusBarTopPx,
                 headerHeightPx = headerHeightPx,
                 headerOffsetPx = { topBarOffsetState.value },

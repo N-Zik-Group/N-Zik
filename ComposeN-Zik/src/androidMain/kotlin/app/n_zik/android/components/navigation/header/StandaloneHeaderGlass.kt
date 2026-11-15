@@ -1,6 +1,7 @@
 package app.n_zik.android.components.navigation.header
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
@@ -39,6 +40,7 @@ internal fun StandaloneHeaderGlass(
     headerHeightPx: Float,
     headerOffsetPx: () -> Float,
     horizontalInsets: WindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
+    baseColor: Color = Color.Transparent,
     content: @Composable (Backdrop) -> Unit,
 ) {
     val surface = rememberLayerBackdrop()
@@ -50,6 +52,7 @@ internal fun StandaloneHeaderGlass(
             alpha = headerScrollOpacity(statusBarTopPx, headerHeightPx, headerOffsetPx())
         }.extendGlassPastScreenEdge(GlassScreenEdge.Top)
             .layerBackdrop(surface)
+            .background(baseColor, shape)
             .glassMaterial(
                 settings = settings.forArea(GlassArea.Header),
                 shape = materialShape,

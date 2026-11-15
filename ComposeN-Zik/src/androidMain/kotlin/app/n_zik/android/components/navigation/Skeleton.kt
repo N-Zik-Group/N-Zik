@@ -6,6 +6,7 @@ import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.GlassRenderer
 import app.n_zik.android.components.glass.glassRenderer
 import app.n_zik.android.components.glass.LocalGlassBackdrop
+import app.n_zik.android.components.glass.LocalIndependentGlassBackdrop
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
@@ -96,6 +97,7 @@ fun Skeleton(
     topInsetHandledByContent: Boolean = false,
     topContentInsetProvider: (() -> Dp)? = null,
     suppressTabTransition: (Int, Int) -> Boolean = { _, _ -> false },
+    capturePageGlassBackdrop: Boolean = true,
     content: @Composable AnimatedVisibilityScope.(Int) -> Unit
 ) {
     val preview = LocalThemePreview.current
@@ -103,7 +105,8 @@ fun Skeleton(
     val tabTransition = transition()
     val glassSettings = rememberGlassSettings()
     val contentBackdrop = rememberLayerBackdrop()
-    val captureGlass = glassSettings.enabled && glassRenderer(glassSettings) != GlassRenderer.Tint
+    val captureGlass = capturePageGlassBackdrop && LocalIndependentGlassBackdrop.current == null &&
+        glassSettings.enabled && glassRenderer(glassSettings) != GlassRenderer.Tint
     val useGlassNav = glassSettings.usesGlassMaterial(GlassArea.Nav)
     val isFloating = navigationBarPosition.isFloating
     val isIconOnly = NavigationBarType.IconOnly.isCurrent()

@@ -55,6 +55,9 @@ import app.n_zik.android.typography
 import app.n_zik.android.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.ui.styling.Dimensions
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.components.ui.FullPageLoader
 
 internal fun List<StatusBarNotification>.inboxEntries() = filter {
     val channel = it.notification.channelId
@@ -81,11 +84,15 @@ internal fun NotificationsScreen(navController: NavController, miniPlayer: @Comp
     val context = LocalContext.current
     val manager = remember(context) { context.getSystemService(NotificationManager::class.java) }
     val preferences = remember(context) { context.getSharedPreferences(InboxPreferences, 0) }
-    var entries by remember(manager) { mutableStateOf(manager.activeNotifications.toList().inboxEntries()) }
+    var entries by remember(manager) { mutableStateOf(emptyList<StatusBarNotification>()) }
+    var loading by remember(manager) { mutableStateOf(true) }
     var read by remember(preferences) { mutableStateOf(preferences.getStringSet("read", emptySet()).orEmpty()) }
     fun identity(entry: StatusBarNotification) = entry.inboxIdentity()
     LaunchedEffect(manager, preferences) {
-        val visible = manager.activeNotifications.toList().inboxEntries().map(::identity).toSet()
+        val initial = withContext(NzikDispatchers.DATA) { manager.activeNotifications.toList().inboxEntries() }
+        val visible = initial.map(::identity).toSet()
+        entries = initial
+        loading = false
         read = visible
         preferences.edit().putStringSet(InboxReadKey, read).apply()
     }
@@ -107,8 +114,9 @@ internal fun NotificationsScreen(navController: NavController, miniPlayer: @Comp
     LaunchedEffect(manager, lifecycle) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             while (true) {
-                val active = manager.activeNotifications.toList().inboxEntries()
-                entries = active
+                if (!loading) {
+                    entries = withContext(NzikDispatchers.DATA) { manager.activeNotifications.toList().inboxEntries() }
+                }
                 delay(1_000)
             }
         }
@@ -245,8 +253,9 @@ internal fun NotificationsScreen(navController: NavController, miniPlayer: @Comp
                 }
             }
         }
+            if (loading) FullPageLoader(modifier = Modifier.align(Alignment.Center).fillMaxWidth())
             AnimatedVisibility(
-                visible = entries.isEmpty(),
+                visible = !loading && entries.isEmpty(),
                 modifier = Modifier.align(Alignment.Center),
                 enter = fadeIn(tween(200, delayMillis = 200)),
                 exit = fadeOut(tween(120)),

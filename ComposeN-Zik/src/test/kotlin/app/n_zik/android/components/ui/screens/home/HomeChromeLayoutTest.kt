@@ -39,6 +39,11 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.ui.styling.typographyOf
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.components.navigation.LocalSideRailContentInsets
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
@@ -71,8 +76,11 @@ class HomeChromeLayoutTest {
         val composedReserves = mutableListOf<Int>()
         val firstPlacements = mutableListOf<Float>()
         val topInset = mutableStateOf(88.dp)
+        val shape = RoundedCornerShape(0.dp)
+        val appearance = Appearance(DefaultDarkColorPalette, typographyOf(Color.White, true, false, FontType.Rubik), shape, shape, shape)
         compose.setContent {
             CompositionLocalProvider(LocalDensity provides Density(1f),
+                LocalAppearance provides appearance,
                 LocalSideRailContentInsets provides WindowInsets(0, 0, 0, 0),
                 LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0)) {
                 HomeChromeLayout(Modifier.size(360.dp, 600.dp).testTag("initial.root"), header = {

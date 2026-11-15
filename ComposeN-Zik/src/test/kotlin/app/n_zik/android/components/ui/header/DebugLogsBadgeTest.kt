@@ -56,7 +56,7 @@ class DebugLogsBadgeTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val prefs: SharedPreferences get() = context.preferences
-    private val logsDir: File get() = File(context.filesDir, "logs")
+    private val logsDir: File get() = app.n_zik.android.utils.debug.profileDiagnosticsDir(context)
 
     private val appearance = Appearance(
         colorPalette = DefaultDarkColorPalette,

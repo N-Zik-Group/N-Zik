@@ -21,6 +21,7 @@ import app.n_zik.android.utils.logDebugEnabledKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.R
 import app.n_zik.android.utils.debug.debugLogFiles
+import app.n_zik.android.utils.debug.profileDiagnosticsDir
 import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -56,7 +57,7 @@ class DebugLogsMenuItemTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val prefs: SharedPreferences get() = context.preferences
-    private val logsDir: File get() = File(context.filesDir, "logs")
+    private val logsDir: File get() = profileDiagnosticsDir(context)
 
     private val enableLabel: String get() = context.getString(R.string.maintenance_debug_logging_title)
     private val disableLabel: String get() = context.getString(R.string.settings_logging_disabled_label)

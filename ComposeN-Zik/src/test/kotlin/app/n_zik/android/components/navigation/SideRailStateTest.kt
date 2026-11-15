@@ -18,6 +18,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.isNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -144,7 +147,11 @@ class SideRailStateTest {
             val expected = if (target == null || incomingComposed) target else source
             if (expected != null) assertEquals(initialTabs, compose.onNodeWithTag("tabs-$expected", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot)
             for (route in listOf("home", "search")) {
-                if (route != expected) compose.onNodeWithTag("tabs-$route", useUnmergedTree = true).assertDoesNotExist()
+                if (route == expected) continue
+                val tabsForRoute = hasTestTag("tabs-$route")
+                // A destination without tabs keeps the old controls drawn through the exit fade.
+                val unexpectedTabs = if (target == null) tabsForRoute and !hasAnyAncestor(isNotEnabled()) else tabsForRoute
+                compose.onNode(unexpectedTabs, useUnmergedTree = true).assertDoesNotExist()
             }
             assertEquals(1, headerMounts)
             assertEquals(0, headerDisposals)

@@ -22,6 +22,11 @@ internal fun sidePageOwnsTopInset(route: String?): Boolean = route?.substringBef
     NavRoutes.newAlbums.name, NavRoutes.bridgeServer.name, NavRoutes.listenTogether.name, NavRoutes.profiles.name,
     NavRoutes.notifications.name,
     NavRoutes.themeStore.name,
+    NavRoutes.themeStoreNew.name,
+    NavRoutes.themeStoreDetail.name,
+    NavRoutes.themeStoreCreator.name,
+    NavRoutes.themeStoreCreatorSettings.name,
+    NavRoutes.themeStoreSubmission.name,
 )
 
 /** Destination transitions keep old pages composed, but only the target owns navigation UI. */

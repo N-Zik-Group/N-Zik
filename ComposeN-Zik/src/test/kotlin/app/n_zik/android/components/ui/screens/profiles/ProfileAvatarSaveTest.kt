@@ -87,6 +87,9 @@ class ProfileAvatarSaveTest {
 
             every { filesDir } returns files
 
+            every { getSharedPreferences(any(), any()) } answers {
+                org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences(firstArg(), secondArg())
+            }
             every { contentResolver } returns resolver
 
         }

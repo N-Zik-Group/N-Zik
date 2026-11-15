@@ -21,6 +21,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.isNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
@@ -164,7 +166,9 @@ class SkeletonNavigationLifecycleTest {
             repeat(14) { frame ->
                 compose.mainClock.advanceTimeByFrame()
                 compose.waitForIdle()
-                val actual = compose.onAllNodes(tabs).fetchSemanticsNodes().size
+                // The outgoing tabs may still be drawn while fading, but their wrapper must disable them.
+                val visibleTabs = if (count == 0) tabs and !hasAnyAncestor(isNotEnabled()) else tabs
+                val actual = compose.onAllNodes(visibleTabs, useUnmergedTree = count == 0).fetchSemanticsNodes().size
                 val registrations = pageIds.mapValues { (_, id) ->
                     if (position.isHorizontal) dockState.registration(id)?.present
                     else railState.registration(id) != null
@@ -194,6 +198,7 @@ class SkeletonNavigationLifecycleTest {
         }
         compose.runOnIdle { controller.navigate("settings") }
         frames(0)
+        assertTabs(0)
         compose.runOnIdle { controller.popBackStack() }
         // A returning page is registered once NavHost composes it; assert every subsequent frame.
         compose.mainClock.advanceTimeBy(32)

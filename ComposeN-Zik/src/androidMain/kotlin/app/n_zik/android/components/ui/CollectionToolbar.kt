@@ -43,6 +43,7 @@ internal fun CollectionToolbar(
     settings: GlassSettings = rememberGlassSettings(),
     bookmarkWidth: Dp = GlassStandaloneActionSize,
     actionCellWidth: Dp = CollectionActionCellWidth,
+    trailingSeparator: Boolean = false,
 ) {
     BoxWithConstraints(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         val cellWidth = collectionActionCellWidth(maxWidth, actions.size, bookmarkWidth, actionCellWidth)
@@ -53,7 +54,7 @@ internal fun CollectionToolbar(
                     compact = true) { bookmark() }
             } else Box(Modifier.width(bookmarkWidth), contentAlignment = Alignment.Center) { bookmark() }
             GlassToolbarRow(actions.size, Modifier.width(cellWidth * actions.size), settings,
-                expandToWidth = true, compact = true) {
+                expandToWidth = true, compact = true, trailingSeparator = trailingSeparator) {
                 actions.forEach { action -> action() }
             }
         }
@@ -92,6 +93,6 @@ internal fun CollectionButtonToolbar(
         }
         val actions = visible.map { button -> @Composable { button.ToolBarButton() } }
         CollectionToolbar(bookmark, actions, settings = settings, bookmarkWidth = bookmarkWidth,
-            actionCellWidth = actionCellWidth)
+            actionCellWidth = actionCellWidth, trailingSeparator = visible.size < buttons.size)
     }
 }

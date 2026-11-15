@@ -72,6 +72,7 @@ import app.n_zik.android.extensions.pip.isPipSupported
 import app.n_zik.android.extensions.pip.rememberPipHandler
 import app.n_zik.android.components.menu.DropdownMenu
 import app.n_zik.android.components.glass.GlassActionGroup
+import app.n_zik.android.components.glass.usesGlassContour
 import app.n_zik.android.components.glass.GlassVerticalActionGroup
 import app.n_zik.android.components.glass.GlassActionGroupNativeItem
 import app.n_zik.android.components.glass.GlassActionGroupItem
@@ -460,6 +461,8 @@ fun ActionBar(
             glass, GlassArea.Header, trailingTrigger = menuTrigger,
             menuActionCount = profileIndex + 1,
             menuTriggerIndex = profileIndex,
+            separatorBefore = setOf(profileIndex),
+            detachRemainingActionsOnMenu = true,
             filmColor = surfaceColor(colorPalette().background1),
         ) {
             notificationAction()
@@ -478,7 +481,11 @@ fun ActionBar(
     } else {
         GlassActionGroup(glass, GlassArea.Header, trailingTrigger = menuTrigger,
             menuActionCount = profileIndex + 1,
-            menuTriggerIndex = profileIndex, drawSurface = false) {
+            menuTriggerIndex = profileIndex,
+            drawSurface = glass.usesGlassContour(GlassArea.Header),
+            separatorBefore = setOf(profileIndex),
+            detachRemainingActionsOnMenu = true,
+        ) {
             GlassActionGroupNativeItem(0) { notificationAction() }
             HorizontalHeaderSearchVisibility(sideSearchProgress, fade = true) {
                 GlassActionGroupNativeItem(1) {
@@ -494,7 +501,6 @@ fun ActionBar(
                 Box(
                     modifier = Modifier.size(HeaderActionCanvasSize).glassMenuTrigger(menuTrigger)
                         .clip(uiRoundnessShape())
-                        .glassAreaContour(glass, GlassArea.Header, uiRoundnessShape())
                         .clickable { expanded = !expanded },
                     contentAlignment = Alignment.Center,
                 ) { profileContent() }

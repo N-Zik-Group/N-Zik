@@ -43,8 +43,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import java.io.File
 import java.io.IOException
@@ -376,19 +374,16 @@ fun ProfileFaceAvatar(
                 avatar.source.startsWith("https://", ignoreCase = true)
             val model: Any = remember(avatar.source) { if (isUrl) avatar.source else File(avatar.source) }
             val revision = ImageCacheFactory.rememberLocalArtworkRevision(avatar.source)
-            val context = LocalContext.current
-            val request = remember(model, revision, context) {
-                if (isUrl) model else {
-                    val key = ImageCacheFactory.generateCacheKeySync(avatar.source, ImageCacheFactory.NetworkQuality.HIGH)
-                    ImageRequest.Builder(context).data(model).memoryCacheKey(key).diskCacheKey(key).build()
-                }
+            val cacheKey = remember(avatar.source, revision) {
+                if (isUrl) null else ImageCacheFactory.generateCacheKeySync(avatar.source, ImageCacheFactory.NetworkQuality.HIGH)
             }
-            AsyncImage(
-                model = request,
-                imageLoader = ImageCacheFactory.LOADER,
+            ImageCacheFactory.LocalAsyncImage(
+                model = model,
+                cacheKey = cacheKey,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                placeholder = painterResource(R.drawable.loader),
+                fallback = null,
+                shape = null,
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(artistThumbnailShape()),

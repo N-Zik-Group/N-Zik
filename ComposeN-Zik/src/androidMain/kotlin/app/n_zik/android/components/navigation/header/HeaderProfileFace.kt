@@ -29,9 +29,9 @@ internal fun initialHeaderProfileFace(defaultName: String): ProfileFace =
 
 @Composable
 internal fun rememberHeaderProfileFace(): ProfileFace {
-    if (LocalThemePreview.current != null) return initialHeaderProfileFace("Mira")
-    val context = LocalContext.current
     val defaultName = stringResource(R.string.profile_base_name)
+    if (LocalThemePreview.current != null) return initialHeaderProfileFace(defaultName)
+    val context = LocalContext.current
     val activeProfile = getActiveProfile(context)
     val faceTrigger = encryptedPreferencesUpdateTrigger + profileFaceUpdateTrigger
     var face by remember(activeProfile, defaultName) { mutableStateOf(initialHeaderProfileFace(defaultName)) }

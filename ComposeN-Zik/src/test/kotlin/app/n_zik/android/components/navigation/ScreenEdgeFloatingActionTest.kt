@@ -81,10 +81,14 @@ class ScreenEdgeFloatingActionTest {
             }
         }
         composeRule.runOnIdle { visible.value = true }
-        advanceFrame()
-        advanceFrame()
+        // AnimatedVisibility can need more than two frames to place its first child.
+        for (frame in 0 until 8) {
+            if (composeRule.runOnIdle { coordinates != null }) break
+            advanceFrame()
+        }
         composeRule.runOnIdle {
-            assertTrue("entry begins beyond the actual window", requireNotNull(coordinates).localToWindow(Offset.Zero).y >= windowBottom)
+            val firstPlacement = requireNotNull(coordinates) { "The entering action was never placed" }
+            assertTrue("entry begins beyond the actual window", firstPlacement.localToWindow(Offset.Zero).y >= windowBottom)
         }
         advanceTime(180)
         var enteringTop = 0f
