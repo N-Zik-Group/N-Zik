@@ -215,6 +215,8 @@ Volume BAS : titre précédent</string>
     <string name="settings_home_default_page_label">Page par défaut</string>
     <string name="settings_interface_corner_radius_label">Arrondi de l\'interface utilisateur</string>
     <string name="settings_interface_hide_status_bar_label">Masquer la barre d\'état</string>
+    <string name="settings_interface_right_to_left_label">Mise en page de droite à gauche</string>
+    <string name="settings_interface_right_to_left_description">Miroir l\'interface indépendamment de la langue de l\'application.</string>
     <string name="settings_interface_page_description">La section « Interface Utilisateur » contient des paramètres permettant de modifier l\'interface générale et la navigation.</string>
     <string name="settings_interface_page_title">Interface Utilisateur</string>
     <string name="settings_interface_title">Interface Utilisateur</string>
