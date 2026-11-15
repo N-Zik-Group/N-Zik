@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">Anslut GitHub</string>
+    <string name="github_account_logout">Koppla från GitHub</string>
+    <string name="github_account_description">Använd ditt GitHub-konto i Temabutiken.</string>
+    <string name="github_account_offline">Gå online för att ansluta GitHub.</string>
+    <string name="github_account_code">Ange %1$s på GitHub för att logga in.</string>
+    <string name="github_account_code_copied">GitHub-koden har kopierats till urklipp.</string>
+    <string name="github_account_login_failed">Kunde inte ansluta till GitHub. Försök igen.</string>
+    <string name="github_account_connected">GitHub ansluten.</string>
     <!-- Account -->
     <string name="account_action_login">Logga in</string>
     <string name="account_action_logout">Logga ut</string>
