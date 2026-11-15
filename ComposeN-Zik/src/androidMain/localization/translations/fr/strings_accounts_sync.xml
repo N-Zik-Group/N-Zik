@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="github_account_login">Connecter GitHub</string>
-    <string name="github_account_logout">Déconnecter GitHub</string>
+    <string name="github_account_login">Se connecter à GitHub</string>
+    <string name="github_account_logout">Se déconnecter de GitHub</string>
     <string name="github_account_description">Utilisez votre compte GitHub dans la boutique de thèmes.</string>
-    <string name="github_account_offline">Allez en ligne pour connecter GitHub.</string>
-    <string name="github_account_code">Entrez %1$s sur GitHub pour terminer la connexion.</string>
-    <string name="github_account_code_copied">Code GitHub copié dans le presse-papiers.</string>
-    <string name="github_account_login_failed">Impossible de se connecter à GitHub. Réessayez.</string>
-    <string name="github_account_connected">GitHub connecté.</string>
+    <string name="github_account_offline">Rendez-vous sur le site pour connecter GitHub.</string>
+    <string name="github_account_code">Saisissez %1$s sur GitHub pour terminer votre connexion.</string>
+    <string name="github_account_code_copied">Le code GitHub a été copié dans le presse-papiers.</string>
+    <string name="github_account_login_failed">Impossible de se connecter à GitHub. Veuillez réessayer.</string>
+    <string name="github_account_connected">Connexion à GitHub établie.</string>
     <!-- Account -->
     <string name="account_action_login">Se connecter</string>
     <string name="account_action_logout">Se déconnecter</string>
