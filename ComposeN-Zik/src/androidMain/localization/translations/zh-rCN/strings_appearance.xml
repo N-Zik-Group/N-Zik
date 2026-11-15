@@ -264,6 +264,14 @@
     <string name="theme_store_choose_revision">选择修订版</string>
     <string name="theme_store_published_on">发布于 %1$s</string>
     <string name="theme_store_compatibility">N-Zik兼容性</string>
+    <string name="theme_store_submission_minimum_version">最小N-Zik版本</string>
+    <string name="theme_store_submission_minimum_description">可以应用此主题的最旧版本。新主题默认为版本代码 %3$d。您正在使用 N-Zik %1$s (版本代码 %2$d)。</string>
+    <string name="theme_store_submission_version_code_label">最小版本代码</string>
+    <string name="theme_store_submission_find_version_code">查找 N-Zik 版本和代码</string>
+    <string name="theme_store_submission_version_with_code">%1$s (代码 %2$d)</string>
+    <string name="theme_store_submission_version_code">版本代码 %1$d</string>
+    <string name="theme_store_submission_version_required">输入版本代码 %1$d。</string>
+    <string name="theme_store_submission_version_range">输入 %1$d 和 %2$d 之间的版本代码。</string>
     <string name="theme_store_revision">修订版 %1$d</string>
     <string name="theme_store_authors">创建者</string>
     <string name="theme_store_author_theme_count">Themes: %1$d</string>
@@ -433,6 +441,7 @@
     <string name="theme_store_preview_import_requirements">预览是公开的。将个人信息排除在屏幕截图之外。PNG、JPEG或WebP ·每张图像4MB。</string>
     <string name="theme_store_preview_import_error">无法导入此图像。请选择一个 PNG，JPEG 或 WebP 图像在 4 MB 之下。</string>
     <string name="theme_store_submission_included">包含的设置</string>
+    <string name="theme_store_submission_unsupported_categories">这些组包含的设置不能在主题中共享： %1$s</string>
     <string name="theme_store_submission_sending">正在发送审阅…</string>
     <string name="theme_store_report_theme">报告主题</string>
     <string name="theme_store_report_review">报告审查</string>
