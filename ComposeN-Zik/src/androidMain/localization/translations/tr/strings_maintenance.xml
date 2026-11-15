@@ -323,9 +323,9 @@
     <string name="updates_check_failed">Güncellemeler kontrol edilemedi.</string>
     <string name="updates_install_generic_error">Güncelleme yüklenemedi.</string>
     <string name="updates_channel_available_format">%1$s güncelleme mevcut</string>
-    <string name="recovery_theme_backup_title">Themes</string>
-    <string name="recovery_theme_backup_no_match">Only themes belonging to profiles available in this view can be restored here.</string>
-    <string name="recovery_theme_backup_operation_failed">Could not complete the theme backup operation.</string>
-    <string name="recovery_theme_backup_restore_action">Restore themes</string>
-    <string name="recovery_theme_backup_restore_description">Open the last theme backup used for this profile.</string>
+    <string name="recovery_theme_backup_title">Temalar</string>
+    <string name="recovery_theme_backup_no_match">Burada yalnızca bu görünümde mevcut olan profillere ait temalar geri yüklenebilir.</string>
+    <string name="recovery_theme_backup_operation_failed">Tema yedekleme işlemi tamamlanamadı.</string>
+    <string name="recovery_theme_backup_restore_action">Temaların geri yükle</string>
+    <string name="recovery_theme_backup_restore_description">Bu profil için kullanılan en son tema yedeğini açın.</string>
 </resources>
