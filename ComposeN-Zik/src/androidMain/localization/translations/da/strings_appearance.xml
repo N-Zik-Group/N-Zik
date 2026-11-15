@@ -264,6 +264,14 @@
     <string name="theme_store_choose_revision">Vælg en revision</string>
     <string name="theme_store_published_on">Udgivet på %1$s</string>
     <string name="theme_store_compatibility">N-Zik-kompatibilitet</string>
+    <string name="theme_store_submission_minimum_version">Minimum N-Zik-version</string>
+    <string name="theme_store_submission_minimum_description">Den ældste version, der kan anvende dette tema. Nye temaer standard til versionskode %3$d. Du bruger N-Zik %1$s (versionskode %2$d).</string>
+    <string name="theme_store_submission_version_code_label">Mindste versionskode</string>
+    <string name="theme_store_submission_find_version_code">Find N-Zik-versioner og -koder</string>
+    <string name="theme_store_submission_version_with_code">%1$s (kode %2$d)</string>
+    <string name="theme_store_submission_version_code">Versionskode %1$d</string>
+    <string name="theme_store_submission_version_required">Indtast versionskode %1$d.</string>
+    <string name="theme_store_submission_version_range">Indtast en versionskode mellem %1$d og %2$d.</string>
     <string name="theme_store_revision">Revision %1$d</string>
     <string name="theme_store_authors">Skabere</string>
     <string name="theme_store_author_theme_count">Temaer: %1$d</string>
@@ -433,6 +441,7 @@
     <string name="theme_store_preview_import_requirements">Forhåndsvisninger er offentlige. Hold personlige oplysninger ude af skærmbilleder. PNG, JPEG eller WebP · 4 MB per billede.</string>
     <string name="theme_store_preview_import_error">Kunne ikke importere dette billede. Vælg et PNG, JPEG eller WebP billede under 4 MB.</string>
     <string name="theme_store_submission_included">Inkluderede indstillinger</string>
+    <string name="theme_store_submission_unsupported_categories">Disse grupper indeholder indstillinger, der ikke kan deles i et tema: %1$s.</string>
     <string name="theme_store_submission_sending">Sender til gennemgang…</string>
     <string name="theme_store_report_theme">Rapporter tema</string>
     <string name="theme_store_report_review">Rapport gennemgang</string>
