@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="backup_export_themes_description">Save downloaded and local themes to a ZIP backup</string>
+    <string name="backup_import_themes_description">Restore downloaded and local themes from a ZIP backup</string>
+    <string name="backup_export_select_all_description">Select every type of data to export</string>
+    <string name="backup_import_select_all_description">Select every type of data to import</string>
+    <string name="backup_include_github_identity_credentials">Include GitHub identity credentials</string>
     <string name="storage_image_quality_title">Image quality</string>
     <string name="storage_image_quality_description">Applies to online artwork and newly added covers and profile photos. Original uses the highest quality available and can use more storage and data.</string>
     <string name="storage_image_quality_optimized">Optimized</string>
@@ -116,9 +121,9 @@
     <string name="backup_before_update_failed">Pre-install backup failed</string>
     <string name="backup_before_update_running_message">Backing up data before installation…</string>
     <string name="backup_before_update_running_title">Backup in progress</string>
-    <string name="backup_excluded_preferences_and_cache_description">개인 설정(예: 테마 모드)과 캐시는 제외됩니다.</string>
-    <string name="backup_export_library_options_description">Export the database with its custom covers, settings, or profiles</string>
-    <string name="backup_import_library_options_description">Restore a SQLite or ZIP database backup, settings, or profiles</string>
+    <string name="backup_export_separate_files_description">Each selected category is exported to a separate file. Cache files and the Stock theme are excluded.</string>
+    <string name="backup_export_with_themes_description">Export the database with its custom covers, settings, themes, or profiles</string>
+    <string name="backup_import_with_themes_description">Restore a SQLite or ZIP database backup, settings, themes, or profiles</string>
     <string name="backup_include_discord_credentials">Include Discord identity credentials</string>
     <string name="backup_include_lastfm_credentials">Include Last.fm identity credentials</string>
     <string name="backup_include_proxy_password">Include the proxy password</string>
@@ -251,4 +256,34 @@
     <string name="export_cached_songs_generic_error">Export failed</string>
     <string name="backup_startup_preparing_library">Preparing your library…</string>
     <string name="backup_startup_recovery_failed">Could not finish restoring your library.</string>
+    <string name="storage_breakdown_themes">Themes</string>
+    <string name="storage_info_themes">Saved theme records and shared Theme Store assets, previews and drafts.</string>
+    <string name="storage_breakdown_lyrics">Lyrics</string>
+    <string name="storage_info_lyrics">Text bytes of downloaded and custom lyrics stored inside the profile database.</string>
+    <string name="storage_cleanup_clear_theme_cache">Clear Theme Store cache</string>
+    <string name="storage_cleanup_theme_cache_description">Removes shared catalog metadata. Saved themes, drafts and their previews are kept.</string>
+    <string name="storage_cleanup_clear_lyrics">Clear fetched lyrics</string>
+    <string name="storage_cleanup_lyrics_description">Removes automatically fetched lyrics. Custom lyrics are kept. Freed pages can be reused by the library database.</string>
+    <string name="backup_auto_enabled_title">Enable automatic backup</string>
+    <string name="backup_auto_enabled_description">Pause automatic backups and keep your backup settings.</string>
+    <string name="storage_cleanup_picker_title">Clean storage</string>
+    <string name="storage_cleanup_picker_description">Choose the files and data to clear for this scope.</string>
+    <string name="storage_cleanup_select_caches">Select caches</string>
+    <string name="storage_cleanup_select_caches_description">Select caches and temporary files.</string>
+    <string name="storage_cleanup_select_everything">Select everything</string>
+    <string name="storage_cleanup_select_everything_description">Select caches and data, including offline downloads.</string>
+    <string name="storage_cleanup_cache_group">Caches and temporary files</string>
+    <string name="storage_cleanup_delete_group">Data to delete</string>
+    <string name="storage_cleanup_review_selection">Review</string>
+    <string name="storage_cleanup_selected_confirmation">Clear the selected items in this scope?</string>
+    <string name="storage_cleanup_option_cached_images">Cached images</string>
+    <string name="storage_cleanup_option_streamed_audio">Streamed audio</string>
+    <string name="storage_cleanup_option_waveforms">Waveforms</string>
+    <string name="storage_cleanup_option_network_cache">Network cache</string>
+    <string name="storage_cleanup_option_diagnostic_logs">Diagnostic logs</string>
+    <string name="storage_cleanup_option_temporary_files">Temporary files</string>
+    <string name="storage_cleanup_option_theme_catalog">Theme Store cache</string>
+    <string name="storage_cleanup_option_fetched_lyrics">Automatically fetched lyrics</string>
+    <string name="storage_cleanup_option_offline_downloads">Downloaded audio</string>
+    <string name="storage_cleanup_completed">Cleanup complete.</string>
 </resources>
