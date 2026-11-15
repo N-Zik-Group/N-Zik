@@ -273,6 +273,14 @@
     <string name="theme_store_choose_revision">Choose a revision</string>
     <string name="theme_store_published_on">Published on %1$s</string>
     <string name="theme_store_compatibility">N-Zik compatibility</string>
+    <string name="theme_store_submission_minimum_version">Minimum N-Zik version</string>
+    <string name="theme_store_submission_minimum_description">The oldest version that can apply this theme. You are using N-Zik %1$s (version code %2$d).</string>
+    <string name="theme_store_submission_version_code_label">Minimum version code</string>
+    <string name="theme_store_submission_find_version_code">Find N-Zik version codes on GitHub</string>
+    <string name="theme_store_submission_version_with_code">%1$s (code %2$d)</string>
+    <string name="theme_store_submission_version_code">Version code %1$d</string>
+    <string name="theme_store_submission_version_required">Enter version code %1$d.</string>
+    <string name="theme_store_submission_version_range">Enter a version code between %1$d and %2$d.</string>
     <string name="theme_store_revision">Revision %1$d</string>
     <string name="theme_store_authors">Creators</string>
     <string name="theme_store_author_theme_count">Themes: %1$d</string>
@@ -442,6 +450,7 @@
     <string name="theme_store_preview_import_requirements">Previews are public. Keep personal information out of screenshots. PNG, JPEG or WebP · 4 MB per image.</string>
     <string name="theme_store_preview_import_error">Could not import this image. Choose a PNG, JPEG or WebP image under 4 MB.</string>
     <string name="theme_store_submission_included">Included settings</string>
+    <string name="theme_store_submission_unsupported_categories">These groups contain settings that cannot be shared in a theme: %1$s.</string>
     <string name="theme_store_submission_sending">Sending for review…</string>
     <string name="theme_store_report_theme">Report theme</string>
     <string name="theme_store_report_review">Report review</string>

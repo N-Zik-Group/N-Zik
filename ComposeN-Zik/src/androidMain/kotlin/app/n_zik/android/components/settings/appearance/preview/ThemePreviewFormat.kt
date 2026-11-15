@@ -89,7 +89,10 @@ import kotlinx.serialization.json.put
 internal enum class ThemeCategory { COLORS, PLAYER_AND_QUEUE, NAVIGATION, GLASS }
 internal data class ThemeSettings(val plain: Map<String, Any>, val glass: Map<String, Any> = emptyMap())
 
-internal fun parseThemeV1(source: String): Map<ThemeCategory, ThemeSettings> {
+internal fun parseThemeV1(source: String): Map<ThemeCategory, ThemeSettings> =
+    parseThemeV1(source, allowEmptyCategories = false)
+
+internal fun parseThemeV1(source: String, allowEmptyCategories: Boolean): Map<ThemeCategory, ThemeSettings> {
     val root = Json.parseToJsonElement(source) as? JsonObject ?: error("Invalid theme document")
     val version = root["schemaVersion"] as? JsonPrimitive
     require(root.keys == setOf("schemaVersion", "categories") &&
@@ -99,7 +102,7 @@ internal fun parseThemeV1(source: String): Map<ThemeCategory, ThemeSettings> {
         "Unsupported theme schema"
     }
     val categories = root["categories"] as? JsonObject ?: error("Invalid theme categories")
-    require(categories.isNotEmpty()) { "The theme contains no categories" }
+    require(allowEmptyCategories || categories.isNotEmpty()) { "The theme contains no categories" }
     return categories.map { (name, content) ->
         val fields = ImportThemeFields(content)
         val category = ThemeCategory.entries.firstOrNull { it.wireKey == name }
@@ -108,13 +111,22 @@ internal fun parseThemeV1(source: String): Map<ThemeCategory, ThemeSettings> {
     }.toMap()
 }
 
-internal fun encodeThemeV1(plain: Map<String, *>, glass: Map<String, *>): String =
+internal fun encodeThemeV1(
+    plain: Map<String, *>,
+    glass: Map<String, *>,
+    omitUnsupportedCategories: Boolean = false,
+): String =
     buildJsonObject {
         put("schemaVersion", 1)
         put("categories", buildJsonObject {
             ThemeCategory.entries.forEach { category ->
                 val fields = ExportThemeFields(if (category == ThemeCategory.GLASS) glass + plain else plain)
-                fields.fields(category)
+                try {
+                    fields.fields(category)
+                } catch (error: IllegalArgumentException) {
+                    if (!omitUnsupportedCategories) throw error
+                    return@forEach
+                }
                 put(category.wireKey, JsonObject(fields.values))
             }
         })

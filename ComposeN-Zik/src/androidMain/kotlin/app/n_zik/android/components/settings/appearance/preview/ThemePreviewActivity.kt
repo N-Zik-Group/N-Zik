@@ -2,6 +2,7 @@ package app.n_zik.android.components.settings.appearance.preview
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
@@ -61,6 +62,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.navigation.compose.rememberNavController
@@ -77,6 +80,7 @@ import app.n_zik.android.components.ui.UiButton
 import app.n_zik.android.components.glass.GlassMenuHostState
 import app.n_zik.android.components.glass.GlassRippleProvider
 import app.n_zik.android.components.glass.GlassSceneContent
+import app.n_zik.android.components.glass.LocalGlassArtworkColor
 import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.LocalGlassPlayerOverlayActive
 import app.n_zik.android.components.glass.LocalGlassPreviewSettings
@@ -87,6 +91,7 @@ import app.n_zik.android.components.navigation.dock.FloatingDockState
 import app.n_zik.android.components.navigation.nav.GlassNavigationBarHeight
 import app.n_zik.android.components.navigation.nav.GlassNavigationPlayerGap
 import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.rememberGlassArtworkDisplayColors
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.theme.appearanceBackground
 import app.n_zik.android.compose.persist.LocalPersistMap
@@ -104,11 +109,13 @@ import app.n_zik.android.ui.screens.player.rememberPlayerSheetState
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.hideStatusBarKey
 import app.n_zik.android.utils.navigationBarPositionKey
 import app.n_zik.android.utils.searchResultScreenTabIndexKey
 import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.utils.transitionEffectKey
 import java.io.File
+import java.util.Locale
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.CancellationException
@@ -123,6 +130,11 @@ open class ThemePreviewActivity : ComponentActivity() {
 
     /** Only the debug manifest exposes the automated catalog capture activity. */
     protected open val automation = false
+
+    override fun attachBaseContext(newBase: Context) {
+        val english = Configuration().apply { setLocale(Locale.ENGLISH) }
+        super.attachBaseContext(newBase.createConfigurationContext(english))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -243,6 +255,21 @@ private fun CaptureGallery(
     var frameIndex by remember { mutableStateOf(if (automation) 0 else -1) }
     var failed by remember { mutableStateOf<CaptureFrame?>(null) }
     val frame = frames.getOrNull(frameIndex)
+    val visibleTheme = if (frame?.glass == true) glass else normal
+    val dark = visibleTheme.appearance.colorPalette.isDark
+    val hideStatusBar = frame != null && visibleTheme.preferences[hideStatusBarKey] == true
+    LaunchedEffect(window, dark, hideStatusBar) {
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = !dark
+            isAppearanceLightNavigationBars = !dark
+            if (hideStatusBar) {
+                systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                hide(WindowInsetsCompat.Type.statusBars())
+            } else {
+                show(WindowInsetsCompat.Type.statusBars())
+            }
+        }
+    }
     val completionKey = document?.let { Base64.encodeToString(it.toByteArray(), Base64.NO_WRAP) }.orEmpty()
     val working = remember { File(filesDir, "theme-preview-working") }
     val output = remember {
@@ -255,7 +282,7 @@ private fun CaptureGallery(
         frameIndex = -1
     }
     if (frame != null) {
-        val theme = if (frame.glass) glass else normal
+        val theme = visibleTheme
         key(frame) {
             val previewContext = remember {
                 ThemePreviewContext.create(
@@ -289,10 +316,6 @@ private fun CaptureGallery(
                     if (frameIndex == 0) withContext(NzikDispatchers.DATA) {
                         resetCaptureFolder(working)
                         staging.clear()
-                    }
-                    WindowCompat.getInsetsController(window, window.decorView).apply {
-                        isAppearanceLightStatusBars = !theme.appearance.colorPalette.isDark
-                        isAppearanceLightNavigationBars = !theme.appearance.colorPalette.isDark
                     }
                     kotlinx.coroutines.withTimeoutOrNull(5_000) {
                         while (player.duration <= 0 && player.playerError == null) delay(50)
@@ -366,6 +389,10 @@ private fun PreviewPage(session: ThemePreviewSession, theme: ThemePreviewAppeara
     val fullPlayer = session.scene in setOf(
         ThemePreviewScene.PLAYER, ThemePreviewScene.PLAYER_PLAYING, ThemePreviewScene.QUEUE, ThemePreviewScene.LYRICS,
     )
+    // Full-player scenes skip AppNavigation, which normally supplies this artwork tint.
+    val artworkColor = if (fullPlayer) {
+        rememberGlassArtworkDisplayColors(session.player, theme.glass.enabled, theme.appearance.colorPalette.isDark)?.dominant
+    } else null
     val navPosition = (theme.preferences[navigationBarPositionKey] as? String)?.let { position ->
         NavigationBarPosition.entries.firstOrNull { it.name == position }
     } ?: NavigationBarPosition.BottomFloating
@@ -396,6 +423,7 @@ private fun PreviewPage(session: ThemePreviewSession, theme: ThemePreviewAppeara
             LocalThemePreview provides session,
             LocalGlassPreviewSettings provides theme.glass,
             LocalGlassMenuHost provides host,
+            LocalGlassArtworkColor provides artworkColor,
             app.n_zik.android.components.navigation.dock.LocalFloatingDock provides dock,
             LocalGlassPlayerOverlayActive provides fullPlayer,
             LocalPlayerAwareWindowInsets provides windowInsets,

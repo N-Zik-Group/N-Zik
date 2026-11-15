@@ -3,6 +3,8 @@ package app.n_zik.android.components.settings.appearance.preview
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import kotlinx.serialization.Serializable
+import java.time.LocalDate
+import java.time.ZoneOffset
 import kotlinx.serialization.json.Json
 
 @Serializable
@@ -44,7 +46,27 @@ internal class ThemeStoreLibrary(private val preferences: SharedPreferences) {
         }
 
     fun save(theme: SavedTheme) = synchronized(downloadMutationLock) {
-        preferences.edit { putString(downloadPrefix + theme.id, Json.encodeToString(theme)) }
+        preferences.edit {
+            putString(downloadPrefix + theme.id, Json.encodeToString(theme))
+            putLong(savedTimePrefix + theme.id, System.currentTimeMillis())
+        }
+    }
+
+    fun recentlySavedFirst(themes: List<SavedTheme>, catalog: List<StoreTheme>): List<SavedTheme> {
+        val catalogOrder = catalog.mapIndexed { index, theme -> theme.themeId to index }.toMap()
+        val dated = themes.map { saved ->
+            val localTime = preferences.getLong(savedTimePrefix + saved.id, 0L)
+            val publication = saved.theme?.publishedOn?.let { date ->
+                runCatching { LocalDate.parse(date).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli() }.getOrNull()
+            }
+            val time = if (saved.imported) localTime.takeIf { it > 0 } ?: publication ?: 0L else publication ?: localTime
+            saved to time
+        }
+        return dated.sortedWith(
+            compareByDescending<Pair<SavedTheme, Long>> { it.second }
+                .thenByDescending { (saved) -> saved.theme?.themeId?.let(catalogOrder::get) ?: -1 }
+                .thenByDescending { (saved) -> saved.theme?.revision ?: 0 },
+        ).map { it.first }
     }
 
     fun restoreImported(themes: List<SavedTheme>): Int = synchronized(downloadMutationLock) {
@@ -52,7 +74,11 @@ internal class ThemeStoreLibrary(private val preferences: SharedPreferences) {
         val pending = themes.distinctBy(SavedTheme::id).filterNot { preferences.contains(downloadPrefix + it.id) }
         if (pending.isNotEmpty()) {
             val editor = preferences.edit()
-            pending.forEach { editor.putString(downloadPrefix + it.id, Json.encodeToString(it)) }
+            val now = System.currentTimeMillis()
+            pending.forEach {
+                editor.putString(downloadPrefix + it.id, Json.encodeToString(it))
+                editor.putLong(savedTimePrefix + it.id, now)
+            }
             check(editor.commit()) { "Could not save restored themes" }
         }
         pending.size
@@ -78,6 +104,7 @@ internal class ThemeStoreLibrary(private val preferences: SharedPreferences) {
                 editor.putString(downloadPrefix + restored.id, Json.encodeToString(restored))
             }
             editor.remove(downloadPrefix + local.id)
+            editor.remove(savedTimePrefix + local.id)
             bound++
         }
         if (bound > 0) check(editor.commit()) { "Could not update restored theme origins" }
@@ -85,7 +112,10 @@ internal class ThemeStoreLibrary(private val preferences: SharedPreferences) {
     }
 
     fun removeDownload(id: String) {
-        preferences.edit { remove(downloadPrefix + id) }
+        preferences.edit {
+            remove(downloadPrefix + id)
+            remove(savedTimePrefix + id)
+        }
     }
 
     fun downloadedThemeUpdates(themes: List<StoreTheme>, mode: ThemeUpdateMode): List<StoreTheme> {
@@ -125,23 +155,28 @@ internal class ThemeStoreLibrary(private val preferences: SharedPreferences) {
         }
     }
 
-    fun newPublications(themes: List<StoreTheme>): List<StoreTheme> {
-        val published = mutableListOf<StoreTheme>()
-        for ((id, authored) in themes.groupBy { it.author.githubId }) {
-            val key = "themeStore.publications.$id"
-            val seen = preferences.getStringSet(key, null) ?: continue
-            val new = authored.filter { it.themeId !in seen }
-            if (new.isNotEmpty()) {
-                preferences.edit { putStringSet(key, seen + new.map { it.themeId }) }
-                published += new
-            }
-        }
-        return published
+    fun hasNotificationSubscriptions(): Boolean =
+        preferences.all.keys.any { it.startsWith("themeStore.publications.") } ||
+            downloads().any { !it.imported && it.theme?.let { theme -> updateMode(theme.themeId) == ThemeUpdateMode.Notify } == true }
+
+    fun newPublications(themes: List<StoreTheme>): List<StoreTheme> = themes.filter { theme ->
+        val seen = preferences.getStringSet("themeStore.publications.${theme.author.githubId}", null)
+        seen != null && theme.themeId !in seen
     }
 
-    private companion object {
-        val downloadMutationLock = Any()
-        const val downloadPrefix = "themeStore.download."
-        const val followPrefix = "themeStore.follow."
+    fun markPublicationNotified(theme: StoreTheme) {
+        val key = "themeStore.publications.${theme.author.githubId}"
+        val seen = preferences.getStringSet(key, null) ?: return
+        preferences.edit { putStringSet(key, seen + theme.themeId) }
+    }
+
+    companion object {
+        fun isDownloadPreference(key: String): Boolean =
+            key.startsWith(downloadPrefix) || key.startsWith(savedTimePrefix)
+
+        private val downloadMutationLock = Any()
+        private const val savedTimePrefix = "themeStore.savedAt."
+        private const val downloadPrefix = "themeStore.download."
+        private const val followPrefix = "themeStore.follow."
     }
 }

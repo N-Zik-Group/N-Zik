@@ -93,6 +93,9 @@ internal object GitHubAccount {
     fun userId(context: Context): Long? = store(context).getString(identityKey, null)
         ?.let { runCatching { JSONObject(it).getLong("id") }.getOrNull() }
 
+    fun accountLogin(context: Context): String? = store(context).getString(identityKey, null)
+        ?.let { runCatching { JSONObject(it).getString("login") }.getOrNull() }
+
     fun read(context: Context) {
         login.value = store(context).getString(identityKey, null)
             .let { current ->

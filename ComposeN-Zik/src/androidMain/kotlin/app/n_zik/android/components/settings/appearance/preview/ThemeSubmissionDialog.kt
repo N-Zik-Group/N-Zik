@@ -11,9 +11,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import app.n_zik.android.components.glass.GlassTextField as TextField
@@ -23,6 +23,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
@@ -30,7 +37,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import app.n_zik.android.core.navigation.currentPageNavigationEntry
+import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.NzikCheckbox
+import app.n_zik.android.components.image.PickedImageEditor
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
@@ -52,6 +64,7 @@ import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.glassMaterial
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.updater.models.UpdateEndpoints
 import app.n_zik.android.updater.ui.UpdaterBottomPanel
 import app.n_zik.android.components.dialog.settings.SettingsDialogTabRow
 import app.n_zik.android.components.glass.GlassProfilePreferences
@@ -83,6 +96,12 @@ internal val playbackPreviews = listOf("player-playing", "miniplayer-playing")
     .flatMap { listOf("$it-normal", "$it-glass") }
 internal val automaticPreviews = requiredPreviews + playbackPreviews
 internal const val SubmissionPreviewLimit = 4 * 1024 * 1024
+private const val FirstThemeStoreVersionCode = 96
+
+internal fun submissionMinimumVersionCode(input: String, current: Int, previous: Int?): Int? =
+    input.trim().toIntOrNull()?.takeIf { code ->
+        code > 0 && (code == previous || code in FirstThemeStoreVersionCode..current)
+    }
 
 @Composable
 internal fun ThemeSubmissionPage(navController: NavController, miniPlayer: @Composable () -> Unit, themeId: String) {
@@ -146,7 +165,11 @@ internal fun ThemeSubmissionPage(navController: NavController, miniPlayer: @Comp
         } else if (creatingLocal || themeId == "new" || existing != null) {
             ThemeSubmissionForm(existing, loaded, padding, localOnly, localTheme,
                 initialAppearance = localTheme?.document ?: initial?.getOrNull(), currentAppearance = {
-                encodeThemeV1(context.preferences.all, GlassProfilePreferences.preferences(context, profileId).all)
+                encodeThemeV1(
+                    context.preferences.all,
+                    GlassProfilePreferences.preferences(context, profileId).all,
+                    omitUnsupportedCategories = true,
+                )
             }, onLocalSaved = { saved ->
                 check(getActiveProfile(context) == profileId &&
                     (creatingLocal || (localKey != null && library.download(localKey)?.imported == true)))
@@ -189,21 +212,43 @@ private fun ThemeSubmissionForm(
     }
     val storedDraft = remember(key, published) {
         drafts.getString(key, null)?.let { runCatching { JSONObject(it) }.getOrNull() }
-            ?.takeUnless { saved -> existing == null && published.any { it.themeId == saved.optString("id") } }
+    }
+    val obsoleteDraft = existing == null && storedDraft != null &&
+        published.any { it.themeId == storedDraft.optString("id") }
+    fun discardDraft(activePreviews: JSONObject? = null) {
+        val savedPreviews = draftPreviewUris(drafts.getString(key, null))
+        drafts.edit().remove(key).apply()
+        removeUnusedSubmissionPreviews(context, drafts, savedPreviews + submissionPreviewUris(activePreviews))
+    }
+    LaunchedEffect(key, obsoleteDraft) {
+        if (obsoleteDraft) discardDraft()
     }
     var useDraft by rememberSaveable(key) { mutableStateOf<Boolean?>(null) }
-    if (storedDraft != null && useDraft == null) {
+    if (storedDraft != null && !obsoleteDraft && useDraft == null) {
         ThemeStoreDraftDialog(dismiss, onDiscard = {
-            drafts.edit().remove(key).apply()
+            discardDraft()
             useDraft = false
         }, onContinue = { useDraft = true })
         return
     }
-    val draft = storedDraft.takeIf { useDraft == true }
+    val draft = storedDraft.takeIf { !obsoleteDraft && useDraft == true }
     val themeId = rememberSaveable(key) { existing?.themeId ?: draft?.optString("id") ?: UUID.randomUUID().toString() }
     var title by rememberSaveable(key) { mutableStateOf(draft?.optString("title") ?: existing?.title.orEmpty()) }
     var description by rememberSaveable(key) { mutableStateOf(draft?.optString("description") ?: existing?.description.orEmpty()) }
     var tags by rememberSaveable(key) { mutableStateOf(draft?.optString("tags") ?: existing?.tags?.joinToString(", ").orEmpty()) }
+    val previousMinimum = existing?.compatibility?.minVersionCode
+    val currentVersionCode = BuildConfig.VERSION_CODE
+    var minimumVersionInput by rememberSaveable(key) {
+        mutableStateOf(draft?.takeIf { it.has("minVersionCode") }?.optString("minVersionCode")
+            ?: (previousMinimum ?: currentVersionCode).toString())
+    }
+    val minimumVersionCode = submissionMinimumVersionCode(minimumVersionInput, currentVersionCode, previousMinimum)
+    val minimumVersionLabel = when (minimumVersionCode) {
+        currentVersionCode -> stringResource(R.string.theme_store_submission_version_with_code,
+            BuildConfig.VERSION_NAME.substringBefore('-'), currentVersionCode)
+        null -> ""
+        else -> stringResource(R.string.theme_store_submission_version_code, minimumVersionCode)
+    }
     val canUseReservedTags by produceState(false, catalog, id, localOnly) {
         if (!localOnly) {
             try {
@@ -234,7 +279,10 @@ private fun ThemeSubmissionForm(
                 ?: draft?.optString("appearance") ?: initialAppearance ?: currentAppearance(),
         )
     }
-    val availableSettings = remember(fullAppearance) { parseThemeV1(fullAppearance) }
+    var usingCurrentAppearance by rememberSaveable(key) {
+        mutableStateOf(draft?.optBoolean("usingCurrentAppearance") ?: (initialAppearance == null))
+    }
+    val availableSettings = remember(fullAppearance) { parseThemeV1(fullAppearance, allowEmptyCategories = true) }
     val availableCategories = availableSettings.keys
     var expandedCategory by rememberSaveable(key) { mutableStateOf<ThemeCategory?>(null) }
     var selection by rememberSaveable(key) {
@@ -252,6 +300,29 @@ private fun ThemeSubmissionForm(
         val saved = JSONObject(previewState)
         saved.keys().forEach { put(it, saved.getString(it)) }
     } }
+    fun replacePreviews(updated: JSONObject, unused: Set<String> = emptySet()) {
+        val previous = submissionPreviewUris(JSONObject(previewState))
+        previewState = updated.toString()
+        val retained = submissionPreviewUris(updated)
+        removeUnusedSubmissionPreviews(context, drafts, (previous + unused) - retained, retained)
+    }
+    fun invalidateGeneratedPreviews() {
+        reusePublishedPreviews = false
+        val remaining = JSONObject(previewState)
+        automaticPreviews.forEach { slot ->
+            val path = android.net.Uri.parse(remaining.optString(slot)).path
+            if (path?.contains("/theme-submission-previews/") == true) remaining.remove(slot)
+        }
+        replacePreviews(remaining)
+    }
+    currentPageNavigationEntry()?.let { entry ->
+        val cleanup = viewModel<ThemeSubmissionCleanup>(viewModelStoreOwner = entry)
+        SideEffect {
+            val candidates = submissionPreviewUris(JSONObject(previewState))
+            val app = context.applicationContext
+            cleanup.onExit = { removeUnusedSubmissionPreviews(app, drafts, candidates) }
+        }
+    }
     var picking by rememberSaveable { mutableStateOf<String?>(null) }
     var importingPreview by remember { mutableStateOf(false) }
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -260,9 +331,16 @@ private fun ThemeSubmissionForm(
         if (uri != null && slot != null) {
             importingPreview = true
             scope.launch {
+                var staged: File? = null
                 try {
-                    val file = withContext(NzikDispatchers.DATA) { prepareSubmissionPreview(context, uri) }
-                    previewState = JSONObject(previewState).put(slot, android.net.Uri.fromFile(file).toString()).toString()
+                    val edited = PickedImageEditor.edit(context, uri) ?: return@launch
+                    val file = edited.use { image ->
+                        withContext(NzikDispatchers.DATA) {
+                            prepareSubmissionPreview(context, image.file).also { staged = it }
+                        }
+                    }
+                    replacePreviews(JSONObject(previewState).put(slot, android.net.Uri.fromFile(file).toString()))
+                    staged = null
                     selectedPreview = slot
                 } catch (cancelled: CancellationException) {
                     throw cancelled
@@ -270,6 +348,7 @@ private fun ThemeSubmissionForm(
                     timber.log.Timber.tag("ThemeStore").w(error, "Could not import submission preview")
                     Toaster.e(R.string.theme_store_preview_import_error)
                 } finally {
+                    staged?.let { removeUnusedSubmissionPreviews(context, drafts, setOf(android.net.Uri.fromFile(it).toString())) }
                     importingPreview = false
                 }
             }
@@ -278,18 +357,19 @@ private fun ThemeSubmissionForm(
     val capture = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val updated = JSONObject(previewState)
         val received = result.data?.getStringArrayListExtra(ThemePreviewActivity.CapturedFiles)
-            .orEmpty().map(::File).associateBy(File::nameWithoutExtension)
+            .orEmpty().map(::File)
+        val bySlot = received.associateBy(File::nameWithoutExtension)
         val existingSlots = existing?.previews.orEmpty().map { it.path.substringAfterLast('/').substringBeforeLast('.') }
         val nonPlayback = (existingSlots + updated.keys().asSequence() + requiredPreviews).toSet() - playbackPreviews.toSet()
         val available = if (nonPlayback.size + playbackPreviews.size <= 36) automaticPreviews else requiredPreviews
         for (slot in available) {
-            val file = received[slot] ?: continue
+            val file = bySlot[slot] ?: continue
             val previous = android.net.Uri.parse(updated.optString(slot)).path
             if (previous.isNullOrBlank() || previous.contains("/theme-submission-previews/")) {
                 updated.put(slot, android.net.Uri.fromFile(file).toString())
             }
         }
-        previewState = updated.toString()
+        replacePreviews(updated, received.map { android.net.Uri.fromFile(it).toString() }.toSet())
     }
     var step by rememberSaveable { mutableIntStateOf(0) }
     var rights by rememberSaveable { mutableStateOf(false) }
@@ -300,7 +380,7 @@ private fun ThemeSubmissionForm(
     if (authorizing && awaiting) deviceCode?.let { GitHubLoginWebView(it) { GitHubAccount.cancel() } }
     val revision = localTheme?.theme?.revision ?: ((existing?.revision ?: 0) + 1)
     val publishedPreviews = existing?.previews.orEmpty()
-        .filter { reusePublishedPreviews || it.path.substringAfterLast('/').substringBeforeLast('.') !in requiredPreviews }
+        .filter { reusePublishedPreviews || it.path.substringAfterLast('/').substringBeforeLast('.') !in automaticPreviews }
         .associateBy { it.path.substringAfterLast('/').substringBeforeLast('.') }
     val readyPreviews = publishedPreviews.keys + previews.keys
     val gallerySlots = requiredPreviews + playbackPreviews.filter { it in readyPreviews } +
@@ -340,15 +420,20 @@ private fun ThemeSubmissionForm(
     val categories = included.map { stringResource(it.submissionLabel()) }
     val sections = listOf("Information", "Previews", "Review")
     fun saveDraft() {
+        val previous = draftPreviewUris(drafts.getString(key, null))
         val data = JSONObject().put("id", themeId).put("title", title).put("description", description)
+            .put("minVersionCode", minimumVersionInput)
             .put("tags", tags).put("appearance", appearance).put("previews", JSONObject(previews.toMap()))
             .put("captions", captions)
             .put("fullAppearance", fullAppearance).put("categorySelection", selection)
+            .put("usingCurrentAppearance", usingCurrentAppearance)
             .put("reusePublishedPreviews", reusePublishedPreviews)
         drafts.edit().putString(key, data.toString()).apply()
+        removeUnusedSubmissionPreviews(context, drafts, previous)
     }
     suspend fun packageTheme(): Pair<StoreTheme, Map<String, ByteArray>> = withContext(NzikDispatchers.DATA) {
         require(validTags)
+        val compatibility = StoreCompatibility(checkNotNull(minimumVersionCode))
         val files = mutableMapOf<String, ByteArray>()
         val appearanceBytes = appearance.encodeToByteArray()
         parseThemeV1(appearance)
@@ -380,7 +465,7 @@ private fun ThemeSubmissionForm(
         }
         val theme = StoreTheme(1, themeId, revision, title.trim(), description.trim(),
             if (login == "local") StoreAuthor(0, login) else StoreAuthor(id, login), submissionTags,
-            existing?.compatibility ?: StoreCompatibility(if (localOnly) app.n_zik.android.BuildConfig.VERSION_CODE else null), StoreFile("appearance.json", appearanceBytes.sha256()), gallery,
+            compatibility, StoreFile("appearance.json", appearanceBytes.sha256()), gallery,
             localCreatorName = localCreator)
         files["manifest.json"] = Json.encodeToString(StoreTheme.serializer(), theme).encodeToByteArray()
         theme to files
@@ -394,7 +479,7 @@ private fun ThemeSubmissionForm(
                     cacheThemeArchivePreviews(context, theme) { files.getValue(it) }
                 }
                 onLocalSaved(SavedTheme(theme.title, files.getValue(theme.appearance.path).decodeToString(), theme, imported = true, storeOrigin = localTheme?.storeOrigin))
-                drafts.edit().remove(key).apply()
+                discardDraft(JSONObject(previewState))
                 Toaster.s(R.string.theme_store_local_saved)
                 dismiss()
             } catch (cancelled: CancellationException) {
@@ -419,9 +504,9 @@ private fun ThemeSubmissionForm(
                     val url = submitCreatorProfile(token, id, files.mapKeys { theme.directory + it.key }, theme)
                     val number = url.substringAfterLast('/').toInt()
                     context.getSharedPreferences("theme_creator_submissions", 0).edit().putString("$id:$number", "open").apply()
+                    discardDraft(JSONObject(previewState))
                     notifyCreatorSubmissionSent(context, id, number, R.string.theme_store_theme_submitted)
                     Toaster.s(R.string.theme_store_theme_submitted)
-                    if (existing != null) drafts.edit().remove(key).apply()
                     dismiss()
                 } catch (cancelled: CancellationException) {
                     throw cancelled
@@ -448,12 +533,21 @@ private fun ThemeSubmissionForm(
             GitHubAccount.start(context, id, submit)
         }
     }
-    val informationValid = title.isNotBlank() && description.isNotBlank() && included.isNotEmpty() && validTags
+    val informationValid = title.isNotBlank() && description.isNotBlank() && included.isNotEmpty() && validTags &&
+        minimumVersionCode != null
     val footerGlass = rememberGlassSettings()
     val footerBackdrop = rememberLayerBackdrop()
     val captureFooter = footerGlass.usesGlassMaterial(GlassArea.SettingsCards) &&
         glassRenderer(footerGlass) != GlassRenderer.Tint
-    BackHandler(step > 0 || busy) { if (!busy) step-- }
+    fun navigateBack() {
+        if (step > 0) {
+            step--
+        } else {
+            removeUnusedSubmissionPreviews(context, drafts, submissionPreviewUris(JSONObject(previewState)))
+            dismiss()
+        }
+    }
+    BackHandler { if (!busy && !importingPreview) navigateBack() }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = colorPalette().background0,
@@ -471,9 +565,9 @@ private fun ThemeSubmissionForm(
                     val palette = colorPalette()
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         PageButton(
-                            onClick = { if (step == 0) dismiss() else step-- },
+                            onClick = ::navigateBack,
                             modifier = Modifier.weight(1f),
-                            enabled = !busy,
+                            enabled = !busy && !importingPreview,
                             elevation = null,
                             colors = ButtonDefaults.buttonColors(containerColor = palette.red),
                         ) {
@@ -548,6 +642,45 @@ private fun ThemeSubmissionForm(
                             if (!localOnly) SettingsSectionCard("Author", R.drawable.github_icon, bottomSpacing = 0.dp, content = {
                                 SubmissionAuthor(login)
                             })
+                            val minimumLabel = stringResource(R.string.theme_store_submission_minimum_version)
+                            SettingsSectionCard(minimumLabel, R.drawable.information, bottomSpacing = 0.dp, content = {
+                                SettingsDescription(stringResource(R.string.theme_store_submission_minimum_description,
+                                    BuildConfig.VERSION_NAME.substringBefore('-'), currentVersionCode))
+                                TextField(
+                                    value = minimumVersionInput,
+                                    onValueChange = { value ->
+                                        if (value.length <= 10 && value.all { it in '0'..'9' }) minimumVersionInput = value
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    label = { Text(stringResource(R.string.theme_store_submission_version_code_label)) },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    singleLine = true,
+                                    isError = minimumVersionCode == null,
+                                    colors = app.n_zik.android.components.dialog.common.InputDialog.defaultTextFieldColors(),
+                                )
+                                val versionCodeLink = stringResource(R.string.theme_store_submission_find_version_code)
+                                val linkColor = colorPalette().accent
+                                Text(
+                                    text = buildAnnotatedString {
+                                        withLink(LinkAnnotation.Url(
+                                            url = UpdateEndpoints.REPO_URL + "/blob/main/gradle/libs.versions.toml#L23-L24",
+                                            styles = TextLinkStyles(style = SpanStyle(
+                                                color = linkColor, textDecoration = TextDecoration.Underline,
+                                            )),
+                                        )) {
+                                            append(versionCodeLink)
+                                        }
+                                    },
+                                    modifier = Modifier.padding(top = 8.dp),
+                                )
+                                if (minimumVersionCode == null) {
+                                    SettingsDescription(stringResource(
+                                        if (FirstThemeStoreVersionCode == currentVersionCode) R.string.theme_store_submission_version_required
+                                        else R.string.theme_store_submission_version_range,
+                                        FirstThemeStoreVersionCode, currentVersionCode,
+                                    ))
+                                }
+                            })
                             SettingsSectionCard(stringResource(R.string.theme_store_submission_included), R.drawable.ui,
                                 bottomSpacing = 0.dp, content = {
                                     if (localTheme != null) {
@@ -557,9 +690,19 @@ private fun ThemeSubmissionForm(
                                             icon = R.drawable.ui,
                                             onClick = {
                                                 fullAppearance = currentAppearance()
+                                                usingCurrentAppearance = true
                                                 selection = -1
+                                                invalidateGeneratedPreviews()
                                             },
                                         )
+                                    }
+                                    if (usingCurrentAppearance && availableCategories.size < ThemeCategory.entries.size) {
+                                        val omitted = ThemeCategory.entries.filterNot { it in availableCategories }
+                                            .map { stringResource(it.submissionLabel()) }
+                                        SettingsDescription(stringResource(
+                                            R.string.theme_store_submission_unsupported_categories,
+                                            omitted.joinToString(", "),
+                                        ))
                                     }
                                     availableCategories.forEach { category ->
                                         val checked = category in included
@@ -575,13 +718,7 @@ private fun ThemeSubmissionForm(
                                             onExpand = { expandedCategory = if (expandedCategory == category) null else category },
                                             onCheckedChange = {
                                                 selection = selection xor (1 shl category.ordinal)
-                                                reusePublishedPreviews = false
-                                                val remaining = JSONObject(previewState)
-                                                requiredPreviews.forEach { slot ->
-                                                    if (android.net.Uri.parse(remaining.optString(slot)).path
-                                                            ?.contains("/theme-submission-previews/") == true) remaining.remove(slot)
-                                                }
-                                                previewState = remaining.toString()
+                                                invalidateGeneratedPreviews()
                                             },
                                         )
                                     }
@@ -711,6 +848,7 @@ private fun ThemeSubmissionForm(
                                 }
                                 SettingsCardSectionDivider()
                                 if (!localOnly) SubmissionSummaryRow("Revision", revision.toString())
+                                SubmissionSummaryRow(stringResource(R.string.theme_store_submission_minimum_version), minimumVersionLabel)
                             })
                             SettingsSectionCard(stringResource(R.string.theme_store_submission_included), R.drawable.ui, bottomSpacing = 0.dp, content = {
                                 SubmissionCategoryChips(categories)
@@ -725,9 +863,7 @@ private fun ThemeSubmissionForm(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        Checkbox(checked = rights, onCheckedChange = null,
-                                            colors = androidx.compose.material3.CheckboxDefaults.colors(
-                                                checkedColor = colorPalette().accent, checkmarkColor = colorPalette().onAccent))
+                                        NzikCheckbox(checked = rights, onCheckedChange = null)
                                         Text("I have the rights to publish these previews.", style = typography().xs)
                                     }
                                 }
@@ -829,18 +965,15 @@ private fun ThemeCategory.submissionLabel(): Int = when (this) {
     ThemeCategory.GLASS -> R.string.theme_store_preview_glass
 }
 
-private fun prepareSubmissionPreview(context: android.content.Context, uri: android.net.Uri): File {
-    val resolver = context.contentResolver
-    require(resolver.getType(uri) in setOf("image/png", "image/jpeg", "image/webp"))
-    val bytes = checkNotNull(resolver.openInputStream(uri)).use { it.readThemeBytes(SubmissionPreviewLimit) }
+private fun prepareSubmissionPreview(context: android.content.Context, source: File): File {
     val options = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
-    android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+    android.graphics.BitmapFactory.decodeFile(source.path, options)
     require(options.outWidth > 0 && options.outHeight > 0)
     options.inJustDecodeBounds = false
     while (maxOf(options.outWidth, options.outHeight) / options.inSampleSize.coerceAtLeast(1) > 1920) {
         options.inSampleSize = options.inSampleSize.coerceAtLeast(1) * 2
     }
-    val bitmap = checkNotNull(android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options))
+    val bitmap = checkNotNull(android.graphics.BitmapFactory.decodeFile(source.path, options))
     try {
         val buffer = java.io.ByteArrayOutputStream()
         @Suppress("DEPRECATION")
@@ -848,7 +981,9 @@ private fun prepareSubmissionPreview(context: android.content.Context, uri: andr
         require(buffer.size() in 1..SubmissionPreviewLimit)
         val folder = File(context.filesDir, "theme-submission-imports")
         check(folder.isDirectory || folder.mkdirs())
-        return File(folder, "${UUID.randomUUID()}.webp").apply { writeBytes(buffer.toByteArray()) }
+        val file = android.util.AtomicFile(File(folder, "${UUID.randomUUID()}.webp"))
+        writeThemeFile(file, buffer.toByteArray())
+        return file.baseFile
     } finally {
         bitmap.recycle()
     }

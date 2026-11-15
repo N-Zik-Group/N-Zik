@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings.appearance.preview
 
 import android.app.Application
+import android.app.NotificationManager
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
@@ -33,10 +34,35 @@ class ThemeStorePublicationTest {
         library.setPublicationsEnabled(1, true, listOf(existing))
         val catalog = listOf(existing.copy(revision = 2), new, other)
         assertEquals(listOf(new), library.newPublications(catalog))
+        // A failed or blocked notification leaves the publication eligible for retry.
+        assertEquals(listOf(new), library.newPublications(catalog))
+        library.markPublicationNotified(new)
         assertEquals(emptyList<StoreTheme>(), library.newPublications(catalog))
 
         library.setPublicationsEnabled(1, false, catalog)
         assertEquals(emptyList<StoreTheme>(), library.newPublications(listOf(other.copy(author = existing.author))))
+    }
+
+    @Test
+    fun staleOpenSnapshotCannotRearmAnAcceptedSubmission() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        context.getSharedPreferences("github_account", Context.MODE_PRIVATE).edit()
+            .putString("identity", """{"id":42,"login":"creator"}""").apply()
+        val preferences = context.getSharedPreferences("theme_creator_submissions", Context.MODE_PRIVATE)
+        preferences.edit().putString("42:123", "open").apply()
+        val accepted = CreatorSubmission(123, "A theme", "accepted", stateDate = "2026-11-15T15:20:00Z")
+        val staleOpen = accepted.copy(state = "open", stateDate = "2026-11-15T15:10:00Z")
+        val notifications = checkNotNull(context.getSystemService(NotificationManager::class.java))
+
+        notifyCreatorDecisions(context, 42, listOf(accepted))
+        assertEquals("accepted", preferences.getString("42:123", null))
+        assertEquals(1, notifications.activeNotifications.size)
+        notifications.cancelAll()
+        notifyCreatorDecisions(context, 42, listOf(staleOpen))
+        notifyCreatorDecisions(context, 42, listOf(accepted))
+
+        assertEquals("accepted", preferences.getString("42:123", null))
+        assertEquals(0, notifications.activeNotifications.size)
     }
 
     @Test
@@ -50,6 +76,7 @@ class ThemeStorePublicationTest {
             revision = 1,
             title = "Downloaded theme",
             description = "",
+            publishedOn = "2026-11-15",
             author = StoreAuthor(1, "creator"),
             tags = emptyList(),
             compatibility = StoreCompatibility(null),
@@ -75,5 +102,7 @@ class ThemeStorePublicationTest {
         assertEquals(catalog, library.downloadedThemeUpdates(catalog, ThemeUpdateMode.AutoDownload))
         library.save(SavedTheme(update.title, "{}", update))
         assertEquals(emptyList<StoreTheme>(), library.downloadedThemeUpdates(catalog, ThemeUpdateMode.AutoDownload))
+        val downloaded = library.downloads().filterNot(SavedTheme::imported)
+        assertEquals(listOf(2, 1), library.recentlySavedFirst(downloaded, catalog).map { it.theme?.revision })
     }
 }

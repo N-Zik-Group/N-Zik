@@ -135,6 +135,7 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import app.n_zik.android.components.settings.appearance.preview.ThemeStoreAlertWorker
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.withStarted
 import androidx.media3.common.MediaItem
@@ -733,6 +734,7 @@ class MainActivity :
 
     override fun onStart() {
         super.onStart()
+        ThemeStoreAlertWorker.schedule(applicationContext)
         if (libraryUiStarted) bindLibraryUi()
     }
 

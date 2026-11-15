@@ -22,6 +22,33 @@ import org.robolectric.annotation.Config
 @Config(sdk = [32], application = Application::class)
 class CreatorGitHubPublisherTest {
     @Test
+    fun submissionHistoryReadsAllPagesAndDeduplicatesPulls() = runBlocking {
+        fun pull(number: Int, account: Long = 123) = """
+            {"number":$number,"user":{"id":$account},"head":{"ref":"nzik/creator-profile-123"},
+             "title":"Profile $number","state":"closed","labels":[{"name":"merged"}]}
+        """.trimIndent()
+        val pages = mutableListOf<String>()
+        val http = OkHttpClient.Builder().addInterceptor { chain ->
+            val request = chain.request()
+            val page = requireNotNull(request.url.queryParameter("page"))
+            pages += page
+            val response = Response.Builder().code(200).request(request).protocol(Protocol.HTTP_1_1).message("Stub")
+            val body = when (page) {
+                "1" -> {
+                    response.header("Link", "<https://api.github.com/repos/$upstream/pulls?page=2>; rel=\"next\"")
+                    "[${pull(102)},${pull(101, 456)}]"
+                }
+                "2" -> "[${pull(102)},${pull(1)}]"
+                else -> error("Unexpected history page $page")
+            }
+            response.body(body.toResponseBody("application/json".toMediaType())).build()
+        }.build()
+
+        assertEquals(listOf(102, 1), creatorSubmissions(123, "creator", null, http).map { it.number })
+        assertEquals(listOf("1", "2"), pages)
+    }
+
+    @Test
     fun allSubmissionKindsUseUpstreamBaseWithoutSynchronizingTheFork() = runBlocking {
         val author = StoreAuthor(123, "creator")
         val theme = StoreTheme(

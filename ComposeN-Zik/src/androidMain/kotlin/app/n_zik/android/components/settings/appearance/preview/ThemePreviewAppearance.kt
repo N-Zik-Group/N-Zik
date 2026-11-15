@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.withContext
@@ -15,6 +16,7 @@ import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassAreaMode
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassTintSource
+import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.glass.glassTintSourceKey
 import app.n_zik.android.components.theme.forPaletteMode
 import app.n_zik.android.enums.ColorPaletteMode
@@ -32,6 +34,8 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.fontTypeKey
 import app.n_zik.android.utils.thumbnailRoundnessDpKey
 import app.n_zik.android.utils.useSystemFontKey
+import com.kieronquinn.monetcompat.core.MonetCompat
+import timber.log.Timber
 
 internal data class ThemePreviewAppearance(
     val preferences: Map<String, Any>,
@@ -39,17 +43,32 @@ internal data class ThemePreviewAppearance(
     val glass: GlassSettings,
 )
 
+internal fun themePreviewPreferences(document: String?, glass: Boolean): ThemeSettings {
+    val categories = document?.let(::parseThemeV1).orEmpty()
+    val preferences = categories.values.flatMap { it.plain.entries }.associate { it.toPair() }
+    // The two captures differ by the master switch only, including for a theme that disables Glass.
+    return ThemeSettings(preferences + (glassEnabledKey to glass), categories[ThemeCategory.GLASS]?.glass.orEmpty())
+}
+
 @Composable
 internal fun rememberThemePreviewAppearance(document: String?, glass: Boolean): ThemePreviewAppearance {
     val context = LocalContext.current.applicationContext
-    val categories = remember(document) { document?.let(::parseThemeV1).orEmpty() }
-    val preferences = remember(categories) { categories.values.flatMap { it.plain.entries }.associate { it.toPair() } }
-    val glassPreferences = categories[ThemeCategory.GLASS]?.glass.orEmpty()
+    val settings = remember(document, glass) { themePreviewPreferences(document, glass) }
+    val preferences = settings.plain
+    val glassPreferences = settings.glass
     val systemDark = isSystemInDarkTheme()
     val paletteName = preferences.option(colorPaletteNameKey, ColorPaletteName.Dynamic)
     val paletteMode = preferences.option(colorPaletteModeKey, ColorPaletteMode.Dark)
     val dark = paletteMode != ColorPaletteMode.Light && (paletteMode != ColorPaletteMode.System || systemDark)
-    val base = colorPaletteOf(paletteName, paletteMode, systemDark)
+    val base = remember(context, paletteName, paletteMode, systemDark) {
+        val fallback = colorPaletteOf(paletteName, paletteMode, systemDark)
+        if (paletteName != ColorPaletteName.MaterialYou) fallback else try {
+            dynamicColorPaletteOf(Color(MonetCompat.setup(context).getAccentColor(context)), dark)
+        } catch (error: IllegalStateException) {
+            Timber.tag("ThemePreview").w(error, "Material You palette is unavailable")
+            fallback
+        }
+    }
     val artworkPalette by produceState(base, context, paletteName, dark, base) {
         if (paletteName == ColorPaletteName.Dynamic) value = withContext(NzikDispatchers.DATA) {
             val bitmap = BitmapFactory.decodeFile(ThemePreviewAssets.file(context, "atlas.jpg").path)

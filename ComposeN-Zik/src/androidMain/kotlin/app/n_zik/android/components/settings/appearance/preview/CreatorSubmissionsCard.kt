@@ -136,20 +136,38 @@ internal fun notifyCreatorSubmissionSent(context: Context, id: Long, number: Int
     }
 }
 
-private fun notifyCreatorDecisions(context: Context, id: Long, submissions: List<CreatorSubmission>) {
+private val creatorDecisionNotificationLock = Any()
+
+internal fun hasPendingCreatorDecisions(context: Context, id: Long): Boolean =
+    context.getSharedPreferences("theme_creator_submissions", Context.MODE_PRIVATE).all.any { (key, state) ->
+        key.startsWith("$id:") && state == "open"
+    }
+
+internal fun notifyCreatorDecisions(context: Context, id: Long, submissions: List<CreatorSubmission>) {
+    synchronized(creatorDecisionNotificationLock) {
+        if (GitHubAccount.userId(context) == id) postCreatorDecisions(context, id, submissions)
+    }
+}
+
+private fun postCreatorDecisions(context: Context, id: Long, submissions: List<CreatorSubmission>) {
     val preferences = context.getSharedPreferences("theme_creator_submissions", Context.MODE_PRIVATE)
     val notifications = context.getSystemService(NotificationManager::class.java) ?: return
-    val available = NotificationManagerCompat.from(context).areNotificationsEnabled()
+    var available = NotificationManagerCompat.from(context).areNotificationsEnabled()
     val channel = "theme_store_creator_submissions"
     if (available && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         notifications.createNotificationChannel(NotificationChannel(channel,
             context.getString(R.string.theme_store_creator_submissions), NotificationManager.IMPORTANCE_DEFAULT))
+        available = notifications.getNotificationChannel(channel)?.importance != NotificationManager.IMPORTANCE_NONE
     }
     for (submission in submissions) {
         val key = "$id:${submission.number}"
         val old = preferences.getString(key, null)
-        if (old == submission.state) continue
-        if (old == "open" && submission.state != "open") {
+        val timestampKey = "date:$key"
+        val recordedDate = preferences.getString(timestampKey, null).orEmpty()
+        if (submission.stateDate.isNotEmpty() && submission.stateDate < recordedDate) continue
+        if (old in terminalSubmissionStates && submission.state == "open") continue
+        val terminalDecision = submission.state in terminalSubmissionStates
+        if (old != submission.state && ((old == "open" && submission.state != "open") || (old == "closed" && terminalDecision))) {
             if (!available) continue
             val open = PendingIntent.getActivity(context, submission.number, openSubmission(submission.number), PendingIntent.FLAG_IMMUTABLE)
             val description = listOfNotNull(submission.title, submission.reason).joinToString("\n")
@@ -167,6 +185,12 @@ private fun notifyCreatorDecisions(context: Context, id: Long, submissions: List
                 continue
             }
         }
-        preferences.edit().putString(key, submission.state).apply()
+        if (old != submission.state || submission.stateDate > recordedDate) {
+            preferences.edit().putString(key, submission.state).apply {
+                if (submission.stateDate.isNotEmpty()) putString(timestampKey, submission.stateDate)
+            }.apply()
+        }
     }
 }
+
+private val terminalSubmissionStates = setOf("accepted", "refused", "banned")

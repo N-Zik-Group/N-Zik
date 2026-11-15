@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.ui.components.applyInterfaceLayoutDirection
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import com.yalantis.ucrop.UCrop
 import com.yalantis.ucrop.UCropActivity
@@ -35,11 +36,15 @@ class PickedImageEditorActivity : UCropActivity() {
         val colors = ImageEditorColors.resolve(this)
         if (request != null) {
             val crop = UCrop.of(Uri.fromFile(request.source), Uri.fromFile(request.output))
-                .withOptions(colors.options(this, request.originalSize))
+                .withOptions(colors.options(this, request.originalSize).apply {
+                    if (request.aspectRatio != null) setFreeStyleCropEnabled(false)
+                })
+            request.aspectRatio?.let { crop.withAspectRatio(it.width.toFloat(), it.height.toFloat()) }
             if (!request.originalSize) crop.withMaxResultSize(2048, 2048)
             intent.putExtras(crop.getIntent(this))
         }
         super.onCreate(savedInstanceState)
+        window.decorView.applyInterfaceLayoutDirection()
         if (request == null) {
             // Process death severs the caller/target identity. Never restore a stale request.
             val app = applicationContext

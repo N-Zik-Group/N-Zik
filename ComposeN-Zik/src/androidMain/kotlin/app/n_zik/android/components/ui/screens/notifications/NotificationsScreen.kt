@@ -127,6 +127,7 @@ internal fun NotificationsScreen(navController: NavController, miniPlayer: @Comp
     val bottom = Dimensions.navBarBottomPadding(floating) + if (floating) 10.dp else 15.dp
     val title = stringResource(R.string.notification_inbox_title)
     Skeleton(navController = navController, topInsetHandledByContent = true, miniPlayer = miniPlayer,
+        capturePageGlassBackdrop = false,
         navBarContent = { item -> item(0, title, R.drawable.notification2) }) { _ ->
         Box(Modifier.fillMaxSize()) {
         LazyColumn(Modifier.fillMaxSize(), contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = bottom))) {

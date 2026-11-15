@@ -8,6 +8,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,14 +29,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import app.n_zik.android.components.ui.FullPageLoader
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import app.n_zik.android.components.glass.GlassTextField as TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -49,16 +53,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.NzikCheckbox
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.AppPullToRefreshBox
 import app.n_zik.android.components.artist.ArtistFollowButton
@@ -68,7 +80,10 @@ import app.n_zik.android.components.dialog.common.DefaultDialog
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.DialogButtonPlacement
 import app.n_zik.android.components.dialog.common.InputDialog
+import app.n_zik.android.components.glass.LocalIndependentGlassBackdrop
+import app.n_zik.android.components.glass.PageButton
 import app.n_zik.android.components.glass.PageIconButton
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.settings.accounts.GitHubAccount
 import app.n_zik.android.components.settings.accounts.GitHubLoginWebView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -128,7 +143,8 @@ internal fun ThemeStoreDetailScreen(
         }
         val catalogState = catalog.cachedState()
         catalogState?.syncedAt?.let { lastSync = it }
-        val cached = catalogState?.themes?.firstOrNull { it.themeId == themeId && it.revision == revision }
+        val cachedLatest = catalogState?.themes?.firstOrNull { it.themeId == themeId }
+        val cached = cachedLatest?.takeIf { it.revision == revision }
         val saved = library.download(id)?.theme
         if (offline) {
             theme = saved
@@ -138,11 +154,12 @@ internal fun ThemeStoreDetailScreen(
         }
         if (theme == null) theme = cached ?: saved
         try {
-            if (cached == null || retry > 0) {
-                val updated = catalog.refreshState()
-                lastSync = updated.syncedAt
-                theme = updated.themes.firstOrNull { it.themeId == themeId && it.revision == revision }
-                    ?: saved ?: cached
+            if ((cached == null && saved == null) || retry > 0) {
+                val updated = loadDetail("catalog for theme detail") { catalog.refreshState() }
+                if (updated != null) lastSync = updated.syncedAt
+                val latest = if (updated == null) cachedLatest else updated.themes.firstOrNull { it.themeId == themeId }
+                theme = latest?.takeIf { it.revision == revision } ?: saved ?: cached
+                    ?: latest?.takeIf { revision in 1 until it.revision }?.let { catalog.publishedRevision(it, revision) }
             }
         } catch (cancelled: CancellationException) {
             throw cancelled
@@ -350,7 +367,7 @@ private fun ThemeStoreDetailContent(
                             library.removeDownload(id)
                             downloaded = null
                             Toaster.s(R.string.theme_store_remove_done)
-                            onRemoved()
+                            if (localPackage) onRemoved()
                         }
                         dismiss()
                     }, danger = true, placement = DialogButtonPlacement.End),
@@ -527,7 +544,7 @@ private fun ThemeStoreDetailContent(
                                 val notification = ThemeDownloadNotification(context.applicationContext, theme)
                                 notification.show()
                                 try {
-                                    val parsed = appearance ?: catalog.appearance(theme, null)
+                                    val parsed = catalog.downloadForOffline(theme, appearance)
                                     if (getActiveProfile(context) == profileId) {
                                         val saved = SavedTheme(theme.title, parsed.document, theme)
                                         library.save(saved)
@@ -605,6 +622,7 @@ private fun ThemePreviewGallery(theme: StoreTheme, catalog: ThemeStoreCatalog, r
     var selectedGlass by rememberSaveable { mutableStateOf(currentGlass) }
     val variant = selectedGlass.takeIf { it in variants } ?: variants.firstOrNull()
     val previews = theme.galleryPreviews(variant)
+    var expandedPath by remember(theme.themeId, theme.revision, variant) { mutableStateOf<String?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         if (variants.size > 1) SettingsDialogTabRow(
             labels = listOf(stringResource(R.string.theme_store_preview_normal), stringResource(R.string.theme_store_preview_glass)),
@@ -617,7 +635,69 @@ private fun ThemePreviewGallery(theme: StoreTheme, catalog: ThemeStoreCatalog, r
             key(variant) {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(previews, key = { it.path }) { preview ->
-                        ThemeGalleryPreview(theme, preview, catalog, retry, Modifier.width(width))
+                        ThemeGalleryPreview(theme, preview, catalog, retry, Modifier.width(width)) {
+                            expandedPath = preview.path
+                        }
+                    }
+                }
+            }
+        }
+    }
+    val initialPage = previews.indexOfFirst { it.path == expandedPath }
+    if (initialPage >= 0) {
+        val pager = rememberPagerState(initialPage = initialPage) { previews.size }
+        Dialog(
+            onDismissRequest = { expandedPath = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+        ) {
+            Column(
+                Modifier.fillMaxSize().background(Color.Black).padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                HorizontalPager(
+                    state = pager,
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    key = { previews[it].path },
+                ) { page ->
+                    val preview = previews[page]
+                    val file = rememberStorePreview(theme, preview, catalog, retry)?.file
+                    Box(Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 6.dp)) {
+                        StorePreviewImage(file, galleryPreviewLabel(preview), showImageRim = false, fitPortraitFrame = true)
+                    }
+                }
+                val palette = colorPalette()
+                Text(
+                    galleryPreviewLabel(previews[pager.currentPage]),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                    color = Color.White,
+                    maxLines = 2,
+                    textAlign = TextAlign.Center,
+                )
+                if (previews.size > 1) {
+                    Canvas(Modifier.fillMaxWidth(.55f).height(4.dp)) {
+                        val radius = CornerRadius(size.height / 2)
+                        drawRoundRect(Color.White.copy(alpha = .22f), cornerRadius = radius)
+                        val thumb = (size.width / previews.size).coerceIn(16.dp.toPx().coerceAtMost(size.width), size.width)
+                        val page = (pager.currentPage + pager.currentPageOffsetFraction)
+                            .coerceIn(0f, previews.lastIndex.toFloat())
+                        val travel = size.width - thumb
+                        val offset = travel * page / previews.lastIndex
+                        drawRoundRect(
+                            palette.accent,
+                            topLeft = Offset(if (layoutDirection == LayoutDirection.Rtl) travel - offset else offset, 0f),
+                            size = Size(thumb, size.height),
+                            cornerRadius = radius,
+                        )
+                    }
+                }
+                val galleryBackdrop = rememberCanvasBackdrop { drawRect(Color.Black) }
+                CompositionLocalProvider(LocalIndependentGlassBackdrop provides galleryBackdrop) {
+                    PageButton(
+                        onClick = { expandedPath = null },
+                        modifier = Modifier.padding(top = 10.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = palette.accent),
+                    ) {
+                        Text(stringResource(R.string.common_action_close))
                     }
                 }
             }
@@ -626,22 +706,35 @@ private fun ThemePreviewGallery(theme: StoreTheme, catalog: ThemeStoreCatalog, r
 }
 
 @Composable
-private fun ThemeGalleryPreview(theme: StoreTheme, preview: StorePreview, catalog: ThemeStoreCatalog, retry: Int, modifier: Modifier) {
+private fun ThemeGalleryPreview(
+    theme: StoreTheme,
+    preview: StorePreview,
+    catalog: ThemeStoreCatalog,
+    retry: Int,
+    modifier: Modifier,
+    onExpand: () -> Unit,
+) {
     val asset = rememberStorePreview(theme, preview, catalog, retry)
-    val label = preview.caption ?: when (preview.role) {
-        "player" -> stringResource(R.string.theme_store_preview_player)
-        "queue" -> stringResource(R.string.theme_store_preview_queue)
-        "navigation" -> stringResource(R.string.theme_store_group_navigation)
-        else -> preview.path.substringAfter('/').substringBeforeLast('.').replace('-', ' ')
-    }
+    val label = galleryPreviewLabel(preview)
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        ThemeCardSurface(Modifier.fillMaxWidth().aspectRatio(asset?.aspectRatio ?: 9f / 20f)) {
+        ThemeCardSurface(
+            Modifier.fillMaxWidth().aspectRatio(StorePreviewAspectRatio),
+            onClick = onExpand.takeIf { asset != null },
+        ) {
             Box(Modifier.fillMaxSize()) {
-                StorePreviewImage(asset?.file, null, showImageRim = false)
+                StorePreviewImage(asset?.file, label, showImageRim = false, fitPortraitFrame = true)
             }
         }
         BasicText(label, Modifier.basicMarquee(iterations = Int.MAX_VALUE), style = typography().xs.copy(color = colorPalette().text, textAlign = TextAlign.Center), maxLines = 1, softWrap = false)
     }
+}
+
+@Composable
+private fun galleryPreviewLabel(preview: StorePreview): String = preview.caption ?: when (preview.role) {
+    "player" -> stringResource(R.string.theme_store_preview_player)
+    "queue" -> stringResource(R.string.theme_store_preview_queue)
+    "navigation" -> stringResource(R.string.theme_store_group_navigation)
+    else -> preview.path.substringAfter('/').substringBeforeLast('.').replace('-', ' ')
 }
 
 @Composable
@@ -991,8 +1084,7 @@ internal fun ThemeSettingsCategoryRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Checkbox(checked, onCheckedChange = onCheckedChange, enabled = enabled,
-            colors = CheckboxDefaults.colors(checkedColor = colorPalette().accent, checkmarkColor = colorPalette().onAccent))
+        NzikCheckbox(checked, onCheckedChange = onCheckedChange, enabled = enabled)
         Row(
             Modifier.weight(1f).heightIn(min = 48.dp)
                 .clip(uiRoundnessShape())

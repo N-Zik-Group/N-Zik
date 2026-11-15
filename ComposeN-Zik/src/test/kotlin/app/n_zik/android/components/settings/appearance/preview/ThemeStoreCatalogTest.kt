@@ -11,6 +11,17 @@ class ThemeStoreCatalogTest {
     private val catalog = listOf(blur, waves, night)
 
     @Test
+    fun exploreOrdersLatestRevisionsFirstAndUsesIndexOrderWithinADay() {
+        val first = blur.copy(publishedOn = "2026-11-13")
+        val updated = night.copy(revision = 2, publishedOn = "2026-11-15")
+        val new = waves.copy(publishedOn = "2026-11-15")
+        val unpublished = blur.copy(title = "Undated")
+
+        assertEquals(listOf(new, updated, first, unpublished),
+            listOf(first, updated, new, unpublished).mostRecentlyPublishedFirst())
+    }
+
+    @Test
     fun partialTitleOrAuthorAndTagMustBothMatch() {
         assertEquals(listOf(waves), catalog.filterStoreThemes(" zik ", "dark"))
         assertEquals(listOf(blur), catalog.filterStoreThemes("COVER", "artwork"))

@@ -51,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -288,14 +289,12 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                     bindRestoredStoreThemes(library, current.themes + olderRestores)
                 }
             }
-            notifyThemePublications(context, library, current.themes)
-            notifyDownloadedThemeUpdates(context, library, current.themes)
-            signedInIdForPublication(context)?.let { notifyOwnThemePublications(context, it, current.themes) }
+            if (getActiveProfile(context) == profileId) notifyThemeStoreAlerts(context, library, current.themes)
             launch {
                 for (theme in library.downloadedThemeUpdates(current.themes, ThemeUpdateMode.AutoDownload)) {
                     if (theme.compatibility.supportAt(app.n_zik.android.BuildConfig.VERSION_CODE) != StoreSupport.Supported) continue
                     try {
-                        val appearance = catalog.appearance(theme, null)
+                        val appearance = catalog.downloadForOffline(theme)
                         if (getActiveProfile(context) == profileId &&
                             library.downloadedThemeUpdates(listOf(theme), ThemeUpdateMode.AutoDownload).isNotEmpty()
                         ) {
@@ -322,12 +321,16 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
     val tags = themes.orEmpty().flatMap { it.tags }.canonicalStoreTags()
     val effectiveTag = tag?.takeIf { it in tags }
     val selectedTags = advancedTags.filter { it in tags }
-    val filtered = themes.orEmpty().filterStoreThemes(query.text, effectiveTag)
+    val newestFirst = remember(themes) { themes.orEmpty().mostRecentlyPublishedFirst() }
+    val filtered = newestFirst.filterStoreThemes(query.text, effectiveTag)
         .filter { it.tags.canonicalStoreTags().containsAll(selectedTags) && (section?.includes(it, verifiedIds) ?: true) }
     val downloadedTags = (listOf(builtIn) + downloads).flatMap { it.theme?.tags.orEmpty() }.canonicalStoreTags()
     val effectiveDownloadedTag = downloadedTag?.takeIf { it in downloadedTags }
     val selectedDownloadedTags = downloadedAdvancedTags.filter { it in downloadedTags }
     val byAuthor = themes.orEmpty().groupBy { it.author.githubId }
+    val creatorDisplayNames = remember(creators) { creators.associate { it.githubId to it.displayName } }
+    val locale = LocalConfiguration.current.locales[0]
+    val creatorNameCollator = remember(locale) { java.text.Collator.getInstance(locale) }
     val authorIds = (creators.map { it.githubId } + byAuthor.keys).distinct()
     val searchTerm = query.text.trim().removePrefix("@")
     val matchingCreators = if (section == null && searchTerm.isNotBlank()) authorIds.filter { id ->
@@ -615,7 +618,7 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                         }
                     }
                     categories.forEach { category ->
-                        val group = downloadedGroups.getValue(category).distinctBy { it.id }
+                        val group = library.recentlySavedFirst(downloadedGroups.getValue(category).distinctBy { it.id }, themes.orEmpty())
                         if (section == null) {
                             item(key = "download-section-${category.routeKey}", span = { GridItemSpan(maxLineSpan) }) {
                                 Box(tabContentModifier.fillMaxWidth()) {
@@ -648,8 +651,10 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                     val visibleFollows = follows.filterNot { it.githubId == ownCreatorId }
                     val matching = visibleFollows.filter { author ->
                         author.login.contains(term, ignoreCase = true) ||
-                            creators.any { it.githubId == author.githubId && it.displayName.contains(term, ignoreCase = true) }
-                    }
+                            creatorDisplayNames[author.githubId]?.contains(term, ignoreCase = true) == true
+                    }.sortedWith(compareBy(creatorNameCollator) { author ->
+                        creatorDisplayNames[author.githubId] ?: author.login
+                    })
                     if (matching.isEmpty()) {
                         item(span = { GridItemSpan(maxLineSpan) }) {
                             Box(tabContentModifier.fillMaxWidth()) {
@@ -880,6 +885,9 @@ internal fun launchThemePicker(launch: () -> Unit) {
     }
 }
 
+// Same portrait frame as the official catalogue assets.
+internal const val StorePreviewAspectRatio = 780f / 1736f
+
 internal data class StoreCardPreview(val file: File, val aspectRatio: Float)
 
 @Composable
@@ -939,8 +947,8 @@ private fun ThemeStoreCard(
     val imageDescription = publishedPreview?.caption
     ThemeCardSurface(modifier = modifier, onClick = open) {
         val image = preview
-        Box(Modifier.fillMaxWidth().aspectRatio(image?.aspectRatio ?: 9f / 20f), contentAlignment = Alignment.Center) {
-            StorePreviewImage(image?.file, imageDescription, showImageRim = false)
+        Box(Modifier.fillMaxWidth().aspectRatio(StorePreviewAspectRatio), contentAlignment = Alignment.Center) {
+            StorePreviewImage(image?.file, imageDescription, showImageRim = false, fitPortraitFrame = true)
         }
         Column(Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = if (open == null) 10.dp else 0.dp)) {
             StoreText(theme.title, style = typography().xs.copy(fontWeight = FontWeight.SemiBold), marquee = true)
@@ -1082,13 +1090,19 @@ internal fun OfficialCreatorBadge(official: Boolean) {
 }
 
 @Composable
-internal fun StorePreviewImage(file: java.io.File?, description: String?, showImageRim: Boolean = true) {
+internal fun StorePreviewImage(
+    file: File?,
+    description: String?,
+    showImageRim: Boolean = true,
+    fitPortraitFrame: Boolean = false,
+) {
+    val fitImage = fitPortraitFrame && file != null
     ImageCacheFactory.LocalAsyncImage(
         model = file,
         cacheKey = file?.absolutePath,
         contentDescription = description,
-        modifier = Modifier.fillMaxSize(),
-        contentScale = ContentScale.Crop,
+        modifier = Modifier.fillMaxSize().then(if (fitImage) Modifier.background(Color.Black) else Modifier),
+        contentScale = if (fitImage) ContentScale.Fit else ContentScale.Crop,
         shape = if (showImageRim) uiRoundnessShape() else null,
     )
 }

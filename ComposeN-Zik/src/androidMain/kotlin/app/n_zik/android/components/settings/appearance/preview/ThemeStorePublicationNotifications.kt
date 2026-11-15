@@ -14,9 +14,17 @@ import app.n_zik.android.MainActivity
 import timber.log.Timber
 import app.n_zik.android.components.settings.accounts.GitHubAccount
 
-internal fun signedInIdForPublication(context: Context) = GitHubAccount.userId(context)
+private val publicationNotificationLock = Any()
 
-internal fun notifyDownloadedThemeUpdates(context: Context, library: ThemeStoreLibrary, themes: List<StoreTheme>) {
+internal fun notifyThemeStoreAlerts(context: Context, library: ThemeStoreLibrary, themes: List<StoreTheme>) {
+    synchronized(publicationNotificationLock) {
+        notifyThemePublications(context, library, themes)
+        notifyDownloadedThemeUpdates(context, library, themes)
+        GitHubAccount.userId(context)?.let { notifyOwnThemePublications(context, it, themes) }
+    }
+}
+
+private fun notifyDownloadedThemeUpdates(context: Context, library: ThemeStoreLibrary, themes: List<StoreTheme>) {
     if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
     val manager = context.getSystemService(NotificationManager::class.java) ?: return
     val channel = "theme_store_publications"
@@ -48,7 +56,7 @@ internal fun notifyDownloadedThemeUpdates(context: Context, library: ThemeStoreL
     }
 }
 
-internal fun notifyOwnThemePublications(context: Context, id: Long, themes: List<StoreTheme>) {
+private fun notifyOwnThemePublications(context: Context, id: Long, themes: List<StoreTheme>) {
     if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
     val manager = context.getSystemService(NotificationManager::class.java) ?: return
     val channel = "theme_store_publications"
@@ -84,7 +92,7 @@ internal fun notifyOwnThemePublications(context: Context, id: Long, themes: List
     saved.putBoolean("initialized:$id", true).apply()
 }
 
-internal fun notifyThemePublications(context: Context, library: ThemeStoreLibrary, themes: List<StoreTheme>) {
+private fun notifyThemePublications(context: Context, library: ThemeStoreLibrary, themes: List<StoreTheme>) {
     if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
     val manager = context.getSystemService(NotificationManager::class.java) ?: return
     val channel = "theme_store_publications"
@@ -103,6 +111,7 @@ internal fun notifyThemePublications(context: Context, library: ThemeStoreLibrar
             .build()
         try {
             manager.notify("theme-store:${theme.themeId}", 1, notification)
+            library.markPublicationNotified(theme)
         } catch (error: SecurityException) {
             Timber.tag("ThemeStore").w(error, "Publication notification permission changed")
         }

@@ -3,6 +3,8 @@ package app.n_zik.android.components.settings.appearance.preview
 import android.util.Base64
 import app.n_zik.android.components.settings.accounts.githubContributionBlock
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -20,17 +22,30 @@ private val client = OkHttpClient.Builder().followRedirects(false).followSslRedi
 
 internal data class CreatorSubmission(val number: Int, val title: String, val state: String, val reason: String? = null, val stateDate: String = "")
 
-internal suspend fun creatorSubmissions(id: Long, login: String, publicationToken: String?): List<CreatorSubmission> = withContext(NzikDispatchers.DATA) {
+internal suspend fun creatorSubmissions(
+    id: Long,
+    login: String,
+    publicationToken: String?,
+    http: OkHttpClient = client,
+): List<CreatorSubmission> = withContext(NzikDispatchers.DATA) {
     check(login.matches(Regex("[A-Za-z0-9-]{1,39}")))
-    val url = "https://api.github.com/repos/$repo/pulls?state=all&per_page=100&base=main"
-    val response = client.newCall(Request.Builder().url(url).header("Accept", "application/vnd.github+json").build()).execute()
-    response.use {
-        check(it.isSuccessful)
-        val list = JSONArray(checkNotNull(it.body).string())
-        val newestBranches = mutableSetOf<String>()
-        buildList {
+    val newestBranches = mutableSetOf<String>()
+    val seenPulls = mutableSetOf<Int>()
+    buildList {
+        var page = 1
+        var hasNext: Boolean
+        do {
+            currentCoroutineContext().ensureActive()
+            val url = "https://api.github.com/repos/$repo/pulls?state=all&sort=created&direction=desc&per_page=100&base=main&page=$page"
+            val request = Request.Builder().url(url).header("Accept", "application/vnd.github+json").build()
+            val list = http.newCall(request).execute().use {
+                check(it.isSuccessful) { "GitHub submission history HTTP ${it.code}" }
+                hasNext = it.header("Link").orEmpty().split(',').any { link -> link.contains("rel=\"next\"") }
+                JSONArray(checkNotNull(it.body).string())
+            }
             for (index in 0 until list.length()) {
                 val pull = list.getJSONObject(index)
+                if (!seenPulls.add(pull.getInt("number"))) continue
                 if (pull.optJSONObject("user")?.optLong("id") != id) continue
                 val labels = pull.optJSONArray("labels") ?: JSONArray()
                 val names = (0 until labels.length()).mapNotNull { labels.optJSONObject(it)?.optString("name") }
@@ -45,7 +60,7 @@ internal suspend fun creatorSubmissions(id: Long, login: String, publicationToke
                     "ban" in names -> "banned"
                     "refused" in names -> "refused"
                     "merged" in names -> "accepted"
-                    creatorPullMerged(pull.getInt("number")) -> "accepted"
+                    creatorPullMerged(http, pull.getInt("number")) -> "accepted"
                     else -> "closed"
                 }
                 if (state in setOf("accepted", "refused", "banned") && isLatestForBranch && publicationToken != null) {
@@ -63,7 +78,8 @@ internal suspend fun creatorSubmissions(id: Long, login: String, publicationToke
                     reason.takeIf { state == "refused" || state == "banned" }, timestamp,
                 ))
             }
-        }
+            page++
+        } while (hasNext)
     }
 }
 
@@ -206,7 +222,7 @@ internal suspend fun pendingThemeStoreReports(accountId: Long, login: String): S
         }
     }
 
-private fun creatorPullMerged(number: Int): Boolean = client.newCall(
+private fun creatorPullMerged(http: OkHttpClient, number: Int): Boolean = http.newCall(
     Request.Builder().url("https://api.github.com/repos/$repo/pulls/$number")
         .header("Accept", "application/vnd.github+json").build(),
 ).execute().use {
@@ -385,17 +401,16 @@ internal suspend fun submitCreatorProfile(
                         val manifest = obj("$upstream/contents/catalog/themes/${theme.themeId}/$revision/manifest.json?ref=$baseSha")
                         val previous = JSONObject(Base64.decode(manifest.getString("content"), Base64.DEFAULT).decodeToString())
                         check(previous.getJSONObject("author").getLong("githubId") == id)
+                    } else {
+                        creators.put(updatedEntry)
                     }
-                    creators.put(updatedEntry)
                     indexed = true
                 } else {
                     creators.put(entry)
                 }
             }
-            if (!indexed) {
-                check(theme == null || theme.revision == 1)
-                creators.put(updatedEntry)
-            }
+            if (!indexed) check(theme == null || theme.revision == 1)
+            if (theme != null || !indexed) creators.put(updatedEntry)
             index.put(indexKey, creators)
             files + (indexPath to (index.toString(2) + "\n").encodeToByteArray())
         }
@@ -433,7 +448,7 @@ internal suspend fun submitCreatorProfile(
         }
         val title = when {
             withdrawalTitle != null -> withdrawalTitle
-            review != null -> "Review: ${review.theme.title} · revision ${review.theme.revision}"
+            review != null -> "Review: ${review.theme.title} Â· revision ${review.theme.revision}"
             theme != null -> "Theme: ${theme.title}"
             else -> "Creator profile: @$login"
         }

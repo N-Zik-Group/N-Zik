@@ -10,6 +10,7 @@ import android.graphics.Color
 import android.graphics.Matrix
 import android.net.Uri
 import android.os.Looper
+import android.util.Size
 import android.view.View
 import android.widget.PopupMenu
 import com.yalantis.ucrop.view.UCropView
@@ -94,6 +95,17 @@ class PickedImageEditorActivityTest {
     }
 
     @Test
+    fun `creator banner loads with fixed crop ratio`() = withEditor(Size(1100, 500)) { editor, awaitResult ->
+        val activity = editor.get()
+        val crop = awaitImage(activity)
+        assertEquals(2.2f, crop.cropImageView.targetAspectRatio, 0.025f)
+        assertEquals(0, crop.overlayView.freestyleCropMode)
+        assertEquals(View.GONE, activity.findViewById<View>(CropR.id.state_aspect_ratio).visibility)
+        activity.onBackPressedDispatcher.onBackPressed()
+        assertNull(awaitResult())
+    }
+
+    @Test
     fun `applying a square crop returns the cropped pixels to the caller`() = withEditor { editor, awaitResult ->
         val activity = editor.get()
         val crop = awaitImage(activity)
@@ -162,6 +174,7 @@ class PickedImageEditorActivityTest {
     }
 
     private fun withEditor(
+        aspectRatio: Size? = null,
         verify: suspend (ActivityController<PickedImageEditorActivity>, suspend () -> PreparedImage?) -> Unit,
     ) {
         // JUnit synchronously waits while explicitly draining Android's paused main looper.
@@ -180,7 +193,9 @@ class PickedImageEditorActivityTest {
             original.outputStream().use { assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
             bitmap.recycle()
             val bytes = original.readBytes()
-            val result = async(NzikDispatchers.UI) { PickedImageEditor.edit(caller.get(), Uri.fromFile(original)) }
+            val result = async(NzikDispatchers.UI) {
+                PickedImageEditor.edit(caller.get(), Uri.fromFile(original), aspectRatio = aspectRatio)
+            }
             var editor: ActivityController<PickedImageEditorActivity>? = null
             try {
                 var launched: Intent? = null

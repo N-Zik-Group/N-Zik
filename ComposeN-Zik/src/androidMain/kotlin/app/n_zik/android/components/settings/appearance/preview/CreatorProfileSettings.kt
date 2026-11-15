@@ -7,6 +7,8 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
 import android.net.Uri
+import android.util.AtomicFile
+import android.util.Size
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +24,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import app.n_zik.android.components.glass.GlassTextField as TextField
 import androidx.compose.material3.Text
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -39,8 +42,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import app.n_zik.android.R
+import app.n_zik.android.components.image.PickedImageEditor
 import app.n_zik.android.components.glass.PageButton
 import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.components.dialog.common.DialogActionList
@@ -58,6 +64,7 @@ import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.navigation.currentPageNavigationEntry
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.uiRoundnessShape
@@ -69,6 +76,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
 import org.json.JSONObject
 
 @Composable
@@ -138,6 +146,18 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
     val catalog = remember(context, offline) { themeStoreCatalog(context, offline) }
     val prefs = remember(context) { context.getSharedPreferences("theme_creator_drafts", android.content.Context.MODE_PRIVATE) }
     val storedDraft = remember(id) { prefs.getString(id.toString(), null)?.let { runCatching { JSONObject(it) }.getOrNull() } }
+    val navigationEntry = currentPageNavigationEntry()
+    val imageCleanup = if (navigationEntry != null) {
+        viewModel<CreatorDraftImageCleanup>(viewModelStoreOwner = navigationEntry, key = "creator-images-$id")
+    } else null
+    SideEffect {
+        val app = context.applicationContext
+        imageCleanup?.onExit = { candidates ->
+            val retained = creatorDraftImages(prefs.getString(id.toString(), null))
+            pruneCreatorDraftImages(app.filesDir, id, candidates - retained)
+        }
+        imageCleanup?.candidates?.addAll(creatorDraftImages(storedDraft?.toString()))
+    }
     var useDraft by rememberSaveable(id) { mutableStateOf<Boolean?>(null) }
     if (storedDraft != null && useDraft == null) {
         ThemeStoreDraftDialog(onSaved, onDiscard = {
@@ -169,6 +189,7 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
     var bio by rememberSaveable { mutableStateOf(saved?.optString("bio")) }
     var avatar by rememberSaveable { mutableStateOf(saved?.optString("avatar")) }
     var banner by rememberSaveable { mutableStateOf(saved?.optString("banner")) }
+    SideEffect { imageCleanup?.candidates?.addAll(listOfNotNull(avatar, banner)) }
     var imageChoice by rememberSaveable { mutableStateOf<CreatorImageChoice?>(null) }
     val displayName = name ?: publicProfile?.displayName ?: login
     val description = bio ?: publicProfile?.bio.orEmpty()
@@ -190,13 +211,41 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
         value = if (banner != null) banner?.takeIf(String::isNotEmpty)?.let(Uri::parse)
         else profile?.let { creatorEditorImage(catalog, it, it.banner) }
     }
+    val scope = rememberCoroutineScope()
+    fun cropImage(uri: Uri?, size: Size, onSelected: (String) -> Unit) {
+        if (uri == null) return
+        scope.launch {
+            var staged: String? = null
+            try {
+                val edited = PickedImageEditor.edit(context, uri, aspectRatio = size) ?: return@launch
+                val selected = edited.use {
+                    withContext(NzikDispatchers.DATA) {
+                        persistCreatorImage(context, id, it.file, size).also { staged = it }
+                    }
+                }
+                imageCleanup?.candidates?.add(selected)
+                onSelected(selected)
+                staged = null
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                timber.log.Timber.tag("CreatorProfile").w(error, "Could not save cropped image")
+                Toaster.e(R.string.theme_store_creator_image_error)
+            } finally {
+                staged?.let { discarded ->
+                    withContext(NonCancellable + NzikDispatchers.DATA) {
+                        pruneCreatorDraftImages(context.filesDir, id, setOf(discarded))
+                    }
+                }
+            }
+        }
+    }
     val avatarPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null) persistCreatorImage(context, uri) { avatar = it }
+        cropImage(uri, Size(256, 256)) { avatar = it }
     }
     val bannerPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null) persistCreatorImage(context, uri) { banner = it }
+        cropImage(uri, Size(1100, 500)) { banner = it }
     }
-    val scope = rememberCoroutineScope()
     var packaging by remember { mutableStateOf(false) }
     var pullUrl by rememberSaveable { mutableStateOf<String?>(null) }
     var confirmPublish by rememberSaveable { mutableStateOf(false) }
@@ -482,11 +531,38 @@ private suspend fun creatorEditorImage(catalog: ThemeStoreCatalog, profile: Crea
         null
     }
 
-private fun persistCreatorImage(context: android.content.Context, uri: Uri, onSelected: (String) -> Unit) {
-    try {
-        context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        onSelected(uri.toString())
-    } catch (_: SecurityException) {
-        Toaster.e(R.string.theme_store_creator_image_error)
+private fun persistCreatorImage(context: android.content.Context, id: Long, image: File, size: Size): String {
+    val source = image.inputStream().use { it.readThemeBytes(32 * 1024 * 1024) }
+    val bytes = creatorWebp(source, size.width, size.height)
+    val folder = context.filesDir.resolve("theme-creator-drafts/$id")
+    check(folder.isDirectory || folder.mkdirs() || folder.isDirectory)
+    val file = AtomicFile(folder.resolve("${java.util.UUID.randomUUID()}.webp"))
+    writeThemeFile(file, bytes)
+    return Uri.fromFile(file.baseFile).toString()
+}
+
+
+internal class CreatorDraftImageCleanup : ViewModel() {
+    val candidates = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+    var onExit: ((Set<String>) -> Unit)? = null
+
+    override fun onCleared() {
+        val cleanup = onExit ?: return
+        NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch { cleanup(candidates) }
+    }
+}
+
+private fun creatorDraftImages(raw: String?): Set<String> {
+    val draft = raw?.let { runCatching { JSONObject(it) }.getOrNull() } ?: return emptySet()
+    return listOf("avatar", "banner").map { draft.optString(it) }.filter(String::isNotEmpty).toSet()
+}
+
+private fun pruneCreatorDraftImages(filesDir: File, id: Long, candidates: Set<String>) {
+    val folder = filesDir.canonicalFile.resolve("theme-creator-drafts/$id")
+    for (candidate in candidates) {
+        val uri = Uri.parse(candidate)
+        if (uri.scheme != "file" || !uri.authority.isNullOrEmpty()) continue
+        val file = uri.path?.let(::File)?.canonicalFile ?: continue
+        if (file.parentFile == folder && file.extension == "webp") file.delete()
     }
 }

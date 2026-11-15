@@ -21,6 +21,8 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 private const val CatalogBase = "https://raw.githubusercontent.com/N-Zik-Group/N-Zik-Theme-Store/refs/heads/main/"
 private const val CatalogLimit = 512 * 1024
+private const val CatalogSnapshotLimit = 16 * 1024 * 1024
+private val catalogSnapshotLock = Any()
 internal const val ThemeDocumentLimit = 128 * 1024
 private const val PreviewLimit = 4 * 1024 * 1024
 
@@ -125,6 +127,10 @@ internal val reservedStoreTags = setOf("stock", "built-in")
 internal fun Iterable<String>.canonicalStoreTags(): List<String> =
     map(::canonicalStoreTag).filter(String::isNotEmpty).distinct()
 
+/** The index appends newly published or revised entries, breaking ties within a publication day. */
+internal fun List<StoreTheme>.mostRecentlyPublishedFirst(): List<StoreTheme> =
+    asReversed().sortedByDescending(StoreTheme::publishedOn)
+
 internal fun List<StoreTheme>.filterStoreThemes(query: String, tag: String?): List<StoreTheme> {
     val term = query.trim()
     return filter { theme ->
@@ -213,7 +219,9 @@ internal class ThemeStoreCatalog(
 
     suspend fun cachedState(): ThemeCatalogState? = withContext(NzikDispatchers.DATA) {
         try {
-            val stored = Json.decodeFromString<CatalogSnapshot>(snapshot.openRead().use { it.readThemeBytes(CatalogLimit * 8) }.decodeToString())
+            val stored = synchronized(catalogSnapshotLock) {
+                snapshot.openRead().use { it.readThemeBytes(CatalogSnapshotLimit) }
+            }.decodeToString().let { Json.decodeFromString<CatalogSnapshot>(it) }
             ThemeCatalogState(validateCatalog(stored), stored.syncedAt)
         } catch (error: java.io.FileNotFoundException) {
             null
@@ -239,20 +247,24 @@ internal class ThemeStoreCatalog(
         }
 
     suspend fun refreshState(): ThemeCatalogState = runInterruptible(NzikDispatchers.DATA) {
-        val index = fetch("catalog/themes/index.json", CatalogLimit).decodeToString(throwOnInvalidSequence = true)
+        val indexBytes = fetch("catalog/themes/index.json", CatalogLimit)
+        val index = indexBytes.decodeToString(throwOnInvalidSequence = true)
         val entries = parseCatalogIndex(index).themes
+        var remainingBytes = CatalogSnapshotLimit - indexBytes.size
         val manifests = entries.map { entry ->
-            fetch("catalog/themes/${entry.themeId}/${entry.revision}/manifest.json", CatalogLimit)
-                .decodeToString(throwOnInvalidSequence = true)
+            val bytes = fetch("catalog/themes/${entry.themeId}/${entry.revision}/manifest.json", CatalogLimit)
+            require(bytes.size <= remainingBytes) { "Catalog manifests exceeded the total byte limit" }
+            remainingBytes -= bytes.size
+            bytes.decodeToString(throwOnInvalidSequence = true)
         }
         val downloaded = CatalogSnapshot(index, manifests)
         val themes = validateCatalog(downloaded)
         val refreshed = downloaded.copy(syncedAt = System.currentTimeMillis())
-        try {
+        val encoded = Json.encodeToString(refreshed).encodeToByteArray()
+        require(encoded.size <= CatalogSnapshotLimit) { "Catalog snapshot exceeded its byte limit" }
+        synchronized(catalogSnapshotLock) {
             check(directory.isDirectory || directory.mkdirs() || directory.isDirectory)
-            writeThemeFile(snapshot, Json.encodeToString(refreshed).encodeToByteArray())
-        } catch (error: Exception) {
-            Timber.tag("ThemeStore").w(error, "Could not save the validated catalog")
+            writeThemeFile(snapshot, encoded)
         }
         ThemeCatalogState(themes, refreshed.syncedAt)
     }
@@ -396,9 +408,16 @@ internal fun themeStoreCatalog(context: android.content.Context, offline: Boolea
 
 private val catalogPreviewLocks = List(8) { Mutex() }
 private data class CachedStoreFile(val bytes: ByteArray?, val loadedAt: Long)
-private val storeReads = android.util.LruCache<String, CachedStoreFile>(128)
+private val storeReads = object : android.util.LruCache<String, CachedStoreFile>(8 * 1024 * 1024) {
+    override fun sizeOf(key: String, value: CachedStoreFile): Int =
+        maxOf(64 * 1024, 256 + key.length * 2 + (value.bytes?.size ?: 0))
+}
 private val storeReadLocks = List(16) { Any() }
 private const val StoreReadTtlMs = 5 * 60 * 1000L
+
+internal fun expireThemeStoreIndex() {
+    storeReads.remove("catalog/themes/index.json")
+}
 
 internal fun expireThemeStoreReads() {
     storeReads.evictAll()
