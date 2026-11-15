@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -53,13 +52,18 @@ import android.content.ClipboardManager
 import android.os.SystemClock
 import java.net.URLEncoder
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import javax.net.ssl.HttpsURLConnection
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import timber.log.Timber
 
 private const val clientId = "Ov23lidRTeOCWplQz9iZ"
 private const val identityKey = "identity"
@@ -89,9 +93,65 @@ internal fun nextGitHubPoll(interval: Int, error: String): Int? = when (error) {
     else -> null
 }
 
+internal class GitHubInstallationSetup(
+    private val scope: CoroutineScope,
+    private val prepareFork: suspend (GitHubAccount.SetupSession) -> Unit,
+    private val onFailure: (Exception) -> Unit,
+) {
+    internal data class State(val preparing: Boolean = false, val session: GitHubAccount.SetupSession? = null)
+
+    private val mutableState = MutableStateFlow(State())
+    val state = mutableState.asStateFlow()
+    private var preparation: Job? = null
+    private var generation = 0L
+
+    fun prepare(session: GitHubAccount.SetupSession) {
+        cancel()
+        val operation = generation
+        mutableState.value = State(preparing = true)
+        preparation = scope.launch {
+            try {
+                prepareFork(session)
+                currentCoroutineContext().ensureActive()
+                if (generation == operation) mutableState.value = State(session = session)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                if (generation == operation) {
+                    mutableState.value = State()
+                    onFailure(error)
+                }
+            } finally {
+                if (generation == operation) preparation = null
+            }
+        }
+    }
+
+    fun consume(session: GitHubAccount.SetupSession): Boolean {
+        if (state.value.session !== session) return false
+        cancel()
+        return true
+    }
+
+    fun cancel() {
+        generation++
+        preparation?.cancel()
+        preparation = null
+        mutableState.value = State()
+    }
+}
+
 internal object GitHubAccount {
     private val scope = NzikDispatchers.fireAndForget(NzikDispatchers.UI)
     private var attempt: Job? = null
+    val installation = GitHubInstallationSetup(
+        scope,
+        prepareFork = { prepareCreatorThemeStoreFork(it.login, it.token) },
+        onFailure = {
+            Timber.tag("GitHubAccount").w(it, "Could not prepare Theme Store fork")
+            Toaster.e(R.string.github_app_installation_fork_lookup_failed)
+        },
+    )
     val login = MutableStateFlow<String?>(null)
     val awaiting = MutableStateFlow(false)
     val code = MutableStateFlow<String?>(null)
@@ -145,8 +205,8 @@ internal object GitHubAccount {
     fun start(context: Context, expectedId: Long? = null, onAuthorized: (() -> Unit)? = null) =
         authorize(context, expectedId, onSetup = null, onAuthorized = onAuthorized)
 
-    fun startSetup(context: Context, onSetup: (SetupSession) -> Unit) =
-        authorize(context, expectedId = null, onSetup = onSetup, onAuthorized = null)
+    fun startSetup(context: Context) =
+        authorize(context, expectedId = null, onSetup = installation::prepare, onAuthorized = null)
 
     private fun authorize(
         context: Context,
@@ -154,7 +214,9 @@ internal object GitHubAccount {
         onSetup: ((SetupSession) -> Unit)?,
         onAuthorized: (() -> Unit)?,
     ) {
-        if (awaiting.value || OfflineMode.enabled(context)) return
+        if (awaiting.value || installation.state.value.preparing || installation.state.value.session != null ||
+            OfflineMode.enabled(context)
+        ) return
         val app = context.applicationContext
         val needsWorkflow = (expectedId ?: userId(app))?.let { id ->
             store(app).getBoolean("publicationWorkflowScope:$id", false)
@@ -235,7 +297,13 @@ internal object GitHubAccount {
         }
     }
 
-    fun saveSession(context: Context, session: SetupSession) {
+    fun completeSetup(context: Context, session: SetupSession): Boolean {
+        if (!installation.consume(session)) return false
+        saveSession(context.applicationContext, session)
+        return true
+    }
+
+    private fun saveSession(context: Context, session: SetupSession) {
         val identity = JSONObject().put("id", session.id).put("login", session.login).toString()
         val credentials = JSONObject().put("id", session.id).put("token", session.token).put("expires", session.expires)
         runCatching {
@@ -249,9 +317,13 @@ internal object GitHubAccount {
         read(context)
     }
 
-    fun cancel() { attempt?.cancel() }
+    fun cancel() {
+        attempt?.cancel()
+        installation.cancel()
+    }
 
     fun disconnect(context: Context) {
+        cancel()
         clearPublicationToken(context)
         runCatching { context.encryptedPreferences.edit().remove("githubBackupIdentity").apply() }
         store(context).edit().clear().apply()
@@ -307,25 +379,9 @@ internal fun GitHubAccountCard(horizontalPadding: Dp? = null, showAppInstallatio
     }
     var showLogin by rememberSaveable { mutableStateOf(false) }
     var showInstallationManagement by rememberSaveable { mutableStateOf(false) }
-    var pendingSetup by remember { mutableStateOf<GitHubAccount.SetupSession?>(null) }
-    var checkingFork by remember { mutableStateOf(false) }
-    val installationScope = rememberCoroutineScope()
-    var forkJob by remember { mutableStateOf<Job?>(null) }
-    fun prepareAppInstallation(setup: GitHubAccount.SetupSession) {
-        checkingFork = true
-        forkJob = installationScope.launch {
-            try {
-                prepareCreatorThemeStoreFork(setup.login, setup.token)
-                pendingSetup = setup
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                Toaster.e(R.string.github_app_installation_fork_lookup_failed)
-            } finally {
-                checkingFork = false
-            }
-        }
-    }
+    val installationState by GitHubAccount.installation.state.collectAsStateWithLifecycle()
+    val pendingSetup = installationState.session
+    val checkingFork = installationState.preparing
     androidx.compose.runtime.LaunchedEffect(context) { GitHubAccount.read(context) }
     val content: @Composable () -> Unit = {
         OtherSettingsEntry(
@@ -338,7 +394,6 @@ internal fun GitHubAccountCard(horizontalPadding: Dp? = null, showAppInstallatio
             onClick = {
                 when {
                     login != null -> {
-                        forkJob?.cancel()
                         showInstallationManagement = false
                         GitHubAccount.disconnect(context)
                     }
@@ -346,9 +401,7 @@ internal fun GitHubAccountCard(horizontalPadding: Dp? = null, showAppInstallatio
                         showLogin = true
                         if (!awaiting) {
                             if (showAppInstallation) {
-                                GitHubAccount.startSetup(context) { setup ->
-                                    if (showLogin) prepareAppInstallation(setup)
-                                }
+                                GitHubAccount.startSetup(context)
                             } else GitHubAccount.start(context)
                         }
                     }
@@ -377,7 +430,7 @@ internal fun GitHubAccountCard(horizontalPadding: Dp? = null, showAppInstallatio
         SettingsSectionCard(title = title, icon = R.drawable.github_icon, horizontalPadding = horizontalPadding, content = { content() })
     }
     val userCode = code
-    val installationPage = pendingSetup != null && !offline
+    val installationPage = showLogin && pendingSetup != null && !offline
     val managementPage = showInstallationManagement && login != null && !offline
     val loginPage = showLogin && (userCode != null || checkingFork)
     if (installationPage || managementPage || loginPage) {
@@ -393,25 +446,23 @@ internal fun GitHubAccountCard(horizontalPadding: Dp? = null, showAppInstallatio
             onInstallationConfirmed = if (installationPage) { account ->
                 showInstallationManagement = false
                 showLogin = false
-                val setup = pendingSetup
-                pendingSetup = null
-                if (account.equals(setup?.login ?: login, ignoreCase = true)) {
-                    if (setup != null) GitHubAccount.saveSession(context, setup)
-                    Toaster.s(R.string.github_app_installation_confirmed)
+                if (account.equals(pendingSetup.login, ignoreCase = true)) {
+                    if (GitHubAccount.completeSetup(context, pendingSetup)) {
+                        Toaster.s(R.string.github_app_installation_confirmed)
+                    }
                 } else {
+                    GitHubAccount.cancel()
                     Toaster.e(context.getString(R.string.github_app_installation_other_account, account))
                 }
             } else null,
         ) {
             showInstallationManagement = false
             showLogin = false
-            pendingSetup = null
-            forkJob?.cancel()
-            if (awaiting) GitHubAccount.cancel()
+            GitHubAccount.cancel()
         }
     }
-    androidx.compose.runtime.LaunchedEffect(awaiting, checkingFork) {
-        if (!awaiting && !checkingFork) showLogin = false
+    androidx.compose.runtime.LaunchedEffect(awaiting, checkingFork, pendingSetup) {
+        if (!awaiting && !checkingFork && pendingSetup == null) showLogin = false
     }
 }
 

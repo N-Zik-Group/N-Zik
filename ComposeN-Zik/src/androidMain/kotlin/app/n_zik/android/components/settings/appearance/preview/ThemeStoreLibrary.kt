@@ -159,6 +159,9 @@ internal class ThemeStoreLibrary(private val preferences: SharedPreferences) {
         preferences.all.keys.any { it.startsWith("themeStore.publications.") } ||
             downloads().any { !it.imported && it.theme?.let { theme -> updateMode(theme.themeId) == ThemeUpdateMode.Notify } == true }
 
+    fun hasAutomaticDownloads(): Boolean =
+        downloads().any { !it.imported && it.theme?.let { theme -> updateMode(theme.themeId) == ThemeUpdateMode.AutoDownload } == true }
+
     fun newPublications(themes: List<StoreTheme>): List<StoreTheme> = themes.filter { theme ->
         val seen = preferences.getStringSet("themeStore.publications.${theme.author.githubId}", null)
         seen != null && theme.themeId !in seen

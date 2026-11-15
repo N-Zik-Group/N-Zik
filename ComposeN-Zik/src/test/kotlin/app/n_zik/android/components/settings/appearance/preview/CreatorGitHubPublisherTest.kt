@@ -75,6 +75,7 @@ class CreatorGitHubPublisherTest {
             val request = chain.request()
             val page = requireNotNull(request.url.queryParameter("page"))
             pages += page
+            assertEquals("Bearer history-token", request.header("Authorization"))
             val response = Response.Builder().code(200).request(request).protocol(Protocol.HTTP_1_1).message("Stub")
             val body = when (page) {
                 "1" -> {
@@ -87,7 +88,7 @@ class CreatorGitHubPublisherTest {
             response.body(body.toResponseBody("application/json".toMediaType())).build()
         }.build()
 
-        assertEquals(listOf(102, 1), creatorSubmissions(123, "creator", null, http).map { it.number })
+        assertEquals(listOf(102, 1), creatorSubmissions(123, "creator", "history-token", http).map { it.number })
         assertEquals(listOf("1", "2"), pages)
     }
 
@@ -144,6 +145,36 @@ class CreatorGitHubPublisherTest {
     }
 
     @Test
+    fun submissionOpensNewPullWhenExistingPullClosesDuringUpdate() = runBlocking {
+        val fork = OutdatedFork(alreadyPublished = false, closingPull = true)
+        val files = mapOf(
+            "catalog/creators/123/profile.json" to """{"githubId":123,"displayName":"Creator","bio":""}""".encodeToByteArray(),
+        )
+
+        val result = submitCreatorProfile("test-token", 123, files, requestClient = fork.client, contributionBlock = { null })
+
+        assertTrue(fork.calls.contains("/repos/$upstream/pulls/399"))
+        assertEquals("https://github.com/$upstream/pull/400", result)
+        assertEquals("creator:nzik/creator-profile-123", fork.pull?.getString("head"))
+    }
+
+    @Test
+    fun expiredHistoryTokenFallsBackToPublicRead() = runBlocking {
+        val headers = mutableListOf<String?>()
+        val http = OkHttpClient.Builder().addInterceptor { chain ->
+            val request = chain.request()
+            val token = request.header("Authorization")
+            headers += token
+            Response.Builder().code(if (token == null) 200 else 401)
+                .request(request).protocol(Protocol.HTTP_1_1).message("Stub")
+                .body("[]".toResponseBody("application/json".toMediaType())).build()
+        }.build()
+
+        assertTrue(creatorSubmissions(123, "creator", "old-token", http).isEmpty())
+        assertEquals(listOf("Bearer old-token", null), headers)
+    }
+
+    @Test
     fun missingWorkflowScopeStopsBeforeOpeningAPullRequest() = runBlocking {
         val fork = OutdatedFork(alreadyPublished = false, refStatus = 404)
         val files = mapOf(
@@ -165,7 +196,11 @@ class CreatorGitHubPublisherTest {
         val alreadyPublished: Boolean = true,
     )
 
-    private class OutdatedFork(private val alreadyPublished: Boolean, private val refStatus: Int = 201) {
+    private class OutdatedFork(
+        private val alreadyPublished: Boolean,
+        private val refStatus: Int = 201,
+        private val closingPull: Boolean = false,
+    ) {
         val calls = mutableListOf<String>()
         var ref: JSONObject? = null
         var pull: JSONObject? = null
@@ -183,7 +218,10 @@ class CreatorGitHubPublisherTest {
             }
             val (status, response) = when {
                 path == "/user" -> 200 to """{"id":123,"login":"creator"}"""
-                path == "/repos/$upstream/pulls" && request.method == "GET" -> 200 to "[]"
+                path == "/repos/$upstream/pulls" && request.method == "GET" -> 200 to
+                    if (closingPull) """[{"number":399}]""" else "[]"
+                path == "/repos/$upstream/pulls/399" && request.method == "PATCH" ->
+                    200 to """{"number":399,"state":"closed"}"""
                 path == "/repos/creator/N-Zik-Theme-Store" -> 200 to """{"parent":{"full_name":"$upstream"}}"""
                 path == "/repos/$upstream/branches/main" -> 200 to
                     """{"commit":{"sha":"$mainSha","commit":{"tree":{"sha":"$mainTree"}}}}"""
@@ -211,7 +249,7 @@ class CreatorGitHubPublisherTest {
                 }
                 path == "/repos/$upstream/pulls" && request.method == "POST" -> {
                     pull = body
-                    201 to """{"number":400}"""
+                    201 to """{"number":400,"state":"open","head":{"sha":"new-commit"}}"""
                 }
                 else -> error("Unexpected request ${request.method} $path")
             }

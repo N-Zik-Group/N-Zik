@@ -351,3 +351,8 @@ Fixed:
   - Let the embedded browser handle vertical gestures while preserving the sheet drag handle.
 - fix(youtube): remove redundant stream client notifications
   - Remove the preferred-client and Web Remix messages and their unused translation keys.
+- fix(theme-store): verify GitHub submissions and preserve sign-in setup
+  - Confirm the submitted commit on an open pull request, authenticate submission history, and let moderation own branch cleanup.
+  - Resume app installation after Android recreates the screen without saving provisional credentials.
+- fix(theme-store): download selected theme updates in the background
+  - Share scheduled and on-screen downloads and recheck profile ownership before saving.

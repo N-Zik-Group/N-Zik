@@ -22,20 +22,27 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
 
-internal class ThemeStoreAlertWorker(context: Context, parameters: WorkerParameters) :
+internal class ThemeStoreAlertWorker internal constructor(
+    context: Context,
+    parameters: WorkerParameters,
+    private val catalog: ThemeStoreCatalog,
+) :
     CoroutineWorker(context, parameters) {
+
+    constructor(context: Context, parameters: WorkerParameters) :
+        this(context, parameters, themeStoreCatalog(context, false))
 
     override suspend fun doWork(): Result = checkLock.withLock {
         val context = applicationContext
         val owner = ProfileWorkOwner.capture(context) ?: return@withLock Result.success()
         fun mayCheck() = ProfileWorkOwner.isBound(context, owner) && !OfflineMode.enabled(context)
-        if (!mayCheck() || !NotificationManagerCompat.from(context).areNotificationsEnabled()) {
-            return@withLock Result.success()
-        }
+        if (!mayCheck()) return@withLock Result.success()
         val preferences = profileDataPrefs(context, owner.id)
-        val id = GitHubAccount.userId(context)
+        val notificationsEnabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
+        val id = GitHubAccount.userId(context).takeIf { notificationsEnabled }
         val library = ThemeStoreLibrary(preferences)
-        val needsCatalog = library.hasNotificationSubscriptions() || id != null
+        val needsCatalog = library.hasAutomaticDownloads() ||
+            (notificationsEnabled && library.hasNotificationSubscriptions()) || id != null
         val hasPending = id != null && hasPendingCreatorDecisions(context, id)
         val now = System.currentTimeMillis()
         val lastCheck = preferences.getLong(lastCheckKey, 0L)
@@ -56,9 +63,10 @@ internal class ThemeStoreAlertWorker(context: Context, parameters: WorkerParamet
         }
         attempt("catalog") {
             expireThemeStoreIndex()
-            val themes = themeStoreCatalog(context, false).refresh()
+            val themes = catalog.refresh()
             if (mayCheck()) {
-                notifyThemeStoreAlerts(context, library, themes)
+                if (!catalog.downloadAutomaticUpdates(context, library, themes, ::mayCheck)) failed = true
+                if (notificationsEnabled && mayCheck()) notifyThemeStoreAlerts(context, library, themes)
             }
         }
         if (hasPending && mayCheck()) attempt("creator submissions") {

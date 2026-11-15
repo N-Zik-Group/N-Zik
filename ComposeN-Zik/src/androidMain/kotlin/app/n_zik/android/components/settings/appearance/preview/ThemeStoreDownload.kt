@@ -1,5 +1,41 @@
 package app.n_zik.android.components.settings.appearance.preview
 
+import android.content.Context
+import app.n_zik.android.BuildConfig
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import timber.log.Timber
+
+private val automaticDownloadLock = Mutex()
+
+/** Shares update downloads between the Store screen and scheduled checks. */
+internal suspend fun ThemeStoreCatalog.downloadAutomaticUpdates(
+    context: Context,
+    library: ThemeStoreLibrary,
+    themes: List<StoreTheme>,
+    mayDownload: () -> Boolean,
+): Boolean = automaticDownloadLock.withLock {
+    var successful = true
+    for (theme in library.downloadedThemeUpdates(themes, ThemeUpdateMode.AutoDownload)) {
+        if (!mayDownload()) break
+        if (theme.compatibility.supportAt(BuildConfig.VERSION_CODE) != StoreSupport.Supported) continue
+        try {
+            val appearance = downloadForOffline(theme)
+            if (mayDownload() && library.downloadedThemeUpdates(listOf(theme), ThemeUpdateMode.AutoDownload).isNotEmpty()) {
+                library.save(SavedTheme(theme.title, appearance.document, theme))
+                ThemeDownloadNotification(context.applicationContext, theme).show(result = true)
+            }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            Timber.tag("ThemeStore").w(error, "Could not automatically download theme update")
+            successful = false
+        }
+    }
+    successful
+}
+
 internal suspend fun ThemeStoreCatalog.downloadForOffline(
     theme: StoreTheme,
     cachedAppearance: StoreAppearance? = null,

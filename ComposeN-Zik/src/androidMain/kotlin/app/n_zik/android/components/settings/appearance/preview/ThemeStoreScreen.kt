@@ -104,6 +104,7 @@ import app.n_zik.android.components.ui.UiTextButton
 import app.n_zik.android.components.ui.screens.home.GlassHomeChips
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
@@ -177,6 +178,7 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
     val ownCreatorId = signedInCreatorId()
     val profileId = getActiveProfile(context)
     val preferences = remember(context, profileId) { context.preferences }
+    val owner = remember(context, preferences, profileId) { ProfileWorkOwner.capture(context)?.takeIf { it.id == profileId } }
     val library = remember(preferences) { ThemeStoreLibrary(preferences) }
     val offline by OfflineMode.rememberEnabled()
     var withdrawalTheme by remember { mutableStateOf<StoreTheme?>(null) }
@@ -257,7 +259,7 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
     val glass = rememberGlassSettings().enabled
     var lastSync by remember(catalog) { mutableStateOf<Long?>(null) }
 
-    LaunchedEffect(catalog, retry) {
+    LaunchedEffect(catalog, retry, library, owner) {
         loading = true
         if (themes == null) catalog.cachedState()?.let {
             themes = it.themes
@@ -291,21 +293,8 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
             }
             if (getActiveProfile(context) == profileId) notifyThemeStoreAlerts(context, library, current.themes)
             launch {
-                for (theme in library.downloadedThemeUpdates(current.themes, ThemeUpdateMode.AutoDownload)) {
-                    if (theme.compatibility.supportAt(app.n_zik.android.BuildConfig.VERSION_CODE) != StoreSupport.Supported) continue
-                    try {
-                        val appearance = catalog.downloadForOffline(theme)
-                        if (getActiveProfile(context) == profileId &&
-                            library.downloadedThemeUpdates(listOf(theme), ThemeUpdateMode.AutoDownload).isNotEmpty()
-                        ) {
-                            library.save(SavedTheme(theme.title, appearance.document, theme))
-                            ThemeDownloadNotification(context.applicationContext, theme).show(result = true)
-                        }
-                    } catch (cancelled: CancellationException) {
-                        throw cancelled
-                    } catch (error: Exception) {
-                        Timber.tag("ThemeStore").w(error, "Could not automatically download theme update")
-                    }
+                catalog.downloadAutomaticUpdates(context, library, current.themes) {
+                    owner != null && ProfileWorkOwner.isBound(context, owner) && !OfflineMode.enabled(context)
                 }
             }
         } catch (cancelled: CancellationException) {

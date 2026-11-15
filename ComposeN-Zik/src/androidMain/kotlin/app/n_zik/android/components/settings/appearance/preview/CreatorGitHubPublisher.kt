@@ -14,6 +14,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -99,7 +100,6 @@ internal suspend fun creatorSubmissions(
     http: OkHttpClient = client,
 ): List<CreatorSubmission> = withContext(NzikDispatchers.DATA) {
     check(login.matches(Regex("[A-Za-z0-9-]{1,39}")))
-    val newestBranches = mutableSetOf<String>()
     val seenPulls = mutableSetOf<Int>()
     buildList {
         var page = 1
@@ -107,8 +107,7 @@ internal suspend fun creatorSubmissions(
         do {
             currentCoroutineContext().ensureActive()
             val url = "https://api.github.com/repos/$repo/pulls?state=all&sort=created&direction=desc&per_page=100&base=main&page=$page"
-            val request = Request.Builder().url(url).header("Accept", "application/vnd.github+json").build()
-            val list = http.newCall(request).execute().use {
+            val list = creatorHistoryRequest(http, url, publicationToken).use {
                 check(it.isSuccessful) { "GitHub submission history HTTP ${it.code}" }
                 hasNext = it.header("Link").orEmpty().split(',').any { link -> link.contains("rel=\"next\"") }
                 JSONArray(checkNotNull(it.body).string())
@@ -123,24 +122,14 @@ internal suspend fun creatorSubmissions(
                 if (branch != "nzik/creator-profile-$id" && branch?.startsWith("nzik/theme-") != true &&
                     branch?.startsWith("nzik/review-") != true && branch?.startsWith("nzik/withdraw-") != true &&
                     "new theme" !in names && "theme update" !in names) continue
-                val isLatestForBranch = branch != null && newestBranches.add(branch)
                 val reason = names.singleOrNull { it.startsWith("reason: ") }?.removePrefix("reason: ")
                 val state = when {
                     pull.optString("state") == "open" -> "open"
                     "ban" in names -> "banned"
                     "refused" in names -> "refused"
                     "merged" in names -> "accepted"
-                    creatorPullMerged(http, pull.getInt("number")) -> "accepted"
+                    creatorPullMerged(http, pull.getInt("number"), publicationToken) -> "accepted"
                     else -> "closed"
-                }
-                if (state in setOf("accepted", "refused", "banned") && isLatestForBranch && publicationToken != null) {
-                    try {
-                        creatorPublicationMutex.withLock { cleanupClosedSubmissionBranch(pull, id, publicationToken, state == "accepted") }
-                    } catch (cancelled: kotlinx.coroutines.CancellationException) {
-                        throw cancelled
-                    } catch (error: Exception) {
-                        timber.log.Timber.tag("ThemeStore").w(error, "Could not remove closed submission branch")
-                    }
                 }
                 val timestamp = if (state == "open") pull.optString("updated_at") else pull.optString("closed_at")
                 add(CreatorSubmission(
@@ -150,47 +139,6 @@ internal suspend fun creatorSubmissions(
             }
             page++
         } while (hasNext)
-    }
-}
-
-private val generatedSubmissionRef = Regex(
-    "nzik/(creator-profile-[1-9][0-9]*|(?:theme|withdraw)-[0-9a-f-]{36}|review-[0-9a-f-]{36}-[1-9][0-9]*-[1-9][0-9]*)",
-)
-
-private fun cleanupClosedSubmissionBranch(pull: JSONObject, accountId: Long, token: String, accepted: Boolean) {
-    fun request(path: String) = Request.Builder().url("https://api.github.com/repos/$path")
-        .header("Authorization", "Bearer $token").header("Accept", "application/vnd.github+json")
-
-    val number = pull.getInt("number")
-    val closed = client.newCall(request("$repo/pulls/$number").build()).execute().use {
-        if (!it.isSuccessful) return
-        JSONObject(it.body.string())
-    }
-    if (closed.optString("state") != "closed" || closed.optJSONObject("user")?.optLong("id") != accountId) return
-    if (accepted && !closed.optBoolean("merged")) return
-    if (!accepted && closed.optInt("changed_files", -1) != 0) return
-    val head = closed.optJSONObject("head") ?: return
-    val fork = head.optJSONObject("repo") ?: return
-    val owner = fork.optJSONObject("owner") ?: return
-    if (owner.optLong("id") != accountId || !fork.optBoolean("fork")) return
-    val login = owner.optString("login").takeIf { it.matches(Regex("[A-Za-z0-9-]{1,39}")) } ?: return
-    val branch = head.optString("ref").takeIf(generatedSubmissionRef::matches) ?: return
-    if (!fork.optString("full_name").equals("$login/N-Zik-Theme-Store", ignoreCase = true)) return
-    val sha = head.optString("sha").takeIf { it.isNotEmpty() } ?: return
-
-    val currentPulls = "$repo/pulls?state=open&head=$login%3A${branch.replace("/", "%2F")}"
-    val stillOpen = client.newCall(request(currentPulls).build()).execute().use {
-        !it.isSuccessful || JSONArray(it.body.string()).length() != 0
-    }
-    if (stillOpen) return
-
-    val branchPath = "$login/N-Zik-Theme-Store/git/refs/heads/$branch"
-    val matchesClosedHead = client.newCall(request(branchPath).build()).execute().use {
-        it.isSuccessful && JSONObject(it.body.string()).getJSONObject("object").getString("sha") == sha
-    }
-    if (!matchesClosedHead) return
-    client.newCall(request(branchPath).delete().build()).execute().use {
-        check(it.isSuccessful || it.code == 404) { "GitHub HTTP ${it.code} while deleting a closed submission branch" }
     }
 }
 
@@ -292,13 +240,20 @@ internal suspend fun pendingThemeStoreReports(accountId: Long, login: String): S
         }
     }
 
-private fun creatorPullMerged(http: OkHttpClient, number: Int): Boolean = http.newCall(
-    Request.Builder().url("https://api.github.com/repos/$repo/pulls/$number")
-        .header("Accept", "application/vnd.github+json").build(),
-).execute().use {
-    check(it.isSuccessful)
-    JSONObject(checkNotNull(it.body).string()).getBoolean("merged")
+private fun creatorHistoryRequest(http: OkHttpClient, url: String, token: String?): Response {
+    val request = Request.Builder().url(url).header("Accept", "application/vnd.github+json")
+    if (token == null) return http.newCall(request.build()).execute()
+    val response = http.newCall(request.header("Authorization", "Bearer $token").build()).execute()
+    if (response.code != 401) return response
+    response.close()
+    return http.newCall(request.removeHeader("Authorization").build()).execute()
 }
+
+private fun creatorPullMerged(http: OkHttpClient, number: Int, token: String?): Boolean =
+    creatorHistoryRequest(http, "https://api.github.com/repos/$repo/pulls/$number", token).use {
+        check(it.isSuccessful)
+        JSONObject(checkNotNull(it.body).string()).getBoolean("merged")
+    }
 
 internal class CreatorPublicationBlocked(val publicMessage: String) : Exception()
 internal class CreatorPublicationAccountMismatch : Exception()
@@ -468,7 +423,6 @@ internal suspend fun submitCreatorProfile(
             index.put(indexKey, creators)
             files + (indexPath to (index.toString(2) + "\n").encodeToByteArray())
         }
-        val ref = api("$fork/git/ref/heads/$branch", missing = true)
         // Each submission replaces the generated branch with one commit on current main.
         val baseTree = latest.getJSONObject("commit").getJSONObject("tree").getString("sha")
         val entries = JSONArray()
@@ -482,22 +436,27 @@ internal suspend fun submitCreatorProfile(
                 .put("type", "blob").put("sha", JSONObject.NULL))
         }
         val tree = obj("$fork/git/trees", JSONObject().put("base_tree", baseTree).put("tree", entries)).getString("sha")
-        if (tree != baseTree || ref != null) {
-            val commit = obj("$fork/git/commits", JSONObject().put("message", withdrawalTitle ?: if (review != null) "Submit theme review" else theme?.let { "Submit theme ${it.themeId}" } ?: "Update creator profile for @$login")
-                .put("tree", tree).put("parents", JSONArray().put(baseSha))).getString("sha")
-            fun updateGeneratedRef() {
-                api("$fork/git/refs/heads/$branch", JSONObject().put("sha", commit).put("force", true), patch = true)
-            }
-            if (ref != null) {
+        val ref = api("$fork/git/ref/heads/$branch", missing = true)
+        if (tree == baseTree && ref == null) throw CreatorPublicationUnchanged()
+        val message = withdrawalTitle ?: when {
+            review != null -> "Submit theme review"
+            theme != null -> "Submit theme ${theme.themeId}"
+            else -> "Update creator profile for @$login"
+        }
+        val commit = obj("$fork/git/commits", JSONObject().put("message", message)
+            .put("tree", tree).put("parents", JSONArray().put(baseSha))).getString("sha")
+        fun updateGeneratedRef() {
+            api("$fork/git/refs/heads/$branch", JSONObject().put("sha", commit).put("force", true), patch = true)
+        }
+        if (ref != null) {
+            updateGeneratedRef()
+        } else {
+            val newRef = JSONObject().put("ref", "refs/heads/$branch").put("sha", commit)
+            try {
+                obj("$fork/git/refs", newRef)
+            } catch (error: CreatorPublicationHttpError) {
+                if (error.status !in setOf(409, 422) || api("$fork/git/ref/heads/$branch", missing = true) == null) throw error
                 updateGeneratedRef()
-            } else {
-                val newRef = JSONObject().put("ref", "refs/heads/$branch").put("sha", commit)
-                try {
-                    obj("$fork/git/refs", newRef)
-                } catch (error: CreatorPublicationHttpError) {
-                    if (error.status !in setOf(409, 422) || api("$fork/git/ref/heads/$branch", missing = true) == null) throw error
-                    updateGeneratedRef()
-                }
             }
         }
         val title = when {
@@ -511,9 +470,10 @@ internal suspend fun submitCreatorProfile(
             JSONObject().put("body", body).put("title", title),
             patch = true,
         )))
-        val open = existing ?: findOpen()
-        val pull = if (open != null) {
-            updatePull(open)
+        val open = findOpen()
+        val updated = open?.let(::updatePull)
+        val pull = if (updated?.optString("state") == "open") {
+            updated
         } else {
             try {
                 obj("$upstream/pulls", JSONObject().put("head", head).put("base", "main").put("title", title).put("body", body))
@@ -523,7 +483,22 @@ internal suspend fun submitCreatorProfile(
                 updatePull(raced)
             }
         }
-        "https://github.com/$repo/pull/${pull.getInt("number")}"
+        val number = pull.getInt("number")
+        var confirmed = pull
+        repeat(3) {
+            if (confirmed.optString("state") == "open" &&
+                confirmed.optJSONObject("head")?.optString("sha") == commit
+            ) return@withLock creatorPullUrl(number)
+            if (confirmed.optString("state") == "closed") {
+                error("GitHub closed submission #$number before it was confirmed")
+            }
+            delay(500)
+            confirmed = obj("$upstream/pulls/$number")
+        }
+        check(confirmed.optString("state") == "open" && confirmed.optJSONObject("head")?.optString("sha") == commit) {
+            "GitHub did not confirm the submitted commit on open pull request #$number"
+        }
+        creatorPullUrl(number)
     }
 }
 
