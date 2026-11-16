@@ -8,12 +8,30 @@
     <string name="github_account_code_copied">GitHub koodi kopioitu leikepöydälle.</string>
     <string name="github_account_login_failed">Ei voitu yhdistää GitHubiin. Yritä uudelleen.</string>
     <string name="github_account_connected">GitHub yhdistetty.</string>
+    <string name="github_account_finishing_connection">Viimeistellään GitHub-yhteyttä…</string>
+    <string name="github_app_installation_instructions">Valitse @%1$s ja myönnä pääsy vain N-Zik-Theme-Store haarukkaasi viimeistelläksesi asetuksen.</string>
+    <string name="github_app_installation">Sovelluksen asennus</string>
+    <string name="github_app_installation_confirmed">GitHub vahvisti sovelluksen asennuksen.</string>
+    <string name="github_app_installation_other_account">Sovellus asennettu @%1$s. Valitse oma tilisi sallitaksesi haarukan poisto.</string>
+    <string name="github_app_installation_description">Hallitse tai peruta N-Zik Kirjaudu Sisään pääset henkilökohtaisissa GitHub-asetuksissa.</string>
+    <string name="github_app_installation_needs_fork">Lähetä teema tai luoja profiili ensin luoda Teemakaupan haarukka.</string>
+    <string name="github_app_installation_fork_lookup_failed">Teemakaupan haarukkaa ei voitu tarkistaa. Yritä uudelleen.</string>
     <!-- Account -->
     <string name="account_action_login">Kirjaudu sisään</string>
     <string name="account_action_logout">Kirjaudu pois</string>
     <string name="account_youtube_login_description">Yhdistä YouTube-tilisi tai kirjaudu ulos nykyisestä istunnosta.</string>
+    <string name="account_youtube_change_account">Vaihda YouTube-tiliä</string>
+    <string name="account_youtube_change_account_description">Valitse, mitä YouTube-kanava käyttää tässä N-Zik-profiilissa.</string>
     <string name="account_youtube_login_enabled_description">Salli YouTube-tilin kirjautuminen henkilökohtaiseen selaamiseen ja synkronointiin.</string>
     <!-- Account Youtube -->
+    <string name="account_youtube_checking_login">Tarkistetaan YouTube Music kirjautumisesi…</string>
+    <string name="account_youtube_choose_channel">Valitse YouTube-musiikkikanava</string>
+    <string name="account_youtube_add_google_account">Lisää Google-tili</string>
+    <string name="account_youtube_google_account">Google-tili</string>
+    <string name="account_youtube_google_select">Valitse tili</string>
+    <string name="account_youtube_google_sign_out">Kirjaudu ulos tästä tilistä</string>
+    <string name="account_youtube_google_sign_out_description">Tämä poistaa koko Google-profiilin ja sen kirjautumistiedot tämän laitteen N-Zikistä. Muut tilit pysyvät kirjautuneina.</string>
+    <string name="account_youtube_verify_failed">YouTube-musiikkisi kirjautuminen ei onnistunut. Yritä uudelleen tai kirjaudu sisään Googlen kautta.</string>
     <string name="account_youtube_cookie_invalid">YouTube-eväste on virheellinen, kirjaudu sisään uudelleen</string>
     <string name="account_youtube_login_success">YouTube kirjautuminen onnistui</string>
     <string name="account_youtube_session_expired">YouTube-istunto on vanhentunut, kirjaudu sisään uudelleen</string>
@@ -188,6 +206,8 @@
     <string name="sync_cooldown">Synkronoi Jäähdytys</string>
     <string name="sync_cooldown_description">Minimi aika automaattisen synkronoinnin välillä (minuutteina)</string>
     <string name="sync_data_with_ytm_account">Synkronoi tiedot YTM-tilin kanssa</string>
+    <string name="account_youtube_sync_build_required">Synkronointi on saatavilla Debug ja Dev rakennuksissa.</string>
+    <string name="account_youtube_sync_browse_required">Ota kirjautuminen käyttöön Selaa käyttääksesi synkronointia.</string>
     <string name="sync_direction">Synkronoinnin Suunta</string>
     <string name="sync_direction_app_to_yt">Sovellus → Vain YouTube</string>
     <string name="sync_direction_description">Valitse, lähettääkö synkronoinnin tuonti YouTubesta, tai toimiiko se molempiin suuntiin.</string>
