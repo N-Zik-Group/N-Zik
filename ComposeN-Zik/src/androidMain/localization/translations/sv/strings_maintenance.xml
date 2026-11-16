@@ -328,4 +328,14 @@
     <string name="recovery_theme_backup_operation_failed">Kunde inte slutföra säkerhetskopieringen av temat.</string>
     <string name="recovery_theme_backup_restore_action">Återställ teman</string>
     <string name="recovery_theme_backup_restore_description">Öppna den senaste säkerhetskopia av tema som används för denna profil.</string>
+    <string name="updates_status_and_last_check">%1$s · %2$s</string>
+    <string name="recovery_action_failed">Kunde inte slutföra återställningsåtgärden.</string>
+    <string name="recovery_reopen_after_restoring_settings">Öppna räddningscentralen igen efter att du återställt inställningarna.</string>
+    <string name="recovery_settings_file_empty">Inställningsfilen är tom.</string>
+    <string name="recovery_profile_changed_during_import">Den valda profilen ändrades under importen av inställningar. Välj den igen och försök igen.</string>
+    <string name="recovery_no_importable_settings">Filen innehåller inga inställningar som kan importeras.</string>
+    <string name="recovery_finish_pending_profile_operation">Avsluta den väntande profilen återställning eller återställning först.</string>
+    <string name="recovery_no_database_to_reset">Det finns ingen databas att återställa.</string>
+    <string name="updates_current_version_format">V%1$s</string>
+    <string name="updates_version_and_status">%1$s • %2$s</string>
 </resources>
