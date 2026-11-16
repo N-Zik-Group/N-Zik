@@ -64,8 +64,8 @@ object PreferredStreamClientDialog : ContentFramedDialog {
         var selectedClient by remember { mutableStateOf(savedPref) }
 
         val options = listOf(
-            Triple("ANDROID_VR", "Android VR", stringResource(R.string.network_stream_client_android_vr_description)),
-            Triple("WEB_REMIX", "Web Remix", stringResource(R.string.network_stream_client_youtube_music_web_description))
+            Triple("ANDROID_VR", stringResource(R.string.network_stream_client_android_vr), stringResource(R.string.network_stream_client_android_vr_description)),
+            Triple("WEB_REMIX", stringResource(R.string.network_stream_client_web_remix), stringResource(R.string.network_stream_client_youtube_music_web_description))
         )
 
         DialogFrame(onDismiss = ::hideDialog, title = dialogTitle, bodyPadding = PaddingValues(0.dp),

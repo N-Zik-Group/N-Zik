@@ -15,7 +15,9 @@ Added:
 Improved:
 - improve(theme-store): update theme compatibility and previews
   - Appearance V2 themes require Android version code 99 and can include the player opening mode, the hold-to-speed gesture, and its boost speed.
-  - Refreshed Stock and catalog previews include menus, dialogs, and separate light and dark previews for themes that follow the system.
+  - Theme updates and download, apply, and customize actions follow compatibility. Stock remains available as a bundled theme.
+  - Refreshed Stock and catalog previews include menus, dialogs, and full light and dark galleries for themes that follow the system.
+  - Settings use rounded color previews and a centered color picker. Pure Black and Modern Black use a fixed dark appearance.
 
 Fixed:
 - fix(player): update the Glass reflection when paused video changes

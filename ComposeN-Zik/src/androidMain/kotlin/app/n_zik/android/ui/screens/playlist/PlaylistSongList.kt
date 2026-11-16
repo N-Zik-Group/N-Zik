@@ -542,8 +542,12 @@ fun PlaylistSongList(
                             )
 
                             BasicText(
-                                text = pluralStringResource(R.plurals.library_song_count, filteredPageSongs?.size ?: 0, filteredPageSongs?.size ?: 0)
-                                        + " - " + formatAsTime(totalPlayTimes),
+                                text = pluralStringResource(
+                                    R.plurals.library_song_count_with_duration,
+                                    filteredPageSongs?.size ?: 0,
+                                    filteredPageSongs?.size ?: 0,
+                                    formatAsTime(totalPlayTimes),
+                                ),
                                 style = typography().xs.medium,
                                 maxLines = 1,
                                 modifier = Modifier

@@ -98,7 +98,11 @@ fun MatchResultsDialog(
                 Column(Modifier.fillMaxWidth()) {
                     failedSongs.forEach { song ->
                         BasicText(
-                            text = "${cleanPrefix(song.title)} - ${cleanPrefix(song.artistsText.orEmpty())}",
+                            text = stringResource(
+                                R.string.song_matching_result_title_and_artist,
+                                cleanPrefix(song.title),
+                                cleanPrefix(song.artistsText.orEmpty()),
+                            ),
                             style = typography().xs.copy(color = colorPalette().text),
                             modifier = Modifier
                                 .fillMaxWidth()

@@ -318,7 +318,7 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
                             )
                     
                             BasicText(
-                                text = "${currentVisualizer + 1}/${visualizersList.size}",
+                                text = stringResource(R.string.visualizer_position_format, currentVisualizer + 1, visualizersList.size),
                                 style = typography().xs.semiBold.copy(color = colorPalette().text),
                             )
                     

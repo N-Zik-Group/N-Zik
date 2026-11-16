@@ -52,7 +52,7 @@ class ThemeSubmissionRegressionTest {
     @Test
     fun removingAnInheritedExtraSurvivesDraftResumeWithoutRestoringItsReplacement() {
         val extra = "extra-first-normal"
-        val fixedModePreviews = automaticPreviews - systemModePreviews.toSet()
+        val fixedModePreviews = requiredPreviews + optionalAutomaticPreviews
         val inherited = (fixedModePreviews + (1..(36 - fixedModePreviews.size)).map { "extra-$it-normal" })
             .map { StorePreview("previews/$it.webp", "other", "a".repeat(64)) }
         val selection = SubmissionPreviewSelection()
@@ -76,13 +76,12 @@ class ThemeSubmissionRegressionTest {
 
     @Test
     fun editingAddsMenuAndDialogAsPairsWithoutDisplacingPublishedPreviews() {
-        val olderGallery = automaticPreviews.filterNot {
-            it.startsWith("menu-") || it.startsWith("dialog-") || it in systemModePreviews
-        }.toSet()
-        assertEquals(automaticPreviews, availableAutomaticPreviews(olderGallery))
+        val fixedGallery = requiredPreviews + optionalAutomaticPreviews
+        val olderGallery = fixedGallery.filterNot { it.startsWith("menu-") || it.startsWith("dialog-") }.toSet()
+        assertEquals(fixedGallery, availableAutomaticPreviews(olderGallery, previewLimit = 36))
 
         val nearlyFullGallery = olderGallery + (1..5).map { "extra-$it-normal" }
-        val available = availableAutomaticPreviews(nearlyFullGallery)
+        val available = availableAutomaticPreviews(nearlyFullGallery, previewLimit = 36)
         assertTrue(available.containsAll(listOf("menu-normal", "menu-glass")))
         assertFalse(available.any { it.startsWith("dialog-") })
     }

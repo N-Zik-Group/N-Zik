@@ -355,7 +355,7 @@ private fun OnDeviceOptions(search: Search, target: ProfileStorageIdentity, page
             SettingsInputDialog(
                 title = stringResource(R.string.settings_local_music_initial_folder_description),
                 initialValue = defaultFolder,
-                placeholder = "Music/Live",
+                placeholder = stringResource(R.string.settings_local_music_start_folder_path_example),
                 onDismiss = { showFolderDialog = false },
                 onSetValue = {
                     if (ProfileWorkOwner.exists(context, target)) {

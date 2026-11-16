@@ -49,7 +49,6 @@ internal suspend fun ThemeStoreCatalog.downloadAutomaticUpdates(
     var successful = true
     for (theme in library.downloadedThemeUpdates(themes, ThemeUpdateMode.AutoDownload)) {
         if (!mayDownload()) break
-        if (theme.compatibility.supportAt(BuildConfig.VERSION_CODE) != StoreSupport.Supported) continue
         try {
             val appearance = downloadForOffline(theme)
             if (mayDownload() && library.downloadedThemeUpdates(listOf(theme), ThemeUpdateMode.AutoDownload).isNotEmpty()) {
@@ -70,9 +69,10 @@ internal suspend fun ThemeStoreCatalog.downloadForOffline(
     theme: StoreTheme,
     cachedAppearance: StoreAppearance? = null,
 ): StoreAppearance {
+    require(theme.supportAt(BuildConfig.VERSION_CODE) == StoreSupport.Supported)
     val verified = cachedAppearance ?: appearance(theme, null)
     for (preview in theme.previews) {
-        val file = checkNotNull(preview(theme, preview)) { "Could not verify preview ${preview.path}" }
+        val file = checkNotNull(preview(theme, preview))
         kotlinx.coroutines.withContext(app.n_zik.android.utils.coroutines.NzikDispatchers.DATA) {
             val bytes = file.inputStream().use { it.readThemeBytes(SubmissionPreviewLimit) }
             validateThemeArchivePreview(preview, bytes)

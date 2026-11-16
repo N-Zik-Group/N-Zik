@@ -17,12 +17,17 @@ import timber.log.Timber
 
 internal const val SubmissionPreviewMaxEdge = 1920
 
-internal fun availableAutomaticPreviews(existing: Set<String>): List<String> {
-    val occupied = (existing + requiredPreviews).toMutableSet()
+internal fun availableAutomaticPreviews(
+    existing: Set<String>,
+    previewLimit: Int,
+    required: List<String> = requiredPreviews,
+    optional: List<String> = optionalAutomaticPreviews,
+): List<String> {
+    val occupied = (existing + required).toMutableSet()
     return buildList {
-        addAll(requiredPreviews)
-        for (variants in optionalAutomaticPreviews.chunked(2)) {
-            if (occupied.size + variants.count { it !in occupied } <= 36) {
+        addAll(required)
+        for (variants in optional.groupBy { it.substringBeforeLast('-').removeSuffix("-light").removeSuffix("-dark") }.values) {
+            if (occupied.size + variants.count { it !in occupied } <= previewLimit) {
                 addAll(variants)
                 occupied.addAll(variants)
             }
@@ -49,9 +54,14 @@ internal data class SubmissionPreviewSelection(val removedExtras: Set<String> = 
         previews.associateBy { it.path.substringAfterLast('/').substringBeforeLast('.') }
             .filterKeys { includes(it) && (reuseAutomatic || it !in automaticPreviews) }
 
-    fun gallerySlots(published: Set<String>, replacements: Set<String>): List<String> {
+    fun gallerySlots(
+        published: Set<String>,
+        replacements: Set<String>,
+        required: List<String> = requiredPreviews,
+        optional: List<String> = optionalAutomaticPreviews,
+    ): List<String> {
         val ready = (published + replacements).filter(::includes).toSet()
-        return requiredPreviews + optionalAutomaticPreviews.filter { it in ready } + (ready - automaticPreviews.toSet())
+        return required + optional.filter { it in ready } + (ready - automaticPreviews.toSet())
     }
 }
 

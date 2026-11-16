@@ -16,6 +16,8 @@ import android.provider.DocumentsContract
 import android.os.Build
 import android.os.Process
 import android.system.Os
+import androidx.annotation.StringRes
+import app.n_zik.android.R
 import app.n_zik.android.utils.DEFAULT_PROFILE_ID
 import app.n_zik.android.utils.PROFILE_NAMES_FILE_NAME
 import app.n_zik.android.utils.activeProfileKey
@@ -126,7 +128,9 @@ object RescueFiles {
     }
 
     private fun checkSettingsCurrent() {
-        check(!settingsReloadRequired) { "Reopen Rescue after restoring settings" }
+        if (settingsReloadRequired) {
+            throw ActionUnavailableException(R.string.recovery_reopen_after_restoring_settings)
+        }
     }
 
     private val profileSuffix: String
@@ -299,7 +303,9 @@ object RescueFiles {
      * process) is using it. The export is refused rather than producing a file that silently
      * lacks the transactions still in the WAL; the UI tells the user to close the app.
      */
-    class DatabaseBusyException(message: String) : IllegalStateException(message)
+    class DatabaseBusyException : IllegalStateException()
+
+    internal class ActionUnavailableException(@StringRes val messageRes: Int) : IllegalStateException()
 
     /** Captures a rescue export through raw SQLite without starting Room. */
     internal fun prepareDatabaseExport(context: Context): DatabaseBackup.Export =
@@ -323,7 +329,7 @@ object RescueFiles {
                 if (cursor.moveToFirst()) {
                     val busy = cursor.getInt(0)
                     Timber.tag(TAG).d("WAL checkpoint busy flag: %d", busy)
-                    if (busy != 0) throw DatabaseBusyException("Database is busy: its WAL could not be merged")
+                    if (busy != 0) throw DatabaseBusyException()
                 }
             }
         }
@@ -433,11 +439,13 @@ object RescueFiles {
             readSettingsCsv(inStream)
         } ?: error("Failed to open input stream for settings import")
 
-        if (rows.isEmpty()) error("Empty settings file")
+        if (rows.isEmpty()) throw ActionUnavailableException(R.string.recovery_settings_file_empty)
 
         DatabaseRestoreJournal.withProfileStorageMutation(context) {
             checkSettingsCurrent()
-            check(profileStorageIdentity(context, profile) == target) { "The profile changed during settings import" }
+            if (profileStorageIdentity(context, profile) != target) {
+                throw ActionUnavailableException(R.string.recovery_profile_changed_during_import)
+            }
             val editor = profileDataPrefs(context, profile).edit()
             val encEditor = openEncryptedPreferences()?.getOrNull()?.edit()
             val glassEditor = SettingsPreferencesBridge.stageGlass(context, rows, profile)
@@ -448,8 +456,8 @@ object RescueFiles {
             if (stats.imported == 0 && stats.encryptedSkipped > 0 && glassEditor == null && !hasRemovedRows) {
                 return@withProfileStorageMutation SettingsOutcome(encryptedSkipped = true)
             }
-            check(stats.imported > 0 || glassEditor != null || hasRemovedRows) {
-                "No setting could be imported"
+            if (stats.imported == 0 && glassEditor == null && !hasRemovedRows) {
+                throw ActionUnavailableException(R.string.recovery_no_importable_settings)
             }
 
             check(editor.commit()) { "Could not save the settings" }
@@ -549,7 +557,7 @@ object RescueFiles {
      */
     fun exportProfileState(context: Context, uri: Uri): Result<Unit> = runCatching {
         if (!ProfileStateArchive.hasState(context)) {
-            error("No profile state to export")
+            throw ActionUnavailableException(R.string.recovery_no_profile_state)
         }
         context.contentResolver.openOutputStream(uri)?.use { outStream ->
             ProfileStateArchive.writeArchive(context, outStream)
@@ -620,8 +628,8 @@ object RescueFiles {
             if (id == DEFAULT_PROFILE_ID || id !in context.readProfileIds() ||
                 (!allowSelected && isProcessStorageProfile(context, id))
             ) return@withProfileStorageMutation false
-            check(!ProfileResetSnapshot.hasPendingOperation(context.filesDir.resolve("$RESCUE_BACKUPS_DIR/profiles"))) {
-                "Finish the pending profile reset or restore first"
+            if (ProfileResetSnapshot.hasPendingOperation(context.filesDir.resolve("$RESCUE_BACKUPS_DIR/profiles"))) {
+                throw ActionUnavailableException(R.string.recovery_finish_pending_profile_operation)
             }
             val directory = profileDeletionDirectory(context)
             check(directory.canonicalFile == directory && (directory.isDirectory || directory.mkdirs()))
@@ -811,7 +819,7 @@ object RescueFiles {
     private fun restoreProfileData(context: Context, profileId: String) {
         val backup = profileBackupDir(context, profileId)
         if (!hasProfileBackup(context, profileId)) {
-            error("No backup to restore for $profileId")
+            throw ActionUnavailableException(R.string.recovery_no_backup)
         }
 
         if (ProfileResetSnapshot.isVerifiedSnapshot(backup) || ProfileResetSnapshot.hasInterruptedRestore(backup)) {
@@ -1191,7 +1199,7 @@ object RescueFiles {
     fun resetDatabase(context: Context): Result<Unit> = runRescueMutation(context) {
         val dbFile = context.getDatabasePath(DB_FILE_NAME)
         if (!dbFile.exists()) {
-            error("No database to reset")
+            throw ActionUnavailableException(R.string.recovery_no_database_to_reset)
         }
 
         val backupDir = File(context.filesDir, RESCUE_BACKUPS_DIR)
@@ -1280,7 +1288,7 @@ object RescueFiles {
     fun restoreDatabase(context: Context): Result<Unit> = runRescueMutation(context) {
         val backupFile = File(File(context.filesDir, RESCUE_BACKUPS_DIR), DB_FILE_NAME)
         if (!backupFile.exists()) {
-            error("No backup to restore")
+            throw ActionUnavailableException(R.string.recovery_no_backup)
         }
 
         swapDatabaseFiles(context.getDatabasePath(DB_FILE_NAME), backupFile)
@@ -1383,7 +1391,7 @@ object RescueFiles {
         val plainFileName = names.first()
         val backupDir = File(context.filesDir, RESCUE_BACKUPS_DIR)
         if (names.none { File(backupDir, it).exists() }) {
-            error("No settings backup to restore")
+            throw ActionUnavailableException(R.string.recovery_no_settings_backup)
         }
 
         val sharedPrefsDir = File(context.applicationInfo.dataDir, SHARED_PREFS_DIR)
@@ -1487,8 +1495,8 @@ object RescueFiles {
 
     /** Deletes all backups (database, settings and the profile reset backups) from the rescue_backups directory. */
     fun deleteBackups(context: Context): Result<Unit> = runRescueMutation(context) {
-        check(!ProfileResetSnapshot.hasPendingOperation(context.filesDir.resolve("$RESCUE_BACKUPS_DIR/profiles"))) {
-            "Finish the pending profile reset or restore before deleting backups"
+        if (ProfileResetSnapshot.hasPendingOperation(context.filesDir.resolve("$RESCUE_BACKUPS_DIR/profiles"))) {
+            throw ActionUnavailableException(R.string.recovery_finish_pending_profile_operation)
         }
         val backupDir = File(context.filesDir, RESCUE_BACKUPS_DIR)
         backupDir.takeIf(File::exists)?.let(DatabaseRestoreJournal::retireRescueBackups)

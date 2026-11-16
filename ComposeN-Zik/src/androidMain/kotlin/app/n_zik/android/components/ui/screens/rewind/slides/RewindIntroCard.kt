@@ -142,7 +142,7 @@ fun RewindIntroCard(
                 Spacer(Modifier.height(if (compact) 12.dp else 16.dp))
                 RewindReveal(active, 220, direction = RewindRevealDirection.Left, distance = 30.dp) {
                     Text(
-                        text = "$displayName,",
+                        text = stringResource(R.string.rewind_intro_display_name, displayName),
                         color = rewindColors.value.cream,
                         fontSize = nameSize,
                         lineHeight = nameSize,

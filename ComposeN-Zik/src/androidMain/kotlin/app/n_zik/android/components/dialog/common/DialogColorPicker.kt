@@ -9,6 +9,7 @@ import android.graphics.RectF
 import android.graphics.Shader
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.InteractionSource
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -41,6 +43,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toRect
 import app.n_zik.android.R
+import app.n_zik.android.colorPalette
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import android.graphics.Color as AndroidColor
@@ -69,8 +72,8 @@ fun DialogColorPicker(
         onDismiss = onDismiss,
         footer = {
             ButtonRow(listOf(
-                DialogButton(text = stringResource(R.string.common_action_cancel), icon = R.drawable.close, onClick = onDismiss, danger = true),
-                DialogButton(text = stringResource(R.string.common_action_apply), icon = R.drawable.checkmark, primary = true, onClick = {
+                DialogButton(text = stringResource(R.string.common_action_cancel), onClick = onDismiss, danger = true),
+                DialogButton(text = stringResource(R.string.common_action_apply), primary = true, onClick = {
                     onColorSelected(backgroundColor.value)
                     onDismiss()
                 })
@@ -78,6 +81,7 @@ fun DialogColorPicker(
         }
     ) {
         Column(
+            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -94,11 +98,7 @@ fun DialogColorPicker(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Box(
-                modifier = Modifier
-                    .size(50.dp)
-                    .background(backgroundColor.value)
-            )
+            ColorPreviewSwatch(backgroundColor.value, Modifier.size(50.dp))
 
 
         }
@@ -106,6 +106,12 @@ fun DialogColorPicker(
 }
 
 
+
+@Composable
+internal fun ColorPreviewSwatch(color: Color, modifier: Modifier = Modifier) {
+    val shape = uiRoundnessShape()
+    Box(modifier.background(color, shape).border(1.dp, colorPalette().textSecondary.copy(alpha = 0.3f), shape))
+}
 
 @Composable
 fun SatValPanel(

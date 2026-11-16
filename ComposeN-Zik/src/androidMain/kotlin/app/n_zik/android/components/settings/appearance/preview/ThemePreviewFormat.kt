@@ -358,6 +358,11 @@ internal fun encodeThemeAppearance(
             ThemeCategory.entries.forEach { category ->
                 val fields = ExportThemeFields(when (category) {
                     ThemeCategory.GLASS -> portableGlassPreferences(glass, defaultGlassQuality) + plain
+                    ThemeCategory.COLORS -> {
+                        val palette = ColorPaletteName.entries.firstOrNull { it.name == plain[colorPaletteNameKey] }
+                        if (palette?.isAlwaysDark == true) plain + (colorPaletteModeKey to ColorPaletteMode.Dark.name)
+                        else plain
+                    }
                     else -> plain
                 })
                 fields.fields(category, schemaVersion)

@@ -36,7 +36,12 @@ internal val LocalDialogInput = staticCompositionLocalOf<DialogPresentation?> { 
 
 /** Retains a locally owned dialog until its bounded exit finishes. Owner disposal is immediate. */
 @Composable
-fun DialogPresence(visible: Boolean, inherit: Boolean = false, content: @Composable () -> Unit) {
+fun DialogPresence(
+    visible: Boolean,
+    inherit: Boolean = false,
+    onHidden: (() -> Unit)? = null,
+    content: @Composable () -> Unit,
+) {
     if (inherit && LocalDialogPresentation.current != null) {
         content()
         return
@@ -44,11 +49,15 @@ fun DialogPresence(visible: Boolean, inherit: Boolean = false, content: @Composa
     val requested = rememberUpdatedState(visible)
     val presentation = remember { DialogPresentation(requested) }
     var retained by remember { mutableStateOf(visible) }
+    val latestOnHidden by rememberUpdatedState(onHidden)
     LaunchedEffect(visible) {
         if (visible) retained = true
         val target = if (visible) 1f else 0f
         animateDialogMotion(presentation.motion, target)
-        if (!visible) retained = false
+        if (!visible && retained) {
+            retained = false
+            latestOnHidden?.invoke()
+        }
     }
     if (visible || retained) {
         CompositionLocalProvider(LocalDialogPresentation provides presentation) { content() }

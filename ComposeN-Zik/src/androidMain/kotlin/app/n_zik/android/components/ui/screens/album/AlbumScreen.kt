@@ -669,13 +669,17 @@ fun AlbumDetails(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                val songCount = pluralStringResource(R.plurals.library_song_count, items.size, items.size)
                                 val totalDuration = items.sumOf {
                                     durationTextToMillis(it.durationText ?: "")
                                 }.let(::formatAsTime)
 
                                 BasicText(
-                                    text = "$songCount - $totalDuration",
+                                    text = pluralStringResource(
+                                        R.plurals.library_song_count_with_duration,
+                                        items.size,
+                                        items.size,
+                                        totalDuration,
+                                    ),
                                     style = typography().xs.medium,
                                     maxLines = 1
                                 )

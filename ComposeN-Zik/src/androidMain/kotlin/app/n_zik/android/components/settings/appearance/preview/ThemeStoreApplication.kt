@@ -43,7 +43,7 @@ internal data class StoreAppearance(
     val groups: Map<StoreGroup, ThemeSettings>,
 )
 
-internal enum class StoreSupport { Supported, Pending, RequiresUpdate }
+internal enum class StoreSupport { Supported, Pending, RequiresUpdate, Legacy }
 
 internal const val FirstThemeStoreVersionCode = 97
 
@@ -55,6 +55,15 @@ internal fun StoreCompatibility.supportAt(versionCode: Int): StoreSupport = when
     minVersionCode == null -> StoreSupport.Pending
     versionCode < maxOf(FirstThemeStoreVersionCode, minVersionCode) -> StoreSupport.RequiresUpdate
     else -> StoreSupport.Supported
+}
+
+internal fun StoreTheme.supportAt(versionCode: Int): StoreSupport {
+    if (themeId == BundledThemeId) return StoreSupport.Supported
+    val support = compatibility.supportAt(versionCode)
+    // Earlier V2 appearances used V1 manifest envelopes and already declared a minimum of 99.
+    return if (support == StoreSupport.Supported && schemaVersion == 1 &&
+        (compatibility.minVersionCode ?: 0) <= ThemeLegacyMaxVersionCode && versionCode > ThemeLegacyMaxVersionCode
+    ) StoreSupport.Legacy else support
 }
 
 internal fun Map<ThemeCategory, ThemeSettings>.toStoreGroups(): Map<StoreGroup, ThemeSettings> {
@@ -102,6 +111,19 @@ internal fun StoreAppearance.selectedSettings(
     selection: Set<StoreGroup>,
 ): ThemeSettings? {
     if (compatibility.supportAt(versionCode) != StoreSupport.Supported) return null
+    return selectedGroups(selection)
+}
+
+internal fun StoreAppearance.selectedSettings(
+    theme: StoreTheme,
+    versionCode: Int,
+    selection: Set<StoreGroup>,
+): ThemeSettings? {
+    if (theme.supportAt(versionCode) != StoreSupport.Supported) return null
+    return selectedGroups(selection)
+}
+
+private fun StoreAppearance.selectedGroups(selection: Set<StoreGroup>): ThemeSettings? {
     val selected = groups.filterKeys { it in selection }.values
     if (selected.isEmpty()) return null
     return ThemeSettings(

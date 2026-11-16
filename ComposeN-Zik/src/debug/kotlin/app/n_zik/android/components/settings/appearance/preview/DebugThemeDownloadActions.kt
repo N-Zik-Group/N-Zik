@@ -37,8 +37,13 @@ class DebugThemeDownloadActions : BroadcastReceiver() {
         internal fun post(context: Context, theme: String, paused: Boolean = false) {
             val builder = Notification.Builder(context, "debug_theme_store_examples")
                 .setSmallIcon(R.drawable.download_progress)
-                .setContentTitle(if (paused) "Download paused • demo" else "Downloading theme • demo")
-                .setContentText("$theme · 42%")
+                .setContentTitle(
+                    context.getString(
+                        if (paused) R.string.notification_debug_theme_paused_title
+                        else R.string.notification_debug_theme_downloading_title,
+                    ),
+                )
+                .setContentText(context.getString(R.string.notification_debug_theme_progress, theme, debugNotificationProgress(context.resources, 42)))
                 .setProgress(100, 42, false)
                 .setOngoing(!paused)
                 .addAction(

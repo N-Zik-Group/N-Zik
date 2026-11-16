@@ -729,7 +729,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                         )
                                         Spacer(modifier = Modifier.height(4.dp))
                                         BasicText(
-                                            text = "${UpdaterConstants.PREFIX_VERSION}$currentVersion",
+                                            text = stringResource(R.string.updates_current_version_format, currentVersion),
                                             modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                                             maxLines = 1,
                                             style = typography().s.copy(color = colorPalette().textSecondary, textAlign = TextAlign.Center)
@@ -764,7 +764,11 @@ private fun UpdateScreenContent(navController: NavController) {
                                             CheckUpdateState.Disabled -> stringResource(R.string.updates_check_mode_disabled_status)
                                         }
                                         BasicText(
-                                            text = "${UpdaterConstants.PREFIX_VERSION}$currentVersion • $stateStr",
+                                            text = stringResource(
+                                                R.string.updates_version_and_status,
+                                                stringResource(R.string.updates_current_version_format, currentVersion),
+                                                stateStr,
+                                            ),
                                             modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                                             maxLines = 1,
                                             style = typography().s.copy(color = colorPalette().textSecondary, textAlign = TextAlign.Center)
@@ -858,7 +862,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     BasicText(
-                                        text = stringResource(R.string.updates_changelog_title, if (hasUpdate && !isReinstalling) newVersion else "${UpdaterConstants.PREFIX_VERSION}$currentVersion"),
+                                        text = stringResource(R.string.updates_changelog_title, if (hasUpdate && !isReinstalling) newVersion else stringResource(R.string.updates_current_version_format, currentVersion)),
                                         modifier = Modifier.weight(1f).padding(end = 8.dp).basicMarquee(iterations = Int.MAX_VALUE),
                                         maxLines = 1,
                                         style = typography().m.bold.copy(color = colorPalette().text)

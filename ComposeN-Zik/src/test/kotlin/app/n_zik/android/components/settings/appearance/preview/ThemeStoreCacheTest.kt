@@ -90,6 +90,58 @@ class ThemeStoreCacheTest {
     }
 
     @Test
+    fun v2UsesTrustedPreviewLimitAndRetainsItOffline() = runTest {
+        val theme = StoreTheme(
+            2, "99edc843-6a9b-5753-8e76-cc11fe9b3295", 3, "Theme", "Theme", StoreAuthor(1, "Creator"),
+            emptyList(), StoreCompatibility(99), StoreFile("appearance.json", "a".repeat(64)),
+            List(80) { slot -> StorePreview("previews/player-$slot.webp", "other", "b".repeat(64)) },
+        )
+        val manifest = Json.encodeToString(theme).encodeToByteArray()
+        val index = """{"schemaVersion":1,"previewLimit":80,"legacyMaxVersionCode":98,"themes":[
+            {"themeId":"${theme.themeId}","revision":3,"manifestSha256":"${manifest.sha256()}"}
+        ]}"""
+        val bundled = """{"schemaVersion":1,"previewLimit":64,"legacyMaxVersionCode":98,"themes":[]}""".encodeToByteArray()
+        var remoteIndex = index
+        var offline = true
+        val store = ThemeStoreCatalog(folder.root, appVersionCode = 99, bundledPolicy = { bundled }) { path, _ ->
+            if (offline) throw IOException("Offline")
+            when (path.substringBefore('?')) {
+                ThemeCatalogV2Path -> remoteIndex.encodeToByteArray()
+                "${theme.directory}manifest.json" -> manifest
+                else -> error("Unexpected path $path")
+            }
+        }
+
+        assertEquals(64, store.submissionPreviewLimit())
+        offline = false
+        assertEquals(80, store.submissionPreviewLimit())
+        assertEquals(listOf(theme), store.refresh())
+        remoteIndex = index.replace("\"previewLimit\":80", "\"previewLimit\":79")
+        assertTrue(runCatching { store.refresh() }.exceptionOrNull() is IllegalArgumentException)
+        remoteIndex = index.replace("\"previewLimit\":80", "\"previewLimit\":0")
+        assertTrue(runCatching { store.submissionPreviewLimit() }.exceptionOrNull() is IllegalArgumentException)
+        offline = true
+        assertEquals(80, store.submissionPreviewLimit())
+        assertEquals(listOf(theme), store.cached())
+    }
+
+    @Test
+    fun missingV2IndexFallsBackToV1Only() = runTest {
+        val paths = mutableListOf<String>()
+        val store = ThemeStoreCatalog(folder.root, appVersionCode = 99) { path, _ ->
+            paths += path
+            when (path) {
+                ThemeCatalogV2Path -> throw StoreFileNotFound()
+                ThemeCatalogV1Path -> """{"schemaVersion":1,"themes":[]}""".encodeToByteArray()
+                else -> error("Unexpected path $path")
+            }
+        }
+        assertEquals(emptyList<StoreTheme>(), store.refresh())
+        assertEquals(listOf(ThemeCatalogV2Path, ThemeCatalogV1Path), paths)
+        assertEquals(emptyList<StoreTheme>(), store.cached())
+    }
+
+    @Test
     fun newProfileHasNoDownloadsOrFollows() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val library = ThemeStoreLibrary(context.getSharedPreferences("emptyStore", Context.MODE_PRIVATE))

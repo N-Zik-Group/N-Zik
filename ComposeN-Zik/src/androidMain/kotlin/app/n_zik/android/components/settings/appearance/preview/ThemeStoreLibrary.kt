@@ -2,6 +2,7 @@ package app.n_zik.android.components.settings.appearance.preview
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import app.n_zik.android.BuildConfig
 import kotlinx.serialization.Serializable
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -185,11 +186,16 @@ internal class ThemeStoreLibrary(private val preferences: SharedPreferences) {
         }
     }
 
-    fun downloadedThemeUpdates(themes: List<StoreTheme>, mode: ThemeUpdateMode): List<StoreTheme> {
+    fun downloadedThemeUpdates(
+        themes: List<StoreTheme>,
+        mode: ThemeUpdateMode,
+        versionCode: Int = BuildConfig.VERSION_CODE,
+    ): List<StoreTheme> {
         val downloadedRevisions = downloads().filterNot { it.imported }.mapNotNull { it.theme }
             .groupBy { it.themeId }
             .mapValues { (_, revisions) -> revisions.maxOf { it.revision } }
         return themes.filter { theme ->
+            if (theme.supportAt(versionCode) != StoreSupport.Supported) return@filter false
             val installed = downloadedRevisions[theme.themeId] ?: return@filter false
             updateMode(theme.themeId) == mode && theme.revision > installed &&
                 (mode != ThemeUpdateMode.Notify || theme.revision > preferences.getInt("themeStore.updateSeen.${theme.themeId}", 0))

@@ -231,7 +231,7 @@ fun GoToLink(
                     onDismiss = { },
                     title = stringResource(R.string.search_youtube_url_input_hint),
                     value = textFieldValue.text,
-                    placeholder = "https://........",
+                    placeholder = stringResource(R.string.search_youtube_open_url_example),
                     setValue = { textLink = it }
                 )
 

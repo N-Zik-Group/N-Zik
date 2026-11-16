@@ -253,6 +253,23 @@ class UiSettingsWiringTest {
         }
     }
 
+    @Test fun `black palettes hide the theme mode entry until a configurable palette returns`() {
+        val preferences = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val modeDescription = context.getString(R.string.theme_mode_description)
+        show()
+        composeRule.onNodeWithText(modeDescription).assertExists()
+
+        for (palette in listOf("PureBlack", "ModernBlack")) {
+            composeRule.runOnIdle { preferences.edit().putString(colorPaletteNameKey, palette).commit() }
+            composeRule.waitForIdle()
+            composeRule.onNodeWithText(modeDescription).assertDoesNotExist()
+        }
+
+        composeRule.runOnIdle { preferences.edit().putString(colorPaletteNameKey, "Default").commit() }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText(modeDescription).assertExists()
+    }
+
     @Test fun `unknown query shows empty state and clearing restores cards`() {
         show()
         composeRule.onNode(isEditable()).performTextInput("zzzz-no-such-setting")

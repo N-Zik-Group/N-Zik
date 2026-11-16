@@ -20,7 +20,9 @@ class ThemeStoreDownloadTest {
 
     @Test
     fun downloadRequiresEveryPreviewAndCachesThemForOfflineAccess() = runTest {
-        val appearance = encodeThemeAppearance(emptyMap<String, Any>(), emptyMap<String, Any>()).encodeToByteArray()
+        val appearance = encodeThemeAppearance(
+            emptyMap<String, Any>(), emptyMap<String, Any>(), schemaVersion = ThemeAppearanceV2,
+        ).encodeToByteArray()
         fun png(color: Int): ByteArray = java.io.ByteArrayOutputStream().use { output ->
             val bitmap = android.graphics.Bitmap.createBitmap(2, 2, android.graphics.Bitmap.Config.ARGB_8888)
             try {
@@ -34,8 +36,8 @@ class ThemeStoreDownloadTest {
         val cover = png(android.graphics.Color.RED)
         val queue = png(android.graphics.Color.BLUE)
         val theme = StoreTheme(
-            1, "99edc843-6a9b-5753-8e76-cc11fe9b3295", 1, "Theme", "Theme",
-            StoreAuthor(1, "Creator"), emptyList(), StoreCompatibility(null),
+            2, "99edc843-6a9b-5753-8e76-cc11fe9b3295", 2, "Theme", "Theme",
+            StoreAuthor(1, "Creator"), emptyList(), StoreCompatibility(99),
             StoreFile("appearance.json", appearance.sha256()),
             listOf(
                 StorePreview("previews/player-normal.png", "player", cover.sha256()),

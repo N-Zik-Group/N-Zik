@@ -277,9 +277,12 @@ private fun ThemeStoreDetailContent(
     }
     val id = "${theme.themeId}:${theme.revision}"
     val downloaded = builtIn ?: downloads.firstOrNull { it.id == id }
+    val appVersion = BuildConfig.VERSION_CODE
+    val support = theme.supportAt(appVersion)
+    val supported = support == StoreSupport.Supported
     var appearance by remember(theme.appearance) { mutableStateOf<StoreAppearance?>(null) }
-    LaunchedEffect(theme, catalog, retry, downloaded) {
-        appearance = loadDetail("appearance") { catalog.appearance(theme, downloaded) } ?: appearance
+    LaunchedEffect(theme, catalog, retry, downloaded, supported) {
+        if (supported) appearance = loadDetail("appearance") { catalog.appearance(theme, downloaded) } ?: appearance
     }
     var downloading by remember { mutableStateOf(false) }
     var followed by remember { mutableStateOf(library.follows().any { it.githubId == theme.author.githubId }) }
@@ -309,12 +312,10 @@ private fun ThemeStoreDetailContent(
     var dialog by rememberSaveable { mutableStateOf<DetailDialog?>(null) }
     var updateMode by remember(library, theme.themeId) { mutableStateOf(library.updateMode(theme.themeId)) }
     var undo by remember { mutableStateOf<(() -> Unit)?>(null) }
-    val support = theme.compatibility.supportAt(BuildConfig.VERSION_CODE)
-    val appVersion = BuildConfig.VERSION_CODE
     val dismiss = { dialog = null }
     val apply: (Set<StoreGroup>) -> Unit = { groups ->
         if (getActiveProfile(context) == profileId) {
-            appearance?.selectedSettings(theme.compatibility, appVersion, groups)?.let { settings ->
+            appearance?.selectedSettings(theme, appVersion, groups)?.let { settings ->
                 undo = settings.applyTo(
                     context.preferences,
                     GlassProfilePreferences.preferences(context, profileId),
@@ -325,10 +326,10 @@ private fun ThemeStoreDetailContent(
         }
     }
     when (dialog) {
-        DetailDialog.Customize -> appearance?.let { parsed ->
+        DetailDialog.Customize -> if (supported) appearance?.let { parsed ->
             ThemeCustomizeDialog(
                 groups = parsed.groups,
-                compatibilityNotice = compatibilityLabel(support).takeIf { support != StoreSupport.Supported },
+                compatibilityNotice = null,
                 dismiss = dismiss,
             ) { selection ->
                 apply(selection)
@@ -508,7 +509,9 @@ private fun ThemeStoreDetailContent(
                 Column {
                     if (!localPackage) {
                         DetailRow(reviewLabel(reviews), R.drawable.star_brilliant) { dialog = DetailDialog.Reviews }
-                        DetailRow(revisionLabel(theme), R.drawable.alternative_version) { dialog = DetailDialog.Revisions }
+                        if (builtIn == null) {
+                            DetailRow(revisionLabel(theme), R.drawable.alternative_version) { dialog = DetailDialog.Revisions }
+                        }
                         firstPublication?.let { DetailRow(stringResource(R.string.theme_store_published_on, it), R.drawable.calendar) }
                         DetailRow(
                             appearance?.let { Formatter.formatShortFileSize(context, it.size.toLong()) }
@@ -516,7 +519,7 @@ private fun ThemeStoreDetailContent(
                             R.drawable.download,
                         )
                     }
-                    OtherInfoSettingsEntry(
+                    if (builtIn == null) OtherInfoSettingsEntry(
                         title = stringResource(R.string.theme_store_compatibility),
                         text = compatibilityLabel(support),
                         icon = R.drawable.information,
@@ -531,14 +534,14 @@ private fun ThemeStoreDetailContent(
         }
         item {
             val hasGroups = appearance?.groups?.isNotEmpty() == true
-            val ready = hasGroups && support == StoreSupport.Supported
-            val latestRevision = publicationCatalog.orEmpty().filter { it.themeId == theme.themeId }
-                .maxByOrNull { it.revision }?.revision
-            val updateTarget = latestRevision?.takeIf {
-                !offline && !localPackage && downloaded != null && it > theme.revision &&
-                    library.download("${theme.themeId}:$it") == null
-            }
-            val isUpdate = !localPackage && latestRevision == theme.revision && library.downloads().any {
+            val latestTheme = publicationCatalog.orEmpty().filter { it.themeId == theme.themeId }
+                .maxByOrNull { it.revision }
+            val updateTarget = latestTheme?.takeIf {
+                !offline && !localPackage && downloaded != null && it.revision > theme.revision &&
+                    it.supportAt(appVersion) == StoreSupport.Supported &&
+                    library.download("${theme.themeId}:${it.revision}") == null
+            }?.revision
+            val isUpdate = !localPackage && latestTheme?.revision == theme.revision && library.downloads().any {
                 it.theme?.themeId == theme.themeId && it.theme.revision < theme.revision
             }
             Column(
@@ -546,7 +549,7 @@ private fun ThemeStoreDetailContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                if (downloaded == null && !localPackage) {
+                if (supported && downloaded == null && !localPackage) {
                     ButtonRow(listOf(DialogButton(
                         stringResource(when {
                             downloading -> R.string.theme_store_downloading
@@ -590,9 +593,9 @@ private fun ThemeStoreDetailContent(
                         { onRevision(updateTarget) },
                         primary = true,
                     )))
-                    ButtonRow(listOf(
+                    if (supported) ButtonRow(listOf(
                         DialogButton(stringResource(R.string.theme_store_customize), { dialog = DetailDialog.Customize }, enabled = hasGroups),
-                        DialogButton(stringResource(R.string.common_action_apply), { apply(appearance?.groups?.keys.orEmpty()) }, primary = true, enabled = ready),
+                        DialogButton(stringResource(R.string.common_action_apply), { apply(appearance?.groups?.keys.orEmpty()) }, primary = true, enabled = hasGroups),
                     ))
                     if (builtIn == null) ButtonRow(listOf(DialogButton(
                         stringResource(R.string.common_action_delete),
@@ -628,6 +631,17 @@ private fun DetailHeader() {
     }
 }
 
+private val StorePreview.darkPreview: Boolean?
+    get() {
+        val scene = path.substringAfterLast('/').substringBeforeLast('.')
+            .removeSuffix("-normal").removeSuffix("-glass")
+        return when {
+            scene.endsWith("-light") -> false
+            scene.endsWith("-dark") -> true
+            else -> null
+        }
+    }
+
 @Composable
 private fun ThemePreviewGallery(theme: StoreTheme, catalog: ThemeStoreCatalog, retry: Int) {
     if (theme.previews.isEmpty()) return
@@ -635,8 +649,14 @@ private fun ThemePreviewGallery(theme: StoreTheme, catalog: ThemeStoreCatalog, r
     val variants = listOf(false, true).filter { glass -> theme.previews.any { it.glassVariant == glass } }
     var selectedGlass by rememberSaveable { mutableStateOf(currentGlass) }
     val variant = selectedGlass.takeIf { it in variants } ?: variants.firstOrNull()
-    val previews = theme.galleryPreviews(variant)
-    var expandedPath by remember(theme.themeId, theme.revision, variant) { mutableStateOf<String?>(null) }
+    val currentDark = colorPalette().isDark
+    var selectedDark by rememberSaveable { mutableStateOf(currentDark) }
+    val hasPaletteVariants = theme.previews.any { it.darkPreview == true } &&
+        theme.previews.any { it.darkPreview == false }
+    val previews = theme.galleryPreviews(variant).filter {
+        !hasPaletteVariants || it.darkPreview == null || it.darkPreview == selectedDark
+    }
+    var expandedPath by remember(theme.themeId, theme.revision, variant, selectedDark) { mutableStateOf<String?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         if (variants.size > 1) SettingsDialogTabRow(
             labels = listOf(stringResource(R.string.theme_store_preview_normal), stringResource(R.string.theme_store_preview_glass)),
@@ -644,9 +664,18 @@ private fun ThemePreviewGallery(theme: StoreTheme, catalog: ThemeStoreCatalog, r
             equalWidthWhenFitting = true,
             followNestedTarget = false,
         ) { selectedGlass = it == 1 }
+        if (hasPaletteVariants) SettingsDialogTabRow(
+            labels = listOf(
+                stringResource(R.string.settings_theme_light_mode_label),
+                stringResource(R.string.settings_theme_dark_mode_label),
+            ),
+            selectedTabIndex = if (selectedDark) 1 else 0,
+            equalWidthWhenFitting = true,
+            followNestedTarget = false,
+        ) { selectedDark = it == 1 }
         BoxWithConstraints(Modifier.fillMaxWidth()) {
             val width = (maxWidth - 16.dp) / 3
-            key(variant) {
+            key(variant, selectedDark) {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(previews, key = { it.path }) { preview ->
                         ThemeGalleryPreview(theme, preview, catalog, retry, Modifier.width(width)) {
@@ -699,7 +728,7 @@ private fun galleryPreviewLabel(preview: StorePreview): String = preview.caption
     "player" -> stringResource(R.string.theme_store_preview_player)
     "queue" -> stringResource(R.string.theme_store_preview_queue)
     "navigation" -> stringResource(R.string.theme_store_group_navigation)
-    else -> preview.path.substringAfter('/').substringBeforeLast('.').replace('-', ' ')
+    else -> submissionPreviewLabel(preview.path.substringAfterLast('/').substringBeforeLast('.'))
 }
 
 @Composable
@@ -729,6 +758,7 @@ private fun reviewLabel(reviews: StoreReviewSummary?): String = when {
 private fun compatibilityLabel(support: StoreSupport): String = when (support) {
     StoreSupport.Pending -> stringResource(R.string.theme_store_support_pending)
     StoreSupport.RequiresUpdate -> stringResource(R.string.theme_store_support_requires_update)
+    StoreSupport.Legacy -> stringResource(R.string.theme_store_support_legacy, ThemeLegacyMaxVersionCode)
     StoreSupport.Supported -> stringResource(R.string.theme_store_support_minimum)
 }
 

@@ -123,11 +123,19 @@ import java.io.File
 internal val requiredPreviews = listOf("player", "queue", "lyrics", "home", "navigation", "album",
     "artist", "playlist", "local-playlist", "search", "search-albums", "search-artists")
     .flatMap { listOf("$it-normal", "$it-glass") }
-internal val systemModePreviews = listOf("player-light", "player-dark")
-    .flatMap { listOf("$it-normal", "$it-glass") }
 internal val optionalAutomaticPreviews = listOf("player-playing", "miniplayer-playing", "menu", "dialog")
-    .flatMap { listOf("$it-normal", "$it-glass") } + systemModePreviews
-internal val automaticPreviews = requiredPreviews + optionalAutomaticPreviews
+    .flatMap { listOf("$it-normal", "$it-glass") }
+
+internal fun previewSlotsForMode(slots: List<String>, followsSystem: Boolean): List<String> =
+    if (!followsSystem) slots else slots.flatMap { slot ->
+        val scene = slot.substringBeforeLast('-').removeSuffix("-light").removeSuffix("-dark")
+        val surface = slot.substringAfterLast('-')
+        listOf("$scene-light-$surface", "$scene-dark-$surface")
+    }
+
+internal val automaticPreviews = (requiredPreviews + optionalAutomaticPreviews).let {
+    it + previewSlotsForMode(it, followsSystem = true)
+}
 internal const val SubmissionPreviewLimit = 4 * 1024 * 1024
 private val SubmissionPreviewMimeTypes = arrayOf("image/png", "image/jpeg", "image/webp", "image/gif")
 internal fun submissionMinimumVersionCode(input: String, current: Int, previous: Int?): Int? =
@@ -349,10 +357,14 @@ private fun ThemeSubmissionForm(
     }
     val included = availableCategories.filter { selection and (1 shl it.ordinal) != 0 }
     val appearance = remember(fullAppearance, selection) { selectThemeAppearanceCategories(fullAppearance, included.toSet()) }
-    val applicablePreviews = remember(appearance) {
-        if (themePreviewFollowsSystem(appearance)) automaticPreviews else automaticPreviews - systemModePreviews.toSet()
+    val followsSystem = remember(appearance) { themePreviewFollowsSystem(appearance) }
+    val requiredSlots = remember(followsSystem) { previewSlotsForMode(requiredPreviews, followsSystem) }
+    val optionalSlots = remember(followsSystem) { previewSlotsForMode(optionalAutomaticPreviews, followsSystem) }
+    val applicablePreviews = remember(requiredSlots, optionalSlots) { requiredSlots + optionalSlots }
+    val previewLimit by produceState<Int?>(null, catalog) {
+        value = withContext(NzikDispatchers.DATA) { catalog.submissionPreviewLimit() }
     }
-    fun isApplicablePreview(slot: String): Boolean = slot !in systemModePreviews || slot in applicablePreviews
+    fun isApplicablePreview(slot: String): Boolean = slot !in automaticPreviews || slot in applicablePreviews
 
     var reusePublishedPreviews by rememberSaveable(key) { mutableStateOf(draft?.optBoolean("reusePublishedPreviews", true) ?: true) }
     var previewState by rememberSaveable(key) { mutableStateOf(draft?.optJSONObject("previews")?.toString() ?: "{}") }
@@ -440,7 +452,10 @@ private fun ThemeSubmissionForm(
             .orEmpty().map(::File)
         val bySlot = received.associateBy(File::nameWithoutExtension)
         val existingSlots = previewSelection.published(existing?.previews.orEmpty(), reuseAutomatic = true).keys.filter(::isApplicablePreview).toSet()
-        val available = availableAutomaticPreviews(existingSlots + updated.keys().asSequence().filter(::isApplicablePreview))
+        val available = availableAutomaticPreviews(
+            existingSlots + updated.keys().asSequence().filter(::isApplicablePreview),
+            checkNotNull(previewLimit), requiredSlots, optionalSlots,
+        )
         for (slot in available) {
             val file = bySlot[slot] ?: continue
             val previous = android.net.Uri.parse(updated.optString(slot)).path
@@ -458,7 +473,7 @@ private fun ThemeSubmissionForm(
     val publishedPreviews = previewSelection.published(existing?.previews.orEmpty(), reusePublishedPreviews)
         .filterKeys(::isApplicablePreview)
     val readyPreviews = publishedPreviews.keys + previews.keys
-    val gallerySlots = previewSelection.gallerySlots(publishedPreviews.keys, previews.keys)
+    val gallerySlots = previewSelection.gallerySlots(publishedPreviews.keys, previews.keys, requiredSlots, optionalSlots)
     fun captionFor(slot: String): String = captions.optString(slot, publishedPreviews[slot]?.caption.orEmpty())
     val previewSizes by produceState<Map<String, Long>?>(null, step, previews, existing) {
         value = null
@@ -491,7 +506,7 @@ private fun ThemeSubmissionForm(
             emptyMap()
         }
     }
-    val sections = listOf("Information", "Previews", "Review")
+    val sections = listOf(stringResource(R.string.theme_submission_section_information), stringResource(R.string.theme_submission_section_previews), stringResource(R.string.theme_submission_section_review))
     fun saveDraft() {
         val previous = draftPreviewUris(drafts.getString(key, null))
         val data = JSONObject().put("id", themeId).put("title", title).put("description", description)
@@ -542,10 +557,11 @@ private fun ThemeSubmissionForm(
             require(bytes.isNotEmpty())
             val path = "previews/$slot.$extension"
             files[path] = bytes
-            val scene = slot.substringBeforeLast('-')
+            val scene = slot.substringBeforeLast('-').removeSuffix("-light").removeSuffix("-dark")
             StorePreview(path, if (scene in listOf("player", "queue", "navigation")) scene else "other", bytes.sha256(), caption)
         }
-        val theme = StoreTheme(1, themeId, revision, title.trim(), description.trim(),
+        require(gallery.size <= checkNotNull(previewLimit))
+        val theme = StoreTheme(2, themeId, revision, title.trim(), description.trim(),
             if (login == "local") StoreAuthor(0, login) else StoreAuthor(id, login), submissionTags,
             compatibility, StoreFile("appearance.json", appearanceBytes.sha256()), gallery,
             localCreatorName = localCreator)
@@ -651,7 +667,7 @@ private fun ThemeSubmissionForm(
                             elevation = null,
                             colors = ButtonDefaults.buttonColors(containerColor = palette.red),
                         ) {
-                            Text(if (step == 0) stringResource(R.string.common_action_cancel) else "Back")
+                            Text(if (step == 0) stringResource(R.string.common_action_cancel) else stringResource(R.string.theme_submission_back))
                         }
                         PageButton(
                             onClick = {
@@ -665,15 +681,15 @@ private fun ThemeSubmissionForm(
                             elevation = null,
                             enabled = when (step) {
                                 0 -> informationValid
-                                1 -> !importingPreview && readyPreviews.containsAll(requiredPreviews)
+                                1 -> !importingPreview && readyPreviews.containsAll(requiredSlots) && previewLimit?.let { gallerySlots.size <= it } == true
                                 else -> informationValid && !busy && !awaiting && (localOnly || rights)
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = palette.accent, contentColor = palette.onAccent),
                         ) {
                             Text(when {
-                                step < 2 -> "Continue"
+                                step < 2 -> stringResource(R.string.theme_submission_continue)
                                 localOnly -> stringResource(R.string.theme_store_local_save)
-                                else -> "Submit for review"
+                                else -> stringResource(R.string.theme_submission_submit_for_review)
                             })
                         }
                     }
@@ -697,10 +713,10 @@ private fun ThemeSubmissionForm(
                 ) {
                     when (step) {
                         0 -> {
-                            SettingsSectionCard("Theme information", R.drawable.ui, bottomSpacing = 0.dp, content = {
+                            SettingsSectionCard(stringResource(R.string.theme_submission_information_title), R.drawable.ui, bottomSpacing = 0.dp, content = {
                                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    SubmissionField(title, { if (it.themeTextLength <= 100) title = it }, "Theme title")
-                                    SubmissionField(description, { if (it.themeTextLength <= 1000) description = it }, "Description", 3)
+                                    SubmissionField(title, { if (it.themeTextLength <= 100) title = it }, stringResource(R.string.theme_submission_title))
+                                    SubmissionField(description, { if (it.themeTextLength <= 1000) description = it }, stringResource(R.string.theme_submission_description), 3)
                                     SubmissionField(tags, { tags = it }, stringResource(R.string.theme_store_tags_entry))
                                     if (hasDuplicateTags || hasReservedTags) {
                                         SettingsDescription(stringResource(
@@ -719,7 +735,7 @@ private fun ThemeSubmissionForm(
                                     }
                                 }
                             })
-                            if (!localOnly) SettingsSectionCard("Author", R.drawable.github_icon, bottomSpacing = 0.dp, content = {
+                            if (!localOnly) SettingsSectionCard(stringResource(R.string.theme_submission_author), R.drawable.github_icon, bottomSpacing = 0.dp, content = {
                                 SubmissionAuthor(login)
                             })
                             val minimumLabel = stringResource(R.string.theme_store_submission_minimum_version)
@@ -802,11 +818,11 @@ private fun ThemeSubmissionForm(
                                 })
                         }
                         1 -> {
-                            SettingsSectionCard("Show your theme", R.drawable.ui, bottomSpacing = 0.dp, content = {
-                                Text("Generate Normal and Glass screenshots with demo content, or replace them with images from your device.",
+                            SettingsSectionCard(stringResource(R.string.theme_submission_show_theme), R.drawable.ui, bottomSpacing = 0.dp, content = {
+                                Text(stringResource(R.string.theme_submission_previews_description),
                                     color = colorPalette().textSecondary)
-                                OtherSettingsEntry("Generate previews", "${applicablePreviews.count { it in readyPreviews }} / ${applicablePreviews.size} ready", R.drawable.ui,
-                                    onClick = { saveDraft(); capture.launch(ThemePreviewActivity.submissionIntent(context, appearance)) })
+                                OtherSettingsEntry(stringResource(R.string.theme_submission_generate_previews), stringResource(R.string.theme_submission_ready, applicablePreviews.count { it in readyPreviews }, applicablePreviews.size), R.drawable.ui,
+                                    isEnabled = previewLimit != null, onClick = { saveDraft(); capture.launch(ThemePreviewActivity.submissionIntent(context, appearance)) })
                                 val variants = listOf(
                                     stringResource(R.string.theme_store_preview_normal),
                                     stringResource(R.string.theme_store_preview_glass),
@@ -896,7 +912,7 @@ private fun ThemeSubmissionForm(
                                     }
                                     PageButton(
                                         modifier = Modifier.fillMaxWidth(),
-                                        enabled = !importingPreview && gallerySlots.size < 36,
+                                        enabled = !importingPreview && previewLimit?.let { gallerySlots.size < it } == true,
                                         onClick = {
                                             picking = "extra-${UUID.randomUUID()}$suffix"
                                             picker.launch(SubmissionPreviewMimeTypes)
@@ -920,7 +936,7 @@ private fun ThemeSubmissionForm(
                                             if (caption.themeTextLength <= 160) {
                                                 captionState = JSONObject(captionState).put(selected, caption).toString()
                                             }
-                                        }, if (selected in requiredPreviews) stringResource(R.string.theme_store_caption_for, selectedLabel)
+                                        }, if (selected in requiredSlots) stringResource(R.string.theme_store_caption_for, selectedLabel)
                                         else stringResource(R.string.theme_store_preview_extra_title))
                                     }
                                 }
@@ -931,9 +947,12 @@ private fun ThemeSubmissionForm(
                             val configurationSize = android.text.format.Formatter.formatShortFileSize(
                                 context, appearance.encodeToByteArray().size.toLong(),
                             )
-                            val summarySlot = if (rememberGlassSettings().enabled && "player-glass" in readyPreviews) {
-                                "player-glass"
-                            } else "player-normal"
+                            val playerSlot = if (followsSystem) {
+                                if (colorPalette().isDark) "player-dark" else "player-light"
+                            } else "player"
+                            val summarySlot = if (rememberGlassSettings().enabled && "$playerSlot-glass" in readyPreviews) {
+                                "$playerSlot-glass"
+                            } else "$playerSlot-normal"
                             val localCover = previews[summarySlot]?.let(android.net.Uri::parse)?.path?.let(::File)
                             val previous = publishedPreviews[summarySlot]
                             val remoteCover = if (localCover == null && existing != null && previous != null) {
@@ -958,8 +977,8 @@ private fun ThemeSubmissionForm(
                                     }
                                 }
                             }
-                            SettingsSectionCard("Submission summary", R.drawable.ui, bottomSpacing = 0.dp, content = {
-                                SubmissionSummaryRow("Configuration", configurationSize)
+                            SettingsSectionCard(stringResource(R.string.theme_submission_summary), R.drawable.ui, bottomSpacing = 0.dp, content = {
+                                SubmissionSummaryRow(stringResource(R.string.theme_submission_configuration), configurationSize)
                                 SettingsCardSectionDivider()
                                 val count = readyPreviews.size
                                 val sizes = previewSizes
@@ -969,7 +988,7 @@ private fun ThemeSubmissionForm(
                                     else -> stringResource(R.string.theme_store_preview_size_total, count,
                                         android.text.format.Formatter.formatShortFileSize(context, sizes.values.sum()))
                                 }
-                                SubmissionSummaryRow("Previews", previewSummary)
+                                SubmissionSummaryRow(stringResource(R.string.theme_submission_section_previews), previewSummary)
                                 for (slot in gallerySlots.filterNot { it in automaticPreviews }) {
                                     val sizeLabel = sizes?.get(slot)?.let {
                                         android.text.format.Formatter.formatShortFileSize(context, it)
@@ -977,7 +996,7 @@ private fun ThemeSubmissionForm(
                                     SubmissionSummaryRow(captionFor(slot).ifBlank { submissionPreviewLabel(slot) }, sizeLabel)
                                 }
                                 SettingsCardSectionDivider()
-                                if (!localOnly) SubmissionSummaryRow("Revision", revision.toString())
+                                if (!localOnly) SubmissionSummaryRow(stringResource(R.string.theme_submission_revision), revision.toString())
                                 SubmissionSummaryRow(stringResource(R.string.theme_store_submission_minimum_version), minimumVersionLabel)
                             })
                             SettingsSectionCard(stringResource(R.string.theme_store_submission_included), R.drawable.ui, bottomSpacing = 0.dp, content = {
@@ -996,9 +1015,9 @@ private fun ThemeSubmissionForm(
                                 Spacer(Modifier.height(8.dp))
                                 SettingsDescription(stringResource(R.string.theme_store_submission_saved_content))
                             })
-                            if (!localOnly) SettingsSectionCard("Before submitting", R.drawable.information, bottomSpacing = 0.dp, content = {
+                            if (!localOnly) SettingsSectionCard(stringResource(R.string.theme_submission_before_submitting), R.drawable.information, bottomSpacing = 0.dp, content = {
                                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Text("GitHub creates or updates a pull request for review. Explicit content will be rejected and may result in a ban.", style = typography().xs)
+                                    Text(stringResource(R.string.theme_submission_review_explanation), style = typography().xs)
                                     Row(
                                         Modifier.fillMaxWidth().toggleable(rights, enabled = !busy,
                                             role = androidx.compose.ui.semantics.Role.Checkbox, onValueChange = { rights = it }),
@@ -1006,7 +1025,7 @@ private fun ThemeSubmissionForm(
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         NzikCheckbox(checked = rights, onCheckedChange = null)
-                                        Text("I have the rights to publish these previews.", style = typography().xs)
+                                        Text(stringResource(R.string.theme_submission_preview_rights), style = typography().xs)
                                     }
                                 }
                             })
@@ -1096,9 +1115,35 @@ private fun SubmissionSummaryRow(label: String, value: String) {
 }
 
 
-private fun submissionPreviewLabel(slot: String): String =
-    if (slot.startsWith("extra-")) "Extra preview"
-    else slot.substringBeforeLast('-').replace('-', ' ').replaceFirstChar(Char::uppercaseChar)
+@Composable
+internal fun submissionPreviewLabel(slot: String): String {
+    val scene = slot.removeSuffix("-normal").removeSuffix("-glass")
+    val label = stringResource(when (scene.removeSuffix("-light").removeSuffix("-dark")) {
+        "player" -> R.string.theme_store_scene_player
+        "queue" -> R.string.theme_store_scene_queue
+        "lyrics" -> R.string.theme_store_scene_lyrics
+        "home" -> R.string.theme_store_scene_home
+        "navigation" -> R.string.theme_store_scene_navigation
+        "album" -> R.string.theme_store_scene_album
+        "artist" -> R.string.theme_store_scene_artist
+        "playlist" -> R.string.theme_store_scene_playlist
+        "local-playlist" -> R.string.theme_store_scene_local_playlist
+        "search" -> R.string.theme_store_scene_search
+        "search-albums" -> R.string.theme_store_scene_search_albums
+        "search-artists" -> R.string.theme_store_scene_search_artists
+        "player-playing" -> R.string.theme_store_scene_player_playing
+        "miniplayer-playing" -> R.string.theme_store_scene_miniplayer_playing
+        "menu" -> R.string.theme_store_scene_menu
+        "dialog" -> R.string.theme_store_scene_dialog
+        else -> R.string.theme_store_scene_extra
+    })
+    val palette = when {
+        scene.endsWith("-light") -> stringResource(R.string.settings_theme_light_mode_label)
+        scene.endsWith("-dark") -> stringResource(R.string.settings_theme_dark_mode_label)
+        else -> return label
+    }
+    return stringResource(R.string.theme_store_scene_palette_format, label, palette)
+}
 
 private fun ThemeCategory.submissionLabel(): Int = when (this) {
     ThemeCategory.COLORS -> R.string.theme_store_group_colors

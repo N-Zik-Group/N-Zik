@@ -17,7 +17,7 @@ internal fun bundledDefaultTheme(context: Context): SavedTheme {
     }
     val name = context.getString(R.string.theme_store_default_title)
     val theme = StoreTheme(
-        schemaVersion = 1,
+        schemaVersion = 2,
         themeId = BundledThemeId,
         revision = 2,
         title = name,

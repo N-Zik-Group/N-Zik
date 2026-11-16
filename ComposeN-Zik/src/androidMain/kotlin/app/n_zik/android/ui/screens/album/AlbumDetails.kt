@@ -428,13 +428,21 @@ fun AlbumDetails(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         val year = album?.year ?: "0000"
-                        val songCount = pluralStringResource(R.plurals.library_song_count, items.size, items.size)
                         val totalDuration = items.sumOf {
                             durationTextToMillis(it.durationText ?: "")
                         }.let( ::formatAsTime )
 
                         BasicText(
-                            text = "$year - $songCount - $totalDuration",
+                            text = stringResource(
+                                R.string.album_year_and_song_summary,
+                                year,
+                                pluralStringResource(
+                                    R.plurals.library_song_count_with_duration,
+                                    items.size,
+                                    items.size,
+                                    totalDuration,
+                                ),
+                            ),
                             style = typography().xs.medium,
                             maxLines = 1
                         )

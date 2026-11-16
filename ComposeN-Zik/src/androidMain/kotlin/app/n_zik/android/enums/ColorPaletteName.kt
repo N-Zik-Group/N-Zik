@@ -21,6 +21,8 @@ enum class ColorPaletteName(
     Customized( R.string.theme_palette_custom ),
 
     CustomColor( R.string.settings_theme_custom_colors_label);
+
+    val isAlwaysDark: Boolean get() = this == PureBlack || this == ModernBlack
 }
 
 

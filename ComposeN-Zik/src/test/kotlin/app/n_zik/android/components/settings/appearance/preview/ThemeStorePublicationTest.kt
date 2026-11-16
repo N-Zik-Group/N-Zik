@@ -83,13 +83,17 @@ class ThemeStorePublicationTest {
             appearance = StoreFile("appearance.json", "a".repeat(64)),
             previews = emptyList(),
         )
-        val update = original.copy(revision = 2)
+        val update = original.copy(revision = 2, compatibility = StoreCompatibility(99))
         val catalog = listOf(update)
         library.save(SavedTheme(original.title, "{}", original, imported = true))
         assertEquals(emptyList<StoreTheme>(), library.downloadedThemeUpdates(catalog, ThemeUpdateMode.Notify))
 
         library.save(SavedTheme(original.title, "{}", original))
-        assertEquals(catalog, library.downloadedThemeUpdates(catalog, ThemeUpdateMode.Notify))
+        assertEquals(emptyList<StoreTheme>(), library.downloadedThemeUpdates(catalog, ThemeUpdateMode.Notify, 98))
+        assertEquals(emptyList<StoreTheme>(), library.downloadedThemeUpdates(
+            listOf(update.copy(compatibility = StoreCompatibility(null))), ThemeUpdateMode.Notify, 99,
+        ))
+        assertEquals(catalog, library.downloadedThemeUpdates(catalog, ThemeUpdateMode.Notify, 99))
         library.markThemeUpdateNotified(update)
         assertEquals(emptyList<StoreTheme>(), library.downloadedThemeUpdates(catalog, ThemeUpdateMode.Notify))
 
@@ -99,7 +103,8 @@ class ThemeStorePublicationTest {
         assertEquals(emptyList<StoreTheme>(), library.downloadedThemeUpdates(catalog, ThemeUpdateMode.Notify))
 
         library.setUpdateMode(original.themeId, ThemeUpdateMode.AutoDownload)
-        assertEquals(catalog, library.downloadedThemeUpdates(catalog, ThemeUpdateMode.AutoDownload))
+        assertEquals(emptyList<StoreTheme>(), library.downloadedThemeUpdates(catalog, ThemeUpdateMode.AutoDownload, 98))
+        assertEquals(catalog, library.downloadedThemeUpdates(catalog, ThemeUpdateMode.AutoDownload, 99))
         library.save(SavedTheme(update.title, "{}", update))
         assertEquals(emptyList<StoreTheme>(), library.downloadedThemeUpdates(catalog, ThemeUpdateMode.AutoDownload))
         val downloaded = library.downloads().filterNot(SavedTheme::imported)

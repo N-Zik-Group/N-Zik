@@ -14,14 +14,20 @@ class DebugThemePreviewActivity : ThemePreviewActivity() {
         if (intent.getBooleanExtra("postThemeUpdateAndDownloadExamples", false)) {
             intent.removeExtra("postThemeUpdateAndDownloadExamples")
             val manager = getSystemService(NotificationManager::class.java)
-            val channel = NotificationChannel("debug_theme_store_examples", "Theme Store examples", NotificationManager.IMPORTANCE_LOW)
+            val channel = NotificationChannel(
+                "debug_theme_store_examples",
+                getString(R.string.notification_debug_theme_examples_channel),
+                NotificationManager.IMPORTANCE_LOW,
+            )
             manager.createNotificationChannel(channel)
             val openPreviews = PendingIntent.getActivity(
                 this, 20, ThemePreviewActivity.intent(this), PendingIntent.FLAG_IMMUTABLE,
             )
             val examples = listOf(
-                "Theme update available • demo" to "Artwork Gradient · Revision 2",
-                "Theme downloaded • demo" to "Artwork Gradient is ready in Downloaded.",
+                getString(R.string.notification_debug_theme_update_title) to
+                    getString(R.string.notification_debug_theme_update_detail, "Artwork Gradient", 2),
+                getString(R.string.notification_debug_theme_downloaded_title) to
+                    getString(R.string.notification_debug_theme_downloaded_detail, "Artwork Gradient"),
             )
             examples.forEachIndexed { index, (title, message) ->
                 val builder = Notification.Builder(this, channel.id)
@@ -31,9 +37,13 @@ class DebugThemePreviewActivity : ThemePreviewActivity() {
                     .setContentIntent(openPreviews)
                     .setAutoCancel(true)
                 if (index == 0) {
-                    builder.addAction(R.drawable.download, "Download update", DebugThemeDownloadActions.action(this, "update"))
+                    builder.addAction(
+                        R.drawable.download,
+                        getString(R.string.notification_debug_download_update_action),
+                        DebugThemeDownloadActions.action(this, "update"),
+                    )
                 } else {
-                    builder.addAction(R.drawable.ui, "Open preview", openPreviews)
+                    builder.addAction(R.drawable.ui, getString(R.string.notification_debug_open_preview_action), openPreviews)
                 }
                 manager.notify("theme-store-example", index, builder.build())
             }
@@ -46,17 +56,21 @@ class DebugThemePreviewActivity : ThemePreviewActivity() {
         if (intent.getBooleanExtra("postNotificationExample", false)) {
             intent.removeExtra("postNotificationExample")
             val manager = getSystemService(NotificationManager::class.java)
-            val channel = NotificationChannel("debug_inbox_example", "Inbox example", NotificationManager.IMPORTANCE_LOW)
+            val channel = NotificationChannel(
+                "debug_inbox_example",
+                getString(R.string.notification_debug_inbox_example_channel),
+                NotificationManager.IMPORTANCE_LOW,
+            )
             manager.createNotificationChannel(channel)
             val openPreviews = PendingIntent.getActivity(
                 this, 0, ThemePreviewActivity.intent(this), PendingIntent.FLAG_IMMUTABLE,
             )
             manager.notify("inbox-example", 1, Notification.Builder(this, channel.id)
                 .setSmallIcon(R.drawable.notification2)
-                .setContentTitle("New theme available")
-                .setContentText("Explore the Normal and Glass previews for Artwork Gradient.")
+                .setContentTitle(getString(R.string.notification_debug_new_theme_title))
+                .setContentText(getString(R.string.notification_debug_new_theme_detail, "Artwork Gradient"))
                 .setContentIntent(openPreviews)
-                .addAction(Notification.Action.Builder(null, "View previews", openPreviews).build())
+                .addAction(Notification.Action.Builder(null, getString(R.string.notification_debug_view_previews_action), openPreviews).build())
                 .build())
         }
         super.onCreate(savedInstanceState)
@@ -64,16 +78,20 @@ class DebugThemePreviewActivity : ThemePreviewActivity() {
 
     private fun postNotificationSuite() {
         val manager = getSystemService(NotificationManager::class.java)
-        val channel = NotificationChannel("debug_inbox_suite", "Notification test suite", NotificationManager.IMPORTANCE_LOW)
+        val channel = NotificationChannel(
+            "debug_inbox_suite",
+            getString(R.string.notification_debug_test_suite_channel),
+            NotificationManager.IMPORTANCE_LOW,
+        )
         manager.createNotificationChannel(channel)
         val samples = listOf(
-            Triple("Playback • test", "Now playing a sample track.", true),
-            Triple("Music downloads • test", "Downloading 2 tracks.", true),
-            Triple("Listen Together • test", "A listener asked to join your room.", false),
-            Triple("App update • test", "The sample update finished downloading.", false),
-            Triple("Modules • test", "The sample module failed to download.", false),
-            Triple("Rewind • test", "The monthly playlist is ready.", false),
-            Triple("PC Bridge • test", "The sample server is running.", true),
+            Triple(R.string.notification_debug_playback_title, R.string.notification_debug_playback_detail, true),
+            Triple(R.string.notification_debug_music_downloads_title, R.string.notification_debug_music_downloads_detail, true),
+            Triple(R.string.notification_debug_listen_together_title, R.string.notification_debug_listen_together_detail, false),
+            Triple(R.string.notification_debug_app_update_title, R.string.notification_debug_app_update_detail, false),
+            Triple(R.string.notification_debug_modules_title, R.string.notification_debug_modules_detail, false),
+            Triple(R.string.notification_debug_rewind_title, R.string.notification_debug_rewind_detail, false),
+            Triple(R.string.notification_debug_bridge_title, R.string.notification_debug_bridge_detail, true),
         )
         val openPreviews = PendingIntent.getActivity(
             this, 1, ThemePreviewActivity.intent(this), PendingIntent.FLAG_IMMUTABLE,
@@ -81,28 +99,35 @@ class DebugThemePreviewActivity : ThemePreviewActivity() {
         samples.forEachIndexed { index, (title, message, ongoing) ->
             val builder = Notification.Builder(this, channel.id)
                 .setSmallIcon(R.drawable.notification2)
-                .setContentTitle(title)
-                .setContentText(message)
+                .setContentTitle(getString(title))
+                .setContentText(getString(message))
                 .setCategory(if (index == 0) Notification.CATEGORY_TRANSPORT else null)
                 .setOngoing(ongoing)
                 .setAutoCancel(!ongoing)
             val labels = when (index) {
-                1 -> listOf("Pause", "Cancel")
-                2 -> listOf("Approve", "Reject")
-                3 -> listOf("Install update")
-                4 -> listOf("Retry")
-                5 -> listOf("Open playlist")
-                6 -> listOf("Open Bridge")
+                1 -> listOf(R.string.player_notification_pause, R.string.common_action_cancel)
+                2 -> listOf(R.string.listen_together_action_approve, R.string.listen_together_action_reject)
+                3 -> listOf(R.string.notification_debug_install_update_action)
+                4 -> listOf(R.string.common_action_retry)
+                5 -> listOf(R.string.notification_debug_open_playlist_action)
+                6 -> listOf(R.string.notification_debug_open_bridge_action)
                 else -> emptyList()
             }
             labels.forEach { label ->
-                builder.addAction(Notification.Action.Builder(null, label, openPreviews).build())
+                builder.addAction(Notification.Action.Builder(null, getString(label), openPreviews).build())
             }
             if (index == 1) {
                 builder.setProgress(100, 42, false)
-                    .setStyle(Notification.InboxStyle().addLine("Track 1 • 42%").addLine("Track 2 • Waiting"))
+                    .setStyle(
+                        Notification.InboxStyle()
+                            .addLine(getString(R.string.notification_debug_track_progress, 1, debugNotificationProgress(resources, 42)))
+                            .addLine(getString(R.string.notification_debug_track_waiting, 2)),
+                    )
             }
             manager.notify("inbox-suite", 100 + index, builder.build())
         }
     }
 }
+
+internal fun debugNotificationProgress(resources: android.content.res.Resources, percent: Int): String =
+    java.text.NumberFormat.getPercentInstance(resources.configuration.locales[0]).format(percent / 100.0)

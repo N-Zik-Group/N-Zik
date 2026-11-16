@@ -5,7 +5,6 @@ import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -49,7 +48,6 @@ import app.n_zik.android.utils.topPaddingKey
 import app.n_zik.android.utils.visualizerEnabledKey
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.core.utils.Toaster
-import app.n_zik.android.components.dialog.common.DialogColorPicker
 import app.n_zik.android.utils.visualizerWhiteColorOptionKey
 import app.n_zik.android.utils.visualizerLineThicknessKey
 import app.n_zik.android.utils.visualizerCustomColorKey
@@ -57,6 +55,7 @@ import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.ImportantSettingsDescription
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
+import app.n_zik.android.components.settings.common.ColorSettingEntry
 import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettingsEntry
 import app.n_zik.android.components.settings.common.SliderSettingsEntry
 import androidx.compose.ui.platform.testTag
@@ -363,32 +362,14 @@ internal fun AppearanceBehaviorCard(search: Search) {
                         }
 
                         AnimatedVisibility(visible = visualizerWhiteColorOption == enums.VisualizerWhiteColorOption.Custom) {
-                            var showColorPicker by remember { mutableStateOf(false) }
-                            val customColorString = stringResource(R.string.common_color_custom)
-                            if (search.inputValue.isBlank() || true) {
-                                OtherSettingsEntry(
-                                    title = customColorString,
-                                    text = stringResource(R.string.visualizer_custom_color_description),
-                                    icon = R.drawable.color_palette,
-                                    onClick = { showColorPicker = true },
-                                    modifier = (Modifier.padding(start = 40.dp)).settingsSearchTarget("appearance.player_behavior_and_visuals.color_custom"),
-                                    trailingContent = {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(20.dp)
-                                                .background(androidx.compose.ui.graphics.Color(visualizerCustomColor))
-                                                .border(BorderStroke(1.dp, androidx.compose.ui.graphics.Color.LightGray))
-                                        )
-                                    }
-                                )
-                            }
-                            DialogPresence(visible = showColorPicker) {
-                                DialogColorPicker(onDismiss = { showColorPicker = false }) {
-                                    visualizerCustomColor = it.toArgb()
-                                    showColorPicker = false
-                                    Toaster.n(R.string.settings_theme_color_applied_format, customColorString)
-                                }
-                            }
+                            ColorSettingEntry(
+                                title = stringResource(R.string.common_color_custom),
+                                text = stringResource(R.string.visualizer_custom_color_description),
+                                color = androidx.compose.ui.graphics.Color(visualizerCustomColor),
+                                onColorSelected = { visualizerCustomColor = it.toArgb() },
+                                modifier = Modifier.padding(start = 40.dp)
+                                    .settingsSearchTarget("appearance.player_behavior_and_visuals.color_custom"),
+                            )
                         }
 
                         if (search.inputValue.isBlank() || stringResource(R.string.settings_visualizer_artwork_visible_label).contains(search.inputValue, true)) {

@@ -287,7 +287,7 @@ class PlaybackSettingsMenu private constructor(
                 onValueChange = { tempLoudnessGain = it },
                 onSlideComplete = { loudnessBaseGain = tempLoudnessGain },
                 valueRange = -20f..20f,
-                displayValue = { "%.2f dB".format(it) },
+                displayValue = { stringResource(R.string.player_decibels_value, it) },
                 onReset = {
                     tempLoudnessGain = 5f
                     loudnessBaseGain = 5f
@@ -307,7 +307,7 @@ class PlaybackSettingsMenu private constructor(
                 onValueChange = { tempVolumeBoost = it },
                 onSlideComplete = { volumeBoostLevel = tempVolumeBoost },
                 valueRange = -30f..30f,
-                displayValue = { "%.2f dB".format(it) },
+                displayValue = { stringResource(R.string.player_decibels_value, it) },
                 onReset = {
                     tempVolumeBoost = 0f
                     volumeBoostLevel = 0f
@@ -506,7 +506,7 @@ class PlaybackSettingsMenu private constructor(
                     title = stringResource(R.string.settings_loudness_base_gain),
                     icon = R.drawable.volume_up,
                     value = tempLoudnessGain,
-                    toDisplay = { "%.2f dB".format(it) },
+                    toDisplay = { stringResource(R.string.player_decibels_value, it) },
                     onValueChange = { tempLoudnessGain = kotlin.math.round(it * 100f) / 100f },
                     onSlideComplete = { loudnessBaseGain = tempLoudnessGain },
                     valueRange = -20f..20f,

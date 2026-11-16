@@ -323,4 +323,5 @@
     <string name="listen_together_log_level_error">Error</string>
     <string name="listen_together_log_level_info">Info</string>
     <string name="listen_together_log_level_warning">Warning</string>
+    <string name="network_proxy_mode_direct">DIRECT</string>
 </resources>

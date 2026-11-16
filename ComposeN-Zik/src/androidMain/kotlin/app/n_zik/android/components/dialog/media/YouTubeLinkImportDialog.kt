@@ -70,7 +70,12 @@ fun YouTubeLinkImportDialog(
             enabled = dialogInputEnabled,
             value = youTubeUrl,
             onValueChange = { youTubeUrl = it },
-            placeholder = { BasicText("https://youtube.com/playlist?list=...", style = typography().xs.semiBold.copy(color = colorPalette().textDisabled)) },
+            placeholder = {
+                BasicText(
+                    stringResource(R.string.playlist_import_youtube_link_hint),
+                    style = typography().xs.semiBold.copy(color = colorPalette().textDisabled),
+                )
+            },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {

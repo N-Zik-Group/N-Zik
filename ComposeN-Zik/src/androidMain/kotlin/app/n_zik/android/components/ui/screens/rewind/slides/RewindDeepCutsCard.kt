@@ -140,7 +140,10 @@ fun RewindDeepCutsCard(
                                 )
                             }
                             Text(
-                                text = "${formatRewindNumber(song.playCount.toLong())}×",
+                                text = stringResource(
+                                    R.string.rewind_deep_cuts_play_multiplier,
+                                    formatRewindNumber(song.playCount.toLong()),
+                                ),
                                 color = rowOn.copy(alpha = 0.76f),
                                 fontSize = textScale.size(10.sp),
                                 fontWeight = FontWeight.Black,

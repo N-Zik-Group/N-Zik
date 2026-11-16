@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.edit
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -45,9 +46,10 @@ import app.n_zik.android.utils.customThemeLight_textDisabledKey
 import app.n_zik.android.utils.customThemeLight_TextKey
 import app.n_zik.android.utils.customThemeLight_textSecondaryKey
 import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.putEnum
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
-import app.n_zik.android.components.settings.common.ButtonBarSettingEntry
 import app.n_zik.android.components.settings.common.ColorSettingEntry
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
@@ -65,7 +67,7 @@ import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 @Composable
 internal fun UiThemeCard(search: Search) {
     val context = LocalContext.current
-    var colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
+    val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
     var colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
     var respectThemeBrightness by rememberPreference(dynamicThemeRespectBrightnessKey, DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT)
     var customThemeLight_Background0 by rememberPreference(customThemeLight_Background0Key, DefaultLightColorPalette.background0.hashCode())
@@ -123,9 +125,10 @@ internal fun UiThemeCard(search: Search) {
         brightnessTitle.contains(search.inputValue, true) ||
         brightnessDescription.contains(search.inputValue, true) ||
         stringResource(R.string.common_color_source_theme).contains(search.inputValue, true)
+    val themeModeEnabled = !colorPaletteName.isAlwaysDark
     val uiSearchContextMatch = search.inputValue.isBlank() ||
         stringResource(R.string.common_color_source_theme).contains(search.inputValue, true) ||
-        stringResource(R.string.settings_theme_mode_label).contains(search.inputValue, true) ||
+        (themeModeEnabled && stringResource(R.string.settings_theme_mode_label).contains(search.inputValue, true)) ||
         (colorPaletteName == ColorPaletteName.Dynamic && brightnessSearchMatch)
 
     AnimatedVisibility(
@@ -139,6 +142,7 @@ internal fun UiThemeCard(search: Search) {
             icon = R.drawable.color_palette,
             content = {
                 var showThemeDialog by remember { mutableStateOf(false) }
+                var pendingPalette by remember { mutableStateOf<ColorPaletteName?>(null) }
                 if (search.inputValue.isBlank() || stringResource(R.string.common_color_source_theme).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.theme.theme"),
@@ -150,18 +154,23 @@ internal fun UiThemeCard(search: Search) {
                     )
                 }
 
-                DialogPresence(visible = showThemeDialog) {
+                DialogPresence(
+                    visible = showThemeDialog,
+                    onHidden = {
+                        pendingPalette?.let { palette ->
+                            context.preferences.edit {
+                                putEnum(colorPaletteNameKey, palette)
+                                if (palette.isAlwaysDark) putEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
+                                else if (colorPaletteName.isAlwaysDark) putEnum(colorPaletteModeKey, ColorPaletteMode.System)
+                            }
+                        }
+                        pendingPalette = null
+                    },
+                ) {
                     ValueSelectorDialog(
                         title = stringResource(R.string.common_color_source_theme),
                         selectedValue = colorPaletteName,
-                        onValueSelected = {
-                            colorPaletteName = it
-                            when (it) {
-                                ColorPaletteName.PureBlack,
-                                ColorPaletteName.ModernBlack -> colorPaletteMode = ColorPaletteMode.System
-                                else -> {}
-                            }
-                        },
+                        onValueSelected = { pendingPalette = it },
                         valueText = { it.text },
                         values = ColorPaletteName.values().toList(),
                         onDismiss = { showThemeDialog = false }
@@ -186,7 +195,7 @@ internal fun UiThemeCard(search: Search) {
                     Column(modifier = Modifier.padding(start = 25.dp)) {
 
                         if (search.inputValue.isBlank() || stringResource(R.string.settings_theme_light_colors_reset_description).contains(search.inputValue, true) || stringResource(R.string.common_color_source_theme).contains(search.inputValue, true) || stringResource(R.string.settings_theme_light_colors_reset_title).contains(search.inputValue, true)) {
-                            ButtonBarSettingEntry(
+                            OtherSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.title_reset_customized_light_colors"),
                                 title = stringResource(R.string.settings_theme_light_colors_reset_title),
                                 text = stringResource(R.string.settings_theme_light_colors_reset_description),
@@ -288,7 +297,7 @@ internal fun UiThemeCard(search: Search) {
 
 
                         if (search.inputValue.isBlank() || stringResource(R.string.settings_theme_dark_colors_reset_description).contains(search.inputValue, true) || stringResource(R.string.common_color_source_theme).contains(search.inputValue, true) || stringResource(R.string.settings_theme_dark_colors_reset_title).contains(search.inputValue, true)) {
-                            ButtonBarSettingEntry(
+                            OtherSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.title_reset_customized_dark_colors"),
                                 title = stringResource(R.string.settings_theme_dark_colors_reset_title),
                                 text = stringResource(R.string.settings_theme_dark_colors_reset_description),
@@ -407,23 +416,23 @@ internal fun UiThemeCard(search: Search) {
                 }
 
                 var showThemeModeDialog by remember { mutableStateOf(false) }
-                val themeModeEnabled = when (colorPaletteName) {
-                    ColorPaletteName.PureBlack -> false
-                    ColorPaletteName.ModernBlack -> false
-                    else -> true
-                }
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_theme_mode_label).contains(search.inputValue, true)) {
+                AnimatedVisibility(
+                    visible = themeModeEnabled && (search.inputValue.isBlank() ||
+                        stringResource(R.string.settings_theme_mode_label).contains(search.inputValue, true)),
+                    enter = settingsEntryEnter,
+                    exit = settingsEntryExit,
+                ) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.theme.theme_mode"),
                         title = stringResource(R.string.settings_theme_mode_label),
                         text = stringResource(R.string.theme_mode_description),
                         selectedValueText = colorPaletteMode.text,
                         icon = R.drawable.sparkles,
-                        onClick = { if(themeModeEnabled) showThemeModeDialog = true }
+                        onClick = { showThemeModeDialog = true }
                     )
                 }
 
-                DialogPresence(visible = showThemeModeDialog) {
+                DialogPresence(visible = themeModeEnabled && showThemeModeDialog) {
                     ValueSelectorDialog(
                         title = stringResource(R.string.settings_theme_mode_label),
                         selectedValue = colorPaletteMode,

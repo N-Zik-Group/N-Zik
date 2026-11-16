@@ -751,7 +751,7 @@ fun LocalPlaylistSongs(
         RawUrlImportDialog(
             title = stringResource(R.string.playlist_import_youtube_link),
             onDismiss = { showYouTubeLinkDialog = false },
-            placeholder = "https://youtube.com/playlist?list=...",
+            placeholder = stringResource(R.string.playlist_import_youtube_link_hint),
             onImport = { url ->
                 showYouTubeLinkDialog = false
                 val targetPlaylist = playlist ?: return@RawUrlImportDialog

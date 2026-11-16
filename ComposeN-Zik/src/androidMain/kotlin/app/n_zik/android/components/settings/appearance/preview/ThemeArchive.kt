@@ -31,7 +31,7 @@ internal fun readThemeArchive(context: Context, source: InputStream): SavedTheme
                 val count = source.read(buffer)
                 if (count == -1) break
                 size += count
-                require(size <= 36L * SubmissionPreviewLimit + 2 * 1024 * 1024)
+                require(size <= ThemeArchiveZipByteLimit)
                 output.write(buffer, 0, count)
             }
         }
@@ -53,12 +53,15 @@ internal fun readThemeArchive(context: Context, source: InputStream): SavedTheme
     }
 }
 
+private const val ThemeArchiveZipByteLimit = 514L * 1024 * 1024
+
 internal fun localThemeArchiveId(manifest: ByteArray): String =
     UUID.nameUUIDFromBytes(("nzik-local:" + manifest.sha256()).encodeToByteArray()).toString()
 
 internal fun themeArchivePaths(theme: StoreTheme): Set<String> {
     val slots = theme.previews.map { it.path.substringAfterLast('/').substringBeforeLast('.') }
-    require(slots.distinct().size == slots.size && slots.containsAll(requiredPreviews))
+    require(slots.distinct().size == slots.size && (slots.containsAll(requiredPreviews) || theme.schemaVersion == 2 &&
+        slots.containsAll(previewSlotsForMode(requiredPreviews, followsSystem = true))))
     return theme.previews.map { it.path }.toSet() + setOf("manifest.json", "appearance.json", "reviews.json")
 }
 

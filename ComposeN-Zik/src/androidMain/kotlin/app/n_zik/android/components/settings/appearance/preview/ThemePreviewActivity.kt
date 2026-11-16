@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.Build
+import app.n_zik.android.enums.ColorPaletteMode
 import android.util.Base64
 import android.view.PixelCopy
 import android.view.Window
@@ -266,8 +267,20 @@ open class ThemePreviewActivity : ComponentActivity() {
     }
 }
 
-private data class CaptureFrame(val scene: ThemePreviewScene, val glass: Boolean) {
-    val name: String get() = "${scene.fileName}-${if (glass) "glass" else "normal"}"
+private data class CaptureFrame(
+    val scene: ThemePreviewScene,
+    val glass: Boolean,
+    val palette: ColorPaletteMode?,
+) {
+    val name: String get() = buildString {
+        append(scene.fileName)
+        when (palette) {
+            ColorPaletteMode.Light -> append("-light")
+            ColorPaletteMode.Dark -> append("-dark")
+            else -> Unit
+        }
+        append(if (glass) "-glass" else "-normal")
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class, ExperimentalTextApi::class, ExperimentalComposeUiApi::class)
@@ -290,12 +303,19 @@ private fun CaptureGallery(
     val playbackOnly = automation && intent?.getBooleanExtra("playbackOnly", false) == true
     val followsSystem = remember(document) { themePreviewFollowsSystem(document) }
     val scenes = requestedScenes.ifEmpty {
-        ThemePreviewScene.entries.filter { (!playbackOnly || it.playing) && (it.paletteMode == null || followsSystem) }
+        ThemePreviewScene.entries.filter { !playbackOnly || it.playing }
     }
     val normal = rememberThemePreviewAppearance(document, false)
     val glass = rememberThemePreviewAppearance(document, true)
-    val frames = remember(scenes) {
-        scenes.flatMap { scene -> listOf(CaptureFrame(scene, false), CaptureFrame(scene, true)) }
+    val frames = remember(scenes, followsSystem, requestedScenes) {
+        val palettes = if (followsSystem && requestedScenes.isEmpty()) {
+            listOf(ColorPaletteMode.Light, ColorPaletteMode.Dark)
+        } else listOf(null)
+        palettes.flatMap { palette ->
+            scenes.flatMap { scene ->
+                listOf(CaptureFrame(scene, false, palette), CaptureFrame(scene, true, palette))
+            }
+        }
     }
     val staging = remember { mutableMapOf<CaptureFrame, File>() }
     var gallery by remember { mutableStateOf<Map<CaptureFrame, File>>(emptyMap()) }
@@ -331,7 +351,7 @@ private fun CaptureGallery(
             }
         }
     }
-    val paletteOverride = frame?.scene?.paletteMode
+    val paletteOverride = frame?.palette
     val visibleTheme = if (frame != null && paletteOverride != null) {
         rememberThemePreviewAppearance(document, frame.glass, paletteOverride)
     } else if (frame?.glass == true) glass else normal
@@ -500,7 +520,6 @@ private fun PreviewPage(session: ThemePreviewSession, theme: ThemePreviewAppeara
     val fullPlayer = session.scene in setOf(
         ThemePreviewScene.PLAYER, ThemePreviewScene.PLAYER_PLAYING, ThemePreviewScene.QUEUE, ThemePreviewScene.LYRICS,
         ThemePreviewScene.MENU, ThemePreviewScene.DIALOG,
-        ThemePreviewScene.PLAYER_LIGHT, ThemePreviewScene.PLAYER_DARK,
     )
     // Full-player scenes skip AppNavigation, which normally supplies this artwork tint.
     val artworkColor = if (fullPlayer) {

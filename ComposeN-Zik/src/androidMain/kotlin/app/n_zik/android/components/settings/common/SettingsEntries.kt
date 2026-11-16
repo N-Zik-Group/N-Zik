@@ -4,7 +4,6 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.animateFloatAsState
 import android.content.Context
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -56,6 +55,7 @@ import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.DialogColorPicker
+import app.n_zik.android.components.dialog.common.ColorPreviewSwatch
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.StringListDialog
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
@@ -402,22 +402,14 @@ fun ColorSettingEntry(
     isEnabled: Boolean = true
 ) {
     var showColorPicker by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-
-    SettingsEntry(
+    OtherSettingsEntry(
         title = title,
         text = text,
+        icon = R.drawable.color_palette,
         isEnabled = isEnabled,
         onClick = { showColorPicker = true },
-        trailingContent = {
-            Box(
-                modifier = Modifier
-                    .size(20.dp)
-                    .background(color)
-                    .border(BorderStroke(1.dp, Color.LightGray))
-            )
-        },
-        modifier = modifier
+        trailingContent = { ColorPreviewSwatch(color, Modifier.size(20.dp)) },
+        modifier = modifier,
     )
 
     DialogPresence(visible = showColorPicker) {

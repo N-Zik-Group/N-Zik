@@ -90,7 +90,7 @@ fun HomeSearch(
                     PlaylistItem(
                         icon = R.drawable.globe,
                         colorTint = colorPalette().favoritesIcon,
-                        name = "${stringResource(R.string.search_title)} ${stringResource(R.string.search_online)}",
+                        name = stringResource(R.string.search_home_online_action),
                         songCount = null,
                         thumbnailSizeDp = thumbnailSizeDp,
                         alternative = true,
@@ -106,7 +106,7 @@ fun HomeSearch(
                 PlaylistItem(
                     icon = R.drawable.library,
                     colorTint = colorPalette().favoritesIcon,
-                    name = "${stringResource(R.string.search_title)} ${stringResource(R.string.library_title)}",
+                    name = stringResource(R.string.search_home_library_action),
                     songCount = null,
                     thumbnailSizeDp = thumbnailSizeDp,
                     alternative = true,

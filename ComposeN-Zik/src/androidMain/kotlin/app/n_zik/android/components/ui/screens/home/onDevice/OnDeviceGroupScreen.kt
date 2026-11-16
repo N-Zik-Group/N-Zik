@@ -245,7 +245,6 @@ private fun OnDeviceGroupScreen(
         tracks.orEmpty().filter { it.id in eligibleIds && (!parentalControl || !it.title.hasExplicitPrefix()) }
     }
     val duration = remember(visibleTracks) { visibleTracks.sumOf { durationTextToMillis(it.durationText.orEmpty()) } }
-    val count = pluralStringResource(R.plurals.library_song_count, visibleTracks.size, visibleTracks.size)
     val artwork = (sequenceOf(thumbnailUrl) + visibleTracks.asSequence().map(Song::thumbnailUrl))
         .filterNotNull()
         .map(::cleanPrefix)
@@ -310,7 +309,16 @@ private fun OnDeviceGroupScreen(
             }
             if (!isArtist) item(key = "album_details") {
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    BasicText("$count - ${formatAsTime(duration)}", style = type.xs.medium, maxLines = 1)
+                    BasicText(
+                        text = pluralStringResource(
+                            R.plurals.library_song_count_with_duration,
+                            visibleTracks.size,
+                            visibleTracks.size,
+                            formatAsTime(duration),
+                        ),
+                        style = type.xs.medium,
+                        maxLines = 1,
+                    )
                 }
             }
             if (visibleTracks.isNotEmpty()) item(key = "action_buttons") {

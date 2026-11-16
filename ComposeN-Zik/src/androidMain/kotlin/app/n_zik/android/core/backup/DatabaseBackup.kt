@@ -268,7 +268,8 @@ internal object DatabaseBackup {
                 }
             }
         }
-        throw RescueFiles.DatabaseBusyException("Database changed while taking a snapshot")
+        Timber.tag("DatabaseBackup").w("Database changed while taking a snapshot")
+        throw RescueFiles.DatabaseBusyException()
     }
 
     private fun extractZip(payload: File, stage: File): Map<String, File> {

@@ -61,9 +61,11 @@ internal fun themePreviewPreferences(document: String?, glass: Boolean): ThemeSe
     return ThemeSettings(plain, categories[ThemeCategory.GLASS]?.glass.orEmpty())
 }
 
-internal fun themePreviewFollowsSystem(document: String?): Boolean =
-    themePreviewPreferences(document, false).plain.option(colorPaletteModeKey, DefaultColorPaletteMode) ==
-        ColorPaletteMode.System
+internal fun themePreviewFollowsSystem(document: String?): Boolean {
+    val preferences = themePreviewPreferences(document, false).plain
+    return !preferences.option(colorPaletteNameKey, ColorPaletteName.Dynamic).isAlwaysDark &&
+        preferences.option(colorPaletteModeKey, DefaultColorPaletteMode) == ColorPaletteMode.System
+}
 
 @Composable
 internal fun rememberThemePreviewAppearance(

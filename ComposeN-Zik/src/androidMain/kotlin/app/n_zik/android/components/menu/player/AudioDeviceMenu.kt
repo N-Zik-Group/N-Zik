@@ -963,7 +963,8 @@ internal fun loadDevices(
             loadDevicesLegacy(context, onSuccess, onError)
         }
     } catch (e: Exception) {
-        onError(context.getString(R.string.audio_output_load_failed, e.message ?: context.getString(R.string.common_unknown)))
+        Timber.tag("AudioDeviceMenu").w(e, "Failed to load audio devices")
+        onError(context.getString(R.string.audio_output_devices_unavailable))
     }
 }
 

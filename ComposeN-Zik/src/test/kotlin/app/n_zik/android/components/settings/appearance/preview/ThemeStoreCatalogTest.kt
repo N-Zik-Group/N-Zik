@@ -120,6 +120,32 @@ class ThemeStoreCatalogTest {
         assertEquals(setOf("stock", "built-in"), reservedStoreTags)
     }
 
+    @Test
+    fun manifestParserEnforcesTheConfiguredPreviewLimitAndV2MinimumAppCode() {
+        val previews = List(81) { slot ->
+            StorePreview("previews/player-$slot.webp", "other", "a".repeat(64))
+        }
+        val v2 = blur.copy(schemaVersion = 2, revision = 2, compatibility = StoreCompatibility(99), previews = previews)
+        assertEquals(v2, parseStoreTheme(Json.encodeToString(v2)))
+        assertThrows(IllegalArgumentException::class.java) {
+            parseStoreTheme(Json.encodeToString(v2), previewLimit = 80)
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            parseStoreTheme(Json.encodeToString(v2.copy(compatibility = StoreCompatibility(98))))
+        }
+    }
+
+    @Test
+    fun legacyRevisionsHaveACapButPreviouslyPublishedV2AppearancesKeepWorking() {
+        val legacy = blur.copy(compatibility = StoreCompatibility(97))
+        assertEquals(StoreSupport.RequiresUpdate, legacy.supportAt(96))
+        assertEquals(StoreSupport.Supported, legacy.supportAt(98))
+        assertEquals(StoreSupport.Legacy, legacy.supportAt(99))
+        val olderV2Publication = legacy.copy(compatibility = StoreCompatibility(99), revision = 2)
+        assertEquals(StoreSupport.Supported, olderV2Publication.supportAt(99))
+        assertEquals(StoreSupport.Supported, olderV2Publication.copy(schemaVersion = 2).supportAt(99))
+    }
+
     private fun theme(title: String, author: String, tag: String) = StoreTheme(
         schemaVersion = 1,
         themeId = "99edc843-6a9b-5753-8e76-cc11fe9b3295",

@@ -68,6 +68,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
@@ -79,6 +80,7 @@ import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import app.n_zik.android.R
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCombinedBackdrop
@@ -280,6 +282,7 @@ fun GlassOverlayHost(host: GlassMenuHostState) {
 
 @Composable
 private fun GlassOverlayEntry(host: GlassMenuHostState, entry: GlassMenuEntry) {
+    val menuPaneTitle = stringResource(R.string.common_menu_label)
     val source = entry.backdrop ?: host.modalBackdrop
     val visibleMenu = rememberLayerBackdrop()
     val menuMaterial = rememberLayerBackdrop()
@@ -403,7 +406,7 @@ private fun GlassOverlayEntry(host: GlassMenuHostState, entry: GlassMenuEntry) {
                             .layerBackdrop(visibleMenu)
                             .glassOverlayPaint((if (glassEnabled) entry.settings.film else nativeColor.alpha) *
                                 (if (!ready) 0f else if (sharedTrigger) 1f else (fraction * 5f).coerceIn(0f, 1f)))
-                            .semantics { paneTitle = "Menu" }
+                            .semantics { paneTitle = menuPaneTitle }
                             .pointerInput(entry.id) {
                                 // Keep taps in the pane's padding away from the outside-dismiss sibling.
                                 awaitPointerEventScope {

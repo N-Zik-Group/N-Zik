@@ -37,7 +37,15 @@ class ThemePreviewDemoTest {
             emptyMap<String, Any>(),
         )
         assertFalse(themePreviewFollowsSystem(fixedMode))
-        assertEquals(4, systemModePreviews.size)
+        val blackPalette = encodeThemeAppearance(
+            mapOf(app.n_zik.android.utils.colorPaletteNameKey to app.n_zik.android.enums.ColorPaletteName.PureBlack.name),
+            emptyMap<String, Any>(),
+        )
+        assertFalse(themePreviewFollowsSystem(blackPalette))
+        assertEquals("Dark", parseThemeAppearance(blackPalette).getValue(ThemeCategory.COLORS).plain[
+            app.n_zik.android.utils.colorPaletteModeKey
+        ])
+        assertEquals(64, previewSlotsForMode(requiredPreviews + optionalAutomaticPreviews, followsSystem = true).size)
     }
 
     @Test
@@ -45,7 +53,7 @@ class ThemePreviewDemoTest {
         assertEquals(
             listOf("player", "queue", "navigation", "home", "search", "search-albums", "search-artists",
                 "album", "lyrics", "artist", "playlist", "local-playlist", "player-playing", "miniplayer-playing",
-                "menu", "dialog", "player-light", "player-dark"),
+                "menu", "dialog"),
             ThemePreviewScene.entries.map { it.fileName },
         )
     }

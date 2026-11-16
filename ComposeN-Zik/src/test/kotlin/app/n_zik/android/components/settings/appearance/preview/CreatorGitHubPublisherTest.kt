@@ -109,6 +109,7 @@ class CreatorGitHubPublisherTest {
             previews = emptyList(),
         )
         val updated = theme.copy(revision = 2)
+        val upgraded = updated.copy(schemaVersion = 2, compatibility = StoreCompatibility(99))
         val scenarios = listOf(
             Submission("nzik/creator-profile-123", files = mapOf(
                 "catalog/creators/123/profile.json" to """{"githubId":123,"displayName":"Creator","bio":""}""".encodeToByteArray(),
@@ -119,11 +120,17 @@ class CreatorGitHubPublisherTest {
             Submission("nzik/theme-$themeId", theme = updated, files = mapOf(
                 updated.directory + "manifest.json" to """{"author":{"githubId":123,"login":"creator"}}""".encodeToByteArray(),
             )),
+            Submission("nzik/theme-$themeId", theme = upgraded, hasV2Index = true, files = mapOf(
+                upgraded.directory + "manifest.json" to """{"author":{"githubId":123,"login":"creator"}}""".encodeToByteArray(),
+            )),
+            Submission("nzik/withdraw-$themeId", withdrawal = upgraded, hasV2Index = true, v2Revision = 2),
             Submission("nzik/review-$themeId-1-123", review = ThemeReviewSubmission(theme, 5, "Test")),
             Submission("nzik/withdraw-$themeId", withdrawal = theme),
         )
         for (scenario in scenarios) {
-            val fork = OutdatedFork(scenario.alreadyPublished)
+            val fork = OutdatedFork(
+                scenario.alreadyPublished, hasV2Index = scenario.hasV2Index, v2Revision = scenario.v2Revision,
+            )
             val actual = submitCreatorProfile(
                 "test-token", author.githubId, scenario.files, scenario.theme, scenario.review, scenario.withdrawal,
                 requestClient = fork.client,
@@ -136,10 +143,22 @@ class CreatorGitHubPublisherTest {
             assertEquals(mainSha, fork.commit?.getJSONArray("parents")?.getString(0))
             assertEquals(mainTree, fork.tree?.getString("base_tree"))
             assertFalse(fork.calls.any { it.contains("merge-upstream") || it.contains("/git/refs/heads/main") })
+            val entries = checkNotNull(fork.tree).getJSONArray("tree")
+            val paths = (0 until entries.length()).map { entries.getJSONObject(it).getString("path") }.toSet()
+            if (scenario.theme?.schemaVersion == 2) {
+                assertEquals(setOf(upgraded.directory + "manifest.json", ThemeCatalogV2Path), paths)
+                val blob = (0 until entries.length()).map(entries::getJSONObject)
+                    .single { it.getString("path") == ThemeCatalogV2Path }.getString("sha")
+                val index = JSONObject(fork.blobs.getValue(blob).decodeToString())
+                assertEquals(80, index.getInt("previewLimit"))
+                assertEquals(98, index.getInt("legacyMaxVersionCode"))
+                assertEquals(2, index.getJSONArray("themes").getJSONObject(0).getInt("revision"))
+            }
             if (scenario.withdrawal != null) {
-                val entries = checkNotNull(fork.tree).getJSONArray("tree")
-                assertEquals(1, entries.length())
-                assertEquals("catalog/themes/index.json", entries.getJSONObject(0).getString("path"))
+                assertEquals(
+                    if (scenario.hasV2Index) setOf(ThemeCatalogV1Path, ThemeCatalogV2Path) else setOf(ThemeCatalogV1Path),
+                    paths,
+                )
                 assertTrue(checkNotNull(fork.pull).getString("title").startsWith("Withdraw theme:"))
             }
         }
@@ -276,6 +295,8 @@ class CreatorGitHubPublisherTest {
         val review: ThemeReviewSubmission? = null,
         val withdrawal: StoreTheme? = null,
         val alreadyPublished: Boolean = true,
+        val hasV2Index: Boolean = false,
+        val v2Revision: Int? = null,
     )
 
     private class OutdatedFork(
@@ -283,6 +304,8 @@ class CreatorGitHubPublisherTest {
         private val refStatus: Int = 201,
         private val closingPull: Boolean = false,
         private val publishedProfile: String? = null,
+        private val hasV2Index: Boolean = false,
+        private val v2Revision: Int? = null,
     ) {
         val calls = mutableListOf<String>()
         var ref: JSONObject? = null
@@ -313,9 +336,15 @@ class CreatorGitHubPublisherTest {
                 path.endsWith("/creators/123/profile.json") -> publishedProfile?.let { 200 to contents(it) } ?: (404 to "{}")
                 path.endsWith("/creators/index.json") -> 200 to contents("""{"creators":[]}""")
                 path.endsWith("/themes/index.json") -> 200 to contents(
-                    if (alreadyPublished) """{"themes":[{"themeId":"$themeId","revision":1}]}""" else """{"themes":[]}""",
+                    if (alreadyPublished) """{"themes":[${publishedEntry(1)}]}""" else """{"themes":[]}""",
                 )
-                path.endsWith("/manifest.json") -> 200 to contents("""{"author":{"githubId":123}}""")
+                path.endsWith("/themes/index-v2.json") -> if (hasV2Index) {
+                    val entry = v2Revision?.let(::publishedEntry).orEmpty()
+                    200 to contents("""{"schemaVersion":1,"legacyMaxVersionCode":98,"previewLimit":80,"themes":[$entry]}""")
+                } else {
+                    404 to "{}"
+                }
+                path.endsWith("/manifest.json") -> 200 to contents(publishedManifest(path.substringBeforeLast('/').substringAfterLast('/').toInt()))
                 path.endsWith("/reviews.json") -> 404 to "{}"
                 path.contains("/git/ref/heads/") -> 404 to "{}"
                 path.endsWith("/git/blobs") -> {
@@ -351,6 +380,14 @@ class CreatorGitHubPublisherTest {
         const val themeId = "99edc843-6a9b-5753-8e76-cc11fe9b3295"
         const val mainSha = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         const val mainTree = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+
+        fun publishedManifest(revision: Int): String =
+            """{"themeId":"$themeId","revision":$revision,"author":{"githubId":123}}"""
+
+        fun publishedEntry(revision: Int): String {
+            val hash = publishedManifest(revision).encodeToByteArray().sha256()
+            return """{"themeId":"$themeId","revision":$revision,"manifestSha256":"$hash"}"""
+        }
 
         fun contents(json: String): String = JSONObject()
             .put("content", Base64.encodeToString(json.encodeToByteArray(), Base64.NO_WRAP)).toString()

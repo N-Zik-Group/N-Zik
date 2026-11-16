@@ -337,7 +337,7 @@ private fun UpdateRowTrailingStatus() {
         context.getString(R.string.updates_never_checked)
     }
     BasicText(
-        text = "$status \u00B7 $lastCheck",
+        text = stringResource(R.string.updates_status_and_last_check, status, lastCheck),
         style = typography().xxs.secondary,
         modifier = Modifier
             .widthIn(max = 150.dp)

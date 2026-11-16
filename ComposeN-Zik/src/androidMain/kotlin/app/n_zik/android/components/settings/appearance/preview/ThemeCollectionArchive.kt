@@ -16,7 +16,6 @@ private const val CollectionThemeLimit = 512
 private const val CollectionIndexLimit = 256 * 1024
 private const val CollectionBytesLimit = 512L * 1024 * 1024
 internal const val CollectionZipLimit = CollectionBytesLimit + 8 * 1024 * 1024
-private const val CollectionEntryLimit = 1 + CollectionThemeLimit * (36 + 3)
 private val collectionIdPattern = Regex("[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}:[1-9][0-9]{0,9}")
 private val collectionHashPattern = Regex("[0-9a-f]{64}")
 private val emptyThemeReviews = """{"schemaVersion":1,"reviews":[]}""".encodeToByteArray()
@@ -164,7 +163,7 @@ private data class CollectionTheme(
 
 private fun readCollectionThemes(zip: ZipFile): List<CollectionTheme> {
     require(File(zip.name).length() <= CollectionZipLimit) { "Theme collection exceeded its byte limit" }
-    require(zip.size() in 1..CollectionEntryLimit)
+    require(zip.size() > 0)
     val seen = mutableSetOf<String>()
     var size = 0L
     zip.entries().asSequence().forEach { entry ->

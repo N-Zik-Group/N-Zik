@@ -105,7 +105,7 @@ internal fun OtherProxyCard(search: Search) {
                             modifier = Modifier.settingsSearchTarget("other.proxy.proxy_mode"),
                             title = stringResource(R.string.settings_proxy_mode_label),
                             text = stringResource(R.string.network_proxy_mode_description),
-                            selectedValueText = proxyMode.name,
+                            selectedValueText = proxyMode.displayLabel(),
                             icon = R.drawable.server,
                             onClick = { showProxyModeDialog = true }
                         )
@@ -117,7 +117,7 @@ internal fun OtherProxyCard(search: Search) {
                             selectedValue = proxyMode,
                             values = Proxy.Type.values().toList(),
                             onValueSelected = { proxyMode = it },
-                            valueText = { it.name },
+                            valueText = { it.displayLabel() },
                             onDismiss = { showProxyModeDialog = false }
                         )
                     }
@@ -256,3 +256,7 @@ internal fun OtherProxyCard(search: Search) {
         }
     )
 }
+
+@Composable
+private fun Proxy.Type.displayLabel(): String =
+    if (this == Proxy.Type.DIRECT) stringResource(R.string.network_proxy_mode_direct) else name

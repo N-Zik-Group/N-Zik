@@ -353,31 +353,37 @@ internal suspend fun submitCreatorProfile(
         } else if (review != null) "Review submitted from N-Zik for revision ${review.theme.revision}." else if (theme != null) "Theme submission from N-Zik. Revision ${theme.revision}." else creatorProfilePullBody(published, JSONObject(submittedFiles.getValue(profilePath).decodeToString()))
             ?: if (existing == null) throw CreatorPublicationUnchanged()
             else "## Creator profile update\n\nThe profile fields match the currently published version."
+        fun readContents(path: String, optional: Boolean = false): ByteArray? =
+            api("$upstream/contents/$path?ref=$baseSha", missing = optional)?.let {
+                Base64.decode(JSONObject(it).getString("content"), Base64.DEFAULT)
+            }
+
+        fun readIndex(path: String, optional: Boolean = false): JSONObject? =
+            readContents(path, optional)?.let { JSONObject(it.decodeToString()) }
+
+        fun verifyPublishedTheme(entry: JSONObject, themeId: String) {
+            val revision = entry.getInt("revision")
+            val bytes = checkNotNull(readContents("catalog/themes/$themeId/$revision/manifest.json"))
+            check(bytes.sha256() == entry.getString("manifestSha256"))
+            val manifest = JSONObject(bytes.decodeToString())
+            check(manifest.getString("themeId") == themeId && manifest.getInt("revision") == revision)
+            if (manifest.getJSONObject("author").getLong("githubId") != id) {
+                throw CreatorPublicationAccountMismatch()
+            }
+        }
+
         val contributionFiles = if (withdrawal != null) {
-            val path = "catalog/themes/index.json"
-            val indexFile = obj("$upstream/contents/$path?ref=$baseSha")
-            val index = JSONObject(Base64.decode(indexFile.getString("content"), Base64.DEFAULT).decodeToString())
-            val original = index.getJSONArray("themes")
-            val remaining = JSONArray()
-            var found = false
-            for (position in 0 until original.length()) {
-                val entry = original.getJSONObject(position)
-                if (entry.getString("themeId") == withdrawal.themeId) {
-                    check(!found)
-                    val revision = entry.getInt("revision")
-                    val manifest = obj("$upstream/contents/catalog/themes/${withdrawal.themeId}/$revision/manifest.json?ref=$baseSha")
-                    val publishedTheme = JSONObject(Base64.decode(manifest.getString("content"), Base64.DEFAULT).decodeToString())
-                    if (publishedTheme.getJSONObject("author").getLong("githubId") != id) {
-                        throw CreatorPublicationAccountMismatch()
-                    }
-                    found = true
-                } else {
-                    remaining.put(entry)
+            val changes = buildMap {
+                for (path in listOf(ThemeCatalogV1Path, ThemeCatalogV2Path)) {
+                    val index = readIndex(path, optional = path == ThemeCatalogV2Path) ?: continue
+                    val entry = index.themeEntry(withdrawal.themeId) ?: continue
+                    verifyPublishedTheme(entry, withdrawal.themeId)
+                    index.put("themes", index.themesWithout(withdrawal.themeId))
+                    put(path, index.toDocumentBytes())
                 }
             }
-            if (!found) throw CreatorPublicationUnchanged()
-            index.put("themes", remaining)
-            mapOf(path to (index.toString(2) + "\n").encodeToByteArray())
+            if (changes.isEmpty()) throw CreatorPublicationUnchanged()
+            changes
         } else if (review != null) {
             val manifestPath = review.theme.directory + "manifest.json"
             obj("$upstream/contents/$manifestPath?ref=$baseSha")
@@ -393,38 +399,41 @@ internal suspend fun submitCreatorProfile(
             val source = Json.encodeToString(StoreReviewDocument.serializer(), StoreReviewDocument(1, updated))
             parseStoreReviews(source)
             mapOf(path to (source + "\n").encodeToByteArray())
-        } else {
-            val indexPath = if (theme == null) "catalog/creators/index.json" else "catalog/themes/index.json"
-            val indexFile = obj("$upstream/contents/$indexPath?ref=$baseSha")
-            val index = JSONObject(Base64.decode(indexFile.getString("content"), Base64.DEFAULT).decodeToString())
-            val indexKey = if (theme == null) "creators" else "themes"
-            val original = index.getJSONArray(indexKey)
-            val creators = JSONArray()
-            val updatedEntry = if (theme == null) JSONObject().put("githubId", id).put("profileSha256", submittedFiles.getValue(profilePath).sha256())
-            else JSONObject().put("themeId", theme.themeId).put("revision", theme.revision)
+        } else if (theme != null) {
+            val isV2 = theme.schemaVersion == 2
+            val path = if (isV2) ThemeCatalogV2Path else ThemeCatalogV1Path
+            val index = checkNotNull(readIndex(path))
+            val previous = index.themeEntry(theme.themeId) ?: if (isV2) {
+                checkNotNull(readIndex(ThemeCatalogV1Path)).themeEntry(theme.themeId)
+            } else {
+                null
+            }
+            check(theme.revision == (previous?.getInt("revision") ?: 0) + 1)
+            previous?.let { verifyPublishedTheme(it, theme.themeId) }
+            val updatedEntry = JSONObject().put("themeId", theme.themeId).put("revision", theme.revision)
                 .put("manifestSha256", submittedFiles.getValue(theme.directory + "manifest.json").sha256())
+            index.put("themes", index.themesWithout(theme.themeId).put(updatedEntry))
+            submittedFiles + (path to index.toDocumentBytes())
+        } else {
+            val path = "catalog/creators/index.json"
+            val index = checkNotNull(readIndex(path))
+            val original = index.getJSONArray("creators")
+            val creators = JSONArray()
+            val updatedEntry = JSONObject().put("githubId", id)
+                .put("profileSha256", submittedFiles.getValue(profilePath).sha256())
             var indexed = false
             for (position in 0 until original.length()) {
                 val entry = original.getJSONObject(position)
-                if (if (theme == null) entry.getLong("githubId") == id else entry.getString("themeId") == theme.themeId) {
-                    if (theme != null) {
-                        val revision = entry.getInt("revision")
-                        check(theme.revision == revision + 1)
-                        val manifest = obj("$upstream/contents/catalog/themes/${theme.themeId}/$revision/manifest.json?ref=$baseSha")
-                        val previous = JSONObject(Base64.decode(manifest.getString("content"), Base64.DEFAULT).decodeToString())
-                        check(previous.getJSONObject("author").getLong("githubId") == id)
-                    } else {
-                        creators.put(updatedEntry)
-                    }
+                if (entry.getLong("githubId") == id) {
+                    creators.put(updatedEntry)
                     indexed = true
                 } else {
                     creators.put(entry)
                 }
             }
-            if (!indexed) check(theme == null || theme.revision == 1)
-            if (theme != null || !indexed) creators.put(updatedEntry)
-            index.put(indexKey, creators)
-            submittedFiles + (indexPath to (index.toString(2) + "\n").encodeToByteArray())
+            if (!indexed) creators.put(updatedEntry)
+            index.put("creators", creators)
+            submittedFiles + (path to index.toDocumentBytes())
         }
         // Each submission replaces the generated branch with one commit on current main.
         val baseTree = latest.getJSONObject("commit").getJSONObject("tree").getString("sha")
@@ -549,3 +558,24 @@ private fun creatorProfilePullBody(before: JSONObject?, after: JSONObject): Stri
     if (changes.isEmpty()) return null
     return (listOf(if (before == null) "## New creator profile" else "## Creator profile update", "") + changes).joinToString("\n")
 }
+
+private fun JSONObject.themeEntry(themeId: String): JSONObject? {
+    val entries = getJSONArray("themes")
+    return (0 until entries.length())
+        .map(entries::getJSONObject)
+        .filter { it.getString("themeId") == themeId }
+        .also { check(it.size <= 1) }
+        .singleOrNull()
+}
+
+private fun JSONObject.themesWithout(themeId: String): JSONArray {
+    val entries = getJSONArray("themes")
+    val remaining = JSONArray()
+    for (position in 0 until entries.length()) {
+        val entry = entries.getJSONObject(position)
+        if (entry.getString("themeId") != themeId) remaining.put(entry)
+    }
+    return remaining
+}
+
+private fun JSONObject.toDocumentBytes(): ByteArray = (toString(2) + "\n").encodeToByteArray()
