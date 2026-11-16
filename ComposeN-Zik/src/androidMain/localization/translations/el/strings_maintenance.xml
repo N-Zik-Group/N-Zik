@@ -328,4 +328,14 @@
     <string name="recovery_theme_backup_operation_failed">Δεν ήταν δυνατή η ολοκλήρωση της λειτουργίας αντιγράφου ασφαλείας του θέματος.</string>
     <string name="recovery_theme_backup_restore_action">Επαναφορά θεμάτων</string>
     <string name="recovery_theme_backup_restore_description">Άνοιγμα του τελευταίου αντιγράφου ασφαλείας θέματος που χρησιμοποιήθηκε για αυτό το προφίλ.</string>
+    <string name="updates_status_and_last_check">%1$s · %2$s</string>
+    <string name="recovery_action_failed">Δεν ήταν δυνατή η ολοκλήρωση της ενέργειας αποκατάστασης.</string>
+    <string name="recovery_reopen_after_restoring_settings">Ανοίξτε ξανά το Κέντρο Διάσωσης μετά την επαναφορά των ρυθμίσεων.</string>
+    <string name="recovery_settings_file_empty">Το αρχείο ρυθμίσεων είναι κενό.</string>
+    <string name="recovery_profile_changed_during_import">Το επιλεγμένο προφίλ άλλαξε κατά την εισαγωγή ρυθμίσεων. Επιλέξτε το ξανά και προσπαθήστε ξανά.</string>
+    <string name="recovery_no_importable_settings">Το αρχείο δεν περιέχει ρυθμίσεις που μπορούν να εισαχθούν.</string>
+    <string name="recovery_finish_pending_profile_operation">Ολοκληρώστε πρώτα την επαναφορά του προφίλ που εκκρεμεί.</string>
+    <string name="recovery_no_database_to_reset">Δεν υπάρχει βάση δεδομένων για επαναφορά.</string>
+    <string name="updates_current_version_format">v%1$s</string>
+    <string name="updates_version_and_status">%1$s • %2$s</string>
 </resources>
