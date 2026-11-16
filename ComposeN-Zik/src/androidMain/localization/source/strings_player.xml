@@ -173,7 +173,6 @@
     <string name="player_action_play_next">Play next</string>
     <string name="player_action_previous">Previous</string>
     <string name="player_action_repeat">Repeat</string>
-    <string name="player_action_return_to_audio">Return to audio mode</string>
     <string name="player_action_seek_forward">Forward</string>
     <string name="player_action_seek_forward_30_seconds">Forward 30 seconds</string>
     <string name="player_action_seek_forward_5_seconds">Forward 5 seconds</string>
@@ -358,7 +357,6 @@
     <string name="player_mini_button_radio">Radio</string>
     <string name="player_mini_button_share">Share</string>
     <string name="player_mini_button_sleep_timer">Sleep timer</string>
-    <string name="player_mini_button_video">Video</string>
     <string name="player_mini_button_visualizer">Visualizer</string>
     <string name="player_mini_buttons_config">MiniPlayer buttons</string>
     <string name="player_mini_buttons_config_description">Configure the 4 buttons in the miniplayer</string>
@@ -413,4 +411,12 @@
     <string name="audio_output_usb_audio_label">USB audio</string>
     <string name="audio_output_external_speaker_label">External speaker</string>
     <string name="audio_output_load_failed">Failed to load devices: %1$s</string>
+    <string name="player_audio_mode">Audio</string>
+    <string name="player_video_mode">Video</string>
+    <string name="player_video_fullscreen">Enter fullscreen</string>
+    <string name="player_video_exit_fullscreen">Exit fullscreen</string>
+    <string name="player_video_unavailable">Couldn’t find a video</string>
+    <string name="player_video_search_manually">Search manually</string>
+    <string name="player_video_play">Play</string>
+    <string name="player_video_pause">Pause</string>
 </resources>

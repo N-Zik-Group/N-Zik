@@ -165,7 +165,6 @@
     <string name="player_action_play_next">Successivo</string>
     <string name="player_action_previous">Precedente</string>
     <string name="player_action_repeat">Ripeti</string>
-    <string name="player_action_return_to_audio">Ritorna alla modalità audio</string>
     <string name="player_action_seek_forward">Avanti</string>
     <string name="player_action_seek_forward_30_seconds">Avanti 30 secondi</string>
     <string name="player_action_seek_forward_5_seconds">Inoltra 5 secondi</string>
@@ -348,7 +347,6 @@
     <string name="player_mini_button_radio">Radio</string>
     <string name="player_mini_button_share">Condividi</string>
     <string name="player_mini_button_sleep_timer">Timer spegnimento</string>
-    <string name="player_mini_button_video">Video</string>
     <string name="player_mini_button_visualizer">Visualizzazione</string>
     <string name="player_mini_buttons_config">Pulsanti MiniPlayer</string>
     <string name="player_mini_buttons_config_description">Configura i 4 pulsanti nel miniplayer</string>

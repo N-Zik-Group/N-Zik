@@ -114,6 +114,7 @@ internal fun GlassNavigationTabs(
     drawContainer: Boolean = true,
     externalSurfaceBackdrop: Backdrop? = null,
     containerShape: Shape? = null,
+    dragSelectedTab: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     if (indices.isEmpty()) return
@@ -278,8 +279,8 @@ internal fun GlassNavigationTabs(
         }
         Box(
             slotPlacement
-                .then(if (motion) interactiveHighlight.gestureModifier else Modifier)
-                .then(animation.modifier)
+                .then(if (motion && dragSelectedTab) interactiveHighlight.gestureModifier else Modifier)
+                .then(if (dragSelectedTab) animation.modifier else Modifier)
                 .then(slotGrowth)
                 .then(if (optical) Modifier.drawBackdrop(
                     // The parent already contains its film; keep it beneath every press state.

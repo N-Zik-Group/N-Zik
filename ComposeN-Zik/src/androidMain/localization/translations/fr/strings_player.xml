@@ -165,7 +165,6 @@
     <string name="player_action_play_next">Musique suivante</string>
     <string name="player_action_previous">Précédent</string>
     <string name="player_action_repeat">Répéter</string>
-    <string name="player_action_return_to_audio">Revenir en mode audio</string>
     <string name="player_action_seek_forward">Transférer</string>
     <string name="player_action_seek_forward_30_seconds">Avancer 30 secondes</string>
     <string name="player_action_seek_forward_5_seconds">Avancer 5 secondes</string>
@@ -348,7 +347,6 @@
     <string name="player_mini_button_radio">Radio</string>
     <string name="player_mini_button_share">Partager</string>
     <string name="player_mini_button_sleep_timer">Minuteur de veille</string>
-    <string name="player_mini_button_video">Vidéo</string>
     <string name="player_mini_button_visualizer">Visualiseur</string>
     <string name="player_mini_buttons_config">Boutons du mini-lecteur</string>
     <string name="player_mini_buttons_config_description">Configurer les 4 boutons du mini-lecteur</string>

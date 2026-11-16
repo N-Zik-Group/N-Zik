@@ -335,7 +335,6 @@
     <string name="settings_player_action_bar_shuffle_visible_label">Zufallswiedergabe-Schaltfläche anzeigen</string>
     <string name="settings_player_action_bar_sleep_timer_visible_label">Schlaf-Timer Button anzeigen</string>
     <string name="settings_player_action_bar_transparent_background_label">Transparenter Hintergrund</string>
-    <string name="settings_player_action_bar_video_visible_label">Video-Schaltfläche anzeigen</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Visualizer Button</string>
     <string name="settings_player_action_restart_service">Player neu starten</string>
     <string name="settings_player_actions_spaced_evenly_label">Gleichmäßiger Abstand</string>

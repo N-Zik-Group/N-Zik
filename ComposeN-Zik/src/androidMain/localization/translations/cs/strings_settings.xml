@@ -335,7 +335,6 @@
     <string name="settings_player_action_bar_shuffle_visible_label">Zobrazit tlačítko Náhodně</string>
     <string name="settings_player_action_bar_sleep_timer_visible_label">Zobrazit tlačítko časovače spánku</string>
     <string name="settings_player_action_bar_transparent_background_label">Průhledné pozadí</string>
-    <string name="settings_player_action_bar_video_visible_label">Zobrazit tlačítko video</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Tlačítko vizualizace</string>
     <string name="settings_player_action_restart_service">Restartovat přehrávač</string>
     <string name="settings_player_actions_spaced_evenly_label">Rovnoměrné rozložení</string>

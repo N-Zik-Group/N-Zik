@@ -335,7 +335,6 @@
     <string name="settings_player_action_bar_shuffle_visible_label">Shuffle button</string>
     <string name="settings_player_action_bar_sleep_timer_visible_label">Sleep Timer button</string>
     <string name="settings_player_action_bar_transparent_background_label">Transparent background</string>
-    <string name="settings_player_action_bar_video_visible_label">Monstrar le button de video</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Visualizer button</string>
     <string name="settings_player_action_restart_service">Restart player</string>
     <string name="settings_player_actions_spaced_evenly_label">Spaced evenly</string>

@@ -335,7 +335,6 @@
     <string name="settings_player_action_bar_shuffle_visible_label">Shuffle button</string>
     <string name="settings_player_action_bar_sleep_timer_visible_label">Uniajastin painike</string>
     <string name="settings_player_action_bar_transparent_background_label">Läpinäkyvä tausta</string>
-    <string name="settings_player_action_bar_video_visible_label">Näytä Video -nappi</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Visualisoijan painike</string>
     <string name="settings_player_action_restart_service">Käynnistä uudelleen</string>
     <string name="settings_player_actions_spaced_evenly_label">Tasainen väli</string>

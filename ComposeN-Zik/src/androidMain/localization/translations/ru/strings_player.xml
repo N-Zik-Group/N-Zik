@@ -165,7 +165,6 @@
     <string name="player_action_play_next">Играть следующим</string>
     <string name="player_action_previous">Предыдущий</string>
     <string name="player_action_repeat">Повторить</string>
-    <string name="player_action_return_to_audio">Вернуться в аудиорежим</string>
     <string name="player_action_seek_forward">Вперёд</string>
     <string name="player_action_seek_forward_30_seconds">Переслать на 30 секунд</string>
     <string name="player_action_seek_forward_5_seconds">Переслать на 5 секунд</string>
@@ -348,7 +347,6 @@
     <string name="player_mini_button_radio">Радио</string>
     <string name="player_mini_button_share">Поделиться</string>
     <string name="player_mini_button_sleep_timer">Таймер сна</string>
-    <string name="player_mini_button_video">Видео</string>
     <string name="player_mini_button_visualizer">Визуализация</string>
     <string name="player_mini_buttons_config">Кнопки MiniPlayer</string>
     <string name="player_mini_buttons_config_description">Настроить 4 кнопки в мини-плеере</string>

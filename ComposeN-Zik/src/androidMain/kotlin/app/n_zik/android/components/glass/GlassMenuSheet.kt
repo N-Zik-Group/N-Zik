@@ -46,9 +46,11 @@ internal fun GlassMenuSheet(
     showSheet: Boolean,
     onDismissRequest: () -> Unit,
     sheetState: SheetState,
+    expandOnShow: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) = SharedGlassMenuSheet(
-    showSheet, onDismissRequest, sheetState, partiallyExpanded = true, content = content,
+    showSheet, onDismissRequest, sheetState, partiallyExpanded = true,
+    expandOnShow = expandOnShow, content = content,
 )
 
 /** Also hosts short form sheets, reserving their IME insets inside the modal viewport. */
@@ -65,6 +67,7 @@ internal fun SharedGlassMenuSheet(
     shape: Shape = topUiRoundnessShape(),
     dragHandle: @Composable (() -> Unit)? = null,
     contentWindowInsets: @Composable () -> WindowInsets = { WindowInsets(0) },
+    expandOnShow: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val sheetShape = remember(shape) { straightBottomMenuShape(shape) }
@@ -100,7 +103,7 @@ internal fun SharedGlassMenuSheet(
                 // scaffold to measure an actual expanded anchor before starting its motion.
                 snapshotFlow { sheetState.hasExpandedState }.first { it }
                 awaitingShow = false
-                sheetState.show()
+                if (expandOnShow) sheetState.expand() else sheetState.show()
             } else {
                 sheetState.hide()
                 // confirmValueChange may veto Hidden. Keep both the sheet and its scrim mounted.

@@ -1,7 +1,6 @@
 package app.n_zik.android.themed.n_zik.screen.player
 
 import app.n_zik.android.utils.effectRotationDefault
-import app.n_zik.android.utils.showButtonPlayerVideoDefault
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.core.network.OfflineMode
@@ -136,7 +135,6 @@ import app.n_zik.android.utils.showButtonPlayerShuffleKey
 import app.n_zik.android.utils.showButtonPlayerSleepTimerKey
 import app.n_zik.android.utils.showButtonPlayerStartRadioKey
 import app.n_zik.android.utils.showButtonPlayerSystemEqualizerKey
-import app.n_zik.android.utils.showButtonPlayerVideoKey
 import app.n_zik.android.utils.showNextSongsInPlayerKey
 import app.n_zik.android.utils.showalbumcoverKey
 import app.n_zik.android.utils.showlyricsthumbnailKey
@@ -179,7 +177,6 @@ private class PagerViewPort(
 fun BoxScope.ActionBar(
     navController: NavController,
     showQueueState: MutableState<Boolean>,
-    showSearchEntityState: MutableState<Boolean>,
     rotateState: MutableState<Boolean>,
     showVisualizerState: MutableState<Boolean>,
     showSleepTimerState: MutableState<Boolean>,
@@ -220,7 +217,7 @@ fun BoxScope.ActionBar(
     val guestLockAlpha = guestLockedAlpha(ltGuestLocked)
 
     // Full offline mode (spec-full-offline-mode): the network player actions
-    // (video search, discover, download, radio) are removed from the layout.
+    // (discover, download, radio) are removed from the layout.
     val offlineMode by OfflineMode.rememberEnabled()
     val actionToolbarLayout = rememberPlayerActionToolbarLayout()
     val actionToolbarGlass = rememberGlassSettings()
@@ -481,28 +478,6 @@ fun BoxScope.ActionBar(
             val playerActions = mutableListOf<PlayerActionSlot>()
             buttonOrder.forEach { buttonId ->
                 when (buttonId) {
-                    "video" -> {
-                        val showButtonPlayerVideo by rememberPreference( showButtonPlayerVideoKey, showButtonPlayerVideoDefault )
-                        if (showButtonPlayerVideo && !offlineMode)
-                            playerActions.add(PlayerActionSlot(buttonId) {
-                                PlayerActionIcon(
-                                    icon = R.drawable.video,
-                                    color = if (ltGuestLocked) colorPalette().textDisabled else colorPalette().accent,
-                                    // Guest lock: the video button pauses playback and opens the
-                                    // video overlay — a playback-affecting control owned by the
-
-                                    // host, grayed for a guest.
-                                    enabled = !ltGuestLocked,
-                                    onClick = {
-                                        if (!ltGuestLocked) {
-                                            if (binder == null) player.pause() else binder.gracefulPause()
-                                            showSearchEntityState.value = true
-                                        }
-                                    },
-                                    modifier = Modifier.size( 24.dp ).alpha(guestLockAlpha)
-                                )
-                            })
-                    }
                     "discover" -> {
                         val showButtonPlayerDiscover by rememberPreference( showButtonPlayerDiscoverKey, false )
                         val isAutoFillEnabled by rememberPreference(autoLoadSongsInQueueKey, true)
@@ -837,7 +812,7 @@ fun BoxScope.ActionBar(
 
 
 private val defaultPlayerActionBarOrder = listOf(
-    "video", "discover", "download", "add_to_playlist", "loop", "shuffle", "lyrics", "visualizer",
+    "discover", "download", "add_to_playlist", "loop", "shuffle", "lyrics", "visualizer",
     "expanded_player", "sleep_timer", "equalizer", "arrow", "start_radio", "menu",
 )
 

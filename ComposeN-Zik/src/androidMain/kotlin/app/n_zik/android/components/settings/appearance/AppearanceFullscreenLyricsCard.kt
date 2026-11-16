@@ -28,7 +28,6 @@ import app.n_zik.android.utils.showButtonPlayerMenuKey
 import app.n_zik.android.utils.showButtonPlayerShuffleKey
 import app.n_zik.android.utils.showButtonPlayerSleepTimerKey
 import app.n_zik.android.utils.showButtonPlayerSystemEqualizerKey
-import app.n_zik.android.utils.showButtonPlayerVideoKey
 import app.n_zik.android.utils.showNextSongsInPlayerKey
 import app.n_zik.android.utils.showTotalTimeQueueKey
 import app.n_zik.android.utils.showlyricsthumbnailKey
@@ -63,7 +62,6 @@ internal fun AppearanceFullscreenLyricsCard(search: Search) {
         false
     )
     var showButtonPlayerDiscover by rememberPreference(showButtonPlayerDiscoverKey, false)
-    var showButtonPlayerVideo by rememberPreference(showButtonPlayerVideoKey, true)
     var showTotalTimeQueue by rememberPreference(showTotalTimeQueueKey, true)
     var showNextSongsInPlayer by rememberPreference(showNextSongsInPlayerKey, false)
     var statsfornerds by rememberPreference(statsfornerdsKey, false)
@@ -185,8 +183,7 @@ AnimatedVisibility(
                     showButtonPlayerArrow ||
                     showButtonPlayerMenu ||
                     expandedplayertoggle ||
-                    showButtonPlayerDiscover ||
-                    showButtonPlayerVideo
+                    showButtonPlayerDiscover
                 ){
                     if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_action_bar_visible_label).contains(
                             search.inputValue,

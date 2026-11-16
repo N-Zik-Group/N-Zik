@@ -346,7 +346,6 @@
     <string name="settings_player_action_bar_shuffle_visible_label">Shuffle button</string>
     <string name="settings_player_action_bar_sleep_timer_visible_label">Sleep Timer button</string>
     <string name="settings_player_action_bar_transparent_background_label">Transparent background</string>
-    <string name="settings_player_action_bar_video_visible_label">Show video button</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Visualizer button</string>
     <string name="settings_player_action_restart_service">Restart player</string>
     <string name="settings_player_actions_spaced_evenly_label">Spaced evenly</string>
@@ -410,6 +409,9 @@
     <string name="settings_player_timeline_label">Timeline</string>
     <string name="settings_player_timeline_size_label">Player Timeline Size</string>
     <string name="settings_player_timeline_transparent_label">Transparent Timeline Bar</string>
+    <string name="settings_player_opening_mode_label">Player opening mode</string>
+    <string name="settings_player_opening_mode_description">Choose the mode to use when you open the player.</string>
+    <string name="settings_player_opening_mode_remember_last">Remember last mode</string>
     <string name="settings_player_top_action_bar_visible_label">Show top actions bar</string>
     <string name="settings_player_vertical_swipe_expansion_description">It affects only when the Expanded Player is off</string>
     <string name="settings_preference_saved_message">Preference Saved</string>

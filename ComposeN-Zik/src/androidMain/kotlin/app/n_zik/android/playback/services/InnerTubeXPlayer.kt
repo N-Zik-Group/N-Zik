@@ -54,6 +54,17 @@ object InnerTubeXPlayer {
 
     suspend fun prewarm() = bundle().extractor.prewarm()
 
+    /** Resolves a direct video stream independently of the current audio source. */
+    internal suspend fun extractPlayerVideo(videoId: String, isExplicit: Boolean): ExtractedStream? =
+        bundle().extractor.extract(
+            videoId = videoId,
+            hints = ContentHints(
+                isExplicit = isExplicit,
+                wantVideo = true,
+                maxVideoHeight = 720,
+            ).withStreamCapabilities(allowHls = false, allowSabr = false, allowBoundedRange = false),
+        )
+
     /**
      * Resolves a playable audio stream for the given video ID.
      *

@@ -22,7 +22,6 @@ import app.n_zik.android.utils.showButtonPlayerShuffleKey
 import app.n_zik.android.utils.showButtonPlayerSleepTimerKey
 import app.n_zik.android.utils.showButtonPlayerStartRadioKey
 import app.n_zik.android.utils.showButtonPlayerSystemEqualizerKey
-import app.n_zik.android.utils.showButtonPlayerVideoKey
 import app.n_zik.android.utils.expandedplayertoggleKey
 import app.n_zik.android.utils.visualizerEnabledKey
 import app.n_zik.android.utils.playerActionBarButtonOrderKey
@@ -35,7 +34,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 import android.content.Context
 
 private val defaultButtonOrder = listOf(
-    "video", "start_radio", "discover", "download", "add_to_playlist",
+    "start_radio", "discover", "download", "add_to_playlist",
     "shuffle", "loop", "lyrics", "visualizer", "expanded_player",
     "sleep_timer", "equalizer", "arrow", "menu"
 )
@@ -51,7 +50,6 @@ private data class ButtonDef(
 )
 
 private fun buildButtonDefs(): Map<String, ButtonDef> = mapOf(
-    "video" to ButtonDef("video", showButtonPlayerVideoKey, R.drawable.video, R.string.settings_player_action_bar_video_visible_label, true),
     "discover" to ButtonDef("discover", showButtonPlayerDiscoverKey, R.drawable.discover, R.string.settings_player_action_bar_discover_visible_label, false),
     "download" to ButtonDef("download", showButtonPlayerDownloadKey, R.drawable.download, R.string.settings_player_action_bar_download_visible_label, true),
     "add_to_playlist" to ButtonDef("add_to_playlist", showButtonPlayerAddToPlaylistKey, R.drawable.add_in_playlist, R.string.settings_player_action_bar_playlist_add_visible_label, true),

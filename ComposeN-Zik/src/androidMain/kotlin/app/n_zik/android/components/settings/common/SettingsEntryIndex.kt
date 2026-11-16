@@ -130,6 +130,12 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget("appearance.player_behavior_and_visuals.player_rotating_buttons", 2, R.string.player_behavior_and_visuals, R.string.player_rotating_buttons, listOf(R.string.player_enable_rotation_buttons)),
     SettingsEntryTarget("appearance.player_behavior_and_visuals.background_progress_bar", 2, R.string.player_behavior_and_visuals, R.string.settings_player_background_progress_label),
     SettingsEntryTarget("appearance.player_behavior_and_visuals.visualizer", 2, R.string.player_behavior_and_visuals, R.string.visualizer_title),
+    SettingsEntryTarget(
+        "appearance.player_behavior_and_visuals.opening_mode", 2, R.string.player_behavior_and_visuals,
+        R.string.settings_player_opening_mode_label,
+        listOf(R.string.settings_player_opening_mode_description, R.string.settings_player_opening_mode_remember_last,
+            R.string.player_audio_mode, R.string.player_video_mode),
+    ),
     SettingsEntryTarget("appearance.player_behavior_and_visuals.save_visualizer_state", 2, R.string.player_behavior_and_visuals, R.string.settings_visualizer_remember_state_label, listOf(R.string.settings_visualizer_remember_state_description)),
     SettingsEntryTarget("appearance.player_behavior_and_visuals.visualizer_white_color_option", 2, R.string.player_behavior_and_visuals, R.string.visualizer_color_source),
     SettingsEntryTarget("appearance.player_behavior_and_visuals.visualizer_line_thickness", 2, R.string.player_behavior_and_visuals, R.string.visualizer_line_thickness),

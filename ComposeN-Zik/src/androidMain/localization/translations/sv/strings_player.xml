@@ -165,7 +165,6 @@
     <string name="player_action_play_next">Spela nästa</string>
     <string name="player_action_previous">Föregående</string>
     <string name="player_action_repeat">Upprepa</string>
-    <string name="player_action_return_to_audio">Återgå till ljudläge</string>
     <string name="player_action_seek_forward">Framåt</string>
     <string name="player_action_seek_forward_30_seconds">Framåt 30 sekunder</string>
     <string name="player_action_seek_forward_5_seconds">Vidarebefordra 5 sekunder</string>
@@ -348,7 +347,6 @@
     <string name="player_mini_button_radio">Radio</string>
     <string name="player_mini_button_share">Dela</string>
     <string name="player_mini_button_sleep_timer">Sov timer</string>
-    <string name="player_mini_button_video">Video</string>
     <string name="player_mini_button_visualizer">Visualizer</string>
     <string name="player_mini_buttons_config">MiniPlayer knappar</string>
     <string name="player_mini_buttons_config_description">Konfigurera de 4 knapparna i minispelaren</string>

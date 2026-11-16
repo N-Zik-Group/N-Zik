@@ -47,6 +47,7 @@ fun GetControls(
     onBlurScaleChange: (Float) -> Unit,
     dynamicColorPalette: ColorPalette,
     timelineHorizontalInset: Dp = 0.dp,
+    installMedleyEffect: Boolean = true,
 ) {
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     val playerPlayButtonType by rememberPreference(
@@ -85,7 +86,7 @@ fun GetControls(
     }
 
 
-        if (binder != null) MedleyMode(
+        if (installMedleyEffect && binder != null) MedleyMode(
             binder = binder,
             seconds = if (playbackDuration < 1f) 0 else playbackDuration.roundToInt()
         )

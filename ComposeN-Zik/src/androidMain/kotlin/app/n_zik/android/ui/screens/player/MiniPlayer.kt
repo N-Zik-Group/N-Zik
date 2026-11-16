@@ -171,7 +171,6 @@ import app.n_zik.android.utils.showMiniPlayerSleepTimerKey
 import app.n_zik.android.utils.showMiniPlayerLyricsKey
 import app.n_zik.android.utils.showMiniPlayerVisualizerKey
 import app.n_zik.android.utils.showMiniPlayerQueueKey
-import app.n_zik.android.utils.showMiniPlayerVideoKey
 import app.n_zik.android.utils.showMiniPlayerDiscoverKey
 import app.n_zik.android.utils.shuffleQueue
 import app.n_zik.android.utils.positionAndDurationState
@@ -321,7 +320,7 @@ fun MiniPlayer(
         "skip_back", "play_pause", "skip_forward", 
         "shuffle", "repeat", "queue", "audio_output", "sleep_timer", 
         "like", "add_to_playlist", "download", "share", 
-        "radio", "discover", "lyrics", "visualizer", "video"
+        "radio", "discover", "lyrics", "visualizer"
     )
 
     fun parseMiniPlayerOrder(serialized: String): List<String> {
@@ -359,7 +358,6 @@ fun MiniPlayer(
         "lyrics" to MiniPlayerButton.Lyrics,
         "visualizer" to MiniPlayerButton.Visualizer,
         "queue" to MiniPlayerButton.Queue,
-        "video" to MiniPlayerButton.Video,
         "discover" to MiniPlayerButton.Discover,
     )
 
@@ -381,9 +379,8 @@ fun MiniPlayer(
     val toggleLyrics by rememberPreference(showMiniPlayerLyricsKey, false)
     val toggleVisualizer by rememberPreference(showMiniPlayerVisualizerKey, false)
     val toggleQueue by rememberPreference(showMiniPlayerQueueKey, false)
-    val toggleVideo by rememberPreference(showMiniPlayerVideoKey, false)
     val toggleDiscover by rememberPreference(showMiniPlayerDiscoverKey, false)
-    val toggleMap = remember(togglePlayPause, toggleSkipBack, toggleSkipForward, toggleShuffle, toggleRepeat, toggleLike, toggleAddToPlaylist, toggleDownload, toggleShare, toggleRadio, toggleAudioOutput, toggleSleepTimer, toggleLyrics, toggleVisualizer, toggleQueue, toggleVideo, toggleDiscover) {
+    val toggleMap = remember(togglePlayPause, toggleSkipBack, toggleSkipForward, toggleShuffle, toggleRepeat, toggleLike, toggleAddToPlaylist, toggleDownload, toggleShare, toggleRadio, toggleAudioOutput, toggleSleepTimer, toggleLyrics, toggleVisualizer, toggleQueue, toggleDiscover) {
         mapOf(
             "play_pause" to togglePlayPause,
             "skip_back" to toggleSkipBack,
@@ -400,7 +397,6 @@ fun MiniPlayer(
             "lyrics" to toggleLyrics,
             "visualizer" to toggleVisualizer,
             "queue" to toggleQueue,
-            "video" to toggleVideo,
             "discover" to toggleDiscover,
         )
     }
@@ -1290,25 +1286,6 @@ private fun MiniPlayerSlotButton(
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
                 rotationAngle = rotationAngle
-            )
-        }
-        MiniPlayerButton.Video -> {
-            GlassMiniPlayerIconButton(
-                contentDescription = stringResource(button.labelRes),
-                preserveNativeGeometry = true,
-                icon = R.drawable.video,
-                color = if (listenTogetherGuestLock) colorPalette().textDisabled else controlsColorText,
-                // Guest lock: the video button pauses playback and opens the video overlay —
-                // a playback-affecting control owned by the host, grayed for a guest.
-                enabled = !listenTogetherGuestLock,
-                onClick = {
-                    if (listenTogetherGuestLock) return@GlassMiniPlayerIconButton
-                    pendingAction?.value = PendingMiniPlayerAction.Video
-                    onShowPlayer()
-                    if (effectRotationEnabled) onRotatedChange(!isRotated)
-                },
-                rotationAngle = rotationAngle,
-                alpha = guestLockAlpha
             )
         }
         MiniPlayerButton.Discover -> {

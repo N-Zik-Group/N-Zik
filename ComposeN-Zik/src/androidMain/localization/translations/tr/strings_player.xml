@@ -165,7 +165,6 @@
     <string name="player_action_play_next">Sonrakini çal</string>
     <string name="player_action_previous">Önceki</string>
     <string name="player_action_repeat">Tekrarla</string>
-    <string name="player_action_return_to_audio">Ses moduna geri dön</string>
     <string name="player_action_seek_forward">İleri</string>
     <string name="player_action_seek_forward_30_seconds">30 saniye ileri sar</string>
     <string name="player_action_seek_forward_5_seconds">5 saniye ileri sar</string>
@@ -348,7 +347,6 @@
     <string name="player_mini_button_radio">Radyo</string>
     <string name="player_mini_button_share">Paylaş</string>
     <string name="player_mini_button_sleep_timer">Uyku zamanlayıcısı</string>
-    <string name="player_mini_button_video">Video</string>
     <string name="player_mini_button_visualizer">Görselleştirme</string>
     <string name="player_mini_buttons_config">Mini Oynatıcı düğmeleri</string>
     <string name="player_mini_buttons_config_description">Mini oynatıcıdaki 4 düğmeyi yapılandırın</string>

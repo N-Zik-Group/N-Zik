@@ -1,5 +1,11 @@
 package app.n_zik.android
 
+import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.playback.services.canResolvePlayerVideo
+import app.n_zik.android.ui.screens.player.components.LocalPlayerMusicVideo
+import app.n_zik.android.ui.screens.player.components.MusicVideoPresentation
+import app.n_zik.android.ui.screens.player.components.ManualVideoSearchSheet
+import app.n_zik.android.ui.screens.player.components.rememberPlayerMusicVideo
 import app.n_zik.android.core.settings.ensurePlayerBehaviorDefaults
 import app.n_zik.android.core.settings.ensureDefaultColorPaletteMode
 import app.n_zik.android.core.settings.readProxyPort
@@ -115,6 +121,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -131,7 +138,6 @@ import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import app.n_zik.android.components.settings.appearance.preview.ThemeStoreAlertWorker
@@ -204,7 +210,6 @@ import app.n_zik.android.ui.components.themed.CrossfadeContainer
 import app.n_zik.android.components.navigation.AppNavigation
 import app.n_zik.android.ui.screens.player.MiniPlayer
 import app.n_zik.android.ui.screens.player.Player
-import app.n_zik.android.ui.screens.player.components.YoutubePlayer
 import app.n_zik.android.ui.screens.player.PlayerSheetState
 import app.n_zik.android.ui.screens.player.rememberPlayerSheetState
 import app.n_zik.android.components.CustomBottomSheet
@@ -241,7 +246,6 @@ import app.n_zik.android.components.player.PaletteFade
 import app.n_zik.android.components.player.presentMiniplayerThenExpand
 import app.n_zik.android.components.player.presentMiniplayerCollapsed
 import app.n_zik.android.components.theme.AppearanceMenuSheet
-import app.n_zik.android.components.theme.AppearanceVideoSheet
 import app.n_zik.android.components.theme.ProvideAnimatedAppearance
 import app.n_zik.android.components.theme.DynamicAppearanceOwner
 import app.n_zik.android.components.theme.DynamicPaletteArtworkListener
@@ -310,7 +314,6 @@ import app.n_zik.android.utils.isAtLeastAndroid8
 import app.n_zik.android.utils.isKeepScreenOnEnabledKey
 import app.n_zik.android.utils.isProxyEnabledKey
 import app.n_zik.android.utils.isValidIP
-import app.n_zik.android.utils.isVideo
 import app.n_zik.android.utils.keepPlayerMinimizedKey
 import app.n_zik.android.utils.languageAppKey
 import app.n_zik.android.utils.miniPlayerTypeKey
@@ -332,7 +335,7 @@ import app.n_zik.android.utils.restartActivityKey
 import app.n_zik.android.utils.hideStatusBarKey
 import app.n_zik.android.utils.saveProfileLastUsed
 import app.n_zik.android.utils.setDefaultPalette
-import app.n_zik.android.utils.showButtonPlayerVideoKey
+import app.n_zik.android.utils.REQUEST_INLINE_VIDEO
 import app.n_zik.android.utils.showSearchTabKey
 import app.n_zik.android.utils.showTotalTimeQueueKey
 import app.n_zik.android.core.coil.resize
@@ -1172,7 +1175,6 @@ class MainActivity :
             }
             // Issue #881 (gh-881): tolerant saver — a positional saveable shift (foreign payload)
             // must restore to the default instead of throwing (spec M5).
-            var showPlayer by rememberSaveable(saver = TolerantBoolStateSaver("main.showPlayer")) { mutableStateOf(false) }
             var showQueueOverlay by rememberSaveable(saver = TolerantBoolStateSaver("main.showQueueOverlay")) { mutableStateOf(false) }
             val queueInterceptor = remember(navController) {
                 MiniPlayerQueueInterceptor(navController) { showQueueOverlay = true }
@@ -1182,7 +1184,6 @@ class MainActivity :
                 onDispose { queueInterceptor.detach() }
             }
             // Issue #881 (gh-881): tolerant saver (spec M5).
-            var switchToAudioPlayer by rememberSaveable(saver = TolerantBoolStateSaver("main.switchToAudioPlayer")) { mutableStateOf(false) }
             val pendingMiniPlayerAction = remember { mutableStateOf<PendingMiniPlayerAction?>(null) }
             // Issue #881 (gh-881): tolerant savers (spec M5).
             val isShowingLyrics = rememberSaveable(saver = TolerantBoolStateSaver("main.isShowingLyrics")) { mutableStateOf(false) }
@@ -1604,7 +1605,7 @@ class MainActivity :
             val isPlayerSheetExpanded = remember { mutableStateOf(false) }
 
             // Opening the player must restore the hidden bars: while the player is open
-            // the scroll-hide re-show is disabled (showPlayer guard), so hidden bars would
+            // the scroll-hide re-show is disabled, so hidden bars would
 //
             // otherwise stay hidden forever and the player container would keep its offset,
             // leaving an unrecoverable UI state (player mis-positioned, no nav bars).
@@ -1957,9 +1958,6 @@ class MainActivity :
                 )
 
                 // Keep the scroll-hide guard in sync with the sheet's real on-screen state.
-                // showPlayer alone is not enough: it stays true after a back-collapsed
-//
-                // player, which would permanently block re-hiding the bars while music plays.
                 LaunchedEffect(playerSheetState) {
                     snapshotFlow { playerSheetState.progress > 0.01f }
                         .distinctUntilChanged()
@@ -2079,7 +2077,6 @@ class MainActivity :
                     if (onboardingStep != null) return@LaunchedEffect
                     if (openPlayerFromNotificationWarm) {
                         openPlayerFromNotificationWarm = false
-                        showPlayer = true
                         // Anti-flicker: a sheet already above the expanded bound is left alone
                         // (a tap while the full player is open must not cause a visible
 //
@@ -2138,10 +2135,21 @@ class MainActivity :
                     triggerSamsungStorageAdvice(applicationContext)
                 }
 
+                        val offlineMode by OfflineMode.rememberEnabled()
+                        val videoSession = rememberPlayerMusicVideo(
+                            audio = binder?.player,
+                            expanded = playerSheetState.isExpanded,
+                            collapsed = playerSheetState.isCollapsed || playerSheetState.isDismissed,
+                            inPip = pipState.value,
+                            enabled = !offlineMode,
+                        )
+                        Box(Modifier.fillMaxSize()) {
                         CrossfadeContainer(state = pipState.value) { isCurrentInPip ->
                             Timber.tag("MainActivity").d("pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
                             val pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
-                    if (isCurrentInPip) {
+                    if (isCurrentInPip && videoSession.selected) {
+                        MusicVideoPresentation(videoSession, binder?.player, inPip = true)
+                    } else if (isCurrentInPip) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -2172,6 +2180,7 @@ class MainActivity :
                             LocalRippleConfiguration provides rippleConfiguration,
                             LocalShimmerTheme provides shimmerTheme,
                             LocalPlayerServiceBinder provides binder,
+                            LocalPlayerMusicVideo provides videoSession.takeUnless { pipState.value },
                             LocalFloatingDock provides pageDock,
                             app.n_zik.android.components.navigation.LocalSideRailScrollOrigin provides sideRailScrollOrigin,
                             LocalHomeTopMiniPlayerAnchor provides homeTopMiniAnchor,
@@ -2416,8 +2425,6 @@ class MainActivity :
                                             onDismiss = {
                                                 binder?.stopRadio()
                                                 binder?.player?.clearMediaItems()
-                                                showPlayer = false
-                                                switchToAudioPlayer = false
                                                 runCatching {
                                                     this@MainActivity.stopService(this@MainActivity.intent<app.n_zik.android.playback.services.PlayerServiceModern>())
                                                 }
@@ -2481,13 +2488,11 @@ class MainActivity :
                                                     )) {
                                                 MiniPlayer(
                                                     showPlayer = {
-                                                        showPlayer = true
                                                         playerSheetState.expandSoft()
                                                     },
                                                     hidePlayer = {
                                                         coroutineScope.launch {
                                                             playerSheetState.hide()
-                                                            showPlayer = false
                                                         }
                                                     },
                                                     navController = navController
@@ -2499,8 +2504,6 @@ class MainActivity :
                                             Player(navController) {
                                                 coroutineScope.launch {
                                                     playerSheetState.hide()
-                                                    showPlayer = false
-                                                    switchToAudioPlayer = false
                                                 }
                                             }
                                         }
@@ -2517,31 +2520,10 @@ class MainActivity :
                             )
                             })
 
-                            val isVideo = binder?.player?.currentMediaItem?.isVideo ?: false
-                            val isVideoEnabled =
-                                preferences.getBoolean(showButtonPlayerVideoKey, true)
-
-                            val youtubePlayer: @Composable () -> Unit = {
-                                binder?.player?.currentMediaItem?.mediaId?.let {
-                                    YoutubePlayer(
-                                        ytVideoId = it,
-                                        lifecycleOwner = LocalLifecycleOwner.current,
-                                        onCurrentSecond = {},
-                                        showPlayer = showPlayer,
-                                        onSwitchToAudioPlayer = {
-                                            showPlayer = false
-                                            switchToAudioPlayer = true
-                                        }
-                                    )
-                                }
-                            }
-
-                            AppearanceVideoSheet(
-                                showSheet = isVideo && isVideoEnabled && showPlayer,
-                                onDismissRequest = { showPlayer = false },
-                            ) {
-                                youtubePlayer()
-                            }
+                            ManualVideoSearchSheet(
+                                query = videoSession.manualSearchQuery.takeUnless { pipState.value },
+                                onDismiss = { videoSession.manualSearchQuery = null },
+                            )
 
                             val menuState = LocalMenuState.current
                             val menuSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
@@ -2594,6 +2576,14 @@ class MainActivity :
 
                         }
 
+                        if (videoSession.selected && videoSession.fullscreen && !pipState.value) {
+                            Box(Modifier.fillMaxSize().zIndex(1f)) {
+                                CompositionLocalProvider(LocalPlayerServiceBinder provides binder) {
+                                    MusicVideoPresentation(videoSession, binder?.player, inPip = false)
+                                }
+                            }
+                        }
+                        }
                 }
                 // Issue #881 (gh-881): tolerant saver — this slot lives in the BoxWithConstraints
                 // sub-composition, the exact spot where the 15:23:55 CCE crashed (spec M5).
@@ -2638,7 +2628,6 @@ class MainActivity :
                             // (a deliberate tap, distinct from the widget/historical
 //
                             // cold start that honors the setting).
-                            showPlayer = true
                             // Anti-flicker: a sheet already above the expanded bound is left
                             // alone (no visible collapse→expand on a tap while the full player
 //
@@ -2653,29 +2642,13 @@ class MainActivity :
 
                     if (!isPlayerInitialized) {
                         isPlayerInitialized = true
-                        if (player.currentMediaItem == null) {
-                            if (playerSheetState.isVisible) {
-                                showPlayer = false
-                            }
-                        } else if (deployedNow) {
-                            // The deployment above owns the presentation: the default collapsed
-                            // presentation must NOT run in the same effect run (it would undo
-//
-                            // the deployment).
-                        } else if (launchedFromNotification) {
-                            intent.replaceExtras(Bundle())
-                            if (preferences.getBoolean(keepPlayerMinimizedKey, true)) {
-                                showPlayer = false
-                                // Collapsed position; pops with a fade when coming from the dismissed zone
-                                playerSheetState.presentMiniplayerCollapsed()
-                            } else {
-                                showPlayer = true
+                        if (player.currentMediaItem != null && !deployedNow) {
+                            if (launchedFromNotification) intent.replaceExtras(Bundle())
+                            if (launchedFromNotification && !preferences.getBoolean(keepPlayerMinimizedKey, true)) {
                                 coroutineScope.presentMiniplayerThenExpand(playerSheetState, onPresent = { restoreHiddenBars() })
+                            } else {
+                                playerSheetState.presentMiniplayerCollapsed()
                             }
-                        } else {
-                            showPlayer = false
-                            // Collapsed position; pops with a fade when coming from the dismissed zone
-                            playerSheetState.presentMiniplayerCollapsed()
                         }
                     }
 
@@ -2683,12 +2656,12 @@ class MainActivity :
                         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
                                 if (mediaItem.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
-                                    if (preferences.getBoolean(keepPlayerMinimizedKey, true)) {
-                                        showPlayer = false
+                                    val explicitVideo = mediaItem.mediaMetadata.extras?.getBoolean(REQUEST_INLINE_VIDEO) == true &&
+                                        !OfflineMode.enabled(this@MainActivity) && canResolvePlayerVideo(mediaItem)
+                                    if (!explicitVideo && preferences.getBoolean(keepPlayerMinimizedKey, true)) {
                                         // Collapsed position; pops with a fade when coming from the dismissed zone
                                         playerSheetState.presentMiniplayerCollapsed()
                                     } else {
-                                        showPlayer = true
                                         coroutineScope.presentMiniplayerThenExpand(playerSheetState, onPresent = { restoreHiddenBars() })
                                     }
                                 }

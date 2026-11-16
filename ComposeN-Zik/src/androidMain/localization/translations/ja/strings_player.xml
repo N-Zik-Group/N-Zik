@@ -165,7 +165,6 @@
     <string name="player_action_play_next">次に再生</string>
     <string name="player_action_previous">前</string>
     <string name="player_action_repeat">繰り返す</string>
-    <string name="player_action_return_to_audio">音声モードに戻る</string>
     <string name="player_action_seek_forward">転送</string>
     <string name="player_action_seek_forward_30_seconds">30秒前に進む</string>
     <string name="player_action_seek_forward_5_seconds">5秒転送</string>
@@ -348,7 +347,6 @@
     <string name="player_mini_button_radio">ラジオ</string>
     <string name="player_mini_button_share">共有</string>
     <string name="player_mini_button_sleep_timer">スリープタイマー</string>
-    <string name="player_mini_button_video">ビデオ</string>
     <string name="player_mini_button_visualizer">ビジュアライザー</string>
     <string name="player_mini_buttons_config">MiniPlayer ボタン</string>
     <string name="player_mini_buttons_config_description">ミニプレーヤーの4つのボタンを設定する</string>

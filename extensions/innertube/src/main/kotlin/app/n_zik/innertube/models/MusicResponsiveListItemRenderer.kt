@@ -16,7 +16,8 @@ data class MusicResponsiveListItemRenderer(
     val thumbnail: ThumbnailRenderer?,
     val navigationEndpoint: NavigationEndpoint?,
     val badges: List<Badges>?,
-    val playlistItemData: PlaylistItemData?
+    val playlistItemData: PlaylistItemData?,
+    val overlay: Overlay? = null,
 ) {
 
     val isSong: Boolean
@@ -49,4 +50,15 @@ data class MusicResponsiveListItemRenderer(
         val videoId: String,
     )
 
+    @Serializable
+    data class Overlay(val musicItemThumbnailOverlayRenderer: Renderer? = null) {
+        @Serializable
+        data class Renderer(val content: Content? = null)
+
+        @Serializable
+        data class Content(val musicPlayButtonRenderer: PlayButton? = null)
+
+        @Serializable
+        data class PlayButton(val playNavigationEndpoint: NavigationEndpoint? = null)
+    }
 }

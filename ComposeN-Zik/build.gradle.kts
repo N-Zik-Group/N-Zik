@@ -508,7 +508,6 @@ dependencies {
     implementation(libs.androidx.crypto)
     implementation(libs.math3)
     implementation(libs.toasty)
-    implementation(libs.androidyoutubeplayer)
     implementation(libs.androidx.glance.widgets)
     implementation(libs.gson)
     implementation(libs.snakeyaml.engine)

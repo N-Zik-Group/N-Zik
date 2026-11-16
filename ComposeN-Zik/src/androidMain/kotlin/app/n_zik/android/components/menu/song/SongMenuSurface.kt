@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.rememberGlassSettings
@@ -31,6 +32,7 @@ import app.n_zik.android.topUiRoundnessShape
 @Composable
 internal fun SongMenuSurface(
     modifier: Modifier = Modifier,
+    opaqueWhenNonGlass: Boolean = false,
     header: @Composable ColumnScope.() -> Unit,
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -38,8 +40,14 @@ internal fun SongMenuSurface(
     val useGlass = glass.usesGlassMaterial(GlassArea.Menus)
     val nativeHeaderColor = surfaceColor(colorPalette().background1)
     val nativeBodyColor = recessedSurfaceColor(colorPalette().background0)
-    val headerColor = if (useGlass) glassNativeSurfaceTint(glass, nativeHeaderColor) else nativeHeaderColor
-    val bodyColor = if (useGlass) glassNativeSurfaceTint(glass, nativeBodyColor) else nativeBodyColor
+    @Composable
+    fun sectionColor(nativeColor: Color) = when {
+        useGlass -> glassNativeSurfaceTint(glass, nativeColor)
+        opaqueWhenNonGlass -> nativeColor.copy(alpha = 1f)
+        else -> nativeColor
+    }
+    val headerColor = sectionColor(nativeHeaderColor)
+    val bodyColor = sectionColor(nativeBodyColor)
     val filmOpacity = if (useGlass) menuSheetFilmOpacity(glass) else 1f
     GlassMaterialContainerColumn(modifier.fillMaxWidth().glassOverlayPaint(if (useGlass) 0f else bodyColor.alpha).then(
         if (useGlass) Modifier else Modifier.background(bodyColor).glassAreaContour(glass, GlassArea.Menus, topUiRoundnessShape())

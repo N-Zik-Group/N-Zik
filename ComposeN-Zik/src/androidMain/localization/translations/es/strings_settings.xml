@@ -335,7 +335,6 @@
     <string name="settings_player_action_bar_shuffle_visible_label">Mostrar botón aleatorio</string>
     <string name="settings_player_action_bar_sleep_timer_visible_label">Mostrar botón del temporizador de apagado</string>
     <string name="settings_player_action_bar_transparent_background_label">Fondo transparente</string>
-    <string name="settings_player_action_bar_video_visible_label">Mostrar botón vídeo</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Botón Visualizador</string>
     <string name="settings_player_action_restart_service">Reiniciar servicio</string>
     <string name="settings_player_actions_spaced_evenly_label">Espaciado uniforme</string>

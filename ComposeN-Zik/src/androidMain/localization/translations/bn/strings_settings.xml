@@ -335,7 +335,6 @@
     <string name="settings_player_action_bar_shuffle_visible_label">শাফল বাটন দেখান</string>
     <string name="settings_player_action_bar_sleep_timer_visible_label">স্লিপ টাইমার বাটন দেখান</string>
     <string name="settings_player_action_bar_transparent_background_label">স্বচ্ছ ব্যাকগ্রাউন্ড</string>
-    <string name="settings_player_action_bar_video_visible_label">Show video button</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Visualizer button</string>
     <string name="settings_player_action_restart_service">Restart service</string>
     <string name="settings_player_actions_spaced_evenly_label">সমভাবে ছড়ানো</string>

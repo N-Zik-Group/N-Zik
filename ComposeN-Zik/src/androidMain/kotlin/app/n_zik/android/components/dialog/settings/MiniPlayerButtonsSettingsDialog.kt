@@ -34,7 +34,6 @@ import app.n_zik.android.utils.showMiniPlayerSleepTimerKey
 import app.n_zik.android.utils.showMiniPlayerLyricsKey
 import app.n_zik.android.utils.showMiniPlayerVisualizerKey
 import app.n_zik.android.utils.showMiniPlayerQueueKey
-import app.n_zik.android.utils.showMiniPlayerVideoKey
 import app.n_zik.android.utils.showMiniPlayerDiscoverKey
 import app.n_zik.android.utils.visualizerEnabledKey
 import app.n_zik.android.core.utils.Toaster
@@ -65,7 +64,6 @@ private val defaultButtonOrder = listOf(
 
     "lyrics",
     "visualizer",
-    "video"
 )
 
 private data class MiniPlayerButtonDef(
@@ -87,7 +85,6 @@ private fun buildButtonDefs(): Map<String, MiniPlayerButtonDef> = mapOf(
     "repeat" to MiniPlayerButtonDef("repeat", showMiniPlayerRepeatKey, R.drawable.repeat, R.string.player_action_repeat, false),
     "add_to_playlist" to MiniPlayerButtonDef("add_to_playlist", showMiniPlayerAddToPlaylistKey, R.drawable.add_in_playlist, R.string.player_mini_action_add_to_playlist, false),
     "queue" to MiniPlayerButtonDef("queue", showMiniPlayerQueueKey, R.drawable.reorder, R.string.player_mini_button_queue, false),
-    "video" to MiniPlayerButtonDef("video", showMiniPlayerVideoKey, R.drawable.video, R.string.player_mini_button_video, false),
     "share" to MiniPlayerButtonDef("share", showMiniPlayerShareKey, R.drawable.share_social, R.string.player_mini_button_share, false),
     "radio" to MiniPlayerButtonDef("radio", showMiniPlayerRadioKey, R.drawable.radio, R.string.player_mini_button_radio, false),
     "discover" to MiniPlayerButtonDef("discover", showMiniPlayerDiscoverKey, R.drawable.discover, R.string.player_mini_button_discover, false),

@@ -335,7 +335,6 @@
     <string name="settings_player_action_bar_shuffle_visible_label">顯示 \"隨機播放\" 按鈕</string>
     <string name="settings_player_action_bar_sleep_timer_visible_label">顯示 \"睡眠計時器\" 按鈕</string>
     <string name="settings_player_action_bar_transparent_background_label">透明背景</string>
-    <string name="settings_player_action_bar_video_visible_label">顯示影片按鈕</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Visualizer button</string>
     <string name="settings_player_action_restart_service">重啟服務</string>
     <string name="settings_player_actions_spaced_evenly_label">平均間隔</string>

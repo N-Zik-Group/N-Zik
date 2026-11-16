@@ -165,7 +165,6 @@
     <string name="player_action_play_next">Afspil næste</string>
     <string name="player_action_previous">Forrige</string>
     <string name="player_action_repeat">Gentag</string>
-    <string name="player_action_return_to_audio">Vend tilbage til lydtilstand</string>
     <string name="player_action_seek_forward">Fremad</string>
     <string name="player_action_seek_forward_30_seconds">Videresend 30 sekunder</string>
     <string name="player_action_seek_forward_5_seconds">Videresend 5 sekunder</string>
@@ -348,7 +347,6 @@
     <string name="player_mini_button_radio">Radio</string>
     <string name="player_mini_button_share">Del</string>
     <string name="player_mini_button_sleep_timer">Søvntimer</string>
-    <string name="player_mini_button_video">Video</string>
     <string name="player_mini_button_visualizer">Visualisering</string>
     <string name="player_mini_buttons_config">MiniPlayer knapper</string>
     <string name="player_mini_buttons_config_description">Indstil de 4 knapper i miniafspilleren</string>

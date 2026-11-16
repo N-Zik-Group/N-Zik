@@ -165,7 +165,6 @@
     <string name="player_action_play_next">Ascultă după</string>
     <string name="player_action_previous">Anterior</string>
     <string name="player_action_repeat">Repetă</string>
-    <string name="player_action_return_to_audio">Revenire la modul audio</string>
     <string name="player_action_seek_forward">Redirecționare</string>
     <string name="player_action_seek_forward_30_seconds">Redirecţionează 30 de secunde</string>
     <string name="player_action_seek_forward_5_seconds">Redirecţionează 5 secunde</string>
@@ -348,7 +347,6 @@
     <string name="player_mini_button_radio">Radio</string>
     <string name="player_mini_button_share">Distribuie</string>
     <string name="player_mini_button_sleep_timer">Temporizator de somn</string>
-    <string name="player_mini_button_video">Video</string>
     <string name="player_mini_button_visualizer">Vizualizator</string>
     <string name="player_mini_buttons_config">Butoane MiniPlayer</string>
     <string name="player_mini_buttons_config_description">Configurați 4 butoane în miniplayer</string>

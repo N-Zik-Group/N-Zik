@@ -165,7 +165,6 @@
     <string name="player_action_play_next">播放下一首</string>
     <string name="player_action_previous">上一个</string>
     <string name="player_action_repeat">重复</string>
-    <string name="player_action_return_to_audio">返回音频模式</string>
     <string name="player_action_seek_forward">转发方式</string>
     <string name="player_action_seek_forward_30_seconds">轉發30秒</string>
     <string name="player_action_seek_forward_5_seconds">转发5秒</string>
@@ -348,7 +347,6 @@
     <string name="player_mini_button_radio">收音机</string>
     <string name="player_mini_button_share">分享</string>
     <string name="player_mini_button_sleep_timer">睡眠计时器</string>
-    <string name="player_mini_button_video">视频</string>
     <string name="player_mini_button_visualizer">可视化器</string>
     <string name="player_mini_buttons_config">MiniPlayer 按钮</string>
     <string name="player_mini_buttons_config_description">配置小播放器中的4个按钮</string>

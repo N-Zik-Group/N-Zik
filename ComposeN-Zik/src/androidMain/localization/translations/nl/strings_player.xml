@@ -165,7 +165,6 @@
     <string name="player_action_play_next">Volgende afspelen</string>
     <string name="player_action_previous">named@@0</string>
     <string name="player_action_repeat">Herhalen</string>
-    <string name="player_action_return_to_audio">Terug naar audiomodus</string>
     <string name="player_action_seek_forward">Doorsturen</string>
     <string name="player_action_seek_forward_30_seconds">30 seconden doorsturen</string>
     <string name="player_action_seek_forward_5_seconds">5 seconden doorsturen</string>
@@ -348,7 +347,6 @@
     <string name="player_mini_button_radio">Kiezer</string>
     <string name="player_mini_button_share">Delen</string>
     <string name="player_mini_button_sleep_timer">Slaaptimer</string>
-    <string name="player_mini_button_video">Video</string>
     <string name="player_mini_button_visualizer">Equalizer</string>
     <string name="player_mini_buttons_config">MiniPlayer knoppen</string>
     <string name="player_mini_buttons_config_description">Configureer de 4 knoppen in de miniplayer</string>

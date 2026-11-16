@@ -335,7 +335,6 @@
     <string name="settings_player_action_bar_shuffle_visible_label">Show Shuffle button</string>
     <string name="settings_player_action_bar_sleep_timer_visible_label">Show Sleep Timer button</string>
     <string name="settings_player_action_bar_transparent_background_label">Διαφανές φόντο</string>
-    <string name="settings_player_action_bar_video_visible_label">Εμφάνιση κουμπιού βίντεο</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Κουμπί οπτικοποίησης</string>
     <string name="settings_player_action_restart_service">Restart service</string>
     <string name="settings_player_actions_spaced_evenly_label">Spaced Evenly</string>

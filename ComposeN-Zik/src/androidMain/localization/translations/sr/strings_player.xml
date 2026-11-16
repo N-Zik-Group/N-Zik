@@ -165,7 +165,6 @@
     <string name="player_action_play_next">Pusti sledeću</string>
     <string name="player_action_previous">Previous</string>
     <string name="player_action_repeat">Repeat</string>
-    <string name="player_action_return_to_audio">Return to audio mode</string>
     <string name="player_action_seek_forward">Forward</string>
     <string name="player_action_seek_forward_30_seconds">Forward 30 seconds</string>
     <string name="player_action_seek_forward_5_seconds">Forward 5 seconds</string>
@@ -348,7 +347,6 @@
     <string name="player_mini_button_radio">Radio</string>
     <string name="player_mini_button_share">Share</string>
     <string name="player_mini_button_sleep_timer">Тајмер за спавање</string>
-    <string name="player_mini_button_video">Video</string>
     <string name="player_mini_button_visualizer">Визуализатор</string>
     <string name="player_mini_buttons_config">MiniPlayer buttons</string>
     <string name="player_mini_buttons_config_description">Configure the 4 buttons in the miniplayer</string>

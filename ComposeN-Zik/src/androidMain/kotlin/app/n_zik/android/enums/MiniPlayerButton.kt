@@ -23,7 +23,6 @@ enum class MiniPlayerButton(
     Lyrics(R.drawable.song_lyrics, R.string.lyrics_title),
     Visualizer(R.drawable.sound_effect, R.string.player_mini_button_visualizer),
     Queue(R.drawable.reorder, R.string.player_mini_button_queue),
-    Video(R.drawable.video, R.string.player_mini_button_video),
     Discover(R.drawable.discover, R.string.player_mini_button_discover)
 }
 
@@ -32,5 +31,4 @@ enum class PendingMiniPlayerAction {
     Visualizer,
     Queue,
     SleepTimer,
-    Video
 }

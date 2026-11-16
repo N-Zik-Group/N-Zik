@@ -165,7 +165,6 @@
     <string name="player_action_play_next">Soita seuraavaksi</string>
     <string name="player_action_previous">Edellinen</string>
     <string name="player_action_repeat">Uudelleentoisto</string>
-    <string name="player_action_return_to_audio">Palaa äänitilaan</string>
     <string name="player_action_seek_forward">Eteenpäin</string>
     <string name="player_action_seek_forward_30_seconds">Eteenpäin 30 sekuntia</string>
     <string name="player_action_seek_forward_5_seconds">Eteenpäin 5 sekuntia</string>
@@ -348,7 +347,6 @@
     <string name="player_mini_button_radio">Radio</string>
     <string name="player_mini_button_share">Jaa</string>
     <string name="player_mini_button_sleep_timer">Uniajastin</string>
-    <string name="player_mini_button_video">Video</string>
     <string name="player_mini_button_visualizer">Visualisointi</string>
     <string name="player_mini_buttons_config">MiniPlayerin painikkeet</string>
     <string name="player_mini_buttons_config_description">Määritä pienoissoittimen 4 painikkeet</string>

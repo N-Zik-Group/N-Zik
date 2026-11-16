@@ -233,6 +233,8 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(2, R.string.player_behavior_and_visuals, R.drawable.equalizer,
         keywordRes = listOf(
             R.string.player_behavior_and_visuals, R.string.settings_player_top_action_bar_visible_label,
+            R.string.settings_player_opening_mode_label, R.string.settings_player_opening_mode_description,
+            R.string.settings_player_opening_mode_remember_last, R.string.player_audio_mode, R.string.player_video_mode,
             R.string.settings_lyrics_top_spacing_label, R.string.settings_player_next_queue_visible_label,
             R.string.settings_player_queue_visible_count_label, R.string.settings_player_album_cover_visible_label, R.string.settings_player_disable_text_marquee_label,
             R.string.settings_player_disable_text_marquee_description, R.string.player_rotating_buttons,
@@ -251,7 +253,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
         keywordRes = listOf(
             R.string.settings_section_player_action_bar_title, R.string.settings_player_action_bar_transparent_background_label,
             R.string.settings_player_actions_spaced_evenly_label, R.string.settings_player_queue_tap_to_open_label, R.string.settings_player_queue_swipe_up_label,
-            R.string.settings_player_action_bar_video_visible_label, R.string.settings_player_action_bar_discover_visible_label,
+            R.string.settings_player_action_bar_discover_visible_label,
             R.string.settings_player_action_bar_download_visible_label, R.string.settings_player_action_bar_playlist_add_visible_label,
             R.string.settings_player_action_bar_loop_visible_label, R.string.settings_player_action_bar_shuffle_visible_label,
             R.string.settings_action_bar_show_lyrics_button, R.string.settings_player_expanded_label,

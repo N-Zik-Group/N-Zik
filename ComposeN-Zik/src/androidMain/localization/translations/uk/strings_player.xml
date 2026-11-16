@@ -165,7 +165,6 @@
     <string name="player_action_play_next">Грати далі</string>
     <string name="player_action_previous">Попереднє</string>
     <string name="player_action_repeat">Повторити</string>
-    <string name="player_action_return_to_audio">Повернутися до режиму звуку</string>
     <string name="player_action_seek_forward">Переслати</string>
     <string name="player_action_seek_forward_30_seconds">Переслати 30 секунд</string>
     <string name="player_action_seek_forward_5_seconds">Переслати 5 секунд</string>
@@ -348,7 +347,6 @@
     <string name="player_mini_button_radio">Радіомодуль</string>
     <string name="player_mini_button_share">Поділитись</string>
     <string name="player_mini_button_sleep_timer">Таймер сну</string>
-    <string name="player_mini_button_video">Відео</string>
     <string name="player_mini_button_visualizer">Візуалізатор</string>
     <string name="player_mini_buttons_config">Міні-кнопки плеєра</string>
     <string name="player_mini_buttons_config_description">Налаштування 4 кнопок у міні-плеєрі</string>

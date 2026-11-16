@@ -2,7 +2,6 @@ package app.n_zik.android.components.theme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CornerSize
@@ -10,7 +9,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -31,36 +29,6 @@ fun Modifier.appearanceBackground(): Modifier = composed {
     background(LocalAppearance.current.colorPalette.background0)
 }
 
-/** Keeps video sheet color reads separate from the application content scope. */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AppearanceVideoSheet(
-    showSheet: Boolean,
-    onDismissRequest: () -> Unit,
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    val appearance = LocalAppearance.current
-    val background = appearance.colorPalette.background0
-    val shape = appearance.uiRoundnessShape
-    CustomModalBottomSheet(
-        showSheet = showSheet,
-        onDismissRequest = onDismissRequest,
-        containerColor = background,
-        contentColor = background,
-        modifier = Modifier.fillMaxWidth(),
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        dragHandle = {
-            Surface(
-                modifier = Modifier.padding(vertical = 0.dp),
-                color = background,
-                shape = shape,
-            ) {}
-        },
-        shape = bottomSheetShape(shape),
-        content = content,
-    )
-}
-
 /** Keeps menu sheet shape reads separate from the application content scope. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,13 +36,14 @@ fun AppearanceMenuSheet(
     showSheet: Boolean,
     onDismissRequest: () -> Unit,
     sheetState: SheetState,
+    expandOnShow: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val glass = rememberGlassSettings()
     val host = LocalGlassMenuHost.current
     val sameWindow = host?.dialogs?.windowRoot === LocalView.current.rootView
     if (canHostGlassMenuSheet(glass, glassRenderer(glass), sameWindow && host?.backdrop != null)) {
-        GlassMenuSheet(showSheet, onDismissRequest, sheetState, content)
+        GlassMenuSheet(showSheet, onDismissRequest, sheetState, expandOnShow, content)
         return
     }
     CustomModalBottomSheet(
@@ -83,6 +52,7 @@ fun AppearanceMenuSheet(
         containerColor = Color.Transparent,
         modifier = Modifier.statusBarsPadding(),
         sheetState = sheetState,
+        expandOnShow = expandOnShow,
         dragHandle = {
             Surface(
                 modifier = Modifier.padding(vertical = 0.dp),

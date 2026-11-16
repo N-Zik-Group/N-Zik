@@ -189,11 +189,12 @@ fun PlayerTopAction(
     onClick: () -> Unit,
     settings: GlassSettings = rememberGlassSettings(GlassScope.PlayerActions),
     contentDescription: String? = null,
+    glassFilm: Color? = null,
 ) {
     val settings = settings.inScope(GlassScope.PlayerActions)
     if (GlassFloatingActionIcon(painterResource(icon), onClick, size = GlassActionCellHeight,
             iconSize = 24.dp, iconModifier = Modifier.rotate(rotation), tint = color,
-            settings = settings, contentDescription = contentDescription)) return
+            settings = settings, contentDescription = contentDescription, filmColor = glassFilm)) return
     Box(Modifier.size(GlassActionCellHeight)
         .glassAreaContour(settings, GlassArea.ActionButtons, uiRoundnessShape())
         .clip(uiRoundnessShape()).clickable(onClick = onClick), contentAlignment = Alignment.Center) {

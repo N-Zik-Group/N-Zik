@@ -165,7 +165,6 @@
     <string name="player_action_play_next">Reproducir a continuación</string>
     <string name="player_action_previous">Anterior</string>
     <string name="player_action_repeat">Repetir</string>
-    <string name="player_action_return_to_audio">Volver al modo de audio</string>
     <string name="player_action_seek_forward">Reenviar</string>
     <string name="player_action_seek_forward_30_seconds">Reenviar 30 segundos</string>
     <string name="player_action_seek_forward_5_seconds">Reenviar 5 segundos</string>
@@ -348,7 +347,6 @@
     <string name="player_mini_button_radio">Radio</string>
     <string name="player_mini_button_share">Compartir</string>
     <string name="player_mini_button_sleep_timer">Temporizador de apagado</string>
-    <string name="player_mini_button_video">Vídeo</string>
     <string name="player_mini_button_visualizer">Visualizador</string>
     <string name="player_mini_buttons_config">Botones de MiniPlayer</string>
     <string name="player_mini_buttons_config_description">Configurar los 4 botones en el minijugador</string>

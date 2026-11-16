@@ -336,7 +336,6 @@ Volume BAS : titre précédent</string>
     <string name="settings_player_action_bar_shuffle_visible_label">Bouton « Lecture Aléatoire »</string>
     <string name="settings_player_action_bar_sleep_timer_visible_label">Bouton « Minuterie de mise en veille »</string>
     <string name="settings_player_action_bar_transparent_background_label">Arrière-plan transparent</string>
-    <string name="settings_player_action_bar_video_visible_label">Bouton « Vidéo »</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Bouton « Visualiseur »</string>
     <string name="settings_player_action_restart_service">Redémarrer le service</string>
     <string name="settings_player_actions_spaced_evenly_label">Espacement sévère</string>

@@ -1,5 +1,11 @@
 package app.n_zik.android.ui.screens.player
 
+import app.n_zik.android.ui.screens.player.components.LocalPlayerMusicVideo
+import app.n_zik.android.ui.screens.player.components.PlayerAudioVideoToggle
+import app.n_zik.android.ui.screens.player.components.PlayerVideoUnavailable
+import app.n_zik.android.ui.screens.player.components.InlineMusicVideo
+import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.playback.services.canResolvePlayerVideo
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.utils.actionExpandedKey
 import app.n_zik.android.components.player.extractCoverPalette
@@ -147,8 +153,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import app.n_zik.android.components.player.rememberPlayerArtworkPagerState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Surface
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -255,7 +260,6 @@ import app.n_zik.android.enums.ThumbnailCoverType
 import app.n_zik.android.enums.ThumbnailType
 import app.n_zik.android.models.ui.toUiMedia
 import app.n_zik.android.typography
-import app.n_zik.android.components.glass.CustomModalBottomSheet
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.themed.NowPlayingSongIndicator
 import app.n_zik.android.extensions.nextvisualizer.views.NextVisualizer
@@ -269,7 +273,6 @@ import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.collapsedPlayerProgressBar
 import app.n_zik.android.ui.styling.favoritesOverlay
 import app.n_zik.android.utils.DisposableListener
-import app.n_zik.android.utils.SearchYoutubeEntity
 import app.n_zik.android.utils.VerticalfadingEdge2
 import app.n_zik.android.utils.VinylSizeKey
 import app.n_zik.android.utils.albumCoverRotationKey
@@ -545,8 +548,6 @@ fun Player(
     val showQueueState = rememberSaveable(saver = TolerantBoolStateSaver("player.showQueue")) { mutableStateOf( false ) }
     var showQueue by showQueueState
 
-    val showSearchEntityState = rememberSaveable(saver = TolerantBoolStateSaver("player.showSearchEntity")) { mutableStateOf( false ) }
-    var showSearchEntity by showSearchEntityState
 
     val showVisualizerState = LocalIsShowingVisualizer.current
     var isShowingVisualizer by showVisualizerState
@@ -576,7 +577,6 @@ fun Player(
             }
             PendingMiniPlayerAction.Queue -> showQueue = true
             PendingMiniPlayerAction.SleepTimer -> isShowingSleepTimerDialog = true
-            PendingMiniPlayerAction.Video -> showSearchEntity = true
             null -> {}
         }
         if (pendingAction.value != null) {
@@ -838,7 +838,26 @@ fun Player(
                 playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient ||
                 playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient
 
-    val showLandscapeArtworkColumn = !isLandscape ||
+    val videoSession = LocalPlayerMusicVideo.current
+    val offlineMode by OfflineMode.rememberEnabled()
+    val showVideoMode = preview == null && videoSession != null && !offlineMode &&
+        canResolvePlayerVideo(mediaItem)
+    LaunchedEffect(videoSession?.selected) {
+        if (videoSession?.selected == true) {
+            isShowingLyrics = false
+            isShowingVisualizer = false
+        }
+    }
+    val showInlineVideo = showVideoMode && videoSession?.selected == true && videoSession.player != null &&
+        !isShowingLyrics && !isShowingVisualizer
+    val showVideoUnavailable = showVideoMode && videoSession?.failed == true
+    val openManualVideoSearch: () -> Unit = {
+        videoSession?.manualSearchQuery = listOfNotNull(
+            mediaItem.mediaMetadata.title?.toString()?.let(::cleanPrefix),
+            mediaItem.mediaMetadata.artist?.toString()?.let(::cleanPrefix),
+        ).joinToString(" ")
+    }
+    val showLandscapeArtworkColumn = showInlineVideo || !isLandscape ||
         playerLandscapeArtworkColumnVisible(playerType, thumbnailType, expandedplayer, showthumbnail)
     val coverOverlayPolicy = playerCoverOverlayPolicy(
         lyricsOnCover = showlyricsthumbnail && showthumbnail && showLandscapeArtworkColumn,
@@ -870,6 +889,7 @@ fun Player(
         if (coverDisplay.forceDark) palette.copy(accent = coverDisplay.foreground ?: palette.text) else palette
     } ?: color
     val coverColors = coverDisplay?.colors
+    SideEffect { videoSession?.controlPalette = dynamicColorPalette }
     val dominant = coverColors?.dominant ?: dynamicColorPalette.accent.toArgb()
     val vibrant = coverColors?.vibrant ?: dominant
     val lightVibrant = coverColors?.lightVibrant ?: dominant
@@ -1468,7 +1488,6 @@ fun Player(
                 ActionBar(
                     navController,
                     showQueueState,
-                    showSearchEntityState,
                     rotateState,
                     showVisualizerState,
                     showSleepTimerState,
@@ -1637,6 +1656,18 @@ fun Player(
                     .then(playerForegroundClip)
                     .playerArtworkShadowOverflow(artworkShadowOverflow),
                 artwork = {
+                    if (showInlineVideo && videoSession != null) {
+                        Box(Modifier.weight(1f).fillMaxWidth()) {
+                            InlineMusicVideo(
+                                videoSession,
+                                artworkPadding = playerThumbnailPadding(thumbnailSizeLDp, landscape = true)
+                                    .takeIf { showthumbnail },
+                                viewportShape = uiRoundnessShape(),
+                            ) {
+                                thumbnailContent()
+                            }
+                        }
+                    } else {
                     if (showthumbnail && (playerType == PlayerType.Essential)) {
                         PlayerLandscapeThumbnailFrame(
                             contentPadding = playerThumbnailPadding(thumbnailSizeLDp, landscape = true),
@@ -1924,7 +1955,17 @@ fun Player(
                             )
                         }
                     }
+                    }
                 }, controls = {
+                    if (showVideoMode && videoSession != null) {
+                        Box(Modifier.fillMaxWidth().padding(vertical = 4.dp), contentAlignment = Alignment.Center) {
+                            PlayerAudioVideoToggle(
+                                videoSession,
+                                showUnavailable = showVideoUnavailable,
+                                onSearchManually = openManualVideoSearch,
+                            )
+                        }
+                    }
                     val landscapeLyricsState = rememberOverlayTransition(isShowingLyrics && !showLandscapeArtworkColumn)
                     val landscapeVisualizerState = rememberOverlayTransition(isShowingVisualizer && !showLandscapeArtworkColumn)
                     if (!showLandscapeArtworkColumn &&
@@ -2248,7 +2289,7 @@ fun Player(
 
 
                 header = {
-                if (showTopActionsBar) {
+                if (showTopActionsBar || showVideoMode) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -2263,27 +2304,23 @@ fun Player(
                             .height(44.dp)
                     ) {
 
-                        PlayerTopAction(
+                        if (showTopActionsBar) PlayerTopAction(
                             icon = R.drawable.chevron_down,
                             color = colorPalette().collapsedPlayerProgressBar,
                             rotation = rotationAngle,
                             settings = glassSettings,
                             onClick = onDismiss,
-                        )
+                        ) else Spacer(Modifier.size(44.dp))
 
-                        PlayerTopAction(
-                            icon = R.drawable.ic_launcher_monochrome,
-                            color = colorPalette().collapsedPlayerProgressBar,
-                            rotation = 0f,
-                            settings = glassSettings,
-                            contentDescription = stringResource(R.string.accessibility_app_icon_in_player),
-                            onClick = {
-                                onDismiss()
-                                navController.navigate(NavRoutes.home.name)
-                            },
-                        )
+                        if (showVideoMode && videoSession != null) {
+                            PlayerAudioVideoToggle(
+                                videoSession,
+                                showUnavailable = false,
+                                onSearchManually = openManualVideoSearch,
+                            )
+                        }
 
-                        if (!showButtonPlayerMenu)
+                        if (showTopActionsBar && !showButtonPlayerMenu) {
                             PlayerTopAction(
                                 icon = R.drawable.ellipsis_vertical,
                                 color = colorPalette().collapsedPlayerProgressBar,
@@ -2311,6 +2348,9 @@ fun Player(
                                     }
                                 },
                             )
+                        } else {
+                            Spacer(Modifier.size(44.dp))
+                        }
 
                     }
                     Spacer(
@@ -2324,7 +2364,7 @@ fun Player(
                     )
                 }
 
-                if (topPadding && !showTopActionsBar) {
+                if (topPadding && !showTopActionsBar && !showVideoMode) {
                     Spacer(
                         modifier = Modifier
                             .padding(
@@ -2349,7 +2389,14 @@ fun Player(
                         .playerArtworkOverflowViewport(artworkShadowOverflow)
                 ) {
 
-                      if (showthumbnail) {
+                      if (showInlineVideo && videoSession != null) {
+                          InlineMusicVideo(
+                              videoSession,
+                              artworkPadding = playerThumbnailPadding(thumbnailSizeDp).takeIf { showthumbnail },
+                          ) {
+                              thumbnailContent()
+                          }
+                      } else if (showthumbnail) {
                          if (playerCoverArtworkVisible(showthumbnail, isShowingLyrics, coverOverlayPolicy.lyricsOnCover, isShowingVisualizer, coverOverlayPolicy.visualizerOnCover)) {
                              if (playerType == PlayerType.Modern) {
                                    val fling = flingBehaviorFor(pagerState, sensitivity = playerSwipeSensitivity)
@@ -2552,6 +2599,15 @@ fun Player(
                         fadeDurationMillis = 500,
                     ) {
                         NextVisualizer(isDisplayed = standaloneVisualizer, onCover = false, fadeHosted = true)
+                    }
+                    if (showVideoUnavailable) {
+                        PlayerVideoUnavailable(
+                            onSearchManually = openManualVideoSearch,
+                            modifier = Modifier.align(Alignment.TopCenter)
+                                .padding(top = 4.dp)
+                                .background(color.background0.copy(alpha = 1f), uiRoundnessShape())
+                                .padding(horizontal = 12.dp, vertical = 4.dp),
+                        )
                     }
                 }
 
@@ -2839,30 +2895,7 @@ fun Player(
             )
         }
 
-        CustomModalBottomSheet(
-            showSheet = showSearchEntity,
-            onDismissRequest = { showSearchEntity = false },
-            containerColor = if (playerType == PlayerType.Modern) Color.Transparent else colorPalette().background2,
-            contentColor = if (playerType == PlayerType.Modern) Color.Transparent else colorPalette().background2,
-            modifier = Modifier
-                .fillMaxWidth(),
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            dragHandle = {
-                Surface(
-                    modifier = Modifier.padding(vertical = 0.dp),
-                    color = colorPalette().background0,
-                    shape = uiRoundnessShape()
-                ) {}
-            },
-            shape = RectangleShape
-        ) {
-            SearchYoutubeEntity(
-                navController = navController,
-                onDismiss = { showSearchEntity = false },
-                query = "${mediaItem.artistTextWithFallback()} - ${mediaItem.mediaMetadata.title?.toString()?.takeIf { it != "null" } ?: ""}",
-                disableScrollingText = disableScrollingText
-            )
-        }
+
 
     }
     }

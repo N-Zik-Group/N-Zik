@@ -58,7 +58,6 @@ import app.n_zik.android.utils.showMiniPlayerShuffleKey
 import app.n_zik.android.utils.showMiniPlayerSkipBackKey
 import app.n_zik.android.utils.showMiniPlayerSkipForwardKey
 import app.n_zik.android.utils.showMiniPlayerSleepTimerKey
-import app.n_zik.android.utils.showMiniPlayerVideoKey
 import app.n_zik.android.utils.showMiniPlayerVisualizerKey
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
@@ -105,7 +104,6 @@ private val previewButtons = listOf(
     PreviewButton("discover", MiniPlayerButton.Discover, showMiniPlayerDiscoverKey),
     PreviewButton("lyrics", MiniPlayerButton.Lyrics, showMiniPlayerLyricsKey),
     PreviewButton("visualizer", MiniPlayerButton.Visualizer, showMiniPlayerVisualizerKey),
-    PreviewButton("video", MiniPlayerButton.Video, showMiniPlayerVideoKey),
 )
 private val defaultPreviewButtons = setOf(
     MiniPlayerButton.SkipBack, MiniPlayerButton.PlayPause,

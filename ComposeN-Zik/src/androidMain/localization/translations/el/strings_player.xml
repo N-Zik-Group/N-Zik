@@ -165,7 +165,6 @@
     <string name="player_action_play_next">Αναπαραγωγή επόμενου</string>
     <string name="player_action_previous">Προηγούμενο</string>
     <string name="player_action_repeat">Επανάληψη</string>
-    <string name="player_action_return_to_audio">Επιστροφή στη λειτουργία ήχου</string>
     <string name="player_action_seek_forward">Μπροστά</string>
     <string name="player_action_seek_forward_30_seconds">Εμπρός 30 δευτερόλεπτα</string>
     <string name="player_action_seek_forward_5_seconds">Μπροστά 5 δευτερόλεπτα</string>
@@ -348,7 +347,6 @@
     <string name="player_mini_button_radio">Ραδιόφωνο</string>
     <string name="player_mini_button_share">Κοινοποίηση</string>
     <string name="player_mini_button_sleep_timer">Χρονόμετρο ύπνου</string>
-    <string name="player_mini_button_video">Βίντεο</string>
     <string name="player_mini_button_visualizer">Απεικονίσεις</string>
     <string name="player_mini_buttons_config">Κουμπιά MiniPlayer</string>
     <string name="player_mini_buttons_config_description">Ρυθμίστε τα πλήκτρα 4 στο μίνι παίχτη</string>

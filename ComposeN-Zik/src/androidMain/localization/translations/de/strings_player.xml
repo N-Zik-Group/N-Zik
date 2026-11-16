@@ -165,7 +165,6 @@
     <string name="player_action_play_next">Als nächstes wiedergeben</string>
     <string name="player_action_previous">Zurück</string>
     <string name="player_action_repeat">Wiederholen</string>
-    <string name="player_action_return_to_audio">Zurück zum Audiomodus</string>
     <string name="player_action_seek_forward">Vorwärts</string>
     <string name="player_action_seek_forward_30_seconds">30 Sekunden weiterleiten</string>
     <string name="player_action_seek_forward_5_seconds">5 Sekunden weiterleiten</string>
@@ -348,7 +347,6 @@
     <string name="player_mini_button_radio">Radio</string>
     <string name="player_mini_button_share">Teilen</string>
     <string name="player_mini_button_sleep_timer">Schlaf-Timer</string>
-    <string name="player_mini_button_video">Video</string>
     <string name="player_mini_button_visualizer">Visualisierer</string>
     <string name="player_mini_buttons_config">Mini-Player-Schaltflächen</string>
     <string name="player_mini_buttons_config_description">Konfigurieren Sie die 4 Tasten im Mini-Player</string>

@@ -9,10 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CutCornerShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -77,7 +74,6 @@ class AppearanceRecompositionTest {
                 UnrelatedChild { unrelatedCount++ }
                 PaletteReader { colors += it }
                 Box(Modifier.size(16.dp).testTag("root-background").appearanceBackground())
-                AppearanceVideoSheet(showSheet = false, onDismissRequest = {}) {}
                 AppearanceMenuSheet(
                     showSheet = false,
                     onDismissRequest = {},
@@ -146,28 +142,13 @@ class AppearanceRecompositionTest {
 
     @Test
     @GraphicsMode(GraphicsMode.Mode.NATIVE)
-    fun `visible video sheet follows animated colors and both sheets dismiss their content`() {
-        val roundedRed = red.copy(
-            uiRoundnessShape = RoundedCornerShape(
-                topStart = 36.dp,
-                topEnd = 12.dp,
-                bottomStart = 72.dp,
-                bottomEnd = 60.dp,
-            ),
-        )
-        val target = mutableStateOf(roundedRed)
+    fun `visible menu sheet survives a palette change and dismisses its content`() {
+        val target = mutableStateOf(red)
         val fadeFrom = mutableStateOf<Appearance?>(null)
-        val showVideo = mutableStateOf(true)
-        val showMenu = mutableStateOf(false)
-        val videoColors = mutableListOf<Color>()
+        val showMenu = mutableStateOf(true)
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
             ProvideAnimatedAppearance(target.value, fadeFrom.value, 320, { fadeFrom.value = null }) {
-                AppearanceVideoSheet(showVideo.value, { showVideo.value = false }) {
-                    val contentColor = LocalContentColor.current
-                    SideEffect { videoColors += contentColor }
-                    Box(Modifier.fillMaxWidth().height(160.dp).testTag("video-content"))
-                }
                 AppearanceMenuSheet(
                     showSheet = showMenu.value,
                     onDismissRequest = { showMenu.value = false },
@@ -178,39 +159,10 @@ class AppearanceRecompositionTest {
             }
         }
         advanceFrames(600)
-        composeRule.onNodeWithTag("video-content").assertIsDisplayed()
-        assertRenderedColor("video-content", red.colorPalette.background0)
-        val roundedPixels = composeRule.onNodeWithTag("video-content").captureToImage().toPixelMap()
-        assertNotEquals(Color.Red.toArgb(), roundedPixels[1, 1].toArgb())
-        assertEquals(Color.Red.toArgb(), roundedPixels[1, roundedPixels.height - 2].toArgb())
-        composeRule.runOnIdle {
-            fadeFrom.value = roundedRed
-            target.value = blue.copy(uiRoundnessShape = CutCornerShape(36.dp))
-        }
-        advanceFrames(144)
-        composeRule.runOnIdle {
-            assertNotEquals(Color.Red, videoColors.last())
-            assertNotEquals(Color.Blue, videoColors.last())
-        }
-        assertRenderedColor("video-content", videoColors.last())
-        advanceFrames(240)
-        assertRenderedColor("video-content", blue.colorPalette.background0)
-        val fallbackPixels = composeRule.onNodeWithTag("video-content").captureToImage().toPixelMap()
-        assertNotEquals(Color.Blue.toArgb(), fallbackPixels[1, 1].toArgb())
-        // All corner-based sheets meet the bottom edge, including cut-corner themes.
-        assertEquals(Color.Blue.toArgb(), fallbackPixels[1, fallbackPixels.height - 2].toArgb())
-        composeRule.runOnIdle {
-            assertEquals(Color.Blue, videoColors.last())
-            showVideo.value = false
-        }
-        advanceFrames(600)
-        composeRule.onNodeWithTag("video-content").assertDoesNotExist()
-        composeRule.runOnIdle { showMenu.value = true }
-        advanceFrames(600)
         composeRule.onNodeWithTag("menu-content").assertIsDisplayed()
         composeRule.runOnIdle {
-            fadeFrom.value = blue
-            target.value = green
+            fadeFrom.value = red
+            target.value = blue
         }
         advanceFrames(400)
         composeRule.onNodeWithTag("menu-content").assertIsDisplayed()

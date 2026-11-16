@@ -335,7 +335,6 @@
     <string name="settings_player_action_bar_shuffle_visible_label">Shuffle button</string>
     <string name="settings_player_action_bar_sleep_timer_visible_label">Кнопка таймеру сну</string>
     <string name="settings_player_action_bar_transparent_background_label">Прозорий фон</string>
-    <string name="settings_player_action_bar_video_visible_label">Показати кнопку \"Відео\"</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Кнопка візуалізації</string>
     <string name="settings_player_action_restart_service">Перезапустити плеєр</string>
     <string name="settings_player_actions_spaced_evenly_label">Шифрований вечір</string>

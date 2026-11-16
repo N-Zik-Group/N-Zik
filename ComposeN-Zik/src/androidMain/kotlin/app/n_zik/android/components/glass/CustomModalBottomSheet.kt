@@ -27,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -50,6 +51,8 @@ import app.n_zik.android.components.menu.NativeMenuSheetDragHandle
 import app.n_zik.android.components.menu.straightBottomMenuShape
 import app.n_zik.android.surfaceColor
 
+import kotlinx.coroutines.flow.first
+
 /** Hosts menu content with straight lower corners in native and shared windows. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,6 +73,7 @@ fun CustomModalBottomSheet(
     },
     contentWindowInsets: @Composable () -> WindowInsets = { WindowInsets.ime },
     useSharedHost: Boolean = true,
+    expandOnShow: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val sheetShape = remember(shape) { straightBottomMenuShape(shape) }
@@ -88,6 +92,8 @@ fun CustomModalBottomSheet(
             sheetState = sheetState,
             scrimColor = scrimColor,
             shape = sheetShape,
+            partiallyExpanded = expandOnShow,
+            expandOnShow = expandOnShow,
             contentWindowInsets = contentWindowInsets,
         ) {
             if (glassSheet) GlassMaterialContainerColumn(modifier.fillMaxWidth().glassOverlayPaint(glass.forArea(GlassArea.Menus).film),
@@ -151,6 +157,12 @@ fun CustomModalBottomSheet(
             dragHandle = null,
             contentWindowInsets = { WindowInsets(0) },
         ) {
+            if (expandOnShow) {
+                LaunchedEffect(sheetState) {
+                    snapshotFlow { sheetState.targetValue }.first { it != SheetValue.Hidden }
+                    sheetState.expand()
+                }
+            }
             CompositionLocalProvider(LocalGlassOverlayPaintScope provides host?.let {
                 GlassOverlayPaintScope(it, overlayId) {
                     if (sheetState.currentValue == SheetValue.Expanded && sheetState.targetValue == SheetValue.Expanded) 1f else 0f
