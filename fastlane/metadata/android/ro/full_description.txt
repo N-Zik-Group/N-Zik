@@ -10,7 +10,7 @@ Un sistem multilingv de muzică YouTube YouTube frontend pentru Android, axat pe
 - 3D Carousel Player, widget-uri casă, jucător unificat și mini-player
 - Profiluri de artist, descoperiri și dispoziții, antete casnice prăbușite
 
-🎨 <b>Depozitul Temei</b>
+🎨 <b>Magazin Teme (BETA)</b>
 - Navigați și descărcați temele comunității, previzualizați-le în Normal și Glass, și alegeți ce setări de aspect să aplicați.
 - Crează teme locale sau partajează proiectele tale cu comunitatea. Importă și exportă teme ca fișiere ZIP.
 
@@ -33,7 +33,8 @@ Credite de sticlă: Proiect pătrat / Convx (GPL-3.0); Kyant0 AndroidLiquidGass 
 - Copie de rezervă automată cu intervale și retenție personalizate
 
 🔗 <b>Integrări</b>
-- Autentificare YouTube pentru recomandări și redare video, plus un motor experimental de sincronizare în două direcții
+- Comutare între conturile Google și canalele YouTube. Fiecare profil N-Zik foloseşte un canal de muzică YouTube activ pentru recomandări şi redare.
+- Biblioteca Muzică YouTube experimentală bidirecțională se sincronizează în Debug and Dev builds.
 - Scrobbling Last.fm cu Acum Redă și iubește/dezvăluie
 - Ştiri despre MusicBrainz şi album
 - Discord Rich Presence, inclusiv modul avansat cu previzualizare în direct
