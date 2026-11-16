@@ -323,4 +323,9 @@
     <string name="updates_check_failed">更新を確認できませんでした。</string>
     <string name="updates_install_generic_error">アップデートをインストールできませんでした。</string>
     <string name="updates_channel_available_format">%1$s のアップデートがあります</string>
+    <string name="recovery_theme_backup_title">テーマ</string>
+    <string name="recovery_theme_backup_no_match">このビューで利用可能なプロファイルに属するテーマのみをリストアできます。</string>
+    <string name="recovery_theme_backup_operation_failed">テーマのバックアップ操作を完了できませんでした。</string>
+    <string name="recovery_theme_backup_restore_action">テーマを復元</string>
+    <string name="recovery_theme_backup_restore_description">このプロファイルに使用されている最後のテーマのバックアップを開きます。</string>
 </resources>
