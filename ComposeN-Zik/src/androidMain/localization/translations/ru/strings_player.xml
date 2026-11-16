@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">Отрегулируйте размер обложки для текущей ориентации.</string>
     <string name="player_artwork_technical_info_description">Показывать техническую информацию о воспроизведении в плеере.</string>
     <string name="player_artwork_technical_info_title">Статистика для ботаников</string>
+    <string name="player_artwork_hold_to_speed_up_title">Удерживайте, чтобы ускорить</string>
+    <string name="player_artwork_hold_to_speed_up_description">Нажмите и удерживайте для ускорения воспроизведения</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Ускорение скорости</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Воспроизведение скорости во время работы над изображением.</string>
     <string name="player_artwork_transition_circular">Круглый</string>
     <string name="player_auto_load_songs_in_queue">Автоматическая загрузка песен в очередь</string>
     <string name="player_auto_load_songs_in_queue_description">Добавляет треки, когда очередь подходит к концу</string>
