@@ -1,0 +1,5 @@
+Fixed:
+- Smoother player cover and color transitions, including lyrics and visualizer layouts.
+- Fixed onboarding text overflow and kept the Glass preview visible while scrolling.
+- Improved download and deletion ordering, Android Auto resume, and Bridge library updates.
+- Added accessible labels to player transport controls.
