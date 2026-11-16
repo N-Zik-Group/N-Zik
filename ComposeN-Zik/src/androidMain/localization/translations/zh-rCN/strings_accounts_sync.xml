@@ -8,12 +8,30 @@
     <string name="github_account_code_copied">GitHub 代码已复制到剪贴板。</string>
     <string name="github_account_login_failed">无法连接到 GitHub ，请重试。</string>
     <string name="github_account_connected">GitHub 已连接。</string>
+    <string name="github_account_finishing_connection">正在完成 GitHub 连接…</string>
+    <string name="github_app_installation_instructions">Choose @%1$s and grant access only to your N-Zik-Theme-Store fork to finish setup.</string>
+    <string name="github_app_installation">应用安装</string>
+    <string name="github_app_installation_confirmed">GitHub 确认了应用安装。</string>
+    <string name="github_app_installation_other_account">App installed on @%1$s. Select your own account to enable fork cleanup.</string>
+    <string name="github_app_installation_description">在您个人的 GitHub 设置中管理或吊销N-Zik 登录权限。</string>
+    <string name="github_app_installation_needs_fork">首先提交主题或创建者配置文件来创建您的主题商店叉。</string>
+    <string name="github_app_installation_fork_lookup_failed">无法检查您的主题商店叉，请重试。</string>
     <!-- Account -->
     <string name="account_action_login">登录</string>
     <string name="account_action_logout">注销</string>
     <string name="account_youtube_login_description">连接您的 YouTube 帐户或退出当前会话。</string>
+    <string name="account_youtube_change_account">更改 YouTube 帐户</string>
+    <string name="account_youtube_change_account_description">选择此 N-Zik 配置文件使用的 YouTube 频道。</string>
     <string name="account_youtube_login_enabled_description">允许 YouTube 帐户登录以进行个性化浏览和同步。</string>
     <!-- Account Youtube -->
+    <string name="account_youtube_checking_login">正在检查您的 YouTube 音乐登录…</string>
+    <string name="account_youtube_choose_channel">选择 YouTube 音乐频道</string>
+    <string name="account_youtube_add_google_account">添加Google账户</string>
+    <string name="account_youtube_google_account">Google账户</string>
+    <string name="account_youtube_google_select">选择帐户</string>
+    <string name="account_youtube_google_sign_out">登出此账户</string>
+    <string name="account_youtube_google_sign_out_description">这将删除此设备上的 N-Zik 的整个谷歌个人资料及其登录数据。您的其他帐户仍然登录。</string>
+    <string name="account_youtube_verify_failed">无法验证您的 YouTube 音乐登录。请重试或使用Google登录。</string>
     <string name="account_youtube_cookie_invalid">YouTube cookie 无效，请重新登录</string>
     <string name="account_youtube_login_success">YouTube登录成功</string>
     <string name="account_youtube_session_expired">YouTube 会话已过期，请重新登录</string>
@@ -188,6 +206,8 @@
     <string name="sync_cooldown">同步冷却时间</string>
     <string name="sync_cooldown_description">自动同步之间的最小时间(分钟)</string>
     <string name="sync_data_with_ytm_account">与 YTM 帐户同步数据</string>
+    <string name="account_youtube_sync_build_required">在调试和调试版本中可以进行同步操作。</string>
+    <string name="account_youtube_sync_browse_required">启用登录以便浏览使用同步。</string>
     <string name="sync_direction">同步方向</string>
     <string name="sync_direction_app_to_yt">App → YouTube</string>
     <string name="sync_direction_description">选择同步从 YouTube 导入是否会发送本地更改，还是双向运行。</string>
