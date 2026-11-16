@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">Passen Sie die Größe des Spieler-Artworks für die aktuelle Ausrichtung an.</string>
     <string name="player_artwork_technical_info_description">Technische Wiedergabeinformationen im Player anzeigen.</string>
     <string name="player_artwork_technical_info_title">Zeige Statistiken für Nerds im Player</string>
+    <string name="player_artwork_hold_to_speed_up_title">Halten um zu beschleunigen</string>
+    <string name="player_artwork_hold_to_speed_up_description">Drücke und halte das Kunstwerk, um die Wiedergabe vorübergehend zu beschleunigen</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Beschleunigungsgeschwindigkeit</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Wiedergabegeschwindigkeit während Sie das Artwork halten.</string>
     <string name="player_artwork_transition_circular">Kreisförmig</string>
     <string name="player_auto_load_songs_in_queue">Titel automatisch in die Warteschlange laden</string>
     <string name="player_auto_load_songs_in_queue_description">Fügt weitere Songs hinzu, wenn sich die Warteschlange dem Ende nähert</string>
