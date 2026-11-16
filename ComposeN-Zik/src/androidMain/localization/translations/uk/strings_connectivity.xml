@@ -318,4 +318,5 @@
     <string name="listen_together_log_level_error">Помилка</string>
     <string name="listen_together_log_level_info">Інформація</string>
     <string name="listen_together_log_level_warning">Застереження</string>
+    <string name="network_proxy_mode_direct">ВІДДАЛИТИ</string>
 </resources>
