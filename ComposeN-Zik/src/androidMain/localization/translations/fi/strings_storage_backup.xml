@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="backup_export_themes_description">Tallenna ladatut ja paikalliset teemat ZIP varmuuskopioon</string>
+    <string name="backup_import_themes_description">Palauta ladattu ja paikallinen teemat ZIP varmuuskopiosta</string>
+    <string name="backup_export_select_all_description">Valitse kaikki vietävät tiedot</string>
+    <string name="backup_import_already_running">Varmuuskopion tuonti on jo käynnissä.</string>
+    <string name="backup_import_select_all_description">Valitse kaikki tuotavat tiedot</string>
+    <string name="backup_include_github_identity_credentials">Sisällytä GitHub henkilöllisyystiedot</string>
     <string name="storage_image_quality_title">Kuvan laatu</string>
     <string name="storage_image_quality_description">Koskee online-taideteoksia ja äskettäin lisättyjä kansia ja profiilikuvia. Alkuperäinen käyttää korkealaatuista ja voi käyttää enemmän tallennustilaa ja dataa.</string>
     <string name="storage_image_quality_optimized">Optimoitu</string>
@@ -116,6 +122,9 @@
     <string name="backup_before_update_failed">Varmuuskopion ennakkoasennus epäonnistui</string>
     <string name="backup_before_update_running_message">Varmuuskopioidaan tietoja ennen asennusta…</string>
     <string name="backup_before_update_running_title">Varmuuskopiointi käynnissä</string>
+    <string name="backup_export_separate_files_description">Jokainen valittu kategoria viedään erilliseen tiedostoon. Välimuistitiedostoja ja Stock teema eivät sisälly siihen.</string>
+    <string name="backup_export_with_themes_description">Vie tietokanta mukautetuilla kansilla, asetuksilla, teemoilla tai profiileilla</string>
+    <string name="backup_import_with_themes_description">Palauta SQLite tai ZIP tietokannan varmuuskopiointi, asetukset, teemat tai profiilit</string>
     <string name="backup_include_discord_credentials">Sisällytä Discordin henkilöllisyystiedot</string>
     <string name="backup_include_lastfm_credentials">Sisällytä Last.fm henkilöllisyystiedot</string>
     <string name="backup_include_proxy_password">Sisällytä välityspalvelimen salasana</string>
@@ -248,4 +257,34 @@
     <string name="export_cached_songs_generic_error">Vienti epäonnistui</string>
     <string name="backup_startup_preparing_library">Preparing your library…</string>
     <string name="backup_startup_recovery_failed">Kirjaston palauttaminen ei onnistunut.</string>
+    <string name="storage_breakdown_themes">Teemat</string>
+    <string name="storage_info_themes">Tallennetut teematietueet ja jaetut teemakaupan resurssit, esikatselut ja luonnokset.</string>
+    <string name="storage_breakdown_lyrics">Sanoitukset</string>
+    <string name="storage_info_lyrics">Teksti tavuja ladatuista ja mukautetuista sanoituksista tallennettu profiilitietokantaan.</string>
+    <string name="storage_cleanup_clear_theme_cache">Tyhjennä teemakaupan välimuisti</string>
+    <string name="storage_cleanup_theme_cache_description">Poistaa jaetut luettelotiedot. Tallennetut teemat, luonnokset ja niiden esikatselut säilytetään.</string>
+    <string name="storage_cleanup_clear_lyrics">Tyhjennä haetut sanoitukset</string>
+    <string name="storage_cleanup_lyrics_description">Poistaa automaattisesti haetut sanoitukset. Mukautetut sanoitukset säilytetään. Kirjastotietokanta voi käyttää vapaita sivuja uudelleen.</string>
+    <string name="backup_auto_enabled_title">Ota automaattinen varmuuskopiointi käyttöön</string>
+    <string name="backup_auto_enabled_description">Keskeytä automaattiset varmuuskopiot ja säilytä varmuuskopion asetukset.</string>
+    <string name="storage_cleanup_picker_title">Puhdista tallennustila</string>
+    <string name="storage_cleanup_picker_description">Valitse tiedostot ja tiedot tyhjentääksesi tämän soveltamisalan.</string>
+    <string name="storage_cleanup_select_caches">Valitse kätköt</string>
+    <string name="storage_cleanup_select_caches_description">Valitse kätköt ja väliaikaiset tiedostot.</string>
+    <string name="storage_cleanup_select_everything">Valitse kaikki</string>
+    <string name="storage_cleanup_select_everything_description">Valitse kätköt ja tiedot, mukaan lukien offline-lataukset.</string>
+    <string name="storage_cleanup_cache_group">Kätköt ja väliaikaiset tiedostot</string>
+    <string name="storage_cleanup_delete_group">Poistettavat tiedot</string>
+    <string name="storage_cleanup_review_selection">Arvostelu</string>
+    <string name="storage_cleanup_selected_confirmation">Tyhjennetäänkö valitut kohteet tässä laajuudessa?</string>
+    <string name="storage_cleanup_option_cached_images">Välimuistissa olevat kuvat</string>
+    <string name="storage_cleanup_option_streamed_audio">Suoratoistettu ääni</string>
+    <string name="storage_cleanup_option_waveforms">Aaltomuodot</string>
+    <string name="storage_cleanup_option_network_cache">Verkon välimuisti</string>
+    <string name="storage_cleanup_option_diagnostic_logs">Diagnostiset lokit</string>
+    <string name="storage_cleanup_option_temporary_files">Väliaikaiset tiedostot</string>
+    <string name="storage_cleanup_option_theme_catalog">Teemakaupan välimuisti</string>
+    <string name="storage_cleanup_option_fetched_lyrics">Noudetut sanoitukset automaattisesti</string>
+    <string name="storage_cleanup_option_offline_downloads">Ladattu ääni</string>
+    <string name="storage_cleanup_completed">Siivoaminen valmis.</string>
 </resources>
