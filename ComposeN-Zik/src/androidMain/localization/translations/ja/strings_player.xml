@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">プレイヤーのアートワークのサイズを現在の向きに合わせて調整します。</string>
     <string name="player_artwork_technical_info_description">プレーヤーに技術的な再生情報を表示します。</string>
     <string name="player_artwork_technical_info_title">詳細統計情報</string>
+    <string name="player_artwork_hold_to_speed_up_title">長押しでスピードアップ</string>
+    <string name="player_artwork_hold_to_speed_up_description">アートワークを長押しすると、一時的に再生が速くなります</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">ブースト速度</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">あなたがアートワークを保持している間、再生速度。</string>
     <string name="player_artwork_transition_circular">円形</string>
     <string name="player_auto_load_songs_in_queue">キューにある曲を自動で読み込む</string>
     <string name="player_auto_load_songs_in_queue_description">キューの終了時に曲を追加する</string>
