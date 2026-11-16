@@ -82,8 +82,8 @@
         <item quantity="other">%1$d utilisateurs bloqués</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
-        <item quantity="one">%1$d Élément nettoyé</item>
-        <item quantity="other">%1$d Éléments nettoyés</item>
+        <item quantity="one">%1$d élément nettoyé</item>
+        <item quantity="other">%1$d éléments nettoyés</item>
     </plurals>
     <plurals name="maintenance_pass_deferred_count">
         <item quantity="one">%1$d Élément reporté</item>
