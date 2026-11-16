@@ -437,6 +437,7 @@
     <string name="theme_store_draft_discard">Elimina bozza</string>
     <string name="theme_store_draft_resume">Continua bozza</string>
     <string name="theme_store_preview_add_extra">Aggiungi un\'anteprima extra</string>
+    <string name="theme_store_preview_remove_extra">Rimuovi questa anteprima extra</string>
     <string name="theme_store_preview_extra_title">Titolo anteprima</string>
     <string name="theme_store_preview_import_requirements_with_gif">Le anteprime sono pubbliche. Tenere le informazioni personali fuori dagli screenshot. PNG, JPEG, WebP o GIF · 4 MB per immagine. Le GIF mantengono la loro dimensione originale e devono adattarsi entro 1920 × 1920.</string>
     <string name="theme_store_preview_import_error">Impossibile importare questa immagine. Scegliere un\'immagine PNG, JPEG o WebP sotto 4 MB.</string>
