@@ -181,7 +181,6 @@
     <string name="network_stream_client_ios">iOS</string>
     <string name="network_stream_client_ipados">iPadOS</string>
     <string name="network_stream_client_mobile">Téléphone mobile</string>
-    <string name="network_stream_client_redownload_recommendation">Télécharger à nouveau les morceaux pour bénéficier d\'une meilleure qualité (notamment avec Web Remix ou un compte YTB Premium)</string>
     <string name="network_stream_client_tv_embedded">Télévision intégrée</string>
     <string name="network_stream_client_tv_html5">Télévision HTML5</string>
     <string name="network_stream_client_tv_simply">Télévision Simplement</string>
