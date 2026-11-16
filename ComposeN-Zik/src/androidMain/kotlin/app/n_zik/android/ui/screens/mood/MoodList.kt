@@ -1,6 +1,5 @@
 package app.n_zik.android.ui.screens.mood
 
-import app.n_zik.android.utils.showButtonPlayerVideoDefault
 import app.n_zik.android.components.ui.screens.CollectionPageStatus
 import androidx.compose.foundation.layout.PaddingValues
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
@@ -77,7 +76,6 @@ import androidx.compose.runtime.remember
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.models.Song
 import app.n_zik.android.core.utils.Toaster
-import app.n_zik.android.utils.showButtonPlayerVideoKey
 
 import app.n_zik.android.utils.addNext
 import app.n_zik.android.utils.asMediaItem
@@ -86,7 +84,6 @@ import app.n_zik.android.utils.enqueue
 import app.n_zik.android.utils.forcePlay
 import app.n_zik.android.utils.isDownloadedSong
 import app.n_zik.android.utils.manageDownload
-import app.n_zik.android.utils.playVideo
 import app.n_zik.android.enums.DownloadedStateMedia
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.CompositionLocalProvider
@@ -132,7 +129,6 @@ fun MoodList(
     val hapticFeedback = LocalHapticFeedback.current
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
-    val isVideoEnabled = remember { context.preferences.getBoolean(showButtonPlayerVideoKey, showButtonPlayerVideoDefault) }
 
     Column (
         modifier = Modifier
@@ -328,8 +324,7 @@ fun MoodList(
                                                 modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                                     onClick = {
                                                         binder?.stopRadio()
-                                                        if (isVideoEnabled) binder?.player?.playVideo(childItem.asMediaItem)
-                                                        else binder?.player?.forcePlay(childItem.asMediaItem)
+                                                        binder?.player?.forcePlay(childItem.asMediaItem)
                                                     },
                                                     onLongClick = {
                                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -343,8 +338,7 @@ fun MoodList(
                                                 ),
                                                 onClick = {
                                                     binder?.stopRadio()
-                                                    if (isVideoEnabled) binder?.player?.playVideo(childItem.asMediaItem)
-                                                    else binder?.player?.forcePlay(childItem.asMediaItem)
+                                                    binder?.player?.forcePlay(childItem.asMediaItem)
                                                 }
                                             )
                                         }
@@ -370,8 +364,7 @@ fun MoodList(
                                                     .clip(uiRoundnessShape()).combinedClickable(
                                                         onClick = {
                                                             binder?.stopRadio()
-                                                            if (isVideoEnabled) binder?.player?.playVideo(childItem.asMediaItem)
-                                                            else binder?.player?.forcePlay(childItem.asMediaItem)
+                                                            binder?.player?.forcePlay(childItem.asMediaItem)
                                                         },
                                                         onLongClick = {
                                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)

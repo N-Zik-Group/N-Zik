@@ -1,7 +1,6 @@
 package app.n_zik.android
 
 import app.n_zik.android.core.network.OfflineMode
-import app.n_zik.android.playback.services.canResolvePlayerVideo
 import app.n_zik.android.ui.screens.player.components.LocalPlayerMusicVideo
 import app.n_zik.android.ui.screens.player.components.MusicVideoPresentation
 import app.n_zik.android.ui.screens.player.components.ManualVideoSearchSheet
@@ -335,7 +334,6 @@ import app.n_zik.android.utils.restartActivityKey
 import app.n_zik.android.utils.hideStatusBarKey
 import app.n_zik.android.utils.saveProfileLastUsed
 import app.n_zik.android.utils.setDefaultPalette
-import app.n_zik.android.utils.REQUEST_INLINE_VIDEO
 import app.n_zik.android.utils.showSearchTabKey
 import app.n_zik.android.utils.showTotalTimeQueueKey
 import app.n_zik.android.core.coil.resize
@@ -2138,7 +2136,6 @@ class MainActivity :
                         val offlineMode by OfflineMode.rememberEnabled()
                         val videoSession = rememberPlayerMusicVideo(
                             audio = binder?.player,
-                            expanded = playerSheetState.isExpanded,
                             collapsed = playerSheetState.isCollapsed || playerSheetState.isDismissed,
                             inPip = pipState.value,
                             enabled = !offlineMode,
@@ -2656,9 +2653,8 @@ class MainActivity :
                         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
                                 if (mediaItem.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
-                                    val explicitVideo = mediaItem.mediaMetadata.extras?.getBoolean(REQUEST_INLINE_VIDEO) == true &&
-                                        !OfflineMode.enabled(this@MainActivity) && canResolvePlayerVideo(mediaItem)
-                                    if (!explicitVideo && preferences.getBoolean(keepPlayerMinimizedKey, true)) {
+                                    if (playerSheetState.isExpanded) return
+                                    if (preferences.getBoolean(keepPlayerMinimizedKey, true)) {
                                         // Collapsed position; pops with a fade when coming from the dismissed zone
                                         playerSheetState.presentMiniplayerCollapsed()
                                     } else {

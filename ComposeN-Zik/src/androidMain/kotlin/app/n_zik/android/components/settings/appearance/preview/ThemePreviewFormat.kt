@@ -43,6 +43,11 @@ import app.n_zik.android.enums.AnimatedGradient
 import app.n_zik.android.enums.BackgroundProgress
 import app.n_zik.android.enums.CarouselSize
 import app.n_zik.android.core.settings.DefaultColorPaletteMode
+import app.n_zik.android.enums.PlayerOpeningMode
+import app.n_zik.android.utils.DEFAULT_HOLD_TO_SPEED_UP_RATE
+import app.n_zik.android.utils.holdToSpeedUpKey
+import app.n_zik.android.utils.holdToSpeedUpRateKey
+import app.n_zik.android.utils.playerOpeningModeKey
 import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.enums.FontType
@@ -300,42 +305,62 @@ internal data object UseThemeDefault
 
 internal data class ThemeSettings(val plain: Map<String, Any>, val glass: Map<String, Any> = emptyMap())
 
-internal fun parseThemeV1(source: String): Map<ThemeCategory, ThemeSettings> =
-    parseThemeV1(source, allowEmptyCategories = false)
+internal const val ThemeAppearanceV2 = 2
+internal const val ThemeAppearanceV2MinimumVersionCode = 99
 
-internal fun parseThemeV1(source: String, allowEmptyCategories: Boolean): Map<ThemeCategory, ThemeSettings> {
-    val root = Json.parseToJsonElement(source) as? JsonObject ?: error("Invalid theme document")
+internal fun themeAppearanceSchemaFor(versionCode: Int): Int =
+    if (versionCode >= ThemeAppearanceV2MinimumVersionCode) ThemeAppearanceV2 else 1
+
+internal fun parseThemeAppearance(source: String): Map<ThemeCategory, ThemeSettings> =
+    parseThemeAppearance(source, allowEmptyCategories = false)
+
+internal fun themeAppearanceSchema(root: JsonObject): Int? {
     val version = root["schemaVersion"] as? JsonPrimitive
-    require(root.keys == setOf("schemaVersion", "categories") &&
-        version != null && !version.isString && jsonNumber.matches(version.content) &&
-        version.content.toBigDecimalOrNull()?.compareTo(java.math.BigDecimal.ONE) == 0
-    ) {
+    val numericVersion = version?.takeUnless { it.isString }?.content
+        ?.takeIf(jsonNumber::matches)?.toBigDecimalOrNull()
+    return (1..ThemeAppearanceV2).firstOrNull { numericVersion?.compareTo(it.toBigDecimal()) == 0 }
+}
+
+internal fun parseThemeAppearance(
+    source: String,
+    allowEmptyCategories: Boolean,
+    advertisedMinVersionCode: Int? = null,
+): Map<ThemeCategory, ThemeSettings> {
+    val root = Json.parseToJsonElement(source) as? JsonObject ?: error("Invalid theme document")
+    val schemaVersion = themeAppearanceSchema(root)
+    require(root.keys == setOf("schemaVersion", "categories") && schemaVersion != null) {
         "Unsupported theme schema"
+    }
+    require(schemaVersion != ThemeAppearanceV2 || advertisedMinVersionCode == null ||
+        advertisedMinVersionCode >= ThemeAppearanceV2MinimumVersionCode) {
+        "Theme appearance V2 requires Android version code 99"
     }
     val categories = root["categories"] as? JsonObject ?: error("Invalid theme categories")
     require(allowEmptyCategories || categories.isNotEmpty()) { "The theme contains no categories" }
     return categories.map { (name, content) ->
-        val fields = ImportThemeFields(content)
+        val fields = ImportThemeFields(content, schemaVersion)
         val category = ThemeCategory.entries.firstOrNull { it.wireKey == name }
             ?: error("Unknown theme category $name")
-        category to fields.readCategory(category)
+        category to fields.readCategory(category, schemaVersion)
     }.toMap()
 }
 
-internal fun encodeThemeV1(
+internal fun encodeThemeAppearance(
     plain: Map<String, *>,
     glass: Map<String, *>,
     defaultGlassQuality: GlassQuality = GlassQuality.Balanced,
+    schemaVersion: Int = 1,
 ): String =
     buildJsonObject {
-        put("schemaVersion", 1)
+        require(schemaVersion in 1..ThemeAppearanceV2)
+        put("schemaVersion", schemaVersion)
         put("categories", buildJsonObject {
             ThemeCategory.entries.forEach { category ->
                 val fields = ExportThemeFields(when (category) {
                     ThemeCategory.GLASS -> portableGlassPreferences(glass, defaultGlassQuality) + plain
                     else -> plain
                 })
-                fields.fields(category)
+                fields.fields(category, schemaVersion)
                 put(category.wireKey, JsonObject(fields.values))
             }
         })
@@ -426,7 +451,7 @@ private class ExportThemeFields(private val preferences: Map<String, *>) : Theme
     }
 }
 
-internal fun selectThemeV1Categories(source: String, included: Set<ThemeCategory>): String {
+internal fun selectThemeAppearanceCategories(source: String, included: Set<ThemeCategory>): String {
     val root = Json.parseToJsonElement(source) as JsonObject
     val categories = root.getValue("categories") as JsonObject
     val keys = included.map(ThemeCategory::wireKey).toSet()
@@ -440,7 +465,7 @@ private val ThemeCategory.wireKey: String get() = when (this) {
     ThemeCategory.GLASS -> "glass"
 }
 
-private fun ThemeFields.fields(category: ThemeCategory) {
+private fun ThemeFields.fields(category: ThemeCategory, schemaVersion: Int) {
     when (category) {
         ThemeCategory.COLORS -> {
             option<ColorPaletteName>("palette", colorPaletteNameKey, ColorPaletteName.Dynamic)
@@ -476,7 +501,7 @@ private fun ThemeFields.fields(category: ThemeCategory) {
                 }
             }
         }
-        ThemeCategory.PLAYER_AND_QUEUE -> player()
+        ThemeCategory.PLAYER_AND_QUEUE -> player(schemaVersion)
         ThemeCategory.NAVIGATION -> {
             option<NavigationBarPosition>("position", navigationBarPositionKey, NavigationBarPosition.BottomFloating)
             option<NavigationBarType>("labels", navigationBarTypeKey, NavigationBarType.IconOnly)
@@ -534,8 +559,8 @@ private fun ThemeFields.fields(category: ThemeCategory) {
     }
 }
 
-private fun ImportThemeFields.readCategory(category: ThemeCategory): ThemeSettings {
-    fields(category)
+private fun ImportThemeFields.readCategory(category: ThemeCategory, schemaVersion: Int): ThemeSettings {
+    fields(category, schemaVersion)
     val settings = result()
     return if (category == ThemeCategory.GLASS) {
         ThemeSettings(plain = mapOf(glassEnabledKey to settings.getValue(glassEnabledKey)), glass = settings - glassEnabledKey)
@@ -558,7 +583,12 @@ internal inline fun ThemeFields.optional(field: String, block: () -> Unit) {
     if (this !is ImportThemeFields || has(field)) block()
 }
 
-private fun ThemeFields.player() {
+private fun ThemeFields.player(schemaVersion: Int) {
+    if (schemaVersion >= ThemeAppearanceV2) {
+        optional("openingMode") { option<PlayerOpeningMode>("openingMode", playerOpeningModeKey, PlayerOpeningMode.Audio) }
+        optional("holdToSpeedUp") { flag("holdToSpeedUp", holdToSpeedUpKey, false) }
+        optional("holdToSpeedUpRate") { number("holdToSpeedUpRate", holdToSpeedUpRateKey, 1.1..4.0, DEFAULT_HOLD_TO_SPEED_UP_RATE) }
+    }
     optional("coverBackdrop") { number("coverBackdrop", playerBackdropKey, 0.0..100.0, 0f) }
     optional("nowPlayingIndicator") {
         option<MusicAnimationType>("nowPlayingIndicator", nowPlayingIndicatorKey, MusicAnimationType.Bubbles)
@@ -659,7 +689,7 @@ private fun ThemeFields.player() {
                 flag("lyrics", showMiniPlayerLyricsKey, false)
                 flag("visualizer", showMiniPlayerVisualizerKey, false)
                 flag("queue", showMiniPlayerQueueKey, false)
-                flag("video", showMiniPlayerVideoKey, false)
+                if (schemaVersion == 1) flag("video", showMiniPlayerVideoKey, false)
                 flag("discover", showMiniPlayerDiscoverKey, false)
             }
         }
@@ -714,7 +744,7 @@ private fun ThemeFields.player() {
         flag("menu", showButtonPlayerMenuKey, false)
         flag("startRadio", showButtonPlayerStartRadioKey, false)
         flag("discover", showButtonPlayerDiscoverKey, false)
-        flag("video", showButtonPlayerVideoKey, showButtonPlayerVideoDefault)
+        if (schemaVersion == 1) flag("video", showButtonPlayerVideoKey, showButtonPlayerVideoDefault)
     }
 }
 
@@ -824,7 +854,9 @@ internal val themeSettingNames: Map<String, String> by lazy {
             }
         }
     }
-    ThemeCategory.entries.forEach { collector.fields(it) }
+    for (schema in 1..ThemeAppearanceV2) {
+        ThemeCategory.entries.forEach { collector.fields(it, schema) }
+    }
     names
 }
 
@@ -837,7 +869,7 @@ private inline fun <reified T : Enum<T>> ThemeFields.option(field: String, prefe
 
 private fun String.isLayoutMask(length: Int): Boolean = this.length == length && all { it == '0' || it == '1' }
 
-internal class ImportThemeFields(content: JsonElement) : ThemeFields {
+internal class ImportThemeFields(content: JsonElement, private val schemaVersion: Int) : ThemeFields {
     private val remaining = (content as? JsonObject ?: error("Expected theme settings object")).toMutableMap()
     private val values = mutableMapOf<String, Any>()
 
@@ -885,7 +917,10 @@ internal class ImportThemeFields(content: JsonElement) : ThemeFields {
     }
 
     override fun order(field: String, key: String, allowedIds: Set<String>?, repeats: Map<String, Int>) {
-        val order = remaining.remove(field) as? JsonArray ?: error("Invalid order for $field")
+        val importedOrder = remaining.remove(field) as? JsonArray ?: error("Invalid order for $field")
+        val order = if (schemaVersion == 1 && key in setOf(miniPlayerButtonOrderKey, playerActionBarButtonOrderKey)) {
+            importedOrder.filterNot { it == JsonPrimitive("video") }
+        } else importedOrder
         require(order.size <= (allowedIds?.size ?: maxDockOrderEntries) + repeats.values.sum() - repeats.size) { "Too many buttons in $field" }
         val names = order.map { element ->
             val value = element as? JsonPrimitive ?: error("Invalid button in $field")
@@ -905,7 +940,7 @@ internal class ImportThemeFields(content: JsonElement) : ThemeFields {
     }
 
     override fun group(field: String, block: ThemeFields.() -> Unit) {
-        values.putAll(ImportThemeFields(requireNotNull(remaining.remove(field))).apply(block).result())
+        values.putAll(ImportThemeFields(requireNotNull(remaining.remove(field)), schemaVersion).apply(block).result())
     }
 
     private fun primitive(field: String): JsonPrimitive =

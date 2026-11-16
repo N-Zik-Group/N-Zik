@@ -27,6 +27,11 @@ import app.n_zik.android.utils.lyricsFontSizeKey
 import app.n_zik.android.utils.lyricsSizeKey
 import app.n_zik.android.utils.lyricsTypeKey
 import app.n_zik.android.utils.miniPlayerButtonOrderKey
+import app.n_zik.android.enums.PlayerOpeningMode
+import app.n_zik.android.utils.holdToSpeedUpKey
+import app.n_zik.android.utils.holdToSpeedUpRateKey
+import app.n_zik.android.utils.playerOpeningModeKey
+import app.n_zik.android.utils.playerLastModeWasVideoKey
 import app.n_zik.android.utils.nowPlayingIndicatorKey
 import app.n_zik.android.utils.playlistindicatorKey
 import app.n_zik.android.utils.Preference
@@ -49,7 +54,7 @@ import app.n_zik.android.utils.navigationBarPositionKey
 class ThemePreviewFormatTest {
     @Test
     fun `system font preference delegates font choice to Android`() {
-        val document = encodeThemeV1(
+        val document = encodeThemeAppearance(
             mapOf(useSystemFontKey to true, fontTypeKey to FontType.Poppins.name),
             emptyMap<String, Any>(),
         )
@@ -65,7 +70,7 @@ class ThemePreviewFormatTest {
 
     @Test
     fun `v1 appearance maps to isolated preview values`() {
-        val theme = parseThemeV1("""
+        val theme = parseThemeAppearance("""
             {"schemaVersion":1,"categories":{
               "colors":{"palette":"dynamic","mode":"system"},
               "navigation":{"position":"bottom-floating","labels":"icon-only"},
@@ -84,7 +89,7 @@ class ThemePreviewFormatTest {
     @Test
     fun `v1 appearance rejects non appearance fields`() {
         assertThrows(IllegalArgumentException::class.java) {
-            parseThemeV1("""{"schemaVersion":1,"categories":{"colors":{
+            parseThemeAppearance("""{"schemaVersion":1,"categories":{"colors":{
                 "palette":"dynamic","mode":"system","activeProfile":"other"
             }}}""")
         }
@@ -92,11 +97,12 @@ class ThemePreviewFormatTest {
 
     @Test
     fun `preview variants preserve every decoded setting except the Glass master switch`() {
-        val document = encodeThemeV1(
+        val document = encodeThemeAppearance(
             mapOf(hideStatusBarKey to true, glassEnabledKey to false),
             mapOf(GlassArea.Nav.preferenceKey to "GlassOnly", GlassArea.MiniPlayer.preferenceKey to "Disabled"),
+            schemaVersion = ThemeAppearanceV2,
         )
-        val theme = parseThemeV1(document)
+        val theme = parseThemeAppearance(document)
         val plain = theme.values.flatMap { it.plain.entries }.associate { it.toPair() }
         val optics = theme.getValue(ThemeCategory.GLASS).glass
 
@@ -112,8 +118,8 @@ class ThemePreviewFormatTest {
 
     @Test
     fun `empty preferences export creates an importable default theme`() {
-        val document = encodeThemeV1(emptyMap<String, Any>(), emptyMap<String, Any>())
-        val groups = parseThemeV1(document).toStoreGroups()
+        val document = encodeThemeAppearance(emptyMap<String, Any>(), emptyMap<String, Any>())
+        val groups = parseThemeAppearance(document).toStoreGroups()
         assertEquals(StoreGroup.entries.toSet(), groups.keys)
         assertEquals("System", groups.getValue(StoreGroup.Colors).plain[colorPaletteModeKey])
         assertEquals(25f, groups.getValue(StoreGroup.PageLayout).plain[uiRoundnessDpKey])
@@ -148,19 +154,60 @@ class ThemePreviewFormatTest {
             glassJellyEnabledKey to false,
             GlassArea.Header.preferenceKey to "ContourOnly",
         )
-        val document = encodeThemeV1(plain, glass)
+        val document = encodeThemeAppearance(plain, glass)
         val preview = themePreviewPreferences(document, glass = true)
         assertEquals(plain - setOf("githubAccessToken", "prevNextSongs"), preview.plain.filterKeys { it in plain })
         assertEquals(glass, preview.glass.filterKeys { it in glass })
         assertFalse(document.contains("not-a-theme-setting"))
         assertEquals(plain.filterKeys { it in setOf(lyricsFontSizeKey, lyricsSizeKey, lyricsTypeKey, actionExpandedKey) },
-            parseThemeV1(document).toStoreGroups().getValue(StoreGroup.Lyrics).plain.filterKeys { it in plain })
+            parseThemeAppearance(document).toStoreGroups().getValue(StoreGroup.Lyrics).plain.filterKeys { it in plain })
+    }
+
+    @Test
+    fun `V2 round trips opening mode and boost without carrying the last used mode`() {
+        val playerPreferences = mapOf(
+            playerOpeningModeKey to PlayerOpeningMode.RememberLast.name,
+            holdToSpeedUpKey to true,
+            holdToSpeedUpRateKey to 2.7f,
+        )
+        val legacy = encodeThemeAppearance(playerPreferences, emptyMap<String, Any>(), schemaVersion = 1)
+        val latest = encodeThemeAppearance(
+            playerPreferences + (playerLastModeWasVideoKey to true),
+            emptyMap<String, Any>(),
+            schemaVersion = ThemeAppearanceV2,
+        )
+        val latestPlayer = parseThemeAppearance(latest).getValue(ThemeCategory.PLAYER_AND_QUEUE).plain
+        assertEquals(playerPreferences, latestPlayer.filterKeys { it in playerPreferences })
+        assertFalse(playerLastModeWasVideoKey in latestPlayer)
+        assertFalse(playerOpeningModeKey in parseThemeAppearance(legacy).getValue(ThemeCategory.PLAYER_AND_QUEUE).plain)
+        assertEquals(1, themeAppearanceSchemaFor(98))
+        assertEquals(ThemeAppearanceV2, themeAppearanceSchemaFor(99))
+    }
+
+    @Test
+    fun `older themes can keep their button orders after the video action is removed`() {
+        val current = encodeThemeAppearance(
+            mapOf(
+                miniPlayerButtonOrderKey to """["play_pause"]""",
+                playerActionBarButtonOrderKey to """["download"]""",
+            ),
+            emptyMap<String, Any>(),
+        )
+        val order = """"buttonOrder":["play-pause"]"""
+        assertTrue(order in current)
+        val actionOrder = """"actionBarOrder":["download"]"""
+        assertTrue(actionOrder in current)
+        val document = current.replace(order, """"buttonOrder":["video","play-pause"]""")
+            .replace(actionOrder, """"actionBarOrder":["video","download"]""")
+        val preview = themePreviewPreferences(document, glass = false)
+        assertEquals("""["play_pause"]""", preview.plain[miniPlayerButtonOrderKey])
+        assertEquals("""["download"]""", preview.plain[playerActionBarButtonOrderKey])
     }
 
     @Test
     fun `landscape cover follows portrait until explicitly customized`() {
         fun decode(plain: Map<String, Any>) =
-            parseThemeV1(encodeThemeV1(plain, emptyMap<String, Any>()))
+            parseThemeAppearance(encodeThemeAppearance(plain, emptyMap<String, Any>()))
                 .getValue(ThemeCategory.PLAYER_AND_QUEUE).plain
 
         assertEquals(UseThemeDefault, decode(mapOf(thumbnailSizeDpKey to 83f))[thumbnailSizeLDpKey])
@@ -177,14 +224,14 @@ class ThemePreviewFormatTest {
             DataStoreUtils.KEY_BURGER_MENU_ORDER to """["history","separator","profiles","separator","settings"]""",
             DataStoreUtils.burgerMenuToggleKey("history") to false,
         )
-        val document = encodeThemeV1(plain, emptyMap<String, Any>())
+        val document = encodeThemeAppearance(plain, emptyMap<String, Any>())
         assertEquals(plain, themePreviewPreferences(document, false).plain.filterKeys { it in plain })
     }
 
     @Test
     fun `sparse previews fill from Stock without adding settings to import`() {
         val partial = """{"schemaVersion":1,"categories":{"colors":{"palette":"dynamic","mode":"light"}}}"""
-        val imported = parseThemeV1(partial)
+        val imported = parseThemeAppearance(partial)
         val demo = themePreviewPreferences(partial, glass = true)
 
         assertEquals(setOf(ThemeCategory.COLORS), imported.keys)

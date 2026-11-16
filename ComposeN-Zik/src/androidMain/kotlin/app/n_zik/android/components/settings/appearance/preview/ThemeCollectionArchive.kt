@@ -81,7 +81,7 @@ internal suspend fun writeThemeCollectionArchive(
             val theme = checkNotNull(saved.theme)
             val appearance = saved.document.encodeToByteArray()
             require(appearance.size <= ThemeDocumentLimit && appearance.sha256() == theme.appearance.sha256)
-            parseThemeV1(saved.document)
+            parseThemeAppearance(saved.document)
             put(record.directory + "manifest.json", metadata)
             put(record.directory + theme.appearance.path, appearance)
             put(record.directory + "reviews.json", emptyThemeReviews)

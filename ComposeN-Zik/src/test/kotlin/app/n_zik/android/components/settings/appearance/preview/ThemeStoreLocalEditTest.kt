@@ -131,7 +131,7 @@ class ThemeStoreLocalEditTest {
 
     private fun editedTheme(original: SavedTheme): SavedTheme {
         val theme = checkNotNull(original.theme)
-        val document = encodeThemeV1(mapOf(colorPaletteModeKey to ColorPaletteMode.Light.name), emptyMap<String, Any>())
+        val document = encodeThemeAppearance(mapOf(colorPaletteModeKey to ColorPaletteMode.Light.name), emptyMap<String, Any>())
         return original.copy(name = "My edited theme", document = document, theme = theme.copy(
             title = "My edited theme", appearance = theme.appearance.copy(sha256 = document.encodeToByteArray().sha256()),
         ))

@@ -30,10 +30,22 @@ class ThemePreviewDemoTest {
     }
 
     @Test
+    fun onlySystemThemesReceiveBothBrightnessPreviews() {
+        assertTrue(themePreviewFollowsSystem(defaultThemeAppearanceDocument()))
+        val fixedMode = encodeThemeAppearance(
+            mapOf(app.n_zik.android.utils.colorPaletteModeKey to app.n_zik.android.enums.ColorPaletteMode.Dark.name),
+            emptyMap<String, Any>(),
+        )
+        assertFalse(themePreviewFollowsSystem(fixedMode))
+        assertEquals(4, systemModePreviews.size)
+    }
+
+    @Test
     fun galleryScenesHaveStableUniqueNames() {
         assertEquals(
             listOf("player", "queue", "navigation", "home", "search", "search-albums", "search-artists",
-                "album", "lyrics", "artist", "playlist", "local-playlist", "player-playing", "miniplayer-playing"),
+                "album", "lyrics", "artist", "playlist", "local-playlist", "player-playing", "miniplayer-playing",
+                "menu", "dialog", "player-light", "player-dark"),
             ThemePreviewScene.entries.map { it.fileName },
         )
     }

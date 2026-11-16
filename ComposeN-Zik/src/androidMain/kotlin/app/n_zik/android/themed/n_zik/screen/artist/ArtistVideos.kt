@@ -1,6 +1,5 @@
 package app.n_zik.android.themed.n_zik.screen.artist
 
-import app.n_zik.android.utils.showButtonPlayerVideoDefault
 import app.n_zik.android.ui.styling.Dimensions
 import androidx.compose.foundation.layout.PaddingValues
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
@@ -47,10 +46,8 @@ import app.n_zik.android.utils.asSong
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.enqueue
 import app.n_zik.android.utils.forcePlay
-import app.n_zik.android.utils.playVideo
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.utils.showButtonPlayerVideoKey
 import app.n_zik.android.compose.persist.persist
 import app.n_zik.android.MODIFIED_PREFIX
 
@@ -71,7 +68,6 @@ fun ArtistVideos(
     val context = LocalContext.current
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
-    val isVideoEnabled = context.preferences.getBoolean(showButtonPlayerVideoKey, showButtonPlayerVideoDefault)
 
     val thumbnailHeightDp = 72.dp
     val thumbnailWidthDp = 128.dp
@@ -136,10 +132,7 @@ fun ArtistVideos(
                                     },
                                     onClick = {
                                         binder?.stopRadio()
-                                        if (isVideoEnabled)
-                                            binder?.player?.playVideo(mediaItem)
-                                        else
-                                            binder?.player?.forcePlay(mediaItem)
+                                        binder?.player?.forcePlay(mediaItem)
                                     }
                                 ),
                             disableScrollingText = disableScrollingText

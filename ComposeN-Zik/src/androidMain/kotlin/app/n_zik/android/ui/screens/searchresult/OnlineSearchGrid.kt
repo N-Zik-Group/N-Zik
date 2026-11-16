@@ -1,6 +1,5 @@
 package app.n_zik.android.ui.screens.searchresult
 
-import app.n_zik.android.utils.showButtonPlayerVideoDefault
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.settings.appearance.preview.themePreviewSearchPage
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
@@ -50,7 +49,6 @@ import app.n_zik.android.utils.enqueue
 import app.n_zik.android.utils.forcePlay
 import app.n_zik.android.utils.isDownloadedSong
 import app.n_zik.android.utils.manageDownload
-import app.n_zik.android.utils.playVideo
 import app.n_zik.android.colorPalette
 import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.enums.DownloadedStateMedia
@@ -71,7 +69,6 @@ import androidx.compose.runtime.remember
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.utils.preferences
-import app.n_zik.android.utils.showButtonPlayerVideoKey
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.typography
 import app.n_zik.android.ui.items.ArtistItem
@@ -108,7 +105,6 @@ fun OnlineSearchGrid(
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
     val hapticFeedback = LocalHapticFeedback.current
-    val isVideoEnabled = remember { context.preferences.getBoolean(showButtonPlayerVideoKey, showButtonPlayerVideoDefault) }
 
     val itemContent: @Composable LazyGridItemScope.(Innertube.Item) -> Unit = { item ->
         Column(
@@ -169,8 +165,7 @@ fun OnlineSearchGrid(
                                     },
                                     onClick = {
                                         binder?.stopRadio()
-                                        if (isVideoEnabled) binder?.player?.playVideo(item.asMediaItem)
-                                        else binder?.player?.forcePlay(item.asMediaItem)
+                                        binder?.player?.forcePlay(item.asMediaItem)
                                     }
                                 ),
                             disableScrollingText = disableScrollingText

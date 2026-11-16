@@ -51,7 +51,6 @@ import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
 import app.n_zik.android.components.menu.artist.OnlineArtistItemMenu
 import app.n_zik.android.components.menu.song.SongItemMenu
 import app.n_zik.android.components.menu.video.VideoItemMenu
-import app.n_zik.android.isVideoEnabled
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
@@ -70,7 +69,6 @@ import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.asSong
 import app.n_zik.android.utils.forcePlay
 import app.n_zik.android.core.database.artistEntryNames
-import app.n_zik.android.utils.playVideo
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.playlist.OnlinePlaylistItemMenu
@@ -377,10 +375,7 @@ fun YtmSectionItems(
                                         .combinedClickable(
                                             onClick = {
                                                 binder?.stopRadio()
-                                                if (isVideoEnabled())
-                                                    binder?.player?.playVideo(item.asMediaItem)
-                                                else
-                                                    binder?.player?.forcePlay(item.asMediaItem)
+                                                binder?.player?.forcePlay(item.asMediaItem)
                                             },
                                             onLongClick = { menuState.display { VideoItemMenu(navController = navController, song = item.asSong).MenuComponent() } }
                                         ).animateItem()

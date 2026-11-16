@@ -69,6 +69,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -80,6 +82,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import app.n_zik.android.LocalIsShowingLyrics
@@ -94,7 +97,11 @@ import app.n_zik.android.typography
 import app.n_zik.android.components.ui.UiButton
 import app.n_zik.android.components.glass.GlassMenuHostState
 import app.n_zik.android.components.glass.GlassRippleProvider
+import app.n_zik.android.components.dialog.common.ConfirmationDialog
+import app.n_zik.android.components.glass.GlassDialogOverlayHost
 import app.n_zik.android.components.glass.GlassSceneContent
+import app.n_zik.android.components.glass.SharedGlassMenuSheet
+import app.n_zik.android.components.menu.song.SongItemMenu
 import app.n_zik.android.components.glass.LocalGlassArtworkColor
 import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.LocalGlassPlayerOverlayActive
@@ -281,7 +288,10 @@ private fun CaptureGallery(
     } else emptyList()
     val inspectOnly = requestedScenes.size == 1 && intent?.getBooleanExtra("inspectOnly", false) == true
     val playbackOnly = automation && intent?.getBooleanExtra("playbackOnly", false) == true
-    val scenes = requestedScenes.ifEmpty { ThemePreviewScene.entries.filter { !playbackOnly || it.playing } }
+    val followsSystem = remember(document) { themePreviewFollowsSystem(document) }
+    val scenes = requestedScenes.ifEmpty {
+        ThemePreviewScene.entries.filter { (!playbackOnly || it.playing) && (it.paletteMode == null || followsSystem) }
+    }
     val normal = rememberThemePreviewAppearance(document, false)
     val glass = rememberThemePreviewAppearance(document, true)
     val frames = remember(scenes) {
@@ -321,7 +331,10 @@ private fun CaptureGallery(
             }
         }
     }
-    val visibleTheme = if (frame?.glass == true) glass else normal
+    val paletteOverride = frame?.scene?.paletteMode
+    val visibleTheme = if (frame != null && paletteOverride != null) {
+        rememberThemePreviewAppearance(document, frame.glass, paletteOverride)
+    } else if (frame?.glass == true) glass else normal
     val dark = visibleTheme.appearance.colorPalette.isDark
     val hideStatusBar = frame != null && visibleTheme.preferences[hideStatusBarKey] == true
     LaunchedEffect(window, dark, hideStatusBar) {
@@ -486,6 +499,8 @@ private fun PreviewPage(session: ThemePreviewSession, theme: ThemePreviewAppeara
     val menu = remember { MenuState() }
     val fullPlayer = session.scene in setOf(
         ThemePreviewScene.PLAYER, ThemePreviewScene.PLAYER_PLAYING, ThemePreviewScene.QUEUE, ThemePreviewScene.LYRICS,
+        ThemePreviewScene.MENU, ThemePreviewScene.DIALOG,
+        ThemePreviewScene.PLAYER_LIGHT, ThemePreviewScene.PLAYER_DARK,
     )
     // Full-player scenes skip AppNavigation, which normally supplies this artwork tint.
     val artworkColor = if (fullPlayer) {
@@ -633,9 +648,37 @@ private fun PreviewPage(session: ThemePreviewSession, theme: ThemePreviewAppeara
                     ) {
                         if (fullPlayer) Player(nav, onDismiss = {})
                     }
+                    when (session.scene) {
+                        ThemePreviewScene.MENU -> ThemePreviewSongMenu(nav)
+                        ThemePreviewScene.DIALOG -> ConfirmationDialog(
+                            title = stringResource(R.string.common_action_confirm),
+                            text = stringResource(R.string.player_queue_clear_confirmation),
+                            confirmText = stringResource(R.string.common_action_clear),
+                            onDismiss = {},
+                            onConfirm = {},
+                        )
+                        else -> Unit
+                    }
                 }
+                GlassDialogOverlayHost(host)
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@androidx.annotation.OptIn(UnstableApi::class)
+@Composable
+private fun ThemePreviewSongMenu(nav: NavController) {
+    val state = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val menu = SongItemMenu(nav, ThemePreviewDemo.queue.first())
+    SharedGlassMenuSheet(
+        showSheet = true,
+        onDismissRequest = {},
+        sheetState = state,
+        partiallyExpanded = true,
+    ) {
+        menu.MenuComponent()
     }
 }
 

@@ -69,17 +69,17 @@ class ThemeStoreCatalogTest {
 
     @Test
     fun defaultAppearanceExportsAsPortableDocument() {
-        val appearance = parseThemeV1(encodeThemeV1(emptyMap<String, String>(), emptyMap<String, String>()))
+        val appearance = parseThemeAppearance(encodeThemeAppearance(emptyMap<String, String>(), emptyMap<String, String>()))
         assertEquals(ThemeCategory.entries.toSet(), appearance.keys)
         assertTrue(appearance.values.all { it.plain.isNotEmpty() })
     }
 
     @Test
     fun submissionOnlyExportsSelectedCategories() {
-        val source = encodeThemeV1(emptyMap<String, String>(), emptyMap<String, String>())
+        val source = encodeThemeAppearance(emptyMap<String, String>(), emptyMap<String, String>())
         val selected = setOf(ThemeCategory.COLORS, ThemeCategory.NAVIGATION)
-        assertEquals(parseThemeV1(source).filterKeys { it in selected },
-            parseThemeV1(selectThemeV1Categories(source, selected)))
+        assertEquals(parseThemeAppearance(source).filterKeys { it in selected },
+            parseThemeAppearance(selectThemeAppearanceCategories(source, selected)))
     }
 
     @Test

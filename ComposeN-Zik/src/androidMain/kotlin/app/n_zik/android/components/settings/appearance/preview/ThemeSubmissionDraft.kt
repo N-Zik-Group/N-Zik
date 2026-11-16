@@ -3,17 +3,22 @@ package app.n_zik.android.components.settings.appearance.preview
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 
-private val submissionDraftShape by lazy {
-    Json.parseToJsonElement(defaultThemeAppearanceDocument()) as JsonObject
+private val submissionDraftShapes by lazy {
+    (1..ThemeAppearanceV2).associateWith { version ->
+        Json.parseToJsonElement(
+            encodeThemeAppearance(emptyMap<String, Any>(), emptyMap<String, Any>(), schemaVersion = version)
+        ) as JsonObject
+    }
 }
 
 /** Resumes local editor drafts without relaxing the external theme document parser. */
 internal fun compatibleThemeSubmissionDraftAppearance(source: String): String? {
-    if (runCatching { parseThemeV1(source) }.isSuccess) return source
+    if (runCatching { parseThemeAppearance(source) }.isSuccess) return source
     return runCatching {
         val root = Json.parseToJsonElement(source) as? JsonObject ?: error("Invalid draft appearance")
-        val filtered = retainDraftFields(root, submissionDraftShape).toString()
-        parseThemeV1(filtered)
+        val shape = requireNotNull(submissionDraftShapes[themeAppearanceSchema(root)])
+        val filtered = retainDraftFields(root, shape).toString()
+        parseThemeAppearance(filtered)
         filtered
     }.getOrNull()
 }

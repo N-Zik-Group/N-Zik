@@ -1,6 +1,7 @@
 package app.n_zik.android.ui.screens.player
 
 import app.n_zik.android.ui.screens.player.components.LocalPlayerMusicVideo
+import app.n_zik.android.ui.screens.player.components.PlayerMusicVideo
 import app.n_zik.android.ui.screens.player.components.PlayerAudioVideoToggle
 import app.n_zik.android.ui.screens.player.components.PlayerVideoUnavailable
 import app.n_zik.android.ui.screens.player.components.InlineMusicVideo
@@ -304,6 +305,7 @@ import app.n_zik.android.utils.playNext
 import app.n_zik.android.utils.playPrevious
 import app.n_zik.android.utils.playbackStateState
 import app.n_zik.android.utils.playerBackgroundColorsKey
+import app.n_zik.android.utils.transparentBackgroundPlayerActionBarKey
 import app.n_zik.android.components.player.rememberPlayerLandscapeArtworkSize
 import app.n_zik.android.utils.playerTypeKey
 import app.n_zik.android.utils.positionAndDurationState
@@ -840,8 +842,9 @@ fun Player(
 
     val videoSession = LocalPlayerMusicVideo.current
     val offlineMode by OfflineMode.rememberEnabled()
-    val showVideoMode = preview == null && videoSession != null && !offlineMode &&
-        canResolvePlayerVideo(mediaItem)
+    val toggleSession = if (preview != null) remember { PlayerMusicVideo() } else videoSession
+    val showVideoMode = toggleSession != null &&
+        (preview != null || !offlineMode && canResolvePlayerVideo(mediaItem))
     LaunchedEffect(videoSession?.selected) {
         if (videoSession?.selected == true) {
             isShowingLyrics = false
@@ -1498,11 +1501,19 @@ fun Player(
                     onDismiss
                 )
             }
+            val transparentActionBar by rememberPreference(transparentBackgroundPlayerActionBarKey, true)
+            val gradientHidesNativePlate = blackgradient &&
+                (playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient ||
+                    playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient)
+            val transparentNativeActions = !glassSettings.enabled && (transparentActionBar || gradientHidesNativePlate)
             val modifier = if (glassSettings.enabled)
                 Modifier.align(if (isLandscape) Alignment.BottomEnd else Alignment.BottomCenter) else Modifier
             Box(modifier) {
-                if (playerContrast == null) bar()
-                else SurfaceForegroundContent(playerContrast.surface, playerContrast.scrim) { bar() }
+                when {
+                    playerContrast == null -> bar()
+                    transparentNativeActions -> SurfaceForegroundContent(playerContrast.backdrop) { bar() }
+                    else -> SurfaceForegroundContent(playerContrast.surface, playerContrast.scrim) { bar() }
+                }
             }
         }
 
@@ -1957,12 +1968,13 @@ fun Player(
                     }
                     }
                 }, controls = {
-                    if (showVideoMode && videoSession != null) {
+                    if (showVideoMode && toggleSession != null) {
                         Box(Modifier.fillMaxWidth().padding(vertical = 4.dp), contentAlignment = Alignment.Center) {
                             PlayerAudioVideoToggle(
-                                videoSession,
+                                toggleSession,
                                 showUnavailable = showVideoUnavailable,
                                 onSearchManually = openManualVideoSearch,
+                                interactive = preview == null,
                             )
                         }
                     }
@@ -2289,7 +2301,7 @@ fun Player(
 
 
                 header = {
-                if (showTopActionsBar || showVideoMode) {
+                if (showTopActionsBar) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -2304,23 +2316,24 @@ fun Player(
                             .height(44.dp)
                     ) {
 
-                        if (showTopActionsBar) PlayerTopAction(
+                        PlayerTopAction(
                             icon = R.drawable.chevron_down,
                             color = colorPalette().collapsedPlayerProgressBar,
                             rotation = rotationAngle,
                             settings = glassSettings,
                             onClick = onDismiss,
-                        ) else Spacer(Modifier.size(44.dp))
+                        )
 
-                        if (showVideoMode && videoSession != null) {
+                        if (showVideoMode && toggleSession != null) {
                             PlayerAudioVideoToggle(
-                                videoSession,
+                                toggleSession,
                                 showUnavailable = false,
                                 onSearchManually = openManualVideoSearch,
+                                interactive = preview == null,
                             )
                         }
 
-                        if (showTopActionsBar && !showButtonPlayerMenu) {
+                        if (!showButtonPlayerMenu) {
                             PlayerTopAction(
                                 icon = R.drawable.ellipsis_vertical,
                                 color = colorPalette().collapsedPlayerProgressBar,
@@ -2364,7 +2377,7 @@ fun Player(
                     )
                 }
 
-                if (topPadding && !showTopActionsBar && !showVideoMode) {
+                if (topPadding && !showTopActionsBar) {
                     Spacer(
                         modifier = Modifier
                             .padding(
@@ -2706,6 +2719,21 @@ fun Player(
               }
                 }
             )
+            if (!showTopActionsBar && showVideoMode && toggleSession != null) {
+                Box(
+                    Modifier.align(Alignment.TopCenter)
+                        .padding(windowInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal).asPaddingValues())
+                        .height(44.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    PlayerAudioVideoToggle(
+                        toggleSession,
+                        showUnavailable = false,
+                        onSearchManually = openManualVideoSearch,
+                        interactive = preview == null,
+                    )
+                }
+            }
            }
         }
 

@@ -6,7 +6,7 @@ import kotlinx.serialization.json.Json
 
 internal const val BundledThemeId = "9ffe92cc-aadd-4bc4-ac32-bbce237ee750"
 
-internal fun defaultThemeAppearanceDocument(): String = encodeThemeV1(emptyMap<String, Any>(), emptyMap<String, Any>())
+internal fun defaultThemeAppearanceDocument(): String = encodeThemeAppearance(emptyMap<String, Any>(), emptyMap<String, Any>(), schemaVersion = ThemeAppearanceV2)
 
 internal fun bundledDefaultTheme(context: Context): SavedTheme {
     val document = defaultThemeAppearanceDocument()
@@ -19,12 +19,12 @@ internal fun bundledDefaultTheme(context: Context): SavedTheme {
     val theme = StoreTheme(
         schemaVersion = 1,
         themeId = BundledThemeId,
-        revision = 1,
+        revision = 2,
         title = name,
         description = context.getString(R.string.theme_store_default_description),
         author = StoreAuthor(292738521, "N-Zik-Group"),
         tags = listOf("stock", "built-in"),
-        compatibility = StoreCompatibility(FirstThemeStoreVersionCode),
+        compatibility = StoreCompatibility(ThemeAppearanceV2MinimumVersionCode),
         appearance = StoreFile("appearance.json", document.encodeToByteArray().sha256()),
         previews = previews,
         localCreatorName = "N-Zik Group",

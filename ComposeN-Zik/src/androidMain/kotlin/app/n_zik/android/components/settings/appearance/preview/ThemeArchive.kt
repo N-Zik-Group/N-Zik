@@ -66,7 +66,8 @@ internal fun validateThemeArchiveDocuments(theme: StoreTheme, read: (String, Int
     val appearance = read(theme.appearance.path, ThemeDocumentLimit)
     require(appearance.sha256() == theme.appearance.sha256)
     val document = appearance.decodeToString(throwOnInvalidSequence = true)
-    parseThemeV1(document)
+    parseThemeAppearance(document, allowEmptyCategories = false,
+        advertisedMinVersionCode = theme.compatibility.minVersionCode ?: 0)
     parseStoreReviews(read("reviews.json", ThemeMetadataLimit).decodeToString(throwOnInvalidSequence = true))
     return document
 }

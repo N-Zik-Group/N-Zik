@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.edit
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.models.Album
 import app.n_zik.android.models.Artist
@@ -127,11 +128,19 @@ internal object ThemePreviewDemo {
     }.trimEnd()
 }
 
-internal enum class ThemePreviewScene(val fileName: String, val searchTab: Int? = null, val playing: Boolean = false) {
+internal enum class ThemePreviewScene(
+    val fileName: String,
+    val searchTab: Int? = null,
+    val playing: Boolean = false,
+    val paletteMode: ColorPaletteMode? = null,
+) {
     PLAYER("player"), QUEUE("queue"), NAVIGATION("navigation"), HOME("home"),
     SEARCH("search", 0), SEARCH_ALBUMS("search-albums", 1), SEARCH_ARTISTS("search-artists", 2),
     ALBUM("album"), LYRICS("lyrics"), ARTIST("artist"), PLAYLIST("playlist"), LOCAL_PLAYLIST("local-playlist"),
-    PLAYER_PLAYING("player-playing", playing = true), MINIPLAYER_PLAYING("miniplayer-playing", playing = true);
+    PLAYER_PLAYING("player-playing", playing = true), MINIPLAYER_PLAYING("miniplayer-playing", playing = true),
+    MENU("menu"), DIALOG("dialog"),
+    PLAYER_LIGHT("player-light", paletteMode = ColorPaletteMode.Light),
+    PLAYER_DARK("player-dark", paletteMode = ColorPaletteMode.Dark);
 }
 
 internal class ThemePreviewSession(

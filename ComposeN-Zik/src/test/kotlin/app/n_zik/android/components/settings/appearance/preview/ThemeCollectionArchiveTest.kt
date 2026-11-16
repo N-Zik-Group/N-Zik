@@ -168,6 +168,23 @@ class ThemeCollectionArchiveTest {
     }
 
     @Test
+    fun versionTwoArchiveRequiresCompatibilityCodeNinetyNine() {
+        val saved = theme("12345678-1111-2222-3333-123456789019")
+        val document = defaultThemeAppearanceDocument()
+        val bytes = document.encodeToByteArray()
+        val manifest = requireNotNull(saved.theme).copy(
+            appearance = StoreFile("appearance.json", bytes.sha256()),
+        )
+        val read = { path: String, _: Int ->
+            if (path == "appearance.json") bytes else "{\"schemaVersion\":1,\"reviews\":[]}".encodeToByteArray()
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            validateThemeArchiveDocuments(manifest.copy(compatibility = StoreCompatibility(98)), read)
+        }
+        assertEquals(document, validateThemeArchiveDocuments(manifest.copy(compatibility = StoreCompatibility(99)), read))
+    }
+
+    @Test
     fun singleArchiveUsesTheSameLocalIdentityThroughEitherImportPath() = runBlocking {
         val saved = theme("12345678-1111-2222-3333-123456789012")
         val theme = requireNotNull(saved.theme)
@@ -197,7 +214,7 @@ class ThemeCollectionArchiveTest {
             lyricsSizeKey to 38f,
             nowPlayingIndicatorKey to "CrazyBars",
         )
-        val document = encodeThemeV1(plain, mapOf(glassBlurKey to 7f))
+        val document = encodeThemeAppearance(plain, mapOf(glassBlurKey to 7f))
         val original = theme("12345678-1111-2222-3333-123456789022")
         val manifest = requireNotNull(original.theme).let { current ->
             current.copy(appearance = current.appearance.copy(sha256 = document.encodeToByteArray().sha256()))
@@ -209,7 +226,7 @@ class ThemeCollectionArchiveTest {
 
         val restored = requireNotNull(library.download(saved.id))
         assertEquals(document, restored.document)
-        val settings = parseThemeV1(restored.document).toStoreGroups().values
+        val settings = parseThemeAppearance(restored.document).toStoreGroups().values
         val profile = context.getSharedPreferences("zip-customization-test", Context.MODE_PRIVATE)
         val glass = context.getSharedPreferences("zip-customization-glass-test", Context.MODE_PRIVATE)
         settings.forEach { it.applyTo(profile, glass) }
@@ -301,7 +318,7 @@ class ThemeCollectionArchiveTest {
         ThemeStoreLibrary(context.getSharedPreferences("restored-themes-$name", Context.MODE_PRIVATE))
 
     private fun theme(id: String, imported: Boolean = true): SavedTheme {
-        val document = defaultThemeAppearanceDocument()
+        val document = encodeThemeAppearance(emptyMap<String, Any>(), emptyMap<String, Any>())
         val theme = StoreTheme(
             1, id, 1, "Same name", "A portable theme", StoreAuthor(12, "alice"), emptyList(),
             StoreCompatibility(97), StoreFile("appearance.json", document.encodeToByteArray().sha256()),

@@ -1,0 +1,28 @@
+Added:
+- feat(player): add configurable artwork hold boost speed (PR https://github.com/N-Zik-Group/N-Zik/pull/995)
+  - Find Hold to speed up and Boost speed in Cover & Thumbnail or through Player and global settings search. Boost speed appears when the gesture is on. If search finds it while the gesture is off, it takes you to the switch.
+  - The gesture is off by default and the default boost is 2.0x.
+  - Adjust the boost from 1.1x to 4.0x in 0.1x steps. Holding the artwork boosts playback for as long as you hold it, then restores the previous speed. Playback stays at its current speed when it already meets or exceeds the boost.
+- feat(player): add inline music video playback
+  - Switch between Audio and Video from the top of the player. Choose how the player opens, including whether to restore the last mode. YouTube results follow that choice too.
+  - The player looks for the matching clip on YouTube Music. Search for a clip when it cannot find one, or hold the Video tab to open the picker.
+  - Play the clip in the player, in picture-in-picture, or fullscreen in either landscape orientation. The clip shares the player timeline and controls, with buttons that follow the active theme.
+- feat(playlist): show when a song is already in a playlist (issue https://github.com/N-Zik-Group/N-Zik/issues/90)
+  - Show the existing playlist icon beside each destination that already contains the selected song in PlaylistsMenu and AddToPlaylistItemMenu.
+  - Block attempts to add the same song again, show an informational toast, and check stored membership before local and YouTube Music additions.
+  - Remove the back arrow from both add-to-playlist menus.
+
+Improved:
+- improve(theme-store): update theme compatibility and previews
+  - Appearance V2 themes require Android version code 99 and can include the player opening mode, the hold-to-speed gesture, and its boost speed.
+  - Refreshed Stock and catalog previews include menus, dialogs, and separate light and dark previews for themes that follow the system.
+
+Fixed:
+- fix(player): update the Glass reflection when paused video changes
+  - Refresh the reflection when seeking through a paused clip.
+- fix(player): restore the transparent action bar in the classic layout.
+- fix(ui): adapt text and icons to light-theme backgrounds
+  - Use readable foreground colors with the Glass film and dimmed backdrop in menus, dialogs, and sheets, including Lyrics settings.
+  - Adapt full-player text and controls to the displayed artwork or gradient in Glass and native layouts. Keep accent colors where they are readable and use a neutral color or local contrast layer when needed.
+- fix(player): slide the mini-player in and out without fading
+  - Slide the opaque mini-player in and out with a spring from its configured screen edge, including when placed at the top.

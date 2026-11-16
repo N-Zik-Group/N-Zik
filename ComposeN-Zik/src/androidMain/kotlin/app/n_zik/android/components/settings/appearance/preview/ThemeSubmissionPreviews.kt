@@ -17,6 +17,19 @@ import timber.log.Timber
 
 internal const val SubmissionPreviewMaxEdge = 1920
 
+internal fun availableAutomaticPreviews(existing: Set<String>): List<String> {
+    val occupied = (existing + requiredPreviews).toMutableSet()
+    return buildList {
+        addAll(requiredPreviews)
+        for (variants in optionalAutomaticPreviews.chunked(2)) {
+            if (occupied.size + variants.count { it !in occupied } <= 36) {
+                addAll(variants)
+                occupied.addAll(variants)
+            }
+        }
+    }
+}
+
 internal fun submissionPreviewVariantSlots(slots: List<String>, glass: Boolean): List<String> {
     val suffix = if (glass) "-glass" else "-normal"
     return slots.filter { it.endsWith(suffix) || (!it.endsWith("-normal") && !it.endsWith("-glass")) }
@@ -38,7 +51,7 @@ internal data class SubmissionPreviewSelection(val removedExtras: Set<String> = 
 
     fun gallerySlots(published: Set<String>, replacements: Set<String>): List<String> {
         val ready = (published + replacements).filter(::includes).toSet()
-        return requiredPreviews + playbackPreviews.filter { it in ready } + (ready - automaticPreviews.toSet())
+        return requiredPreviews + optionalAutomaticPreviews.filter { it in ready } + (ready - automaticPreviews.toSet())
     }
 }
 

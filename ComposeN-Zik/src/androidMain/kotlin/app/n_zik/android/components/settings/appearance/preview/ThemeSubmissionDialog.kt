@@ -123,9 +123,11 @@ import java.io.File
 internal val requiredPreviews = listOf("player", "queue", "lyrics", "home", "navigation", "album",
     "artist", "playlist", "local-playlist", "search", "search-albums", "search-artists")
     .flatMap { listOf("$it-normal", "$it-glass") }
-internal val playbackPreviews = listOf("player-playing", "miniplayer-playing")
+internal val systemModePreviews = listOf("player-light", "player-dark")
     .flatMap { listOf("$it-normal", "$it-glass") }
-internal val automaticPreviews = requiredPreviews + playbackPreviews
+internal val optionalAutomaticPreviews = listOf("player-playing", "miniplayer-playing", "menu", "dialog")
+    .flatMap { listOf("$it-normal", "$it-glass") } + systemModePreviews
+internal val automaticPreviews = requiredPreviews + optionalAutomaticPreviews
 internal const val SubmissionPreviewLimit = 4 * 1024 * 1024
 private val SubmissionPreviewMimeTypes = arrayOf("image/png", "image/jpeg", "image/webp", "image/gif")
 internal fun submissionMinimumVersionCode(input: String, current: Int, previous: Int?): Int? =
@@ -206,9 +208,10 @@ internal fun ThemeSubmissionPage(navController: NavController, miniPlayer: @Comp
         } else if (creatingLocal || themeId == "new" || existing != null) {
             ThemeSubmissionForm(existing, loaded, padding, localOnly, localTheme,
                 initialAppearance = localTheme?.document ?: initial?.getOrNull(), currentAppearance = {
-                encodeThemeV1(
+                encodeThemeAppearance(
                     context.preferences.all + app.n_zik.android.utils.DataStoreUtils.prefs(context).all.filterKeys { it in portableBurgerKeys },
                     GlassProfilePreferences.preferences(context, profileId).all,
+                    schemaVersion = themeAppearanceSchemaFor(BuildConfig.VERSION_CODE),
                     defaultGlassQuality = app.n_zik.android.components.glass.defaultGlassQuality(
                         android.os.Build.VERSION.SDK_INT,
                         context.getSystemService(android.app.ActivityManager::class.java)?.isLowRamDevice == true,
@@ -281,13 +284,16 @@ private fun ThemeSubmissionForm(
     var description by rememberSaveable(key) { mutableStateOf(draft?.optString("description") ?: existing?.description.orEmpty()) }
     var tags by rememberSaveable(key) { mutableStateOf(draft?.optString("tags") ?: existing?.tags?.joinToString(", ").orEmpty()) }
     val previousMinimum = existing?.compatibility?.minVersionCode
+    val schemaMinimum = if (themeAppearanceSchemaFor(BuildConfig.VERSION_CODE) == ThemeAppearanceV2)
+        ThemeAppearanceV2MinimumVersionCode else FirstThemeStoreVersionCode
     val currentVersionCode = BuildConfig.VERSION_CODE
     var minimumVersionInput by rememberSaveable(key) {
         mutableStateOf(draft?.takeIf { it.has("minVersionCode") }?.optString("minVersionCode")
             ?.let(::submissionDraftMinimumVersionInput)
-            ?: submissionDefaultMinimumVersionCode(previousMinimum).toString())
+            ?: maxOf(schemaMinimum, submissionDefaultMinimumVersionCode(previousMinimum)).toString())
     }
     val minimumVersionCode = submissionMinimumVersionCode(minimumVersionInput, currentVersionCode, previousMinimum)
+        ?.takeIf { it >= schemaMinimum }
     val minimumVersionLabel = when (minimumVersionCode) {
         currentVersionCode -> stringResource(R.string.theme_store_submission_version_with_code,
             BuildConfig.VERSION_NAME.substringBefore('-'), currentVersionCode)
@@ -334,7 +340,7 @@ private fun ThemeSubmissionForm(
         mutableStateOf(compatibleAppearance == null ||
             (draft?.optBoolean("usingCurrentAppearance") ?: (initialAppearance == null)))
     }
-    val availableSettings = remember(fullAppearance) { parseThemeV1(fullAppearance, allowEmptyCategories = true) }
+    val availableSettings = remember(fullAppearance) { parseThemeAppearance(fullAppearance, allowEmptyCategories = true) }
     val availableCategories = availableSettings.keys
     var expandedCategory by rememberSaveable(key) { mutableStateOf<ThemeCategory?>(null) }
     var expandedReviewCategory by rememberSaveable(key) { mutableStateOf<ThemeCategory?>(null) }
@@ -342,7 +348,12 @@ private fun ThemeSubmissionForm(
         mutableIntStateOf(draft?.optInt("categorySelection", -1) ?: -1)
     }
     val included = availableCategories.filter { selection and (1 shl it.ordinal) != 0 }
-    val appearance = remember(fullAppearance, selection) { selectThemeV1Categories(fullAppearance, included.toSet()) }
+    val appearance = remember(fullAppearance, selection) { selectThemeAppearanceCategories(fullAppearance, included.toSet()) }
+    val applicablePreviews = remember(appearance) {
+        if (themePreviewFollowsSystem(appearance)) automaticPreviews else automaticPreviews - systemModePreviews.toSet()
+    }
+    fun isApplicablePreview(slot: String): Boolean = slot !in systemModePreviews || slot in applicablePreviews
+
     var reusePublishedPreviews by rememberSaveable(key) { mutableStateOf(draft?.optBoolean("reusePublishedPreviews", true) ?: true) }
     var previewState by rememberSaveable(key) { mutableStateOf(draft?.optJSONObject("previews")?.toString() ?: "{}") }
     var captionState by rememberSaveable(key) { mutableStateOf(draft?.optJSONObject("captions")?.toString() ?: "{}") }
@@ -356,9 +367,9 @@ private fun ThemeSubmissionForm(
     var selectedPreview by rememberSaveable(key) { mutableStateOf<String?>(null) }
     var expandedPreview by remember(key, previewTab) { mutableStateOf<String?>(null) }
     val captions = remember(captionState) { JSONObject(captionState) }
-    val previews = remember(previewState, previewSelection) { buildMap<String, String> {
+    val previews = remember(previewState, previewSelection, applicablePreviews) { buildMap<String, String> {
         val saved = JSONObject(previewState)
-        saved.keys().forEach { if (previewSelection.includes(it)) put(it, saved.getString(it)) }
+        saved.keys().forEach { if (previewSelection.includes(it) && isApplicablePreview(it)) put(it, saved.getString(it)) }
     } }
     fun replacePreviews(updated: JSONObject, unused: Set<String> = emptySet()) {
         val previous = submissionPreviewUris(JSONObject(previewState))
@@ -428,9 +439,8 @@ private fun ThemeSubmissionForm(
         val received = result.data?.getStringArrayListExtra(ThemePreviewActivity.CapturedFiles)
             .orEmpty().map(::File)
         val bySlot = received.associateBy(File::nameWithoutExtension)
-        val existingSlots = previewSelection.published(existing?.previews.orEmpty(), reuseAutomatic = true).keys
-        val nonPlayback = (existingSlots + updated.keys().asSequence() + requiredPreviews).toSet() - playbackPreviews.toSet()
-        val available = if (nonPlayback.size + playbackPreviews.size <= 36) automaticPreviews else requiredPreviews
+        val existingSlots = previewSelection.published(existing?.previews.orEmpty(), reuseAutomatic = true).keys.filter(::isApplicablePreview).toSet()
+        val available = availableAutomaticPreviews(existingSlots + updated.keys().asSequence().filter(::isApplicablePreview))
         for (slot in available) {
             val file = bySlot[slot] ?: continue
             val previous = android.net.Uri.parse(updated.optString(slot)).path
@@ -446,6 +456,7 @@ private fun ThemeSubmissionForm(
     val awaiting by GitHubAccount.awaiting.collectAsStateWithLifecycle()
     val revision = localTheme?.theme?.revision ?: ((existing?.revision ?: 0) + 1)
     val publishedPreviews = previewSelection.published(existing?.previews.orEmpty(), reusePublishedPreviews)
+        .filterKeys(::isApplicablePreview)
     val readyPreviews = publishedPreviews.keys + previews.keys
     val gallerySlots = previewSelection.gallerySlots(publishedPreviews.keys, previews.keys)
     fun captionFor(slot: String): String = captions.optString(slot, publishedPreviews[slot]?.caption.orEmpty())
@@ -500,7 +511,7 @@ private fun ThemeSubmissionForm(
         val compatibility = StoreCompatibility(checkNotNull(minimumVersionCode))
         val files = mutableMapOf<String, ByteArray>()
         val appearanceBytes = appearance.encodeToByteArray()
-        parseThemeV1(appearance)
+        parseThemeAppearance(appearance)
         files["appearance.json"] = appearanceBytes
         files["reviews.json"] = """{"schemaVersion":1,"reviews":[]}""".encodeToByteArray()
         val gallery = gallerySlots.map { slot ->
@@ -744,9 +755,9 @@ private fun ThemeSubmissionForm(
                                 )
                                 if (minimumVersionCode == null) {
                                     SettingsDescription(stringResource(
-                                        if (FirstThemeStoreVersionCode >= currentVersionCode) R.string.theme_store_submission_version_required
+                                        if (schemaMinimum >= currentVersionCode) R.string.theme_store_submission_version_required
                                         else R.string.theme_store_submission_version_range,
-                                        FirstThemeStoreVersionCode, maxOf(FirstThemeStoreVersionCode, currentVersionCode),
+                                        schemaMinimum, maxOf(schemaMinimum, currentVersionCode),
                                     ))
                                 }
                             })
@@ -794,7 +805,7 @@ private fun ThemeSubmissionForm(
                             SettingsSectionCard("Show your theme", R.drawable.ui, bottomSpacing = 0.dp, content = {
                                 Text("Generate Normal and Glass screenshots with demo content, or replace them with images from your device.",
                                     color = colorPalette().textSecondary)
-                                OtherSettingsEntry("Generate previews", "${automaticPreviews.count { it in readyPreviews }} / ${automaticPreviews.size} ready", R.drawable.ui,
+                                OtherSettingsEntry("Generate previews", "${applicablePreviews.count { it in readyPreviews }} / ${applicablePreviews.size} ready", R.drawable.ui,
                                     onClick = { saveDraft(); capture.launch(ThemePreviewActivity.submissionIntent(context, appearance)) })
                                 val variants = listOf(
                                     stringResource(R.string.theme_store_preview_normal),

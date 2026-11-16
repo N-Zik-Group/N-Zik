@@ -20,7 +20,7 @@ class ThemeStoreDownloadTest {
 
     @Test
     fun downloadRequiresEveryPreviewAndCachesThemForOfflineAccess() = runTest {
-        val appearance = encodeThemeV1(emptyMap<String, Any>(), emptyMap<String, Any>()).encodeToByteArray()
+        val appearance = encodeThemeAppearance(emptyMap<String, Any>(), emptyMap<String, Any>()).encodeToByteArray()
         fun png(color: Int): ByteArray = java.io.ByteArrayOutputStream().use { output ->
             val bitmap = android.graphics.Bitmap.createBitmap(2, 2, android.graphics.Bitmap.Config.ARGB_8888)
             try {

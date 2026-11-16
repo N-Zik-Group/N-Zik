@@ -130,7 +130,6 @@ import app.n_zik.android.enums.PlayerOpeningMode
 import app.n_zik.android.utils.playerLastModeWasVideoKey
 import app.n_zik.android.utils.playerOpeningModeKey
 import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.utils.REQUEST_INLINE_VIDEO
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -187,7 +186,6 @@ internal class PlayerMusicVideo(
 @OptIn(UnstableApi::class)
 internal fun rememberPlayerMusicVideo(
     audio: Player?,
-    expanded: Boolean,
     collapsed: Boolean,
     inPip: Boolean,
     enabled: Boolean,
@@ -202,7 +200,6 @@ internal fun rememberPlayerMusicVideo(
     var openingModeApplied by remember { mutableStateOf(false) }
     var item by remember(audio) { mutableStateOf(audio?.currentMediaItem) }
     var revision by remember(audio) { mutableIntStateOf(0) }
-    var consumedVideoRequest by remember(audio) { mutableIntStateOf(-1) }
     var started by remember { mutableStateOf(false) }
 
     LifecycleStartEffect(Unit) {
@@ -223,9 +220,7 @@ internal fun rememberPlayerMusicVideo(
         onDispose { audio?.removeListener(listener) }
     }
 
-    LaunchedEffect(enabled, audio, revision, expanded, collapsed, inPip) {
-        val explicitVideoRequest = consumedVideoRequest != revision &&
-            item?.mediaMetadata?.extras?.getBoolean(REQUEST_INLINE_VIDEO) == true
+    LaunchedEffect(enabled, audio, revision, collapsed, inPip) {
         if (!enabled || collapsed && !inPip) {
             openingModeApplied = false
             session.selectVideo(false)
@@ -233,16 +228,8 @@ internal fun rememberPlayerMusicVideo(
         } else if (!inPip && !openingModeApplied && item != null) {
             openingModeApplied = true
             session.applyOpeningMode(
-                explicitVideoRequest ||
-                    (openingMode.opensInVideo(lastModeWasVideo) && item?.let(::canResolvePlayerVideo) == true),
+                openingMode.opensInVideo(lastModeWasVideo) && item?.let(::canResolvePlayerVideo) == true,
             )
-            if (explicitVideoRequest) {
-                consumedVideoRequest = revision
-                lastModeWasVideo = true
-            }
-        } else if (expanded && explicitVideoRequest) {
-            consumedVideoRequest = revision
-            session.chooseMode(true)
         }
         if (inPip) session.fullscreen = false
     }
@@ -352,6 +339,7 @@ internal fun PlayerAudioVideoToggle(
     modifier: Modifier = Modifier,
     showUnavailable: Boolean,
     onSearchManually: () -> Unit,
+    interactive: Boolean = true,
 ) {
     val palette = colorPalette()
     val glass = rememberGlassSettings(GlassScope.PlayerActions)
@@ -377,7 +365,7 @@ internal fun PlayerAudioVideoToggle(
             Modifier.clip(shape).background(if (selected) palette.accent else Color.Transparent)
         })
         Box(
-            button.then(if (replica) Modifier else Modifier
+            button.then(if (replica || !interactive) Modifier else Modifier
                 .combinedClickable(
                     interactionSource = null,
                     indication = indication,

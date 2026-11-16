@@ -49,23 +49,34 @@ internal data class ThemePreviewAppearance(
 )
 
 private val themePreviewDefaultPreferences by lazy {
-    parseThemeV1(defaultThemeAppearanceDocument()).values
+    parseThemeAppearance(defaultThemeAppearanceDocument()).values
         .flatMap { it.plain.entries }.associate { it.toPair() }
 }
 
 internal fun themePreviewPreferences(document: String?, glass: Boolean): ThemeSettings {
-    val categories = document?.let(::parseThemeV1).orEmpty()
+    val categories = document?.let { parseThemeAppearance(it, allowEmptyCategories = true) }.orEmpty()
     val preferences = categories.values.flatMap { it.plain.entries }.associate { it.toPair() }
     // Stock defaults belong to the demo. Applying an older theme still leaves omitted keys alone.
     val plain = themePreviewDefaultPreferences + preferences + (glassEnabledKey to glass)
     return ThemeSettings(plain, categories[ThemeCategory.GLASS]?.glass.orEmpty())
 }
 
+internal fun themePreviewFollowsSystem(document: String?): Boolean =
+    themePreviewPreferences(document, false).plain.option(colorPaletteModeKey, DefaultColorPaletteMode) ==
+        ColorPaletteMode.System
+
 @Composable
-internal fun rememberThemePreviewAppearance(document: String?, glass: Boolean): ThemePreviewAppearance {
+internal fun rememberThemePreviewAppearance(
+    document: String?,
+    glass: Boolean,
+    paletteModeOverride: ColorPaletteMode? = null,
+): ThemePreviewAppearance {
     val context = LocalContext.current.applicationContext
     val settings = remember(document, glass) { themePreviewPreferences(document, glass) }
-    val preferences = settings.plain
+    val preferences = remember(settings, paletteModeOverride) {
+        if (paletteModeOverride == null) settings.plain
+        else settings.plain + (colorPaletteModeKey to paletteModeOverride.name)
+    }
     val glassPreferences = settings.glass
     val systemDark = isSystemInDarkTheme()
     val paletteName = preferences.option(colorPaletteNameKey, ColorPaletteName.Dynamic)

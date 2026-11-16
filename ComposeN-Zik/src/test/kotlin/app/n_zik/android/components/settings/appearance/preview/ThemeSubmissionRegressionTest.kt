@@ -52,7 +52,8 @@ class ThemeSubmissionRegressionTest {
     @Test
     fun removingAnInheritedExtraSurvivesDraftResumeWithoutRestoringItsReplacement() {
         val extra = "extra-first-normal"
-        val inherited = (automaticPreviews + (1..8).map { "extra-$it-normal" })
+        val fixedModePreviews = automaticPreviews - systemModePreviews.toSet()
+        val inherited = (fixedModePreviews + (1..(36 - fixedModePreviews.size)).map { "extra-$it-normal" })
             .map { StorePreview("previews/$it.webp", "other", "a".repeat(64)) }
         val selection = SubmissionPreviewSelection()
         val initial = selection.published(inherited, reuseAutomatic = true)
@@ -71,6 +72,19 @@ class ThemeSubmissionRegressionTest {
         assertEquals("player-normal", gallery.first())
         assertFalse("extra-1-normal" in resumed.published(inherited, reuseAutomatic = false))
         assertTrue("extra-2-normal" in resumed.published(inherited, reuseAutomatic = false))
+    }
+
+    @Test
+    fun editingAddsMenuAndDialogAsPairsWithoutDisplacingPublishedPreviews() {
+        val olderGallery = automaticPreviews.filterNot {
+            it.startsWith("menu-") || it.startsWith("dialog-") || it in systemModePreviews
+        }.toSet()
+        assertEquals(automaticPreviews, availableAutomaticPreviews(olderGallery))
+
+        val nearlyFullGallery = olderGallery + (1..5).map { "extra-$it-normal" }
+        val available = availableAutomaticPreviews(nearlyFullGallery)
+        assertTrue(available.containsAll(listOf("menu-normal", "menu-glass")))
+        assertFalse(available.any { it.startsWith("dialog-") })
     }
 
     @Test
@@ -103,7 +117,7 @@ class ThemeSubmissionRegressionTest {
         val glass = mapOf(glassTintSourceKey to GlassTintSource.Custom.name)
         for (palette in listOf(ColorPaletteName.Customized, ColorPaletteName.CustomColor)) {
             val plain = mapOf(colorPaletteNameKey to palette.name)
-            val portable = parseThemeV1(encodeThemeV1(plain, glass))
+            val portable = parseThemeAppearance(encodeThemeAppearance(plain, glass))
             assertEquals(ThemeCategory.entries.toSet(), portable.keys)
             assertEquals(palette.name, portable.getValue(ThemeCategory.COLORS).plain[colorPaletteNameKey])
             assertEquals(GlassTintSource.Custom.name, portable.getValue(ThemeCategory.GLASS).glass[glassTintSourceKey])
@@ -122,14 +136,14 @@ class ThemeSubmissionRegressionTest {
             }}
         """.trimIndent()
         val restored = requireNotNull(compatibleThemeSubmissionDraftAppearance(source))
-        val settings = parseThemeV1(restored)
+        val settings = parseThemeAppearance(restored)
 
         assertEquals(setOf(ThemeCategory.COLORS, ThemeCategory.NAVIGATION), settings.keys)
         assertEquals("Customized", settings.getValue(ThemeCategory.COLORS).plain[colorPaletteNameKey])
         assertEquals(-1234, settings.getValue(ThemeCategory.COLORS).plain[app.n_zik.android.utils.customColorKey])
         assertEquals("Top", settings.getValue(ThemeCategory.NAVIGATION).plain[app.n_zik.android.utils.navigationBarPositionKey])
         assertFalse(restored.contains("retired"))
-        assertThrows(IllegalArgumentException::class.java) { parseThemeV1(source) }
+        assertThrows(IllegalArgumentException::class.java) { parseThemeAppearance(source) }
     }
 
     @Test
@@ -139,7 +153,7 @@ class ThemeSubmissionRegressionTest {
         assertEquals(Json.parseToJsonElement(valid),
             Json.parseToJsonElement(requireNotNull(compatibleThemeSubmissionDraftAppearance(valid))))
         val root = Json.parseToJsonElement(valid) as JsonObject
-        val wrongVersion = JsonObject(root + ("schemaVersion" to JsonPrimitive(2)))
+        val wrongVersion = JsonObject(root + ("schemaVersion" to JsonPrimitive(3)))
         val wrongCategories = JsonObject(root + ("categories" to JsonPrimitive("invalid")))
         for (invalid in listOf("broken JSON", "[]", wrongVersion.toString(), wrongCategories.toString(),
             """{"schemaVersion":1,"categories":{"retiredCategory":{}}}""",

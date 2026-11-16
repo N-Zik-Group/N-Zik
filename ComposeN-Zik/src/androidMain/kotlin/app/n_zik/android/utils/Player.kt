@@ -107,16 +107,6 @@ fun Player.forcePlay(mediaItem: MediaItem) {
     playWhenReady = true
 }
 
-internal const val REQUEST_INLINE_VIDEO = "app.n_zik.android.requestInlineVideo"
-
-/** Starts playback and records the explicit video selection on the incoming item. */
-fun Player.playVideo(mediaItem: MediaItem) {
-    val extras = mediaItem.mediaMetadata.extras?.let { Bundle(it) } ?: Bundle()
-    extras.putBoolean(REQUEST_INLINE_VIDEO, true)
-    val metadata = mediaItem.mediaMetadata.buildUpon().setExtras(extras).build()
-    forcePlay(mediaItem.buildUpon().setMediaMetadata(metadata).build())
-}
-
 fun Player.playAtIndex(mediaItemIndex: Int) {
     seekTo(mediaItemIndex, C.TIME_UNSET)
     prepare()

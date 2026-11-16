@@ -1,6 +1,5 @@
 package app.n_zik.android.ui.screens.searchresult
 
-import app.n_zik.android.utils.showButtonPlayerVideoDefault
 import androidx.media3.exoplayer.offline.Download as OfflineDownload
 import kotlinx.coroutines.flow.flowOf
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
@@ -66,7 +65,6 @@ import app.n_zik.android.utils.forcePlay
 import app.n_zik.android.utils.isDownloadedSong
 import app.n_zik.android.utils.manageDownload
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.n_zik.android.utils.playVideo
 import app.n_zik.android.colorPalette
 import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.enums.DownloadedStateMedia
@@ -94,7 +92,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.utils.preferences
-import app.n_zik.android.utils.showButtonPlayerVideoKey
 import app.n_zik.innertube.models.MusicShelfRenderer
 import androidx.compose.foundation.layout.absoluteOffset
 import app.n_zik.android.ui.components.themed.HeaderIconButton
@@ -123,7 +120,6 @@ fun OnlineSearchList(
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
     val hapticFeedback = LocalHapticFeedback.current
-    val isVideoEnabled = remember { context.preferences.getBoolean(showButtonPlayerVideoKey, showButtonPlayerVideoDefault) }
 
     val loadedItems = remember { androidx.compose.runtime.mutableStateOf<List<Innertube.Item>>(emptyList()) }
 
@@ -237,8 +233,7 @@ fun OnlineSearchList(
                                 },
                                 onClick = {
                                     binder?.stopRadio()
-                                    if (isVideoEnabled) binder?.player?.playVideo(item.asMediaItem)
-                                    else binder?.player?.forcePlay(item.asMediaItem)
+                                    binder?.player?.forcePlay(item.asMediaItem)
                                 }
                             ),
                         disableScrollingText = disableScrollingText

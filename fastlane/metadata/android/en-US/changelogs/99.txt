@@ -1,0 +1,10 @@
+Added:
+- Audio/Video switch, opening mode, clip picker, fullscreen and picture-in-picture.
+- Adjustable hold-to-speed boost.
+Improved:
+- Updated Stock and catalog theme previews with menus, dialogs and light/dark variants.
+- Themes now save opening mode and boost settings.
+Fixed:
+- Glass reflections update on paused video.
+- Restored the transparent classic action bar, improved light-theme contrast and removed mini-player fades.
+Playlists show existing songs and prevent duplicates.

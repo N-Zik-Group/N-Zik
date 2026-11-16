@@ -381,7 +381,10 @@ internal class ThemeStoreCatalog(
     }
 
     suspend fun download(theme: StoreTheme): String = runInterruptible(NzikDispatchers.DATA) {
-        verifiedAppearance(theme).decodeToString(throwOnInvalidSequence = true).also { parseThemeV1(it) }
+        verifiedAppearance(theme).decodeToString(throwOnInvalidSequence = true).also {
+            parseThemeAppearance(it, allowEmptyCategories = false,
+                advertisedMinVersionCode = theme.compatibility.minVersionCode ?: 0)
+        }
     }
 
     suspend fun appearance(theme: StoreTheme, saved: SavedTheme?): StoreAppearance =
@@ -390,7 +393,9 @@ internal class ThemeStoreCatalog(
                 ?.takeIf { it.size <= ThemeDocumentLimit && it.sha256() == theme.appearance.sha256 }
                 ?: verifiedAppearance(theme)
             val document = bytes.decodeToString(throwOnInvalidSequence = true)
-            StoreAppearance(document, bytes.size, parseThemeV1(document).toStoreGroups())
+            val settings = parseThemeAppearance(document, allowEmptyCategories = false,
+                advertisedMinVersionCode = theme.compatibility.minVersionCode ?: 0)
+            StoreAppearance(document, bytes.size, settings.toStoreGroups())
         }
 
     private fun verifiedAppearance(theme: StoreTheme): ByteArray {

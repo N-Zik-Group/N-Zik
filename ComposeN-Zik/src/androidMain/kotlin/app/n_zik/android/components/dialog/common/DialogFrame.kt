@@ -52,6 +52,8 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.glassMaterial
 import app.n_zik.android.components.glass.GlassDialogWindow
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewScene
 import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.canHostGlassDialog
@@ -89,7 +91,10 @@ fun DialogFrame(
     val sameWindow = glassHost?.dialogs?.windowRoot === LocalView.current.rootView
     val useGlass = glass.usesGlassMaterial(GlassArea.Dialogs)
     val hasBackdrop = LocalIndependentGlassBackdrop.current != null || glassHost?.modalBackdrop != null
-    val useSharedHost = canHostGlassDialog(glass, glassRenderer(glass), sameWindow && hasBackdrop)
+    // Keep the preview dialog in the window that PixelCopy captures, also without Glass.
+    val isDialogPreview = LocalThemePreview.current?.scene == ThemePreviewScene.DIALOG
+    val useSharedHost = (isDialogPreview && glassHost != null) ||
+        canHostGlassDialog(glass, glassRenderer(glass), sameWindow && hasBackdrop)
     val shape = uiRoundnessShape()
     val surface = surfaceColor(colorPalette().background1)
     val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp

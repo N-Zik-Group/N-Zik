@@ -45,7 +45,7 @@ import app.n_zik.android.ui.items.VideoItemPlaceholder
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.disableScrollingTextKey
-import app.n_zik.android.utils.playVideo
+import app.n_zik.android.utils.forcePlay
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.requests.searchPage
@@ -82,6 +82,7 @@ private fun ManualVideoSearch(
     modifier: Modifier = Modifier,
 ) {
     val binder = LocalPlayerServiceBinder.current
+    val videoSession = LocalPlayerMusicVideo.current
     val guestLocked = rememberListenTogetherGuestLock()
     val focusManager = LocalFocusManager.current
     val palette = colorPalette()
@@ -160,7 +161,8 @@ private fun ManualVideoSearch(
                         modifier = Modifier.clip(uiRoundnessShape()).clickable(enabled = binder != null && !guestLocked) {
                             val playerBinder = binder ?: return@clickable
                             playerBinder.stopRadio()
-                            playerBinder.player.playVideo(result.asMediaItem)
+                            playerBinder.player.forcePlay(result.asMediaItem)
+                            videoSession?.chooseMode(true)
                             onDismiss()
                         },
                         disableScrollingText = disableScrollingText,

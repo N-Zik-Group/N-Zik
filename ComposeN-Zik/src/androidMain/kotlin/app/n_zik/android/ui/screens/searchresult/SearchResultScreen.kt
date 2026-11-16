@@ -1,5 +1,4 @@
 package app.n_zik.android.ui.screens.searchresult
-import app.n_zik.android.utils.showButtonPlayerVideoDefault
 import app.n_zik.android.components.navigation.rememberTopContentInsetProvider
 
 import app.n_zik.android.components.search.SearchResultHeaderActions
@@ -40,7 +39,6 @@ import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.searchResultScreenTabIndexKey
-import app.n_zik.android.utils.showButtonPlayerVideoKey
 import androidx.compose.foundation.text.BasicText
 import app.n_zik.android.typography
 import androidx.compose.material3.Icon
@@ -80,7 +78,6 @@ fun SearchResultScreen(
 
     val hapticFeedback = LocalHapticFeedback.current
 
-    val isVideoEnabled = LocalContext.current.preferences.getBoolean(showButtonPlayerVideoKey, showButtonPlayerVideoDefault)
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)

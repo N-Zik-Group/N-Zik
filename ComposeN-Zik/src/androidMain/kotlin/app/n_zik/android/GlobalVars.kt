@@ -1,6 +1,5 @@
 package app.n_zik.android
 
-import app.n_zik.android.utils.showButtonPlayerVideoDefault
 import android.content.Context
 import android.content.res.Resources
 import androidx.core.content.ContextCompat
@@ -23,7 +22,6 @@ import app.n_zik.android.utils.pauseOnHeadphoneDisconnectKey
 import app.n_zik.android.utils.encryptedPreferences
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.utils.showButtonPlayerVideoKey
 import app.n_zik.android.utils.showSearchTabKey
 import app.n_zik.android.utils.showStatsInNavbarKey
 import app.n_zik.android.utils.ytAccountNameKey
@@ -117,7 +115,6 @@ fun context(): Context = Dependencies.application
 // display-name consumers (Rewind deck, onboarding, Accounts card) expect a String
 fun ytAccountName(): String = appContext().encryptedPreferences.getString(ytAccountNameKey, "").orEmpty()
 fun ytAccountThumbnail() = appContext().encryptedPreferences.getString(ytAccountThumbnailKey, "")
-fun isVideoEnabled() = appContext().preferences.getBoolean(showButtonPlayerVideoKey, showButtonPlayerVideoDefault)
 
 fun isConnectionMeteredEnabled() = appContext().preferences.getBoolean(isConnectionMeteredEnabledKey, false)
 fun isHandleAudioFocusEnabled() = appContext().preferences.getBoolean(handleAudioFocusEnabledKey, true)

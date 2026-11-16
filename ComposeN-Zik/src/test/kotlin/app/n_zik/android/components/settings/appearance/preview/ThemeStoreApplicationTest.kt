@@ -28,8 +28,8 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
 class ThemeStoreApplicationTest {
-    private val exported = encodeThemeV1(emptyMap<String, String>(), emptyMap<String, String>())
-    private val appearance = StoreAppearance(exported, exported.length, parseThemeV1(exported).toStoreGroups())
+    private val exported = encodeThemeAppearance(emptyMap<String, String>(), emptyMap<String, String>())
+    private val appearance = StoreAppearance(exported, exported.length, parseThemeAppearance(exported).toStoreGroups())
 
     @Test
     fun groupProjectionMovesIndividualSettingsOutOfTheirWireCategories() {
@@ -41,13 +41,15 @@ class ThemeStoreApplicationTest {
         assertEquals(StoreGroup.Lyrics, ownerOf(showButtonPlayerLyricsKey))
         assertEquals(StoreGroup.Animations, ownerOf(animatedGradientKey))
 
-        val baseNavigation = parseThemeV1("""{"schemaVersion":1,"categories":{"navigation":{"position":"bottom-floating","labels":"icon-only"}}}""")
+        val baseNavigation = parseThemeAppearance("""{"schemaVersion":1,"categories":{"navigation":{"position":"bottom-floating","labels":"icon-only"}}}""")
         assertEquals(setOf(StoreGroup.Navigation), baseNavigation.toStoreGroups().keys)
     }
 
     @Test
     fun customizeCanLabelEveryPortableSettingIncludingGlass() {
-        val keys = appearance.groups.values.flatMap { it.plain.keys + it.glass.keys }.toSet()
+        val v1 = appearance.groups.values.flatMap { it.plain.keys + it.glass.keys }
+        val v2 = parseThemeAppearance(defaultThemeAppearanceDocument()).values.flatMap { it.plain.keys + it.glass.keys }
+        val keys = (v1 + v2).toSet()
         assertEquals(keys, themeSettingNames.keys)
         assertEquals("enabled", themeSettingNames[glassEnabledKey])
         assertEquals("lyrics", themeSettingNames[showButtonPlayerLyricsKey])
@@ -66,12 +68,13 @@ class ThemeStoreApplicationTest {
     }
 
     @Test
-    fun bundledStockDeclaresTheThemeStoreMinimum() {
+    fun bundledStockDeclaresTheVersionTwoMinimum() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val stock = requireNotNull(bundledDefaultTheme(context).theme)
-        assertEquals(97, stock.compatibility.minVersionCode)
-        assertEquals(StoreSupport.RequiresUpdate, stock.compatibility.supportAt(96))
-        assertEquals(StoreSupport.Supported, stock.compatibility.supportAt(97))
+        assertEquals(2, stock.revision)
+        assertEquals(99, stock.compatibility.minVersionCode)
+        assertEquals(StoreSupport.RequiresUpdate, stock.compatibility.supportAt(98))
+        assertEquals(StoreSupport.Supported, stock.compatibility.supportAt(99))
     }
 
     @Test
@@ -112,7 +115,7 @@ class ThemeStoreApplicationTest {
         val menuKey = DataStoreUtils.burgerMenuToggleKey("history")
         appSettings.edit().putBoolean(menuKey, true).putString("unrelated", "keep").apply()
         val values = mapOf(menuKey to false, homeTabsOrderKey to """["songs"]""")
-        val settings = parseThemeV1(encodeThemeV1(values, emptyMap<String, Any>()))
+        val settings = parseThemeAppearance(encodeThemeAppearance(values, emptyMap<String, Any>()))
             .toStoreGroups().getValue(StoreGroup.Navigation)
 
         val undo = settings.applyTo(profile, glass, appSettings)
@@ -133,7 +136,7 @@ class ThemeStoreApplicationTest {
         val profile = context.getSharedPreferences("theme-landscape-profile", Context.MODE_PRIVATE)
         val glass = GlassProfilePreferences.preferences(context, "landscape")
         profile.edit().putFloat(thumbnailSizeLDpKey, 61f).apply()
-        val settings = parseThemeV1(exported).toStoreGroups().getValue(StoreGroup.PlayerAndQueue)
+        val settings = parseThemeAppearance(exported).toStoreGroups().getValue(StoreGroup.PlayerAndQueue)
 
         val undo = settings.applyTo(profile, glass)
         assertFalse(profile.contains(thumbnailSizeLDpKey))
