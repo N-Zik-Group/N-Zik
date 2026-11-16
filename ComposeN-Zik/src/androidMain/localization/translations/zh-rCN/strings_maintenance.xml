@@ -323,4 +323,9 @@
     <string name="updates_check_failed">无法检查更新。</string>
     <string name="updates_install_generic_error">无法安装更新。</string>
     <string name="updates_channel_available_format">%1$s 更新可用</string>
+    <string name="recovery_theme_backup_title">主题</string>
+    <string name="recovery_theme_backup_no_match">只有属于此视图可用配置的主题才能在这里恢复。</string>
+    <string name="recovery_theme_backup_operation_failed">无法完成主题备份操作。</string>
+    <string name="recovery_theme_backup_restore_action">还原主题</string>
+    <string name="recovery_theme_backup_restore_description">打开此配置文件使用的最后一个主题备份。</string>
 </resources>
