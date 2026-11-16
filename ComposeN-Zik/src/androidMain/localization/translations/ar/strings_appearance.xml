@@ -437,6 +437,7 @@
     <string name="theme_store_draft_discard">حذف المسودة</string>
     <string name="theme_store_draft_resume">متابعة المسودة</string>
     <string name="theme_store_preview_add_extra">إضافة معاينة إضافية</string>
+    <string name="theme_store_preview_remove_extra">إزالة هذه المعاينة الإضافية</string>
     <string name="theme_store_preview_extra_title">معاينة العنوان</string>
     <string name="theme_store_preview_import_requirements_with_gif">المعاينات عامة. إبقاء المعلومات الشخصية خارج لقطات الشاشة. PNG، JPEG، WebP أو GIF · 4 ميغابايت لكل صورة. تحتفظ الصور الجغرافية بحجمها الأصلي ويجب أن تتناسب مع 1920 × 1920.</string>
     <string name="theme_store_preview_import_error">تعذر استيراد هذه الصورة. اختر PNG، JPEG أو صورة WebP تحت 4 ميغابايت.</string>
