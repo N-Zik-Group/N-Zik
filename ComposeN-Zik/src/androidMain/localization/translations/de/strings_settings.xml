@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">Standard-Seite</string>
     <string name="settings_interface_corner_radius_label">UI-Rundung</string>
     <string name="settings_interface_hide_status_bar_label">Statusleiste ausblenden</string>
+    <string name="settings_interface_right_to_left_label">Rechts-nach-links-Layout</string>
+    <string name="settings_interface_right_to_left_description">Spiegeln Sie die Schnittstelle unabhängig von der App-Sprache.</string>
     <string name="settings_interface_page_description">Der Abschnitt der Benutzeroberfläche enthält Einstellungen zum Ändern der globalen Schnittstelle und der Navigation</string>
     <string name="settings_interface_page_title">UI</string>
     <string name="settings_interface_title">Benutzeroberfläche</string>
