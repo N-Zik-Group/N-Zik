@@ -244,6 +244,7 @@
     <string name="playlist_right_swipe">Højre stryg for playlister</string>
     <string name="playlist_selection_action_deselect">Fravælg</string>
     <string name="playlist_shuffle_positions_confirmation">Vil du virkelig omnummerere positioner i denne playliste?</string>
+    <string name="playlist_contains_song">Allerede i denne afspilningsliste</string>
     <string name="playlist_song_already_present">Sangen er i en af playlisterne</string>
     <string name="playlist_top">Top playliste</string>
     <string name="playlist_top_maximum_items_description">Begræns hvor mange sange der er inkluderet i din topspillede afspilningsliste.</string>
@@ -408,4 +409,10 @@
     <string name="artist_more_from_format">Mere fra %1$s</string>
     <string name="playlist_top_show_title_format">Vis %1$s</string>
     <string name="library_on_device_no_local_playlists">Ingen lokale afspilningslister. Opret en afspilningsliste eller tilføj en sang til en ny afspilningsliste fra On enhed.</string>
+    <string name="playlist_import_youtube_link_hint">https://youtube.com/playlist?list=...</string>
+    <string name="search_youtube_open_url_example">https://........</string>
+    <string name="album_year_and_song_summary">%1$s • %2$s</string>
+    <string name="search_home_online_action">Søg Online</string>
+    <string name="search_home_library_action">Søg I Bibliotek</string>
+    <string name="song_matching_result_title_and_artist">%1$s - %2$s</string>
 </resources>
