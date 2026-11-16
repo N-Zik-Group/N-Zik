@@ -1,11 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">Підключіть GitHub</string>
+    <string name="github_account_logout">Відключити GitHub</string>
+    <string name="github_account_description">Використовуйте свій обліковий запис GitHub у магазині тем.</string>
+    <string name="github_account_offline">Підключіться до мережі GitHub.</string>
+    <string name="github_account_code">Введіть %1$s на GitHub, щоб завершити вхід.</string>
+    <string name="github_account_code_copied">Код GitHub скопійовано до буфера обміну.</string>
+    <string name="github_account_login_failed">Не вдалося підключитися до GitHub. Спробуйте знову.</string>
+    <string name="github_account_connected">GitHub під\'єднано.</string>
+    <string name="github_account_finishing_connection">Finishing GitHub connection…</string>
+    <string name="github_app_installation_instructions">Виберіть @%1$s і надайте доступ тільки до вашого N-Zik-Theme-Store fork для завершення.</string>
+    <string name="github_app_installation">Встановлення додатку</string>
+    <string name="github_app_installation_confirmed">GitHub підтвердив установку додатку.</string>
+    <string name="github_app_installation_other_account">Додаток встановлено на @%1$s. Виберіть свій власний обліковий запис, щоб увімкнути очищення форків.</string>
+    <string name="github_app_installation_description">Керування або відкликати N-Zik доступ до авторизації у особистих налаштуваннях GitHub.</string>
+    <string name="github_app_installation_needs_fork">Спочатку встановіть тему або профіль автора, щоб створити форк магазину тем.</string>
+    <string name="github_app_installation_fork_lookup_failed">Не вдалося перевірити форк магазину тем. Спробуйте ще раз.</string>
     <!-- Account -->
     <string name="account_action_login">Ввійти</string>
     <string name="account_action_logout">Вийти</string>
     <string name="account_youtube_login_description">Підключіть ваш YouTube акаунт або вийдіть з поточного сеансу.</string>
+    <string name="account_youtube_change_account">Змінити обліковий запис YouTube</string>
+    <string name="account_youtube_change_account_description">Виберіть, який YouTube канал використовує профіль N-Zik для цього користувача.</string>
     <string name="account_youtube_login_enabled_description">Дозволити YouTube-акаунті використовувати для персоналізованого перегляду та синхронізації.</string>
     <!-- Account Youtube -->
+    <string name="account_youtube_checking_login">Checking your YouTube Music sign-in…</string>
+    <string name="account_youtube_choose_channel">Виберіть канал із YouTube Music</string>
+    <string name="account_youtube_add_google_account">Підключити обліковий запис Google</string>
+    <string name="account_youtube_google_account">Обліковий запис Google</string>
+    <string name="account_youtube_google_select">Вибрати обліковий запис</string>
+    <string name="account_youtube_google_sign_out">Вийти з цього облікового запису</string>
+    <string name="account_youtube_google_sign_out_description">Це прибирає весь профіль Google та його дані для входу з N-Zik на цьому пристрої. Ваші інші облікові записи залишаться в мережі.</string>
+    <string name="account_youtube_verify_failed">Не вдалося перевірити ваш підпис YouTube Музики. Спробуйте ще раз або увійдіть за допомогою Google.</string>
     <string name="account_youtube_cookie_invalid">Кукі-файл YouTube недійсний. Будь ласка, увійдіть знову</string>
     <string name="account_youtube_login_success">Вы авторизувалися на YouTube</string>
     <string name="account_youtube_session_expired">Сеанс YouTube закінчився, увійдіть знову</string>
@@ -180,6 +206,8 @@
     <string name="sync_cooldown">Синхронізація зарядки</string>
     <string name="sync_cooldown_description">Мінімальний час між автосинхронізації (в хвилинах)</string>
     <string name="sync_data_with_ytm_account">Синхронізувати дані з обліковим записом YTM</string>
+    <string name="account_youtube_sync_build_required">Синхронізація доступна в будівлях Налагодження та ОДБ.</string>
+    <string name="account_youtube_sync_browse_required">Увімкніть Логін для Огляд для використання синхронізації.</string>
     <string name="sync_direction">Синхронізація напрямку</string>
     <string name="sync_direction_app_to_yt">Додаток → Лише YouTube</string>
     <string name="sync_direction_description">Виберіть, чи синхронізація імпорту з YouTube, надсилає локальні зміни або працює в обох напрямках.</string>

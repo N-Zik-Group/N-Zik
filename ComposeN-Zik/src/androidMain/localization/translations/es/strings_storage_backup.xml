@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="backup_export_themes_description">Guardar temas descargados y locales en una copia de seguridad ZIP</string>
+    <string name="backup_import_themes_description">Restaurar temas descargados y locales de una copia de seguridad ZIP</string>
+    <string name="backup_export_select_all_description">Seleccione cada tipo de datos a exportar</string>
+    <string name="backup_import_already_running">Una importación de copia de seguridad ya está en curso.</string>
+    <string name="backup_import_select_all_description">Seleccione cada tipo de datos a importar</string>
+    <string name="backup_include_github_identity_credentials">Incluye credenciales de identidad de GitHub</string>
     <string name="storage_image_quality_title">Calidad de imagen</string>
     <string name="storage_image_quality_description">Se aplica al diseño en línea y a las portadas y fotos de perfil recién añadidas. Original utiliza la más alta calidad disponible y puede utilizar más almacenamiento y datos.</string>
     <string name="storage_image_quality_optimized">Optimizado</string>
@@ -116,6 +122,9 @@
     <string name="backup_before_update_failed">Copia de seguridad preinstalada fallida</string>
     <string name="backup_before_update_running_message">Respaldando los datos antes de la instalación…</string>
     <string name="backup_before_update_running_title">Copia de seguridad en progreso</string>
+    <string name="backup_export_separate_files_description">Cada categoría seleccionada se exporta a un archivo separado. Los archivos de caché y el tema Stock están excluidos.</string>
+    <string name="backup_export_with_themes_description">Exportar la base de datos con sus portadas personalizadas, configuraciones, temas o perfiles</string>
+    <string name="backup_import_with_themes_description">Restaurar una copia de seguridad de base de datos SQLite o ZIP, configuraciones, temas o perfiles</string>
     <string name="backup_include_discord_credentials">Incluye credenciales de identidad de Discord</string>
     <string name="backup_include_lastfm_credentials">Incluye credenciales de identidad de Last.fm</string>
     <string name="backup_include_proxy_password">Incluye la contraseña del proxy</string>
@@ -248,4 +257,34 @@
     <string name="export_cached_songs_generic_error">Exportación fallida</string>
     <string name="backup_startup_preparing_library">Preparando tu biblioteca…</string>
     <string name="backup_startup_recovery_failed">No se pudo terminar de restaurar tu biblioteca.</string>
+    <string name="storage_breakdown_themes">Temas</string>
+    <string name="storage_info_themes">Registros de temas guardados y activos de la tienda de temas, previsualizaciones y borradores.</string>
+    <string name="storage_breakdown_lyrics">Letras</string>
+    <string name="storage_info_lyrics">bytes de texto de las letras descargadas y personalizadas almacenadas dentro de la base de datos del perfil.</string>
+    <string name="storage_cleanup_clear_theme_cache">Limpiar caché de tienda de temas</string>
+    <string name="storage_cleanup_theme_cache_description">Remueve los metadatos del catálogo compartido. Los temas guardados, los borradores y sus vistas previas son siguientes.</string>
+    <string name="storage_cleanup_clear_lyrics">Limpiar letras obtenidas</string>
+    <string name="storage_cleanup_lyrics_description">Elimina las letras obtenidas automáticamente. Las letras personalizadas son siguientes. Las páginas libres pueden ser reutilizadas por la base de datos de la biblioteca.</string>
+    <string name="backup_auto_enabled_title">Activar copia de seguridad automática</string>
+    <string name="backup_auto_enabled_description">Pausar copias de seguridad automáticas y mantener la configuración de la copia de seguridad.</string>
+    <string name="storage_cleanup_picker_title">Limpiar almacenamiento</string>
+    <string name="storage_cleanup_picker_description">Elija los archivos y datos a limpiar para este ámbito.</string>
+    <string name="storage_cleanup_select_caches">Seleccionar cachés</string>
+    <string name="storage_cleanup_select_caches_description">Seleccionar cachés y archivos temporales.</string>
+    <string name="storage_cleanup_select_everything">Seleccionar todo</string>
+    <string name="storage_cleanup_select_everything_description">Seleccionar cachés y datos, incluyendo descargas sin conexión.</string>
+    <string name="storage_cleanup_cache_group">Cachés y archivos temporales</string>
+    <string name="storage_cleanup_delete_group">Datos a eliminar</string>
+    <string name="storage_cleanup_review_selection">Revisión</string>
+    <string name="storage_cleanup_selected_confirmation">¿Borrar los elementos seleccionados en este ámbito de aplicación?</string>
+    <string name="storage_cleanup_option_cached_images">Imágenes en caché</string>
+    <string name="storage_cleanup_option_streamed_audio">Audio transmitido</string>
+    <string name="storage_cleanup_option_waveforms">Formas de onda</string>
+    <string name="storage_cleanup_option_network_cache">Caché de red</string>
+    <string name="storage_cleanup_option_diagnostic_logs">Registros de diagnóstico</string>
+    <string name="storage_cleanup_option_temporary_files">Archivos temporales</string>
+    <string name="storage_cleanup_option_theme_catalog">Tienda caché de temas</string>
+    <string name="storage_cleanup_option_fetched_lyrics">Letras obtenidas automáticamente</string>
+    <string name="storage_cleanup_option_offline_downloads">Audio descargado</string>
+    <string name="storage_cleanup_completed">Limpieza completa.</string>
 </resources>

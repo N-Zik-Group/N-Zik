@@ -289,4 +289,10 @@
         <item quantity="many">%1$d jobs not finished</item>
         <item quantity="other">%1$d jobs not finished</item>
     </plurals>
+    <plurals name="theme_store_settings_count">
+        <item quantity="one">Настройка %d</item>
+        <item quantity="few">Настройки %d</item>
+        <item quantity="many">Настройки %d</item>
+        <item quantity="other">Настройки %d</item>
+    </plurals>
 </resources>

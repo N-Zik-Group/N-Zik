@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="storage_image_quality_title">Image quality</string>
-    <string name="storage_image_quality_description">Applies to online artwork and newly added covers and profile photos. Original uses the highest quality available and can use more storage and data.</string>
-    <string name="storage_image_quality_optimized">Optimized</string>
-    <string name="storage_image_quality_original">Original</string>
+    <string name="backup_export_themes_description">İndirilmiş ve yerel temaları bir ZIP yedeğine kaydedin</string>
+    <string name="backup_import_themes_description">ZIP yedeklemesinden indirilmiş ve yerel temaları geri yükle</string>
+    <string name="backup_export_select_all_description">Dışa aktarılacak tüm veri türlerini seçin</string>
+    <string name="backup_import_already_running">Bir yedekleme içe aktarma işlemi halihazırda devam ediyor.</string>
+    <string name="backup_import_select_all_description">İçe aktarılacak tüm veri türlerini seçin</string>
+    <string name="backup_include_github_identity_credentials">GitHub kimlik bilgilerini ekleyin</string>
+    <string name="storage_image_quality_title">Resim kalitesi</string>
+    <string name="storage_image_quality_description">Çevrimiçi görseller ile yeni eklenen kapak resimleri ve profil fotoğrafları için geçerlidir. Orijinal seçeneği mevcut en yüksek kaliteyi kullanır ve daha fazla depolama alanı ile veri tüketebilir.</string>
+    <string name="storage_image_quality_optimized">Optimize edildi</string>
+    <string name="storage_image_quality_original">Orijinal</string>
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Depolama</string>
     <string name="storage_breakdown_tab_total">Toplam</string>
@@ -116,6 +122,9 @@
     <string name="backup_before_update_failed">Kurulum öncesi yedekleme başarısız oldu</string>
     <string name="backup_before_update_running_message">Kurulumdan önce verileri yedekleme…</string>
     <string name="backup_before_update_running_title">Yedekleme devam ediyor</string>
+    <string name="backup_export_separate_files_description">Seçilen her kategori ayrı bir dosyaya aktarılır. Önbellek dosyaları ve Stok teması bu işlemin dışında tutulur.</string>
+    <string name="backup_export_with_themes_description">Veritabanını özel kapakları, ayarları, temaları veya profilleriyle birlikte dışa aktarın</string>
+    <string name="backup_import_with_themes_description">Bir SQLite veya ZIP veritabanı yedeğini, ayarları, temaları veya profilleri geri yükleme</string>
     <string name="backup_include_discord_credentials">Discord kimlik bilgilerini ekleyin</string>
     <string name="backup_include_lastfm_credentials">Last.fm kimlik bilgilerini ekleyin</string>
     <string name="backup_include_proxy_password">Proxy şifresini ekleyin</string>
@@ -248,4 +257,34 @@
     <string name="export_cached_songs_generic_error">Dışa aktarma başarısız</string>
     <string name="backup_startup_preparing_library">Kütüphaneniz hazırlanıyor…</string>
     <string name="backup_startup_recovery_failed">Kütüphanenizin geri yüklenmesi tamamlanamadı.</string>
+    <string name="storage_breakdown_themes">Temalar</string>
+    <string name="storage_info_themes">Kaydedilmiş tema kayıtları ve paylaşılan Tema Mağazası öğeleri, önizlemeler ve taslaklar.</string>
+    <string name="storage_breakdown_lyrics">Şarkı sözleri</string>
+    <string name="storage_info_lyrics">Profil veritabanında depolanan, indirilmiş ve kullanıcı tarafından eklenmiş şarkı sözlerinin metin baytları.</string>
+    <string name="storage_cleanup_clear_theme_cache">Tema Mağazası önbelleğini temizle</string>
+    <string name="storage_cleanup_theme_cache_description">Paylaşılan katalog meta verilerini siler. Kaydedilmiş temalar, taslaklar ve bunların önizlemeleri korunur.</string>
+    <string name="storage_cleanup_clear_lyrics">Alınan şarkı sözlerini temizle</string>
+    <string name="storage_cleanup_lyrics_description">Otomatik olarak alınan şarkı sözleri silinir. Kullanıcı tarafından eklenen şarkı sözleri korunur. Boşaltılan sayfalar kütüphane veritabanı tarafından yeniden kullanılabilir.</string>
+    <string name="backup_auto_enabled_title">Otomatik yedeklemeyi etkinleştir</string>
+    <string name="backup_auto_enabled_description">Otomatik yedeklemeleri duraklatın ve yedekleme ayarlarınızı koruyun.</string>
+    <string name="storage_cleanup_picker_title">Temiz depolama</string>
+    <string name="storage_cleanup_picker_description">Bu kapsamda silinecek dosyaları ve verileri seçin.</string>
+    <string name="storage_cleanup_select_caches">Önbellekleri seç</string>
+    <string name="storage_cleanup_select_caches_description">Önbellekleri ve geçici dosyaları seçin.</string>
+    <string name="storage_cleanup_select_everything">Hepsini seç</string>
+    <string name="storage_cleanup_select_everything_description">Çevrimdışı indirmeler dahil olmak üzere önbellekleri ve verileri seçin.</string>
+    <string name="storage_cleanup_cache_group">Önbellekler ve geçici dosyalar</string>
+    <string name="storage_cleanup_delete_group">Silinecek veriler</string>
+    <string name="storage_cleanup_review_selection">İnceleme</string>
+    <string name="storage_cleanup_selected_confirmation">Bu kapsamda seçilen öğeleri silmek istiyor musunuz?</string>
+    <string name="storage_cleanup_option_cached_images">Önbelleğe alınmış resimler</string>
+    <string name="storage_cleanup_option_streamed_audio">Akışlı ses</string>
+    <string name="storage_cleanup_option_waveforms">Waveformlar</string>
+    <string name="storage_cleanup_option_network_cache">Ağ önbelleği</string>
+    <string name="storage_cleanup_option_diagnostic_logs">Tanı günlükleri</string>
+    <string name="storage_cleanup_option_temporary_files">Geçici dosyalar</string>
+    <string name="storage_cleanup_option_theme_catalog">Tema Mağazası önbelleği</string>
+    <string name="storage_cleanup_option_fetched_lyrics">Otomatik olarak alınan şarkı sözleri</string>
+    <string name="storage_cleanup_option_offline_downloads">İndirilen ses dosyası</string>
+    <string name="storage_cleanup_completed">Temizlik tamamlandı.</string>
 </resources>

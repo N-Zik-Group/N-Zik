@@ -241,4 +241,9 @@
         <item quantity="few">%1$d lucrări nefinalizate</item>
         <item quantity="other">%1$d lucrări nefinalizate</item>
     </plurals>
+    <plurals name="theme_store_settings_count">
+        <item quantity="one">Setare %d</item>
+        <item quantity="few">Setări %d</item>
+        <item quantity="other">Setări %d</item>
+    </plurals>
 </resources>

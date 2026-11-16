@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="backup_export_themes_description">Salvați temele descărcate și locale într-o copie de rezervă ZIP</string>
+    <string name="backup_import_themes_description">Restaurează temele descărcate și cele locale dintr-o copie de rezervă ZIP</string>
+    <string name="backup_export_select_all_description">Selectați fiecare tip de date de exportat</string>
+    <string name="backup_import_already_running">Un import de rezervă este deja în desfășurare.</string>
+    <string name="backup_import_select_all_description">Selectați fiecare tip de date pentru import</string>
+    <string name="backup_include_github_identity_credentials">Include acreditările de identitate GitHub</string>
     <string name="storage_image_quality_title">Calitatea imaginii</string>
     <string name="storage_image_quality_description">Aplică operelor de artă online și noilor coperți și fotografii de profil. Utilizările originale sunt de cea mai înaltă calitate disponibile și pot utiliza mai multe stocare și date.</string>
     <string name="storage_image_quality_optimized">Optimizat</string>
@@ -116,6 +122,9 @@
     <string name="backup_before_update_failed">Backup pre-instalare eșuat</string>
     <string name="backup_before_update_running_message">Se salvează datele înainte de instalarea…</string>
     <string name="backup_before_update_running_title">Backup în curs</string>
+    <string name="backup_export_separate_files_description">Fiecare categorie selectată este exportată într-un fișier separat. Fișierele cache și tema Stoc sunt excluse.</string>
+    <string name="backup_export_with_themes_description">Exportă baza de date cu coperte, setări, teme sau profiluri personalizate</string>
+    <string name="backup_import_with_themes_description">Restaurează o copie de rezervă a bazei de date SQLite sau ZIP, setări, teme sau profiluri</string>
     <string name="backup_include_discord_credentials">Include acreditările de identitate Discord</string>
     <string name="backup_include_lastfm_credentials">Include acreditările de identitate Last.fm</string>
     <string name="backup_include_proxy_password">Include parola proxy</string>
@@ -248,4 +257,34 @@
     <string name="export_cached_songs_generic_error">Exportul a eșuat</string>
     <string name="backup_startup_preparing_library">Pregătește-ți biblioteca…</string>
     <string name="backup_startup_recovery_failed">Nu s-a putut finaliza restaurarea bibliotecii tale.</string>
+    <string name="storage_breakdown_themes">Teme</string>
+    <string name="storage_info_themes">Înregistrări cu tema salvate și partajate Stocuri Teme, previzualizări și ciorne.</string>
+    <string name="storage_breakdown_lyrics">Versuri</string>
+    <string name="storage_info_lyrics">Text octeți de versuri descărcate și stocate în baza de date a profilului.</string>
+    <string name="storage_cleanup_clear_theme_cache">Goliţi memoria cache a magazinului de teme</string>
+    <string name="storage_cleanup_theme_cache_description">Elimină metadatele catalogului partajat. Temele salvate, ciornele și previzualizările lor sunt păstrate.</string>
+    <string name="storage_cleanup_clear_lyrics">Curăță versurile preluate</string>
+    <string name="storage_cleanup_lyrics_description">Elimină versurile preluate automat. Versuri personalizate sunt păstrate. Paginile gratuite pot fi reutilizate de baza de date a bibliotecii.</string>
+    <string name="backup_auto_enabled_title">Activează copia de rezervă automată</string>
+    <string name="backup_auto_enabled_description">Întrerupeți copiile de rezervă automate și păstrați setările de rezervă.</string>
+    <string name="storage_cleanup_picker_title">Curăță stocarea</string>
+    <string name="storage_cleanup_picker_description">Alegeţi fişierele şi datele de curăţat pentru acest scop.</string>
+    <string name="storage_cleanup_select_caches">Selectează geocutiile</string>
+    <string name="storage_cleanup_select_caches_description">Selectează geocutiile şi fişierele temporare.</string>
+    <string name="storage_cleanup_select_everything">Selectează tot</string>
+    <string name="storage_cleanup_select_everything_description">Selectează geocutii şi date, inclusiv descărcări offline.</string>
+    <string name="storage_cleanup_cache_group">Geocutii şi fişiere temporare</string>
+    <string name="storage_cleanup_delete_group">Date de șters</string>
+    <string name="storage_cleanup_review_selection">Revizuire</string>
+    <string name="storage_cleanup_selected_confirmation">Ștergeți elementele selectate din acest domeniu de aplicație?</string>
+    <string name="storage_cleanup_option_cached_images">Imagini cache</string>
+    <string name="storage_cleanup_option_streamed_audio">Audio streaming</string>
+    <string name="storage_cleanup_option_waveforms">Waveforme</string>
+    <string name="storage_cleanup_option_network_cache">Geocutie reţea</string>
+    <string name="storage_cleanup_option_diagnostic_logs">Jurnale de diagnostic</string>
+    <string name="storage_cleanup_option_temporary_files">Fișiere temporare</string>
+    <string name="storage_cleanup_option_theme_catalog">Cache-ul magazinului de teme</string>
+    <string name="storage_cleanup_option_fetched_lyrics">Versuri preluate automat</string>
+    <string name="storage_cleanup_option_offline_downloads">Audio descărcat</string>
+    <string name="storage_cleanup_completed">Curățare completă.</string>
 </resources>

@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">Pagina predefinita</string>
     <string name="settings_interface_corner_radius_label">Roundness Dell\'UI</string>
     <string name="settings_interface_hide_status_bar_label">Nascondi barra di stato</string>
+    <string name="settings_interface_right_to_left_label">Layout da destra a sinistra</string>
+    <string name="settings_interface_right_to_left_description">Specchia l\'interfaccia indipendentemente dalla lingua dell\'app.</string>
     <string name="settings_interface_page_description">La sezione dell\'interfaccia utente contiene le impostazioni per modificare l\'interfaccia globale e la navigazione</string>
     <string name="settings_interface_page_title">Interfaccia</string>
     <string name="settings_interface_title">Interfaccia</string>

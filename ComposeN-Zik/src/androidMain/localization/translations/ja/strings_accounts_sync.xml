@@ -1,11 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">GitHub に接続</string>
+    <string name="github_account_logout">GitHubの切断</string>
+    <string name="github_account_description">Theme Store で GitHub アカウントを使用します。</string>
+    <string name="github_account_offline">オンラインで GitHub に接続します。</string>
+    <string name="github_account_code">GitHubで %1$s を入力してサインインを完了します。</string>
+    <string name="github_account_code_copied">GitHub コードをクリップボードにコピーしました。</string>
+    <string name="github_account_login_failed">GitHub に接続できませんでした。もう一度やり直してください。</string>
+    <string name="github_account_connected">GitHub が接続されました。</string>
+    <string name="github_account_finishing_connection">Finishing GitHub connection…</string>
+    <string name="github_app_installation_instructions">\@%1$s を選択し、N-Zik-Theme-Store フォークのみにアクセスを許可してセットアップを完了します。</string>
+    <string name="github_app_installation">アプリのインストール</string>
+    <string name="github_app_installation_confirmed">GitHub はアプリのインストールを確認しました。</string>
+    <string name="github_app_installation_other_account">\@%1$sにアプリがインストールされました。フォークのクリーンアップを有効にするには、独自のアカウントを選択してください。</string>
+    <string name="github_app_installation_description">個人の GitHub 設定で N-Zik サインインへのアクセスを管理または取り消します。</string>
+    <string name="github_app_installation_needs_fork">テーマストアのフォークを作成するには、まずテーマまたはクリエイタープロフィールを提出してください。</string>
+    <string name="github_app_installation_fork_lookup_failed">テーマストアのフォークを確認できませんでした。もう一度やり直してください。</string>
     <!-- Account -->
     <string name="account_action_login">ログイン</string>
     <string name="account_action_logout">ログオフ</string>
     <string name="account_youtube_login_description">YouTubeアカウントを接続するか、現在のセッションからサインアウトします。</string>
+    <string name="account_youtube_change_account">YouTubeアカウントの変更</string>
+    <string name="account_youtube_change_account_description">このN-Zikプロファイルが使用するYouTubeチャンネルを選択します。</string>
     <string name="account_youtube_login_enabled_description">パーソナライズされたブラウジングと同期のためのYouTubeアカウントのサインインを許可します。</string>
     <!-- Account Youtube -->
+    <string name="account_youtube_checking_login">Checking your YouTube Music sign-in…</string>
+    <string name="account_youtube_choose_channel">YouTube音楽チャンネルを選択</string>
+    <string name="account_youtube_add_google_account">Googleアカウントを追加</string>
+    <string name="account_youtube_google_account">Google アカウント</string>
+    <string name="account_youtube_google_select">アカウントを選択</string>
+    <string name="account_youtube_google_sign_out">このアカウントからサインアウトする</string>
+    <string name="account_youtube_google_sign_out_description">これにより、このデバイス上のN-ZikからGoogleプロフィール全体とそのサインインデータが削除されます。他のアカウントはサインイン状態のままです。</string>
+    <string name="account_youtube_verify_failed">YouTube音楽のサインインを確認できませんでした。もう一度試すか、Googleでサインインしてください。</string>
     <string name="account_youtube_cookie_invalid">YouTubeのクッキーが無効です。もう一度ログインしてください</string>
     <string name="account_youtube_login_success">YouTubeのログインに成功しました</string>
     <string name="account_youtube_session_expired">YouTubeセッションの有効期限が切れました。もう一度サインインしてください</string>
@@ -180,6 +206,8 @@
     <string name="sync_cooldown">クールダウンを同期</string>
     <string name="sync_cooldown_description">自動同期の最小時間 (分)</string>
     <string name="sync_data_with_ytm_account">YTMアカウントとデータを同期</string>
+    <string name="account_youtube_sync_build_required">Debug ビルドと Dev ビルドで同期が利用できます。</string>
+    <string name="account_youtube_sync_browse_required">同期を使用するには、参照のログインを有効にします。</string>
     <string name="sync_direction">同期方向</string>
     <string name="sync_direction_app_to_yt">アプリ → YouTubeのみ</string>
     <string name="sync_direction_description">YouTubeからの同期インポート、ローカル変更の送信、または両方向で動作するかを選択します。</string>

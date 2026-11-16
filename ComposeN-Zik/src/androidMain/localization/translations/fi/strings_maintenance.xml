@@ -323,4 +323,9 @@
     <string name="updates_check_failed">Päivityksiä ei voitu tarkistaa.</string>
     <string name="updates_install_generic_error">Päivitystä ei voitu asentaa.</string>
     <string name="updates_channel_available_format">%1$s päivitys saatavilla</string>
+    <string name="recovery_theme_backup_title">Teemat</string>
+    <string name="recovery_theme_backup_no_match">Vain tässä näkymässä oleviin profiileihin kuuluvat teemat voidaan palauttaa täältä.</string>
+    <string name="recovery_theme_backup_operation_failed">Teeman varmuuskopiointia ei voitu suorittaa.</string>
+    <string name="recovery_theme_backup_restore_action">Palauta teemat</string>
+    <string name="recovery_theme_backup_restore_description">Avaa viimeinen tähän profiiliin käytetty teeman varmuuskopio.</string>
 </resources>

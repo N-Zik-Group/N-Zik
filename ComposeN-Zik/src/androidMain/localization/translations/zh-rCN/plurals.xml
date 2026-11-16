@@ -145,4 +145,7 @@
     <plurals name="maintenance_abnormal_job_count">
         <item quantity="other">%1$d 任务未完成</item>
     </plurals>
+    <plurals name="theme_store_settings_count">
+        <item quantity="other">%d 设置</item>
+    </plurals>
 </resources>

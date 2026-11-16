@@ -1,9 +1,5 @@
 Ein mehrsprachiges YouTube Music Frontend für Android, fokussiert auf Leistung, UI/UX, Erweiterungen und langfristigen Support.
 
-<b>N-Zik</b> ist ein Open-Source-Fork von <a href="https://github.com/knighthat/Kreate">Kreate</a>.
-
-<b>Hinweis:</b> N-Zik begann als Nebenprojekt. Für reifere Alternativen sieh dir <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> oder <a href="https://github.com/fast4x/RiPlay">RiPlay</a> an.
-
 <b>KI-Nutzung:</b> Ich nutze generative KI für Code (über die <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), geprüft und getestet vor der Veröffentlichung.
 
 ✨ <b>WARUM N-ZIK?</b> Keine Werbung, Hintergrundwiedergabe, Offline-Caching, anpassbare UI - kostenlos, immer.
@@ -13,6 +9,10 @@ Ein mehrsprachiges YouTube Music Frontend für Android, fokussiert auf Leistung,
 - Themes: AMOLED, Deep Dark, Crisp Light + eingefärbte Akzente
 - 3D Carousel Player, Home-Widgets, einheitlicher Player und Mini-Player
 - Künstlerprofile, Discovery und Moods, einklappbare Home-Header
+
+<b>N-Zik</b> ist ein Open-Source-Fork von <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+- Durchsuchen und downloaden von Community-Themes, Vorschau in Normal und Glas, und wählen Sie aus, welche Einstellungen Sie anwenden sollen.
+- Erstellen Sie lokale Designs oder teilen Sie Ihre Designs mit der Community. Importieren und exportieren Sie Themes als ZIP-Dateien.
 
 <b>Optionales Glass (BETA)</b>
 Bei Neuinstallation aus; in Einstellungen aktivieren. Je Kategorie: nativ, nur Konturen oder Glass; Qualität einstellbar. Kann Rendering-Aufwand und Akkuverbrauch erhöhen; Qualität senken oder deaktivieren.
@@ -33,6 +33,7 @@ Danksagung: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdr
 - Automatische Backups mit eigenen Intervallen und Aufbewahrung
 
 🔗 <b>Integrationen</b>
+- Wechseln Sie zwischen Google-Konten und YouTube-Kanälen. Jedes N-Zik Profil verwendet einen aktiven YouTube-Musikkanal für Empfehlungen und Wiedergabe.
 - YouTube-Anmeldung für Empfehlungen und Videowiedergabe, plus experimentelle Zwei-Wege-Sync
 - Last.fm-Scrobbling mit Now Playing und love/unlove
 - MusicBrainz-Künstler- und Album-Infos

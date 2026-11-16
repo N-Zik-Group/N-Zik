@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="backup_export_themes_description">Uložit stažené a místní motivy do ZIP zálohy</string>
+    <string name="backup_import_themes_description">Obnovit stažené a lokální motivy ze zálohy ZIP</string>
+    <string name="backup_export_select_all_description">Vyberte všechny typy dat pro export</string>
+    <string name="backup_import_already_running">Import zálohy již probíhá.</string>
+    <string name="backup_import_select_all_description">Vyberte každý typ dat k importu</string>
+    <string name="backup_include_github_identity_credentials">Zahrnout GitHub údaje o identitě</string>
     <string name="storage_image_quality_title">Kvalita obrázku</string>
     <string name="storage_image_quality_description">Aplikuje se na on-line umělecká díla a nově přidané obálky a profilové fotografie. Originál používá nejvyšší možnou kvalitu a může využívat více úložiště a dat.</string>
     <string name="storage_image_quality_optimized">Optimalizováno</string>
@@ -116,6 +122,9 @@
     <string name="backup_before_update_failed">Předinstalování zálohy se nezdařilo</string>
     <string name="backup_before_update_running_message">Zálohování dat před instalací…</string>
     <string name="backup_before_update_running_title">Probíhá zálohování</string>
+    <string name="backup_export_separate_files_description">Každá vybraná kategorie je exportována do samostatného souboru. Soubory mezipaměti a skladové téma je vyloučeno.</string>
+    <string name="backup_export_with_themes_description">Exportovat databázi s jejími vlastními obálkami, nastaveními, motivy nebo profily</string>
+    <string name="backup_import_with_themes_description">Obnovit zálohu SQLite nebo ZIP databáze, nastavení, témata nebo profily</string>
     <string name="backup_include_discord_credentials">Zahrnout Discord identitu</string>
     <string name="backup_include_lastfm_credentials">Zahrnout údaje o identitě Last.fm</string>
     <string name="backup_include_proxy_password">Zahrnout heslo proxy serveru</string>
@@ -248,4 +257,34 @@
     <string name="export_cached_songs_generic_error">Export selhal</string>
     <string name="backup_startup_preparing_library">Příprava tvé knihovny…</string>
     <string name="backup_startup_recovery_failed">Nepodařilo se dokončit obnovení vaší knihovny.</string>
+    <string name="storage_breakdown_themes">Motivy</string>
+    <string name="storage_info_themes">Uložené záznamy motivů a sdílené položky v obchodě, náhledy a koncepty.</string>
+    <string name="storage_breakdown_lyrics">Texty</string>
+    <string name="storage_info_lyrics">Text bajtů stažených a vlastních textů uložených v databázi profilu.</string>
+    <string name="storage_cleanup_clear_theme_cache">Vymazat mezipaměť obchodu motivů</string>
+    <string name="storage_cleanup_theme_cache_description">Odstraní metadata sdíleného katalogu. Uložené motivy, koncepty a jejich náhledy jsou zachovány.</string>
+    <string name="storage_cleanup_clear_lyrics">Vymazat načtené texty</string>
+    <string name="storage_cleanup_lyrics_description">Odstraní automaticky načtené texty. Vlastní texty jsou zachovány. Uvolněné stránky mohou být znovu použity v databázi knihovny.</string>
+    <string name="backup_auto_enabled_title">Povolit automatické zálohování</string>
+    <string name="backup_auto_enabled_description">Pozastavit automatické zálohování a zachovat nastavení zálohy.</string>
+    <string name="storage_cleanup_picker_title">Vyčistit úložiště</string>
+    <string name="storage_cleanup_picker_description">Vyberte soubory a data pro vymazání tohoto rozsahu.</string>
+    <string name="storage_cleanup_select_caches">Vybrat keše</string>
+    <string name="storage_cleanup_select_caches_description">Vyberte keše a dočasné soubory.</string>
+    <string name="storage_cleanup_select_everything">Vybrat vše</string>
+    <string name="storage_cleanup_select_everything_description">Vyberte keše a data, včetně offline stahování.</string>
+    <string name="storage_cleanup_cache_group">Keše a dočasné soubory</string>
+    <string name="storage_cleanup_delete_group">Data k odstranění</string>
+    <string name="storage_cleanup_review_selection">Přezkum</string>
+    <string name="storage_cleanup_selected_confirmation">Vymazat vybrané položky v tomto rozsahu?</string>
+    <string name="storage_cleanup_option_cached_images">Obrázky v mezipaměti</string>
+    <string name="storage_cleanup_option_streamed_audio">Streamované zvuky</string>
+    <string name="storage_cleanup_option_waveforms">Waveovy formy</string>
+    <string name="storage_cleanup_option_network_cache">Síťová keš</string>
+    <string name="storage_cleanup_option_diagnostic_logs">Diagnostické logy</string>
+    <string name="storage_cleanup_option_temporary_files">Dočasné soubory</string>
+    <string name="storage_cleanup_option_theme_catalog">Mezipaměť šablony obchodu</string>
+    <string name="storage_cleanup_option_fetched_lyrics">Automaticky načtené texty</string>
+    <string name="storage_cleanup_option_offline_downloads">Stažený zvuk</string>
+    <string name="storage_cleanup_completed">Vyčištění dokončeno.</string>
 </resources>

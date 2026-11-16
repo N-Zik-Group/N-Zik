@@ -193,4 +193,8 @@
         <item quantity="one">%1$d työtä ei ole suoritettu</item>
         <item quantity="other">%1$d työpaikkaa ei ole valmis</item>
     </plurals>
+    <plurals name="theme_store_settings_count">
+        <item quantity="one">%d asetus</item>
+        <item quantity="other">%d asetukset</item>
+    </plurals>
 </resources>

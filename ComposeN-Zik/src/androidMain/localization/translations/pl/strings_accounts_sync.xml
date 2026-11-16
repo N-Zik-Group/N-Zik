@@ -1,11 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">Połącz GitHub</string>
+    <string name="github_account_logout">Odłącz GitHub</string>
+    <string name="github_account_description">Użyj swojego konta GitHub w Sklepie Motywów.</string>
+    <string name="github_account_offline">Przejdź do trybu online, aby połączyć GitHub.</string>
+    <string name="github_account_code">Wprowadź %1$s na GitHubie, aby zakończyć logowanie.</string>
+    <string name="github_account_code_copied">Kod GitHub skopiowany do schowka.</string>
+    <string name="github_account_login_failed">Nie można połączyć się z GitHub. Spróbuj ponownie.</string>
+    <string name="github_account_connected">GitHub połączony.</string>
+    <string name="github_account_finishing_connection">Kończenie połączenia GitHub…</string>
+    <string name="github_app_installation_instructions">Wybierz @%1$s i udziel dostępu tylko do twojego forka N-Zik-Theme-Store aby zakończyć konfigurację.</string>
+    <string name="github_app_installation">Instalacja aplikacji</string>
+    <string name="github_app_installation_confirmed">GitHub potwierdził instalację aplikacji.</string>
+    <string name="github_app_installation_other_account">Aplikacja zainstalowana na @%1$s. Wybierz własne konto, aby włączyć czyszczenie fork.</string>
+    <string name="github_app_installation_description">Zarządzaj lub cofnij dostęp do logowania N-Zik w swoich osobistych ustawieniach GitHub.</string>
+    <string name="github_app_installation_needs_fork">Prześlij najpierw szablon lub profil twórcy, aby utworzyć fork Twojego sklepu motywu.</string>
+    <string name="github_app_installation_fork_lookup_failed">Nie można sprawdzić fortu Twojego sklepu motywu. Spróbuj ponownie.</string>
     <!-- Account -->
     <string name="account_action_login">Zaloguj się</string>
     <string name="account_action_logout">Wyloguj</string>
     <string name="account_youtube_login_description">Połącz swoje konto na YouTube lub wyloguj się z bieżącej sesji.</string>
+    <string name="account_youtube_change_account">Zmień konto YouTube</string>
+    <string name="account_youtube_change_account_description">Wybierz, który kanał YouTube używa tego profilu N-Zik.</string>
     <string name="account_youtube_login_enabled_description">Zezwalaj na logowanie do konta YouTube dla spersonalizowanego przeglądania i synchronizacji.</string>
     <!-- Account Youtube -->
+    <string name="account_youtube_checking_login">Sprawdzanie logowania muzyki na YouTube…</string>
+    <string name="account_youtube_choose_channel">Wybierz kanał muzyczny YouTube</string>
+    <string name="account_youtube_add_google_account">Dodaj konto Google</string>
+    <string name="account_youtube_google_account">Konto Google</string>
+    <string name="account_youtube_google_select">Wybierz konto</string>
+    <string name="account_youtube_google_sign_out">Wyloguj się z tego konta</string>
+    <string name="account_youtube_google_sign_out_description">To usuwa cały profil Google i jego dane logowania z N-Zik na tym urządzeniu. Twoje inne konta są zalogowane.</string>
+    <string name="account_youtube_verify_failed">Nie można zweryfikować logowania do muzyki na YouTube. Spróbuj ponownie lub zaloguj się za pomocą Google.</string>
     <string name="account_youtube_cookie_invalid">Ciasteczko YouTube jest nieprawidłowe, zaloguj się ponownie</string>
     <string name="account_youtube_login_success">Logowanie do YouTube zakończone powodzeniem</string>
     <string name="account_youtube_session_expired">Sesja YouTube wygasła, zaloguj się ponownie</string>
@@ -180,6 +206,8 @@
     <string name="sync_cooldown">Odnowienie synchronizacji</string>
     <string name="sync_cooldown_description">Minimalny czas między automatyczną synchronizacją (w minutach)</string>
     <string name="sync_data_with_ytm_account">Synchronizuj dane z kontem YTM</string>
+    <string name="account_youtube_sync_build_required">Synchronizacja jest dostępna w wersjach Debug i Dev.</string>
+    <string name="account_youtube_sync_browse_required">Włącz logowanie do przeglądarki, aby korzystać z synchronizacji.</string>
     <string name="sync_direction">Kierunek synchronizacji</string>
     <string name="sync_direction_app_to_yt">Aplikacja → Tylko YouTube</string>
     <string name="sync_direction_description">Wybierz, czy synchronizacja importu z YouTube, wysyła zmiany lokalne, czy działa w obu kierunkach.</string>

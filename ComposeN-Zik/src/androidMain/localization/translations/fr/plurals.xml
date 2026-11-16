@@ -193,4 +193,8 @@
         <item quantity="one">%1$d tâche non terminée</item>
         <item quantity="other">%1$d tâches non terminées</item>
     </plurals>
+    <plurals name="theme_store_settings_count">
+        <item quantity="one">%d réglage</item>
+        <item quantity="other">%d réglages</item>
+    </plurals>
 </resources>

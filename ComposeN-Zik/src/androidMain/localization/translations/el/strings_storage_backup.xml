@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="backup_export_themes_description">Αποθήκευση ληφθέντων και τοπικών θεμάτων σε αντίγραφο ασφαλείας ZIP</string>
+    <string name="backup_import_themes_description">Επαναφορά ληφθέντων και τοπικών θεμάτων από αντίγραφο ασφαλείας ZIP</string>
+    <string name="backup_export_select_all_description">Επιλέξτε κάθε τύπο δεδομένων για εξαγωγή</string>
+    <string name="backup_import_already_running">Μια εισαγωγή αντιγράφου ασφαλείας είναι ήδη σε εξέλιξη.</string>
+    <string name="backup_import_select_all_description">Επιλέξτε κάθε τύπο δεδομένων για εισαγωγή</string>
+    <string name="backup_include_github_identity_credentials">Συμπερίληψη διαπιστευτηρίων ταυτότητας GitHub</string>
     <string name="storage_image_quality_title">Ποιότητα εικόνας</string>
     <string name="storage_image_quality_description">Ισχύει για online έργα τέχνης και πρόσφατα προστεθεί καλύμματα και φωτογραφίες προφίλ. Πρωτότυπο χρησιμοποιεί την υψηλότερη ποιότητα που είναι διαθέσιμη και μπορεί να χρησιμοποιήσει περισσότερη αποθήκευση και δεδομένα.</string>
     <string name="storage_image_quality_optimized">Βελτιστοποιημένο</string>
@@ -116,6 +122,9 @@
     <string name="backup_before_update_failed">Αποτυχία προεγκατάστασης αντιγράφου ασφαλείας</string>
     <string name="backup_before_update_running_message">Δημιουργία αντιγράφων ασφαλείας δεδομένων πριν από την εγκατάσταση…</string>
     <string name="backup_before_update_running_title">Αντίγραφο ασφαλείας σε εξέλιξη</string>
+    <string name="backup_export_separate_files_description">Κάθε επιλεγμένη κατηγορία εξάγεται σε ένα ξεχωριστό αρχείο. Τα αρχεία προσωρινής αποθήκευσης και το θέμα αποθεμάτων εξαιρούνται.</string>
+    <string name="backup_export_with_themes_description">Εξαγωγή της βάσης δεδομένων με προσαρμοσμένα καλύμματα, ρυθμίσεις, θέματα ή προφίλ</string>
+    <string name="backup_import_with_themes_description">Επαναφορά αντιγράφου ασφαλείας βάσης δεδομένων SQLite ή ZIP, ρυθμίσεων, θεμάτων ή προφίλ</string>
     <string name="backup_include_discord_credentials">Συμπερίληψη διαπιστευτηρίων ταυτότητας Discord</string>
     <string name="backup_include_lastfm_credentials">Συμπερίληψη διαπιστευτηρίων ταυτότητας Last.fm</string>
     <string name="backup_include_proxy_password">Συμπερίληψη του κωδικού πρόσβασης διαμεσολαβητή</string>
@@ -248,4 +257,34 @@
     <string name="export_cached_songs_generic_error">Η εξαγωγή απέτυχε</string>
     <string name="backup_startup_preparing_library">Preparing your library…</string>
     <string name="backup_startup_recovery_failed">Αδυναμία ολοκλήρωσης της επαναφοράς της βιβλιοθήκης σας.</string>
+    <string name="storage_breakdown_themes">Θέματα</string>
+    <string name="storage_info_themes">Αποθηκευμένες εγγραφές θεμάτων και κοινόχρηστα στοιχεία του καταστήματος θέματος, προεπισκοπήσεις και σχέδια.</string>
+    <string name="storage_breakdown_lyrics">Στίχοι</string>
+    <string name="storage_info_lyrics">Κείμενο byte των κατεβασμένων και προσαρμοσμένων στίχων αποθηκεύονται μέσα στη βάση δεδομένων προφίλ.</string>
+    <string name="storage_cleanup_clear_theme_cache">Εκκαθάριση cache καταστήματος θέματος</string>
+    <string name="storage_cleanup_theme_cache_description">Αφαιρεί τα κοινόχρηστα μεταδεδομένα καταλόγου. Αποθηκεύονται θέματα, προσχέδια και οι προεπισκοπήσεις τους διατηρούνται.</string>
+    <string name="storage_cleanup_clear_lyrics">Εκκαθάριση ληφθέντων στίχων</string>
+    <string name="storage_cleanup_lyrics_description">Αφαιρεί αυτόματα τους στίχους. Οι προσαρμοσμένοι στίχοι διατηρούνται. Οι ελεύθερες σελίδες μπορούν να επαναχρησιμοποιηθούν από τη βάση δεδομένων της βιβλιοθήκης.</string>
+    <string name="backup_auto_enabled_title">Ενεργοποίηση αυτόματου αντιγράφου ασφαλείας</string>
+    <string name="backup_auto_enabled_description">Παύση αυτόματων αντιγράφων ασφαλείας και διατήρηση των ρυθμίσεων αντιγράφων ασφαλείας.</string>
+    <string name="storage_cleanup_picker_title">Καθαρισμός αποθ. χώρου</string>
+    <string name="storage_cleanup_picker_description">Επιλέξτε τα αρχεία και τα δεδομένα που θέλετε να καθαρίσετε για αυτό το πεδίο.</string>
+    <string name="storage_cleanup_select_caches">Επιλέξτε κρύπτες</string>
+    <string name="storage_cleanup_select_caches_description">Επιλέξτε κρύπτες και προσωρινά αρχεία.</string>
+    <string name="storage_cleanup_select_everything">Επιλογή όλων</string>
+    <string name="storage_cleanup_select_everything_description">Επιλέξτε κρύπτες και δεδομένα, συμπεριλαμβανομένων των λήψεων εκτός σύνδεσης.</string>
+    <string name="storage_cleanup_cache_group">Προσωρινές μνήμες και προσωρινά αρχεία</string>
+    <string name="storage_cleanup_delete_group">Δεδομένα προς διαγραφή</string>
+    <string name="storage_cleanup_review_selection">Επανεξέταση</string>
+    <string name="storage_cleanup_selected_confirmation">Εκκαθάριση των επιλεγμένων στοιχείων σε αυτό το πεδίο?</string>
+    <string name="storage_cleanup_option_cached_images">Προσωρινές εικόνες</string>
+    <string name="storage_cleanup_option_streamed_audio">Ροή ήχου</string>
+    <string name="storage_cleanup_option_waveforms">Κυματομορφές</string>
+    <string name="storage_cleanup_option_network_cache">Προσωρινή μνήμη δικτύου</string>
+    <string name="storage_cleanup_option_diagnostic_logs">Διαγνωστικά αρχεία καταγραφής</string>
+    <string name="storage_cleanup_option_temporary_files">Προσωρινά αρχεία</string>
+    <string name="storage_cleanup_option_theme_catalog">Προσωρινή μνήμη αποθήκευσης θεμάτων</string>
+    <string name="storage_cleanup_option_fetched_lyrics">Αυτόματη λήψη στίχων</string>
+    <string name="storage_cleanup_option_offline_downloads">Λήφθηκε ήχος</string>
+    <string name="storage_cleanup_completed">Ο καθαρισμός ολοκληρώθηκε.</string>
 </resources>

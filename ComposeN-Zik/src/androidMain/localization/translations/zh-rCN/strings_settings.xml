@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">默认页</string>
     <string name="settings_interface_corner_radius_label">界面圆角</string>
     <string name="settings_interface_hide_status_bar_label">隐藏状态栏</string>
+    <string name="settings_interface_right_to_left_label">从右到左布局</string>
+    <string name="settings_interface_right_to_left_description">独立于应用语言的界面镜像。</string>
     <string name="settings_interface_page_description">用户界面部分包含修改全局界面和导航的设置</string>
     <string name="settings_interface_page_title">界面</string>
     <string name="settings_interface_title">用户界面</string>

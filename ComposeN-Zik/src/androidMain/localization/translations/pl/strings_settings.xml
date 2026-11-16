@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">Domyślna strona</string>
     <string name="settings_interface_corner_radius_label">Runda interfejsu użytkownika</string>
     <string name="settings_interface_hide_status_bar_label">Ukryj pasek stanu</string>
+    <string name="settings_interface_right_to_left_label">Układ od prawej do lewej</string>
+    <string name="settings_interface_right_to_left_description">Odbij interfejs niezależnie od języka aplikacji.</string>
     <string name="settings_interface_page_description">Sekcja interfejsu użytkownika zawiera ustawienia do modyfikowania globalnego interfejsu i nawigacji</string>
     <string name="settings_interface_page_title">Interfejs</string>
     <string name="settings_interface_title">Interfejs</string>

@@ -323,4 +323,9 @@
     <string name="updates_check_failed">Kunde inte söka efter uppdateringar.</string>
     <string name="updates_install_generic_error">Kunde inte installera uppdateringen.</string>
     <string name="updates_channel_available_format">%1$s uppdatering tillgänglig</string>
+    <string name="recovery_theme_backup_title">Teman</string>
+    <string name="recovery_theme_backup_no_match">Endast teman som tillhör profiler som finns i denna vy kan återställas här.</string>
+    <string name="recovery_theme_backup_operation_failed">Kunde inte slutföra säkerhetskopieringen av temat.</string>
+    <string name="recovery_theme_backup_restore_action">Återställ teman</string>
+    <string name="recovery_theme_backup_restore_description">Öppna den senaste säkerhetskopia av tema som används för denna profil.</string>
 </resources>

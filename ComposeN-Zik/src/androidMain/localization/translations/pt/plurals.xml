@@ -193,4 +193,8 @@
         <item quantity="one">Trabalho %1$d não finalizado</item>
         <item quantity="other">%1$d trabalhos não concluídos</item>
     </plurals>
+    <plurals name="theme_store_settings_count">
+        <item quantity="one">Configuração %d</item>
+        <item quantity="other">Configurações %d</item>
+    </plurals>
 </resources>

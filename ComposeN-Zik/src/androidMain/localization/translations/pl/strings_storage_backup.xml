@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="backup_export_themes_description">Zapisz pobrane i lokalne motywy do kopii zapasowej ZIP</string>
+    <string name="backup_import_themes_description">Przywróć pobrane i lokalne motywy z kopii zapasowej ZIP</string>
+    <string name="backup_export_select_all_description">Wybierz każdy typ danych do eksportu</string>
+    <string name="backup_import_already_running">Import kopii zapasowej jest już w toku.</string>
+    <string name="backup_import_select_all_description">Wybierz każdy typ danych do zaimportowania</string>
+    <string name="backup_include_github_identity_credentials">Dołącz dane logowania GitHub</string>
     <string name="storage_image_quality_title">Jakość obrazu</string>
     <string name="storage_image_quality_description">Stosuje się do dzieł online i nowo dodanych okładek i zdjęć profilowych. Oryginał używa najwyższej jakości dostępnych i może korzystać z większej ilości przechowywanych danych i danych.</string>
     <string name="storage_image_quality_optimized">Zoptymalizowany</string>
@@ -116,6 +122,9 @@
     <string name="backup_before_update_failed">Tworzenie kopii zapasowej przed instalacją nie powiodło się</string>
     <string name="backup_before_update_running_message">Tworzenie kopii zapasowej danych przed instalacją…</string>
     <string name="backup_before_update_running_title">Kopia zapasowa w toku</string>
+    <string name="backup_export_separate_files_description">Każda wybrana kategoria jest eksportowana do oddzielnego pliku. Pliki pamięci podręcznej i motyw magazynu są wyłączone.</string>
+    <string name="backup_export_with_themes_description">Eksportuj bazę danych za pomocą własnych okładek, ustawień, motywów lub profili</string>
+    <string name="backup_import_with_themes_description">Przywróć kopię zapasową bazy danych SQLite lub ZIP</string>
     <string name="backup_include_discord_credentials">Dołącz dane logowania Discorda</string>
     <string name="backup_include_lastfm_credentials">Dołącz dane logowania Last.fm</string>
     <string name="backup_include_proxy_password">Dołącz hasło proxy</string>
@@ -248,4 +257,34 @@
     <string name="export_cached_songs_generic_error">Eksport nieudany</string>
     <string name="backup_startup_preparing_library">Przygotowywanie biblioteki…</string>
     <string name="backup_startup_recovery_failed">Nie można zakończyć przywracania twojej biblioteki.</string>
+    <string name="storage_breakdown_themes">Motywy</string>
+    <string name="storage_info_themes">Zapisano rekordy motywu i współdzielone zasoby sklepu motywu, podglądy i szkicy.</string>
+    <string name="storage_breakdown_lyrics">Tekst piosenki</string>
+    <string name="storage_info_lyrics">Bajty tekstowe pobranych i niestandardowych tekstów piosenek przechowywanych w bazie danych profilu.</string>
+    <string name="storage_cleanup_clear_theme_cache">Wyczyść pamięć podręczną sklepu motywu</string>
+    <string name="storage_cleanup_theme_cache_description">Usuwa współdzielone metadane katalogu. Zapisane szablony, szkice i ich podglądy są przechowywane.</string>
+    <string name="storage_cleanup_clear_lyrics">Wyczyść pobrane teksty</string>
+    <string name="storage_cleanup_lyrics_description">Usuwa automatycznie pobrane teksty piosenek. Własne teksty piosenek są przechowywane. Darmowe strony mogą być ponownie używane przez bazę danych biblioteki.</string>
+    <string name="backup_auto_enabled_title">Włącz automatyczną kopię zapasową</string>
+    <string name="backup_auto_enabled_description">Wstrzymaj automatyczne kopie zapasowe i zachowaj ustawienia kopii zapasowej.</string>
+    <string name="storage_cleanup_picker_title">Czyszczenie pamięci</string>
+    <string name="storage_cleanup_picker_description">Wybierz pliki i dane do wyczyszczenia dla tego zakresu.</string>
+    <string name="storage_cleanup_select_caches">Wybierz skrzynki</string>
+    <string name="storage_cleanup_select_caches_description">Wybierz skrzynki i pliki tymczasowe.</string>
+    <string name="storage_cleanup_select_everything">Wybierz wszystko</string>
+    <string name="storage_cleanup_select_everything_description">Wybierz skrzynki i dane, w tym pobierane offline.</string>
+    <string name="storage_cleanup_cache_group">Pamięć podręczna i pliki tymczasowe</string>
+    <string name="storage_cleanup_delete_group">Dane do usunięcia</string>
+    <string name="storage_cleanup_review_selection">Artykuł 3</string>
+    <string name="storage_cleanup_selected_confirmation">Wyczyścić zaznaczone elementy w tym zakresie?</string>
+    <string name="storage_cleanup_option_cached_images">Obrazy w pamięci podręcznej</string>
+    <string name="storage_cleanup_option_streamed_audio">Streamowany dźwięk</string>
+    <string name="storage_cleanup_option_waveforms">Formy fal</string>
+    <string name="storage_cleanup_option_network_cache">Skrzynka sieciowa</string>
+    <string name="storage_cleanup_option_diagnostic_logs">Dzienniki diagnostyczne</string>
+    <string name="storage_cleanup_option_temporary_files">Pliki tymczasowe</string>
+    <string name="storage_cleanup_option_theme_catalog">Pamięć podręczna sklepu motywu</string>
+    <string name="storage_cleanup_option_fetched_lyrics">Automatycznie pobierane teksty piosenek</string>
+    <string name="storage_cleanup_option_offline_downloads">Pobrany dźwięk</string>
+    <string name="storage_cleanup_completed">Czyszczenie zakończone.</string>
 </resources>

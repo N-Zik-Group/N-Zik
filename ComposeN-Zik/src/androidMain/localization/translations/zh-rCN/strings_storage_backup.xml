@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="backup_export_themes_description">将下载的主题和本地主题保存到ZIP备份</string>
+    <string name="backup_import_themes_description">从ZIP备份恢复下载和本地主题</string>
+    <string name="backup_export_select_all_description">选择要导出的每一种数据</string>
+    <string name="backup_import_already_running">备份导入已在进行中。</string>
+    <string name="backup_import_select_all_description">选择要导入的每一种数据</string>
+    <string name="backup_include_github_identity_credentials">包含 GitHub 身份凭据</string>
     <string name="storage_image_quality_title">图像质量</string>
     <string name="storage_image_quality_description">应用于在线艺术作品以及新添加的封面和个人资料照片。原始使用的是现有的最高质量，可以使用更多的存储和数据。</string>
     <string name="storage_image_quality_optimized">优化</string>
@@ -116,6 +122,9 @@
     <string name="backup_before_update_failed">预安装备份失败</string>
     <string name="backup_before_update_running_message">安装前备份数据…</string>
     <string name="backup_before_update_running_title">正在备份</string>
+    <string name="backup_export_separate_files_description">每个选定的类别被导出到一个单独的文件。缓存文件和库存主题被排除在外。</string>
+    <string name="backup_export_with_themes_description">用自定义封面、设置、主题或配置文件导出数据库</string>
+    <string name="backup_import_with_themes_description">恢复 SQLite 或 ZIP 数据库备份、 设置、 主题或配置文件</string>
     <string name="backup_include_discord_credentials">包含Discord身份凭据</string>
     <string name="backup_include_lastfm_credentials">包含 Last.fm 身份认证</string>
     <string name="backup_include_proxy_password">包含代理密码</string>
@@ -248,4 +257,34 @@
     <string name="export_cached_songs_generic_error">导出失败</string>
     <string name="backup_startup_preparing_library">正在准备您的库…</string>
     <string name="backup_startup_recovery_failed">无法完成还原您的库。</string>
+    <string name="storage_breakdown_themes">主题</string>
+    <string name="storage_info_themes">保存主题记录和共享主题存储资产、预览和草稿。</string>
+    <string name="storage_breakdown_lyrics">歌词</string>
+    <string name="storage_info_lyrics">存储在个人资料库中的已下载歌词和自定义歌词的字节。</string>
+    <string name="storage_cleanup_clear_theme_cache">清除主题存储缓存</string>
+    <string name="storage_cleanup_theme_cache_description">删除共享目录元数据。保存主题、草稿及其预览。</string>
+    <string name="storage_cleanup_clear_lyrics">清除已获取的歌词</string>
+    <string name="storage_cleanup_lyrics_description">删除自动获取的歌词。保存自定义歌词。已释放的页面可以由库数据库重新使用。</string>
+    <string name="backup_auto_enabled_title">启用自动备份</string>
+    <string name="backup_auto_enabled_description">暂停自动备份并保留备份设置。</string>
+    <string name="storage_cleanup_picker_title">清理存储</string>
+    <string name="storage_cleanup_picker_description">选择要清除此范围的文件和数据。</string>
+    <string name="storage_cleanup_select_caches">选择缓存</string>
+    <string name="storage_cleanup_select_caches_description">选择缓存和临时文件。</string>
+    <string name="storage_cleanup_select_everything">选择所有内容</string>
+    <string name="storage_cleanup_select_everything_description">选择缓存和数据，包括离线下载。</string>
+    <string name="storage_cleanup_cache_group">缓存和临时文件</string>
+    <string name="storage_cleanup_delete_group">要删除的数据</string>
+    <string name="storage_cleanup_review_selection">审查</string>
+    <string name="storage_cleanup_selected_confirmation">清除此范围内选中的项目？</string>
+    <string name="storage_cleanup_option_cached_images">缓存图像</string>
+    <string name="storage_cleanup_option_streamed_audio">串流音频</string>
+    <string name="storage_cleanup_option_waveforms">波形</string>
+    <string name="storage_cleanup_option_network_cache">网络缓存</string>
+    <string name="storage_cleanup_option_diagnostic_logs">诊断日志</string>
+    <string name="storage_cleanup_option_temporary_files">临时文件</string>
+    <string name="storage_cleanup_option_theme_catalog">主题存储缓存</string>
+    <string name="storage_cleanup_option_fetched_lyrics">自动获取歌词</string>
+    <string name="storage_cleanup_option_offline_downloads">下载的音频</string>
+    <string name="storage_cleanup_completed">清理完成。</string>
 </resources>

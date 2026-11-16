@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="backup_export_themes_description">Lagre nedlastede og lokale temaer i en ZIP sikkerhetskopi</string>
+    <string name="backup_import_themes_description">Gjenopprett nedlastede og lokale temaer fra en ZIP sikkerhetskopi</string>
+    <string name="backup_export_select_all_description">Velg alle datatyper du vil eksportere</string>
+    <string name="backup_import_already_running">En sikkerhetskopiimport pågår.</string>
+    <string name="backup_import_select_all_description">Velg alle datatyper du vil importere</string>
+    <string name="backup_include_github_identity_credentials">Inkluder GitHub identitetsopplysninger</string>
     <string name="storage_image_quality_title">Bilde kvalitet</string>
     <string name="storage_image_quality_description">Gjelder kunstverk på nett og nylig lagt til dekker og profilbilder. Originale bruker høyeste kvalitet som er tilgjengelig og kan bruke mer lagrings- og data.</string>
     <string name="storage_image_quality_optimized">Optimalisert</string>
@@ -116,6 +122,9 @@
     <string name="backup_before_update_failed">Forhåndsinstallasjon av sikkerhetskopi mislyktes</string>
     <string name="backup_before_update_running_message">Sikkerhetskopierer data før installasjon…</string>
     <string name="backup_before_update_running_title">Sikkerhetskopiering pågår</string>
+    <string name="backup_export_separate_files_description">Hver valgte kategori eksporteres til en egen fil. Mellomlagerfiler og standard tema ekskluderes.</string>
+    <string name="backup_export_with_themes_description">Eksporter databasen med egendefinerte omslag, innstillinger, temaer eller profiler</string>
+    <string name="backup_import_with_themes_description">Gjenopprett en SQLite eller ZIP database sikkerhetskopiering, innstillinger, temaer eller profiler</string>
     <string name="backup_include_discord_credentials">Inkluder Discord identitetsopplysninger</string>
     <string name="backup_include_lastfm_credentials">Inkluder Last.fm identitet påloggingsinformasjon</string>
     <string name="backup_include_proxy_password">Oppgi proxypassordet</string>
@@ -248,4 +257,34 @@
     <string name="export_cached_songs_generic_error">Eksportering feilet</string>
     <string name="backup_startup_preparing_library">Forbereder ditt bibliotek…</string>
     <string name="backup_startup_recovery_failed">Kunne ikke fullføre gjenopprettingen av biblioteket ditt.</string>
+    <string name="storage_breakdown_themes">Temaer</string>
+    <string name="storage_info_themes">Lagrede temamaterialer og delte tema, forhåndsvisninger og utkast.</string>
+    <string name="storage_breakdown_lyrics">Tekster</string>
+    <string name="storage_info_lyrics">Tekst byte av nedlastede og egendefinerte tekster lagret i profildatabasen.</string>
+    <string name="storage_cleanup_clear_theme_cache">Tøm tema butikk buffer</string>
+    <string name="storage_cleanup_theme_cache_description">Fjerner delte katalog-metadata. Lagrede temaer, utkast og deres forhåndsvisninger er beholdt.</string>
+    <string name="storage_cleanup_clear_lyrics">Tøm hentede tekster</string>
+    <string name="storage_cleanup_lyrics_description">Fjerner automatisk hentet sangtekster. Egendefinerte sangtekster spept. Frisider kan gjenbrukes av bibliotekdatabasen.</string>
+    <string name="backup_auto_enabled_title">Slå på automatisk sikkerhetskopiering</string>
+    <string name="backup_auto_enabled_description">Pause automatisk sikkerhetskopiering og behold sikkerhetskopiinnstillingene dine.</string>
+    <string name="storage_cleanup_picker_title">Rengjør lagring</string>
+    <string name="storage_cleanup_picker_description">Velg filene og dataene som skal slettes for dette omfanget.</string>
+    <string name="storage_cleanup_select_caches">Velg cacher</string>
+    <string name="storage_cleanup_select_caches_description">Velg cacher og midlertidige filer.</string>
+    <string name="storage_cleanup_select_everything">Velg alt</string>
+    <string name="storage_cleanup_select_everything_description">Velg cacher og data, inkludert offline-nedlastinger.</string>
+    <string name="storage_cleanup_cache_group">Cacher og midlertidige filer</string>
+    <string name="storage_cleanup_delete_group">Data å slette</string>
+    <string name="storage_cleanup_review_selection">Anmeldelse</string>
+    <string name="storage_cleanup_selected_confirmation">Slett de valgte elementene i dette omfanget?</string>
+    <string name="storage_cleanup_option_cached_images">Bufrede bilder</string>
+    <string name="storage_cleanup_option_streamed_audio">Strøm lyd</string>
+    <string name="storage_cleanup_option_waveforms">Bølgeformer</string>
+    <string name="storage_cleanup_option_network_cache">Nettverks cache</string>
+    <string name="storage_cleanup_option_diagnostic_logs">Diagnostiske logger</string>
+    <string name="storage_cleanup_option_temporary_files">Midlertidige filer</string>
+    <string name="storage_cleanup_option_theme_catalog">Tema Butikk cache</string>
+    <string name="storage_cleanup_option_fetched_lyrics">Hentet sangtekst automatisk</string>
+    <string name="storage_cleanup_option_offline_downloads">Lyden er lastet ned</string>
+    <string name="storage_cleanup_completed">Opprydding er fullført.</string>
 </resources>

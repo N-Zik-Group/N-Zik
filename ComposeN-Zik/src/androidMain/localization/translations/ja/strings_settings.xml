@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">起動に表示するページ</string>
     <string name="settings_interface_corner_radius_label">UIの丸さ</string>
     <string name="settings_interface_hide_status_bar_label">ステータスバーを隠す</string>
+    <string name="settings_interface_right_to_left_label">右から左へのレイアウト</string>
+    <string name="settings_interface_right_to_left_description">インターフェイスをアプリの言語とは関係なくミラーします。</string>
     <string name="settings_interface_page_description">ユーザーインターフェイスセクションには、グローバルインターフェイスとナビゲーションを変更するための設定が含まれています。</string>
     <string name="settings_interface_page_title">UI</string>
     <string name="settings_interface_title">ユーザーインターフェイス</string>

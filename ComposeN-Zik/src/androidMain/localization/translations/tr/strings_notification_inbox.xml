@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="notification_inbox_title">Bildirimler</string>
-    <string name="notification_inbox_empty">No notifications</string>
+    <string name="notification_inbox_empty">Bildirim yok</string>
     <string name="notification_inbox_open">Açık</string>
-    <string name="notification_inbox_unread">Unread notifications: %1$d</string>
+    <string name="notification_inbox_unread">Okunmamış bildirimler: %1$d</string>
     <string name="notification_inbox_clear_all">Tümünü temizle</string>
 </resources>

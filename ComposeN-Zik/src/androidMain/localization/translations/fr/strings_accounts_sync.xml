@@ -1,11 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">Se connecter à GitHub</string>
+    <string name="github_account_logout">Se déconnecter de GitHub</string>
+    <string name="github_account_description">Utilisez votre compte GitHub dans la boutique de thèmes.</string>
+    <string name="github_account_offline">Rendez-vous sur le site pour connecter GitHub.</string>
+    <string name="github_account_code">Saisissez %1$s sur GitHub pour terminer votre connexion.</string>
+    <string name="github_account_code_copied">Le code GitHub a été copié dans le presse-papiers.</string>
+    <string name="github_account_login_failed">Impossible de se connecter à GitHub. Veuillez réessayer.</string>
+    <string name="github_account_connected">Connexion à GitHub établie.</string>
+    <string name="github_account_finishing_connection">Fin de la connexion GitHub…</string>
+    <string name="github_app_installation_instructions">Choisissez @%1$s et accordez l\'accès uniquement à votre fork N-Zik-Theme-Store pour terminer l\'installation.</string>
+    <string name="github_app_installation">Installation de l\'application</string>
+    <string name="github_app_installation_confirmed">GitHub a confirmé l\'installation de l\'application.</string>
+    <string name="github_app_installation_other_account">Application installée sur%1$s. Sélectionnez votre propre compte pour activer le nettoyage de fork.</string>
+    <string name="github_app_installation_description">Gérer ou révoquer l\'accès à la connexion N-Zik dans vos paramètres GitHub personnels.</string>
+    <string name="github_app_installation_needs_fork">Soumettez d\'abord un thème ou un profil de créateur pour créer votre fork de boutique de thèmes.</string>
+    <string name="github_app_installation_fork_lookup_failed">Impossible de vérifier le fork de votre boutique de thèmes. Veuillez réessayer.</string>
     <!-- Account -->
     <string name="account_action_login">Se connecter</string>
     <string name="account_action_logout">Se déconnecter</string>
     <string name="account_youtube_login_description">Connectez-vous à votre compte YouTube ou déconnectez-vous de la session en cours.</string>
+    <string name="account_youtube_change_account">Changer de compte YouTube</string>
+    <string name="account_youtube_change_account_description">Choisissez la chaîne YouTube que ce profil N-Zik utilise.</string>
     <string name="account_youtube_login_enabled_description">Autorisez la connexion à votre compte YouTube pour bénéficier d\'une navigation personnalisée et de la synchronisation.</string>
     <!-- Account Youtube -->
+    <string name="account_youtube_checking_login">Vérification de votre connexion à la musique YouTube…</string>
+    <string name="account_youtube_choose_channel">Choisissez une chaîne de musique YouTube</string>
+    <string name="account_youtube_add_google_account">Ajouter un compte Google</string>
+    <string name="account_youtube_google_account">Compte Google</string>
+    <string name="account_youtube_google_select">Choisir un compte</string>
+    <string name="account_youtube_google_sign_out">Se déconnecter de ce compte</string>
+    <string name="account_youtube_google_sign_out_description">Cela supprime l\'ensemble du profil Google et de ses données de connexion N-Zik sur cet appareil. Vos autres comptes restent connectés.</string>
+    <string name="account_youtube_verify_failed">Impossible de vérifier votre connexion à YouTube Music. Réessayez ou connectez-vous avec Google.</string>
     <string name="account_youtube_cookie_invalid">Le cookie YouTube n\'est pas valide. Veuillez vous reconnecter.</string>
     <string name="account_youtube_login_success">Connexion à YouTube réussie</string>
     <string name="account_youtube_session_expired">La session YouTube a expiré. Veuillez vous reconnecter.</string>
@@ -180,6 +206,8 @@
     <string name="sync_cooldown">Délai de recharge de la synchronisation</string>
     <string name="sync_cooldown_description">Durée minimale entre deux synchronisations automatiques (en minutes)</string>
     <string name="sync_data_with_ytm_account">Synchroniser les données avec le compte YTM</string>
+    <string name="account_youtube_sync_build_required">La synchronisation est disponible dans les versions Debug et Dev.</string>
+    <string name="account_youtube_sync_browse_required">Activer la connexion pour naviguer pour utiliser la synchronisation.</string>
     <string name="sync_direction">Sens de synchronisation</string>
     <string name="sync_direction_app_to_yt">Application → YouTube uniquement</string>
     <string name="sync_direction_description">Choisissez si la synchronisation doit importer des données depuis YouTube, envoyer les modifications locales ou fonctionner dans les deux sens.</string>

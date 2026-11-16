@@ -323,4 +323,9 @@
     <string name="updates_check_failed">Не удалось проверить обновления.</string>
     <string name="updates_install_generic_error">Не удалось установить обновление.</string>
     <string name="updates_channel_available_format">Доступно обновление %1$s</string>
+    <string name="recovery_theme_backup_title">Темы</string>
+    <string name="recovery_theme_backup_no_match">Только темы, относящиеся к профилям, доступные в этом представлении, могут быть восстановлены здесь.</string>
+    <string name="recovery_theme_backup_operation_failed">Не удалось завершить операцию резервного копирования темы.</string>
+    <string name="recovery_theme_backup_restore_action">Восстановить темы</string>
+    <string name="recovery_theme_backup_restore_description">Открыть последнюю резервную копию темы, используемую для этого профиля.</string>
 </resources>

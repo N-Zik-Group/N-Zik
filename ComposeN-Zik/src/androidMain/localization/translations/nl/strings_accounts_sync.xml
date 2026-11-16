@@ -1,11 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">Verbind GitHub</string>
+    <string name="github_account_logout">GitHub loskoppelen</string>
+    <string name="github_account_description">Gebruik uw GitHub account in de Theme Store.</string>
+    <string name="github_account_offline">Ga online om verbinding te maken met GitHub.</string>
+    <string name="github_account_code">Voer %1$s in op GitHub om aan te melden.</string>
+    <string name="github_account_code_copied">Github code gekopieerd naar klembord.</string>
+    <string name="github_account_login_failed">Kan geen verbinding maken met GitHub. Probeer het opnieuw.</string>
+    <string name="github_account_connected">GitHub verbonden.</string>
+    <string name="github_account_finishing_connection">GitHub verbinding voltooien…</string>
+    <string name="github_app_installation_instructions">Kies @%1$s en verleen alleen toegang tot uw N-Zik-Theme-Store vork om de installatie af te ronden.</string>
+    <string name="github_app_installation">App installatie</string>
+    <string name="github_app_installation_confirmed">GitHub heeft de installatie van de app bevestigd.</string>
+    <string name="github_app_installation_other_account">App geïnstalleerd op @%1$s. Selecteer uw eigen account om opschonen van de vork in te schakelen.</string>
+    <string name="github_app_installation_description">Beheer of intrekking van N-Zik login toegang in uw persoonlijke GitHub instellingen.</string>
+    <string name="github_app_installation_needs_fork">Dien eerst een thema of het profiel van de maker in om een Thema Winkel te maken.</string>
+    <string name="github_app_installation_fork_lookup_failed">Fork voor themaopslag kon niet worden gecontroleerd. Probeer het opnieuw.</string>
     <!-- Account -->
     <string name="account_action_login">Log in</string>
     <string name="account_action_logout">Log uit</string>
     <string name="account_youtube_login_description">Verbind je YouTube-account of log uit de huidige sessie.</string>
+    <string name="account_youtube_change_account">Youtube account wijzigen</string>
+    <string name="account_youtube_change_account_description">Kies welk YouTube kanaal dit N-Zik-profiel gebruikt.</string>
     <string name="account_youtube_login_enabled_description">Toestaan dat YouTube account inloggen voor gepersonaliseerd browsen en synchroniseren.</string>
     <!-- Account Youtube -->
+    <string name="account_youtube_checking_login">Controleren van uw YouTube-muziek-aanmelding…</string>
+    <string name="account_youtube_choose_channel">Kies een YouTube-muziekkanaal</string>
+    <string name="account_youtube_add_google_account">Google account toevoegen</string>
+    <string name="account_youtube_google_account">Google account</string>
+    <string name="account_youtube_google_select">Account kiezen</string>
+    <string name="account_youtube_google_sign_out">Afmelden bij deze account</string>
+    <string name="account_youtube_google_sign_out_description">Hiermee worden de volledige Google-profiel en de inloggegevens verwijderd van N-Zik op dit apparaat. Uw andere accounts blijven aangemeld.</string>
+    <string name="account_youtube_verify_failed">Kon uw YouTube Music login niet verifiëren. Probeer het opnieuw of log in met Google.</string>
     <string name="account_youtube_cookie_invalid">YouTube cookie is ongeldig, log opnieuw in</string>
     <string name="account_youtube_login_success">YouTube login succesvol</string>
     <string name="account_youtube_session_expired">YouTube-sessie verlopen, log opnieuw in</string>
@@ -180,6 +206,8 @@
     <string name="sync_cooldown">Synchroniseer afkoeltijd</string>
     <string name="sync_cooldown_description">Minimale tijd tussen automatische synchronisatie (in minuten)</string>
     <string name="sync_data_with_ytm_account">Gegevens synchroniseren met YTM account</string>
+    <string name="account_youtube_sync_build_required">Synchronisatie is beschikbaar in Debug en Dev builds.</string>
+    <string name="account_youtube_sync_browse_required">Schakel inloggen in om te navigeren om synchronisatie te gebruiken.</string>
     <string name="sync_direction">Synchroniseer richting</string>
     <string name="sync_direction_app_to_yt">Alleen App → YouTube</string>
     <string name="sync_direction_description">Kies of synchronisatie import vanuit YouTube de lokale wijzigingen verstuurt of in beide richtingen werkt.</string>

@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="backup_export_themes_description">Сохранить загруженные и локальные темы в ZIP бэкап</string>
+    <string name="backup_import_themes_description">Восстановить загруженные и локальные темы из ZIP бэкапа</string>
+    <string name="backup_export_select_all_description">Выберите каждый тип данных для экспорта</string>
+    <string name="backup_import_already_running">Резервное копирование уже выполняется.</string>
+    <string name="backup_import_select_all_description">Выберите каждый тип данных для импорта</string>
+    <string name="backup_include_github_identity_credentials">Включить идентификационные данные GitHub</string>
     <string name="storage_image_quality_title">Качество изображения</string>
     <string name="storage_image_quality_description">Применяется к онлайн-изображению и вновь добавленным обложкам и фотографиям профиля. Оригинал использует наивысшее качество доступных и может использовать больше хранилища и данных.</string>
     <string name="storage_image_quality_optimized">Оптимизировано</string>
@@ -116,6 +122,9 @@
     <string name="backup_before_update_failed">Ошибка предварительной установки резервной копии</string>
     <string name="backup_before_update_running_message">Резервное копирование данных перед установкой…</string>
     <string name="backup_before_update_running_title">Идёт резервное копирование</string>
+    <string name="backup_export_separate_files_description">Каждая выбранная категория экспортируется в отдельный файл. Файлы кэша и стандартная тема исключаются.</string>
+    <string name="backup_export_with_themes_description">Экспортировать базу данных с ее обложками, настройками, темами или профилями</string>
+    <string name="backup_import_with_themes_description">Восстановить резервную копию базы данных SQLite или ZIP, настройки, темы или профили</string>
     <string name="backup_include_discord_credentials">Включить учетные данные Discord</string>
     <string name="backup_include_lastfm_credentials">Включить учетные данные Last.fm</string>
     <string name="backup_include_proxy_password">Включить пароль прокси-сервера</string>
@@ -248,4 +257,34 @@
     <string name="export_cached_songs_generic_error">Не удалось экспортировать</string>
     <string name="backup_startup_preparing_library">Подготовка вашей библиотеки…</string>
     <string name="backup_startup_recovery_failed">Не удалось завершить восстановление вашей библиотеки.</string>
+    <string name="storage_breakdown_themes">Темы</string>
+    <string name="storage_info_themes">Сохраненные записи темы и общие ресурсы хранилища темы, превью и черновики.</string>
+    <string name="storage_breakdown_lyrics">Тексты песен</string>
+    <string name="storage_info_lyrics">Текстовые байты загруженных и пользовательских текстов песен внутри базы данных профиля.</string>
+    <string name="storage_cleanup_clear_theme_cache">Очистить кэш хранилища тем</string>
+    <string name="storage_cleanup_theme_cache_description">Удаляет общие метаданные каталога. Сохраненные темы, черновики и их превью сохраняются.</string>
+    <string name="storage_cleanup_clear_lyrics">Очистить загруженные тексты</string>
+    <string name="storage_cleanup_lyrics_description">Удаляет автоматически загруженный текст песни. Пользовательские тексты сохраняются. Свободные страницы могут быть повторно использованы в базе данных библиотеки.</string>
+    <string name="backup_auto_enabled_title">Включить автоматическое резервное копирование</string>
+    <string name="backup_auto_enabled_description">Приостановить автоматическое резервное копирование и сохранить настройки резервного копирования.</string>
+    <string name="storage_cleanup_picker_title">Очистить хранилище</string>
+    <string name="storage_cleanup_picker_description">Выберите файлы и данные, чтобы очистить для этой области.</string>
+    <string name="storage_cleanup_select_caches">Выберите тайники</string>
+    <string name="storage_cleanup_select_caches_description">Выберите тайники и временные файлы.</string>
+    <string name="storage_cleanup_select_everything">Выбрать всё</string>
+    <string name="storage_cleanup_select_everything_description">Выберите кэш и данные, включая автономные загрузки.</string>
+    <string name="storage_cleanup_cache_group">Кэши и временные файлы</string>
+    <string name="storage_cleanup_delete_group">Данные для удаления</string>
+    <string name="storage_cleanup_review_selection">Обзор</string>
+    <string name="storage_cleanup_selected_confirmation">Очистить выбранные элементы области применения?</string>
+    <string name="storage_cleanup_option_cached_images">Кэшированные изображения</string>
+    <string name="storage_cleanup_option_streamed_audio">Трансляция аудио</string>
+    <string name="storage_cleanup_option_waveforms">Формы волны</string>
+    <string name="storage_cleanup_option_network_cache">Кэш сети</string>
+    <string name="storage_cleanup_option_diagnostic_logs">Журналы диагностики</string>
+    <string name="storage_cleanup_option_temporary_files">Временные файлы</string>
+    <string name="storage_cleanup_option_theme_catalog">Кэш хранилища тем</string>
+    <string name="storage_cleanup_option_fetched_lyrics">Автоматически загруженные тексты песен</string>
+    <string name="storage_cleanup_option_offline_downloads">Загружено аудио</string>
+    <string name="storage_cleanup_completed">Очистка завершена.</string>
 </resources>

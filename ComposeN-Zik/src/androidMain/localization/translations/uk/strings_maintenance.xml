@@ -323,4 +323,9 @@
     <string name="updates_check_failed">Не вдається перевірити наявність оновлень.</string>
     <string name="updates_install_generic_error">Не вдалося встановити оновлення.</string>
     <string name="updates_channel_available_format">Доступне оновлення %1$s</string>
+    <string name="recovery_theme_backup_title">Теми оформлення</string>
+    <string name="recovery_theme_backup_no_match">У цьому вікні можна відновити тільки теми для профілів.</string>
+    <string name="recovery_theme_backup_operation_failed">Не вдалося завершити операцію резервного копіювання теми.</string>
+    <string name="recovery_theme_backup_restore_action">Відновити теми</string>
+    <string name="recovery_theme_backup_restore_description">Відкрити останню резервну копію теми, що використовується для цього профілю.</string>
 </resources>

@@ -289,4 +289,10 @@
         <item quantity="many">%1$d zadania nie zostały zakończone</item>
         <item quantity="other">%1$d zadania nie zostały zakończone</item>
     </plurals>
+    <plurals name="theme_store_settings_count">
+        <item quantity="one">%d ustawienia</item>
+        <item quantity="few">%d ustawienia</item>
+        <item quantity="many">%d ustawienia</item>
+        <item quantity="other">%d ustawienia</item>
+    </plurals>
 </resources>

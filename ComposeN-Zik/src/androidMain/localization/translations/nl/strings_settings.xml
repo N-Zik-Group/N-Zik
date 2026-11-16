@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">Standaardpagina</string>
     <string name="settings_interface_corner_radius_label">UI geluidshinder</string>
     <string name="settings_interface_hide_status_bar_label">Verberg statusbalk</string>
+    <string name="settings_interface_right_to_left_label">Rechts-naar-links lay-out</string>
+    <string name="settings_interface_right_to_left_description">Spiegel de interface onafhankelijk van de app-taal.</string>
     <string name="settings_interface_page_description">De gebruikersinterface sectie bevat instellingen om de globale interface en navigatie te wijzigen</string>
     <string name="settings_interface_page_title">UI</string>
     <string name="settings_interface_title">Gebruikersinterface</string>

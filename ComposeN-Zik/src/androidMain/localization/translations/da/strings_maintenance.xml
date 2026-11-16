@@ -323,4 +323,9 @@
     <string name="updates_check_failed">Kunne ikke søge efter opdateringer.</string>
     <string name="updates_install_generic_error">Kunne ikke installere opdateringen.</string>
     <string name="updates_channel_available_format">%1$s opdatering tilgængelig</string>
+    <string name="recovery_theme_backup_title">Temaer</string>
+    <string name="recovery_theme_backup_no_match">Kun temaer, der tilhører profiler, der er tilgængelige i denne visning, kan gendannes her.</string>
+    <string name="recovery_theme_backup_operation_failed">Kunne ikke fuldføre sikkerhedskopieringen af temaet.</string>
+    <string name="recovery_theme_backup_restore_action">Gendan temaer</string>
+    <string name="recovery_theme_backup_restore_description">Åbn den sidste backup af temaet, der bruges til denne profil.</string>
 </resources>

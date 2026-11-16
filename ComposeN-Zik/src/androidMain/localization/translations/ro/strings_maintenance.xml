@@ -323,4 +323,9 @@
     <string name="updates_check_failed">Nu s-au putut verifica actualizările.</string>
     <string name="updates_install_generic_error">Actualizarea nu a putut fi instalată.</string>
     <string name="updates_channel_available_format">Actualizare %1$s disponibilă</string>
+    <string name="recovery_theme_backup_title">Teme</string>
+    <string name="recovery_theme_backup_no_match">Numai temele care aparțin profilurilor disponibile în această vizualizare pot fi restaurate aici.</string>
+    <string name="recovery_theme_backup_operation_failed">Operatia de backup a temei nu a putut fi finalizata.</string>
+    <string name="recovery_theme_backup_restore_action">Restaurare teme</string>
+    <string name="recovery_theme_backup_restore_description">Deschide ultima copie de rezervă a temei utilizată pentru acest profil.</string>
 </resources>

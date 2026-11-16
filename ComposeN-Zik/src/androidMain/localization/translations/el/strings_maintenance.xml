@@ -323,4 +323,9 @@
     <string name="updates_check_failed">Αδυναμία ελέγχου για ενημερώσεις.</string>
     <string name="updates_install_generic_error">Δεν ήταν δυνατή η εγκατάσταση της ενημέρωσης.</string>
     <string name="updates_channel_available_format">Διαθέσιμη ενημέρωση %1$s</string>
+    <string name="recovery_theme_backup_title">Θέματα</string>
+    <string name="recovery_theme_backup_no_match">Μόνο θέματα που ανήκουν σε προφίλ διαθέσιμα σε αυτήν την προβολή μπορούν να αποκατασταθούν εδώ.</string>
+    <string name="recovery_theme_backup_operation_failed">Δεν ήταν δυνατή η ολοκλήρωση της λειτουργίας αντιγράφου ασφαλείας του θέματος.</string>
+    <string name="recovery_theme_backup_restore_action">Επαναφορά θεμάτων</string>
+    <string name="recovery_theme_backup_restore_description">Άνοιγμα του τελευταίου αντιγράφου ασφαλείας θέματος που χρησιμοποιήθηκε για αυτό το προφίλ.</string>
 </resources>
