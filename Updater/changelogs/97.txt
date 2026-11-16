@@ -1,0 +1,289 @@
+Added:
+- feat(glass): style loading and refresh indicators
+  - Add separate Glass modes for loaders and pull to refresh in the Indicators section.
+  - Apply shared Glass to the animated loader silhouette and to the complete refresh capsule and its glyph, preserving their native colors.
+  - Use a backdrop that excludes the indicators to prevent recursive rendering.
+- feat(settings): expand storage cleanup actions
+  - Add confirmed diagnostic log and abandoned temporary file cleanup.
+  - Put Clear all last and run every listed cleanup while preserving library data, covers and settings.
+- feat(settings): add interactive storage chart
+  - Inspect segments and legend rows with a long press and drag, with animated leaders and dimming.
+  - Apply the Settings Cards Glass mode to the storage bar and give the aligned info action its matching badge.
+- feat(settings): add a live storage breakdown and cleanup actions
+  - Show internal storage use by category, the total used by NZik, and an explanation of each segment.
+  - Move confirmed cleanup actions to Storage and keep quota and location controls in Cache.
+  - Share the section divider across multi-section settings cards and index Storage in global and page search.
+- feat(images): edit and safely apply covers and profile photos (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Open uCrop from cover and profile pickers with readable application colors and crop/rotate controls.
+  - Edit owned temporary copies and publish only after confirmation; clean cancellation/orphans and retain the captured profile/entity target.
+  - Refresh local artwork revisions after saves and protect playlist/image-editor results against stale targets.
+- feat(backup): include custom artwork in portable database backups
+  - Export a SQLite file for a library without custom artwork and a ZIP with the database and referenced covers otherwise.
+  - Restore both formats in Settings, onboarding and Rescue, and use the same format selection and retention for automatic and pre-update backups.
+  - Validate SQLite schema and artwork before replacement, rebase local cover references and recover interrupted restores from a journal before database access.
+  - Retire the obsolete migration entry and its localized strings, and describe both supported backup formats in the import and export options.
+- feat(ffmpeg): show cancellable setup progress in metadata editing and audio exports
+  - Reuse the circular export progress dialog for first-time FFmpeg installation and updates, with a centered percentage.
+  - Wait for FFmpeg before opening the metadata editor or creating export files, including batch exports.
+  - Cancel the owning transfer, remove partial files, and preserve the installed version when an update is cancelled.
+  - Cover cancellation during a stalled HTTP response, screen disposal, and retry in focused regression tests.
+- feat(storage): isolate storage and cleanup by profile
+  - Combine cache settings, storage usage, and cleanup in one Data card with Total and per-profile tabs.
+  - Attribute app data and caches to their profile and distinguish device usage, secondary volumes, and protected historical files.
+  - Clear eligible files while the app stays open and coordinate live cache cleanup with readers and writers.
+  - Preserve verified downloads and indexes during storage moves, recover interrupted operations, and keep older Rescue snapshots restorable.
+  - Validate profile generations before applying download commands and storage mutations. Cover recovery and profile isolation with regression tests.
+- feat(lyrics): configure providers for each lyrics mode (issue https://github.com/N-Zik-Group/N-Zik/issues/838)
+  - Persist independent provider selections for Auto, Karaoke, Sync and Unsync, with at least one compatible source in each mode.
+  - Continue to the next compatible provider after missing or invalid results and recoverable failures. Derive timed lines from BetterLyrics word timing in Sync.
+  - Preserve manual edits during concurrent automatic writes and keep cached lyrics available during searches.
+- feat(lyrics): import and export Lyricsfile documents (issue https://github.com/N-Zik-Group/N-Zik/issues/968)
+  - Open the editor, Android document picker or export destination from full-width actions in EditLyricsDialog.
+  - Use SnakeYAML Engine to read bounded Lyricsfile documents and preserve line and word timing in import previews and exports.
+  - Offer Lyricsfile alongside LRC when exporting cached songs individually or in batches. Use saved lyrics for Lyricsfile export without a provider lookup.
+  - Avoid an Android ICU regex initialization error in the cache export dialog and cover lyric conversion and provider fallback with regression tests.
+- feat(artwork): preserve original quality for custom covers
+  - Add Optimized (1,000 px) and Original modes per profile, preserve original files in database backups, and bound display decoding in the grid and player.
+  - Reported on Discord. Exported cover example: https://media.discordapp.net/attachments/1545794303845208215/1569999573496242307/cover_0jXTOUQ4A7g.jpg
+- feat(library): add profile-controlled On device browsing for songs, albums, artists and playlists
+  - Request audio permission on activation, retain the scan until a manual refresh, and expose local groups in Android Auto.
+  - Keep device links and artwork edits local, and protect device records during playback and maintenance.
+- feat(themes): add Normal and Glass preview capture with demo content for 12 N-Zik views.
+- feat(notifications): add an in-app inbox with an unread badge, Android actions, details and progress.
+- feat(theme-store): browse, preview, apply and share community themes
+  - Include a Stock theme, Normal and Glass previews, profile-specific downloads and local themes, and GitHub submissions with withdrawal support.
+- feat(backup): add theme archives and a selectable automatic backup
+  - Import and export theme ZIP files with the existing backup categories. Rescue opens the picker directly and restores themes under their original profile.
+  - Add an off-by-default switch that pauses automatic backup while retaining the selected folder, categories and timing.
+- feat(interface): add an optional right-to-left layout
+  - Apply the profile preference to app, Rescue and image editor layouts. Keep the language in control of text direction and expose the option in both settings searches.
+  - Align search text to the interface start and use the logical action order for Glass groups, detached buttons and dividers.
+- feat(theme-store): let creators choose the minimum supported app version
+  - Default to version code 96 and keep the existing compatibility value when editing. Store the minimum in drafts, submission manifests and local packages.
+  - Link the form to the updater guide for current and historical version codes. Add a segmented swipe position indicator and an accent Glass action to the full-size preview gallery.
+- feat(youtube): support multiple Google accounts and YouTube Music channels
+  - Group channels by Google account in the channel picker, display the account email once and preserve the order in which accounts were added.
+  - Open newly added accounts in isolated WebView profiles on supported devices, preserve sessions when the sheet is dismissed and confirm per-account sign-out.
+  - Resume the Google sign-in flow after device verification and validate the selected channel and sign-in data before replacing the active YouTube Music session.
+  - Store verified credentials and the local account roster in encrypted profile preferences. Include the active account index in optional YouTube CSV exports and clear a stale index when importing a legacy cookie.
+  - Keep the sync card visible and allow synchronization in Debug and Dev builds when authenticated browsing is enabled.
+
+Changed:
+- The Theme Store is available in beta. Themes require Android version code 97 or higher. The Theme Store and Glass page headers show the existing Beta badge.
+
+Improved:
+- improve(settings): organize Data settings by profile
+  - Put Backup and restore first with Import backup at the top, and keep the storage summary and cleanup together.
+  - Give each profile separate Cache settings, Automatic Backup, and On device cards, with global and Data search targets.
+- improve(artwork): extend per-profile image quality
+  - Apply Original mode to online artwork, profile photos and covers embedded in local music, with bounded display decoding.
+  - Migrate the saved choice to originalImageQuality and update the translation keys and settings search.
+  - Follow-up to the Discord report about pixelated custom artwork. Exported cover example: https://media.discordapp.net/attachments/1545794303845208215/1569999573496242307/cover_0jXTOUQ4A7g.jpg
+- improve(notifications): preload existing notifications, animate arrivals and dismissals, and support swipe and Clear all.
+- improve(navigation): reuse the Rewind mini-player transition for Notifications and Theme Store, and restore the app header after Clear all.
+- improve(storage): account for themes and lyrics and consolidate cleanup
+  - Show separate usage rows and group cleanup choices into caches and explicitly removable data.
+  - Confirm the selected categories and profile, preserve custom data, and report a successful cleanup with a toast.
+- improve(settings): index storage cleanup and automatic backup in global and page search.
+- improve(theme-store): refresh creator submissions and theme notifications
+  - Check eligible subscriptions and pending submissions during foreground and scheduled work. Bind checks and downloads to their originating profile.
+  - Normalize preview geometry and language, reuse the image crop editor, and preserve captions and preview assets through publication, restore and download.
+- improve(player): reduce work during the miniplayer squeeze
+  - Observe the dock target outside activity composition and apply animated spacing and sizing in layout.
+  - Skip hidden expanded-player Glass geometry and redundant optical exports. Stop encoding a legacy widget PNG each second during playback.
+- improve(theme-store): refresh the bundled Stock preview gallery
+  - Replace the Normal and Glass preview assets, including playing player and miniplayer scenes, and refresh their manifest hashes.
+
+Fixed:
+- fix(theme-store): refresh catalog assets and preserve animated previews
+  - Fetch indexed manifests and previews by content hash to avoid stale downloads.
+  - Keep animated GIF previews, refresh the appearance of resumed theme drafts, and capture Quick Picks for Home previews.
+  - Stop demo playback when preview capture fails.
+- fix(theme-store): keep preview capture awake and support back cancellation
+  - Keep the capture screen awake until generation finishes or is canceled.
+  - Give the capture flow priority over back actions from the previewed screen, then return to the submission when canceled.
+- fix(theme-store): isolate demo data and align theme previews with the app
+  - Use demo albums, artists, playlists and covers in generated previews.
+  - Reserve the correct space for the navigation bars and mini-player. Keep the queue mini-player aligned in Normal and Glass.
+  - Match catalogue limits for Unicode metadata and theme archives.
+- fix(player): restore persistent queues and album artwork (issue https://github.com/N-Zik-Group/N-Zik/issues/978)
+  - Save queue snapshots atomically before player teardown and persist an empty queue when the last track is removed.
+  - Restore the saved position and resolve durable artwork sources on phone and Android Auto while respecting active selections and profile settings.
+  - Preserve custom artwork references and hide internal title prefixes while retaining the explicit badge.
+- improve(theme-store): show a store-style review card and inspect included settings
+  - Share the preview frame and summary across local creation, local editing, publishing and online editing.
+  - Show the preview details, saved content and expandable setting lists before saving or submitting.
+- fix(theme-store): preserve portable appearance across theme export, import and demo
+  - Preserve palettes, lyrics, Glass, player controls, navigation, nested layouts, indicators and visual settings.
+  - Use Stock defaults for missing demo settings and keep omitted fields untouched when applying an existing theme.
+  - Restore the native player toolbar and regenerate the Stock previews in Normal and Glass.
+  - Refresh notification buttons immediately when applying or undoing a theme.
+- fix(about): animate the Credits section
+  - Match the fade and scale transitions of the other About sections.
+- fix(glass): resolve interaction and rendering audit findings
+  - Give the Storage info and debug badges Jelly feedback, keep searched settings below the header, and preserve native profile-action geometry.
+  - Track the finger with the profile menu ripple and isolate the On and Off preview interactions while keeping both preview bars visible.
+  - Draw one Storage chart contour, close the floating toast outline, and keep loading indicators visible in Glass-only mode with zero film.
+  - Cover preview sizing and presses, menu gestures, profile photo removal, and loader rendering with regression tests.
+- fix(artwork): unify cover editing and export
+  - Use the shared cover dialog for playlist thumbnails, album details and embedded audio artwork.
+  - Recrop existing covers or drafts, reuse cached remote artwork and export to an Android document chosen by the user.
+  - Keep the embedded cover preview in the metadata editor and stage images imported from HTTPS links until tags are saved.
+  - Preserve playlist thumbnail storage and track-specific album artwork, and verify confirmation and export recovery with regression tests.
+- fix(glass): keep playlist import and audio device headers inside shared menus
+  - Use the shared list and grid headers for playlist import so the title, drag handle and options share one Glass surface.
+  - Show audio device loading and retry states inside the shared menu, including initial load failures.
+  - Avoid overlapping Glass surfaces during audio device state changes and cover both menus with Compose rendering tests.
+- fix(startup): keep the app responsive during library restore
+  - Run restore journal recovery and acquire the library lease in LibraryStartup before opening Room or starting library-dependent services.
+  - Show a responsive waiting screen in MainActivity and RescueActivity, with a retry action if recovery fails.
+  - Preserve pending navigation across activity recreation and replay hardware media button, download, and Playlist widget requests when the library is ready.
+  - Keep Media3 clients connected while the player waits for the library.
+- fix(settings): group Glass indicators under Shared and improve settings search
+  - Move the loading and pull-to-refresh controls into Shared with a refreshed description.
+  - Find the three Storage cleanup actions by name in global and Data settings search.
+  - Preserve refresh glyph visibility at zero film opacity and keep a player restart pending until the service is connected.
+  - Report image cache cleanup errors to the Storage action.
+- fix(player): honor timeline and controls swap in the compact portrait player
+  - Apply the saved order in the compact expanded and lyrics layouts while retaining the existing spacing.
+  - Keep timeline and playback controls independently visible in lyrics mode and avoid recreating the other block when visibility changes.
+  - Verify both orders and independent visibility in Material and Glass with Compose tests.
+- fix(player): restore portrait timeline spacing and center swapped playback controls
+  - Let the portrait controller use its bounded viewport height after the natural-height probe so the weighted timeline gaps expand.
+  - Center portrait controls above the timeline between the metadata and progress track in Material and Glass.
+  - Verify timeline spacing and transport placement across both control orders and multiple portrait heights.
+- fix(player): make the mini-player explicit badge open the full player
+  - Reuse the original ExplicitBadge renderers in Glass and Material while letting the mini-player handle taps without badge Jelly feedback.
+  - Reduce the Glass control gap to 8 dp in the mini-player and settings preview through shared geometry.
+  - Cover taps on the badge in Glass and Material with Compose regression tests.
+- fix(updater): animate Glass action icons with their Jelly feedback
+  - Move the icon and chip surface together for the overflow and translation actions while keeping their touch targets fixed.
+  - Preserve translation long-press behavior and verify glyph motion, chip motion, and touch input.
+- fix(settings): restore direct PiP access and improve search navigation
+  - Add a profile-style Open row to the PiP card, index it in global and page search, and report when Android refuses entry.
+  - Scroll from the top to search destinations and fade the four highlight pulses on rows and fallback cards.
+  - Apply the shared Glass chip style to Restart player actions across settings.
+- fix(localization): finish the Android catalog and Fastlane audit
+  - Preserve Bridge message identities, localize export failures, and isolate status details per YouTube Music sync operation.
+  - Repair placeholders across the Android catalogs and consolidate Fastlane listings under one Crowdin rule.
+- fix(storage): make the Samsung storage advice readable
+  - Stack the warning and optional usage summary in a scrollable body so the paragraphs stay separate on short screens.
+  - Allow both storage action labels to wrap in place and cover the rendered popup with a Compose regression test.
+- fix(android-auto): publish personalized suggested playback (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Share playlist-widget selection and empty-library fallbacks with the Android Auto suggested root.
+  - Publish personalized queues for the host dashboard without replacing the in-app Quick Picks browser.
+  - Retain suggestion title, artwork, profile ownership and playable queue identity.
+- fix(player): preserve duration across queue and buffering changes (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Enrich phone and automotive selections with known database durations before publishing the queue.
+  - Keep resolved duration and seekable timeline metadata synchronized across buffering and player replacement for Auto and notifications.
+  - Guard rapid selections, profile changes and stale duration results; cover actual session state transitions.
+- fix(artwork): apply video cropping consistently across displays (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Resolve original video artwork and apply the saved fit/crop choice in shared image and painter paths, including the full player.
+  - Avoid stale Coil crossfade geometry and refresh artwork when the crop preference changes.
+  - Keep the video-cropping setting visible for all appearance configurations.
+- fix(metadata): refresh edited names throughout library and menus (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Observe current song/entity rows and reopen editing dialogs with fresh values instead of retained menu snapshots.
+  - Hide internal metadata prefixes in menus, info/history, notifications, matching, maintenance and exported labels while preserving stored identities.
+  - Preserve playlist markers when renaming and publish coherent album/artist metadata changes.
+- fix(metadata): make song reset actions explicit and reliable (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Keep seven independent reset selections, including favorite/dislike state and separate playback-cache/offline-download removal.
+  - Validate exact provider identities, keep stored values when fields are absent and fill missing video credits only from verified channel metadata.
+  - Commit selected metadata safely, refresh playback/artwork and report specific failures or partial completion instead of a generic false success.
+  - Propagate real cover, image-cache and waveform cleanup failures; retain cancellation and profile guards.
+- fix(widgets): honor artwork and interface roundness preferences (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Render UI, cover and artist roundness from the application preferences with the matching no-image fallback.
+  - Refresh widgets on preference changes, preserve circular turntable artwork and apply video artwork preferences.
+  - Keep displayed metadata clean without changing widget intents or stored values.
+- fix(widgets): fit compact controls and retain playback time (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Use font-aware compact layout selection and bound artwork/buttons to available height.
+  - Reserve an elapsed/total time row and keep controls usable on small launcher cells.
+  - Cover compact dimensions and font scaling with actual RemoteViews rendering.
+- fix(widgets): center turntable controls in rectangular cells (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Anchor the existing turntable controls and time display to a centered square inside tall or wide widget cells.
+  - Preserve the circular record artwork and original control arrangement.
+  - Verify square, portrait and landscape launcher dimensions.
+- fix(downloads): draw download badges above rounded feedback (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Render download glyphs above a separately clipped press-feedback canvas so the completed check badge stays visible.
+  - Route only download controls through the shared helper and preserve click, long press, cancellation, disabled state and reserved geometry.
+  - Compare actual legacy controls against unclipped vectors across Material, Glass and roundness settings.
+- fix(player): correct mini-player badge and Glass controls (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Move the mini-player heart with its entire action canvas so it remains visible above the cover edge.
+  - Choose the proper Glass backdrop for mini-player control film without sampling it twice.
+  - Cover badge rendering and mini-player interaction behavior.
+- fix(glass): stabilize optics and clip controls to card bounds (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Read optics composition locals consistently before visibility decisions to keep animation groups stable.
+  - Use the measured card surface bounds when clipping control decoration in fixed-height cards.
+  - Update focused optical, overlay and information-card rendering regressions.
+- fix(metadata): preserve artist fields when saving covers (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Update only the cover column and verify a concurrent metadata refresh survives.
+- fix(downloads): clean legacy labels with artist separators (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Recognize stored title markers in old notifications and preserve display-ready labels for new requests.
+- test(images): cover crop confirmation and activity recreation (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Exercise the actual crop result delivery and verify selected coordinates survive Activity recreation.
+- fix(backup): coordinate cover edits and clean abandoned backup files
+  - Serialize database imports with cover and playlist thumbnail edits through their rollback paths.
+  - Protect active export staging across processes and retain picker handoffs for seven days before cleanup.
+  - Detach completed restore journals and deleted Rescue backups under the restore lock, then remove their contents outside it.
+  - Cover startup lease acquisition, staging ownership, and import ordering with regression tests.
+- fix(player): prevent portrait playback crashes with inline statistics (issue https://github.com/N-Zik-Group/N-Zik/issues/979)
+  - Give the inline statistics panel a finite scroll viewport during portrait layout.
+  - Preserve the action bar when expanded statistics overflow and cover both scroll areas with a regression test.
+- fix(player): resume animations when returning to the app
+  - Make the foreground state observable so the full player redraws on return in Glass and standard modes.
+  - Keep background audio uninterrupted and cover foreground transitions with a regression test.
+- fix(navigation): stabilize On device toolbars and restore Home transitions
+  - Preserve each grid's position and reverse the Glass surface transition when returning to the app header.
+- fix(export): retain the album and release year when exporting cached audio
+- refactor(sync): remove the Home sync service and its settings
+- fix(navigation): keep Home toolbars above the AppHeader Glass during transitions
+  - Slide and fade the title, toolbar and chips from the AppHeader edge while keeping the page reflection live.
+  - Keep the backdrop available when filters reload and prevent a render loop between the page and toolbar.
+- fix(glass): refine dialog controls, loading indicators and navigation surfaces
+  - Keep previews, artwork and headers legible during interaction and transitions.
+- fix(backup): validate the receiving profile before restoring selected categories
+  - Share the destination and picker flow across Settings and onboarding, preserve imported theme identities, and keep Rescue archives scoped to their profile.
+  - Respect the automatic backup switch in the updater and preserve protected lyric edits during storage cleanup.
+- fix(glass): make queue backdrop recording safe during preview generation
+  - Preserve queue invalidation order and prevent re-entry into an active material capture.
+  - Scope ancestry checks to optical recordings and keep the live background behind Theme Store details and notifications.
+- fix(theme-store): describe removal of withdrawn theme revisions
+  - Update the withdrawal pull request text to match the moderation workflow, which removes published theme files from the current catalog after acceptance.
+- fix(theme-store): complete GitHub setup after personal app installation
+  - Keep the setup session in memory until confirmation, reuse existing installations, and index the GitHub controls in Settings search.
+- fix(accounts): improve scrolling in sign-in WebViews
+  - Let the embedded browser handle vertical gestures while preserving the sheet drag handle.
+- fix(youtube): remove redundant stream client notifications
+  - Remove the preferred-client and Web Remix messages and their unused translation keys.
+- fix(theme-store): verify GitHub submissions and preserve sign-in setup
+  - Confirm the submitted commit on an open pull request, authenticate submission history, and let moderation own branch cleanup.
+  - Resume app installation after Android recreates the screen without saving provisional credentials.
+- fix(theme-store): download selected theme updates in the background
+  - Share scheduled and on-screen downloads and recheck profile ownership before saving.
+- fix(theme-store): restore profile-scoped GitHub sessions and follow-up actions
+  - Keep credentials and account state scoped to the active profile, resume publication authorization, and refresh the GitHub login used in submissions.
+- fix(theme-store): resume updates for restored themes and refresh theme details
+  - Verify restored Store origins before scheduled updates and reflect downloads saved in the background.
+- fix(theme-store): reconcile account restoration and existing installations
+  - Restore the GitHub identity with its profile credentials, allow login-only profile updates, and recognize saved repository-wide installations.
+- fix(theme-store): keep theme details attached to restored downloads
+  - Follow a verified restored theme onto its Store revision and prevent recreating the old local copy.
+- fix(theme-store): restore GitHub accounts in the selected profile
+  - Reconcile identities and invalidate the old publication session in both settings import paths.
+- fix(theme-store): preserve edits while restored themes reconnect
+  - Save explicit edits to an independent local copy and keep the verified Store version intact.
+- fix(rescue): keep profile settings safe during reset and restore
+  - Keep the selected profile after recreation and bind credential access to that profile.
+  - Serialize settings changes with app startup, block stale writes after restore, and flush the outgoing profile before switching.
+- Remove optional preview images when creating or editing a theme, including previews from an earlier revision. Open gallery images in the same full-screen viewer as theme details. Preview captions are centered in the local and online editors.
+- Resume drafts with supported settings and previews when an older draft contains obsolete appearance fields.
+- Report and retry failed fork branch cleanup after a theme submission is merged.
+
+Other:
+- chore(player): migrate Media3 and automotive session callbacks (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Upgrade Media3 to 1.11.1 and centralize primary/secondary engine construction with the existing audio-focus and load-control policy.
+  - Adapt automotive playback requests, paging and captured selections while retaining offline, parental and controller ownership guards.
+  - Cover engine configuration, queue commands and automotive request compatibility.
+- test(android): refresh UI and localization fixtures (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Refresh window-inset, localized-title, settings semantics and import/profile fixtures for current application behavior.
+  - Synchronize Compose and Robolectric event delivery where tests observe asynchronous UI updates.
+  - Keep these test-only changes separate from playback and UI product changes.

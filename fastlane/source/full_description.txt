@@ -10,7 +10,7 @@ A multilingual YouTube Music frontend for Android, focused on performance, UI/UX
 - 3D Carousel Player, home widgets, unified player and mini-player
 - Artist profiles, Discovery and moods, collapsible home headers
 
-🎨 <b>Theme Store</b>
+🎨 <b>Theme Store (BETA)</b>
 - Browse and download community themes, preview them in Normal and Glass, and choose which appearance settings to apply.
 - Create local themes or share your designs with the community. Import and export themes as ZIP files.
 

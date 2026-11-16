@@ -1,0 +1,10 @@
+Added:
+- Theme Store (beta) with Normal and Glass previews, custom themes, and ZIP backups.
+- Multiple Google accounts and YouTube Music channels.
+- An in-app notification inbox, right-to-left layout, and on-device browsing.
+
+Improved:
+- Per-profile storage, cleanup, automatic backups, and lyric provider settings.
+
+Fixed:
+- Queue and artwork restoration, Glass rendering, profile recovery, and theme updates.

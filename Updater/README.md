@@ -9,7 +9,7 @@ Android version codes are whole numbers. The Theme Store uses them to check whet
 
 ## Theme compatibility
 
-The default minimum is **96 (N-Zik 8.6.0)**. Raise it when your theme requires a feature introduced in a later version. Earlier releases in the table predate the Theme Store.
+The Theme Store is in beta and requires **N-Zik 8.7.0 or later (Android version code 97)**. A theme can require a higher version when it uses a newer feature.
 
 ## Published releases
 
@@ -17,6 +17,7 @@ Versions are listed newest first. For releases whose tag declares a different ve
 
 | N-Zik version | Android version code | Updater changelog |
 | --- | ---: | --- |
+| [8.7.0](https://github.com/N-Zik-Group/N-Zik/releases/tag/v8.7.0) | 97 | [97.txt](changelogs/97.txt) |
 | [8.6.0](https://github.com/N-Zik-Group/N-Zik/releases/tag/v8.6.0) | 96 | [96.txt](changelogs/96.txt) |
 | [8.5.0](https://github.com/N-Zik-Group/N-Zik/releases/tag/v8.5.0) | 95 | [95.txt](changelogs/95.txt) |
 | [8.4.5](https://github.com/N-Zik-Group/N-Zik/releases/tag/v8.4.5) | 94 | [94.txt](changelogs/94.txt) |
