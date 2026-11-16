@@ -445,7 +445,6 @@
     <string name="settings_service_keep_screen_on_label">Mantener pantalla encendida</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Permitir operación en segundo plano sin restricciones, por lo que es menos probable que el sistema interrumpa la reproducción.</string>
     <string name="settings_stream_disabled_clients_title">Clientes de stream deshabilitados</string>
-    <string name="settings_stream_preferred_client_changed_message">Cliente preferido cambiado. Se aplicará en la siguiente pista.</string>
     <string name="settings_stream_preferred_client_title">Cliente de flujo preferido</string>
     <string name="settings_swipe_actions_description">Habilita el menú de acciones deslizando la canción hacia la izquierda o derecha</string>
     <string name="settings_swipe_actions_title">Deslizar para ejecutar acción</string>
