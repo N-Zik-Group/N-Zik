@@ -318,4 +318,5 @@
     <string name="listen_together_log_level_error">Błąd</string>
     <string name="listen_together_log_level_info">Informacje</string>
     <string name="listen_together_log_level_warning">Ostrzeżenie</string>
+    <string name="network_proxy_mode_direct">BEZPOŚREDNIE</string>
 </resources>
