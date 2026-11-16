@@ -318,4 +318,5 @@
     <string name="listen_together_log_level_error">Σφάλμα</string>
     <string name="listen_together_log_level_info">Πληροφορίες</string>
     <string name="listen_together_log_level_warning">Προειδοποίηση</string>
+    <string name="network_proxy_mode_direct">ΑΜΕΣΗ</string>
 </resources>
