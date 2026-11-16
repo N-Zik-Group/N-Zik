@@ -8,12 +8,30 @@
     <string name="github_account_code_copied">Ο κωδικός GitHub αντιγράφηκε στο πρόχειρο.</string>
     <string name="github_account_login_failed">Δεν ήταν δυνατή η σύνδεση με το GitHub. Δοκιμάστε ξανά.</string>
     <string name="github_account_connected">Το GitHub συνδέθηκε.</string>
+    <string name="github_account_finishing_connection">Ολοκλήρωση της σύνδεσης GitHub…</string>
+    <string name="github_app_installation_instructions">Επιλέξτε @%1$s και παραχωρήστε πρόσβαση μόνο στο N-Zik-Theme-Store πιρούνι σας για να ολοκληρώσετε τη ρύθμιση.</string>
+    <string name="github_app_installation">Εγκατάσταση εφαρμογής</string>
+    <string name="github_app_installation_confirmed">Το GitHub επιβεβαίωσε την εγκατάσταση της εφαρμογής.</string>
+    <string name="github_app_installation_other_account">Η εφαρμογή εγκαταστάθηκε στο @%1$s. Επιλέξτε το δικό σας λογαριασμό για να ενεργοποιήσετε την εκκαθάριση του πιρουνιού.</string>
+    <string name="github_app_installation_description">Διαχειριστείτε ή ανακαλέστε την πρόσβαση N-Zik στην προσωπική σας ρύθμιση GitHub.</string>
+    <string name="github_app_installation_needs_fork">Υποβάλετε ένα θέμα ή δημιουργό προφίλ πρώτα για να δημιουργήσετε το πιρούνι Κατάστημα Θέμα σας.</string>
+    <string name="github_app_installation_fork_lookup_failed">Δεν ήταν δυνατός ο έλεγχος του υποκαταστήματος θεμάτων σας. Δοκιμάστε ξανά.</string>
     <!-- Account -->
     <string name="account_action_login">Σύνδεση</string>
     <string name="account_action_logout">Αποσύνδεση</string>
     <string name="account_youtube_login_description">Συνδέστε τον λογαριασμό σας στο YouTube ή αποσυνδεθείτε από την τρέχουσα περίοδο λειτουργίας.</string>
+    <string name="account_youtube_change_account">Αλλαγή λογαριασμού YouTube</string>
+    <string name="account_youtube_change_account_description">Επιλέξτε ποιο κανάλι YouTube χρησιμοποιεί αυτό το προφίλ N-Zik.</string>
     <string name="account_youtube_login_enabled_description">Να επιτρέπεται η είσοδος στο λογαριασμό YouTube για εξατομικευμένη περιήγηση και συγχρονισμό.</string>
     <!-- Account Youtube -->
+    <string name="account_youtube_checking_login">Έλεγχος της εγγραφής σας στο YouTube Music…</string>
+    <string name="account_youtube_choose_channel">Επιλέξτε ένα κανάλι μουσικής YouTube</string>
+    <string name="account_youtube_add_google_account">Προσθήκη λογαριασμού Google</string>
+    <string name="account_youtube_google_account">Λογαριασμός Google</string>
+    <string name="account_youtube_google_select">Επιλέξτε λογαριασμό</string>
+    <string name="account_youtube_google_sign_out">Αποσύνδεση από αυτόν τον λογαριασμό</string>
+    <string name="account_youtube_google_sign_out_description">Αυτό αφαιρεί ολόκληρο το προφίλ Google και τα δεδομένα εισόδου του από το N-Zik σε αυτήν τη συσκευή. Οι άλλοι λογαριασμοί σας παραμένουν συνδεδεμένοι.</string>
+    <string name="account_youtube_verify_failed">Δεν ήταν δυνατή η επαλήθευση της εισόδου σας στο YouTube Music. Δοκιμάστε ξανά ή συνδεθείτε μέσω Google.</string>
     <string name="account_youtube_cookie_invalid">Το YouTube cookie δεν είναι έγκυρο, παρακαλώ συνδεθείτε ξανά</string>
     <string name="account_youtube_login_success">Επιτυχής σύνδεση στο YouTube</string>
     <string name="account_youtube_session_expired">Η συνεδρία YouTube έληξε, παρακαλώ συνδεθείτε ξανά</string>
@@ -188,6 +206,8 @@
     <string name="sync_cooldown">Συγχρονισμός Κλήσης</string>
     <string name="sync_cooldown_description">Ελάχιστος χρόνος μεταξύ αυτόματων συγχρονισμών (σε λεπτά)</string>
     <string name="sync_data_with_ytm_account">Συγχρονισμός δεδομένων με λογαριασμό YTM</string>
+    <string name="account_youtube_sync_build_required">Ο συγχρονισμός είναι διαθέσιμος σε Debug και Dev κτίρια.</string>
+    <string name="account_youtube_sync_browse_required">Ενεργοποίηση σύνδεσης για περιήγηση για χρήση συγχρονισμού.</string>
     <string name="sync_direction">Κατεύθυνση Συγχρονισμού</string>
     <string name="sync_direction_app_to_yt">Εφαρμογή → YouTube μόνο</string>
     <string name="sync_direction_description">Επιλέξτε αν οι εισαγωγές συγχρονισμού από το YouTube, στέλνουν τοπικές αλλαγές ή λειτουργούν και προς τις δύο κατευθύνσεις.</string>
