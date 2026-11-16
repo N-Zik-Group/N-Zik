@@ -181,7 +181,6 @@
     <string name="network_stream_client_ios">iOS</string>
     <string name="network_stream_client_ipados">iPadOS</string>
     <string name="network_stream_client_mobile">移动设备</string>
-    <string name="network_stream_client_redownload_recommendation">重新下载歌曲以获得新质量(尤其是使用 Web Remix/YTB 高级帐户)</string>
     <string name="network_stream_client_tv_embedded">电视嵌入</string>
     <string name="network_stream_client_tv_html5">TV HTML5</string>
     <string name="network_stream_client_tv_simply">只需电视模式</string>
