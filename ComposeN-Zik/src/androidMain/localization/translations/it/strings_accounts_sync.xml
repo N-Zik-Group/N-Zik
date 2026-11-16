@@ -8,12 +8,30 @@
     <string name="github_account_code_copied">Codice GitHub copiato negli appunti.</string>
     <string name="github_account_login_failed">Impossibile connettersi a GitHub. Riprova.</string>
     <string name="github_account_connected">GitHub connesso.</string>
+    <string name="github_account_finishing_connection">Finitura connessione GitHub…</string>
+    <string name="github_app_installation_instructions">Scegli @%1$s e concedi l\'accesso solo al fork N-Zik-Theme-Store per completare la configurazione.</string>
+    <string name="github_app_installation">Installazione app</string>
+    <string name="github_app_installation_confirmed">GitHub ha confermato l\'installazione dell\'app.</string>
+    <string name="github_app_installation_other_account">App installata su @%1$s. Seleziona il tuo account per abilitare la pulizia del fork.</string>
+    <string name="github_app_installation_description">Gestisci o revoca l\'accesso N-Zik Accedi nelle impostazioni personali di GitHub.</string>
+    <string name="github_app_installation_needs_fork">Invia prima un tema o un profilo creatore per creare il fork del tuo Theme Store.</string>
+    <string name="github_app_installation_fork_lookup_failed">Impossibile controllare il fork del tuo negozio temi. Riprova.</string>
     <!-- Account -->
     <string name="account_action_login">Log in</string>
     <string name="account_action_logout">Log off</string>
     <string name="account_youtube_login_description">Collega il tuo account YouTube o esci dalla sessione corrente.</string>
+    <string name="account_youtube_change_account">Cambia account YouTube</string>
+    <string name="account_youtube_change_account_description">Scegli quale canale YouTube utilizza questo profilo N-Zik.</string>
     <string name="account_youtube_login_enabled_description">Consenti l\'accesso all\'account YouTube per la navigazione e la sincronizzazione personalizzate.</string>
     <!-- Account Youtube -->
+    <string name="account_youtube_checking_login">Controllo del tuo accesso YouTube Music…</string>
+    <string name="account_youtube_choose_channel">Scegli un canale YouTube Music</string>
+    <string name="account_youtube_add_google_account">Aggiungi account Google</string>
+    <string name="account_youtube_google_account">Account Google</string>
+    <string name="account_youtube_google_select">Scegli account</string>
+    <string name="account_youtube_google_sign_out">Esci da questo account</string>
+    <string name="account_youtube_google_sign_out_description">Questo rimuove l\'intero profilo di Google e i suoi dati di accesso da N-Zik su questo dispositivo. Gli altri account rimangono connessi.</string>
+    <string name="account_youtube_verify_failed">Impossibile verificare il tuo login su YouTube Music. Riprova o accedi con Google.</string>
     <string name="account_youtube_cookie_invalid">Il cookie di YouTube non è valido, per favore accedi di nuovo</string>
     <string name="account_youtube_login_success">Accesso a YouTube riuscito</string>
     <string name="account_youtube_session_expired">Sessione YouTube scaduta, per favore accedi di nuovo</string>
@@ -188,6 +206,8 @@
     <string name="sync_cooldown">Sincronizza Il Cooldown</string>
     <string name="sync_cooldown_description">Tempo minimo tra sincronizzazioni automatiche (in minuti)</string>
     <string name="sync_data_with_ytm_account">Sincronizza i dati con l\'account YTM</string>
+    <string name="account_youtube_sync_build_required">La sincronizzazione è disponibile nelle build di Debug e Dev.</string>
+    <string name="account_youtube_sync_browse_required">Abilita Login per Sfoglia per usare la sincronizzazione.</string>
     <string name="sync_direction">Direzione Di Sincronizzazione</string>
     <string name="sync_direction_app_to_yt">App → Solo YouTube</string>
     <string name="sync_direction_description">Scegli se importare la sincronizzazione da YouTube, invia modifiche locali o funziona in entrambe le direzioni.</string>
