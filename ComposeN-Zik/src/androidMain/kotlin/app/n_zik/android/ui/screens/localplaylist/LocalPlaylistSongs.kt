@@ -27,7 +27,11 @@ import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
 
-import app.n_zik.android.core.database.*
+import app.n_zik.android.core.database.PlaylistLinkKind
+import app.n_zik.android.core.database.canBookmarkPlaylist
+import app.n_zik.android.core.database.canRefreshPlaylist
+import app.n_zik.android.core.database.isPlaylistBookmarked
+import app.n_zik.android.core.database.playlistLinkKind
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -850,7 +854,7 @@ fun LocalPlaylistSongs(
                             } else {
                                 coroutineScope.launch(NzikDispatchers.DATA) {
                                     Database.asyncTransaction {
-                                        playlist?.let(playlistTable::delete)
+                                        playlist?.let { playlistTable.delete(it) }
                                     }
                                     withContext(NzikDispatchers.UI) {
                                         if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED)
@@ -1015,12 +1019,13 @@ fun LocalPlaylistSongs(
                 val relatedSongsResult = Innertube.relatedSongs(videoId = seedSong.id)?.getOrNull()
                 
                 relatedSongsResult?.songs?.forEach { songItem ->
-                    // Filter out songs that are already in the playlist
-                    if (!existingSongIds.contains(songItem.info?.endpoint?.videoId)) {
+                    val info = songItem.info ?: return@forEach
+                    val videoId = info.endpoint?.videoId ?: return@forEach
+                    if (!existingSongIds.contains(videoId)) {
                         val song = Song(
                             // raw videoId + "e:" title prefix, as in Innertube.SongItem.asSong
-                            id = songItem.info!!.endpoint!!.videoId!!,
-                            title = (if (songItem.explicit) EXPLICIT_PREFIX else "") + (songItem.info!!.name ?: ""),
+                            id = videoId,
+                            title = (if (songItem.explicit) EXPLICIT_PREFIX else "") + (info.name.orEmpty()),
                             artistsText = songItem.authors.artistEntryNames().joinToString(", "),
                             durationText = songItem.durationText,
                             thumbnailUrl = songItem.thumbnail?.url

@@ -19,6 +19,7 @@ import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkObject
 import io.mockk.unmockkStatic
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -56,7 +57,7 @@ class ChangeAlbumCoverDialogConfirmationTest {
     }
 
     @Test
-    fun `album details confirmation changes the album cover and preserves track artwork`() {
+    fun `album details confirmation changes the album cover and preserves track artwork`() = runBlocking<Unit> {
         val album = Album("album-1", thumbnailUrl = "https://example.com/album.jpg")
         val trackCover = "${MODIFIED_PREFIX}https://example.com/custom-track.jpg"
         val track = Song.makePlaceholder("song-1").copy(thumbnailUrl = trackCover)

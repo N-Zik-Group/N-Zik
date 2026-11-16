@@ -62,7 +62,7 @@ internal suspend fun togglePodcastBookmark(
                 if (episodes.isEmpty()) playlistTable.insert(playlist)
                 else mapIgnore(playlist, *episodes.toTypedArray())
             }
-            PodcastBookmarkOperation.Remove -> latest?.let(playlistTable::delete)
+            PodcastBookmarkOperation.Remove -> latest?.let { playlistTable.delete(it) }
             PodcastBookmarkOperation.ExistingImport -> Unit
         }
     }

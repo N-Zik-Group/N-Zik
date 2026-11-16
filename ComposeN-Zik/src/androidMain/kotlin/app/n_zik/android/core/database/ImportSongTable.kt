@@ -26,22 +26,22 @@ data class ImportSong(
 @RewriteQueriesToDropUnusedColumns
 interface ImportSongTable {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(importSong: ImportSong)
+    suspend fun insert(importSong: ImportSong)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(importSongs: List<ImportSong>)
+    suspend fun insertAll(importSongs: List<ImportSong>)
 
     @Query("SELECT position FROM ImportSong WHERE originalId = :originalId AND playlistId = :playlistId LIMIT 1")
-    fun getPosition(originalId: String, playlistId: Long? = null): Int?
+    suspend fun getPosition(originalId: String, playlistId: Long? = null): Int?
 
     @Query("SELECT position FROM ImportSong WHERE originalId = :originalId LIMIT 1")
-    fun getPositionGlobal(originalId: String): Int?
+    suspend fun getPositionGlobal(originalId: String): Int?
 
     @Query("DELETE FROM ImportSong WHERE originalId = :originalId")
-    fun deleteByOriginalId(originalId: String)
+    suspend fun deleteByOriginalId(originalId: String)
 
     @Query("SELECT * FROM ImportSong")
-    fun getAllEntries(): List<ImportSong>
+    suspend fun getAllEntries(): List<ImportSong>
 
     /** Keeps pending matches aligned when existing playlist members move. */
     @Query("""
@@ -54,8 +54,8 @@ interface ImportSongTable {
             WHERE songId = ImportSong.originalId AND playlistId = :playlistId
         )
     """)
-    fun alignPlaylistPositions(playlistId: Long)
+    suspend fun alignPlaylistPositions(playlistId: Long)
 
     @Query("DELETE FROM ImportSong")
-    fun clear()
+    suspend fun clear()
 }

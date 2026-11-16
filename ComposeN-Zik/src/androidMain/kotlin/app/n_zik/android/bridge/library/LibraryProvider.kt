@@ -479,7 +479,7 @@ internal class DatabaseLibraryProvider(
             bookmarked
         }
 
-    private suspend fun artwork(size: Int, thumbnailUrl: () -> String?): ArtworkResult =
+    private suspend fun artwork(size: Int, thumbnailUrl: suspend () -> String?): ArtworkResult =
         withContext(NzikDispatchers.DATA) { artworkRelay.relay(thumbnailUrl(), size) }
 
     /** Local file artwork (`content://…/albumart/…`), opened through the ContentResolver; the relay bounds the read. */

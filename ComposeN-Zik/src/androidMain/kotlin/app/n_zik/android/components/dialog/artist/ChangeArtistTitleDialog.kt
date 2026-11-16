@@ -76,7 +76,7 @@ class ChangeArtistTitleDialog private constructor(
         // full propagation scan is skipped.
         if (cleanNew.equals(oldName, ignoreCase = true)) return
         Database.asyncTransaction {
-            syncTransaction {
+            transaction {
                 if (isDeviceArtistId(artist.id)) rememberDeviceGroupOriginalName(artist.id, artist.name)
                 artistTable.insertIgnore( artist )
                 artistTable.update( artist.copy(name = "$MODIFIED_PREFIX$cleanNew") )

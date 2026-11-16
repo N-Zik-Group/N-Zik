@@ -105,7 +105,7 @@ class RewindSectionCollageCardTest {
     }
 
     @Before
-    fun setUp() {
+    fun setUp() = runBlocking<Unit> {
         val app = ApplicationProvider.getApplicationContext<Application>()
         val mainApplication = mockk<MainApplication>()
         every { mainApplication.applicationContext } returns app

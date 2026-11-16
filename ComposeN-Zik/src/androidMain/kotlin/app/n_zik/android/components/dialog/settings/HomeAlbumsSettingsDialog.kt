@@ -124,7 +124,7 @@ object HomeAlbumsSettingsDialog : ContentFramedDialog {
                 edit.putString(excludeDislikedAlbumsKey, if (workingToggles["disliked"] == true) DislikeMode.Enabled.name else DislikeMode.Disabled.name)
                 edit.apply()
                 if (workingToggles["disliked"] == false) {
-                    Database.albumTable.clearAllDisliked()
+                    Database.asyncTransaction { albumTable.clearAllDisliked() }
                 }
                 Toaster.s(R.string.settings_preference_saved_message); hideDialog()
             }

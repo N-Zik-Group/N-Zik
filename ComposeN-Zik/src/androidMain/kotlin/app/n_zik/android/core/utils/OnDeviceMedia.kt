@@ -31,6 +31,7 @@ import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.utils.isAtLeastAndroid10
 import app.n_zik.android.utils.isAtLeastAndroid11
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -289,15 +290,16 @@ private suspend fun Context.readDeviceLibraryLocked(
                         extractor.release()
                     }
                     if (sampleRate != null || codec != null || audioChannels != null) {
-                        Database.asyncTransaction {
-                            if (!isCurrentOwner()) return@asyncTransaction
-                            val current = formatTable.findBySongIdDirect(baseFormat.songId)
-                            if (current != null && current.hasSameSourceAs(baseFormat)) {
-                                formatTable.upsert(current.copy(sampleRate = sampleRate, audioChannels = audioChannels, codecs = codec))
-                            }
+                        if (!isCurrentOwner()) return@launch
+                        Database.updateExistingFormat(baseFormat.songId) { current ->
+                            current
+                                .takeIf { isCurrentOwner() && it.hasSameSourceAs(baseFormat) }
+                                ?.copy(sampleRate = sampleRate, audioChannels = audioChannels, codecs = codec)
                         }
                         Timber.tag("OnDeviceMedia").d("Probed local:%d → sampleRate=%s, channels=%s, codec=%s", id, sampleRate, audioChannels, codec)
                     }
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
                 } catch (e: Exception) {
                     Timber.tag("OnDeviceMedia").d(e, "Failed to probe audio format for local:$id")
                 }

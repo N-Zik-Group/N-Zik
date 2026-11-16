@@ -147,7 +147,7 @@ class AutoSessionRemoteArtworkPolicyTest {
         val songs = mockk<SongTable>()
         every { Database.songTable } returns songs
         val song = Song("policy-${url.hashCode()}", "Remote", "Artist", "3:00", url)
-        every { songs.findByIdDirect(song.id) } returns song
+        coEvery { songs.findByIdDirect(song.id) } returns song
         mockkObject(ImageCacheFactory)
         every { ImageCacheFactory.getDownloadDecision(url) } returns ImageCacheFactory.DownloadDecision(
             useNetwork = false, quality = ImageCacheFactory.NetworkQuality.LOW,

@@ -10,6 +10,7 @@ import app.n_zik.android.core.database.AlbumTable
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import com.metrolist.music.discordrpc.DiscordRpcConnection
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -234,7 +235,7 @@ class DiscordImageTooltipTest {
         mockkObject(Database)
         val albumTable = mockk<AlbumTable>()
         every { Database.albumTable } returns albumTable
-        every { albumTable.findBySongIdDirect("dQw4w9WgXcQ") } returns null
+        coEvery { albumTable.findBySongIdDirect("dQw4w9WgXcQ") } returns null
         val connection = newConnection()
         val manager = newManager(
             UnconfinedTestDispatcher(testScheduler),

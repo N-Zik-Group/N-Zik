@@ -1,6 +1,5 @@
 package app.n_zik.android.core.database
 
-import app.n_zik.android.core.database.*
 
 import android.database.SQLException
 import androidx.room.Dao
@@ -262,10 +261,10 @@ interface EventTable : RewindEventSource {
 
     /** Inserts [event], silently skipping it when the row already exists (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertIgnore( event: Event )
+    suspend fun insertIgnore( event: Event )
 
     @Query("DELETE FROM Event")
-    fun deleteAll(): Int
+    suspend fun deleteAll(): Int
 
     /**
      * Total playtime for all songs over [from, to], summed in SQL instead of in memory.
@@ -386,13 +385,13 @@ interface EventTable : RewindEventSource {
     fun getPlaylistListeningTotals(): Flow<List<PlaylistListening>>
 
     @Query("UPDATE Event SET songId = :newId WHERE songId = :oldId")
-    fun updateSongId(oldId: String, newId: String)
+    suspend fun updateSongId(oldId: String, newId: String)
 
     @Query("DELETE FROM Event WHERE songId IN (:songIds)")
-    fun deleteBySongIds(songIds: List<String>): Int
+    suspend fun deleteBySongIds(songIds: List<String>): Int
 
     @Query("DELETE FROM Event WHERE songId = :songId")
-    fun deleteBySongId(songId: String): Int
+    suspend fun deleteBySongId(songId: String): Int
 }
 
 data class PlayCountTuple(

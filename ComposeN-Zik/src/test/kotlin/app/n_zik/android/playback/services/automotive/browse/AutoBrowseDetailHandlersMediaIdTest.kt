@@ -72,7 +72,7 @@ class AutoBrowseDetailHandlersMediaIdTest {
     private suspend fun <T> onDatabase(block: suspend () -> T): T = withContext(NzikDispatchers.DATA) { block() }
 
     @Test
-    fun `local album detail emits container-prefixed song mediaIds`() {
+    fun `local album detail emits container-prefixed song mediaIds`() = runBlocking<Unit> {
         runBlocking {
             onDatabase {
                 // The album row itself is required by the SongAlbumMap foreign key.
@@ -90,7 +90,7 @@ class AutoBrowseDetailHandlersMediaIdTest {
     }
 
     @Test
-    fun `local artist detail emits container-prefixed song mediaIds`() {
+    fun `local artist detail emits container-prefixed song mediaIds`() = runBlocking<Unit> {
         runBlocking {
             onDatabase {
                 Database.songTable.upsert(Song.makePlaceholder("art-a"))
@@ -105,7 +105,7 @@ class AutoBrowseDetailHandlersMediaIdTest {
     }
 
     @Test
-    fun `local playlist detail emits the shuffle item with the playlist id`() {
+    fun `local playlist detail emits the shuffle item with the playlist id`() = runBlocking<Unit> {
         runBlocking {
             onDatabase {
                 Database.playlistTable.insertIgnore(Playlist(id = 777, name = "PL 777"))

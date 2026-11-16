@@ -76,7 +76,7 @@ class AutoCallbackPublicationProfileTest {
         mockkObject(Database, DislikedExclusion)
         coEvery { DislikedExclusion.excludedSongIds(any(), any()) } returns emptySet()
         every { Database.songTable } returns songs
-        every { songs.findByIdDirect(any()) } returns null
+        coEvery { songs.findByIdDirect(any()) } returns null
         every { Database.queueTable } returns queue
         callback = AutoSessionCallback(context, Database, mockk<MyDownloadHelper>(relaxed = true))
         tree = AutoSessionCallback::class.java.getDeclaredField("autoBrowseTree").apply {
@@ -113,7 +113,7 @@ class AutoCallbackPublicationProfileTest {
             id = "publication-item", title = "Item", artistsText = "Artist", durationText = "3:00",
             thumbnailUrl = "https://example.test/publication-profile-item.jpg",
         )
-        every { songs.findByIdDirect(song.id) } returns song
+        coEvery { songs.findByIdDirect(song.id) } returns song
         val loader = mockk<ImageLoader>()
         mockkObject(ImageCacheFactory)
         every { ImageCacheFactory.LOADER } returns loader

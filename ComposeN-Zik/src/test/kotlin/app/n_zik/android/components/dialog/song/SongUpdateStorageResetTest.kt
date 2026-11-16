@@ -67,16 +67,16 @@ class SongUpdateStorageResetTest {
         mockkObject(DatabaseInitializer.Companion)
         every { DatabaseInitializer.Instance } returns internal
         every { internal.transactionExecutor } returns Executor { it.run() }
-        every { Database.syncTransaction(any()) } answers {
+        coEvery { Database.transaction(any()) } coAnswers {
             inTransaction = true
             try {
-                firstArg<Database.() -> Unit>().invoke(Database)
+                firstArg<suspend Database.() -> Unit>().invoke(Database)
             } finally {
                 inTransaction = false
             }
         }
-        every { songTable.findByIdDirect(any()) } returns stored
-        every { songTable.updateReplace(any()) } answers { writtenRows.add(firstArg()) }
+        coEvery { songTable.findByIdDirect(any()) } returns stored
+        coEvery { songTable.updateReplace(any()) } coAnswers { writtenRows.add(firstArg()) }
         every { binder.cache } returns cache
         every { binder.downloadCache } returns downloadCache
         mockkObject(WaveformExtractor)
@@ -154,14 +154,14 @@ class SongUpdateStorageResetTest {
     @Test
     fun `download reset does not remove local media`() = runBlocking {
         val local = stored.copy(id = "local:track")
-        every { songTable.findByIdDirect(local.id) } returns local
+        coEvery { songTable.findByIdDirect(local.id) } returns local
         runSongUpdateCore(binder, local, SongUpdateSelection(offlineDownload = true), "active")
         verify(exactly = 0) { downloadOwner.sendRemove(any(), any()) }
     }
 
     @Test
     fun `profile switch after commit prevents the download request`() = runBlocking {
-        every { songTable.updateReplace(any()) } answers {
+        coEvery { songTable.updateReplace(any()) } coAnswers {
             writtenRows.add(firstArg())
             profile = "other"
         }

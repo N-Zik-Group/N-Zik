@@ -119,7 +119,7 @@ object NameConvergence {
         // trailing spaces)
         val pairs = songArtistMapTable.allPairsDirect()
         val nameCache = HashMap<String, String?>()
-        fun rowNames(artistIds: List<String>): List<String> =
+        suspend fun rowNames(artistIds: List<String>): List<String> =
             artistIds.mapNotNull { id ->
                 nameCache.getOrPut(id) { artistTable.findByIdDirect(id)?.name }
                     ?.let { cleanPrefix(it).trim() }
@@ -269,14 +269,14 @@ object NameConvergence {
      * is preserved. Divergent copies (token differs from the row's old name) are
      * left alone. No write happens when the text would not actually change.
      *
-     * Non-suspend, DAO-direct: call it from inside a [Database.syncTransaction]
+     * Call it from inside a [Database.transaction]
      * block (the dialogs do, wrapped in [Database.asyncTransaction] for the
      * lock-retry), so the row rename and every copy write land in one transaction.
      *
      * Both names are [cleanPrefix]ed at entry, so a prefixed row name never reaches
      * a copy.
      */
-    internal fun propagateRename(
+    internal suspend fun propagateRename(
         db: Database,
         artistId: String,
         oldName: String,

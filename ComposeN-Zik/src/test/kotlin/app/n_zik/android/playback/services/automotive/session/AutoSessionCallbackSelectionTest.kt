@@ -150,7 +150,7 @@ class AutoSessionCallbackSelectionTest {
     }
 
     @Test
-    fun `local numeric playlist shuffle resolves its own songs`() {
+    fun `local numeric playlist shuffle resolves its own songs`() = runBlocking<Unit> {
         runBlocking {
             onDatabase {
                 Database.playlistTable.insertIgnore(Playlist(id = 123, name = "PL 123"))
@@ -165,7 +165,7 @@ class AutoSessionCallbackSelectionTest {
     }
 
     @Test
-    fun `library all shuffle mirrors the phone all tab queue`() {
+    fun `library all shuffle mirrors the phone all tab queue`() = runBlocking<Unit> {
         // The phone's All-tab queue (HomeLibrary.getSelectedSongs) flattens EVERY
         // displayed playlist — YT, pinned and rewind included — then Shuffler.play
 
@@ -216,7 +216,7 @@ class AutoSessionCallbackSelectionTest {
     }
 
     @Test
-    fun `artist detail selection resolves the artist queue with the right start index`() {
+    fun `artist detail selection resolves the artist queue with the right start index`() = runBlocking<Unit> {
         runBlocking {
             onDatabase {
                 upsertSong("art-1")
@@ -232,7 +232,7 @@ class AutoSessionCallbackSelectionTest {
     }
 
     @Test
-    fun `album detail selection resolves the album queue with the right start index`() {
+    fun `album detail selection resolves the album queue with the right start index`() = runBlocking<Unit> {
         runBlocking {
             onDatabase {
                 upsertSong("alb-1")
@@ -445,7 +445,7 @@ class AutoSessionCallbackSelectionTest {
     }
 
     @Test
-    fun `on-device shuffle never queues a disliked song`() {
+    fun `on-device shuffle never queues a disliked song`() = runBlocking<Unit> {
         // The on-device queue comes from context.getLocalSongs (a real MediaStore
         // query) — stub the file facade so no query actually runs. Local song ids
 
@@ -480,7 +480,7 @@ class AutoSessionCallbackSelectionTest {
     }
 
     @Test
-    fun `cached shuffle never queues a disliked song`() {
+    fun `cached shuffle never queues a disliked song`() = runBlocking<Unit> {
         runBlocking {
             onDatabase {
                 upsertSong("cache-ok")
@@ -561,7 +561,7 @@ class AutoSessionCallbackSelectionTest {
     }
 
     @Test
-    fun `artist selection queue keeps every track (no triple filter, phone parity)`() {
+    fun `artist selection queue keeps every track (no triple filter, phone parity)`() = runBlocking<Unit> {
         runBlocking {
             onDatabase {
                 upsertSong("art-ok-1")
@@ -583,7 +583,7 @@ class AutoSessionCallbackSelectionTest {
     }
 
     @Test
-    fun `songs all selection queue excludes songs of disliked artists and albums`() {
+    fun `songs all selection queue excludes songs of disliked artists and albums`() = runBlocking<Unit> {
         runBlocking {
             onDatabase {
                 upsertSong("ok-1")

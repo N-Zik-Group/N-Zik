@@ -569,7 +569,7 @@ class OfflineContentTest {
     // MB_OFFLINE: DB row present, network down — the local content renders as
     // today (existing behavior unchanged, no message).
     @Test
-    fun artistInsightsRendersLocalContentWhenTheDbRowExists() {
+    fun artistInsightsRendersLocalContentWhenTheDbRowExists() = runBlocking<Unit> {
         // runBlocking is forced by the synchronous test setup API
         // (AGENTS.md runBlocking exception); the write runs on the DATA executor
         //
@@ -601,7 +601,7 @@ class OfflineContentTest {
     }
 
     @Test
-    fun albumInsightsRendersLocalContentWhenTheDbRowExists() {
+    fun albumInsightsRendersLocalContentWhenTheDbRowExists() = runBlocking<Unit> {
         // The artist row uses a "local:" id so the album load skips the online
         // artist-page completion (no network in the test).
         //

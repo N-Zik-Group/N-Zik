@@ -105,10 +105,10 @@ interface AlbumTable {
     fun findById( albumId: String ): Flow<Album?>
 
     @Query("SELECT DISTINCT * FROM Album WHERE id = :albumId")
-    fun findByIdDirect( albumId: String ): Album?
+    suspend fun findByIdDirect( albumId: String ): Album?
 
     @Query("SELECT * FROM Album WHERE substr(id, 1, 12) = 'LOCAL_ALBUM_' ORDER BY id")
-    fun deviceAlbumsDirect(): List<Album>
+    suspend fun deviceAlbumsDirect(): List<Album>
 
     /**
      * @return [Album] that has song with id [songId]
@@ -128,21 +128,21 @@ interface AlbumTable {
         WHERE SAM.songId = :songId
         ORDER BY substr(SAM.albumId, 1, 19) = 'LOCAL_ALBUM_DEVICE_', SAM.rowid LIMIT 1
     """)
-    fun findBySongIdDirect( songId: String ): Album?
+    suspend fun findBySongIdDirect( songId: String ): Album?
 
     /**
      * @param mbId of a MusicBrainz release group
      * @return [Album] that has [Album.mbId] matches [mbId]
      */
     @Query("SELECT DISTINCT * FROM Album WHERE mbId = :mbId LIMIT 1")
-    fun getByMbId( mbId: String ): Album?
+    suspend fun getByMbId( mbId: String ): Album?
 
     /**
      * @param albumId of a YouTube album
      * @return [Album] that has [Album.youtubeAlbumId] matches [albumId]
      */
     @Query("SELECT DISTINCT * FROM Album WHERE youtubeAlbumId = :albumId LIMIT 1")
-    fun getByYoutubeAlbumId( albumId: String ): Album?
+    suspend fun getByYoutubeAlbumId( albumId: String ): Album?
 
     /**
      * @return bookmarked or in-library albums that still have no MusicBrainz metadata
@@ -168,7 +168,7 @@ interface AlbumTable {
             bookmarkedAt DESC
         LIMIT :limit
     """)
-    fun albumsWithoutMbData( limit: Int ): List<Album>
+    suspend fun albumsWithoutMbData( limit: Int ): List<Album>
 
     /**
      * @return all other albums of the given artist name (excluding the given album)
@@ -182,23 +182,23 @@ interface AlbumTable {
         ORDER BY originalYear ASC NULLS LAST, title COLLATE NOCASE
         LIMIT :limit
     """)
-    fun getOtherAlbumsByArtistName( artistName: String, albumId: String, limit: Int ): List<Album>
+    suspend fun getOtherAlbumsByArtistName( artistName: String, albumId: String, limit: Int ): List<Album>
 
     /** Inserts [album], silently skipping it when the row already exists (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertIgnore( album: Album )
+    suspend fun insertIgnore( album: Album )
 
     /** Replaces the row with [album] (onConflict REPLACE). */
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun updateReplace( album: Album )
+    suspend fun updateReplace( album: Album )
 
     /** Replaces each existing row with its [albums] entry (onConflict REPLACE). */
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun updateReplace( albums: List<Album> )
+    suspend fun updateReplace( albums: List<Album> )
 
     /** Inserts [album], replacing the existing row's columns when its primary key already exists. */
     @Upsert
-    fun upsert( album: Album )
+    suspend fun upsert( album: Album )
 
     @Query("""
         UPDATE Album SET
@@ -212,7 +212,7 @@ interface AlbumTable {
             lastFetch = :lastFetch
         WHERE id = :id
     """)
-    fun updateMetadata(
+    suspend fun updateMetadata(
         id: String,
         title: String?,
         thumbnailUrl: String?,
@@ -228,7 +228,7 @@ interface AlbumTable {
         INSERT OR IGNORE INTO Album (id, title, thumbnailUrl, year, authorsText, shareUrl, timestamp, isYoutubeAlbum, position, lastFetch)
         VALUES (:id, :title, :thumbnailUrl, :year, :authorsText, :shareUrl, :timestamp, :isYoutubeAlbum, :position, :lastFetch)
     """)
-    fun insertMetadata(
+    suspend fun insertMetadata(
         id: String,
         title: String?,
         thumbnailUrl: String?,
@@ -251,7 +251,7 @@ interface AlbumTable {
      * @param albums list of [Album] to insert to database
      */
     @Upsert
-    fun upsert( albums: List<Album> )
+    suspend fun upsert( albums: List<Album> )
 
     /**
      * @return whether [Album] with id [albumId] is bookmarked,
@@ -286,7 +286,7 @@ interface AlbumTable {
             END
         WHERE id = :albumId
     """)
-    fun toggleBookmark( albumId: String ): Int
+    suspend fun toggleBookmark( albumId: String ): Int
 
     /**
      * Set the explicit bookmark state of an album (PC bridge, contract §10.2, since 1.7):
@@ -316,7 +316,7 @@ interface AlbumTable {
             END
         WHERE id = :albumId
     """)
-    fun bookmarkState( albumId: String, bookmarked: Boolean ): Int
+    suspend fun bookmarkState( albumId: String, bookmarked: Boolean ): Int
 
     /**
      * Set the explicit like state of an album (PC bridge, contract §10.2, since 1.7.2):
@@ -342,7 +342,7 @@ interface AlbumTable {
             END
         WHERE id = :albumId
     """)
-    fun likeState( albumId: String, bookmarked: Boolean, disliked: Boolean ): Int
+    suspend fun likeState( albumId: String, bookmarked: Boolean, disliked: Boolean ): Int
 
     /**
      * Rotate like state for an album: neutral → bookmarked → disliked → neutral
@@ -372,7 +372,7 @@ interface AlbumTable {
             END
         WHERE id = :albumId
     """)
-    fun rotateLikeState( albumId: String ): Int
+    suspend fun rotateLikeState( albumId: String ): Int
 
     /**
      * Reset the album-page fetch TTL ([Album.lastFetch] → NULL) so the next
@@ -385,7 +385,7 @@ interface AlbumTable {
      * @return number of albums affected by this operation
      */
     @Query("UPDATE Album SET lastFetch = NULL WHERE id = :albumId")
-    fun resetFetchTtl( albumId: String ): Int
+    suspend fun resetFetchTtl( albumId: String ): Int
 
     /**
      * @return like state of album: true = bookmarked, false = disliked, null = neutral
@@ -431,10 +431,10 @@ interface AlbumTable {
             END
         WHERE id = :albumId
     """)
-    fun toggleDislike( albumId: String ): Int
+    suspend fun toggleDislike( albumId: String ): Int
 
     @Query("UPDATE Album SET dislikedAt = NULL WHERE dislikedAt IS NOT NULL")
-    fun clearAllDisliked(): Int
+    suspend fun clearAllDisliked(): Int
 
     /**
      * @return whether [Album] with id [albumId] is disliked
@@ -471,7 +471,7 @@ interface AlbumTable {
      * @return number of albums affected by this operation
      */
     @Query("UPDATE Album SET thumbnailUrl = :thumbnailUrl WHERE id = :albumId")
-    fun updateCover( albumId: String, thumbnailUrl: String ): Int
+    suspend fun updateCover( albumId: String, thumbnailUrl: String ): Int
 
     /**
      * @param albumId identifier of [Album]
@@ -480,7 +480,7 @@ interface AlbumTable {
      * @return number of albums affected by this operation
      */
     @Query("UPDATE Album SET authorsText = :authors WHERE id = :albumId")
-    fun updateAuthors( albumId: String, authors: String ): Int
+    suspend fun updateAuthors( albumId: String, authors: String ): Int
 
     /**
      * @param albumId identifier of [Album]
@@ -489,10 +489,10 @@ interface AlbumTable {
      * @return number of albums affected by this operation
      */
     @Query("UPDATE Album SET title = :title WHERE id = :albumId")
-    fun updateTitle( albumId: String, title: String ): Int
+    suspend fun updateTitle( albumId: String, title: String ): Int
 
     @Query("UPDATE Album SET position = :position WHERE id = :albumId")
-    fun updatePosition( albumId: String, position: Int ): Int
+    suspend fun updatePosition( albumId: String, position: Int ): Int
 
     /**
      * Delete all albums that have no songs mapped to them
@@ -508,10 +508,10 @@ interface AlbumTable {
         )
         AND bookmarkedAt IS NULL
     """)
-    fun deleteOrphaned(): Int
+    suspend fun deleteOrphaned(): Int
 
     @Query("DELETE FROM Album WHERE id = :id")
-    fun deleteById(id: String): Int
+    suspend fun deleteById(id: String): Int
 
     //<editor-fold defaultstate="collapsed" desc="Sort bookmarked">
     @Query("""

@@ -1,6 +1,5 @@
 package app.n_zik.android.ui.screens.album
 
-import app.n_zik.android.core.database.*
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -162,7 +161,7 @@ fun AlbumScreen(
 
                          online.songs
                               .map( Innertube.SongItem::asMediaItem )
-                              .onEach( ::insertIgnore )
+                              .onEach { insertIgnore(it) }
                               .mapIndexed { position, mediaItem ->
                                   SongAlbumMap(
                                       songId = mediaItem.mediaId,
@@ -170,7 +169,7 @@ fun AlbumScreen(
                                       position = position
                                   )
                               }
-                              .also( songAlbumMapTable::upsert )
+                              .also { songAlbumMapTable.upsert(it) }
                    }
 
                    alternatives = online.otherVersions

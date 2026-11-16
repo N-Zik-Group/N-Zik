@@ -100,11 +100,11 @@ internal suspend fun Database.indexDeviceTracks(
                     thumbnailUrl = song.thumbnailUrl,
                     authorsText = track.albumArtist ?: song.artistsText,
                     timestamp = System.currentTimeMillis(),
-                ).also(albumTable::insertIgnore)
+                ).also { albumTable.insertIgnore(it) }
                 val album = if (existingAlbum.id.startsWith(DEVICE_ALBUM_PREFIX) &&
                     existingAlbum.year.isNullOrBlank() && track.year != null
                 ) {
-                    existingAlbum.copy(year = track.year).also(albumTable::updateReplace)
+                    existingAlbum.copy(year = track.year).also { albumTable.updateReplace(it) }
                 } else existingAlbum
                 albums[key] = album
                 if (albumPairs.add(album.id to song.id)) {
@@ -122,7 +122,7 @@ internal suspend fun Database.indexDeviceTracks(
                         name = name,
                         thumbnailUrl = song.thumbnailUrl,
                         timestamp = System.currentTimeMillis(),
-                    ).also(artistTable::insertIgnore)
+                    ).also { artistTable.insertIgnore(it) }
                 }
                 val pair = SongArtistMap(song.id, artist.id)
                 if (artistPairs.add(pair)) songArtistMapTable.insertIgnore(pair)

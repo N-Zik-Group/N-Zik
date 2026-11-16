@@ -11,7 +11,6 @@ import app.n_zik.android.listentogether.guestLockedAlpha
 import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.uiRoundnessShape
 
-import app.n_zik.android.core.database.*
 import app.n_zik.android.utils.excludeDislikedSongsKey
 import app.n_zik.android.enums.DislikeMode
 
@@ -238,8 +237,8 @@ fun PlaylistSongList(
             YtMusic.getPlaylist( browseId.removePrefix(MODIFIED_PREFIX) )
         else
             YtMusic.getPlaylistContinuation( it )
-                   .map { fetchedPlaylist ->
-                       playlistPage!!.copy(
+                   .mapCatching { fetchedPlaylist ->
+                       checkNotNull(playlistPage) { "Playlist continuation requires an initial page" }.copy(
                            songs = fetchedPlaylist?.songs.orEmpty(),
                            songsContinuation = fetchedPlaylist?.continuation
                        )
@@ -493,7 +492,7 @@ fun PlaylistSongList(
                                 Box {
                                     ImageCacheFactory.AsyncImage(
                                         shape = null,
-                                        thumbnailUrl = playlistPage!!.playlist.thumbnail?.url?.resize(
+                                        thumbnailUrl = playlistPage?.playlist?.thumbnail?.url?.resize(
                                             1000,
                                             1000
                                         ),
@@ -615,7 +614,7 @@ fun PlaylistSongList(
                                                 Database.playlistTable
                                                     .findByBrowseId(browseId)
                                                     .first()
-                                                    ?.let( Database.playlistTable::delete )
+                                                    ?.let { Database.playlistTable.delete(it) }
                                             } else {
                                                 if (isYouTubeSyncEnabled() && isNetworkConnected(context)) {
                                                     YtMusic.likePlaylistOrAlbum(browseId.substringAfter("VL"))
@@ -1243,16 +1242,14 @@ internal suspend fun processPlaylistBatch(
     context: Context,
     downloadState: Boolean
 ) {
-    songs?.forEach { songItem ->
-        binder?.cache?.removeResource(songItem.asMediaItem.mediaId)
-        Database.asyncTransaction {
-            formatTable.findBySongId( songItem.key )
+    if (songs.isNullOrEmpty()) return
+
+    Database.awaitWriteBatch(retries = 1) {
+        songs.forEach { songItem ->
+            val mediaItem = songItem.asMediaItem
+            binder?.cache?.removeResource(mediaItem.mediaId)
+            manageDownload(context, mediaItem, downloadState)
         }
-        manageDownload(
-            context = context,
-            mediaItem = songItem.asMediaItem,
-            downloadState = downloadState
-        )
     }
 }
 

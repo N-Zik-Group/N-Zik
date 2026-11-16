@@ -68,7 +68,7 @@ class EditLyricsDialog private constructor(
     private val getLyrics: () -> Lyrics?,
     private val getTitle: () -> String?,
     private val getArtist: () -> String?,
-    private val getEnsureSongInserted: () -> (() -> Unit),
+    private val getEnsureSongInserted: () -> (suspend () -> Unit),
     pendingFileActionState: MutableState<PendingFileAction?>,
 ) : TextInputDialog(InputDialogConstraints.ALL) {
 
@@ -121,7 +121,7 @@ class EditLyricsDialog private constructor(
             mediaId: String,
             lyricsType: LyricsType,
             getLyrics: () -> Lyrics?,
-            ensureSongInserted: () -> Unit,
+            ensureSongInserted: suspend () -> Unit,
             title: String? = null,
             artist: String? = null,
             activeMode: LyricsType = lyricsType,

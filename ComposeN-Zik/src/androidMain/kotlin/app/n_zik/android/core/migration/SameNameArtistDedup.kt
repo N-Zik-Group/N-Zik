@@ -333,7 +333,7 @@ object SameNameArtistDedup {
      * Maintenance: if a production setter for [Song.isYoutubeSong] ever appears,
      * revisit this filter.
      */
-    private fun rowFallbackSongs(artistId: String, mapTable: SongArtistMapTable): List<Song> =
+    private suspend fun rowFallbackSongs(artistId: String, mapTable: SongArtistMapTable): List<Song> =
         mapTable.allSongsByDirect(artistId)
             .filter { !it.id.startsWith(LOCAL_KEY_PREFIX) && it.cleanTitle().isNotBlank() }
             .take(SONGS_PER_ROW)

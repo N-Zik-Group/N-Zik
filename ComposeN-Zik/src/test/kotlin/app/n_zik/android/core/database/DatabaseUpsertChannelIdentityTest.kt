@@ -3,6 +3,8 @@ package app.n_zik.android.core.database
 import app.n_zik.android.models.Artist
 import app.n_zik.android.models.Song
 import app.n_zik.android.models.SongArtistMap
+import io.mockk.coVerify
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -82,9 +84,9 @@ class DatabaseUpsertChannelIdentityTest {
         every { internal.transactionExecutor } returns Executor { it.run() }
         // Deterministic regardless of the locale wiring done at app startup
         ArtistConjunctions.conjunctions = listOf("and")
-        every { artistTable.findByIdDirect(any()) } returns null
-        every { artistTable.findByNameDirect(any()) } returns null
-        every { songTable.findByIdDirect(any()) } returns null
+        coEvery { artistTable.findByIdDirect(any()) } returns null
+        coEvery { artistTable.findByNameDirect(any()) } returns null
+        coEvery { songTable.findByIdDirect(any()) } returns null
     }
 
     @After
@@ -100,14 +102,14 @@ class DatabaseUpsertChannelIdentityTest {
         runBlocking { Database.upsert(item) }
 
         val upserted = slot<List<Artist>>()
-        verify(exactly = 1) { artistTable.upsert(capture(upserted)) }
+        coVerify(exactly = 1) { artistTable.upsert(capture(upserted)) }
         assertEquals(listOf(Artist(id = "UC_BIGFLO", name = "Bigflo & OLi")), upserted.captured)
         // complete author list -> reconcile path, not add-only
-        verify(exactly = 1) { mapTable.deleteBySongId("ORxckE7oN6g") }
-        verify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("ORxckE7oN6g", "UC_BIGFLO")) }
+        coVerify(exactly = 1) { mapTable.deleteBySongId("ORxckE7oN6g") }
+        coVerify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("ORxckE7oN6g", "UC_BIGFLO")) }
 
         val song = slot<Song>()
-        verify(exactly = 1) { songTable.upsert(capture(song)) }
+        coVerify(exactly = 1) { songTable.upsert(capture(song)) }
         // whole entry name, not the split join "Bigflo, OLi"
         assertEquals("Bigflo & OLi", song.captured.artistsText)
     }
@@ -115,77 +117,77 @@ class DatabaseUpsertChannelIdentityTest {
     @Test
     fun existingChannelRowKeepsPageName() {
         val pageRow = Artist(id = "UC_BIGFLO", name = "Bigflo & Oli")
-        every { artistTable.findByIdDirect("UC_BIGFLO") } returns pageRow
-        every { songTable.findByIdDirect("ORxckE7oN6g") } returns
+        coEvery { artistTable.findByIdDirect("UC_BIGFLO") } returns pageRow
+        coEvery { songTable.findByIdDirect("ORxckE7oN6g") } returns
             Song(id = "ORxckE7oN6g", title = "Dommage", artistsText = "Bigflo, OLi", durationText = null, thumbnailUrl = null)
         val item = songItem(listOf(author("Bigflo & OLi", "UC_BIGFLO")))
 
         runBlocking { Database.upsert(item) }
 
         // the raw entry name ("OLi" quirk) must not clobber the stored page name
-        verify(exactly = 0) {
+        coVerify(exactly = 0) {
             artistTable.upsert(match<List<Artist>> { list -> list.any { it.name == "Bigflo & OLi" } })
         }
 
         val song = slot<Song>()
-        verify(exactly = 1) { songTable.upsert(capture(song)) }
+        coVerify(exactly = 1) { songTable.upsert(capture(song)) }
         // artistsText follows the row name (table of truth)
         assertEquals("Bigflo & Oli", song.captured.artistsText)
-        verify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("ORxckE7oN6g", "UC_BIGFLO")) }
+        coVerify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("ORxckE7oN6g", "UC_BIGFLO")) }
     }
 
     @Test
     fun multiEntrySongMapsEachEntryToItsOwnChannel() {
-        every { artistTable.findByIdDirect("UC_A") } returns Artist(id = "UC_A", name = "Tanchiky")
-        every { artistTable.findByIdDirect("UC_B") } returns Artist(id = "UC_B", name = "siromaru")
+        coEvery { artistTable.findByIdDirect("UC_A") } returns Artist(id = "UC_A", name = "Tanchiky")
+        coEvery { artistTable.findByIdDirect("UC_B") } returns Artist(id = "UC_B", name = "siromaru")
         val item = songItem(listOf(author("Tanchiky", "UC_A"), author("siromaru", "UC_B")))
 
         runBlocking { Database.upsert(item) }
 
-        verify(exactly = 1) { mapTable.deleteBySongId("ORxckE7oN6g") }
-        verify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("ORxckE7oN6g", "UC_A")) }
-        verify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("ORxckE7oN6g", "UC_B")) }
+        coVerify(exactly = 1) { mapTable.deleteBySongId("ORxckE7oN6g") }
+        coVerify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("ORxckE7oN6g", "UC_A")) }
+        coVerify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("ORxckE7oN6g", "UC_B")) }
 
         val song = slot<Song>()
-        verify(exactly = 1) { songTable.upsert(capture(song)) }
+        coVerify(exactly = 1) { songTable.upsert(capture(song)) }
         assertEquals("Tanchiky, siromaru", song.captured.artistsText)
     }
 
     @Test
     fun modifiedArtistsTextIsPreserved() {
-        every { artistTable.findByIdDirect("UC_BIGFLO") } returns Artist(id = "UC_BIGFLO", name = "Bigflo & Oli")
+        coEvery { artistTable.findByIdDirect("UC_BIGFLO") } returns Artist(id = "UC_BIGFLO", name = "Bigflo & Oli")
         // A stale title forces a write so the persisted song can be
         // inspected; the user-modified artistsText must survive the rewrite.
-        every { songTable.findByIdDirect("ORxckE7oN6g") } returns
+        coEvery { songTable.findByIdDirect("ORxckE7oN6g") } returns
             Song(id = "ORxckE7oN6g", title = "Old title", artistsText = "modified:Custom", durationText = null, thumbnailUrl = null)
         val item = songItem(listOf(author("Bigflo & OLi", "UC_BIGFLO")))
 
         runBlocking { Database.upsert(item) }
 
         val song = slot<Song>()
-        verify(exactly = 1) { songTable.upsert(capture(song)) }
+        coVerify(exactly = 1) { songTable.upsert(capture(song)) }
         assertEquals("modified:Custom", song.captured.artistsText)
     }
 
     @Test
     fun entryWithoutBrowseIdKeepsNameOnlyPath() {
-        every { artistTable.findByNameDirect("LocalArtist") } returns Artist(id = "LOCAL_1", name = "LocalArtist")
+        coEvery { artistTable.findByNameDirect("LocalArtist") } returns Artist(id = "LOCAL_1", name = "LocalArtist")
         val item = songItem(listOf(author("LocalArtist", null)))
 
         runBlocking { Database.upsert(item) }
 
         // incomplete author list -> add-only: no delete, no online search per part
-        verify(exactly = 0) { mapTable.deleteBySongId(any()) }
-        verify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("ORxckE7oN6g", "LOCAL_1")) }
+        coVerify(exactly = 0) { mapTable.deleteBySongId(any()) }
+        coVerify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("ORxckE7oN6g", "LOCAL_1")) }
 
         val song = slot<Song>()
-        verify(exactly = 1) { songTable.upsert(capture(song)) }
+        coVerify(exactly = 1) { songTable.upsert(capture(song)) }
         assertEquals("LocalArtist", song.captured.artistsText)
     }
 
     @Test
     fun separatorAndConjunctionEntriesAreSkipped() {
-        every { artistTable.findByIdDirect("UC_BIGFLO") } returns Artist(id = "UC_BIGFLO", name = "Bigflo & Oli")
+        coEvery { artistTable.findByIdDirect("UC_BIGFLO") } returns Artist(id = "UC_BIGFLO", name = "Bigflo & Oli")
         val item = songItem(listOf(
             author("Bigflo & OLi", "UC_BIGFLO"),
             author("&", "UC_SEPARATOR"),
@@ -194,7 +196,7 @@ class DatabaseUpsertChannelIdentityTest {
 
         runBlocking { Database.upsert(item) }
 
-        verify(exactly = 1) { mapTable.insertIgnore(any<SongArtistMap>()) }
-        verify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("ORxckE7oN6g", "UC_BIGFLO")) }
+        coVerify(exactly = 1) { mapTable.insertIgnore(any<SongArtistMap>()) }
+        coVerify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("ORxckE7oN6g", "UC_BIGFLO")) }
     }
 }

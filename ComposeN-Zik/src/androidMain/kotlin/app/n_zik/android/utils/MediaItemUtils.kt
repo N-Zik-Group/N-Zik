@@ -142,7 +142,7 @@ fun MediaItem.albumTitleWithFallback(): String? {
 
 // ─── Non-Composable fallbacks (for services, notifications, etc.) ───
 
-fun MediaItem.artistTextOrDb(): String {
+suspend fun MediaItem.artistTextOrDb(): String {
     val artist = cleanPrefix(mediaMetadata.artist?.toString() ?: "")
     if (artist.isNotBlank() && artist != "null") return artist
     val dbText = Database.songTable.findByIdDirect(mediaId)?.artistsText
@@ -150,7 +150,7 @@ fun MediaItem.artistTextOrDb(): String {
     return artist
 }
 
-fun MediaItem.albumTitleOrDb(): String {
+suspend fun MediaItem.albumTitleOrDb(): String {
     val album = cleanPrefix(mediaMetadata.albumTitle?.toString() ?: "")
     if (album.isNotBlank() && album != "null") return album
     // Same sources as the player screen: the albumId extra (direct album row) when the
@@ -163,7 +163,7 @@ fun MediaItem.albumTitleOrDb(): String {
     return dbTitle ?: album
 }
 
-fun MediaItem.titleOrDb(): String {
+suspend fun MediaItem.titleOrDb(): String {
     val title = cleanPrefix(mediaMetadata.title?.toString() ?: "")
     if (title.isNotBlank() && title != "null") return title
     return Database.songTable.findByIdDirect(mediaId)?.title?.let { cleanPrefix(it) } ?: title

@@ -299,6 +299,7 @@ class LastFmScrobbleManager(
             val artist = cachedArtist ?: mediaItem.artistTextOrDb()
             val title = cachedTitle ?: mediaItem.titleOrDb()
             val album = cachedAlbum ?: mediaItem.albumTitleOrDb()
+            if (gen != jobGeneration || mediaId != trackedMediaId || destroyed) return@launch
             if (artist.isBlank() || title.isBlank()) {
                 // Empty metadata (no metadata + no DB row): nothing to send
                 phase = Phase.Done
@@ -307,7 +308,6 @@ class LastFmScrobbleManager(
             cachedArtist = artist
             cachedTitle = title
             cachedAlbum = album
-            if (gen != jobGeneration || mediaId != trackedMediaId || destroyed) return@launch
 
             if (!resume && config.nowPlayingEnabled) {
                 LastFm.updateNowPlaying(artist, title, album, durationSeconds()).onFailure { e ->

@@ -24,15 +24,15 @@ interface SongPlaylistMapTable {
 
     /** Removes [songId] from all playlists. */
     @Query("DELETE FROM SongPlaylistMap WHERE songId = :songId")
-    fun deleteBySongId( songId: String ): Int
+    suspend fun deleteBySongId( songId: String ): Int
 
     /** Removes [songId] from playlist [playlistId]. */
     @Query("DELETE FROM SongPlaylistMap WHERE songId = :songId AND playlistId = :playlistId")
-    fun deleteBySongId( songId: String, playlistId: Long ): Int
+    suspend fun deleteBySongId( songId: String, playlistId: Long ): Int
 
     /** Removes all songs from playlist [playlistId]. */
     @Query("DELETE FROM SongPlaylistMap WHERE playlistId = :playlistId")
-    fun clear( playlistId: Long ): Int
+    suspend fun clear( playlistId: Long ): Int
 
     /** Deletes all mappings whose song no longer exists in the `Song` table. */
     @Query("""
@@ -42,7 +42,7 @@ interface SongPlaylistMapTable {
             FROM Song
         )
     """)
-    fun clearGhostMaps(): Int
+    suspend fun clearGhostMaps(): Int
 
     @Query("""
         SELECT playlistId FROM SongPlaylistMap
@@ -63,7 +63,7 @@ interface SongPlaylistMapTable {
     fun allSongsOf( playlistId: Long, limit: Int = Int.MAX_VALUE ): Flow<List<Song>>
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun updateReplace( songPlaylistMaps: List<SongPlaylistMap> ): Int
+    suspend fun updateReplace( songPlaylistMaps: List<SongPlaylistMap> ): Int
 
     /** The [SongPlaylistMap] linking [songId] to [playlistId], if any. */
     @Query("SELECT * FROM SongPlaylistMap WHERE playlistId = :playlistId AND songId = :songId")
@@ -83,7 +83,7 @@ interface SongPlaylistMapTable {
             -1
         ) 
         """)
-    fun findPositionOf( songId: String, playlistId: Long ): Int
+    suspend fun findPositionOf( songId: String, playlistId: Long ): Int
 
     /**
      * @return whether [songId] is mapped to any playlist
@@ -97,7 +97,7 @@ interface SongPlaylistMapTable {
     fun isMapped( songId: String ): Flow<Boolean>
 
     @Query("SELECT EXISTS(SELECT 1 FROM SongPlaylistMap WHERE songId = :songId)")
-    fun isMappedSync( songId: String ): Boolean
+    suspend fun isMappedSync( songId: String ): Boolean
 
     /**
      * Batch variant of [isMapped]: checks a whole list of songs with a single query.
@@ -133,7 +133,7 @@ interface SongPlaylistMapTable {
     """)
     // You'll get complain from IDE that "shuffled" and "FROM"
     // aren't exist, that's OK - IGNORE it.
-    fun shufflePositions( playlistId: Long ): Int
+    suspend fun shufflePositions( playlistId: Long ): Int
 
     /** Moves the song from position [from] to [to] within playlist [playlistId], shifting the other songs accordingly. */
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -158,10 +158,10 @@ interface SongPlaylistMapTable {
     """)
     // You'll get complain from IDE that "updated" and "FROM"
     // aren't exist, that's OK - IGNORE it.
-    fun move( playlistId: Long, from: Int, to: Int ): Int
+    suspend fun move( playlistId: Long, from: Int, to: Int ): Int
 
     @Query("UPDATE SongPlaylistMap SET position = :position WHERE playlistId = :playlistId AND songId = :songId")
-    fun updatePosition( playlistId: Long, songId: String, position: Int )
+    suspend fun updatePosition( playlistId: Long, songId: String, position: Int )
 
     /** Inserts [songId] into [playlistId] at the next available position (MAX(position) + 1, or 0 for an empty playlist); skipped if the pair already exists. */
     @Query("""
@@ -179,24 +179,24 @@ interface SongPlaylistMapTable {
             )
         )
     """)
-    fun map( songId: String, playlistId: Long )
+    suspend fun map( songId: String, playlistId: Long )
 
     @Query("INSERT OR IGNORE INTO SongPlaylistMap ( songId, playlistId, position ) VALUES (:songId, :playlistId, :position)")
-    fun mapAtPosition( songId: String, playlistId: Long, position: Int )
+    suspend fun mapAtPosition( songId: String, playlistId: Long, position: Int )
 
     /** Membership snapshot for a deduplicated batch inside its write transaction. */
     @Query("SELECT songId FROM SongPlaylistMap WHERE playlistId = :playlistId")
-    fun songIdsInPlaylist(playlistId: Long): List<String>
+    suspend fun songIdsInPlaylist(playlistId: Long): List<String>
 
     /** Reserves the beginning of canonical order without changing existing relative order. */
     @Query("UPDATE SongPlaylistMap SET position = position + :count WHERE playlistId = :playlistId")
-    fun shiftPositions(playlistId: Long, count: Int)
+    suspend fun shiftPositions(playlistId: Long, count: Int)
 
     @Query("SELECT IFNULL(MAX(position), -1) FROM SongPlaylistMap WHERE playlistId = :playlistId")
-    fun getMaxPosition(playlistId: Long): Int
+    suspend fun getMaxPosition(playlistId: Long): Int
 
     @Query("SELECT COUNT(*) FROM SongPlaylistMap WHERE playlistId = :playlistId")
-    fun countSongsInPlaylist(playlistId: Long): Int
+    suspend fun countSongsInPlaylist(playlistId: Long): Int
 
     //<editor-fold defaultstate="collapsed" desc="Sort songs of playlist">
     @Query("""
@@ -347,10 +347,10 @@ interface SongPlaylistMapTable {
     //</editor-fold>
 
     @Query("UPDATE SongPlaylistMap SET songId = :newId WHERE songId = :oldId")
-    fun updateSongId(oldId: String, newId: String)
+    suspend fun updateSongId(oldId: String, newId: String)
 
     @Query("SELECT * FROM SongPlaylistMap WHERE songId = :songId")
-    fun getAllForSong(songId: String): List<SongPlaylistMap>
+    suspend fun getAllForSong(songId: String): List<SongPlaylistMap>
 
     @Query("SELECT DISTINCT songId FROM SongPlaylistMap")
     fun allMappedSongIds(): Flow<List<String>>
@@ -363,7 +363,7 @@ interface SongPlaylistMapTable {
         WHERE spm.playlistId = :playlistId
         ORDER BY spm.position
     """)
-    fun songsByPositionDirect( playlistId: Long ): List<Song>
+    suspend fun songsByPositionDirect( playlistId: Long ): List<Song>
 
     /**
      * Read-only, for the PC bridge (contract §1.1 `Playlist.artworkTrackId`).
@@ -377,7 +377,7 @@ interface SongPlaylistMapTable {
         WHERE S.thumbnailUrl IS NOT NULL
         ORDER BY spm.playlistId, spm.position
     """)
-    fun songsWithThumbnailDirect(): List<PlaylistSongRef>
+    suspend fun songsWithThumbnailDirect(): List<PlaylistSongRef>
 }
 
 /** One song of one playlist; see [SongPlaylistMapTable.songsWithThumbnailDirect]. */

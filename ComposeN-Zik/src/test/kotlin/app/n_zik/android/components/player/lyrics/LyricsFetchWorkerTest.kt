@@ -10,6 +10,7 @@ import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.models.Lyrics
 import com.metrolist.music.betterlyrics.BetterLyrics
 import com.metrolist.music.betterlyrics.TTMLParser
+import io.mockk.coEvery
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -88,7 +89,7 @@ class LyricsFetchWorkerTest {
         }
         every { lyricsDao.findAllBySongId(any()) } returns flowOf(emptyList())
         every { lyricsDao.findBySongIdAndType(any(), any()) } returns flowOf(null)
-        every { lyricsDao.upsert(any()) } answers {
+        coEvery { lyricsDao.upsert(any()) } coAnswers {
             upserts += firstArg<Lyrics>()
             1L
         }

@@ -282,7 +282,7 @@ class AutoBrowseRewindDislikedSectionsTest {
     }
 
     @Test
-    fun `on-device list and root count exclude the disliked songs per phone DislikeMode`() {
+    fun `on-device list and root count exclude the disliked songs per phone DislikeMode`() = runBlocking<Unit> {
         // The on-device root counter queries the DB for `local:` ids — the rows are
         // needed there; the list itself comes from getLocalSongs (a real MediaStore
 
@@ -402,7 +402,7 @@ class AutoBrowseRewindDislikedSectionsTest {
     }
 
     @Test
-    fun `albums root hides disliked albums from library and favorites with matching counts`() {
+    fun `albums root hides disliked albums from library and favorites with matching counts`() = runBlocking<Unit> {
         // allInLibrary JOINs the songs: every album needs a mapped song to be
         // a candidate at all (the disliked one must too, to prove the hiding).
         runBlocking {
@@ -436,7 +436,7 @@ class AutoBrowseRewindDislikedSectionsTest {
     }
 
     @Test
-    fun `artists root hides disliked artists from library and favorites with matching counts`() {
+    fun `artists root hides disliked artists from library and favorites with matching counts`() = runBlocking<Unit> {
         // allInLibrary JOINs the songs: every artist needs a mapped song to be
         // a candidate at all (the disliked one must too, to prove the hiding).
         runBlocking {
@@ -535,7 +535,7 @@ class AutoBrowseRewindDislikedSectionsTest {
     }
 
     @Test
-    fun `all playlists folder includes yt pinned and rewind with matching count`() {
+    fun `all playlists folder includes yt pinned and rewind with matching count`() = runBlocking<Unit> {
         runBlocking {
             onDatabase {
                 Database.playlistTable.insertIgnore(Playlist(id = 1, name = "YT One", browseId = "VL1", isYoutubePlaylist = true))

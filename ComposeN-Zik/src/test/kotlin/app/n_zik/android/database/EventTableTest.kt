@@ -59,7 +59,7 @@ class EventTableTest {
         db.close()
     }
 
-    private fun insertSong(id: String) {
+    private fun insertSong(id: String) = runBlocking<Unit> {
         db.songTable.upsert(Song.makePlaceholder(id))
     }
 

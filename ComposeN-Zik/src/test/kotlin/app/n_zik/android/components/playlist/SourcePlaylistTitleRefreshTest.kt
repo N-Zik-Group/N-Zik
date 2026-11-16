@@ -31,7 +31,7 @@ class SourcePlaylistTitleRefreshTest {
     private lateinit var db: DatabaseInitializer
     private lateinit var playlist: Playlist
 
-    @Before fun setup() {
+    @Before fun setup() = runBlocking<Unit> {
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = Room.inMemoryDatabaseBuilder(context, DatabaseInitializer::class.java)
             .allowMainThreadQueries().build()
@@ -49,13 +49,13 @@ class SourcePlaylistTitleRefreshTest {
     private fun media(id: String, title: String?): MediaItem = MediaItem.Builder().setMediaId(id)
         .setMediaMetadata(MediaMetadata.Builder().setTitle(title).build()).build()
 
-    private fun seed(id: String, title: String): Song {
+    private fun seed(id: String, title: String): Song = runBlocking {
         val song = Song(id = id, title = title, artistsText = "Local artist", durationText = "4:20",
             thumbnailUrl = "https://example.test/local-cover", likedAt = 456L, totalPlayTimeMs = 98765L,
             position = 12, isYoutubeSong = true).also { it.playCount = 17 }
         db.songTable.insertIgnore(song)
         db.songPlaylistMapTable.map(songId = id, playlistId = playlist.id)
-        return song
+        return@runBlocking song
     }
 
     @Test fun `source rename updates existing title without changing statistics likes or other metadata`() = runBlocking {

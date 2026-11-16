@@ -86,7 +86,7 @@ class AutoCallbackEligibilityPublicationTest {
         mockkObject(Database)
         val songs = mockk<SongTable>()
         every { Database.songTable } returns songs
-        every { songs.findByIdDirect("selected") } returns Song("selected", "Selected", "Artist", "3:00", null)
+        coEvery { songs.findByIdDirect("selected") } returns Song("selected", "Selected", "Artist", "3:00", null)
         val queue = mockk<QueuedMediaItemTable>()
         every { Database.queueTable } returns queue
         coEvery { Database.readSavedQueue() } returns listOf(QueuedMediaItem(mediaItem = row(), position = 456L))

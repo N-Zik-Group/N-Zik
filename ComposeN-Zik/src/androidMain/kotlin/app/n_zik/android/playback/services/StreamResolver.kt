@@ -657,7 +657,7 @@ fun downloadQualityToInnerTubeX(
 }
 
 @NonBlocking
-private fun upsertSongFormat(
+private suspend fun upsertSongFormat(
     videoId: String,
     format: PlayerResponse.StreamingData.Format,
     perceptualLoudnessDb: Float? = null,
@@ -666,7 +666,7 @@ private fun upsertSongFormat(
     downloadQuality: String? = null
 ) {
     if (videoId == justInserted) return
-    runCatching {
+    try {
         // Extract codecs from mimeType (e.g. "audio/webm; codecs=opus" -> "opus")
         val codecs = format.mimeType
             .substringAfter("codecs=", "")
@@ -679,6 +679,7 @@ private fun upsertSongFormat(
         // The download quality tracking value is set by the download path; the streaming path
         // must preserve whatever value a previous download already stored.
         val existingFormat = Database.formatTable.findBySongIdDirect(videoId)
+        if (videoId == justInserted) return
 
         val formatToSave = Format(
             songId = videoId,
@@ -724,6 +725,10 @@ private fun upsertSongFormat(
         }
         saveFormatSafe(formatToSave)
         justInserted = videoId
+    } catch (cancelled: CancellationException) {
+        throw cancelled
+    } catch (error: Exception) {
+        Timber.tag(TAG).w(error, "Unable to save song format")
     }
 }
 
@@ -1162,6 +1167,14 @@ private fun logResolutionOutcome(videoId: String, outcome: String, elapsedMs: Lo
     }
 }
 
+private fun requireAllowedPlayback(videoId: String) {
+    // Media3's Resolver returns synchronously on its loading thread. Read before opening audio.
+    val isExplicit = runBlocking(NzikDispatchers.DATA) {
+        Database.songTable.findByIdDirect(videoId)?.title?.startsWith(EXPLICIT_PREFIX, true) == true
+    }
+    if (isExplicit) throw ExplicitContentException()
+}
+
 @UnstableApi
 fun PlayerServiceModern.createDataSourceFactory(): DataSource.Factory {
     val upstreamFactory = appContext().okHttpDataSourceFactory
@@ -1223,10 +1236,7 @@ fun PlayerServiceModern.createDataSourceFactory(): DataSource.Factory {
         val videoId = dataSpec.key ?: dataSpec.uri.toString().substringAfter("watch?v=")
         val parentalControlEnabled = appContext().preferences.getBoolean(parentalControlEnabledKey, false)
         if (parentalControlEnabled) {
-            val isExplicit = Database.songTable.findByIdDirect(videoId)?.title?.startsWith(EXPLICIT_PREFIX, true) == true
-            if (isExplicit) {
-                throw ExplicitContentException()
-            }
+            requireAllowedPlayback(videoId)
         }
         fetchFormatIfMissing(videoId)
         dataSpec.buildUpon().setKey(videoId).build()
@@ -1276,10 +1286,7 @@ fun PlayerServiceModern.createBackgroundMusicDataSourceFactory(): DataSource.Fac
         val videoId = dataSpec.key ?: dataSpec.uri.toString().substringAfter("watch?v=")
         val parentalControlEnabled = appContext().preferences.getBoolean(parentalControlEnabledKey, false)
         if (parentalControlEnabled) {
-            val isExplicit = Database.songTable.findByIdDirect(videoId)?.title?.startsWith(EXPLICIT_PREFIX, true) == true
-            if (isExplicit) {
-                throw ExplicitContentException()
-            }
+            requireAllowedPlayback(videoId)
         }
         dataSpec.buildUpon().setKey(videoId).build()
     }
@@ -1319,7 +1326,9 @@ fun MyDownloadHelper.createDownloadDataSourceFactory(): DataSource.Factory {
             // Retry once after invalidating URL cache (handles expired 403/410/416)
             Timber.tag("StreamResolver").w(firstError, "Download resolve failed for $videoId, invalidating cache and retrying")
             songUrlCache.invalidate(videoId)
-            try { downloadCache.removeResource(videoId) } catch (_: Exception) {}
+            try { downloadCache.removeResource(videoId) } catch (error: Exception) {
+                Timber.tag("StreamResolver").w("Unable to evict failed download from cache (%s)", error.javaClass.simpleName)
+            }
             dataSpec.processForDownload(videoId, downloadQualityFormat)
                 .buildUpon()
                 .setKey(videoId)
@@ -1407,7 +1416,10 @@ private fun DataSpec.processForDownload(
                         // path inserted the same Format row first; the dedicated update makes sure
 //
                         // the tracked quality is recorded in that case too.
-                        Database.formatTable.updateDownloadQuality(videoId, trackedDownloadQuality)
+                        // Complete the quality update after the queued Song and Format writes.
+                        Database.awaitWriteBatch {
+                            formatTable.updateDownloadQuality(videoId, trackedDownloadQuality)
+                        }
                     }
 
                     // Cache for future download use - in the download cache, never the player one

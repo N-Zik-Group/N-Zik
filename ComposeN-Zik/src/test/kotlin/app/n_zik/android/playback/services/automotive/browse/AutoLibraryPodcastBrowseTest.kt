@@ -264,7 +264,7 @@ class AutoLibraryPodcastBrowseTest {
     }
 
     @Test
-    fun `saved podcast page two selects the exact episode in the full phone sorted queue`() {
+    fun `saved podcast page two selects the exact episode in the full phone sorted queue`() = runBlocking<Unit> {
         seed(Playlist(id = 42, name = "Long saved podcast", browseId = "MPSPlong", isYoutubePlaylist = false))
         val episodes = (0 until 205).map {
             Song(id = "episode-$it", title = "Episode ${it.toString().padStart(3, '0')}",
@@ -294,7 +294,7 @@ class AutoLibraryPodcastBrowseTest {
     }
 
     @Test
-    fun `offline saved podcast folders retain aggregate actions and only available episodes`() {
+    fun `offline saved podcast folders retain aggregate actions and only available episodes`() = runBlocking<Unit> {
         seed(Playlist(id = 42, name = "Offline saved podcast", browseId = "MPSPoffline", isYoutubePlaylist = false))
         onDatabase {
             listOf("downloaded", "unavailable").forEach {
@@ -322,7 +322,7 @@ class AutoLibraryPodcastBrowseTest {
     }
 
     @Test
-    fun `Downloaded browse snapshots preserve both group directions through page two selection and queue cap`() {
+    fun `Downloaded browse snapshots preserve both group directions through page two selection and queue cap`() = runBlocking<Unit> {
         seed(Playlist(id = 42, name = "Downloaded ordering"))
         val songs = (0 until 205).map {
             Song(id = "song-$it", title = "Song ${it.toString().padStart(3, '0')}",

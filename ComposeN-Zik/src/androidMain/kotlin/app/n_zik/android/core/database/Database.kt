@@ -8,8 +8,7 @@ import app.n_zik.android.utils.playlist.supportsInsertionPosition
 import app.n_zik.android.appContext
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
-import app.n_zik.android.core.database.*
-import app.n_zik.android.*
+import app.n_zik.android.Dependencies
 
 import androidx.annotation.OptIn
 import androidx.compose.ui.util.fastForEach
@@ -43,14 +42,19 @@ import app.n_zik.android.models.SongArtistMap
 import app.n_zik.android.models.SongPlaylistMap
 import app.n_zik.android.models.SortedSongPlaylistMap
 import app.n_zik.android.utils.asSong
+import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.coroutineContext
+import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import app.n_zik.android.core.database.AlbumTable
 import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.Converters
@@ -63,6 +67,7 @@ import app.n_zik.android.core.database.SongAlbumMapTable
 import app.n_zik.android.core.database.SongArtistMapTable
 import app.n_zik.android.core.database.SongPlaylistMapTable
 import app.n_zik.android.core.database.SongTable
+import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Proxy
 import app.n_zik.android.core.database.migration.From10To11Migration
 import app.n_zik.android.core.database.migration.From11To12Migration
@@ -201,15 +206,30 @@ object Database {
         ),
     )
 
+    private class LibraryTransactionWrites : AbstractCoroutineContextElement(Key) {
+        companion object Key : CoroutineContext.Key<LibraryTransactionWrites>
+
+        private val kinds = linkedSetOf<String>()
+
+        fun append(values: List<String>) = synchronized(kinds) { kinds.addAll(values) }
+        fun snapshot(): List<String> = synchronized(kinds) { kinds.toList() }
+    }
+
+    private fun notifyLibraryWrites(kinds: List<String>, context: CoroutineContext? = null) {
+        if (kinds.isEmpty()) return
+        val pending = context?.get(LibraryTransactionWrites)
+        if (pending != null) {
+            pending.append(kinds)
+        } else {
+            runCatching { libraryWriteNotifier?.invoke(kinds) }.onFailure {
+                Timber.tag("Database").w("Unable to publish library write (%s)", it.javaClass.simpleName)
+            }
+        }
+    }
+
     /**
-     * Wraps [dao] in a transparent proxy: every call is delegated unchanged, and a call to a
-     * write method (a name in [writes] that doesn't return a Flow) additionally notifies
-     * [libraryWriteNotifier] with [kinds]. Both default to the table's own map entries.
-     *
-     * A `suspend` write (its caller's hidden `Continuation` is the last argument) notifies when
-     * the write actually completes: the bare `invoke` returns `COROUTINE_SUSPENDED` before the
-     * SQL has run, and a notification there would let the client's re-read observe the pre-write
-     * state. A failed (or cancelled) write changed nothing and notifies nothing.
+     * Delegates DAO calls and publishes library writes once their SQL succeeds. Inside [transaction]
+     * the changes are accumulated and published after the outer transaction commits.
      */
     internal fun <T : Any> libraryWrites(
         dao: T,
@@ -220,25 +240,28 @@ object Database {
         @Suppress("UNCHECKED_CAST")
         return Proxy.newProxyInstance(daoClass.classLoader, arrayOf(daoClass)) { _, method, args ->
             val isWrite = method.name in writes && method.returnType != Flow::class.java
-            val continuation = if (isWrite && args != null && args.isNotEmpty()) args.last() as? Continuation<Any?> else null
-            if (continuation != null) {
-                method.invoke(
-                    dao,
-                    *args.copyOf(args.size - 1),
-                    object : Continuation<Any?> {
+            val continuation = if (isWrite) args?.lastOrNull() as? Continuation<Any?> else null
+            try {
+                if (continuation != null) {
+                    val suspendArgs = checkNotNull(args)
+                    val observingContinuation = object : Continuation<Any?> {
                         override val context: CoroutineContext get() = continuation.context
+
                         override fun resumeWith(result: Result<Any?>) {
-                            if (result.isSuccess) runCatching { libraryWriteNotifier?.invoke(kinds) }
+                            if (result.isSuccess) notifyLibraryWrites(kinds, context)
                             continuation.resumeWith(result)
                         }
-                    },
-                )
-            } else {
-                // `args` is nullable (a no-arg call passes `null`), and a nullable array is not
-                // spread into the vararg by Kotlin: pass it explicitly, or `invoke` sees one array
-                val result = if (args == null) method.invoke(dao) else method.invoke(dao, *args)
-                if (isWrite) runCatching { libraryWriteNotifier?.invoke(kinds) }
-                result
+                    }
+                    val result = method.invoke(dao, *suspendArgs.copyOf(suspendArgs.size - 1), observingContinuation)
+                    if (result !== COROUTINE_SUSPENDED) notifyLibraryWrites(kinds, continuation.context)
+                    result
+                } else {
+                    val result = if (args == null) method.invoke(dao) else method.invoke(dao, *args)
+                    if (isWrite) notifyLibraryWrites(kinds)
+                    result
+                }
+            } catch (error: InvocationTargetException) {
+                throw error.targetException
             }
         } as T
     }
@@ -377,12 +400,14 @@ object Database {
                         artistsToUpsert.add(newArtist)
                         artistsToMap.add(newArtist)
                     }
-                } catch (_: Exception) { }
+                } catch (error: Exception) {
+                    Timber.tag("Database").w("Unable to prepare artist mapping (%s)", error.javaClass.simpleName)
+                }
             }
         }
 
         // Phase 3: Write all to DB in a single transaction (brief lock)
-        _internal.withTransaction {
+        transaction {
             // Upsert song
             val finalTitle = when {
                 song.title.isNullOrBlank() && !dbSong?.title.isNullOrBlank() -> dbSong.title
@@ -528,7 +553,7 @@ object Database {
      * @param artists the complete fresh artist list the links are rebuilt from
      * @return number of stale links deleted before the re-insert
      */
-    fun reconcileArtistLinks( songId: String, artists: List<Artist> ): Int {
+    suspend fun reconcileArtistLinks( songId: String, artists: List<Artist> ): Int {
         if (songId.startsWith(LOCAL_KEY_PREFIX)) return 0
         val onlineArtists = artists.filterNot { isDeviceArtistId(it.id) }
         if (artists.isNotEmpty() && onlineArtists.isEmpty()) return 0
@@ -547,7 +572,7 @@ object Database {
      * this method handles the insertion automatically.
      */
     @OptIn(UnstableApi::class)
-    internal fun prepareArtworkForInsert(mediaItem: MediaItem): Map<String?, String?> {
+    internal suspend fun prepareArtworkForInsert(mediaItem: MediaItem): Map<String?, String?> {
         val songId = mediaItem.mediaId.substringAfterLast('/')
         val albumId = mediaItem.mediaMetadata.extras?.getString("albumId")
         return listOf(
@@ -568,11 +593,11 @@ object Database {
             ?.let { android.net.Uri.fromFile(it).toString() }
     }
 
-    fun insertIgnore(mediaItem: MediaItem, autoFix: Boolean = true) =
+    suspend fun insertIgnore(mediaItem: MediaItem, autoFix: Boolean = true) =
         insertIgnore(mediaItem, autoFix, null)
 
     @OptIn(UnstableApi::class)
-    internal fun insertIgnore(mediaItem: MediaItem, autoFix: Boolean, preparedArtwork: Map<String?, String?>?) {
+    internal suspend fun insertIgnore(mediaItem: MediaItem, autoFix: Boolean, preparedArtwork: Map<String?, String?>?) {
         val cleanSongId = mediaItem.mediaId.split("/").lastOrNull() ?: mediaItem.mediaId
         val newSong = mediaItem.asSong
         val dbSong = songTable.findByIdDirect(cleanSongId)
@@ -789,7 +814,9 @@ object Database {
                                 artistTable.insertIgnore(Artist(id = foundArtist.key, name = foundArtist.info?.name ?: name, isYoutubeArtist = true))
                                 songArtistMapTable.insertIgnore(SongArtistMap(cleanSongId, foundArtist.key))
                             }
-                        } catch (_: Exception) { }
+                        } catch (error: Exception) {
+                            Timber.tag("Database").w("Unable to insert artist mapping (%s)", error.javaClass.simpleName)
+                        }
                     }
                 }
             }
@@ -843,7 +870,7 @@ object Database {
      * @param artistTable name lookup for each dropped pair
      * @param songId song side of the dropped pairs
      */
-    internal fun logReconcileDrops(
+    internal suspend fun logReconcileDrops(
         mapTable: SongArtistMapTable,
         artistTable: ArtistTable,
         songId: String,
@@ -858,7 +885,7 @@ object Database {
     }
 
     /** Ensures [album] and [song] exist, then maps them; [position] -1 (default) maps to the next free position. */
-    fun mapIgnore( album: Album, song: Song, position: Int = -1 ) {
+    suspend fun mapIgnore( album: Album, song: Song, position: Int = -1 ) {
         if (isDeviceAlbumId(album.id) != song.id.startsWith(LOCAL_KEY_PREFIX)) return
         albumTable.insertIgnore( album )
         songTable.insertIgnore( song )
@@ -866,12 +893,12 @@ object Database {
     }
 
     /** [mapIgnore] overload for [MediaItem]. */
-    fun mapIgnore( album: Album, mediaItem: MediaItem, position: Int = -1 ) =
+    suspend fun mapIgnore( album: Album, mediaItem: MediaItem, position: Int = -1 ) =
         mapIgnore( album, mediaItem.asSong, position )
 
 
     /** Ensures [artist] and each [songs] entry exist, then maps them. */
-    fun mapIgnore( artist: Artist, vararg songs: Song ) {
+    suspend fun mapIgnore( artist: Artist, vararg songs: Song ) {
         val compatibleSongs = songs.filter { it.id.startsWith(LOCAL_KEY_PREFIX) == isDeviceArtistId(artist.id) }
         if (compatibleSongs.isEmpty()) return
 
@@ -885,18 +912,18 @@ object Database {
     }
 
     /** [mapIgnore] overload for [MediaItem]s. */
-    fun mapIgnore( artist: Artist, vararg mediaItems: MediaItem ) =
+    suspend fun mapIgnore( artist: Artist, vararg mediaItems: MediaItem ) =
         mapIgnore( artist, *mediaItems.map( MediaItem::asSong ).toTypedArray() )
 
     /** Ensures [playlist] and each [songs] entry exist, then maps them. */
-    fun mapIgnore( playlist: Playlist, vararg songs: Song ) {
+    suspend fun mapIgnore( playlist: Playlist, vararg songs: Song ) {
         if( songs.isEmpty() ) return
 
         val position = if (playlist.supportsInsertionPosition())
             PlaylistInsertionPreferences(appContext()).get(playlist.id)
         else PlaylistInsertionPosition.End
 
-        syncTransaction {
+        transaction {
             // Autogenerated IDs become available only after inserting the playlist.
             val pId = if (playlist.id > 0) {
                 playlistTable.insertIgnore(playlist)
@@ -907,7 +934,7 @@ object Database {
             val newSongs = songs.distinctBy(Song::id).filter {
                 it.id !in existingIds && (!remotePlaylist || !it.id.startsWith(LOCAL_KEY_PREFIX))
             }
-            if (newSongs.isEmpty()) return@syncTransaction
+            if (newSongs.isEmpty()) return@transaction
 
             if (position == PlaylistInsertionPosition.Beginning) {
                 songPlaylistMapTable.shiftPositions(pId, newSongs.size)
@@ -923,96 +950,114 @@ object Database {
     }
 
     /** [mapIgnore] overload for [MediaItem]s. */
-    fun mapIgnore( playlist: Playlist, vararg mediaItems: MediaItem ) =
+    suspend fun mapIgnore( playlist: Playlist, vararg mediaItems: MediaItem ) =
         mapIgnore( playlist, *mediaItems.map( MediaItem::asSong ).toTypedArray() )
 
-    /**
-     * Commit statements in BULK: if anything fails mid-transaction, the other
-     * statements are cancelled and reversed to preserve integrity
-     * ([read more](https://sqlite.org/lang_transaction.html)). Runs all statements
-     * on a non-blocking thread. Do NOT use it to read data — use [asyncQuery].
-     *
-     * @param block of statements to write to database
-     */
-    fun asyncTransaction( retries: Int = 3, block: Database.() -> Unit ) =
-        _internal.transactionExecutor.execute {
-            var attempt = 0
-            while (attempt < retries) {
-                try {
-                    this.block()
-                    return@execute
-                } catch (e: SQLiteDatabaseLockedException) {
-                    attempt++
-                    if (attempt >= retries) {
-                        Timber.tag("Database").e(e, "Transaction FAILED after $retries attempts")
-                        return@execute
-                    }
-                    Thread.sleep(200L * attempt)
-                } catch (e: Exception) {
-                    Timber.tag("Database").e(e, "asyncTransaction unexpected exception, aborting")
-                    return@execute
-                }
+    private class QueuedWriteContext : AbstractCoroutineContextElement(Key) {
+        companion object Key : CoroutineContext.Key<QueuedWriteContext>
+    }
+
+    private val databaseWorkScope by lazy { NzikDispatchers.fireAndForget(NzikDispatchers.DATA) }
+
+    // Separate from Room's executors: a batch can suspend on a Room DAO without holding
+    // the executor needed to run its SQL. Keep submitted batches FIFO, including cleanup.
+    private val writeQueue by lazy {
+        Channel<suspend () -> Unit>(Channel.UNLIMITED).also { queue ->
+            databaseWorkScope.launch(QueuedWriteContext()) {
+                for (work in queue) work()
             }
         }
+    }
 
-    internal suspend fun readSavedQueue(): List<QueuedMediaItem> = suspendCancellableCoroutine { continuation ->
+    /**
+     * Schedules a write batch in submission order. Individual statements still autocommit
+     * unless the caller explicitly uses [transaction].
+     */
+    fun asyncTransaction(retries: Int = 3, block: suspend Database.() -> Unit) {
+        writeQueue.trySend {
+            runCatching { runWriteBatch(retries, block) }.onFailure { error ->
+                if (error !is CancellationException) {
+                    Timber.tag("Database").e(error, "Database write batch failed")
+                }
+            }
+        }.getOrThrow()
+    }
+
+    /**
+     * Waits for the batch and any subsequent cleanup in it. A canceled waiter does not
+     * interrupt a submitted batch between SQL and its associated filesystem operations.
+     */
+    internal suspend fun <T> awaitWriteBatch(retries: Int = 3, block: suspend Database.() -> T): T {
+        if (coroutineContext[QueuedWriteContext] != null) {
+            return runWriteBatch(retries, block)
+        }
+        val completed = CompletableDeferred<T>()
+        writeQueue.trySend {
+            runCatching { runWriteBatch(retries, block) }
+                .fold(completed::complete, completed::completeExceptionally)
+        }.getOrThrow()
+        return completed.await()
+    }
+
+    private suspend fun <T> runWriteBatch(retries: Int, block: suspend Database.() -> T): T {
+        require(retries > 0) { "A database write batch requires at least one attempt" }
+        var attempt = 1
+        while (true) {
+            check(!isClosed) { "The database is closed" }
+            try {
+                return block()
+            } catch (error: SQLiteDatabaseLockedException) {
+                if (attempt == retries) throw error
+                delay(200L * attempt)
+                attempt++
+            }
+        }
+    }
+
+    /** Updates existing format metadata and publishes the change after the transaction commits. */
+    internal suspend fun updateExistingFormat(songId: String, update: (Format) -> Format?) {
+        transaction {
+            val current = formatTable.findBySongIdDirect(songId) ?: return@transaction
+            val updated = update(current) ?: return@transaction
+            formatTable.upsert(updated)
+        }
+    }
+
+    internal suspend fun readSavedQueue(): List<QueuedMediaItem> {
         val database = _internal
-        database.transactionExecutor.execute {
-            if (continuation.isActive) {
-                try {
-                    continuation.resume(database.queueTable.allDirect())
-                } catch (exception: Exception) {
-                    continuation.resumeWithException(exception)
-                }
+        if (coroutineContext[QueuedWriteContext] != null) return database.queueTable.allDirect()
+        val completed = CompletableDeferred<List<QueuedMediaItem>>()
+        writeQueue.trySend {
+            if (completed.isActive) {
+                runCatching { database.queueTable.allDirect() }
+                    .fold(completed::complete, completed::completeExceptionally)
             }
-        }
-    }
-
-    /**
-     * Suspending transaction that waits for the block to complete.
-     * Use this when subsequent code depends on the transaction being committed.
-     */
-    suspend fun transaction( block: suspend Database.() -> Unit ) {
-        val db = this
-        _internal.withTransaction {
-            db.block()
-        }
-    }
-
-    /**
-     * Synchronous atomic transaction for the non-suspend write paths (dialog
-     * save bodies running inside [asyncTransaction], which retries on lock
-     * exceptions but does not group the writes atomically on its own): the
-     * row rename and every propagated copy commit or abort together.
-     *
-     * Uses the classic three-call transaction API because it is the only
-     * synchronous one Room offers: the suspend `RoomDatabase.withTransaction`
-     * cannot be called from the non-suspend dialog paths, and the block must
-     * stay inside [asyncTransaction] to keep its lock retries.
-     */
-    @Suppress("DEPRECATION")
-    fun syncTransaction( block: Database.() -> Unit ) {
-        _internal.beginTransaction()
+        }.getOrThrow()
         try {
-            block()
-            _internal.setTransactionSuccessful()
+            return completed.await()
         } finally {
-            _internal.endTransaction()
+            completed.cancel()
         }
     }
 
-
-    /**
-     * Access and retrieve records from database, on a non-blocking thread.
-     * Do NOT use this to write data (no fail-safe during write) —
-     * use [asyncTransaction] to modify the database.
-     *
-     * @param block of statements to retrieve data from database
-     */
-    fun asyncQuery( block: Database.() -> Unit ) =
-        _internal.queryExecutor.execute {
-            this.block()
+    /** Runs an atomic Room transaction and publishes any library changes after its outer commit. */
+    suspend fun transaction(block: suspend Database.() -> Unit) {
+        val database = _internal
+        if (coroutineContext[LibraryTransactionWrites] != null) {
+            database.withTransaction { block() }
+        } else {
+            val pending = LibraryTransactionWrites()
+            withContext(pending) {
+                database.withTransaction { block() }
+            }
+            notifyLibraryWrites(pending.snapshot())
         }
+    }
+
+    /** Runs a read callback off the main thread without occupying Room's query executor. */
+    fun asyncQuery(block: suspend Database.() -> Unit) {
+        databaseWorkScope.launch { block() }
+    }
 
     fun checkpoint() = _internal.query( SimpleSQLiteQuery("PRAGMA wal_checkpoint(FULL)") )
                                      .use {

@@ -66,7 +66,7 @@ class ChangeAlbumAuthorsDialog private constructor(
         }
         Database.asyncTransaction {
             // Row rename + propagation + local write land in ONE transaction.
-            syncTransaction {
+            transaction {
                 rename?.let { ( oldToken, newToken ) ->
                     val linkedArtists = songAlbumMapTable.allSongsOfDirect( album.id )
                         .flatMap { songArtistMapTable.findArtistsOfDirect( it.id ) }

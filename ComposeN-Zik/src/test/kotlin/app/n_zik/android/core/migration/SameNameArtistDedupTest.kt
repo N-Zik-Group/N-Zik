@@ -21,6 +21,7 @@ import app.n_zik.innertube.models.NavigationEndpoint
 import app.n_zik.innertube.models.Thumbnail
 import app.n_zik.innertube.requests.artistPage
 import app.n_zik.innertube.requests.searchPage
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -87,7 +88,7 @@ class SameNameArtistDedupTest {
 
     // ---- fixtures ----
 
-    private fun insertSong(id: String) {
+    private fun insertSong(id: String) = runBlocking<Unit> {
         db.songTable.upsert(Song.makePlaceholder(id))
     }
 
@@ -97,7 +98,7 @@ class SameNameArtistDedupTest {
         thumbnail: String? = null,
         bookmarkedAt: Long? = null,
         dislikedAt: Long? = null,
-    ) {
+    ) = runBlocking<Unit> {
         db.artistTable.upsert(
             Artist(
                 id = id,
@@ -110,12 +111,12 @@ class SameNameArtistDedupTest {
         )
     }
 
-    private fun insertLink(songId: String, artistId: String) {
+    private fun insertLink(songId: String, artistId: String) = runBlocking<Unit> {
         db.songArtistMapTable.insertIgnore(SongArtistMap(songId, artistId))
     }
 
     private fun linksOf(artistId: String): List<SongArtistMap> =
-        db.songArtistMapTable.allPairsDirect().filter { it.artistId == artistId }
+        runBlocking { db.songArtistMapTable.allPairsDirect().filter { it.artistId == artistId } }
 
     /** Resolver answering from a fixed table; [calls] records the search count. */
     private class FakeResolver(

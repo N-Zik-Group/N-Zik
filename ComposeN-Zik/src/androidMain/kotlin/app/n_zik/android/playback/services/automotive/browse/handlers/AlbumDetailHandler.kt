@@ -99,7 +99,7 @@ class AlbumDetailHandler : BrowseHandler {
                                 position = position
                             )
                         }
-                        .also(songAlbumMapTable::upsert)
+                        .also { songAlbumMapTable.upsert(it) }
                 }
             }
         } else {

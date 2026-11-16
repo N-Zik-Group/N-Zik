@@ -25,18 +25,18 @@ interface QueuedMediaItemTable {
     fun all( limit: Int = Int.MAX_VALUE ): Flow<List<QueuedMediaItem>>
 
     @Query("SELECT * FROM QueuedMediaItem ORDER BY id LIMIT :limit")
-    fun allDirect( limit: Int = Int.MAX_VALUE ): List<QueuedMediaItem>
+    suspend fun allDirect( limit: Int = Int.MAX_VALUE ): List<QueuedMediaItem>
 
     /** Inserts [queuedMediaItems]; when even one element fails the whole insert (or the surrounding transaction) rolls back and the exception propagates. */
     @Insert
     @Throws(SQLException::class)
-    fun insert( queuedMediaItems: List<QueuedMediaItem> )
+    suspend fun insert( queuedMediaItems: List<QueuedMediaItem> )
 
     @Query("DELETE FROM QueuedMediaItem")
-    fun deleteAll(): Int
+    suspend fun deleteAll(): Int
 
     @Transaction
-    fun replaceAll(queuedMediaItems: List<QueuedMediaItem>) {
+    suspend fun replaceAll(queuedMediaItems: List<QueuedMediaItem>) {
         deleteAll()
         insert(queuedMediaItems)
     }

@@ -329,13 +329,16 @@ internal class BridgePlayerSource(
      * `likedAt`: a track absent from the database reads neutral; a failed read is an empty map (the
      * caller's neutral, and no like move).
      */
-    private fun readLikes(trackIds: Collection<String>): Map<String, TrackLike> {
+    private suspend fun readLikes(trackIds: Collection<String>): Map<String, TrackLike> {
         val likedAt = runCatching {
             trackIds.distinct()
                 .chunked(LIKE_READ_CHUNK)
                 .flatMap { Database.songTable.findByIdsDirect(it) }
                 .associate { it.id to it.likedAt }
-        }.onFailure { Timber.tag(TAG).w(it, "Could not read the like states of the queue") }
+        }.onFailure {
+            if (it is CancellationException) throw it
+            Timber.tag(TAG).w(it, "Could not read the like states of the queue")
+        }
             .getOrNull() ?: return emptyMap()
         return trackIds.associateWith { TrackLike.of(likedAt[it]) }
     }

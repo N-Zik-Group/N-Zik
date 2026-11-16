@@ -8,8 +8,8 @@ import app.n_zik.android.core.database.canEditPlaylistMembership
 import app.n_zik.android.core.database.canEditStoredPlaylistMembership
 
 /** Imports metadata and an ordered batch together; call inside Database.asyncTransaction for retries. */
-fun importSongsToPlaylist(playlist: Playlist, songs: List<Song>) {
-    Database.syncTransaction {
+suspend fun importSongsToPlaylist(playlist: Playlist, songs: List<Song>) {
+    Database.transaction {
         check(canEditPlaylistMembership(playlist) &&
             (playlist.id <= 0 || canEditStoredPlaylistMembership(playlist.id))) { "Playlist membership is read-only" }
         songTable.upsert(songs)
@@ -18,12 +18,12 @@ fun importSongsToPlaylist(playlist: Playlist, songs: List<Song>) {
 }
 
 /** Maps a service import without replacing existing metadata and records actual positions for matching. */
-internal fun importServiceSongsToPlaylist(
+internal suspend fun importServiceSongsToPlaylist(
     playlist: Playlist?,
     songs: List<Song>,
     onImported: (index: Int, position: Int) -> Unit = { _, _ -> },
 ) {
-    Database.syncTransaction {
+    Database.transaction {
         check(playlist == null || (canEditPlaylistMembership(playlist) &&
             (playlist.id <= 0 || canEditStoredPlaylistMembership(playlist.id)))) { "Playlist membership is read-only" }
         if (playlist != null) mapIgnore(playlist, *songs.toTypedArray())

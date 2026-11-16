@@ -311,7 +311,7 @@ class DiscordPresenceManager(
      * Item 6: in advanced mode the details line is rendered from the dedicated pause
      * template (default: "⏸︎ Paused: {song.name}" = current behavior).
      */
-    private fun sendPausedPresence(duration: Long, now: Long, pausedPosition: Long) {
+    private suspend fun sendPausedPresence(duration: Long, now: Long, pausedPosition: Long) {
         if (isStopped) return
         val mediaItem = lastMediaItem ?: return
         var frozenTimestamp = now - pausedPosition
@@ -334,6 +334,7 @@ class DiscordPresenceManager(
             return
         }
         val info = mediaInfo(mediaItem)
+        if (isStopped || lastIsPlaying || lastMediaItem?.mediaId != mediaId) return
         // Name/state/buttons follow the current mode; only the details line is
         // templatized for the paused state (the frozen progress bar is kept).
         val str = discordStrings()
@@ -341,9 +342,10 @@ class DiscordPresenceManager(
             .copy(details = DiscordActivityBuilder.buildPausedLine(info, settings, str))
 
         discordScope.launch {
-            if (isStopped) return@launch
+            if (isStopped || lastIsPlaying || lastMediaItem?.mediaId != mediaId) return@launch
             sendActivity(
                 content = content,
+                info = info,
                 start = frozenTimestamp,
                 end = frozenTimestamp,
                 mediaItem = mediaItem,
@@ -362,6 +364,7 @@ class DiscordPresenceManager(
      */
     private suspend fun sendActivity(
         content: DiscordPresenceContent,
+        info: DiscordMediaInfo,
         start: Long,
         end: Long,
         mediaItem: MediaItem?,
@@ -417,7 +420,6 @@ class DiscordPresenceManager(
         val smallImageUrl = if (advanced && !settings.showSmallImage) null else getSmallImageUrl()
         // Image tooltips: advanced mode can override each one with a template (empty =
         // the built-in default); `{app.version}` resolves to the app version name.
-        val info = mediaItem?.let { mediaInfo(it) } ?: DiscordMediaInfo("", "", null, "")
         val str = discordStrings()
         val renderImageText: (String) -> String = { template ->
             DiscordTemplateRenderer.render(
@@ -496,7 +498,7 @@ class DiscordPresenceManager(
                     sendPlayingPresence(media, lastPosition, lastDuration, lastPlaybackSpeed)
                 }
             } else {
-                sendPausedPresence(lastDuration, System.currentTimeMillis(), lastPosition)
+                discordScope.launch { sendPausedPresence(lastDuration, System.currentTimeMillis(), lastPosition) }
             }
         }
     }
@@ -678,7 +680,7 @@ class DiscordPresenceManager(
      * The details carry a " [%.2fx]" suffix when the speed is not 1.0. The drift cache
      * is invalidated by a speed change (or a song change / resume).
      */
-    private fun sendPlayingPresence(mediaItem: MediaItem, position: Long, duration: Long, speed: Float) {
+    private suspend fun sendPlayingPresence(mediaItem: MediaItem, position: Long, duration: Long, speed: Float) {
         val safeSpeed = speedOrOne(speed)
         val currentTime = System.currentTimeMillis()
         val adjustedPosition = (position / safeSpeed).toLong()
@@ -708,32 +710,22 @@ class DiscordPresenceManager(
             wasPaused = false
         }
 
-        val cleanTitle = cleanPrefix(mediaItem.mediaMetadata.title?.toString() ?: "").takeIf { it.isNotBlank() } ?: context.getString(R.string.metadata_unknown_title)
-        // The explicit marker, exactly like the notification and the app widgets:
-        // the marker is prepended when the app's MediaItem.isExplicit flags the track.
-        val rawTitle = if (mediaItem.isExplicit) "\uD83C\uDD74 $cleanTitle" else cleanTitle
-        // Item 5: suffix only when the speed differs from 1.0 (locale-fixed format).
+        val baseInfo = mediaInfo(mediaItem)
+        if (isStopped || !lastIsPlaying || lastMediaItem?.mediaId != mediaId) return
+        // Add the speed suffix for the activity while image tooltips use the base track title.
         val title = if (safeSpeed != 1.0f) {
-            "$rawTitle [${String.format(Locale.US, "%.2fx", safeSpeed)}]"
+            "${baseInfo.title} [${String.format(Locale.US, "%.2fx", safeSpeed)}]"
         } else {
-            rawTitle
+            baseInfo.title
         }
         val settings = getAdvancedSettings()
-        val info = DiscordMediaInfo(
-            title = title,
-            artist = mediaItem.artistTextOrDb().takeIf { it.isNotBlank() } ?: context.getString(R.string.metadata_unknown_artist),
-            // Album resolved from metadata then DB (same path as LastFM/lyrics) — a
-            // streaming MediaItem usually carries no albumTitle. Null → the renderer
-//
-            // applies the localized "Unknown Album" for {album.name}.
-            albumName = mediaItem.albumTitleOrDb().takeIf { it.isNotBlank() && it != "null" },
-            songId = mediaId,
-        )
+        val info = baseInfo.copy(title = title)
         val content = DiscordActivityBuilder.buildForPlaying(info, settings, discordStrings())
         discordScope.launch {
-            if (isStopped) return@launch
+            if (isStopped || !lastIsPlaying || lastMediaItem?.mediaId != mediaId) return@launch
             sendActivity(
                 content = content,
+                info = baseInfo,
                 start = calculatedStartTime,
                 end = end,
                 mediaItem = mediaItem,
@@ -745,7 +737,7 @@ class DiscordPresenceManager(
     /**
      * Media info for template rendering (title may carry the speed suffix).
      */
-    private fun mediaInfo(mediaItem: MediaItem): DiscordMediaInfo {
+    private suspend fun mediaInfo(mediaItem: MediaItem): DiscordMediaInfo {
         val cleanTitle = cleanPrefix(mediaItem.mediaMetadata.title?.toString() ?: "").takeIf { it.isNotBlank() }
             ?: context.getString(R.string.metadata_unknown_title)
         return DiscordMediaInfo(

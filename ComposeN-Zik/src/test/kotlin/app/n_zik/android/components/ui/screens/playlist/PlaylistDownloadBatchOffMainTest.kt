@@ -9,6 +9,8 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import io.mockk.Runs
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -29,15 +31,8 @@ import org.robolectric.annotation.Config
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
- * Issue #606 H2 — [processPlaylistBatch] is the single fire-and-forget batch extracted from
- * `PlaylistSongList.kt`'s two `onConfirm` dialogs (download-all / delete-all), which used to run
- * `removeResource` + `asMediaItem` + `manageDownload` per song on the Main thread. The batch must
- * run off the caller's (UI-simulating) thread, invoke one `manageDownload` per song, and stay a
- * safe no-op for the cache eviction when the [binder] is null while still managing the download.
- *
- * Robolectric + JUnit 4: `SongItem.asMediaItem` builds a `Bundle`. [Database] is mocked (relaxed)
- * so the internal `asyncTransaction` is a no-op; [MyDownloadHelper] is object-mocked to verify the
- * `addDownload`/`removeDownload` fan-out.
+ * Playlist cache eviction and download commands must run within the same queued batch.
+ * The binder may be absent even when download commands still need to be sent.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
@@ -70,23 +65,39 @@ class PlaylistDownloadBatchOffMainTest {
         return binder
     }
 
+    private fun stubWriteBatch(onEnter: () -> Unit = {}, onExit: () -> Unit = {}) {
+        mockkObject(Database)
+        coEvery { Database.awaitWriteBatch<Unit>(1, any()) } coAnswers {
+            onEnter()
+            try {
+                secondArg<suspend Database.() -> Unit>().invoke(Database)
+            } finally {
+                onExit()
+            }
+        }
+    }
+
     @Test
     fun `removeDownload runs once per song off the caller thread`() = runBlocking {
+        val steps = CopyOnWriteArrayList<String>()
         val cache = mockk<Cache>()
-        every { cache.removeResource(any()) } just Runs
+        every { cache.removeResource(any()) } answers { steps += "cache" }
         val binder = binderWithCache(cache)
         val context = mockk<Context>(relaxed = true)
 
         val threads = CopyOnWriteArrayList<Thread>()
         mockkObject(MyDownloadHelper)
-        every { MyDownloadHelper.removeDownload(any(), any()) } answers { threads += Thread.currentThread() }
-        mockkObject(Database)
-        every { Database.asyncTransaction(any(), any()) } just Runs
+        every { MyDownloadHelper.removeDownload(any(), any()) } answers {
+            threads += Thread.currentThread()
+            steps += "command"
+        }
+        stubWriteBatch(onEnter = { steps += "enter" }, onExit = { steps += "exit" })
 
         withContext(NzikDispatchers.DATA) {
             processPlaylistBatch(songs(3), binder, context, downloadState = true)
         }
 
+        assertEquals(listOf("enter", "cache", "command", "cache", "command", "cache", "command", "exit"), steps)
         assertEquals(3, threads.size)
         threads.forEach { assertNotEquals(callerThread, it) }
         verify(exactly = 3) { MyDownloadHelper.removeDownload(any(), any()) }
@@ -106,8 +117,7 @@ class PlaylistDownloadBatchOffMainTest {
         val threads = CopyOnWriteArrayList<Thread>()
         mockkObject(MyDownloadHelper)
         every { MyDownloadHelper.addDownload(any(), any()) } answers { threads += Thread.currentThread() }
-        mockkObject(Database)
-        every { Database.asyncTransaction(any(), any()) } just Runs
+        stubWriteBatch()
 
         withContext(NzikDispatchers.DATA) {
             processPlaylistBatch(songs(2), binder, context, downloadState = false)
@@ -125,8 +135,7 @@ class PlaylistDownloadBatchOffMainTest {
         val threads = CopyOnWriteArrayList<Thread>()
         mockkObject(MyDownloadHelper)
         every { MyDownloadHelper.removeDownload(any(), any()) } answers { threads += Thread.currentThread() }
-        mockkObject(Database)
-        every { Database.asyncTransaction(any(), any()) } just Runs
+        stubWriteBatch()
 
         withContext(NzikDispatchers.DATA) {
             processPlaylistBatch(songs(2), binder = null, context, downloadState = true)
@@ -143,8 +152,7 @@ class PlaylistDownloadBatchOffMainTest {
         val binder = binderWithCache(cache)
         val context = mockk<Context>(relaxed = true)
         mockkObject(MyDownloadHelper)
-        mockkObject(Database)
-        every { Database.asyncTransaction(any(), any()) } just Runs
+        stubWriteBatch()
 
         withContext(NzikDispatchers.DATA) {
             processPlaylistBatch(emptyList(), binder, context, downloadState = true)
@@ -152,5 +160,6 @@ class PlaylistDownloadBatchOffMainTest {
 
         verify(exactly = 0) { MyDownloadHelper.removeDownload(any(), any()) }
         verify(exactly = 0) { cache.removeResource(any()) }
+        coVerify(exactly = 0) { Database.awaitWriteBatch<Unit>(1, any()) }
     }
 }

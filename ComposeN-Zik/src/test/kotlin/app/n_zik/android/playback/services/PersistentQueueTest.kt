@@ -55,7 +55,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertThrows
+import kotlin.test.assertFailsWith
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -87,7 +87,7 @@ class PersistentQueueTest {
     fun `failed replacement leaves the old queue with its duplicates and position`() = runBlocking {
         val queue = db.queueTable
         queue.replaceAll(listOf(row("z"), row("a", 7200L), row("z")))
-        assertThrows(SQLiteConstraintException::class.java) {
+        assertFailsWith<SQLiteConstraintException> {
             queue.replaceAll(listOf(row("partial", id = 20), row("duplicate-key", id = 20)))
         }
         val expected = listOf("z" to null, "a" to 7200L, "z" to null)
@@ -96,7 +96,7 @@ class PersistentQueueTest {
     }
 
     @Test
-    fun `saved provider token restores the original artwork without inline bytes`() {
+    fun `saved provider token restores the original artwork without inline bytes`() = runBlocking<Unit> {
         val original = "https://example.com/cover.jpg"
         val saved = mediaItem("a", providerUri("source/obsolete"), original).let { item ->
             item.buildUpon().setMediaMetadata(item.mediaMetadata.buildUpon()
@@ -114,7 +114,7 @@ class PersistentQueueTest {
     }
 
     @Test
-    fun `unsigned remote payload and a missing file fall back to the library`() {
+    fun `unsigned remote payload and a missing file fall back to the library`() = runBlocking<Unit> {
         val artwork = "https://example.com/library.jpg"
         db.songTable.upsert(Song(id = "a", title = "a", thumbnailUrl = artwork, durationText = null))
         val unsigned = providerUri("remote").buildUpon()
@@ -147,7 +147,7 @@ class PersistentQueueTest {
     }
 
     @Test
-    fun `live remote token is serialized with a portable original`() {
+    fun `live remote token is serialized with a portable original`() = runBlocking<Unit> {
         val original = "https://example.com/original.jpg"
         val token = requireNotNull(ArtworkContentProvider.uriForRemote(original, "default", false, 1))
         val saved = PersistentQueueArtwork.preserveSnapshotSource(context, "default", mediaItem("a", token))
@@ -157,7 +157,7 @@ class PersistentQueueTest {
 
     @Test
     @GraphicsMode(GraphicsMode.Mode.NATIVE)
-    fun `modified per-song cover persists as its file reference`() {
+    fun `modified per-song cover persists as its file reference`() = runBlocking<Unit> {
         val file = File(coversDir(context, "default"), "cover_portable.jpg")
         file.parentFile?.mkdirs()
         val bitmap = Bitmap.createBitmap(8, 8, Bitmap.Config.ARGB_8888)
@@ -172,7 +172,7 @@ class PersistentQueueTest {
                 "https://example.com/original.jpg", modified = true
             )
             val preparedArtwork = Database.prepareArtworkForInsert(item)
-            Database.syncTransaction { insertIgnore(item, autoFix = false, preparedArtwork = preparedArtwork) }
+            Database.transaction { insertIgnore(item, autoFix = false, preparedArtwork = preparedArtwork) }
             assertEquals(MODIFIED_PREFIX + Uri.fromFile(file), db.songTable.findByIdDirect("portable")?.thumbnailUrl)
         } finally {
             unmockkStatic("app.n_zik.android.GlobalVarsKt")
@@ -226,7 +226,7 @@ class PersistentQueueTest {
     }
 
     @Test
-    fun `unreadable local artwork falls back with the library cover marker`() {
+    fun `unreadable local artwork falls back with the library cover marker`() = runBlocking<Unit> {
         val artwork = "https://example.com/library.jpg"
         val unavailable = Uri.parse("content://missing-provider/cover")
         val resolver = mockk<ContentResolver>()
@@ -243,7 +243,7 @@ class PersistentQueueTest {
     }
 
     @Test
-    fun `prefixed original repairs the song without propagating its custom cover to the album`() {
+    fun `prefixed original repairs the song without propagating its custom cover to the album`() = runBlocking<Unit> {
         val token = providerUri("source/obsolete")
         val custom = MODIFIED_PREFIX + "https://example.com/custom.jpg"
         val albumCover = "https://example.com/album.jpg"
@@ -262,7 +262,7 @@ class PersistentQueueTest {
     }
 
     @Test
-    fun `service destruction saves live selection before the next service restores idle or resumes`() {
+    fun `service destruction saves live selection before the next service restores idle or resumes`() = runBlocking<Unit> {
         db.queueTable.replaceAll(listOf(row("old", 1L)))
         val executorGate = CountDownLatch(1)
         val timeline = mockk<Timeline>()
@@ -358,7 +358,7 @@ class PersistentQueueTest {
     }
 
     @Test
-    fun `clearing the last track replaces the saved queue with an empty snapshot`() {
+    fun `clearing the last track replaces the saved queue with an empty snapshot`() = runBlocking<Unit> {
         db.queueTable.replaceAll(listOf(row("old", 1000L)))
         val player = mockk<ExoPlayer>(relaxed = true)
         every { player.currentTimeline } returns Timeline.EMPTY
@@ -377,12 +377,10 @@ class PersistentQueueTest {
         }
     }
 
-    private fun savedQueueAfterWrites(): List<QueuedMediaItem> {
-        val result = java.util.concurrent.CompletableFuture<List<QueuedMediaItem>>()
-        db.transactionExecutor.execute {
-            result.complete(db.queueTable.allDirect())
-        }
-        return result.get(10, TimeUnit.SECONDS)
+    private fun savedQueueAfterWrites(): List<QueuedMediaItem> = runBlocking {
+        var saved = emptyList<QueuedMediaItem>()
+        Database.awaitWriteBatch { saved = db.queueTable.allDirect() }
+        saved
     }
 
     private fun service(player: ExoPlayer) = Robolectric.buildService(PlayerServiceModern::class.java).get().apply {
@@ -398,7 +396,7 @@ class PersistentQueueTest {
     }
 
     @Test
-    fun `library insertion preserves valid covers and repairs stale covers only from durable artwork`() {
+    fun `library insertion preserves valid covers and repairs stale covers only from durable artwork`() = runBlocking<Unit> {
         val token = providerUri("source/obsolete")
         val valid = "https://example.com/existing.jpg"
         val durable = "https://example.com/original.jpg"
@@ -433,7 +431,7 @@ class PersistentQueueTest {
         }
 
     private fun restore(item: MediaItem, artworkContext: Context = context): MediaItem =
-        PersistentQueueArtwork.restore(artworkContext, "default", item) { db.songTable.findByIdDirect(it)?.thumbnailUrl }
+        runBlocking { PersistentQueueArtwork.restore(artworkContext, "default", item) { db.songTable.findByIdDirect(it)?.thumbnailUrl } }
 
     private fun row(mediaId: String, position: Long? = null, id: Long = 0) =
         QueuedMediaItem(id = id, mediaItem = mediaItem(mediaId), position = position)

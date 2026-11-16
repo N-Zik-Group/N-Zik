@@ -70,7 +70,7 @@ internal data class CoverEditTarget(
     val id: String,
     val currentUrl: String?,
     val currentBytes: ByteArray? = null,
-    val update: Database.(String) -> Unit = {},
+    val update: suspend Database.(String) -> Unit = {},
 )
 
 /** Keeps edited gallery content temporary until the cover dialog itself is confirmed. */

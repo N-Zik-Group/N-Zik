@@ -92,12 +92,12 @@ class PlaylistSourceRefreshTest {
     private fun media(id: String) = MediaItem.Builder().setMediaId(id)
         .setMediaMetadata(MediaMetadata.Builder().setTitle(id).build()).build()
 
-    private fun saved(id: String = "PLsource", editable: Boolean = false): Playlist {
+    private fun saved(id: String = "PLsource", editable: Boolean = false): Playlist = runBlocking {
         val row = Playlist(name = "Saved", browseId = id, isEditable = editable)
-        return row.copy(id = db.playlistTable.insert(row))
+        return@runBlocking row.copy(id = db.playlistTable.insert(row))
     }
 
-    private fun ids(playlist: Playlist) = db.songPlaylistMapTable.songsByPositionDirect(playlist.id).map { it.id }
+    private fun ids(playlist: Playlist) = runBlocking { db.songPlaylistMapTable.songsByPositionDirect(playlist.id).map { it.id } }
 
     @Test fun `complete source updates membership and retains local survivor order`() = runBlocking {
         val row = saved()
@@ -127,7 +127,7 @@ class PlaylistSourceRefreshTest {
         assertEquals(listOf("old"), ids(row))
     }
 
-    @Test fun `stored membership guard rejects stale editable target while direct order remains mutable`() {
+    @Test fun `stored membership guard rejects stale editable target while direct order remains mutable`() = runBlocking<Unit> {
         val editable = saved(editable = true)
         db.playlistTable.update(editable.copy(isEditable = false))
         assertFalse(canEditStoredPlaylistMembership(editable.id))

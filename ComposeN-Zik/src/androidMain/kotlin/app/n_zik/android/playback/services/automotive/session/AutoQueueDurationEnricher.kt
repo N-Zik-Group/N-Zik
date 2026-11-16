@@ -13,7 +13,7 @@ import timber.log.Timber
 /** Adds known local lengths to stale browse snapshots without changing their queue identity. */
 internal suspend fun enrichAutoQueueDurations(
     items: List<MediaItem>,
-    findSongs: (List<String>) -> List<Song>,
+    findSongs: suspend (List<String>) -> List<Song>,
 ): List<MediaItem> = withContext(NzikDispatchers.DATA) {
     val missingIds = items.filterNot { it.hasDeclaredDuration() }.map { it.mediaId }.distinct()
     if (missingIds.isEmpty()) return@withContext items

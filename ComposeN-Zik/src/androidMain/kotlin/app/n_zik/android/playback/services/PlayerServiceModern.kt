@@ -1969,7 +1969,9 @@ class PlayerServiceModern : MediaLibraryService(),
                         streamUrlCache.invalidate(currentMediaId)
                         try {
                             cache.removeResource(currentMediaId)
-                        } catch (_: Exception) {}
+                        } catch (error: Exception) {
+                            Timber.tag("PlayerServiceModern").w("Unable to evict cached audio during recovery (%s)", error.javaClass.simpleName)
+                        }
                         val streamClient = playbackDataCache[currentMediaId]?.streamClient ?: "WEB_REMIX"
                         markClientFailed(streamClient, currentMediaId)
                         coroutineScope.launch {
@@ -1996,7 +1998,9 @@ class PlayerServiceModern : MediaLibraryService(),
                     isRemotePlaybackError(error) -> {
                         Timber.tag("PlayerServiceModern").d("Handling remote playback error for $currentMediaId — treating as expired URL")
                         streamUrlCache.invalidate(currentMediaId)
-                        try { cache.removeResource(currentMediaId) } catch (_: Exception) {}
+                        try { cache.removeResource(currentMediaId) } catch (error: Exception) {
+                            Timber.tag("PlayerServiceModern").w("Unable to evict cached audio during recovery (%s)", error.javaClass.simpleName)
+                        }
                         val streamClient = playbackDataCache[currentMediaId]?.streamClient ?: "WEB_REMIX"
                         markClientFailed(streamClient, currentMediaId)
                         coroutineScope.launch {
@@ -2011,7 +2015,9 @@ class PlayerServiceModern : MediaLibraryService(),
                     isAudioRendererError(error) -> {
                         Timber.tag("PlayerServiceModern").d("Handling audio renderer error for $currentMediaId — extra delay")
                         streamUrlCache.invalidate(currentMediaId)
-                        try { cache.removeResource(currentMediaId) } catch (_: Exception) {}
+                        try { cache.removeResource(currentMediaId) } catch (error: Exception) {
+                            Timber.tag("PlayerServiceModern").w("Unable to evict cached audio during recovery (%s)", error.javaClass.simpleName)
+                        }
                     }
 
                     // File not found — cache eviction or corruption

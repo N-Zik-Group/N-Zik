@@ -11,6 +11,7 @@ import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.models.VideoOrSongInfo
 import app.n_zik.innertube.requests.searchPage
 import app.n_zik.innertube.requests.songInfo
+import io.mockk.coVerify
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
@@ -91,8 +92,8 @@ class VideoOrSongInfoScreenLoadOffMainTest {
         mockSongInfoSuccess(videoId, info)
         every { artistTable.findBySongId(videoId) } returns flowOf(emptyList())
         every { artistTable.findByName("Alice") } returns flowOf(null)
-        every { artistTable.insertIgnore(any<Artist>()) } just Runs
-        every { songArtistMapTable.insertIgnore(any<SongArtistMap>()) } just Runs
+        coEvery { artistTable.insertIgnore(any<Artist>()) } just Runs
+        coEvery { songArtistMapTable.insertIgnore(any<SongArtistMap>()) } just Runs
 
         val foundArtist = mockk<Innertube.ArtistItem>()
         every { foundArtist.key } returns "id-alice"
@@ -109,8 +110,8 @@ class VideoOrSongInfoScreenLoadOffMainTest {
         val result = loadVideoOrSongInfo(videoId, songArtist = "Alice")
 
         assertEquals(listOf("id-alice" to "Alice"), result.finalArtists)
-        verify(exactly = 1) { artistTable.insertIgnore(Artist(id = "id-alice", name = "Alice")) }
-        verify(exactly = 1) { songArtistMapTable.insertIgnore(SongArtistMap(songId = videoId, artistId = "id-alice")) }
+        coVerify(exactly = 1) { artistTable.insertIgnore(Artist(id = "id-alice", name = "Alice")) }
+        coVerify(exactly = 1) { songArtistMapTable.insertIgnore(SongArtistMap(songId = videoId, artistId = "id-alice")) }
     }
 
     @Test
@@ -180,7 +181,7 @@ class VideoOrSongInfoScreenLoadOffMainTest {
         val result = loadVideoOrSongInfo(videoId, songArtist = "Bob")
 
         assertEquals(listOf("" to "Bob"), result.finalArtists)
-        verify(exactly = 0) { artistTable.insertIgnore(any<Artist>()) }
+        coVerify(exactly = 0) { artistTable.insertIgnore(any<Artist>()) }
     }
 
     @Test

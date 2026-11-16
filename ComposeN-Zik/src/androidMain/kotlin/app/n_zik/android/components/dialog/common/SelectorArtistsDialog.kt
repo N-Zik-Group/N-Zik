@@ -92,7 +92,7 @@ inline fun SelectorArtistsDialog(
                                        .onSuccess { currentArtistPage ->
                                            artist?.copy(
                                                thumbnailUrl = currentArtistPage.artist.thumbnail?.url
-                                           )?.let( Database.artistTable::update )
+                                           )?.let { Database.artistTable.update(it) }
                                        }
                                 }
                             }

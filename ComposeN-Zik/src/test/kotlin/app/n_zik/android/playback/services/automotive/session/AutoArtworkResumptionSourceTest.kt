@@ -2,6 +2,7 @@ package app.n_zik.android.playback.services.automotive.session
 
 import android.app.Application
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import io.mockk.coVerify
 import io.mockk.mockkObject
 import io.mockk.every
 import io.mockk.coEvery
@@ -31,7 +32,6 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.unmockkAll
-import io.mockk.verify
 import java.io.File
 import java.util.concurrent.TimeUnit
 import org.junit.After
@@ -123,7 +123,7 @@ class AutoArtworkResumptionSourceTest {
             assertTrue(requireNotNull(item.mediaMetadata.extras).getBoolean(persistentQueueKey))
             assertFreshPixels(item, expired[index], if (index == 0) Color.RED else Color.BLUE)
         }
-        verify(exactly = 0) { songs.findByIdDirect(any()) }
+        coVerify(exactly = 0) { songs.findByIdDirect(any()) }
         assertTrue(context.preferences.getBoolean(persistentQueueKey, false))
     }
 
@@ -139,7 +139,7 @@ class AutoArtworkResumptionSourceTest {
         assertNull(saved.mediaMetadata.extras?.getString(SessionMediaItemMapper.ORIGINAL_ARTWORK_SOURCE_EXTRA))
         val expired = requireNotNull(saved.mediaMetadata.artworkUri)
         coEvery { Database.readSavedQueue() } returns listOf(QueuedMediaItem(mediaItem = saved, position = 7_654L))
-        every { songs.findByIdDirect(source.id) } returns source.copy(title = "Different database title")
+        coEvery { songs.findByIdDirect(source.id) } returns source.copy(title = "Different database title")
         clearSourceRegistry()
         assertExpired(expired)
 
@@ -152,7 +152,7 @@ class AutoArtworkResumptionSourceTest {
         assertEquals(source.title, item.mediaMetadata.title.toString())
         assertTrue(requireNotNull(item.mediaMetadata.extras).getBoolean(persistentQueueKey))
         assertFreshPixels(item, expired, Color.RED)
-        verify(exactly = 1) { songs.findByIdDirect(source.id) }
+        coVerify(exactly = 1) { songs.findByIdDirect(source.id) }
     }
 
     private fun resume(): MediaSession.MediaItemsWithStartPosition = callback.onPlaybackResumption(

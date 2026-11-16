@@ -7,14 +7,29 @@ import app.n_zik.android.components.search.SearchEmptyFeedback
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,7 +66,7 @@ import app.n_zik.innertube.requests.searchPage
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import app.n_zik.innertube.utils.*
+import app.n_zik.innertube.utils.from
 import java.util.UUID
 import app.n_zik.android.appContext
 import app.n_zik.android.ui.components.MenuState
@@ -176,11 +191,13 @@ class ChangePlaylistBrowseIdDialog private constructor(
                                 .clickable {
                                     val newId = "$MODIFIED_PREFIX${item.key}"
                                     if (newId.isNotEmpty() && newId != MODIFIED_PREFIX) {
-                                        appContext().preferences.edit().putString("old_browse_id_$newId", playlist.browseId ?: "").apply()
-                                        Database.playlistTable.updateBrowseId(playlist.id, newId)
-                                        Toaster.done()
-                                        hideDialog()
-                                        menuState?.hide()
+                                        coroutineScope.launch {
+                                            appContext().preferences.edit().putString("old_browse_id_$newId", playlist.browseId ?: "").apply()
+                                            Database.playlistTable.updateBrowseId(playlist.id, newId)
+                                            Toaster.done()
+                                            hideDialog()
+                                            menuState?.hide()
+                                        }
                                     }
                                 }
                                 .padding(vertical = 8.dp),
@@ -218,6 +235,7 @@ class ChangePlaylistBrowseIdDialog private constructor(
     @Composable
     override fun Buttons() {
         val playlist = getPlaylist() ?: return
+        val coroutineScope = rememberCoroutineScope()
         ButtonRow(
             buttons = buildList {
                 add(
@@ -236,11 +254,13 @@ class ChangePlaylistBrowseIdDialog private constructor(
                                 val prefs = appContext().preferences
                                 val oldId = prefs.getString("old_browse_id_${playlist.browseId}", null)
                                 val cleanId = oldId ?: playlist.browseId?.removePrefix(MODIFIED_PREFIX)
-                                Database.playlistTable.updateBrowseId(playlist.id, cleanId)
-                                prefs.edit().remove("old_browse_id_${playlist.browseId}").apply()
-                                Toaster.done()
-                                hideDialog()
-                                menuState?.hide()
+                                coroutineScope.launch {
+                                    Database.playlistTable.updateBrowseId(playlist.id, cleanId)
+                                    prefs.edit().remove("old_browse_id_${playlist.browseId}").apply()
+                                    Toaster.done()
+                                    hideDialog()
+                                    menuState?.hide()
+                                }
                             }
                         )
                     )
@@ -250,10 +270,12 @@ class ChangePlaylistBrowseIdDialog private constructor(
                     DialogButton(
                         text = stringResource(R.string.common_action_unlink),
                         onClick = {
-                            Database.playlistTable.updateBrowseId(playlist.id, "LOCAL_Playlist_${UUID.randomUUID()}")
-                            Toaster.done()
-                            hideDialog()
-                            menuState?.hide()
+                            coroutineScope.launch {
+                                Database.playlistTable.updateBrowseId(playlist.id, "LOCAL_Playlist_${UUID.randomUUID()}")
+                                Toaster.done()
+                                hideDialog()
+                                menuState?.hide()
+                            }
                         },
                         primary = true
                     )

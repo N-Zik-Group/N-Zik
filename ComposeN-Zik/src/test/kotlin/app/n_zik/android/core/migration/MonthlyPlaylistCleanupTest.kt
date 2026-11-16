@@ -54,12 +54,12 @@ class MonthlyPlaylistCleanupTest {
     }
 
     /** Insert a minimal Song so that the FK constraint on SongPlaylistMap is satisfied. */
-    private fun insertSong(id: String) {
+    private fun insertSong(id: String) = runBlocking<Unit> {
         db.songTable.upsert(Song.makePlaceholder(id))
     }
 
     /** Insert a local playlist so that the FK constraint on SongPlaylistMap is satisfied. */
-    private fun insertPlaylist(id: Long, name: String) {
+    private fun insertPlaylist(id: Long, name: String) = runBlocking<Unit> {
         db.playlistTable.upsert(Playlist(id = id, name = name))
     }
 

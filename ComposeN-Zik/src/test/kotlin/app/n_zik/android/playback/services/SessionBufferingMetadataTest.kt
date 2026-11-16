@@ -30,6 +30,7 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.models.Song
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -205,7 +206,7 @@ class SessionBufferingMetadataTest {
         val songs = mockk<SongTable>()
         every { Database.songTable } returns songs
         var databaseReadOnMain: Boolean? = null
-        every { songs.findByIdDirect(id) } answers {
+        coEvery { songs.findByIdDirect(id) } coAnswers {
             databaseReadOnMain = Looper.myLooper() === Looper.getMainLooper()
             Song(id, "Stored title", durationText = "2:37", thumbnailUrl = null)
         }

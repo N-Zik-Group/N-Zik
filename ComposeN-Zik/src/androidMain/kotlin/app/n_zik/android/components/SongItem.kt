@@ -4,7 +4,6 @@ package app.n_zik.android.components
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.glass.glassGlobalIndication
 
-import app.n_zik.android.core.database.*
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.ui.res.stringResource
 
@@ -94,7 +93,9 @@ import app.n_zik.android.utils.playlistindicatorKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.secondary
 import app.n_zik.android.utils.semiBold
+import app.n_zik.android.components.dialog.media.runDownloadBatch
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.launch
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.components.menu.song.SongItemMenu
 import app.n_zik.android.components.tab.ItemSelector
@@ -402,11 +403,11 @@ fun SongItem(
                             modifier = Modifier
                                 .size(20.dp)
                                 .clip(uiRoundnessShape()).clickable {
-                                    binder?.cache?.removeResource( song.id )
-                                    Database.asyncTransaction {
-                                        formatTable.deleteBySongId( song.id )
+                                    NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                        runDownloadBatch(listOf(song), binder?.cache) {
+                                            MyDownloadHelper.handleDownload(context, displaySong, true)
+                                        }
                                     }
-                                    MyDownloadHelper.handleDownload( context, displaySong, true )
                                 },
                             contentAlignment = Alignment.Center
                         ) {
@@ -442,11 +443,11 @@ fun SongItem(
                             color = color,
                             modifier = Modifier.size( 20.dp ),
                             onClick = {
-                                binder?.cache?.removeResource( song.id )
-                                Database.asyncTransaction {
-                                    formatTable.deleteBySongId( song.id )
+                                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                    runDownloadBatch(listOf(song), binder?.cache) {
+                                        MyDownloadHelper.handleDownload(context, displaySong, true)
+                                    }
                                 }
-                                MyDownloadHelper.handleDownload( context, displaySong, true )
                             }
                         )
                     }

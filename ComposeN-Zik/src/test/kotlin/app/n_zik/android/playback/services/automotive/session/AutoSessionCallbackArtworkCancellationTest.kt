@@ -111,7 +111,7 @@ class AutoSessionCallbackArtworkCancellationTest {
         val songs = mockk<SongTable>()
         mockkObject(Database)
         every { Database.songTable } returns songs
-        every { songs.findByIdDirect(song.id) } returns song
+        coEvery { songs.findByIdDirect(song.id) } returns song
         val loader = mockk<ImageLoader>()
         mockkObject(ImageCacheFactory)
         every { ImageCacheFactory.LOADER } returns loader

@@ -587,6 +587,7 @@ object MyDownloadHelper {
         downloadPreparationSemaphore.withPermit {
             if (owner != ProfileDownloadCommands.capture(context)) return
             val artistTextRaw = mediaItem.artistTextOrDb()
+            if (owner != ProfileDownloadCommands.capture(context)) return
             val artistText = if (artistTextRaw == "null" || artistTextRaw.isBlank()) context.getString(R.string.metadata_unknown_artist) else artistTextRaw
             val titleTextRaw = cleanPrefix(mediaItem.mediaMetadata.title?.toString().orEmpty())
             val titleText = if (titleTextRaw == "null" || titleTextRaw.isBlank()) context.getString(R.string.metadata_unknown_title) else titleTextRaw

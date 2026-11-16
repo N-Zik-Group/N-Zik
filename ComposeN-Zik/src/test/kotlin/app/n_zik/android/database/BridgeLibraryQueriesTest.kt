@@ -7,6 +7,7 @@ import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.core.database.PlaylistSongRef
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -41,7 +42,7 @@ class BridgeLibraryQueriesTest {
         db.close()
     }
 
-    private fun insertSong(id: String, thumbnailUrl: String? = null) {
+    private fun insertSong(id: String, thumbnailUrl: String? = null) = runBlocking<Unit> {
         db.songTable.upsert(Song(id = id, title = "T $id", durationText = null, thumbnailUrl = thumbnailUrl))
     }
 
@@ -55,7 +56,7 @@ class BridgeLibraryQueriesTest {
     }
 
     @Test
-    fun `album song counts ignore orphan map rows`() {
+    fun `album song counts ignore orphan map rows`() = runBlocking<Unit> {
         insertSong("s1")
         insertSong("s2")
         sql.execSQL("INSERT INTO Album (id) VALUES ('al1'), ('al2'), ('al3')")
@@ -70,7 +71,7 @@ class BridgeLibraryQueriesTest {
     }
 
     @Test
-    fun `artist song counts ignore orphan map rows`() {
+    fun `artist song counts ignore orphan map rows`() = runBlocking<Unit> {
         insertSong("s1")
         insertSong("s2")
         insertSong("s3")
@@ -86,7 +87,7 @@ class BridgeLibraryQueriesTest {
     }
 
     @Test
-    fun `playlist songs come in playlist order without orphans`() {
+    fun `playlist songs come in playlist order without orphans`() = runBlocking<Unit> {
         insertSong("a")
         insertSong("b")
         insertSong("c")
@@ -101,7 +102,7 @@ class BridgeLibraryQueriesTest {
     }
 
     @Test
-    fun `songs with a thumbnail come per playlist in position order`() {
+    fun `songs with a thumbnail come per playlist in position order`() = runBlocking<Unit> {
         insertSong("noThumb")
         insertSong("t1", thumbnailUrl = "https://x/1")
         insertSong("t2", thumbnailUrl = "https://x/2")

@@ -139,7 +139,7 @@ class AutoLibraryPlaylistActionsTest {
         assertEquals(before, context.preferences.all)
     }
 
-    @Test fun `empty or fully disliked podcast groups return an empty queue`() {
+    @Test fun `empty or fully disliked podcast groups return an empty queue`() = runBlocking<Unit> {
         assertTrue(action("PLAYLISTS_YT_PODCASTS_PLAY_ALL").isEmpty())
         seed(Playlist(1, "Podcast", "MPSPfirst"), "blocked")
         onDatabase { Database.songTable.upsert(song("blocked").copy(likedAt = -1L)) }
@@ -189,7 +189,7 @@ class AutoLibraryPlaylistActionsTest {
         }
     }
 
-    @Test fun `offline play all retains later downloaded episodes when first episode is unavailable`() {
+    @Test fun `offline play all retains later downloaded episodes when first episode is unavailable`() = runBlocking<Unit> {
         seed(Playlist(1, "Podcast", "MPSPfirst"), "a-unavailable", "b-downloaded", "c-disliked")
         onDatabase { Database.songTable.upsert(song("c-disliked").copy(likedAt = -1L)) }
         fun download(id: String) = Download(

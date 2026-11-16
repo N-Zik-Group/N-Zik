@@ -6,10 +6,12 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.PlaylistTable
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -32,8 +34,8 @@ class RenamePlaylistDisplayNameTest {
         val table = mockk<PlaylistTable>()
         mockkObject(Database)
         every { Database.playlistTable } returns table
-        every { Database.asyncTransaction(any(), any()) } answers { secondArg<Database.() -> Unit>().invoke(Database) }
-        every { table.update(any()) } answers { playlist.value = firstArg(); 1 }
+        every { Database.asyncTransaction(any(), any()) } answers { runBlocking { secondArg<suspend Database.() -> Unit>().invoke(Database) } }
+        coEvery { table.update(any()) } coAnswers { playlist.value = firstArg(); 1 }
         lateinit var dialog: RenamePlaylistDialog
         compose.setContent {
             val current = playlist.value

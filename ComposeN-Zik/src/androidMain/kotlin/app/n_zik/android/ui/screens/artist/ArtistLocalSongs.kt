@@ -1,5 +1,7 @@
 package app.n_zik.android.ui.screens.artist
 
+import android.content.Context
+import androidx.media3.datasource.cache.Cache
 import androidx.compose.ui.res.pluralStringResource
 import app.n_zik.android.utils.durationTextToMillis
 import app.n_zik.android.utils.formatAsDuration
@@ -10,7 +12,6 @@ import androidx.compose.ui.draw.clip
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.uiRoundnessShape
 
-import app.n_zik.android.core.database.*
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -287,19 +288,7 @@ fun ArtistLocalSongs(
                         val snapshot = songs?.toList()
                         if (snapshot?.isNotEmpty() == true)
                             NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                Database.asyncTransaction {
-                                    snapshot.forEach { song ->
-                                        formatTable.deleteBySongId(song.asMediaItem.mediaId)
-                                    }
-                                }
-                                snapshot.forEach { song ->
-                                    binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                                    manageDownload(
-                                        context = context,
-                                        mediaItem = song.asMediaItem,
-                                        downloadState = false
-                                    )
-                                }
+                                processArtistDownloadBatch(snapshot, binder?.cache, context, downloadState = false)
                             }
                     }
                 )
@@ -316,19 +305,7 @@ fun ArtistLocalSongs(
                         val snapshot = songs?.toList()
                         if (snapshot?.isNotEmpty() == true)
                             NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                Database.asyncTransaction {
-                                    snapshot.forEach { song ->
-                                        formatTable.deleteBySongId(song.asMediaItem.mediaId)
-                                    }
-                                }
-                                snapshot.forEach { song ->
-                                    binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                                    manageDownload(
-                                        context = context,
-                                        mediaItem = song.asMediaItem,
-                                        downloadState = true
-                                    )
-                                }
+                                processArtistDownloadBatch(snapshot, binder?.cache, context, downloadState = true)
                             }
                     }
                 )
@@ -533,19 +510,7 @@ fun ArtistLocalSongs(
                                         val snapshot = songs?.toList()
                                         if (snapshot?.isNotEmpty() == true)
                                             NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                Database.asyncTransaction {
-                                                    snapshot.forEach { song ->
-                                                        formatTable.deleteBySongId(song.asMediaItem.mediaId)
-                                                    }
-                                                }
-                                                snapshot.forEach { song ->
-                                                    binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                                                    manageDownload(
-                                                        context = context,
-                                                        mediaItem = song.asMediaItem,
-                                                        downloadState = false
-                                                    )
-                                                }
+                                                processArtistDownloadBatch(snapshot, binder?.cache, context, downloadState = false)
                                             }
                                     }
                                 )
@@ -576,19 +541,7 @@ fun ArtistLocalSongs(
                                         val snapshot = songs?.toList()
                                         if (snapshot?.isNotEmpty() == true)
                                             NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                Database.asyncTransaction {
-                                                    snapshot.forEach { song ->
-                                                        formatTable.deleteBySongId(song.asMediaItem.mediaId)
-                                                    }
-                                                }
-                                                snapshot.forEach { song ->
-                                                    binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                                                    manageDownload(
-                                                        context = context,
-                                                        mediaItem = song.asMediaItem,
-                                                        downloadState = true
-                                                    )
-                                                }
+                                                processArtistDownloadBatch(snapshot, binder?.cache, context, downloadState = true)
                                             }
                                     }
                                 )
@@ -795,9 +748,24 @@ fun ArtistHeader(
     }
 }
 
-
-
-
-
-
-
+@UnstableApi
+private suspend fun processArtistDownloadBatch(
+    songs: List<Song>,
+    cache: Cache?,
+    context: Context,
+    downloadState: Boolean,
+) {
+    Database.awaitWriteBatch(retries = 1) {
+        // Retry the SQL before starting side effects that cannot roll back.
+        awaitWriteBatch {
+            songs.forEach { song ->
+                formatTable.deleteBySongId(song.asMediaItem.mediaId)
+            }
+        }
+        songs.forEach { song ->
+            val mediaItem = song.asMediaItem
+            cache?.removeResource(mediaItem.mediaId)
+            manageDownload(context, mediaItem, downloadState)
+        }
+    }
+}

@@ -115,7 +115,7 @@ interface SongTable {
      * @return number of rows affected by this operation
      */
     @Query("DELETE FROM Song WHERE totalPlayTimeMs = 0")
-    fun clearHiddenSongs(): Int
+    suspend fun clearHiddenSongs(): Int
 
     /**
      * @param songId of album to look for
@@ -126,18 +126,18 @@ interface SongTable {
     fun findById( songId: String ): Flow<Song?>
 
     @Query("SELECT DISTINCT * FROM Song WHERE id = :songId")
-    fun findByIdDirect( songId: String ): Song?
+    suspend fun findByIdDirect( songId: String ): Song?
 
     /** The songs of [songIds] (any order, unknown ids skipped): the PC bridge's batched queue resolution. */
     @Query("SELECT DISTINCT * FROM Song WHERE id IN (:songIds)")
-    fun findByIdsDirect( songIds: List<String> ): List<Song>
+    suspend fun findByIdsDirect( songIds: List<String> ): List<Song>
 
     /** Observes metadata for a bounded batch of menu song identities. */
     @Query("SELECT DISTINCT * FROM Song WHERE id IN (:songIds)")
     fun findByIds(songIds: List<String>): Flow<List<Song>>
 
     @Query("SELECT COUNT(*) FROM Song WHERE id = :songId")
-    fun countById( songId: String ): Int
+    suspend fun countById( songId: String ): Int
 
     /** Case-insensitive containment of [searchTerm] in [Song.title] or [Song.artistsText] (I.E.: `name` matches `1name_to`). */
     @Query("""
@@ -163,26 +163,26 @@ interface SongTable {
 
     /** Inserts [song], silently skipping it when the row already exists (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertIgnore( song: Song )
+    suspend fun insertIgnore( song: Song )
 
     /** Replaces the row with [song] (onConflict REPLACE); returns the number of rows affected. */
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun updateReplace( song: Song )
+    suspend fun updateReplace( song: Song )
 
     @Query("UPDATE Song SET id = :newId WHERE id = :oldId")
-    fun updateId(oldId: String, newId: String): Int
+    suspend fun updateId(oldId: String, newId: String): Int
 
     /** Inserts [song], replacing the existing row's columns when its primary key already exists. */
     @Upsert
-    fun upsert( song: Song )
+    suspend fun upsert( song: Song )
 
     /** Inserts [songs], replacing each existing row's columns when its primary key already exists. */
     @Upsert
-    fun upsert( songs: List<Song> )
+    suspend fun upsert( songs: List<Song> )
 
     /** Deletes [song]. */
     @Delete
-    fun delete( song: Song )
+    suspend fun delete( song: Song )
 
     /** Whether any row has id [songId]. */
     @Query("SELECT COUNT(*) > 0 FROM Song WHERE id = :songId")
@@ -202,7 +202,7 @@ interface SongTable {
     fun isLiked( songId: String ): Flow<Boolean>
 
     @Query("SELECT COALESCE(likedAt IS NOT NULL AND likedAt > 0, 0) FROM Song WHERE id = :songId")
-    fun isLikedDirect( songId: String ): Boolean
+    suspend fun isLikedDirect( songId: String ): Boolean
 
     /** Like tri-state of [songId]: `true` = liked, `false` = disliked, `null` = unset (neutral). */
     @Query("""
@@ -244,10 +244,10 @@ interface SongTable {
             END  
         WHERE id = :songId
     """)
-    fun rotateLikeState( songId: String ): Int
+    suspend fun rotateLikeState( songId: String ): Int
 
     @Query("UPDATE Song SET likedAt = NULL WHERE likedAt = -1")
-    fun clearAllDisliked(): Int
+    suspend fun clearAllDisliked(): Int
 
     /**
      * Toggles dislike: neutral (NULL) or liked (timestamp) → disliked (-1),
@@ -263,7 +263,7 @@ interface SongTable {
             END
         WHERE id = :songId
     """)
-    fun toggleDislike( songId: String ): Int
+    suspend fun toggleDislike( songId: String ): Int
 
     /** Toggles like: liked (non-null) → `null`, not liked → current time. Returns the number of rows affected. */
     @Query("""
@@ -275,7 +275,7 @@ interface SongTable {
             END
         WHERE id = :songId
     """)
-    fun toggleLike( songId: String ): Int
+    suspend fun toggleLike( songId: String ): Int
 
     /** Sets [Song.likedAt] from [likeState] (`true` = like, `false` = dislike, `null` = neutral). */
     @Query("""
@@ -288,7 +288,7 @@ interface SongTable {
             END
         WHERE id = :songId
     """)
-    fun likeState( songId: String, likeState: Boolean? ): Int
+    suspend fun likeState( songId: String, likeState: Boolean? ): Int
 
     /**
      * Set [Song.likedAt] to a specific timestamp value.
@@ -298,7 +298,7 @@ interface SongTable {
      * @return number of rows affected
      */
     @Query("UPDATE Song SET likedAt = :likedAt WHERE id = :songId")
-    fun likeState( songId: String, likedAt: Long ): Int
+    suspend fun likeState( songId: String, likedAt: Long ): Int
 
     /**
      * Get the raw [Song.likedAt] value for a song.
@@ -316,10 +316,10 @@ interface SongTable {
      * @return number of albums affected by this operation
      */
     @Query("UPDATE Song SET title = :title WHERE id = :songId")
-    fun updateTitle( songId: String, title: String ): Int
+    suspend fun updateTitle( songId: String, title: String ): Int
 
     @Query("UPDATE Song SET thumbnailUrl = :thumbnailUrl WHERE id = :songId")
-    fun updateCover( songId: String, thumbnailUrl: String ): Int
+    suspend fun updateCover( songId: String, thumbnailUrl: String ): Int
 
     @Query("""
         UPDATE Song
@@ -330,10 +330,10 @@ interface SongTable {
             WHERE albumId = :albumId
         )
     """)
-    fun updateCoverForAlbum( albumId: String, thumbnailUrl: String ): Int
+    suspend fun updateCoverForAlbum( albumId: String, thumbnailUrl: String ): Int
 
     @Query("UPDATE Song SET position = :position WHERE id = :songId")
-    fun updatePosition( songId: String, position: Int ): Int
+    suspend fun updatePosition( songId: String, position: Int ): Int
 
     /**
      * @param songId identifier of [Song]
@@ -342,7 +342,7 @@ interface SongTable {
      * @return number of albums affected by this operation
      */
     @Query("UPDATE Song SET artistsText = :artistsText WHERE id = :songId")
-    fun updateArtists( songId: String, artistsText: String ): Int
+    suspend fun updateArtists( songId: String, artistsText: String ): Int
 
     /** Set [Song.totalPlayTimeMs] to [value] (hard set when [isIncrement] is `false`, otherwise sum with the existing value). @param songId song to update @return number of rows affected */
     @Query(
@@ -356,7 +356,7 @@ interface SongTable {
         WHERE id = :songId
     """
     )
-    fun updateTotalPlayTime( songId: String, value: Long, isIncrement: Boolean = false ): Int
+    suspend fun updateTotalPlayTime( songId: String, value: Long, isIncrement: Boolean = false ): Int
 
     //<editor-fold defaultstate="collapsed" desc="Sort all">
     @Query("""
@@ -587,18 +587,18 @@ interface SongTable {
     fun artistSongs(artistId: String): Flow<List<Song>>
 
     @Query("DELETE FROM Song WHERE id IN (:ids)")
-    fun deleteByIds(ids: List<String>): Int
+    suspend fun deleteByIds(ids: List<String>): Int
 
     @Query("DELETE FROM Song")
-    fun deleteAll(): Int
+    suspend fun deleteAll(): Int
 
     @Query("UPDATE Song SET likedAt = NULL WHERE id IN (:ids)")
-    fun unlikeByIds(ids: List<String>): Int
+    suspend fun unlikeByIds(ids: List<String>): Int
 
     @Query("UPDATE Song SET likedAt = NULL WHERE likedAt IS NOT NULL AND likedAt > 0")
-    fun unlikeAll(): Int
+    suspend fun unlikeAll(): Int
 
     @Query("UPDATE Song SET totalPlayTimeMs = 0 WHERE id IN (:ids)")
-    fun resetPlayTimeByIds(ids: List<String>): Int
+    suspend fun resetPlayTimeByIds(ids: List<String>): Int
 }
 

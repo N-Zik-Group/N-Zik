@@ -25,6 +25,7 @@ import app.n_zik.android.R
 import app.n_zik.android.core.profiles.coversDir
 import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.core.profiles.profileStorageIdentity
+import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.getActiveProfile
 import java.io.File
 import java.io.FileOutputStream
@@ -155,7 +156,7 @@ class ArtworkContentProvider : ContentProvider() {
                 val profile = getActiveProfile(ctx)
                 val (source, crop) = remoteSource(uri, profile) ?: return null
                 // ContentProvider's synchronous descriptor API runs on its Binder worker, never the metadata getter.
-                val bytes = runBlocking { SessionArtworkLoader.load(source, crop) } ?: return null
+                val bytes = runBlocking(NzikDispatchers.DATA) { SessionArtworkLoader.load(source, crop) } ?: return null
                 if (profile != getActiveProfile(ctx)) return null
                 return writeSeekableBytes(privateArtworkDirectory(ctx), bytes)
             }

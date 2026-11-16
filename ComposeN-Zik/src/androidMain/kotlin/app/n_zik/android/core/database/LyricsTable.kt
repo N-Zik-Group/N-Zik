@@ -33,10 +33,10 @@ interface LyricsTable {
      * @return ROWID of successfully modified record
      */
     @Upsert
-    fun upsert( lyrics: Lyrics ): Long
+    suspend fun upsert( lyrics: Lyrics ): Long
 
     @Query("DELETE FROM Lyrics WHERE isEdited = 0 AND (lastFetchedAt IS NULL OR lastFetchedAt <= :through)")
-    fun deleteFetchedLyrics(through: Long): Int
+    suspend fun deleteFetchedLyrics(through: Long): Int
 
     /**
      * Reset the lyrics fetch TTL for every row of the song
@@ -49,7 +49,7 @@ interface LyricsTable {
      * @return number of lyrics rows affected by this operation
      */
     @Query("UPDATE Lyrics SET lastFetchedAt = NULL WHERE songId = :songId")
-    fun resetFetchTtlBySongId( songId: String ): Int
+    suspend fun resetFetchTtlBySongId( songId: String ): Int
 }
 
 

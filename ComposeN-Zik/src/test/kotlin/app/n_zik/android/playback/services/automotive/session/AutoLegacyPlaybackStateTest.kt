@@ -168,7 +168,7 @@ class AutoLegacyPlaybackStateTest {
         val track = item("stale-duration", 180_000L).buildUpon()
             .setMediaMetadata(item("stale-duration", 180_000L).mediaMetadata.buildUpon().setDurationMs(null).build()).build()
         val captured = capture(track)
-        every { Database.songTable.findByIdsDirect(listOf("stale-duration")) } returns
+        coEvery { Database.songTable.findByIdsDirect(listOf("stale-duration")) } returns
             listOf(Song("stale-duration", "Database title", durationText = "3:35", thumbnailUrl = null))
         LegacySessionShadow.playFromMediaId(captured)
         assertBuffering("stale-duration", 215_000L)
@@ -185,7 +185,7 @@ class AutoLegacyPlaybackStateTest {
     fun `truly unknown AA duration remains unknown until the source resolves it`() {
         val known = item("unknown-duration", 180_000L)
         val track = known.buildUpon().setMediaMetadata(known.mediaMetadata.buildUpon().setDurationMs(null).build()).build()
-        every { Database.songTable.findByIdsDirect(listOf("unknown-duration")) } returns emptyList()
+        coEvery { Database.songTable.findByIdsDirect(listOf("unknown-duration")) } returns emptyList()
         LegacySessionShadow.playFromMediaId(capture(track))
         pumpUntil("unknown AA duration") {
             raw.currentMediaItem?.mediaId == track.mediaId &&

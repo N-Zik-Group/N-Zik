@@ -5,10 +5,12 @@ import androidx.media3.common.MediaMetadata
 import app.n_zik.android.models.Album
 import app.n_zik.android.core.database.AlbumTable
 import app.n_zik.android.core.database.Database
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -33,7 +35,7 @@ class MediaItemUtilsAlbumTest {
             .build()
 
     /** The exact expression DiscordPresenceManager applies to the utility result. */
-    private fun MediaItem.albumNameForRpc(): String? =
+    private suspend fun MediaItem.albumNameForRpc(): String? =
         albumTitleOrDb().takeIf { it.isNotBlank() && it != "null" }
 
     @BeforeEach
@@ -48,7 +50,7 @@ class MediaItemUtilsAlbumTest {
     }
 
     @Test
-    fun `album from metadata wins when present`() {
+    fun `album from metadata wins when present`() = runTest {
         val item = mediaItem("My Album")
 
         assertEquals("My Album", item.albumTitleOrDb())
@@ -58,23 +60,23 @@ class MediaItemUtilsAlbumTest {
     }
 
     @Test
-    fun `album from DB is used when metadata is missing`() {
-        every { albumTable.findBySongIdDirect("song1") } returns Album(id = "album1", title = "DB Album")
+    fun `album from DB is used when metadata is missing`() = runTest {
+        coEvery { albumTable.findBySongIdDirect("song1") } returns Album(id = "album1", title = "DB Album")
 
         assertEquals("DB Album", mediaItem(null).albumTitleOrDb())
         assertEquals("DB Album", mediaItem(null).albumNameForRpc())
     }
 
     @Test
-    fun `literal null metadata falls through to the DB`() {
-        every { albumTable.findBySongIdDirect("song1") } returns Album(id = "album1", title = "DB Album")
+    fun `literal null metadata falls through to the DB`() = runTest {
+        coEvery { albumTable.findBySongIdDirect("song1") } returns Album(id = "album1", title = "DB Album")
 
         assertEquals("DB Album", mediaItem("null").albumNameForRpc())
     }
 
     @Test
-    fun `unknown album resolves to null so the renderer applies the localized fallback`() {
-        every { albumTable.findBySongIdDirect("song1") } returns null
+    fun `unknown album resolves to null so the renderer applies the localized fallback`() = runTest {
+        coEvery { albumTable.findBySongIdDirect("song1") } returns null
 
         assertNull(mediaItem(null).albumNameForRpc())
         assertNull(mediaItem("").albumNameForRpc())

@@ -56,7 +56,7 @@ class RenamePlaylistDialog private constructor(
 
         Database.asyncTransaction {
             playlist.copy( name = storedPrefixes + newValue )
-                    .let( playlistTable::update )
+                    .let { playlistTable.update(it) }
         }
 
         hideDialog()

@@ -97,8 +97,8 @@ fun ArtistVideos(
                 val video = item as? Innertube.VideoItem
                 val song = item as? Innertube.SongItem
 
-                if (video != null || song != null) {
-                    val mediaItem = video?.asMediaItem ?: song?.asMediaItem!!
+                val mediaItem = video?.asMediaItem ?: song?.asMediaItem
+                if (mediaItem != null) {
                     SwipeablePlaylistItem(
                         mediaItem = mediaItem,
                         onPlayNext = {

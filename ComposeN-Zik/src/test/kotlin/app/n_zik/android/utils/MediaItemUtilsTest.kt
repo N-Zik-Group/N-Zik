@@ -25,9 +25,6 @@ import org.robolectric.annotation.Config
  * style as EventTableTest/LyricsTableTest): clean metadata title is returned
  * as-is, "null"/empty metadata falls back to the cleaned DB title, and a
  * missing DB row falls back to the metadata title.
- *
- * Note: findByIdDirect is a non-suspend DAO call, so it must run off the
- * main thread (Room main-thread guard) — hence withContext(NzikDispatchers.DATA).
  */
 /**
  * Test-only application: MainApplication.onCreate() migrates credentials via
@@ -64,7 +61,6 @@ class MediaItemUtilsTest {
         .build()
 
     private suspend fun insertSong(id: String, title: String) {
-        // Room suspend DAOs still block the calling thread — keep it off main.
         withContext(NzikDispatchers.DATA) {
             Database.songTable.upsert(
                 Song(id = id, title = title, durationText = null, thumbnailUrl = null)

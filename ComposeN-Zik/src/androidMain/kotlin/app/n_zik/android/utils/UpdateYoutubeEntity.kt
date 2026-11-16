@@ -1,6 +1,6 @@
 package app.n_zik.android.utils
 
-import app.n_zik.android.core.database.*
+import app.n_zik.android.core.database.artistEntryNames
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -121,7 +121,7 @@ fun UpdateYoutubeAlbum (browseId: String) {
                                                             position = position
                                                         )
                                                     }
-                                                   ?.also( Database.songAlbumMapTable::upsert )
+                                                   ?.also { Database.songAlbumMapTable.upsert(it) }
                                 }
                         }
 

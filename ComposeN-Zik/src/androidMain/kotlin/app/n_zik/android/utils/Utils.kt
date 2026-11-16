@@ -3,7 +3,7 @@ package app.n_zik.android.utils
 import app.n_zik.android.appTextResources
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import android.R.attr.duration
-import app.n_zik.android.core.database.*
+import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.innertube.models.ArtistConjunctions
 
 
@@ -316,7 +316,9 @@ val Song.asMediaItem: MediaItem
                                     val rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
                                     if (rotated !== bitmap) { bitmap.recycle(); bitmap = rotated }
                                 }
-                            } catch (_: Exception) {}
+                            } catch (error: Exception) {
+                                Timber.tag("Utils").w("Unable to apply artwork EXIF rotation (%s)", error.javaClass.simpleName)
+                            }
                             // Center crop to square
                             val size = minOf(bitmap.width, bitmap.height)
                             val x = (bitmap.width - size) / 2
@@ -332,7 +334,9 @@ val Song.asMediaItem: MediaItem
                         metadataBuilder.setArtworkUri(AutoMediaItemMapper.drawableUri(appContext(), R.drawable.ic_launcher_box))
                     }
                 }
-            } catch (_: Exception) {}
+            } catch (error: Exception) {
+                Timber.tag("Utils").w("Unable to attach local artwork payload (%s)", error.javaClass.simpleName)
+            }
         } else if (artworkUri.scheme == ContentResolver.SCHEME_CONTENT) {
             try {
                 appContext().contentResolver.openInputStream(artworkUri)?.close()
@@ -614,10 +618,10 @@ suspend fun downloadSyncedLyrics( song: Song ) {
         }
     }
 
-    if( fetchedLyrics != null )
-        Database.asyncTransaction {
-            lyricsTable.upsert( fetchedLyrics!! )
-        }
+    val lyrics = fetchedLyrics ?: return
+    Database.asyncTransaction {
+        lyricsTable.upsert(lyrics)
+    }
 }
 
 suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: String, mediaItems: List<MediaItem>){

@@ -64,7 +64,7 @@ class ChangeAuthorDialog private constructor(
         }
         Database.asyncTransaction {
             // Row rename + propagation + local write land in ONE transaction.
-            syncTransaction {
+            transaction {
                 rename?.let { ( oldToken, newToken ) ->
                     NameConvergence.uniqueCandidate( songArtistMapTable.findArtistsOfDirect( song.id ), oldToken )
                         ?.let { row ->

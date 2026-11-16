@@ -733,12 +733,12 @@ class NZikRadioTest {
         // The discover filter removes every fetched song (mapped AND liked)
         val mapTable = mockk<SongPlaylistMapTable>(relaxed = true)
         every { Database.songPlaylistMapTable } returns mapTable
-        every { mapTable.isMappedSync("r1") } returns true
-        every { mapTable.isMappedSync("r2") } returns true
+        coEvery { mapTable.isMappedSync("r1") } returns true
+        coEvery { mapTable.isMappedSync("r2") } returns true
         val songTable = mockk<SongTable>(relaxed = true)
         every { Database.songTable } returns songTable
-        every { songTable.isLikedDirect("r1") } returns true
-        every { songTable.isLikedDirect("r2") } returns true
+        coEvery { songTable.isLikedDirect("r1") } returns true
+        coEvery { songTable.isLikedDirect("r2") } returns true
 
         nZikRadio.startRadio(mediaItem("Z"), isExplicit = true)
 

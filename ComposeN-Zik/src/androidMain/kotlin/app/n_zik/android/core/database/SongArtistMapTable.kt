@@ -17,11 +17,11 @@ interface SongArtistMapTable {
 
     /** Inserts [songArtistMap], silently skipping it when the pair already exists (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertIgnore( songArtistMap: SongArtistMap )
+    suspend fun insertIgnore( songArtistMap: SongArtistMap )
 
     /** Inserts [songArtistMaps], silently skipping pairs that already exist (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertIgnore( songArtistMaps: List<SongArtistMap> )
+    suspend fun insertIgnore( songArtistMaps: List<SongArtistMap> )
 
     /** All [Song]s mapped to the artist whose [Artist.id] equals [artistId]. */
     @Query("""
@@ -43,7 +43,7 @@ interface SongArtistMapTable {
         ORDER BY Song.ROWID
         LIMIT :limit
     """)
-    fun allSongsByDirect( artistId: String, limit: Int = Int.MAX_VALUE ): List<Song>
+    suspend fun allSongsByDirect( artistId: String, limit: Int = Int.MAX_VALUE ): List<Song>
 
     /**
      * @return all [Artist]s featured in this song
@@ -67,7 +67,7 @@ interface SongArtistMapTable {
         ORDER BY A.ROWID
         LIMIT :limit
     """)
-    fun findArtistsOfDirect( songId: String, limit: Int = Int.MAX_VALUE ): List<Artist>
+    suspend fun findArtistsOfDirect( songId: String, limit: Int = Int.MAX_VALUE ): List<Artist>
 
     /** Deletes all mappings whose song no longer exists in the `Song` table. */
     @Query("""
@@ -77,7 +77,7 @@ interface SongArtistMapTable {
             FROM Song
         )
     """)
-    fun clearGhostMaps(): Int
+    suspend fun clearGhostMaps(): Int
 
     /**
      * Deletes the source song's links to every artist that the target song already
@@ -95,13 +95,13 @@ interface SongArtistMapTable {
         WHERE songId = :oldId
         AND artistId IN ( SELECT artistId FROM SongArtistMap WHERE songId = :newId )
     """)
-    fun clearConflictingPairs(oldId: String, newId: String): Int
+    suspend fun clearConflictingPairs(oldId: String, newId: String): Int
 
     @Query("UPDATE SongArtistMap SET songId = :newId WHERE songId = :oldId")
-    fun updateSongId(oldId: String, newId: String)
+    suspend fun updateSongId(oldId: String, newId: String)
 
     @Query("UPDATE SongArtistMap SET artistId = :newId WHERE artistId = :oldId")
-    fun updateArtistId(oldId: String, newId: String)
+    suspend fun updateArtistId(oldId: String, newId: String)
 
     /** Delete the (song, :newId) links of every song that also holds a (song, :oldId) link, so a following [updateArtistId] cannot violate the (songId, artistId) primary key for songs already linked to the target. */
     @Query("""
@@ -109,21 +109,21 @@ interface SongArtistMapTable {
         WHERE artistId = :newId
         AND songId IN ( SELECT songId FROM SongArtistMap WHERE artistId = :oldId )
     """)
-    fun dropLinksAlreadyOn(oldId: String, newId: String): Int
+    suspend fun dropLinksAlreadyOn(oldId: String, newId: String): Int
 
     /** Delete all mappings for [songId]. */
     @Query("DELETE FROM SongArtistMap WHERE songId = :songId")
-    fun deleteBySongId(songId: String): Int
+    suspend fun deleteBySongId(songId: String): Int
 
     /**
      * @return every (songId, artistId) pair in this table, used by data
      * cleanups that must scan all mappings at once
      */
     @Query("SELECT songId, artistId FROM SongArtistMap")
-    fun allPairsDirect(): List<SongArtistMap>
+    suspend fun allPairsDirect(): List<SongArtistMap>
 
     @Query("SELECT * FROM SongArtistMap WHERE substr(artistId, 1, 13) = 'LOCAL_ARTIST_' OR artistId LIKE 'local:%'")
-    fun deviceArtistPairsDirect(): List<SongArtistMap>
+    suspend fun deviceArtistPairsDirect(): List<SongArtistMap>
 
     /**
      * @param songId the song side of the pair
@@ -132,11 +132,11 @@ interface SongArtistMapTable {
      * logging that names the stale links right before they are deleted
      */
     @Query("SELECT songId, artistId FROM SongArtistMap WHERE songId = :songId")
-    fun pairsBySongIdDirect(songId: String): List<SongArtistMap>
+    suspend fun pairsBySongIdDirect(songId: String): List<SongArtistMap>
 
     /** Delete the single mapping between [songId] and [artistId]. */
     @Query("DELETE FROM SongArtistMap WHERE songId = :songId AND artistId = :artistId")
-    fun deletePairDirect(songId: String, artistId: String): Int
+    suspend fun deletePairDirect(songId: String, artistId: String): Int
 
     /**
      * Read-only, for the PC bridge (contract §1.1 `Artist.trackCount`).
@@ -149,6 +149,6 @@ interface SongArtistMapTable {
         JOIN Song S ON S.id = sam.songId
         GROUP BY sam.artistId
     """)
-    fun songCountsDirect(): List<SongCount>
+    suspend fun songCountsDirect(): List<SongCount>
 }
 

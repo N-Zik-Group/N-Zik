@@ -56,29 +56,29 @@ class SongMapMergeRedirectTest {
         db.close()
     }
 
-    private fun insertSong(id: String) {
+    private fun insertSong(id: String) = runBlocking<Unit> {
         db.songTable.upsert(Song.makePlaceholder(id))
     }
 
-    private fun linkArtist(songId: String, artistId: String) {
+    private fun linkArtist(songId: String, artistId: String) = runBlocking<Unit> {
         db.artistTable.insertIgnore(Artist(id = artistId))
         db.songArtistMapTable.insertIgnore(SongArtistMap(songId = songId, artistId = artistId))
     }
 
-    private fun linkAlbum(songId: String, albumId: String, position: Int = -1) {
+    private fun linkAlbum(songId: String, albumId: String, position: Int = -1) = runBlocking<Unit> {
         db.albumTable.insertIgnore(Album(id = albumId))
         db.songAlbumMapTable.map(songId = songId, albumId = albumId, position = position)
     }
 
     private fun artistsOf(songId: String): Set<String> =
-        db.songArtistMapTable.pairsBySongIdDirect(songId).map { it.artistId }.toSet()
+        runBlocking { db.songArtistMapTable.pairsBySongIdDirect(songId).map { it.artistId }.toSet() }
 
     private fun albumsOf(songId: String): Set<String> =
-        db.songAlbumMapTable.findAlbumsOfDirect(songId).map { it.id }.toSet()
+        runBlocking { db.songAlbumMapTable.findAlbumsOfDirect(songId).map { it.id }.toSet() }
 
     /** Bug reproduction: the pre-fix MERGE path (redirect without purge) must still throw the constraint violation — proves the test actually exercises the failing condition. */
     @Test(expected = SQLiteConstraintException::class)
-    fun `naive redirect without purge violates the composite primary key (bug reproduction)`() {
+    fun `naive redirect without purge violates the composite primary key (bug reproduction)`() = runBlocking<Unit> {
         insertSong("song_target")
         insertSong("song_old")
         linkArtist("song_target", "artist_A1")
@@ -90,7 +90,7 @@ class SongMapMergeRedirectTest {
 
     /** Album-side bug reproduction: same failing condition on the (songId, albumId) composite primary key. */
     @Test(expected = SQLiteConstraintException::class)
-    fun `naive album redirect without purge violates the composite primary key (bug reproduction)`() {
+    fun `naive album redirect without purge violates the composite primary key (bug reproduction)`() = runBlocking<Unit> {
         insertSong("song_target")
         insertSong("song_old")
         linkAlbum("song_target", "album_AL1")
@@ -106,7 +106,7 @@ class SongMapMergeRedirectTest {
      * union {A1, A2} on the target with no exception.
      */
     @Test
-    fun `merge redirect with overlapping artists keeps the union (log scenario)`() {
+    fun `merge redirect with overlapping artists keeps the union (log scenario)`() = runBlocking<Unit> {
         insertSong("song_target")
         insertSong("song_old")
         linkArtist("song_target", "artist_A1")
@@ -125,7 +125,7 @@ class SongMapMergeRedirectTest {
      * Disjoint keys: the purge must not touch the target's own mappings.
      */
     @Test
-    fun `merge redirect with disjoint artists preserves every mapping`() {
+    fun `merge redirect with disjoint artists preserves every mapping`() = runBlocking<Unit> {
         insertSong("song_target")
         insertSong("song_old")
         linkArtist("song_target", "artist_A1")
@@ -140,7 +140,7 @@ class SongMapMergeRedirectTest {
 
     /** Target without any mapping: nothing to purge, the redirect alone is sufficient (previous behavior preserved). */
     @Test
-    fun `merge redirect into a target without mappings only redirects`() {
+    fun `merge redirect into a target without mappings only redirects`() = runBlocking<Unit> {
         insertSong("song_target")
         insertSong("song_old")
         linkArtist("song_old", "artist_A1")
@@ -156,7 +156,7 @@ class SongMapMergeRedirectTest {
      * Same fix on the album side (composite PK (songId, albumId)).
      */
     @Test
-    fun `merge redirect with overlapping albums keeps the union`() {
+    fun `merge redirect with overlapping albums keeps the union`() = runBlocking<Unit> {
         insertSong("song_target")
         insertSong("song_old")
         linkAlbum("song_target", "album_AL1")

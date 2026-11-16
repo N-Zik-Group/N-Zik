@@ -13,6 +13,7 @@ import app.n_zik.android.core.database.DatabaseInitializer
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -66,7 +67,7 @@ class NameConvergenceDbTest {
 
     // ---- fixtures ----
 
-    private fun insertSong(id: String, artistsText: String?) {
+    private fun insertSong(id: String, artistsText: String?) = runBlocking<Unit> {
         db.songTable.upsert(
             Song(
                 id = id,
@@ -78,25 +79,25 @@ class NameConvergenceDbTest {
         )
     }
 
-    private fun insertArtist(id: String, name: String) {
+    private fun insertArtist(id: String, name: String) = runBlocking<Unit> {
         db.artistTable.upsert(Artist(id = id, name = name))
     }
 
-    private fun insertLink(songId: String, artistId: String) {
+    private fun insertLink(songId: String, artistId: String) = runBlocking<Unit> {
         db.songArtistMapTable.insertIgnore(SongArtistMap(songId, artistId))
     }
 
-    private fun insertAlbum(id: String, authorsText: String?) {
+    private fun insertAlbum(id: String, authorsText: String?) = runBlocking<Unit> {
         db.albumTable.upsert(Album(id = id, title = "Album $id", authorsText = authorsText))
     }
 
-    private fun linkSongToAlbum(songId: String, albumId: String, position: Int = 0) {
+    private fun linkSongToAlbum(songId: String, albumId: String, position: Int = 0) = runBlocking<Unit> {
         db.songAlbumMapTable.upsert(listOf(SongAlbumMap(songId, albumId, position)))
     }
 
-    private fun songArtists(id: String): String? = db.songTable.findByIdDirect(id)?.artistsText
+    private fun songArtists(id: String): String? = runBlocking { db.songTable.findByIdDirect(id)?.artistsText }
 
-    private fun albumAuthors(id: String): String? = db.albumTable.findByIdDirect(id)?.authorsText
+    private fun albumAuthors(id: String): String? = runBlocking { db.albumTable.findByIdDirect(id)?.authorsText }
 
     /** Runs the real sweep core against the in-memory DAOs. */
     private suspend fun sweep(): ConvergenceSummary =
@@ -111,7 +112,7 @@ class NameConvergenceDbTest {
     // ---- propagateRename (end to end) ----
 
     @Test
-    fun propagateRenameRewritesOnlyLinkedAgreeingCopies() {
+    fun propagateRenameRewritesOnlyLinkedAgreeingCopies() = runBlocking<Unit> {
         insertArtist("UC1", "Aran")
         insertArtist("UC2", "B")
         insertSong("s1", "Aran, B")
@@ -146,7 +147,7 @@ class NameConvergenceDbTest {
     }
 
     @Test
-    fun propagateRenameIsANoOpWhenNothingAgrees() {
+    fun propagateRenameIsANoOpWhenNothingAgrees() = runBlocking<Unit> {
         insertArtist("UC1", "Aran (UK)") // the row was already renamed
         insertSong("s1", "Aran (UK)")
         insertLink("s1", "UC1")
@@ -158,7 +159,7 @@ class NameConvergenceDbTest {
     }
 
     @Test
-    fun propagateRenameWithAPrefixedNewNameYieldsCleanCopies() {
+    fun propagateRenameWithAPrefixedNewNameYieldsCleanCopies() = runBlocking<Unit> {
         // a prefixed row name must never reach a copy: no "modified:" at a token
         // position (cleanPrefix only cuts at the head of a copy)
         insertArtist("UC1", "Aran")
@@ -176,7 +177,7 @@ class NameConvergenceDbTest {
     }
 
     @Test
-    fun propagateRenameTrimsTrailingSpacesInTheRowNames() {
+    fun propagateRenameTrimsTrailingSpacesInTheRowNames() = runBlocking<Unit> {
         // the live database has row names with trailing spaces ("RoughSketch  "):
         // the agreement rule (old name) and the replacement (new name) must be
 

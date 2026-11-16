@@ -90,9 +90,9 @@ class LastFmScrobbleManagerTest {
         every { prefs.getInt(lastfmMaxScrobbleDelaySecondsKey, 50) } returns 50
 
         mockkStatic("app.n_zik.android.utils.MediaItemUtilsKt")
-        every { any<MediaItem>().artistTextOrDb() } returns "Artist"
-        every { any<MediaItem>().titleOrDb() } returns "Title"
-        every { any<MediaItem>().albumTitleOrDb() } returns "Album"
+        coEvery { any<MediaItem>().artistTextOrDb() } returns "Artist"
+        coEvery { any<MediaItem>().titleOrDb() } returns "Title"
+        coEvery { any<MediaItem>().albumTitleOrDb() } returns "Album"
 
         mockkObject(LastFm)
         every { LastFm.initialize(any(), any()) } just Runs
@@ -217,7 +217,7 @@ class LastFmScrobbleManagerTest {
         fun `blank metadata is never sent`() {
             withManager { manager ->
                 val blankItem = onlineItem(id = "blankMeta")
-                every { blankItem.titleOrDb() } returns ""
+                coEvery { blankItem.titleOrDb() } returns ""
 
                 manager.onTrackTransition(blankItem, 60_000L)
 

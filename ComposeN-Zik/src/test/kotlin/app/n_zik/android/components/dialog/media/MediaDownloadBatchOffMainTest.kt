@@ -3,8 +3,10 @@ package app.n_zik.android.components.dialog.media
 import androidx.media3.datasource.cache.Cache
 import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.FormatTable
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import io.mockk.Runs
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -27,7 +29,7 @@ import java.util.concurrent.CopyOnWriteArrayList
  * thread; a null cache must still run `onAction` (it only skips the eviction).
  *
  * Plain JUnit 5 — [runDownloadBatch] only reads `Song.id` (no `asMediaItem`, no Android
- * framework dependency). [Database] is mocked (relaxed) to no-op the internal `asyncTransaction`.
+ * framework dependency). [Database] is mocked (relaxed) to execute the suspending format cleanup without a real database.
  */
 class MediaDownloadBatchOffMainTest {
 
@@ -44,13 +46,26 @@ class MediaDownloadBatchOffMainTest {
     fun `runDownloadBatch evicts the cache and runs onAction per song off the caller thread`() = runBlocking {
         val callerThread = Thread.currentThread()
         val cache = mockk<Cache>()
-        every { cache.removeResource(any()) } just Runs
         mockkObject(Database)
-        every { Database.asyncTransaction(any(), any()) } just Runs
+        val order = CopyOnWriteArrayList<String>()
+        val formats = mockk<FormatTable>()
+        every { Database.formatTable } returns formats
+        every { cache.removeResource(any()) } answers { order += "cache:${firstArg<String>()}" }
+        coEvery { formats.deleteBySongId(any()) } coAnswers {
+            order += "format:${firstArg<String>()}"
+            1
+        }
+        coEvery { Database.awaitWriteBatch<Unit>(any(), any()) } coAnswers {
+            val ownsBatch = firstArg<Int>() == 1
+            if (ownsBatch) order += "begin"
+            secondArg<suspend Database.() -> Unit>().invoke(Database)
+            if (ownsBatch) order += "end"
+        }
 
         val actions = CopyOnWriteArrayList<Song>()
         val actionThreads = CopyOnWriteArrayList<Thread>()
         val onAction: (Song) -> Unit = { song ->
+            order += "action:${song.id}"
             actions += song
             actionThreads += Thread.currentThread()
         }
@@ -59,6 +74,10 @@ class MediaDownloadBatchOffMainTest {
             runDownloadBatch(songs(3), cache, onAction)
         }
 
+        assertEquals(
+            songs(3).flatMap { listOf("begin", "cache:${it.id}", "format:${it.id}", "action:${it.id}", "end") },
+            order,
+        )
         assertEquals(3, actions.size)
         assertEquals(3, actionThreads.size)
         actionThreads.forEach { assertNotEquals(callerThread, it) }
@@ -68,7 +87,10 @@ class MediaDownloadBatchOffMainTest {
     @Test
     fun `runDownloadBatch still runs onAction per song when the cache is null`() = runBlocking {
         mockkObject(Database)
-        every { Database.asyncTransaction(any(), any()) } just Runs
+        every { Database.formatTable } returns mockk<FormatTable>(relaxed = true)
+        coEvery { Database.awaitWriteBatch<Unit>(any(), any()) } coAnswers {
+            secondArg<suspend Database.() -> Unit>().invoke(Database)
+        }
 
         val actions = CopyOnWriteArrayList<Song>()
         withContext(NzikDispatchers.DATA) {
@@ -83,7 +105,7 @@ class MediaDownloadBatchOffMainTest {
         val cache = mockk<Cache>()
         every { cache.removeResource(any()) } just Runs
         mockkObject(Database)
-        every { Database.asyncTransaction(any(), any()) } just Runs
+        coEvery { Database.awaitWriteBatch<Unit>(any(), any()) } just Runs
 
         val actions = CopyOnWriteArrayList<Song>()
         withContext(NzikDispatchers.DATA) {

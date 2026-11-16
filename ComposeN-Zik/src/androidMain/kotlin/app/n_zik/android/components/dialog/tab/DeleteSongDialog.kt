@@ -2,7 +2,6 @@ package app.n_zik.android.components.dialog.tab
 
 import android.content.ContentUris
 import android.provider.MediaStore
-import app.n_zik.android.core.database.*
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -64,22 +63,17 @@ open class DeleteSongDialog(
 
     override fun onConfirm() {
         song.ifPresent { s ->
-            Database.asyncTransaction {
-                menuState.hide()
-                binder?.cache?.removeResource( s.id )
-                binder?.downloadCache?.removeResource( s.id )
-                songPlaylistMapTable.deleteBySongId( s.id )
-                formatTable.deleteBySongId( s.id )
-                songTable.delete( s )
-                WaveformExtractor.deleteWaveform(appContext(), s.id)
-            }
-
-            // File/MediaStore I/O must not run on Main; Toast only after it completes.
-            // This class has no Compose scope, so the launch uses a fire-and-forget UI scope:
-            //
-            // allocated per call, never cancelled (delete + toast must run to completion).
+            menuState.hide()
             NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                deleteSongFiles( s )
+                Database.awaitWriteBatch {
+                    binder?.cache?.removeResource(s.id)
+                    binder?.downloadCache?.removeResource(s.id)
+                    songPlaylistMapTable.deleteBySongId(s.id)
+                    formatTable.deleteBySongId(s.id)
+                    songTable.delete(s)
+                    WaveformExtractor.deleteWaveform(appContext(), s.id)
+                    deleteSongFiles(s)
+                }
                 Toaster.i( R.string.common_delete_success )
             }
         }

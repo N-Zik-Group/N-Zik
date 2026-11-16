@@ -11,6 +11,8 @@ import app.n_zik.android.core.database.SongAlbumMapTable
 import app.n_zik.android.core.database.SongArtistMapTable
 import app.n_zik.android.core.database.SongTable
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import io.mockk.coVerify
+import io.mockk.coEvery
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -216,14 +218,14 @@ class StreamResolverPageCacheTest {
         stubNextPage(videoId)
         every { songArtistMapTable.findArtistsOf(videoId) } returns flowOf(listOf(stored))
         every { songAlbumMapTable.findAlbumOf(videoId) } returns flowOf(null)
-        every { artistTable.findByIdDirect(artistId) } returns stored
+        coEvery { artistTable.findByIdDirect(artistId) } returns stored
         coEvery { Innertube.artistPage(browseId = artistId) } returns
             artistPageResult(Result.success(artistPage(name = null, thumbnailUrl = null)))
 
         upsertSongInfo(videoId)
 
         val payload = slot<Artist>()
-        verify(timeout = 15_000) { artistTable.upsert(capture(payload)) }
+        coVerify(timeout = 15_000) { artistTable.upsert(capture(payload)) }
         // The empty page keeps the stored name + thumbnail...
         assertEquals("Strike44", payload.captured.name)
         assertEquals("https://stored/thumb", payload.captured.thumbnailUrl)
@@ -249,14 +251,14 @@ class StreamResolverPageCacheTest {
         stubNextPage(videoId)
         every { songArtistMapTable.findArtistsOf(videoId) } returns flowOf(listOf(stored))
         every { songAlbumMapTable.findAlbumOf(videoId) } returns flowOf(null)
-        every { artistTable.findByIdDirect(artistId) } returns stored
+        coEvery { artistTable.findByIdDirect(artistId) } returns stored
         coEvery { Innertube.artistPage(browseId = artistId) } returns
             artistPageResult(Result.success(artistPage(name = "Tanger", thumbnailUrl = "https://fetched/thumb")))
 
         upsertSongInfo(videoId)
 
         val payload = slot<Artist>()
-        verify(timeout = 15_000) { artistTable.upsert(capture(payload)) }
+        coVerify(timeout = 15_000) { artistTable.upsert(capture(payload)) }
         // A non-blank fetch still wins over an unmodified stored value.
         assertEquals("Tanger", payload.captured.name)
         assertEquals("https://fetched/thumb", payload.captured.thumbnailUrl)
@@ -278,7 +280,7 @@ class StreamResolverPageCacheTest {
         stubNextPage(videoId)
         every { songArtistMapTable.findArtistsOf(videoId) } returns flowOf(emptyList())
         every { songAlbumMapTable.findAlbumOf(videoId) } returns flowOf(stored)
-        every { albumTable.findByIdDirect(albumId) } returns stored
+        coEvery { albumTable.findByIdDirect(albumId) } returns stored
         // Empty album page: no title, no thumbnail, no authors, no year —
         // but a non-empty track list (a zero-song page is a no-op, not an
 
@@ -297,10 +299,10 @@ class StreamResolverPageCacheTest {
         upsertSongInfo(videoId)
 
         val payload = slot<Album>()
-        verify(timeout = 15_000) { albumTable.upsert(capture(payload)) }
+        coVerify(timeout = 15_000) { albumTable.upsert(capture(payload)) }
         // Await the rest of the transaction block (map clear + upsert) so no
         // mock call lands after the teardown.
-        verify(timeout = 15_000) { songAlbumMapTable.upsert(any()) }
+        coVerify(timeout = 15_000) { songAlbumMapTable.upsert(any()) }
         assertEquals("Stored title", payload.captured.title)
         assertEquals("https://stored/thumb", payload.captured.thumbnailUrl)
         assertEquals("Stored artists", payload.captured.authorsText)
@@ -323,7 +325,7 @@ class StreamResolverPageCacheTest {
         stubNextPage(videoId)
         every { songArtistMapTable.findArtistsOf(videoId) } returns flowOf(emptyList())
         every { songAlbumMapTable.findAlbumOf(videoId) } returns flowOf(stored)
-        every { albumTable.findByIdDirect(albumId) } returns stored
+        coEvery { albumTable.findByIdDirect(albumId) } returns stored
         coEvery { YtMusic.getAlbum(albumId, true) } returns getAlbumResult(
             albumPage(
                 albumId = albumId,
@@ -338,8 +340,8 @@ class StreamResolverPageCacheTest {
         upsertSongInfo(videoId)
 
         val payload = slot<Album>()
-        verify(timeout = 15_000) { albumTable.upsert(capture(payload)) }
-        verify(timeout = 15_000) { songAlbumMapTable.upsert(any()) }
+        coVerify(timeout = 15_000) { albumTable.upsert(capture(payload)) }
+        coVerify(timeout = 15_000) { songAlbumMapTable.upsert(any()) }
         // A non-blank page still overwrites an unmodified stored row.
         assertEquals("Fetched title", payload.captured.title)
         assertEquals("https://fetched/thumb", payload.captured.thumbnailUrl)

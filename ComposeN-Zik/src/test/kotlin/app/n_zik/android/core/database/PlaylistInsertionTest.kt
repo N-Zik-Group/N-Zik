@@ -67,15 +67,15 @@ class PlaylistInsertionTest {
         setActiveProfile("default", context)
     }
 
-    private fun add(vararg ids: String) {
+    private fun add(vararg ids: String) = runBlocking<Unit> {
         Database.mapIgnore(playlist, *ids.map { Song.makePlaceholder(it) }.toTypedArray())
     }
 
     private fun begin() = preferences.set(playlist.id, PlaylistInsertionPosition.Beginning)
-    private fun ids() = db.songPlaylistMapTable.songsByPositionDirect(playlist.id).map { it.id }
-    private fun positions() = ids().map { db.songPlaylistMapTable.findPositionOf(it, playlist.id) }
+    private fun ids() = runBlocking { db.songPlaylistMapTable.songsByPositionDirect(playlist.id).map { it.id } }
+    private fun positions() = runBlocking { ids().map { db.songPlaylistMapTable.findPositionOf(it, playlist.id) } }
 
-    @Test fun `missing preference appends after max including gaps`() {
+    @Test fun `missing preference appends after max including gaps`() = runBlocking<Unit> {
         add("A", "B")
         db.songPlaylistMapTable.updatePosition(playlist.id, "B", 9)
         add("C", "D")
@@ -93,7 +93,7 @@ class PlaylistInsertionTest {
         assertEquals(listOf("A", "B", "C"), ids())
     }
 
-    @Test fun `beginning keeps incoming order and existing gaps`() {
+    @Test fun `beginning keeps incoming order and existing gaps`() = runBlocking<Unit> {
         add("A", "B")
         db.songPlaylistMapTable.updatePosition(playlist.id, "B", 9)
         begin()
@@ -182,7 +182,7 @@ class PlaylistInsertionTest {
         }
     }
 
-    @Test fun `explicit mapping keeps requested position despite preference`() {
+    @Test fun `explicit mapping keeps requested position despite preference`() = runBlocking<Unit> {
         add("A")
         begin()
         db.songTable.insertIgnore(Song.makePlaceholder("C"))
@@ -191,7 +191,7 @@ class PlaylistInsertionTest {
         assertEquals(listOf(0, 7), positions())
     }
 
-    @Test fun `remote playlists suppress option and always append`() {
+    @Test fun `remote playlists suppress option and always append`() = runBlocking<Unit> {
         begin()
         val remote = playlist.copy(browseId = "VLremote", isYoutubePlaylist = true)
         assertFalse(remote.supportsInsertionPosition())
@@ -203,7 +203,7 @@ class PlaylistInsertionTest {
         assertEquals(listOf("A", "B"), ids())
     }
 
-    @Test fun `generated playlist id supports normal default insertion`() {
+    @Test fun `generated playlist id supports normal default insertion`() = runBlocking<Unit> {
         Database.mapIgnore(Playlist(name = "New"), Song.makePlaceholder("C"), Song.makePlaceholder("D"))
         db.openHelper.readableDatabase.query("SELECT songId FROM SongPlaylistMap ORDER BY position").use {
             val result = mutableListOf<String>()
@@ -212,7 +212,7 @@ class PlaylistInsertionTest {
         }
     }
 
-    @Test fun `YouTube and CSV import batch prepends in order and still upserts existing metadata`() {
+    @Test fun `YouTube and CSV import batch prepends in order and still upserts existing metadata`() = runBlocking<Unit> {
         add("A", "B")
         begin()
         val updated = Song.makePlaceholder("A").copy(title = "Imported metadata", totalPlayTimeMs = 1L)
@@ -222,7 +222,7 @@ class PlaylistInsertionTest {
         assertEquals(1L, db.songTable.findByIdDirect("A")?.totalPlayTimeMs)
     }
 
-    @Test fun `service import records actual positions and later prepends move pending matches together`() {
+    @Test fun `service import records actual positions and later prepends move pending matches together`() = runBlocking<Unit> {
         add("A", "B")
         begin()
         val observedPositions = mutableListOf<Int>()
@@ -242,7 +242,7 @@ class PlaylistInsertionTest {
         assertEquals(listOf("E", "C", "D", "A", "B"), ids())
     }
 
-    @Test fun `import failure rolls back metadata and shifted pending matches`() {
+    @Test fun `import failure rolls back metadata and shifted pending matches`() = runBlocking<Unit> {
         add("A", "B")
         db.importSongTable.insert(ImportSong(originalId = "A", position = 0, playlistId = playlist.id))
         begin()
@@ -259,7 +259,7 @@ class PlaylistInsertionTest {
         assertEquals(0, db.importSongTable.getPosition("A", playlist.id))
     }
 
-    @Test fun `service CSV parser completes one ordered batch before reporting success`() {
+    @Test fun `service CSV parser completes one ordered batch before reporting success`() = runBlocking<Unit> {
         add("A", "B")
         begin()
         val csv = File.createTempFile("service-import", ".csv", context.cacheDir)

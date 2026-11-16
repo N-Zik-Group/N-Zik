@@ -12,6 +12,7 @@ import io.mockk.unmockkAll
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.models.ArtistConjunctions
 import app.n_zik.innertube.models.NavigationEndpoint
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -85,11 +86,11 @@ class DatabaseUpsertArtistsTextTest {
         thumbnail = null
     )
 
-    private fun insertArtist(id: String, name: String) {
+    private fun insertArtist(id: String, name: String) = runBlocking<Unit> {
         db.artistTable.upsert(Artist(id = id, name = name))
     }
 
-    private fun insertLink(songId: String, artistId: String) {
+    private fun insertLink(songId: String, artistId: String) = runBlocking<Unit> {
         db.songArtistMapTable.insertIgnore(SongArtistMap(songId, artistId))
     }
 

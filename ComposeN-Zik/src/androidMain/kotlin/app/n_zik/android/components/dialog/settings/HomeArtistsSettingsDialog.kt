@@ -124,7 +124,7 @@ object HomeArtistsSettingsDialog : ContentFramedDialog {
                 edit.putString(excludeDislikedArtistsKey, if (workingToggles["disliked"] == true) DislikeMode.Enabled.name else DislikeMode.Disabled.name)
                 edit.apply()
                 if (workingToggles["disliked"] == false) {
-                    Database.artistTable.clearAllDisliked()
+                    Database.asyncTransaction { artistTable.clearAllDisliked() }
                 }
                 Toaster.s(R.string.settings_preference_saved_message); hideDialog()
             }

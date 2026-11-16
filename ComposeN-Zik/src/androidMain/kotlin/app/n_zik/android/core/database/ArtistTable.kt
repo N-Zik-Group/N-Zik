@@ -100,10 +100,10 @@ interface ArtistTable {
     fun findById( artistId: String ): Flow<Artist?>
 
     @Query("SELECT DISTINCT * FROM Artist WHERE id = :artistId")
-    fun findByIdDirect( artistId: String ): Artist?
+    suspend fun findByIdDirect( artistId: String ): Artist?
 
     @Query("SELECT * FROM Artist WHERE substr(id, 1, 13) = 'LOCAL_ARTIST_' OR id LIKE 'local:%' ORDER BY id")
-    fun deviceArtistsDirect(): List<Artist>
+    suspend fun deviceArtistsDirect(): List<Artist>
 
     @Query("""
         SELECT DISTINCT Artist.*
@@ -114,7 +114,7 @@ interface ArtistTable {
     fun findBySongId( songId: String ): Flow<List<Artist>>
 
     @Query("SELECT DISTINCT Artist.* FROM SongArtistMap JOIN Artist ON id = artistId WHERE songId = :songId")
-    fun findBySongIdDirect( songId: String ): List<Artist>
+    suspend fun findBySongIdDirect( songId: String ): List<Artist>
 
     /**
      * @param name artist name to search for (case-insensitive)
@@ -124,14 +124,14 @@ interface ArtistTable {
     fun findByName( name: String ): Flow<Artist?>
 
     @Query("SELECT DISTINCT * FROM Artist WHERE name = :name COLLATE NOCASE LIMIT 1")
-    fun findByNameDirect( name: String ): Artist?
+    suspend fun findByNameDirect( name: String ): Artist?
 
     /**
      * @param name artist name to search for (case-insensitive)
      * @return all [Artist] rows that match the name
      */
     @Query("SELECT DISTINCT * FROM Artist WHERE name = :name COLLATE NOCASE")
-    fun allByNameIgnoreCase( name: String ): List<Artist>
+    suspend fun allByNameIgnoreCase( name: String ): List<Artist>
 
     /**
      * @return one representative name per group of artists stored under the same
@@ -145,21 +145,21 @@ interface ArtistTable {
         GROUP BY name COLLATE NOCASE
         HAVING COUNT( * ) > 1
     """)
-    fun sameNameGroups(): List<String>
+    suspend fun sameNameGroups(): List<String>
 
     /**
      * @param mbId of a MusicBrainz artist
      * @return [Artist] that has [Artist.mbId] matches [mbId]
      */
     @Query("SELECT DISTINCT * FROM Artist WHERE mbId = :mbId LIMIT 1")
-    fun getByMbId( mbId: String ): Artist?
+    suspend fun getByMbId( mbId: String ): Artist?
 
     /**
      * @param channelId of a YouTube channel
      * @return [Artist] that has [Artist.youtubeChannelId] matches [channelId]
      */
     @Query("SELECT DISTINCT * FROM Artist WHERE youtubeChannelId = :channelId LIMIT 1")
-    fun getByYoutubeChannelId( channelId: String ): Artist?
+    suspend fun getByYoutubeChannelId( channelId: String ): Artist?
 
     /**
      * @return followed or in-library artists that still have no MusicBrainz metadata
@@ -184,7 +184,7 @@ interface ArtistTable {
             bookmarkedAt DESC
         LIMIT :limit
     """)
-    fun artistsWithoutMbData( limit: Int ): List<Artist>
+    suspend fun artistsWithoutMbData( limit: Int ): List<Artist>
 
     /**
      * @return all albums of the given artist
@@ -199,7 +199,7 @@ interface ArtistTable {
           AND S.totalPlayTimeMs >= 1
         ORDER BY A.ROWID
     """)
-    fun getAlbumsByArtist( artistId: String ): List<Album>
+    suspend fun getAlbumsByArtist( artistId: String ): List<Album>
 
     /**
      * @return the albums of the given artist ordered by total play time (desc),
@@ -217,7 +217,7 @@ interface ArtistTable {
         ORDER BY IFNULL(SUM(E.playtime), 0) DESC
         LIMIT :limit
     """)
-    fun getTopAlbumsByArtist( artistId: String, limit: Int ): List<Album>
+    suspend fun getTopAlbumsByArtist( artistId: String, limit: Int ): List<Album>
 
     /**
      * @return the number of bookmarked albums of the given artist.
@@ -230,7 +230,7 @@ interface ArtistTable {
         WHERE saa.artistId = :artistId
           AND A.bookmarkedAt IS NOT NULL
     """)
-    fun getBookmarkedAlbumsCountByArtist( artistId: String ): Int
+    suspend fun getBookmarkedAlbumsCountByArtist( artistId: String ): Int
 
     /**
      * @return most listened songs of the given artist
@@ -243,7 +243,7 @@ interface ArtistTable {
         ORDER BY S.totalPlayTimeMs DESC
         LIMIT :limit
     """)
-    fun getTopSongsByArtist( artistId: String, limit: Int ): List<Song>
+    suspend fun getTopSongsByArtist( artistId: String, limit: Int ): List<Song>
 
     /**
      * @return whether [Artist] with id [artistId] is followed by user,
@@ -264,15 +264,15 @@ interface ArtistTable {
 
     /** Inserts [artist], silently skipping it when the row already exists (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertIgnore( artist: Artist )
+    suspend fun insertIgnore( artist: Artist )
 
     /** Inserts [artists], silently skipping each existing row (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertIgnore( artists: List<Artist> )
+    suspend fun insertIgnore( artists: List<Artist> )
 
     /** Inserts [artist], replacing the existing row's columns when its primary key already exists. */
     @Upsert
-    fun upsert( artist: Artist )
+    suspend fun upsert( artist: Artist )
 
     @Query("""
         UPDATE Artist SET
@@ -282,7 +282,7 @@ interface ArtistTable {
             position = :position
         WHERE id = :id
     """)
-    fun updateMetadata(
+    suspend fun updateMetadata(
         id: String,
         name: String?,
         thumbnailUrl: String?,
@@ -294,7 +294,7 @@ interface ArtistTable {
         INSERT OR IGNORE INTO Artist (id, name, thumbnailUrl, timestamp, isYoutubeArtist, position)
         VALUES (:id, :name, :thumbnailUrl, :timestamp, :isYoutubeArtist, :position)
     """)
-    fun insertMetadata(
+    suspend fun insertMetadata(
         id: String,
         name: String?,
         thumbnailUrl: String?,
@@ -305,7 +305,7 @@ interface ArtistTable {
 
     /** Inserts [artists], silently skipping each existing row (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun upsert( artists: List<Artist> )
+    suspend fun upsert( artists: List<Artist> )
 
     /**
      * Replaces the row with [artist]; a conflict throws [SQLException]
@@ -315,10 +315,10 @@ interface ArtistTable {
      */
     @Update
     @Throws(SQLException::class)
-    fun update( artist: Artist )
+    suspend fun update( artist: Artist )
 
     @Query("UPDATE Artist SET thumbnailUrl = :url WHERE id = :id")
-    fun updateCover(id: String, url: String)
+    suspend fun updateCover(id: String, url: String)
 
     /**
      * Toggles [Artist.bookmarkedAt]: not followed → current time (millis),
@@ -336,7 +336,7 @@ interface ArtistTable {
         END
         WHERE id = :artistId
     """)
-    fun toggleFollow( artistId: String ): Int
+    suspend fun toggleFollow( artistId: String ): Int
 
     /**
      * Set the explicit follow state of an artist (PC bridge, contract §10.2, since 1.7):
@@ -359,7 +359,7 @@ interface ArtistTable {
         END
         WHERE id = :artistId
     """)
-    fun followState( artistId: String, followState: Boolean? ): Int
+    suspend fun followState( artistId: String, followState: Boolean? ): Int
 
     /**
      * Rotate like state for an artist: neutral → followed → disliked → neutral
@@ -385,7 +385,7 @@ interface ArtistTable {
             END
         WHERE id = :artistId
     """)
-    fun rotateLikeState( artistId: String ): Int
+    suspend fun rotateLikeState( artistId: String ): Int
 
     /**
      * Reset the artist-page fetch TTL ([Artist.lastFetch] → NULL) so the next
@@ -398,7 +398,7 @@ interface ArtistTable {
      * @return number of artists affected by this operation
      */
     @Query("UPDATE Artist SET lastFetch = NULL WHERE id = :artistId")
-    fun resetFetchTtl( artistId: String ): Int
+    suspend fun resetFetchTtl( artistId: String ): Int
 
     @Query("""
         UPDATE Artist
@@ -409,7 +409,7 @@ interface ArtistTable {
             dislikedAt = NULL
         WHERE id = :artistId
     """)
-    fun toggleBookmark( artistId: String ): Int
+    suspend fun toggleBookmark( artistId: String ): Int
 
     /**
      * @return like state of artist: true = followed, false = disliked, null = neutral
@@ -455,10 +455,10 @@ interface ArtistTable {
             END
         WHERE id = :artistId
     """)
-    fun toggleDislike( artistId: String ): Int
+    suspend fun toggleDislike( artistId: String ): Int
 
     @Query("UPDATE Artist SET dislikedAt = NULL WHERE dislikedAt IS NOT NULL")
-    fun clearAllDisliked(): Int
+    suspend fun clearAllDisliked(): Int
 
     /**
      * @return whether [Artist] with id [artistId] is disliked
@@ -489,7 +489,7 @@ interface ArtistTable {
     fun allDisliked( limit: Int = Int.MAX_VALUE ): Flow<List<Artist>>
 
     @Query("UPDATE Artist SET position = :position WHERE id = :artistId")
-    fun updatePosition( artistId: String, position: Int ): Int
+    suspend fun updatePosition( artistId: String, position: Int ): Int
 
     /**
      * Delete all artists that have no songs mapped to them
@@ -505,10 +505,10 @@ interface ArtistTable {
         )
         AND bookmarkedAt IS NULL
     """)
-    fun deleteOrphaned(): Int
+    suspend fun deleteOrphaned(): Int
 
     @Query("DELETE FROM Artist WHERE id = :id")
-    fun deleteById(id: String): Int
+    suspend fun deleteById(id: String): Int
 
     //<editor-fold defaultstate="collapsed" desc="Sort all">
     @Query("""

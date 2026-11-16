@@ -199,7 +199,7 @@ class AutoRealSessionQueueOwnershipTest {
     @Test fun `real browser subscribes root and emitted folders receives refresh and rejects unknown or playable parents`() {
         val songs = mockk<SongTable>()
         every { Database.songTable } returns songs
-        every { songs.findByIdDirect(any()) } returns null
+        coEvery { songs.findByIdDirect(any()) } returns null
         val root = await(first.getLibraryRoot(null)).value
         assertEquals(true, root?.mediaMetadata?.isBrowsable)
         assertEquals(0, await(first.subscribe(PlayerServiceModern.ROOT, null)).resultCode)
@@ -436,7 +436,7 @@ class AutoRealSessionQueueOwnershipTest {
         val lookupEntered = CountDownLatch(1)
         val lookupRelease = CountDownLatch(1)
         val lookupFinished = CountDownLatch(1)
-        every { songs.findByIdsDirect(listOf("duration-pending")) } answers {
+        coEvery { songs.findByIdsDirect(listOf("duration-pending")) } coAnswers {
             lookupEntered.countDown()
             try {
                 assertTrue(lookupRelease.await(15, TimeUnit.SECONDS))

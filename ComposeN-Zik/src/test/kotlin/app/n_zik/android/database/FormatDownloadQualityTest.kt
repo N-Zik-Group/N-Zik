@@ -7,6 +7,8 @@ import app.n_zik.android.models.Format
 import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.core.database.FormatTable
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -47,16 +49,16 @@ class FormatDownloadQualityTest {
         db.close()
     }
 
-    private fun insertSong(id: String) {
+    private fun insertSong(id: String) = runBlocking<Unit> {
         db.songTable.upsert(Song.makePlaceholder(id))
     }
 
-    private fun insertFormat(songId: String, downloadQuality: String?) {
+    private fun insertFormat(songId: String, downloadQuality: String?) = runBlocking<Unit> {
         formatDao.upsert(Format(songId = songId, itag = 251, downloadQuality = downloadQuality))
     }
 
     @Test
-    fun `a download tracked with the current setting is compliant`() {
+    fun `a download tracked with the current setting is compliant`() = runTest {
         insertSong("s1")
         insertFormat("s1", "High")
 
@@ -65,7 +67,7 @@ class FormatDownloadQualityTest {
     }
 
     @Test
-    fun `a download tracked with a different setting is non-compliant`() {
+    fun `a download tracked with a different setting is non-compliant`() = runTest {
         insertSong("s1")
         insertFormat("s1", "Low")
 
@@ -74,7 +76,7 @@ class FormatDownloadQualityTest {
     }
 
     @Test
-    fun `a download with a null tracking value is non-compliant`() {
+    fun `a download with a null tracking value is non-compliant`() = runTest {
         insertSong("s1")
         insertFormat("s1", null)
 
@@ -83,7 +85,7 @@ class FormatDownloadQualityTest {
     }
 
     @Test
-    fun `an auto tracked download is compliant with the auto setting`() {
+    fun `an auto tracked download is compliant with the auto setting`() = runTest {
         insertSong("s1")
         insertFormat("s1", "Auto")
 
@@ -92,7 +94,7 @@ class FormatDownloadQualityTest {
     }
 
     @Test
-    fun `a mixed batch reports only the non-compliant downloads`() {
+    fun `a mixed batch reports only the non-compliant downloads`() = runTest {
         insertSong("compliant")
         insertSong("different")
         insertSong("nullTracked")
@@ -112,7 +114,7 @@ class FormatDownloadQualityTest {
     }
 
     @Test
-    fun `songs without a format row are excluded from the tracked set`() {
+    fun `songs without a format row are excluded from the tracked set`() = runTest {
         insertSong("tracked")
         insertSong("untracked")
         insertFormat("tracked", "High")

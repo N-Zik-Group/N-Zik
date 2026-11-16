@@ -53,7 +53,7 @@ class LyricsTableTest {
     }
 
     /** Insert a minimal Song so that the FK constraint on Lyrics is satisfied. */
-    private fun insertSong(id: String) {
+    private fun insertSong(id: String) = runBlocking<Unit> {
         db.songTable.upsert(Song.makePlaceholder(id))
     }
 

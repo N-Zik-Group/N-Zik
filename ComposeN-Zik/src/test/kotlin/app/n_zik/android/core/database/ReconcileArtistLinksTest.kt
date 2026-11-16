@@ -11,6 +11,7 @@ import app.n_zik.android.core.database.DatabaseInitializer
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -63,21 +64,21 @@ class ReconcileArtistLinksTest {
     }
 
     /** Insert a minimal Song so that the FK constraint on SongArtistMap is satisfied. */
-    private fun insertSong(id: String) {
+    private fun insertSong(id: String) = runBlocking<Unit> {
         db.songTable.upsert(Song.makePlaceholder(id))
     }
 
     /** Insert an artist row so that the FK constraint on SongArtistMap is satisfied. */
-    private fun insertArtist(id: String, name: String) {
+    private fun insertArtist(id: String, name: String) = runBlocking<Unit> {
         db.artistTable.upsert(Artist(id = id, name = name))
     }
 
-    private fun insertLink(songId: String, artistId: String) {
+    private fun insertLink(songId: String, artistId: String) = runBlocking<Unit> {
         db.songArtistMapTable.insertIgnore(SongArtistMap(songId, artistId))
     }
 
     private fun linksOf(songId: String): Set<SongArtistMap> =
-        db.songArtistMapTable.pairsBySongIdDirect(songId).toSet()
+        runBlocking { db.songArtistMapTable.pairsBySongIdDirect(songId).toSet() }
 
     @Test
     fun completeListReplacesStaleLinksAndReturnsDroppedCount() = runTest {
@@ -133,7 +134,7 @@ class ReconcileArtistLinksTest {
         assertEquals("Stored Fresh Name", db.artistTable.findByIdDirect("NEW_A")?.name)
     }
     @Test
-    fun coverUpdatePreservesArtistFieldsRefreshedWhileEditing() {
+    fun coverUpdatePreservesArtistFieldsRefreshedWhileEditing() = runBlocking<Unit> {
         val stale = Artist(id = "ARTIST", name = "Old name")
         val current = stale.copy(name = "Refreshed name", bookmarkedAt = 42L, lastFetch = 100L)
         db.artistTable.upsert(current)

@@ -134,15 +134,15 @@ interface PlaylistTable {
      */
     @Insert
     @Throws(SQLException::class)
-    fun insert( playlist: Playlist ): Long
+    suspend fun insert( playlist: Playlist ): Long
 
     /** Inserts [playlist], silently skipping it when the row already exists (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertIgnore( playlist: Playlist )
+    suspend fun insertIgnore( playlist: Playlist )
 
     /** Inserts [playlist], replacing the existing row's columns when its primary key already exists. */
     @Upsert
-    fun upsert( playlist: Playlist )
+    suspend fun upsert( playlist: Playlist )
 
     /**
      * Replaces the row with [playlist]; a conflict throws [SQLException]
@@ -152,14 +152,14 @@ interface PlaylistTable {
      */
     @Update
     @Throws(SQLException::class)
-    fun update( playlist: Playlist ): Int
+    suspend fun update( playlist: Playlist ): Int
 
     /** Deletes [playlist]; returns the number of rows affected. */
     @Delete
-    fun delete( playlist: Playlist ): Int
+    suspend fun delete( playlist: Playlist ): Int
 
     @Query("SELECT * FROM Playlist")
-    fun getAll(): List<Playlist>
+    suspend fun getAll(): List<Playlist>
 
     /**
      * @return whether a playlist with name [playlistName] exists in the database
@@ -172,7 +172,7 @@ interface PlaylistTable {
     fun exists( playlistName: String ): Flow<Boolean>
 
     @Query("SELECT COUNT(*) > 0 FROM Playlist WHERE name = :playlistName")
-    fun existsDirect( playlistName: String ): Boolean
+    suspend fun existsDirect( playlistName: String ): Boolean
 
     /**
      * Toggles the [PINNED_PREFIX] on [Playlist.name]: unpinned → prefixed,
@@ -187,7 +187,7 @@ interface PlaylistTable {
             END
         WHERE id = :playlistId
     """)
-    fun togglePin( playlistId: Long ): Int
+    suspend fun togglePin( playlistId: Long ): Int
 
     /**
      * Set the explicit pin state of a playlist (PC bridge, contract §10.2, since 1.7):
@@ -210,19 +210,19 @@ interface PlaylistTable {
             END
         WHERE id = :playlistId
     """)
-    fun pinState( playlistId: Long, pinned: Boolean ): Int
+    suspend fun pinState( playlistId: Long, pinned: Boolean ): Int
 
     @Query("UPDATE Playlist SET isAutoSync = NOT isAutoSync WHERE id = :playlistId")
-    fun toggleAutoSync( playlistId: Long ): Int
+    suspend fun toggleAutoSync( playlistId: Long ): Int
 
     @Query("SELECT isAutoSync FROM Playlist WHERE id = :playlistId")
     fun isAutoSync( playlistId: Long ): Flow<Boolean>
 
     @Query("UPDATE Playlist SET position = :position WHERE id = :playlistId")
-    fun updatePosition( playlistId: Long, position: Int ): Int
+    suspend fun updatePosition( playlistId: Long, position: Int ): Int
 
     @Query("UPDATE Playlist SET browseId = :browseId WHERE id = :playlistId")
-    fun updateBrowseId( playlistId: Long, browseId: String? ): Int
+    suspend fun updateBrowseId( playlistId: Long, browseId: String? ): Int
 
     //<editor-fold defaultstate="collapsed" desc="Sort as preview">
     @Query("""

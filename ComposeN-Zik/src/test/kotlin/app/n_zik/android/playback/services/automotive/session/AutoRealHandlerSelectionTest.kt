@@ -162,7 +162,7 @@ class AutoRealHandlerSelectionTest {
     }
 
     @Test
-    fun `cached never played songs follow configured title sort and reject missing cache or length`() {
+    fun `cached never played songs follow configured title sort and reject missing cache or length`() = runBlocking<Unit> {
         context.preferences.edit()
             .putString(Preference.HOME_SONGS_OFFLINE_SORT_BY.key, SongSortBy.Title.name)
             .putString(Preference.HOME_SONGS_OFFLINE_SORT_ORDER.key, SortOrder.Descending.name)

@@ -15,11 +15,11 @@ interface SongAlbumMapTable {
 
     /** Upsert [songAlbumMap] rows (insert, or replace on primary key). */
     @Upsert
-    fun upsert( songAlbumMap: List<SongAlbumMap> )
+    suspend fun upsert( songAlbumMap: List<SongAlbumMap> )
 
     /** Remove all songs belonging to album [albumId]. @return number of rows affected. */
     @Query("DELETE FROM SongAlbumMap WHERE albumId = :albumId")
-    fun clear( albumId: String ): Int
+    suspend fun clear( albumId: String ): Int
 
     /** Delete all mappings whose song no longer exists in `Song`. @return rows affected. */
     @Query("""
@@ -29,7 +29,7 @@ interface SongAlbumMapTable {
             FROM Song
         )
     """)
-    fun clearGhostMaps(): Int
+    suspend fun clearGhostMaps(): Int
 
     /** All [Song]s mapped to album [albumId], sorted by position in the album, up to [limit]. */
     @Query("""
@@ -43,7 +43,7 @@ interface SongAlbumMapTable {
     fun allSongsOf( albumId: String, limit: Int = Int.MAX_VALUE ): Flow<List<Song>>
 
     @Query("SELECT DISTINCT Song.* FROM SongAlbumMap JOIN Song ON id = songId WHERE albumId = :albumId ORDER BY SongAlbumMap.position LIMIT :limit")
-    fun allSongsOfDirect( albumId: String, limit: Int = Int.MAX_VALUE ): List<Song>
+    suspend fun allSongsOfDirect( albumId: String, limit: Int = Int.MAX_VALUE ): List<Song>
 
     /**
      * @param artistId of artist to look for
@@ -60,7 +60,7 @@ interface SongAlbumMapTable {
         JOIN SongArtistMap SA ON SA.songId = S.id
         WHERE SA.artistId = :artistId
     """)
-    fun albumsOfArtistDirect( artistId: String ): List<Album>
+    suspend fun albumsOfArtistDirect( artistId: String ): List<Album>
 
     /**
      * All songs of the album ranked by play time (desc), i.e. the album's
@@ -74,7 +74,7 @@ interface SongAlbumMapTable {
         ORDER BY Song.totalPlayTimeMs DESC
         LIMIT :limit
     """)
-    fun getTopSongsOfDirect( albumId: String, limit: Int = Int.MAX_VALUE ): List<Song>
+    suspend fun getTopSongsOfDirect( albumId: String, limit: Int = Int.MAX_VALUE ): List<Song>
 
     /**
      * @return [Album] that the song belongs to
@@ -101,7 +101,7 @@ interface SongAlbumMapTable {
         JOIN SongAlbumMap SAM ON SAM.albumId = A.id
         WHERE SAM.songId = :songId
     """)
-    fun findAlbumsOfDirect( songId: String ): List<Album>
+    suspend fun findAlbumsOfDirect( songId: String ): List<Album>
 
     @Query("""
         SELECT A.* FROM Album A JOIN SongAlbumMap M ON A.id = M.albumId
@@ -135,10 +135,10 @@ interface SongAlbumMapTable {
             END
         )
     """)
-    fun map( songId: String, albumId: String, position: Int = -1 )
+    suspend fun map( songId: String, albumId: String, position: Int = -1 )
 
     @Query("SELECT * FROM SongAlbumMap WHERE substr(albumId, 1, 12) = 'LOCAL_ALBUM_'")
-    fun deviceAlbumPairsDirect(): List<SongAlbumMap>
+    suspend fun deviceAlbumPairsDirect(): List<SongAlbumMap>
 
     /**
      * Delete the source song's links to every album that the target song already holds, so a
@@ -159,13 +159,13 @@ interface SongAlbumMapTable {
         WHERE songId = :oldId
         AND albumId IN ( SELECT albumId FROM SongAlbumMap WHERE songId = :newId )
     """)
-    fun clearConflictingPairs(oldId: String, newId: String): Int
+    suspend fun clearConflictingPairs(oldId: String, newId: String): Int
 
     @Query("UPDATE SongAlbumMap SET songId = :newId WHERE songId = :oldId")
-    fun updateSongId(oldId: String, newId: String)
+    suspend fun updateSongId(oldId: String, newId: String)
 
     @Query("UPDATE SongAlbumMap SET albumId = :newId WHERE albumId = :oldId")
-    fun updateAlbumId(oldId: String, newId: String)
+    suspend fun updateAlbumId(oldId: String, newId: String)
 
     /**
      * Delete all mappings for a specific song
@@ -174,7 +174,7 @@ interface SongAlbumMapTable {
      * @return number of rows affected by this operation
      */
     @Query("DELETE FROM SongAlbumMap WHERE songId = :songId")
-    fun deleteBySongId(songId: String): Int
+    suspend fun deleteBySongId(songId: String): Int
 
     /**
      * Read-only, for the PC bridge (contract §1.1 `Album.trackCount`).
@@ -187,7 +187,7 @@ interface SongAlbumMapTable {
         JOIN Song S ON S.id = sam.songId
         GROUP BY sam.albumId
     """)
-    fun songCountsDirect(): List<SongCount>
+    suspend fun songCountsDirect(): List<SongCount>
 }
 
 /** Number of songs mapped to the album or artist [id]; see [SongAlbumMapTable.songCountsDirect]. */

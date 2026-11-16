@@ -54,16 +54,16 @@ class SongUpdateFavoriteResetTest {
         mockkObject(DatabaseInitializer.Companion)
         every { DatabaseInitializer.Instance } returns internal
         every { internal.transactionExecutor } returns Executor { it.run() }
-        every { Database.syncTransaction(any()) } answers {
+        coEvery { Database.transaction(any()) } coAnswers {
             inTransaction = true
             try {
-                firstArg<Database.() -> Unit>().invoke(Database)
+                firstArg<suspend Database.() -> Unit>().invoke(Database)
             } finally {
                 inTransaction = false
             }
         }
-        every { songTable.findByIdDirect(any()) } answers { storedRows[firstArg<String>()] }
-        every { songTable.updateReplace(any()) } answers {
+        coEvery { songTable.findByIdDirect(any()) } coAnswers { storedRows[firstArg<String>()] }
+        coEvery { songTable.updateReplace(any()) } coAnswers {
             assertTrue("Song changes must share the database transaction", inTransaction)
             writtenRows.add(firstArg())
         }
@@ -123,7 +123,7 @@ class SongUpdateFavoriteResetTest {
         ))
         assertEquals(listOf(stored.copy(likedAt = null, totalPlayTimeMs = 0L)), writtenRows)
         assertEquals(stored.playCount, writtenRows.single().playCount)
-        verify(exactly = 1) { Database.syncTransaction(any()) }
+        coVerify(exactly = 1) { Database.transaction(any()) }
         coVerify(exactly = 0) { Innertube.song(any()) }
     }
 

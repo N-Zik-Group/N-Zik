@@ -242,7 +242,7 @@ fun AlbumScreen(
                 val authorsText: String? = onlineAlbum.authors.artistEntryNames().joinToString(", ")
 
                 Database.asyncTransaction {
-                    syncTransaction {
+                    transaction {
                         val now = System.currentTimeMillis()
                         val inserted = albumTable.insertMetadata(
                             id = browseId,
@@ -275,7 +275,7 @@ fun AlbumScreen(
 
                         online.songs
                             .map(Innertube.SongItem::asMediaItem)
-                            .onEach(::insertIgnore)
+                            .onEach { insertIgnore(it) }
                             .mapIndexed { position, mediaItem ->
                                 SongAlbumMap(
                                     songId = mediaItem.mediaId,
@@ -283,7 +283,7 @@ fun AlbumScreen(
                                     position = position
                                 )
                             }
-                            .also(songAlbumMapTable::upsert)
+                            .also { songAlbumMapTable.upsert(it) }
 
                         // Store the YouTube description so the Insights page can reuse it
                         // as a bio fallback without refetching the album page.

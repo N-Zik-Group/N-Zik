@@ -1,6 +1,5 @@
 package app.n_zik.android.components.album
 
-import app.n_zik.android.core.database.*
 
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
@@ -19,7 +18,7 @@ class AlbumModifier private constructor(
     override val iconId: Int,
     override val messageId: Int,
     private val getDefaultValue: () -> String,
-    private val onConfirm: AlbumTable.(String) -> Unit
+    private val onConfirm: suspend AlbumTable.(String) -> Unit
 ): RenameDialog(activeState, valueState) {
 
     companion object {
@@ -28,7 +27,7 @@ class AlbumModifier private constructor(
             iconId: Int,
             messageId: Int,
             getDefaultValue: () -> String,
-            onConfirm: AlbumTable.(String) -> Unit
+            onConfirm: suspend AlbumTable.(String) -> Unit
         ) = AlbumModifier(
             remember { mutableStateOf(false) },
             remember( getDefaultValue() ) {

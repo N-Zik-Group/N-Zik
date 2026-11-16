@@ -1,6 +1,5 @@
 package app.n_zik.android.core.database
 
-import app.n_zik.android.core.database.*
 
 import android.database.SQLException
 import androidx.room.Dao
@@ -45,7 +44,7 @@ interface FormatTable {
      * @return number of rows affected by this operation
      */
     @Query("DELETE FROM Format WHERE songId = :songId")
-    fun deleteBySongId( songId: String ): Int
+    suspend fun deleteBySongId( songId: String ): Int
 
     /**
      * @param songId of song to look for
@@ -55,15 +54,15 @@ interface FormatTable {
     fun findBySongId( songId: String ): Flow<Format?>
 
     @Query("SELECT DISTINCT * FROM Format WHERE songId = :songId")
-    fun findBySongIdDirect( songId: String ): Format?
+    suspend fun findBySongIdDirect( songId: String ): Format?
 
     /** Inserts [format], silently skipping it when the row already exists (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertIgnore( format: Format )
+    suspend fun insertIgnore( format: Format )
 
     /** Inserts [format], replacing the existing row's columns when its primary key already exists. */
     @Upsert
-    fun upsert( format: Format )
+    suspend fun upsert( format: Format )
 
     /**
      * @return stored [Format.contentLength] of song with id [songId], `0` otherwise
@@ -86,7 +85,7 @@ interface FormatTable {
      * @return number of rows affected by this operation
      */
     @Query("UPDATE Format SET contentLength = :contentLength WHERE songId = :songId")
-    fun updateContentLengthOf( songId: String, contentLength: Long = 0L ): Int
+    suspend fun updateContentLengthOf( songId: String, contentLength: Long = 0L ): Int
 
     /**
      * Songs in [songIds] whose [Format.downloadQuality] is not [downloadQuality].
@@ -100,7 +99,7 @@ interface FormatTable {
         WHERE songId IN (:songIds)
           AND (downloadQuality IS NULL OR downloadQuality != :downloadQuality)
     """)
-    fun findNonCompliantSongIds( songIds: List<String>, downloadQuality: String ): List<String>
+    suspend fun findNonCompliantSongIds( songIds: List<String>, downloadQuality: String ): List<String>
 
     /**
      * @return number of songs in [songIds] that are non-compliant with [downloadQuality]
@@ -112,13 +111,13 @@ interface FormatTable {
         WHERE songId IN (:songIds)
           AND (downloadQuality IS NULL OR downloadQuality != :downloadQuality)
     """)
-    fun countNonCompliantDownloaded( songIds: List<String>, downloadQuality: String ): Int
+    suspend fun countNonCompliantDownloaded( songIds: List<String>, downloadQuality: String ): Int
 
     /**
      * @return the subset of [songIds] that already has a [Format] row
      */
     @Query("SELECT songId FROM Format WHERE songId IN (:songIds)")
-    fun findSongIdsWithFormat( songIds: List<String> ): List<String>
+    suspend fun findSongIdsWithFormat( songIds: List<String> ): List<String>
 
     /**
      * Set [Format.downloadQuality] of song with id [songId] to [downloadQuality]
@@ -126,7 +125,7 @@ interface FormatTable {
      * @return number of rows affected by this operation
      */
     @Query("UPDATE Format SET downloadQuality = :downloadQuality WHERE songId = :songId")
-    fun updateDownloadQuality( songId: String, downloadQuality: String ): Int
+    suspend fun updateDownloadQuality( songId: String, downloadQuality: String ): Int
 
     //<editor-fold defaultstate="collapsed" desc="Sort all with songs">
     fun sortAllWithSongsByPlayTime( limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false ): Flow<List<FormatWithSong>> =

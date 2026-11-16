@@ -128,7 +128,7 @@ internal object PersistentQueueArtwork {
         return item.buildUpon().setMediaMetadata(item.mediaMetadata.buildUpon().setExtras(extras).build()).build()
     }
 
-    fun restore(
+    internal inline fun restore(
         context: Context,
         profile: String,
         item: MediaItem,

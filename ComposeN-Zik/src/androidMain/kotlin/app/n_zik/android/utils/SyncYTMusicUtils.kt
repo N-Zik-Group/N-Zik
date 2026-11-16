@@ -1,7 +1,6 @@
 package app.n_zik.android.utils
 
 import app.n_zik.android.appTextResources
-import app.n_zik.android.core.database.*
 
 import android.widget.Toast
 import androidx.annotation.OptIn
@@ -171,7 +170,7 @@ suspend fun importYTMSubscribedChannels(force: Boolean = false, showDetails: Boo
                     bookmarkedAt = localArtist.bookmarkedAt ?: System.currentTimeMillis(),
                     thumbnailUrl = PropUtils.retainIfModified(localArtist.thumbnailUrl, remoteArtist.thumbnail?.url) ?: localArtist.thumbnailUrl,
                     isYoutubeArtist = true
-                ).let( Database.artistTable::update )
+                ).let { Database.artistTable.update(it) }
             }
         }
 
@@ -182,7 +181,7 @@ suspend fun importYTMSubscribedChannels(force: Boolean = false, showDetails: Boo
                     artist.isYoutubeArtist && artist.id !in remoteKeys
                 }
                 .map { it.copy( isYoutubeArtist = false, bookmarkedAt = null ) }
-                .forEach( Database.artistTable::update )
+                .forEach { Database.artistTable.update(it) }
 
         if (showDetails) Toaster.done()
         setLastSyncTimeFor("artists")
@@ -233,7 +232,7 @@ suspend fun importYTMLikedAlbums(force: Boolean = false, showDetails: Boolean = 
                     isYoutubeAlbum = true,
                     bookmarkedAt = localAlbum.bookmarkedAt ?: System.currentTimeMillis(),
                     thumbnailUrl = PropUtils.retainIfModified(localAlbum.thumbnailUrl, remoteAlbum.thumbnail?.url) ?: localAlbum.thumbnailUrl)
-                    .let( Database.albumTable::updateReplace )
+                    .let { Database.albumTable.updateReplace(it) }
             }
         }
 
@@ -244,7 +243,7 @@ suspend fun importYTMLikedAlbums(force: Boolean = false, showDetails: Boolean = 
                     album.isYoutubeAlbum && album.id !in remoteKeys
                 }
                 .map { it.copy( isYoutubeAlbum = false, bookmarkedAt = null ) }
-                .also( Database.albumTable::updateReplace )
+                .also { Database.albumTable.updateReplace(it) }
 
         if (showDetails) Toaster.done()
         setLastSyncTimeFor("albums")
@@ -540,7 +539,7 @@ suspend fun importYTMUploadedAlbums(force: Boolean = false, showDetails: Boolean
             localAlbum.copy(
                 isYoutubeAlbum = true,
                 thumbnailUrl = PropUtils.retainIfModified(localAlbum.thumbnailUrl, remoteAlbum.thumbnail?.url) ?: localAlbum.thumbnailUrl
-            ).let( Database.albumTable::updateReplace )
+            ).let { Database.albumTable.updateReplace(it) }
         }
     }
 
@@ -551,7 +550,7 @@ suspend fun importYTMUploadedAlbums(force: Boolean = false, showDetails: Boolean
                 album.isYoutubeAlbum && album.id !in remoteKeys
             }
             .map { it.copy( isYoutubeAlbum = false ) }
-            .also( Database.albumTable::updateReplace )
+            .also { Database.albumTable.updateReplace(it) }
 
     coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.Count(R.plurals.sync_detail_albums_imported, ytmAlbums.size)
 
@@ -749,14 +748,14 @@ private fun startSyncQueue() {
 
             syncMutex.lock()
             try {
-                _syncStatus.value = _syncStatus.value.copy(isRunning = true, currentOperation = operation::class.simpleName ?: "")
+                _syncStatus.update { it.copy(isRunning = true, currentOperation = operation::class.simpleName.orEmpty()) }
                 executeOperation(operation)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 Timber.tag("SyncYTMusicUtils").e(e, "Sync operation failed: $operation")
             } finally {
-                _syncStatus.value = _syncStatus.value.copy(isRunning = false, currentOperation = "")
+                _syncStatus.update { it.copy(isRunning = false, currentOperation = "") }
                 syncMutex.unlock()
             }
         }

@@ -162,7 +162,7 @@ class RewindPlaylistWorkersTest {
     }
 
     @Test
-    fun monthlyDoWorkSkipsWhenThePlaylistAlreadyExists() {
+    fun monthlyDoWorkSkipsWhenThePlaylistAlreadyExists() = runBlocking<Unit> {
         val name = finishedMonthlyName()
         cleanUp(name)
         seedFinishedPeriod("mth")
@@ -485,7 +485,7 @@ class RewindPlaylistWorkersTest {
             .allNotifications
 
     /** Deletes the finished-period playlist if a previous test left it behind (the DB persists across methods). */
-    private fun cleanUp(name: String) {
+    private fun cleanUp(name: String) = runBlocking<Unit> {
         runBlocking {
             Database.playlistTable.findByName(name).first()?.let { playlist ->
                 withContext(NzikDispatchers.DATA) {
@@ -497,7 +497,7 @@ class RewindPlaylistWorkersTest {
     }
 
     /** Seeds three songs (distinct playtimes) with events inside the finished month window. */
-    private fun seedFinishedPeriod(prefix: String) {
+    private fun seedFinishedPeriod(prefix: String) = runBlocking<Unit> {
         val name = finishedMonthlyName()
         val (from, _) = RewindPlaylists.windowFor(name)!! // name built from a real date: non-null
         insertSong("${prefix}_seed_a")
@@ -513,7 +513,7 @@ class RewindPlaylistWorkersTest {
     }
 
     /** Seeds two songs (distinct playtimes) with events inside the finished year window. */
-    private fun seedFinishedYear() {
+    private fun seedFinishedYear() = runBlocking<Unit> {
         val name = finishedYearlyName()
         val (from, _) = RewindPlaylists.windowFor(name)!! // name built from a real date: non-null
         insertSong("yr_seed_a")
@@ -526,7 +526,7 @@ class RewindPlaylistWorkersTest {
         }
     }
 
-    private fun insertSong(id: String) {
+    private fun insertSong(id: String) = runBlocking<Unit> {
         runBlocking {
             withContext(NzikDispatchers.DATA) {
                 Database.songTable.upsert(Song.makePlaceholder(id))

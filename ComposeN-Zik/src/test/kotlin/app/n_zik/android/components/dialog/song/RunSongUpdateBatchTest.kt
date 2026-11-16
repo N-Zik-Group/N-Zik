@@ -202,10 +202,10 @@ class RunSongUpdateBatchTest {
         // Deterministic regardless of the locale wiring done at app startup
         ArtistConjunctions.conjunctions = listOf("and")
 
-        every { songTable.findByIdDirect(any()) } returns null
-        every { artistTable.findByIdDirect(any()) } returns null
-        every { artistTable.findByNameDirect(any()) } returns null
-        every { songTable.updateReplace(any()) } answers { updatedRows.add( firstArg() ) }
+        coEvery { songTable.findByIdDirect(any()) } returns null
+        coEvery { artistTable.findByIdDirect(any()) } returns null
+        coEvery { artistTable.findByNameDirect(any()) } returns null
+        coEvery { songTable.updateReplace(any()) } coAnswers { updatedRows.add( firstArg() ) }
     }
 
     @After
@@ -216,10 +216,10 @@ class RunSongUpdateBatchTest {
 
     @Test
     fun batchWithAFetchBoxFetchesEveryRemoteTargetSequentially() {
-        every { songTable.findByIdDirect("video_00001") } returns stored1
-        every { songTable.findByIdDirect("video_00002") } returns stored2
+        coEvery { songTable.findByIdDirect("video_00001") } returns stored1
+        coEvery { songTable.findByIdDirect("video_00002") } returns stored2
         val stored3 = stored2.copy( id = "video_00003", title = "Stored title 3" )
-        every { songTable.findByIdDirect("video_00003") } returns stored3
+        coEvery { songTable.findByIdDirect("video_00003") } returns stored3
         val item = songItem( "Fetched title", listOf(author("Tanchiky", "UC_A")) )
 
         val processed = runBlocking {
@@ -241,7 +241,7 @@ class RunSongUpdateBatchTest {
             Innertube.song( "video_00002" )
             Innertube.song( "video_00003" )
         }
-        verify( exactly = 3 ) { songTable.updateReplace( any() ) }
+        coVerify( exactly = 3 ) { songTable.updateReplace( any() ) }
         assertEquals( 3, updatedRows.size )
         updatedRows.forEach { assertEquals( "Fetched title", it.title ) }
         // one summary toast with the processed count - never per-song done toasts
@@ -252,10 +252,10 @@ class RunSongUpdateBatchTest {
 
     @Test
     fun playtimeOnlyBatchSkipsEveryFetchAndTheRateLimit() {
-        every { songTable.findByIdDirect("video_00001") } returns stored1
-        every { songTable.findByIdDirect("video_00002") } returns stored2
+        coEvery { songTable.findByIdDirect("video_00001") } returns stored1
+        coEvery { songTable.findByIdDirect("video_00002") } returns stored2
         val stored3 = stored2.copy( id = "video_00003" )
-        every { songTable.findByIdDirect("video_00003") } returns stored3
+        coEvery { songTable.findByIdDirect("video_00003") } returns stored3
 
         val processed = runBlocking {
             runSongUpdateBatch( binder, listOf( stored1, stored2, stored3 ), SongUpdateSelection( playtime = true ), onProgress = progressRecorder )
@@ -263,7 +263,7 @@ class RunSongUpdateBatchTest {
 
         assertEquals( 3, processed )
         coVerify( exactly = 0 ) { Innertube.song( any() ) }
-        verify( exactly = 3 ) { songTable.updateReplace( any() ) }
+        coVerify( exactly = 3 ) { songTable.updateReplace( any() ) }
         updatedRows.forEach { row ->
             assertEquals( 0L, row.totalPlayTimeMs )
             // unticked fetch boxes keep the stored values
@@ -276,8 +276,8 @@ class RunSongUpdateBatchTest {
 
     @Test
     fun localSongsAreSkippedSilentlyAndTheCountReflectsThat() {
-        every { songTable.findByIdDirect("video_00001") } returns stored1
-        every { songTable.findByIdDirect("video_00002") } returns stored2
+        coEvery { songTable.findByIdDirect("video_00001") } returns stored1
+        coEvery { songTable.findByIdDirect("video_00002") } returns stored2
         val item = songItem( "Fetched title", listOf(author("Tanchiky", "UC_A")) )
 
         val processed = runBlocking {
@@ -292,7 +292,7 @@ class RunSongUpdateBatchTest {
         assertEquals( 2, processed )
         coVerify( exactly = 2 ) { Innertube.song( any() ) }
         coVerify( exactly = 0 ) { Innertube.song( "local:track_1" ) }
-        verify( exactly = 2 ) { songTable.updateReplace( any() ) }
+        coVerify( exactly = 2 ) { songTable.updateReplace( any() ) }
         assertEquals( setOf( "video_00001", "video_00002" ), updatedRows.map { it.id }.toSet() )
         verify( exactly = 1 ) { ToastRelay.successWithPlural(R.plurals.song_metadata_updated_song_count, R.string.song_metadata_updated_count, 2) }
         // progress counts the remote targets only
@@ -307,7 +307,7 @@ class RunSongUpdateBatchTest {
 
         assertEquals( 0, processed )
         coVerify( exactly = 0 ) { Innertube.song( any() ) }
-        verify( exactly = 0 ) { songTable.updateReplace( any() ) }
+        coVerify( exactly = 0 ) { songTable.updateReplace( any() ) }
         verify( exactly = 0 ) { Toaster.s( any(), any<Long>() ) }
         verify( exactly = 0 ) { Toaster.done() }
         assertTrue( progressCalls.isEmpty() )
@@ -326,15 +326,15 @@ class RunSongUpdateBatchTest {
 
         assertEquals( 0, processed )
         coVerify( exactly = 0 ) { Innertube.song( any() ) }
-        verify( exactly = 0 ) { songTable.updateReplace( any() ) }
+        coVerify( exactly = 0 ) { songTable.updateReplace( any() ) }
         verify( exactly = 0 ) { Toaster.s( any(), any<Long>() ) }
         assertTrue( progressCalls.isEmpty() )
     }
 
     @Test
     fun fetchFailureWritesNoFetchedFieldButStillCountsTheSong() {
-        every { songTable.findByIdDirect("video_00001") } returns stored1
-        every { songTable.findByIdDirect("video_00002") } returns stored2
+        coEvery { songTable.findByIdDirect("video_00001") } returns stored1
+        coEvery { songTable.findByIdDirect("video_00002") } returns stored2
 
         val processed = runBlocking {
             coEvery { Innertube.song(any()) } returns
@@ -344,7 +344,7 @@ class RunSongUpdateBatchTest {
 
         assertEquals( 2, processed )
         coVerify( exactly = 2 ) { Innertube.song( any() ) }
-        verify( exactly = 2 ) { songTable.updateReplace( any() ) }
+        coVerify( exactly = 2 ) { songTable.updateReplace( any() ) }
         updatedRows.forEach { row ->
             val stored = if ( row.id == "video_00001" ) stored1 else stored2
             // the null fetch keeps every stored value
@@ -353,8 +353,8 @@ class RunSongUpdateBatchTest {
             assertEquals( stored.thumbnailUrl, row.thumbnailUrl )
         }
         // a failed fetch cannot back a reconcile
-        verify( exactly = 0 ) { mapTable.deleteBySongId( any() ) }
-        verify( exactly = 0 ) { mapTable.insertIgnore( any<SongArtistMap>() ) }
+        coVerify( exactly = 0 ) { mapTable.deleteBySongId( any() ) }
+        coVerify( exactly = 0 ) { mapTable.insertIgnore( any<SongArtistMap>() ) }
         // Progress still counts attempted targets; the success toast must not.
         verify(exactly = 0) { Toaster.s(any(), any<Long>()) }
         verify(exactly = 1) { Toaster.e(any<String>(), android.widget.Toast.LENGTH_LONG) }
@@ -363,8 +363,8 @@ class RunSongUpdateBatchTest {
 
     @Test
     fun modifiedArtistsTextIsResetAndReconciledInBatch() {
-        every { songTable.findByIdDirect("video_00001") } returns stored1.copy( artistsText = "modified:Custom" )
-        every { songTable.findByIdDirect("video_00002") } returns stored2
+        coEvery { songTable.findByIdDirect("video_00001") } returns stored1.copy( artistsText = "modified:Custom" )
+        coEvery { songTable.findByIdDirect("video_00002") } returns stored2
         val item = songItem(
             "Fetched title",
             listOf( author("Tanchiky", "UC_A"), author("siromaru", "UC_B") )
@@ -379,7 +379,7 @@ class RunSongUpdateBatchTest {
             runSongUpdateBatch( binder, listOf( stored1, stored2 ), SongUpdateSelection( authors = true ), fetchGapMs = { 0L }, onProgress = progressRecorder )
         }
 
-        verify( exactly = 2 ) { songTable.updateReplace( any() ) }
+        coVerify( exactly = 2 ) { songTable.updateReplace( any() ) }
         val row1 = updatedRows.first { it.id == "video_00001" }
         val row2 = updatedRows.first { it.id == "video_00002" }
         // Both modified and plain values reset to the complete provider list.
@@ -387,14 +387,14 @@ class RunSongUpdateBatchTest {
         // the fresh complete list replaces the plain stored value
         assertEquals( "Tanchiky, siromaru", row2.artistsText )
         // Both songs receive the provider links.
-        verify( exactly = 1 ) { mapTable.deleteBySongId( "video_00001" ) }
-        verify( exactly = 1 ) { mapTable.deleteBySongId( "video_00002" ) }
+        coVerify( exactly = 1 ) { mapTable.deleteBySongId( "video_00001" ) }
+        coVerify( exactly = 1 ) { mapTable.deleteBySongId( "video_00002" ) }
         val inserts = mutableListOf<SongArtistMap>()
-        verify( exactly = 4 ) { mapTable.insertIgnore( capture( inserts ) ) }
+        coVerify( exactly = 4 ) { mapTable.insertIgnore( capture( inserts ) ) }
         assertEquals( 2, inserts.count { it.songId == "video_00001" } )
         assertEquals( listOf( "UC_A", "UC_B" ).toSet(), inserts.filter { it.songId == "video_00002" }.map { it.artistId }.toSet() )
         val artists = mutableListOf<List<Artist>>()
-        verify( exactly = 2 ) { artistTable.upsert( capture( artists ) ) }
+        coVerify( exactly = 2 ) { artistTable.upsert( capture( artists ) ) }
         assertEquals(2, artists.size)
         artists.forEach { assertEquals(setOf("Tanchiky", "siromaru"), it.map { artist -> artist.name }.toSet()) }
         assertEquals( 2, progressCalls.size )
@@ -402,8 +402,8 @@ class RunSongUpdateBatchTest {
 
     @Test
     fun cancelAfterTheFirstSongStopsTheBatchBetweenSongs() {
-        every { songTable.findByIdDirect("video_00001") } returns stored1
-        every { songTable.findByIdDirect("video_00002") } returns stored2
+        coEvery { songTable.findByIdDirect("video_00001") } returns stored1
+        coEvery { songTable.findByIdDirect("video_00002") } returns stored2
         val item = songItem( "Fetched title", listOf(author("Tanchiky", "UC_A")) )
         var processed = -1
         var batchJob: Job? = null
@@ -435,7 +435,7 @@ class RunSongUpdateBatchTest {
         assertEquals( 1, processed )
         assertEquals( 1, updatedRows.size )
         coVerify( exactly = 1 ) { Innertube.song( any() ) }
-        verify( exactly = 1 ) { songTable.updateReplace( any() ) }
+        coVerify( exactly = 1 ) { songTable.updateReplace( any() ) }
         // a cancelled batch shows no summary toast
         verify( exactly = 0 ) { Toaster.s( any(), any<Long>() ) }
         assertEquals( listOf( 1 to 2 ), progressCalls )
@@ -456,15 +456,15 @@ class RunSongUpdateBatchTest {
         }
         assertEquals( 0, processed )
         coVerify( exactly = 0 ) { Innertube.song( any() ) }
-        verify( exactly = 0 ) { songTable.updateReplace( any() ) }
+        coVerify( exactly = 0 ) { songTable.updateReplace( any() ) }
         verify( exactly = 0 ) { Toaster.s( any(), any<Long>() ) }
         assertTrue( progressCalls.isEmpty() )
     }
 
     @Test
     fun selectedCoversResetOnlyForSongsWithProviderArtwork() {
-        every { songTable.findByIdDirect("video_00001") } returns stored1.copy(thumbnailUrl = "modified:custom1")
-        every { songTable.findByIdDirect("video_00002") } returns stored2.copy(thumbnailUrl = "modified:custom2")
+        coEvery { songTable.findByIdDirect("video_00001") } returns stored1.copy(thumbnailUrl = "modified:custom1")
+        coEvery { songTable.findByIdDirect("video_00002") } returns stored2.copy(thumbnailUrl = "modified:custom2")
         // The suspend batch action is awaited synchronously in this JVM test.
         runBlocking {
             coEvery { Innertube.song("video_00001") } returns fetchResult(Result.success(songItem("Fresh", emptyList(), "https://provider/cover")))

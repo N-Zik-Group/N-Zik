@@ -54,7 +54,7 @@ class ImportSongsFromServices private constructor(
                 }
             }
             var activePlaylistId = targetPlaylistId
-            var playlistCreated = false
+            var createPlaylist = false
             var targetPlaylist = if (targetPlaylistId > 0L) {
                 Database.playlistTable.findById(targetPlaylistId).first()
                     ?: error("Import target playlist no longer exists")
@@ -72,13 +72,8 @@ class ImportSongsFromServices private constructor(
                             
                             val isSpotifyFormat = row.containsKey("Track URI")
                             val isRiplayFormat = row.containsKey("AlbumId") || row.containsKey("ArtistIds")
-                            if (activePlaylistId == 0L && (isSpotifyFormat || isRiplayFormat) && !playlistCreated) {
-                                playlistCreated = true
-                                val cleanName = fileName.substringBeforeLast(".")
-                                val newPlaylist = Playlist(name = cleanName, browseId = source)
-                                // Insert playlist directly to get ID, we are already in an IO thread
-                                activePlaylistId = Database.playlistTable.insert(newPlaylist)
-                                targetPlaylist = newPlaylist.copy(id = activePlaylistId)
+                            if (targetPlaylistId == 0L && (isSpotifyFormat || isRiplayFormat)) {
+                                createPlaylist = true
                             }
 
                             beforeActions += { beforeTransaction(index, row, fileName) }
@@ -177,7 +172,12 @@ class ImportSongsFromServices private constructor(
                     }
                 }
             Database.asyncTransaction {
-                syncTransaction {
+                transaction {
+                    if (createPlaylist) {
+                        val newPlaylist = Playlist(name = fileName.substringBeforeLast("."), browseId = source)
+                        activePlaylistId = playlistTable.insert(newPlaylist)
+                        targetPlaylist = newPlaylist.copy(id = activePlaylistId)
+                    }
                     beforeActions.forEach { it() }
                     importServiceSongsToPlaylist(targetPlaylist, importedRows.map { it.song }) { index, position ->
                         val row = importedRows[index]

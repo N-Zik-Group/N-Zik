@@ -106,7 +106,7 @@ object DbCleanup {
 
         val songs = songTable.all().first().associateBy { it.id }
         val artistNameCache = HashMap<String, String?>()
-        fun artistName(artistId: String): String? =
+        suspend fun artistName(artistId: String): String? =
             artistNameCache.getOrPut(artistId) { artistTable.findByIdDirect(artistId)?.name }
 
         var removed = 0

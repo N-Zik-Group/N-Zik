@@ -1,7 +1,6 @@
 package app.n_zik.android.components.dialog.media
 
 import androidx.media3.datasource.cache.Cache
-import app.n_zik.android.core.database.*
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
 
@@ -81,13 +80,13 @@ internal suspend fun runDownloadBatch(
     onAction: ( Song ) -> Unit
 ) {
     songs.forEach { song ->
-        cache?.removeResource( song.id )
-
-        Database.asyncTransaction {
-            formatTable.deleteBySongId( song.id )
+        Database.awaitWriteBatch(retries = 1) {
+            cache?.removeResource(song.id)
+            awaitWriteBatch {
+                formatTable.deleteBySongId(song.id)
+            }
+            onAction(song)
         }
-
-        onAction( song )
     }
 }
 

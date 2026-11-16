@@ -488,7 +488,7 @@ internal suspend fun runSongUpdateCore(
         if (getActiveProfile(context) != requestProfile) return@awaitSongUpdateCommit null
         var previousThumbnail: String? = null
         var committedRow: Song? = null
-        syncTransaction {
+        transaction {
             // Re-read the stored row before writing: the entry may be a 5-field
             // MediaItem snapshot, so out-of-snapshot fields come from the DB.
             val storedRow = songTable.findByIdDirect( entry.id ) ?: entry

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.models.Album
+import app.n_zik.android.models.Format
 import app.n_zik.android.models.Artist
 import app.n_zik.android.models.Song
 import app.n_zik.android.models.SongAlbumMap
@@ -84,4 +85,20 @@ class DatabaseLibraryWritesRealDbTest {
         assertEquals(true, Database.songTable.exists("s-1").first())
         assertEquals(3, notified.size)
     }
+    @Test
+    fun `format metadata updates notify only after commit`() = runBlocking {
+        db.songTable.upsert(Song.makePlaceholder("format-1"))
+        db.formatTable.upsert(Format(songId = "format-1"))
+        val notifications = mutableListOf<Pair<List<String>, Boolean>>()
+        Database.libraryWriteNotifier = { kinds ->
+            notifications += kinds to db.inTransaction()
+        }
+
+        Database.updateExistingFormat("format-1") { it.copy(sampleRate = 48_000) }
+        Database.updateExistingFormat("format-1") { null }
+
+        assertEquals(48_000, db.formatTable.findBySongIdDirect("format-1")?.sampleRate)
+        assertEquals(listOf(listOf("songs") to false), notifications)
+    }
+
 }

@@ -240,7 +240,7 @@ object SessionMediaItemMapper {
 
     // Non-AA callers expose synchronous APIs. Keep their compatibility bridge here only;
     // automobile callers use the suspend variants below and never block a DATA worker.
-    private fun blockingArtworkBridge(load: suspend () -> MediaItem): MediaItem = runBlocking { load() }
+    private fun blockingArtworkBridge(load: suspend () -> MediaItem): MediaItem = runBlocking(NzikDispatchers.DATA) { load() }
 
     internal suspend fun mapArtistWithArtwork(
         parentId: String, id: String, name: String, thumbnailUrl: String?,

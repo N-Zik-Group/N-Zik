@@ -244,7 +244,7 @@ fun ArtistScreen(
                     artistPage = online
 
                     Database.asyncTransaction {
-                        syncTransaction {
+                        transaction {
                             val now = System.currentTimeMillis()
                             val inserted = artistTable.insertMetadata(
                                 id = browseId,

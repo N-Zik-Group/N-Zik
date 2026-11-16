@@ -59,7 +59,7 @@ fun isReadOnlyPlaylistSource(playlist: Playlist): Boolean =
 fun canEditPlaylistMembership(playlist: Playlist): Boolean = !isReadOnlyPlaylistSource(playlist)
 
 /** Rechecks an existing target inside the caller's database transaction. */
-fun canEditStoredPlaylistMembership(playlistId: Long): Boolean =
+suspend fun canEditStoredPlaylistMembership(playlistId: Long): Boolean =
     Database.playlistTable.getAll().firstOrNull { it.id == playlistId }
         ?.let(::canEditPlaylistMembership) == true
 
@@ -71,9 +71,9 @@ fun dispatchPlaylistMembershipEdit(playlistId: Long, edit: () -> Unit) {
 }
 
 /** Applies user additions/removals atomically against the current target's membership policy. */
-fun editStoredPlaylistMembership(playlistId: Long, edit: Database.() -> Unit): Boolean {
+suspend fun editStoredPlaylistMembership(playlistId: Long, edit: suspend Database.() -> Unit): Boolean {
     var edited = false
-    Database.syncTransaction {
+    Database.transaction {
         if (canEditStoredPlaylistMembership(playlistId)) {
             edit()
             edited = true

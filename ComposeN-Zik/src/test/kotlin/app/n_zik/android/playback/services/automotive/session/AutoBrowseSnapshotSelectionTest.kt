@@ -280,7 +280,7 @@ class AutoBrowseSnapshotSelectionTest {
     }
 
     @Test
-    fun `emitted playlist actions keep the full capture after same parent refresh`() {
+    fun `emitted playlist actions keep the full capture after same parent refresh`() = runBlocking<Unit> {
         val parent = "playlist/42"
         val ids = (0 until 205).map { "displayed-${204 - it}" }
         // Synchronous JUnit fixture setup must dispatch Room writes off its main thread.
@@ -313,7 +313,7 @@ class AutoBrowseSnapshotSelectionTest {
     }
 
     @Test
-    fun `captured song category actions reapply exclusions changed after browse`() {
+    fun `captured song category actions reapply exclusions changed after browse`() = runBlocking<Unit> {
         val ids = listOf("kept-first", "newly-disliked", "repeated", "kept-middle", "repeated")
         val parents = listOf(
             AutoSessionConstants.ID_SONGS_ALL,
@@ -353,7 +353,7 @@ class AutoBrowseSnapshotSelectionTest {
     }
 
     @Test
-    fun `detail disliked quick picks and video captures retain their unfiltered policy`() {
+    fun `detail disliked quick picks and video captures retain their unfiltered policy`() = runBlocking<Unit> {
         val ids = listOf("first", "newly-disliked", "last")
         val parents = listOf(
             "playlist/42", "album/A", "artist/A/videos",
@@ -382,7 +382,7 @@ class AutoBrowseSnapshotSelectionTest {
     }
 
     @Test
-    fun `append reapplies captured category exclusions and preserves negative policies and occurrences`() {
+    fun `append reapplies captured category exclusions and preserves negative policies and occurrences`() = runBlocking<Unit> {
         val filtered = listOf(AutoSessionConstants.ID_SONGS_ALL, AutoSessionConstants.ID_SONGS_FAVORITES,
             AutoSessionConstants.ID_SONGS_DOWNLOADED, AutoSessionConstants.ID_SONGS_CACHED,
             AutoSessionConstants.ID_SONGS_TOP, AutoSessionConstants.ID_SONGS_ONDEVICE,
@@ -412,7 +412,7 @@ class AutoBrowseSnapshotSelectionTest {
     }
 
     @Test
-    fun `scoped song search excludes disliked songs artists and albums without moving selected song`() {
+    fun `scoped song search excludes disliked songs artists and albums without moving selected song`() = runBlocking<Unit> {
         val ids = listOf("allowed-before", "disliked-song", "disliked-artist", "disliked-album", "selected", "allowed-after")
         // Synchronous JUnit fixture setup must dispatch Room writes off its main thread.
         runBlocking { withContext(NzikDispatchers.DATA) {

@@ -7,6 +7,8 @@ import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.SongArtistMapTable
 import app.n_zik.android.core.database.SongTable
 import app.n_zik.android.core.maintenance.DbCleanupLinkRecord
+import io.mockk.coVerify
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -132,40 +134,40 @@ class DbCleanupTest {
 
     @Test
     fun emptyDatabaseRemovesNothing() = runBlocking {
-        every { mapTable.allPairsDirect() } returns emptyList()
+        coEvery { mapTable.allPairsDirect() } returns emptyList()
 
         val result = DbCleanup.runClean(songTable, artistTable, mapTable)
 
         assertEquals(0, result.removed)
         assertTrue(result.removedLinks.isEmpty())
         verify(exactly = 0) { songTable.all() }
-        verify(exactly = 0) { mapTable.deletePairDirect(any(), any()) }
+        coVerify(exactly = 0) { mapTable.deletePairDirect(any(), any()) }
     }
 
     @Test
     fun cleanDatabaseRemovesNothing() = runBlocking {
-        every { mapTable.allPairsDirect() } returns listOf(
+        coEvery { mapTable.allPairsDirect() } returns listOf(
             SongArtistMap("s1", "UC_T"), SongArtistMap("s1", "UC_S")
         )
         every { songTable.all() } returns flowOf(listOf(song("s1", "Tanchiky, siromaru")))
-        every { artistTable.findByIdDirect("UC_T") } returns Artist(id = "UC_T", name = "Tanchiky")
-        every { artistTable.findByIdDirect("UC_S") } returns Artist(id = "UC_S", name = "siromaru")
+        coEvery { artistTable.findByIdDirect("UC_T") } returns Artist(id = "UC_T", name = "Tanchiky")
+        coEvery { artistTable.findByIdDirect("UC_S") } returns Artist(id = "UC_S", name = "siromaru")
 
         val result = DbCleanup.runClean(songTable, artistTable, mapTable)
 
         assertEquals(0, result.removed)
         assertTrue(result.removedLinks.isEmpty())
-        verify(exactly = 0) { mapTable.deletePairDirect(any(), any()) }
+        coVerify(exactly = 0) { mapTable.deletePairDirect(any(), any()) }
     }
 
     @Test
     fun staleLinkIsRemovedWhileRealOnesAreKept() = runBlocking {
-        every { mapTable.allPairsDirect() } returns listOf(
+        coEvery { mapTable.allPairsDirect() } returns listOf(
             SongArtistMap("s1", "UC_T"), SongArtistMap("s1", "UC_ET")
         )
         every { songTable.all() } returns flowOf(listOf(song("s1", "Tanchiky, siromaru")))
-        every { artistTable.findByIdDirect("UC_T") } returns Artist(id = "UC_T", name = "Tanchiky")
-        every { artistTable.findByIdDirect("UC_ET") } returns Artist(id = "UC_ET", name = "E.T")
+        coEvery { artistTable.findByIdDirect("UC_T") } returns Artist(id = "UC_T", name = "Tanchiky")
+        coEvery { artistTable.findByIdDirect("UC_ET") } returns Artist(id = "UC_ET", name = "E.T")
 
         val result = DbCleanup.runClean(songTable, artistTable, mapTable)
 
@@ -173,19 +175,19 @@ class DbCleanupTest {
         // The per-link record carries the song title + the removed artist name (the
         // sheet lists it in the expanded "Artist link cleanup" row)
         assertEquals(listOf(DbCleanupLinkRecord("Song s1", "E.T")), result.removedLinks)
-        verify(exactly = 1) { mapTable.deletePairDirect("s1", "UC_ET") }
-        verify(exactly = 0) { mapTable.deletePairDirect("s1", "UC_T") }
+        coVerify(exactly = 1) { mapTable.deletePairDirect("s1", "UC_ET") }
+        coVerify(exactly = 0) { mapTable.deletePairDirect("s1", "UC_T") }
     }
 
     @Test
     fun linkOfSongMissingFromSongTableIsKept() = runBlocking {
-        every { mapTable.allPairsDirect() } returns listOf(SongArtistMap("s2", "UC_X"))
+        coEvery { mapTable.allPairsDirect() } returns listOf(SongArtistMap("s2", "UC_X"))
         every { songTable.all() } returns flowOf(listOf(song("s1", "Tanchiky")))
 
         val result = DbCleanup.runClean(songTable, artistTable, mapTable)
 
         assertEquals(0, result.removed)
-        verify(exactly = 0) { mapTable.deletePairDirect(any(), any()) }
+        coVerify(exactly = 0) { mapTable.deletePairDirect(any(), any()) }
     }
 
     // ---- diagnostics logging (I/O matrix rows: sweep with removals / clean sweep) ----
@@ -203,12 +205,12 @@ class DbCleanupTest {
         Timber.plant(captureTree)
         try {
             runBlocking {
-                every { mapTable.allPairsDirect() } returns listOf(
+                coEvery { mapTable.allPairsDirect() } returns listOf(
                     SongArtistMap("s1", "UC_T"), SongArtistMap("s1", "UC_ET")
                 )
                 every { songTable.all() } returns flowOf(listOf(song("s1", "Tanchiky, siromaru")))
-                every { artistTable.findByIdDirect("UC_T") } returns Artist(id = "UC_T", name = "Tanchiky")
-                every { artistTable.findByIdDirect("UC_ET") } returns Artist(id = "UC_ET", name = "E.T")
+                coEvery { artistTable.findByIdDirect("UC_T") } returns Artist(id = "UC_T", name = "Tanchiky")
+                coEvery { artistTable.findByIdDirect("UC_ET") } returns Artist(id = "UC_ET", name = "E.T")
 
                 val result = DbCleanup.runClean(songTable, artistTable, mapTable)
 
@@ -238,12 +240,12 @@ class DbCleanupTest {
         Timber.plant(captureTree)
         try {
             runBlocking {
-                every { mapTable.allPairsDirect() } returns listOf(
+                coEvery { mapTable.allPairsDirect() } returns listOf(
                     SongArtistMap("s1", "UC_T"), SongArtistMap("s1", "UC_S")
                 )
                 every { songTable.all() } returns flowOf(listOf(song("s1", "Tanchiky, siromaru")))
-                every { artistTable.findByIdDirect("UC_T") } returns Artist(id = "UC_T", name = "Tanchiky")
-                every { artistTable.findByIdDirect("UC_S") } returns Artist(id = "UC_S", name = "siromaru")
+                coEvery { artistTable.findByIdDirect("UC_T") } returns Artist(id = "UC_T", name = "Tanchiky")
+                coEvery { artistTable.findByIdDirect("UC_S") } returns Artist(id = "UC_S", name = "siromaru")
 
                 val result = DbCleanup.runClean(songTable, artistTable, mapTable)
 

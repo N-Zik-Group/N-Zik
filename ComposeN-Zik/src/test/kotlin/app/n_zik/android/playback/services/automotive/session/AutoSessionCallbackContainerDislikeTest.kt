@@ -91,7 +91,7 @@ class AutoSessionCallbackContainerDislikeTest {
     }
 
     @Test
-    fun albumDislikeTogglesFlagAndReverts() {
+    fun albumDislikeTogglesFlagAndReverts() = runBlocking<Unit> {
         runBlocking {
             onDatabase { Database.albumTable.upsert(Album(id = "LOCAL_ALBUM_1", title = "A")) }
             browse("album/LOCAL_ALBUM_1")
@@ -106,7 +106,7 @@ class AutoSessionCallbackContainerDislikeTest {
     }
 
     @Test
-    fun nonAutoConnectionKeepsBrowsedAlbumDislikeTarget() {
+    fun nonAutoConnectionKeepsBrowsedAlbumDislikeTarget() = runBlocking<Unit> {
         // JUnit is synchronous; runBlocking waits for the Room-backed browse and command effects.
         runBlocking {
             onDatabase {
@@ -139,7 +139,7 @@ class AutoSessionCallbackContainerDislikeTest {
     }
 
     @Test
-    fun autoConnectionClearsPreviouslyBrowsedAlbumDislikeTarget() {
+    fun autoConnectionClearsPreviouslyBrowsedAlbumDislikeTarget() = runBlocking<Unit> {
         // JUnit is synchronous; runBlocking waits for the Room-backed browse and toggle.
         runBlocking {
             onDatabase { Database.albumTable.upsert(Album(id = "LOCAL_ALBUM_PREVIOUS", title = "Previous")) }
@@ -157,7 +157,7 @@ class AutoSessionCallbackContainerDislikeTest {
     }
 
     @Test
-    fun artistDislikeTogglesFlag() {
+    fun artistDislikeTogglesFlag() = runBlocking<Unit> {
         runBlocking {
             onDatabase { Database.artistTable.upsert(Artist(id = "LOCAL_ARTIST_1", name = "X")) }
             browse("artist/LOCAL_ARTIST_1")
@@ -168,7 +168,7 @@ class AutoSessionCallbackContainerDislikeTest {
     }
 
     @Test
-    fun artistSectionDrilldownStillTargetsTheArtist() {
+    fun artistSectionDrilldownStillTargetsTheArtist() = runBlocking<Unit> {
         runBlocking {
             onDatabase { Database.artistTable.upsert(Artist(id = "LOCAL_ARTIST_2", name = "Y")) }
             // Artist drill-down section (artist/{id}/{section}) keeps the artist container.
@@ -180,7 +180,7 @@ class AutoSessionCallbackContainerDislikeTest {
     }
 
     @Test
-    fun otherTypeCommandIsNoop() {
+    fun otherTypeCommandIsNoop() = runBlocking<Unit> {
         runBlocking {
             onDatabase {
                 Database.albumTable.upsert(Album(id = "LOCAL_ALBUM_2", title = "A"))
@@ -206,7 +206,7 @@ class AutoSessionCallbackContainerDislikeTest {
     }
 
     @Test
-    fun dislikedAlbumsCategoryListsOnlyDislikedAlbums() {
+    fun dislikedAlbumsCategoryListsOnlyDislikedAlbums() = runBlocking<Unit> {
         runBlocking {
             onDatabase {
                 Database.albumTable.upsert(Album(id = "LOCAL_ALBUM_9", title = "D", dislikedAt = 123L))
@@ -221,7 +221,7 @@ class AutoSessionCallbackContainerDislikeTest {
     }
 
     @Test
-    fun dislikedArtistsCategoryListsOnlyDislikedArtists() {
+    fun dislikedArtistsCategoryListsOnlyDislikedArtists() = runBlocking<Unit> {
         runBlocking {
             onDatabase {
                 Database.artistTable.upsert(Artist(id = "LOCAL_ARTIST_9", name = "D", dislikedAt = 123L))
@@ -234,7 +234,7 @@ class AutoSessionCallbackContainerDislikeTest {
     }
 
     @Test
-    fun albumLibraryListReflectsDislikeToggleOnRebrowse() {
+    fun albumLibraryListReflectsDislikeToggleOnRebrowse() = runBlocking<Unit> {
         runBlocking {
             onDatabase {
                 // Each album needs a mapped song to be a library candidate (the

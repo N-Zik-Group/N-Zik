@@ -12,7 +12,9 @@ import app.n_zik.android.core.profiles.isCurrentProcessStorageProfile
 import app.n_zik.android.core.profiles.isProcessStorageProfile
 import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.profiles.profileStorageIdentity
+import app.n_zik.android.utils.coroutines.NzikDispatchers
 import java.io.File
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 
 internal fun themeProfilePayloadBytes(context: Context, profile: String): Long =
@@ -81,7 +83,10 @@ internal fun clearFetchedLyrics(context: Context, target: FetchedLyricsCleanup):
         }
         if (isProcessStorageProfile(context, owner.id)) {
             if (!isCurrentProcessStorageProfile(context, owner)) return@withProfileStorageMutation CleanupResult.SKIPPED
-            Database.lyricsTable.deleteFetchedLyrics(target.cutoff)
+            val lyricsTable = Database.lyricsTable
+            // The synchronous journal lock must cover the inode check and SQL write.
+            // Wait for Room directly here, since FIFO database work may need this lock.
+            runBlocking(NzikDispatchers.DATA) { lyricsTable.deleteFetchedLyrics(target.cutoff) }
         } else {
             openLyricsDatabase(file, SQLiteDatabase.OPEN_READWRITE).use { database ->
                 database.delete("Lyrics", "isEdited = 0 AND (lastFetchedAt IS NULL OR lastFetchedAt <= ?)", arrayOf(target.cutoff.toString()))

@@ -42,20 +42,26 @@ class ImportDatabase private constructor(
             val isActive = profile == getActiveProfile(context)
             val activeOwner = if (isActive) checkNotNull(profileStorageIdentity(context, profile)) else null
             Timber.tag("ImportDatabase").d("Importing database into profile '$profile' (active: $isActive)")
-            ownedCoverMutationMutex.withLock {
-                DatabaseBackup.restore(context, uri, profile) {
-                    if (activeOwner != null) {
-                        check(isCurrentProcessStorageProfile(context, activeOwner)) { "The import target changed" }
-                        Database.checkpoint()
-                        Database.close()
+            val restore: suspend () -> Unit = {
+                ownedCoverMutationMutex.withLock {
+                    DatabaseBackup.restore(context, uri, profile) {
+                        if (activeOwner != null) {
+                            check(isCurrentProcessStorageProfile(context, activeOwner)) { "The import target changed" }
+                            Database.checkpoint()
+                            Database.close()
+                        }
                     }
                 }
             }
-
-            if (activeOwner != null) {
-                // The listening history was just replaced: recompute every existing
-                // rewind-* playlist from it (one-shot job, silent, not gated — spec 2)
-                RewindPostImportRegenerationWorker.schedule(context, activeOwner)
+            if (activeOwner == null) {
+                restore()
+            } else {
+                // Join the write queue before acquiring the cover mutex, which other writes may need.
+                Database.awaitWriteBatch(retries = 1) {
+                    restore()
+                    // The worker must be scheduled even if the caller stops awaiting the restore.
+                    RewindPostImportRegenerationWorker.schedule(context, activeOwner)
+                }
             }
         }
 

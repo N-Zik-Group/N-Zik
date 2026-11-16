@@ -180,7 +180,7 @@ fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
                                 existing.buildUpon()
                                     .setArtist(
                                         if (dbSong.artistsText.isNullOrBlank()) existing.artist?.toString()
-                                        else cleanPrefix(dbSong.artistsText!!)
+                                        else cleanPrefix(dbSong.artistsText)
                                     )
                                     .setExtras(bundle)
                                     .build()
@@ -336,9 +336,8 @@ fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): Lis
 
         if (excludeSongWithDurationLimit != DurationInMinutes.Disabled) {
             filteredMediaItems = filteredMediaItems.filter {
-                it.mediaMetadata.extras?.getString("durationText")?.let { it1 ->
-                    durationTextToMillis(it1)
-                }!! < excludeSongWithDurationLimit.asMillis
+                val duration = it.mediaMetadata.extras?.getString("durationText")?.let(::durationTextToMillis)
+                duration == null || duration < excludeSongWithDurationLimit.asMillis
             }
 
             val excludedSongs = mediaItems.size - filteredMediaItems.size
@@ -411,9 +410,9 @@ fun Player.excludeMediaItem(mediaItem: MediaItem, context: Context): Boolean {
         val excludeSongWithDurationLimit =
             preferences.getEnum(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
         if (excludeSongWithDurationLimit != DurationInMinutes.Disabled) {
-            val excludedSong = mediaItem.mediaMetadata.extras?.getString("durationText")?.let { it1 ->
-                    durationTextToMillis(it1)
-                }!! <= excludeSongWithDurationLimit.asMillis
+            val duration = mediaItem.mediaMetadata.extras?.getString("durationText")
+                ?.let(::durationTextToMillis) ?: return false
+            val excludedSong = duration <= excludeSongWithDurationLimit.asMillis
 
             if (excludedSong)
                 Toaster.n( R.string.player_excluded_song_count_format, arrayOf( 1 ) )
