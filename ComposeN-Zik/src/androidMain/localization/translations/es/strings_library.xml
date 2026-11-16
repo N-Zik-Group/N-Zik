@@ -244,6 +244,7 @@
     <string name="playlist_right_swipe">Lista de reproducción deslizar a la derecha</string>
     <string name="playlist_selection_action_deselect">Deseleccionar</string>
     <string name="playlist_shuffle_positions_confirmation">¿Seguro que quieres re-enumerar las posiciones en esta lista de reproducción?</string>
+    <string name="playlist_contains_song">Ya está en esta lista</string>
     <string name="playlist_song_already_present">La canción está presente en una de las listas de reproducción</string>
     <string name="playlist_top">Lista de reproducción top</string>
     <string name="playlist_top_maximum_items_description">Limita cuántas canciones están incluidas en tu lista de reproducción más popular.</string>
@@ -408,4 +409,10 @@
     <string name="artist_more_from_format">Más de %1$s</string>
     <string name="playlist_top_show_title_format">Mostrar %1$s</string>
     <string name="library_on_device_no_local_playlists">No hay listas de reproducción locales. Crea una lista de reproducción o añade una canción a una nueva lista de reproducción desde el dispositivo On.</string>
+    <string name="playlist_import_youtube_link_hint">https://youtube.com/playlist?list=...</string>
+    <string name="search_youtube_open_url_example">https://........</string>
+    <string name="album_year_and_song_summary">%1$s • %2$s</string>
+    <string name="search_home_online_action">Buscar en línea</string>
+    <string name="search_home_library_action">Buscar biblioteca</string>
+    <string name="song_matching_result_title_and_artist">%1$s - %2$s</string>
 </resources>
