@@ -244,6 +244,7 @@
     <string name="playlist_right_swipe">Spilleliste høyre-sveip</string>
     <string name="playlist_selection_action_deselect">Velg bort</string>
     <string name="playlist_shuffle_positions_confirmation">Vil du virkelig legge til sanger i denne spillelisten?</string>
+    <string name="playlist_contains_song">Allerede i denne spillelisten</string>
     <string name="playlist_song_already_present">Sangen er tilgjengelig i en av spillelistene</string>
     <string name="playlist_top">Topp spilleliste</string>
     <string name="playlist_top_maximum_items_description">Begrens hvor mange sanger som er inkludert i toppspillelisten.</string>
@@ -408,4 +409,10 @@
     <string name="artist_more_from_format">Mer fra %1$s</string>
     <string name="playlist_top_show_title_format">Vis %1$s</string>
     <string name="library_on_device_no_local_playlists">Ingen lokale spillelister. Opprett en spilleliste eller legg til en sang til en ny spilleliste fra enheten.</string>
+    <string name="playlist_import_youtube_link_hint">https://youtube.com/playlist?list=...</string>
+    <string name="search_youtube_open_url_example">https://........</string>
+    <string name="album_year_and_song_summary">%1$s • %2$s</string>
+    <string name="search_home_online_action">Søk online</string>
+    <string name="search_home_library_action">Søk i biblioteket</string>
+    <string name="song_matching_result_title_and_artist">%1$s – %2$s</string>
 </resources>
