@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
@@ -90,12 +92,15 @@ fun CustomModalBottomSheet(
         ) {
             if (glassSheet) GlassMaterialContainerColumn(modifier.fillMaxWidth().glassOverlayPaint(glass.forArea(GlassArea.Menus).film),
                 materialSource = LocalGlassBackdrop.current,
+                foregroundFill = glassFilmColor(glass.forArea(GlassArea.Menus), sheetContainerColor),
                 material = { exported -> Modifier.glassMaterial(
                     glass.forArea(GlassArea.Menus), sheetShape, menu = true, filmColor = sheetContainerColor,
                     exportedBackdrop = exported,
                 ) },
             ) {
-                CompositionLocalProvider(LocalContentColor provides glassArtworkForeground(glass, contentColor)) {
+                val foreground = if (colorPalette().isDark) glassArtworkForeground(glass, contentColor)
+                    else LocalContentColor.current
+                CompositionLocalProvider(LocalContentColor provides foreground) {
                     dragHandle?.let { CenteredMenuSheetDragHandle(it) }
                     content()
                 }
@@ -128,6 +133,12 @@ fun CustomModalBottomSheet(
         NativeGlassOverlayCoverage(host, overlayId)
         // Native windows retain transparent glass children because they cannot sample the page.
         val nativeBackdrop = rememberCanvasBackdrop { if (!glassSheet) drawRect(sheetContainerColor) }
+        val nativeScrim = nativeGlassSheetScrimColor(glass, scrimColor, BottomSheetDefaults.ScrimColor)
+        val nativeUnderlay = effectiveSurfaceColor(surfaceBackdropColor(), Color.Transparent, nativeScrim)
+        val scheme = MaterialTheme.colorScheme
+        val nativeFill = if (sheetContainerColor == scheme.surface) scheme.surfaceColorAtElevation(tonalElevation)
+            else sheetContainerColor
+        val foregroundFill = if (glassSheet) glassFilmColor(glass.forArea(GlassArea.Menus), sheetContainerColor) else nativeFill
         ModalBottomSheet(
             onDismissRequest = onDismissRequest,
             modifier = modifier,
@@ -136,7 +147,7 @@ fun CustomModalBottomSheet(
             containerColor = if (glassSheet) Color.Transparent else sheetContainerColor,
             contentColor = contentColor,
             tonalElevation = tonalElevation,
-            scrimColor = nativeGlassSheetScrimColor(glass, scrimColor, BottomSheetDefaults.ScrimColor),
+            scrimColor = nativeScrim,
             dragHandle = null,
             contentWindowInsets = { WindowInsets(0) },
         ) {
@@ -155,15 +166,18 @@ fun CustomModalBottomSheet(
                 ) else if (containerColor != Color.Transparent) Modifier.glassAreaContour(glass, GlassArea.Menus, sheetShape)
                 else Modifier,
             ).windowInsetsPadding(contentWindowInsets())) {
-                dragHandle?.let { NativeMenuSheetDragHandle(sheetState, onDismissRequest, it) }
-
                 val view = LocalView.current
                 val colorPalette = colorPalette()
                 (view.parent as? DialogWindowProvider)?.window?.let { window ->
                     val hideStatusBar by rememberPreference(hideStatusBarKey, false)
-                    DisposableEffect(window, sheetContainerColor, colorPalette, hideStatusBar) {
-                        val luminance = ColorUtils.calculateLuminance(sheetContainerColor.toArgb())
-                        val isLightBackground = luminance > 0.5
+                    val useEstimatedContrast = !colorPalette.isDark && containerColor != Color.Transparent
+                    val legacyLightBars = ColorUtils.calculateLuminance(sheetContainerColor.toArgb()) > 0.5
+                    val lightNavigation = if (useEstimatedContrast)
+                        neutralForeground(effectiveSurfaceColor(nativeUnderlay, foregroundFill)) == Color.Black
+                    else legacyLightBars
+                    val lightStatus = if (useEstimatedContrast)
+                        neutralForeground(nativeUnderlay) == Color.Black else legacyLightBars
+                    DisposableEffect(window, lightNavigation, lightStatus, hideStatusBar) {
 
                         val applyInsets = {
                             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
@@ -173,8 +187,8 @@ fun CustomModalBottomSheet(
                             }
 
                             val insetsController = WindowCompat.getInsetsController(window, view)
-                            insetsController.isAppearanceLightNavigationBars = isLightBackground
-                            insetsController.isAppearanceLightStatusBars = isLightBackground
+                            insetsController.isAppearanceLightNavigationBars = lightNavigation
+                            insetsController.isAppearanceLightStatusBars = lightStatus
 
                             if (hideStatusBar) {
                                 insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
@@ -214,9 +228,20 @@ fun CustomModalBottomSheet(
                     LocalGlassContainerBackdrop provides nativeBackdrop,
                     LocalGlassMaterialSource provides nativeBackdrop,
                     LocalGlassBackdrop provides null,
+                    LocalSurfaceBackdropColor provides nativeUnderlay,
                     LocalGlassOverlayBackdrop provides null,
                 ) {
-                    GlassRippleProvider(glass) { content() }
+                    GlassRippleProvider(glass) {
+                        if (containerColor != Color.Transparent) {
+                            SurfaceForegroundContent(effectiveSurfaceColor(nativeUnderlay, foregroundFill)) {
+                                dragHandle?.let { NativeMenuSheetDragHandle(sheetState, onDismissRequest, it) }
+                                content()
+                            }
+                        } else {
+                            dragHandle?.let { NativeMenuSheetDragHandle(sheetState, onDismissRequest, it) }
+                            content()
+                        }
+                    }
                 }
             }
             }

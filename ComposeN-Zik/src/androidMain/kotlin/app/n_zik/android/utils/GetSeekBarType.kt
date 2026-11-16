@@ -32,6 +32,8 @@ import app.n_zik.android.ui.components.SeekBarCustom
 import app.n_zik.android.ui.components.SeekBarThin
 import app.n_zik.android.ui.components.SeekBarWaved
 import app.n_zik.android.ui.styling.collapsedPlayerProgressBar
+import app.n_zik.android.components.glass.surfaceGlyphColor
+import app.n_zik.android.components.glass.surfaceProgressTrackColor
 import app.n_zik.android.themed.n_zik.screen.player.timeline.DurationIndicator
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
@@ -73,6 +75,8 @@ fun GetSeekBar(
         val generation by binder.playerUpdateTrigger.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
         remember(binder, generation) { binder.player }
     }
+    val progressColor = surfaceGlyphColor(colorPalette().collapsedPlayerProgressBar)
+    val playedAccent = surfaceGlyphColor(colorPalette().accent)
     val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
     val seekDuration = duration()
     // Cancelled native handlers must not target a new player or track.
@@ -93,6 +97,8 @@ fun GetSeekBar(
         pendingSeekIssuedAtMs = SystemClock.elapsedRealtime()
     }
     val transparentbar by rememberPreference(transparentbarKey, true)
+    val progressTrack = surfaceProgressTrackColor(progressColor, colorPalette().textSecondary)
+    val visualizerTrack = surfaceProgressTrackColor(playedAccent, colorPalette().textSecondary)
     val ltGuestLocked = rememberListenTogetherGuestLock()
     val ltContext = LocalContext.current
 
@@ -125,13 +131,13 @@ fun GetSeekBar(
             if (shouldBePlaying && seekDuration == C.TIME_UNSET) {
                 LinearProgressIndicator(
                     modifier = Modifier.fillMaxWidth(),
-                    color = colorPalette().collapsedPlayerProgressBar
+                    color = progressColor
                 )
             } else {
                 LinearProgressIndicator(
                     progress = { 0f },
                     modifier = Modifier.fillMaxWidth(),
-                    color = colorPalette().collapsedPlayerProgressBar
+                    color = progressColor
                 )
             }
         } else {
@@ -185,8 +191,8 @@ fun GetSeekBar(
                                 }
                                 scrubbingPosition = null
                             },
-                            color = colorPalette().collapsedPlayerProgressBar,
-                            backgroundColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
+                            color = progressColor,
+                            backgroundColor = if (transparentbar) Color.Transparent else progressTrack,
                             shape = uiRoundnessShape(),
                         )
 
@@ -223,8 +229,8 @@ fun GetSeekBar(
                                 }
                                 scrubbingPosition = null
                             },
-                            color = colorPalette().collapsedPlayerProgressBar,
-                            backgroundColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
+                            color = progressColor,
+                            backgroundColor = if (transparentbar) Color.Transparent else progressTrack,
                             shape = uiRoundnessShape(),
                         )
 
@@ -261,8 +267,8 @@ fun GetSeekBar(
                                 }
                                 scrubbingPosition = null
                             },
-                            color = colorPalette().collapsedPlayerProgressBar,
-                            backgroundColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
+                            color = progressColor,
+                            backgroundColor = if (transparentbar) Color.Transparent else progressTrack,
                             shape = uiRoundnessShape(),
                         )
 
@@ -299,9 +305,9 @@ fun GetSeekBar(
                                 }
                                 scrubbingPosition = null
                             },
-                            color = colorPalette().collapsedPlayerProgressBar,
+                            color = progressColor,
                             isActive = isActuallyPlaying,
-                            backgroundColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
+                            backgroundColor = if (transparentbar) Color.Transparent else progressTrack,
                             shape = uiRoundnessShape(),
                         )
                     }
@@ -315,8 +321,8 @@ fun GetSeekBar(
                                 val held = pendingSeekTarget ?: position()
                                 ProgressPercentage.safeValue((held.toFloat() / duration().toFloat()).coerceIn(0f, 1f))
                             },
-                            playedColor = colorPalette().accent,
-                            notPlayedColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
+                            playedColor = playedAccent,
+                            notPlayedColor = if (transparentbar) Color.Transparent else visualizerTrack,
                             waveInteraction = rememberCurrentSeekValueCallback(isCurrentGesture) {
                                 if (ltGuestLocked) {
                                     ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
@@ -397,8 +403,8 @@ fun GetSeekBar(
                                 }
                                 scrubbingPosition = null
                             },
-                            color = colorPalette().collapsedPlayerProgressBar,
-                            backgroundColor = colorPalette().textSecondary,
+                            color = progressColor,
+                            backgroundColor = progressTrack,
                             shape = uiRoundnessShape()
                         )
                 }

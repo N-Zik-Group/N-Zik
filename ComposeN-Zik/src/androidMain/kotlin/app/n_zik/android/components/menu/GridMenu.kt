@@ -101,6 +101,7 @@ object GridMenu {
                 GlassMaterialContainerColumn(
                     includeParent = true,
                     sectionFilm = headerFilm,
+                    foregroundFill = if (useGlass) headerFilm else if (hasHeader) headerFilm else nativeBodyColor,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -157,6 +158,7 @@ object GridMenu {
                     .background(bodyFilm).glassOverlayPaint(bodyFilm.alpha),
                 includeParent = true,
                 sectionFilm = bodyFilm,
+                foregroundFill = bodyFilm,
             ) { bodyModifier ->
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive( minSize = 120.dp ),

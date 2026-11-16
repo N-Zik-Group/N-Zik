@@ -4,3 +4,9 @@ Added:
   - Keep the gesture off by default and the boost speed at 2.0x by default. Show the speed control when the gesture is enabled.
   - Index both controls in Player settings search and global settings search. Focus the parent switch when the boost speed control is hidden.
   - Apply the selected speed for the duration of the hold and restore the previous speed on release. Keep playback at its current speed if it already meets or exceeds the boost.
+
+Fixed:
+- fix(ui): adapt text and icons to light-theme backgrounds
+  - Resolve foreground contrast from the Glass film and dimmed backdrop in menus, dialogs, and sheets, including Lyrics settings.
+  - Adapt the full player's text and controls to the displayed artwork or gradient in both Glass and native layouts.
+  - Preserve accent colors where they remain readable. Use a neutral fallback and a local scrim where artwork tones vary.

@@ -27,9 +27,10 @@ fun GlassMaterialContainerColumn(
     material: (@Composable (LayerBackdrop) -> Modifier)? = null,
     materialSource: Backdrop? = null,
     sectionFilmIsMaterial: Boolean = false,
+    foregroundFill: Color? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    GlassMaterialContainerScope(modifier, includeParent, sectionFilm, material, materialSource, sectionFilmIsMaterial) { surface ->
+    GlassMaterialContainerScope(modifier, includeParent, sectionFilm, material, materialSource, sectionFilmIsMaterial, foregroundFill) { surface ->
         Column(surface, verticalArrangement, horizontalAlignment, content)
     }
 }
@@ -43,6 +44,7 @@ fun GlassMaterialContainerScope(
     material: (@Composable (LayerBackdrop) -> Modifier)? = null,
     materialSource: Backdrop? = null,
     sectionFilmIsMaterial: Boolean = false,
+    foregroundFill: Color? = null,
     content: @Composable (Modifier) -> Unit,
 ) {
     val exported = if (material != null) rememberLayerBackdrop() else null
@@ -68,7 +70,9 @@ fun GlassMaterialContainerScope(
     }
     CompositionLocalProvider(LocalGlassContainerBackdrop provides backdrop,
         LocalGlassMaterialSource provides source) {
-        GlassArtworkContent(rememberGlassSettings(), active = material != null || sectionFilmIsMaterial) {
+        val foregroundSurface = foregroundFill?.let { effectiveSurfaceColor(surfaceBackdropColor(), it) }
+        GlassArtworkContent(rememberGlassSettings(), active = material != null || sectionFilmIsMaterial,
+            surface = foregroundSurface) {
             content(modifier.then(materialModifier))
         }
     }

@@ -72,7 +72,10 @@ import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.components.glass.TextContrast
+import app.n_zik.android.components.glass.surfaceGlyphColor
 import app.n_zik.android.components.ui.iconBadgeBackground
+import app.n_zik.android.components.ui.iconBadgeGlyphColor
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
@@ -298,7 +301,7 @@ class LyricsSettingsMenu private constructor(
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.text),
-                                tint = colorPalette().accent,
+                                tint = iconBadgeGlyphColor(colorPalette().accent),
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -732,7 +735,7 @@ class LyricsSettingsMenu private constructor(
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.text),
-                                    tint = colorPalette().accent,
+                                    tint = iconBadgeGlyphColor(colorPalette().accent),
                                     contentDescription = null,
                                     modifier = Modifier.size(18.dp)
                                 )
@@ -1128,7 +1131,7 @@ class LyricsSettingsMenu private constructor(
         ) {
             Icon(
                 painter = painterResource(icon),
-                tint = colorPalette().accent,
+                tint = iconBadgeGlyphColor(colorPalette().accent),
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
             )
@@ -1140,7 +1143,7 @@ class LyricsSettingsMenu private constructor(
         BasicText(
             text = title,
             style = typography().xxs.semiBold.copy(
-                color = colorPalette().accent,
+                color = surfaceGlyphColor(colorPalette().accent, minimum = TextContrast),
                 textAlign = TextAlign.Start
             ),
             modifier = Modifier

@@ -1,6 +1,21 @@
 package app.n_zik.android.components.player
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassScope
+import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.IconContrast
+import app.n_zik.android.components.glass.TextContrast
+import app.n_zik.android.components.glass.contrastAgainst
+import app.n_zik.android.components.glass.forArea
+import app.n_zik.android.components.glass.glassFilmColor
+import app.n_zik.android.components.glass.inScope
+import app.n_zik.android.components.glass.neutralForeground
+import app.n_zik.android.components.glass.surfaceForegroundIsLight
+import app.n_zik.android.components.glass.surfaceGlyphColor
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.ui.styling.ColorPalette
 
@@ -62,3 +77,61 @@ internal fun ColorPalette.m3eRecapRestoredDynamicPalette(
  */
 internal fun durationOutlineColorOf(textOutline: Boolean, palette: ColorPalette): Color =
     if (!textOutline) Color.Transparent else textOutlineColor(palette.isDark, 0.5f)
+
+internal data class PlayerControlContrast(val backdrop: Color, val scrim: Color) {
+    val surface: Color get() = scrim.compositeOver(backdrop)
+}
+
+/** Make the local controls readable across the estimated artwork and gradient range. */
+internal fun playerControlContrast(backdrop: Color, samples: List<Color>): PlayerControlContrast {
+    val foreground = neutralForeground(backdrop)
+    val scrimColor = if (foreground == Color.Black) Color.White else Color.Black
+    fun meetsTarget(alpha: Float): Boolean =
+        samples.all { contrastAgainst(foreground, scrimColor.copy(alpha = alpha).compositeOver(it)) >= TextContrast }
+    if (meetsTarget(0f)) return PlayerControlContrast(backdrop, Color.Transparent)
+    var lower = 0f
+    var upper = 1f
+    repeat(10) {
+        val midpoint = (lower + upper) / 2
+        if (meetsTarget(midpoint)) upper = midpoint else lower = midpoint
+    }
+    return PlayerControlContrast(backdrop, scrimColor.copy(alpha = upper))
+}
+
+internal fun playerTintedArtworkSample(
+    artwork: Color,
+    wash: Color,
+    bottom: Color,
+    gradientStart: Float,
+    height: Float,
+    position: Float,
+): Color {
+    val fraction = if (height <= gradientStart) 0f
+        else ((position * height - gradientStart) / (height - gradientStart)).coerceIn(0f, 1f)
+    return bottom.copy(alpha = bottom.alpha * fraction)
+        .compositeOver(wash.compositeOver(artwork))
+}
+
+@Composable
+internal fun playerTransportGlyph(
+    color: Color,
+    settings: GlassSettings,
+    nativePlate: Color = Color.Transparent,
+    hasGlassPlate: Boolean = true,
+    minimum: Float = IconContrast,
+): Color = surfaceGlyphColor(color, playerTransportPlate(settings, nativePlate, hasGlassPlate), minimum)
+
+@Composable
+internal fun playerTransportPlate(
+    settings: GlassSettings,
+    nativePlate: Color,
+    hasGlassPlate: Boolean = true,
+): Color {
+    val transport = settings.inScope(GlassScope.PlayerTransport)
+    return if (hasGlassPlate && transport.usesGlassMaterial(GlassArea.ActionButtons))
+        glassFilmColor(transport.forArea(GlassArea.ActionButtons), role = null, menu = false) else nativePlate
+}
+
+@Composable
+internal fun playerTextOutlineColor(effectiveIsDark: Boolean, alpha: Float): Color =
+    textOutlineColor(surfaceForegroundIsLight(effectiveIsDark), alpha)

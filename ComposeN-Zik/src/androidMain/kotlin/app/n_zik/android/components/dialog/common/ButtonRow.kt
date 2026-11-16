@@ -29,6 +29,14 @@ import app.n_zik.android.components.glass.glassDialogButtonBackground
 import app.n_zik.android.components.glass.GlassDialogButtonFeedback
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.IconContrast
+import app.n_zik.android.components.glass.TextContrast
+import app.n_zik.android.components.glass.forArea
+import app.n_zik.android.components.glass.glassFilmColor
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.surfaceGlyphColor
+import app.n_zik.android.components.glass.usesGlassDialogButtonMaterial
 import app.n_zik.android.R
 import app.n_zik.android.typography
 import app.n_zik.android.utils.medium
@@ -122,8 +130,15 @@ private fun DialogButtonBand(buttons: List<DialogButton>, gap: Dp) {
 private fun DialogPill(button: DialogButton, modifier: Modifier) {
     val palette = colorPalette()
     val iconOnly = button.icon != null && button.text.isEmpty()
+    val nativeFill = pillColor(button, palette)
+    val settings = rememberGlassSettings()
+    val plate = if (settings.usesGlassDialogButtonMaterial())
+        glassFilmColor(settings.forArea(GlassArea.DialogButtons), nativeFill) else nativeFill
+    val originalForeground = resolvedColor(button, palette)
+    val label = if (button.enabled) surfaceGlyphColor(originalForeground, plate, TextContrast) else originalForeground
+    val glyph = if (button.enabled) surfaceGlyphColor(originalForeground, plate, IconContrast) else originalForeground
     val style = (if (button.primary) typography().xs.semiBold else typography().xs.medium)
-        .copy(color = resolvedColor(button, palette), textAlign = TextAlign.Center)
+        .copy(color = label, textAlign = TextAlign.Center)
     GlassDialogButtonFeedback(button.enabled && dialogInputEnabled, uiRoundnessShape()) { feedback, source ->
         Row(
             modifier = pillModifier(button, palette, modifier.then(feedback), source),
@@ -134,7 +149,7 @@ private fun DialogPill(button: DialogButton, modifier: Modifier) {
                 Icon(
                     painter = painterResource(iconRes),
                     contentDescription = null,
-                    tint = resolvedColor(button, palette),
+                    tint = glyph,
                     modifier = Modifier.size(16.dp),
                 )
                 if (!iconOnly) Spacer(Modifier.width(6.dp))
@@ -161,10 +176,7 @@ private fun pillModifier(button: DialogButton, palette: ColorPalette, modifier: 
         .fillMaxWidth()
         .clip(shape)
         .glassDialogButtonBackground(
-            if (!button.enabled) palette.background2
-            else if (button.primary) palette.accent
-            else if (button.danger) palette.red
-            else palette.background2,
+            pillColor(button, palette),
             shape = shape,
         )
         .clickable(interactionSource = source, indication = if (source != null) null else androidx.compose.foundation.LocalIndication.current,
@@ -172,6 +184,13 @@ private fun pillModifier(button: DialogButton, palette: ColorPalette, modifier: 
             if (presentation?.interactive != false) button.onClick()
         }
         .padding(horizontal = 16.dp, vertical = 10.dp)
+}
+
+private fun pillColor(button: DialogButton, palette: ColorPalette): Color = when {
+    !button.enabled -> palette.background2
+    button.primary -> palette.accent
+    button.danger -> palette.red
+    else -> palette.background2
 }
 
 private fun resolvedColor(button: DialogButton, palette: ColorPalette): Color =

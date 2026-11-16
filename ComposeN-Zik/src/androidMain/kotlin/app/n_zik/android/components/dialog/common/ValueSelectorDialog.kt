@@ -53,8 +53,6 @@ fun <T> ValueSelectorDialog(
     lockedValues: Set<T> = emptySet(),
     lockedLabel: String? = null
 ) {
-    val palette = colorPalette()
-
     DialogFrame(
         onDismiss = onDismiss,
         modifier = modifier,
@@ -72,7 +70,7 @@ fun <T> ValueSelectorDialog(
             )
         }
     ) {
-
+        val palette = colorPalette()
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())

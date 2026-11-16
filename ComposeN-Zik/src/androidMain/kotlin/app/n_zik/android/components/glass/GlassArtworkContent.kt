@@ -12,9 +12,14 @@ import app.n_zik.android.components.theme.withColor
 internal fun GlassArtworkContent(
     settings: GlassSettings,
     active: Boolean = true,
+    surface: Color? = null,
     content: @Composable () -> Unit,
 ) {
     val appearance = LocalAppearance.current
+    if (!appearance.colorPalette.isDark && surface != null) {
+        SurfaceForegroundContent(surface, content = content)
+        return
+    }
     val forced = active && settings.enabled && glassArtworkForcesDark(settings)
     val palette = appearance.colorPalette
     val effective = if (forced) appearance.copy(

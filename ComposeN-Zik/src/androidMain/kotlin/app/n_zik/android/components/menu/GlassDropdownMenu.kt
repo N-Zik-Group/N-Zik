@@ -24,6 +24,10 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.dp
 
 import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.SurfaceForegroundContent
+import app.n_zik.android.components.glass.effectiveSurfaceColor
+import app.n_zik.android.components.glass.glassFilmColor
+import app.n_zik.android.components.glass.surfaceBackdropColor
 import app.n_zik.android.components.glass.GlassMenuEntry
 import app.n_zik.android.components.glass.GlassMenuTriggerState
 import app.n_zik.android.components.glass.LocalGlassMenuHost
@@ -96,6 +100,10 @@ fun GlassDropdownMenu(
             filmColor = originalContainerColor, excludeBottomRim = false,
         ) else modifier.glassAreaContour(settings, GlassArea.Dropdowns, menuShape),
         shape = menuShape,
-        content = content,
+        content = {
+            val fill = if (glassEnabled) glassFilmColor(settings.forArea(GlassArea.Dropdowns), originalContainerColor)
+                else originalContainerColor
+            SurfaceForegroundContent(effectiveSurfaceColor(surfaceBackdropColor(), fill)) { content() }
+        },
     )
 }

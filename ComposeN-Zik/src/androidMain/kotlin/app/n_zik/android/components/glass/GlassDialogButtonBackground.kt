@@ -121,7 +121,7 @@ internal fun GlassDialogOutlinedButton(
     }
 }
 
-private fun GlassSettings.usesGlassDialogButtonMaterial(): Boolean =
+internal fun GlassSettings.usesGlassDialogButtonMaterial(): Boolean =
     usesGlassMaterial(GlassArea.DialogButtons)
 
 /** The Glass rim replaces a native outline while the dialog button material is active. */

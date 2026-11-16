@@ -17,6 +17,7 @@ data class ArtworkColorSnapshot internal constructor(
     val darkColors: M3ECoverColors?,
     val fallbackDominant: Color?,
     val isMonochrome: Boolean,
+    internal val artworkSamples: List<Color> = emptyList(),
 ) {
     fun display(isDark: Boolean, keepDark: Boolean): ArtworkDisplayColors {
         val originalPalette = if (isDark) darkPalette else lightPalette
@@ -33,7 +34,7 @@ data class ArtworkColorSnapshot internal constructor(
             M3ECoverColors(value, value, value, value, value, value, value)
         } else originalColors
         return ArtworkDisplayColors(palette, colors, if (forceDark) background else source,
-            background, foreground, forceDark, isMonochrome)
+            background, foreground, forceDark, isMonochrome, artworkSamples)
     }
 }
 
@@ -45,6 +46,7 @@ data class ArtworkDisplayColors(
     val foreground: Color?,
     val forceDark: Boolean,
     val isMonochrome: Boolean,
+    internal val artworkSamples: List<Color> = emptyList(),
 )
 
 /** One normal quantization; the existing pure-white/black recovery is shared too. */
@@ -62,6 +64,8 @@ internal suspend fun analyzeArtworkColors(
     val monochrome = sourceSwatches.isNotEmpty() && sourceSwatches.all {
         channelDelta(it.rgb) < ACHROMATIC_CHANNEL_DELTA_THRESHOLD
     }
+    val dominant = (fallback ?: swatches).dominantSwatch
+    val samples = (listOfNotNull(dominant) + sourceSwatches).distinctBy { it.rgb }.map { Color(it.rgb) }
     ArtworkColorSnapshot(light?.palette, dark?.palette, light?.colors, dark?.colors,
-        fallback?.dominantSwatch?.rgb?.let(::Color), monochrome)
+        fallback?.dominantSwatch?.rgb?.let(::Color), monochrome, samples)
 }

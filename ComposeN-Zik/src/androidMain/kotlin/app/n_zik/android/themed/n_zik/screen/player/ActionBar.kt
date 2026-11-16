@@ -103,7 +103,7 @@ import app.n_zik.android.components.player.PlayerActionToolbar
 import app.n_zik.android.components.player.PlayerActionPanel
 import app.n_zik.android.components.player.PlayerActionIcon
 import app.n_zik.android.components.player.PlayerDownloadAction
-import app.n_zik.android.components.player.textOutlineColor
+import app.n_zik.android.components.player.playerTextOutlineColor
 import app.n_zik.android.utils.DisposableListener
 import app.n_zik.android.utils.actionspacedevenlyKey
 import app.n_zik.android.utils.addNext
@@ -409,7 +409,7 @@ fun BoxScope.ActionBar(
                                             ),
                                             // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
                                             color = if (!textOutline) Color.Transparent
-                                            else textOutlineColor(colorPalette().isDark, 0.65f),
+                                            else playerTextOutlineColor(colorPalette().isDark, 0.65f),
                                             fontSize = typography().xxxs.semiBold.fontSize,
                                         ),
                                         maxLines = 1,
@@ -443,7 +443,7 @@ fun BoxScope.ActionBar(
                                             ),
                                             // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
                                             color = if ( !textOutline ) Color.Transparent
-                                            else textOutlineColor( colorPalette().isDark, 0.65f ),
+                                            else playerTextOutlineColor( colorPalette().isDark, 0.65f ),
                                             fontSize = typography().xxxs.semiBold.fontSize,
                                         ),
                                         maxLines = 1,

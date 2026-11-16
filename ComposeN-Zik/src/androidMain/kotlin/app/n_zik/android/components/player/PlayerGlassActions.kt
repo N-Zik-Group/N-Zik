@@ -27,6 +27,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.runtime.Composable
+import app.n_zik.android.components.glass.LocalSurfaceBackdropColor
+import app.n_zik.android.components.glass.SurfaceForegroundContent
+import app.n_zik.android.components.glass.effectiveSurfaceColor
+import app.n_zik.android.components.glass.glassFilmColor
+import app.n_zik.android.components.glass.surfaceForegroundScrim
+import app.n_zik.android.components.glass.surfaceGlyphColor
+import app.n_zik.android.components.glass.surfaceProgressTrackColor
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.DisposableEffect
@@ -145,6 +152,7 @@ private data class PlayerToolbarStyle(
     val actions: List<PlayerActionSlot>,
     val bounds: Map<Int, Rect>,
     val nativeBackground: Color,
+    val contrastScrim: Color,
     val placementMotions: Map<String, PlayerReflowPlacement>,
     val onBounds: (Int, Rect) -> Unit,
 ) {
@@ -218,18 +226,27 @@ fun PlayerActionToolbar(
     if (actions.isEmpty()) return
     val glass = settings.usesGlassMaterial(GlassArea.ActionButtons)
     val arrangement = if (spaceEvenly) Arrangement.SpaceEvenly else Arrangement.SpaceBetween
-    val content: @Composable () -> Unit = {
+    val contrastBackdrop = LocalSurfaceBackdropColor.current
+    val contrastScrim = surfaceForegroundScrim()
+    val shape = uiRoundnessShape()
+    val plate = if (glass) glassFilmColor(settings.forArea(GlassArea.ActionButtons), null, menu = false) else nativeBackground
+    val slots: @Composable () -> Unit = {
         actions.forEachIndexed { index, action -> key(action.id) {
             CompositionLocalProvider(LocalPlayerSlotIndex provides index,
                 app.n_zik.android.components.glass.LocalGlassScope provides GlassScope.PlayerActions) { action.content() }
         } }
     }
+    val content: @Composable () -> Unit = {
+        if (contrastBackdrop == null) slots()
+        else SurfaceForegroundContent(effectiveSurfaceColor(contrastBackdrop, plate), content = slots)
+    }
     val glassRowModifier = Modifier.playerActionToolbarWidth(landscape)
+        .then(if (contrastScrim.alpha > 0f && actions.size > 1) Modifier.background(contrastScrim, shape) else Modifier)
     val cellPadding = if (actions.size > 1) Modifier.padding(
         start = ((48.dp - actions.first().nativeHeight) / 2).coerceAtLeast(0.dp),
         end = ((48.dp - actions.last().nativeHeight) / 2).coerceAtLeast(0.dp)) else Modifier
     val bounds = remember(actions.map { it.id }) { mutableStateMapOf<Int, Rect>() }
-    val style = PlayerToolbarStyle(settings, actions.size == 1, actions, bounds, nativeBackground, activeMotions) { index, rect -> bounds[index] = rect }
+    val style = PlayerToolbarStyle(settings, actions.size == 1, actions, bounds, nativeBackground, contrastScrim, activeMotions) { index, rect -> bounds[index] = rect }
     val toolbarHeight = style.height
     if (!glass) {
         Box(modifier.fillMaxWidth().windowInsetsPadding(horizontalInsets), contentAlignment = Alignment.Center) {
@@ -299,7 +316,7 @@ fun PlayerActionIcon(
         return
     }
     PlayerActionCell(enabled, onClick, onLongClick) {
-        Image(painterResource(icon), null, colorFilter = ColorFilter.tint(color), modifier = modifier)
+        Image(painterResource(icon), null, colorFilter = ColorFilter.tint(if (enabled) surfaceGlyphColor(color) else color), modifier = modifier)
     }
 }
 
@@ -368,6 +385,7 @@ private fun PlayerActionCell(
             Box(Modifier.matchParentSize().requiredSize(style.height)
                 .playerVisibleToolbarBounds(style.settings, style.nativeBackground, nativeSize)
                 .testTag(if (glass) "player.actionToolbar.material" else "player.actionToolbar.native")
+                .background(style.contrastScrim, shape)
                 .then(if (glass) Modifier.glassMaterial(style.settings.forArea(GlassArea.ActionButtons), uiRoundnessShape(),
                     ownBackdrop = LocalGlassContainerBackdrop.current) else Modifier.background(style.nativeBackground, uiRoundnessShape())
                     .glassAreaContour(style.settings, GlassArea.ActionButtons, uiRoundnessShape())))
@@ -398,16 +416,18 @@ fun PlayerDownloadAction(
         downloadState == Download.STATE_RESTARTING
     val progress = if (mediaId != null) getDownloadProgress(mediaId) else 0f
     PlayerActionCell(enabled, if (active) onCancelButtonClicked else onClick) {
-        if (!active) Image(painterResource(icon), null, colorFilter = ColorFilter.tint(color), modifier = modifier)
+        if (!active) Image(painterResource(icon), null, colorFilter = ColorFilter.tint(if (enabled) surfaceGlyphColor(color) else color), modifier = modifier)
         else Box(modifier, contentAlignment = Alignment.Center) {
+            val arc = surfaceGlyphColor(colorPalette().accent)
+            val track = surfaceProgressTrackColor(arc, colorPalette().textDisabled)
             val stroke = Stroke(with(LocalDensity.current) { DOWNLOAD_INDICATOR_STROKE_WIDTH.dp.toPx() })
             val progressModifier = Modifier.size(DOWNLOAD_INDICATOR_SIZE_NORMAL.dp)
             if (progress > .01f && downloadState == Download.STATE_DOWNLOADING)
                 CircularWavyProgressIndicator(progress = { progress }, modifier = progressModifier,
-                    color = colorPalette().accent, trackColor = colorPalette().textDisabled,
+                    color = arc, trackColor = track,
                     stroke = stroke, trackStroke = stroke)
             else CircularWavyProgressIndicator(modifier = progressModifier,
-                color = colorPalette().accent, trackColor = colorPalette().textDisabled,
+                color = arc, trackColor = track,
                 stroke = stroke, trackStroke = stroke)
         }
     }

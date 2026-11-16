@@ -117,7 +117,12 @@ import app.n_zik.android.components.glass.inScope
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.player.monochromeControlsColor
 import app.n_zik.android.components.player.placeholderCompositeBase
-import app.n_zik.android.components.player.textOutlineColor
+import app.n_zik.android.components.glass.TextContrast
+import app.n_zik.android.components.glass.surfaceGlyphColor
+import app.n_zik.android.components.glass.surfaceProgressTrackColor
+import app.n_zik.android.components.player.playerTextOutlineColor
+import app.n_zik.android.components.player.playerTransportGlyph
+import app.n_zik.android.components.player.playerTransportPlate
 
 
 @UnstableApi
@@ -238,7 +243,7 @@ fun InfoAlbumAndArtistModern(
                     style = TextStyle(
                         drawStyle = Stroke(width = 1.5f, join = StrokeJoin.Round),
                         color = if (!textoutline) Color.Transparent
-                        else textOutlineColor(colorPalette().isDark, 0.5f),
+                        else playerTextOutlineColor(colorPalette().isDark, 0.5f),
                         fontStyle = typography().l.bold.fontStyle,
                         fontWeight = typography().l.bold.fontWeight,
                         fontSize = typography().l.bold.fontSize,
@@ -369,7 +374,7 @@ fun InfoAlbumAndArtistModern(
                 style = TextStyle(
                     drawStyle = Stroke(width = 1.5f, join = StrokeJoin.Round),
                     color = if (!textoutline) Color.Transparent
-                    else textOutlineColor(colorPalette().isDark, 0.5f),
+                    else playerTextOutlineColor(colorPalette().isDark, 0.5f),
                     fontStyle = typography().m.bold.fontStyle,
                     fontSize = typography().m.bold.fontSize,
                     fontWeight = typography().m.bold.fontWeight,
@@ -408,6 +413,7 @@ fun ControlsModern(
     val transportSettings = rememberGlassSettings(GlassScope.PlayerTransport).inScope(GlassScope.PlayerTransport)
     val transportGlass = transportSettings.usesGlassMaterial(GlassArea.ActionButtons)
     val transportFilm = colorPalette().background2.copy(0.95f)
+    val transportPlate = playerTransportPlate(transportSettings, transportFilm)
     val playerControlsColors by rememberPreference(playerControlsColorsKey, PlayerControlsColors.Monochrome)
     val controlsColorText = when (playerControlsColors) {
         PlayerControlsColors.Cover -> dynamicColorPalette.accent
@@ -473,7 +479,7 @@ fun ControlsModern(
           Image(
               painter = painterResource(R.drawable.play_skip_back),
               contentDescription = null,
-              colorFilter = ColorFilter.tint(controlsColorText),
+              colorFilter = ColorFilter.tint(playerTransportGlyph(controlsColorText, transportSettings, transportFilm)),
               modifier = Modifier
                   .padding(10.dp)
                   .size(26.dp)
@@ -544,9 +550,11 @@ fun ControlsModern(
               )
 
               if (isBuffering && shouldBePlaying) {
+                  val arc = surfaceGlyphColor(colorPalette().accent, transportPlate)
+                  val track = surfaceGlyphColor(colorPalette().text, transportPlate)
                   CircularWavyProgressIndicator(
-                      color = colorPalette().accent,
-                      trackColor = colorPalette().text,
+                      color = arc,
+                      trackColor = surfaceProgressTrackColor(arc, track, transportPlate),
                       modifier = Modifier
                           .align(Alignment.Center)
                           .size(30.dp),
@@ -557,7 +565,7 @@ fun ControlsModern(
                   Image(
                       painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
                       contentDescription = null,
-                      colorFilter = ColorFilter.tint(controlsColorText),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
+                      colorFilter = ColorFilter.tint(playerTransportGlyph(controlsColorText, transportSettings, transportFilm)),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
                       modifier = Modifier
                           .rotate(rotationAngle)
                           .align(Alignment.Center)
@@ -595,9 +603,11 @@ fun ControlsModern(
 
           ) {
 if (isBuffering && shouldBePlaying) {
+                  val arc = surfaceGlyphColor(colorPalette().accent, transportPlate)
+                  val track = surfaceGlyphColor(colorPalette().text, transportPlate)
                   CircularWavyProgressIndicator(
-                      color = colorPalette().accent,
-                      trackColor = colorPalette().text,
+                      color = arc,
+                      trackColor = surfaceProgressTrackColor(arc, track, transportPlate),
                       modifier = Modifier
                           .align(Alignment.Center)
                           .size(30.dp),
@@ -608,7 +618,7 @@ if (isBuffering && shouldBePlaying) {
                   Image(
                       painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
                       contentDescription = null,
-                      colorFilter = ColorFilter.tint(controlsColorText),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
+                      colorFilter = ColorFilter.tint(playerTransportGlyph(controlsColorText, transportSettings, transportFilm)),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
                       modifier = Modifier
                           .rotate(rotationAngle)
                           .align(Alignment.Center)
@@ -626,7 +636,7 @@ if (isBuffering && shouldBePlaying) {
                       BasicText(
                           text = stringResource(R.string.player_playback_speed_value, playbackSpeed),
                           style = TextStyle(
-                              color = colorPalette().text,
+                              color = surfaceGlyphColor(colorPalette().text, transportPlate, TextContrast),
                               fontStyle = typography().xxxs.semiBold.fontStyle,
                               fontSize = typography().xxxs.semiBold.fontSize
                           ),
@@ -660,7 +670,7 @@ if (isBuffering && shouldBePlaying) {
           Image(
               painter = painterResource(R.drawable.play_skip_forward),
               contentDescription = null,
-              colorFilter = ColorFilter.tint(controlsColorText),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
+              colorFilter = ColorFilter.tint(playerTransportGlyph(controlsColorText, transportSettings, transportFilm)),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
               modifier = Modifier
                   .padding(10.dp)
                   .size(26.dp)
@@ -692,7 +702,7 @@ if (isBuffering && shouldBePlaying) {
               Image(
                   painter = painterResource(R.drawable.play_skip_back),
                   contentDescription = null,
-                  colorFilter = ColorFilter.tint(controlsColorAccent),
+                  colorFilter = ColorFilter.tint(surfaceGlyphColor(controlsColorAccent)),
                   modifier = Modifier
                       .padding(10.dp)
                       .size(34.dp)
@@ -733,7 +743,7 @@ if (isBuffering && shouldBePlaying) {
               Image(
                   painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
                   contentDescription = null,
-                  colorFilter = ColorFilter.tint(controlsColorAccent),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
+                  colorFilter = ColorFilter.tint(surfaceGlyphColor(controlsColorAccent)),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
                   modifier = Modifier
                       .rotate(rotationAngle)
                       .size(44.dp)
@@ -776,7 +786,7 @@ if (isBuffering && shouldBePlaying) {
               Image(
                   painter = painterResource(R.drawable.play_skip_forward),
                   contentDescription = null,
-                  colorFilter = ColorFilter.tint(controlsColorAccent),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
+                  colorFilter = ColorFilter.tint(surfaceGlyphColor(controlsColorAccent)),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
                   modifier = Modifier
                       .padding(10.dp)
                       .size(34.dp)

@@ -70,8 +70,10 @@ class ArtworkColorSnapshotTest {
             if (color == android.graphics.Color.WHITE) assertTrue(recovered.luminance() > .9f)
             else assertTrue(recovered.luminance() < .01f)
             assertFalse(raw.display(false, false).forceDark)
+            assertEquals(listOf(recovered), raw.display(false, false).artworkSamples)
             for (dark in listOf(false, true)) {
                 val display = raw.display(dark, true)
+                assertEquals(listOf(recovered), display.artworkSamples)
                 assertTrue(display.forceDark)
                 assertTrue(requireNotNull(display.palette).isDark)
                 assertNotEquals(display.foreground, display.background)
@@ -120,7 +122,9 @@ class ArtworkColorSnapshotTest {
         val raw = analyzeArtworkColors(bitmap(android.graphics.Color.GRAY)) { _, _ -> palette }
         assertFalse(raw.isMonochrome)
         for (dark in listOf(false, true)) {
-            assertEquals(raw.display(dark, false), raw.display(dark, true))
+            val display = raw.display(dark, false)
+            assertEquals(display, raw.display(dark, true))
+            assertEquals(listOf(Color(android.graphics.Color.GRAY), Color(android.graphics.Color.rgb(8, 0, 32))), display.artworkSamples)
             assertEquals(coverPaletteFromSwatches(palette, dark)?.palette, raw.display(dark, false).palette)
         }
     }

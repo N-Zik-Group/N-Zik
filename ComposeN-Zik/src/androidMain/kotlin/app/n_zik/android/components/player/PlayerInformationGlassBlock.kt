@@ -1,8 +1,10 @@
 package app.n_zik.android.components.player
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
@@ -13,6 +15,12 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import app.n_zik.android.components.glass.LocalSurfaceBackdropColor
+import app.n_zik.android.components.glass.SurfaceForegroundContent
+import app.n_zik.android.components.glass.effectiveSurfaceColor
+import app.n_zik.android.components.glass.glassFilmColor
+import app.n_zik.android.components.glass.surfaceForegroundScrim
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.findRootCoordinates
@@ -130,6 +138,8 @@ fun PlayerDurationBounds(content: @Composable () -> Unit) {
     }) { content() }
 }
 
+private val LocalPlayerInformationFilm = compositionLocalOf { Color.Transparent }
+
 /** A passive plate follows metadata and time regions without changing their measurement. */
 @Composable
 fun PlayerInformationGlassBlock(
@@ -160,14 +170,20 @@ fun PlayerInformationGlassBlock(
         }
     }
     val plate = rememberLayerBackdrop()
+    val contrastScrim = surfaceForegroundScrim()
+    val scrimLayer = if (material && parent != null && contrastScrim.alpha > 0f) rememberLayerBackdrop() else null
+    val underlay = if (parent != null && scrimLayer != null) rememberCombinedBackdrop(parent, scrimLayer) else parent
     val childBackdrop = if (material) {
-        if (parent != null) rememberCombinedBackdrop(parent, plate) else plate
+        if (underlay != null) rememberCombinedBackdrop(underlay, plate) else plate
     } else parent
     // Build the plate against its parent before exposing the rendered surface to
     // children. The exported layer contains no child controls or seek lens.
     val surface = if (material) Modifier.glassMaterial(settings.forArea(GlassArea.ActionButtons), shape,
-        ownBackdrop = parent, separateWindow = parent == null, exportedBackdrop = plate) else Modifier
+        ownBackdrop = underlay, separateWindow = underlay == null, exportedBackdrop = plate) else Modifier
+    val film = if (material) glassFilmColor(settings.forArea(GlassArea.ActionButtons), null, menu = false)
+        else Color.Transparent
     CompositionLocalProvider(LocalPlayerInformationBounds provides scope,
+        LocalPlayerInformationFilm provides film,
         LocalGlassContainerBackdrop provides childBackdrop,
         LocalGlassMaterialSource provides childBackdrop) {
         Layout(modifier = modifier.onPlaced {
@@ -184,6 +200,10 @@ fun PlayerInformationGlassBlock(
             if (material || contour) Box(Modifier.testTag("player.informationBlock.surface")
                 .then(if (material) surface else if (contour)
                     Modifier.glassAreaContour(settings, GlassArea.ActionButtons, shape) else Modifier))
+            if (contrastScrim.alpha > 0f) Box(
+                Modifier.then(if (scrimLayer != null) Modifier.layerBackdrop(scrimLayer) else Modifier)
+                    .background(contrastScrim, shape),
+            )
         }) { children, constraints ->
             val body = children[0].measure(constraints)
             val lookahead = isLookingAhead
@@ -204,7 +224,10 @@ fun PlayerInformationGlassBlock(
                     geometry?.landscapeInformationTopOutset = if (landscape)
                         visibleTop?.let { (-it).coerceAtLeast(0f) } else 0f
                 }
-                children.getOrNull(1)?.let { surface ->
+                val scrimIndex = if (material || contour) 2 else 1
+                children.getOrNull(scrimIndex)?.measure(Constraints.fixed(body.width, body.height))
+                    ?.placeRelative(0, 0, zIndex = -2f)
+                if (material || contour) children.getOrNull(1)?.let { surface ->
                     val pane = surface.measure(Constraints.fixed(
                         bounds?.width?.roundToInt()?.coerceAtLeast(0) ?: 0,
                         bounds?.height?.roundToInt()?.coerceAtLeast(0) ?: 0))
@@ -267,7 +290,14 @@ fun PlayerInformationGlassRegion(
         LocalGlassContainerBackdrop provides childBackdrop,
         LocalGlassMaterialSource provides if (precedingInformation != null) childBackdrop
             else LocalGlassMaterialSource.current) {
-        if (vertical) Column(capture) { content() } else Box(capture) { content() }
+        val backdrop = LocalSurfaceBackdropColor.current
+        val film = LocalPlayerInformationFilm.current
+        val regionContent: @Composable () -> Unit = {
+            if (vertical) Column(capture) { content() } else Box(capture) { content() }
+        }
+        if (backdrop != null && film.alpha > 0f)
+            SurfaceForegroundContent(effectiveSurfaceColor(backdrop, film), content = regionContent)
+        else regionContent()
     }
 }
 

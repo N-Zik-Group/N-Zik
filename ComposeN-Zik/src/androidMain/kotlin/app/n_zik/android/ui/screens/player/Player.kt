@@ -108,6 +108,7 @@ import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -176,6 +177,12 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.lerp
+import app.n_zik.android.components.glass.LocalSurfaceBackdropColor
+import app.n_zik.android.components.glass.SurfaceForegroundContent
+import app.n_zik.android.components.player.playerControlContrast
+import app.n_zik.android.components.player.playerTintedArtworkSample
 import app.n_zik.android.components.player.rememberPlayerFluidShader
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
@@ -338,7 +345,7 @@ import app.n_zik.android.components.glass.rememberGlassArtwork
 import app.n_zik.android.components.player.rememberArtworkDisplayColors
 import app.n_zik.android.components.player.BlurAdjuster
 import app.n_zik.android.components.player.m3eDarkenBy
-import app.n_zik.android.components.player.textOutlineColor
+import app.n_zik.android.components.player.playerTextOutlineColor
 import app.n_zik.android.components.player.m3eSaturate
 import app.n_zik.android.core.utils.Toaster
 import kotlin.Float.Companion.POSITIVE_INFINITY
@@ -1261,6 +1268,56 @@ fun Player(
 
     }
 
+    val themeSurface = color.background1.copy(alpha = 1f)
+    val playerHeightPx = with(LocalDensity.current) { screenHeight.toPx() }
+    val coverSwatches = listOf(dominant, vibrant, lightVibrant, darkVibrant, muted, lightMuted, darkMuted)
+    // The players use a white or black bottom tint, with an additional wash in landscape.
+    // Use the exact same tone choices as the active blurred-cover branch.
+    val lightBottomTint = if (showFullScreenArtworkPager && isLandscape) lightTheme
+        else colorPaletteMode == ColorPaletteMode.Light
+    val bottomTint = if (!bottomgradient) Color.Transparent else
+        (if (lightBottomTint) Color.White else Color.Black).copy(alpha = if (isLandscape) 0.8f else 0.75f)
+    val artworkWash = bottomTint.copy(alpha = if (bottomgradient && isLandscape) 0.25f else 0f)
+    val resolvedGradient = if (animatedGradient == AnimatedGradient.Random) tempGradient else animatedGradient
+    val themeStops = listOf(surfaceColor(color.background1), surfaceColor(color.background2))
+    val playerSurfaces = if (!lightTheme || color.isDark) emptyList() else when (playerBackgroundColors) {
+        PlayerBackgroundColors.BlurredCoverColor -> {
+            val tones = coverDisplay?.artworkSamples.orEmpty().ifEmpty { listOfNotNull(coverDisplay?.dominant) }
+            if (tones.isEmpty()) listOf(themeSurface) else {
+                val positions = listOf(0.8f, 0.5f, 1f)
+                tones.flatMap { tone ->
+                    positions.map { position ->
+                        playerTintedArtworkSample(tone, artworkWash, bottomTint, playerGradientStartY, playerHeightPx, position)
+                    }
+                }
+            }
+        }
+        PlayerBackgroundColors.CoverColor -> listOf(fadingCoverBackground)
+        PlayerBackgroundColors.CoverColorGradient, PlayerBackgroundColors.ThemeColorGradient -> {
+            val coverGradient = playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient
+            val start = if (coverGradient) fadingCoverBackground else themeStops.first()
+            val end = if (blackgradient) Color.Black else if (coverGradient) fadingCoverBackground else themeStops.last()
+            val progress = ((playerHeightPx * 0.8f / 1500f - 0.5f) * 2f).coerceIn(0f, 1f)
+            listOf(lerp(start, end, progress), start, end)
+        }
+        PlayerBackgroundColors.ColorPalette -> coverSwatches.map(::Color)
+        PlayerBackgroundColors.AnimatedGradient -> when (resolvedGradient) {
+            AnimatedGradient.FluidThemeColorGradient, AnimatedGradient.M3EMorphingTheme ->
+                themeStops + listOf(color.background0, color.accent)
+            AnimatedGradient.FluidCoverColorGradient, AnimatedGradient.M3EMorphingCover ->
+                listOf(coverBackground, dynamicColorPalette.background0, dynamicColorPalette.background1,
+                    dynamicColorPalette.background2) + coverSwatches.map(::coverGradientColor)
+            AnimatedGradient.Linear, AnimatedGradient.Mesh ->
+                coverSwatches.map(::coverGradientColor)
+            else -> listOf(themeSurface, Color.Black, Color.White)
+        }
+        else -> listOf(themeSurface)
+    }
+    val playerBackdropEstimate = playerSurfaces.firstOrNull()?.compositeOver(themeSurface)
+    val playerContrast = playerBackdropEstimate?.let { backdrop ->
+        playerControlContrast(backdrop, playerSurfaces.map { it.compositeOver(themeSurface) })
+    }
+
     val controllerPreviewPage = if (showthumbnail && playerType == PlayerType.Modern && coverArtworkVisible)
         pagerState.currentPage else artworkPreviewPage
     val artworkShadowOverflow = rememberPlayerArtworkShadowOverflow()
@@ -1356,25 +1413,29 @@ fun Player(
         position: () -> Long,
         duration: () -> Long
     ) {
-        Controls(
-            navController = navController,
-            onCollapse = onDismiss,
-            onBlurScaleChange = { strength -> blurAdjuster.strength = strength },
-            expandedplayer = expandedplayer,
-            titleExpanded = titleExpanded,
-            timelineExpanded = timelineExpanded,
-            controlsExpanded = controlsExpanded,
-            isShowingLyrics = isShowingStandaloneLyrics,
-            mediaItem = mediaItem,
-            artistIds = artistInfos,
-            albumId = albumId,
-            shouldBePlaying = shouldBePlaying,
-            isBuffering = isBuffering,
-            position = position,
-            duration = duration,
-            dynamicColorPalette = dynamicColorPalette,
-            modifier = modifier,
-        )
+        val controls: @Composable () -> Unit = {
+            Controls(
+                navController = navController,
+                onCollapse = onDismiss,
+                onBlurScaleChange = { strength -> blurAdjuster.strength = strength },
+                expandedplayer = expandedplayer,
+                titleExpanded = titleExpanded,
+                timelineExpanded = timelineExpanded,
+                controlsExpanded = controlsExpanded,
+                isShowingLyrics = isShowingStandaloneLyrics,
+                mediaItem = mediaItem,
+                artistIds = artistInfos,
+                albumId = albumId,
+                shouldBePlaying = shouldBePlaying,
+                isBuffering = isBuffering,
+                position = position,
+                duration = duration,
+                dynamicColorPalette = dynamicColorPalette,
+                modifier = modifier,
+            )
+        }
+        if (playerContrast == null) controls()
+        else SurfaceForegroundContent(playerContrast.surface, playerContrast.scrim, controls)
     }
 
     blurAdjuster.Render()
@@ -1387,6 +1448,7 @@ fun Player(
         LocalGlassOpticsTransitionProgress provides playerTransition.value,
         LocalGlassUnderlayCovered provides playerUnderlayCovered,
         LocalGlassBackdrop provides artworkControlsSource,
+        LocalSurfaceBackdropColor provides playerBackdropEstimate,
         LocalGlassMaterialSource provides artworkControlsSource,
         LocalGlassContainerBackdrop provides artworkControlsSource,
         LocalGlassOverlayBackdrop provides if (capturePlayerScene && playerSheetState.isExpanded) playerVisibleBackdrop
@@ -1402,34 +1464,26 @@ fun Player(
         @Composable
         fun ActionsBar() {
             if (isShowingStandaloneLyrics && !showActionsInFullscreenLyrics) return
-            if (glassSettings.enabled) {
-                Box(Modifier.align(if (isLandscape) Alignment.BottomEnd else Alignment.BottomCenter)) { ActionBar(
-            navController,
-            showQueueState,
-            showSearchEntityState,
-            rotateState,
-            showVisualizerState,
-            showSleepTimerState,
-            showLyricsState,
-            discoverState,
-            queueLoopState,
-            expandPlayerState,
-            onDismiss
-        ) }
-            } else {
-                Box { ActionBar(
-            navController,
-            showQueueState,
-            showSearchEntityState,
-            rotateState,
-            showVisualizerState,
-            showSleepTimerState,
-            showLyricsState,
-            discoverState,
-            queueLoopState,
-            expandPlayerState,
-            onDismiss
-        ) }
+            val bar: @Composable BoxScope.() -> Unit = {
+                ActionBar(
+                    navController,
+                    showQueueState,
+                    showSearchEntityState,
+                    rotateState,
+                    showVisualizerState,
+                    showSleepTimerState,
+                    showLyricsState,
+                    discoverState,
+                    queueLoopState,
+                    expandPlayerState,
+                    onDismiss
+                )
+            }
+            val modifier = if (glassSettings.enabled)
+                Modifier.align(if (isLandscape) Alignment.BottomEnd else Alignment.BottomCenter) else Modifier
+            Box(modifier) {
+                if (playerContrast == null) bar()
+                else SurfaceForegroundContent(playerContrast.surface, playerContrast.scrim) { bar() }
             }
         }
 
@@ -2550,7 +2604,7 @@ fun Player(
                                                 ),
                                                 // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
                                                 color = if (!textoutline) Color.Transparent
-                                                else textOutlineColor(colorPalette().isDark, 0.5f),
+                                                else playerTextOutlineColor(colorPalette().isDark, 0.5f),
                                             )
                                         ),
                                         maxLines = 1,

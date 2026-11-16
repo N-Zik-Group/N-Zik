@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.Composable
+import app.n_zik.android.components.glass.surfaceGlyphColor
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -143,6 +144,7 @@ fun PlayerTransportIconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
+    val foreground = if (enabled) surfaceGlyphColor(color) else color
     val canvasSize = LocalTransportCanvasSize.current
     if (canvasSize != null) {
         BoxWithConstraints(modifier, contentAlignment = androidx.compose.ui.Alignment.Center) {
@@ -162,7 +164,7 @@ fun PlayerTransportIconButton(
                     enabled = enabled, onClick = onClick), contentAlignment = androidx.compose.ui.Alignment.Center) {
                 androidx.compose.foundation.Image(
                     painter = androidx.compose.ui.res.painterResource(icon), contentDescription = null,
-                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(color),
+                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(foreground),
                     modifier = Modifier.requiredSize(glyphWidth, glyphHeight)
                         .testTag("player.transport.smallGlyph"))
             }
@@ -172,7 +174,7 @@ fun PlayerTransportIconButton(
     androidx.compose.foundation.Image(
         painter = androidx.compose.ui.res.painterResource(icon),
         contentDescription = null,
-        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(color),
+        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(foreground),
         modifier = modifier.playerTransportFeedback(interactionSource, enabled = enabled)
             .clip(uiRoundnessShape()).combinedClickable(
             interactionSource = interactionSource,

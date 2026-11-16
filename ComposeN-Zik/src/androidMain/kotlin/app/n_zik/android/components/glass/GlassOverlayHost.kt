@@ -437,7 +437,11 @@ private fun GlassOverlayEntry(host: GlassMenuHostState, entry: GlassMenuEntry) {
                             CompositionLocalProvider(LocalGlassMaterialSource provides
                                 if (glassEnabled) menuMaterial else nativeMaterial) {
                                 val column = this
-                                GlassArtworkContent(settings, glassEnabled) { entry.content(column) }
+                                val fill = if (glassEnabled) glassFilmColor(settings, entry.containerColor,
+                                    progress = if (sharedTrigger) fraction else 1f) else nativeColor
+                                val surface = effectiveSurfaceColor(surfaceBackdropColor(), fill,
+                                    Color.Black.copy(alpha = dimmingAlpha))
+                                GlassArtworkContent(settings, glassEnabled, surface) { entry.content(column) }
                             }
                         },
                     )

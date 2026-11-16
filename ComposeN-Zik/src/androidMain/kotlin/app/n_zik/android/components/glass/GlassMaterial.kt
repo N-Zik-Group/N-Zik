@@ -241,6 +241,13 @@ internal fun glassRoleFilmTint(settings: GlassSettings, role: Color?): Color =
     else glassNativeSurfaceTint(settings, role.copy(alpha = 1f))
 
 @Composable
+internal fun glassFilmTint(settings: GlassSettings, role: Color?, menu: Boolean, progress: Float): Color {
+    val baseFilm = glassSurfaceTint(settings)
+    val roleFilm = role?.let { glassRoleFilmTint(settings, it) } ?: return baseFilm
+    return if (menu) lerp(baseFilm, roleFilm, progress.coerceIn(0f, 1f)) else roleFilm
+}
+
+@Composable
 private fun glassRimTint(settings: GlassSettings): Color {
     return blendGlassTint(Color.White, glassTint(settings), settings.tintStrength)
 }
@@ -285,10 +292,7 @@ fun Modifier.glassMaterial(
     // Keep the optical node/source identity across the cheap endpoint. Only its
     // processed layer fades; rebuilding the material here also discards exports.
     val renderer = if (separateWindow || backdrop == null) GlassRenderer.Tint else glassRenderer(settings)
-    val baseFilm = glassSurfaceTint(settings)
-    val nativeFilm = filmColor?.let { glassRoleFilmTint(settings, it) }
-    val film = if (menu && nativeFilm != null) lerp(baseFilm, nativeFilm, menuFilmProgress.coerceIn(0f, 1f))
-        else nativeFilm ?: baseFilm
+    val film = glassFilmTint(settings, filmColor, menu, menuFilmProgress)
     val rimColor = glassRimTint(settings)
     val rimAlpha = (highlightAlpha * settings.rim / 0.55f).coerceIn(0f, 1f)
     val cornerShape = glassOpticalShape(shape)

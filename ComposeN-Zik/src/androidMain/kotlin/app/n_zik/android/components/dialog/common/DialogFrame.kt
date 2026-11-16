@@ -52,6 +52,7 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.glassMaterial
 import app.n_zik.android.components.glass.GlassDialogWindow
+import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.canHostGlassDialog
 import app.n_zik.android.components.glass.glassRenderer
@@ -167,6 +168,7 @@ fun DialogFrame(
                     GlassMaterialContainerScope(
                         modifier = Modifier,
                         sectionFilm = if (useGlass) null else surface,
+                        foregroundFill = if (useGlass) glassFilmColor(glass.forArea(GlassArea.Dialogs), surface) else surface,
                         materialSource = if (useGlass) materialSource else null,
                         material = if (useGlass) ({ exported -> Modifier.glassMaterial(
                             glass.forArea(GlassArea.Dialogs), shape, menu = true, filmColor = surface,

@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import app.n_zik.android.components.glass.glassFilmColor
+import app.n_zik.android.components.glass.surfaceGlyphColor
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -74,6 +76,8 @@ fun PlayerInformationFavoriteAction(
     val material = scopedSettings.usesGlassMaterial(GlassArea.ActionButtons)
     val contour = scopedSettings.usesGlassContour(GlassArea.ActionButtons)
     val optical = material || contour
+    val plate = if (material) glassFilmColor(scopedSettings.forArea(GlassArea.ActionButtons), null, menu = false) else null
+    val foreground = surfaceGlyphColor(color, plate)
     val interaction = remember { MutableInteractionSource() }
     val shape = uiRoundnessShape()
     val backdrop = ownBackdrop
@@ -99,7 +103,7 @@ fun PlayerInformationFavoriteAction(
             .clickable(interactionSource = interaction,
                 indication = if (optical) null else ripple(),
                 role = Role.Button, onClick = onClick), contentAlignment = Alignment.Center) {
-            Image(painterResource(icon), stringResource(R.string.settings_player_favorite_button_style_label), colorFilter = ColorFilter.tint(color),
+            Image(painterResource(icon), stringResource(R.string.settings_player_favorite_button_style_label), colorFilter = ColorFilter.tint(foreground),
                 modifier = Modifier.size(24.dp).testTag("player.informationFavorite.glyph"))
         }
     }

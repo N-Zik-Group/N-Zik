@@ -91,6 +91,7 @@ object ListMenu {
                     GlassMaterialContainerColumn(
                         includeParent = true,
                         sectionFilm = headerFilm,
+                        foregroundFill = if (useGlass) headerFilm else if (hasHeader) headerFilm else nativeBodyColor,
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -145,6 +146,7 @@ object ListMenu {
                 GlassMaterialContainerColumn(
                     includeParent = true,
                     sectionFilm = bodyFilm,
+                    foregroundFill = bodyFilm,
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)

@@ -37,6 +37,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertCountEquals
@@ -53,11 +54,15 @@ import app.n_zik.android.enums.FontType
 import app.n_zik.android.enums.PlayerTimelineSize
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.DefaultLightColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassAreaMode
 import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.SurfaceForegroundContent
+import app.n_zik.android.components.glass.forArea
+import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassOpticsEnabled
@@ -97,6 +102,43 @@ class PlayerInformationGlassBlockTest {
 
     @org.junit.After fun resetPreferences() {
         ApplicationProvider.getApplicationContext<Application>().preferences.edit().clear().commit()
+    }
+
+    @Test fun `information scrim renders below the fallback film and behind plain text`() {
+        val enabled = mutableStateOf(false)
+        val scrim = Color.White.copy(alpha = .45f)
+        var film = Color.Transparent
+        compose.setContent {
+            val settings = GlassSettings(enabled = enabled.value, film = .55f, rim = 0f)
+            val shape = RoundedCornerShape(16.dp)
+            val palette = DefaultLightColorPalette
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(palette,
+                    typographyOf(palette.text, true, false, FontType.Rubik), shape, shape, shape),
+                LocalGlassContainerBackdrop provides null,
+            ) {
+                film = glassFilmColor(settings.forArea(GlassArea.ActionButtons), null, menu = false)
+                Box(Modifier.background(Color.Black).testTag("contrast-artwork")) {
+                    SurfaceForegroundContent(scrim.compositeOver(Color.Black), scrim) {
+                        PlayerInformationGlassBlock(settings = settings, landscape = false) {
+                            PlayerInformationGlassRegion("info") { Box(Modifier.size(120.dp, 70.dp)) }
+                        }
+                    }
+                }
+            }
+        }
+        fun checkCenterColor(expected: Color) {
+            val pixels = compose.onNodeWithTag("contrast-artwork").captureToImage().toPixelMap()
+            val actual = pixels[pixels.width / 2, pixels.height / 2]
+            assertEquals(expected.red, actual.red, .02f)
+            assertEquals(expected.green, actual.green, .02f)
+            assertEquals(expected.blue, actual.blue, .02f)
+        }
+        val scrimmed = scrim.compositeOver(Color.Black)
+        checkCenterColor(scrimmed)
+        compose.runOnIdle { enabled.value = true }
+        compose.waitForIdle()
+        checkCenterColor(film.compositeOver(scrimmed))
     }
 
     @Test @Config(qualifiers = "w800dp-h1200dp")

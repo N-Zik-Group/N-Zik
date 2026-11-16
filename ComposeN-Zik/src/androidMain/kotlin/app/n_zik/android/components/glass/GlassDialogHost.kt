@@ -136,7 +136,13 @@ internal fun GlassDialogWindow(
                 if (presentation == null || (useSharedHost && host != null && properties.securePolicy != SecureFlagPolicy.Inherit)) {
                     NativeDialogDimming(presentation, area, scrimColor, scrimVisible)
                 }
-                GlassRippleProvider(settings) { GlassArtworkContent(settings, settings.usesGlassMaterial(area)) { content() } }
+                val nativeScrim = if (!scrimVisible) 0f else if (scrimColor.isSpecified) scrimColor.alpha
+                    else if (area == GlassArea.Menus) settings.menuDimming else settings.dialogDimming
+                val backdrop = effectiveSurfaceColor(surfaceBackdropColor(), Color.Transparent,
+                    Color.Black.copy(alpha = nativeScrim * (presentation?.motion?.value?.let(::dialogFadeAlpha) ?: 1f)))
+                CompositionLocalProvider(LocalSurfaceBackdropColor provides backdrop) {
+                    GlassRippleProvider(settings) { GlassArtworkContent(settings, settings.usesGlassMaterial(area)) { content() } }
+                }
             }
         }
         return
@@ -273,7 +279,10 @@ fun GlassDialogOverlayHost(host: GlassMenuHostState) {
                 if (properties.dismissOnBackPress) entry.onDismiss()
             }
             GlassDialogEntryLocals(entry) {
+                val backdrop = effectiveSurfaceColor(surfaceBackdropColor(), Color.Transparent,
+                    scrimColor.copy(alpha = scrimColor.alpha * dimmingAlpha))
                 CompositionLocalProvider(
+                    LocalSurfaceBackdropColor provides backdrop,
                     LocalGlassOpticsEnabled provides true,
                     LocalGlassOpticalUnderlayCovered provides host.overlaysAbove(entry.id).isNotEmpty(),
                     LocalGlassOpticsTransitionProgress provides 1f,

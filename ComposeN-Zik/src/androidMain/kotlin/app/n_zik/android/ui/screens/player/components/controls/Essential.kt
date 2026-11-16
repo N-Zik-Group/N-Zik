@@ -112,6 +112,7 @@ import app.n_zik.android.enums.PlayerControlsColors
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import app.n_zik.android.utils.playerControlsColorsKey
+import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.player.playerTransportAction
 import app.n_zik.android.components.player.playerTransportFeedback
@@ -126,7 +127,12 @@ import app.n_zik.android.components.player.playerTransportPlayBackground
 import app.n_zik.android.components.player.playerTransportSurface
 import app.n_zik.android.components.player.monochromeControlsColor
 import app.n_zik.android.components.player.placeholderCompositeBase
-import app.n_zik.android.components.player.textOutlineColor
+import app.n_zik.android.components.glass.TextContrast
+import app.n_zik.android.components.glass.surfaceGlyphColor
+import app.n_zik.android.components.glass.surfaceProgressTrackColor
+import app.n_zik.android.components.player.playerTextOutlineColor
+import app.n_zik.android.components.player.playerTransportGlyph
+import app.n_zik.android.components.player.playerTransportPlate
 
 
 @UnstableApi
@@ -258,7 +264,7 @@ fun InfoAlbumAndArtistEssential(
                                 drawStyle = Stroke(width = 1.5f, join = StrokeJoin.Round),
                                 textAlign = TextAlign.Center,
                                 color = if (!textoutline) Color.Transparent
-                                else textOutlineColor(colorPalette().isDark, 0.5f),
+                                else playerTextOutlineColor(colorPalette().isDark, 0.5f),
                                 fontStyle = typography().l.bold.fontStyle,
                                 fontWeight = typography().l.bold.fontWeight,
                                 fontSize = typography().l.bold.fontSize,
@@ -371,7 +377,7 @@ fun InfoAlbumAndArtistEssential(
                     drawStyle = Stroke(width = 1.5f, join = StrokeJoin.Round),
                     textAlign = TextAlign.Center,
                     color = if (!textoutline) Color.Transparent
-                    else textOutlineColor(colorPalette().isDark, 0.5f),
+                    else playerTextOutlineColor(colorPalette().isDark, 0.5f),
                     fontStyle = typography().m.bold.fontStyle,
                     fontSize = typography().m.bold.fontSize,
                     //fontWeight = typography().m.bold.fontWeight,
@@ -406,6 +412,7 @@ fun ControlsEssential(
     onShowSpeedPlayerDialog: () -> Unit,
     dynamicColorPalette: ColorPalette
 ) {
+    val transportSettings = rememberGlassSettings(GlassScope.PlayerTransport)
     val playerControlsColors by rememberPreference(playerControlsColorsKey, PlayerControlsColors.Monochrome)
     val controlsColor = when (playerControlsColors) {
         PlayerControlsColors.Cover -> dynamicColorPalette.accent
@@ -447,6 +454,22 @@ fun ControlsEssential(
     )
 
     var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
+    val nativePlayPlate = when (playerPlayButtonType) {
+        PlayerPlayButtonType.CircularRibbed -> when (colorPaletteName) {
+            ColorPaletteName.PureBlack, ColorPaletteName.ModernBlack -> colorPalette().background4
+            else -> if (isGradientBackgroundEnabled) colorPalette().background1 else colorPalette().background2
+        }
+        else -> app.n_zik.android.components.player.playButtonContainerColor(
+            playerPlayButtonType, colorPaletteName, colorPalette(), isGradientBackgroundEnabled,
+        )
+    }
+    val playColor = if (playerPlayButtonType == PlayerPlayButtonType.Disabled ||
+        (colorPaletteName == ColorPaletteName.Dynamic && colorPaletteMode == ColorPaletteMode.PitchBlack))
+        colorPalette().accent else controlsColor
+    val skipGlyph = playerTransportGlyph(controlsColor, transportSettings)
+    val playPlate = playerTransportPlate(transportSettings, nativePlayPlate,
+        hasGlassPlate = playerPlayButtonType != PlayerPlayButtonType.Disabled)
+    val playGlyph = surfaceGlyphColor(playColor, playPlate)
     val playerBackgroundColors by rememberPreference(playerBackgroundColorsKey,PlayerBackgroundColors.AnimatedGradient)
     var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
     val currentMediaItem = player.currentMediaItem
@@ -489,7 +512,7 @@ fun ControlsEssential(
     Image(
         painter = painterResource(R.drawable.play_skip_back),
         contentDescription = null,
-        colorFilter = ColorFilter.tint(controlsColor),
+        colorFilter = ColorFilter.tint(skipGlyph),
         modifier = Modifier
             .playerTransportAction(previousLabel)
             .alpha(if (previousEnabled) 1f else 0.38f)
@@ -583,9 +606,11 @@ fun ControlsEssential(
             )
 
         if (isBuffering && shouldBePlaying) {
+            val arc = surfaceGlyphColor(colorPalette().accent, playPlate)
+            val track = surfaceGlyphColor(colorPalette().text, playPlate)
             CircularWavyProgressIndicator(
-                color = colorPalette().accent,
-                trackColor = colorPalette().text,
+                color = arc,
+                trackColor = surfaceProgressTrackColor(arc, track, playPlate),
                 modifier = Modifier
                     .align(Alignment.Center)
                     .size(if (playerPlayButtonType == PlayerPlayButtonType.Disabled) 40.dp else 30.dp),
@@ -596,7 +621,7 @@ fun ControlsEssential(
             Image(
                 painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(if ((playerPlayButtonType == PlayerPlayButtonType.Disabled) || ((colorPaletteName == ColorPaletteName.Dynamic) && (colorPaletteMode == ColorPaletteMode.PitchBlack))) colorPalette().accent else controlsColor),
+                colorFilter = ColorFilter.tint(playGlyph),
                 modifier = Modifier
                     .rotate(rotationAngle)
                     .align(Alignment.Center)
@@ -614,7 +639,7 @@ fun ControlsEssential(
                 BasicText(
                     text = stringResource(R.string.player_playback_speed_value, playbackSpeed),
                     style = TextStyle(
-                        color = colorPalette().text,
+                        color = surfaceGlyphColor(colorPalette().text, playPlate, TextContrast),
                         fontStyle = typography().xxxs.semiBold.fontStyle,
                         fontSize = typography().xxxs.semiBold.fontSize
                     ),
@@ -631,7 +656,7 @@ fun ControlsEssential(
     Image(
         painter = painterResource(R.drawable.play_skip_forward),
         contentDescription = null,
-        colorFilter = ColorFilter.tint(controlsColor),
+        colorFilter = ColorFilter.tint(skipGlyph),
         modifier = Modifier
             .playerTransportAction(nextLabel)
             .alpha(if (nextEnabled) 1f else 0.38f)
