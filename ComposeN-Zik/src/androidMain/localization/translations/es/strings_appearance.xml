@@ -437,6 +437,7 @@
     <string name="theme_store_draft_discard">Eliminar borrador</string>
     <string name="theme_store_draft_resume">Continuar borrador</string>
     <string name="theme_store_preview_add_extra">Añadir una vista previa extra</string>
+    <string name="theme_store_preview_remove_extra">Eliminar esta vista previa extra</string>
     <string name="theme_store_preview_extra_title">Previsualizar título</string>
     <string name="theme_store_preview_import_requirements_with_gif">Las vistas previas son públicas. Mantenga la información personal fuera de las capturas de pantalla. PNG, JPEG, WebP o GIF · 4 MB por imagen.</string>
     <string name="theme_store_preview_import_error">No se pudo importar esta imagen. Elija una imagen PNG, JPEG o WebP de menos de 4 MB.</string>
