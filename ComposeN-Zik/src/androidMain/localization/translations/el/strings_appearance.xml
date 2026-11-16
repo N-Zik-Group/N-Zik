@@ -437,6 +437,7 @@
     <string name="theme_store_draft_discard">Διαγραφή προχείρου</string>
     <string name="theme_store_draft_resume">Συνέχεια προχείρου</string>
     <string name="theme_store_preview_add_extra">Προσθήκη επιπλέον προεπισκόπησης</string>
+    <string name="theme_store_preview_remove_extra">Αφαίρεση αυτής της επιπλέον προεπισκόπησης</string>
     <string name="theme_store_preview_extra_title">Προεπισκόπηση τίτλου</string>
     <string name="theme_store_preview_import_requirements_with_gif">Οι προεπισκοπήσεις είναι δημόσιες. Κρατήστε τις προσωπικές πληροφορίες εκτός στιγμιότυπα. PNG, JPEG, WebP ή GIF · 4 MB ανά εικόνα. GIFs κρατούν το αρχικό τους μέγεθος και πρέπει να χωρέσουν μέσα σε 1920 × 1920.</string>
     <string name="theme_store_preview_import_error">Δεν ήταν δυνατή η εισαγωγή αυτής της εικόνας. Επιλέξτε μια εικόνα PNG, JPEG ή WebP κάτω από 4 MB.</string>
