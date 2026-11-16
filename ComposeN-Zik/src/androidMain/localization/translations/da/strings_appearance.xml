@@ -437,6 +437,7 @@
     <string name="theme_store_draft_discard">Slet kladde</string>
     <string name="theme_store_draft_resume">Fortsæt kladde</string>
     <string name="theme_store_preview_add_extra">Tilføj en ekstra forhåndsvisning</string>
+    <string name="theme_store_preview_remove_extra">Fjern denne ekstra forhåndsvisning</string>
     <string name="theme_store_preview_extra_title">Forhåndsvis titel</string>
     <string name="theme_store_preview_import_requirements_with_gif">Forhåndsvisninger er offentlige. Hold personlige oplysninger ude af skærmbilleder. PNG, JPEG, WebP eller GIF · 4 MB pr. billede. GIF\'er holder deres oprindelige størrelse og skal passe inden for 1920 × 1920.</string>
     <string name="theme_store_preview_import_error">Kunne ikke importere dette billede. Vælg et PNG, JPEG eller WebP billede under 4 MB.</string>
