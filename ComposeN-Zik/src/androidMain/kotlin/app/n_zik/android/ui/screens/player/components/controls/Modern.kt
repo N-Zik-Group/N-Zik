@@ -96,6 +96,7 @@ import app.n_zik.android.enums.PlayerControlsColors
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import app.n_zik.android.utils.playerControlsColorsKey
+import app.n_zik.android.components.player.playerTransportAction
 import app.n_zik.android.components.player.playerTransportFeedback
 import app.n_zik.android.components.player.rememberPlayerSkipAvailability
 import app.n_zik.android.playback.utils.playNextIfAvailable
@@ -440,6 +441,11 @@ fun ControlsModern(
     val skipAvailability by rememberPlayerSkipAvailability(player)
     val previousEnabled = !listenTogetherGuestLock && skipAvailability.previous
     val nextEnabled = !listenTogetherGuestLock && skipAvailability.next
+    val previousLabel = stringResource(R.string.player_action_previous)
+    val playPauseLabel = stringResource(
+        if (shouldBePlaying) R.string.player_notification_pause else R.string.player_action_play,
+    )
+    val nextLabel = stringResource(R.string.player_action_next)
 
   if (playerPlayButtonType != PlayerPlayButtonType.Disabled) {
       CustomElevatedButton(
@@ -460,6 +466,7 @@ fun ControlsModern(
               .size(55.dp)
               .doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp)
               .clip(uiRoundnessShape())
+              .playerTransportAction(previousLabel)
               .alpha(if (previousEnabled) 1f else 0.38f)
               .playerTransportSurface(transportFilm, settings = transportSettings)
       ) {
@@ -478,6 +485,7 @@ fun ControlsModern(
           Box(
              contentAlignment = Alignment.Center,
              modifier = Modifier
+                 .playerTransportAction(playPauseLabel)
                  .playerTransportFeedback(playInteraction, playerTransportPlayShape(playerPlayButtonType, rotationAngle))
                  .clip(playerTransportPlayShape(playerPlayButtonType, rotationAngle))
                  .combinedClickable(
@@ -531,7 +539,7 @@ fun ControlsModern(
                           0.dp
                       )
                       .size(100.dp),
-                  contentDescription = stringResource(R.string.accessibility_background_image),
+                  contentDescription = null,
                   contentScale = ContentScale.Fit
               )
 
@@ -580,6 +588,7 @@ fun ControlsModern(
                   .doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp)
                   .clip(uiRoundnessShape())
 
+                  .playerTransportAction(playPauseLabel)
                   .width(playerPlayButtonType.width.dp)
                   .height(playerPlayButtonType.height.dp)
                   .playerTransportSurface(transportFilm, settings = transportSettings)
@@ -643,6 +652,7 @@ if (isBuffering && shouldBePlaying) {
             .size(55.dp)
             .doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp)
             .clip(uiRoundnessShape())
+            .playerTransportAction(nextLabel)
             .alpha(if (nextEnabled) 1f else 0.38f)
             .playerTransportSurface(transportFilm, settings = transportSettings)
 
@@ -687,6 +697,7 @@ if (isBuffering && shouldBePlaying) {
                       .padding(10.dp)
                       .size(34.dp)
                       .rotate(rotationAngle)
+                      .playerTransportAction(previousLabel)
                       .playerTransportFeedback(previousInteraction, enabled = previousEnabled)
                       .clip(uiRoundnessShape()).combinedClickable(
                           interactionSource = previousInteraction,
@@ -727,6 +738,7 @@ if (isBuffering && shouldBePlaying) {
                       .rotate(rotationAngle)
                       .size(44.dp)
                       .align(Alignment.Center)
+                      .playerTransportAction(playPauseLabel)
                       .playerTransportFeedback(playInteraction, enabled = true)
                       .clip(uiRoundnessShape()).combinedClickable(
                           interactionSource = playInteraction,
@@ -769,6 +781,7 @@ if (isBuffering && shouldBePlaying) {
                       .padding(10.dp)
                       .size(34.dp)
                       .rotate(rotationAngle)
+                      .playerTransportAction(nextLabel)
                       .playerTransportFeedback(nextInteraction, enabled = nextEnabled)
                       .clip(uiRoundnessShape()).combinedClickable(
                           interactionSource = nextInteraction,

@@ -113,6 +113,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import app.n_zik.android.utils.playerControlsColorsKey
 import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.player.playerTransportAction
 import app.n_zik.android.components.player.playerTransportFeedback
 import app.n_zik.android.components.player.rememberPlayerSkipAvailability
 import app.n_zik.android.playback.utils.playNextIfAvailable
@@ -422,6 +423,11 @@ fun ControlsEssential(
     val skipAvailability by rememberPlayerSkipAvailability(player)
     val previousEnabled = !listenTogetherGuestLock && skipAvailability.previous
     val nextEnabled = !listenTogetherGuestLock && skipAvailability.next
+    val previousLabel = stringResource(R.string.player_action_previous)
+    val playPauseLabel = stringResource(
+        if (shouldBePlaying) R.string.player_notification_pause else R.string.player_action_play,
+    )
+    val nextLabel = stringResource(R.string.player_action_next)
     val context = LocalContext.current
     val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
@@ -485,6 +491,7 @@ fun ControlsEssential(
         contentDescription = null,
         colorFilter = ColorFilter.tint(controlsColor),
         modifier = Modifier
+            .playerTransportAction(previousLabel)
             .alpha(if (previousEnabled) 1f else 0.38f)
             .playerTransportFeedback(previousInteraction, uiRoundnessShape(), enabled = previousEnabled)
             .clip(uiRoundnessShape()).combinedClickable(
@@ -514,6 +521,7 @@ fun ControlsEssential(
 
     Box(
         modifier = Modifier
+            .playerTransportAction(playPauseLabel)
             .playerTransportFeedback(playInteraction, transportPlayShape)
             .clip(transportPlayShape).combinedClickable(
                 indication = playerTransportIndication(nativeControlIndication()),
@@ -570,7 +578,7 @@ fun ControlsEssential(
                     .fillMaxSize()
                     .rotate(rotationAngle)
                     ,
-                contentDescription = stringResource(R.string.accessibility_background_image),
+                contentDescription = null,
                 contentScale = ContentScale.Fit
             )
 
@@ -625,6 +633,7 @@ fun ControlsEssential(
         contentDescription = null,
         colorFilter = ColorFilter.tint(controlsColor),
         modifier = Modifier
+            .playerTransportAction(nextLabel)
             .alpha(if (nextEnabled) 1f else 0.38f)
             .playerTransportFeedback(nextInteraction, uiRoundnessShape(), enabled = nextEnabled)
             .clip(uiRoundnessShape()).combinedClickable(

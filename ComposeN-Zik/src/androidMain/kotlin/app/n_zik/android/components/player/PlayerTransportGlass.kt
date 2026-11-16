@@ -31,6 +31,10 @@ import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.IntrinsicMeasureScope
 import androidx.compose.ui.layout.IntrinsicMeasurable
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -99,6 +103,12 @@ internal fun Modifier.playerTransportFilledBackground(
     settings: GlassSettings = rememberGlassSettings(GlassScope.PlayerTransport),
 ): Modifier = background(playerTransportNativeFill(original, settings), shape)
     .playerTransportSurface(original, shape, settings)
+
+/** Labels the existing action even when a progress indicator replaces its icon. */
+internal fun Modifier.playerTransportAction(label: String): Modifier = semantics {
+    contentDescription = label
+    role = Role.Button
+}
 
 /** Adds feedback to the existing gesture source without creating another clickable. */
 @Composable

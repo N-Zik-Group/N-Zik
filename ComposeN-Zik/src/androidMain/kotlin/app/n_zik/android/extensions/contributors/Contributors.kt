@@ -68,7 +68,7 @@ fun ShowDevelopers() {
 
     Box( Modifier.fillMaxWidth().height( 600.dp ) ) {
         LazyColumn( Modifier.fillMaxWidth().padding( top = 15.dp ) ) {
-            items( developersList ) { it.Draw() }
+            items(developersList, key = { it.id }, contentType = { "developer" }) { it.Draw() }
         }
     }
 }
@@ -115,7 +115,7 @@ fun ShowTranslators() {
 
     Box( Modifier.fillMaxWidth().height( 600.dp ) ) {
         LazyColumn( Modifier.fillMaxWidth().padding( top = 15.dp ) ) {
-            items( translatorsList ) { it.Draw() }
+            items(translatorsList, key = { it.username }, contentType = { "translator" }) { it.Draw() }
         }
     }
 }

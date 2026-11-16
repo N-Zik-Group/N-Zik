@@ -32,17 +32,20 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.R
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.enums.PlayerPlayButtonType
 import app.n_zik.android.ui.screens.player.components.controls.ControlsEssential
@@ -220,6 +223,13 @@ class PlayerTransportGlassTest {
     }
 
     @Test fun `both actual variants retain native bounds and gesture owners across five styles`() {
+        val strings = ApplicationProvider.getApplicationContext<Application>().resources
+        val button = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button)
+        val transportLabels = listOf(
+            R.string.player_action_previous,
+            R.string.player_notification_pause,
+            R.string.player_action_next,
+        ).map(strings::getString)
         val modern = mutableStateOf(false)
         val style = mutableStateOf(PlayerPlayButtonType.Default)
         val buffering = mutableStateOf(false)
@@ -248,6 +258,10 @@ class PlayerTransportGlassTest {
                         assertEquals(with(compose.density) { 26.dp.toPx() }, glyph.boundsInRoot.height, .01f)
                     }
                 compose.onAllNodes(hasClickAction()).assertCountEquals(if (variant) 3 else 5)
+                for (label in transportLabels) {
+                    compose.onAllNodes(hasClickAction() and button and hasContentDescription(label))
+                        .assertCountEquals(1)
+                }
                 compose.runOnIdle { preferences.edit().putBoolean(glassEnabledKey, true).commit() }
                 val glass = compose.onAllNodes(hasClickAction()).fetchSemanticsNodes().map { it.boundsInRoot }
                 assertEquals("$variant $type", native, glass)
@@ -261,6 +275,8 @@ class PlayerTransportGlassTest {
                 compose.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo))
                     .assertCountEquals(if (variant && type == PlayerPlayButtonType.Disabled) 0 else 1)
                 compose.onAllNodes(hasClickAction()).assertCountEquals(if (variant) 3 else 5)
+                compose.onAllNodes(hasClickAction() and button and hasContentDescription(transportLabels[1]))
+                    .assertCountEquals(1)
                 compose.runOnIdle { buffering.value = false }
             }
         }

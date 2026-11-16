@@ -13,7 +13,6 @@ import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
 
-import app.n_zik.android.core.database.*
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -250,7 +249,7 @@ fun OnlineSearch(
                     .fillMaxSize()
             ) {
                 if (textFieldValue.text.isNotBlank() && suggestionsResult?.getOrNull()?.hasContent() == false && historyMatches.isEmpty()) {
-                    item(key = "search_no_results") {
+                    item(key = "search_no_results", contentType = "empty") {
                         SearchEmptySpace(fillRemainingViewport = true)
                     }
                 }
@@ -259,14 +258,14 @@ fun OnlineSearch(
                     SearchDisplayOrder.SuggestionsFirst -> {
                         // Afficher d'abord les suggestions
                         suggestionsResult?.getOrNull()?.takeIf { it.hasContent() }?.let { suggestions ->
-                            item {
+                            item(key = "search_suggestions_title", contentType = "section_title") {
                                 TitleMiniSection(title = stringResource(R.string.search_suggestions_title),
                                     modifier = Modifier.padding(start = 24.dp)
                                 )
                             }
 
                             suggestions.recommendedSong.let {
-                                item{
+                                item(key = "search_recommended_song", contentType = "song") {
                                     it?.asMediaItem?.let { mediaItem ->
                                         SongItem(
                                             song = mediaItem.asSong,
@@ -282,7 +281,7 @@ fun OnlineSearch(
                                 }
                             }
                             suggestions.recommendedAlbum?.let { album ->
-                                item{
+                                item(key = "search_recommended_album", contentType = "album") {
                                     AlbumItem(
                                         yearCentered = false,
                                         album = album,
@@ -309,7 +308,7 @@ fun OnlineSearch(
                                 }
                             }
                             suggestions.recommendedArtist?.let { artist ->
-                                item{
+                                item(key = "search_recommended_artist", contentType = "artist") {
                                     ArtistItem(
                                         artist = artist,
                                         thumbnailSizePx = songThumbnailSizePx,
@@ -335,7 +334,7 @@ fun OnlineSearch(
                                 }
                             }
                             suggestions.recommendedPlaylist?.let { playlist ->
-                                item{
+                                item(key = "search_recommended_playlist", contentType = "playlist") {
                                     PlaylistItem(
                                         playlist = playlist,
                                         thumbnailSizePx = songThumbnailSizePx,
@@ -361,7 +360,7 @@ fun OnlineSearch(
                                 }
                             }
                             suggestions.recommendedVideo?.let { video ->
-                                item{
+                                item(key = "search_recommended_video", contentType = "video") {
                                     VideoItem(
                                         video = video,
                                         thumbnailHeightDp = songThumbnailSizeDp,
@@ -387,7 +386,11 @@ fun OnlineSearch(
                                 }
                             }
 
-                            items(items = suggestions.queries) { query ->
+                            items(
+                                items = suggestions.queries.distinct(),
+                                key = { "search_query:$it" },
+                                contentType = { "search_query" },
+                            ) { query ->
                                 val editQuery: () -> Unit = {
                                     onTextFieldValueChanged(
                                         TextFieldValue(
@@ -445,7 +448,7 @@ fun OnlineSearch(
                                 }
                             }
                         } ?: suggestionsResult?.exceptionOrNull()?.let {
-                            item {
+                            item(key = "search_suggestions_error", contentType = "error") {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
@@ -466,7 +469,7 @@ fun OnlineSearch(
                         }
 
                         // Puis afficher l'historique (toujours visible)
-                        item(key = "search_history") {
+                        item(key = "search_history", contentType = "history") {
                             SearchHistorySection(
                                 visible = historyMatches.isNotEmpty(),
                                 queries = historyMatches,
@@ -491,7 +494,7 @@ fun OnlineSearch(
 
                     SearchDisplayOrder.SavedSearchesFirst -> {
                         // Afficher d'abord l'historique (toujours visible)
-                        item(key = "search_history") {
+                        item(key = "search_history", contentType = "history") {
                             SearchHistorySection(
                                 visible = historyMatches.isNotEmpty(),
                                 queries = historyMatches,
@@ -515,14 +518,14 @@ fun OnlineSearch(
 
                         // Puis afficher les suggestions
                         suggestionsResult?.getOrNull()?.takeIf { it.hasContent() }?.let { suggestions ->
-                            item {
+                            item(key = "search_suggestions_title", contentType = "section_title") {
                                 TitleMiniSection(title = stringResource(R.string.search_suggestions_title),
                                     modifier = Modifier.padding(start = 24.dp)
                                 )
                             }
 
                             suggestions.recommendedSong.let {
-                                item{
+                                item(key = "search_recommended_song", contentType = "song") {
                                     it?.asMediaItem?.let { mediaItem ->
                                         SongItem(
                                             song = mediaItem.asSong,
@@ -538,7 +541,7 @@ fun OnlineSearch(
                                 }
                             }
                             suggestions.recommendedAlbum?.let { album ->
-                                item{
+                                item(key = "search_recommended_album", contentType = "album") {
                                     AlbumItem(
                                         yearCentered = false,
                                         album = album,
@@ -565,7 +568,7 @@ fun OnlineSearch(
                                 }
                             }
                             suggestions.recommendedArtist?.let { artist ->
-                                item{
+                                item(key = "search_recommended_artist", contentType = "artist") {
                                     ArtistItem(
                                         artist = artist,
                                         thumbnailSizePx = songThumbnailSizePx,
@@ -591,7 +594,7 @@ fun OnlineSearch(
                                 }
                             }
                             suggestions.recommendedPlaylist?.let { playlist ->
-                                item{
+                                item(key = "search_recommended_playlist", contentType = "playlist") {
                                     PlaylistItem(
                                         playlist = playlist,
                                         thumbnailSizePx = songThumbnailSizePx,
@@ -617,7 +620,7 @@ fun OnlineSearch(
                                 }
                             }
                             suggestions.recommendedVideo?.let { video ->
-                                item{
+                                item(key = "search_recommended_video", contentType = "video") {
                                     VideoItem(
                                         video = video,
                                         thumbnailHeightDp = songThumbnailSizeDp,
@@ -643,7 +646,11 @@ fun OnlineSearch(
                                 }
                             }
 
-                            items(items = suggestions.queries) { query ->
+                            items(
+                                items = suggestions.queries.distinct(),
+                                key = { "search_query:$it" },
+                                contentType = { "search_query" },
+                            ) { query ->
                                 val editQuery: () -> Unit = {
                                     onTextFieldValueChanged(
                                         TextFieldValue(
@@ -701,7 +708,7 @@ fun OnlineSearch(
                                 }
                             }
                         } ?: suggestionsResult?.exceptionOrNull()?.let {
-                            item {
+                            item(key = "search_suggestions_error", contentType = "error") {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
