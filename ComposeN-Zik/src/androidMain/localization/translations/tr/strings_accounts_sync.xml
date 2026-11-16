@@ -1,11 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="github_account_login">GitHub\'a bağlan</string>
+    <string name="github_account_logout">GitHub bağlantısını kes</string>
+    <string name="github_account_description">Tema Mağazası\'nda GitHub hesabınızı kullanın.</string>
+    <string name="github_account_offline">GitHub\'ı bağlamak için çevrimiçi olun.</string>
+    <string name="github_account_code">GitHub\'da %1$s yazarak oturum açma işlemini tamamlayın.</string>
+    <string name="github_account_code_copied">GitHub kodu panoya kopyalandı.</string>
+    <string name="github_account_login_failed">GitHub\'a bağlanılamadı. Lütfen tekrar deneyin.</string>
+    <string name="github_account_connected">GitHub\'a bağlandı.</string>
+    <string name="github_account_finishing_connection">GitHub bağlantısı kuruluyor…</string>
+    <string name="github_app_installation_instructions">Kurulumu tamamlamak için @%1$s seçin ve yalnızca N-Zik-Tema Mağazası çatalına erişim izni verin.</string>
+    <string name="github_app_installation">Uygulama kurulumu</string>
+    <string name="github_app_installation_confirmed">GitHub uygulamanın yüklendiğini doğruladı.</string>
+    <string name="github_app_installation_other_account">Uygulama @%1$s üzerine yüklendi. Çatalların temizlenmesini etkinleştirmek için kendi hesabınızı seçin.</string>
+    <string name="github_app_installation_description">Kişisel GitHub ayarlarınızda N-Zik Oturum Açma erişimini yönetin veya iptal edin.</string>
+    <string name="github_app_installation_needs_fork">Tema Mağazası’nda kendi çatalınızı oluşturmak için önce bir tema veya içerik oluşturucu profili gönderin.</string>
+    <string name="github_app_installation_fork_lookup_failed">Tema Mağazası\'ndaki çatalınız kontrol edilemedi. Lütfen tekrar deneyin.</string>
     <!-- Account -->
     <string name="account_action_login">Giriş yap</string>
     <string name="account_action_logout">Oturumu kapat</string>
     <string name="account_youtube_login_description">YouTube hesabınızı bağlayın veya mevcut oturumdan çıkış yapın.</string>
+    <string name="account_youtube_change_account">YouTube hesabını değiştir</string>
+    <string name="account_youtube_change_account_description">Bu N-Zik profilinin hangi YouTube kanalını kullanacağını seçin.</string>
     <string name="account_youtube_login_enabled_description">Kişiselleştirilmiş gezinme ve senkronizasyon için YouTube hesabıyla oturum açmaya izin verin.</string>
     <!-- Account Youtube -->
+    <string name="account_youtube_checking_login">YouTube Music oturum açma bilgileriniz kontrol ediliyor…</string>
+    <string name="account_youtube_choose_channel">Bir YouTube Music kanalı seçin</string>
+    <string name="account_youtube_add_google_account">Google hesabı ekle</string>
+    <string name="account_youtube_google_account">Google hesabı</string>
+    <string name="account_youtube_google_select">Hesap seçin</string>
+    <string name="account_youtube_google_sign_out">Bu hesaptan çıkış yap</string>
+    <string name="account_youtube_google_sign_out_description">Bu işlem bu cihazdaki N-Zik uygulamasından Google profilinin tamamını ve oturum açma bilgilerini siler. Diğer hesaplarınızda oturumunuz açık kalır.</string>
+    <string name="account_youtube_verify_failed">YouTube Music oturum açma bilgilerinizi doğrulayamadık. Lütfen tekrar deneyin veya Google ile oturum açın.</string>
     <string name="account_youtube_cookie_invalid">YouTube çerezi geçersiz, lütfen tekrar oturum açın</string>
     <string name="account_youtube_login_success">YouTube\'da oturum açma işlemi başarıyla tamamlandı</string>
     <string name="account_youtube_session_expired">YouTube oturumunuzun süresi doldu, lütfen tekrar oturum açın</string>
@@ -180,6 +206,8 @@
     <string name="sync_cooldown">Senkronizasyon Bekleme Süresi</string>
     <string name="sync_cooldown_description">Otomatik senkronizasyonlar arasındaki minimum süre (dakika cinsinden)</string>
     <string name="sync_data_with_ytm_account">YTM hesabıyla verileri senkronize et</string>
+    <string name="account_youtube_sync_build_required">Senkronizasyon, Hata Ayıklama ve Geliştirme sürümlerinde kullanılabilir.</string>
+    <string name="account_youtube_sync_browse_required">Senkronizasyonun kullanılabilmesi için Gözat seçeneğinde oturum açma özelliğini etkinleştirin.</string>
     <string name="sync_direction">Senkronizasyon Yönü</string>
     <string name="sync_direction_app_to_yt">Uygulama → YouTube yalnızca</string>
     <string name="sync_direction_description">Senkronizasyonun YouTube’dan veri almasını, yerel değişiklikleri göndermesini veya her iki yönde de çalışmasını seçin.</string>
