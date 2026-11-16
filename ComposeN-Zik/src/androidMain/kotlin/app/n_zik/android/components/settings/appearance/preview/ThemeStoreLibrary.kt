@@ -37,7 +37,8 @@ internal fun SavedTheme.restoredStoreDownload(downloads: List<SavedTheme>): Save
     return downloads.firstOrNull { saved ->
         val trusted = saved.theme
         !saved.imported && trusted != null && trusted.themeId == origin.themeId && trusted.revision == origin.revision &&
-            local.copy(themeId = trusted.themeId, publishedOn = trusted.publishedOn) == trusted &&
+            local.copy(themeId = trusted.themeId, publishedOn = trusted.publishedOn).withMinimumCompatibility() ==
+                trusted.withMinimumCompatibility() &&
             appearanceHash == trusted.appearance.sha256 && saved.document == document
     }
 }
@@ -158,7 +159,8 @@ internal class ThemeStoreLibrary(private val preferences: SharedPreferences) {
             val theme = local.theme ?: continue
             if (!local.imported || theme.themeId == origin.themeId || origin.themeId == BundledThemeId) continue
             val trusted = revisions[origin] ?: continue
-            if (theme.copy(themeId = trusted.themeId, publishedOn = trusted.publishedOn) != trusted ||
+            if (theme.copy(themeId = trusted.themeId, publishedOn = trusted.publishedOn).withMinimumCompatibility() !=
+                trusted.withMinimumCompatibility() ||
                 local.document.encodeToByteArray().sha256() != trusted.appearance.sha256) continue
 
             val restored = SavedTheme(trusted.title, local.document, trusted)

@@ -211,7 +211,7 @@ internal fun parseStoreTheme(manifest: String, allowLocalAuthor: Boolean = false
                 preview.role in setOf("player", "queue", "navigation", "other") &&
                 preview.caption?.themeTextLength?.let { it in 1..160 } != false
         })
-    }
+    }.withMinimumCompatibility()
 
 internal class ThemeStoreCatalog(
     private val directory: File,

@@ -53,9 +53,9 @@ internal suspend fun writeThemeCollectionArchive(
     val exports = themes.sortedByDescending(SavedTheme::imported).map { saved ->
         val theme = requireNotNull(saved.theme)
         require(theme.themeId != BundledThemeId && collectionIdPattern.matches(saved.id))
-        val localTheme = if (saved.imported) theme else {
+        val localTheme = (if (saved.imported) theme else {
             theme.copy(themeId = localThemeArchiveId(Json.encodeToString(theme).encodeToByteArray()))
-        }
+        }).withMinimumCompatibility()
         val bytes = Json.encodeToString(localTheme).encodeToByteArray()
         require(bytes.size <= ThemeMetadataLimit)
         parseStoreTheme(bytes.decodeToString(), allowLocalAuthor = true)

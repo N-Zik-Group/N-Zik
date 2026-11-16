@@ -75,6 +75,34 @@ class ThemeCollectionArchiveTest {
     }
 
     @Test
+    fun legacyMinimumIsRaisedOnImportAndExportWithoutLosingTheTrustedStoreOrigin() = runBlocking {
+        val current = theme("12345678-1111-2222-3333-123456789019", imported = false)
+        val legacyTheme = requireNotNull(current.theme).copy(compatibility = StoreCompatibility(96))
+        val legacy = current.copy(theme = legacyTheme)
+        val archive = export(legacy)
+        val manifests = zipFiles(archive).filterKeys { it.endsWith("manifest.json") }.values
+        assertEquals(97, Json.decodeFromString<StoreTheme>(manifests.single().decodeToString()).compatibility.minVersionCode)
+        val entry = readThemeCollectionIndex(context, archive.inputStream()).single()
+        assertEquals(ThemeCollectionResult(1, 0), restoreThemeCollection(context, archive.inputStream(), library, setOf(entry.id)))
+        assertEquals(97, library.download(entry.id)?.theme?.compatibility?.minVersionCode)
+        assertEquals(1, bindRestoredStoreThemes(library, listOf(legacyTheme)))
+        assertEquals(legacy, library.download(legacy.id))
+
+        val singleFiles = mutableMapOf(
+            "manifest.json" to Json.encodeToString(legacyTheme).encodeToByteArray(),
+            "appearance.json" to legacy.document.encodeToByteArray(),
+            "reviews.json" to """{"schemaVersion":1,"reviews":[]}""".encodeToByteArray(),
+        )
+        legacyTheme.previews.forEach { singleFiles[it.path] = preview }
+        val single = ByteArrayOutputStream().also { writeThemeArchive(it, singleFiles) }.toByteArray()
+        assertEquals(97, readThemeArchive(context, single.inputStream()).theme?.compatibility?.minVersionCode)
+        val oldManifest = Json.encodeToString(legacyTheme)
+        assertEquals(97, parseStoreTheme(oldManifest).compatibility.minVersionCode)
+        assertEquals(105, parseStoreTheme(Json.encodeToString(legacyTheme.copy(compatibility = StoreCompatibility(105))))
+            .compatibility.minVersionCode)
+    }
+
+    @Test
     fun collectionRoundTripsMoreThanSixtyFourThemes() = runBlocking {
         val themes = (1..65).map { number ->
             theme("12345678-1111-2222-3333-" + number.toString().padStart(12, '0'))
@@ -276,7 +304,7 @@ class ThemeCollectionArchiveTest {
         val document = defaultThemeAppearanceDocument()
         val theme = StoreTheme(
             1, id, 1, "Same name", "A portable theme", StoreAuthor(12, "alice"), emptyList(),
-            StoreCompatibility(1), StoreFile("appearance.json", document.encodeToByteArray().sha256()),
+            StoreCompatibility(97), StoreFile("appearance.json", document.encodeToByteArray().sha256()),
             requiredPreviews.map { slot -> StorePreview("previews/$slot.png", "other", preview.sha256()) },
         )
         cacheThemeArchivePreviews(context, theme) { preview }

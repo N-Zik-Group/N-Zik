@@ -215,6 +215,7 @@ internal fun GlassSettingsContent(
                             HeaderWithIcon(
                                 title = stringResource(R.string.glass_effect_title),
                                 iconId = R.drawable.droplet,
+                                showBetaBadge = true,
                                 enabled = false,
                                 showIcon = true,
                                 modifier = Modifier,

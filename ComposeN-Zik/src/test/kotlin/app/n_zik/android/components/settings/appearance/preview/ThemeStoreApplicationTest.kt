@@ -61,6 +61,17 @@ class ThemeStoreApplicationTest {
         assertNull(appearance.selectedSettings(StoreCompatibility(100), 100, emptySet()))
         assertNotNull(appearance.selectedSettings(StoreCompatibility(100), 100, selected))
         assertNotNull(appearance.selectedSettings(StoreCompatibility(99), 100, selected))
+        assertNull(appearance.selectedSettings(StoreCompatibility(1), 96, selected))
+        assertNotNull(appearance.selectedSettings(StoreCompatibility(1), 97, selected))
+    }
+
+    @Test
+    fun bundledStockDeclaresTheThemeStoreMinimum() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val stock = requireNotNull(bundledDefaultTheme(context).theme)
+        assertEquals(97, stock.compatibility.minVersionCode)
+        assertEquals(StoreSupport.RequiresUpdate, stock.compatibility.supportAt(96))
+        assertEquals(StoreSupport.Supported, stock.compatibility.supportAt(97))
     }
 
     @Test

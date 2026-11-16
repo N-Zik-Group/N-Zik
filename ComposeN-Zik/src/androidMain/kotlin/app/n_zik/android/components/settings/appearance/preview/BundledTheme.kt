@@ -24,7 +24,7 @@ internal fun bundledDefaultTheme(context: Context): SavedTheme {
         description = context.getString(R.string.theme_store_default_description),
         author = StoreAuthor(292738521, "N-Zik-Group"),
         tags = listOf("stock", "built-in"),
-        compatibility = StoreCompatibility(1),
+        compatibility = StoreCompatibility(FirstThemeStoreVersionCode),
         appearance = StoreFile("appearance.json", document.encodeToByteArray().sha256()),
         previews = previews,
         localCreatorName = "N-Zik Group",

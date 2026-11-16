@@ -30,6 +30,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
@@ -97,12 +98,14 @@ internal val playbackPreviews = listOf("player-playing", "miniplayer-playing")
 internal val automaticPreviews = requiredPreviews + playbackPreviews
 internal const val SubmissionPreviewLimit = 4 * 1024 * 1024
 private val SubmissionPreviewMimeTypes = arrayOf("image/png", "image/jpeg", "image/webp", "image/gif")
-private const val FirstThemeStoreVersionCode = 96
-
 internal fun submissionMinimumVersionCode(input: String, current: Int, previous: Int?): Int? =
     input.trim().toIntOrNull()?.takeIf { code ->
-        code > 0 && (code == previous || code in FirstThemeStoreVersionCode..current)
+        code >= FirstThemeStoreVersionCode &&
+            (code == previous || code <= maxOf(FirstThemeStoreVersionCode, current))
     }
+
+internal fun submissionDefaultMinimumVersionCode(previous: Int?): Int =
+    maxOf(FirstThemeStoreVersionCode, previous ?: FirstThemeStoreVersionCode)
 
 @Composable
 internal fun ThemeSubmissionPage(navController: NavController, miniPlayer: @Composable () -> Unit, themeId: String) {
@@ -251,7 +254,8 @@ private fun ThemeSubmissionForm(
     val currentVersionCode = BuildConfig.VERSION_CODE
     var minimumVersionInput by rememberSaveable(key) {
         mutableStateOf(draft?.takeIf { it.has("minVersionCode") }?.optString("minVersionCode")
-            ?: (previousMinimum ?: FirstThemeStoreVersionCode).toString())
+            ?.let(::submissionDraftMinimumVersionInput)
+            ?: submissionDefaultMinimumVersionCode(previousMinimum).toString())
     }
     val minimumVersionCode = submissionMinimumVersionCode(minimumVersionInput, currentVersionCode, previousMinimum)
     val minimumVersionLabel = when (minimumVersionCode) {
@@ -284,14 +288,21 @@ private fun ThemeSubmissionForm(
         tag !in enteredTags && (canUseReservedTags || tag !in reservedStoreTags) && tag.contains(tagQuery)
     }
 
-    var fullAppearance by rememberSaveable(key) {
+    var storedAppearance by rememberSaveable(key) {
         mutableStateOf(
             draft?.optString("fullAppearance")?.takeIf(String::isNotBlank)
                 ?: draft?.optString("appearance") ?: initialAppearance ?: currentAppearance(),
         )
     }
+    val compatibleAppearance = remember(storedAppearance) {
+        compatibleThemeSubmissionDraftAppearance(storedAppearance)
+    }
+    val fullAppearance = remember(storedAppearance, compatibleAppearance) {
+        compatibleAppearance ?: currentAppearance()
+    }
     var usingCurrentAppearance by rememberSaveable(key) {
-        mutableStateOf(draft?.optBoolean("usingCurrentAppearance") ?: (initialAppearance == null))
+        mutableStateOf(compatibleAppearance == null ||
+            (draft?.optBoolean("usingCurrentAppearance") ?: (initialAppearance == null)))
     }
     val availableSettings = remember(fullAppearance) { parseThemeV1(fullAppearance, allowEmptyCategories = true) }
     val availableCategories = availableSettings.keys
@@ -305,12 +316,19 @@ private fun ThemeSubmissionForm(
     var reusePublishedPreviews by rememberSaveable(key) { mutableStateOf(draft?.optBoolean("reusePublishedPreviews", true) ?: true) }
     var previewState by rememberSaveable(key) { mutableStateOf(draft?.optJSONObject("previews")?.toString() ?: "{}") }
     var captionState by rememberSaveable(key) { mutableStateOf(draft?.optJSONObject("captions")?.toString() ?: "{}") }
+    var previewSelectionState by rememberSaveable(key) {
+        mutableStateOf(draft?.optString("previewSelection", "{}") ?: "{}")
+    }
+    val previewSelection = remember(previewSelectionState) {
+        Json.decodeFromString<SubmissionPreviewSelection>(previewSelectionState)
+    }
     var previewTab by rememberSaveable(key) { mutableIntStateOf(0) }
     var selectedPreview by rememberSaveable(key) { mutableStateOf<String?>(null) }
+    var expandedPreview by remember(key, previewTab) { mutableStateOf<String?>(null) }
     val captions = remember(captionState) { JSONObject(captionState) }
-    val previews = remember(previewState) { buildMap<String, String> {
+    val previews = remember(previewState, previewSelection) { buildMap<String, String> {
         val saved = JSONObject(previewState)
-        saved.keys().forEach { put(it, saved.getString(it)) }
+        saved.keys().forEach { if (previewSelection.includes(it)) put(it, saved.getString(it)) }
     } }
     fun replacePreviews(updated: JSONObject, unused: Set<String> = emptySet()) {
         val previous = submissionPreviewUris(JSONObject(previewState))
@@ -380,7 +398,7 @@ private fun ThemeSubmissionForm(
         val received = result.data?.getStringArrayListExtra(ThemePreviewActivity.CapturedFiles)
             .orEmpty().map(::File)
         val bySlot = received.associateBy(File::nameWithoutExtension)
-        val existingSlots = existing?.previews.orEmpty().map { it.path.substringAfterLast('/').substringBeforeLast('.') }
+        val existingSlots = previewSelection.published(existing?.previews.orEmpty(), reuseAutomatic = true).keys
         val nonPlayback = (existingSlots + updated.keys().asSequence() + requiredPreviews).toSet() - playbackPreviews.toSet()
         val available = if (nonPlayback.size + playbackPreviews.size <= 36) automaticPreviews else requiredPreviews
         for (slot in available) {
@@ -397,12 +415,9 @@ private fun ThemeSubmissionForm(
     var busy by remember { mutableStateOf(false) }
     val awaiting by GitHubAccount.awaiting.collectAsStateWithLifecycle()
     val revision = localTheme?.theme?.revision ?: ((existing?.revision ?: 0) + 1)
-    val publishedPreviews = existing?.previews.orEmpty()
-        .filter { reusePublishedPreviews || it.path.substringAfterLast('/').substringBeforeLast('.') !in automaticPreviews }
-        .associateBy { it.path.substringAfterLast('/').substringBeforeLast('.') }
+    val publishedPreviews = previewSelection.published(existing?.previews.orEmpty(), reusePublishedPreviews)
     val readyPreviews = publishedPreviews.keys + previews.keys
-    val gallerySlots = requiredPreviews + playbackPreviews.filter { it in readyPreviews } +
-        (readyPreviews - automaticPreviews.toSet())
+    val gallerySlots = previewSelection.gallerySlots(publishedPreviews.keys, previews.keys)
     fun captionFor(slot: String): String = captions.optString(slot, publishedPreviews[slot]?.caption.orEmpty())
     val previewSizes by produceState<Map<String, Long>?>(null, step, previews, existing) {
         value = null
@@ -442,6 +457,7 @@ private fun ThemeSubmissionForm(
             .put("minVersionCode", minimumVersionInput)
             .put("tags", tags).put("appearance", appearance).put("previews", JSONObject(previews.toMap()))
             .put("captions", captions)
+            .put("previewSelection", previewSelectionState)
             .put("fullAppearance", fullAppearance).put("categorySelection", selection)
             .put("usingCurrentAppearance", usingCurrentAppearance)
             .put("reusePublishedPreviews", reusePublishedPreviews)
@@ -698,9 +714,9 @@ private fun ThemeSubmissionForm(
                                 )
                                 if (minimumVersionCode == null) {
                                     SettingsDescription(stringResource(
-                                        if (FirstThemeStoreVersionCode == currentVersionCode) R.string.theme_store_submission_version_required
+                                        if (FirstThemeStoreVersionCode >= currentVersionCode) R.string.theme_store_submission_version_required
                                         else R.string.theme_store_submission_version_range,
-                                        FirstThemeStoreVersionCode, currentVersionCode,
+                                        FirstThemeStoreVersionCode, maxOf(FirstThemeStoreVersionCode, currentVersionCode),
                                     ))
                                 }
                             })
@@ -714,7 +730,7 @@ private fun ThemeSubmissionForm(
                                             onClick = {
                                                 val updated = currentAppearance()
                                                 if (updated != fullAppearance) {
-                                                    fullAppearance = updated
+                                                    storedAppearance = updated
                                                     usingCurrentAppearance = true
                                                     if (initialAppearance != null) selection = -1
                                                     invalidateGeneratedPreviews()
@@ -755,11 +771,31 @@ private fun ThemeSubmissionForm(
                                     stringResource(R.string.theme_store_preview_glass),
                                 )
                                 val suffix = if (previewTab == 0) "-normal" else "-glass"
-                                val slots = gallerySlots.filter {
-                                    it.endsWith(suffix) || (it !in requiredPreviews && !it.endsWith("-normal") && !it.endsWith("-glass"))
-                                }
+                                val slots = submissionPreviewVariantSlots(gallerySlots, glass = previewTab == 1)
                                 val selected = selectedPreview?.takeIf { it in slots } ?: slots.first()
                                 val selectedLabel = submissionPreviewLabel(selected)
+                                val availableGallery = slots.filter { it in readyPreviews }
+                                ThemePreviewGalleryDialog(
+                                    previews = availableGallery,
+                                    initialPage = expandedPreview?.let(availableGallery::indexOf) ?: -1,
+                                    onDismiss = { expandedPreview = null },
+                                    itemKey = { it },
+                                    caption = { captionFor(it).ifBlank { submissionPreviewLabel(it) } },
+                                ) { slot ->
+                                    val previous = publishedPreviews[slot]
+                                    val remote = if (existing != null && previous != null && slot !in previews) {
+                                        rememberStorePreview(existing, previous, catalog, 0)
+                                    } else null
+                                    val model = previews[slot]?.let(android.net.Uri::parse) ?: remote?.file
+                                    ImageCacheFactory.LocalAsyncImage(
+                                        model = model,
+                                        contentDescription = captionFor(slot).ifBlank { submissionPreviewLabel(slot) },
+                                        modifier = Modifier.fillMaxSize(),
+                                        placeholder = R.drawable.loader,
+                                        contentScale = ContentScale.Fit,
+                                        shape = null,
+                                    )
+                                }
                                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                                     SettingsDialogTabRow(
                                         labels = variants, selectedTabIndex = previewTab,
@@ -780,7 +816,10 @@ private fun ThemeSubmissionForm(
                                                         verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                                         ThemeCardSurface(
                                                             modifier = Modifier.fillMaxWidth().aspectRatio(remote?.aspectRatio ?: 9f / 20f),
-                                                            onClick = { selectedPreview = slot },
+                                                            onClick = {
+                                                                selectedPreview = slot
+                                                                if (model != null) expandedPreview = slot
+                                                            },
                                                         ) {
                                                             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                                                 if (model == null) {
@@ -792,7 +831,10 @@ private fun ThemeSubmissionForm(
                                                                 }
                                                             }
                                                         }
-                                                        Text(captionFor(slot).ifBlank { label }, style = typography().xs,
+                                                        Text(captionFor(slot).ifBlank { label },
+                                                            modifier = Modifier.fillMaxWidth().clickable { selectedPreview = slot },
+                                                            style = typography().xs,
+                                                            textAlign = TextAlign.Center,
                                                             color = if (slot == selected) colorPalette().accent else colorPalette().text,
                                                             maxLines = 1, overflow = TextOverflow.Ellipsis)
                                                     }
@@ -819,6 +861,18 @@ private fun ThemeSubmissionForm(
                                             picker.launch(SubmissionPreviewMimeTypes)
                                         },
                                     ) { Text(stringResource(R.string.theme_store_preview_add_extra)) }
+                                    if (selected in readyPreviews && selected !in automaticPreviews) {
+                                        PageButton(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            enabled = !importingPreview,
+                                            onClick = {
+                                                previewSelectionState = Json.encodeToString(previewSelection.withoutExtra(selected))
+                                                replacePreviews(JSONObject(previewState).apply { remove(selected) })
+                                                captionState = JSONObject(captionState).apply { remove(selected) }.toString()
+                                                selectedPreview = null
+                                            },
+                                        ) { Text(stringResource(R.string.theme_store_preview_remove_extra)) }
+                                    }
                                     SettingsDescription(stringResource(R.string.theme_store_preview_import_requirements_with_gif))
                                     if (selected in readyPreviews) {
                                         SubmissionField(captionFor(selected), { caption ->

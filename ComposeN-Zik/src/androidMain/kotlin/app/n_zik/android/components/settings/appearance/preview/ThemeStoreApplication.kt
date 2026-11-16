@@ -45,9 +45,15 @@ internal data class StoreAppearance(
 
 internal enum class StoreSupport { Supported, Pending, RequiresUpdate }
 
+internal const val FirstThemeStoreVersionCode = 97
+
+internal fun StoreTheme.withMinimumCompatibility(): StoreTheme = copy(
+    compatibility = StoreCompatibility(compatibility.minVersionCode?.coerceAtLeast(FirstThemeStoreVersionCode)),
+)
+
 internal fun StoreCompatibility.supportAt(versionCode: Int): StoreSupport = when {
     minVersionCode == null -> StoreSupport.Pending
-    versionCode < minVersionCode -> StoreSupport.RequiresUpdate
+    versionCode < maxOf(FirstThemeStoreVersionCode, minVersionCode) -> StoreSupport.RequiresUpdate
     else -> StoreSupport.Supported
 }
 

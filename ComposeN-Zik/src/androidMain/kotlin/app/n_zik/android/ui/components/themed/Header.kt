@@ -25,11 +25,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.R
+import app.n_zik.android.components.ui.header.HeaderBadgeBox
 import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.shimmer
@@ -156,6 +159,7 @@ fun HeaderWithIcon (
     @DrawableRes iconId: Int,
     showIcon: Boolean = true,
     enabled: Boolean = true,
+    showBetaBadge: Boolean = false,
     onClick: () -> Unit
 ){
     //val disableIconButtonOnTop by rememberPreference(disableIconButtonOnTopKey, false)
@@ -178,6 +182,14 @@ fun HeaderWithIcon (
                     iconId = iconId,
                     enabled = enabled,
                     onClick = onClick,
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+
+            if (showBetaBadge) {
+                HeaderBadgeBox(
+                    text = stringResource(R.string.updates_build_beta_label),
+                    color = colorPalette().accent,
                 )
                 Spacer(modifier = Modifier.width(8.dp))
             }

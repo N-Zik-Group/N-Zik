@@ -358,7 +358,14 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
         ) {
             item(key = "store-header", span = { GridItemSpan(maxLineSpan) }) {
                 Column(Modifier.padding(bottom = 8.dp)) {
-                    HeaderWithIcon(title = title, iconId = R.drawable.color_palette, enabled = false, modifier = Modifier, onClick = {})
+                    HeaderWithIcon(
+                        title = title,
+                        iconId = R.drawable.color_palette,
+                        enabled = false,
+                        modifier = Modifier,
+                        showBetaBadge = creatorId == null && section == null,
+                        onClick = {},
+                    )
                     lastSync?.let { StoreLastSync(it, Modifier.padding(bottom = 8.dp)) }
                     if (section == null && creatorId == null) SettingsDialogTabRow(
                         labels = labels,

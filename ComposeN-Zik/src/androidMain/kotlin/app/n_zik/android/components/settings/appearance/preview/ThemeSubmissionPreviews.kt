@@ -11,10 +11,36 @@ import java.io.EOFException
 import java.io.File
 import java.io.InputStream
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import org.json.JSONObject
 import timber.log.Timber
 
 internal const val SubmissionPreviewMaxEdge = 1920
+
+internal fun submissionPreviewVariantSlots(slots: List<String>, glass: Boolean): List<String> {
+    val suffix = if (glass) "-glass" else "-normal"
+    return slots.filter { it.endsWith(suffix) || (!it.endsWith("-normal") && !it.endsWith("-glass")) }
+}
+
+/** Keeps explicitly removed extras out of inherited revisions and resumed drafts. */
+@Serializable
+internal data class SubmissionPreviewSelection(val removedExtras: Set<String> = emptySet()) {
+    fun includes(slot: String): Boolean = slot in automaticPreviews || slot !in removedExtras
+
+    fun withoutExtra(slot: String): SubmissionPreviewSelection {
+        require(slot !in automaticPreviews) { "Automatic preview slots cannot be removed" }
+        return copy(removedExtras = removedExtras + slot)
+    }
+
+    fun published(previews: List<StorePreview>, reuseAutomatic: Boolean): Map<String, StorePreview> =
+        previews.associateBy { it.path.substringAfterLast('/').substringBeforeLast('.') }
+            .filterKeys { includes(it) && (reuseAutomatic || it !in automaticPreviews) }
+
+    fun gallerySlots(published: Set<String>, replacements: Set<String>): List<String> {
+        val ready = (published + replacements).filter(::includes).toSet()
+        return requiredPreviews + playbackPreviews.filter { it in ready } + (ready - automaticPreviews.toSet())
+    }
+}
 
 /** Identifies GIF by its header because document providers can report a generic MIME type. */
 internal fun InputStream.readSubmissionGifOrNull(): ByteArray? {
