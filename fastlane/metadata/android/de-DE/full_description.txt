@@ -10,7 +10,7 @@ Ein mehrsprachiges YouTube Music Frontend für Android, fokussiert auf Leistung,
 - 3D Carousel Player, Home-Widgets, einheitlicher Player und Mini-Player
 - Künstlerprofile, Discovery und Moods, einklappbare Home-Header
 
-🎨 <b>Theme Store</b>
+🎨 <b>Theme Store (BETA)</b>
 - Durchsuchen und downloaden von Community-Themes, Vorschau in Normal und Glas, und wählen Sie aus, welche Einstellungen Sie anwenden sollen.
 - Erstellen Sie lokale Designs oder teilen Sie Ihre Designs mit der Community. Importieren und exportieren Sie Themes als ZIP-Dateien.
 
@@ -33,7 +33,8 @@ Danksagung: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdr
 - Automatische Backups mit eigenen Intervallen und Aufbewahrung
 
 🔗 <b>Integrationen</b>
-- YouTube-Anmeldung für Empfehlungen und Videowiedergabe, plus experimentelle Zwei-Wege-Sync
+- Wechseln Sie zwischen Google-Konten und YouTube-Kanälen. Jedes N-Zik Profil verwendet einen aktiven YouTube-Musikkanal für Empfehlungen und Wiedergabe.
+- Synchronisation der zweiseitigen YouTube Musikbibliothek in Debug und Dev Builds.
 - Last.fm-Scrobbling mit Now Playing und love/unlove
 - MusicBrainz-Künstler- und Album-Infos
 erweitertem Modus mit Live-Vorschau
