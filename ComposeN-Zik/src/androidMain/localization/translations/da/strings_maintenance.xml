@@ -328,4 +328,14 @@
     <string name="recovery_theme_backup_operation_failed">Kunne ikke fuldføre sikkerhedskopieringen af temaet.</string>
     <string name="recovery_theme_backup_restore_action">Gendan temaer</string>
     <string name="recovery_theme_backup_restore_description">Åbn den sidste backup af temaet, der bruges til denne profil.</string>
+    <string name="updates_status_and_last_check">%1$s · %2$s</string>
+    <string name="recovery_action_failed">Kunne ikke fuldføre genoprettelseshandlingen.</string>
+    <string name="recovery_reopen_after_restoring_settings">Genåbn redningscentret efter gendannelse af indstillinger.</string>
+    <string name="recovery_settings_file_empty">Indstillingsfilen er tom.</string>
+    <string name="recovery_profile_changed_during_import">Den valgte profil blev ændret under import af indstillinger. Vælg den igen, og prøv igen.</string>
+    <string name="recovery_no_importable_settings">Filen indeholder ingen indstillinger, der kan importeres.</string>
+    <string name="recovery_finish_pending_profile_operation">Afslut den ventende profil nulstilling eller gendannelse først.</string>
+    <string name="recovery_no_database_to_reset">Der er ingen database at nulstille.</string>
+    <string name="updates_current_version_format">v%1$s</string>
+    <string name="updates_version_and_status">%1$s • %2$s</string>
 </resources>
