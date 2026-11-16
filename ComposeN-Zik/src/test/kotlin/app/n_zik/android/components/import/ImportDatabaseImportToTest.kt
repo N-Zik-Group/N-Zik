@@ -19,16 +19,21 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 // runBlocking (not a test dispatcher): importTo is a plain suspend flow and the tests
 // only assert on files and the stubbed Database / worker entry points.
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -149,12 +154,35 @@ class ImportDatabaseImportToTest {
     }
 
     @Test
-    fun anActiveProfileImportChecksPointsClosesAndSchedulesRegeneration() = runBlocking {
+    fun `active profile import waits for saved queue work before closing the database`() = runBlocking {
         val baseDb = dbPath("data.db")
         baseDb.writeBytes(byteArrayOf(0))
         val baseWal = sideFile("data.db-wal")
+        val queueWorkStarted = CompletableDeferred<Unit>()
+        val finishQueueWork = CompletableDeferred<Unit>()
+        val queueWork = launch(start = CoroutineStart.UNDISPATCHED) {
+            Database.awaitSavedQueueWork {
+                queueWorkStarted.complete(Unit)
+                finishQueueWork.await()
+            }
+        }
 
-        ImportDatabase.importTo(context, uri, "default")
+        try {
+            withTimeout(5_000) { queueWorkStarted.await() }
+            val import = async(start = CoroutineStart.UNDISPATCHED) {
+                ImportDatabase.importTo(context, uri, "default")
+            }
+            try {
+                assertNull(withTimeoutOrNull(250) { import.await() })
+                verify(exactly = 0) { Database.close() }
+            } finally {
+                finishQueueWork.complete(Unit)
+            }
+            withTimeout(5_000) { import.await() }
+        } finally {
+            finishQueueWork.complete(Unit)
+            queueWork.join()
+        }
 
         assertArrayEquals(importedBytes, baseDb.readBytes())
         assertFalse(baseWal.exists())

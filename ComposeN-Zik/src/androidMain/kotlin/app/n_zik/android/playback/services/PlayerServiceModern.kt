@@ -2808,13 +2808,12 @@ class PlayerServiceModern : MediaLibraryService(),
             QueuedMediaItem(mediaItem = mediaItem, position = mediaItemPosition.takeIf { index == mediaItemIndex })
         }
 
-        // Room serializes writes in submission order, including the snapshot taken during teardown.
-        Database.asyncTransaction {
-            queueTable.replaceAll(snapshot.map { row ->
+        // Keep snapshots in submission order, including the one taken during teardown.
+        Database.saveQueueSnapshot {
+            snapshot.map { row ->
                 val item = PersistentQueueArtwork.preserveSnapshotSource(this@PlayerServiceModern, profile, row.mediaItem)
                 QueuedMediaItem(mediaItem = item, position = row.position)
-            })
-            Timber.tag("PlayerServiceModern").d("Saved persistent queue")
+            }
         }
     }
 

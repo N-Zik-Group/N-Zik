@@ -88,11 +88,11 @@ class SmartTrashDeleteDownloadsTest {
         }
 
         assertEquals(
-            songs(3).flatMap {
+            listOf("begin") + songs(3).flatMap {
                 listOf(
-                    "begin", "cache:${it.id}", "downloadCache:${it.id}", "format:${it.id}", "remove:${it.id}", "end",
+                    "cache:${it.id}", "downloadCache:${it.id}", "format:${it.id}", "remove:${it.id}",
                 )
-            },
+            } + "end",
             order,
         )
         assertEquals(3, threads.size)

@@ -57,9 +57,9 @@ import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.utils.preferences
-import app.n_zik.android.core.coil.thumbnail
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -69,9 +69,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import app.n_zik.android.utils.ExternalUris
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.notifications.channelId
@@ -108,6 +111,13 @@ object MyDownloadHelper {
 
     // Semaphore to limit concurrent download preparation (avoids overwhelming the API)
     private val downloadPreparationSemaphore = Semaphore(3)
+
+    private class DownloadCommandLock {
+        val mutex = Mutex()
+        var users = 0
+    }
+
+    private val downloadCommandLocks = mutableMapOf<Pair<ProfileDownloadCommands, String>, DownloadCommandLock>()
 
     // Scheduling seam lets the failure test exercise the real toast deterministically.
     internal var scheduleDownloadRequest: (ProfileDownloadCommands, Context, DownloadRequest) -> Result<Unit> =
@@ -568,14 +578,39 @@ object MyDownloadHelper {
             insertIgnore( mediaItem, autoFix = false )
         }
 
-        coroutineScope.launch {
+        // Join the track's queue before dispatching to DATA so a following removal cannot overtake.
+        coroutineScope.launch(start = CoroutineStart.UNDISPATCHED) {
             addDownloadInternal(context, mediaItem, owner)
         }
 
-
     }
 
-    /** Suspended core of [addDownload]: prepares the download request under the preparation semaphore, schedules it on [MyDownloadService], then preloads lyrics and artwork outside the semaphore so they don't block other downloads. */
+    /** Runs commands for the same profile and track in arrival order, with independent tracks using separate locks. */
+    private suspend fun <T> withDownloadCommand(
+        owner: ProfileDownloadCommands,
+        mediaId: String,
+        command: suspend () -> T,
+    ): T {
+        val key = owner to mediaId
+        val lock = synchronized(downloadCommandLocks) {
+            downloadCommandLocks.getOrPut(key, ::DownloadCommandLock).also { it.users++ }
+        }
+        try {
+            return lock.mutex.withLock {
+                withContext(NzikDispatchers.DATA) {
+                    // The public entry points enter the queue undispatched from their callers.
+                    yield()
+                    command()
+                }
+            }
+        } finally {
+            synchronized(downloadCommandLocks) {
+                if (--lock.users == 0) downloadCommandLocks.remove(key)
+            }
+        }
+    }
+
+    /** Suspended core of [addDownload], with lyrics and artwork preloaded after releasing the command lock. */
     // internal (not private): the A2 failure test drives the scheduling path directly
     // (P14, review 2026-10-23) instead of going through the DB-backed [addDownload] entry.
     internal suspend fun addDownloadInternal(
@@ -584,6 +619,17 @@ object MyDownloadHelper {
         owner: ProfileDownloadCommands? = ProfileDownloadCommands.capture(context),
     ) {
         if (owner == null) return
+        withDownloadCommand(owner, mediaItem.mediaId) {
+            prepareAndScheduleDownload(context, mediaItem, owner)
+        }
+        preloadDownloadMetadata(context, mediaItem, owner)
+    }
+
+    private suspend fun prepareAndScheduleDownload(
+        context: Context,
+        mediaItem: MediaItem,
+        owner: ProfileDownloadCommands,
+    ) {
         downloadPreparationSemaphore.withPermit {
             if (owner != ProfileDownloadCommands.capture(context)) return
             val artistTextRaw = mediaItem.artistTextOrDb()
@@ -603,8 +649,6 @@ object MyDownloadHelper {
                 .setData(encodeDownloadDisplayName(notificationTitle))
                 .build()
 
-            val imageUrl = mediaItem.mediaMetadata.artworkUri.thumbnail(1000)
-
             scheduleDownloadRequest(owner, context, downloadRequest).exceptionOrNull()?.let {
                 if (it is CancellationException) throw it
 
@@ -614,25 +658,34 @@ object MyDownloadHelper {
                 Toaster.e(R.string.downloads_failed)
             }
         }
-        // Lyrics and image preload OUTSIDE semaphore - don't block download preparation
-        if (owner != ProfileDownloadCommands.capture(context)) return
-        downloadSyncedLyrics( mediaItem.asSong )
+    }
+
+    private suspend fun preloadDownloadMetadata(
+        context: Context,
+        mediaItem: MediaItem,
+        owner: ProfileDownloadCommands,
+    ) = withContext(NzikDispatchers.DATA) {
+        if (owner != ProfileDownloadCommands.capture(context)) return@withContext
+        downloadSyncedLyrics(mediaItem.asSong)
+        if (owner != ProfileDownloadCommands.capture(context)) return@withContext
         ImageCacheFactory.preloadImage(mediaItem.mediaMetadata.artworkUri.toString())
     }
 
     fun removeDownload(context: Context, mediaItem: MediaItem) {
         if (mediaItem.isLocal) return
         val owner = ProfileDownloadCommands.capture(context) ?: return
-        coroutineScope.launch {
-            removeDownloadInternal(context, mediaItem, owner)
+        coroutineScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            withDownloadCommand(owner, mediaItem.mediaId) {
+                removeDownloadInternal(context, mediaItem.mediaId, owner)
+            }
         }
     }
 
     /**
-     * Suspended core of [removeDownload]: sends the removal intent to [MyDownloadService].
+     * Sends the removal intent to [MyDownloadService].
      */
-    private fun removeDownloadInternal(context: Context, mediaItem: MediaItem, owner: ProfileDownloadCommands) {
-        owner.sendRemove(context, mediaItem.mediaId).exceptionOrNull()?.let {
+    private fun removeDownloadInternal(context: Context, mediaId: String, owner: ProfileDownloadCommands) {
+        owner.sendRemove(context, mediaId).exceptionOrNull()?.let {
             if (it is CancellationException) throw it
 
             Timber.tag("MyDownloadHelper").e(it.stackTraceToString())
@@ -714,22 +767,21 @@ object MyDownloadHelper {
         startBatchDownload( targets.size )
 
         targets.forEach { songId ->
-            // A stream URL cached under the previous quality must not be reused by the re-download
-            songUrlCache.invalidate( songId )
+            val mediaItem = withDownloadCommand(owner, songId) {
+                if (owner != ProfileDownloadCommands.capture(context)) return@withDownloadCommand null
+                // A stream URL cached under the previous quality must not be reused by the re-download.
+                songUrlCache.invalidate(songId)
+                val item = Database.songTable.findByIdDirect(songId)?.asMediaItem
+                    ?: MediaItem.Builder()
+                        .setMediaId(songId)
+                        .setUri(Uri.parse(ExternalUris.youtubeMusic(songId)))
+                        .build()
 
-            val mediaItem = withContext( NzikDispatchers.DATA ) { Database.songTable.findByIdDirect( songId ) }
-                ?.asMediaItem
-                ?: MediaItem.Builder()
-                    .setMediaId(songId)
-                    .setUri(Uri.parse(ExternalUris.youtubeMusic(songId)))
-                    .build()
-
-            runCatching {
-                removeDownloadInternal(context, mediaItem, owner)
-            }.onFailure { e ->
-                Timber.tag("MyDownloadHelper").e(e, "updateDownloads: remove failed for $songId, attempting the add anyway")
-            }
-            addDownloadInternal(context, mediaItem, owner)
+                removeDownloadInternal(context, songId, owner)
+                prepareAndScheduleDownload(context, item, owner)
+                item
+            } ?: return
+            preloadDownloadMetadata(context, mediaItem, owner)
         }
     }
 

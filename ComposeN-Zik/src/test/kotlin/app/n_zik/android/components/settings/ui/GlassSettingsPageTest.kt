@@ -692,11 +692,14 @@ class GlassSettingsPageTest {
 
     @Test fun `onboarding provides the same complete Glass controls and local comparison`() {
         assertCompleteGlassSurface(onboarding = true)
+        val preview = composeRule.onNodeWithTag("settings.glass.preview")
+        val initialBounds = preview.fetchSemanticsNode().boundsInRoot
         val controls = composeRule.onNodeWithTag("settings.glass.controls")
         controls.performScrollToKey("onboarding.footer")
         composeRule.onNodeWithTag("onboarding.glass.continue").assertIsDisplayed()
             .assert(hasAnyAncestor(hasTestTag("settings.glass.controls")))
-        composeRule.onNodeWithTag("settings.glass.preview").assertDoesNotExist()
+        preview.assertIsDisplayed()
+        assertEquals(initialBounds, preview.fetchSemanticsNode().boundsInRoot)
         controls.performScrollToKey("header")
         composeRule.onNodeWithTag("onboarding.glass.continue").assertDoesNotExist()
     }

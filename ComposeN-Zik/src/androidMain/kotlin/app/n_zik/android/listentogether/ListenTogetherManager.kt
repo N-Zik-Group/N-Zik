@@ -1741,7 +1741,7 @@ class ListenTogetherManager(
      * Create a new room
      */
     fun createRoom(username: String) {
-        Timber.tag(TAG).d("Creating room with username: $username")
+        Timber.tag(TAG).d("Creating room")
         client.createRoom(username)
     }
 
@@ -1752,7 +1752,7 @@ class ListenTogetherManager(
         roomCode: String,
         username: String,
     ) {
-        Timber.tag(TAG).d("Joining room $roomCode as $username")
+        Timber.tag(TAG).d("Joining room")
         client.joinRoom(roomCode, username)
     }
 

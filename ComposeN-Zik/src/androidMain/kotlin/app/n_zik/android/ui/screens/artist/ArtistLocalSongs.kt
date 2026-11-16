@@ -765,6 +765,7 @@ private suspend fun processArtistDownloadBatch(
         songs.forEach { song ->
             val mediaItem = song.asMediaItem
             cache?.removeResource(mediaItem.mediaId)
+            MyDownloadHelper.songUrlCache.invalidate(mediaItem.mediaId)
             manageDownload(context, mediaItem, downloadState)
         }
     }

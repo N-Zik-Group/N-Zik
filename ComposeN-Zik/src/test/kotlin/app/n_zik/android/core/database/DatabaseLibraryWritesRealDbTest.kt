@@ -5,6 +5,14 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.models.Album
 import app.n_zik.android.models.Format
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
+import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
 import app.n_zik.android.models.Artist
 import app.n_zik.android.models.Song
 import app.n_zik.android.models.SongAlbumMap
@@ -101,4 +109,52 @@ class DatabaseLibraryWritesRealDbTest {
         assertEquals(listOf(listOf("songs") to false), notifications)
     }
 
-}
+    @Test
+    fun `cancellation before the return from Room still publishes the committed write`() = runBlocking {
+        val returns = LinkedBlockingQueue<Runnable>()
+        val callerDispatcher = object : CoroutineDispatcher() {
+            override fun dispatch(context: CoroutineContext, block: Runnable) {
+                returns.add(block)
+            }
+        }
+        val notified = mutableListOf<List<String>>()
+        Database.libraryWriteNotifier = { notified += it }
+
+        val writer = launch(callerDispatcher) {
+            Database.transaction { songTable.upsert(Song.makePlaceholder("committed")) }
+        }
+        try {
+            checkNotNull(returns.poll(5, TimeUnit.SECONDS)).run()
+            val returnFromRoom = checkNotNull(returns.poll(5, TimeUnit.SECONDS))
+            assertEquals("committed", db.songTable.findByIdDirect("committed")?.id)
+            assertEquals(emptyList<List<String>>(), notified)
+            writer.cancel()
+            returnFromRoom.run()
+            assertEquals(listOf(listOf("songs")), notified)
+        } finally {
+            writer.cancel()
+            while (!writer.isCompleted) {
+                checkNotNull(returns.poll(5, TimeUnit.SECONDS)).run()
+            }
+        }
+    }
+
+    @Test
+    fun `cancellation inside the Room transaction rolls back without notifying`() = runBlocking {
+        val entered = CompletableDeferred<Unit>()
+        val notified = mutableListOf<List<String>>()
+        Database.libraryWriteNotifier = { notified += it }
+        val writer = launch {
+            Database.transaction {
+                songTable.upsert(Song.makePlaceholder("rolled-back"))
+                entered.complete(Unit)
+                awaitCancellation()
+            }
+        }
+        entered.await()
+        writer.cancelAndJoin()
+
+        assertEquals(null, db.songTable.findByIdDirect("rolled-back"))
+        assertEquals(emptyList<List<String>>(), notified)
+    }
+}

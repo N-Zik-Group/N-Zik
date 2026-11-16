@@ -26,6 +26,7 @@ import java.util.Optional
 import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
 import app.n_zik.android.appContext
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -65,20 +66,41 @@ open class DeleteSongDialog(
         song.ifPresent { s ->
             menuState.hide()
             NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                Database.awaitWriteBatch {
-                    binder?.cache?.removeResource(s.id)
-                    binder?.downloadCache?.removeResource(s.id)
-                    songPlaylistMapTable.deleteBySongId(s.id)
-                    formatTable.deleteBySongId(s.id)
-                    songTable.delete(s)
-                    WaveformExtractor.deleteWaveform(appContext(), s.id)
-                    deleteSongFiles(s)
+                try {
+                    Database.awaitWriteBatch(retries = 1) {
+                        evictSongCache { binder?.cache?.removeResource(s.id) }
+                        evictSongCache { binder?.downloadCache?.removeResource(s.id) }
+                        awaitWriteBatch {
+                            transaction {
+                                songPlaylistMapTable.deleteBySongId(s.id)
+                                formatTable.deleteBySongId(s.id)
+                                songTable.delete(s)
+                            }
+                        }
+                        WaveformExtractor.deleteWaveform(appContext(), s.id)
+                        deleteSongFiles(s)
+                    }
+                    Toaster.i(R.string.common_delete_success)
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    Timber.tag("DeleteSongDialog").w("Unable to delete song (%s)", error.javaClass.simpleName)
+                    Toaster.e(R.string.common_error_title)
                 }
-                Toaster.i( R.string.common_delete_success )
             }
         }
 
         onDismiss()
+    }
+}
+
+internal fun evictSongCache(evict: () -> Unit) {
+    try {
+        evict()
+    } catch (cancelled: CancellationException) {
+        throw cancelled
+    } catch (error: Exception) {
+        Timber.tag("DeleteSongDialog").w("Unable to evict cached audio (%s)", error.javaClass.simpleName)
     }
 }
 
@@ -101,13 +123,13 @@ internal fun deleteLocalSongFile(song: Song) {
         val path = resolvedPath
         if (path != null) {
             val deleted = File(path).delete()
-            Timber.tag("DeleteSongDialog").d("File.delete(%s) = %s", path, deleted)
+            Timber.tag("DeleteSongDialog").d("Local audio file deleted: %s", deleted)
         }
 
         val rowsDeleted = context.contentResolver.delete(uri, null, null)
-        Timber.tag("DeleteSongDialog").d("MediaStore.delete rows=%d for: %s", rowsDeleted, song.title)
+        Timber.tag("DeleteSongDialog").d("MediaStore rows deleted: %d", rowsDeleted)
     } catch (e: Exception) {
-        Timber.tag("DeleteSongDialog").e(e, "Failed to delete local file: %s", song.title)
+        Timber.tag("DeleteSongDialog").w("Unable to delete local audio file (%s)", e.javaClass.simpleName)
     }
 }
 

@@ -218,13 +218,15 @@ internal suspend fun deleteDownloadsOffMain(
     downloadCache: Cache?,
     context: Context
 ) {
-    songs.forEach { song ->
-        Database.awaitWriteBatch(retries = 1) {
+    if (songs.isEmpty()) return
+    Database.awaitWriteBatch(retries = 1) {
+        songs.forEach { song ->
             cache?.removeResource(song.id)
             downloadCache?.removeResource(song.id)
             awaitWriteBatch {
                 formatTable.deleteBySongId(song.id)
             }
+            MyDownloadHelper.songUrlCache.invalidate(song.id)
             MyDownloadHelper.removeDownload(context, song.asMediaItem)
         }
     }

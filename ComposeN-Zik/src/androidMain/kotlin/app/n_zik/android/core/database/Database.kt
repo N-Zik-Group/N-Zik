@@ -49,8 +49,11 @@ import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -1023,13 +1026,39 @@ object Database {
         }
     }
 
-    internal suspend fun readSavedQueue(): List<QueuedMediaItem> {
-        val database = _internal
-        if (coroutineContext[QueuedWriteContext] != null) return database.queueTable.allDirect()
-        val completed = CompletableDeferred<List<QueuedMediaItem>>()
-        writeQueue.trySend {
+    // Startup and automotive resumption must see earlier submitted snapshots, even
+    // while ordinary write batches perform library work or file cleanup.
+    private val savedQueueWork by lazy {
+        Channel<suspend () -> Unit>(Channel.UNLIMITED).also { queue ->
+            databaseWorkScope.launch {
+                for (work in queue) work()
+            }
+        }
+    }
+
+    internal fun saveQueueSnapshot(snapshot: () -> List<QueuedMediaItem>) {
+        savedQueueWork.trySend {
+            runCatching {
+                runWriteBatch(retries = 3) { queueTable.replaceAll(snapshot()) }
+            }.onFailure { error ->
+                if (error !is CancellationException) {
+                    Timber.tag("Database").e(error, "Saving persistent queue failed")
+                }
+            }
+        }.getOrThrow()
+    }
+
+    internal suspend fun readSavedQueue(): List<QueuedMediaItem> = awaitSavedQueueWork {
+        check(!isClosed) { "The database is closed" }
+        queueTable.allDirect()
+    }
+
+    /** Active database import joins this queue from the ordered write batch before closing Room. */
+    internal suspend fun <T> awaitSavedQueueWork(block: suspend () -> T): T {
+        val completed = CompletableDeferred<T>()
+        savedQueueWork.trySend {
             if (completed.isActive) {
-                runCatching { database.queueTable.allDirect() }
+                runCatching { block() }
                     .fold(completed::complete, completed::completeExceptionally)
             }
         }.getOrThrow()
@@ -1046,11 +1075,19 @@ object Database {
         if (coroutineContext[LibraryTransactionWrites] != null) {
             database.withTransaction { block() }
         } else {
+            val caller = coroutineContext
+            caller.ensureActive()
             val pending = LibraryTransactionWrites()
-            withContext(pending) {
-                database.withTransaction { block() }
+            // A committed write must still notify Bridge if the caller cancels during
+            // the dispatch back from Room. Keep the SQL body cancellable by the caller.
+            withContext(NonCancellable + pending) {
+                database.withTransaction {
+                    withContext(caller[Job] ?: NonCancellable) { block() }
+                    caller.ensureActive()
+                }
+                notifyLibraryWrites(pending.snapshot())
             }
-            notifyLibraryWrites(pending.snapshot())
+            caller.ensureActive()
         }
     }
 

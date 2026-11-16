@@ -428,7 +428,7 @@ fun OnboardingAccountsScreen(
                             lastfmSession = sessionKey
                             lastfmUsername = username
                             lastfmAvatarUrl = ""
-                            Timber.tag("Onboarding").i("Last.fm account connected as $username")
+                            Timber.tag("Onboarding").i("Last.fm account connected")
                             // The connection only updates the card — the user leaves the
                             // step with the skip button. The fetch runs on the
 //

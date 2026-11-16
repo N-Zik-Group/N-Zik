@@ -4,7 +4,9 @@ import androidx.media3.datasource.cache.Cache
 import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.FormatTable
+import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import com.metrolist.innertubex.extraction.AudioQuality as InnerTubeXAudioQuality
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.every
@@ -18,6 +20,7 @@ import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -64,7 +67,18 @@ class MediaDownloadBatchOffMainTest {
 
         val actions = CopyOnWriteArrayList<Song>()
         val actionThreads = CopyOnWriteArrayList<Thread>()
+        songs(3).forEach { song ->
+            MyDownloadHelper.songUrlCache.put(
+                mediaId = song.id,
+                url = "https://example.com/audio",
+                requestHeaders = emptyMap(),
+                clientName = "test",
+                expiresInSeconds = 60,
+                quality = InnerTubeXAudioQuality.HIGH,
+            )
+        }
         val onAction: (Song) -> Unit = { song ->
+            assertNull(MyDownloadHelper.songUrlCache.clientName(song.id))
             order += "action:${song.id}"
             actions += song
             actionThreads += Thread.currentThread()
@@ -75,7 +89,7 @@ class MediaDownloadBatchOffMainTest {
         }
 
         assertEquals(
-            songs(3).flatMap { listOf("begin", "cache:${it.id}", "format:${it.id}", "action:${it.id}", "end") },
+            listOf("begin") + songs(3).flatMap { listOf("cache:${it.id}", "format:${it.id}", "action:${it.id}") } + "end",
             order,
         )
         assertEquals(3, actions.size)

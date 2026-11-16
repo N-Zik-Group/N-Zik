@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -49,11 +51,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.conditional
+import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.faceAvatarSource
 import app.n_zik.android.utils.faceNameSource
 import app.n_zik.android.utils.isProfileNameValid
 import app.n_zik.android.utils.profileDisplayName
 import app.n_zik.android.utils.readProfileIds
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.resolveProfileDisplayName
 import app.n_zik.android.utils.saveFaceAvatarSource
 import app.n_zik.android.utils.saveFaceNameSource
@@ -153,6 +158,7 @@ fun OnboardingProfileScreen(
     val context = LocalContext.current
     val app = context.applicationContext
     val defaultName = stringResource(R.string.profile_base_name)
+    val scrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
 
     // The resolved base name: the field prefill and the no-op guard â€” a name
     // identical to the resolved name is not stored as a custom name (the resolved
@@ -401,7 +407,8 @@ fun OnboardingProfileScreen(
                             text = previewFace.name,
                             style = typography().s.copy(color = colorPalette().text),
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.profileMarquee(!scrollingTextDisabled)
                         )
                     }
                 }
@@ -462,6 +469,7 @@ fun OnboardingProfileScreen(
                             option = option,
                             selected = nameSource == option,
                             locked = option in lockedSources,
+                            marqueeEnabled = !scrollingTextDisabled,
                             onSelect = { nameSource = option }
                         )
                     }
@@ -491,6 +499,7 @@ fun OnboardingProfileScreen(
                             option = option,
                             selected = avatarSource == option,
                             locked = option in lockedSources,
+                            marqueeEnabled = !scrollingTextDisabled,
                             onSelect = { avatarSource = option }
                         )
                     }
@@ -531,14 +540,21 @@ fun OnboardingProfileScreen(
                         text = stringResource(R.string.profile_photo),
                         style = typography().s,
                         color = colorPalette().text,
-                        modifier = Modifier.weight(1f)
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f).profileMarquee(!scrollingTextDisabled)
                     )
 
                     Text(
                         text = stringResource(
                             if (profilePhoto != null) R.string.profile_photo_set else R.string.profile_photo_not_set
                         ),
-                        style = typography().xxs.copy(color = colorPalette().textSecondary)
+                        style = typography().xxs.copy(color = colorPalette().textSecondary),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.widthIn(max = ONBOARDING_ACTION_LABEL_MAX_WIDTH_DP.dp)
+                            .padding(start = 8.dp)
+                            .profileMarquee(!scrollingTextDisabled)
                     )
 
                     if (profilePhoto != null) {
@@ -614,6 +630,7 @@ private fun FaceSourceOptionRow(
     option: String,
     selected: Boolean,
     locked: Boolean,
+    marqueeEnabled: Boolean,
     onSelect: () -> Unit,
 ) {
     Row(
@@ -650,14 +667,24 @@ private fun FaceSourceOptionRow(
             text = faceSourceLabel(option),
             style = typography().s,
             color = colorPalette().text,
-            modifier = Modifier.weight(1f)
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f).profileMarquee(marqueeEnabled)
         )
 
         if (locked) {
             Text(
                 text = stringResource(R.string.profile_identity_source_not_connected),
-                style = typography().xxs.copy(color = colorPalette().textSecondary)
+                style = typography().xxs.copy(color = colorPalette().textSecondary),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.widthIn(max = ONBOARDING_ACTION_LABEL_MAX_WIDTH_DP.dp)
+                    .padding(start = 8.dp)
+                    .profileMarquee(marqueeEnabled)
             )
         }
     }
 }
+
+private fun Modifier.profileMarquee(enabled: Boolean): Modifier =
+    conditional(enabled) { basicMarquee(iterations = Int.MAX_VALUE) }

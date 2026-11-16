@@ -665,7 +665,7 @@ private suspend fun upsertSongFormat(
     audioConfigLoudnessDb: Float? = null,
     downloadQuality: String? = null
 ) {
-    if (videoId == justInserted) return
+    if (downloadQuality == null && videoId == justInserted) return
     try {
         // Extract codecs from mimeType (e.g. "audio/webm; codecs=opus" -> "opus")
         val codecs = format.mimeType
@@ -679,7 +679,7 @@ private suspend fun upsertSongFormat(
         // The download quality tracking value is set by the download path; the streaming path
         // must preserve whatever value a previous download already stored.
         val existingFormat = Database.formatTable.findBySongIdDirect(videoId)
-        if (videoId == justInserted) return
+        if (downloadQuality == null && videoId == justInserted) return
 
         val formatToSave = Format(
             songId = videoId,
@@ -1373,6 +1373,7 @@ private fun DataSpec.processForDownload(
             val audioQuality = downloadQualityToInnerTubeX(downloadQualityFormat, appContext().isConnectionMetered())
 
             // The download URL cache is only reusable at the same resolved quality
+            val urlGeneration = MyDownloadHelper.songUrlCache.generation(videoId)
             val cachedStream = MyDownloadHelper.songUrlCache.get(videoId, audioQuality)
             if (cachedStream != null) {
                 Timber.tag(TAG).d("Download URL cache hit for $videoId (quality=$audioQuality)")
@@ -1412,11 +1413,7 @@ private fun DataSpec.processForDownload(
                             playbackData.audioConfig?.loudnessDb,
                             downloadQuality = trackedDownloadQuality
                         )
-                        // upsertSongFormat is skipped by the justInserted guard when the streaming
-                        // path inserted the same Format row first; the dedicated update makes sure
-//
-                        // the tracked quality is recorded in that case too.
-                        // Complete the quality update after the queued Song and Format writes.
+                        // Apply the selected quality after the queued Format write.
                         Database.awaitWriteBatch {
                             formatTable.updateDownloadQuality(videoId, trackedDownloadQuality)
                         }
@@ -1433,6 +1430,7 @@ private fun DataSpec.processForDownload(
                         rangeChunkSizeBytes = playbackData.rangeChunkSizeBytes,
                         useRangeChunks = playbackData.useRangeChunks,
                         quality = audioQuality,
+                        expectedGeneration = urlGeneration,
                     )
 
                     withResolvedStream(

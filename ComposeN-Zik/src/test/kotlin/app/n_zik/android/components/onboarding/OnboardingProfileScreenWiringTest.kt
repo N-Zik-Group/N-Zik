@@ -5,6 +5,11 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.unit.Density
 import app.n_zik.android.utils.DEFAULT_PROFILE_ID
 import app.n_zik.android.Dependenciesimport app.n_zik.android.MainApplicationimport app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassQuality
@@ -117,18 +122,34 @@ class OnboardingProfileScreenWiringTest {
         every { profileSecurePrefs(any(), "default") } returns secure
     }
 
-    private fun showScreen(settings: GlassSettings? = null) {
+    private fun showScreen(settings: GlassSettings? = null, fontScale: Float? = null) {
         composeRule.setContent {
             CompositionLocalProvider(
                 LocalAppearance provides appearance,
                 LocalGlassPreviewSettings provides settings,
-            ) {
+                LocalDensity provides Density(LocalDensity.current.density, fontScale ?: LocalDensity.current.fontScale),            ) {
                 OnboardingProfileScreen(onComplete = { completed = true })
             }
         }
     }
 
     @Test
+    fun accountSourceLabelsStayOnOneLineWithLargeText() {
+        mockSecurePrefs("")
+        showScreen(fontScale = 2f)
+        waitForLockState(6)        val labels = composeRule.onAllNodesWithText(
+            context.getString(R.string.profile_display_name_source_youtube),
+            useUnmergedTree = true,
+        )
+        labels.assertCountEquals(2)
+        for (index in 0..1) {
+            val layouts = mutableListOf<TextLayoutResult>()
+            labels[index].performScrollTo().performSemanticsAction(SemanticsActions.GetTextLayoutResult) {
+                it(layouts)
+            }
+            assertEquals(1, layouts.single().lineCount)
+        }
+    }    @Test
     fun glassPhotoRemovalDeletesTheLocalAvatar() {
         mockSecurePrefs("")
         val application = mockk<MainApplication>()        every { application.applicationContext } returns context        Dependencies.init(application)        val settings = GlassSettings(enabled = true, quality = GlassQuality.Performance)

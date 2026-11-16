@@ -49,8 +49,10 @@ import io.mockk.unmockkStatic
 import io.mockk.unmockkObject
 import io.mockk.verify
 import io.mockk.verifyOrder
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -264,7 +266,8 @@ class PersistentQueueTest {
     @Test
     fun `service destruction saves live selection before the next service restores idle or resumes`() = runBlocking<Unit> {
         db.queueTable.replaceAll(listOf(row("old", 1L)))
-        val executorGate = CountDownLatch(1)
+        val writeBatchStarted = CompletableDeferred<Unit>()
+        val finishWriteBatch = CompletableDeferred<Unit>()
         val timeline = mockk<Timeline>()
         val cover = "https://example.com/final.jpg"
         val items = listOf(
@@ -291,15 +294,23 @@ class PersistentQueueTest {
             every { DatabaseInitializer.Instance } returns db
             every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
             every { appContext() } returns context
-            Database.asyncTransaction { check(executorGate.await(10, TimeUnit.SECONDS)) }
+            Database.asyncTransaction {
+                writeBatchStarted.complete(Unit)
+                finishWriteBatch.await()
+            }
+            withTimeout(5_000) { writeBatchStarted.await() }
             oldService.setField("playbackInitializationStarted", true)
             oldService.onDestroy()
             verifyOrder { oldPlayer.currentPosition; oldPlayer.release() }
 
             context.preferences.edit().putBoolean(persistentQueueKey, true).commit()
             val auto = AutoSessionCallback(context, Database, mockk<MyDownloadHelper>(relaxed = true))
-            val autoResult = auto.onPlaybackResumption(mockk<MediaSession>(), mockk<MediaSession.ControllerInfo>(), false)
-            assertFalse(autoResult.isDone)
+            try {
+                val autoResult = auto.onPlaybackResumption(mockk<MediaSession>(), mockk<MediaSession.ControllerInfo>(), false)
+                assertEquals(6543L, autoResult.get(5, TimeUnit.SECONDS).startPositionMs)
+            } finally {
+                auto.release()
+            }
             for (scenario in listOf("idle", "resume", "live", "profile-change")) {
                 val resume = scenario == "resume"
                 val liveQueue = scenario == "live"
@@ -314,16 +325,13 @@ class PersistentQueueTest {
                 }
                 val service = service(newPlayer)
                 service.setField("guestGuardPlayer", guest)
-                service.preferences.edit().putBoolean(parentalControlEnabledKey, false)
-                    .putBoolean(resumePlaybackOnStartKey, !resume).commit()
+                service.preferences.edit().putBoolean(parentalControlEnabledKey, true)
+                    .putBoolean(resumePlaybackOnStartKey, resume).commit()
                 PlayerServiceModern::class.java.getDeclaredMethod("maybeRestorePlayerQueue").apply {
                     isAccessible = true
                     invoke(service)
                 }
-                service.preferences.edit().putBoolean(parentalControlEnabledKey, true)
-                    .putBoolean(resumePlaybackOnStartKey, resume).commit()
                 if (profileChange) context.profilePreferences.edit().putString(activeProfileKey, "other").commit()
-                executorGate.countDown()
                 val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10)
                 while ((if (profileChange) shadowOf(Looper.getMainLooper()).isIdle else published.count > 0) &&
                     System.nanoTime() < deadline
@@ -344,10 +352,8 @@ class PersistentQueueTest {
                 verify(exactly = if (resume) 1 else 0) { guest.play() }
                 service.onDestroy()
             }
-            assertEquals(6543L, autoResult.get(10, TimeUnit.SECONDS).startPositionMs)
-            auto.release()
         } finally {
-            executorGate.countDown()
+            finishWriteBatch.complete(Unit)
             context.profilePreferences.edit().remove(activeProfileKey).commit()
             unmockkStatic("app.n_zik.android.GlobalVarsKt")
             unmockkObject(NetworkQualityHelper)
@@ -377,11 +383,7 @@ class PersistentQueueTest {
         }
     }
 
-    private fun savedQueueAfterWrites(): List<QueuedMediaItem> = runBlocking {
-        var saved = emptyList<QueuedMediaItem>()
-        Database.awaitWriteBatch { saved = db.queueTable.allDirect() }
-        saved
-    }
+    private fun savedQueueAfterWrites(): List<QueuedMediaItem> = runBlocking { Database.readSavedQueue() }
 
     private fun service(player: ExoPlayer) = Robolectric.buildService(PlayerServiceModern::class.java).get().apply {
         this.player = player

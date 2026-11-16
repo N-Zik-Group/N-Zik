@@ -173,7 +173,11 @@ internal fun GlassSettingsContent(
         }
     }
     // A pinned surface follows visible chrome, whereas scrolling content keeps its initial reserve.
-    val visibleChromeInset = if (pinPreview) rememberPullRefreshOverlayInsetProvider() else remember { { 0.dp } }
+    val visibleChromeInset = if (pinPreview && onboardingFooter == null) {
+        rememberPullRefreshOverlayInsetProvider()
+    } else {
+        remember { { 0.dp } }
+    }
     val topPadding = remember(visibleChromeInset, pinPreview) {
         object : PaddingValues {
             override fun calculateTopPadding() = if (pinPreview) visibleChromeInset() else 0.dp

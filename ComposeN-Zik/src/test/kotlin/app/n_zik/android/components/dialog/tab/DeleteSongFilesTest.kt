@@ -5,12 +5,23 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertThrows
+import kotlinx.coroutines.CancellationException
 import org.junit.jupiter.api.Test
+import java.io.IOException
 import java.util.concurrent.CopyOnWriteArrayList
 
 class DeleteSongFilesTest {
 
     private fun song(id: String) = Song(id = id, title = "t", durationText = null, thumbnailUrl = null)
+
+    @Test
+    fun `cache eviction is best effort but cancellation propagates`() {
+        evictSongCache { throw IOException("cache busy") }
+        assertThrows(CancellationException::class.java) {
+            evictSongCache { throw CancellationException() }
+        }
+    }
 
     @Test
     fun `local song file deletion runs off the calling thread`() = runBlocking {

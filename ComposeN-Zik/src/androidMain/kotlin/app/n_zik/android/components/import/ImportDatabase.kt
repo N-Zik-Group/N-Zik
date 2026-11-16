@@ -56,9 +56,9 @@ class ImportDatabase private constructor(
             if (activeOwner == null) {
                 restore()
             } else {
-                // Join the write queue before acquiring the cover mutex, which other writes may need.
+                // Drain ordinary writes and saved-queue work before acquiring the cover mutex.
                 Database.awaitWriteBatch(retries = 1) {
-                    restore()
+                    awaitSavedQueueWork { restore() }
                     // The worker must be scheduled even if the caller stops awaiting the restore.
                     RewindPostImportRegenerationWorker.schedule(context, activeOwner)
                 }

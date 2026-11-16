@@ -79,12 +79,14 @@ internal suspend fun runDownloadBatch(
     cache: Cache?,
     onAction: ( Song ) -> Unit
 ) {
-    songs.forEach { song ->
-        Database.awaitWriteBatch(retries = 1) {
+    if (songs.isEmpty()) return
+    Database.awaitWriteBatch(retries = 1) {
+        songs.forEach { song ->
             cache?.removeResource(song.id)
             awaitWriteBatch {
                 formatTable.deleteBySongId(song.id)
             }
+            MyDownloadHelper.songUrlCache.invalidate(song.id)
             onAction(song)
         }
     }
