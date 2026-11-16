@@ -445,7 +445,6 @@
     <string name="settings_service_keep_screen_on_label">Behåll skärmen på</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Tillåt obegränsad bakgrundsoperation så systemet är mindre sannolikt att avbryta uppspelningen.</string>
     <string name="settings_stream_disabled_clients_title">Inaktiverade strömklienter</string>
-    <string name="settings_stream_preferred_client_changed_message">Önskad klient ändrad. Kommer att gälla på nästa spår.</string>
     <string name="settings_stream_preferred_client_title">Föredragen flödesklient</string>
     <string name="settings_swipe_actions_description">Utför åtgärder genom att dra åt vänster eller höger på en låt i en vertikal lista över låtar</string>
     <string name="settings_swipe_actions_title">Svep för åtgärd</string>
