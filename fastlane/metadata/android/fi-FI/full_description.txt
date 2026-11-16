@@ -1,9 +1,5 @@
 Monikielinen YouTube-musiikkikonsertti Androidille, joka keskittyy suorituskykyyn, UI/UX-ominaisuuksiin, laajenemiseen ja pitkäaikaiseen tukeen.
 
-<b>N-Zik</b> on <a href="https://github.com/knighthat/Kreate">Kreate</a> -luokan avoimen lähdekoodin haarukka.
-
-<b>Huomautus:</b> N-Zik alkoi sivuprojektina. Jos haluat lisää kypsiä vaihtoehtoja, tarkista <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, tai <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
-
 <b>tekoälyn käyttö:</b> Käytän generatiivista tekoälyn koodin ( <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD-menetelmän</a>kautta), tarkistetaan ja testataan ennen toimitusta.
 
 ✨ <b>MITÄ N-ZIK?</b> Ei mainoksia, taustan toisto, offline välimuisti, muokattavissa oleva UI - ilmaiseksi, aina.
@@ -13,6 +9,10 @@ Monikielinen YouTube-musiikkikonsertti Androidille, joka keskittyy suorituskykyy
 - Teemat: AMOLED, Syvä Tumma, Crisp Light + sävytetyt aksentit
 - 3D Carousel Player, koti-widgetit, yhtenäinen pelaaja ja mini-soitin
 - Taiteilijan profiilit, löytö ja tunnelmat, kodin kodin otsikot
+
+🎨 <b>Teemakauppa (BETA)</b>
+- Selaa ja lataa yhteisön teemoja, esikatsele niitä Normaalissa ja lasissa ja valitse mitä ulkoasuasetuksia käytetään.
+- Luo paikallisia teemoja tai jaa suunnitelmasi yhteisön kanssa. Tuo ja vie teemoja ZIP-tiedostoiksi.
 
 🫧 <b>lasitefektit (BETA, valinnainen)</b>
 Poistettu käytöstä tuoreissa asennuksissa. Ota käyttöön asetukset: natiivinen, ääriviivat tai lasi luokittain säädettävällä laadulla. Voi lisätä renderointityötä ja akun käyttöä; vähentää laatua tai poistaa käytöstä tarvittaessa.
@@ -33,7 +33,8 @@ Lasiluotot: Neliö / Convx projekti (GPL-3.0); Kyant0 AndroidLiquidGlass / Backd
 - Automaattinen varmuuskopiointi mukautetuilla aikaväleillä ja säilyttämisellä
 
 🔗 <b>Integraatiot</b>
-- YouTube-sisäänkirjautuminen suosituksiin ja videon toistoon sekä kokeellinen kaksisuuntainen synkronointimoottori
+- Vaihda Google-tilien ja YouTube-kanavien välillä. Jokainen N-Zik profiili käyttää yhtä aktiivista YouTube Music -kanavaa suosituksiin ja toistoon.
+- Kokeellinen kaksisuuntainen YouTube-musiikkikirjaston synkronointi Debug ja Dev rakennuksissa.
 - Last.fm scrobbling nyt pelaaminen ja rakkaus / unlove
 - MusicBrainz-taiteilijan ja levyn oivalluksia
 - Discord Rich Presence, mukaan lukien edistynyt tila live esikatselu
