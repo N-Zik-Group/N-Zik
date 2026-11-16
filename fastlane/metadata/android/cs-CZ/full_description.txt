@@ -1,9 +1,5 @@
 Mnohojazyčné YouTube hudební rozhraní pro Android, zaměřené na výkon, UI/UX vylepšení, rozšíření funkcí a dlouhodobou podporu.
 
-<b>N-Zik</b> je open-source fork <a href="https://github.com/knighthat/Kreate">Kreate</a>.
-
-<b>Poznámka:</b> N-Zik začal jako postranní projekt. Pro dospělé alternativy se podívejte na <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>nebo <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
-
 <b>Využití AI:</b> Používám generativní AI pro kód (prostřednictvím <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD metoda</a>) zkontrolováno a testováno před odesláním.
 
 ✨ <b>CO N-ZIK?</b> Žádné reklamy, přehrávání pozadí, offline ukládání do mezipaměti, přizpůsobitelné uživatelské rozhraní - vždy, zdarma.
@@ -13,6 +9,10 @@ Mnohojazyčné YouTube hudební rozhraní pro Android, zaměřené na výkon, UI
 - Motivy: AMOLED, hluboké tmavé, Crisp Light + tónované zvýraznění
 - 3D kolotočový přehrávač, domácí widgety, sjednocené hráče a mini-přehrávač
 - Profily umělce, objevování a nálady, sbalitelné hlavičky domů
+
+🎨 <b>Obchod s šablonami (BETA)</b>
+- Procházejte a stahujte komunitní motivy, náhled je v Normální a Glasy a zvolte jaká nastavení vzhledu se mají použít.
+- Vytvořte místní šablony nebo sdílejte své návrhy s komunitou. Importovat a exportovat motivy jako ZIP soubory.
 
 :bubliny: <b>skleněný efekt (BETA, volitelné)</b>
 Zakázáno při čerstvých instalacích. Povolit v nastavení: nativní, pouze pro vzhled nebo sklo podle kategorií, s nastavitelnou kvalitou. Může zvýšit vykreslování a využití baterie; snížit kvalitu nebo v případě potřeby vypnout.
@@ -33,7 +33,8 @@ Skleněné kredity: Square / Convx projekt (GPL-3.0); Kyant0 AndroidLiquidGlass 
 - Automatická záloha s vlastními intervaly a uchováním
 
 🔗 <b>integrace</b>
-- Přihlášení k YouTube pro doporučení a přehrávání videa, plus experimentální obousměrný synchronizační modul
+- Přepínání mezi Google účty a YouTube kanály. Každý N-Zik profil používá pro doporučení a přehrávání jeden aktivní YouTube Music kanál.
+- Experimentální obousměrná synchronizace YouTube hudební knihovny v ladících a Dev sestavách.
 - Last.fm scrobbling s láskou/nemilovnou
 - Zhlédnutí umělce a alba MusicBrainz
 - Discord Rich Presence, včetně pokročilého režimu s živým náhledem
