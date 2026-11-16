@@ -10,7 +10,7 @@ Użycie <b>AI:</b> używam ogólnej AI dla kodu (za pośrednictwem <a href="http
 - Gracza karuzeli 3D, widżety domowe, zjednoczony gracz i minigracz
 - Profile wykonawcy, odkrywanie i nastroje, zwinięte nagłówki domowe
 
-🎨 <b>Sklep z motywem</b>
+🎨 <b>Sklep z motywem (BETA)</b>
 - Przeglądaj i pobieraj motywy społeczności, podgląd ich w normalnym i szklanym kolorze i wybierz ustawienia wyglądu.
 - Utwórz lokalne motywy lub udostępnij swoje projekty społeczności. Importuj i eksportuj motywy jako pliki ZIP.
 
@@ -33,7 +33,8 @@ Wyłączone na świeżych instalacjach. Włącz w ustawieniach: natywne, tylko k
 - Automatyczna kopia zapasowa z niestandardowymi odstępami i zatrzymaniem
 
 🔗 <b>Integracje</b>
-- Logowanie na YouTube dla rekomendacji i odtwarzania wideo oraz eksperymentalny silnik synchronizacji
+- Przełączanie pomiędzy kontami Google i kanałami YouTube. Każdy profil N-Zik używa jednego aktywnego kanału muzycznego YouTube dla rekomendacji i odtwarzania.
+- Eksperymentalna dwukierunkowa synchronizacja biblioteki muzyki YouTube w wersjach Debug i Dev.
 - Scrobbling Last.fm z teraz odtwarzaniem i miłością/niemiłością
 - Artysta MusicBrainz i wgląd w albumy
 - Discord Rich Presence, w tym tryb zaawansowany z podglądem na żywo
