@@ -318,4 +318,5 @@
     <string name="listen_together_log_level_error">Foutmelding</string>
     <string name="listen_together_log_level_info">Informatie</string>
     <string name="listen_together_log_level_warning">Waarschuwing</string>
+    <string name="network_proxy_mode_direct">VUIL</string>
 </resources>
