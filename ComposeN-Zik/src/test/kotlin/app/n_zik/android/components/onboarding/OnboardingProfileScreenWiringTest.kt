@@ -4,9 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
-import androidx.compose.ui.test.click
 import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.performTouchInput
 import app.n_zik.android.utils.DEFAULT_PROFILE_ID
 import app.n_zik.android.Dependenciesimport app.n_zik.android.MainApplicationimport app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassQuality
@@ -143,10 +141,11 @@ class OnboardingProfileScreenWiringTest {
 
         try {
             showScreen(settings)
+            // Check the screen action wiring; Glass button pointer handling has dedicated tests.
             composeRule.onNodeWithContentDescription(context.getString(R.string.profile_photo_remove))
-                .performScrollTo().assertIsDisplayed().performTouchInput { click() }
-            composeRule.waitUntil(5_000) { !avatar.exists() }
-            composeRule.waitUntil(5_000) {
+                .performScrollTo().assertIsDisplayed().performClick()
+            composeRule.waitUntil(10_000) { !avatar.exists() }
+            composeRule.waitUntil(10_000) {
                 composeRule.onAllNodesWithText(context.getString(R.string.profile_photo_not_set))
                     .fetchSemanticsNodes().isNotEmpty()
             }

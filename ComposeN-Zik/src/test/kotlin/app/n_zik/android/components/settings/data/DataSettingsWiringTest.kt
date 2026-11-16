@@ -235,6 +235,17 @@ class DataSettingsWiringTest {
         assertEquals(0, completed.get())
     }
 
+    private fun openCleanupReview(option: Int) {
+        composeRule.onNodeWithTag("data.storage.cleanup.all").performScrollTo().performClick()
+        val selection = context.getString(option)
+        composeRule.waitUntil(10_000) {
+            composeRule.onAllNodes(hasText(selection)).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText(selection).performScrollTo().assertIsEnabled().performClick()
+        composeRule.onNodeWithText(context.getString(R.string.storage_cleanup_review_selection))
+            .assertIsEnabled().performClick()
+    }
+
     @Test fun `confirming populated active diagnostics removes only the selected logs`() {
         val owner = checkNotNull(profileStorageIdentity(context, "default"))
         val profile = ProfileStorageUsage(owner, "Main", emptyMap())
@@ -251,7 +262,7 @@ class DataSettingsWiringTest {
         }
 
         try {
-            composeRule.onNodeWithTag("data.storage.cleanup.diagnostic_logs").performScrollTo().performClick()
+            openCleanupReview(R.string.storage_cleanup_option_diagnostic_logs)
             composeRule.waitUntil(10_000) {
                 Shadows.shadowOf(Looper.getMainLooper()).idle()
                 composeRule.onAllNodes(hasTestTag("data.storage.cleanup.confirmation")).fetchSemanticsNodes().isNotEmpty()
@@ -292,33 +303,24 @@ class DataSettingsWiringTest {
         }
 
         try {
-            composeRule.waitUntil(10_000) {
-                Shadows.shadowOf(Looper.getMainLooper()).idle()
-                composeRule.onAllNodes(hasTestTag("data.storage.cleanup.temporary_files"))
-                    .fetchSemanticsNodes().isNotEmpty()
-            }
-            for (action in listOf("images", "streaming", "downloads", "waveforms", "network", "diagnostic_logs")) {
-                composeRule.onNodeWithTag("data.storage.cleanup.$action").assertIsEnabled()
-            }
-            composeRule.onNodeWithTag("data.storage.cleanup.network").performScrollTo().performClick()
+            openCleanupReview(R.string.storage_cleanup_option_network_cache)
             val noFiles = context.getString(R.string.storage_cleanup_no_files)
             composeRule.waitUntil(10_000) {
                 Shadows.shadowOf(Looper.getMainLooper()).idle()
                 composeRule.onAllNodes(hasText(noFiles, substring = true)).fetchSemanticsNodes().isNotEmpty()
             }
-            composeRule.onNodeWithText(context.getString(R.string.common_action_clear)).assertIsEnabled().performClick()
+            composeRule.onNodeWithText(context.getString(R.string.common_action_clear)).assertDoesNotExist()
+            composeRule.onNodeWithText(context.getString(R.string.common_action_close)).performClick()
             composeRule.waitUntil(10_000) {
                 Shadows.shadowOf(Looper.getMainLooper()).idle()
-                completed.get() == 1 && composeRule.onAllNodes(isDialog()).fetchSemanticsNodes().isEmpty()
+                composeRule.onAllNodes(isDialog()).fetchSemanticsNodes().isEmpty()
             }
-            composeRule.onNodeWithTag("data.storage.cleanup.temporary_files").assertIsEnabled()
-            composeRule.onNodeWithTag("data.storage.cleanup.all").assertIsEnabled()
+            assertEquals(0, completed.get())
+            assertTrue(temporary.exists())
             assertEquals(0L, temporary.length())
-            assertEquals("cover", cover.readText())
-            assertEquals("export", unknown.readText())
 
             fun assertConfirmation(scope: String) {
-                composeRule.onNodeWithTag("data.storage.cleanup.all").performScrollTo().performClick()
+                openCleanupReview(R.string.storage_cleanup_option_temporary_files)
                 val bodyTag = "data.storage.cleanup.confirmation"
                 composeRule.waitUntil(10_000) {
                     Shadows.shadowOf(Looper.getMainLooper()).idle()
@@ -326,10 +328,10 @@ class DataSettingsWiringTest {
                 }
                 val body = composeRule.onNodeWithTag(bodyTag).fetchSemanticsNode().config[SemanticsProperties.Text]
                     .single().text
-                val description = context.getString(R.string.storage_cleanup_dialog_all)
-                assertEquals(context.getString(R.string.storage_cleanup_dialog_scope, scope, description), body)
-                assertEquals(1, Regex(Regex.escape(scope)).findAll(body).count())
-                composeRule.onNodeWithText(context.getString(R.string.common_action_clear)).assertExists()
+                val description = context.getString(R.string.storage_cleanup_selected_confirmation)
+                val files = context.getString(R.string.storage_cleanup_option_temporary_files)
+                assertEquals(context.getString(R.string.storage_cleanup_dialog_scope, scope, description) + "\n\n" + files, body)
+                composeRule.onNodeWithText(context.getString(R.string.common_action_clear)).assertIsEnabled()
             }
 
             assertConfirmation("Main")
@@ -338,13 +340,18 @@ class DataSettingsWiringTest {
                 Shadows.shadowOf(Looper.getMainLooper()).idle()
                 composeRule.onAllNodes(isDialog()).fetchSemanticsNodes().isEmpty()
             }
+            assertTrue(temporary.exists())
+
             composeRule.runOnIdle { selected.value = null }
+            assertConfirmation(context.getString(R.string.storage_cleanup_all_profiles))
+            composeRule.onNodeWithText(context.getString(R.string.common_action_clear)).performClick()
             composeRule.waitUntil(10_000) {
                 Shadows.shadowOf(Looper.getMainLooper()).idle()
-                composeRule.onAllNodes(hasTestTag("data.storage.cleanup.all")).fetchSemanticsNodes().isNotEmpty()
+                completed.get() == 1
             }
-            composeRule.onNodeWithTag("data.storage.cleanup.network").assertIsEnabled()
-            assertConfirmation(context.getString(R.string.storage_cleanup_all_profiles))
+            assertFalse(temporary.exists())
+            assertEquals("cover", cover.readText())
+            assertEquals("export", unknown.readText())
         } finally {
             temporary.delete()
             editor.delete()

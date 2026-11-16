@@ -107,18 +107,25 @@ class ScreenEdgeFloatingActionTest {
         }
         composeRule.onNodeWithTag("arrow").performClick()
         composeRule.runOnIdle { assertEquals(1, clicks); visible.value = false }
-        advanceFrame()
-        advanceFrame()
-        advanceTime(150)
-        composeRule.runOnIdle {
-            val bounds = requireNotNull(coordinates).boundsInWindow()
-            assertTrue("exit stays visible after leaving its own slot", bounds.top > restingTop + 62f && bounds.height > 50f)
+        // Inspect the trajectory rather than assuming the transition starts on an exact frame.
+        var crossedSlotWhileVisible = false
+        var crossedWindowBeforeDisposal = false
+        repeat(40) {
+            advanceFrame()
+            composeRule.runOnIdle {
+                val placed = coordinates?.takeIf { it.isAttached } ?: return@runOnIdle
+                val buttonHeight = placed.size.height.toFloat()
+                val bounds = placed.boundsInWindow()
+                if (bounds.top > restingTop + buttonHeight && bounds.height >= buttonHeight * .75f) {
+                    crossedSlotWhileVisible = true
+                }
+                if (placed.localToWindow(Offset.Zero).y >= windowBottom) {
+                    crossedWindowBeforeDisposal = true
+                }
+            }
         }
-        advanceTime(300)
-        composeRule.runOnIdle {
-            assertTrue("exit reaches below the window before disposal", requireNotNull(coordinates).localToWindow(Offset.Zero).y >= windowBottom)
-        }
-        advanceTime(100)
+        assertTrue("exit stays visible after leaving its own slot", crossedSlotWhileVisible)
+        assertTrue("exit reaches below the window before disposal", crossedWindowBeforeDisposal)
         composeRule.onNodeWithTag("arrow").assertDoesNotExist()
     }
 }

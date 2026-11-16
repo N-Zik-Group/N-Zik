@@ -3,6 +3,7 @@ package app.n_zik.android.components.settings.ai
 import android.app.Application
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.components.dialog.settings.buildSectionDefs
 import app.n_zik.android.enums.LocalRecommandationsNumber
 import app.n_zik.android.enums.MaxStatisticsItems
 import app.n_zik.android.enums.MaxTopPlaylistItems
@@ -27,7 +28,9 @@ import app.n_zik.android.utils.showSimilarArtistsKey
 import app.n_zik.android.utils.showStatsListeningTimeKey
 import app.n_zik.android.utils.showTipsKey
 import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.quickPicksSectionOrderKey
 import app.n_zik.android.utils.setActiveProfile
+import org.json.JSONArray
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -37,7 +40,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-/** Pins reset values to the pre-extraction AI page. */
+/** Pins defaults for the AI page and the Quick Picks content it resets. */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
 class AiSettingsPreferencesTest {
@@ -73,11 +76,24 @@ class AiSettingsPreferencesTest {
     @After fun tearDown() { setActiveProfile("default", context) }
 
     @Test fun `reset preserves baseline values and unrelated profile settings`() {
-        context.preferences.edit().putString("sentinel", "keep").commit()
+        val sections = buildSectionDefs()
+        val editor = context.preferences.edit()
+            .putString("sentinel", "keep")
+            .putString(quickPicksSectionOrderKey, "[\"charts\"]")
+        sections.values.forEach { section -> editor.putBoolean(section.preferenceKey, !section.defaultValue) }
+        editor.commit()
         val other = context.getSharedPreferences("preferences_other", Context.MODE_PRIVATE)
         other.edit().clear().putString("sentinel", "other").commit()
         applyAiDefaults(context)
-        assertEquals(expected + mapOf("sentinel" to "keep"), context.preferences.all)
+        val values = context.preferences.all
+        val order = JSONArray(values[quickPicksSectionOrderKey] as String)
+        val orderedSections = List(order.length(), order::getString)
+        assertEquals(sections.keys, orderedSections.toSet())
+        assertEquals(sections.size, orderedSections.size)
+        assertEquals("tips", orderedSections.first())
+        assertEquals("charts", orderedSections.last())
+        val quickPicksDefaults = sections.values.associate { it.preferenceKey to it.defaultValue }
+        assertEquals(expected + quickPicksDefaults + mapOf("sentinel" to "keep"), values - quickPicksSectionOrderKey)
         assertEquals(mapOf("sentinel" to "other"), other.all)
         context.preferences.edit().putBoolean(showTipsKey, false).commit()
         assertTrue(!context.preferences.getBoolean(showTipsKey, true))
