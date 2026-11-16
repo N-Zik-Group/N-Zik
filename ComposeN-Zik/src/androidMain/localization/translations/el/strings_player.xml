@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">Ρυθμίστε το μέγεθος του έργου τέχνης του παίκτη για τον τρέχοντα προσανατολισμό.</string>
     <string name="player_artwork_technical_info_description">Εμφάνιση τεχνικών πληροφοριών αναπαραγωγής στον παίκτη.</string>
     <string name="player_artwork_technical_info_title">Show Stats for Nerds in Player</string>
+    <string name="player_artwork_hold_to_speed_up_title">Κρατήστε για επιτάχυνση</string>
+    <string name="player_artwork_hold_to_speed_up_description">Πατήστε παρατεταμένα το εξώφυλλο για να επιταχύνετε προσωρινά την αναπαραγωγή</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Ταχύτητα ενίσχυσης</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Ταχύτητα αναπαραγωγής ενώ κρατάτε το artwork.</string>
     <string name="player_artwork_transition_circular">Κυκλικό</string>
     <string name="player_auto_load_songs_in_queue">Αυτόματη φόρτωση τραγουδιών σε ουρά</string>
     <string name="player_auto_load_songs_in_queue_description">Προσθέτει τραγούδια όταν η ουρά είναι έτοιμη να τελειώσει</string>
