@@ -437,6 +437,7 @@
     <string name="theme_store_draft_discard">Entwurf löschen</string>
     <string name="theme_store_draft_resume">Entwurf fortsetzen</string>
     <string name="theme_store_preview_add_extra">Zusätzliche Vorschau hinzufügen</string>
+    <string name="theme_store_preview_remove_extra">Diese zusätzliche Vorschau entfernen</string>
     <string name="theme_store_preview_extra_title">Vorschau des Titels</string>
     <string name="theme_store_preview_import_requirements_with_gif">Vorschaubilder sind öffentlich. Persönliche Informationen von Screenshots fernhalten. PNG, JPEG, WebP oder GIF · 4 MB pro Bild.</string>
     <string name="theme_store_preview_import_error">Dieses Bild konnte nicht importiert werden. Wählen Sie ein PNG, JPEG oder WebP Bild unter 4 MB.</string>
