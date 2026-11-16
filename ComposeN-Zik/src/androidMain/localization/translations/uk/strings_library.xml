@@ -244,6 +244,7 @@
     <string name="playlist_right_swipe">Плейлист Свайп праворуч</string>
     <string name="playlist_selection_action_deselect">Скасовувати виділення</string>
     <string name="playlist_shuffle_positions_confirmation">Ви дійсно хочете перетасувати позиції пісень в цьому списку відтворення?</string>
+    <string name="playlist_contains_song">Вже є в цьому плейлісту</string>
     <string name="playlist_song_already_present">Пісня Присутня в одному із Плейлістів</string>
     <string name="playlist_top">Найпопулярніший список відтворення</string>
     <string name="playlist_top_maximum_items_description">Обмежити кількість пісень включених в плейліст з вашим топ відтворенням.</string>
@@ -408,4 +409,10 @@
     <string name="artist_more_from_format">Більше з %1$s</string>
     <string name="playlist_top_show_title_format">Показати %1$s</string>
     <string name="library_on_device_no_local_playlists">Немає локальних списків відтворення. Створіть список відтворення або додайте пісню до нового списку відтворення з пристрою.</string>
+    <string name="playlist_import_youtube_link_hint">https://youtube.com/playlist?list=...</string>
+    <string name="search_youtube_open_url_example">https://........</string>
+    <string name="album_year_and_song_summary">%1$s • %2$s</string>
+    <string name="search_home_online_action">Пошук в мережі</string>
+    <string name="search_home_library_action">Пошук у бібліотеці</string>
+    <string name="song_matching_result_title_and_artist">%1$s - %2$s</string>
 </resources>
