@@ -244,6 +244,7 @@
     <string name="playlist_right_swipe">Afspeellijst rechts vegen</string>
     <string name="playlist_selection_action_deselect">Deselecteer</string>
     <string name="playlist_shuffle_positions_confirmation">Weet je zeker dat je de songtekst in deze afspeellijst wilt verschuiven?</string>
+    <string name="playlist_contains_song">Al in deze afspeellijst</string>
     <string name="playlist_song_already_present">Nummer is aanwezig in een van de afspeellijsten</string>
     <string name="playlist_top">Top afspeellijst</string>
     <string name="playlist_top_maximum_items_description">Beperk het aantal nummers dat opgenomen is in je afspeellijst met afspeellijsten.</string>
@@ -408,4 +409,10 @@
     <string name="artist_more_from_format">Meer van %1$s</string>
     <string name="playlist_top_show_title_format">Toon %1$s</string>
     <string name="library_on_device_no_local_playlists">Geen lokale afspeellijsten. Maak een afspeellijst of voeg een nummer toe aan een nieuwe afspeellijst op het apparaat.</string>
+    <string name="playlist_import_youtube_link_hint">https://youtube.com/playlist?list=...</string>
+    <string name="search_youtube_open_url_example">https://........</string>
+    <string name="album_year_and_song_summary">%1$s • %2$s</string>
+    <string name="search_home_online_action">Online zoeken</string>
+    <string name="search_home_library_action">Zoek Bibliotheek</string>
+    <string name="song_matching_result_title_and_artist">%1$s - %2$s</string>
 </resources>
