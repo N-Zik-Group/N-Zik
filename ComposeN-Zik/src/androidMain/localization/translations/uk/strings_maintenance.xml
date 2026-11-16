@@ -328,4 +328,14 @@
     <string name="recovery_theme_backup_operation_failed">Не вдалося завершити операцію резервного копіювання теми.</string>
     <string name="recovery_theme_backup_restore_action">Відновити теми</string>
     <string name="recovery_theme_backup_restore_description">Відкрити останню резервну копію теми, що використовується для цього профілю.</string>
+    <string name="updates_status_and_last_check">%1$s · %2$s</string>
+    <string name="recovery_action_failed">Не вдалося завершити дію для відновлення.</string>
+    <string name="recovery_reopen_after_restoring_settings">Відкрити центр порятунку після відновлення налаштувань.</string>
+    <string name="recovery_settings_file_empty">Файл налаштувань порожній.</string>
+    <string name="recovery_profile_changed_during_import">Вибраний профіль змінено під час імпорту налаштувань. Виберіть його ще раз і повторіть спробу.</string>
+    <string name="recovery_no_importable_settings">Файл не містить параметрів, які можуть бути імпортовані.</string>
+    <string name="recovery_finish_pending_profile_operation">Спершу завершіть скидання профілю або відновити.</string>
+    <string name="recovery_no_database_to_reset">Немає бази даних для скидання.</string>
+    <string name="updates_current_version_format">v%1$s</string>
+    <string name="updates_version_and_status">%1$s • %2$s</string>
 </resources>
