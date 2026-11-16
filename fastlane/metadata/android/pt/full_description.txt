@@ -10,7 +10,7 @@ Interface YouTube Music multilíngue para Android, focada em desempenho, refinam
 - 3D Carousel Player, widgets de ecrã inicial, player e mini-player unificados
 - Perfis de artistas, Discovery e humores, cabeçalhos recolhíveis
 
-🎨 <b>Loja de Tema</b>
+🎨 <b>Loja de temas (BETA)</b>
 - Navegue e baixe os temas da comunidade, pré-visualize-os no Normal e no Vidro, e escolha quais configurações de aparência serão aplicadas.
 - Crie temas locais ou compartilhe seus projetos com a comunidade. Importar e exportar temas como arquivos ZIP.
 
@@ -33,7 +33,8 @@ Créditos Glass: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / B
 - Backup automático com intervalos e retenção próprios
 
 🔗 <b>Integrações</b>
-- Login do YouTube para recomendações e vídeo, mais um motor experimental de sync bidirecional
+- Alternar entre contas do Google e canais do YouTube. Cada perfil N-Zik utiliza um canal de música do YouTube ativo para recomendações e reprodução.
+- Sincronização bilateral experimental da biblioteca do YouTube Music nas compilações Dev e Dev.
 - Scrobbling no Last.fm com Now Playing e love/unlove
 - Informações de artistas e álbuns do MusicBrainz
 - Discord Rich Presence, incluindo modo avançado com pré-visualização ao vivo
