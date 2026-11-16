@@ -318,4 +318,5 @@
     <string name="listen_together_log_level_error">ERRO</string>
     <string name="listen_together_log_level_info">Informações</string>
     <string name="listen_together_log_level_warning">ATENÇÃO</string>
+    <string name="network_proxy_mode_direct">DIREITO</string>
 </resources>
