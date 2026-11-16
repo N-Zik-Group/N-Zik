@@ -8,12 +8,30 @@
     <string name="github_account_code_copied">Codul GitHub a fost copiat în clipboard.</string>
     <string name="github_account_login_failed">Nu s-a putut conecta la GitHub. Încercați din nou.</string>
     <string name="github_account_connected">GitHub este conectat.</string>
+    <string name="github_account_finishing_connection">Terminare conexiune GitHub…</string>
+    <string name="github_app_installation_instructions">Alegeți @%1$s și acordați acces numai la fork-ul dvs N-Zik-Theme-Store pentru a finaliza configurarea.</string>
+    <string name="github_app_installation">Instalarea aplicației</string>
+    <string name="github_app_installation_confirmed">GitHub a confirmat instalarea aplicației.</string>
+    <string name="github_app_installation_other_account">Aplicația instalată pe @%1$s. Selectați propriul cont pentru a activa curățarea furculiței.</string>
+    <string name="github_app_installation_description">Gestionați sau revocați accesul de conectare N-Zik în setările personale GitHub.</string>
+    <string name="github_app_installation_needs_fork">Trimiteți mai întâi o temă sau un profil de creator pentru a crea o furcă a magazinului dvs. de teme.</string>
+    <string name="github_app_installation_fork_lookup_failed">Nu s-a putut verifica furculiţa magazinului dvs. Teme. Încercaţi din nou.</string>
     <!-- Account -->
     <string name="account_action_login">Autentificare</string>
     <string name="account_action_logout">Deconectare</string>
     <string name="account_youtube_login_description">Conectați-vă contul de YouTube sau deconectați-vă din sesiunea curentă.</string>
+    <string name="account_youtube_change_account">Schimbă contul YouTube</string>
+    <string name="account_youtube_change_account_description">Alege ce canal YouTube foloseşte acest profil N-Zik.</string>
     <string name="account_youtube_login_enabled_description">Permite conectarea contului YouTube pentru navigare personalizată și sincronizare.</string>
     <!-- Account Youtube -->
+    <string name="account_youtube_checking_login">Se verifică înregistrarea muzicii YouTube…</string>
+    <string name="account_youtube_choose_channel">Alege un canal de muzică YouTube</string>
+    <string name="account_youtube_add_google_account">Adaugă cont Google</string>
+    <string name="account_youtube_google_account">Cont Google</string>
+    <string name="account_youtube_google_select">Alege cont</string>
+    <string name="account_youtube_google_sign_out">Deconectare de la acest cont</string>
+    <string name="account_youtube_google_sign_out_description">Aceasta elimină întregul profil Google și datele sale de autentificare de la N-Zik de pe acest dispozitiv. Celelalte conturi rămân conectate.</string>
+    <string name="account_youtube_verify_failed">Nu am putut verifica log-ul de muzică YouTube. Încercați din nou sau conectați-vă cu Google.</string>
     <string name="account_youtube_cookie_invalid">Cookie-urile YouTube sunt incorecte, te rugăm să te autentifici din nou</string>
     <string name="account_youtube_login_success">Autentificare pe YouTube cu succes</string>
     <string name="account_youtube_session_expired">Sesiunea YouTube a expirat, te rugăm să te autentifici din nou</string>
@@ -188,6 +206,8 @@
     <string name="sync_cooldown">Sincronizare redirecționare</string>
     <string name="sync_cooldown_description">Timp minim între auto-sincronizare (în minute)</string>
     <string name="sync_data_with_ytm_account">Sincronizare date cu contul YTM</string>
+    <string name="account_youtube_sync_build_required">Sincronizarea este disponibilă în Debug and Dev builds.</string>
+    <string name="account_youtube_sync_browse_required">Activează autentificarea pentru a naviga pentru a utiliza sincronizarea.</string>
     <string name="sync_direction">Direcția de sincronizare</string>
     <string name="sync_direction_app_to_yt">Aplicaţie → Numai YouTube</string>
     <string name="sync_direction_description">Alegeți dacă importurile de sincronizare din YouTube, trimite modificări locale sau funcționează în ambele direcții.</string>
