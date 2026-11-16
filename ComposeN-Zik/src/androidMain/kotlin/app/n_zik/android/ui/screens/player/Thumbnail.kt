@@ -54,6 +54,8 @@ import androidx.compose.ui.unit.sp
 import androidx.media3.common.PlaybackParameters
 import kotlinx.coroutines.coroutineScope
 import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
+import app.n_zik.android.utils.DEFAULT_HOLD_TO_SPEED_UP_RATE
+import app.n_zik.android.utils.HOLD_TO_SPEED_UP_RATE_RANGE
 import app.n_zik.android.utils.holdToSpeedUpKey
 import app.n_zik.android.utils.holdToSpeedUpRateKey
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -268,8 +270,10 @@ fun Thumbnail(
 
         val thumbnailType by rememberPreference(thumbnailTypeKey, ThumbnailType.Modern)
         val cropVideoThumbnails by rememberPreference(cropVideoThumbnailsKey, true)
-        val holdToSpeedUp by rememberPreference(holdToSpeedUpKey, true)
-        val holdToSpeedUpRate by rememberPreference(holdToSpeedUpRateKey, 2f)
+        val holdToSpeedUp by rememberPreference(holdToSpeedUpKey, false)
+        val savedBoostRate by rememberPreference(holdToSpeedUpRateKey, DEFAULT_HOLD_TO_SPEED_UP_RATE)
+        val holdToSpeedUpRate = savedBoostRate.takeIf { it in HOLD_TO_SPEED_UP_RATE_RANGE }
+            ?: DEFAULT_HOLD_TO_SPEED_UP_RATE
         val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
         val haptic = LocalHapticFeedback.current
 
@@ -277,14 +281,14 @@ fun Thumbnail(
         var originalPlaybackSpeed by remember { mutableFloatStateOf(1f) }
 
         val startSpeedBoost = remember(player, listenTogetherGuestLock, holdToSpeedUpRate, context) {
-            {
+            boost@{
                 if (listenTogetherGuestLock) {
                     ListenTogetherGuestGuardPlayer.reportUiBlockedOp(context)
                 } else if (player.isPlaying) {
-                    val currentSpeed = player.playbackParameters.speed
-                    originalPlaybackSpeed = if (currentSpeed > 0f) currentSpeed else 1f
-                    val targetSpeed = if (holdToSpeedUpRate > 0f) holdToSpeedUpRate else 2f
-                    player.playbackParameters = PlaybackParameters(targetSpeed, player.playbackParameters.pitch)
+                    val playbackParameters = player.playbackParameters
+                    if (playbackParameters.speed >= holdToSpeedUpRate) return@boost
+                    originalPlaybackSpeed = playbackParameters.speed
+                    player.playbackParameters = PlaybackParameters(holdToSpeedUpRate, playbackParameters.pitch)
                     isHoldingToSpeedUp = true
                     try {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -389,7 +393,7 @@ fun Thumbnail(
                                 modifier = Modifier
                                     .glassImageRim(CircleShape)
                                     .then(coverPressFeedback.modifier())
-                                    .pointerInput(thumbnailTapEnabledKey, holdToSpeedUp, player.isPlaying) {
+                                    .pointerInput(thumbnailTapEnabledKey, holdToSpeedUp, holdToSpeedUpRate, listenTogetherGuestLock, player.isPlaying) {
                                         detectTapGestures(
                                             onPress = handleArtworkPress,
                                             onLongPress = { handleArtworkLongPress() },
@@ -407,7 +411,7 @@ fun Thumbnail(
                                 contentScale = if (cropVideoThumbnails) ContentScale.Crop else ContentScale.Fit,
                                 modifier = Modifier
                                     .then(coverPressFeedback.modifier())
-                                    .pointerInput(thumbnailTapEnabledKey, holdToSpeedUp, player.isPlaying) {
+                                    .pointerInput(thumbnailTapEnabledKey, holdToSpeedUp, holdToSpeedUpRate, listenTogetherGuestLock, player.isPlaying) {
                                         detectTapGestures(
                                             onPress = handleArtworkPress,
                                             onLongPress = { handleArtworkLongPress() },
@@ -426,7 +430,7 @@ fun Thumbnail(
                             painter = painterResource(R.drawable.ic_launcher_box),
                             modifier = Modifier
                                 .then(coverPressFeedback.modifier())
-                                .pointerInput(thumbnailTapEnabledKey, holdToSpeedUp, player.isPlaying) {
+                                .pointerInput(thumbnailTapEnabledKey, holdToSpeedUp, holdToSpeedUpRate, listenTogetherGuestLock, player.isPlaying) {
                                     detectTapGestures(
                                         onPress = handleArtworkPress,
                                         onLongPress = { handleArtworkLongPress() },
@@ -497,7 +501,7 @@ fun Thumbnail(
                             BasicText(
                                 text = stringResource(
                                     R.string.player_playback_speed_value,
-                                    if (holdToSpeedUpRate > 0f) holdToSpeedUpRate else 2f
+                                    holdToSpeedUpRate
                                 ),
                                 style = TextStyle(
                                     color = Color.White,

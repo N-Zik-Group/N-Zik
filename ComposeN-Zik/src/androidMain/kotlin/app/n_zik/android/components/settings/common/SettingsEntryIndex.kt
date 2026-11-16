@@ -162,6 +162,8 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget("appearance.cover_and_thumbnail.ui_roundness", 2, R.string.settings_player_artwork_section_title, R.string.settings_interface_corner_radius_label),
     SettingsEntryTarget("appearance.cover_and_thumbnail.noblur", 2, R.string.settings_player_artwork_section_title, R.string.settings_player_background_blur_disabled_without_lyrics_label),
     SettingsEntryTarget("appearance.cover_and_thumbnail.statsfornerdsplayer", 2, R.string.settings_player_artwork_section_title, R.string.player_artwork_technical_info_title),
+    SettingsEntryTarget("appearance.cover_and_thumbnail.hold_to_speed_up", 2, R.string.settings_player_artwork_section_title, R.string.player_artwork_hold_to_speed_up_title),
+    SettingsEntryTarget("appearance.cover_and_thumbnail.hold_to_speed_up_rate", 2, R.string.settings_player_artwork_section_title, R.string.player_artwork_hold_to_speed_up_rate_title),
     SettingsEntryTarget("appearance.full_screen_lyrics_components.show_total_time_of_queue", 2, R.string.settings_section_fullscreen_lyrics_title, R.string.settings_player_queue_duration_visible_label),
     SettingsEntryTarget("appearance.full_screen_lyrics_components.titleartist", 2, R.string.settings_section_fullscreen_lyrics_title, R.string.settings_lyrics_title_artist_visible_label),
     SettingsEntryTarget("appearance.full_screen_lyrics_components.timeline", 2, R.string.settings_section_fullscreen_lyrics_title, R.string.settings_player_timeline_label),

@@ -43,7 +43,10 @@ import app.n_zik.android.utils.playerTypeKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.showCoverThumbnailAnimationKey
 import app.n_zik.android.utils.showthumbnailKey
+import app.n_zik.android.utils.DEFAULT_HOLD_TO_SPEED_UP_RATE
+import app.n_zik.android.utils.HOLD_TO_SPEED_UP_RATE_RANGE
 import app.n_zik.android.utils.holdToSpeedUpKey
+import app.n_zik.android.utils.holdToSpeedUpRateKey
 import app.n_zik.android.utils.statsfornerdsKey
 import app.n_zik.android.utils.swipeAnimationsNoThumbnailKey
 import app.n_zik.android.utils.thumbnailpauseKey
@@ -72,6 +75,7 @@ import androidx.compose.ui.platform.testTag
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
 import app.n_zik.android.core.settings.DEFAULT_THUMBNAIL_SIZE_DP
+import kotlin.math.round
 
 @OptIn(ExperimentalAnimationApi::class)
 @UnstableApi
@@ -92,7 +96,8 @@ internal fun AppearanceCoverCard(search: Search) {
     var thumbnailpause by rememberPreference(thumbnailpauseKey, true)
     var cropVideoThumbnails by rememberPreference(cropVideoThumbnailsKey, true)
     var statsfornerds by rememberPreference(statsfornerdsKey, false)
-    var holdToSpeedUp by rememberPreference(holdToSpeedUpKey, true)
+    var holdToSpeedUp by rememberPreference(holdToSpeedUpKey, false)
+    var holdToSpeedUpRate by rememberPreference(holdToSpeedUpRateKey, DEFAULT_HOLD_TO_SPEED_UP_RATE)
     var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
     var noblur by rememberPreference(noblurKey, true)
     var fadingedge by rememberPreference(fadingedgeKey, false)
@@ -104,8 +109,12 @@ internal fun AppearanceCoverCard(search: Search) {
     val searchCtx_0_2 = search.inputValue.isBlank() || stringResource(R.string.settings_player_artwork_section_title).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_visible_label).contains(search.inputValue, true) || stringResource(R.string.player_artwork_hidden_swipe_animation).contains(search.inputValue, true) || stringResource(R.string.settings_transition_slide_vertical).contains(search.inputValue, true) || stringResource(R.string.settings_transition_fade).contains(search.inputValue, true) || stringResource(R.string.settings_transition_scale).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_carousel_label).contains(search.inputValue, true) || stringResource(R.string.player_artwork_transition_circular).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_fading_edge_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_expanded_artwork_size_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_shrink_when_paused_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_artwork_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_visualizer_artwork_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_animation_enabled_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_animation_style_label).contains(search.inputValue, true) || stringResource(R.string.player_thumbnail_size).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_corner_radius_label).contains(search.inputValue, true) || stringResource(R.string.artist_roundness).contains(search.inputValue, true) || stringResource(R.string.settings_player_background_blur_disabled_without_lyrics_label).contains(search.inputValue, true) || stringResource(R.string.player_artwork_technical_info_title).contains(search.inputValue, true)
     val matchesVideoCrop = search.inputValue.isBlank() ||
         stringResource(R.string.settings_player_crop_video_artwork_label).contains(search.inputValue, true)
+    val holdToSpeedUpTitle = stringResource(R.string.player_artwork_hold_to_speed_up_title)
+    val boostSpeedTitle = stringResource(R.string.player_artwork_hold_to_speed_up_rate_title)
+    val matchesSpeedBoost = holdToSpeedUpTitle.contains(search.inputValue, ignoreCase = true) ||
+        boostSpeedTitle.contains(search.inputValue, ignoreCase = true)
     AnimatedVisibility(
-                visible = searchCtx_0_2 || matchesVideoCrop,
+                visible = searchCtx_0_2 || matchesVideoCrop || matchesSpeedBoost,
                 enter = settingsCardEnter,
                 exit = settingsCardExit
             ) {
@@ -456,16 +465,36 @@ internal fun AppearanceCoverCard(search: Search) {
                             onCheckedChange = { statsfornerds = it }
                         )
                     }
-                    if (search.inputValue.isBlank() || stringResource(R.string.player_artwork_hold_to_speed_up_title).contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                            modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.hold_to_speed_up"),
-                            icon = R.drawable.play_forward,
-                            title = stringResource(R.string.player_artwork_hold_to_speed_up_title),
-                            text = stringResource(R.string.player_artwork_hold_to_speed_up_description),
-                            isChecked = holdToSpeedUp,
-                            onCheckedChange = { holdToSpeedUp = it }
-                        )
-                    }
+            }
+
+            if (matchesSpeedBoost) {
+                OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.hold_to_speed_up"),
+                    icon = R.drawable.play_forward,
+                    title = holdToSpeedUpTitle,
+                    text = stringResource(R.string.player_artwork_hold_to_speed_up_description),
+                    isChecked = holdToSpeedUp,
+                    onCheckedChange = { holdToSpeedUp = it }
+                )
+                AnimatedVisibility(visible = holdToSpeedUp) {
+                    SliderSettingsEntry(
+                        modifier = Modifier
+                            .padding(start = 25.dp)
+                            .settingsSearchTarget("appearance.cover_and_thumbnail.hold_to_speed_up_rate"),
+                        icon = R.drawable.slow_motion,
+                        title = boostSpeedTitle,
+                        text = stringResource(R.string.player_artwork_hold_to_speed_up_rate_description),
+                        state = holdToSpeedUpRate.takeIf { it in HOLD_TO_SPEED_UP_RATE_RANGE }
+                            ?: DEFAULT_HOLD_TO_SPEED_UP_RATE,
+                        range = HOLD_TO_SPEED_UP_RATE_RANGE,
+                        defaultValue = DEFAULT_HOLD_TO_SPEED_UP_RATE,
+                        stepSize = 0.1f,
+                        onSlide = { holdToSpeedUpRate = round(it * 10f) / 10f },
+                        toDisplay = { stringResource(R.string.player_playback_speed_value, it) },
+                        snapToSteps = true,
+                        drawStepPoints = false
+                    )
+                }
             }
             }
         )

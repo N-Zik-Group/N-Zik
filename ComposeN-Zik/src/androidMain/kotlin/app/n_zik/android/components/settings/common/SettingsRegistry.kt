@@ -214,7 +214,8 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.settings_visualizer_artwork_visible_label, R.string.settings_player_artwork_animation_enabled_label,
             R.string.settings_player_artwork_animation_style_label, R.string.player_thumbnail_size,
             R.string.settings_player_artwork_corner_radius_label, R.string.artist_roundness, R.string.settings_player_background_blur_disabled_without_lyrics_label,
-            R.string.player_artwork_technical_info_title,
+            R.string.player_artwork_technical_info_title, R.string.player_artwork_hold_to_speed_up_title,
+            R.string.player_artwork_hold_to_speed_up_rate_title,
         )),
     SettingsCardRegistryEntry(2, R.string.settings_player_timeline_controls_section_title, R.drawable.horizontal_straight_line,
         keywordRes = listOf(

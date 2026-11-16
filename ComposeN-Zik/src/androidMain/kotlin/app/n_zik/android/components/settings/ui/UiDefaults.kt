@@ -134,7 +134,9 @@ import app.n_zik.android.utils.tapqueueKey
 import app.n_zik.android.utils.thumbnailSizeDpKey
 import app.n_zik.android.utils.thumbnailSizeLDpKey
 import app.n_zik.android.utils.thumbnailTapEnabledKey
+import app.n_zik.android.utils.DEFAULT_HOLD_TO_SPEED_UP_RATE
 import app.n_zik.android.utils.holdToSpeedUpKey
+import app.n_zik.android.utils.holdToSpeedUpRateKey
 import app.n_zik.android.utils.thumbnailTypeKey
 import app.n_zik.android.utils.transitionEffectKey
 import app.n_zik.android.utils.transparentBackgroundPlayerActionBarKey
@@ -245,7 +247,8 @@ internal fun applyUiDefaults(context: Context) {
         putBoolean(disableScrollingTextKey, false)
         putBoolean(effectRotationKey, effectRotationDefault)
         putBoolean(thumbnailTapEnabledKey, true)
-        putBoolean(holdToSpeedUpKey, true)
+        putBoolean(holdToSpeedUpKey, false)
+        putFloat(holdToSpeedUpRateKey, DEFAULT_HOLD_TO_SPEED_UP_RATE)
         putBoolean(clickOnLyricsTextKey, true)
         putEnum(backgroundProgressKey, BackgroundProgress.MiniPlayer)
         putBoolean(transparentBackgroundPlayerActionBarKey, true)

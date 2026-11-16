@@ -1,0 +1,6 @@
+Added:
+- feat(player): add configurable artwork hold boost speed (PR https://github.com/N-Zik-Group/N-Zik/pull/995)
+  - Place Boost speed beneath Hold to speed up in Cover & Thumbnail, with an icon and a tick-free slider from 1.1x to 4.0x in 0.1x steps.
+  - Keep the gesture off by default and the boost speed at 2.0x by default. Show the speed control when the gesture is enabled.
+  - Index both controls in Player settings search and global settings search. Focus the parent switch when the boost speed control is hidden.
+  - Apply the selected speed for the duration of the hold and restore the previous speed on release. Keep playback at its current speed if it already meets or exceeds the boost.

@@ -51,6 +51,7 @@ import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
 import app.n_zik.android.components.pullrefresh.rememberPullRefreshOverlayInsetProvider
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.utils.pauseSearchHistoryKey
+import app.n_zik.android.utils.holdToSpeedUpKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.R
@@ -184,6 +185,9 @@ fun SettingsCategoryPage(
         withFrameNanos { }
         withFrameNanos { }
         val requestedTarget = when (rawTarget) {
+            "appearance.cover_and_thumbnail.hold_to_speed_up_rate" ->
+                if (context.preferences.getBoolean(holdToSpeedUpKey, false)) rawTarget
+                else "appearance.cover_and_thumbnail.hold_to_speed_up"
             "appearance.player_presets_and_layout.icon_like_button" -> "appearance.timeline_and_controls.icon_like_button"
             "network.network_status.image_quality_format" -> "network.quality.image_quality_format"
             "network.network_status.audio_quality_format" -> "network.quality.audio_quality_format"

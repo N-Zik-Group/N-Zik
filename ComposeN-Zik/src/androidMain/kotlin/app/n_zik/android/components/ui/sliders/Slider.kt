@@ -42,7 +42,9 @@ fun Slider(
     stepSize: Float = 0f,
     defaultValue: Float? = null,
     drawValuePoints: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    snapToSteps: Boolean = false,
+    drawStepPoints: Boolean = true
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isDragged by interactionSource.collectIsDraggedAsState()
@@ -92,7 +94,7 @@ fun Slider(
 
     Slider(
         enabled = isEnabled,
-        state = rememberControlledSliderState(animatedValue, range),
+        state = rememberControlledSliderState(animatedValue, range, steps = if (snapToSteps) actualSteps else 0),
         onValueChange = { newValue ->
             val normalized = normalize(newValue)
             var finalValue = if (abs(newValue - normalized) <= magneticThreshold) normalized else newValue
@@ -147,7 +149,7 @@ fun Slider(
                     )
                 }
                 
-                if (actualSteps > 0) {
+                if (actualSteps > 0 && drawStepPoints) {
                     val accentColor = colorPalette().accent
                     val passedColor = colorPalette().text.copy(alpha = 0.5f)
                     
@@ -227,9 +229,10 @@ fun Slider(
 internal fun rememberControlledSliderState(
     value: Float,
     range: ClosedFloatingPointRange<Float>,
+    steps: Int = 0,
 ): SliderState {
-    val sliderState = remember(range) {
-        SliderState(value = value, steps = 0, trackRange = range)
+    val sliderState = remember(range, steps) {
+        SliderState(value = value, steps = steps, trackRange = range)
     }
     // The parent owns the animated value; keep Material's state in sync on recomposition.
     sliderState.value = value

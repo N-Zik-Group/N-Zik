@@ -480,6 +480,8 @@ fun SliderSettingsEntry(
     icon: Int? = null,
     isIntegerOnly: Boolean = false,
     inputValueText: ((Float) -> String)? = null,
+    snapToSteps: Boolean = false,
+    drawStepPoints: Boolean = true,
     trailingContent: (@Composable () -> Unit)? = null,
 ) = Column(modifier = modifier) {
 
@@ -544,6 +546,8 @@ fun SliderSettingsEntry(
         stepSize = stepSize,
         defaultValue = defaultValue,
         drawValuePoints = drawValuePoints,
+        snapToSteps = snapToSteps,
+        drawStepPoints = drawStepPoints,
         modifier = Modifier
             .height(36.dp)
             .alpha(if (isEnabled) 1f else 0.5f)

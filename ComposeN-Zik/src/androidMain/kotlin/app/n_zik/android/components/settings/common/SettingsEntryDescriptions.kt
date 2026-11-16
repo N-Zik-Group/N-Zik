@@ -53,6 +53,8 @@ internal val SettingsEntryDescriptions = mapOf(
     "appearance.cover_and_thumbnail.cover_thumbnail_animation_type" to R.string.player_artwork_animation_style_description,
     "appearance.cover_and_thumbnail.crop_video_thumbnails" to R.string.player_artwork_crop_video_thumbnails_description,
     "appearance.cover_and_thumbnail.fadingedge" to R.string.player_artwork_edge_fade_description,
+    "appearance.cover_and_thumbnail.hold_to_speed_up" to R.string.player_artwork_hold_to_speed_up_description,
+    "appearance.cover_and_thumbnail.hold_to_speed_up_rate" to R.string.player_artwork_hold_to_speed_up_rate_description,
     "appearance.cover_and_thumbnail.noblur" to R.string.player_artwork_blur_disabled_description,
     "appearance.cover_and_thumbnail.player_thumbnail_size" to R.string.player_artwork_size_description,
     "appearance.cover_and_thumbnail.show_cover_thumbnail_animation" to R.string.player_artwork_animation_enabled_description,
