@@ -323,4 +323,9 @@
     <string name="updates_check_failed">Konnte nicht nach Updates suchen.</string>
     <string name="updates_install_generic_error">Konnte das Update nicht installieren.</string>
     <string name="updates_channel_available_format">%1$s Update verfügbar</string>
+    <string name="recovery_theme_backup_title">Themes</string>
+    <string name="recovery_theme_backup_no_match">Hier können nur Themen wiederhergestellt werden, die zu Profilen in dieser Ansicht gehören.</string>
+    <string name="recovery_theme_backup_operation_failed">Konnte die Sicherung des Themes nicht abschließen.</string>
+    <string name="recovery_theme_backup_restore_action">Themen wiederherstellen</string>
+    <string name="recovery_theme_backup_restore_description">Öffnen Sie die letzte Sicherung für dieses Profil.</string>
 </resources>
