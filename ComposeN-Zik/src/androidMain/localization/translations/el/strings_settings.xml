@@ -445,7 +445,6 @@
     <string name="settings_service_keep_screen_on_label">Διατήρηση ενεργής οθόνης</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Επιτρέψτε την απεριόριστη λειτουργία παρασκηνίου, ώστε το σύστημα να είναι λιγότερο πιθανό να διακόψει την αναπαραγωγή.</string>
     <string name="settings_stream_disabled_clients_title">Απενεργοποιημένοι Πελάτες Ροής</string>
-    <string name="settings_stream_preferred_client_changed_message">Προτιμώμενος πελάτης άλλαξε. Θα εφαρμοστεί στο επόμενο κομμάτι.</string>
     <string name="settings_stream_preferred_client_title">Προτιμώμενος Πελάτης Ροής</string>
     <string name="settings_swipe_actions_description">Activate the action menu by swiping the song left or right</string>
     <string name="settings_swipe_actions_title">Swipe to action</string>
