@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">Página por defecto</string>
     <string name="settings_interface_corner_radius_label">Redondeo de la interfaz</string>
     <string name="settings_interface_hide_status_bar_label">Ocultar barra de estado</string>
+    <string name="settings_interface_right_to_left_label">Diseño de derecha a izquierda</string>
+    <string name="settings_interface_right_to_left_description">Ordena la interfaz independientemente del idioma de la aplicación.</string>
     <string name="settings_interface_page_description">La sección de interfaz de usuario contiene opciones para modificar la interfaz global y la navegación</string>
     <string name="settings_interface_page_title">Interfaz</string>
     <string name="settings_interface_title">Interfaz</string>
