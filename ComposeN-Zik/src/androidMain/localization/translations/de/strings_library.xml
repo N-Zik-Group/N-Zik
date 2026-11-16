@@ -244,6 +244,7 @@
     <string name="playlist_right_swipe">Wiedergabeliste rechts wischen</string>
     <string name="playlist_selection_action_deselect">Auswahl aufheben</string>
     <string name="playlist_shuffle_positions_confirmation">Möchtest du wirklich die Positionen in dieser Wiedergabeliste neu nummerieren?</string>
+    <string name="playlist_contains_song">Bereits in dieser Playlist</string>
     <string name="playlist_song_already_present">Titel ist in einer der Playliste vorhanden</string>
     <string name="playlist_top">Top-Playlist</string>
     <string name="playlist_top_maximum_items_description">Begrenzen, wie viele Lieder in Ihrer Top-Playlist enthalten sind.</string>
@@ -408,4 +409,10 @@
     <string name="artist_more_from_format">Mehr von %1$s</string>
     <string name="playlist_top_show_title_format">Zeige %1$s</string>
     <string name="library_on_device_no_local_playlists">Keine lokalen Wiedergabelisten. Erstellen Sie eine Wiedergabeliste oder fügen Sie einen Titel einer neuen Wiedergabeliste von On hinzu.</string>
+    <string name="playlist_import_youtube_link_hint">https://youtube.com/playlist?list=...</string>
+    <string name="search_youtube_open_url_example">https://........</string>
+    <string name="album_year_and_song_summary">%1$s • %2$s</string>
+    <string name="search_home_online_action">Online suchen</string>
+    <string name="search_home_library_action">Bibliothek durchsuchen</string>
+    <string name="song_matching_result_title_and_artist">%1$s - %2$s</string>
 </resources>
