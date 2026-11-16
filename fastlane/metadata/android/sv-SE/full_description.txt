@@ -10,7 +10,7 @@ Ett flerspråkigt YouTube Music-skal för Android, fokuserat på prestanda, UI/U
 - 3D Carousel Player, hemwidgets, enhetlig spelare och minispelare
 - Konstnärsprofiler, Upptäckt och stämningar, kollapsbara hem rubriker
 
-🎨 <b>Temabutik</b>
+🎨 <b>Temabutik (BETA)</b>
 - Bläddra bland och ladda ner gemenskapsteman, förhandsgranska dem i Normal och Glas, och välj vilka inställningar för utseende som ska tillämpas.
 - Skapa lokala teman eller dela din design med gemenskapen. Importera och exportera teman som ZIP-filer.
 
@@ -33,7 +33,8 @@ Glaskrediter: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Back
 - Automatisk säkerhetskopiering med anpassade intervall och lagring
 
 🔗 <b>Integrationer</b>
-- YouTube inloggning för rekommendationer och videouppspelning, plus en experimentell tvåvägs-synkroniseringsmotor
+- Växla mellan Google-konton och YouTube-kanaler. Varje N-Zik-profil använder en aktiv YouTube Music kanal för rekommendationer och uppspelning.
+- Experimentell tvåvägs YouTube Musikbibliotek synkroniseras i Debug och Dev bygger.
 - Last.fm scrobbling med Nu Spela och kärlek/okärlek
 - MusikBrainz artist och album insikter
 - Discord Rich Presence, inklusive avancerat läge med live förhandsgranskning
