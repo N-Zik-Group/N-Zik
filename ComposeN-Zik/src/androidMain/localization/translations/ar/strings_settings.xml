@@ -445,7 +445,6 @@
     <string name="settings_service_keep_screen_on_label">إبقاء الشاشة قيد التشغيل</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">السماح بالعملية الخلفية غير المقيدة بحيث يكون من غير المحتمل أن يقاطع النظام التشغيل.</string>
     <string name="settings_stream_disabled_clients_title">عملاء البث المعطلين</string>
-    <string name="settings_stream_preferred_client_changed_message">تم تغيير العميل المفضل. سيتم التطبيق على المسار التالي.</string>
     <string name="settings_stream_preferred_client_title">عميل البث المفضل</string>
     <string name="settings_swipe_actions_description">Activate the action menu by swiping the song left or right</string>
     <string name="settings_swipe_actions_title">Swipe to action</string>
