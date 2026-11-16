@@ -437,6 +437,7 @@
     <string name="theme_store_draft_discard">Удалить черновик</string>
     <string name="theme_store_draft_resume">Продолжить черновик</string>
     <string name="theme_store_preview_add_extra">Добавить дополнительный предварительный просмотр</string>
+    <string name="theme_store_preview_remove_extra">Удалить этот предварительный просмотр</string>
     <string name="theme_store_preview_extra_title">Заголовок</string>
     <string name="theme_store_preview_import_requirements_with_gif">Предварительные просмотры являются публичными. Держите личную информацию вне снимков. PNG, JPEG, WebP или GIF · 4 MB на изображение. GIF сохраняет исходный размер и должен соответствовать 1920 × 1920.</string>
     <string name="theme_store_preview_import_error">Не удалось импортировать это изображение. Выберите изображение PNG, JPEG или WebP не более 4 МБ.</string>
