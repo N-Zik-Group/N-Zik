@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">Förvald sida</string>
     <string name="settings_interface_corner_radius_label">UI Roundness</string>
     <string name="settings_interface_hide_status_bar_label">Dölj statusfältet</string>
+    <string name="settings_interface_right_to_left_label">Höger-till-vänster layout</string>
+    <string name="settings_interface_right_to_left_description">Spegla gränssnittet oberoende av appens språk.</string>
     <string name="settings_interface_page_description">Användargränssnittet innehåller inställningar för att ändra det globala gränssnittet och navigeringen</string>
     <string name="settings_interface_page_title">UI</string>
     <string name="settings_interface_title">Användargränssnitt</string>
