@@ -10,7 +10,7 @@ En flerspråklig YouTube Music frontend for Android, fokusert på ytelse, UI/UX-
 - 3D Karousel Spiller, Hjem-moduler, enhetlig spiller og mini spiller
 – Artistens profiler, Oppdagelse og humør, sammenleggbare husoverskrifter
 
-🎨 <b>tema butikk</b>
+🎨 <b>tema butikk (BETA)</b>
 - Bla gjennom og last ned samfunnstemaer, forhåndsvise dem i normale temaer, og velg hvilken utseende de skal gjelde.
 - Lag lokale temaer eller del dine prosjekter med samfunnet. Importer og eksporter temaer som ZIP filer.
 
@@ -33,7 +33,8 @@ Glasskreditter: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Ba
 -Automatisk sikkerhetskopiering med egendefinerte intervaller og tilbakeholdelse
 
 🔗 <b>Integrasjoner</b>
-- YouTube-innlogging for anbefalinger og videospilling, samt en eksperimentell 2-veis synkroniseringsmotor
+- Bytt mellom Google-kontoer og YouTube-kanaler. Hver N-Zik-profil bruker en aktiv YouTube Musikkkanal for anbefalinger og avspilling.
+- Eksperimentell toveis YouTube musikkbibliotek synkronisering i Debug og Dev builds.
 -Last.fm scrobbling med nå Spill og kjærlighet/ukjærlighet
 - MusicBrainz artist og album innsikt
 - Discord Rich Presence, inkludert avansert modus med live forhåndsvisning
