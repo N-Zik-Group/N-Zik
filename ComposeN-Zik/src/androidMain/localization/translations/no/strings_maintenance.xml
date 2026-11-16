@@ -323,4 +323,9 @@
     <string name="updates_check_failed">Kan ikke se etter oppdateringer.</string>
     <string name="updates_install_generic_error">Kunne ikke installere oppdateringen.</string>
     <string name="updates_channel_available_format">%1$s oppdatering tilgjengelig</string>
+    <string name="recovery_theme_backup_title">Temaer</string>
+    <string name="recovery_theme_backup_no_match">Kun temaer som tilhører profiler som er tilgjengelige i dette visningen, kan gjenopprettes her.</string>
+    <string name="recovery_theme_backup_operation_failed">Kunne ikke fullføre tema sikkerhetskopieringen.</string>
+    <string name="recovery_theme_backup_restore_action">Gjenopprett temaer</string>
+    <string name="recovery_theme_backup_restore_description">Åpne siste sikkerhetskopiering for denne profilen.</string>
 </resources>
