@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="backup_export_themes_description">حفظ السمات المحملة والمحلية إلى النسخة الاحتياطية المضغوطة</string>
+    <string name="backup_import_themes_description">استعادة التحميل والسمات المحلية من نسخة ZIP احتياطية</string>
+    <string name="backup_export_select_all_description">حدد كل نوع من البيانات للتصدير</string>
+    <string name="backup_import_already_running">جارٍ بالفعل استيراد النسخة الاحتياطية.</string>
+    <string name="backup_import_select_all_description">حدد كل نوع من البيانات لاستيرادها</string>
+    <string name="backup_include_github_identity_credentials">تضمين بيانات اعتماد هوية GitHub</string>
     <string name="storage_image_quality_title">جودة الصورة</string>
     <string name="storage_image_quality_description">ينطبق على الأعمال الفنية على الإنترنت والأغلفة المضافة حديثا وصور الملف الشخصي. يستخدم الأصل أعلى جودة متاحة ويمكنه استخدام المزيد من التخزين والبيانات.</string>
     <string name="storage_image_quality_optimized">محسّن</string>
@@ -116,6 +122,9 @@
     <string name="backup_before_update_failed">فشل النسخ الاحتياطي للتثبيت</string>
     <string name="backup_before_update_running_message">جارٍ النسخ الاحتياطي للبيانات قبل التثبيت…</string>
     <string name="backup_before_update_running_title">جارٍ النسخ الاحتياطي</string>
+    <string name="backup_export_separate_files_description">يتم تصدير كل فئة محددة إلى ملف منفصل. يتم استبعاد ملفات ذاكرة التخزين المؤقت وسمة المخزون.</string>
+    <string name="backup_export_with_themes_description">تصدير قاعدة البيانات مع غلاف مخصص، الإعدادات، السمات أو الملفات الشخصية</string>
+    <string name="backup_import_with_themes_description">استعادة نسخة احتياطية لقاعدة بيانات SQLite أو ZIP أو الإعدادات أو السمات أو الملفات الشخصية</string>
     <string name="backup_include_discord_credentials">تضمين بيانات اعتماد هوية ديسكورد</string>
     <string name="backup_include_lastfm_credentials">قم بتضمين بيانات اعتماد هوية Last.fm</string>
     <string name="backup_include_proxy_password">تضمين كلمة مرور الوكيل</string>
@@ -248,4 +257,34 @@
     <string name="export_cached_songs_generic_error">فشل التصدير</string>
     <string name="backup_startup_preparing_library">جارٍ إعداد مكتبتك…</string>
     <string name="backup_startup_recovery_failed">تعذر إنهاء استعادة مكتبتك.</string>
+    <string name="storage_breakdown_themes">السمات</string>
+    <string name="storage_info_themes">حفظ سجلات السمة ومتجر المواضيع المشتركة ، الأصول والمعاينات والمسودات.</string>
+    <string name="storage_breakdown_lyrics">كلمات</string>
+    <string name="storage_info_lyrics">نص البايت من الكلمات المحملة والمخصصة المخزنة داخل قاعدة بيانات الملف الشخصي.</string>
+    <string name="storage_cleanup_clear_theme_cache">مسح ذاكرة التخزين المؤقت لمتجر السمات</string>
+    <string name="storage_cleanup_theme_cache_description">إزالة بيانات التعريف المشتركة للكتالوجات. يتم حفظ السمات والمسودات والمعاينات الخاصة بها.</string>
+    <string name="storage_cleanup_clear_lyrics">مسح الكلمات التي تم جلبها</string>
+    <string name="storage_cleanup_lyrics_description">يزيل تلقائياً كلمات الأغنية. يتم الاحتفاظ بكلمات مخصصة. يمكن إعادة استخدام الصفحات الحرة من قبل قاعدة بيانات المكتبة.</string>
+    <string name="backup_auto_enabled_title">تمكين النسخ الاحتياطي التلقائي</string>
+    <string name="backup_auto_enabled_description">إيقاف النسخ الاحتياطي التلقائي والحفاظ على إعدادات النسخ الاحتياطي.</string>
+    <string name="storage_cleanup_picker_title">تنظيف التخزين</string>
+    <string name="storage_cleanup_picker_description">اختر الملفات والبيانات لمسحها لهذا النطاق.</string>
+    <string name="storage_cleanup_select_caches">حدد المخبآت</string>
+    <string name="storage_cleanup_select_caches_description">اختر المخبآت والملفات المؤقتة.</string>
+    <string name="storage_cleanup_select_everything">تحديد كل شيء</string>
+    <string name="storage_cleanup_select_everything_description">حدد المخبآت والبيانات، بما في ذلك التحميلات دون اتصال.</string>
+    <string name="storage_cleanup_cache_group">المخبآت والملفات المؤقتة</string>
+    <string name="storage_cleanup_delete_group">البيانات المراد حذفها</string>
+    <string name="storage_cleanup_review_selection">مراجعة</string>
+    <string name="storage_cleanup_selected_confirmation">مسح العناصر المحددة في هذا النطاق؟</string>
+    <string name="storage_cleanup_option_cached_images">الصور المخزنة مؤقتاً</string>
+    <string name="storage_cleanup_option_streamed_audio">صوت مذيّل</string>
+    <string name="storage_cleanup_option_waveforms">موجات</string>
+    <string name="storage_cleanup_option_network_cache">مخبئ الشبكة</string>
+    <string name="storage_cleanup_option_diagnostic_logs">سجلات التشخيص</string>
+    <string name="storage_cleanup_option_temporary_files">الملفات المؤقتة</string>
+    <string name="storage_cleanup_option_theme_catalog">مخبئ متجر السمة</string>
+    <string name="storage_cleanup_option_fetched_lyrics">جلب كلمات الأغاني تلقائياً</string>
+    <string name="storage_cleanup_option_offline_downloads">تم تنزيل الصوت</string>
+    <string name="storage_cleanup_completed">اكتمل التنظيف.</string>
 </resources>
