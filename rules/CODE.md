@@ -1,6 +1,6 @@
 # Code Quality Rules
 
-**Version:** 1.11.0 | **Last updated:** 2026-11-15
+**Version:** 1.12.1 | **Last updated:** 2026-11-16
 
 ## Portable theme settings
 
@@ -235,7 +235,7 @@ NEVER swallow exceptions silently. ALWAYS log with Timber.
 
 ## Coroutines & Dispatchers — NzikDispatchers (MANDATORY)
 
-All named threads/dispatchers in the app come from `NzikDispatchers` (`app.n_zik.android.utils.coroutines`) — the single source of truth for threading (issue #606). NEVER add new raw `Dispatchers.IO` / `Dispatchers.Default` / `Dispatchers.Main` / hand-rolled `Executors.*` usages in app code — use the named entries below. (6 pre-existing raw `Dispatchers.IO` usages across 2 rewind files (`RewindStoryComponents.kt`, `RewindShareCapture.kt`) — plus one `Dispatchers.Main.immediate` — remain in the rewind screen — do NOT opportunistically migrate them unless the user asks.)
+All named threads/dispatchers in the app come from `NzikDispatchers` (`app.n_zik.android.utils.coroutines`) — the single source of truth for threading (issue #606). NEVER add new raw `Dispatchers.IO` / `Dispatchers.Default` / `Dispatchers.Main` / hand-rolled `Executors.*` usages in app code — use the named entries below.
 
 | Entry point                                            | Threads                       | Use for                                                                                                                        |
 | ------------------------------------------------------ | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
@@ -253,7 +253,7 @@ Rules:
 - When the scope's context already carries a parent `Job` that must stay the cancellation root (e.g. a lifecycle-scoped child), use the `CoroutineContext` overload — it keeps that Job as the cancellation root and only adds a `SupervisorJob` when the context carries no Job
 - NEVER cancel process-lifetime scopes from component lifecycle code (`onDestroy()` of an Activity/Service) — same reason as the executor rule above
 - `NzikDispatchers` is a process-lifetime singleton with daemon threads — NEVER `shutdown()` its executors or close them from an `onDestroy()`/service scope: that kills the pools for the rest of the process
-- Use `withContext(NzikDispatchers.X)` to move work between named dispatchers; cancel regular coroutines in `onCleared()` / `DisposableEffect`
+- Use `withContext(NzikDispatchers.X)` to move work between named dispatchers. `NzikDispatchers.UI.immediate` may preserve immediate main-thread behavior when needed. Cancel regular coroutines in `onCleared()` or `DisposableEffect`.
 - Flow collection off the main thread: `collectAsStateWithLifecycle(..., context = NzikDispatchers.DATA)` is the established pattern — use it, do not collect on `UI`
 - Unit tests may still use `Dispatchers.setMain()`/`Dispatchers.resetMain()`; the established test style is `runBlocking` (see Testing)
 
@@ -296,15 +296,15 @@ NEVER edit schema without explicit instruction. Never add, remove, or rename col
 
 ### Room Patterns
 
-- Table naming: **singular** (`Song`, `Playlist`) — all 13 existing tables are singular
-- DAO suffix: **`*Table`** (`SongTable`, `PlaylistTable`) — 13 DAO interfaces, none named `*Dao`
-- DAOs carry `@RewriteQueriesToDropUnusedColumns` (all 13 existing) — new DAOs must carry it
+- Table naming: **singular** (`Song`, `Playlist`) — entity table names are singular
+- DAO suffix: **`*Table`** (`SongTable`, `PlaylistTable`) — 12 DAO interfaces, none named `*Dao`
+- DAOs carry `@RewriteQueriesToDropUnusedColumns` (all 12 existing) — new DAOs must carry it
 - Use `@Insert(onConflict = OnConflictStrategy.IGNORE)` for insert-or-ignore
 - Use `@Upsert` for insert-or-update
 - Use `@Query` with `Flow<T>` for reactive queries
-- Use `@Transaction` for multi-step operations — Room transactions in this app run via `Database.asyncTransaction` (`core/database/Database.kt`), which **retries 3× on `SQLiteDatabaseLockedException`** — keep that resilience when touching transaction code
+- Use `Database.transaction` or a DAO `@Transaction` for atomic writes. `Database.asyncTransaction` queues suspend callbacks in submission order and retries SQLite lock failures up to three attempts. Use `Database.awaitWriteBatch` and keep dependent cache, file, or command dispatch work in the same callback when it must finish before the next queued batch.
 - All DAO methods `suspend` (except Flow-returning queries)
-- Migration testing required before reporting — frozen schema JSON fixtures live in `ComposeN-Zik/src/test/resources/schemas/app.n_zik.android.core.database.DatabaseInitializer/` (40-42.json, used by the `From*To*MigrationTest` suite); the LIVE Room export directory is `ComposeN-Zik/schemas/` (`schemaDirectory`) — new version JSONs land there after a DB change (the `app.n_zik.android.core.database.DatabaseInitializer/` dir now holds 1–42.json complete, incl. the once-missing `33.json`; three extra historical export dirs also exist — `database.MusicDatabase/23.json`, `database.MusicDatabaseConstructor/23.json` and `app.n_zik.android.core.database.legacy.DatabaseInitializer/` (versions 1–27.json) — do NOT clean or regenerate any of them without the user)
+- Migration testing required before reporting — frozen schema JSON fixtures live in `ComposeN-Zik/src/test/resources/schemas/app.n_zik.android.core.database.DatabaseInitializer/` (40-42.json, used by the `From*To*MigrationTest` suite); the LIVE Room export directory is `ComposeN-Zik/schemas/` (`schemaDirectory`) — new version JSONs land there after a DB change (the `app.n_zik.android.core.database.DatabaseInitializer/` dir now holds 1–43.json complete, incl. the once-missing `33.json`; three extra historical export dirs also exist — `database.MusicDatabase/23.json`, `database.MusicDatabaseConstructor/23.json` and `app.n_zik.android.core.database.legacy.DatabaseInitializer/` (versions 1–27.json) — do NOT clean or regenerate any of them without the user)
 
 ### Migration Safety
 
@@ -332,7 +332,7 @@ NEVER edit schema without explicit instruction. Never add, remove, or rename col
 ## Testing Conventions
 
 - Test method names are backtick descriptive sentences (`` fun `shuffle should return list of same size`() ``) — match this style
-- **Off-main tests** (name suffix `*OffMainTest`, 29 existing): assert that offloaded work actually lands on a named `NzikDispatchers` thread (thread-name prefix assertion, e.g. `nzik-media-`). Any new work moved off the main thread gets one — this is the verification pillar of issue #606
+- **Off-main tests** (name suffix `*OffMainTest`): assert that offloaded work actually lands on a named `NzikDispatchers` thread (thread-name prefix assertion, e.g. `nzik-media-`). Any new work moved off the main thread gets one — this is the verification pillar of issue #606
 - Put new tests in the package that mirrors the source (see rules/BUILD.md).
 
 ## Compose UI Testing
