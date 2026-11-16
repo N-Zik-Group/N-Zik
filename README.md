@@ -342,7 +342,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, verification and pull requests
 [![Fetch, create, and update repo's translators](https://github.com/N-Zik-Group/N-Zik/actions/workflows/weekly-update-translators.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/weekly-update-translators.yaml)  
 [![Copilot](https://github.com/N-Zik-Group/N-Zik/actions/workflows/agents/copilot-pull-request-reviewer/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/agents/copilot-pull-request-reviewer)  
 [![CodeQL - Code Quality](https://github.com/N-Zik-Group/N-Zik/actions/workflows/github-code-quality/codeql/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/github-code-quality/codeql)  
-[![CodeQL (GitHub default setup)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/github-code-scanning/codeql)
 
 # 👥 Contributors
 
