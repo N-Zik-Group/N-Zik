@@ -8,12 +8,30 @@
     <string name="github_account_code_copied">GitHub kód zkopírován do schránky.</string>
     <string name="github_account_login_failed">Nelze se připojit k GitHubu. Zkuste to znovu.</string>
     <string name="github_account_connected">GitHub připojen.</string>
+    <string name="github_account_finishing_connection">Dokončování připojení GitHub…</string>
+    <string name="github_app_installation_instructions">Vyberte @%1$s a povolte přístup pouze k vašemu N-Zik-Theme-Store forku pro dokončení nastavení.</string>
+    <string name="github_app_installation">Instalace aplikace</string>
+    <string name="github_app_installation_confirmed">GitHub potvrdil instalaci aplikace.</string>
+    <string name="github_app_installation_other_account">Aplikace nainstalována na @%1$s. Vyberte si svůj vlastní účet pro umožnění vyčištění rozkazů.</string>
+    <string name="github_app_installation_description">Spravujte nebo odeberte přístup N-Zik v osobním nastavení GitHub.</string>
+    <string name="github_app_installation_needs_fork">Nejdříve odešlete šablonu nebo profil tvůrce k vytvoření fóra obchodu s tématy.</string>
+    <string name="github_app_installation_fork_lookup_failed">Nelze zkontrolovat tvé rozštěpení šablony v obchodě. Zkuste to znovu.</string>
     <!-- Account -->
     <string name="account_action_login">Přihlásit se</string>
     <string name="account_action_logout">Odhlásit se</string>
     <string name="account_youtube_login_description">Připojte svůj YouTube účet nebo se odhlásíte z aktuální relace.</string>
+    <string name="account_youtube_change_account">Změnit účet YouTube</string>
+    <string name="account_youtube_change_account_description">Vyberte, který YouTube kanál používá profil N-Zik.</string>
     <string name="account_youtube_login_enabled_description">Povolit přihlášení k účtu YouTube pro osobní prohlížení a synchronizaci.</string>
     <!-- Account Youtube -->
+    <string name="account_youtube_checking_login">Kontrola přihlášení k YouTube Music…</string>
+    <string name="account_youtube_choose_channel">Vyberte si YouTube Music kanál</string>
+    <string name="account_youtube_add_google_account">Přidat účet Google</string>
+    <string name="account_youtube_google_account">Účet Google</string>
+    <string name="account_youtube_google_select">Zvolte účet</string>
+    <string name="account_youtube_google_sign_out">Odhlásit se z tohoto účtu</string>
+    <string name="account_youtube_google_sign_out_description">Tím se odstraní celý profil Google a jeho přihlašovací údaje z N-Zik na tomto zařízení. Vaše ostatní účty zůstanou přihlášeny.</string>
+    <string name="account_youtube_verify_failed">Nelze ověřit přihlášení k Music na YouTube. Zkuste to znovu nebo se přihlaste přes Google.</string>
     <string name="account_youtube_cookie_invalid">YouTube cookie je neplatná, přihlaste se prosím znovu</string>
     <string name="account_youtube_login_success">YouTube přihlášení úspěšné</string>
     <string name="account_youtube_session_expired">YouTube relace vypršela, přihlaste se prosím znovu</string>
@@ -188,6 +206,8 @@
     <string name="sync_cooldown">Synchronizovat nastavení</string>
     <string name="sync_cooldown_description">Minimální doba mezi automatickými synchronizacemi (v minutách)</string>
     <string name="sync_data_with_ytm_account">Synchronizovat data s účtem YTM</string>
+    <string name="account_youtube_sync_build_required">Synchronizace je k dispozici v ladících a Dev sestavách.</string>
+    <string name="account_youtube_sync_browse_required">Povolte přihlášení pro procházení pro použití synchronizace.</string>
     <string name="sync_direction">Směr synchronizace</string>
     <string name="sync_direction_app_to_yt">Aplikace → Pouze YouTube</string>
     <string name="sync_direction_description">Zvolte, zda synchronizace importů z YouTube, odesílá místní změny nebo funguje v obou směrech.</string>
