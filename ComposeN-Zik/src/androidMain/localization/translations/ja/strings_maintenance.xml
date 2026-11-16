@@ -328,4 +328,14 @@
     <string name="recovery_theme_backup_operation_failed">テーマのバックアップ操作を完了できませんでした。</string>
     <string name="recovery_theme_backup_restore_action">テーマを復元</string>
     <string name="recovery_theme_backup_restore_description">このプロファイルに使用されている最後のテーマのバックアップを開きます。</string>
+    <string name="updates_status_and_last_check">%1$s · %2$s</string>
+    <string name="recovery_action_failed">リカバリ操作を完了できませんでした。</string>
+    <string name="recovery_reopen_after_restoring_settings">設定を復元した後、救急センターを再開します。</string>
+    <string name="recovery_settings_file_empty">設定ファイルが空です。</string>
+    <string name="recovery_profile_changed_during_import">設定のインポート中に選択したプロファイルが変更されました。もう一度選択して再試行してください。</string>
+    <string name="recovery_no_importable_settings">ファイルにはインポート可能な設定がありません。</string>
+    <string name="recovery_finish_pending_profile_operation">保留中のプロファイルをリセットするか、最初に復元します。</string>
+    <string name="recovery_no_database_to_reset">リセットするデータベースがありません。</string>
+    <string name="updates_current_version_format">v%1$s</string>
+    <string name="updates_version_and_status">%1$s • %2$s</string>
 </resources>
