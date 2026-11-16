@@ -445,7 +445,6 @@
     <string name="settings_service_keep_screen_on_label">Scherm aanhouden</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Onbeperkte achtergrondbewerking toestaan, zodat het systeem het afspelen minder waarschijnlijk zal onderbreken.</string>
     <string name="settings_stream_disabled_clients_title">Uitgeschakelde Stream Clients</string>
-    <string name="settings_stream_preferred_client_changed_message">Geprefereerde klant gewijzigd. Zal van toepassing zijn op het volgende nummer.</string>
     <string name="settings_stream_preferred_client_title">Voorkeurs stream client</string>
     <string name="settings_swipe_actions_description">Voer acties uit door naar links of rechts te vegen over een nummer binnen een verticale lijst van nummers</string>
     <string name="settings_swipe_actions_title">Veeg voor actie</string>
