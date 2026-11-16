@@ -445,7 +445,6 @@
     <string name="settings_service_keep_screen_on_label">Drži ekran uključen</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Allow unrestricted background operation so the system is less likely to interrupt playback.</string>
     <string name="settings_stream_disabled_clients_title">Disabled Stream Clients</string>
-    <string name="settings_stream_preferred_client_changed_message">Preferred client changed. Will apply on next track.</string>
     <string name="settings_stream_preferred_client_title">Preferred Stream Client</string>
     <string name="settings_swipe_actions_description">Aktivirajte meni radnji prevlačenjem pesme ulevo ili udesno</string>
     <string name="settings_swipe_actions_title">Prevucite prstom do akcije</string>
