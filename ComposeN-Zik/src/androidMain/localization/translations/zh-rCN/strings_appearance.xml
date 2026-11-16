@@ -437,6 +437,7 @@
     <string name="theme_store_draft_discard">删除草稿</string>
     <string name="theme_store_draft_resume">继续草稿</string>
     <string name="theme_store_preview_add_extra">添加额外预览</string>
+    <string name="theme_store_preview_remove_extra">删除此额外预览</string>
     <string name="theme_store_preview_extra_title">预览标题</string>
     <string name="theme_store_preview_import_requirements_with_gif">预览是公开的。请在屏幕截图之外保留个人信息。 PNG, JPEG, WebP 或 GIF · 4MB 每张图像。GIF 保持原始大小，必须在1920 × 1920范围内。</string>
     <string name="theme_store_preview_import_error">无法导入此图像。请选择一个 PNG，JPEG 或 WebP 图像在 4 MB 之下。</string>
