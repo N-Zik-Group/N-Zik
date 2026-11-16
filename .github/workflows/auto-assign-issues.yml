@@ -11,8 +11,6 @@ on:
           - scan-clean
           - scan-clean-keep-contributors
           - scan-add-only
-  issues:
-    types: [opened]
 permissions:
   issues: write
 jobs:
