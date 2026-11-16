@@ -8,12 +8,30 @@
     <string name="github_account_code_copied">تم نسخ رمز GitHub إلى الحافظة.</string>
     <string name="github_account_login_failed">تعذر الاتصال بـ GitHub. حاول مرة أخرى.</string>
     <string name="github_account_connected">GitHub متصل.</string>
+    <string name="github_account_finishing_connection">إنهاء اتصال GitHub…</string>
+    <string name="github_app_installation_instructions">اختر @%1$s ومنح حق الوصول فقط إلى N-Zik-Theme-Store الخاص بك لإنهاء الإعداد.</string>
+    <string name="github_app_installation">تثبيت التطبيق</string>
+    <string name="github_app_installation_confirmed">أكد GitHub تثبيت التطبيق.</string>
+    <string name="github_app_installation_other_account">التطبيق المثبت على @%1$s. حدد حسابك الخاص لتمكين تنظيف الشوك.</string>
+    <string name="github_app_installation_description">إدارة أو إلغاء وصول N-Zik في إعدادات GitHub الشخصية الخاصة بك.</string>
+    <string name="github_app_installation_needs_fork">قم بتقديم موضوع أو ملف شخصي للمنشئ أولاً لإنشاء شوكي متجر السمات الخاص بك.</string>
+    <string name="github_app_installation_fork_lookup_failed">تعذر التحقق من شوكة متجر السمة. حاول مرة أخرى.</string>
     <!-- Account -->
     <string name="account_action_login">تسجيل الدخول</string>
     <string name="account_action_logout">إيقاف التشغيل</string>
     <string name="account_youtube_login_description">قم بتوصيل حسابك على اليوتيوب أو قم بتسجيل الخروج من الجلسة الحالية.</string>
+    <string name="account_youtube_change_account">تغيير حساب اليوتيوب</string>
+    <string name="account_youtube_change_account_description">اختر أي قناة يوتيوب تستخدم هذا الملف الشخصي N-Zik.</string>
     <string name="account_youtube_login_enabled_description">السماح بتسجيل الدخول لحساب اليوتيوب للتصفح والمزامنة الشخصية.</string>
     <!-- Account Youtube -->
+    <string name="account_youtube_checking_login">التحقق من تسجيل دخول موسيقى اليوتيوب الخاصة بك…</string>
+    <string name="account_youtube_choose_channel">اختر قناة موسيقى يوتيوب</string>
+    <string name="account_youtube_add_google_account">إضافة حساب جوجل</string>
+    <string name="account_youtube_google_account">حساب جوجل</string>
+    <string name="account_youtube_google_select">اختيار حساب</string>
+    <string name="account_youtube_google_sign_out">تسجيل الخروج من هذا الحساب</string>
+    <string name="account_youtube_google_sign_out_description">هذا يزيل كامل ملف جوجل الشخصي وبيانات تسجيل الدخول الخاصة به من N-Zik على هذا الجهاز. حساباتك الأخرى لا تزال تسجل الدخول.</string>
+    <string name="account_youtube_verify_failed">تعذر التحقق من تسجيل دخول موسيقى اليوتيوب. حاول مرة أخرى أو سجل الدخول باستخدام جوجل.</string>
     <string name="account_youtube_cookie_invalid">كوكي يوتيوب غير صالح، الرجاء تسجيل الدخول مرة أخرى</string>
     <string name="account_youtube_login_success">تم تسجيل الدخول لليوتيوب بنجاح</string>
     <string name="account_youtube_session_expired">انتهت صلاحية جلسة اليوتيوب، الرجاء تسجيل الدخول مرة أخرى</string>
@@ -188,6 +206,8 @@
     <string name="sync_cooldown">تبريد المزامنة</string>
     <string name="sync_cooldown_description">الحد الأدنى للوقت بين المزامنة التلقائية (بالدقائق)</string>
     <string name="sync_data_with_ytm_account">مزامنة البيانات مع حساب YTM</string>
+    <string name="account_youtube_sync_build_required">المزامنة متوفرة في إصدارات التصحيح و ديف.</string>
+    <string name="account_youtube_sync_browse_required">تمكين تسجيل الدخول للتصفح لاستخدام المزامنة.</string>
     <string name="sync_direction">اتجاه المزامنة</string>
     <string name="sync_direction_app_to_yt">التطبيق → يوتيوب فقط</string>
     <string name="sync_direction_description">اختر ما إذا كانت عمليات استيراد المزامنة من يوتيوب، أو إرسال التغييرات المحلية، أو يعمل في كلا الاتجاهين.</string>
