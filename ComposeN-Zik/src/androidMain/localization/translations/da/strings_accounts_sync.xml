@@ -8,12 +8,30 @@
     <string name="github_account_code_copied">GitHub kode kopieret til udklipsholder.</string>
     <string name="github_account_login_failed">Kunne ikke forbinde til GitHub. Prøv igen.</string>
     <string name="github_account_connected">GitHub tilsluttet.</string>
+    <string name="github_account_finishing_connection">Afslutter GitHub forbindelse…</string>
+    <string name="github_app_installation_instructions">Vælg @%1$s og giv kun adgang til din N-Zik-Theme-Store gaffel for at afslutte opsætningen.</string>
+    <string name="github_app_installation">App installation</string>
+    <string name="github_app_installation_confirmed">GitHub bekræftede app-installationen.</string>
+    <string name="github_app_installation_other_account">App installeret på @%1$s. Vælg din egen konto for at aktivere gaffeloprydning.</string>
+    <string name="github_app_installation_description">Administrer eller tilbagekalder N-Zik Log ind adgang i dine personlige GitHub indstillinger.</string>
+    <string name="github_app_installation_needs_fork">Indsend et tema eller en skaberprofil først for at oprette din Theme Store gaffel.</string>
+    <string name="github_app_installation_fork_lookup_failed">Kunne ikke tjekke din Theme Store gaffel. Prøv igen.</string>
     <!-- Account -->
     <string name="account_action_login">Log ind</string>
     <string name="account_action_logout">Log af</string>
     <string name="account_youtube_login_description">Tilslut din YouTube-konto eller log ud af den aktuelle session.</string>
+    <string name="account_youtube_change_account">Skift YouTube-konto</string>
+    <string name="account_youtube_change_account_description">Vælg hvilken YouTube-kanal denne N-Zik-profil anvender.</string>
     <string name="account_youtube_login_enabled_description">Tillad YouTube-konto login til personlig browsing og synkronisering.</string>
     <!-- Account Youtube -->
+    <string name="account_youtube_checking_login">Kontrollerer dit YouTube-Musik-login…</string>
+    <string name="account_youtube_choose_channel">Vælg en YouTube-musikkanal</string>
+    <string name="account_youtube_add_google_account">Tilføj Google-konto</string>
+    <string name="account_youtube_google_account">Google konto</string>
+    <string name="account_youtube_google_select">Vælg konto</string>
+    <string name="account_youtube_google_sign_out">Log ud af denne konto</string>
+    <string name="account_youtube_google_sign_out_description">Dette fjerner hele Google-profilen og dens login-data fra N-Zik på denne enhed. Dine andre konti forbliver logget ind.</string>
+    <string name="account_youtube_verify_failed">Kunne ikke bekræfte dit YouTube Music-login. Prøv igen eller log ind med Google.</string>
     <string name="account_youtube_cookie_invalid">YouTube cookie er ugyldig, log ind igen</string>
     <string name="account_youtube_login_success">YouTube-login vellykket</string>
     <string name="account_youtube_session_expired">YouTube- session udløbet, log venligst ind igen</string>
@@ -188,6 +206,8 @@
     <string name="sync_cooldown">Synkroniser Nedkøling</string>
     <string name="sync_cooldown_description">Minimum tid mellem auto-synkronisering (i minutter)</string>
     <string name="sync_data_with_ytm_account">Synkroniser data med YTM-konto</string>
+    <string name="account_youtube_sync_build_required">Synkronisering er tilgængelig i Debug og Dev builds.</string>
+    <string name="account_youtube_sync_browse_required">Aktiver Login for at gennemse for at bruge synkronisering.</string>
     <string name="sync_direction">Synkroniserings Retning</string>
     <string name="sync_direction_app_to_yt">App → Kun YouTube</string>
     <string name="sync_direction_description">Vælg om synkronisering import fra YouTube, sender lokale ændringer eller virker i begge retninger.</string>
