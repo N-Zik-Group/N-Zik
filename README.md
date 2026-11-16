@@ -275,6 +275,7 @@ Glass builds on [Square / Convx Project](https://github.com/Lelonio/Square) (GPL
 <a href="https://crowdin.com/profile/ebisadeghi81362647"><img src="https://crowdin-static.cf-downloads.crowdin.com/avatar/17301554/medium/890d19d37674fddaf0e70d7e15f9145f.jpeg" width="54" height="54" alt="Ebi Sadeghi (Behnam)" title="Ebi Sadeghi (Behnam)" /></a>
 <a href="https://crowdin.com/profile/floot727"><img src="https://crowdin-static.cf-downloads.crowdin.com/avatar/17413824/medium/eefda7cd518f1f4e9f292cef645ca112.jpeg" width="54" height="54" alt="Floot" title="Floot" /></a>
 <a href="https://crowdin.com/profile/LeonDayi"><img src="https://crowdin-static.cf-downloads.crowdin.com/avatar/17519450/medium/0a7d52edd7725d4d9d3366b86401d46e.jpg" width="54" height="54" alt="Leon Dayı" title="Leon Dayı" /></a>
+<a href="https://crowdin.com/profile/IMPOX"><img src="https://crowdin-static.cf-downloads.crowdin.com/avatar/16624895/medium/1e3e8befa9bf605e6d417f51a3ee889f.jpeg" width="54" height="54" alt="Lorenzo" title="Lorenzo" /></a>
 <a href="https://crowdin.com/profile/manuel09"><img src="https://crowdin-static.cf-downloads.crowdin.com/avatar/17179874/medium/74fa7d43eb181ca8f68d611f7f379e44.png" width="54" height="54" alt="manuel09" title="manuel09" /></a>
 <a href="https://crowdin.com/profile/Mickael81"><img src="https://crowdin-static.cf-downloads.crowdin.com/avatar/16589059/medium/65fcdfc7892c0e034a5b24fcba44b471_default.png" width="54" height="54" alt="Mickael81" title="Mickael81" /></a>
 <a href="https://crowdin.com/profile/Nick806"><img src="https://crowdin-static.cf-downloads.crowdin.com/avatar/17910183/medium/234b8a1b1b91ba19e30891e033975024.jpeg" width="54" height="54" alt="Nicola Zamprogno" title="Nicola Zamprogno" /></a>
@@ -282,6 +283,7 @@ Glass builds on [Square / Convx Project](https://github.com/Lelonio/Square) (GPL
 <a href="https://crowdin.com/profile/OrangeZXZ"><img src="https://crowdin-static.cf-downloads.crowdin.com/avatar/16130898/medium/63a28f52887ba3835eb7cc7ef828ec5b.png" width="54" height="54" alt="OrangeZXZ" title="OrangeZXZ" /></a>
 <a href="https://crowdin.com/profile/siggi1984"><img src="https://crowdin-static.cf-downloads.crowdin.com/avatar/15963157/medium/af6f94fe7cea3595b77a2a8b41433d03.png" width="54" height="54" alt="siggi1984" title="siggi1984" /></a>
 <a href="https://crowdin.com/profile/Usia"><img src="https://crowdin-static.cf-downloads.crowdin.com/avatar/16236470/medium/315b1ebbd38e0f7e41d44bee752afa33.jpg" width="54" height="54" alt="Usia" title="Usia" /></a>
+<a href="https://crowdin.com/profile/Leofrrp"><img src="https://crowdin-static.cf-downloads.crowdin.com/avatar/17972217/medium/cb65c6508d2f2637b6d943bc76bc702b.jpeg" width="54" height="54" alt="Witrack." title="Witrack." /></a>
 <a href="https://crowdin.com/profile/yrrad8"><img src="https://crowdin-static.cf-downloads.crowdin.com/avatar/16884921/medium/26b03f3f453a0e021552026b04acfd3c_default.png" width="54" height="54" alt="yrrad8" title="yrrad8" /></a>
 </p>
 <!-- crowdin-contributors:end -->
