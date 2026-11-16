@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">Pagina implicită</string>
     <string name="settings_interface_corner_radius_label">Rotunjire UI</string>
     <string name="settings_interface_hide_status_bar_label">Ascunde bara de stare</string>
+    <string name="settings_interface_right_to_left_label">Aspect dreapta-stânga</string>
+    <string name="settings_interface_right_to_left_description">Oglindiți interfața independent de limba aplicației.</string>
     <string name="settings_interface_page_description">Secțiunea interfață utilizator conține setări pentru a modifica interfața globală și navigația</string>
     <string name="settings_interface_page_title">Interfață</string>
     <string name="settings_interface_title">Interfața utilizatorului</string>
