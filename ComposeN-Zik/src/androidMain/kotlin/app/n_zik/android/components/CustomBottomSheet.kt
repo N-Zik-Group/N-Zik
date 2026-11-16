@@ -133,6 +133,21 @@ internal fun sheetTranslationY(
 }
 
 /**
+ * Moves the collapsed card toward its screen edge as the sheet enters the dismissed zone.
+ * [dismissProgress] runs from zero at the collapsed anchor to one at the dismissed anchor.
+ */
+internal fun miniPlayerDismissOffset(
+    dismissProgress: Float,
+    collapsedYPx: Float,
+    parentHeightPx: Float,
+    collapsedHeightPx: Float,
+    anchoredAtTop: Boolean,
+): Float {
+    val edgeY = if (anchoredAtTop) -collapsedHeightPx else parentHeightPx
+    return (edgeY - collapsedYPx) * dismissProgress
+}
+
+/**
  * Drag delta handed to the sheet state, which opens the sheet on a negative (upward) delta.
  * Anchored at the top the sheet deploys downwards, so the gesture is mirrored: dragging
  * down opens it and dragging up closes it.
@@ -290,25 +305,34 @@ fun CustomBottomSheet(
     CompositionLocalProvider(
         LocalPlayerSheetGlassTransition provides transition,
         LocalGlassContainerBackdrop provides
-            if (miniPlayerGlass && state.progress > 0f) deployBackdrop else LocalGlassContainerBackdrop.current,
+            if (miniPlayerGlass && state.isAboveCollapsed) deployBackdrop else LocalGlassContainerBackdrop.current,
         LocalGlassMaterialSource provides
-            if (miniPlayerGlass && state.progress > 0f) pageBackdrop else LocalGlassMaterialSource.current,
+            if (miniPlayerGlass && state.isAboveCollapsed) pageBackdrop else LocalGlassMaterialSource.current,
     ) {
     Box(
         modifier = modifier
             .fillMaxSize()
             .graphicsLayer {
                 val offset = verticalOffset().toPx()
+                val height = collapsedHeight().toPx()
                 val collapsedY = sheetTranslationY(
                     progress = 0f,
                     parentHeightPx = size.height,
-                    collapsedHeightPx = collapsedHeight().toPx(),
+                    collapsedHeightPx = height,
                     bottomPaddingPx = bottomPadding().toPx(),
                     topPaddingPx = topPadding?.invoke()?.toPx(),
                 )
                 // Deployment stays finger-driven; only the collapsed anchor changes with navigation.
-                translationY = (animatedPlacement(collapsedY + offset) - offset) *
-                    (1f - state.progress.coerceIn(0f, 1f)) + offset
+                val placedY = animatedPlacement(collapsedY + offset)
+                val dismissOffset = miniPlayerDismissOffset(
+                    dismissProgress = state.dismissProgress,
+                    collapsedYPx = placedY,
+                    parentHeightPx = size.height,
+                    collapsedHeightPx = height,
+                    anchoredAtTop = anchoredAtTop,
+                )
+                translationY = (placedY - offset) * (1f - state.progress.coerceIn(0f, 1f)) +
+                    offset + dismissOffset
             }
             .onGloballyPositioned { sheetCoordinates = it }
             // The exact card still bounds ordinary input. Only a currently animated mini
@@ -403,7 +427,7 @@ fun CustomBottomSheet(
                 }
             }
     ) {
-        if (miniPlayerGlass && !state.isCollapsed && !state.isDismissed) PlayerDeployGlassSurface(
+        if (miniPlayerGlass && state.isAboveCollapsed) PlayerDeployGlassSurface(
             progress = { state.progress }, collapsedHeight = collapsedHeight(),
             startInset = leftInset(), endInset = rightInset(),
             horizontalPadding = horizontalPadding(),
@@ -411,7 +435,7 @@ fun CustomBottomSheet(
             filmColor = miniPlayerColor, exportedBackdrop = deployBackdrop,
             handoffProgress = { transition.value },
         )
-        if (!state.isCollapsed && !state.isDismissed) {
+        if (state.isAboveCollapsed) {
             BackHandler(onBack = state::collapseSoft)
         }
 
@@ -467,20 +491,9 @@ fun CustomBottomSheet(
             content = content
         )
 
-        // Mini-player — visible while the card is not fully deployed. Fades
-        // out from 0 to 0.45f (miniPlayerFade), so it is fully transparent
-
-        // right when the player fade-in starts — the hand-over is smooth,
-        // without pop, overlap or empty gap. Excluded when dismissed: at
-
-        // the dismissed bound the sheet is closed and keeping the box would
-        // leave an invisible tap/drag target at the screen edge.
-
-        // Clipped to the collapsed card shape (geometry at progress 0) while
-        // deploying so the mini-player's shadow (drawn inside the legacy
-
-        // MiniPlayer) cannot leak outside its card as the card grows around it.
-        if (!state.isExpanded && !state.isDismissed) {
+        // Prepare the card at the offscreen anchor before the appearance spring starts.
+        // The collapsed card clip keeps its shadow contained during deployment.
+        if (!state.isExpanded) {
             Box(
                 modifier =
                 Modifier
@@ -496,6 +509,7 @@ fun CustomBottomSheet(
                         layout(constraints.maxWidth, height) { placeable.placeRelative(left, 0) }
                     }
                     .clickable(
+                        enabled = !state.isDismissed,
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
                         onClick = { if (isExpandable) state.expandSoft() },

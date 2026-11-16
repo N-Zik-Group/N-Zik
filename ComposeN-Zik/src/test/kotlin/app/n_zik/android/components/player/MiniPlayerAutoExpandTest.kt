@@ -1,7 +1,8 @@
 package app.n_zik.android.components.player
 
 import androidx.compose.animation.core.AnimationSpec
-import androidx.compose.animation.core.TweenSpec
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.SpringSpec
 import androidx.compose.ui.unit.Dp
 import app.n_zik.android.ui.screens.player.PlayerSheetState
 import io.mockk.Runs
@@ -30,8 +31,10 @@ class MiniPlayerAutoExpandTest {
 
         presentMiniplayerThenExpand(sheetState)
 
-        assertTrue(spec.captured is TweenSpec<*>, "the pop must be a tween, not another spec type")
-        assertEquals(MINIPLAYER_POP_ANIMATION_MS.toInt(), (spec.captured as TweenSpec<*>).durationMillis)
+        assertTrue(spec.captured is SpringSpec<*>)
+        val spring = spec.captured as SpringSpec<*>
+        assertEquals(Spring.StiffnessMediumLow, spring.stiffness)
+        assertEquals(Spring.DampingRatioNoBouncy, spring.dampingRatio)
         verify(exactly = 1) { sheetState.collapse(any()) }
         verify(exactly = 0) { sheetState.expandSoft() }
 

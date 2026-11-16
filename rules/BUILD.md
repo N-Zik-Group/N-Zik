@@ -1,6 +1,6 @@
 # Build & Test Rules
 
-**Version:** 1.13.1 | **Last updated:** 2026-11-16
+**Version:** 1.14.0 | **Last updated:** 2026-11-16
 
 ## Gradle Version Catalog
 
@@ -40,7 +40,8 @@ If a needed library isn't in the catalog → HALT and ask user before adding to 
 ## Android Emulator Cleanup
 
 - Record the ADB serial of each emulator started for the task. As soon as verification no longer needs it, including after failure or cancellation, shut it down with `adb -s <serial> emu kill` and verify that its instance has exited.
-- Leave shared emulators and emulators started by the user or other tasks running.
+- Leave shared emulators and emulators started by the user or other tasks running. Preserve pre-existing AVD definitions, installed apps and data when shutting down an instance started for this task.
+- If the task created a disposable AVD, delete it with `avdmanager delete avd -n <name>` after shutdown. Verify its absence from `emulator -list-avds` and verify its registered files and data directory are gone. Keep a disposable AVD only when requested as a deliverable.
 
 ## Verification
 
@@ -104,14 +105,8 @@ When a new task starts while the main checkout holds in-progress work (uncommitt
      - Initial release
      ```
 - Run all `gradlew`/`git` commands from the worktree root, exactly as from `N-Zik/`
-- **Removal (Windows, validated 2026-10-26):** plain `git worktree remove` fails on this machine — do it in order:
-  1. Verify clean first: `git -C <wt> status --porcelain` empty (the "never `--force` on a worktree with uncommitted work" rule still applies)
-  2. `git -C <wt> submodule deinit -f --all` (only when submodules were initialized) — unregisters them; leftover checkout dirs are removed manually; the main checkout's submodules are unaffected (their data lives in `N-Zik/.git/modules/`)
-  3. `git worktree remove <wt>` errors "working trees containing submodules cannot be moved or removed": the worktree gitdir (path in the `gitdir:` line of `<wt>/.git`, e.g. `N-Zik/.git/worktrees/main`) keeps leftover `modules/` dirs — `cmd /c rmdir /s /q "<gitdir>\modules"`
-  4. after the deinit the status shows ` D modules/<name>` gitlink artifacts, so `git worktree remove --force <wt>`
-  5. `--force` removes the git metadata but can fail on the physical dir: "Filename too long" (Windows MAX_PATH, deep `ComposeN-Zik/build/` paths); the worktree no longer appears in `git worktree list`
-  6. delete the physical tree with robocopy: mirror an empty temp dir onto it (`robocopy <empty> <wt> /MIR /R:1 /W:1 /NFL /NDL /NJH /NJS`, exit 1-3 = success), then `cmd /c rmdir <wt>` + remove the empty parent dirs
-- **End of task (push + cleanup):** when the worktree task is complete and verified, propose the push to `origin/main`; after the user's approval: `git push origin HEAD:main`, then remove the worktree per the procedure above (ask the user before removing)
+- **Removal on Windows:** verify the absolute path is the registered task directory under `worktrees/n-zik/`. After confirming the worktree is clean, run `git -c core.longpaths=true submodule deinit --all` from that worktree if it has submodules, then use `git -c core.longpaths=true worktree remove <wt>`. If Git requires `--force` solely because the clean worktree used submodules, verify there are no pending changes or artifacts and retry with that option. If Git unregisters it but leaves files, verify their ownership and remove only that registered task directory with a literal path.
+- **End of task (deliverables + cleanup):** preserve the final changes and requested artifacts outside the temporary worktree before removing it. Verify an approved push, a transfer into the destination checkout, or an applicable patch that includes any new files. Then remove the task worktree and verify its absence from both `git worktree list` and the filesystem. Apply emulator cleanup as well when both resources were used. If either cleanup is blocked or the user asks to keep a resource, report the exact resource and reason.
 
 ## Build Types
 

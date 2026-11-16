@@ -67,6 +67,14 @@ class PlayerSheetState(
         1f - (checkNotNull(animatable.upperBound) - animatable.value) / (checkNotNull(animatable.upperBound) - collapsedBound)
     }
 
+    internal val isAboveCollapsed by derivedStateOf { value > collapsedBound }
+
+    /** Fraction of the travel from the collapsed anchor toward the dismissed anchor. */
+    internal val dismissProgress by derivedStateOf {
+        if (value >= collapsedBound) 0f
+        else ((collapsedBound - value) / (collapsedBound - dismissedBound)).coerceIn(0f, 1f)
+    }
+
     val isVisible by derivedStateOf { !isCollapsed }
 
     fun hide() {

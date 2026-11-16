@@ -1,6 +1,6 @@
 # AGENTS.md — NZik
 
-**Version:** 1.16.0 | **Last updated:** 2026-11-15
+**Version:** 1.17.0 | **Last updated:** 2026-11-16
 
 **MANDATORY: Read this file + rules/*.md before any task.**
 
@@ -141,15 +141,13 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 
 > **Windows:** run `gradlew.bat …` from the repo root `N-Zik/` (e.g. `gradlew.bat :ComposeN-Zik:assembleDebug`). The workspace root (the parent of `N-Zik/`, where `_bmad/` lives) is **not** a git/gradle project — all `git` and `gradlew` commands run from `N-Zik/`.
 
-> **Parallel work (worktrees):** when a new task starts while `N-Zik/` holds in-progress (uncommitted) work, do NOT work in the dirty tree — propose a git worktree per rules/BUILD.md "Git Worktrees — Parallel Work": a DETACHED worktree on `origin/main` (no feature branch — work commits straight on main, then push `HEAD:main` after approval); a code task's setup = the README fresh clone (submodules + `release_notes.txt`). At task end, propose the push to `origin/main`; after approval push and remove the worktree (same rule).
+> **Parallel work (worktrees):** when a new task starts while `N-Zik/` holds in-progress (uncommitted) work, do NOT work in the dirty tree — propose a git worktree per rules/BUILD.md "Git Worktrees — Parallel Work": a DETACHED worktree on `origin/main` (no feature branch — work commits straight on main, then push `HEAD:main` after approval); a code task's setup = the README fresh clone (submodules + `release_notes.txt`).
 >
 > **Worktree location:** create every new N-Zik task worktree under `{project-root}/worktrees/n-zik/<task-id>/`.
 >
 > **Java cleanup:** at the end of every task, stop and verify termination of the Java processes dedicated to that task, including its Gradle and Kotlin daemons. See rules/BUILD.md.
 >
-> **Emulator cleanup:** shut down the Android emulator started for the task as soon as testing no longer needs it, and verify it has exited. See rules/BUILD.md.
->
-> **Worktree cleanup:** after removing a task worktree, verify both that it is absent from `git worktree list` and that its directory is gone. On Windows, use `git -c core.longpaths=true worktree remove` to handle long build paths. If Git unregisters the worktree but leaves its directory, verify the absolute path and that the remaining contents belong to the task before cleaning it up. Report any residual directory that could not be removed.
+> **Task cleanup:** shut down emulators started for the task and delete disposable AVDs created for it. Remove task worktrees once deliverables are preserved outside them. If the task used both, clean up both and verify the process, Git registration and directories as applicable. Keep existing AVD definitions and shared resources. See rules/BUILD.md.
 
 HALT after 3 failed build attempts → report with full error log.
 

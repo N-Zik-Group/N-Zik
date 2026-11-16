@@ -113,7 +113,6 @@ import app.n_zik.android.components.navigation.nav.GlassNavigationPlayerGap
 import app.n_zik.android.components.glass.LocalGlassMenuHost
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -232,7 +231,6 @@ import app.n_zik.android.components.navigation.dock.floatingDockGeometry
 import app.n_zik.android.components.navigation.dock.classicDockGeometry
 import app.n_zik.android.components.player.MiniPlayerQueueOverlay
 import app.n_zik.android.components.player.APP_HEADER_HEIGHT
-import app.n_zik.android.components.player.miniPlayerDismissAlpha
 import app.n_zik.android.components.player.shouldComposePlayerSheet
 import app.n_zik.android.components.player.miniPlayerSideInset
 import app.n_zik.android.components.player.miniPlayerTopInset
@@ -242,8 +240,6 @@ import app.n_zik.android.components.player.showMiniplayerIfDismissed
 import app.n_zik.android.components.player.PaletteFade
 import app.n_zik.android.components.player.presentMiniplayerThenExpand
 import app.n_zik.android.components.player.presentMiniplayerCollapsed
-import app.n_zik.android.components.player.MINIPLAYER_APPEAR_FADE_MS
-import app.n_zik.android.components.player.MINIPLAYER_APPEAR_FADE_SKIPPED_FRAMES
 import app.n_zik.android.components.theme.AppearanceMenuSheet
 import app.n_zik.android.components.theme.AppearanceVideoSheet
 import app.n_zik.android.components.theme.ProvideAnimatedAppearance
@@ -2375,10 +2371,6 @@ class MainActivity :
                                     if (binder?.player?.currentMediaItem != null) return@LaunchedEffect
                                     mediaPresent = false
                                     if (!playerSheetState.isDismissed) {
-                                        // Animated dismiss instead of the old instant snap: the sheet
-                                        // slides out of the screen while the dismissed-zone alpha fades the
-//
-                                        // mini-player, instead of vanishing in place.
                                         playerSheetState.dismiss()
                                     }
                                     showQueueOverlay = false
@@ -2392,16 +2384,7 @@ class MainActivity :
                                 }
                             }
 
-                            // Single CustomBottomSheet — only rendered while there's media.
-                            // Handles both collapsed (mini-player) and expanded (player) states
-//
-                            // in a single composition tree, preventing animation jumps.
-                            // Rewind and the OTA updater are full-screen decks: the player sheet
-                            // (mini-player included) slides down out of the screen with the same
-//
-                            // jelly spring as the header, and returns with the same bounce when
-//
-                            // leaving the route
+                            // Full-screen routes have their own mini-player transition.
                             val isMiniplayerHiddenRoute = isMiniplayerHiddenRoute(currentRoute)
                             val miniplayerHideProgress = animateFloatAsState(
                                 targetValue = if (isMiniplayerHiddenRoute) 1f else 0f,
@@ -2412,58 +2395,13 @@ class MainActivity :
                                 label = "miniplayerHideDismiss"
                             )
 
-                            // The sheet subtree stays composed until the animated dismiss has reached
-                            // the dismissed bound, so the slide-out is never cut short. The fades come
-//
-                            // from the appearance + dismissed-zone alphas below — no AnimatedVisibility:
-//
-                            // it would add a second full-screen layer with the default Auto strategy,
-                            // i.e. an offscreen buffer of the whole sheet on every frame (lag).
+                            // Keep the card mounted through the slide to the dismissed anchor.
                             if (shouldComposePlayerSheet(mediaPresent, playerSheetState.isDismissed)) {
-                                // Appearance fade, replayed each time the sheet leaves the dismissed
-                                // bound. The mini-player is only composed once the sheet is out of
-//
-                                // dismissed, and that composition (plus the full player's) is heavy:
-                                // a fade started in the same frame has its first frames swallowed and
-//
-                                // the mini-player pops in. So wait for the sheet to leave dismissed,
-//
-                                // let the heavy frames land, then start the fade.
-                                val appearAlpha = remember { Animatable(0f) }
-                                LaunchedEffect(playerSheetState) {
-                                    snapshotFlow { playerSheetState.isDismissed }.collectLatest { dismissed ->
-                                        if (dismissed) {
-                                            appearAlpha.snapTo(0f)
-                                        } else if (appearAlpha.value < 1f) {
-                                            repeat(MINIPLAYER_APPEAR_FADE_SKIPPED_FRAMES) { withFrameNanos { } }
-                                            appearAlpha.animateTo(1f, tween(MINIPLAYER_APPEAR_FADE_MS.toInt()))
-                                        }
-                                    }
-                                }
                                 Box(
-                                    // Top anchor follows the header through topPadding instead
                                     modifier = Modifier.fillMaxSize()
                                         .graphicsLayer {
                                             translationY = miniplayerHideProgress.value * 160.dp.toPx()
-                                            // Appearance fade x route-hide fade x dismissed-zone fade: the
-                                            // mini-player fades with the sheet's value, which follows the
-//
-                                            // finger on a drag and the tween on an animated dismiss.
-                                            alpha = appearAlpha.value *
-                                                (1f - miniplayerHideProgress.value).coerceIn(0f, 1f) *
-                                                miniPlayerDismissAlpha(
-                                                    value = playerSheetState.value,
-                                                    dismissedBound = playerSheetState.dismissedBound,
-                                                    collapsedBound = playerSheetState.collapsedBound,
-                                                )
-                                            // This layer spans the full screen: with the default Auto strategy,
-                                            // an alpha below 1 would render the whole sheet subtree into a
-//
-                                            // full-screen offscreen buffer on every frame of a drag (lag).
-                                            // ModulateAlpha applies the alpha per draw op instead. Trade-off:
-//
-                                            // semi-transparent elements modulate individually rather than as a
-                                            // unit — imperceptible on a fast dismiss fade.
+                                            alpha = (1f - miniplayerHideProgress.value).coerceIn(0f, 1f)
                                             compositingStrategy = CompositingStrategy.ModulateAlpha
                                         }
                                 ) {

@@ -49,6 +49,28 @@ class CustomBottomSheetTranslationTest {
     }
 
     @Test
+    fun `bottom mini-player follows the dismissal to the bottom screen edge`() {
+        val collapsedY = bottomAnchored(0f)
+        fun offset(progress: Float) =
+            miniPlayerDismissOffset(progress, collapsedY, parentHeight, collapsedHeight, anchoredAtTop = false)
+
+        assertEquals(0f, offset(0f))
+        assertEquals(51f, offset(0.5f))
+        assertEquals(parentHeight, collapsedY + offset(1f))
+    }
+
+    @Test
+    fun `top mini-player follows the mirrored dismissal off the top screen edge`() {
+        val collapsedY = topAnchored(0f)
+        fun offset(progress: Float) =
+            miniPlayerDismissOffset(progress, collapsedY, parentHeight, collapsedHeight, anchoredAtTop = true)
+
+        assertEquals(collapsedY, collapsedY + offset(0f))
+        assertEquals(64f, collapsedY + offset(0.5f))
+        assertEquals(-collapsedHeight, collapsedY + offset(1f))
+    }
+
+    @Test
     fun `bottom anchor opens on an upward drag and swipe`() {
         // The sheet state opens on a negative delta and on a positive fling velocity
         assertEquals(-50f, sheetDragDelta(dragAmountPx = -50f, anchoredAtTop = false))

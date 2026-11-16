@@ -10,3 +10,6 @@ Fixed:
   - Resolve foreground contrast from the Glass film and dimmed backdrop in menus, dialogs, and sheets, including Lyrics settings.
   - Adapt the full player's text and controls to the displayed artwork or gradient in both Glass and native layouts.
   - Preserve accent colors where they remain readable. Use a neutral fallback and a local scrim where artwork tones vary.
+- fix(player): slide the mini-player in and out without fading
+  - Slide the mini-player from its screen edge using a spring on appearance and dismissal.
+  - Mirror the motion for the top placement and keep the card opaque throughout the slide.
