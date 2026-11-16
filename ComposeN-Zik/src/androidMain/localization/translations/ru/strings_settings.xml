@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">Начальная страница</string>
     <string name="settings_interface_corner_radius_label">Округление пользовательского интерфейса</string>
     <string name="settings_interface_hide_status_bar_label">Скрыть строку состояния</string>
+    <string name="settings_interface_right_to_left_label">Расположение справа налево</string>
+    <string name="settings_interface_right_to_left_description">Отражает интерфейс независимо от языка приложения.</string>
     <string name="settings_interface_page_description">Раздел пользовательского интерфейса содержит настройки для изменения глобального интерфейса и навигации</string>
     <string name="settings_interface_page_title">Интерфейс</string>
     <string name="settings_interface_title">Пользовательский интерфейс</string>
