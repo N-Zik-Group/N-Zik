@@ -244,6 +244,7 @@
     <string name="playlist_right_swipe">재생목록 오른쪽으로 스와이프</string>
     <string name="playlist_selection_action_deselect">선택 해제</string>
     <string name="playlist_shuffle_positions_confirmation">Do you really want to shuffle song positions in this playlist?</string>
+    <string name="playlist_contains_song">Already in this playlist</string>
     <string name="playlist_song_already_present">곡이 플레이리스트 중 하나에 존재합니다</string>
     <string name="playlist_top">Top Playlist</string>
     <string name="playlist_top_maximum_items_description">Limit how many songs are included in your top-played playlist.</string>
@@ -408,4 +409,10 @@
     <string name="artist_more_from_format">More from %1$s</string>
     <string name="playlist_top_show_title_format">Show %1$s</string>
     <string name="library_on_device_no_local_playlists">No local playlists. Create a playlist or add a song to a new playlist from On device.</string>
+    <string name="playlist_import_youtube_link_hint">https://youtube.com/playlist?list=...</string>
+    <string name="search_youtube_open_url_example">https://........</string>
+    <string name="album_year_and_song_summary">%1$s • %2$s</string>
+    <string name="search_home_online_action">Search Online</string>
+    <string name="search_home_library_action">Search Library</string>
+    <string name="song_matching_result_title_and_artist">%1$s - %2$s</string>
 </resources>
