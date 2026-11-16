@@ -4,6 +4,7 @@ import android.app.PictureInPictureParams
 import android.content.pm.ActivityInfo
 import android.graphics.Matrix
 import android.graphics.Rect
+import android.graphics.SurfaceTexture
 import android.os.Build
 import android.os.SystemClock
 import android.util.Rational
@@ -473,15 +474,15 @@ private fun VideoTexture(
     var texture by remember { mutableStateOf<TextureView?>(null) }
     var frame by remember(player, backdrop) { mutableStateOf<ImageBitmap?>(null) }
 
-    LaunchedEffect(texture, backdrop, player) {
+    LaunchedEffect(texture, backdrop, player, viewport, cropToFill, ratio) {
         val view = texture ?: return@LaunchedEffect
         if (backdrop == null) return@LaunchedEffect
-        var lastPosition = Long.MIN_VALUE
+        var capturedFrame: Pair<SurfaceTexture, Long>? = null
         while (true) {
-            val position = player.currentPosition
-            if (view.isAvailable && view.width > 0 && view.height > 0 &&
-                (frame == null || position != lastPosition)
-            ) {
+            val surface = view.surfaceTexture
+            // A paused seek changes the playback position before its frame reaches the surface.
+            val renderedFrame = surface?.let { it to it.timestamp }
+            if (renderedFrame != null && renderedFrame != capturedFrame && view.width > 0 && view.height > 0) {
                 // Only the lens needs a copy of the frame. Keep the primary TextureView live.
                 val scale = minOf(1f, 144f / maxOf(view.width, view.height))
                 val width = (view.width * scale).roundToInt().coerceAtLeast(1)
@@ -490,7 +491,7 @@ private fun VideoTexture(
                     // Refresh retained optical captures once the new video frame is recorded.
                     backdrop.materialChanged()
                     frame = it.asImageBitmap()
-                    lastPosition = position
+                    capturedFrame = renderedFrame
                 }
             }
             delay(150)
