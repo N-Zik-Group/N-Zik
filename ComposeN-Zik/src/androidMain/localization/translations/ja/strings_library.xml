@@ -244,6 +244,7 @@
     <string name="playlist_right_swipe">プレイリスト 右スワイプ</string>
     <string name="playlist_selection_action_deselect">選択を解除</string>
     <string name="playlist_shuffle_positions_confirmation">このプレイリストで曲の位置をシャッフルしてもよろしいですか？</string>
+    <string name="playlist_contains_song">すでにこのプレイリストに入っています</string>
     <string name="playlist_song_already_present">曲は再生リスト内にあります</string>
     <string name="playlist_top">トッププレイリスト</string>
     <string name="playlist_top_maximum_items_description">トッププレイリストに含まれる曲数を制限します。</string>
@@ -408,4 +409,10 @@
     <string name="artist_more_from_format">%1$s の詳細</string>
     <string name="playlist_top_show_title_format">%1$s を表示</string>
     <string name="library_on_device_no_local_playlists">ローカルプレイリストがありません。オンデバイスからプレイリストを作成するか、新しいプレイリストに曲を追加します。</string>
+    <string name="playlist_import_youtube_link_hint">https://youtube.com/playlist?list=...</string>
+    <string name="search_youtube_open_url_example">https://........</string>
+    <string name="album_year_and_song_summary">%1$s • %2$s</string>
+    <string name="search_home_online_action">オンラインで検索</string>
+    <string name="search_home_library_action">ライブラリを検索</string>
+    <string name="song_matching_result_title_and_artist">%1$s - %2$s</string>
 </resources>
