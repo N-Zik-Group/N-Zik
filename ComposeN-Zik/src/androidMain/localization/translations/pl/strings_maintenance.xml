@@ -328,4 +328,14 @@
     <string name="recovery_theme_backup_operation_failed">Nie można ukończyć operacji kopii zapasowej motywu.</string>
     <string name="recovery_theme_backup_restore_action">Przywróć motywy</string>
     <string name="recovery_theme_backup_restore_description">Otwórz ostatnią kopię zapasową motywu używaną dla tego profilu.</string>
+    <string name="updates_status_and_last_check">%1$s · %2$s</string>
+    <string name="recovery_action_failed">Nie można ukończyć akcji odzyskiwania.</string>
+    <string name="recovery_reopen_after_restoring_settings">Otwórz ponownie Centrum ratownicze po przywróceniu ustawień.</string>
+    <string name="recovery_settings_file_empty">Plik ustawień jest pusty.</string>
+    <string name="recovery_profile_changed_during_import">Wybrany profil został zmieniony podczas importowania ustawień. Wybierz go ponownie i spróbuj ponownie.</string>
+    <string name="recovery_no_importable_settings">Plik nie zawiera ustawień, które mogą być zaimportowane.</string>
+    <string name="recovery_finish_pending_profile_operation">Zakończ resetowanie lub przywracanie profilu oczekującego.</string>
+    <string name="recovery_no_database_to_reset">Brak bazy danych do zresetowania.</string>
+    <string name="updates_current_version_format">v%1$s</string>
+    <string name="updates_version_and_status">%1$s • %2$s</string>
 </resources>
