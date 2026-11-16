@@ -214,6 +214,8 @@
     <string name="settings_home_default_page_label">Standardside</string>
     <string name="settings_interface_corner_radius_label">UI Rundhet</string>
     <string name="settings_interface_hide_status_bar_label">Skjul statuslinjen</string>
+    <string name="settings_interface_right_to_left_label">Høyre-til-venstre layout</string>
+    <string name="settings_interface_right_to_left_description">Speil grensesnittet uavhengig av appspråket.</string>
     <string name="settings_interface_page_description">Brukergrensesnittet inneholder innstillinger for å endre det globale grensesnittet og navigasjon</string>
     <string name="settings_interface_page_title">UI</string>
     <string name="settings_interface_title">Brukergrensesnitt</string>
