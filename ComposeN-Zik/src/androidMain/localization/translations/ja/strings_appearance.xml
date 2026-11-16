@@ -437,6 +437,7 @@
     <string name="theme_store_draft_discard">下書きを削除</string>
     <string name="theme_store_draft_resume">下書きを続ける</string>
     <string name="theme_store_preview_add_extra">追加のプレビューを追加</string>
+    <string name="theme_store_preview_remove_extra">この追加プレビューを削除</string>
     <string name="theme_store_preview_extra_title">タイトルをプレビュー</string>
     <string name="theme_store_preview_import_requirements_with_gif">プレビューは公開されています。個人情報はスクリーンショットから除外してください。 PNG、JPEG、WebPまたはGIF・画像ごとに4MB。 GIFは元のサイズを維持し、1920×1920以内に収まる必要があります。</string>
     <string name="theme_store_preview_import_error">この画像をインポートできませんでした。PNG、JPEG、WebP画像を4MB以下で選択してください。</string>
