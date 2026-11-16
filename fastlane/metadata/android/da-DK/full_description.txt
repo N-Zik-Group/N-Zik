@@ -1,9 +1,5 @@
 En flersproget YouTube Music frontend til Android, fokuseret på ydeevne, UI/UX raffineringer, funktion ekspansion og langsigtet support.
 
-<b>N-Zik</b> er en open source gaffel af <a href="https://github.com/knighthat/Kreate">Kreate</a>.
-
-<b>Bemærk:</b> N-Zik startede som et sideprojekt. For mere modne alternativer, tjek <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>eller <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
-
 <b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), gennemgået og testet før afsendelse.
 
 :gnister: <b>HVORFOR N-ZIK?</b> Ingen annoncer, baggrundsafspilning, offline caching, tilpasselig UI - gratis, altid.
@@ -13,6 +9,10 @@ En flersproget YouTube Music frontend til Android, fokuseret på ydeevne, UI/UX 
 - Temaer: AMOLED, Deep Dark, Crisp Light + tonede accenter
 - 3D Carousel Player, home widgets, samlet spiller og mini-player
 - Kunstnerprofiler, Opdagelse og stemninger, sammenklappelige hjemmesidehoveder
+
+🎨 <b>Tema Butik (BETA)</b>
+- Gennemse og download fællesskabstemaer, få vist dem i Normal og Glass, og vælg hvilke indstillinger for udseende der skal gælde.
+- Opret lokale temaer eller del dine designs med fællesskabet. Importer og eksporter temaer som ZIP-filer.
 
 🫧 <b>Glas Effekt (BETA, valgfri)</b>
 Deaktiveret på friske installationer. Aktiver i Indstillinger: indfødt, kontur-only eller Glas efter kategori, med justerbar kvalitet. Kan øge rendering arbejde og batteri brug; reducere kvalitet eller deaktivere hvis nødvendigt.
@@ -33,7 +33,8 @@ Glas credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Back
 - Auto-backup med brugerdefinerede intervaller og retention
 
 🔗 <b>Integrationer</b>
-- YouTube-login til anbefalinger og videoafspilning, plus en eksperimentel tovejs synkroniseringsmotor
+- Skift mellem Google-konti og YouTube-kanaler. Hver N-Zik profil bruger en aktiv YouTube Musik-kanal til anbefalinger og afspilning.
+- Eksperimentel to-vejs YouTube Music bibliotek synkronisering i Debug og Dev builds.
 - Last.fm scrobbling med Nu Spille og kærlighed/handske
 - MusicBrainz kunstner og album indsigt
 - Discord Rich Presence, herunder avanceret tilstand med live preview
