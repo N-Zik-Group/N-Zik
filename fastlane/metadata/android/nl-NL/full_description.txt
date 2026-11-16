@@ -1,9 +1,5 @@
 Een meertalige YouTube Music frontend voor Android, gericht op prestaties, UI/UX raffinaderijen, feature expansie en langdurige ondersteuning.
 
-<b>N-Zik</b> is een open-source vork van <a href="https://github.com/knighthat/Kreate">Kreate</a>.
-
-<b>Opmerking:</b> N-Zik begon als een zijproject. Voor meer volwassen alternatieven, bekijk <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>of <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
-
 <b>AI gebruik:</b> Ik gebruik generative AI voor code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), herzien en getest voor verzending.
 
 ✨ <b>WHY N-ZIK?</b> Geen advertenties, afspelen, offline caching, aanpasbare UI - gratis, altijd.
@@ -13,6 +9,10 @@ Een meertalige YouTube Music frontend voor Android, gericht op prestaties, UI/UX
 - Thema's: AMOLED, Deep Dark, Crisp Licht + getinteerde accenten
 - 3D Carrousel Speler, home widgets, verenigde speler en mini-speler
 - Kunstenaar profielen, ontdekking en spoelen, inklapbare huiskoppen
+
+🎨 <b>Theme Store (BETA)</b>
+- Blader en download de communitythema's, bekijk ze in Normaal en Glass, en kies welke weergave-instellingen van toepassing zijn.
+- Maak lokale thema's aan of deel uw ontwerpen met de community. Importeer en exporteer thema's als ZIP bestanden.
 
 🫧 <b>Glazen Effect (BETA, optioneel)</b>
 Uitgeschakeld met verse installaties. Inschakelen in Instellingen: natieve, enkel contouren of glas per categorie, met verstelbare kwaliteit. Kan het rendering en accugebruik vergroten; kwaliteit verminderen of uitschakelen indien nodig.
@@ -33,7 +33,8 @@ Glazen credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Ac
 -Automatische back-up met aangepaste intervallen en retentie
 
 🔗 <b>Integraties</b>
-- YouTube-login voor aanbevelingen en het afspelen van video's, plus een experimentele tweewegse sync engine
+- Schakel tussen Google-accounts en YouTube-kanalen. Elk N-Zik-profiel gebruikt één actief YouTube-muziekkanaal voor aanbevelingen en afspelen.
+- Experimentele twee-weg YouTube Music library synchronisatie in Debug en Dev builds.
 - Last.fm scrobblen met nu spelen en liefde/los
 - MusicBrainz artiest en album inzichten
 - Discord Rich Presence, inclusief geavanceerde modus met live voorbeeld
