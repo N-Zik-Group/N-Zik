@@ -328,4 +328,14 @@
     <string name="recovery_theme_backup_operation_failed">Não foi possível concluir a operação de backup do tema.</string>
     <string name="recovery_theme_backup_restore_action">Restaurar temas</string>
     <string name="recovery_theme_backup_restore_description">Abra o último backup do tema usado para este perfil.</string>
+    <string name="updates_status_and_last_check">%1$s · %2$s</string>
+    <string name="recovery_action_failed">Não foi possível concluir a ação de recuperação.</string>
+    <string name="recovery_reopen_after_restoring_settings">Reabra o Centro de Resgate após restaurar as configurações.</string>
+    <string name="recovery_settings_file_empty">O arquivo de configurações está vazio.</string>
+    <string name="recovery_profile_changed_during_import">O perfil selecionado mudou durante a importação de configurações. Selecione novamente e tente novamente.</string>
+    <string name="recovery_no_importable_settings">O arquivo não contém configurações que possam ser importadas.</string>
+    <string name="recovery_finish_pending_profile_operation">Finalize a restauração do perfil pendente ou restaure primeiro.</string>
+    <string name="recovery_no_database_to_reset">Não há banco de dados para redefinir.</string>
+    <string name="updates_current_version_format">v%1$s</string>
+    <string name="updates_version_and_status">%1$s • %2$s</string>
 </resources>
