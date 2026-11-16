@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">Justera storleken på spelarens tryckfil för den aktuella orienteringen.</string>
     <string name="player_artwork_technical_info_description">Visa teknisk uppspelningsinformation i spelaren.</string>
     <string name="player_artwork_technical_info_title">Statistik för nördar</string>
+    <string name="player_artwork_hold_to_speed_up_title">Håll för att snabba upp</string>
+    <string name="player_artwork_hold_to_speed_up_description">Tryck och håll in tryckfilen för att tillfälligt påskynda uppspelningen</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Öka hastigheten</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Uppspelningshastighet medan du håller i tryckverket.</string>
     <string name="player_artwork_transition_circular">Cirkulär</string>
     <string name="player_auto_load_songs_in_queue">Ladda låtar automatiskt i kö</string>
     <string name="player_auto_load_songs_in_queue_description">Lägger till låtar när kön är på väg att avslutas</string>
