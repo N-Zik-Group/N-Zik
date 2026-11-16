@@ -328,4 +328,14 @@
     <string name="recovery_theme_backup_operation_failed">Kunne ikke fullføre tema sikkerhetskopieringen.</string>
     <string name="recovery_theme_backup_restore_action">Gjenopprett temaer</string>
     <string name="recovery_theme_backup_restore_description">Åpne siste sikkerhetskopiering for denne profilen.</string>
+    <string name="updates_status_and_last_check">%1$s · %2$s</string>
+    <string name="recovery_action_failed">Kunne ikke fullføre gjenopprettingshandlingen.</string>
+    <string name="recovery_reopen_after_restoring_settings">Åpne cue senteret etter gjenopprettingsinstillinger.</string>
+    <string name="recovery_settings_file_empty">Innstillingsfilen er tom.</string>
+    <string name="recovery_profile_changed_during_import">Den valgte profilen endret under import av innstillinger. Velg nytt og prøv igjen.</string>
+    <string name="recovery_no_importable_settings">Filen inneholder ingen innstillinger som kan importeres.</string>
+    <string name="recovery_finish_pending_profile_operation">Fullfør ventende tilbakestilling eller gjenoppretting først.</string>
+    <string name="recovery_no_database_to_reset">Det er ingen database å restarte.</string>
+    <string name="updates_current_version_format">v%1$s</string>
+    <string name="updates_version_and_status">%1$s • %2$s</string>
 </resources>
