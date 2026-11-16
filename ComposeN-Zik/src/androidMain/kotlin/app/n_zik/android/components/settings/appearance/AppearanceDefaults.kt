@@ -128,6 +128,7 @@ import app.n_zik.android.utils.thumbnailSizeLDpKey
 import app.n_zik.android.utils.thumbnailSpacingKey
 import app.n_zik.android.utils.thumbnailSpacingLKey
 import app.n_zik.android.utils.thumbnailTapEnabledKey
+import app.n_zik.android.utils.holdToSpeedUpKey
 import app.n_zik.android.utils.thumbnailTypeKey
 import app.n_zik.android.utils.thumbnailpauseKey
 import app.n_zik.android.utils.timelineExpandedKey
@@ -177,6 +178,7 @@ internal fun applyAppearanceDefaults(context: Context) {
         putEnum(playerTimelineSizeKey, PlayerTimelineSize.Biggest)
         putBoolean(effectRotationKey, effectRotationDefault)
         putBoolean(thumbnailTapEnabledKey, true)
+        putBoolean(holdToSpeedUpKey, true)
         putBoolean(showButtonPlayerAddToPlaylistKey, true)
         putBoolean(showButtonPlayerArrowKey, true)
         putBoolean(showButtonPlayerDownloadKey, true)

@@ -43,6 +43,7 @@ import app.n_zik.android.utils.playerTypeKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.showCoverThumbnailAnimationKey
 import app.n_zik.android.utils.showthumbnailKey
+import app.n_zik.android.utils.holdToSpeedUpKey
 import app.n_zik.android.utils.statsfornerdsKey
 import app.n_zik.android.utils.swipeAnimationsNoThumbnailKey
 import app.n_zik.android.utils.thumbnailpauseKey
@@ -91,6 +92,7 @@ internal fun AppearanceCoverCard(search: Search) {
     var thumbnailpause by rememberPreference(thumbnailpauseKey, true)
     var cropVideoThumbnails by rememberPreference(cropVideoThumbnailsKey, true)
     var statsfornerds by rememberPreference(statsfornerdsKey, false)
+    var holdToSpeedUp by rememberPreference(holdToSpeedUpKey, true)
     var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
     var noblur by rememberPreference(noblurKey, true)
     var fadingedge by rememberPreference(fadingedgeKey, false)
@@ -452,6 +454,16 @@ internal fun AppearanceCoverCard(search: Search) {
                             text = stringResource(R.string.player_artwork_technical_info_description),
                             isChecked = statsfornerds,
                             onCheckedChange = { statsfornerds = it }
+                        )
+                    }
+                    if (search.inputValue.isBlank() || stringResource(R.string.player_artwork_hold_to_speed_up_title).contains(search.inputValue, true)) {
+                        OtherSwitchSettingEntry(
+                            modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.hold_to_speed_up"),
+                            icon = R.drawable.play_forward,
+                            title = stringResource(R.string.player_artwork_hold_to_speed_up_title),
+                            text = stringResource(R.string.player_artwork_hold_to_speed_up_description),
+                            isChecked = holdToSpeedUp,
+                            onCheckedChange = { holdToSpeedUp = it }
                         )
                     }
             }
