@@ -10,7 +10,7 @@
 - 3D Carousel Player, 홈 위젯, 통합 플레이어와 미니 플레이어
 - 아티스트 프로필, Discovery와 무드, 접이식 홈 헤더
 
-🎨 <b>Theme Store</b>
+🎨 <b>Theme Store (BETA)</b>
 - Browse and download community themes, preview them in Normal and Glass, and choose which appearance settings to apply.
 - Create local themes or share your designs with the community. Import and export themes as ZIP files.
 
@@ -33,7 +33,8 @@ Glass 크레딧: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / B
 - 맞춤 간격 및 보존 기간의 자동 백업
 
 🔗 <b>통합</b>
-- 추천 및 비디오 재생을 위한 YouTube 로그인, 실험적 양방향 동기화 엔진 포함
+- Switch between Google accounts and YouTube channels. Each N-Zik profile uses one active YouTube Music channel for recommendations and playback.
+- Experimental two-way YouTube Music library sync in Debug and Dev builds.
 - Now Playing과 love/unlove를 갖춘 Last.fm 스크로블링
 - MusicBrainz 아티스트 및 앨범 정보
 - Discord Rich Presence, 라이브 미리보기가 있는 고급 모드 포함
