@@ -1,9 +1,5 @@
 Android için hızlı, özelleştirilebilir ve uzun süre desteklenen çok dilli YouTube Music uygulaması.
 
-<b>N-Zik</b>, <a href="https://github.com/knighthat/Kreate">Kreate</a>'nin açık kaynaklı bir çatalıdır.
-
-<b>Not:</b> N-Zik bir yan proje olarak başladı. Daha olgun alternatifler için <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> veya <a href="https://github.com/fast4x/RiPlay">RiPlay</a>'e göz atın.
-
 <b>AI Kullanımı:</b> Kod için üretken AI kullanıyorum (<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a> aracılığıyla), her şey yayına alınmadan önce incelenir ve test edilir.
 
 ✨ <b>NEDEN N-ZIK?</b> Reklam yok, arka planda oynatma, çevrimdışı önbellekleme, özelleştirilebilir kullanıcı arayüzü – her zaman ücretsiz.
@@ -13,6 +9,10 @@ Android için hızlı, özelleştirilebilir ve uzun süre desteklenen çok dilli
 - Temalar: AMOLED, Derin Karanlık, Net Işık + renkli vurgular
 - 3D Karusel Oynatıcı, ana sayfa widget'ları, birleştirilmiş oynatıcı ve mini oynatıcı
 - Sanatçı profilleri, Keşif/ruh halleri, katlanabilir ana ekran başlıkları
+
+🎨 <b>Tema Mağazası (BETA)</b>
+- Topluluk temalarını inceleyin ve indirin, bunları Normal ve Cam modlarında önizleyin ve hangi görünüm ayarlarını uygulayacağınızı seçin.
+- Yerel temalar oluşturun veya tasarımlarınızı toplulukla paylaşın. Temaları ZIP dosyaları olarak içe ve dışa aktarın.
 
 🫧 <b>Cam efekti (BETA, isteğe bağlı)</b>
 Yeni kurulumlarda kapalıdır. Ayarlarda kategoriye göre yerel, yalnızca kenar veya Cam ve kalite seçilir. İşleme yükünü ve pil tüketimini artırabilir; kaliteyi düşürün veya kapatın.
@@ -33,7 +33,8 @@ Cam katkıları: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / B
 - Özel aralıklı ve saklama süreli otomatik yedekleme
 
 🔗 <b>Entegrasyonlar</b>
-- Öneriler ve video için YouTube oturumu, deneysel çift yönlü eşitleme
+- Google hesapları ve YouTube kanalları arasında geçiş yapın. Her bir N-Zik profili, öneriler ve çalma işlemleri için tek bir aktif YouTube Music kanalı kullanır.
+- Hata Ayıklama ve Geliştirici sürümlerinde deneysel olarak sunulan iki yönlü YouTube Music kütüphane senkronizasyonu.
 - Şimdi Çalıyor ve beğenme/beğenme seçenekleriyle Last.fm'e kaydetme
 - MusicBrainz sanatçı ve albüm bilgileri
 - Discord Zengin Varlık, canlı önizlemeli gelişmiş mod dahil
