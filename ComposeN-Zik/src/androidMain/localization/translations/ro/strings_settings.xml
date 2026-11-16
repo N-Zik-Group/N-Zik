@@ -445,7 +445,6 @@
     <string name="settings_service_keep_screen_on_label">Menține ecranul aprins</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Permite o funcționare nerestricționată a fundalului, astfel încât este mai puțin probabil ca sistemul să întrerupă redarea.</string>
     <string name="settings_stream_disabled_clients_title">Clienți Stream dezactivați</string>
-    <string name="settings_stream_preferred_client_changed_message">Clientul preferat a fost modificat. Se va aplica pe următoarea pistă.</string>
     <string name="settings_stream_preferred_client_title">Client Stream preferat</string>
     <string name="settings_swipe_actions_description">Efectuează acțiuni glisând la stânga sau la dreapta pe o melodie</string>
     <string name="settings_swipe_actions_title">Glisează pentru acțiune</string>
