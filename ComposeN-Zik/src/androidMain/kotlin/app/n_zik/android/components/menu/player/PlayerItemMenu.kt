@@ -484,14 +484,14 @@ class PlayerItemMenu private constructor(
         // Add to Playlist
         val addToPlaylist = PlaylistsMenu.init(
             navController = navController,
+            songId = currentMediaItem.mediaId,
             mediaItems = { _ -> listOf(currentMediaItem) },
             onFailure = { throwable, preview ->
                 Timber.tag("PlayerItemMenu").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
             },
             finalAction = {
                 menuState.hide()
-            },
-            onDismiss = { openMenu() }
+            }
         )
 
         // Listen On

@@ -8,6 +8,10 @@ Added:
   - Switch between Audio and Video from the player header, with the default mode or last used mode selected on opening.
   - Prefer the YouTube Music counterpart and provide a searchable video picker when a clip cannot be resolved or the Video tab is held.
   - Play clips in the player, picture-in-picture, or either landscape orientation in fullscreen. Reuse the player controls, timeline, Glass settings, and theme shapes.
+- feat(playlist): show when a song is already in a playlist (issue https://github.com/N-Zik-Group/N-Zik/issues/90)
+  - Show the existing playlist icon beside each destination that already contains the selected song in PlaylistsMenu and AddToPlaylistItemMenu.
+  - Block attempts to add the same song again, show an informational toast, and check stored membership before local and YouTube Music additions.
+  - Remove the back arrow from both add-to-playlist menus.
 
 Fixed:
 - fix(ui): adapt text and icons to light-theme backgrounds

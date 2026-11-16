@@ -511,8 +511,7 @@ class AlbumItemMenu private constructor(
             navController = navController,
             mediaItems = { songs.map { it.asMediaItem } },
             onFailure = { _, _ -> },
-            finalAction = { menuState.hide() },
-            onDismiss = { openMenu() }
+            finalAction = { menuState.hide() }
         )
 
         val shuffle = SongShuffler { songs }

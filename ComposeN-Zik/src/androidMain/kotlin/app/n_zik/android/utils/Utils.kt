@@ -43,6 +43,7 @@ import app.n_zik.kugou.KuGou
 import app.n_zik.lrclib.LrcLib
 import androidx.media3.session.MediaConstants.EXTRAS_KEY_IS_EXPLICIT
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.canEditStoredPlaylistMembership
 import app.n_zik.android.EXPLICIT_PREFIX
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.hasExplicitPrefix
@@ -60,6 +61,8 @@ import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import app.n_zik.android.core.utils.Toaster
 import java.io.File
 import java.time.Duration
@@ -679,23 +682,31 @@ suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: 
     }
 }
 
-suspend fun addSongToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: String, mediaItem: MediaItem){
-    if (isYouTubeSyncEnabled() && canPushToYTM() && isNetworkConnected(appContext())) {
+private val singleYouTubePlaylistAddMutex = Mutex()
+
+suspend fun addSongToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: String, mediaItem: MediaItem) {
+    if (!isYouTubeSyncEnabled() || !canPushToYTM() || !isNetworkConnected(appContext())) return
+
+    singleYouTubePlaylistAddMutex.withLock {
         PlaylistEditThrottle.throttle(ytplaylistId)
-        addToPlaylist(ytplaylistId,mediaItem.mediaId)
+        if (!canEditStoredPlaylistMembership(localPlaylistId)) return@withLock
+        if (Database.songPlaylistMapTable.findById(mediaItem.mediaId, localPlaylistId).first() != null) {
+            Toaster.i(R.string.playlist_contains_song)
+            return@withLock
+        }
+        addToPlaylist(ytplaylistId, mediaItem.mediaId)
             .onSuccess {
-                Database.playlistTable.findById( localPlaylistId ).first()?.let {
-                    Database.mapIgnore( it, mediaItem )
+                Database.playlistTable.findById(localPlaylistId).first()?.let {
+                    Database.mapIgnore(it, mediaItem)
                 }
-                Toaster.s( R.string.sync_youtube_playlist_add_success )
+                Toaster.s(R.string.sync_youtube_playlist_add_success)
             }
             .onFailure {
-                Toaster.e( R.string.sync_youtube_playlist_add_failed )
+                if (it is CancellationException) throw it
+                Toaster.e(R.string.sync_youtube_playlist_add_failed)
             }
-
     }
 }
-
 
 @OptIn(UnstableApi::class)
 suspend fun addToYtLikedSongs(mediaItems: List<MediaItem>){

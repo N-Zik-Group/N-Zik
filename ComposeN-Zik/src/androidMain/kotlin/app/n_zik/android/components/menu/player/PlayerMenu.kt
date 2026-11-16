@@ -3,11 +3,14 @@ package app.n_zik.android.components.menu.player
 import androidx.compose.foundation.layout.height
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchEmptySpace
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
 
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import app.n_zik.android.ui.components.themed.SongInPlaylistIcon
+import app.n_zik.android.ui.components.themed.rememberSongPlaylistIds
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -173,14 +176,22 @@ fun AddToPlaylistPlayerMenu(
             if (!canEditPlaylistMembership(playlist)) return@add
             if (!isYouTubeSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
-                    editStoredPlaylistMembership(playlist.id) {
-                        insertIgnore(mediaItem)
-                        mapIgnore(playlist, mediaItem.asSong)
+                    var alreadyPresent = false
+                    val editable = editStoredPlaylistMembership(playlist.id) {
+                        alreadyPresent = songPlaylistMapTable.findById(mediaItem.mediaId, playlist.id).first() != null
+                        if (!alreadyPresent) {
+                            insertIgnore(mediaItem)
+                            mapIgnore(playlist, mediaItem.asSong)
+                        }
+                    }
+                    when {
+                        alreadyPresent -> Toaster.i(R.string.playlist_contains_song)
+                        editable -> Toaster.done()
+                        else -> Unit
                     }
                 }
             } else {
-                coroutineScope.launch(NzikDispatchers.DATA) {
-                    if (!canEditStoredPlaylistMembership(playlist.id)) return@launch
+                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                     addSongToYtPlaylist(playlist.id, position, playlist.browseId ?: "", mediaItem)
                 }
             }
@@ -249,9 +260,16 @@ fun AddToPlaylistItemMenu(
         Database.playlistTable.sortPreviews( sortBy, sortOrder ).onEach { playlistsLoaded = true }
     }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
 
-    val playlistIds by remember {
-        Database.songPlaylistMapTable.mappedTo( mediaItem.mediaId )
-    }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
+    val playlistIds = rememberSongPlaylistIds(mediaItem.mediaId)
+
+    fun addSong(preview: PlaylistPreview) {
+        if (preview.playlist.id in playlistIds) {
+            Toaster.i(R.string.playlist_contains_song)
+        } else {
+            onAddToPlaylist(preview.playlist, preview.songCount)
+            onDismiss()
+        }
+    }
 
     val editablePreviews = playlistPreviews.filter { canEditPlaylistMembership(it.playlist) }
     val pinnedPlaylists = editablePreviews.filter {
@@ -279,14 +297,6 @@ fun AddToPlaylistItemMenu(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
                 .fillMaxWidth()
         ) {
-            IconButton(
-                onClick = onDismiss,
-                icon = R.drawable.chevron_back,
-                color = colorPalette().accent,
-                modifier = Modifier
-                    .padding(all = 4.dp)
-                    .size(20.dp)
-            )
             IconButton(
                 onClick = { search.onShortClick() },
                 icon = R.drawable.search_circle,
@@ -336,12 +346,9 @@ fun AddToPlaylistItemMenu(
                         text = cleanPrefix(playlistPreview.playlist.name),
                         icon = { SettingIcon(R.drawable.add_in_playlist) },
                         subtitle = pluralStringResource(R.plurals.library_song_count, playlistPreview.songCount, playlistPreview.songCount),
-                        onClick = {
-                            onAddToPlaylist(playlistPreview.playlist, playlistPreview.songCount)
-                            Toaster.done()
-                            onDismiss()
-                        },
+                        onClick = { addSong(playlistPreview) },
                         trailingContent = {
+                            if (playlistPreview.playlist.id in playlistIds) SongInPlaylistIcon()
 
                             if (playlistPreview.playlist.isYoutubePlaylist) {
                                 Image(
@@ -386,12 +393,9 @@ fun AddToPlaylistItemMenu(
                         text = cleanPrefix(playlistPreview.playlist.name),
                         icon = { SettingIcon(R.drawable.add_in_playlist) },
                         subtitle = pluralStringResource(R.plurals.library_song_count, playlistPreview.songCount, playlistPreview.songCount),
-                        onClick = {
-                            onAddToPlaylist(playlistPreview.playlist, playlistPreview.songCount)
-                            Toaster.done()
-                            onDismiss()
-                        },
+                        onClick = { addSong(playlistPreview) },
                         trailingContent = {
+                            if (playlistPreview.playlist.id in playlistIds) SongInPlaylistIcon()
                             IconButton(
                                 icon = R.drawable.open,
                                 color = colorPalette().accent,
@@ -424,12 +428,9 @@ fun AddToPlaylistItemMenu(
                         text = cleanPrefix(playlistPreview.playlist.name),
                         icon = { SettingIcon(R.drawable.add_in_playlist) },
                         subtitle = pluralStringResource(R.plurals.library_song_count, playlistPreview.songCount, playlistPreview.songCount),
-                        onClick = {
-                            onAddToPlaylist(playlistPreview.playlist, playlistPreview.songCount)
-                            Toaster.done()
-                            onDismiss()
-                        },
+                        onClick = { addSong(playlistPreview) },
                         trailingContent = {
+                            if (playlistPreview.playlist.id in playlistIds) SongInPlaylistIcon()
 
 
                             IconButton(

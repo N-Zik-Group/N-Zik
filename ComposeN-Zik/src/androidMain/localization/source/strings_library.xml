@@ -258,6 +258,7 @@
     <string name="playlist_right_swipe">Playlist Right Swipe</string>
     <string name="playlist_selection_action_deselect">Deselect</string>
     <string name="playlist_shuffle_positions_confirmation">Do you really want to shuffle song positions in this playlist?</string>
+    <string name="playlist_contains_song">Already in this playlist</string>
     <string name="playlist_song_already_present">Song is Present in one of the Playlists</string>
     <string name="playlist_top">Top Playlist</string>
     <string name="playlist_top_maximum_items_description">Limit how many songs are included in your top-played playlist.</string>

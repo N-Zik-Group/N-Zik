@@ -66,6 +66,25 @@ class PlaylistStateManagerTest {
     }
 
     @Test
+    fun `playlist membership lists only the destinations containing the selected song`() = runBlocking {
+        insertSong("selected")
+        insertSong("other")
+        insertPlaylist(1, "First playlist")
+        insertPlaylist(2, "Second playlist")
+        insertPlaylist(3, "Third playlist")
+        songPlaylistMapDao.map("selected", 1)
+        songPlaylistMapDao.map("other", 2)
+        songPlaylistMapDao.map("selected", 3)
+
+        val memberships = songPlaylistMapDao.mappedTo("selected")
+
+        assertEquals(setOf(1L, 3L), memberships.first().toSet())
+        songPlaylistMapDao.deleteBySongId("selected", 1)
+        assertEquals(listOf(3L), memberships.first())
+        assertEquals(listOf(2L), songPlaylistMapDao.mappedTo("other").first())
+    }
+
+    @Test
     fun `mapped songs are true while unmapped songs are false`() = runBlocking {
         insertSong("song_a")
         insertSong("song_b")

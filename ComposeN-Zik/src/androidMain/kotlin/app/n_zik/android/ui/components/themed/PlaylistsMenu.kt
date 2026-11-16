@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchEmptySpace
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
 
 import app.n_zik.android.core.database.canEditPlaylistMembership
@@ -12,7 +13,6 @@ import app.n_zik.android.core.database.editStoredPlaylistMembership
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +22,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -67,12 +68,30 @@ import app.n_zik.android.components.menu.ListMenu
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
 
+@Composable
+internal fun rememberSongPlaylistIds(songId: String): List<Long> = key(songId) {
+    val playlistIds by remember {
+        Database.songPlaylistMapTable.mappedTo(songId)
+    }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
+    playlistIds
+}
+
+@Composable
+internal fun SongInPlaylistIcon() {
+    Icon(
+        painter = painterResource(R.drawable.playlist),
+        contentDescription = stringResource(R.string.playlist_contains_song),
+        tint = colorPalette().accent,
+        modifier = Modifier.size(18.dp)
+    )
+}
+
 class PlaylistsMenu private constructor(
     private val navController: NavController,
+    private val songId: String?,
     private val mediaItems: (PlaylistPreview) -> List<MediaItem>,
     private val onFailure: (Throwable, PlaylistPreview) -> Unit,
     private val finalAction: (PlaylistPreview) -> Unit,
-    private val onDismiss: (() -> Unit)?,
     override val menuState: MenuState,
     styleState: MutableState<MenuStyle>
 ): MenuIcon, Descriptive, Menu {
@@ -85,13 +104,13 @@ class PlaylistsMenu private constructor(
             mediaItems: (PlaylistPreview) -> List<MediaItem>,
             onFailure: (Throwable, PlaylistPreview) -> Unit,
             finalAction: (PlaylistPreview) -> Unit,
-            onDismiss: (() -> Unit)? = null
+            songId: String? = null
         ) = PlaylistsMenu(
             navController,
+            songId,
             mediaItems,
             onFailure,
             finalAction,
-            onDismiss,
             LocalMenuState.current,
             rememberPreference( menuStyleKey, MenuStyle.List )
         )
@@ -107,9 +126,19 @@ class PlaylistsMenu private constructor(
 
     private fun onAdd( preview: PlaylistPreview ) = Database.asyncTransaction {
         try {
-            if (editStoredPlaylistMembership(preview.playlist.id) {
-                mapIgnore(preview.playlist, *mediaItems(preview).toTypedArray())
-            }) Toaster.done()
+            var alreadyPresent = false
+            val editable = editStoredPlaylistMembership(preview.playlist.id) {
+                alreadyPresent = songId != null &&
+                    songPlaylistMapTable.findById(songId, preview.playlist.id).first() != null
+                if (!alreadyPresent) {
+                    mapIgnore(preview.playlist, *mediaItems(preview).toTypedArray())
+                }
+            }
+            when {
+                alreadyPresent -> Toaster.i(R.string.playlist_contains_song)
+                editable -> Toaster.done()
+                else -> Unit
+            }
         } catch (e: Throwable) {
             onFailure(e, preview)
         } finally {
@@ -138,7 +167,7 @@ class PlaylistsMenu private constructor(
     }
 
     @Composable
-    private fun PlaylistCard( playlistPreview: PlaylistPreview ) {
+    private fun PlaylistCard(playlistPreview: PlaylistPreview, containsSong: Boolean) {
         val playlist = playlistPreview.playlist
 
         ListMenu.Entry(
@@ -146,9 +175,14 @@ class PlaylistsMenu private constructor(
             icon = { SettingIcon(R.drawable.add_in_playlist) },
             subtitle = pluralStringResource(R.plurals.library_song_count, playlistPreview.songCount, playlistPreview.songCount),
             onClick = {
-                onAdd( playlistPreview )
+                if (containsSong) {
+                    Toaster.i(R.string.playlist_contains_song)
+                } else {
+                    onAdd(playlistPreview)
+                }
             },
             trailingContent = {
+                if (containsSong) SongInPlaylistIcon()
                 if (playlistPreview.playlist.isYoutubePlaylist) {
                     Image(
                         painter = painterResource(R.drawable.ytmusic),
@@ -192,6 +226,8 @@ class PlaylistsMenu private constructor(
             Database.playlistTable.sortPreviewsByName().onEach { playlistsLoaded = true }
         }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
 
+        val songPlaylistIds = if (songId != null) rememberSongPlaylistIds(songId) else emptyList()
+
         val editablePreviews = playlistPreviews.filter { canEditPlaylistMembership(it.playlist) }
         val pinnedPlaylists = editablePreviews.filter {
             it.playlist.name.startsWith(PINNED_PREFIX, 0, true)
@@ -217,14 +253,6 @@ class PlaylistsMenu private constructor(
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .fillMaxWidth()
             ) {
-                IconButton(
-                    onClick = { onDismiss?.invoke() ?: menuState.hide() },
-                    icon = R.drawable.chevron_back,
-                    color = colorPalette().accent,
-                    modifier = Modifier
-                        .padding(all = 4.dp)
-                        .size(20.dp)
-                )
                 IconButton(
                     onClick = { search.onShortClick() },
                     icon = R.drawable.search_circle,
@@ -261,7 +289,7 @@ class PlaylistsMenu private constructor(
                         .padding(vertical = 12.dp, horizontal = 4.dp)
                 )
 
-                filteredPinnedPlaylists.forEach { PlaylistCard(it) }
+                filteredPinnedPlaylists.forEach { PlaylistCard(it, it.playlist.id in songPlaylistIds) }
             }
 
             if (filteredUnpinnedPlaylists.isNotEmpty()) {
@@ -275,7 +303,7 @@ class PlaylistsMenu private constructor(
                         .padding(vertical = 12.dp, horizontal = 4.dp)
                 )
 
-                filteredUnpinnedPlaylists.forEach { PlaylistCard(it) }
+                filteredUnpinnedPlaylists.forEach { PlaylistCard(it, it.playlist.id in songPlaylistIds) }
             }
         }
     }

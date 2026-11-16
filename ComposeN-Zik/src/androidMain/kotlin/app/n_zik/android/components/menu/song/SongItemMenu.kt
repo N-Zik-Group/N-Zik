@@ -453,12 +453,12 @@ class SongItemMenu private constructor(
         val addToFavorite = LikeComponent { listOf(song) }
         val addToPlaylist = PlaylistsMenu.init(
             navController = navController,
+            songId = song.id,
             mediaItems = { _ -> listOf(song.asMediaItem) },
             onFailure = { throwable, preview ->
                 Timber.tag("SongItemMenu").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
             },
-            finalAction = {},
-            onDismiss = { openMenu() }
+            finalAction = {}
         )
         val deleteSongDialog = DeleteSongDialog().apply {
             song = Optional.of( this@SongItemMenu.song )

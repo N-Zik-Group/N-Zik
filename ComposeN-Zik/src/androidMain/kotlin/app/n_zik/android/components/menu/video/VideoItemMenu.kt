@@ -338,12 +338,12 @@ class VideoItemMenu private constructor(
         }
         val addToPlaylist = PlaylistsMenu.init(
             navController = navController,
+            songId = song.id,
             mediaItems = { _ -> listOf(song.asMediaItem) },
             onFailure = { throwable, preview ->
                 Timber.tag("VideoItemMenu").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
             },
-            finalAction = {},
-            onDismiss = { openMenu() }
+            finalAction = {}
         )
 
         val albumForInfo by remember(song.id) {
