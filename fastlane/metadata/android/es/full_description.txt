@@ -1,9 +1,5 @@
 Frontend multilingüe de YouTube Music para Android enfocado en rendimiento, UI/UX, más funciones y soporte a largo plazo.
 
-<b>N-Zik</b> es un fork de código abierto de <a href="https://github.com/knighthat/Kreate">Kreate</a>.
-
-<b>Nota:</b> N-Zik comenzó como proyecto personal. Para alternativas más maduras, revisa <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> o <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
-
 <b>Uso de IA:</b> Uso IA generativa para el código (vía <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), revisada y probada antes de publicar.
 
 ✨ <b>¿POR QUÉ N-ZIK?</b> Sin anuncios, reproducción en segundo plano, caché offline e interfaz personalizable - gratis, siempre.
@@ -13,6 +9,10 @@ Frontend multilingüe de YouTube Music para Android enfocado en rendimiento, UI/
 - Temas: AMOLED, Deep Dark, Crisp Light + acentos de color
 - 3D Carousel Player, widgets de inicio, reproductor y mini-reproductor unificados
 - Perfiles de artistas, Descubrimiento y moods, cabeceras plegables
+
+<b>Nota:</b> N-Zik comenzó como proyecto personal.
+- Navegar y descargar temas comunitarios, previsualizarlos en Normal y Cristal y elegir qué ajustes de apariencia aplicar.
+- Crea temas locales o comparte tus diseños con la comunidad. Importar y exportar temas como archivos ZIP.
 
 <b>Glass opcional (BETA)</b>
 Deshabilitado en nuevas instalaciones. Por categoría: nativo, solo contornos o Glass; calidad ajustable. Puede aumentar la carga gráfica y el consumo de batería; reduce la calidad o desactívalo.
@@ -33,7 +33,8 @@ Créditos: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdro
 - Auto-backup con intervalos y retención personalizables
 
 🔗 <b>Integraciones</b>
-- Acceso de YouTube para recomendaciones y video, más sync bidireccional
+- Cambiar entre cuentas de Google y canales de YouTube. Cada perfil de N-Zik utiliza un canal activo de YouTube Music para recomendaciones y reproducción.
+- Sincronización Experimental de biblioteca de YouTube Music bidireccional en compilaciones de depuración y dev.
 - Last.fm scrobbling con Now Playing y love/unlove
 - MusicBrainz: datos de artistas y álbumes
 - Discord Rich Presence, con modo avanzado y vista previa en vivo
