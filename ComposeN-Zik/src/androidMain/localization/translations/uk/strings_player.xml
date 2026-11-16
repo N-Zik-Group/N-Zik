@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">Регулювання розміру картини гравця для поточної орієнтації.</string>
     <string name="player_artwork_technical_info_description">Показувати технічну інформацію відтворення в плеєрі.</string>
     <string name="player_artwork_technical_info_title">Статистика для ботанів</string>
+    <string name="player_artwork_hold_to_speed_up_title">Утримуйте, щоб прискорити</string>
+    <string name="player_artwork_hold_to_speed_up_description">Натисніть і утримуйте цю роботу, щоб тимчасово прискорити відтворення</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Пришвидшувач</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Швидкість відтворення під час утримання цієї фігури.</string>
     <string name="player_artwork_transition_circular">Закруглений</string>
     <string name="player_auto_load_songs_in_queue">Автоматичне завантаження пісень у чергу</string>
     <string name="player_auto_load_songs_in_queue_description">Додає треки, коли черга добігає кінця</string>
