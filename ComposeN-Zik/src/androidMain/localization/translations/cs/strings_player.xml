@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">Upravte velikost obrazu hráče pro aktuální orientaci.</string>
     <string name="player_artwork_technical_info_description">Zobrazit technické informace o přehrávači</string>
     <string name="player_artwork_technical_info_title">Zobrazit statistiky pro nerdy v přehrávači</string>
+    <string name="player_artwork_hold_to_speed_up_title">Podržte pro zrychlení</string>
+    <string name="player_artwork_hold_to_speed_up_description">Stiskněte a podržte obrázek pro dočasné urychlení přehrávání</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Rychlost zrychlení</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Rychlost přehrávání, zatímco držíte obrázek.</string>
     <string name="player_artwork_transition_circular">Kruhový</string>
     <string name="player_auto_load_songs_in_queue">Automatické načítání skladeb ve frontě</string>
     <string name="player_auto_load_songs_in_queue_description">Přidání skladeb, když se fronta blíží ke konci</string>
