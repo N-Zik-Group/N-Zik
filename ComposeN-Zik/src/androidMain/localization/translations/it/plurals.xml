@@ -193,4 +193,8 @@
         <item quantity="one">%1$d processo non finito</item>
         <item quantity="other">%1$d processi non finito</item>
     </plurals>
+    <plurals name="theme_store_settings_count">
+        <item quantity="one">%d setting</item>
+        <item quantity="other">Impostazioni di %d</item>
+    </plurals>
 </resources>
