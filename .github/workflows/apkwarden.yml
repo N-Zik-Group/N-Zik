@@ -1,0 +1,89 @@
+name: APKwarden
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Scan release64 APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          submodules: true
+          persist-credentials: false
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v6.2.0
+        with:
+          java-version: '21'
+          distribution: corretto
+
+      - name: Prepare release notes
+        shell: bash
+        run: |
+          notes=ComposeN-Zik/src/androidMain/res/raw/release_notes.txt
+          mkdir -p "$(dirname "$notes")"
+          code=$(grep -E '^\s*nzikVersionCode\s*=' gradle/libs.versions.toml | cut -d '"' -f 2)
+          changelog="Updater/changelogs/$code.txt"
+          if [[ -f "$changelog" ]]; then
+            cp "$changelog" "$notes"
+          else
+            printf 'N-Zik\n' > "$notes"
+          fi
+
+      - name: Build unsigned release64 APK
+        run: ./gradlew --no-daemon :ComposeN-Zik:assembleRelease64 --no-build-cache
+
+      - name: Scan APK with APKwarden
+        shell: bash
+        run: |
+          shopt -s nullglob
+          apks=(ComposeN-Zik/build/outputs/apk/release64/*.apk)
+          if ((${#apks[@]} != 1)); then
+            echo "::error::Expected one release64 APK, found ${#apks[@]}"
+            exit 1
+          fi
+
+          jar="$RUNNER_TEMP/apkwarden.jar"
+          curl --fail --silent --show-error --location --retry 3 \
+            --output "$jar" \
+            https://github.com/no-hup/apkwarden/releases/download/v0.1.0/apkwarden-0.1.0-all.jar
+          printf '%s  %s\n' 010ec1355ae5760a7bbf4489ebb2619c2e9f8dac8d6cdad60d434a000820a98c "$jar" | sha256sum --check
+          java -jar "$jar" scan "${apks[0]}" \
+            --fail-on NEVER --sarif "$RUNNER_TEMP/apkwarden-release64.sarif"
+          test -s "$RUNNER_TEMP/apkwarden-release64.sarif"
+
+      - name: Upload APKwarden report
+        uses: actions/upload-artifact@v7
+        with:
+          name: apkwarden-release64
+          path: ${{ runner.temp }}/apkwarden-release64.sarif
+          if-no-files-found: error
+
+      - name: Verify scan completed
+        shell: bash
+        run: |
+          python3 - "$RUNNER_TEMP/apkwarden-release64.sarif" <<'PY'
+          import json
+          import sys
+
+          with open(sys.argv[1], encoding="utf-8") as report:
+              runs = json.load(report)["runs"]
+          if not runs or any(
+              not run.get("invocations") or any(
+                  invocation.get("executionSuccessful") is not True
+                  for invocation in run["invocations"]
+              )
+              for run in runs
+          ):
+              sys.exit("APKwarden reported an incomplete scan. See the SARIF artifact.")
+          PY
