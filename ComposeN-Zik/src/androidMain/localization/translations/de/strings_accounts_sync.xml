@@ -8,12 +8,30 @@
     <string name="github_account_code_copied">GitHub-Code in die Zwischenablage kopiert.</string>
     <string name="github_account_login_failed">Keine Verbindung zu GitHub möglich. Versuchen Sie es erneut.</string>
     <string name="github_account_connected">GitHub verbunden.</string>
+    <string name="github_account_finishing_connection">Beende GitHub Verbindung…</string>
+    <string name="github_app_installation_instructions">Wählen Sie @%1$s und gewähren Sie Zugriff nur auf Ihren N-Zik-Theme-Store Fork um die Einrichtung abzuschließen.</string>
+    <string name="github_app_installation">App-Installation</string>
+    <string name="github_app_installation_confirmed">GitHub bestätigte die App-Installation.</string>
+    <string name="github_app_installation_other_account">App auf @%1$sinstalliert. Wählen Sie Ihr eigenes Konto aus, um die Fork-Bereinigung zu aktivieren.</string>
+    <string name="github_app_installation_description">Verwalten oder entziehen Sie N-Zik Anmeldezugriff in Ihren persönlichen GitHub Einstellungen.</string>
+    <string name="github_app_installation_needs_fork">Senden Sie zuerst ein Design- oder Erstellerprofil ein, um Ihren ThemenStore Fork zu erstellen.</string>
+    <string name="github_app_installation_fork_lookup_failed">Konnte Ihren Theme Store Fork nicht überprüfen. Versuchen Sie es erneut.</string>
     <!-- Account -->
     <string name="account_action_login">Anmelden</string>
     <string name="account_action_logout">Abmelden</string>
     <string name="account_youtube_login_description">Verbinden Sie Ihr YouTube-Konto oder melden Sie sich aus der aktuellen Sitzung ab.</string>
+    <string name="account_youtube_change_account">YouTube-Konto ändern</string>
+    <string name="account_youtube_change_account_description">Wählen Sie, welchen YouTube-Kanal dieses N-Zik-Profil verwendet.</string>
     <string name="account_youtube_login_enabled_description">YouTube-Account-Anmeldung für personalisiertes Surfen und Synchronisieren erlauben.</string>
     <!-- Account Youtube -->
+    <string name="account_youtube_checking_login">Überprüfe deine YouTube-Musik-Anmeldung…</string>
+    <string name="account_youtube_choose_channel">Wähle einen YouTube-Musikkanal</string>
+    <string name="account_youtube_add_google_account">Google-Konto hinzufügen</string>
+    <string name="account_youtube_google_account">Google-Konto</string>
+    <string name="account_youtube_google_select">Konto auswählen</string>
+    <string name="account_youtube_google_sign_out">Von diesem Konto abmelden</string>
+    <string name="account_youtube_google_sign_out_description">Dies entfernt das gesamte Google-Profil und seine Anmeldedaten von N-Zik auf diesem Gerät. Ihre anderen Konten bleiben angemeldet.</string>
+    <string name="account_youtube_verify_failed">Ihre YouTube-Musik-Anmeldung konnte nicht verifiziert werden. Versuchen Sie es erneut oder melden Sie sich mit Google an.</string>
     <string name="account_youtube_cookie_invalid">YouTube Cookie ist ungültig, bitte melden Sie sich erneut an</string>
     <string name="account_youtube_login_success">YouTube Login erfolgreich</string>
     <string name="account_youtube_session_expired">YouTube-Sitzung abgelaufen, bitte melden Sie sich erneut an</string>
@@ -188,6 +206,8 @@
     <string name="sync_cooldown">Abklingzeit</string>
     <string name="sync_cooldown_description">Minimale Zeit zwischen Auto-Synchronisation (in Minuten)</string>
     <string name="sync_data_with_ytm_account">Daten mit YTM-Konto synchronisieren</string>
+    <string name="account_youtube_sync_build_required">Synchronisierung ist in Debug und Dev Builds verfügbar.</string>
+    <string name="account_youtube_sync_browse_required">Aktiviere Login für Browse, um Synchronisation zu verwenden.</string>
     <string name="sync_direction">Sychronisierungsrichtung</string>
     <string name="sync_direction_app_to_yt">App → Nur YouTube</string>
     <string name="sync_direction_description">Wählen Sie, ob die Synchronisation aus YouTube importiert, lokale Änderungen sendet oder in beide Richtungen funktioniert.</string>
