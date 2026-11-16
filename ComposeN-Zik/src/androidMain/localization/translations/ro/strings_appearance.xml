@@ -437,6 +437,7 @@
     <string name="theme_store_draft_discard">Ștergere ciornă</string>
     <string name="theme_store_draft_resume">Continuă schița</string>
     <string name="theme_store_preview_add_extra">Adaugă o previzualizare suplimentară</string>
+    <string name="theme_store_preview_remove_extra">Elimină această previzualizare suplimentară</string>
     <string name="theme_store_preview_extra_title">Previzualizare titlu</string>
     <string name="theme_store_preview_import_requirements_with_gif">Previzualizările sunt publice. Păstrați informațiile personale fără capturi de ecran. PNG, JPEG, WebP sau GIF · 4 MB per imagine. GIF-urile își păstrează dimensiunea inițială și trebuie să se potrivească în 1920 × 1920.</string>
     <string name="theme_store_preview_import_error">Nu s-a putut importa această imagine. Alegeți o imagine PNG, JPEG sau WebP sub 4 MB.</string>
