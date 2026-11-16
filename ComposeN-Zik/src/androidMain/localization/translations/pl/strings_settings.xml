@@ -445,7 +445,6 @@
     <string name="settings_service_keep_screen_on_label">Nie wyłączaj ekranu</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Zezwalaj na nieograniczoną operację w tle, aby system mniej prawdopodobne było przerwanie odtwarzania.</string>
     <string name="settings_stream_disabled_clients_title">Wyłączone Klienci Strumienia</string>
-    <string name="settings_stream_preferred_client_changed_message">Wybrany klient zmienił się.</string>
     <string name="settings_stream_preferred_client_title">Preferowany klient strumienia</string>
     <string name="settings_swipe_actions_description">Wykonaj akcje przesuwając w lewo lub w prawo piosenkę w pionowej liście piosenek</string>
     <string name="settings_swipe_actions_title">Przesuń palcem aby akcji</string>
