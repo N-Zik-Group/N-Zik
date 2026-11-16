@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">Adjust the size of the player artwork for the current orientation.</string>
     <string name="player_artwork_technical_info_description">Show technical playback information in the player.</string>
     <string name="player_artwork_technical_info_title">Show Stats for Nerds in Player</string>
+    <string name="player_artwork_hold_to_speed_up_title">Hold to speed up</string>
+    <string name="player_artwork_hold_to_speed_up_description">Press and hold the artwork to temporarily speed up playback</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Boost speed</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Playback speed while you hold the artwork.</string>
     <string name="player_artwork_transition_circular">循環</string>
     <string name="player_auto_load_songs_in_queue">自動加入歌曲到播放佇列中</string>
     <string name="player_auto_load_songs_in_queue_description">當播放佇列即將結束時添加歌曲</string>
