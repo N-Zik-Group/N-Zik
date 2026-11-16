@@ -437,6 +437,7 @@
     <string name="theme_store_draft_discard">Concept verwijderen</string>
     <string name="theme_store_draft_resume">Kladversie voortzetten</string>
     <string name="theme_store_preview_add_extra">Voeg een extra voorbeeld toe</string>
+    <string name="theme_store_preview_remove_extra">Verwijder dit extra voorbeeld</string>
     <string name="theme_store_preview_extra_title">Voorbeeld titel</string>
     <string name="theme_store_preview_import_requirements_with_gif">Voorvertoningen zijn openbaar. Houd persoonlijke informatie buiten screenshots. PNG, JPEG, WebP of GIF · 4 MB per afbeelding. GIF\'s behouden hun oorspronkelijke grootte en moeten binnen 1920 × 1920 passen.</string>
     <string name="theme_store_preview_import_error">Kon deze afbeelding niet importeren. Kies een PNG, JPEG of WebP afbeelding onder 4 MB.</string>
