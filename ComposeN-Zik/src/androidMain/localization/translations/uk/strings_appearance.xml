@@ -437,6 +437,7 @@
     <string name="theme_store_draft_discard">Видалити чернетку</string>
     <string name="theme_store_draft_resume">Продовжити чернетку</string>
     <string name="theme_store_preview_add_extra">Додати додатковий попередній перегляд</string>
+    <string name="theme_store_preview_remove_extra">Видалити цей додатковий перегляд</string>
     <string name="theme_store_preview_extra_title">Заголовок попереднього перегляду</string>
     <string name="theme_store_preview_import_requirements_with_gif">Попередній перегляд є загальнодоступними. Збережіть особисту інформацію з знімків екрану. PNG, JPEG, WebP або GIF · 4 МБ на зображення. GIF збереже свій початковий розмір і повинні вміщатися в межах 1920 × 1920 року.</string>
     <string name="theme_store_preview_import_error">Не вдалося імпортувати це зображення. Оберіть зображення у форматі PNG, JPEG або WebP.</string>
