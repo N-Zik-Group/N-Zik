@@ -116,7 +116,6 @@ import app.n_zik.android.ui.styling.overlay
 import app.n_zik.innertube.YtMusic
 import app.n_zik.innertube.requests.ArtistPage
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
@@ -878,7 +877,7 @@ internal fun RewindArtistArtwork(
             return@LaunchedEffect
         }
         if (enableSlideshow || preferWikipedia || primaryUrl.isNullOrBlank()) {
-            wikipediaUrl = withContext(Dispatchers.IO) {
+            wikipediaUrl = withContext(NzikDispatchers.DATA) {
                 WikipediaArtistImageResolver.findImage(artistName)
             }
         }
@@ -949,7 +948,7 @@ internal fun rememberArtistBio(
     var metadata by remember(browseId, storedDescription) { mutableStateOf<ArtistWikiMetadata?>(null) }
     LaunchedEffect(browseId, storedDescription) {
         metadata = null
-        metadata = withContext(Dispatchers.IO) {
+        metadata = withContext(NzikDispatchers.DATA) {
             RewindArtistBioResolver.resolve(browseId, storedDescription)
         }
     }

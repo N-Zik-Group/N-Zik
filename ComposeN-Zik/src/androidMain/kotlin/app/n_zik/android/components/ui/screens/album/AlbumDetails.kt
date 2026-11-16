@@ -1,7 +1,6 @@
 package app.n_zik.android.components.ui.screens.album
 
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
-import app.n_zik.android.core.database.*
 
 import app.n_zik.android.components.glass.GlassDescriptionTranslate
 import androidx.compose.runtime.Composable

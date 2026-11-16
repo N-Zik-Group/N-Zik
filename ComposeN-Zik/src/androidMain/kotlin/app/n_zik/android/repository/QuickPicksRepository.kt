@@ -1,7 +1,6 @@
 package app.n_zik.android.repository
 
 import app.n_zik.android.playback.services.isLocal
-import app.n_zik.android.core.database.*
 
 import androidx.core.content.edit
 import app.n_zik.android.core.database.Database
@@ -11,13 +10,32 @@ import app.n_zik.android.enums.Countries
 import app.n_zik.android.enums.LocalRecommandationsNumber
 import app.n_zik.android.models.Song
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
-import app.n_zik.android.utils.*
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.playEventsTypeKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.quickPicsDiscoverPageKey
+import app.n_zik.android.utils.quickPicsHomePageKey
+import app.n_zik.android.utils.quickPicsRelatedPageKey
+import app.n_zik.android.utils.quickPicsTrendingSongKey
+import app.n_zik.android.utils.selectedCountryCodeKey
+import app.n_zik.android.utils.showChartsKey
+import app.n_zik.android.utils.showMoodsAndGenresKey
+import app.n_zik.android.utils.showNewAlbumsArtistsKey
+import app.n_zik.android.utils.showNewAlbumsKey
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.YtMusic
-import app.n_zik.innertube.requests.*
+import app.n_zik.innertube.requests.HomePage
+import app.n_zik.innertube.requests.chartsPageComplete
+import app.n_zik.innertube.requests.discoverPage
+import app.n_zik.innertube.requests.relatedPage
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.take
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import timber.log.Timber

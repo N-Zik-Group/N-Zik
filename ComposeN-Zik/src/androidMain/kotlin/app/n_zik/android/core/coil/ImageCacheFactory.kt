@@ -85,6 +85,9 @@ import timber.log.Timber
 @OptIn(ExperimentalCoilApi::class)
 object ImageCacheFactory {
 
+    /** Builds the Coil loader used before application dependencies are initialized. */
+    internal fun bootstrapLoader(context: Context): ImageLoader = ImageLoader.Builder(context).build()
+
     /**
      * The Coil disk-cache dir of the ACTIVE profile (spec-profile-data-separation):
      * `coil` (base) or `coil_<id>` (separate), under that profile's location setting
@@ -192,7 +195,8 @@ object ImageCacheFactory {
                     updateCleanupMetadata { preferences.edit().putString(id, updated).apply() }
                     storeVersion.update { it + 1 }
                 }
-            } catch (e: Exception) {
+            } catch (error: Exception) {
+                Timber.tag("ImageCacheFactory").w("Unable to store playlist thumbnail metadata (%s)", error.javaClass.simpleName)
             }
         }
 
@@ -213,11 +217,15 @@ object ImageCacheFactory {
         fun clear(id: String) {
             try {
                 updateCleanupMetadata { getPrefs().edit().remove(id).apply() }
-            } catch (e: Exception) {}
+            } catch (error: Exception) {
+                Timber.tag("ImageCacheFactory").w("Unable to remove playlist thumbnail metadata (%s)", error.javaClass.simpleName)
+            }
         }
 
         fun clearAll() {
-            try { updateCleanupMetadata { getPrefs().edit().clear().apply() } } catch (e: Exception) {}
+            try { updateCleanupMetadata { getPrefs().edit().clear().apply() } } catch (error: Exception) {
+                Timber.tag("ImageCacheFactory").w("Unable to clear playlist thumbnail metadata (%s)", error.javaClass.simpleName)
+            }
         }
     }
 
@@ -231,7 +239,9 @@ object ImageCacheFactory {
             try {
                 val key = url.hashCode().toString()
                 updateCleanupMetadata { getPrefs().edit().putString(key, "${quality.name}:${System.currentTimeMillis()}").apply() }
-            } catch (e: Exception) {}
+            } catch (error: Exception) {
+                Timber.tag("ImageCacheFactory").w("Unable to store image cache quality (%s)", error.javaClass.simpleName)
+            }
         }
 
         fun get(url: String): NetworkQuality? {
@@ -243,11 +253,15 @@ object ImageCacheFactory {
         }
 
         fun remove(url: String) {
-            try { updateCleanupMetadata { getPrefs().edit().remove(url.hashCode().toString()).apply() } } catch (e: Exception) {}
+            try { updateCleanupMetadata { getPrefs().edit().remove(url.hashCode().toString()).apply() } } catch (error: Exception) {
+                Timber.tag("ImageCacheFactory").w("Unable to remove image cache quality (%s)", error.javaClass.simpleName)
+            }
         }
 
         fun clearAll() {
-            try { updateCleanupMetadata { getPrefs().edit().clear().apply() } } catch (e: Exception) {}
+            try { updateCleanupMetadata { getPrefs().edit().clear().apply() } } catch (error: Exception) {
+                Timber.tag("ImageCacheFactory").w("Unable to clear image cache quality (%s)", error.javaClass.simpleName)
+            }
         }
     }
 
@@ -315,7 +329,9 @@ object ImageCacheFactory {
         val key = generateCacheKeySync(url, quality)
         try {
             evictCacheKey(key)
-        } catch (e: Exception) {}
+        } catch (error: Exception) {
+            Timber.tag("ImageCacheFactory").w("Unable to evict image cache key (%s)", error.javaClass.simpleName)
+        }
         // Publish only after pixel eviction, so new-generation readers cannot see old cache entries.
         if (invalidateColors) app.n_zik.android.components.player.SharedArtworkColors.invalidate(url)
     }
@@ -931,7 +947,7 @@ object ImageCacheFactory {
                     CacheMetadataStore.save(url, decision.quality)
                 }
                 return result.image?.toBitmap() ?: run {
-                    Timber.w("Null bitmap for image result")
+                    Timber.tag("ImageCacheFactory").w("Null bitmap for image result")
                     return null
                 }
             }
@@ -1046,7 +1062,8 @@ object ImageCacheFactory {
     fun clearImageCache() {
         try {
             clearImageCacheOrThrow()
-        } catch (e: Exception) {
+        } catch (error: Exception) {
+            Timber.tag("ImageCacheFactory").w("Unable to clear image cache (%s)", error.javaClass.simpleName)
         }
     }
 

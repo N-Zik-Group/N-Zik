@@ -40,12 +40,13 @@ class CoilBitmapLoader(
                 if (drawable is BitmapDrawable) {
                     bitmap = drawable.bitmap
                 } else if (drawable != null) {
-                    bitmap = Bitmap.createBitmap(
+                    val rendered = Bitmap.createBitmap(
                         if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else bitmapSize,
                         if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else bitmapSize,
                         Bitmap.Config.ARGB_8888
                     )
-                    val canvas = Canvas(bitmap!!)
+                    bitmap = rendered
+                    val canvas = Canvas(rendered)
                     drawable.setBounds(0, 0, canvas.width, canvas.height)
                     drawable.draw(canvas)
                 }

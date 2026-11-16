@@ -2,7 +2,6 @@ package app.n_zik.android.utils
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.LocalDownloadHelper
 
-import app.n_zik.android.core.database.*
 
 
 import app.n_zik.android.core.network.utils.isNetworkAvailable

@@ -156,7 +156,9 @@ class ExportCacheDialog private constructor(
                     try {
                         // Attempt to delete created file
                         DocumentsContract.deleteDocument( appContext().contentResolver, uri )
-                    } catch ( _: Exception ) {}
+                    } catch (error: Exception) {
+                        Timber.tag("ExportCacheDialog").w("Unable to delete incomplete export (%s)", error.javaClass.simpleName)
+                    }
 
                     kotlinx.coroutines.withContext(NzikDispatchers.UI) { isExporting.value = false }
                     return@launch
@@ -361,7 +363,9 @@ class ExportCacheDialog private constructor(
                             isExporting.value = false
                             if (showResultToast) Toaster.e(R.string.export_cached_songs_generic_error)
                         }
-                        try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (_: Exception) {}
+                        try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (error: Exception) {
+                            Timber.tag("ExportCacheDialog").w("Unable to delete incomplete export (%s)", error.javaClass.simpleName)
+                        }
                     }
 
                 } catch (e: Exception) {
@@ -370,7 +374,9 @@ class ExportCacheDialog private constructor(
                         isExporting.value = false
                         if (showResultToast) Toaster.e(R.string.export_cached_songs_generic_error)
                     }
-                    try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (_: Exception) {}
+                    try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (error: Exception) {
+                        Timber.tag("ExportCacheDialog").w("Unable to delete failed export (%s)", error.javaClass.simpleName)
+                    }
                 } finally {
                     rawFile.delete()
                     outFile.delete()
@@ -383,7 +389,9 @@ class ExportCacheDialog private constructor(
                     isExporting.value = false
                     if (showResultToast) Toaster.e(R.string.export_cached_songs_generic_error)
                 }
-                try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (_: Exception) {}
+                try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (error: Exception) {
+                    Timber.tag("ExportCacheDialog").w("Unable to delete empty export (%s)", error.javaClass.simpleName)
+                }
             }
         }
 
@@ -421,7 +429,9 @@ class ExportCacheDialog private constructor(
                     val takeFlags = android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or
                             android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                     appContext().contentResolver.takePersistableUriPermission(folderUri, takeFlags)
-                } catch (_: Exception) {}
+                } catch (error: Exception) {
+                    Timber.tag("ExportCacheDialog").w("Unable to persist export folder permission (%s)", error.javaClass.simpleName)
+                }
 
                 val treeDocId = DocumentsContract.getTreeDocumentId(folderUri)
                 val parentUri = DocumentsContract.buildDocumentUriUsingTree(folderUri, treeDocId)
@@ -581,7 +591,9 @@ class ExportCacheDialog private constructor(
                             if (codec?.contains("opus", ignoreCase = true) == true) {
                                 actualIsOpus = true
                             }
-                        } catch (_: Exception) {}
+                        } catch (error: Exception) {
+                            Timber.tag("ExportCacheDialog").w("Unable to inspect cached audio codec (%s)", error.javaClass.simpleName)
+                        }
                         finally { probeFile.delete() }
                     }
                     val ext = if (actualIsOpus) "ogg" else "m4a"
@@ -930,7 +942,9 @@ class ExportCacheDialog private constructor(
             onDismiss = { hideDialog() },
             onChoice = { choice ->
                 lyricsChoice.value = choice
-                try { folderLauncher.launch(null) } catch (_: Exception) {}
+                try { folderLauncher.launch(null) } catch (error: Exception) {
+                    Timber.tag("ExportCacheDialog").w("Unable to open export folder picker (%s)", error.javaClass.simpleName)
+                }
             }
         )
         }

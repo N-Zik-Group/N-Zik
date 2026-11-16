@@ -165,11 +165,11 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
 
         val currentTab = tabs[selectedTabIndex].first
         val currentWorkingOrder = workingOrders[currentTab] ?: run {
-            Timber.w("Missing workingOrders for tab $currentTab")
+            Timber.tag("HomeSongsToolbarSettingsDialog").w("Missing workingOrders for tab $currentTab")
             return
         }
         val currentWorkingToggles = workingToggles[currentTab] ?: run {
-            Timber.w("Missing workingToggles for tab $currentTab")
+            Timber.tag("HomeSongsToolbarSettingsDialog").w("Missing workingToggles for tab $currentTab")
             return
         }
         val isTopTab = currentTab == BuiltInPlaylist.Top

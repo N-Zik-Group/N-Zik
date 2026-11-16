@@ -87,7 +87,7 @@ class MessageCodec(
         try {
             GZIPInputStream(ByteArrayInputStream(data)).use { it.readBytes() }
         } catch (error: Exception) {
-            Timber.e(error, "Failed to decompress Listen Together payload")
+            Timber.tag("MessageCodec").e(error, "Failed to decompress Listen Together payload")
             null
         }
 }

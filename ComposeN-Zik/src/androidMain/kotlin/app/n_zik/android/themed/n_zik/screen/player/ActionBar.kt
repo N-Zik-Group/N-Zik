@@ -3,7 +3,6 @@ package app.n_zik.android.themed.n_zik.screen.player
 import app.n_zik.android.utils.effectRotationDefault
 import app.n_zik.android.utils.showButtonPlayerVideoDefault
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
-import app.n_zik.android.core.database.*
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.listentogether.guestLockedAlpha

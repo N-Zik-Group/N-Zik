@@ -381,7 +381,9 @@ object WaveformExtractor {
             try {
                 codec?.stop()
                 codec?.release()
-            } catch (e: Exception) {}
+            } catch (error: Exception) {
+                Timber.tag("WaveformExtractor").d("Unable to release waveform codec (%s)", error.javaClass.simpleName)
+            }
             extractor.release()
         }
 
@@ -453,7 +455,9 @@ object WaveformExtractor {
         override fun close() {
             try {
                 dataSource?.close()
-            } catch (e: Exception) {}
+            } catch (error: Exception) {
+                Timber.tag("WaveformExtractor").d("Unable to close waveform data source (%s)", error.javaClass.simpleName)
+            }
             dataSource = null
         }
     }

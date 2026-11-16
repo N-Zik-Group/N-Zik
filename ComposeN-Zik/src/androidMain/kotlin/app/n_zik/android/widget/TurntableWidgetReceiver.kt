@@ -8,6 +8,7 @@ import android.os.Bundle
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class TurntableWidgetReceiver : AppWidgetProvider() {
 
@@ -26,10 +27,12 @@ class TurntableWidgetReceiver : AppWidgetProvider() {
                     }
                     try {
                         context.startService(intent)
-                    } catch (_: Exception) {
+                    } catch (error: Exception) {
+                        Timber.tag("TurntableWidgetReceiver").w("Unable to start turntable playback service (%s)", error.javaClass.simpleName)
                     }
                 }
-            } catch (_: Exception) {
+            } catch (error: Exception) {
+                Timber.tag("TurntableWidgetReceiver").w("Unable to handle turntable playback action (%s)", error.javaClass.simpleName)
             } finally {
                 pendingResult.finish()
             }
@@ -53,10 +56,12 @@ class TurntableWidgetReceiver : AppWidgetProvider() {
                     }
                     try {
                         context.startService(intent)
-                    } catch (_: Exception) {
+                    } catch (error: Exception) {
+                        Timber.tag("TurntableWidgetReceiver").w("Unable to start turntable playback service (%s)", error.javaClass.simpleName)
                     }
                 }
-            } catch (_: Exception) {
+            } catch (error: Exception) {
+                Timber.tag("TurntableWidgetReceiver").w("Unable to handle turntable playback action (%s)", error.javaClass.simpleName)
             } finally {
                 pendingResult.finish()
             }

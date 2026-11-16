@@ -2,7 +2,6 @@ package app.n_zik.android.ui.items
 
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
-import app.n_zik.android.core.database.*
 import app.n_zik.android.uiRoundnessShape
 
 import androidx.annotation.DrawableRes

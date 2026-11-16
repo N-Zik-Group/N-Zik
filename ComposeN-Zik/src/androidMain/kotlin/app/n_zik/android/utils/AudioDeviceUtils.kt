@@ -2,7 +2,14 @@ package app.n_zik.android.utils
 
 import android.media.AudioDeviceInfo
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Bluetooth
+import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material.icons.filled.PhoneAndroid
+import androidx.compose.material.icons.filled.Speaker
+import androidx.compose.material.icons.filled.SpeakerGroup
+import androidx.compose.material.icons.filled.Tv
+import androidx.compose.material.icons.filled.Usb
 import app.n_zik.android.components.menu.player.AudioDeviceType
 import app.n_zik.android.playback.services.AudioOutputManager
 

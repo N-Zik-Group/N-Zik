@@ -9,7 +9,9 @@ import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
 
-import app.n_zik.android.core.database.*
+import app.n_zik.android.core.database.BookmarkStateManager
+import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.PlaylistStateManager
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 import android.annotation.SuppressLint

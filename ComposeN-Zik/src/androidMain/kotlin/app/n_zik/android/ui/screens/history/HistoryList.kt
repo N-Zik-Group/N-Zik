@@ -8,7 +8,6 @@ import app.n_zik.android.components.navigation.TopOverlayContentPadding
 import app.n_zik.android.components.navigation.LocalSideRailContentInsets
 import androidx.compose.ui.unit.Dp
 
-import app.n_zik.android.core.database.*
 
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility

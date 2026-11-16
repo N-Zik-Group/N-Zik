@@ -412,7 +412,11 @@ private class ExportThemeFields(private val preferences: Map<String, *>) : Theme
             .orEmpty().mapNotNull { (it as? JsonPrimitive)?.content }
             .filter { allowedIds?.contains(it) ?: dockPreferenceId.matches(it) }
         val counts = mutableMapOf<String, Int>()
-        val validOrder = order.filter { id -> counts.merge(id, 1, Int::plus)!! <= (repeats[id] ?: 1) }
+        val validOrder = order.filter { id ->
+            val count = counts.getOrDefault(id, 0) + 1
+            counts[id] = count
+            count <= repeats.getOrDefault(id, 1)
+        }
         val portableOrder = if (allowedIds == null) validOrder.take(maxDockOrderEntries) else validOrder
         values[field] = JsonArray(portableOrder.map { JsonPrimitive(it.replace('_', '-')) })
     }

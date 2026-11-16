@@ -51,7 +51,7 @@ internal class ShapeProvider(
                 _outline = shape.createOutline(size, layoutDirection, density)
             }
 
-            return _outline!!
+            return checkNotNull(_outline) { "Outline is initialized on the first read" }
         }
     }
 }

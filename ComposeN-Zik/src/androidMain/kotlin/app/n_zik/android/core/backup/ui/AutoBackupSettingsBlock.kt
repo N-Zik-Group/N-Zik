@@ -92,7 +92,7 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity, pageEntryTa
                     autoBackupUri = uri.toString()
                     BackupManager.scheduleBackup(context, autoBackupInterval, target)
                 } catch (e: Exception) {
-                    Timber.e(e, "Failed to take persistable URI permission")
+                    Timber.tag("AutoBackupSettingsBlock").e(e, "Failed to take persistable URI permission")
                 }
             }
         }

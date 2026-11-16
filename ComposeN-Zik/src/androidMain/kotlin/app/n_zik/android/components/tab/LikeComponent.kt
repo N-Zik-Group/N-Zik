@@ -1,6 +1,5 @@
 package app.n_zik.android.components.tab
 
-import app.n_zik.android.core.database.*
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource

@@ -115,6 +115,7 @@ import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.bridge.ActiveDevice
 import app.n_zik.android.bridge.AudioOutput
 import app.n_zik.android.bridge.BridgeServerController
+import timber.log.Timber
 
 data class AudioDevice(
     val name: String,
@@ -336,7 +337,8 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                 context.unregisterReceiver(volumeChangeReceiver)
                 context.unregisterReceiver(audioDeviceReceiver)
                 context.unregisterReceiver(bluetoothReceiver)
-            } catch (e: IllegalArgumentException) {
+            } catch (error: IllegalArgumentException) {
+                Timber.tag("AudioDeviceMenu").d("Unable to unregister audio device receiver (%s)", error.javaClass.simpleName)
             }
         }
     }

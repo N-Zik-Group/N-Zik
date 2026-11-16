@@ -44,15 +44,15 @@ class PlayerSheetState(
     val collapsedBound: Dp,
 ) : DraggableState by draggableState {
     val dismissedBound: Dp
-        get() = animatable.lowerBound!!
+        get() = checkNotNull(animatable.lowerBound)
 
     val expandedBound: Dp
-        get() = animatable.upperBound!!
+        get() = checkNotNull(animatable.upperBound)
 
     val value by animatable.asState()
 
     val isDismissed by derivedStateOf {
-        value == animatable.lowerBound!!
+        value == checkNotNull(animatable.lowerBound)
     }
 
     val isCollapsed by derivedStateOf {
@@ -64,7 +64,7 @@ class PlayerSheetState(
     }
 
     val progress by derivedStateOf {
-        1f - (animatable.upperBound!! - animatable.value) / (animatable.upperBound!! - collapsedBound)
+        1f - (checkNotNull(animatable.upperBound) - animatable.value) / (checkNotNull(animatable.upperBound) - collapsedBound)
     }
 
     val isVisible by derivedStateOf { !isCollapsed }
@@ -83,7 +83,7 @@ class PlayerSheetState(
     fun expand(animationSpec: AnimationSpec<Dp>) {
         onAnchorChanged(expandedAnchor)
         coroutineScope.launch {
-            animatable.animateTo(animatable.upperBound!!, animationSpec)
+            animatable.animateTo(checkNotNull(animatable.upperBound), animationSpec)
         }
     }
 
@@ -106,7 +106,7 @@ class PlayerSheetState(
     fun dismiss() {
         onAnchorChanged(dismissedAnchor)
         coroutineScope.launch {
-            animatable.animateTo(animatable.lowerBound!!)
+            animatable.animateTo(checkNotNull(animatable.lowerBound))
         }
     }
 
@@ -136,7 +136,7 @@ class PlayerSheetState(
 
     suspend fun dismissAndWait() {
         onAnchorChanged(dismissedAnchor)
-        animatable.animateTo(animatable.lowerBound!!)
+        animatable.animateTo(checkNotNull(animatable.lowerBound))
     }
 
     fun performFling(velocity: Float, onDismiss: (() -> Unit)?) {

@@ -126,7 +126,7 @@ class AudioOutputManager internal constructor(
                     activeRouteId = devices.firstOrNull { it.id == deviceInfo.id }?.id
                     if (activeRouteId != null) routeSource = "PlaybackConfig(type=${deviceInfo.type})"
                 } else {
-                    Timber.d("AudioOutputManager: PlaybackConfig present but audioDeviceInfo is null")
+                    Timber.tag("AudioOutputManager").d("AudioOutputManager: PlaybackConfig present but audioDeviceInfo is null")
                 }
             }
         }
@@ -272,7 +272,7 @@ class AudioOutputManager internal constructor(
             }
 
             override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>) {
-                Timber.d("AudioOutputManager: onAudioDevicesRemoved - count=${removedDevices.size}")
+                Timber.tag("AudioOutputManager").d("AudioOutputManager: onAudioDevicesRemoved - count=${removedDevices.size}")
                 notifyDevicesChanged()
             }
         }

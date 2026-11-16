@@ -24,8 +24,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import app.n_zik.android.R
+import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
@@ -176,7 +176,7 @@ internal suspend fun captureRewindDeckPages(
                 shareDirectory,
                 "NZik_Rewind_${period.fileNameToken()}_${(page + 1).toString().padStart(2, '0')}.png"
             )
-            val compressed = withContext(Dispatchers.IO) {
+            val compressed = withContext(NzikDispatchers.DATA) {
                 pageFile.outputStream().buffered().use { output ->
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
                 }
@@ -256,7 +256,7 @@ internal suspend fun captureRewindSlidePng(
             shareDirectory,
             "NZik_Rewind_${period.fileNameToken()}_${(page + 1).toString().padStart(2, '0')}.png"
         )
-        val compressed = withContext(Dispatchers.IO) {
+        val compressed = withContext(NzikDispatchers.DATA) {
             slideFile.outputStream().buffered().use { output ->
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
             }
@@ -363,7 +363,7 @@ internal suspend fun captureRewindScreenshot(
     page: Int? = null
 ): File? {
     return runCatching {
-        val bitmap = withContext(Dispatchers.Main.immediate) {
+        val bitmap = withContext(NzikDispatchers.UI.immediate) {
             val width = view.width.coerceAtLeast(1)
             val height = view.height.coerceAtLeast(1)
             Timber.tag("RewindShare").d("Capturing %dx%d from %s", width, height, view.javaClass.simpleName)
@@ -371,7 +371,7 @@ internal suspend fun captureRewindScreenshot(
                 view.draw(AndroidCanvas(target))
             }
         }
-        val imageFile = withContext(Dispatchers.IO) {
+        val imageFile = withContext(NzikDispatchers.DATA) {
             val shareDirectory = rewindCaptureDirectory(context)
             // Captures from previous share runs (> 24 h old) are dropped (spec cleanup)
             val staleBefore = System.currentTimeMillis() - RewindCaptureMaxAgeMs
@@ -519,7 +519,7 @@ internal suspend fun exportRewindPagesToFolder(
     context: Context,
     folderUri: Uri,
     files: List<File>
-): Int = withContext(Dispatchers.IO) {
+): Int = withContext(NzikDispatchers.DATA) {
     var written = 0
     runCatching {
         val resolver = context.contentResolver

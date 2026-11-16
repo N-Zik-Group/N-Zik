@@ -17,9 +17,10 @@ internal fun Canvas.clipOutline(outline: Outline, path: Path?) {
     when (outline) {
         is Outline.Rectangle -> clipRect(outline.rect)
         is Outline.Rounded -> {
-            path!!.rewind()
-            path.addRoundRect(outline.roundRect)
-            clipPath(path)
+            val roundedPath = path ?: Path()
+            roundedPath.rewind()
+            roundedPath.addRoundRect(outline.roundRect)
+            clipPath(roundedPath)
         }
 
         is Outline.Generic -> clipPath(outline.path)

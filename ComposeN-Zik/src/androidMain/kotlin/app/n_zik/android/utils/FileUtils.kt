@@ -22,8 +22,13 @@ import java.nio.file.StandardCopyOption
 @RequiresApi(Build.VERSION_CODES.O)
 fun moveDir(src: Path, dest: Path): Boolean {
     if (src.toFile().isDirectory) {
-        for (file in src.toFile().listFiles()!!) {
-            moveDir(file.toPath(), dest.resolve(src.relativize(file.toPath())))
+        val children = src.toFile().listFiles()
+        if (children == null) {
+            Timber.tag("FileUtils").w("Unable to read source directory before moving")
+            return false
+        }
+        for (file in children) {
+            if (!moveDir(file.toPath(), dest.resolve(src.relativize(file.toPath())))) return false
         }
     }
     return try {

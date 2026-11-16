@@ -22,7 +22,7 @@ import androidx.core.content.getSystemService
 
 class AudioVolumeObserver(private val context: Context) {
     private val mAudioManager: AudioManager =
-        context.getSystemService()!!
+        requireNotNull(context.getSystemService()) { "AudioManager is required for volume observation" }
     private var contentObserver: AudioVolumeContentObserver? = null
 
     fun register(audioStreamType: Int, listener: OnAudioVolumeChangedListener) {
@@ -32,7 +32,7 @@ class AudioVolumeObserver(private val context: Context) {
 
         // To execute in another thread you can use a Looper.
         // +info: https://stackoverflow.com/a/35261443/904907
-        contentObserver = AudioVolumeContentObserver(
+        val observer = AudioVolumeContentObserver(
             handler,
             mAudioManager,
             audioStreamType,
@@ -41,13 +41,14 @@ class AudioVolumeObserver(private val context: Context) {
         context.contentResolver.registerContentObserver(
             Settings.System.CONTENT_URI,
             true,
-            contentObserver!!
+            observer
         )
+        contentObserver = observer
     }
 
     fun unregister() {
-        if (contentObserver != null) {
-            context.contentResolver.unregisterContentObserver(contentObserver!!)
+        contentObserver?.let { observer ->
+            context.contentResolver.unregisterContentObserver(observer)
             contentObserver = null
         }
     }

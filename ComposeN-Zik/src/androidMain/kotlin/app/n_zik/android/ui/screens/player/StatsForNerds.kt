@@ -1,7 +1,6 @@
 package app.n_zik.android.ui.screens.player
 
 import app.n_zik.android.utils.percentLabel
-import app.n_zik.android.core.database.*
 
 import android.annotation.SuppressLint
 import android.text.format.Formatter

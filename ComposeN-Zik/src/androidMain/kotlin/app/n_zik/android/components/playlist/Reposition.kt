@@ -1,6 +1,5 @@
 package app.n_zik.android.components.playlist
 
-import app.n_zik.android.core.database.*
 import app.n_zik.android.playback.utils.Shuffler
 
 import androidx.compose.runtime.Composable

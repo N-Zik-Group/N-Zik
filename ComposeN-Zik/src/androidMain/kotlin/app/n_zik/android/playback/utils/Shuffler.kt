@@ -25,7 +25,6 @@ import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -36,7 +35,7 @@ object Shuffler {
     /** Test seam: overridden with `UnconfinedTestDispatcher()` in `ShufflerTest` so assertions
      *  made right after [play] stay deterministic instead of racing a real background thread. */
     internal var backgroundDispatcher: CoroutineDispatcher = NzikDispatchers.DATA
-    internal val scope = NzikDispatchers.fireAndForget(SupervisorJob())
+    internal val scope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
 
     /**
      * [onComplete] is invoked once the real work for the given exit path is actually finished,

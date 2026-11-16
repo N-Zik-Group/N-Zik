@@ -1,7 +1,6 @@
 package app.n_zik.android.utils
 
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
-import app.n_zik.android.core.database.*
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

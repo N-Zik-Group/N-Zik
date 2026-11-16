@@ -67,7 +67,7 @@ object Toaster {
         val icon: Drawable by lazy {
             when( this ) {
                 NORMAL -> ColorDrawable(Color.TRANSPARENT)
-                else -> AppCompatResources.getDrawable( appContext(), iconId )!!
+                else -> requireNotNull(AppCompatResources.getDrawable(appContext(), iconId)) { "Missing toast icon resource" }
             }
         }
     }
@@ -123,7 +123,7 @@ object Toaster {
         message = app.n_zik.android.utils.ToastRelay.legacyResource( messageId, emptyArray() ),
         type = type,
         duration = duration,
-        icon = AppCompatResources.getDrawable( appContext(), iconId )!!
+        icon = requireNotNull(AppCompatResources.getDrawable(appContext(), iconId)) { "Missing toast icon resource" }
     )
 
     fun n( message: String, @MagicConstant(valuesFromClass = Toast::class) duration: Int = Toast.LENGTH_SHORT ) =

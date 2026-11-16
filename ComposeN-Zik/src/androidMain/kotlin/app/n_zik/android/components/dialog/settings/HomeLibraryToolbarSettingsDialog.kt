@@ -138,11 +138,11 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
 
         val currentTabKey = tabs[selectedTabIndex].first
         val currentWorkingOrder = workingOrders[currentTabKey] ?: run {
-            Timber.w("Missing workingOrders for tab $currentTabKey")
+            Timber.tag("HomeLibraryToolbarSettingsDialog").w("Missing workingOrders for tab $currentTabKey")
             return
         }
         val currentWorkingToggles = workingToggles[currentTabKey] ?: run {
-            Timber.w("Missing workingToggles for tab $currentTabKey")
+            Timber.tag("HomeLibraryToolbarSettingsDialog").w("Missing workingToggles for tab $currentTabKey")
             return
         }
         val tabPrefix = getTabPrefix(currentTabKey)

@@ -5,7 +5,6 @@ import app.n_zik.android.core.navigation.LocalSettingsBackNavigation
 import app.n_zik.android.core.navigation.SettingsBackNavigation
 import app.n_zik.android.components.search.SearchResultsViewport
 
-import app.n_zik.android.core.database.*
 
 import android.net.Uri
 import androidx.compose.animation.ExperimentalAnimationApi

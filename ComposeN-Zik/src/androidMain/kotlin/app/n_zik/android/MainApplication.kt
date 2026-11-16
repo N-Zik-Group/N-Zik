@@ -427,10 +427,10 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                         }
                     }
                 } else {
-                    Timber.w("Proxy preference is null or invalid, running without proxy")
+                    Timber.tag("MainApplication").w("Proxy preference is null or invalid, running without proxy")
                 }
             } else {
-                Timber.w("Proxy preference is null, running without proxy")
+                Timber.tag("MainApplication").w("Proxy preference is null, running without proxy")
             }
             val regionOverride = preferences.getString(regionOverrideKey, "")
             if (!regionOverride.isNullOrBlank()) {
@@ -740,7 +740,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         return if (Dependencies.isInitialized) {
             ImageCacheFactory.LOADER
         } else {
-            ImageLoader.Builder(context).build()
+            ImageCacheFactory.bootstrapLoader(context)
         }
     }
 
