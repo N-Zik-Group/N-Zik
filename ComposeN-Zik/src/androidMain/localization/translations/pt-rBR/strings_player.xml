@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">Ajuste o tamanho da arte do player para a orientação atual.</string>
     <string name="player_artwork_technical_info_description">Mostrar informações técnicas de reprodução no jogador.</string>
     <string name="player_artwork_technical_info_title">Exibir Estatísticas para Nerds no reprodutor</string>
+    <string name="player_artwork_hold_to_speed_up_title">Segure para acelerar</string>
+    <string name="player_artwork_hold_to_speed_up_description">Pressione e segure a arte da arte para acelerar temporariamente a reprodução</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Otimizar velocidade</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Velocidade de reprodução enquanto você segura a arte.</string>
     <string name="player_artwork_transition_circular">Circular</string>
     <string name="player_auto_load_songs_in_queue">Carregar músicas automaticamente na fila</string>
     <string name="player_auto_load_songs_in_queue_description">Adicionar músicas quando a fila está prestes a terminar</string>
