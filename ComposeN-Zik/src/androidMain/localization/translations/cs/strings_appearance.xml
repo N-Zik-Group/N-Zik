@@ -437,6 +437,7 @@
     <string name="theme_store_draft_discard">Odstranit koncept</string>
     <string name="theme_store_draft_resume">Pokračovat v konceptu</string>
     <string name="theme_store_preview_add_extra">Přidat další náhled</string>
+    <string name="theme_store_preview_remove_extra">Odstranit tento extra náhled</string>
     <string name="theme_store_preview_extra_title">Náhled názvu</string>
     <string name="theme_store_preview_import_requirements_with_gif">Náhledy jsou veřejné. Osobní údaje ponechejte mimo snímky obrazovky. PNG, JPEG, WebP nebo GIF · 4 MB na obrázek. GIFy si zachovávají svou původní velikost a musejí odpovídat do roku 1920 × 1920.</string>
     <string name="theme_store_preview_import_error">Nelze importovat tento obrázek. Vyberte PNG, JPEG nebo WebP obrázek do 4 MB.</string>
