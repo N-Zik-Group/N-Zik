@@ -323,4 +323,9 @@
     <string name="updates_check_failed">Nie można sprawdzić aktualizacji.</string>
     <string name="updates_install_generic_error">Nie można zainstalować aktualizacji.</string>
     <string name="updates_channel_available_format">Dostępna aktualizacja %1$s</string>
+    <string name="recovery_theme_backup_title">Motywy</string>
+    <string name="recovery_theme_backup_no_match">Tutaj można przywrócić tylko motywy należące do profili dostępnych w tym widoku.</string>
+    <string name="recovery_theme_backup_operation_failed">Nie można ukończyć operacji kopii zapasowej motywu.</string>
+    <string name="recovery_theme_backup_restore_action">Przywróć motywy</string>
+    <string name="recovery_theme_backup_restore_description">Otwórz ostatnią kopię zapasową motywu używaną dla tego profilu.</string>
 </resources>
