@@ -328,4 +328,14 @@
     <string name="recovery_theme_backup_operation_failed">无法完成主题备份操作。</string>
     <string name="recovery_theme_backup_restore_action">还原主题</string>
     <string name="recovery_theme_backup_restore_description">打开此配置文件使用的最后一个主题备份。</string>
+    <string name="updates_status_and_last_check">%1$s · %2$s</string>
+    <string name="recovery_action_failed">无法完成恢复操作。</string>
+    <string name="recovery_reopen_after_restoring_settings">恢复设置后重新打开救援中心。</string>
+    <string name="recovery_settings_file_empty">设置文件为空。</string>
+    <string name="recovery_profile_changed_during_import">在设置导入过程中所选的配置文件已更改。请再次选择并重试。</string>
+    <string name="recovery_no_importable_settings">文件中没有可以导入的设置。</string>
+    <string name="recovery_finish_pending_profile_operation">首先完成待处理的配置文件重置或还原。</string>
+    <string name="recovery_no_database_to_reset">没有要重置的数据库。</string>
+    <string name="updates_current_version_format">v%1$s</string>
+    <string name="updates_version_and_status">%1$s • %2$s</string>
 </resources>
