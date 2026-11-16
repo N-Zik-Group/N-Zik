@@ -289,4 +289,10 @@
         <item quantity="many">%1$d úlohy nebyly dokončeny</item>
         <item quantity="other">%1$d úlohy nebyly dokončeny</item>
     </plurals>
+    <plurals name="theme_store_settings_count">
+        <item quantity="one">Nastavení %d</item>
+        <item quantity="few">Nastavení %d</item>
+        <item quantity="many">Nastavení %d</item>
+        <item quantity="other">Nastavení %d</item>
+    </plurals>
 </resources>
