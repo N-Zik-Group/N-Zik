@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">Säädä pelaajan taideteoksen kokoa nykyiseen suuntautumiseen.</string>
     <string name="player_artwork_technical_info_description">Näytä soiton tekniset tiedot soittimessa.</string>
     <string name="player_artwork_technical_info_title">Tilastoja nörteille</string>
+    <string name="player_artwork_hold_to_speed_up_title">Pidä pohjassa nopeuttaaksesi</string>
+    <string name="player_artwork_hold_to_speed_up_description">Paina kuvaa ja pidä sitä pohjassa nopeuttaaksesi soittoa tilapäisesti</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Tehostettu nopeus</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Toiston nopeus kun pidät taidetta.</string>
     <string name="player_artwork_transition_circular">Pyöreä</string>
     <string name="player_auto_load_songs_in_queue">Lisää kappaleita automaattisesti jonoon</string>
     <string name="player_auto_load_songs_in_queue_description">Lisää jonoon kappaleita, kun jono loppuu</string>
