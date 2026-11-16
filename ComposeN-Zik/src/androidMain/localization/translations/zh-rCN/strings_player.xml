@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">调整当前方向的玩家艺术作品的大小。</string>
     <string name="player_artwork_technical_info_description">在播放器中显示技术播放信息。</string>
     <string name="player_artwork_technical_info_title">在播放器中显示详细统计信息</string>
+    <string name="player_artwork_hold_to_speed_up_title">按住以加快速度</string>
+    <string name="player_artwork_hold_to_speed_up_description">按住艺术作品来暂时加快播放</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">提升速度</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">当你按住艺术作品时播放速度。</string>
     <string name="player_artwork_transition_circular">循环</string>
     <string name="player_auto_load_songs_in_queue">在队列中自动加载歌曲</string>
     <string name="player_auto_load_songs_in_queue_description">当播放队列即将结束时添加歌曲</string>

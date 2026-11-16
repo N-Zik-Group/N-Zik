@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">Pas de grootte van de bestanden van de speler aan voor de huidige oriëntatie.</string>
     <string name="player_artwork_technical_info_description">Toon technische afspeelinformatie in de speler.</string>
     <string name="player_artwork_technical_info_title">Statistieken voor Nerds</string>
+    <string name="player_artwork_hold_to_speed_up_title">Vasthouden om te versnellen</string>
+    <string name="player_artwork_hold_to_speed_up_description">Houd de bestanden ingedrukt om het afspelen tijdelijk te versnellen</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Boost snelheid</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Afspeelsnelheid terwijl je de bestanden vasthoudt.</string>
     <string name="player_artwork_transition_circular">Rond</string>
     <string name="player_auto_load_songs_in_queue">Automatisch nummers laden in wachtrij</string>
     <string name="player_auto_load_songs_in_queue_description">Voegt nummers toe wanneer de wachtrij bijna eindigt</string>

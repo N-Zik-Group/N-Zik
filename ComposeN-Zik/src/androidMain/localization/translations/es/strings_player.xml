@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">Ajusta el tamaño de la obra de arte del jugador para la orientación actual.</string>
     <string name="player_artwork_technical_info_description">Mostrar información de reproducción técnica en el reproductor.</string>
     <string name="player_artwork_technical_info_title">Mostrar estadísticas para nerds en el reproductor</string>
+    <string name="player_artwork_hold_to_speed_up_title">Mantén para acelerar</string>
+    <string name="player_artwork_hold_to_speed_up_description">Mantén pulsado el artwork para acelerar temporalmente la reproducción</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Velocidad de impulso</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Velocidad de reproducción mientras mantienes la obra.</string>
     <string name="player_artwork_transition_circular">Circular</string>
     <string name="player_auto_load_songs_in_queue">Cargar automáticamente canciones en cola</string>
     <string name="player_auto_load_songs_in_queue_description">Añade canciones cuando la cola está a punto de terminar</string>

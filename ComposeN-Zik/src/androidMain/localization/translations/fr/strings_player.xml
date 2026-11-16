@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">Ajustez la taille de l\'illustration du lecteur en fonction de l\'orientation actuelle.</string>
     <string name="player_artwork_technical_info_description">Afficher les informations de lecture technique dans le lecteur.</string>
     <string name="player_artwork_technical_info_title">Statistiques pour les geeks</string>
+    <string name="player_artwork_hold_to_speed_up_title">Maintenez pour accélérer</string>
+    <string name="player_artwork_hold_to_speed_up_description">Appuyez et maintenez la pochette pour accélérer temporairement la lecture</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Accélérer la vitesse</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Vitesse de lecture pendant que vous maintenez l\'illustration.</string>
     <string name="player_artwork_transition_circular">Circulaire</string>
     <string name="player_auto_load_songs_in_queue">Charger automatiquement les titres dans la file d\'attente</string>
     <string name="player_auto_load_songs_in_queue_description">Ajoute des titres quand la file d\'attente est sur le point de se terminer</string>

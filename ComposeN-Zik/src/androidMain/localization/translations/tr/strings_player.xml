@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">Oynatıcının görselinin boyutunu mevcut yönelime göre ayarlayın.</string>
     <string name="player_artwork_technical_info_description">Oynatıcıda teknik oynatma bilgilerini göster.</string>
     <string name="player_artwork_technical_info_title">İstatistikler</string>
+    <string name="player_artwork_hold_to_speed_up_title">Hızlandırmak için basılı tut</string>
+    <string name="player_artwork_hold_to_speed_up_description">Oynatmayı geçici olarak hızlandırmak için resme basılı tutun</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Hızı artır</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Kapak resmini basılı tuttuğunuzda oynatma hızı.</string>
     <string name="player_artwork_transition_circular">Dairesel</string>
     <string name="player_auto_load_songs_in_queue">Sırada şarkıları otomatik yükle</string>
     <string name="player_auto_load_songs_in_queue_description">Sıra bitmek üzereyken şarkılar ekler</string>

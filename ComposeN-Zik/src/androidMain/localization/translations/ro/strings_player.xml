@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">Reglaţi dimensiunea lucrării de artă a jucătorului pentru orientarea curentă.</string>
     <string name="player_artwork_technical_info_description">Arată informații tehnice de redare în jucător.</string>
     <string name="player_artwork_technical_info_title">Statistici pentru nerds</string>
+    <string name="player_artwork_hold_to_speed_up_title">Ține apăsat pentru a accelera</string>
+    <string name="player_artwork_hold_to_speed_up_description">Apăsați și țineți apăsat opera de artă pentru a accelera temporar redarea</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Viteza de accelerare</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Viteza de redare în timp ce ții arta.</string>
     <string name="player_artwork_transition_circular">Circular</string>
     <string name="player_auto_load_songs_in_queue">Încarcă automat melodiile în coadă</string>
     <string name="player_auto_load_songs_in_queue_description">Adaugă melodii când coada este pe cale să se termine</string>

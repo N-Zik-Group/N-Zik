@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">Juster størrelsen af spillerens illustrationer for den aktuelle orientering.</string>
     <string name="player_artwork_technical_info_description">Vis teknisk afspilningsinformation i spilleren.</string>
     <string name="player_artwork_technical_info_title">Vis statistikker for nørder i afspiller</string>
+    <string name="player_artwork_hold_to_speed_up_title">Hold for at fremskynde</string>
+    <string name="player_artwork_hold_to_speed_up_description">Tryk og hold kunstværket nede for midlertidigt at fremskynde afspilning</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Øg hastighed</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Afspilningshastighed, mens du holder kunstværket.</string>
     <string name="player_artwork_transition_circular">Cirkulær</string>
     <string name="player_auto_load_songs_in_queue">Auto-indlæs sange i kø</string>
     <string name="player_auto_load_songs_in_queue_description">Tilføjer sange, når køen er ved at slutte</string>

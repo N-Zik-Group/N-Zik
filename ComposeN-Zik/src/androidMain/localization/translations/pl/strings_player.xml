@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">Dostosuj rozmiar grafiki gracza do bieżącej orientacji.</string>
     <string name="player_artwork_technical_info_description">Pokaż informacje o technicznym odtwarzaniu w odtwarzaczu.</string>
     <string name="player_artwork_technical_info_title">Statystyki dla nerdów</string>
+    <string name="player_artwork_hold_to_speed_up_title">Przytrzymaj aby przyspieszyć</string>
+    <string name="player_artwork_hold_to_speed_up_description">Naciśnij i przytrzymaj pracę, aby tymczasowo przyspieszyć odtwarzanie</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Zwiększ prędkość</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Szybkość odtwarzania podczas trzymania dzieła.</string>
     <string name="player_artwork_transition_circular">Okrągły</string>
     <string name="player_auto_load_songs_in_queue">Automatycznie załaduj piosenki w kolejce</string>
     <string name="player_auto_load_songs_in_queue_description">Dodaj piosenki, kiedy kolejka się kończy</string>

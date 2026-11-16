@@ -188,6 +188,10 @@
     <string name="player_artwork_size_description">Regola la dimensione dell\'opera d\'arte del giocatore per l\'orientamento corrente.</string>
     <string name="player_artwork_technical_info_description">Mostra le informazioni sulla riproduzione tecnica nel giocatore.</string>
     <string name="player_artwork_technical_info_title">Statistiche per nerd</string>
+    <string name="player_artwork_hold_to_speed_up_title">Tieni premuto per velocizzare</string>
+    <string name="player_artwork_hold_to_speed_up_description">Premi e tieni premuto l\'opera per velocizzare temporaneamente la riproduzione</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Velocità di potenziamento</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Velocità di riproduzione mentre tieni premuto l\'opera.</string>
     <string name="player_artwork_transition_circular">Circolare</string>
     <string name="player_auto_load_songs_in_queue">Aggiunta automatica brani nella coda</string>
     <string name="player_auto_load_songs_in_queue_description">Aggiunge brani quando la coda sta per terminare</string>
