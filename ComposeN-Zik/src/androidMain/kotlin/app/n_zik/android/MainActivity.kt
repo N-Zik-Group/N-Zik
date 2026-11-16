@@ -1140,11 +1140,11 @@ class MainActivity :
                 if (isValidIP(hostName) && hostName != null) {
                     app.n_zik.innertube.utils.getProxy(ProxyPreferenceItem(hostName, proxyPort, proxyMode))
                 } else {
-                    Timber.w("Proxy preference is null or invalid, running without proxy")
+                    Timber.tag("MainActivity").w("Proxy preference is null or invalid, running without proxy")
                     null
                 }
             } else {
-                Timber.w("Proxy preference is null, running without proxy")
+                Timber.tag("MainActivity").w("Proxy preference is null, running without proxy")
                 null
             }
 
@@ -1262,14 +1262,16 @@ class MainActivity :
                 onDispose { dynamicAppearanceOwner.close() }
             }
 
-            fun setDynamicPalette(url: String?, animateTheme: Boolean = false) {
-                dynamicAppearanceOwner.refresh(url, animateTheme)
+            fun setDynamicPalette(player: Player?, animateTheme: Boolean = false) {
+                val item = player?.currentMediaItem
+                val artworkUri = item?.let { player.mediaMetadata.artworkUri ?: it.mediaMetadata.artworkUri }
+                dynamicAppearanceOwner.refresh(artworkUri?.toString(), animateTheme, awaitArtworkMetadata = item != null)
             }
 
             val artworkColorGeneration by app.n_zik.android.components.player.SharedArtworkColors.generation.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
             LaunchedEffect(artworkColorGeneration) {
                 if (artworkColorGeneration > 0) binder?.player?.let { player ->
-                    setDynamicPalette(player.currentMediaItem?.mediaMetadata?.artworkUri?.toString(), true)
+                    setDynamicPalette(player, animateTheme = true)
                 }
             }
 
@@ -1288,10 +1290,7 @@ class MainActivity :
                 val colorPaletteName = preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
                 if (colorPaletteName == ColorPaletteName.Dynamic) {
                     binder?.player?.let { player ->
-                        setDynamicPalette(
-                            player.currentMediaItem?.mediaMetadata?.artworkUri?.toString(),
-                            animateTheme = true
-                        )
+                        setDynamicPalette(player, animateTheme = true)
                     }
                 } else {
                     val computed = computeAppearance()
@@ -1424,8 +1423,7 @@ class MainActivity :
 
                                 if (colorPaletteName == ColorPaletteName.Dynamic) {
                                     // Always call setDynamicPalette when switching to the dynamic theme
-                                    val currentArtworkUri = binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri?.toString()
-                                    setDynamicPalette(currentArtworkUri, animateTheme = true)
+                                    setDynamicPalette(binder?.player, animateTheme = true)
                                 } else {
                                     dynamicAppearanceOwner.cancel()
 
@@ -1523,7 +1521,7 @@ class MainActivity :
                     if (colorPaletteName == ColorPaletteName.Dynamic) {
                         // A disconnected service has unknown artwork, not an empty queue.
                         binder?.player?.let { player ->
-                            setDynamicPalette(player.currentMediaItem?.mediaMetadata?.artworkUri?.toString())
+                            setDynamicPalette(player)
                         }
                     }
 
@@ -2667,8 +2665,8 @@ class MainActivity :
                     val currentBinder = binder ?: return@DisposableEffect onDispose { }
                     val player = currentBinder.player
 
-                    val paletteArtworkListener = DynamicPaletteArtworkListener(player) { artworkUri ->
-                        setDynamicPalette(artworkUri?.toString())
+                    val paletteArtworkListener = DynamicPaletteArtworkListener(player) {
+                        setDynamicPalette(player, animateTheme = true)
                     }
                     player.addListener(paletteArtworkListener)
                     paletteArtworkListener.publishCurrentArtwork()

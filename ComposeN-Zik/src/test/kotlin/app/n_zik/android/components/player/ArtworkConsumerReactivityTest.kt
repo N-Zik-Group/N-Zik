@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.os.Looper
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.core.app.ApplicationProvider
@@ -19,6 +20,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -55,6 +57,50 @@ class ArtworkConsumerReactivityTest {
         context.profilePreferences.edit().putString(activeProfileKey, previousProfile).commit()
         SharedArtworkColors.invalidate()
         unmockkObject(ImageCacheFactory)
+    }
+
+    @Test fun `a pending cover request keeps the displayed colors until it resolves`() {
+        val previousUri = "test://artwork/previous"
+        val nextUri = "test://artwork/next"
+        val previous = Bitmap.createBitmap(16, 16, Bitmap.Config.ARGB_8888).apply {
+            eraseColor(android.graphics.Color.RED)
+        }
+        val next = Bitmap.createBitmap(16, 16, Bitmap.Config.ARGB_8888).apply {
+            eraseColor(android.graphics.Color.BLUE)
+        }
+        val started = CompletableDeferred<Unit>()
+        val pending = CompletableDeferred<Bitmap>()
+        mockkObject(ImageCacheFactory)
+        coEvery {
+            ImageCacheFactory.loadBitmap(previousUri, allowHardware = false, requestSize = 1000,
+                qualityOverride = ImageCacheFactory.NetworkQuality.HIGH)
+        } returns previous
+        coEvery {
+            ImageCacheFactory.loadBitmap(nextUri, allowHardware = false, requestSize = 1000,
+                qualityOverride = ImageCacheFactory.NetworkQuality.HIGH)
+        } coAnswers {
+            started.complete(Unit)
+            pending.await()
+        }
+
+        val uri = mutableStateOf(previousUri)
+        var displayed: ArtworkDisplayColors? = null
+        compose.setContent {
+            val source = uri.value
+            displayed = rememberArtworkDisplayColors(source, isDark = true)
+            BasicText(source)
+        }
+        compose.waitUntil(5_000) { displayed != null }
+        val oldDisplay = compose.runOnIdle {
+            requireNotNull(displayed).also { uri.value = nextUri }
+        }
+        shadowOf(Looper.getMainLooper()).idle()
+        compose.waitForIdle()
+        compose.waitUntil(5_000) { started.isCompleted }
+        compose.runOnIdle { assertEquals(oldDisplay, displayed) }
+
+        pending.complete(next)
+        compose.waitUntil(5_000) { displayed != null && displayed != oldDisplay }
     }
 
     @Test fun `two live cover consumers toggle and change mode without replacing their source`() {

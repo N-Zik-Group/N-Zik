@@ -67,7 +67,6 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.appRunningInBackground
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 
-import app.n_zik.android.core.database.*
 import app.n_zik.android.utils.artistIdsWithFallback
 import app.n_zik.android.utils.albumIdWithFallback
 import app.n_zik.android.utils.artistTextWithFallback
@@ -78,6 +77,7 @@ import android.annotation.SuppressLint
 import android.graphics.RenderEffect
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -334,6 +334,7 @@ import kotlinx.coroutines.withContext
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.player.PlayerCurrentCover
+import app.n_zik.android.components.glass.rememberGlassArtwork
 import app.n_zik.android.components.player.rememberArtworkDisplayColors
 import app.n_zik.android.components.player.BlurAdjuster
 import app.n_zik.android.components.player.m3eDarkenBy
@@ -785,8 +786,9 @@ fun Player(
 
     LaunchedEffect(binder, delayedSleepTimer, sleepTimerMillisLeft) {
         snapshotFlow { timeRemainingState.value }.collect { timeRemaining ->
-            if (sleepTimerMillisLeft != null) {
-                if (sleepTimerMillisLeft!! < timeRemaining.toLong() && !delayedSleepTimer) {
+            val sleepTimerRemaining = sleepTimerMillisLeft
+            if (sleepTimerRemaining != null) {
+                if (sleepTimerRemaining < timeRemaining.toLong() && !delayedSleepTimer) {
                     binder?.cancelSleepTimer()
                     binder?.startSleepTimer(timeRemaining.toLong())
                     delayedSleepTimer = true
@@ -829,10 +831,33 @@ fun Player(
                 playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient ||
                 playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient
 
+    val showLandscapeArtworkColumn = !isLandscape ||
+        playerLandscapeArtworkColumnVisible(playerType, thumbnailType, expandedplayer, showthumbnail)
+    val coverOverlayPolicy = playerCoverOverlayPolicy(
+        lyricsOnCover = showlyricsthumbnail && showthumbnail && showLandscapeArtworkColumn,
+        visualizerOnCover = showvisthumbnail && showthumbnail && showLandscapeArtworkColumn,
+    )
+    val coverArtworkVisible = playerCoverArtworkVisible(
+        showthumbnail, isShowingLyrics, coverOverlayPolicy.lyricsOnCover,
+        isShowingVisualizer, coverOverlayPolicy.visualizerOnCover,
+    )
     val fullCoverPresentation = !playerLandscapeArtworkColumnVisible(playerType, thumbnailType, expandedplayer, showthumbnail)
-    val currentSwipedMediaItem = if (fullCoverPresentation) mediaItem else mediaItems.getOrNull(if (!showthumbnail || albumCoverRotation) pagerStateFS.currentPage else if (playerType == PlayerType.Modern) pagerState.currentPage else player.currentMediaItemIndex) ?: mediaItem
+    val showFullScreenArtworkPager = playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor &&
+        playerType == PlayerType.Modern && (!showthumbnail || albumCoverRotation)
+    val artworkPreviewPage = when {
+        showFullScreenArtworkPager -> pagerStateFS.currentPage
+        playerType == PlayerType.Modern && showLandscapeArtworkColumn && coverArtworkVisible -> pagerState.currentPage
+        else -> null
+    }
+    val currentSwipedMediaItem = artworkPreviewPage
+        ?.takeIf { !fullCoverPresentation }
+        ?.let(mediaItems::getOrNull) ?: mediaItem
+    val playingArtwork = rememberGlassArtwork(player)
+    fun coverUrl(item: MediaItem?): String? =
+        playingArtwork?.takeIf { it.mediaId == item?.mediaId }?.uri ?: item?.mediaMetadata?.artworkUri?.toString()
+    val currentCoverUrl = coverUrl(currentSwipedMediaItem)
     val coverDisplay = rememberArtworkDisplayColors(
-        currentSwipedMediaItem.mediaMetadata.artworkUri?.toString(), !lightTheme,
+        currentCoverUrl, !lightTheme, awaitArtworkMetadata = currentSwipedMediaItem.mediaId == mediaItem.mediaId,
     )
     val dynamicColorPalette = coverDisplay?.palette?.let { palette ->
         if (coverDisplay.forceDark) palette.copy(accent = coverDisplay.foreground ?: palette.text) else palette
@@ -847,6 +872,17 @@ fun Player(
     val darkMuted = coverColors?.darkMuted ?: dominant
     val coverBackground = if (coverColors != null || coverDisplay?.forceDark == true)
         coverDisplay?.background ?: dynamicColorPalette.background1 else dynamicColorPalette.background1
+
+    val fadingCoverBackground = if (
+        playerBackgroundColors == PlayerBackgroundColors.CoverColor ||
+        playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient
+    ) {
+        animateColorAsState(
+            coverBackground,
+            animationSpec = tween(350, easing = FastOutSlowInEasing),
+            label = "playerCoverBackground",
+        ).value
+    } else coverBackground
 
     fun coverGradientColor(swatch: Int): Color =
         if (coverDisplay?.forceDark == true) coverBackground
@@ -1054,7 +1090,7 @@ fun Player(
                     }
                 }
         } else if (playerBackgroundColors == PlayerBackgroundColors.CoverColor){
-            containerModifier = containerModifier.background(coverBackground)
+            containerModifier = containerModifier.background(fadingCoverBackground)
         } else if (playerBackgroundColors == PlayerBackgroundColors.ThemeColor){
             containerModifier = containerModifier
                 .background(color.background1)
@@ -1193,10 +1229,11 @@ fun Player(
                     AnimatedGradient.Random -> throw IllegalStateException("Anything but this")
                 }
 
-                containerModifier = containerModifier.conditional( shaderCondition && shader != null ) {
-                                                         shaderBackground( shader!! )
-                                                     }
-                                                     .background( background )
+                val activeShader = shader
+                if (shaderCondition && activeShader != null) {
+                    containerModifier = containerModifier.shaderBackground(activeShader)
+                }
+                containerModifier = containerModifier.background(background)
                                                      .onSizeChanged {
                                                          sizeShader = Size( it.width.toFloat(), it.height.toFloat() )
                                                      }
@@ -1207,12 +1244,12 @@ fun Player(
                     .background(
                         Brush.verticalGradient(
                             0.5f to if (playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient)
-                                coverBackground
+                                fadingCoverBackground
                             else surfaceColor(colorPalette().background1),
                             // OQ2=B: the whole "cover color" gradient renders the dominant swatch,
                             // the same hue the app's dynamic accent is built from (RiPlay reference).
                             1.0f to if (blackgradient) Color.Black else if (playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient)
-                                coverBackground
+                                fadingCoverBackground
                             else surfaceColor(colorPalette().background2),
                             startY = 0.0f,
                             endY = 1500.0f
@@ -1224,13 +1261,9 @@ fun Player(
 
     }
 
+    val controllerPreviewPage = if (showthumbnail && playerType == PlayerType.Modern && coverArtworkVisible)
+        pagerState.currentPage else artworkPreviewPage
     val artworkShadowOverflow = rememberPlayerArtworkShadowOverflow()
-    val showLandscapeArtworkColumn = !isLandscape ||
-        playerLandscapeArtworkColumnVisible(playerType, thumbnailType, expandedplayer, showthumbnail)
-    val coverOverlayPolicy = playerCoverOverlayPolicy(
-        lyricsOnCover = showlyricsthumbnail && showthumbnail && showLandscapeArtworkColumn,
-        visualizerOnCover = showvisthumbnail && showthumbnail && showLandscapeArtworkColumn,
-    )
     val isShowingStandaloneLyrics = playerStandaloneLyricsVisible(
         showthumbnail, isShowingLyrics, coverOverlayPolicy.lyricsOnCover)
     val showActionsInFullscreenLyrics by rememberPreference(actionExpandedKey, true)
@@ -1404,7 +1437,7 @@ fun Player(
         Box(Modifier.fillMaxSize().then(if (capturePlayerScene) Modifier.layerBackdrop(queuePlayerBackdrop) else Modifier)) {
         if (isLandscape) {
          Box{
-             if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor && playerType == PlayerType.Modern && (!showthumbnail || albumCoverRotation)) {
+             if (showFullScreenArtworkPager) {
                    val fling = flingBehaviorFor(pagerStateFS, sensitivity = playerSwipeSensitivity)
                    pagerStateFS.LaunchedEffectScrollToPage(
                        player,
@@ -1467,7 +1500,7 @@ fun Player(
                      }
 
                      if (fullCoverPresentation) FullCoverPagerPage() else PlayerBlurredCover(
-                         thumbnailUrl = mediaItems.getOrNull(it)?.mediaMetadata?.artworkUri?.toString() ?: "",
+                         thumbnailUrl = coverUrl(mediaItems.getOrNull(it)).orEmpty(),
                          captureBackdrop = false,
                          blurAdjuster = blurAdjuster,
                          showThumbnail = showthumbnail,
@@ -1522,7 +1555,7 @@ fun Player(
              }
 
              PlayerBlurredCover(
-                 thumbnailUrl = if (fullCoverPresentation) mediaItem.mediaMetadata.artworkUri?.toString().orEmpty() else mediaItems.getOrNull(if (!showLandscapeArtworkColumn) player.currentMediaItemIndex else if (!showthumbnail || albumCoverRotation) pagerStateFS.currentPage else if (playerType == PlayerType.Modern) pagerState.currentPage else player.currentMediaItemIndex)?.mediaMetadata?.artworkUri?.toString() ?: "",
+                 thumbnailUrl = currentCoverUrl.orEmpty(),
                  blurAdjuster = blurAdjuster,
                  showThumbnail = showthumbnail,
                  noBlur = noblur,
@@ -1637,7 +1670,7 @@ fun Player(
                                      ) {
 
                                      val coverPainter = ImageCacheFactory.Painter(
-                                         thumbnailUrl = mediaItems.getOrNull(it)?.mediaMetadata?.artworkUri?.toString() ?: ""
+                                         thumbnailUrl = coverUrl(mediaItems.getOrNull(it)).orEmpty()
                                      )
 
                                       val coverModifier = Modifier.playerThumbnailCover(
@@ -1864,10 +1897,8 @@ fun Player(
                             }
                         }
                     }
-                    val controllerIndex = (if (!showthumbnail) pagerStateFS.currentPage else pagerState.currentPage)
-                        .coerceIn(0, player.mediaItemCount - 1)
-                    val controllerItem = if (!showLandscapeArtworkColumn || playerType == PlayerType.Essential || isShowingVisualizer)
-                        mediaItem else player.getMediaItemAt(controllerIndex)
+                    val controllerItem = if (!showLandscapeArtworkColumn || isShowingLyrics || isShowingVisualizer)
+                        mediaItem else controllerPreviewPage?.let(mediaItems::getOrNull) ?: mediaItem
                     Controller(
                         controllerItem,
                         Modifier.playerLandscapeControlsMargin().weight(1f),
@@ -1888,7 +1919,7 @@ fun Player(
          }
         } else {
            Box {
-               if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor && playerType == PlayerType.Modern && (!showthumbnail || albumCoverRotation)) {
+               if (showFullScreenArtworkPager) {
                      val fling = flingBehaviorFor(pagerStateFS, sensitivity = playerSwipeSensitivity)
                     val scaleAnimationFloat by animateFloatAsState(
                         if (isDraggedFS) 0.85f else 1f, label = ""
@@ -1971,7 +2002,7 @@ fun Player(
                                 }
                         ) {
                             if (fullCoverPresentation) FullCoverPagerPage() else PlayerBlurredCover(
-                                thumbnailUrl = mediaItems.getOrNull(it)?.mediaMetadata?.artworkUri?.toString() ?: "",
+                                thumbnailUrl = coverUrl(mediaItems.getOrNull(it)).orEmpty(),
                                 captureBackdrop = false,
                                 blurAdjuster = blurAdjuster,
                                 showThumbnail = showthumbnail,
@@ -2118,7 +2149,7 @@ fun Player(
                 }
 
                PlayerBlurredCover(
-                   thumbnailUrl = if (fullCoverPresentation) mediaItem.mediaMetadata.artworkUri?.toString().orEmpty() else mediaItems.getOrNull(if (!showthumbnail || albumCoverRotation) pagerStateFS.currentPage else if (playerType == PlayerType.Modern) pagerState.currentPage else player.currentMediaItemIndex)?.mediaMetadata?.artworkUri?.toString() ?: "",
+                   thumbnailUrl = currentCoverUrl.orEmpty(),
                    blurAdjuster = blurAdjuster,
                    showThumbnail = showthumbnail,
                    noBlur = noblur,
@@ -2331,7 +2362,7 @@ fun Player(
                                  ){
 
                                      val coverPainter = ImageCacheFactory.Painter(
-                                         thumbnailUrl = mediaItems.getOrNull(it)?.mediaMetadata?.artworkUri?.toString() ?: ""
+                                         thumbnailUrl = coverUrl(mediaItems.getOrNull(it)).orEmpty()
                                      )
 
                                       val coverModifier = Modifier.playerThumbnailCover(
@@ -2541,10 +2572,8 @@ fun Player(
                         (isShowingVisualizer && !coverOverlayPolicy.visualizerOnCover)
                     if (playerType == PlayerType.Essential || standaloneOverlay ||
                         !(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Scale && isDraggedFS)) {
-                        val controllerIndex = (if (!showthumbnail) pagerStateFS.currentPage else pagerState.currentPage)
-                            .coerceIn(0, player.mediaItemCount - 1)
-                        val controllerItem = if (playerType == PlayerType.Essential || isShowingLyrics || isShowingVisualizer)
-                            mediaItem else player.getMediaItemAt(controllerIndex)
+                        val controllerItem = if (isShowingLyrics || isShowingVisualizer)
+                            mediaItem else controllerPreviewPage?.let(mediaItems::getOrNull) ?: mediaItem
                         Controller(
                             controllerItem,
                             Modifier.padding(vertical = 4.dp).fillMaxWidth(),

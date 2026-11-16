@@ -49,6 +49,34 @@ class DynamicAppearanceOwnerTest {
         shadowOf(Looper.getMainLooper()).idle()
     }
 
+    @Test fun `late metadata replaces the previous palette in a single animated update`() = runTest {
+        val previous = dynamicColorPaletteOf(Color.Red, true)
+        val incoming = dynamicColorPaletteOf(Color.Blue, true)
+        val updates = mutableListOf<Pair<ColorPalette, Boolean>>()
+        val owner = DynamicAppearanceOwner(preferences, this, { true }, { url, _ ->
+            if (url == "previous") previous else incoming
+        }, { appearance }, { next, animate ->
+            appearance = next
+            updates += next.colorPalette to animate
+        }, {}, {}, StandardTestDispatcher(testScheduler))
+
+        owner.refresh("previous")
+        testScheduler.runCurrent()
+        owner.refresh(null, animate = true, awaitArtworkMetadata = true)
+        testScheduler.advanceTimeBy(100)
+        assertEquals(listOf(previous to false), updates)
+
+        owner.refresh("incoming", animate = true, awaitArtworkMetadata = true)
+        testScheduler.advanceUntilIdle()
+        assertEquals(listOf(previous to false, incoming to true), updates)
+
+        owner.refresh(null, animate = true, awaitArtworkMetadata = true)
+        testScheduler.advanceUntilIdle()
+        assertEquals(3, updates.size)
+        assertTrue(updates.last().second)
+        assertTrue(updates.last().first != incoming)
+    }
+
     @Test fun `real preference listener toggles cached raw artwork and publishes all consumers without reloading`() = runTest {
         var loads = 0
         val owner = DynamicAppearanceOwner(preferences, this, { true }, { _, _ -> loads++; bright },

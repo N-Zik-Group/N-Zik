@@ -40,6 +40,7 @@ import app.n_zik.android.core.coil.isVideoArtwork
 import app.n_zik.android.core.coil.rememberDisplayArtworkSource
 import coil3.compose.asPainter
 import kotlin.math.sqrt
+import kotlinx.coroutines.delay
 
 /** A media ID alone is insufficient when metadata refreshes the artwork URI. */
 internal data class PlayerCoverIdentity(val mediaId: String, val artworkUri: String)
@@ -102,7 +103,10 @@ fun PlayerCurrentCover(
     frames.request(identity)
     val fallback = painterResource(R.drawable.ic_launcher_box)
     if (artworkUri.isBlank() || artworkUri == "null") {
-        LaunchedEffect(identity) { frames.complete(identity, fallback) }
+        LaunchedEffect(identity) {
+            if (frames.displayed != null) delay(ARTWORK_METADATA_GRACE_MS)
+            frames.complete(identity, fallback)
+        }
     } else key(identity) {
         ImageCacheFactory.Painter(
             thumbnailUrl = artworkUri,

@@ -10,8 +10,6 @@ import java.util.WeakHashMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Semaphore
 import kotlin.coroutines.coroutineContext
@@ -38,7 +36,7 @@ internal class ArtworkColorRepository(
         lateinit var task: Deferred<ArtworkColorSnapshot?>
         var waiters = 1
     }
-    private val workScope = CoroutineScope(scope.coroutineContext + SupervisorJob(scope.coroutineContext[Job]))
+    private val workScope = NzikDispatchers.supervisedChildScope(scope)
     private val admission = Semaphore(maxInFlight)
     private val lock = Any()
     private val completed = LinkedHashMap<ArtworkColorKey, ArtworkColorSnapshot>(16, .75f, true)

@@ -17,7 +17,12 @@ import app.n_zik.android.components.theme.DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAU
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import timber.log.Timber
+
+internal const val ARTWORK_METADATA_GRACE_MS = 350L
 
 /** Source changes load once; brightness and mode changes only derive display roles. */
 @Composable
@@ -25,6 +30,7 @@ fun rememberArtworkDisplayColors(
     uri: String?,
     isDark: Boolean,
     revision: String? = null,
+    awaitArtworkMetadata: Boolean = false,
 ): ArtworkDisplayColors? {
     val context = LocalContext.current.applicationContext
     var profile by remember(context) { mutableStateOf(getActiveProfile(context)) }
@@ -49,15 +55,22 @@ fun rememberArtworkDisplayColors(
         onDispose { preferences.unregisterOnSharedPreferenceChangeListener(listener) }
     }
     val generation by SharedArtworkColors.generation.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
-    var raw by remember(uri, profile, revision, generation) { mutableStateOf<ArtworkColorSnapshot?>(null) }
-    LaunchedEffect(uri, profile, revision, generation) {
+    var raw by remember(profile) { mutableStateOf<ArtworkColorSnapshot?>(null) }
+    val missingUri = uri.isNullOrBlank() || uri == "null"
+    LaunchedEffect(uri, profile, revision, generation, awaitArtworkMetadata) {
+        if (missingUri && awaitArtworkMetadata && raw != null) delay(ARTWORK_METADATA_GRACE_MS)
         try {
-            raw = SharedArtworkColors.load(context, uri, revision)
+            val loaded = SharedArtworkColors.load(context, uri, revision)
+            currentCoroutineContext().ensureActive()
+            raw = loaded
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
+            raw = null
             Timber.tag("ArtworkColors").w(error, "Unable to analyze artwork")
         }
     }
-    return remember(raw, isDark, keepDark) { raw?.display(isDark, keepDark) }
+    return remember(missingUri, awaitArtworkMetadata, raw, isDark, keepDark) {
+        raw?.takeUnless { missingUri && !awaitArtworkMetadata }?.display(isDark, keepDark)
+    }
 }

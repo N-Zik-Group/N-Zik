@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainCoroutineDispatcher
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import timber.log.Timber
@@ -26,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger
 object NzikDispatchers {
 
     /** Thread 1 — UI & gestures. Always Dispatchers.Main. */
-    val UI: CoroutineDispatcher = Dispatchers.Main
+    val UI: MainCoroutineDispatcher = Dispatchers.Main
 
     /** Thread 2 — Audio & playback. Single thread: guarantees ordering. Absorbs the former
      *  `PlaybackDispatchers.STREAM_RESOLVER`. ExoPlayer `player.*` access itself stays on UI.
@@ -98,6 +99,12 @@ object NzikDispatchers {
      */
     fun fireAndForget(context: CoroutineContext): CoroutineScope =
         CoroutineScope(context + (context[Job] ?: SupervisorJob()) + fireAndForgetExceptionHandler)
+
+    /** Isolates child failures while inheriting the parent's dispatcher and cancellation. */
+    internal fun supervisedChildScope(parent: CoroutineScope): CoroutineScope {
+        val context = parent.coroutineContext
+        return CoroutineScope(context + SupervisorJob(context[Job]))
+    }
 
     private val fireAndForgetExceptionHandler = CoroutineExceptionHandler { context, e ->
         // Name + dispatcher identify the failing site for this shared handler.

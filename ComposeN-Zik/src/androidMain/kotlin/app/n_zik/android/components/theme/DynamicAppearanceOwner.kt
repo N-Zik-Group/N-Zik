@@ -10,12 +10,14 @@ import app.n_zik.android.ui.styling.dynamicColorPaletteOf
 import app.n_zik.android.utils.colorPaletteModeKey
 import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.utils.getEnum
+import app.n_zik.android.components.player.ARTWORK_METADATA_GRACE_MS
 import app.n_zik.android.components.player.ArtworkColorSnapshot
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -65,7 +67,7 @@ internal class DynamicAppearanceOwner(
         job = null
     }
 
-    fun refresh(url: String?, animate: Boolean = false) {
+    fun refresh(url: String?, animate: Boolean = false, awaitArtworkMetadata: Boolean = false) {
         cancel()
         if (!isDynamic()) return
         val mode = preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
@@ -78,8 +80,16 @@ internal class DynamicAppearanceOwner(
             extractedPalette = null
             extractedSnapshot = null
         }
-        if (url.isNullOrEmpty() || url.contains("ic_launcher_box")) {
-            publishPalette(fallback(dark), animate)
+        if (url.isNullOrBlank() || url.contains("ic_launcher_box")) {
+            if (awaitArtworkMetadata) {
+                job = scope.launch {
+                    // Media3 may publish the artwork URI in a separate metadata event.
+                    delay(ARTWORK_METADATA_GRACE_MS)
+                    if (isDynamic()) publishPalette(fallback(dark), animate)
+                }
+            } else {
+                publishPalette(fallback(dark), animate)
+            }
             return
         }
         val version = request

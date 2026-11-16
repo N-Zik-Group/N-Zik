@@ -56,7 +56,7 @@ internal fun rememberGlassArtwork(player: Player?): GlassArtwork? {
 internal suspend fun extractGlassArtworkColor(bitmap: Bitmap, isDark: Boolean): Color? =
     SharedArtworkColors.fromBitmap(bitmap)?.display(isDark, keepDark = false)?.dominant
 
-/** Clears the preceding song's tint immediately while loading the current cover. */
+/** Keeps the current tint visible while the replacement cover loads. */
 @Composable
 fun rememberGlassArtworkColor(player: Player?, enabled: Boolean, isDark: Boolean): Color? {
     return rememberGlassArtworkDisplayColors(player, enabled, isDark)?.dominant
@@ -65,7 +65,9 @@ fun rememberGlassArtworkColor(player: Player?, enabled: Boolean, isDark: Boolean
 @Composable
 internal fun rememberGlassArtworkDisplayColors(player: Player?, enabled: Boolean, isDark: Boolean): ArtworkDisplayColors? {
     val artwork = rememberGlassArtwork(player)
-    return rememberArtworkDisplayColors(artwork?.uri.takeIf { enabled }, isDark)
+    return rememberArtworkDisplayColors(
+        artwork?.uri.takeIf { enabled }, isDark, awaitArtworkMetadata = enabled && artwork?.mediaId != null,
+    )
 }
 
 @Composable
