@@ -445,7 +445,6 @@
     <string name="settings_service_keep_screen_on_label">Ponechat obrazovku zapnutou</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Povolit neomezenou operaci na pozadí, takže systém bude s menší pravděpodobností přerušit přehrávání.</string>
     <string name="settings_stream_disabled_clients_title">Zakázaní klienti vysílání</string>
-    <string name="settings_stream_preferred_client_changed_message">Upřednostňovaný klient byl změněn. Bude aplikován na další skladbu.</string>
     <string name="settings_stream_preferred_client_title">Upřednostňovaný klient vysílání</string>
     <string name="settings_swipe_actions_description">Přejetím prstem po skladbě doleva nebo doprava aktivujete nabídku akcí</string>
     <string name="settings_swipe_actions_title">Akce přejetím</string>
