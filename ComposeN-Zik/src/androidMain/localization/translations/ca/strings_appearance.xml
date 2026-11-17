@@ -478,6 +478,7 @@
     <string name="theme_store_local_saved">Local theme updated.</string>
     <string name="theme_store_local_save_failed">Could not update the local theme.</string>
     <string name="theme_store_publish_description">Propose a new theme for the Theme Store.</string>
+    <string name="theme_store_published_creator_required">Your creator profile must be accepted and published in the Theme Store before you can publish a theme.</string>
     <string name="theme_store_edit_description">Submit a new revision of a published theme.</string>
     <string name="theme_store_submissions_in_progress_description">Track submissions awaiting review.</string>
     <string name="theme_store_submissions_history_description">See the decisions on your previous submissions.</string>
