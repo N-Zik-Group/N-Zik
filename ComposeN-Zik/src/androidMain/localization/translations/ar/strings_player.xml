@@ -397,4 +397,17 @@
     <string name="audio_output_usb_audio_label">صوت USB</string>
     <string name="audio_output_external_speaker_label">المتحدث الخارجي</string>
     <string name="audio_output_load_failed">فشل تحميل الأجهزة: %1$s</string>
+    <string name="player_audio_mode">الصوت</string>
+    <string name="player_video_mode">فيديو</string>
+    <string name="player_video_fullscreen">أدخل ملء الشاشة</string>
+    <string name="player_video_exit_fullscreen">الخروج من ملء الشاشة</string>
+    <string name="player_video_unavailable">تعذر العثور على فيديو</string>
+    <string name="player_video_search_manually">البحث يدوياً</string>
+    <string name="player_video_play">تشغيل</string>
+    <string name="player_video_pause">إيقاف</string>
+    <string name="player_statistics_kilobits_per_second">%1$d كيلوبايت</string>
+    <string name="player_statistics_kilohertz">%1$d kHz</string>
+    <string name="player_statistics_field_value">%1$s: %2$s</string>
+    <string name="audio_output_devices_unavailable">تعذر تحميل الأجهزة الصوتية.</string>
+    <string name="visualizer_position_format">%1$d/%2$d</string>
 </resources>
