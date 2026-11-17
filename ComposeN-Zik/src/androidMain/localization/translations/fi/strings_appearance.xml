@@ -478,6 +478,7 @@
     <string name="theme_store_local_saved">Paikallinen teema päivitetty.</string>
     <string name="theme_store_local_save_failed">Paikallista teemaa ei voitu päivittää.</string>
     <string name="theme_store_publish_description">Ehdota uutta teemaa teemasivustolle.</string>
+    <string name="theme_store_published_creator_required">Sinun luojaprofiilisi on hyväksyttävä ja julkaistava Teemakaupassa, ennen kuin voit julkaista teeman.</string>
     <string name="theme_store_edit_description">Lähetä uusi versio julkaistusta teemasta.</string>
     <string name="theme_store_submissions_in_progress_description">Kappaleen palautukset odottavat arvostelua.</string>
     <string name="theme_store_submissions_history_description">Katso aiempia pyyntöjäsi koskevat päätökset.</string>
