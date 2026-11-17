@@ -398,6 +398,9 @@
     <string name="settings_player_timeline_label">Tidslinje</string>
     <string name="settings_player_timeline_size_label">Størrelse på afspillertidslinjen</string>
     <string name="settings_player_timeline_transparent_label">Gennemsigtig tidslinje</string>
+    <string name="settings_player_opening_mode_label">Spiller åbningstilstand</string>
+    <string name="settings_player_opening_mode_description">Vælg den tilstand du skal bruge, når du åbner spilleren.</string>
+    <string name="settings_player_opening_mode_remember_last">Husk sidste tilstand</string>
     <string name="settings_player_top_action_bar_visible_label">Vis øverste handlingslinje</string>
     <string name="settings_player_vertical_swipe_expansion_description">Virker kun, når Udvidet Afspiller er slået fra</string>
     <string name="settings_preference_saved_message">Præference Gemt</string>
@@ -501,4 +504,5 @@
     <string name="settings_local_music_summary_title">On-device bibliotek resumé</string>
     <string name="settings_local_music_summary_description">Se detekteret musik og mapper for denne profil.</string>
     <string name="settings_local_music_summary_count">%1$s: %2$d</string>
+    <string name="settings_local_music_start_folder_path_example">Musik/Live</string>
 </resources>
