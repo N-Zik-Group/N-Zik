@@ -398,6 +398,9 @@
     <string name="settings_player_timeline_label">Aikajana</string>
     <string name="settings_player_timeline_size_label">Soittimen aikajanan koko</string>
     <string name="settings_player_timeline_transparent_label">Läpinäkyvä aikajanapalkki</string>
+    <string name="settings_player_opening_mode_label">Soittimen avaustila</string>
+    <string name="settings_player_opening_mode_description">Valitse tila, jota käytetään, kun avaat pelaajan.</string>
+    <string name="settings_player_opening_mode_remember_last">Muista viimeinen tila</string>
     <string name="settings_player_top_action_bar_visible_label">Näytä ylätoimintapalkki</string>
     <string name="settings_player_vertical_swipe_expansion_description">Se vaikuttaa vain kun laajennettu soitin on pois päältä</string>
     <string name="settings_preference_saved_message">Asetukset Tallennettu</string>
@@ -501,4 +504,5 @@
     <string name="settings_local_music_summary_title">Laitteen kirjaston yhteenveto</string>
     <string name="settings_local_music_summary_description">Katso tämän profiilin havaitut musiikit ja kansiot.</string>
     <string name="settings_local_music_summary_count">%1$s: %2$d</string>
+    <string name="settings_local_music_start_folder_path_example">Musiikki/elävä</string>
 </resources>
