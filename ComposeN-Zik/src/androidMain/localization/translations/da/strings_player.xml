@@ -397,4 +397,17 @@
     <string name="audio_output_usb_audio_label">USB lyd</string>
     <string name="audio_output_external_speaker_label">Ekstern højttaler</string>
     <string name="audio_output_load_failed">Kunne ikke indlæse enheder: %1$s</string>
+    <string name="player_audio_mode">Lyd</string>
+    <string name="player_video_mode">Video</string>
+    <string name="player_video_fullscreen">Angiv fuldskærm</string>
+    <string name="player_video_exit_fullscreen">Afslut fuldskærm</string>
+    <string name="player_video_unavailable">Kunne ikke finde en video</string>
+    <string name="player_video_search_manually">Søg manuelt</string>
+    <string name="player_video_play">Afspil</string>
+    <string name="player_video_pause">Pause</string>
+    <string name="player_statistics_kilobits_per_second">%1$d kbps</string>
+    <string name="player_statistics_kilohertz">%1$d kHz</string>
+    <string name="player_statistics_field_value">%1$s: %2$s</string>
+    <string name="audio_output_devices_unavailable">Kunne ikke indlæse lydenheder.</string>
+    <string name="visualizer_position_format">%1$d/%2$d</string>
 </resources>
