@@ -398,6 +398,9 @@
     <string name="settings_player_timeline_label">Таймлайн</string>
     <string name="settings_player_timeline_size_label">Розмір Таймлайну Програвача</string>
     <string name="settings_player_timeline_transparent_label">Прозорий Таймлайн</string>
+    <string name="settings_player_opening_mode_label">Режим відкриття гравця</string>
+    <string name="settings_player_opening_mode_description">Виберіть режим, який потрібно використовувати, коли ви відкриваєте програвача.</string>
+    <string name="settings_player_opening_mode_remember_last">Запам’ятати останній режим</string>
     <string name="settings_player_top_action_bar_visible_label">Показувати верхню панель дій</string>
     <string name="settings_player_vertical_swipe_expansion_description">Діє лише тоді, коли розширений плеєр вимкнено.</string>
     <string name="settings_preference_saved_message">Налаштування збережено</string>
@@ -501,4 +504,5 @@
     <string name="settings_local_music_summary_title">Резюме бібліотеки наш.пристроїв</string>
     <string name="settings_local_music_summary_description">Перегляньте виявлену музику та теки для цього профілю.</string>
     <string name="settings_local_music_summary_count">%1$s: %2$d</string>
+    <string name="settings_local_music_start_folder_path_example">Музика/жити</string>
 </resources>
