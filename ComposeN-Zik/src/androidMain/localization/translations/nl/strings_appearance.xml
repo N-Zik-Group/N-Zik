@@ -478,6 +478,7 @@
     <string name="theme_store_local_saved">Lokaal thema bijgewerkt.</string>
     <string name="theme_store_local_save_failed">Het lokale thema kon niet worden bijgewerkt.</string>
     <string name="theme_store_publish_description">Stel een nieuw thema voor voor de Thema Store.</string>
+    <string name="theme_store_published_creator_required">Uw creatorprofiel moet geaccepteerd en gepubliceerd worden in de Thema Store voordat u een thema kunt publiceren.</string>
     <string name="theme_store_edit_description">Dien een nieuwe revisie in van een gepubliceerd thema.</string>
     <string name="theme_store_submissions_in_progress_description">Bijhouden inzendingen wachten op beoordeling.</string>
     <string name="theme_store_submissions_history_description">Bekijk de beslissingen van je vorige uitwerkingen.</string>
