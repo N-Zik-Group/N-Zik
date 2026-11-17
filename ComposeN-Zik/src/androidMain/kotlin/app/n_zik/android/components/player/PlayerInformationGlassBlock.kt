@@ -22,6 +22,8 @@ import app.n_zik.android.components.glass.effectiveSurfaceColor
 import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.glass.surfaceForegroundScrim
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onPlaced
@@ -248,6 +250,7 @@ fun PlayerInformationGlassRegion(
 ) {
     val scope = LocalPlayerInformationBounds.current
     val token = remember(key) { Any() }
+    var sampleRegion by remember { mutableStateOf<Rect?>(null) }
     val inset = with(LocalDensity.current) { horizontalContentInset.toPx() }
     DisposableEffect(scope, token) {
         onDispose {
@@ -257,7 +260,8 @@ fun PlayerInformationGlassRegion(
             scope?.roles?.remove(token)
         }
     }
-    val region = Modifier.testTag("player.informationRegion.$key").onPlaced { child ->
+    val region = Modifier.testTag("player.informationRegion.$key")
+        .onGloballyPositioned { sampleRegion = it.boundsInWindow() }.onPlaced { child ->
         scope?.let {
             it.coordinates[token] = child
             it.horizontalInsets[token] = inset
@@ -290,14 +294,13 @@ fun PlayerInformationGlassRegion(
         LocalGlassContainerBackdrop provides childBackdrop,
         LocalGlassMaterialSource provides if (precedingInformation != null) childBackdrop
             else LocalGlassMaterialSource.current) {
-        val backdrop = LocalSurfaceBackdropColor.current
+        val backdrop = rememberPlayerBackdropRegionColor(sampleRegion) ?: LocalSurfaceBackdropColor.current
         val film = LocalPlayerInformationFilm.current
         val regionContent: @Composable () -> Unit = {
             if (vertical) Column(capture) { content() } else Box(capture) { content() }
         }
-        if (backdrop != null && film.alpha > 0f)
-            SurfaceForegroundContent(effectiveSurfaceColor(backdrop, film), content = regionContent)
-        else regionContent()
+        SurfaceForegroundContent(backdrop?.let { effectiveSurfaceColor(it, film) },
+            content = regionContent)
     }
 }
 

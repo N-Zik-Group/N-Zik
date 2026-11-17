@@ -3,7 +3,6 @@ package app.n_zik.android.ui.screens.player
 import app.n_zik.android.ui.screens.player.components.LocalPlayerMusicVideo
 import app.n_zik.android.ui.screens.player.components.PlayerMusicVideo
 import app.n_zik.android.ui.screens.player.components.PlayerAudioVideoToggle
-import app.n_zik.android.ui.screens.player.components.PlayerVideoUnavailable
 import app.n_zik.android.ui.screens.player.components.InlineMusicVideo
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.playback.services.canResolvePlayerVideo
@@ -186,9 +185,24 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.lerp
 import app.n_zik.android.components.glass.LocalSurfaceBackdropColor
+import app.n_zik.android.components.glass.isNeutralForeground
+import app.n_zik.android.components.glass.rememberNeutralForegroundFade
+import app.n_zik.android.components.glass.GlassScope
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.glass.forArea
+import app.n_zik.android.components.glass.effectiveSurfaceColor
+import app.n_zik.android.components.glass.glassFilmColor
+import app.n_zik.android.components.theme.PlayerSystemBarAppearance
+import app.n_zik.android.components.glass.LocalForegroundSourcePalette
+import app.n_zik.android.components.glass.LocalNeutralForegroundTransition
+import app.n_zik.android.components.glass.neutralForeground
 import app.n_zik.android.components.glass.SurfaceForegroundContent
-import app.n_zik.android.components.player.playerControlContrast
-import app.n_zik.android.components.player.playerTintedArtworkSample
+import app.n_zik.android.components.player.LocalPlayerBackdropSampling
+import app.n_zik.android.components.player.rememberPlayerBackdropRegionColor
+import app.n_zik.android.components.player.rememberPlayerBackdropSampling
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.boundsInWindow
 import app.n_zik.android.components.player.rememberPlayerFluidShader
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
@@ -854,6 +868,9 @@ fun Player(
     val showInlineVideo = showVideoMode && videoSession?.selected == true && videoSession.player != null &&
         !isShowingLyrics && !isShowingVisualizer
     val showVideoUnavailable = showVideoMode && videoSession?.failed == true
+    LaunchedEffect(showVideoUnavailable) {
+        if (showVideoUnavailable) Toaster.w(R.string.player_video_unavailable_search_hint)
+    }
     val openManualVideoSearch: () -> Unit = {
         videoSession?.manualSearchQuery = listOfNotNull(
             mediaItem.mediaMetadata.title?.toString()?.let(::cleanPrefix),
@@ -903,13 +920,14 @@ fun Player(
     val coverBackground = if (coverColors != null || coverDisplay?.forceDark == true)
         coverDisplay?.background ?: dynamicColorPalette.background1 else dynamicColorPalette.background1
 
+    val coverBackgroundTransitionMs = 350
     val fadingCoverBackground = if (
         playerBackgroundColors == PlayerBackgroundColors.CoverColor ||
         playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient
     ) {
         animateColorAsState(
             coverBackground,
-            animationSpec = tween(350, easing = FastOutSlowInEasing),
+            animationSpec = tween(coverBackgroundTransitionMs, easing = FastOutSlowInEasing),
             label = "playerCoverBackground",
         ).value
     } else coverBackground
@@ -951,12 +969,35 @@ fun Player(
     val playerTransition = LocalPlayerSheetGlassTransition.current
         ?: rememberPlayerSheetGlassTransition(playerSheetState)
     val opticalPlayerBackground = glassSettings.enabled && glassRenderer(glassSettings) != GlassRenderer.Tint
-    val capturePlayerBackground = playerGlassSourceCaptureActive(glassSettings, playerTransition,
-        inheritedOpticsEnabled)
+    val blurAdjuster = BlurAdjuster()
+    // Glass changes the overlay film, not the sampled scene. Retain that scene and retarget the fade.
+    val contrastDecisionKey = listOf(mediaItem.mediaId, currentCoverUrl, coverColors, coverBackground,
+        isLandscape, playerBackgroundColors, color.background0, color.background1, color.background2,
+        color.background3, color.background4, color.accent,
+        colorPaletteMode, animatedGradient, blackgradient, bottomgradient,
+        blurAdjuster.strength, blurAdjuster.backdrop)
+    var contrastDecisionReady by remember(contrastDecisionKey, playerContentVisible) { mutableStateOf(false) }
+    val samplePlayerBackground = !appRunningInBackground && !playerUnderlayCovered &&
+        (playerContentVisible || !contrastDecisionReady)
+    val capturePlayerBackground = (samplePlayerBackground && !contrastDecisionReady) || playerGlassSourceCaptureActive(
+        glassSettings, playerTransition, inheritedOpticsEnabled)
     val playerBackground = rememberGlassPlayerBackground()
     val playerCoverBackground = rememberLayerBackdrop()
     val playerControlsBackdrop = rememberCombinedBackdrop(playerCoverBackground, playerBackground.backdrop)
     val controlsSource = rememberPlayerControlsGlassSource(playerControlsBackdrop)
+    val backgroundSampling = rememberPlayerBackdropSampling(playerControlsBackdrop, samplePlayerBackground,
+        contrastDecisionKey,
+        backgroundTransitionMs = if (playerBackgroundColors == PlayerBackgroundColors.CoverColor ||
+            playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient) coverBackgroundTransitionMs else 0)
+    SideEffect { contrastDecisionReady = backgroundSampling.finished }
+    PlayerSystemBarAppearance(active = playerSheetState.isExpanded && playerContentVisible,
+        sampling = backgroundSampling, fallbackSurface = color.background0)
+    val informationSettings = rememberGlassSettings(GlassScope.PlayerHeader)
+    val informationFilm = if (informationSettings.usesGlassMaterial(GlassArea.ActionButtons))
+        glassFilmColor(informationSettings.forArea(GlassArea.ActionButtons), null, menu = false) else Color.Transparent
+    val commonNeutral = rememberNeutralForegroundFade(backgroundSampling.commonSurface?.let {
+        effectiveSurfaceColor(it, informationFilm)
+    }, if (isNeutralForeground(color.text)) color.text else neutralForeground(color.background0))
     val playerVisibleBackdrop = rememberLayerBackdrop()
     val queuePlayerBackdrop = rememberLayerBackdrop()
     val capturePlayerScene = playerGlassSceneCaptureActive(glassSettings, playerSheetState.isExpanded, capturePlayerBackground)
@@ -972,14 +1013,10 @@ fun Player(
         modifier: Modifier = Modifier,
         captureBackdrop: Boolean = true,
     ) {
-        if (opticalPlayerBackground) {
-            Box(Modifier.fillMaxSize().then(
-                if (capturePlayerBackground && captureBackdrop) Modifier.layerBackdrop(playerCoverBackground) else Modifier
-            )) {
-                PlayerCurrentCover(thumbnailUrl, thumbnailUrl, blurAdjuster, showThumbnail, noBlur,
-                    isShowingLyrics, isShowingVisualizer, modifier)
-            }
-        } else {
+        // Sampling and Glass may toggle during sheet motion; the cover must retain its identity.
+        Box(Modifier.fillMaxSize().then(
+            if (capturePlayerBackground && captureBackdrop) Modifier.layerBackdrop(playerCoverBackground) else Modifier
+        )) {
             PlayerCurrentCover(thumbnailUrl, thumbnailUrl, blurAdjuster, showThumbnail, noBlur,
                 isShowingLyrics, isShowingVisualizer, modifier)
         }
@@ -1012,7 +1049,6 @@ fun Player(
         tempGradient = gradients[valueGrad]
     }
 
-    val blurAdjuster = BlurAdjuster()
 
     @Composable
     fun FullCoverPagerPage() {
@@ -1291,56 +1327,6 @@ fun Player(
 
     }
 
-    val themeSurface = color.background1.copy(alpha = 1f)
-    val playerHeightPx = with(LocalDensity.current) { screenHeight.toPx() }
-    val coverSwatches = listOf(dominant, vibrant, lightVibrant, darkVibrant, muted, lightMuted, darkMuted)
-    // The players use a white or black bottom tint, with an additional wash in landscape.
-    // Use the exact same tone choices as the active blurred-cover branch.
-    val lightBottomTint = if (showFullScreenArtworkPager && isLandscape) lightTheme
-        else colorPaletteMode == ColorPaletteMode.Light
-    val bottomTint = if (!bottomgradient) Color.Transparent else
-        (if (lightBottomTint) Color.White else Color.Black).copy(alpha = if (isLandscape) 0.8f else 0.75f)
-    val artworkWash = bottomTint.copy(alpha = if (bottomgradient && isLandscape) 0.25f else 0f)
-    val resolvedGradient = if (animatedGradient == AnimatedGradient.Random) tempGradient else animatedGradient
-    val themeStops = listOf(surfaceColor(color.background1), surfaceColor(color.background2))
-    val playerSurfaces = if (!lightTheme || color.isDark) emptyList() else when (playerBackgroundColors) {
-        PlayerBackgroundColors.BlurredCoverColor -> {
-            val tones = coverDisplay?.artworkSamples.orEmpty().ifEmpty { listOfNotNull(coverDisplay?.dominant) }
-            if (tones.isEmpty()) listOf(themeSurface) else {
-                val positions = listOf(0.8f, 0.5f, 1f)
-                tones.flatMap { tone ->
-                    positions.map { position ->
-                        playerTintedArtworkSample(tone, artworkWash, bottomTint, playerGradientStartY, playerHeightPx, position)
-                    }
-                }
-            }
-        }
-        PlayerBackgroundColors.CoverColor -> listOf(fadingCoverBackground)
-        PlayerBackgroundColors.CoverColorGradient, PlayerBackgroundColors.ThemeColorGradient -> {
-            val coverGradient = playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient
-            val start = if (coverGradient) fadingCoverBackground else themeStops.first()
-            val end = if (blackgradient) Color.Black else if (coverGradient) fadingCoverBackground else themeStops.last()
-            val progress = ((playerHeightPx * 0.8f / 1500f - 0.5f) * 2f).coerceIn(0f, 1f)
-            listOf(lerp(start, end, progress), start, end)
-        }
-        PlayerBackgroundColors.ColorPalette -> coverSwatches.map(::Color)
-        PlayerBackgroundColors.AnimatedGradient -> when (resolvedGradient) {
-            AnimatedGradient.FluidThemeColorGradient, AnimatedGradient.M3EMorphingTheme ->
-                themeStops + listOf(color.background0, color.accent)
-            AnimatedGradient.FluidCoverColorGradient, AnimatedGradient.M3EMorphingCover ->
-                listOf(coverBackground, dynamicColorPalette.background0, dynamicColorPalette.background1,
-                    dynamicColorPalette.background2) + coverSwatches.map(::coverGradientColor)
-            AnimatedGradient.Linear, AnimatedGradient.Mesh ->
-                coverSwatches.map(::coverGradientColor)
-            else -> listOf(themeSurface, Color.Black, Color.White)
-        }
-        else -> listOf(themeSurface)
-    }
-    val playerBackdropEstimate = playerSurfaces.firstOrNull()?.compositeOver(themeSurface)
-    val playerContrast = playerBackdropEstimate?.let { backdrop ->
-        playerControlContrast(backdrop, playerSurfaces.map { it.compositeOver(themeSurface) })
-    }
-
     val controllerPreviewPage = if (showthumbnail && playerType == PlayerType.Modern && coverArtworkVisible)
         pagerState.currentPage else artworkPreviewPage
     val artworkShadowOverflow = rememberPlayerArtworkShadowOverflow()
@@ -1436,6 +1422,8 @@ fun Player(
         position: () -> Long,
         duration: () -> Long
     ) {
+        var region by remember { mutableStateOf<Rect?>(null) }
+        val surface = rememberPlayerBackdropRegionColor(region)
         val controls: @Composable () -> Unit = {
             Controls(
                 navController = navController,
@@ -1454,11 +1442,10 @@ fun Player(
                 position = position,
                 duration = duration,
                 dynamicColorPalette = dynamicColorPalette,
-                modifier = modifier,
+                modifier = modifier.onGloballyPositioned { region = it.boundsInWindow() },
             )
         }
-        if (playerContrast == null) controls()
-        else SurfaceForegroundContent(playerContrast.surface, playerContrast.scrim, controls)
+        SurfaceForegroundContent(surface, content = controls)
     }
 
     blurAdjuster.Render()
@@ -1471,7 +1458,10 @@ fun Player(
         LocalGlassOpticsTransitionProgress provides playerTransition.value,
         LocalGlassUnderlayCovered provides playerUnderlayCovered,
         LocalGlassBackdrop provides artworkControlsSource,
-        LocalSurfaceBackdropColor provides playerBackdropEstimate,
+        LocalSurfaceBackdropColor provides null,
+        LocalPlayerBackdropSampling provides backgroundSampling,
+        LocalNeutralForegroundTransition provides commonNeutral,
+        LocalForegroundSourcePalette provides color,
         LocalGlassMaterialSource provides artworkControlsSource,
         LocalGlassContainerBackdrop provides artworkControlsSource,
         LocalGlassOverlayBackdrop provides if (capturePlayerScene && playerSheetState.isExpanded) playerVisibleBackdrop
@@ -1481,6 +1471,7 @@ fun Player(
         modifier = Modifier
             .fillMaxSize()
             .playerTransportGeometryHost()
+            .onGloballyPositioned { backgroundSampling.coordinates = it }
             .glassPlayerSceneSource(playerVisibleBackdrop, active = capturePlayerScene,
                 fullyCovering = playerSheetState.isExpanded)
     ) {
@@ -1501,19 +1492,12 @@ fun Player(
                     onDismiss
                 )
             }
-            val transparentActionBar by rememberPreference(transparentBackgroundPlayerActionBarKey, true)
-            val gradientHidesNativePlate = blackgradient &&
-                (playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient ||
-                    playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient)
-            val transparentNativeActions = !glassSettings.enabled && (transparentActionBar || gradientHidesNativePlate)
+            var region by remember { mutableStateOf<Rect?>(null) }
+            val surface = rememberPlayerBackdropRegionColor(region)
             val modifier = if (glassSettings.enabled)
                 Modifier.align(if (isLandscape) Alignment.BottomEnd else Alignment.BottomCenter) else Modifier
-            Box(modifier) {
-                when {
-                    playerContrast == null -> bar()
-                    transparentNativeActions -> SurfaceForegroundContent(playerContrast.backdrop) { bar() }
-                    else -> SurfaceForegroundContent(playerContrast.surface, playerContrast.scrim) { bar() }
-                }
+            Box(modifier.onGloballyPositioned { region = it.boundsInWindow() }) {
+                SurfaceForegroundContent(surface) { bar() }
             }
         }
 
@@ -1972,7 +1956,6 @@ fun Player(
                         Box(Modifier.fillMaxWidth().padding(vertical = 4.dp), contentAlignment = Alignment.Center) {
                             PlayerAudioVideoToggle(
                                 toggleSession,
-                                showUnavailable = showVideoUnavailable,
                                 onSearchManually = openManualVideoSearch,
                                 interactive = preview == null,
                             )
@@ -2327,7 +2310,6 @@ fun Player(
                         if (showVideoMode && toggleSession != null) {
                             PlayerAudioVideoToggle(
                                 toggleSession,
-                                showUnavailable = false,
                                 onSearchManually = openManualVideoSearch,
                                 interactive = preview == null,
                             )
@@ -2613,15 +2595,6 @@ fun Player(
                     ) {
                         NextVisualizer(isDisplayed = standaloneVisualizer, onCover = false, fadeHosted = true)
                     }
-                    if (showVideoUnavailable) {
-                        PlayerVideoUnavailable(
-                            onSearchManually = openManualVideoSearch,
-                            modifier = Modifier.align(Alignment.TopCenter)
-                                .padding(top = 4.dp)
-                                .background(color.background0.copy(alpha = 1f), uiRoundnessShape())
-                                .padding(horizontal = 12.dp, vertical = 4.dp),
-                        )
-                    }
                 }
 
                 },
@@ -2728,7 +2701,6 @@ fun Player(
                 ) {
                     PlayerAudioVideoToggle(
                         toggleSession,
-                        showUnavailable = false,
                         onSearchManually = openManualVideoSearch,
                         interactive = preview == null,
                     )

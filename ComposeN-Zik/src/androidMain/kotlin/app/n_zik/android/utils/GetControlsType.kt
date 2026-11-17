@@ -17,6 +17,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import app.n_zik.android.components.player.rememberPlayerBackdropRegionColor
+import app.n_zik.android.components.glass.SurfaceForegroundContent
 import app.n_zik.android.components.player.playerTransportLayout
 import app.n_zik.android.components.player.PlayerTransportCenter
 import androidx.compose.ui.unit.Dp
@@ -91,6 +96,9 @@ fun GetControls(
             seconds = if (playbackDuration < 1f) 0 else playbackDuration.roundToInt()
         )
 
+    var transportRegion by remember { mutableStateOf<Rect?>(null) }
+    val surface = rememberPlayerBackdropRegionColor(transportRegion)
+    val transportContent: @Composable () -> Unit = {
     PlayerTransportCenter {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -98,6 +106,7 @@ fun GetControls(
         modifier = Modifier
             .playerTransportLayout(timelineHorizontalInset)
             .fillMaxWidth()
+            .onGloballyPositioned { transportRegion = it.boundsInWindow() }
     ) {
 
         if (playerControlsType == PlayerControlsType.Essential)
@@ -131,6 +140,8 @@ fun GetControls(
             )
     }
     }
+    }
+    SurfaceForegroundContent(surface, content = transportContent)
 }
 
 

@@ -2963,7 +2963,10 @@ class MainActivity :
             .apply()
     }
 
-    private var lastSystemBarIsDark: Boolean? = null
+    private val systemBarAppearanceOwner = app.n_zik.android.components.theme.SystemBarAppearanceOwner()
+    private data class PlayerSystemBarWindowState(val statusColor: Int, val navigationColor: Int,
+        val statusContrast: Boolean, val navigationContrast: Boolean)
+    private var playerSystemBarWindowState: PlayerSystemBarWindowState? = null
 
     private fun setInterfaceContent(content: @Composable () -> Unit) {
         setContent { InterfaceLayoutDirection(content) }
@@ -3023,21 +3026,44 @@ class MainActivity :
     }
 
     private fun setSystemBarAppearance(isDark: Boolean) {
-        // The bars only depend on the light/dark state; re-applying the same
-        // state on every track change costs a window-level insets update
-//
-        // (the hideStatusBar pref change triggers recreate(), so no forced
-        // re-apply path is needed)
-        if (lastSystemBarIsDark == isDark) return
-        lastSystemBarIsDark = isDark
+        systemBarAppearanceOwner.updatePage(isDark)?.let { applySystemBarAppearance(it, updateVisibility = true) }
+    }
+
+    @Suppress("DEPRECATION") // Pre-edge-to-edge Android versions still honor these window colors.
+    internal fun setPlayerSystemBarAppearance(appearance: app.n_zik.android.components.theme.SystemBarAppearance?) {
+        if (appearance != null && playerSystemBarWindowState == null) {
+            playerSystemBarWindowState = PlayerSystemBarWindowState(window.statusBarColor, window.navigationBarColor,
+                Build.VERSION.SDK_INT >= 29 && window.isStatusBarContrastEnforced,
+                Build.VERSION.SDK_INT >= 29 && window.isNavigationBarContrastEnforced)
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+            window.navigationBarColor = android.graphics.Color.TRANSPARENT
+            if (Build.VERSION.SDK_INT >= 29) {
+                window.isStatusBarContrastEnforced = false
+                window.isNavigationBarContrastEnforced = false
+            }
+        } else if (appearance == null) {
+            playerSystemBarWindowState?.let { previous ->
+                window.statusBarColor = previous.statusColor
+                window.navigationBarColor = previous.navigationColor
+                if (Build.VERSION.SDK_INT >= 29) {
+                    window.isStatusBarContrastEnforced = previous.statusContrast
+                    window.isNavigationBarContrastEnforced = previous.navigationContrast
+                }
+            }
+            playerSystemBarWindowState = null
+        }
+        systemBarAppearanceOwner.updatePlayer(appearance)?.let { applySystemBarAppearance(it, updateVisibility = false) }
+    }
+
+    private fun applySystemBarAppearance(appearance: app.n_zik.android.components.theme.SystemBarAppearance, updateVisibility: Boolean) {
         val hideStatusBar = preferences.getBoolean(hideStatusBarKey, false)
         with(WindowCompat.getInsetsController(window, window.decorView)) {
-            isAppearanceLightStatusBars = !isDark
-            isAppearanceLightNavigationBars = !isDark
-            if (hideStatusBar) {
+            isAppearanceLightStatusBars = !appearance.statusIsDark
+            isAppearanceLightNavigationBars = !appearance.navigationIsDark
+            if (updateVisibility && hideStatusBar) {
                 systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                 hide(WindowInsetsCompat.Type.statusBars())
-            } else {
+            } else if (updateVisibility) {
                 show(WindowInsetsCompat.Type.statusBars())
             }
         }
@@ -3045,13 +3071,13 @@ class MainActivity :
         if (!isAtLeastAndroid6) {
             @Suppress("DEPRECATION")
             window.statusBarColor =
-                (if (isDark) Color.Transparent else Color.Black.copy(alpha = 0.2f)).toArgb()
+                (if (appearance.statusIsDark) Color.Transparent else Color.Black.copy(alpha = 0.2f)).toArgb()
         }
 
         if (!isAtLeastAndroid8) {
             @Suppress("DEPRECATION")
             window.navigationBarColor =
-                (if (isDark) Color.Transparent else Color.Black.copy(alpha = 0.2f)).toArgb()
+                (if (appearance.navigationIsDark) Color.Transparent else Color.Black.copy(alpha = 0.2f)).toArgb()
         }
     }
 

@@ -96,6 +96,10 @@ import app.n_zik.android.components.glass.GlassActionCellHeight
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassRippleProvider
 import app.n_zik.android.components.glass.GlassScope
+import app.n_zik.android.components.glass.SurfaceForegroundContent
+import app.n_zik.android.components.glass.effectiveSurfaceColor
+import app.n_zik.android.components.glass.glassFilmColor
+import app.n_zik.android.components.glass.surfaceGlyphColor
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
@@ -111,6 +115,8 @@ import app.n_zik.android.components.navigation.nav.GlassNavigationTabs
 import app.n_zik.android.components.navigation.nav.LocalGlassTabReplica
 import app.n_zik.android.components.navigation.nav.LocalGlassTabScale
 import app.n_zik.android.components.player.PlayerTopAction
+import app.n_zik.android.components.player.LocalPlayerBackdropSampling
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.compose.persist.findActivityNullable
 import app.n_zik.android.extensions.pip.isPipSupported
 import app.n_zik.android.core.database.Database
@@ -337,7 +343,6 @@ internal fun rememberPlayerMusicVideo(
 internal fun PlayerAudioVideoToggle(
     session: PlayerMusicVideo,
     modifier: Modifier = Modifier,
-    showUnavailable: Boolean,
     onSearchManually: () -> Unit,
     interactive: Boolean = true,
 ) {
@@ -345,6 +350,15 @@ internal fun PlayerAudioVideoToggle(
     val glass = rememberGlassSettings(GlassScope.PlayerActions)
     val navbarGlass = rememberGlassSettings().forArea(GlassArea.Nav)
     val useGlass = navbarGlass.usesGlassMaterial(GlassArea.Nav)
+    val sampling = LocalPlayerBackdropSampling.current
+    var toggleBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
+    // The header can have a different background than the title/transport union. Do not register
+    // this region in that union: sample its retained background without changing the shared decision.
+    val header = toggleBounds?.let { sampling?.colorAt(it) }
+    val plate = if (useGlass) glassFilmColor(navbarGlass, surfaceColor(palette.background1), menu = false)
+        else palette.background2
+    val toggleSurface = header?.let { effectiveSurfaceColor(it, plate) }
+        ?: plate.takeIf { it.alpha == 1f }
     val shape = uiRoundnessShape()
     val manualSearchLabel = stringResource(R.string.player_video_search_manually)
     val modeButton: @Composable (Boolean, Modifier) -> Unit = { video, slot ->
@@ -353,12 +367,14 @@ internal fun PlayerAudioVideoToggle(
         val replica = LocalGlassTabReplica.current
         val scale = LocalGlassTabScale.current
         val indication = if (!useGlass || LocalGlassRippleActive.current) LocalIndication.current else null
-        val tint = when {
+        val originalTint = when {
             useGlass && (selected || replica) -> palette.text
             useGlass -> palette.textSecondary
             selected -> palette.onAccent
             else -> palette.text
         }
+        val glyphPlate = if (!useGlass && selected) palette.accent else toggleSurface ?: plate
+        val tint = surfaceGlyphColor(originalTint, glyphPlate)
         val button = slot.then(if (useGlass) {
             Modifier.graphicsLayer { scaleX = scale(); scaleY = scale() }.clip(shape)
         } else {
@@ -392,8 +408,10 @@ internal fun PlayerAudioVideoToggle(
             }
         }
     }
+    SurfaceForegroundContent(toggleSurface) {
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         val toggleModifier = Modifier.height(GlassActionCellHeight).width(96.dp).selectableGroup()
+            .onGloballyPositioned { toggleBounds = it.boundsInWindow() }
         if (useGlass) {
             GlassRippleProvider(navbarGlass) {
                 // Start the indicator at the resolved opening mode. Only in-player changes animate.
@@ -422,29 +440,7 @@ internal fun PlayerAudioVideoToggle(
                 modeButton(true, Modifier.weight(1f).fillMaxSize())
             }
         }
-        if (showUnavailable) PlayerVideoUnavailable(onSearchManually)
     }
-}
-
-@Composable
-internal fun PlayerVideoUnavailable(
-    onSearchManually: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val palette = colorPalette()
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            stringResource(R.string.player_video_unavailable),
-            style = typography().xxs,
-            color = palette.text,
-        )
-        Text(
-            stringResource(R.string.player_video_search_manually),
-            modifier = Modifier.clickable(role = Role.Button, onClick = onSearchManually)
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            style = typography().xs,
-            color = palette.accent,
-        )
     }
 }
 

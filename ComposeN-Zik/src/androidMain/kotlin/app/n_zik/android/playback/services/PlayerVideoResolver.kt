@@ -26,10 +26,11 @@ import app.n_zik.innertube.requests.song
 import app.n_zik.innertube.utils.from
 
 private const val TAG = "PlayerVideoResolver"
-private const val MAX_COUNTERPART_DURATION_DELTA_MS = 3_000L
+private fun counterpartDurationTolerance(durationMs: Long): Long =
+    (durationMs / 20).coerceIn(3_000L, 15_000L)
 private val youtubeVideoId = Regex("[A-Za-z0-9_-]{11}")
 private val titleDecoration = Regex(
-    """\s*[\[(]\s*(?:official (?:music )?video|music video|clip officiel|video oficial)\s*[\])]\s*$""",
+    """(?:^\s*[\[(]\s*(?:official (?:music )?video|music video|clip officiel|video oficial)\s*[\])]\s*|\s*[\[(]\s*(?:official (?:music )?video|music video|clip officiel|video oficial)\s*[\])]\s*$)""",
     RegexOption.IGNORE_CASE,
 )
 private val artistTitleSeparator = Regex("""\s+[-–—]\s+|\s*:\s*""")
@@ -88,7 +89,7 @@ private suspend fun resolvePlayableVideo(mediaItem: MediaItem, audioDurationMs: 
         } ?: return null
         val uri = stream.videoUrl?.toUri()?.takeIf { it.scheme == "https" } ?: return null
         val durationMs = stream.mediaMetadata?.durationSeconds?.takeIf { it > 0 }?.times(1_000)
-        if (checkDuration && durationMs != null && abs(audioDurationMs - durationMs) > MAX_COUNTERPART_DURATION_DELTA_MS) {
+        if (checkDuration && durationMs != null && abs(audioDurationMs - durationMs) > counterpartDurationTolerance(audioDurationMs)) {
             return null
         }
         return PlayerVideoStream(uri, stream.headers, stream.videoMimeType, durationMs, positionMap)
@@ -171,7 +172,7 @@ internal fun selectAlbumVideoCounterpart(
     }.map(Innertube.SongItem::key).distinct().singleOrNull()
 }
 
-/** Matches a unique official clip using title, artist and approximate duration. */
+/** Prefer a unique official release, then a credited clip uploaded by its distributor. */
 internal fun selectPlayerVideoCounterpart(
     title: String,
     artistNames: List<String>,
@@ -181,9 +182,16 @@ internal fun selectPlayerVideoCounterpart(
 ): String? {
     if (title.isBlank() || audioDurationMs <= 0) return null
     val coreTitle = coreVideoTitle(title)
-    return results.mapNotNull { candidate ->
+    val matches = results.mapNotNull { candidate ->
         val videoId = candidate.info?.endpoint?.videoId
         val durationMs = candidate.durationText?.let(::durationTextToMillis) ?: 0L
+        val official = isOfficialMusicVideoType(candidate.info?.endpoint?.type)
+        val decoratedTitle = candidate.title.orEmpty()
+        val creditedTitle = coreVideoTitle(decoratedTitle)
+        val creditedArtist = creditedTitle.split(artistTitleSeparator, limit = 2)
+            .takeIf { it.size == 2 }?.first()
+        val distributorCredit = !official && titleDecoration.containsMatchIn(decoratedTitle) &&
+            artistNames.any { creditedArtist.equals(it.trim(), ignoreCase = true) }
         val matchesArtist = candidate.authors.orEmpty().any { author ->
             val id = author.endpoint?.browseId
             if (!id.isNullOrBlank() && artistIds.isNotEmpty()) id in artistIds
@@ -191,12 +199,14 @@ internal fun selectPlayerVideoCounterpart(
         }
         if (
             videoId != null && youtubeVideoId.matches(videoId) &&
-            isOfficialMusicVideoType(candidate.info?.endpoint?.type) &&
-            candidate.title?.let { searchVideoTitle(it, artistNames) }.equals(coreTitle, ignoreCase = true) &&
-            matchesArtist && durationMs > 0 &&
-            abs(audioDurationMs - durationMs) <= MAX_COUNTERPART_DURATION_DELTA_MS
-        ) videoId else null
-    }.distinct().singleOrNull()
+            isPlayableMusicVideoType(candidate.info?.endpoint?.type) &&
+            searchVideoTitle(decoratedTitle, artistNames).equals(coreTitle, ignoreCase = true) &&
+            (matchesArtist && official || distributorCredit) && durationMs > 0 &&
+            abs(audioDurationMs - durationMs) <= counterpartDurationTolerance(audioDurationMs)
+        ) videoId to official else null
+    }.distinct()
+    val preferred = matches.filter { it.second }.ifEmpty { matches }
+    return preferred.map { it.first }.distinct().singleOrNull()
 }
 
 private fun coreVideoTitle(title: String): String = title.trim().replace(titleDecoration, "").trim()
@@ -212,7 +222,7 @@ private fun isPlayableMusicVideoType(type: String?): Boolean = when (type?.upper
 }
 
 private fun searchVideoTitle(title: String, artistNames: List<String>): String {
-    val parts = title.split(artistTitleSeparator, limit = 2)
+    val parts = coreVideoTitle(title).split(artistTitleSeparator, limit = 2)
     val withoutArtist = parts.getOrNull(1)?.takeIf {
         artistNames.any { artist -> artist.trim().equals(parts[0].trim(), ignoreCase = true) }
     }

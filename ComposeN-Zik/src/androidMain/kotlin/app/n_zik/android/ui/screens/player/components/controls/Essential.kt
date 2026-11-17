@@ -125,6 +125,7 @@ import app.n_zik.android.components.player.PlayerTransportRibbedSurface
 import app.n_zik.android.components.player.playerTransportPlayShape
 import app.n_zik.android.components.player.playerTransportPlayBackground
 import app.n_zik.android.components.player.playerTransportSurface
+import app.n_zik.android.components.glass.surfaceSourcePalette
 import app.n_zik.android.components.player.monochromeControlsColor
 import app.n_zik.android.components.player.placeholderCompositeBase
 import app.n_zik.android.components.glass.TextContrast
@@ -418,7 +419,7 @@ fun ControlsEssential(
         PlayerControlsColors.Cover -> dynamicColorPalette.accent
         // Monochrome follows the effective palette tone, not a hardcoded white
         // (spec-achromatic-ramp-luminance-cap)
-        PlayerControlsColors.Monochrome -> monochromeControlsColor(colorPalette())
+        PlayerControlsColors.Monochrome -> monochromeControlsColor(surfaceSourcePalette())
         else -> colorPalette().accent
     }
     // Listen Together guest lock (spec-listen-together-guest-lock-hardening): a guest in a
@@ -466,7 +467,8 @@ fun ControlsEssential(
     val playColor = if (playerPlayButtonType == PlayerPlayButtonType.Disabled ||
         (colorPaletteName == ColorPaletteName.Dynamic && colorPaletteMode == ColorPaletteMode.PitchBlack))
         colorPalette().accent else controlsColor
-    val skipGlyph = playerTransportGlyph(controlsColor, transportSettings)
+    val previousGlyph = playerTransportGlyph(controlsColor, transportSettings, enabled = previousEnabled)
+    val nextGlyph = playerTransportGlyph(controlsColor, transportSettings, enabled = nextEnabled)
     val playPlate = playerTransportPlate(transportSettings, nativePlayPlate,
         hasGlassPlate = playerPlayButtonType != PlayerPlayButtonType.Disabled)
     val playGlyph = surfaceGlyphColor(playColor, playPlate)
@@ -512,7 +514,7 @@ fun ControlsEssential(
     Image(
         painter = painterResource(R.drawable.play_skip_back),
         contentDescription = null,
-        colorFilter = ColorFilter.tint(skipGlyph),
+        colorFilter = ColorFilter.tint(previousGlyph),
         modifier = Modifier
             .playerTransportAction(previousLabel)
             .alpha(if (previousEnabled) 1f else 0.38f)
@@ -656,7 +658,7 @@ fun ControlsEssential(
     Image(
         painter = painterResource(R.drawable.play_skip_forward),
         contentDescription = null,
-        colorFilter = ColorFilter.tint(skipGlyph),
+        colorFilter = ColorFilter.tint(nextGlyph),
         modifier = Modifier
             .playerTransportAction(nextLabel)
             .alpha(if (nextEnabled) 1f else 0.38f)
