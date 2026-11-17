@@ -163,6 +163,8 @@ class PlayerServiceModernAudioSessionTest {
         field("volumeNormalizationJob").set(service, normalizationJob)
         assertSessions(open(41))
 
+        // Production binds effects only after playback initialization has started.
+        field("playbackInitializationStarted").setBoolean(service, true)
         service.onDestroy()
 
         assertSessions(open(41), close(41))

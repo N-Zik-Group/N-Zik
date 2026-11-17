@@ -22,6 +22,8 @@ import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.R
+import app.n_zik.android.Dependencies
+import app.n_zik.android.MainApplication
 import app.n_zik.android.utils.DataStoreUtils
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -31,6 +33,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
 import org.junit.After
+import org.junit.Before
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -71,6 +74,15 @@ class RewindMasterToggleSettingsTest {
         uiRoundnessShape = CircleShape,
         artistThumbnailShape = CircleShape,
     )
+
+    @Before
+    fun setUp() {
+        // AiDataCard reads the database through the application locator.
+        val mainApplication = mockk<MainApplication>()
+        every { mainApplication.applicationContext } returns context
+        Dependencies.init(mainApplication)
+        resetRewindKeys()
+    }
 
     @After
     fun resetRewindKeys() {

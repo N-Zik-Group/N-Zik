@@ -540,6 +540,8 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         assertTrue(recovery.isActive)
         assertSame(outgoing.player, field("pendingSessionPlayerRelease").get(service))
 
+        // Production can reach crossfade recovery only after playback initialization starts.
+        field("playbackInitializationStarted").setBoolean(service, true)
         service.onDestroy()
         scheduler.advanceTimeBy(20_000L)
         scheduler.runCurrent()

@@ -61,6 +61,7 @@ class QuickPicksBrowseHandlerConnectivityTest {
     private val eventTable = mockk<EventTable>()
     private val downloads = MyDownloadHelper
     private var originalDownloads: MutableStateFlow<Map<String, Download>>? = null
+    private val relatedSeed = "4NRXx6U8ABQ"
     private val local = Song.makePlaceholder("local:quick-pick").copy(title = "Local candidate")
     private val localItem = MediaItem.Builder().setMediaId("QUICK_PICKS/${local.id}").build()
     private val preferenceKeys = listOf(fullOfflineModeKey, playEventsTypeKey, parentalControlEnabledKey)
@@ -143,7 +144,7 @@ class QuickPicksBrowseHandlerConnectivityTest {
         withTimeout(5_000) {
             assertTrue(NetworkQualityHelper.isNetworkConnected(context))
             assertEquals(listOf(AutoSessionConstants.ID_LUCKY_SHUFFLE, localItem.mediaId), fetch().map { it.mediaId })
-            coVerify(exactly = 1) { Innertube.relatedPage(videoId = local.id, setLogin = false) }
+            coVerify(exactly = 1) { Innertube.relatedPage(videoId = relatedSeed, setLogin = false) }
             coVerify(exactly = 1) {
                 CancellableAutoMediaItemMapper.mapSongToMediaItem(local, AutoSessionConstants.ID_QUICK_PICKS, true)
             }
@@ -156,7 +157,7 @@ class QuickPicksBrowseHandlerConnectivityTest {
         withTimeout(5_000) {
             val entered = CompletableDeferred<Unit>()
             val release = CompletableDeferred<Unit>()
-            coEvery { Innertube.relatedPage(videoId = local.id, setLogin = false) } coAnswers {
+            coEvery { Innertube.relatedPage(videoId = relatedSeed, setLogin = false) } coAnswers {
                 assertTrue(NetworkQualityHelper.isNetworkConnected(context))
                 entered.complete(Unit)
                 release.await()
@@ -170,7 +171,7 @@ class QuickPicksBrowseHandlerConnectivityTest {
             assertLocalStillEligibleOffline()
             release.complete(Unit)
             assertTrue(result.await().isEmpty())
-            coVerify(exactly = 1) { Innertube.relatedPage(videoId = local.id, setLogin = false) }
+            coVerify(exactly = 1) { Innertube.relatedPage(videoId = relatedSeed, setLogin = false) }
             coVerify(exactly = 0) {
                 CancellableAutoMediaItemMapper.mapSongToMediaItem(any(), any<String>(), any())
             }

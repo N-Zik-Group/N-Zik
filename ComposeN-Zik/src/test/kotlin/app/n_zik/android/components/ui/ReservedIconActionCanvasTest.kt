@@ -30,7 +30,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PixelMap
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertHeightIsEqualTo
@@ -208,7 +210,7 @@ class ReservedIconActionCanvasTest {
                         Box(Modifier.size(80.dp).background(Color.Black).testTag("baseline.host"), contentAlignment = Alignment.Center) {
                             // Independent bare Material control: no project canvas helper or indication replacement.
                             androidx.compose.material3.IconButton(onClick = {}, interactionSource = baselineSource,
-                                modifier = Modifier.size(40.dp)) {
+                                modifier = Modifier.size(40.dp).testTag("baseline.control")) {
                                 Image(painterResource(R.drawable.play_skip_back), null,
                                     colorFilter = ColorFilter.tint(Color.Blue), modifier = Modifier.size(24.dp))
                             }
@@ -247,21 +249,25 @@ class ReservedIconActionCanvasTest {
         action.performTouchInput { up() }
         compose.runOnIdle { assertTrue(baselineSource.tryEmit(PressInteraction.Release(baselinePress))) }
         if (!compareRaster) return
-        val changed = (0 until held.height).sumOf { y -> (0 until held.width).count { x -> held[x,y] != before[x,y] } }
-        val baselineChanged = (0 until baselineHeld.height).sumOf { y -> (0 until baselineHeld.width).count { x -> baselineHeld[x,y] != baselineBefore[x,y] } }
-        if (baselineChanged == 0) {
-            assertEquals("A missing platform ripple raster must affect both baseline and project control", 0, changed)
-            assumeTrue("Robolectric native graphics did not rasterize either pressed Android RippleDrawable; " +
-                "both real drawables have full40px bounds but baselineChanged=0 and actionChanged=0. " +
-                "Geometry and pointer coverage are verified separately; device raster coverage remains required.", false)
-        }
-        val hostBounds = host.fetchSemanticsNode().boundsInRoot
-        val bounds = action.fetchSemanticsNode().boundsInRoot
-        val sampleX = (bounds.left - hostBounds.left + 3f).toInt()
-        val sampleY = (bounds.center.y - hostBounds.top).toInt()
-        assertTrue("Reserved padding must visibly respond beyond the 24dp glyph: baselineChanged=" +
-            "$baselineChanged, actionChanged=$changed", held[sampleX, sampleY] != before[sampleX, sampleY])
         assertEquals("No ripple outside the original reserved action seat", before[1, before.height / 2], held[1, held.height / 2])
+        fun paddingChanges(beforePixels: PixelMap, heldPixels: PixelMap, seat: Rect, container: Rect): Int {
+            // Compare equivalent padding regions outside both 24dp glyphs, rather than glyph raster changes.
+            val left = seat.left - container.left
+            val top = seat.top - container.top
+            val xs = (left + seat.width * .05f).toInt() until (left + seat.width * .15f).toInt()
+            val ys = (top + seat.height * .45f).toInt() until (top + seat.height * .55f).toInt()
+            return ys.sumOf { y -> xs.count { x -> heldPixels[x, y] != beforePixels[x, y] } }
+        }
+        val changed = paddingChanges(before, held, action.fetchSemanticsNode().boundsInRoot,
+            host.fetchSemanticsNode().boundsInRoot)
+        val baselineChanged = paddingChanges(baselineBefore, baselineHeld,
+            compose.onNodeWithTag("baseline.control").fetchSemanticsNode().boundsInRoot,
+            baseline.fetchSemanticsNode().boundsInRoot)
+        assumeTrue("Robolectric did not rasterize padding for either pressed native ripple; " +
+            "full drawable bounds and held-pointer coverage are verified separately.",
+            baselineChanged > 0 || changed > 0)
+        assertTrue("Reserved padding must visibly respond beyond the 24dp glyph: baselinePaddingChanged=" +
+            "$baselineChanged, actionPaddingChanged=$changed", changed > 0)
     }
 
     @Test fun `song download keeps its complete twenty dp vector above the rounded canvas`() {

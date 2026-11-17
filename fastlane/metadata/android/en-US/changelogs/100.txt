@@ -1,0 +1,10 @@
+Hotfix:
+- Fixed player theme colors and Glass contrast.
+- Improved music-video matching and unavailable-video feedback.
+- Theme publishing requires an approved creator profile.
+- Added cancellable previews with consistent Pixel sizing.
+- Stock previews load online and follow app modes.
+- Updated compact and static image loaders; wavy indicators unchanged.
+- Removed extra mini-player space below Updater actions.
+- Fixed native sheets and Romanian battery percentages.
+- Fixed History deep links.

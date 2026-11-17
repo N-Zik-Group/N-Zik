@@ -17,6 +17,7 @@ Versions are listed newest first. For releases whose tag declares a different ve
 
 | N-Zik version | Android version code | Updater changelog |
 | --- | ---: | --- |
+| [8.7.3](https://github.com/N-Zik-Group/N-Zik/releases/tag/v8.7.3) | 100 | [100.txt](changelogs/100.txt) |
 | [8.7.2](https://github.com/N-Zik-Group/N-Zik/releases/tag/v8.7.2) | 99 | [99.txt](changelogs/99.txt) |
 | [8.7.1](https://github.com/N-Zik-Group/N-Zik/releases/tag/v8.7.1) | 98 | [98.txt](changelogs/98.txt) |
 | [8.7.0](https://github.com/N-Zik-Group/N-Zik/releases/tag/v8.7.0) | 97 | [97.txt](changelogs/97.txt) |

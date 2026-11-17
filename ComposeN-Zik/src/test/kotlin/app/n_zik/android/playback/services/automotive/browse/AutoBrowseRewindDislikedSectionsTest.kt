@@ -17,6 +17,9 @@ import app.n_zik.android.utils.showMonthlyPlaylistsKey
 import app.n_zik.android.utils.showYtPlaylistsKey
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
+import app.n_zik.android.core.ondevice.DEVICE_LIBRARY_ENABLED_KEY
+import app.n_zik.android.core.profiles.profileDataPrefs
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.core.rewind.RewindPlaylists
@@ -53,6 +56,7 @@ import org.robolectric.annotation.Config
 @Config(sdk = [33], application = TestApplication::class)
 class AutoBrowseRewindDislikedSectionsTest {
 
+    private var originalDeviceLibraryEnabled: Boolean? = null
     private lateinit var context: Context
     // MyDownloadHelper is a Kotlin object with a `var downloads` property and an
     // explicit `fun getDownloads()` — under a mockkObject spy, ByteBuddy matches
@@ -77,6 +81,10 @@ class AutoBrowseRewindDislikedSectionsTest {
         every { mainApplication.applicationContext } returns app
         Dependencies.init(mainApplication)
         context = app
+        val devicePrefs = profileDataPrefs(context, getActiveProfile(context))
+        originalDeviceLibraryEnabled = if (devicePrefs.contains(DEVICE_LIBRARY_ENABLED_KEY))
+            devicePrefs.getBoolean(DEVICE_LIBRARY_ENABLED_KEY, false) else null
+        devicePrefs.edit().putBoolean(DEVICE_LIBRARY_ENABLED_KEY, true).commit()
         // Pre-initialize the real DownloadManager (StandaloneDatabaseProvider +
         // SimpleCache under Robolectric) so the songs-root counts can call
 
@@ -89,6 +97,10 @@ class AutoBrowseRewindDislikedSectionsTest {
 
     @After
     fun tearDown() {
+        profileDataPrefs(context, getActiveProfile(context)).edit().apply {
+            originalDeviceLibraryEnabled?.let { putBoolean(DEVICE_LIBRARY_ENABLED_KEY, it) }
+                ?: remove(DEVICE_LIBRARY_ENABLED_KEY)
+        }.commit()
         runBlocking { onDatabase { DatabaseInitializer.Instance.clearAllTables() } }
     }
 

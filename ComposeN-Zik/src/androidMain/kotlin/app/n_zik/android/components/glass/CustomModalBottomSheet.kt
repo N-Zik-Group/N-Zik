@@ -244,14 +244,16 @@ fun CustomModalBottomSheet(
                     LocalGlassOverlayBackdrop provides null,
                 ) {
                     GlassRippleProvider(glass) {
-                        if (containerColor != Color.Transparent) {
-                            SurfaceForegroundContent(effectiveSurfaceColor(nativeUnderlay, foregroundFill)) {
+                        Column(Modifier.fillMaxWidth()) {
+                            if (containerColor != Color.Transparent) {
+                                SurfaceForegroundContent(effectiveSurfaceColor(nativeUnderlay, foregroundFill)) {
+                                    dragHandle?.let { NativeMenuSheetDragHandle(sheetState, onDismissRequest, it) }
+                                    content()
+                                }
+                            } else {
                                 dragHandle?.let { NativeMenuSheetDragHandle(sheetState, onDismissRequest, it) }
                                 content()
                             }
-                        } else {
-                            dragHandle?.let { NativeMenuSheetDragHandle(sheetState, onDismissRequest, it) }
-                            content()
                         }
                     }
                 }

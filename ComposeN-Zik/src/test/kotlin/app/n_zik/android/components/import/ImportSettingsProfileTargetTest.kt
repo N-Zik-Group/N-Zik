@@ -3,7 +3,10 @@ package app.n_zik.android.components.import
 import android.content.Context
 import android.content.SharedPreferences
 import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.ytAuthUserKey
 import app.n_zik.android.utils.ytCookieKey
+import app.n_zik.android.utils.ytDataSyncIdKey
+import app.n_zik.android.utils.ytVisitorDataKey
 import app.n_zik.android.components.ui.screens.profiles.profileSecurePrefs
 import app.n_zik.android.core.migration.RemovedSettingsMigration
 import io.mockk.every
@@ -47,6 +50,7 @@ class ImportSettingsProfileTargetTest {
         targetSecure = mockk()
         targetSecureEditor = mockk()
         every { targetSecure.edit() } returns targetSecureEditor
+        every { targetSecureEditor.remove(any()) } returns targetSecureEditor
         every { targetSecureEditor.putString(any(), any()) } returns targetSecureEditor
         every { targetSecureEditor.commit() } returns true
         // The base profile's plain prefs — an import into "work" must not touch them
@@ -92,6 +96,9 @@ class ImportSettingsProfileTargetTest {
 
         ImportSettings.onImport(context, ByteArrayInputStream(csv), "work")
 
+        listOf(ytDataSyncIdKey, ytAuthUserKey, ytVisitorDataKey).forEach { key ->
+            verify(exactly = 1) { targetSecureEditor.remove(key) }
+        }
         verify { targetSecureEditor.putString(ytCookieKey, "SID=abc") }
         verify { targetSecureEditor.commit() }
         verify(exactly = 0) { targetPlainEditor.putString(any(), any()) }

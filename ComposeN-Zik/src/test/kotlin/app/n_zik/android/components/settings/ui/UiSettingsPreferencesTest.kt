@@ -126,6 +126,8 @@ class UiSettingsPreferencesTest {
         "disableScrollingText" to false,
         "effectRotation" to false,
         "thumbnailTapEnabled" to true,
+        "holdToSpeedUp" to false,
+        "holdToSpeedUpRate" to 2f,
         "clickOnLyricsText" to true,
         "backgroundProgress" to "MiniPlayer",
         "transparentBackgroundPlayerActionBar" to true,
@@ -175,6 +177,9 @@ class UiSettingsPreferencesTest {
     @Test fun `full reset restores baseline profile values and store boundaries`() {
         seedOpposite(context.preferences, fullReset)
         context.preferences.edit().putString("unrelated", "keep").putString("playerSwipeSensitivity", "High").commit()
+        context.preferences.edit().putString("historySortMenuOrder", "profile-history-sentinel")
+            .putBoolean("hist_sort_DATE_visible", false).putBoolean("hometab_songs_enabled", false)
+            .putString("homeTabsOrder", "profile-tabs-sentinel").commit()
         store("preferences_untouched").edit().putString("UiType", "ViMusic").commit()
         store("preferences").edit().putString("unrelated", "global").putString("historySortMenuOrder", "history-sentinel")
             .putBoolean("hist_sort_DATE_visible", false).putBoolean("hometab_songs_enabled", false).commit()
@@ -182,19 +187,22 @@ class UiSettingsPreferencesTest {
 
         applyUiDefaults(context)
 
-        assertEquals(fullReset + mapOf("unrelated" to "keep", "playerSwipeSensitivity" to "High"), context.preferences.all)
+        // Reader defaults and toolbar dialogs also reset their own preferences, covered by their contract tests.
+        val expected = fullReset + mapOf("unrelated" to "keep", "playerSwipeSensitivity" to "High")
+        assertEquals(expected, context.preferences.all.filterKeys(expected::containsKey))
         assertEquals(mapOf("UiType" to "ViMusic"), store("preferences_untouched").all)
-        assertEquals("global", store("preferences").getString("unrelated", null))
-        assertEquals("[\"DATE\",\"ALPHABETICAL\",\"ARTIST\"]", store("preferences").getString("historySortMenuOrder", null))
+        assertEquals(mapOf("unrelated" to "global", "historySortMenuOrder" to "history-sentinel",
+            "hist_sort_DATE_visible" to false, "hometab_songs_enabled" to false), store("preferences").all)
+        assertEquals("[\"DATE\",\"ALPHABETICAL\",\"ARTIST\"]", context.preferences.getString("historySortMenuOrder", null))
         listOf("DATE", "ALPHABETICAL", "ARTIST").forEach { id ->
-            assertTrue(store("preferences").getBoolean("hist_sort_${id}_visible", false))
+            assertTrue(context.preferences.getBoolean("hist_sort_${id}_visible", false))
         }
-        assertTrue(store("preferences").getBoolean("hometab_songs_enabled", false))
-        assertEquals("[\"quickpicks\",\"songs\",\"artists\",\"albums\",\"playlists\"]", store("preferences").getString("homeTabsOrder", null))
+        assertTrue(context.preferences.getBoolean("hometab_songs_enabled", false))
+        assertEquals("[\"quickpicks\",\"songs\",\"artists\",\"albums\",\"playlists\"]", context.preferences.getString("homeTabsOrder", null))
         assertEquals("app", store("app_settings").getString("unrelated", null))
         assertTrue(store("app_settings").getBoolean("burger_menu_toggle_history", false))
         assertEquals("[\"history\",\"statistics\",\"rewind\",\"offline_mode\",\"listen_together\",\"bridge_server\",\"profiles\",\"pip\",\"separator\",\"settings\",\"extensions\",\"debug_logs\",\"maintenance\",\"rescue_center\"]", store("app_settings").getString("burger_menu_order", null))
-        assertFalse(context.preferences.contains("homeTabsOrder"))
+        assertFalse(store("preferences").contains("homeTabsOrder"))
         assertFalse(context.preferences.contains("burger_menu_order"))
     }
 

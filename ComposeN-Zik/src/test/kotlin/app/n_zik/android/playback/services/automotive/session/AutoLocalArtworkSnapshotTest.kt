@@ -19,6 +19,7 @@ import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.models.Song
+import app.n_zik.android.utils.PROFILE_NAMES_FILE_NAME
 import app.n_zik.android.utils.activeProfileKey
 import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.Dependencies
@@ -109,6 +110,8 @@ class AutoLocalArtworkSnapshotTest {
     fun `snapshot item uri serves trusted MediaStore pixels as bounded seekable JPEG`() {
         val previousProfile = context.profilePreferences.getString(activeProfileKey, null)
         val profile = "snapshot-mediastore-93803"
+        val namesFile = context.filesDir.resolve(PROFILE_NAMES_FILE_NAME)
+        val previousNames = namesFile.takeIf { it.exists() }?.readBytes()
         val songId = "local:93803"
         val audioUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, 93803L)
         // Different audio and album IDs prove that the provider resolves the album first.
@@ -116,6 +119,7 @@ class AutoLocalArtworkSnapshotTest {
         val customCover = File(coversDir(context, profile), "cover_$songId.jpg")
         val file = File.createTempFile("snapshot-mediastore", ".png", context.cacheDir)
         try {
+            namesFile.writeText(previousNames?.toString(Charsets.UTF_8).orEmpty() + "\n$profile")
             assertTrue(context.profilePreferences.edit().putString(activeProfileKey, profile).commit())
             assertTrue("fixture must exercise MediaStore without a custom cover", !customCover.exists())
             val source = Bitmap.createBitmap(1700, 1100, Bitmap.Config.ARGB_8888)
@@ -170,6 +174,7 @@ class AutoLocalArtworkSnapshotTest {
             file.delete()
             every { appContext() } returns context
             assertTrue(context.profilePreferences.edit().putString(activeProfileKey, previousProfile).commit())
+            if (previousNames == null) namesFile.delete() else namesFile.writeBytes(previousNames)
         }
     }
 

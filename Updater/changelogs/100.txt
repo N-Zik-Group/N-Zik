@@ -1,0 +1,42 @@
+Hotfix:
+- Keep theme colors while improving player text and control contrast.
+  - Preserve colored text and controls while adapting neutral foregrounds to the artwork, gradient or Glass background.
+  - Refresh contrast when the theme or Glass settings change, including the Audio/Video selector. Restore the underlying page's status and navigation bar appearance when closing the player.
+- Improve music-video matching and unavailable-video feedback.
+  - Accept clearly credited distributor clips when no unique official clip is available, while keeping title, duration and ambiguity checks.
+  - Explain unavailable video with a toast. Long-press Video to search manually.
+- Require a published creator profile before publishing a theme.
+  - Check the signed-in GitHub account against the published creator catalog before submitting or changing a theme online.
+  - Local theme creation remains available. Unavailable or invalid catalog responses cannot bypass the prerequisite.
+- Show progress while generating theme previews.
+  - Use the app's centered settings card, wavy progress bar, keep-open instruction and red Cancel action.
+  - Cancel from the screen or notification. Late preparation callbacks cannot restart canceled work, stale notification actions cannot affect another generation, and canceled submissions clean up their own files.
+  - Keep the debug capture gallery out of submission transitions. Keep the surrounding gallery in the app's theme.
+- Generate previews with consistent Pixel sizing.
+  - Use Pixel 10 Pro XL geometry, English demo content and 100 percent system font scaling, independently of the host phone's display settings.
+  - Respect the theme's status-bar choice and hide Android navigation buttons and the gesture indicator in exported images. Preserve Normal and Glass effects.
+- Correct Updater bottom action spacing.
+  - Remove the reserved mini-player gap while it is hidden on this page. Keep system navigation, screen-cutout and side-rail clearance.
+- Keep native menu-sheet content below its drag handle.
+  - Stack content vertically inside the Glass foreground provider for transparent and opaque sheets.
+- Correct the Romanian audio-device battery percentage format.
+  - Display a literal percent sign without throwing a formatting exception.
+- Keep the History settings title visible when opening its deep link.
+  - Recalculate the initial scroll target if entry animations move the card, then stop following after the initial position converges.
+
+Improved:
+- Load Stock preview images from the Theme Store instead of bundling them in the APK.
+  - Keep Stock's actual appearance and Apply action local. Download preview images only when needed, verify their hashes and reuse cached images offline.
+  - Refresh metadata and recover from damaged or oversized cached images.
+- Match preview selection to the app's Light/Dark and Normal/Glass settings.
+  - Follow the app's mode when opening a gallery and when its settings change, while preserving manual choices on the other axis.
+  - Refresh published catalog and Stock previews without changing theme revisions or appearance documents.
+- Use the expressive N-Zik loading glyph in compact controls, including the Video selector.
+  - Preserve each control's size, color and Glass effects. Image placeholders use the same shape without animation.
+  - Circular wavy indicators and actual determinate progress remain unchanged.
+
+Other:
+- The Theme Store service now runs trusted catalog scans automatically, waits for successful checks and published creator profiles before publication, and resumes accepted themes when their creator profile is approved. Failed checks block publication and notify the maintainer.
+  - Store changes are already deployed separately: https://github.com/N-Zik-Group/N-Zik-Theme-Store/commit/4c7e7eaa420f15489364db7c5383ece6ceb58b72
+- Updated internal serialization and test dependencies.
+- Updated regression fixtures for profile-scoped settings, device-library opt-in, song metadata, playback initialization and native ripple rendering.

@@ -58,7 +58,9 @@ class AutoSessionRemoteArtworkPolicyTest {
     @After fun tearDown() {
         callbacks.forEach { it.release() }
         bitmaps.forEach { if (!it.isRecycled) it.recycle() }
-        context.getSharedPreferences("playlist_thumbnail_store", 0).edit().clear().commit()
+        context.getSharedPreferences(
+            ImageCacheFactory.profileMetadataStoreName(context, "playlist_thumbnail_store"), 0,
+        ).edit().clear().commit()
         unmockkAll()
     }
 
@@ -91,13 +93,17 @@ class AutoSessionRemoteArtworkPolicyTest {
     @Test fun `expired learned playlist URL is cleared and original cover is retried`() {
         val original = "https://i.ytimg.com/pl_c/policy-playlist/mwEIC.jpg?rs=valid"
         val learned = "https://i.ytimg.com/pl_c/policy-playlist/mwEKC.jpg?rs=expired"
-        context.getSharedPreferences("playlist_thumbnail_store", 0).edit()
+        context.getSharedPreferences(
+            ImageCacheFactory.profileMetadataStoreName(context, "playlist_thumbnail_store"), 0,
+        ).edit()
             .putString("policy-playlist", "|$learned").commit()
         val requests = load(original, failUrl = learned)
         assertEquals(listOf(learned, original), requests.map { it.data })
         assertEquals("playlist_policy-playlist_HIGH", requests.first().diskCacheKey)
         verify { ImageCacheFactory.clearCacheForKey(learned, ImageCacheFactory.NetworkQuality.HIGH, invalidateColors = false) }
-        assertFalse(context.getSharedPreferences("playlist_thumbnail_store", 0).contains("policy-playlist"))
+        assertFalse(context.getSharedPreferences(
+            ImageCacheFactory.profileMetadataStoreName(context, "playlist_thumbnail_store"), 0,
+        ).contains("policy-playlist"))
     }
 
     @Test fun `large warm cache result is bounded before owned encoding without changing borrowed pixels`() {

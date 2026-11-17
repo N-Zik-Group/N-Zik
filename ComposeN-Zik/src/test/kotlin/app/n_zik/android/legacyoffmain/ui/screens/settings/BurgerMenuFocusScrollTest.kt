@@ -14,8 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.printToString
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.enums.NavRoutes
@@ -96,14 +97,19 @@ class BurgerMenuFocusScrollTest {
      * pending entry animation keeps it from ever settling, so the loop would block forever
      * - advancing the clock IS the pump. [label] is reported on timeout.
      */
-    private fun pumpUntil(label: String, timeoutMs: Long, condition: () -> Boolean) {
+    private fun pumpUntil(
+        label: String,
+        timeoutMs: Long,
+        diagnostics: () -> String = { "" },
+        condition: () -> Boolean,
+    ) {
         val deadline = System.currentTimeMillis() + timeoutMs
         while (System.currentTimeMillis() < deadline) {
             composeRule.mainClock.advanceTimeBy(250)
             Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(250))
             if (condition()) return
         }
-        assertTrue("[$label] not met within ${timeoutMs}ms", condition())
+        assertTrue("[$label] not met within ${timeoutMs}ms. ${diagnostics()}", condition())
     }
 
     @OptIn(ExperimentalAnimationApi::class, UnstableApi::class)
@@ -173,7 +179,8 @@ class BurgerMenuFocusScrollTest {
         showDataSettings(focus = "history")
         pumpUntil(
             "the focused History card is scrolled into the viewport",
-            30_000
+            30_000,
+            diagnostics = { composeRule.onRoot().printToString(maxDepth = 5) },
         ) {
             val b = try {
                 historyCardTitle.fetchSemanticsNode().boundsInRoot

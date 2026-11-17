@@ -108,6 +108,7 @@ class PlayerQueueInteractionTest {
         Dependencies.init(application)
         val songs = mockk<SongTable>()
         every { songs.likeState(any()) } returns flowOf(null)
+        every { songs.findById(any()) } returns flowOf(null)
         mockkObject(Database, LikeStateManager, PlaylistStateManager, Toaster)
         every { Toaster.s(any<String>(), any()) } just Runs
         every { Database.songTable } returns songs

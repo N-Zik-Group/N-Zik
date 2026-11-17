@@ -106,6 +106,39 @@ class MenuSheetPresentationTest {
     @Test fun `custom modal native sheet centers handle and keeps lower corners square`() =
         assertCustomModalPresentation(shared = false)
 
+    @Test fun `native sheet stacks content siblings below its handle`() {
+        val fill = mutableStateOf(Color.Transparent)
+        compose.setContent {
+            key(fill.value) {
+                Fixture(shared = false, direction = LayoutDirection.Ltr) {
+                    CustomModalBottomSheet(
+                        showSheet = true, onDismissRequest = {},
+                        containerColor = fill.value,
+                        contentWindowInsets = { WindowInsets(0) },
+                        dragHandle = { Handle() },
+                    ) {
+                        Box(Modifier.fillMaxWidth().height(60.dp).testTag("sheet.first"))
+                        Box(Modifier.fillMaxWidth().height(60.dp).testTag("sheet.second"))
+                    }
+                }
+            }
+        }
+        for (color in listOf(Color.Transparent, Color.DarkGray)) {
+            compose.runOnIdle { fill.value = color }
+            settleSheetMotion()
+            val handle = compose.onNodeWithTag("sheet.handle", useUnmergedTree = true)
+                .fetchSemanticsNode().boundsInRoot
+            val first = compose.onNodeWithTag("sheet.first").fetchSemanticsNode().boundsInRoot
+            val second = compose.onNodeWithTag("sheet.second").fetchSemanticsNode().boundsInRoot
+            assertTrue("Handle stays above all content for $color", handle.bottom <= first.top + .5f)
+            assertEquals("Content siblings stack without overlap for $color", first.bottom, second.top, .5f)
+            assertEquals("First child keeps its requested height for $color", 60f, first.height, .5f)
+            assertEquals("Second child keeps its requested height for $color", 60f, second.height, .5f)
+            assertEquals("Content fills the native sheet width for $color", 360f, first.width, .5f)
+            assertEquals("Content siblings share the same width for $color", first.width, second.width, .5f)
+        }
+    }
+
     @Test fun `native glass film and open bottom rim follow changing bottom insets`() {
         val bottomInset = mutableStateOf(0)
         lateinit var sheetState: SheetState

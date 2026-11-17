@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -70,16 +71,17 @@ fun DataSettings(
     }
     val scrollState = rememberScrollState()
     var containerTopY by remember { mutableFloatStateOf(-1f) }
-    var historyCardTopY by remember { mutableFloatStateOf(-1f) }
+    var historyContentOffset by remember { mutableIntStateOf(-1) }
 
     LaunchedEffect(focus) {
         if (focus != DataSettingTargets.HISTORY_FOCUS) return@LaunchedEffect
-        // Wait for measurement before scrolling to an off-screen card.
-        val offset = snapshotFlow {
-            if (historyCardTopY < 0f || containerTopY < 0f) -1f
-            else historyCardTopY - containerTopY + scrollState.value
-        }.first { it >= 0f }
-        scrollState.animateScrollTo(offset.roundToInt())
+        // Entry reflow can move the card during the scroll; finish against its latest measured position.
+        snapshotFlow { historyContentOffset }.first { offset ->
+            if (offset < 0) false else {
+                scrollState.animateScrollTo(offset)
+                historyContentOffset == offset
+            }
+        }
     }
 
     Column(
@@ -122,7 +124,11 @@ fun DataSettings(
         }
         DataSettingsContent(
             search, navController,
-            onCardPosition = { _, y -> historyCardTopY = y },
+            onCardPosition = { _, y ->
+                if (containerTopY >= 0f) {
+                    historyContentOffset = (y - containerTopY + scrollState.value).roundToInt()
+                }
+            },
             cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, query = search.inputValue) { cards() } }
         )
 

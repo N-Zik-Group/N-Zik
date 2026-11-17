@@ -31,6 +31,7 @@ import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.components.SongItem
+import app.n_zik.android.components.song.EmptySongMetadataRule
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -43,10 +44,12 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
 class SearchSongVisibilityTest {
-    @get:Rule val composeRule = createComposeRule()
+    @get:Rule(order = 0) val songMetadata = EmptySongMetadataRule()
+    @get:Rule(order = 1) val composeRule = createComposeRule()
 
     @Test
     fun hiddenSongRetainsItsSpaceWithoutPlaybackMenuOrAccessibilityActions() {
+        songMetadata.stub()
         val context = ApplicationProvider.getApplicationContext<Context>()
         context.preferences.edit().putBoolean(disableScrollingTextKey, true).commit()
         val focused = mutableStateOf(false)
