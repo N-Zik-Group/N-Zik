@@ -398,6 +398,9 @@
     <string name="settings_player_timeline_label">Стиль перемотки</string>
     <string name="settings_player_timeline_size_label">Размер таймлайна</string>
     <string name="settings_player_timeline_transparent_label">Прозрачный таймлайн</string>
+    <string name="settings_player_opening_mode_label">Режим открытия плеера</string>
+    <string name="settings_player_opening_mode_description">Выберите режим, который будет использоваться при открытии игрока.</string>
+    <string name="settings_player_opening_mode_remember_last">Запомнить последний режим</string>
     <string name="settings_player_top_action_bar_visible_label">Показать верхнюю панель действий</string>
     <string name="settings_player_vertical_swipe_expansion_description">Действует только тогда, когда расширенный плеер выключен.</string>
     <string name="settings_preference_saved_message">Настройки сохранены</string>
@@ -501,4 +504,5 @@
     <string name="settings_local_music_summary_title">Обзор библиотеки на устройстве</string>
     <string name="settings_local_music_summary_description">Смотрите найденную музыку и папки для этого профиля.</string>
     <string name="settings_local_music_summary_count">%1$s: %2$d</string>
+    <string name="settings_local_music_start_folder_path_example">Музыка/Онлайн</string>
 </resources>
