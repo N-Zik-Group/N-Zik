@@ -8,3 +8,9 @@ Fixed:
   - Catalog validation and bot acceptance require a published creator profile. An accepted theme waits for its profile, then resumes the original approved revision after profile publication.
   - Changes to the approved theme, refusal, bans or revoked acceptance invalidate the waiting approval and require a fresh review. Profile merges through the bot or GitHub are supported.
   - Verified 144 Store tests, real GitHub rejection of invalid catalog data, successful automatic scans of valid data, and isolated live profile/theme publication ordering.
+- fix(theme-previews): generate catalog screenshots with canonical Pixel geometry
+  - ThemePreviewViewport renders at Pixel 10 Pro XL dimensions (1344 x 2992 pixels, 480 dpi, portrait, 448 dp width) with English resources and system font scaling reset to 100 percent.
+  - Canonical insets reserve 159 pixels for the Pixel status/cutout area, or zero when the theme hides its status bar. Android navigation, gesture, keyboard and side insets are zero; no gesture indicator or Android navigation buttons appear in generated captures.
+  - ThemePreviewActivity uses a fixed hardware-backed capture window and normalizes insets before Compose receives them, preserving Glass effects and theme appearance without modifying device display or navigation settings.
+  - Capture-specific window state is restored on exit; unexpected window dimensions fail before images are saved. Existing submission image normalization is retained.
+  - Verified 45 targeted tests, assembleDebug, and 20 real Normal/Glass captures across different host resolutions, densities, font scales and Android navigation modes.

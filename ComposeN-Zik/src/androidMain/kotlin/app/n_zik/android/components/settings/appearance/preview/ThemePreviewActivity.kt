@@ -2,7 +2,6 @@ package app.n_zik.android.components.settings.appearance.preview
 
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
@@ -19,7 +18,6 @@ import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -70,6 +68,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.ui.res.stringResource
@@ -151,7 +150,6 @@ import app.n_zik.android.utils.searchResultScreenTabIndexKey
 import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.utils.transitionEffectKey
 import java.io.File
-import java.util.Locale
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.CancellationException
@@ -176,8 +174,9 @@ open class ThemePreviewActivity : ComponentActivity() {
     protected open val automation = false
 
     override fun attachBaseContext(newBase: Context) {
-        val english = Configuration().apply { setLocale(Locale.ENGLISH) }
-        super.attachBaseContext(newBase.createConfigurationContext(english))
+        super.attachBaseContext(newBase.createConfigurationContext(
+            ThemePreviewViewport.configuration(newBase.resources.configuration),
+        ))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -195,7 +194,13 @@ open class ThemePreviewActivity : ComponentActivity() {
                 if (intent.getBooleanExtra("useDefaultTheme", false)) defaultThemeAppearanceDocument()
                 else intent.getStringExtra(EncodedDocument)?.let { String(Base64.decode(it, Base64.DEFAULT), Charsets.UTF_8) }
             } else null
-        setContent {
+        val insetFrame = ThemePreviewInsetFrame(this)
+        val composeView = ComposeView(this)
+        insetFrame.addView(composeView, android.widget.FrameLayout.LayoutParams(
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+        ))
+        setContentView(insetFrame)
+        composeView.setContent {
             var ready by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
             var failed by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
             var attempt by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
@@ -220,7 +225,7 @@ open class ThemePreviewActivity : ComponentActivity() {
                 }
             }
             if (ready) {
-                CaptureGallery(document, player, automation || submissionCapture, window, filesDir,
+                CaptureGallery(document, player, automation || submissionCapture, window, filesDir, insetFrame,
                     progressNotification = progressNotification,
                     onCancel = if (submissionCapture) ({ finish() }) else null,
                     onCaptured = if (submissionCapture) { files ->
@@ -288,6 +293,7 @@ private data class CaptureFrame(
 @Composable
 private fun CaptureGallery(
     document: String?, player: ExoPlayer, automation: Boolean, window: Window, filesDir: File,
+    insetFrame: ThemePreviewInsetFrame,
     progressNotification: ThemePreviewProgressNotification? = null,
     onCancel: (() -> Unit)? = null,
     onCaptured: ((List<File>) -> Unit)? = null,
@@ -357,6 +363,18 @@ private fun CaptureGallery(
     } else if (frame?.glass == true) glass else normal
     val dark = visibleTheme.appearance.colorPalette.isDark
     val hideStatusBar = frame != null && visibleTheme.preferences[hideStatusBarKey] == true
+    val capturing = frame != null
+    DisposableEffect(window, capturing) {
+        val captureWindow = if (capturing) ThemePreviewCaptureWindow(window).also { it.enter() } else null
+        onDispose {
+            insetFrame.setCapture(false, false)
+            captureWindow?.restore()
+        }
+    }
+    DisposableEffect(insetFrame, capturing, hideStatusBar) {
+        insetFrame.setCapture(capturing, hideStatusBar)
+        onDispose { }
+    }
     LaunchedEffect(window, dark, hideStatusBar) {
         WindowCompat.getInsetsController(window, window.decorView).apply {
             isAppearanceLightStatusBars = !dark
@@ -703,6 +721,7 @@ private fun ThemePreviewSongMenu(nav: NavController) {
 
 private suspend fun Window.captureFrame(): Bitmap = suspendCancellableCoroutine { continuation ->
     val view = decorView
+    ThemePreviewViewport.requireCanonicalSize(view.width, view.height)
     val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
     PixelCopy.request(this, bitmap, { status ->
         if (!continuation.isActive) {
