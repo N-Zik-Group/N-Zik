@@ -92,7 +92,7 @@ internal fun GlassSectionActions(
                         Modifier.size(if (actions.size == 1) GlassStandaloneActionSize else GlassActionCellWidth, GlassActionCellHeight),
                         contentAlignment = Alignment.Center,
                     ) {
-                        InlineCircularLoader(Modifier.size(18.dp), color = colorPalette().textSecondary, strokeWidth = 2.dp)
+                        InlineCircularLoader(Modifier.size(18.dp), color = colorPalette().textSecondary)
                     }
                 } else {
                     GlassActionGroupItem(
@@ -122,7 +122,7 @@ internal fun GlassSectionActions(
                         Box(Modifier.padding(end = nativeSectionEndPadding(action.nativeIconSize, action.nativeEndPadding))
                             .size(NativeIconActionSize), contentAlignment = Alignment.Center) {
                             InlineCircularLoader(Modifier.size(18.dp),
-                                color = colorPalette().textSecondary, strokeWidth = 2.dp)
+                                color = colorPalette().textSecondary)
                         }
                     } else {
                         NativeSectionIconAction(

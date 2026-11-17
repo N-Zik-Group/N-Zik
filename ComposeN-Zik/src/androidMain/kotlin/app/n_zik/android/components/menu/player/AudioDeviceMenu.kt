@@ -690,7 +690,6 @@ internal fun AudioDeviceStatusMenu(error: String?, onRetry: () -> Unit) {
                 // key on the effective palette instead, so the spinner stays readable in both tones
                 InlineCircularLoader(
                     modifier = Modifier.size(48.dp),
-                    strokeWidth = 3.dp,
                     color = colorPalette().text
                 )
             }

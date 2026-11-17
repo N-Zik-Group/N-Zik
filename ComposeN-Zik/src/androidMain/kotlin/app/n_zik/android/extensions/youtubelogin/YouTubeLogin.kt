@@ -25,7 +25,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,6 +47,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import app.n_zik.android.components.ui.InlineCircularLoader
 import app.n_zik.android.R
 import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.components.dialog.common.ButtonRow
@@ -471,7 +471,7 @@ fun YouTubeLogin(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        CircularProgressIndicator(color = palette.accent)
+                        InlineCircularLoader(color = palette.accent)
                         Text(stringResource(R.string.account_youtube_checking_login), color = palette.text)
                     }
                     LoginStage.Failed -> Column(

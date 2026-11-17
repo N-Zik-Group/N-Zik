@@ -74,7 +74,6 @@ class SmartShuffle private constructor(
                 InlineCircularLoader(
                     modifier = Modifier.size(24.dp),
                     color = colorPalette().text,
-                    strokeWidth = 2.dp
                 )
             } else {
                 IconButton(onClick = { onToggleRecommendation() }, shape = uiRoundnessShape()) {

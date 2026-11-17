@@ -39,6 +39,7 @@ import app.n_zik.android.utils.fontTypeKey
 import app.n_zik.android.utils.thumbnailRoundnessDpKey
 import app.n_zik.android.utils.uiRoundnessDpKey
 import app.n_zik.android.utils.useSystemFontKey
+import app.n_zik.android.utils.preferences
 import com.kieronquinn.monetcompat.core.MonetCompat
 import timber.log.Timber
 
@@ -72,9 +73,28 @@ internal fun rememberThemePreviewAppearance(
     document: String?,
     glass: Boolean,
     paletteModeOverride: ColorPaletteMode? = null,
+): ThemePreviewAppearance = rememberPreviewAppearance(document, glass, paletteModeOverride, false)
+
+/** The foreground belongs to the user's app, independently of the demo document and artwork. */
+@Composable
+internal fun rememberThemePreviewProgressAppearance(): Appearance =
+    rememberPreviewAppearance(null, false, null, true).appearance
+
+@Composable
+private fun rememberPreviewAppearance(
+    document: String?,
+    glass: Boolean,
+    paletteModeOverride: ColorPaletteMode?,
+    useApplicationPreferences: Boolean,
 ): ThemePreviewAppearance {
     val context = LocalContext.current.applicationContext
-    val settings = remember(document, glass) { themePreviewPreferences(document, glass) }
+    val settings = remember(document, glass, useApplicationPreferences) {
+        if (useApplicationPreferences) ThemeSettings(buildMap {
+            // MainActivity's app default is Dark; portable theme documents default to System.
+            put(colorPaletteModeKey, ColorPaletteMode.Dark.name)
+            context.preferences.all.forEach { (key, value) -> value?.let { put(key, it) } }
+        }) else themePreviewPreferences(document, glass)
+    }
     val preferences = remember(settings, paletteModeOverride) {
         if (paletteModeOverride == null) settings.plain
         else settings.plain + (colorPaletteModeKey to paletteModeOverride.name)
@@ -102,7 +122,7 @@ internal fun rememberThemePreviewAppearance(
         }
     }
     val artworkPalette by produceState(base, context, paletteName, dark, base, preferences[dynamicThemeRespectBrightnessKey]) {
-        if (paletteName == ColorPaletteName.Dynamic) value = withContext(NzikDispatchers.DATA) {
+        if (!useApplicationPreferences && paletteName == ColorPaletteName.Dynamic) value = withContext(NzikDispatchers.DATA) {
             val bitmap = BitmapFactory.decodeFile(ThemePreviewAssets.file(context, "atlas.jpg").path)
             try {
                 bitmap?.let { analyzeArtworkColors(it).display(

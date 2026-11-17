@@ -2,18 +2,46 @@ package app.n_zik.android.components.settings.appearance.preview
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import app.n_zik.android.R
 import timber.log.Timber
 
 internal class ThemePreviewProgressNotification(private val context: Context) {
     private val manager = context.getSystemService(NotificationManager::class.java)
     private val tag = "theme-preview:${java.util.UUID.randomUUID()}"
+    private var receiver: BroadcastReceiver? = null
+    private var cancelIntent: PendingIntent? = null
+
+    /** A new action identity for every operation prevents old actions cancelling retries. */
+    fun start(onCancel: () -> Unit) {
+        cancel()
+        val action = "${context.packageName}.theme_preview.CANCEL.${java.util.UUID.randomUUID()}"
+        val listener = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if (intent.action != action || receiver !== this) return
+                cancel()
+                onCancel()
+            }
+        }
+        ContextCompat.registerReceiver(context, listener, IntentFilter(action), ContextCompat.RECEIVER_NOT_EXPORTED)
+        receiver = listener
+        cancelIntent = PendingIntent.getBroadcast(
+            context, 0, Intent(action).setPackage(context.packageName),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        show()
+    }
 
     fun show(completed: Int = 0, total: Int = 0) {
+        val action = cancelIntent ?: return
         val notifications = manager ?: return
         if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
         val channel = "theme_store_preview_generation"
@@ -30,6 +58,7 @@ internal class ThemePreviewProgressNotification(private val context: Context) {
             .setProgress(total, completed, total == 0)
             .setOnlyAlertOnce(true)
             .setOngoing(true)
+            .addAction(0, context.getString(R.string.common_action_cancel), action)
             .build()
         try {
             notifications.notify(tag, 1, notification)
@@ -40,5 +69,9 @@ internal class ThemePreviewProgressNotification(private val context: Context) {
 
     fun cancel() {
         manager?.cancel(tag, 1)
+        cancelIntent?.cancel()
+        cancelIntent = null
+        receiver?.let { context.unregisterReceiver(it) }
+        receiver = null
     }
 }

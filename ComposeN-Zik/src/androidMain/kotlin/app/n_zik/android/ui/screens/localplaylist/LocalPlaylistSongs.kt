@@ -2,6 +2,7 @@ package app.n_zik.android.ui.screens.localplaylist
 
 import androidx.compose.ui.layout.onGloballyPositioned
 
+import app.n_zik.android.components.ui.InlineCircularLoader
 import app.n_zik.android.core.ondevice.DeviceLibraryResults
 import app.n_zik.android.core.ondevice.observeDeviceLibrary
 import app.n_zik.android.utils.getActiveProfile
@@ -56,7 +57,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -1305,9 +1305,8 @@ fun LocalPlaylistSongs(
                                         tint = colorPalette().text,
                                         modifier = Modifier.size(16.dp)
                                     )
-                                    CircularProgressIndicator(
+                                    InlineCircularLoader(
                                         modifier = Modifier.size(16.dp),
-                                        strokeWidth = 2.dp,
                                         color = colorPalette().text
                                     )
                                 }
@@ -1323,10 +1322,9 @@ fun LocalPlaylistSongs(
 
                     val recommendationButton: @Composable () -> Unit = {
                         if (isRecommendationsLoading) {
-                            if (!GlassToolbarLoading()) CircularProgressIndicator(
+                            if (!GlassToolbarLoading()) InlineCircularLoader(
                                 modifier = Modifier.size(24.dp),
                                 color = colorPalette().text,
-                                strokeWidth = 2.dp
                             )
                         } else {
                             HeaderIconButton(

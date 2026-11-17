@@ -35,7 +35,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -89,6 +88,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import app.n_zik.android.components.ui.InlineCircularLoader
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -397,7 +397,7 @@ internal fun PlayerAudioVideoToggle(
             contentAlignment = Alignment.Center,
         ) {
             if (video && selected && !session.ready) {
-                CircularProgressIndicator(Modifier.size(16.dp), color = tint, strokeWidth = 2.dp)
+                InlineCircularLoader(Modifier.size(16.dp), color = tint)
             } else {
                 Image(
                     painterResource(if (video) R.drawable.video else R.drawable.headphones),

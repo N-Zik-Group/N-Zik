@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import app.n_zik.android.components.ui.InlineCircularLoader
 import app.n_zik.android.components.ui.AccountSheetWebView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.R
@@ -663,7 +663,7 @@ private fun GitHubWebView(
                 )
                 if (showLoader) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator(color = colorPalette().accent)
+                        InlineCircularLoader(color = colorPalette().accent)
                         Text(
                             stringResource(R.string.github_account_finishing_connection),
                             Modifier.padding(top = 12.dp),

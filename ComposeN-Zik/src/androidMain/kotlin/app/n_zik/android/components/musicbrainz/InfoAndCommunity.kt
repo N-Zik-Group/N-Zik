@@ -154,7 +154,6 @@ fun InfoAndCommunity(
                             InlineCircularLoader(
                                 modifier = Modifier.size(18.dp),
                                 color = colorPalette().textSecondary,
-                                strokeWidth = 2.dp,
                             )
                         }
                     } else {

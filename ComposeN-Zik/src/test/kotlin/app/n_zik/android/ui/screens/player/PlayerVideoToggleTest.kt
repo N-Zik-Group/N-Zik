@@ -3,7 +3,16 @@ package app.n_zik.android.ui.screens.player
 import android.app.Application
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.assertWidthIsEqualTo
+import androidx.compose.ui.test.assertHeightIsEqualTo
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -40,6 +49,41 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [33], application = Application::class, qualifiers = "en-rUS")
 class PlayerVideoToggleTest {
     @get:Rule val composeRule = createComposeRule()
+
+    @Test
+    fun `loading video keeps compact progress semantics and selection bounds in native and glass modes`() {
+        val glass = mutableStateOf(false)
+        val session = PlayerMusicVideo().apply { selectVideo(true) }
+        composeRule.setContent {
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(
+                    ColorPalette.fallback, Typography.fallback, CircleShape, CircleShape, CircleShape,
+                ),
+                LocalGlassPreviewSettings provides GlassSettings(enabled = glass.value, rippleEnabled = false),
+            ) {
+                PlayerAudioVideoToggle(session, onSearchManually = {})
+            }
+        }
+        val loading = SemanticsMatcher.expectValue(
+            SemanticsProperties.ProgressBarRangeInfo, ProgressBarRangeInfo.Indeterminate,
+        ) and hasAnyAncestor(hasContentDescription("Video"))
+        for (enabled in listOf(false, true)) {
+            composeRule.runOnIdle {
+                glass.value = enabled
+                session.ready = false
+            }
+            val video = composeRule.onNodeWithContentDescription("Video")
+            video.assertIsSelected()
+            val loadingBounds = video.fetchSemanticsNode().boundsInRoot
+            composeRule.onNode(loading, useUnmergedTree = true)
+                .assertWidthIsEqualTo(16.dp)
+                .assertHeightIsEqualTo(16.dp)
+            composeRule.runOnIdle { session.ready = true }
+            composeRule.onNode(loading, useUnmergedTree = true).assertDoesNotExist()
+            video.assertIsSelected()
+            assertEquals(loadingBounds, video.fetchSemanticsNode().boundsInRoot)
+        }
+    }
 
     @Test
     @Config(sdk = [32])

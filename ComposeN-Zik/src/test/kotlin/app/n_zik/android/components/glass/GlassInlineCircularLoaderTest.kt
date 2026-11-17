@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
@@ -19,17 +18,21 @@ import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.assertWidthIsEqualTo
+import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.components.ui.InlineCircularLoader
+import app.n_zik.android.components.ui.LargeLoaderGlyph
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -45,7 +48,7 @@ import org.robolectric.annotation.GraphicsMode
 class GlassInlineCircularLoaderTest {
     @get:Rule val compose = createComposeRule()
 
-    @Test fun `all modes keep native spinner dimensions and indeterminate semantics`() {
+    @Test fun `all modes keep expressive glyph dimensions and indeterminate semantics`() {
         val mode = mutableStateOf(GlassAreaMode.Disabled)
         compose.setContent {
             val shape = RoundedCornerShape(12.dp)
@@ -59,10 +62,10 @@ class GlassInlineCircularLoaderTest {
             ) {
                 Row {
                     Box(Modifier.testTag("adapted").background(Color.Black)) {
-                        InlineCircularLoader(Modifier.padding(8.dp).size(48.dp), color = Color.Red, strokeWidth = 3.dp)
+                        InlineCircularLoader(Modifier.padding(8.dp).size(48.dp), color = Color.Red)
                     }
                     Box(Modifier.testTag("native").background(Color.Black)) {
-                        CircularProgressIndicator(Modifier.padding(8.dp).size(48.dp), color = Color.Red, strokeWidth = 3.dp)
+                        LargeLoaderGlyph(color = Color.Red, modifier = Modifier.padding(8.dp).size(48.dp), size = 40.dp)
                     }
                 }
             }
@@ -90,7 +93,39 @@ class GlassInlineCircularLoaderTest {
                 (0 until pixels.width).count { x -> pixels[x, y].green > .1f }
             }
         }
-        assertTrue("The Glass contour adds light pixels around the red arc", rimPixels("adapted") > rimPixels("native"))
+        assertTrue("The Glass contour adds light pixels around the red glyph", rimPixels("adapted") > rimPixels("native"))
+    }
+
+    @Test fun `compact expressive glyph retains fallback and explicit sizes in every glass mode`() {
+        val mode = mutableStateOf(GlassAreaMode.Disabled)
+        val size = mutableStateOf<Dp?>(null)
+        compose.setContent {
+            val shape = RoundedCornerShape(12.dp)
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                    typographyOf(Color.White, true, false, FontType.Rubik), shape, shape, shape),
+                LocalGlassPreviewSettings provides GlassSettings(
+                    quality = GlassQuality.Performance,
+                    areaModes = mapOf(GlassArea.LoadingIndicators to mode.value),
+                ),
+            ) {
+                InlineCircularLoader(modifier = size.value?.let { Modifier.size(it) } ?: Modifier)
+            }
+        }
+        val loading = SemanticsMatcher.expectValue(
+            SemanticsProperties.ProgressBarRangeInfo, ProgressBarRangeInfo.Indeterminate,
+        )
+        for (selected in GlassAreaMode.entries) {
+            for (dimension in listOf(null, 12.dp, 16.dp, 18.dp, 20.dp, 24.dp, 48.dp)) {
+                compose.runOnIdle {
+                    mode.value = selected
+                    size.value = dimension
+                }
+                compose.onNode(loading, useUnmergedTree = true)
+                    .assertWidthIsEqualTo(dimension ?: 40.dp)
+                    .assertHeightIsEqualTo(dimension ?: 40.dp)
+            }
+        }
     }
 
     @Test
@@ -115,7 +150,7 @@ class GlassInlineCircularLoaderTest {
                 }
             }
         }
-        fun brightestArcPixel(value: Float): Float {
+        fun brightestGlyphPixel(value: Float): Float {
             compose.runOnIdle { film.value = value }
             val pixels = compose.onNodeWithTag("uniform").captureToImage().toPixelMap()
             var brightest = 0f
@@ -126,11 +161,11 @@ class GlassInlineCircularLoaderTest {
                 brightest = maxOf(brightest, red)
                 if (red > threshold) visible++
             }
-            assertTrue("Expected a visible red arc at film=$value", visible > 10)
+            assertTrue("Expected a visible red glyph at film=$value", visible > 10)
             return brightest
         }
-        val nativeRed = brightestArcPixel(0f)
-        val filmRed = brightestArcPixel(.6f)
+        val nativeRed = brightestGlyphPixel(0f)
+        val filmRed = brightestGlyphPixel(.6f)
         assertTrue("The Glass film must soften the opaque red glyph ($filmRed vs $nativeRed)",
             filmRed < nativeRed - .1f)
     }

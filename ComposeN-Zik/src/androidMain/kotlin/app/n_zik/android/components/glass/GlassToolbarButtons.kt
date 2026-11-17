@@ -229,7 +229,7 @@ fun GlassToolbarLoading(): Boolean {
     val style = LocalToolbarStyle.current ?: return false
     Box(Modifier.size(if (style.count == 1) GlassStandaloneActionSize else style.cellWidth, GlassActionCellHeight),
         contentAlignment = Alignment.Center) {
-        InlineCircularLoader(Modifier.size(GlassActionIconSize), color = glassArtworkForeground(style.settings, colorPalette().text, style.settings.usesGlassMaterial(GlassArea.ActionButtons)), strokeWidth = 2.dp)
+        InlineCircularLoader(Modifier.size(GlassActionIconSize), color = glassArtworkForeground(style.settings, colorPalette().text, style.settings.usesGlassMaterial(GlassArea.ActionButtons)))
     }
     return true
 }

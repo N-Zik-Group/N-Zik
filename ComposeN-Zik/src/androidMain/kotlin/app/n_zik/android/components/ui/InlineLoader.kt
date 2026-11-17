@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.ProgressIndicatorDefaults
@@ -39,17 +38,16 @@ internal fun LargeLoaderGlyph(color: Color, modifier: Modifier = Modifier, size:
     LoadingIndicator(color = color, modifier = modifier.size(size))
 }
 
-/** Adapts the Material spinner without changing its native animation or dimensions. */
+/** Uses the expressive glyph within the existing compact loading bounds. */
 @Composable
 internal fun InlineCircularLoader(
     modifier: Modifier = Modifier,
     color: Color = ProgressIndicatorDefaults.circularColor,
-    strokeWidth: Dp = ProgressIndicatorDefaults.CircularStrokeWidth,
 ) {
     GlassIndicatorSilhouette(
         rememberGlassSettings(), GlassArea.LoadingIndicators, color, modifier,
     ) { glyph ->
-        CircularProgressIndicator(modifier = glyph, color = color, strokeWidth = strokeWidth)
+        LargeLoaderGlyph(color = color, modifier = glyph, size = 40.dp)
     }
 }
 

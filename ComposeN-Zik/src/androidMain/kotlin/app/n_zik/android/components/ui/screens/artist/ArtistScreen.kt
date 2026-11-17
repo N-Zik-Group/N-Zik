@@ -626,7 +626,6 @@ fun ArtistOverview(
                                         contentAlignment = Alignment.Center) {
                                         InlineCircularLoader(
                                             modifier = Modifier.size(24.dp),
-                                            strokeWidth = 2.dp,
                                             color = colorPalette().accent,
                                         )
                                     }
@@ -715,7 +714,6 @@ fun ArtistOverview(
                             Box(loadingModifier, contentAlignment = Alignment.Center) {
                                 InlineCircularLoader(
                                     modifier = Modifier.size(24.dp),
-                                    strokeWidth = 2.dp,
                                     color = colorPalette().textSecondary,
                                 )
                             }

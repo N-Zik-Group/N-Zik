@@ -211,7 +211,7 @@ fun QuickPicksHeader(
                 GlassActionGroup(glass, GlassArea.ActionButtons, separatorBefore = setOf(2)) {
                     if (isLoading) {
                         Box(Modifier.size(GlassActionCellWidth * 2, GlassActionCellHeight), contentAlignment = Alignment.Center) {
-                            InlineCircularLoader(Modifier.size(GlassActionIconSize), strokeWidth = 2.dp, color = colorPalette().textSecondary)
+                            InlineCircularLoader(Modifier.size(GlassActionIconSize), color = colorPalette().textSecondary)
                         }
                     } else {
                         GlassActionGroupItem(onClick = onDiceClick) {
@@ -228,7 +228,7 @@ fun QuickPicksHeader(
             } else {
                 if (isLoading) {
                     Box(Modifier.size(NativeIconActionSize * 2, NativeIconActionSize), contentAlignment = Alignment.Center) {
-                        InlineCircularLoader(Modifier.size(24.dp), strokeWidth = 2.dp, color = colorPalette().textSecondary)
+                        InlineCircularLoader(Modifier.size(24.dp), color = colorPalette().textSecondary)
                     }
                 } else {
                     NativeSectionIconAction(R.drawable.dice, stringResource(R.string.glass_effect_action_shuffle),

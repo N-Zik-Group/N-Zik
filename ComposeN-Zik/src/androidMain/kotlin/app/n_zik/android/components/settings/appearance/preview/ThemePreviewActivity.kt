@@ -94,7 +94,8 @@ import app.n_zik.android.R
 import app.n_zik.android.components.CustomBottomSheet
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
-import app.n_zik.android.components.ui.UiButton
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.glass.GlassMenuHostState
 import app.n_zik.android.components.glass.GlassRippleProvider
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
@@ -156,6 +157,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -188,7 +190,7 @@ open class ThemePreviewActivity : ComponentActivity() {
             window.isNavigationBarContrastEnforced = false
         }
         val submissionCapture = intent.getBooleanExtra(SubmissionCapture, false)
-        if (submissionCapture) progressNotification = ThemePreviewProgressNotification(this)
+        progressNotification = ThemePreviewProgressNotification(this)
         val document = intent.getStringExtra(Document)
             ?: if (automation) {
                 if (intent.getBooleanExtra("useDefaultTheme", false)) defaultThemeAppearanceDocument()
@@ -201,50 +203,69 @@ open class ThemePreviewActivity : ComponentActivity() {
         ))
         setContentView(insetFrame)
         composeView.setContent {
-            var ready by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
-            var failed by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
-            var attempt by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
-            LaunchedEffect(attempt) {
-                failed = false
-                progressNotification?.show()
-                try {
-                    ThemePreviewAssets.prepare(applicationContext)
-                    ThemePreviewDemo.useAssets(applicationContext)
-                    player = ExoPlayer.Builder(this@ThemePreviewActivity).build().apply {
-                        volume = 0f
-                        setMediaItems(ThemePreviewDemo.mediaItems, 0, ThemePreviewDemo.positionMs)
-                        prepare()
-                    }
-                    ready = true
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (error: Exception) {
-                    Timber.tag("ThemePreview").w(error, "Could not load demo assets")
+            val progressAppearance = rememberThemePreviewProgressAppearance()
+            CompositionLocalProvider(LocalAppearance provides progressAppearance) {
+                var ready by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+                var failed by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+                var attempt by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
+                var preparationCancelled by remember { mutableStateOf(false) }
+                val preparationJob = remember { java.util.concurrent.atomic.AtomicReference<Job?>() }
+                val cancelPreparation by rememberUpdatedState {
+                    preparationJob.getAndSet(null)?.cancel()
                     progressNotification?.cancel()
-                    failed = true
-                }
-            }
-            if (ready) {
-                CaptureGallery(document, player, automation || submissionCapture, window, filesDir, insetFrame,
-                    progressNotification = progressNotification,
-                    onCancel = if (submissionCapture) ({ finish() }) else null,
-                    onCaptured = if (submissionCapture) { files ->
-                        setResult(RESULT_OK, Intent().putStringArrayListExtra(CapturedFiles, ArrayList(files.map(File::getAbsolutePath))))
+                    if (submissionCapture) {
+                        setResult(RESULT_CANCELED)
                         finish()
-                    } else null)
-            } else {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    if (failed) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            BasicText(stringResource(R.string.theme_store_catalog_unavailable))
-                            UiButton(onClick = { attempt++ }) {
-                                androidx.compose.material3.Text(stringResource(R.string.common_action_retry))
-                            }
-                        }
                     } else {
-                        val appearance = rememberThemePreviewAppearance(document, false)
-                        CompositionLocalProvider(LocalAppearance provides appearance.appearance) {
-                            app.n_zik.android.components.ui.InlineLoader()
+                        preparationCancelled = true
+                    }
+                }
+                LaunchedEffect(attempt) {
+                    failed = false
+                    preparationCancelled = false
+                    val job = currentCoroutineContext().job
+                    preparationJob.set(job)
+                    progressNotification?.start { cancelPreparation() }
+                    try {
+                        ThemePreviewAssets.prepare(applicationContext)
+                        currentCoroutineContext().ensureActive()
+                        ThemePreviewDemo.useAssets(applicationContext)
+                        player = ExoPlayer.Builder(this@ThemePreviewActivity).build().apply {
+                            volume = 0f
+                            setMediaItems(ThemePreviewDemo.mediaItems, 0, ThemePreviewDemo.positionMs)
+                            prepare()
+                        }
+                        ready = true
+                        if (!automation && !submissionCapture) progressNotification?.cancel()
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (error: Exception) {
+                        Timber.tag("ThemePreview").w(error, "Could not load demo assets")
+                        progressNotification?.cancel()
+                        failed = true
+                    } finally {
+                        preparationJob.compareAndSet(job, null)
+                    }
+                }
+                if (ready) {
+                    CaptureGallery(document, player, automation || submissionCapture, window, filesDir, insetFrame,
+                        progressNotification = progressNotification,
+                        onCancel = if (submissionCapture) ({ setResult(RESULT_CANCELED); finish() }) else null,
+                        onCaptured = if (submissionCapture) { files ->
+                            setResult(RESULT_OK, Intent().putStringArrayListExtra(CapturedFiles, ArrayList(files.map(File::getAbsolutePath))))
+                            finish()
+                        } else null)
+                } else if (preparationCancelled) {
+                    GalleryActions(emptyMap(), null, onGenerate = { attempt++ }, onReplace = { _, _ -> })
+                } else {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        if (failed) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                BasicText(stringResource(R.string.theme_store_catalog_unavailable))
+                                ButtonRow(listOf(DialogButton(stringResource(R.string.common_action_retry), { attempt++ })))
+                            }
+                        } else {
+                            ThemePreviewProgressDialog(onCancel = cancelPreparation)
                         }
                     }
                 }
@@ -272,7 +293,7 @@ open class ThemePreviewActivity : ComponentActivity() {
     }
 }
 
-private data class CaptureFrame(
+internal data class CaptureFrame(
     val scene: ThemePreviewScene,
     val glass: Boolean,
     val palette: ColorPaletteMode?,
@@ -326,6 +347,7 @@ private fun CaptureGallery(
     val staging = remember { mutableMapOf<CaptureFrame, File>() }
     var gallery by remember { mutableStateOf<Map<CaptureFrame, File>>(emptyMap()) }
     var frameIndex by remember { mutableStateOf(if (automation) 0 else -1) }
+    var completedImages by remember { mutableStateOf(0) }
     var failed by remember { mutableStateOf<CaptureFrame?>(null) }
     val frame = frames.getOrNull(frameIndex)
     val captureJob = remember { java.util.concurrent.atomic.AtomicReference<Job?>() }
@@ -333,11 +355,16 @@ private fun CaptureGallery(
         captureJob.getAndSet(null)?.cancel()
         player.pause()
         progressNotification?.cancel()
-        frameIndex = -1
-        onCancel?.invoke()
+        if (onCancel != null) onCancel() else frameIndex = -1
         Unit
     }
     if (frame != null) {
+        DisposableEffect(inspectOnly) {
+            if (inspectOnly) progressNotification?.cancel()
+            else progressNotification?.start { cancelCapture() }
+            onDispose { progressNotification?.cancel() }
+        }
+        if (!inspectOnly) ThemePreviewProgressDialog(completedImages, frames.size, onCancel = cancelCapture)
         DisposableEffect(window, inspectOnly) {
             val alreadyKeptAwake = window.attributes.flags and FLAG_KEEP_SCREEN_ON != 0
             val keepAwake = !inspectOnly && !alreadyKeptAwake
@@ -361,7 +388,7 @@ private fun CaptureGallery(
     val visibleTheme = if (frame != null && paletteOverride != null) {
         rememberThemePreviewAppearance(document, frame.glass, paletteOverride)
     } else if (frame?.glass == true) glass else normal
-    val dark = visibleTheme.appearance.colorPalette.isDark
+    val dark = if (frame != null) visibleTheme.appearance.colorPalette.isDark else colorPalette().isDark
     val hideStatusBar = frame != null && visibleTheme.preferences[hideStatusBarKey] == true
     val capturing = frame != null
     DisposableEffect(window, capturing) {
@@ -481,21 +508,30 @@ private fun CaptureGallery(
                     } finally {
                         bitmap.recycle()
                     }
+                    completedImages = captureIndex + 1
+                    progressNotification?.show(completedImages, frames.size)
                     if (captureIndex == frames.lastIndex) {
+                        currentCoroutineContext().ensureActive()
                         gallery = withContext(NzikDispatchers.DATA) {
-                            previewCaptureFiles.withLock { publishCapture(working, output, staging) }
+                            previewCaptureFiles.withLock {
+                                currentCoroutineContext().ensureActive()
+                                publishCapture(working, output, staging)
+                            }
                         }
                         player.pause()
                         progressNotification?.cancel()
                         onCaptured?.invoke(gallery.values.toList())
-                        frameIndex = -1
+                        if (onCaptured == null) frameIndex = -1
                     } else {
                         frameIndex++
                     }
                 } catch (cancelled: CancellationException) {
                     if (onCaptured != null) withContext(NonCancellable + NzikDispatchers.DATA) {
-                        working.deleteRecursively()
-                        output.deleteRecursively()
+                        previewCaptureFiles.withLock {
+                            working.deleteRecursively()
+                            // This unique submission has no caller-owned result after cancellation.
+                            output.deleteRecursively()
+                        }
                     }
                     throw cancelled
                 } catch (error: Exception) {
@@ -510,17 +546,16 @@ private fun CaptureGallery(
             }
         }
     } else {
-        CompositionLocalProvider(LocalAppearance provides normal.appearance) {
-            GalleryActions(
-                gallery,
-                failed,
-                onGenerate = {
-                    failed = null
-                    frameIndex = 0
-                },
-                onReplace = { target, file -> gallery = gallery + (target to file) },
-            )
-        }
+        GalleryActions(
+            if (onCaptured == null) gallery else emptyMap(),
+            failed,
+            onGenerate = {
+                failed = null
+                completedImages = 0
+                frameIndex = 0
+            },
+            onReplace = { target, file -> gallery = gallery + (target to file) },
+        )
     }
 }
 
@@ -759,7 +794,7 @@ private fun publishCapture(staging: File, output: File, frames: Map<CaptureFrame
 }
 
 @Composable
-private fun GalleryActions(
+internal fun GalleryActions(
     gallery: Map<CaptureFrame, File>,
     failed: CaptureFrame?,
     onGenerate: () -> Unit,
@@ -838,7 +873,7 @@ private fun GalleryActions(
                 title = stringResource(R.string.theme_store_preview_section),
                 icon = R.drawable.color_palette,
                 content = {
-                    UiButton(onClick = onGenerate) { PreviewText(stringResource(R.string.theme_preview_generate)) }
+                    ButtonRow(listOf(DialogButton(stringResource(R.string.theme_preview_generate), onGenerate)))
                     if (failed != null) PreviewText(stringResource(R.string.theme_preview_scene_failed, failed.name))
                     if (replacementFailed) PreviewText(stringResource(R.string.theme_preview_replacement_failed))
                 },
@@ -855,11 +890,11 @@ private fun GalleryActions(
             Column(Modifier.padding(horizontal = 16.dp)) {
                 PreviewText(target.name)
                 bitmap?.let { Image(it.asImageBitmap(), target.name, Modifier.fillMaxWidth().height(260.dp)) }
-                UiButton(onClick = {
+                ButtonRow(listOf(DialogButton(stringResource(R.string.theme_preview_replace), {
                     replacementFailed = false
                     replacement = target
                     picker.launch("image/*")
-                }) { PreviewText(stringResource(R.string.theme_preview_replace)) }
+                })))
             }
         }
     }

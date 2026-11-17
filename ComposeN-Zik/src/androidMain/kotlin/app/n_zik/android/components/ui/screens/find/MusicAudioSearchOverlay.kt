@@ -471,7 +471,6 @@ private fun RecognizedTrackCard(
                             InlineCircularLoader(
                                 modifier = Modifier.size(18.dp),
                                 color = colorPalette().onAccent,
-                                strokeWidth = 2.dp
                             )
                         } else {
                             androidx.compose.material3.Icon(

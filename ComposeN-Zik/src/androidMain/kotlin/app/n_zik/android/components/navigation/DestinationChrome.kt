@@ -3,9 +3,14 @@ package app.n_zik.android.components.navigation
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -16,6 +21,7 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDeepLink
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.LocalPlayerAwareWindowInsets
@@ -55,7 +61,12 @@ private fun DestinationChromeInsets(route: String?, content: @Composable () -> U
     val ownsTopInset = ownsInsets || (hasSideHeader && sidePageOwnsTopInset(route))
     val headerInset = LocalAppHeaderContentInset.current
     val headerOverlayInset = LocalAppHeaderOverlayInset.current
-    val playerInsets = LocalPlayerAwareWindowInsets.current
+    val inheritedPlayerInsets = LocalPlayerAwareWindowInsets.current
+    // The hidden sheet keeps its playback state; this rendered page needs only system clearance.
+    val playerInsets = if (route == NavRoutes.updater.name) {
+        inheritedPlayerInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+            .add(WindowInsets.systemBars.union(WindowInsets.displayCutout).only(WindowInsetsSides.Bottom))
+    } else inheritedPlayerInsets
     val density = LocalDensity.current
     val left = if (hasSideHeader && position == NavigationBarPosition.Left) Dimensions.navigationRailWidth else 0.dp
     val right = if (hasSideHeader && position == NavigationBarPosition.Right) Dimensions.navigationRailWidth else 0.dp

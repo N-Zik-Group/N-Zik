@@ -704,7 +704,6 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                                         Spacer(modifier = Modifier.width(4.dp))
                                         InlineCircularLoader(
                                             modifier = Modifier.size(12.dp),
-                                            strokeWidth = 1.5.dp,
                                             color = colorPalette().textSecondary
                                         )
                                     } else if (recommendationCount > 0) {
