@@ -244,6 +244,7 @@
     <string name="playlist_right_swipe">Glisare la dreapta în playlist</string>
     <string name="playlist_selection_action_deselect">Deselectează</string>
     <string name="playlist_shuffle_positions_confirmation">Vrei cu adevărat să amesteci pozițiile melodiilor în acest playlist?</string>
+    <string name="playlist_contains_song">Deja în această listă de redare</string>
     <string name="playlist_song_already_present">Melodia este prezentă într-una dintre playlisturi</string>
     <string name="playlist_top">Top Playlisturi</string>
     <string name="playlist_top_maximum_items_description">Limitează câte melodii sunt incluse în lista ta de redare.</string>
@@ -408,4 +409,10 @@
     <string name="artist_more_from_format">Mai multe de la %1$s</string>
     <string name="playlist_top_show_title_format">Arată %1$s</string>
     <string name="library_on_device_no_local_playlists">Nu există liste locale de redare. Creați o listă de redare sau adăugați o melodie la o listă nouă de redare de pe dispozitiv.</string>
+    <string name="playlist_import_youtube_link_hint">https://youtube.com/playlist?list=...</string>
+    <string name="search_youtube_open_url_example">https://....</string>
+    <string name="album_year_and_song_summary">%1$s • %2$s</string>
+    <string name="search_home_online_action">Căutare online</string>
+    <string name="search_home_library_action">Caută în bibliotecă</string>
+    <string name="song_matching_result_title_and_artist">%1$s - %2$s</string>
 </resources>

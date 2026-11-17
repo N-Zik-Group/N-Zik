@@ -398,6 +398,9 @@
     <string name="settings_player_timeline_label">Cronologia</string>
     <string name="settings_player_timeline_size_label">Dimensione Della Timeline Del Player</string>
     <string name="settings_player_timeline_transparent_label">Barra Della Timeline Trasparente</string>
+    <string name="settings_player_opening_mode_label">Modalità apertura lettore</string>
+    <string name="settings_player_opening_mode_description">Scegli la modalità da usare quando apri il giocatore.</string>
+    <string name="settings_player_opening_mode_remember_last">Ricorda l\'ultima modalità</string>
     <string name="settings_player_top_action_bar_visible_label">Mostra barra delle azioni in alto</string>
     <string name="settings_player_vertical_swipe_expansion_description">Influisce solo quando il lettore ampliato è disabilitato</string>
     <string name="settings_preference_saved_message">Preferenze Salvate</string>
@@ -501,4 +504,5 @@
     <string name="settings_local_music_summary_title">Riepilogo librerie On-device</string>
     <string name="settings_local_music_summary_description">Vedi la musica e le cartelle rilevate per questo profilo.</string>
     <string name="settings_local_music_summary_count">%1$s: %2$d</string>
+    <string name="settings_local_music_start_folder_path_example">Musica/Live</string>
 </resources>

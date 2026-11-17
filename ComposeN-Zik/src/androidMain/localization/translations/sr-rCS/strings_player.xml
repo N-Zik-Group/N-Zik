@@ -397,4 +397,17 @@
     <string name="audio_output_usb_audio_label">USB audio</string>
     <string name="audio_output_external_speaker_label">External speaker</string>
     <string name="audio_output_load_failed">Failed to load devices: %1$s</string>
+    <string name="player_audio_mode">Audio</string>
+    <string name="player_video_mode">Video</string>
+    <string name="player_video_fullscreen">Enter fullscreen</string>
+    <string name="player_video_exit_fullscreen">Exit fullscreen</string>
+    <string name="player_video_unavailable">Couldn’t find a video</string>
+    <string name="player_video_search_manually">Search manually</string>
+    <string name="player_video_play">Play</string>
+    <string name="player_video_pause">Pause</string>
+    <string name="player_statistics_kilobits_per_second">%1$d kbps</string>
+    <string name="player_statistics_kilohertz">%1$d kHz</string>
+    <string name="player_statistics_field_value">%1$s: %2$s</string>
+    <string name="audio_output_devices_unavailable">Could not load audio devices.</string>
+    <string name="visualizer_position_format">%1$d/%2$d</string>
 </resources>

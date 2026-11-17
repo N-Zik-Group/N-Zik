@@ -318,4 +318,5 @@
     <string name="listen_together_log_level_error">Chyba</string>
     <string name="listen_together_log_level_info">Info</string>
     <string name="listen_together_log_level_warning">Varování</string>
+    <string name="network_proxy_mode_direct">PŘÍMÉ</string>
 </resources>

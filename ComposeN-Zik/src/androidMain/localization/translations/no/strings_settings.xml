@@ -398,6 +398,9 @@
     <string name="settings_player_timeline_label">Tidslinje</string>
     <string name="settings_player_timeline_size_label">Størrelse på spillerens tidslinje</string>
     <string name="settings_player_timeline_transparent_label">Gjennomsiktig Tidslinje</string>
+    <string name="settings_player_opening_mode_label">Avspiller Åpningsmodus</string>
+    <string name="settings_player_opening_mode_description">Velg modus du vil bruke når du åpner spilleren.</string>
+    <string name="settings_player_opening_mode_remember_last">Husk siste modus</string>
     <string name="settings_player_top_action_bar_visible_label">Vis øverste handlingslinje</string>
     <string name="settings_player_vertical_swipe_expansion_description">Det påvirker bare når Expanded Player er av</string>
     <string name="settings_preference_saved_message">Preferanse lagret</string>
@@ -501,4 +504,5 @@
     <string name="settings_local_music_summary_title">Sammendrag av brukerbibliotek</string>
     <string name="settings_local_music_summary_description">Se oppdagede musikk og mapper for denne profilen.</string>
     <string name="settings_local_music_summary_count">%1$s: %2$d</string>
+    <string name="settings_local_music_start_folder_path_example">Musikk/produksjonsmiljø</string>
 </resources>

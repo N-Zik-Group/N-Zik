@@ -398,6 +398,9 @@
     <string name="settings_player_timeline_label">الخط</string>
     <string name="settings_player_timeline_size_label">حجم الخط الزمني للاعب</string>
     <string name="settings_player_timeline_transparent_label">شريط زمني شفاف</string>
+    <string name="settings_player_opening_mode_label">وضع فتح اللاعب</string>
+    <string name="settings_player_opening_mode_description">اختر الوضع المراد استخدامه عند فتح اللاعب.</string>
+    <string name="settings_player_opening_mode_remember_last">تذكر الوضع الأخير</string>
     <string name="settings_player_top_action_bar_visible_label">إظهار شريط الإجراءات العليا</string>
     <string name="settings_player_vertical_swipe_expansion_description">يؤثر فقط عند إيقاف تشغيل اللاعب الموسع</string>
     <string name="settings_preference_saved_message">تم حفظ التفضيل</string>
@@ -501,4 +504,5 @@
     <string name="settings_local_music_summary_title">ملخص مكتبة على الجهاز</string>
     <string name="settings_local_music_summary_description">شاهد الموسيقى والمجلدات المكتشفة لهذا الملف الشخصي.</string>
     <string name="settings_local_music_summary_count">%1$s: %2$d</string>
+    <string name="settings_local_music_start_folder_path_example">الموسيقى/الفتحة</string>
 </resources>

@@ -398,6 +398,9 @@
     <string name="settings_player_timeline_label">时间线</string>
     <string name="settings_player_timeline_size_label">播放器时间线大小</string>
     <string name="settings_player_timeline_transparent_label">透明时间线</string>
+    <string name="settings_player_opening_mode_label">播放器打开模式</string>
+    <string name="settings_player_opening_mode_description">选择打开玩家时使用的模式。</string>
+    <string name="settings_player_opening_mode_remember_last">记住最后一个模式</string>
     <string name="settings_player_top_action_bar_visible_label">显示顶栏</string>
     <string name="settings_player_vertical_swipe_expansion_description">仅当扩展播放器关闭时才会影响</string>
     <string name="settings_preference_saved_message">首选项已保存</string>
@@ -501,4 +504,5 @@
     <string name="settings_local_music_summary_title">设备上的书库摘要</string>
     <string name="settings_local_music_summary_description">查看检测到的音乐和文件夹。</string>
     <string name="settings_local_music_summary_count">%1$s： %2$d</string>
+    <string name="settings_local_music_start_folder_path_example">音乐/歌词</string>
 </resources>

@@ -397,4 +397,17 @@
     <string name="audio_output_usb_audio_label">Звук USB</string>
     <string name="audio_output_external_speaker_label">Зовнішній динамік</string>
     <string name="audio_output_load_failed">Не вдалося завантажити пристрої: %1$s</string>
+    <string name="player_audio_mode">Аудіо</string>
+    <string name="player_video_mode">Відео</string>
+    <string name="player_video_fullscreen">Повноекранний режим</string>
+    <string name="player_video_exit_fullscreen">Вийти з повноекранного режиму</string>
+    <string name="player_video_unavailable">Відео не знайдено</string>
+    <string name="player_video_search_manually">Пошук вручну</string>
+    <string name="player_video_play">Відтворити</string>
+    <string name="player_video_pause">Пауза</string>
+    <string name="player_statistics_kilobits_per_second">%1$d Кбіт/с</string>
+    <string name="player_statistics_kilohertz">%1$d kHz</string>
+    <string name="player_statistics_field_value">%1$s: %2$s</string>
+    <string name="audio_output_devices_unavailable">Не вдалося завантажити аудіо пристрої.</string>
+    <string name="visualizer_position_format">%1$d/%2$d</string>
 </resources>

@@ -398,6 +398,9 @@
     <string name="settings_player_timeline_label">Časová osa</string>
     <string name="settings_player_timeline_size_label">Velikost časové osy přehrávače</string>
     <string name="settings_player_timeline_transparent_label">Průhledná lišta časové osy</string>
+    <string name="settings_player_opening_mode_label">Režim otevírání přehrávače</string>
+    <string name="settings_player_opening_mode_description">Vyberte režim, který chcete použít, když otevřete hráče.</string>
+    <string name="settings_player_opening_mode_remember_last">Zapamatovat poslední režim</string>
     <string name="settings_player_top_action_bar_visible_label">Zobrazit horní panel akcí</string>
     <string name="settings_player_vertical_swipe_expansion_description">Týká se pouze když je vypnutý rozšířený přehrávač</string>
     <string name="settings_preference_saved_message">Nastavení uloženo</string>
@@ -501,4 +504,5 @@
     <string name="settings_local_music_summary_title">Shrnutí knihovny v zařízení</string>
     <string name="settings_local_music_summary_description">Zobrazit detekovanou hudbu a složky pro tento profil.</string>
     <string name="settings_local_music_summary_count">%1$s: %2$d</string>
+    <string name="settings_local_music_start_folder_path_example">Hudba/Živé</string>
 </resources>

@@ -278,4 +278,6 @@
     <string name="statistics_title">Statistiky</string>
     <string name="statistics_top_period_title">Top %s z …</string>
     <string name="statistics_time_spent_format">%1$s strávený čas</string>
+    <string name="rewind_intro_display_name">%1$s,</string>
+    <string name="rewind_deep_cuts_play_multiplier">%1$s×</string>
 </resources>

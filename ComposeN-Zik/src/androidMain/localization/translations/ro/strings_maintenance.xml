@@ -328,4 +328,14 @@
     <string name="recovery_theme_backup_operation_failed">Operatia de backup a temei nu a putut fi finalizata.</string>
     <string name="recovery_theme_backup_restore_action">Restaurare teme</string>
     <string name="recovery_theme_backup_restore_description">Deschide ultima copie de rezervă a temei utilizată pentru acest profil.</string>
+    <string name="updates_status_and_last_check">%1$s · %2$s</string>
+    <string name="recovery_action_failed">Acțiunea de recuperare nu a putut fi finalizată.</string>
+    <string name="recovery_reopen_after_restoring_settings">Redeschide centrul de salvare după restaurarea setărilor.</string>
+    <string name="recovery_settings_file_empty">Fișierul de setări este gol.</string>
+    <string name="recovery_profile_changed_during_import">Profilul selectat s-a schimbat în timpul importării setărilor. Selectați din nou și încercați din nou.</string>
+    <string name="recovery_no_importable_settings">Fișierul nu conține setări care pot fi importate.</string>
+    <string name="recovery_finish_pending_profile_operation">Finalizează resetarea profilului în așteptare sau restaurează mai întâi.</string>
+    <string name="recovery_no_database_to_reset">Nu există nici o bază de date de resetat.</string>
+    <string name="updates_current_version_format">v%1$s</string>
+    <string name="updates_version_and_status">%1$s • %2$s</string>
 </resources>

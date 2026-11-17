@@ -398,6 +398,9 @@
     <string name="settings_player_timeline_label">Γραμμή χρόνου</string>
     <string name="settings_player_timeline_size_label">Μέγεθος Χρονοδιαγράμματος Παίκτη</string>
     <string name="settings_player_timeline_transparent_label">Διαφανής Γραμμή Χρονοδιαγράμματος</string>
+    <string name="settings_player_opening_mode_label">Λειτουργία ανοίγματος παίκτη</string>
+    <string name="settings_player_opening_mode_description">Επιλέξτε τη λειτουργία που θα χρησιμοποιείται όταν ανοίγετε τον παίκτη.</string>
+    <string name="settings_player_opening_mode_remember_last">Απομνημόνευση τελευταίας λειτουργίας</string>
     <string name="settings_player_top_action_bar_visible_label">Εμφάνιση γραμμής ενεργειών</string>
     <string name="settings_player_vertical_swipe_expansion_description">Επηρεάζει μόνο όταν ο Εκτεταμένος Παίκτης είναι απενεργοποιημένος</string>
     <string name="settings_preference_saved_message">Η Προτίμηση Αποθηκεύτηκε</string>
@@ -501,4 +504,5 @@
     <string name="settings_local_music_summary_title">Περίληψη βιβλιοθήκης συσκευής</string>
     <string name="settings_local_music_summary_description">Δείτε την ανίχνευση μουσικής και φακέλων για αυτό το προφίλ.</string>
     <string name="settings_local_music_summary_count">%1$s: %2$d</string>
+    <string name="settings_local_music_start_folder_path_example">Μουσική/Ζωντανή</string>
 </resources>

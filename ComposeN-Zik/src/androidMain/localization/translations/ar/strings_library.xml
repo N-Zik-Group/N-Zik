@@ -244,6 +244,7 @@
     <string name="playlist_right_swipe">قائمة التشغيل التمرير الأيمن</string>
     <string name="playlist_selection_action_deselect">إلغاء التحديد</string>
     <string name="playlist_shuffle_positions_confirmation">Do you really want to renumbering positions in this playlist?</string>
+    <string name="playlist_contains_song">بالفعل في قائمة التشغيل هذه</string>
     <string name="playlist_song_already_present">الأغنية موجودة في إحدى قوائم التشغيل</string>
     <string name="playlist_top">Playlist Top</string>
     <string name="playlist_top_maximum_items_description">الحد من عدد الأغاني المدرجة في قائمة التشغيل العليا الخاصة بك.</string>
@@ -408,4 +409,10 @@
     <string name="artist_more_from_format">المزيد من %1$s</string>
     <string name="playlist_top_show_title_format">إظهار %1$s</string>
     <string name="library_on_device_no_local_playlists">لا توجد قوائم تشغيل محلية. أنشئ قائمة تشغيل أو أضف أغنية إلى قائمة تشغيل جديدة من الجهاز.</string>
+    <string name="playlist_import_youtube_link_hint">https://youtube.com/playlist?list=...</string>
+    <string name="search_youtube_open_url_example">https://......</string>
+    <string name="album_year_and_song_summary">%1$s • %2$s</string>
+    <string name="search_home_online_action">البحث عبر الإنترنت</string>
+    <string name="search_home_library_action">البحث في المكتبة</string>
+    <string name="song_matching_result_title_and_artist">%1$s - %2$s</string>
 </resources>

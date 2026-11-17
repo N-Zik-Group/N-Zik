@@ -244,6 +244,7 @@
     <string name="playlist_right_swipe">播放列表 右滑动</string>
     <string name="playlist_selection_action_deselect">取消选择</string>
     <string name="playlist_shuffle_positions_confirmation">你真的要重新排列播放列表中的位置吗?</string>
+    <string name="playlist_contains_song">已经在这个播放列表</string>
     <string name="playlist_song_already_present">歌曲已存在于一个播放列表中</string>
     <string name="playlist_top">播放列表顶部</string>
     <string name="playlist_top_maximum_items_description">限制播放列表中包含多少首歌曲。</string>
@@ -408,4 +409,10 @@
     <string name="artist_more_from_format">更多来自 %1$s</string>
     <string name="playlist_top_show_title_format">显示 %1$s</string>
     <string name="library_on_device_no_local_playlists">没有本地播放列表。在设备上创建播放列表或添加歌曲到新播放列表。</string>
+    <string name="playlist_import_youtube_link_hint">https://youtube.com/playlist?list=...</string>
+    <string name="search_youtube_open_url_example">https://........</string>
+    <string name="album_year_and_song_summary">%1$s • %2$s</string>
+    <string name="search_home_online_action">在线搜索</string>
+    <string name="search_home_library_action">搜索库</string>
+    <string name="song_matching_result_title_and_artist">%1$s - %2$s</string>
 </resources>

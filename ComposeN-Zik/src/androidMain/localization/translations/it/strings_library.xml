@@ -244,6 +244,7 @@
     <string name="playlist_right_swipe">Scorrimento a destra nella playlist</string>
     <string name="playlist_selection_action_deselect">Deseleziona</string>
     <string name="playlist_shuffle_positions_confirmation">Vuoi davvero mischiare le posizioni dei brani in questa playlist?</string>
+    <string name="playlist_contains_song">Già in questa playlist</string>
     <string name="playlist_song_already_present">Il brano è presente in una delle Playlist</string>
     <string name="playlist_top">Scaletta Superiore</string>
     <string name="playlist_top_maximum_items_description">Limita quante canzoni sono incluse nella tua playlist riprodotta.</string>
@@ -408,4 +409,10 @@
     <string name="artist_more_from_format">Altro da %1$s</string>
     <string name="playlist_top_show_title_format">Mostra %1$s</string>
     <string name="library_on_device_no_local_playlists">Nessuna playlist locale. Crea una playlist o aggiungi una canzone a una nuova playlist da On device.</string>
+    <string name="playlist_import_youtube_link_hint">https://youtube.com/playlist?list=...</string>
+    <string name="search_youtube_open_url_example">https://........</string>
+    <string name="album_year_and_song_summary">%1$s • %2$s</string>
+    <string name="search_home_online_action">Cerca Online</string>
+    <string name="search_home_library_action">Cerca Libreria</string>
+    <string name="song_matching_result_title_and_artist">%1$s - %2$s</string>
 </resources>

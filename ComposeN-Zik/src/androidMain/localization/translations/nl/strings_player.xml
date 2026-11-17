@@ -397,4 +397,17 @@
     <string name="audio_output_usb_audio_label">USB audio</string>
     <string name="audio_output_external_speaker_label">Externe spreker</string>
     <string name="audio_output_load_failed">Fout bij het laden van apparaten: %1$s</string>
+    <string name="player_audio_mode">Geluid</string>
+    <string name="player_video_mode">Video</string>
+    <string name="player_video_fullscreen">Volledig scherm openen</string>
+    <string name="player_video_exit_fullscreen">Volledig scherm afsluiten</string>
+    <string name="player_video_unavailable">Kon geen video vinden</string>
+    <string name="player_video_search_manually">Handmatig zoeken</string>
+    <string name="player_video_play">Afspelen</string>
+    <string name="player_video_pause">Onderbreken</string>
+    <string name="player_statistics_kilobits_per_second">%1$d kbps</string>
+    <string name="player_statistics_kilohertz">%1$d kHz</string>
+    <string name="player_statistics_field_value">%1$s: %2$s</string>
+    <string name="audio_output_devices_unavailable">Audio-apparaten kunnen niet worden geladen.</string>
+    <string name="visualizer_position_format">%1$d/%2$d</string>
 </resources>

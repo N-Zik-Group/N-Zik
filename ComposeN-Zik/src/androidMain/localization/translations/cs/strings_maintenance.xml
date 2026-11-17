@@ -328,4 +328,14 @@
     <string name="recovery_theme_backup_operation_failed">Nelze dokončit operaci zálohování šablony.</string>
     <string name="recovery_theme_backup_restore_action">Obnovit motivy</string>
     <string name="recovery_theme_backup_restore_description">Otevřete poslední zálohu šablony použité pro tento profil.</string>
+    <string name="updates_status_and_last_check">%1$s · %2$s</string>
+    <string name="recovery_action_failed">Nelze dokončit proces obnovení.</string>
+    <string name="recovery_reopen_after_restoring_settings">Znovu otevřete Záchranné centrum po obnovení nastavení.</string>
+    <string name="recovery_settings_file_empty">Soubor s nastavením je prázdný.</string>
+    <string name="recovery_profile_changed_during_import">Vybraný profil byl změněn během importu nastavení. Vyberte jej znovu a zkuste to znovu.</string>
+    <string name="recovery_no_importable_settings">Soubor neobsahuje žádná nastavení, která by mohla být importována.</string>
+    <string name="recovery_finish_pending_profile_operation">Nejdříve dokončete obnovení nebo obnovení profilu.</string>
+    <string name="recovery_no_database_to_reset">Neexistuje žádná databáze k obnovení.</string>
+    <string name="updates_current_version_format">v%1$s</string>
+    <string name="updates_version_and_status">%1$s • %2$s</string>
 </resources>

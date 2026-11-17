@@ -244,6 +244,7 @@
     <string name="playlist_right_swipe">Playlist přejetím vpravo</string>
     <string name="playlist_selection_action_deselect">Odznačit</string>
     <string name="playlist_shuffle_positions_confirmation">Opravdu chcete přečíslovat pozice v tomto playlistu?</string>
+    <string name="playlist_contains_song">Již v tomto seznamu skladeb</string>
     <string name="playlist_song_already_present">Skladba je přítomna v jednom z playlistů</string>
     <string name="playlist_top">Top playlist</string>
     <string name="playlist_top_maximum_items_description">Omezit, kolik skladeb je zahrnuto v horním seznamu skladeb.</string>
@@ -408,4 +409,10 @@
     <string name="artist_more_from_format">Více z %1$s</string>
     <string name="playlist_top_show_title_format">Zobrazit %1$s</string>
     <string name="library_on_device_no_local_playlists">Žádné místní seznamy skladeb. Vytvořte seznam skladeb nebo přidejte skladbu do nového seznamu skladeb z zařízení.</string>
+    <string name="playlist_import_youtube_link_hint">https://youtube.com/playlist?list=...</string>
+    <string name="search_youtube_open_url_example">https://....</string>
+    <string name="album_year_and_song_summary">%1$s • %2$s</string>
+    <string name="search_home_online_action">Hledat online</string>
+    <string name="search_home_library_action">Hledat knihovnu</string>
+    <string name="song_matching_result_title_and_artist">%1$s - %2$s</string>
 </resources>

@@ -328,4 +328,14 @@
     <string name="recovery_theme_backup_operation_failed">Teeman varmuuskopiointia ei voitu suorittaa.</string>
     <string name="recovery_theme_backup_restore_action">Palauta teemat</string>
     <string name="recovery_theme_backup_restore_description">Avaa viimeinen tähän profiiliin käytetty teeman varmuuskopio.</string>
+    <string name="updates_status_and_last_check">%1$s · %2$s</string>
+    <string name="recovery_action_failed">Palautustoimintoa ei voitu suorittaa loppuun.</string>
+    <string name="recovery_reopen_after_restoring_settings">Avaa Pelastuskeskus uudelleen asetusten palauttamisen jälkeen.</string>
+    <string name="recovery_settings_file_empty">Asetustiedosto on tyhjä.</string>
+    <string name="recovery_profile_changed_during_import">Valittu profiili muuttui asetusten tuonnin aikana. Valitse se uudelleen ja yritä uudelleen.</string>
+    <string name="recovery_no_importable_settings">Tiedosto ei sisällä asetuksia, joita voidaan tuoda.</string>
+    <string name="recovery_finish_pending_profile_operation">Viimeistele odottavan profiilin nollaus tai palautus ensin.</string>
+    <string name="recovery_no_database_to_reset">Ei ole tietokantaa nollata.</string>
+    <string name="updates_current_version_format">v%1$s</string>
+    <string name="updates_version_and_status">%1$s • %2$s</string>
 </resources>

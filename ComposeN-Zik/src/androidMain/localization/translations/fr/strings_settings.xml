@@ -399,6 +399,9 @@ Volume BAS : titre précédent</string>
     <string name="settings_player_timeline_label">Barre de navigation</string>
     <string name="settings_player_timeline_size_label">Taille de la chronologie du lecteur</string>
     <string name="settings_player_timeline_transparent_label">Barre de chronologie transparente</string>
+    <string name="settings_player_opening_mode_label">Mode d\'ouverture du lecteur</string>
+    <string name="settings_player_opening_mode_description">Choisissez le mode à utiliser lorsque vous ouvrez le lecteur.</string>
+    <string name="settings_player_opening_mode_remember_last">Se souvenir du dernier mode</string>
     <string name="settings_player_top_action_bar_visible_label">Afficher la barre d\'actions supérieure</string>
     <string name="settings_player_vertical_swipe_expansion_description">Cela n\'affecte que lorsque le lecteur étendu est désactivé</string>
     <string name="settings_preference_saved_message">Préférence enregistrée</string>
@@ -502,4 +505,5 @@ Volume BAS : titre précédent</string>
     <string name="settings_local_music_summary_title">Résumé des bibliothèques intégrées à l\'appareil</string>
     <string name="settings_local_music_summary_description">Afficher la musique et les dossiers détectés pour ce profil.</string>
     <string name="settings_local_music_summary_count">%1$s : %2$d</string>
+    <string name="settings_local_music_start_folder_path_example">Musique/Live</string>
 </resources>

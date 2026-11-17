@@ -244,6 +244,7 @@
     <string name="playlist_right_swipe">Spellista höger svep</string>
     <string name="playlist_selection_action_deselect">Avmarkera</string>
     <string name="playlist_shuffle_positions_confirmation">Vill du verkligen blanda låtpositioner i den här spellistan?</string>
+    <string name="playlist_contains_song">Redan i denna spellista</string>
     <string name="playlist_song_already_present">Låten finns i en av spellistorna</string>
     <string name="playlist_top">Topplista</string>
     <string name="playlist_top_maximum_items_description">Begränsa hur många låtar som ingår i din toppuppspelade spellista.</string>
@@ -408,4 +409,10 @@
     <string name="artist_more_from_format">Mer från %1$s</string>
     <string name="playlist_top_show_title_format">Visa %1$s</string>
     <string name="library_on_device_no_local_playlists">Inga lokala spellistor. Skapa en spellista eller lägg till en låt till en ny spellista från På enhet.</string>
+    <string name="playlist_import_youtube_link_hint">https://youtube.com/playlist?list=...</string>
+    <string name="search_youtube_open_url_example">https://........</string>
+    <string name="album_year_and_song_summary">%1$s • %2$s</string>
+    <string name="search_home_online_action">Sök online</string>
+    <string name="search_home_library_action">Sök i bibliotek</string>
+    <string name="song_matching_result_title_and_artist">%1$s - %2$s</string>
 </resources>

@@ -397,4 +397,17 @@
     <string name="audio_output_usb_audio_label">USB 音频</string>
     <string name="audio_output_external_speaker_label">外部扬声器</string>
     <string name="audio_output_load_failed">加载设备失败: %1$s</string>
+    <string name="player_audio_mode">音频</string>
+    <string name="player_video_mode">视频</string>
+    <string name="player_video_fullscreen">输入全屏</string>
+    <string name="player_video_exit_fullscreen">退出全屏</string>
+    <string name="player_video_unavailable">找不到视频</string>
+    <string name="player_video_search_manually">手动搜索</string>
+    <string name="player_video_play">播放</string>
+    <string name="player_video_pause">暂停</string>
+    <string name="player_statistics_kilobits_per_second">%1$d kbps</string>
+    <string name="player_statistics_kilohertz">%1$d kHz</string>
+    <string name="player_statistics_field_value">%1$s: %2$s</string>
+    <string name="audio_output_devices_unavailable">无法加载音频设备。</string>
+    <string name="visualizer_position_format">%1$d/%2$d</string>
 </resources>

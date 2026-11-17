@@ -397,4 +397,17 @@
     <string name="audio_output_usb_audio_label">Audio USB</string>
     <string name="audio_output_external_speaker_label">Difuzor extern</string>
     <string name="audio_output_load_failed">Eroare la încărcarea dispozitivelor: %1$s</string>
+    <string name="player_audio_mode">Audio</string>
+    <string name="player_video_mode">Video</string>
+    <string name="player_video_fullscreen">Introduceți tot ecranul</string>
+    <string name="player_video_exit_fullscreen">Ieșiți din ecran complet</string>
+    <string name="player_video_unavailable">Nu s-a găsit niciun videoclip</string>
+    <string name="player_video_search_manually">Căutare manuală</string>
+    <string name="player_video_play">Redare</string>
+    <string name="player_video_pause">Întrerupeți</string>
+    <string name="player_statistics_kilobits_per_second">%1$d kbps</string>
+    <string name="player_statistics_kilohertz">%1$d kHz</string>
+    <string name="player_statistics_field_value">%1$s: %2$s</string>
+    <string name="audio_output_devices_unavailable">Nu s-au putut încărca dispozitivele audio.</string>
+    <string name="visualizer_position_format">%1$d/%2$d</string>
 </resources>

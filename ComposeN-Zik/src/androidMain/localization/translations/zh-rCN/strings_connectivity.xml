@@ -318,4 +318,5 @@
     <string name="listen_together_log_level_error">错误</string>
     <string name="listen_together_log_level_info">信息</string>
     <string name="listen_together_log_level_warning">警告</string>
+    <string name="network_proxy_mode_direct">研发器</string>
 </resources>

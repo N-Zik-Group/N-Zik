@@ -318,4 +318,5 @@
     <string name="listen_together_log_level_error">خطأ</string>
     <string name="listen_together_log_level_info">معلومات</string>
     <string name="listen_together_log_level_warning">تحذير</string>
+    <string name="network_proxy_mode_direct">مدير</string>
 </resources>

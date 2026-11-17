@@ -318,4 +318,5 @@
     <string name="listen_together_log_level_error">Feil</string>
     <string name="listen_together_log_level_info">Informasjon</string>
     <string name="listen_together_log_level_warning">Advarsel</string>
+    <string name="network_proxy_mode_direct">DIREKTE</string>
 </resources>

@@ -328,4 +328,14 @@
     <string name="recovery_theme_backup_operation_failed">Tema yedekleme işlemi tamamlanamadı.</string>
     <string name="recovery_theme_backup_restore_action">Temaların geri yükle</string>
     <string name="recovery_theme_backup_restore_description">Bu profil için kullanılan en son tema yedeğini açın.</string>
+    <string name="updates_status_and_last_check">%1$s · %2$s</string>
+    <string name="recovery_action_failed">Could not complete the recovery action.</string>
+    <string name="recovery_reopen_after_restoring_settings">Reopen the Rescue Center after restoring settings.</string>
+    <string name="recovery_settings_file_empty">The settings file is empty.</string>
+    <string name="recovery_profile_changed_during_import">The selected profile changed during settings import. Select it again and retry.</string>
+    <string name="recovery_no_importable_settings">The file contains no settings that can be imported.</string>
+    <string name="recovery_finish_pending_profile_operation">Finish the pending profile reset or restore first.</string>
+    <string name="recovery_no_database_to_reset">There is no database to reset.</string>
+    <string name="updates_current_version_format">v%1$s</string>
+    <string name="updates_version_and_status">%1$s • %2$s</string>
 </resources>
