@@ -1,0 +1,10 @@
+Fixed:
+- fix(theme-store): require a published creator profile before publishing themes
+  - ThemeStoreScreen and ThemeSubmissionDialog block online Publish until the signed-in numeric GitHub account has a published creator profile; local theme creation remains available.
+  - CreatorGitHubPublisher checks the current upstream creator index before creating or modifying a fork or pull request, and fails closed for unavailable or invalid catalog responses.
+  - Added a clear publication prerequisite message and regression coverage for missing profiles, different account IDs, renamed logins and catalog failures; 26 targeted Android tests and assembleDebug passed.
+- fix(theme-store): automate fork catalog scans and wait for creator publication (https://github.com/N-Zik-Group/N-Zik-Theme-Store/commit/4c7e7eaa420f15489364db7c5383ece6ceb58b72)
+  - Fork PR scans run without manual workflow approval using trusted base-branch validators, dependencies and schemas, with read-only permissions and isolated catalog data extraction.
+  - Catalog validation and bot acceptance require a published creator profile. An accepted theme waits for its profile, then resumes the original approved revision after profile publication.
+  - Changes to the approved theme, refusal, bans or revoked acceptance invalidate the waiting approval and require a fresh review. Profile merges through the bot or GitHub are supported.
+  - Verified 144 Store tests, real GitHub rejection of invalid catalog data, successful automatic scans of valid data, and isolated live profile/theme publication ordering.

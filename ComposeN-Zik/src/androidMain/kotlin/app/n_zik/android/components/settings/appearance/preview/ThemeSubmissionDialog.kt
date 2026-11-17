@@ -174,6 +174,18 @@ internal fun ThemeSubmissionPage(navController: NavController, miniPlayer: @Comp
         }
     }
     val ownId = if (localOnly) null else signedInCreatorId()
+    var creatorRetry by remember(themeId) { mutableIntStateOf(0) }
+    val publishedCreator by produceState<Result<Boolean>?>(null, catalog, ownId, creatorRetry) {
+        value = null
+        value = if (localOnly) Result.success(true) else try {
+            Result.success(catalog.creators().any { it.githubId == ownId })
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            timber.log.Timber.tag("ThemeStore").w(error, "Could not verify published creator profile")
+            Result.failure(error)
+        }
+    }
     val existing = localTheme?.theme ?: published.orEmpty().filter {
         it.themeId == themeId && it.author.githubId == ownId
     }.maxByOrNull(StoreTheme::revision)
@@ -203,8 +215,17 @@ internal fun ThemeSubmissionPage(navController: NavController, miniPlayer: @Comp
         val padding = rememberPageChromeContentPadding(PaddingValues(top = 12.dp))
         val loaded = published
         val initial = publishedAppearance
-        if (loaded == null || (!localOnly && existing != null && initial == null)) {
+        if (loaded == null || publishedCreator == null || (!localOnly && existing != null && initial == null)) {
             FullPageLoader(modifier = Modifier.fillMaxSize().padding(padding))
+        } else if (!localOnly && themeId == "new" && publishedCreator?.getOrNull() != true) {
+            Column(Modifier.fillMaxSize().padding(padding),
+                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                SettingsDescription(stringResource(if (publishedCreator?.isFailure == true)
+                    R.string.theme_store_catalog_unavailable else R.string.theme_store_published_creator_required))
+                PageButton(onClick = { creatorRetry++ }) {
+                    Text(stringResource(R.string.common_action_retry))
+                }
+            }
         } else if (initial?.isFailure == true) {
             Column(Modifier.fillMaxSize().padding(padding),
                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
@@ -214,7 +235,7 @@ internal fun ThemeSubmissionPage(navController: NavController, miniPlayer: @Comp
                 }
             }
         } else if (creatingLocal || themeId == "new" || existing != null) {
-            ThemeSubmissionForm(existing, loaded, padding, localOnly, localTheme,
+            ThemeSubmissionForm(existing, loaded, padding, localOnly, localTheme, publishedCreator?.getOrNull() == true,
                 initialAppearance = localTheme?.document ?: initial?.getOrNull(), currentAppearance = {
                 encodeThemeAppearance(
                     context.preferences.all + app.n_zik.android.utils.DataStoreUtils.prefs(context).all.filterKeys { it in portableBurgerKeys },
@@ -243,6 +264,7 @@ private fun ThemeSubmissionForm(
     padding: PaddingValues,
     localOnly: Boolean,
     localTheme: SavedTheme?,
+    canPublish: Boolean,
     initialAppearance: String?,
     currentAppearance: () -> String,
     onLocalSaved: (SavedTheme) -> Unit,
@@ -608,6 +630,8 @@ private fun ThemeSubmissionForm(
                 throw cancelled
             } catch (blocked: CreatorPublicationBlocked) {
                 Toaster.e(blocked.publicMessage, android.widget.Toast.LENGTH_LONG)
+            } catch (_: CreatorPublicationProfileRequired) {
+                Toaster.e(R.string.theme_store_published_creator_required)
             } catch (_: CreatorPublicationWorkflowPermission) {
                 GitHubAccount.requireWorkflowAuthorization(context)
                 Toaster.i(R.string.theme_store_creator_workflow_authorization)
@@ -625,6 +649,10 @@ private fun ThemeSubmissionForm(
     }
     val authorizePublication = rememberGitHubPublicationAuthorization(submit)
     fun publish() {
+        if (!canPublish) {
+            Toaster.e(R.string.theme_store_published_creator_required)
+            return
+        }
         saveDraft()
         if (GitHubAccount.tokenFor(context, id) != null) submit()
         else authorizePublication(id)
@@ -682,7 +710,7 @@ private fun ThemeSubmissionForm(
                             enabled = when (step) {
                                 0 -> informationValid
                                 1 -> !importingPreview && readyPreviews.containsAll(requiredSlots) && previewLimit?.let { gallerySlots.size <= it } == true
-                                else -> informationValid && !busy && !awaiting && (localOnly || rights)
+                                else -> informationValid && !busy && !awaiting && (localOnly || (rights && canPublish))
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = palette.accent, contentColor = palette.onAccent),
                         ) {
@@ -703,6 +731,9 @@ private fun ThemeSubmissionForm(
                 .then(if (captureFooter) Modifier.layerBackdrop(footerBackdrop) else Modifier)
                 .padding(top = padding.calculateTopPadding()),
         ) {
+            if (!localOnly && !canPublish) {
+                SettingsDescription(stringResource(R.string.theme_store_published_creator_required))
+            }
             SubmissionStepper(sections, step)
             key(step) {
                 Column(

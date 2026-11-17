@@ -259,6 +259,7 @@ internal class CreatorPublicationBlocked(val publicMessage: String) : Exception(
 internal class CreatorPublicationAccountMismatch : Exception()
 internal class CreatorPublicationSessionExpired : Exception()
 internal class CreatorPublicationUnchanged : Exception()
+internal class CreatorPublicationProfileRequired : Exception()
 internal class CreatorPublicationWorkflowPermission : Exception()
 
 private val creatorPublicationMutex = Mutex()
@@ -312,6 +313,15 @@ internal suspend fun submitCreatorProfile(
         val login = user.getString("login")
         check(login.matches(Regex("[A-Za-z0-9-]{1,39}")))
         val upstream = "repos/$repo"
+        if (theme != null) {
+            val indexContents = obj("$upstream/contents/catalog/creators/index.json?ref=main")
+            val index = JSONObject(Base64.decode(indexContents.getString("content"), Base64.DEFAULT).decodeToString())
+            check(index.getInt("schemaVersion") == 1)
+            val creators = index.getJSONArray("creators")
+            if ((0 until creators.length()).none { creators.getJSONObject(it).getLong("githubId") == id }) {
+                throw CreatorPublicationProfileRequired()
+            }
+        }
         require(withdrawal == null || (theme == null && review == null && files.isEmpty()))
         val submittedFiles = if (review == null && withdrawal == null) {
             authenticatedCreatorFiles(files, theme, id, login)

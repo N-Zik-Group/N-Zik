@@ -247,6 +247,7 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
         { id -> library.publicationsEnabled(id) }
     }
     val creators by produceState<List<CreatorProfile>>(emptyList(), catalog, retry) {
+        value = emptyList()
         if (offline) return@produceState
         try {
             value = catalog.creators()
@@ -662,7 +663,7 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                 }
                 StoreTab.Creator -> item(span = { GridItemSpan(maxLineSpan) }) {
                     Box(tabContentModifier.fillMaxWidth()) {
-                        ThemeStoreCreator(onEditCreator, retry, themes, downloads.filter { it.imported && it.theme != null }, onOpenCreator, onSubmitTheme)
+                        ThemeStoreCreator(onEditCreator, retry, themes, creators, downloads.filter { it.imported && it.theme != null }, onOpenCreator, onSubmitTheme)
                     }
                 }
             }
@@ -773,8 +774,9 @@ private fun StoreEmptyMessage(textRes: Int, modifier: Modifier) {
 }
 
 @Composable
-private fun ThemeStoreCreator(onEditCreator: () -> Unit, refreshVersion: Int, themes: List<StoreTheme>?, localThemes: List<SavedTheme>, onOpenCreator: (Long) -> Unit, onSubmitTheme: (String) -> Unit) {
+private fun ThemeStoreCreator(onEditCreator: () -> Unit, refreshVersion: Int, themes: List<StoreTheme>?, creators: List<CreatorProfile>, localThemes: List<SavedTheme>, onOpenCreator: (Long) -> Unit, onSubmitTheme: (String) -> Unit) {
     val ownId = signedInCreatorId()
+    val canPublish = creators.any { it.githubId == ownId }
     val offline by OfflineMode.rememberEnabled()
     val owned = themes.orEmpty().filter { it.author.githubId == ownId }
         .sortedByDescending { it.revision }.distinctBy { it.themeId }
@@ -795,10 +797,10 @@ private fun ThemeStoreCreator(onEditCreator: () -> Unit, refreshVersion: Int, th
                 )
                 OtherSettingsEntry(
                     title = stringResource(R.string.theme_store_creator_publish_theme),
-                    text = stringResource(R.string.theme_store_publish_description),
+                    text = stringResource(if (canPublish) R.string.theme_store_publish_description else R.string.theme_store_published_creator_required),
                     icon = R.drawable.ui,
-                    isEnabled = !offline,
-                    onClick = { onSubmitTheme("new") },
+                    isEnabled = !offline && canPublish,
+                    onClick = { if (canPublish) onSubmitTheme("new") },
                 )
                 OtherSettingsEntry(
                     title = stringResource(R.string.theme_store_creator_edit_theme),

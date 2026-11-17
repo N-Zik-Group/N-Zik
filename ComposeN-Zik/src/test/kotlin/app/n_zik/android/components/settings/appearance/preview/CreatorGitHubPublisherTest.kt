@@ -94,6 +94,47 @@ class CreatorGitHubPublisherTest {
     }
 
     @Test
+    fun `unpublished creators cannot submit themes or updates before any fork or pull request access`() = runTest {
+        for (revision in listOf(1, 2)) {
+            for (creators in listOf("[]", "[{\"githubId\":456}]")) {
+                val fork = OutdatedFork(creatorIndex = """{"schemaVersion":1,"creators":$creators}""")
+                val theme = StoreTheme(
+                    1, themeId, revision, "Preview", "A test theme", StoreAuthor(123, "creator"), emptyList(),
+                    StoreCompatibility(null), StoreFile("appearance.json", "a".repeat(64)), emptyList(),
+                )
+                val result = runCatching {
+                    submitCreatorProfile("test-token", 123, emptyMap(), theme,
+                        requestClient = fork.client, contributionBlock = { null })
+                }
+
+                assertTrue(result.exceptionOrNull() is CreatorPublicationProfileRequired)
+                assertEquals(listOf("/user", "/repos/$upstream/contents/catalog/creators/index.json"), fork.calls)
+                assertEquals(null, fork.pull)
+                assertEquals(null, fork.commit)
+            }
+        }
+    }
+
+    @Test
+    fun `creator index failures never allow theme publication`() = runTest {
+        for ((status, index) in listOf(503 to "{}", 404 to "{}", 200 to "invalid", 200 to """{"schemaVersion":2,"creators":[{"githubId":123}]}""")) {
+            val fork = OutdatedFork(creatorIndex = index, creatorIndexStatus = status)
+            val theme = StoreTheme(
+                1, themeId, 1, "Preview", "A test theme", StoreAuthor(123, "creator"), emptyList(),
+                StoreCompatibility(null), StoreFile("appearance.json", "a".repeat(64)), emptyList(),
+            )
+            val result = runCatching {
+                submitCreatorProfile("test-token", 123, emptyMap(), theme,
+                    requestClient = fork.client, contributionBlock = { null })
+            }
+
+            assertTrue(result.isFailure)
+            assertEquals(listOf("/user", "/repos/$upstream/contents/catalog/creators/index.json"), fork.calls)
+            assertEquals(null, fork.pull)
+        }
+    }
+
+    @Test
     fun allSubmissionKindsUseUpstreamBaseWithoutSynchronizingTheFork() = runBlocking {
         val author = StoreAuthor(123, "creator")
         val theme = StoreTheme(
@@ -300,7 +341,9 @@ class CreatorGitHubPublisherTest {
     )
 
     private class OutdatedFork(
-        private val alreadyPublished: Boolean,
+        private val alreadyPublished: Boolean = false,
+        private val creatorIndex: String = """{"schemaVersion":1,"creators":[{"githubId":123}]}""",
+        private val creatorIndexStatus: Int = 200,
         private val refStatus: Int = 201,
         private val closingPull: Boolean = false,
         private val publishedProfile: String? = null,
@@ -334,7 +377,7 @@ class CreatorGitHubPublisherTest {
                     """{"commit":{"sha":"$mainSha","commit":{"tree":{"sha":"$mainTree"}}}}"""
                 path == "/repos/creator/N-Zik-Theme-Store/git/commits/$mainSha" -> 200 to "{}"
                 path.endsWith("/creators/123/profile.json") -> publishedProfile?.let { 200 to contents(it) } ?: (404 to "{}")
-                path.endsWith("/creators/index.json") -> 200 to contents("""{"creators":[]}""")
+                path.endsWith("/creators/index.json") -> creatorIndexStatus to contents(creatorIndex)
                 path.endsWith("/themes/index.json") -> 200 to contents(
                     if (alreadyPublished) """{"themes":[${publishedEntry(1)}]}""" else """{"themes":[]}""",
                 )
