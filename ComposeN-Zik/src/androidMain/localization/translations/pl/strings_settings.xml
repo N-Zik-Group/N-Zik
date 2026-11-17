@@ -398,6 +398,9 @@
     <string name="settings_player_timeline_label">Oś czasu</string>
     <string name="settings_player_timeline_size_label">Rozmiar czasu odtwarzacza</string>
     <string name="settings_player_timeline_transparent_label">Przezroczysty pasek czasu</string>
+    <string name="settings_player_opening_mode_label">Tryb otwierania gracza</string>
+    <string name="settings_player_opening_mode_description">Wybierz tryb do użycia podczas otwierania gracza.</string>
+    <string name="settings_player_opening_mode_remember_last">Zapamiętaj ostatni tryb</string>
     <string name="settings_player_top_action_bar_visible_label">Pokaż pasek akcji</string>
     <string name="settings_player_vertical_swipe_expansion_description">Dotyczy tylko gdy rozszerzony gracz jest wyłączony</string>
     <string name="settings_preference_saved_message">Preferencje zapisane</string>
@@ -501,4 +504,5 @@
     <string name="settings_local_music_summary_title">Podsumowanie biblioteki na urządzeniach</string>
     <string name="settings_local_music_summary_description">Zobacz muzykę i foldery dla tego profilu.</string>
     <string name="settings_local_music_summary_count">%1$s: %2$d</string>
+    <string name="settings_local_music_start_folder_path_example">Muzyka/na żywo</string>
 </resources>
