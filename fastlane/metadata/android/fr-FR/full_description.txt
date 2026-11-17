@@ -10,7 +10,7 @@ Un frontend multilingue YouTube Music pour Android, axé sur les performances, l
 - 3D Carousel Player, widgets d'accueil, lecteur unifié + mini-lecteur
 - Profils d'artistes, Discovery et ambiances, en-têtes pliables
 
-🎨 <b>Magasin de Thèmes (BETA)</b>
+🎨 <b>Boutique de Thèmes (BÊTA)</b>
 - Parcourez et téléchargez les thèmes de la communauté, prévisualisez-les dans les styles « Normal » et « Glass », puis choisissez les paramètres d'apparence à appliquer.
 - Créez des thèmes locaux ou partagez vos designs avec la communauté. Importer et exporter des thèmes sous forme de fichiers ZIP.
 
