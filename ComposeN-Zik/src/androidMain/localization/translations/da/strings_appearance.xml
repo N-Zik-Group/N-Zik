@@ -478,6 +478,7 @@
     <string name="theme_store_local_saved">Lokalt tema opdateret.</string>
     <string name="theme_store_local_save_failed">Kunne ikke opdatere det lokale tema.</string>
     <string name="theme_store_publish_description">Foreslå et nyt tema for Tema Store.</string>
+    <string name="theme_store_published_creator_required">Din skaberprofil skal accepteres og publiceres i Tema Butik, før du kan udgive et tema.</string>
     <string name="theme_store_edit_description">Indsend en ny revision af et offentliggjort tema.</string>
     <string name="theme_store_submissions_in_progress_description">Spor indlæg afventer gennemgang.</string>
     <string name="theme_store_submissions_history_description">Se beslutningerne om dine tidligere indlæg.</string>
