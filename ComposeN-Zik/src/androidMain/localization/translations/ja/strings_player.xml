@@ -397,4 +397,17 @@
     <string name="audio_output_usb_audio_label">USBオーディオ</string>
     <string name="audio_output_external_speaker_label">外部スピーカー</string>
     <string name="audio_output_load_failed">デバイスの読み込みに失敗しました: %1$s</string>
+    <string name="player_audio_mode">オーディオ</string>
+    <string name="player_video_mode">ビデオ</string>
+    <string name="player_video_fullscreen">全画面表示にする</string>
+    <string name="player_video_exit_fullscreen">全画面表示を終了</string>
+    <string name="player_video_unavailable">ビデオが見つかりませんでした</string>
+    <string name="player_video_search_manually">手動で検索</string>
+    <string name="player_video_play">再生</string>
+    <string name="player_video_pause">一時停止</string>
+    <string name="player_statistics_kilobits_per_second">%1$d kbps</string>
+    <string name="player_statistics_kilohertz">%1$d kHz</string>
+    <string name="player_statistics_field_value">%1$s: %2$s</string>
+    <string name="audio_output_devices_unavailable">オーディオデバイスを読み込めませんでした。</string>
+    <string name="visualizer_position_format">%1$d/%2$d</string>
 </resources>
