@@ -214,7 +214,7 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
     var downloadedAdvancedTags by rememberSaveable { mutableStateOf(emptyList<String>()) }
     var retry by remember { mutableIntStateOf(0) }
     val pendingReports = rememberPendingThemeStoreReports(retry)
-    val builtIn = remember(context) { bundledDefaultTheme(context) }
+    val builtIn = checkNotNull(rememberBundledDefaultTheme(retry))
     val verifiedIds = rememberVerifiedCreatorIds(catalog, retry)
     var loading by remember { mutableStateOf(true) }
     var themes by remember { mutableStateOf<List<StoreTheme>?>(null) }
@@ -916,7 +916,7 @@ private fun ThemeStoreCard(
     if (blocked && followUp && !offline) {
         ThemeReportDialog(theme, null) { followUp = false }
     }
-    val publishedPreview = if (blocked) null else theme.playerPreview(glass)
+    val publishedPreview = if (blocked) null else theme.playerPreview(glass, colorPalette().isDark)
     val open = onOpen.takeUnless { blocked }
     val preview = rememberStorePreview(theme, publishedPreview, catalog, refreshVersion)
     val context = LocalContext.current

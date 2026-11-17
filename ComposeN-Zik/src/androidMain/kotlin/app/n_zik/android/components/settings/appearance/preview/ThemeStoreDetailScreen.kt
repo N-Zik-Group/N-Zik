@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import app.n_zik.android.components.glass.GlassTextField as TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -41,6 +42,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -117,7 +119,8 @@ internal fun ThemeStoreDetailScreen(
     val initialDownload = remember(library, themeId, revision) {
         downloads.firstOrNull { it.id == "$themeId:$revision" }
     }
-    val builtIn = remember(context, themeId) { if (themeId == BundledThemeId) bundledDefaultTheme(context) else null }
+    var retry by remember { mutableIntStateOf(0) }
+    val builtIn = rememberBundledDefaultTheme(retry, enabled = themeId == BundledThemeId)
     val localPackage = builtIn != null || initialDownload?.imported == true
     val removedLocal = initialDownload?.takeIf { saved -> saved.imported && downloads.none { it.id == saved.id } }
     val replacement = removedLocal?.restoredStoreDownload(downloads)
@@ -142,13 +145,14 @@ internal fun ThemeStoreDetailScreen(
             leaveDetail()
         }
     }
-    val catalog = remember(context, offline, localPackage) { themeStoreCatalog(context, offline || localPackage) }
+    val catalog = remember(context, offline, localPackage, builtIn != null) {
+        themeStoreCatalog(context, offline || (localPackage && builtIn == null))
+    }
     val title = stringResource(R.string.theme_store_details)
-    var retry by remember { mutableIntStateOf(0) }
     var loading by remember { mutableStateOf(true) }
     var lastSync by remember(catalog) { mutableStateOf<Long?>(null) }
     var theme by remember(themeId, revision, library, offline) { mutableStateOf<StoreTheme?>(null) }
-    LaunchedEffect(catalog, themeId, revision, library, retry) {
+    LaunchedEffect(catalog, themeId, revision, library, retry, builtIn) {
         loading = true
         val id = "$themeId:$revision"
         if (localPackage) {
@@ -631,26 +635,27 @@ private fun DetailHeader() {
     }
 }
 
-private val StorePreview.darkPreview: Boolean?
-    get() {
-        val scene = path.substringAfterLast('/').substringBeforeLast('.')
-            .removeSuffix("-normal").removeSuffix("-glass")
-        return when {
-            scene.endsWith("-light") -> false
-            scene.endsWith("-dark") -> true
-            else -> null
-        }
-    }
+@Composable
+internal fun rememberGalleryVariantSelection(themeId: String, revision: Int, currentVariant: Boolean): MutableState<Boolean> {
+    val saver = listSaver<MutableState<Boolean>, Any>(
+        save = { listOf(themeId, revision, currentVariant, it.value) },
+        restore = { saved ->
+            val matches = saved[0] == themeId && saved[1] == revision && saved[2] == currentVariant
+            mutableStateOf(if (matches) saved[3] as Boolean else currentVariant)
+        },
+    )
+    return rememberSaveable(themeId, revision, currentVariant, saver = saver) { mutableStateOf(currentVariant) }
+}
 
 @Composable
 private fun ThemePreviewGallery(theme: StoreTheme, catalog: ThemeStoreCatalog, retry: Int) {
     if (theme.previews.isEmpty()) return
     val currentGlass = rememberGlassSettings().enabled
     val variants = listOf(false, true).filter { glass -> theme.previews.any { it.glassVariant == glass } }
-    var selectedGlass by rememberSaveable { mutableStateOf(currentGlass) }
+    var selectedGlass by rememberGalleryVariantSelection(theme.themeId, theme.revision, currentGlass)
     val variant = selectedGlass.takeIf { it in variants } ?: variants.firstOrNull()
     val currentDark = colorPalette().isDark
-    var selectedDark by rememberSaveable { mutableStateOf(currentDark) }
+    var selectedDark by rememberGalleryVariantSelection(theme.themeId, theme.revision, currentDark)
     val hasPaletteVariants = theme.previews.any { it.darkPreview == true } &&
         theme.previews.any { it.darkPreview == false }
     val previews = theme.galleryPreviews(variant).filter {

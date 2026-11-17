@@ -13,6 +13,20 @@ class ThemeStoreCatalogTest {
     private val catalog = listOf(blur, waves, night)
 
     @Test
+    fun fixedPaletteAndLegacyPlayerPreviewsRemainAvailableInEitherAppMode() {
+        val normal = StorePreview("previews/player-normal.webp", "player", "a".repeat(64))
+        val glass = normal.copy(path = "previews/player-glass.webp")
+        val shared = normal.copy(path = "previews/player.webp")
+        val fixedDark = normal.copy(path = "previews/player-dark-normal.webp")
+        for (dark in listOf(false, true)) {
+            assertEquals(normal, blur.copy(previews = listOf(normal, glass)).playerPreview(false, dark))
+            assertEquals(glass, blur.copy(previews = listOf(normal, glass)).playerPreview(true, dark))
+            assertEquals(shared, blur.copy(previews = listOf(shared)).playerPreview(false, dark))
+            assertEquals(fixedDark, blur.copy(previews = listOf(fixedDark)).playerPreview(false, dark))
+        }
+    }
+
+    @Test
     fun metadataLimitsCountUnicodeCodePointsLikeTheCatalogSchema() {
         val symbol = "\uD83C\uDFB5"
         val published = blur.copy(
