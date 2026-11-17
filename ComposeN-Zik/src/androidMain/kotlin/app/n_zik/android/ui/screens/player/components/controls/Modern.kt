@@ -115,6 +115,7 @@ import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.inScope
 import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.glass.surfaceSourcePalette
 import app.n_zik.android.components.player.monochromeControlsColor
 import app.n_zik.android.components.player.placeholderCompositeBase
 import app.n_zik.android.components.glass.TextContrast
@@ -419,14 +420,14 @@ fun ControlsModern(
         PlayerControlsColors.Cover -> dynamicColorPalette.accent
         // Monochrome follows the effective palette tone, not a hardcoded white
         // (spec-achromatic-ramp-luminance-cap)
-        PlayerControlsColors.Monochrome -> monochromeControlsColor(colorPalette())
+        PlayerControlsColors.Monochrome -> monochromeControlsColor(surfaceSourcePalette())
         else -> colorPalette().accent
     }
     val controlsColorAccent = when (playerControlsColors) {
         PlayerControlsColors.Cover -> dynamicColorPalette.accent
         // Monochrome follows the effective palette tone, not a hardcoded white
         // (spec-achromatic-ramp-luminance-cap)
-        PlayerControlsColors.Monochrome -> monochromeControlsColor(colorPalette())
+        PlayerControlsColors.Monochrome -> monochromeControlsColor(surfaceSourcePalette())
         else -> colorPalette().accent
     }
     var effectRotationEnabled by rememberPreference(effectRotationKey, false)
@@ -479,7 +480,7 @@ fun ControlsModern(
           Image(
               painter = painterResource(R.drawable.play_skip_back),
               contentDescription = null,
-              colorFilter = ColorFilter.tint(playerTransportGlyph(controlsColorText, transportSettings, transportFilm)),
+              colorFilter = ColorFilter.tint(playerTransportGlyph(controlsColorText, transportSettings, transportFilm, enabled = previousEnabled)),
               modifier = Modifier
                   .padding(10.dp)
                   .size(26.dp)
@@ -670,7 +671,7 @@ if (isBuffering && shouldBePlaying) {
           Image(
               painter = painterResource(R.drawable.play_skip_forward),
               contentDescription = null,
-              colorFilter = ColorFilter.tint(playerTransportGlyph(controlsColorText, transportSettings, transportFilm)),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
+              colorFilter = ColorFilter.tint(playerTransportGlyph(controlsColorText, transportSettings, transportFilm, enabled = nextEnabled)),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
               modifier = Modifier
                   .padding(10.dp)
                   .size(26.dp)
@@ -702,7 +703,7 @@ if (isBuffering && shouldBePlaying) {
               Image(
                   painter = painterResource(R.drawable.play_skip_back),
                   contentDescription = null,
-                  colorFilter = ColorFilter.tint(surfaceGlyphColor(controlsColorAccent)),
+                  colorFilter = ColorFilter.tint(surfaceGlyphColor(controlsColorAccent, enabled = previousEnabled)),
                   modifier = Modifier
                       .padding(10.dp)
                       .size(34.dp)
@@ -786,7 +787,7 @@ if (isBuffering && shouldBePlaying) {
               Image(
                   painter = painterResource(R.drawable.play_skip_forward),
                   contentDescription = null,
-                  colorFilter = ColorFilter.tint(surfaceGlyphColor(controlsColorAccent)),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
+                  colorFilter = ColorFilter.tint(surfaceGlyphColor(controlsColorAccent, enabled = nextEnabled)),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
                   modifier = Modifier
                       .padding(10.dp)
                       .size(34.dp)

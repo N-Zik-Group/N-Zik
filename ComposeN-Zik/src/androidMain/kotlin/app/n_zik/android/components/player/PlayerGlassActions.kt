@@ -238,8 +238,7 @@ fun PlayerActionToolbar(
         } }
     }
     val content: @Composable () -> Unit = {
-        if (contrastBackdrop == null) slots()
-        else SurfaceForegroundContent(effectiveSurfaceColor(contrastBackdrop, plate), content = slots)
+        SurfaceForegroundContent(contrastBackdrop?.let { effectiveSurfaceColor(it, plate) }, content = slots)
     }
     val glassRowModifier = Modifier.playerActionToolbarWidth(landscape)
         .then(if (contrastScrim.alpha > 0f && actions.size > 1) Modifier.background(contrastScrim, shape) else Modifier)

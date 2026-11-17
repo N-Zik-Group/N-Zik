@@ -13,6 +13,11 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.toPixelMap
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LocalGlassPreviewSettings
 import app.n_zik.android.enums.PlayerOpeningMode
@@ -23,6 +28,7 @@ import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.Typography
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,6 +40,30 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [33], application = Application::class, qualifiers = "en-rUS")
 class PlayerVideoToggleTest {
     @get:Rule val composeRule = createComposeRule()
+
+    @Test
+    @Config(sdk = [32])
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `native audio video toggle preserves colored idle and selected onAccent glyphs`() {
+        val idle = Color(0xFFE78AFA)
+        val selected = Color(0xFF30B0FF)
+        val palette = ColorPalette.fallback.copy(text = idle, onAccent = selected,
+            accent = Color(0xFF302040), background2 = Color(0xFFEEEEEE))
+        val session = PlayerMusicVideo().apply { ready = true }
+        composeRule.setContent {
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(palette, Typography.fallback, CircleShape, CircleShape, CircleShape),
+                LocalGlassPreviewSettings provides GlassSettings(enabled = false),
+            ) {
+                PlayerAudioVideoToggle(session, onSearchManually = {})
+            }
+        }
+        val pixels = composeRule.onRoot().captureToImage().toPixelMap()
+        val seen = mutableSetOf<Int>()
+        for (y in 0 until pixels.height) for (x in 0 until pixels.width) seen.add(pixels[x, y].toArgb())
+        assertTrue("Idle video glyph keeps its selected color", idle.toArgb() in seen)
+        assertTrue("Selected audio glyph keeps onAccent", selected.toArgb() in seen)
+    }
 
     @Test
     @Config(sdk = [32])
@@ -53,7 +83,6 @@ class PlayerVideoToggleTest {
             ) {
                 PlayerAudioVideoToggle(
                     session = session,
-                    showUnavailable = false,
                     onSearchManually = { searches++ },
                 )
             }
@@ -78,7 +107,6 @@ class PlayerVideoToggleTest {
             ) {
                 PlayerAudioVideoToggle(
                     session = session,
-                    showUnavailable = session.failed,
                     onSearchManually = { searches++ },
                 )
             }
@@ -92,7 +120,8 @@ class PlayerVideoToggleTest {
         video.performClick()
         video.assertIsSelected()
         composeRule.runOnIdle { session.unavailable() }
-        composeRule.onNodeWithText("Search manually").performClick()
+        composeRule.onNodeWithText("Search manually").assertDoesNotExist()
+        video.performSemanticsAction(SemanticsActions.OnLongClick) { it() }
         composeRule.runOnIdle {
             assertEquals(2, searches)
             assertEquals(listOf(true), choices)

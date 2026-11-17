@@ -100,9 +100,13 @@ internal data class StoreTheme(
 ) {
     val directory: String get() = "catalog/themes/$themeId/$revision/"
 
-    fun playerPreview(glass: Boolean): StorePreview? {
+    fun playerPreview(glass: Boolean, dark: Boolean): StorePreview? {
         val suffix = if (glass) "player-glass" else "player-normal"
-        return previews.firstOrNull { it.role == "player" && it.path.substringBeforeLast('.') == "previews/$suffix" }
+        val paletteSuffix = "player-${if (dark) "dark" else "light"}-${if (glass) "glass" else "normal"}"
+        return previews.firstOrNull { it.role == "player" && it.path.substringBeforeLast('.') == "previews/$paletteSuffix" }
+            ?: previews.firstOrNull { it.role == "player" && it.path.substringBeforeLast('.') == "previews/$suffix" }
+            ?: previews.firstOrNull { it.role == "player" && it.glassVariant == glass && it.darkPreview == dark }
+            ?: previews.firstOrNull { it.role == "player" && it.glassVariant == glass && it.darkPreview == null }
             ?: previews.firstOrNull { it.role == "player" && it.glassVariant == glass }
             ?: previews.firstOrNull { it.role == "player" }
             ?: previews.firstOrNull()
@@ -117,6 +121,17 @@ internal val StorePreview.glassVariant: Boolean?
         path.substringBeforeLast('.').endsWith("-glass") -> true
         path.substringBeforeLast('.').endsWith("-normal") -> false
         else -> null
+    }
+
+internal val StorePreview.darkPreview: Boolean?
+    get() {
+        val scene = path.substringAfterLast('/').substringBeforeLast('.')
+            .removeSuffix("-normal").removeSuffix("-glass")
+        return when {
+            scene.endsWith("-light") -> false
+            scene.endsWith("-dark") -> true
+            else -> null
+        }
     }
 
 private val tagMarks = Regex("\\p{M}+")
@@ -354,8 +369,8 @@ internal class ThemeStoreCatalog(
         ThemeCatalogState(themes, refreshed.syncedAt)
     }
 
-    suspend fun preview(theme: StoreTheme, glass: Boolean): File? {
-        val preview = theme.playerPreview(glass) ?: return null
+    suspend fun preview(theme: StoreTheme, glass: Boolean, dark: Boolean): File? {
+        val preview = theme.playerPreview(glass, dark) ?: return null
         return preview(theme, preview)
     }
 
@@ -370,9 +385,17 @@ internal class ThemeStoreCatalog(
     private fun previewFile(theme: StoreTheme, preview: StorePreview): File? {
         val file = File(directory, "${preview.sha256}.${preview.path.substringAfterLast('.')}")
         return try {
-            val cached = if (file.isFile) file.inputStream().use { it.readThemeBytes(PreviewLimit) } else null
+            val cached = try {
+                if (file.isFile) file.inputStream().use { it.readThemeBytes(PreviewLimit) } else null
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                Timber.tag("ThemeStore").w(error, "Could not read cached preview for %s", theme.themeId)
+                null
+            }
             if (cached?.sha256() != preview.sha256) {
-                val bytes = fetch("${theme.directory}${preview.path}?sha=${preview.sha256}", PreviewLimit)
+                val previewDirectory = if (theme.themeId == BundledThemeId) StockPreviewDirectory else theme.directory
+                val bytes = fetch("$previewDirectory${preview.path}?sha=${preview.sha256}", PreviewLimit)
                 require(bytes.sha256() == preview.sha256)
                 check(directory.isDirectory || directory.mkdirs() || directory.isDirectory)
                 writeThemeFile(AtomicFile(file), bytes)
@@ -489,15 +512,10 @@ internal fun themeStoreCatalog(context: android.content.Context, offline: Boolea
         appVersionCode = BuildConfig.VERSION_CODE,
         bundledPolicy = { context.assets.open(BundledCatalogPolicy).use { it.readThemeBytes(ThemeMetadataLimit) } },
     ) { path, limit ->
-        val bundledPrefix = "catalog/themes/$BundledThemeId/2/"
-        if (path.startsWith(bundledPrefix)) {
-            context.assets.open("theme-store-default/" + path.substringBefore('?').removePrefix(bundledPrefix)).use { it.readThemeBytes(limit) }
-        } else {
-            if (offline || app.n_zik.android.core.network.OfflineMode.enabled(context)) {
-                throw java.io.IOException("Theme Store is offline")
-            }
-            fetchStoreFile(path, limit)
+        if (offline || app.n_zik.android.core.network.OfflineMode.enabled(context)) {
+            throw java.io.IOException("Theme Store is offline")
         }
+        fetchStoreFile(path, limit)
     }
 
 private val catalogPreviewLocks = List(8) { Mutex() }

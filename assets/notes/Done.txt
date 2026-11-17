@@ -14,3 +14,23 @@ Fixed:
   - ThemePreviewActivity uses a fixed hardware-backed capture window and normalizes insets before Compose receives them, preserving Glass effects and theme appearance without modifying device display or navigation settings.
   - Capture-specific window state is restored on exit; unexpected window dimensions fail before images are saved. Existing submission image normalization is retained.
   - Verified 45 targeted tests, assembleDebug, and 20 real Normal/Glass captures across different host resolutions, densities, font scales and Android navigation modes.
+- change(theme-store): host Stock preview images remotely and refresh published galleries
+  - Regenerated 640 catalog previews across 17 existing revision directories and 64 Stock previews with the canonical Pixel renderer; kept every theme revision, appearance document, author and publication field unchanged.
+  - Moved Stock WebP images to Theme Store demo/stock/previews with a hash-indexed demo/stock/index.json. Removed all 64 Stock image assets from the APK while retaining local Stock defaults, identity and lightweight metadata.
+  - Added validated remote metadata refresh, atomic image caching, offline reuse and retry recovery; real Android tests verified metadata replacement, oversized image-cache repair and cached previews with Apply available offline.
+- fix(theme-store): match preview selections to the app palette and Glass settings
+  - Card thumbnails choose the matching light/dark and Normal/Glass image; fixed and legacy preview layouts keep compatible fallbacks.
+  - Gallery tabs follow app settings initially and reset the affected axis when that setting changes, preserving manual choices on the other axis. Saved selections validate the originating theme and app mode.
+  - Verified all four variants, return-to-previous-mode transitions, 32 targeted Android tests and assembleDebug. No additional palette-specific image series or version bump.
+- fix(theme-store-moderation): wait for successful checks before taking action
+  - Bot checks every current-head validation, commit status and workflow run, waits for registered catalog validation, and rechecks approval/head/labels before publication. Its own workflow is excluded to prevent self-deadlock.
+  - Failed checks block publication, remove inaccurate success labels and notify @NEVARLeVrai with failure links. Real fork PR tests verified the premature accepted label was removed and a corrected commit was not automatically reaccepted.
+  - Bot comments on locked PRs now handle both creation and updates with bounded unlock propagation retries and restore the original lock. Verified 93 moderation regressions plus submission, roadmap, Python catalog/Stock checks and unchanged-revision audits.
+- fix(player): preserve theme colors while adapting neutral foreground contrast
+  - Estimate the rendered player background once per track or background change and share one contrast fade across neutral text and controls; keep chromatic colors unchanged and limit adjustments to gray or inactive glyphs while preserving opacity.
+  - Refresh the contrast when Glass or theme settings change, retain the sampled background through player open/close, and wait for cover-color transitions before freezing the decision.
+  - Include the Audio/Video selector and restore the original palette roles through nested Glass surfaces. Let the expanded player own Android status/navigation contrast and restore the underlying page when it closes.
+  - Verified assembleDebug, 54 targeted tests, installation on the Pixel emulator and user acceptance.
+- fix(player-video): resolve credited music clips and report unavailable video with a toast
+  - Prefer a unique official match, then accept an explicitly credited distributor clip with normalized title and bounded duration tolerance; keep ambiguity rejection and manual search available.
+  - Replace the unavailable-video popup with a localized toast explaining the Video button long-press search action.

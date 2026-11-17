@@ -76,6 +76,37 @@ class PlayerVideoResolverTest {
         )
     }
 
+    @Test
+    fun selectsYeshTikvahClipPublishedByItsDistributor() {
+        val clip = video(
+            "PIPCHjFC9yk",
+            title = "[Official Music Video] Benny Friedman - Yesh Tikvah",
+            artist = "MostlyMusicVideos",
+            duration = "4:28",
+            type = "MUSIC_VIDEO_TYPE_UGC",
+        )
+        assertEquals(
+            "PIPCHjFC9yk",
+            selectPlayerVideoCounterpart("Yesh Tikvah", listOf("Benny Friedman"), emptySet(), 277_000, listOf(clip)),
+        )
+        assertNull(selectPlayerVideoCounterpart("Yesh Tikvah", listOf("Another Artist"), emptySet(), 277_000, listOf(clip)))
+        assertNull(selectPlayerVideoCounterpart("Yesh Tikvah", listOf("Benny Friedman"), emptySet(), 350_000, listOf(clip)))
+    }
+
+    @Test
+    fun distributorClipsRequireExplicitArtistCreditAndAnUnambiguousMatch() {
+        val clip = video("abcdefghijk", title = "[Official Video] Artist - The Song",
+            artist = "Record Label", type = "MUSIC_VIDEO_TYPE_UGC")
+        val duplicate = video("abcdefghijl", title = "[Official Video] Artist - The Song",
+            artist = "Another Label", type = "MUSIC_VIDEO_TYPE_UGC")
+        assertNull(selectPlayerVideoCounterpart("The Song", listOf("Artist"), emptySet(), 212_000, listOf(clip, duplicate)))
+        assertNull(selectPlayerVideoCounterpart("The Song", listOf("Artist"), emptySet(), 212_000,
+            listOf(video("abcdefghijk", title = "[Official Video] The Song", artist = "Record Label", type = "MUSIC_VIDEO_TYPE_UGC"))))
+        val official = video("abcdefghijm")
+        assertEquals("abcdefghijm", selectPlayerVideoCounterpart("The Song", listOf("Artist"), emptySet(), 212_000,
+            listOf(clip, official)))
+    }
+
     private fun video(
         id: String,
         title: String = "The Song",

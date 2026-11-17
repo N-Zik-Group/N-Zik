@@ -119,7 +119,8 @@ internal fun playerTransportGlyph(
     nativePlate: Color = Color.Transparent,
     hasGlassPlate: Boolean = true,
     minimum: Float = IconContrast,
-): Color = surfaceGlyphColor(color, playerTransportPlate(settings, nativePlate, hasGlassPlate), minimum)
+    enabled: Boolean = true,
+): Color = surfaceGlyphColor(color, playerTransportPlate(settings, nativePlate, hasGlassPlate), minimum, enabled)
 
 @Composable
 internal fun playerTransportPlate(

@@ -22,12 +22,20 @@ internal fun GlassArtworkContent(
     }
     val forced = active && settings.enabled && glassArtworkForcesDark(settings)
     val palette = appearance.colorPalette
+    val artworkSurface = surface ?: glassSurfaceTint(settings)
+    fun neutralRole(original: Color): Color = readableForeground(original, artworkSurface, IconContrast)
+    val foregroundPalette = if (forced) palette.copy(
+        text = neutralRole(palette.text),
+        textSecondary = neutralRole(palette.textSecondary),
+        textDisabled = neutralRole(palette.textDisabled),
+        iconButtonPlayer = neutralRole(palette.iconButtonPlayer),
+    ) else palette
     val effective = if (forced) appearance.copy(
-        colorPalette = palette.copy(text = Color.White, textSecondary = Color(0xFFBDBDBD),
-            textDisabled = Color(0xFF858585), iconButtonPlayer = Color.White),
-        typography = appearance.typography.withColor(Color.White),
+        colorPalette = foregroundPalette,
+        typography = appearance.typography.withColor(foregroundPalette.text),
     ) else appearance
-    val contentColor = if (forced) Color.White else LocalContentColor.current
+    val inheritedContent = LocalContentColor.current
+    val contentColor = if (forced) neutralRole(inheritedContent) else inheritedContent
     CompositionLocalProvider(
         LocalAppearance provides effective,
         LocalContentColor provides contentColor,
@@ -38,5 +46,6 @@ internal fun GlassArtworkContent(
 /** Explicit glyph colors may have been evaluated outside the surface's content provider. */
 @Composable
 internal fun glassArtworkForeground(settings: GlassSettings, original: Color, active: Boolean = true): Color =
-    if (active && settings.enabled && glassArtworkForcesDark(settings)) Color.White.copy(alpha = original.alpha)
+    if (active && settings.enabled && glassArtworkForcesDark(settings) && isNeutralForeground(original))
+        readableGlyphForeground(original, glassSurfaceTint(settings), IconContrast)
     else original
