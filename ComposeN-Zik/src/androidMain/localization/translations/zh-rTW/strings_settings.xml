@@ -398,6 +398,9 @@
     <string name="settings_player_timeline_label">進度條</string>
     <string name="settings_player_timeline_size_label">播放器時間軸大小</string>
     <string name="settings_player_timeline_transparent_label">透明的時間軸</string>
+    <string name="settings_player_opening_mode_label">Player opening mode</string>
+    <string name="settings_player_opening_mode_description">Choose the mode to use when you open the player.</string>
+    <string name="settings_player_opening_mode_remember_last">Remember last mode</string>
     <string name="settings_player_top_action_bar_visible_label">顯示上方操作欄</string>
     <string name="settings_player_vertical_swipe_expansion_description">It affects only when the Expanded Player is off</string>
     <string name="settings_preference_saved_message">Preference Saved</string>
@@ -501,4 +504,5 @@
     <string name="settings_local_music_summary_title">On-device library summary</string>
     <string name="settings_local_music_summary_description">See detected music and folders for this profile.</string>
     <string name="settings_local_music_summary_count">%1$s: %2$d</string>
+    <string name="settings_local_music_start_folder_path_example">Music/Live</string>
 </resources>
