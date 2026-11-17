@@ -397,4 +397,17 @@
     <string name="audio_output_usb_audio_label">Áudio USB</string>
     <string name="audio_output_external_speaker_label">Alto-falante externo</string>
     <string name="audio_output_load_failed">Falha ao carregar dispositivos: %1$s</string>
+    <string name="player_audio_mode">Áudio</string>
+    <string name="player_video_mode">Vídeo</string>
+    <string name="player_video_fullscreen">Entrar em tela cheia</string>
+    <string name="player_video_exit_fullscreen">Sair da tela cheia</string>
+    <string name="player_video_unavailable">Nenhum vídeo encontrado</string>
+    <string name="player_video_search_manually">Pesquisar manualmente</string>
+    <string name="player_video_play">Reproduzir</string>
+    <string name="player_video_pause">Suspender</string>
+    <string name="player_statistics_kilobits_per_second">%1$d kbps</string>
+    <string name="player_statistics_kilohertz">%1$d kHz</string>
+    <string name="player_statistics_field_value">%1$s: %2$s</string>
+    <string name="audio_output_devices_unavailable">Não foi possível carregar dispositivos de áudio.</string>
+    <string name="visualizer_position_format">%1$d/%2$d</string>
 </resources>
