@@ -398,6 +398,9 @@
     <string name="settings_player_timeline_label">Cronologie</string>
     <string name="settings_player_timeline_size_label">Dimensiune bară cronologică player</string>
     <string name="settings_player_timeline_transparent_label">Bară cronologică transparentă</string>
+    <string name="settings_player_opening_mode_label">Mod de deschidere a jucătorului</string>
+    <string name="settings_player_opening_mode_description">Alege modul de utilizat atunci când deschizi playerul.</string>
+    <string name="settings_player_opening_mode_remember_last">Memorează ultimul mod</string>
     <string name="settings_player_top_action_bar_visible_label">Afișează bara de acțiuni de sus</string>
     <string name="settings_player_vertical_swipe_expansion_description">Afectează doar când \"Player-ul extins\" este oprit</string>
     <string name="settings_preference_saved_message">Preferințe salvate</string>
@@ -501,4 +504,5 @@
     <string name="settings_local_music_summary_title">Sumar librarie pe dispozitiv</string>
     <string name="settings_local_music_summary_description">Vezi muzica și dosarele detectate pentru acest profil.</string>
     <string name="settings_local_music_summary_count">%1$s: %2$d</string>
+    <string name="settings_local_music_start_folder_path_example">Muzică/Viață</string>
 </resources>
