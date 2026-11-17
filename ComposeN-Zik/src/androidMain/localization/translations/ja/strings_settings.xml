@@ -398,6 +398,9 @@
     <string name="settings_player_timeline_label">タイムライン</string>
     <string name="settings_player_timeline_size_label">プレイヤーのタイムラインサイズ</string>
     <string name="settings_player_timeline_transparent_label">透明なタイムラインバー</string>
+    <string name="settings_player_opening_mode_label">プレイヤーを開くモード</string>
+    <string name="settings_player_opening_mode_description">プレイヤーを開くときに使用するモードを選択します。</string>
+    <string name="settings_player_opening_mode_remember_last">最後のモードを記憶する</string>
     <string name="settings_player_top_action_bar_visible_label">上部の操作バーを表示</string>
     <string name="settings_player_vertical_swipe_expansion_description">拡張プレイヤーがオフの場合にのみ影響します</string>
     <string name="settings_preference_saved_message">設定を保存しました</string>
@@ -501,4 +504,5 @@
     <string name="settings_local_music_summary_title">On-device ライブラリの概要</string>
     <string name="settings_local_music_summary_description">このプロファイルについては、検出された音楽とフォルダを参照してください。</string>
     <string name="settings_local_music_summary_count">%1$s: %2$d</string>
+    <string name="settings_local_music_start_folder_path_example">音楽/ライブ</string>
 </resources>
