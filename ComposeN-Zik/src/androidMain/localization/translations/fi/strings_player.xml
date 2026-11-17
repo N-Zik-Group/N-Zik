@@ -397,4 +397,17 @@
     <string name="audio_output_usb_audio_label">USB ääni</string>
     <string name="audio_output_external_speaker_label">Ulkoinen kaiutin</string>
     <string name="audio_output_load_failed">Laitteiden lataaminen epäonnistui: %1$s</string>
+    <string name="player_audio_mode">Ääni</string>
+    <string name="player_video_mode">Video</string>
+    <string name="player_video_fullscreen">Siirry koko näyttöön</string>
+    <string name="player_video_exit_fullscreen">Poistu kokoruudusta</string>
+    <string name="player_video_unavailable">Videota ei löytynyt</string>
+    <string name="player_video_search_manually">Etsi manuaalisesti</string>
+    <string name="player_video_play">Toista</string>
+    <string name="player_video_pause">Tauko</string>
+    <string name="player_statistics_kilobits_per_second">%1$d kbps</string>
+    <string name="player_statistics_kilohertz">%1$d kHz</string>
+    <string name="player_statistics_field_value">%1$s: %2$s</string>
+    <string name="audio_output_devices_unavailable">Äänilaitteita ei voitu ladata.</string>
+    <string name="visualizer_position_format">%1$d/%2$d</string>
 </resources>
