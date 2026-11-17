@@ -478,6 +478,7 @@
     <string name="theme_store_local_saved">Zaktualizowano lokalny motyw.</string>
     <string name="theme_store_local_save_failed">Nie można zaktualizować lokalnego motywu.</string>
     <string name="theme_store_publish_description">Zaproponuj nowy szablon dla sklepu motywu.</string>
+    <string name="theme_store_published_creator_required">Twój profil twórcy musi zostać zaakceptowany i opublikowany w Sklepie Motywu zanim będziesz mógł opublikować motyw.</string>
     <string name="theme_store_edit_description">Prześlij nową wersję opublikowanego motywu.</string>
     <string name="theme_store_submissions_in_progress_description">Śledź zgłoszenia oczekujące na sprawdzenie.</string>
     <string name="theme_store_submissions_history_description">Zobacz decyzje dotyczące poprzednich przedłożeń.</string>
