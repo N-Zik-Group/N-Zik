@@ -7,23 +7,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.withContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.appContext
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.ui.components.themed.TitleMiniSection
 import app.n_zik.android.components.ui.screens.profiles.loadActiveProfileFace
 import app.n_zik.android.components.ui.screens.profiles.profileFaceUpdateTrigger
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
 @Composable
-fun WelcomeMessage(){
+fun WelcomeMessage() {
     val hour =
         remember {
             val date = Calendar.getInstance().time
@@ -46,37 +47,33 @@ fun WelcomeMessage(){
         }
     }
 
-    var profileName by remember { mutableStateOf("") }
+    val isPreview = LocalThemePreview.current != null
+    var profileName by remember(isPreview) { mutableStateOf("") }
     // When no name was ever chosen, the greeting falls back to the default app name
     val defaultName = stringResource(R.string.profile_base_name)
 
-    // The greeting re-resolves on every face change, like the header and the
-    // accounts card (the same trigger sum they key on) — not only on the
-
-    // time-of-day bucket change.
-    LaunchedEffect(baseMessage, defaultName, encryptedPreferencesUpdateTrigger + profileFaceUpdateTrigger) {
-        withContext(NzikDispatchers.DATA) {
-            // The greeting follows the active profile's face name
-            // (spec-profiles-page-face): its display name or a logged-in account
-
-            // source, with the legacy custom name and the default app name as
-            // fallbacks — the name is never blank, so the greeting always renders.
-            runCatching {
-                val name = loadActiveProfileFace(appContext(), defaultName).name
-                if (name.isNotBlank()) {
-                    profileName = name
+    // Generic captures must never resolve the active profile or account identity.
+    if (!isPreview) {
+        LaunchedEffect(baseMessage, defaultName, encryptedPreferencesUpdateTrigger + profileFaceUpdateTrigger) {
+            withContext(NzikDispatchers.DATA) {
+                runCatching {
+                    val name = loadActiveProfileFace(appContext(), defaultName).name
+                    if (name.isNotBlank()) {
+                        profileName = name
+                    }
+                }.onFailure {
+                    Timber.tag("WelcomeMessage").e(it, "Failed to resolve the greeting face name")
                 }
-            }.onFailure {
-                Timber.tag("WelcomeMessage").e(it, "Failed to resolve the greeting face name")
             }
         }
     }
 
+    val greetingName = if (isPreview) defaultName else profileName
     TitleMiniSection(
-        title = if (profileName.isBlank()) {
+        title = if (greetingName.isBlank()) {
             baseMessage
         } else {
-            stringResource(R.string.home_greeting_with_profile_format, baseMessage, profileName)
+            stringResource(R.string.home_greeting_with_profile_format, baseMessage, greetingName)
         },
         modifier = Modifier.padding(horizontal = 12.dp)
     )
