@@ -7,7 +7,7 @@
     <string name="notification_inbox_clear_all">Tout effacer</string>
     <string name="notification_debug_theme_examples_channel">Exemples de magasin de thème</string>
     <string name="notification_debug_theme_update_title">Mise à jour du thème disponible • démo</string>
-    <string name="notification_debug_theme_update_detail">%1$s · Revision %2$d</string>
+    <string name="notification_debug_theme_update_detail">%1$s · Révision %2$d</string>
     <string name="notification_debug_theme_downloaded_title">Thème téléchargé • démo</string>
     <string name="notification_debug_theme_downloaded_detail">%1$s est prêt en téléchargement.</string>
     <string name="notification_debug_download_update_action">Télécharger la mise à jour</string>
