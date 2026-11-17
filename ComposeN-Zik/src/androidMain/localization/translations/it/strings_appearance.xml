@@ -478,6 +478,7 @@
     <string name="theme_store_local_saved">Tema locale aggiornato.</string>
     <string name="theme_store_local_save_failed">Impossibile aggiornare il tema locale.</string>
     <string name="theme_store_publish_description">Proponi un nuovo tema per il negozio di temi.</string>
+    <string name="theme_store_published_creator_required">Il tuo profilo creatore deve essere accettato e pubblicato nel Theme Store prima di poter pubblicare un tema.</string>
     <string name="theme_store_edit_description">Invia una nuova revisione di un tema pubblicato.</string>
     <string name="theme_store_submissions_in_progress_description">Traccia le presentazioni in attesa di revisione.</string>
     <string name="theme_store_submissions_history_description">Vedi le decisioni sulle tue precedenti presentazioni.</string>
