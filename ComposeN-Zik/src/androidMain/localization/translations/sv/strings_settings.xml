@@ -398,6 +398,9 @@
     <string name="settings_player_timeline_label">Tidslinje</string>
     <string name="settings_player_timeline_size_label">Storlek på spelarens tidslinje</string>
     <string name="settings_player_timeline_transparent_label">Transparent tidslinjefält</string>
+    <string name="settings_player_opening_mode_label">Öppningsläge för spelare</string>
+    <string name="settings_player_opening_mode_description">Välj vilket läge du vill använda när du öppnar spelaren.</string>
+    <string name="settings_player_opening_mode_remember_last">Kom ihåg det senaste läget</string>
     <string name="settings_player_top_action_bar_visible_label">Visa översta åtgärdsfältet</string>
     <string name="settings_player_vertical_swipe_expansion_description">Det påverkar endast när den expanderade spelaren är avstängd</string>
     <string name="settings_preference_saved_message">Preferens sparad</string>
@@ -501,4 +504,5 @@
     <string name="settings_local_music_summary_title">Sammanfattning av biblioteket på enheten</string>
     <string name="settings_local_music_summary_description">Se upptäckt musik och mappar för denna profil.</string>
     <string name="settings_local_music_summary_count">%1$s: %2$d</string>
+    <string name="settings_local_music_start_folder_path_example">Musik/Live</string>
 </resources>
