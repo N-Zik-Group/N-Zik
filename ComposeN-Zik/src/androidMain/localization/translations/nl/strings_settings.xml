@@ -398,6 +398,9 @@
     <string name="settings_player_timeline_label">Tijdlijn</string>
     <string name="settings_player_timeline_size_label">Speler tijdlijn Grootte</string>
     <string name="settings_player_timeline_transparent_label">Transparante tijdlijnbalk</string>
+    <string name="settings_player_opening_mode_label">Speler openingsmodus</string>
+    <string name="settings_player_opening_mode_description">Kies de modus om te gebruiken wanneer je de speler opent.</string>
+    <string name="settings_player_opening_mode_remember_last">Laatste modus onthouden</string>
     <string name="settings_player_top_action_bar_visible_label">Toon de top actiebalk</string>
     <string name="settings_player_vertical_swipe_expansion_description">Het is alleen van toepassing wanneer de Uitgebreide Speler uit is</string>
     <string name="settings_preference_saved_message">Voorkeur opgeslagen</string>
@@ -501,4 +504,5 @@
     <string name="settings_local_music_summary_title">Overzicht bibliotheek van apparaten</string>
     <string name="settings_local_music_summary_description">Zie gedetecteerde muziek en mappen voor dit profiel.</string>
     <string name="settings_local_music_summary_count">%1$s: %2$d</string>
+    <string name="settings_local_music_start_folder_path_example">Muziek/Live</string>
 </resources>
