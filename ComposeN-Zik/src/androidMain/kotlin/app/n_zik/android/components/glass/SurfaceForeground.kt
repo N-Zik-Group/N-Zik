@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.lerp
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.components.theme.withColor
+import app.n_zik.android.components.theme.paletteDarkness
 import app.n_zik.android.ui.styling.LocalAppearance
 
 /** Estimated scene or plate color at the origin of an overlay. */
@@ -27,6 +28,7 @@ internal val LocalForegroundSourcePalette = compositionLocalOf<ColorPalette?> { 
 private val LocalForegroundSurface = compositionLocalOf<Color?> { null }
 private val LocalForegroundScrim = compositionLocalOf { Color.Transparent }
 internal val LocalGlassInkDarkness = compositionLocalOf<Float?> { null }
+internal val LocalPlayerForegroundProgress = compositionLocalOf<Float?> { null }
 
 internal const val TextContrast = 4.5f
 internal const val IconContrast = 3f
@@ -154,10 +156,14 @@ internal fun SurfaceForegroundContent(
     val amount = LocalNeutralForegroundAmount.current
     val commonSurface = LocalNeutralForegroundSurface.current ?: surface
     val transition = LocalNeutralForegroundTransition.current?.value
+    val displayedProgress = LocalPlayerForegroundProgress.current
+    val textFrame = remember { PlayerMeasuredInkFrame() }
+    val secondaryFrame = remember { PlayerMeasuredInkFrame() }
     val adapt = surface != null || commonNeutral != null || transition != null
     val inheritedContent = LocalContentColor.current
-    fun ink(original: Color, minimum: Float, glyph: Boolean = false): Color =
-        if (preferMeasuredText && !glyph && surface != null) measuredPlayerTextForeground(original, surface, minimum)
+    fun ink(original: Color, minimum: Float, glyph: Boolean = false, frame: PlayerMeasuredInkFrame? = null): Color =
+        if (preferMeasuredText && !glyph && surface != null)
+            requireNotNull(frame).resolve(original, surface, minimum, displayedProgress)
         else if (transition != null) transition.resolve(original, minimum, glyph = glyph)
         else if (glassInkDarkness != null && surface != null) glassPaneForeground(original, surface, minimum, glassInkDarkness, glyph)
         else if (glyph && surface != null && isNeutralForeground(original) && isGentleGlyph(original, true))
@@ -169,8 +175,8 @@ internal fun SurfaceForegroundContent(
             lerp(original, target, amount)
         } else if (surface != null) readableForeground(original, surface, minimum) else original
     val palette = if (adapt) appearance.colorPalette.copy(
-        text = ink(source.text, TextContrast),
-        textSecondary = ink(source.textSecondary, TextContrast),
+        text = ink(source.text, TextContrast, frame = textFrame),
+        textSecondary = ink(source.textSecondary, TextContrast, frame = secondaryFrame),
         textDisabled = source.textDisabled,
         iconButtonPlayer = ink(source.iconButtonPlayer, IconContrast, glyph = true),
     ) else appearance.colorPalette
@@ -223,6 +229,27 @@ internal fun invalidatePlayerForegroundMemo() = playerForegroundMemo.clear()
 internal fun measuredPlayerTextForeground(original: Color, surface: Color, minimum: Float = TextContrast): Color =
     measuredPlayerForeground(original, surface, minimum)
 
+/** Reuses the shared clock, retaining the actual ink when that clock is retargeted. */
+internal class PlayerMeasuredInkFrame {
+    private var previousProgress: Float? = null
+    private var origin: Color? = null
+    private var displayed: Color? = null
+
+    fun resolve(original: Color, surface: Color, minimum: Float, progress: Float?): Color {
+        val endpoint = measuredPlayerForeground(original, surface, minimum)
+        val current = progress?.coerceIn(0f, 1f)
+        if (current == null || current >= 1f || !isNeutralForeground(original) || original.alpha == 0f) {
+            origin = null
+            previousProgress = current
+            displayed = endpoint
+            return endpoint
+        }
+        if (origin == null || previousProgress?.let { current < it } == true) origin = displayed ?: original
+        previousProgress = current
+        return lerp(requireNotNull(origin), endpoint, current).also { displayed = it }
+    }
+}
+
 internal fun measuredPlayerForeground(original: Color, surface: Color, minimum: Float): Color {
     if (!original.isSpecified) return neutralForeground(surface)
     if (!isNeutralForeground(original) || original.alpha == 0f) return original
@@ -241,10 +268,26 @@ internal fun playerControlGlyphColor(
     minimum: Float = IconContrast,
     enabled: Boolean = true,
 ): Color {
-    val color = surfaceGlyphColor(original, plate, minimum, enabled)
+    val measuredFrame = remember { PlayerMeasuredInkFrame() }
     val backdrop = LocalForegroundSurface.current
+    val progress = LocalPlayerForegroundProgress.current
+    if (enabled && backdrop != null && progress != null && progress < 1f) {
+        val palette = LocalAppearance.current.colorPalette
+        val source = LocalForegroundSourcePalette.current
+        // Labels may already carry the measured correction. Resolve their source role once,
+        // on the shared frame, before applying this glyph's own plate contrast.
+        val ink = if (plate.alpha > 0f) original else when (original) {
+            palette.text -> source?.text ?: original
+            palette.textSecondary -> source?.textSecondary ?: original
+            palette.iconButtonPlayer -> source?.iconButtonPlayer ?: original
+            else -> original
+        }
+        return measuredFrame.resolve(ink, effectiveSurfaceColor(backdrop, plate), minimum, progress)
+    }
+    val color = surfaceGlyphColor(original, plate, minimum, enabled)
     return if (enabled && backdrop != null)
-        measuredPlayerForeground(color, effectiveSurfaceColor(backdrop, plate), minimum) else color
+        measuredFrame.resolve(color, effectiveSurfaceColor(backdrop, plate), minimum,
+            progress) else color
 }
 
 /** Every role resolves both endpoints from its source ink and uses this single shared clock. */
@@ -365,6 +408,9 @@ internal fun surfaceProgressTrackColor(progress: Color, track: Color, plate: Col
 @Composable
 internal fun surfaceForegroundScrim(): Color = LocalForegroundScrim.current
 
+/** Keeps decoration polarity on the same continuous local surface as the visible text. */
 @Composable
-internal fun surfaceForegroundIsLight(default: Boolean): Boolean =
-    LocalForegroundSurface.current?.let { neutralForeground(it) == Color.White } ?: default
+internal fun surfaceNeutralForeground(default: Color): Color =
+    LocalForegroundSurface.current?.let { surface ->
+        glassPaneForeground(Color.Unspecified, surface, TextContrast, paletteDarkness())
+    } ?: default

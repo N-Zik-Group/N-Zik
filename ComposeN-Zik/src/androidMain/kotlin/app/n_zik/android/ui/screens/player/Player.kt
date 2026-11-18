@@ -1,6 +1,7 @@
 package app.n_zik.android.ui.screens.player
 
 import app.n_zik.android.components.theme.LocalPaletteFadeTarget
+import app.n_zik.android.components.theme.paletteDarkness
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
 
@@ -152,6 +153,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import app.n_zik.android.components.player.rememberPlayerArtworkPagerState
 import app.n_zik.android.components.player.animatePlayerArtworkScrollToPage
 import app.n_zik.android.components.player.shouldHoldPlayerArtworkBackground
+import app.n_zik.android.components.player.shouldWaitForPlayerBackdrop
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.SideEffect
@@ -202,6 +204,9 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.boundsInWindow
 import app.n_zik.android.components.player.playerFluidBackground
 import app.n_zik.android.components.player.PlayerFluidColors
+import app.n_zik.android.components.player.PlayerGradientLayers
+import app.n_zik.android.components.player.playerShaderWash
+import app.n_zik.android.components.player.rememberPlayerGradientFade
 import app.n_zik.android.components.player.LocalPlayerArtworkPaint
 import app.n_zik.android.components.player.LocalPlayerArtworkPaintTarget
 import app.n_zik.android.components.theme.dynamicArtworkFallback
@@ -219,6 +224,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
@@ -256,7 +262,6 @@ import com.mikepenz.hypnoticcanvas.shaders.InkFlow
 import com.mikepenz.hypnoticcanvas.shaders.MesmerizingLens
 import com.mikepenz.hypnoticcanvas.shaders.OilFlow
 import com.mikepenz.hypnoticcanvas.shaders.PurpleLiquid
-import com.mikepenz.hypnoticcanvas.shaders.Shader
 import com.mikepenz.hypnoticcanvas.shaders.Stage
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
@@ -1035,38 +1040,40 @@ fun Player(
         identity.artworkUri == backgroundArtwork.coverUrl.orEmpty() && identity.localRevision == backgroundArtwork.coverRevision
     } == true
     if (artworkInMotion != null) {
-        val waitingForBackdrop = waitForBlurredCover && !expectsForegroundCover &&
-            (!showFullScreenArtworkPager || !fullCoverPresentation) &&
-            !backgroundArtwork.coverUrl.isNullOrBlank() &&
-            !settledArtworkMatches
+        val waitingForBackdrop = shouldWaitForPlayerBackdrop(
+            blurredBackground = waitForBlurredCover,
+            expectsForegroundCover = expectsForegroundCover,
+            fullscreenPagerOwnsPresentation = showFullScreenArtworkPager && fullCoverPresentation,
+            artworkUri = backgroundArtwork.coverUrl,
+            backdropMatches = settledArtworkMatches,
+        )
         val artworkMoving = visiblePlayerArtwork && (holdBackgroundArtwork || waitingForBackdrop || (backgroundArtworkPager != null &&
             (backgroundArtworkPager.isScrollInProgress || backgroundArtworkPager.settledPage != player.currentMediaItemIndex)))
         SideEffect { artworkInMotion.value = artworkMoving }
         DisposableEffect(artworkInMotion) { onDispose { artworkInMotion.value = false } }
     }
-    var randomGradientIndex by remember { mutableIntStateOf(2) }
-    if (animatedGradient == AnimatedGradient.Random) {
-        LaunchedEffect(backgroundArtwork.mediaId) { randomGradientIndex = (2..13).random() }
+    val gradientType = remember(animatedGradient, backgroundArtwork.mediaId) {
+        if (animatedGradient == AnimatedGradient.Random) AnimatedGradient.entries[(2..13).random()]
+        else animatedGradient
     }
-    val gradientType = if (animatedGradient == AnimatedGradient.Random)
-        AnimatedGradient.entries[randomGradientIndex] else animatedGradient
-    val usesCoverFluidGradient = playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient &&
+    val usesAnimatedBackground = playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient
+    val gradientFade = rememberPlayerGradientFade(gradientType, decorationsActive && usesAnimatedBackground)
+    val gradientSettled = !usesAnimatedBackground ||
+        (gradientFade.target == gradientType && gradientFade.outgoing == null)
+    val usesCoverFluidGradient = usesAnimatedBackground &&
         (gradientType == AnimatedGradient.FluidCoverColorGradient || gradientType == AnimatedGradient.M3EMorphingCover)
+    // Outgoing renderers still need their paint roles while the next effect fades in.
     val targetFluidColors = when {
-        !usesCoverFluidGradient -> null
+        !usesAnimatedBackground -> null
         backgroundDisplay?.isExtremeBlack == true -> PlayerFluidColors.ExtremeBlackCover
         else -> PlayerFluidColors(backgroundPalette.background0, backgroundPalette.background2, backgroundPalette.background1, coverBackground)
     }
-    val usesCoverMorphs = playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient &&
-        gradientType == AnimatedGradient.M3EMorphingCover
     val targetSwatches = when {
         playerBackgroundColors == PlayerBackgroundColors.ColorPalette ->
             listOf(Color(dominant), Color(vibrant), Color(lightVibrant), Color(darkVibrant),
                 Color(muted), Color(lightMuted), Color(darkMuted))
-        usesCoverMorphs || (playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient &&
-            (gradientType == AnimatedGradient.Linear || gradientType == AnimatedGradient.Mesh)) ->
-            listOf(dominant, vibrant, lightVibrant, darkVibrant, muted, lightMuted, darkMuted)
-                .map(::coverGradientColor)
+        usesAnimatedBackground -> listOf(dominant, vibrant, lightVibrant, darkVibrant, muted, lightMuted, darkMuted)
+            .map(::coverGradientColor)
         else -> null
     }
     val coverForeground = backgroundDisplay?.takeIf { it.colors != null || it.forceDark }?.foreground
@@ -1100,7 +1107,9 @@ fun Player(
         }
     }.value
 
-    val sampledTheme = targetPalette.takeUnless { waitForBlurredCover || usesCoverFluidGradient || targetSwatches != null }
+    val usesArtworkSwatches = playerBackgroundColors == PlayerBackgroundColors.ColorPalette ||
+        (usesAnimatedBackground && (gradientType == AnimatedGradient.Linear || gradientType == AnimatedGradient.Mesh))
+    val sampledTheme = targetPalette.takeUnless { waitForBlurredCover || usesCoverFluidGradient || usesArtworkSwatches }
     val sampledCoverBackground = if (backgroundDisplay == null) sampledTheme?.background1 else coverBackground
     // Key the recording to the final palette. Animated values would restart the sampler every frame.
     val contrastDecisionKey = listOf(backgroundArtwork.mediaId, backgroundArtwork.coverUrl, backgroundArtwork.coverRevision,
@@ -1113,7 +1122,7 @@ fun Player(
     val renderedBackdropReady = if (waitForBlurredCover) {
         settledArtworkMatches && backgroundArtworkPager?.isScrollInProgress != true
     } else null
-    val backdropTransitioning = !backdropSettled || (sampledTheme != null && color != sampledTheme) ||
+    val backdropTransitioning = !gradientSettled || !backdropSettled || (sampledTheme != null && color != sampledTheme) ||
         renderedBackdropReady == false
     val samplePlayerBackground = !appRunningInBackground && !playerUnderlayCovered &&
         (playerContentVisible || !contrastDecisionReady) && !backdropTransitioning
@@ -1124,12 +1133,15 @@ fun Player(
     val capturePlayerBackground = (samplePlayerBackground && !contrastDecisionReady) || sampleTransition || captureGlassSource
     val playerBackground = rememberGlassPlayerBackground()
     val playerCoverBackground = rememberLayerBackdrop()
-    val playerControlsBackdrop = rememberCombinedBackdrop(playerCoverBackground, playerBackground.backdrop)
+    val animatedGradientBackdrop = if (usesAnimatedBackground) rememberLayerBackdrop() else null
+    val playerControlsBackdrop = if (animatedGradientBackdrop != null)
+        rememberCombinedBackdrop(playerCoverBackground, animatedGradientBackdrop, playerBackground.backdrop)
+    else rememberCombinedBackdrop(playerCoverBackground, playerBackground.backdrop)
     val controlsSource = rememberPlayerControlsGlassSource(playerControlsBackdrop)
-    val provisionalCoverSurface = remember(artworkPaint, usesCoverFluidGradient, usesFlatCoverBackground) {
+    val provisionalCoverSurface = remember(artworkPaint, usesCoverFluidGradient, usesFlatCoverBackground, gradientSettled) {
         derivedStateOf {
             when {
-                usesCoverFluidGradient -> artworkPaint.value.fluid?.centerSurface()
+                usesCoverFluidGradient && gradientSettled -> artworkPaint.value.fluid?.centerSurface()
                 usesFlatCoverBackground -> artworkPaint.value.surface
                 else -> null
             }
@@ -1150,6 +1162,10 @@ fun Player(
     val queuePlayerBackdrop = rememberLayerBackdrop()
     val capturePlayerScene = playerGlassSceneCaptureActive(glassSettings, playerSheetState.isExpanded, captureGlassSource)
     val captureQueueUnderlay = capturePlayerScene && (showQueue || isQueuePanelVisible)
+    val blurredVeil = if (waitForBlurredCover && bottomgradient)
+        lerp(Color.White, Color.Black, paletteDarkness()) else Color.Transparent
+    val blurredVeilEnd = blurredVeil.copy(alpha = blurredVeil.alpha * if (isLandscape) .8f else .75f)
+    val blurredVeilBase = if (isLandscape) blurredVeil.copy(alpha = blurredVeil.alpha * .25f) else Color.Transparent
 
     @Composable
     fun PlayerBlurredCover(
@@ -1227,18 +1243,12 @@ fun Player(
                 .background(
                     Brush.verticalGradient(
                         0.0f to Color.Transparent,
-                        1.0f to if (bottomgradient) if (colorPaletteMode == ColorPaletteMode.Light) Color.White.copy(
-                            if (isLandscape) 0.8f else 0.75f
-                        ) else Color.Black.copy(if (isLandscape) 0.8f else 0.75f) else Color.Transparent,
+                        1.0f to blurredVeilEnd,
                         startY = playerGradientStartY,
                         endY = POSITIVE_INFINITY
                     )
                 )
-                .background(
-                    if (bottomgradient) if (isLandscape) if (colorPaletteMode == ColorPaletteMode.Light) Color.White.copy(
-                        0.25f
-                    ) else Color.Black.copy(0.25f) else Color.Transparent else Color.Transparent
-                )
+                .background(blurredVeilBase)
                 .combinedClickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
@@ -1313,104 +1323,7 @@ fun Player(
         }
     } else {
         when (playerBackgroundColors) {
-            PlayerBackgroundColors.AnimatedGradient -> {
-                var background = Color.Transparent
-                var shaderCondition = true
-                var shader: Shader? = null
-                val type = gradientType
-
-                when( type ) {
-                    AnimatedGradient.FluidThemeColorGradient, AnimatedGradient.FluidCoverColorGradient,
-                    AnimatedGradient.M3EMorphingTheme, AnimatedGradient.M3EMorphingCover -> {
-                        val isThemeGradient = type == AnimatedGradient.FluidThemeColorGradient ||
-                            type == AnimatedGradient.M3EMorphingTheme
-                        val themeStops = PlayerFluidColors(color.background0, color.background2, color.background1, color.accent)
-                        val fallbackStops = rememberUpdatedState(targetFluidColors ?: themeStops)
-                        val fluidStops = remember(artworkPaint, isThemeGradient) { derivedStateOf {
-                            if (isThemeGradient) fallbackStops.value else artworkPaint.value.fluid ?: fallbackStops.value
-                        } }
-                        containerModifier = containerModifier.playerFluidBackground(
-                            fluidStops, rememberPlayerDecorationElapsedNanos(decorationsActive),
-                        )
-                            
-                        if (type == AnimatedGradient.M3EMorphingTheme || type == AnimatedGradient.M3EMorphingCover) {
-                            val isTheme = type == AnimatedGradient.M3EMorphingTheme
-                            containerModifier = containerModifier.animatedM3EBackground(
-                                animating = isActuallyPlaying,
-                                active = decorationsActive,
-                                D = if (isTheme) colorPalette().background1 else coverGradientColor(dominant),
-                                V = if (isTheme) colorPalette().background2 else coverGradientColor(vibrant),
-                                LV = if (isTheme) color.background2 else coverGradientColor(lightVibrant),
-                                DV = if (isTheme) colorPalette().background1 else coverGradientColor(darkVibrant),
-                                M = if (isTheme) color.background1 else coverGradientColor(muted),
-                                LM = if (isTheme) color.accent else coverGradientColor(lightMuted),
-                                DM = if (isTheme) colorPalette().background2 else coverGradientColor(darkMuted),
-                                skipToken = backgroundArtwork.mediaId,
-                                artworkSwatches = displayedSwatches.takeIf { !isTheme },
-                            )
-                        }
-                    }
-                    AnimatedGradient.Linear -> {
-                        containerModifier = containerModifier.animatedGradient(
-                            animating = isActuallyPlaying && decorationsActive,
-                            swatches = displayedSwatches,
-                        )
-                    }
-                    AnimatedGradient.Mesh -> {
-                        shaderCondition = !appRunningInBackground
-                        shader = remember(displayedSwatches) { PlayerMeshGradient(displayedSwatches) }
-                    }
-                    AnimatedGradient.MesmerizingLens -> shader = MesmerizingLens
-                    AnimatedGradient.GlossyGradients -> {
-                        if( !lightTheme )
-                            background = Color.Black.copy(.2f)
-                        shader = GlossyGradients
-                    }
-                    AnimatedGradient.GradientFlow -> {
-                        if( !lightTheme )
-                            background = Color.Black.copy(.2f)
-                        shader = GradientFlow
-                    }
-                    AnimatedGradient.PurpleLiquid -> shader = PurpleLiquid
-                    AnimatedGradient.InkFlow -> {
-                        if( lightTheme )
-                            background = Color.White.copy(.4f)
-                        shader = InkFlow
-                    }
-                    AnimatedGradient.OilFlow -> {
-                        if( lightTheme )
-                            background = Color.White.copy(.4f)
-                        shader = OilFlow
-                    }
-                    AnimatedGradient.IceReflection -> {
-                        background = if( !lightTheme ) Color.Black.copy( .3f ) else Color.White.copy( .4f )
-                        shader = IceReflection
-                    }
-                    AnimatedGradient.Stage -> {
-                        if( !lightTheme )
-                            background = Color.Black.copy( .3f )
-                        shader = Stage
-                    }
-                    AnimatedGradient.GoldenMagma -> {
-                        background = if( !lightTheme ) Color.Black.copy( .2f ) else Color.White.copy( .3f )
-                        shader = GoldenMagma
-                    }
-                    AnimatedGradient.BlackCherryCosmos -> {
-                        if( lightTheme )
-                            background = Color.White.copy( .35f )
-                        shader = BlackCherryCosmos
-                    }
-
-                    // If [tempGradient] is [AnimatedGradient.Random], you have a problem.
-                    AnimatedGradient.Random -> throw IllegalStateException("Anything but this")
-                }
-
-                val activeShader = shader
-                if (shaderCondition && activeShader != null) {
-                    containerModifier = containerModifier.shaderBackground(activeShader)
-                }
-                containerModifier = containerModifier.background(background)
-            }
+            PlayerBackgroundColors.AnimatedGradient -> Unit
 
             else -> {
                 val usesCoverGradient = playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient
@@ -1430,6 +1343,72 @@ fun Player(
             }
         }
 
+    }
+
+    @Composable
+    fun BoxScope.AnimatedPlayerBackground() {
+        if (animatedGradientBackdrop == null) return
+        val source = Modifier.matchParentSize().then(
+            if (capturePlayerBackground) Modifier.layerBackdrop(animatedGradientBackdrop) else Modifier
+        )
+        PlayerGradientLayers(gradientFade, source) { type, incoming ->
+            val animationActive = decorationsActive && incoming
+            when (type) {
+                AnimatedGradient.FluidThemeColorGradient, AnimatedGradient.FluidCoverColorGradient,
+                AnimatedGradient.M3EMorphingTheme, AnimatedGradient.M3EMorphingCover -> {
+                    val isTheme = type == AnimatedGradient.FluidThemeColorGradient || type == AnimatedGradient.M3EMorphingTheme
+                    val themeStops = PlayerFluidColors(color.background0, color.background2, color.background1, color.accent)
+                    val fallbackStops = rememberUpdatedState(targetFluidColors ?: themeStops)
+                    val currentThemeStops = rememberUpdatedState(themeStops)
+                    val fluidStops = remember(artworkPaint, isTheme) { derivedStateOf {
+                        if (isTheme) currentThemeStops.value else artworkPaint.value.fluid ?: fallbackStops.value
+                    } }
+                    val fluid = Modifier.playerFluidBackground(
+                        fluidStops, rememberPlayerDecorationElapsedNanos(animationActive),
+                    )
+                    if (type == AnimatedGradient.M3EMorphingTheme || type == AnimatedGradient.M3EMorphingCover) {
+                        fluid.animatedM3EBackground(
+                            animating = isActuallyPlaying,
+                            active = animationActive,
+                            D = if (isTheme) color.background1 else coverGradientColor(dominant),
+                            V = if (isTheme) color.background2 else coverGradientColor(vibrant),
+                            LV = if (isTheme) color.background2 else coverGradientColor(lightVibrant),
+                            DV = if (isTheme) color.background1 else coverGradientColor(darkVibrant),
+                            M = if (isTheme) color.background1 else coverGradientColor(muted),
+                            LM = if (isTheme) color.accent else coverGradientColor(lightMuted),
+                            DM = if (isTheme) color.background2 else coverGradientColor(darkMuted),
+                            skipToken = backgroundArtwork.mediaId,
+                            artworkSwatches = displayedSwatches.takeIf { !isTheme },
+                            paletteKickKey = if (isTheme) targetPalette.background2 else coverGradientColor(vibrant),
+                        )
+                    } else fluid
+                }
+                AnimatedGradient.Linear -> Modifier.animatedGradient(
+                    animating = isActuallyPlaying && animationActive,
+                    swatches = displayedSwatches,
+                )
+                else -> {
+                    val shader = when (type) {
+                        AnimatedGradient.Mesh -> remember(displayedSwatches) { PlayerMeshGradient(displayedSwatches) }
+                        AnimatedGradient.MesmerizingLens -> MesmerizingLens
+                        AnimatedGradient.GlossyGradients -> GlossyGradients
+                        AnimatedGradient.GradientFlow -> GradientFlow
+                        AnimatedGradient.PurpleLiquid -> PurpleLiquid
+                        AnimatedGradient.InkFlow -> InkFlow
+                        AnimatedGradient.OilFlow -> OilFlow
+                        AnimatedGradient.IceReflection -> IceReflection
+                        AnimatedGradient.Stage -> Stage
+                        AnimatedGradient.GoldenMagma -> GoldenMagma
+                        AnimatedGradient.BlackCherryCosmos -> BlackCherryCosmos
+                        else -> error("Unexpected shader gradient: $type")
+                    }
+                    val shade = playerShaderWash(type, paletteDarkness())
+                    val background = if (decorationsActive && !appRunningInBackground)
+                        Modifier.shaderBackground(shader) else Modifier
+                    background.background(shade)
+                }
+            }
+        }
     }
 
     val controllerPreviewPage = if (showthumbnail && playerType == PlayerType.Modern && coverArtworkVisible)
@@ -1699,18 +1678,12 @@ fun Player(
                      .background(
                          Brush.verticalGradient(
                              0.0f to Color.Transparent,
-                             1.0f to if (bottomgradient) if (lightTheme) Color.White.copy(
-                                 if (isLandscape) 0.8f else 0.75f
-                             ) else Color.Black.copy(if (isLandscape) 0.8f else 0.75f) else Color.Transparent,
+                             1.0f to blurredVeilEnd,
                              startY = playerGradientStartY,
                              endY = POSITIVE_INFINITY
                          )
                      )
-                     .background(
-                         if (bottomgradient) if (isLandscape) if (lightTheme) Color.White.copy(
-                             0.25f
-                         ) else Color.Black.copy(0.25f) else Color.Transparent else Color.Transparent
-                     )){}
+                     .background(blurredVeilBase)){}
              }
 
              PlayerBlurredCover(
@@ -1725,6 +1698,7 @@ fun Player(
                  isShowingVisualizer = isShowingVisualizer,
              )
 
+            AnimatedPlayerBackground()
             PlayerLandscapeColumns(
                 showArtworkColumn = showLandscapeArtworkColumn,
                 modifier = (if (capturePlayerBackground) playerBackground.background else Modifier).then(containerModifier)
@@ -2307,18 +2281,12 @@ fun Player(
                         .background(
                             Brush.verticalGradient(
                                 0.0f to Color.Transparent,
-                                1.0f to if (bottomgradient) if (colorPaletteMode == ColorPaletteMode.Light) Color.White.copy(
-                                    if (isLandscape) 0.8f else 0.75f
-                                ) else Color.Black.copy(if (isLandscape) 0.8f else 0.75f) else Color.Transparent,
+                                1.0f to blurredVeilEnd,
                                 startY = playerGradientStartY,
                                 endY = POSITIVE_INFINITY
                             )
                         )
-                        .background(
-                            if (bottomgradient) if (isLandscape) if (colorPaletteMode == ColorPaletteMode.Light) Color.White.copy(
-                                0.25f
-                            ) else Color.Black.copy(0.25f) else Color.Transparent else Color.Transparent
-                        )){}
+                        .background(blurredVeilBase)){}
                 }
 
                PlayerBlurredCover(
@@ -2333,6 +2301,7 @@ fun Player(
                    isShowingVisualizer = isShowingVisualizer,
                )
 
+            AnimatedPlayerBackground()
             val prioritizePortraitArtwork = playerPortraitPrioritizesArtwork(
                 playerCoverArtworkVisible(showthumbnail, isShowingLyrics, coverOverlayPolicy.lyricsOnCover,
                     isShowingVisualizer, coverOverlayPolicy.visualizerOnCover), playerType)

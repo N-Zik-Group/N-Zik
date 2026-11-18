@@ -67,6 +67,7 @@ fun Modifier.animatedM3EBackground(
     skipToken: Any? = null,
     active: Boolean = true,
     artworkSwatches: State<List<Color>>? = null,
+    paletteKickKey: Any = V,
 ): Modifier = composed {
     val accumulatedTime = remember { mutableFloatStateOf(0f) }
 
@@ -78,6 +79,7 @@ fun Modifier.animatedM3EBackground(
     skipTokenTracker.last = skipToken
     val lastEffectToken = remember { SkipTokenTracker(skipToken) }
     val latestSkipToken by rememberUpdatedState(skipToken)
+    val latestPaletteKickKey by rememberUpdatedState(paletteKickKey)
 
     val visibilityTarget = m3eVisibilityTarget(animating, skipMaskActive, immediateSkipHide)
     val visibilityAnimation = remember { Animatable(visibilityTarget) }
@@ -173,7 +175,7 @@ fun Modifier.animatedM3EBackground(
         }
     }
 
-    val lastLocalColor = remember { mutableStateOf(V.value) }
+    val lastPaletteKick = remember { mutableStateOf(paletteKickKey) }
     val mountTime = remember { System.currentTimeMillis() }
     val hasExploded = remember { mutableStateOf(false) }
 
@@ -206,20 +208,19 @@ fun Modifier.animatedM3EBackground(
             return@LaunchedEffect
         }
 
-        lastLocalColor.value = V.value
+        lastPaletteKick.value = latestPaletteKickKey
         explodeShapes()
         skipMaskActive = false
     }
 
-    // Explosion on song change (colors change) and startup
-    LaunchedEffect(V) {
-        val currentColor = V.value
+    // Palette endpoints kick once. Interpolated drawing colors never restart physics.
+    LaunchedEffect(paletteKickKey) {
         val now = System.currentTimeMillis()
         if (!hasExploded.value) {
             hasExploded.value = true
             explodeShapes()
-        } else if (lastLocalColor.value != currentColor && !skipMaskActive) {
-            lastLocalColor.value = currentColor
+        } else if (lastPaletteKick.value != paletteKickKey && !skipMaskActive && !immediateSkipHide) {
+            lastPaletteKick.value = paletteKickKey
             if (now - mountTime > 800) {
                 explodeShapes()
             }

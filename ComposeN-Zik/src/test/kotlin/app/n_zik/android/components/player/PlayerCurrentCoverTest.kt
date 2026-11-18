@@ -9,6 +9,23 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PlayerCurrentCoverTest {
+    @Test fun `artless tracks keep the palette held until the fallback backdrop is displayed`() {
+        for (uri in listOf(null, "", "null")) {
+            assertTrue(shouldWaitForPlayerBackdrop(true, false, false, uri, false))
+            assertTrue(shouldWaitForPlayerBackdrop(true, true, false, uri, false))
+            assertTrue(shouldWaitForPlayerBackdrop(true, false, true, uri, false))
+            assertFalse(shouldWaitForPlayerBackdrop(true, false, true, uri, true))
+        }
+    }
+
+    @Test fun `other rendered cover owners still release valid artwork without awaiting blur`() {
+        val artwork = "https://example.test/cover.jpg"
+        assertTrue(shouldWaitForPlayerBackdrop(true, false, false, artwork, false))
+        assertFalse(shouldWaitForPlayerBackdrop(true, true, false, artwork, false))
+        assertFalse(shouldWaitForPlayerBackdrop(true, false, true, artwork, false))
+        assertFalse(shouldWaitForPlayerBackdrop(false, false, false, null, false))
+    }
+
     @Test fun `preset three hidden thumbnail has full width even when expanded and Modern cover style`() {
         // AppearancePresetsCard onClick2: this is the real third preset, not onClick3.
         assertFalse(playerLandscapeArtworkColumnVisible(PlayerType.Modern, ThumbnailType.Modern,

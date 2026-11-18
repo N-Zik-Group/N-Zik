@@ -25,6 +25,7 @@ import app.n_zik.android.ui.styling.lerpTo
 import app.n_zik.android.components.theme.LocalPaletteDarkness
 import app.n_zik.android.components.theme.LocalPaletteFadeTarget
 import app.n_zik.android.components.theme.withColor
+import app.n_zik.android.components.glass.LocalPlayerForegroundProgress
 import kotlinx.coroutines.flow.first
 
 /**
@@ -136,8 +137,9 @@ fun PaletteFade(
             return@LaunchedEffect
         }
         if (moving) return@LaunchedEffect
-        if (artworkInMotion != null) {
-            // Let the new pager request reach the player before deciding whether to fade.
+        if (artworkInMotion != null && targetPaint?.themePalette == null) {
+            // Ambient palette updates can precede the player's pager request. Scoped artwork paint
+            // is already committed by the visible player, after its cover and layout gates.
             withFrameNanos { }
             snapshotFlow { artworkInMotion.value }.first { moving -> !moving }
         }
@@ -169,6 +171,7 @@ fun PaletteFade(
         LocalPaletteFadeTarget provides targetAppearance,
         LocalPlayerArtworkPaintTarget provides artworkTarget,
         LocalPlayerArtworkPaint provides displayedPaint,
+        LocalPlayerForegroundProgress provides fraction.value,
     ) {
         content()
     }

@@ -47,6 +47,18 @@ import kotlinx.coroutines.delay
 /** Local artwork can be replaced in place while the song and its URI remain the same. */
 internal data class PlayerCoverIdentity(val mediaId: String, val artworkUri: String, val localRevision: Long = 0L)
 
+internal fun shouldWaitForPlayerBackdrop(
+    blurredBackground: Boolean,
+    expectsForegroundCover: Boolean,
+    fullscreenPagerOwnsPresentation: Boolean,
+    artworkUri: String?,
+    backdropMatches: Boolean,
+): Boolean {
+    val missingArtwork = artworkUri.isNullOrBlank() || artworkUri == "null"
+    return blurredBackground && !backdropMatches &&
+        (missingArtwork || (!expectsForegroundCover && !fullscreenPagerOwnsPresentation))
+}
+
 @Composable
 internal fun rememberPlayerCoverIdentity(mediaId: String, artworkUri: String): PlayerCoverIdentity {
     val source = rememberDisplayArtworkSource(artworkUri)
@@ -145,7 +157,8 @@ internal fun PlayerCurrentCover(
     val artworkSource = rememberDisplayArtworkSource(artworkUri)?.let(::cleanPrefix)
     if (canRequest && (artworkSource.isNullOrBlank() || artworkSource == "null")) {
         LaunchedEffect(identity) {
-            if (frames.displayed != null) delay(ARTWORK_METADATA_GRACE_MS)
+            // Revisions supplied by the player have already passed the metadata grace.
+            if (committedRevision == null && frames.displayed != null) delay(ARTWORK_METADATA_GRACE_MS)
             frames.complete(identity, fallback)
         }
     } else if (canRequest) key(identity) {
