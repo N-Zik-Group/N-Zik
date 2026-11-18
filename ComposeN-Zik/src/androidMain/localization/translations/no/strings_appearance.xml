@@ -219,6 +219,7 @@
     <string name="theme_light_palette_text_secondary_description">Velg farge for sekundær tekst i den lyse paletten.</string>
     <string name="theme_mode_description">Velg når appen bruker lyset eller en mørk palette.</string>
     <string name="theme_mode_pitch_black">Beksvart</string>
+    <string name="theme_mode_pure_black">Ren Svart</string>
     <string name="theme_palette_custom">Tilpasset</string>
     <string name="theme_palette_description">Velg fargepaletten som brukes i appen.</string>
     <string name="theme_palette_dynamic">Dynamisk</string>
@@ -266,6 +267,7 @@
     <string name="theme_store_compatibility">N-Zik kompatibilitet</string>
     <string name="theme_store_submission_minimum_version">Minimum N-Zik versjon</string>
     <string name="theme_store_submission_minimum_description">Den eldste versjonen som kan bruke dette temaet. Nye temaer som standard for versjonskode %3$d. Du bruker N-Zik %1$s (versjonskoden %2$d).</string>
+    <string name="theme_store_submission_feature_requires_update">Dette temaet krever N-Zik Android-versjonskoden %1$d før det kan bli publisert.</string>
     <string name="theme_store_submission_version_code_label">Minimum versjonskode</string>
     <string name="theme_store_submission_find_version_code">Finn N-Zik versjoner og koder</string>
     <string name="theme_store_submission_version_with_code">%1$s (code %2$d)</string>

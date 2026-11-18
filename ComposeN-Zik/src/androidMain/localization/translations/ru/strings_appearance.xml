@@ -219,6 +219,7 @@
     <string name="theme_light_palette_text_secondary_description">В легкой палитре выберите цвет для вторичного текста.</string>
     <string name="theme_mode_description">Выберите, когда приложение использует свою светлую или темную палитру.</string>
     <string name="theme_mode_pitch_black"> Чёрный</string>
+    <string name="theme_mode_pure_black">Чистый черный</string>
     <string name="theme_palette_custom">Пользовательская</string>
     <string name="theme_palette_description">Выберите цветовую палитру, используемую в приложении.</string>
     <string name="theme_palette_dynamic">Динамически</string>
@@ -266,6 +267,7 @@
     <string name="theme_store_compatibility">Совместимость с N-Zik</string>
     <string name="theme_store_submission_minimum_version">Минимальная версия N-Zik</string>
     <string name="theme_store_submission_minimum_description">Старая версия, которая может применить эту тему. По умолчанию новые темы для кода версии %3$d. Вы используете N-Zik %1$s (код версии %2$d).</string>
+    <string name="theme_store_submission_feature_requires_update">Эта тема требует кода версии N-Zik Android %1$d перед публикацией.</string>
     <string name="theme_store_submission_version_code_label">Минимальная версия кода</string>
     <string name="theme_store_submission_find_version_code">Найти версии и коды N-Zik</string>
     <string name="theme_store_submission_version_with_code">%1$s (код %2$d)</string>

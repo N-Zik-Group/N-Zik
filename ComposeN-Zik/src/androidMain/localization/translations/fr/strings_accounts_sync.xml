@@ -206,7 +206,7 @@
     <string name="sync_cooldown">Délai de recharge de la synchronisation</string>
     <string name="sync_cooldown_description">Durée minimale entre deux synchronisations automatiques (en minutes)</string>
     <string name="sync_data_with_ytm_account">Synchroniser les données avec le compte YTM</string>
-    <string name="account_youtube_sync_build_required">La synchronisation est disponible dans les versions Debug et Dev.</string>
+    <string name="account_youtube_sync_build_required">La synchronisation est disponible dans les versions « Debug » et « Dev ».</string>
     <string name="account_youtube_sync_browse_required">Activez la connexion pour « Parcourir » afin d\'utiliser la synchronisation.</string>
     <string name="sync_direction">Sens de synchronisation</string>
     <string name="sync_direction_app_to_yt">Application → YouTube uniquement</string>

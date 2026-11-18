@@ -48,22 +48,22 @@
     <string name="storage_cleanup_unverified">La fonction de nettoyage ne sera pas disponible tant que l\'identité du propriétaire de l\'espace de stockage et les fichiers n\'auront pas été vérifiés.</string>
     <string name="storage_cleanup_active_files">Ces fichiers ne peuvent pas être nettoyés tant que le profil est en cours d\'utilisation.</string>
     <string name="storage_separation_retry">Séparation en cours · Redémarrer pour réessayer</string>
-    <string name="storage_separation_conflict">La destination contient déjà des fichiers différents.</string>
+    <string name="storage_separation_conflict">La destination contient déjà plusieurs fichiers.</string>
     <string name="storage_separation_quota">La limite de la destination ne permet pas de conserver l\'audio vérifié hors ligne.</string>
     <string name="storage_separation_space">L\'espace de stockage est insuffisant pour vérifier la copie.</string>
     <string name="storage_separation_unverified">Il n\'a pas été possible de vérifier les fichiers archivés ou la destination.</string>
     <string name="storage_cleanup_separation_pending">La fonction de nettoyage ne sera pas disponible tant que les fichiers partagés historiques n\'auront pas été séparés.</string>
     <string name="storage_cleanup_download_service_unavailable">Le service de téléchargement associé à ce profil n\'est pas disponible.</string>
-    <string name="storage_cleanup_downloads_warning">L\'audio hors ligne devra être téléchargé à nouveau.</string>
+    <string name="storage_cleanup_downloads_warning">Les fichiers audio hors ligne devront être téléchargés à nouveau.</string>
     <string name="storage_cleanup_clear_network_cache">Vider le cache réseau</string>
     <string name="storage_cleanup_network_description">Supprime les réponses réseau mises en cache.</string>
     <string name="storage_cleanup_no_files">Aucun fichier correspondant</string>
     <string name="storage_cleanup_dialog_scope">%1$s · %2$s</string>
     <string name="storage_cleanup_dialog_all">Effacer les fichiers de stockage éligibles.</string>
-    <string name="storage_cleanup_dialog_unavailable">Le nettoyage n\'est pas disponible pour ces fichiers.</string>
-    <string name="storage_download_limit_preserves_audio">Votre limite actuelle reste en cours d\'utilisation. Choisissez une limite plus élevée ou supprimez les téléchargements hors ligne avant de la diminuer.</string>
-    <string name="storage_cleanup_result_counts">Terminé : %1$d · Ignoré : %2$d · Échec: %3$d</string>
-    <string name="settings_cache_location_change_pending">L\'emplacement actuel reste utilisé jusqu\'à ce que le nouvel emplacement soit vérifié. Redémarrez l\'application pour réessayer le transfert.</string>
+    <string name="storage_cleanup_dialog_unavailable">La fonction de nettoyage n\'est pas disponible pour ces fichiers.</string>
+    <string name="storage_download_limit_preserves_audio">Votre limite actuelle reste en vigueur. Choisissez une limite plus élevée ou supprimez les téléchargements hors ligne avant de la réduire.</string>
+    <string name="storage_cleanup_result_counts">Terminés : %1$d · Ignorés : %2$d · Échoués : %3$d</string>
+    <string name="settings_cache_location_change_pending">L\'emplacement actuel reste actif jusqu\'à ce que le nouvel emplacement soit validé. Redémarrez l\'application pour réessayer le transfert.</string>
     <string name="storage_breakdown_info_title">À propos du stockage</string>
     <string name="storage_breakdown_nzik_total">Total utilisé par N-Zik</string>
     <string name="storage_breakdown_subtitle">Répartition des capacités de stockage</string>
@@ -285,6 +285,6 @@
     <string name="storage_cleanup_option_temporary_files">Fichiers temporaires</string>
     <string name="storage_cleanup_option_theme_catalog">Cache de la boutique de thèmes</string>
     <string name="storage_cleanup_option_fetched_lyrics">Paroles récupérées automatiquement</string>
-    <string name="storage_cleanup_option_offline_downloads">Audio téléchargé</string>
+    <string name="storage_cleanup_option_offline_downloads">Fichier audio téléchargé</string>
     <string name="storage_cleanup_completed">Le nettoyage est terminé.</string>
 </resources>

@@ -219,6 +219,7 @@
     <string name="theme_light_palette_text_secondary_description">Kies de kleur voor secundaire tekst in het lichte palet.</string>
     <string name="theme_mode_description">Kies wanneer de app het licht of donker palet gebruikt.</string>
     <string name="theme_mode_pitch_black">Pitch Zwart</string>
+    <string name="theme_mode_pure_black">Puur Zwart</string>
     <string name="theme_palette_custom">Aangepast</string>
     <string name="theme_palette_description">Kies het kleurenpalet dat in de app wordt gebruikt.</string>
     <string name="theme_palette_dynamic">Dynamisch</string>
@@ -266,6 +267,7 @@
     <string name="theme_store_compatibility">N-Zik compatibiliteit</string>
     <string name="theme_store_submission_minimum_version">Minimale N-Zik versie</string>
     <string name="theme_store_submission_minimum_description">De oudste versie die dit thema kan toepassen. Nieuwe thema\'s standaard versie %3$d. U gebruikt N-Zik %1$s (versiecode %2$d).</string>
+    <string name="theme_store_submission_feature_requires_update">Dit thema vereist een N-Zik Android versiecode %1$d voordat deze kan worden gepubliceerd.</string>
     <string name="theme_store_submission_version_code_label">Minimale versiecode</string>
     <string name="theme_store_submission_find_version_code">Vind N-Zik versies en codes</string>
     <string name="theme_store_submission_version_with_code">%1$s (code %2$d)</string>

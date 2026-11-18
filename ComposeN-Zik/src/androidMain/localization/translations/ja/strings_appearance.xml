@@ -219,6 +219,7 @@
     <string name="theme_light_palette_text_secondary_description">ライトパレットでセカンダリテキストの色を選択します。</string>
     <string name="theme_mode_description">アプリがライトまたはダークパレットを使用するタイミングを選択します。</string>
     <string name="theme_mode_pitch_black">ピッチブラック</string>
+    <string name="theme_mode_pure_black">漆黒</string>
     <string name="theme_palette_custom">自分で調整</string>
     <string name="theme_palette_description">アプリ全体で使用されるカラーパレットを選択します。</string>
     <string name="theme_palette_dynamic">動的</string>
@@ -266,6 +267,7 @@
     <string name="theme_store_compatibility">N-Zik 対応</string>
     <string name="theme_store_submission_minimum_version">最小値 N-Zik バージョン</string>
     <string name="theme_store_submission_minimum_description">このテーマを適用できる最も古いバージョンです。新しいテーマはデフォルトでバージョンコード %3$dに設定されています。N-Zik %1$s (バージョンコード %2$d ) を使用しています。</string>
+    <string name="theme_store_submission_feature_requires_update">このテーマは N-Zik Android のバージョンコード %1$d を公開する前に必要です。</string>
     <string name="theme_store_submission_version_code_label">最小バージョンコード</string>
     <string name="theme_store_submission_find_version_code">N-Zik のバージョンとコードを検索</string>
     <string name="theme_store_submission_version_with_code">%1$s (code %2$d)</string>

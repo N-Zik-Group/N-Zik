@@ -244,7 +244,7 @@
     <string name="playlist_right_swipe">Çalma Listesi Sağa Kaydırma</string>
     <string name="playlist_selection_action_deselect">Seçimi kaldır</string>
     <string name="playlist_shuffle_positions_confirmation">Bu çalma listesindeki şarkı konumlarını gerçekten karıştırmak istiyor musunuz?</string>
-    <string name="playlist_contains_song">Already in this playlist</string>
+    <string name="playlist_contains_song">Bu çalma listesinde zaten var</string>
     <string name="playlist_song_already_present">Şarkı çalma listelerinden birinde mevcut</string>
     <string name="playlist_top">En Popüler Çalma Listesi</string>
     <string name="playlist_top_maximum_items_description">En çok dinlenen çalma listenize eklenecek şarkı sayısını sınırlayın.</string>
@@ -412,7 +412,7 @@
     <string name="playlist_import_youtube_link_hint">https://youtube.com/playlist?list=...</string>
     <string name="search_youtube_open_url_example">https://........</string>
     <string name="album_year_and_song_summary">%1$s • %2$s</string>
-    <string name="search_home_online_action">Search Online</string>
-    <string name="search_home_library_action">Search Library</string>
+    <string name="search_home_online_action">Çevrimiçi Ara</string>
+    <string name="search_home_library_action">Kütüphanede Ara</string>
     <string name="song_matching_result_title_and_artist">%1$s - %2$s</string>
 </resources>

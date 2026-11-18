@@ -219,6 +219,7 @@
     <string name="theme_light_palette_text_secondary_description">在光色板中选择次要文本的颜色。</string>
     <string name="theme_mode_description">选择应用程序何时使用光或暗色板.</string>
     <string name="theme_mode_pitch_black">纯黑</string>
+    <string name="theme_mode_pure_black">纯黑</string>
     <string name="theme_palette_custom">自定义</string>
     <string name="theme_palette_description">选择整个应用所使用的色板颜色。</string>
     <string name="theme_palette_dynamic">动态</string>
@@ -266,6 +267,7 @@
     <string name="theme_store_compatibility">N-Zik兼容性</string>
     <string name="theme_store_submission_minimum_version">最小N-Zik版本</string>
     <string name="theme_store_submission_minimum_description">可以应用此主题的最旧版本。新主题默认为版本代码 %3$d。您正在使用 N-Zik %1$s (版本代码 %2$d)。</string>
+    <string name="theme_store_submission_feature_requires_update">此主题需要在 N-Zik Android 版本代码 %1$d 后才能发布。</string>
     <string name="theme_store_submission_version_code_label">最小版本代码</string>
     <string name="theme_store_submission_find_version_code">查找 N-Zik 版本和代码</string>
     <string name="theme_store_submission_version_with_code">%1$s (代码 %2$d)</string>
