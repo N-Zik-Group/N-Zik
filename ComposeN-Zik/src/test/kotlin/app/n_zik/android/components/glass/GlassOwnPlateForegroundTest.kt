@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -54,8 +55,8 @@ class GlassOwnPlateForegroundTest {
         CompositionLocalProvider(
             LocalAppearance provides Appearance(palette, Typography.fallback, shape, shape, shape),
             LocalContentColor provides Color.White,
-            LocalNeutralForegroundTransition provides NeutralForegroundTransition(
-                listOf(WeightedNeutralDecision(decision, 1f)), decision, 1f),
+            LocalNeutralForegroundTransition provides rememberUpdatedState(NeutralForegroundTransition(
+                listOf(WeightedNeutralDecision(decision, 1f)), decision, 1f)),
             LocalNeutralForegroundOverride provides Color.White,
             LocalNeutralForegroundSurface provides Color.Black,
         ) { content() }

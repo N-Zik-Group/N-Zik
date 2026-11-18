@@ -14,7 +14,7 @@ import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.glass.inScope
 import app.n_zik.android.components.glass.neutralForeground
 import app.n_zik.android.components.glass.surfaceForegroundIsLight
-import app.n_zik.android.components.glass.surfaceGlyphColor
+import app.n_zik.android.components.glass.playerControlGlyphColor
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.ui.styling.ColorPalette
@@ -120,7 +120,7 @@ internal fun playerTransportGlyph(
     hasGlassPlate: Boolean = true,
     minimum: Float = IconContrast,
     enabled: Boolean = true,
-): Color = surfaceGlyphColor(color, playerTransportPlate(settings, nativePlate, hasGlassPlate), minimum, enabled)
+): Color = playerControlGlyphColor(color, playerTransportPlate(settings, nativePlate, hasGlassPlate), minimum, enabled)
 
 @Composable
 internal fun playerTransportPlate(

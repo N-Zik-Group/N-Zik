@@ -2,6 +2,8 @@ package app.n_zik.android.components.glass
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
@@ -25,7 +27,7 @@ internal val LocalSurfaceBackdropColor = compositionLocalOf<Color?> { null }
 internal val LocalNeutralForegroundOverride = compositionLocalOf<Color?> { null }
 internal val LocalNeutralForegroundAmount = compositionLocalOf { 1f }
 internal val LocalNeutralForegroundSurface = compositionLocalOf<Color?> { null }
-internal val LocalNeutralForegroundTransition = compositionLocalOf<NeutralForegroundTransition?> { null }
+internal val LocalNeutralForegroundTransition = compositionLocalOf<State<NeutralForegroundTransition>?> { null }
 internal val LocalForegroundSourcePalette = compositionLocalOf<ColorPalette?> { null }
 private val LocalForegroundSurface = compositionLocalOf<Color?> { null }
 private val LocalForegroundScrim = compositionLocalOf { Color.Transparent }
@@ -112,6 +114,7 @@ internal fun glassFilmColor(
 internal fun SurfaceForegroundContent(
     surface: Color?,
     scrim: Color = Color.Transparent,
+    preferMeasuredText: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val appearance = LocalAppearance.current
@@ -119,11 +122,12 @@ internal fun SurfaceForegroundContent(
     val commonNeutral = LocalNeutralForegroundOverride.current
     val amount = LocalNeutralForegroundAmount.current
     val commonSurface = LocalNeutralForegroundSurface.current ?: surface
-    val transition = LocalNeutralForegroundTransition.current
+    val transition = LocalNeutralForegroundTransition.current?.value
     val adapt = surface != null || commonNeutral != null || transition != null
     val inheritedContent = LocalContentColor.current
     fun ink(original: Color, minimum: Float, glyph: Boolean = false): Color =
-        if (transition != null) transition.resolve(original, minimum, glyph = glyph)
+        if (preferMeasuredText && !glyph && surface != null) measuredPlayerTextForeground(original, surface, minimum)
+        else if (transition != null) transition.resolve(original, minimum, glyph = glyph)
         else if (glyph && surface != null && isNeutralForeground(original) && isGentleGlyph(original, true))
             readableGlyphForeground(original, commonSurface ?: surface, minimum)
         else if (commonNeutral != null && isNeutralForeground(original) && original.alpha > 0f) {
@@ -155,16 +159,72 @@ internal fun SurfaceForegroundContent(
 internal data class NeutralForegroundDecision(val surface: Color?, val anchor: Color?)
 internal data class WeightedNeutralDecision(val decision: NeutralForegroundDecision, val weight: Float)
 
+internal data class NeutralForegroundEndpointKey(
+    val decision: NeutralForegroundDecision,
+    val ink: Color,
+    val minimum: Float,
+    val plate: Color?,
+    val localSurface: Color?,
+    val glyph: Boolean,
+    val enabled: Boolean,
+    val measuredText: Boolean = false,
+)
+
+internal class PlayerForegroundMemo(private val capacity: Int = 96) {
+    private val endpoints = LinkedHashMap<NeutralForegroundEndpointKey, Color>(16, .75f, true)
+
+    fun resolve(key: NeutralForegroundEndpointKey, calculate: () -> Color): Color = synchronized(endpoints) {
+        endpoints[key] ?: calculate().also { result ->
+            endpoints[key] = result
+            if (endpoints.size > capacity) endpoints.remove(endpoints.keys.first())
+        }
+    }
+
+    fun clear() = synchronized(endpoints) { endpoints.clear() }
+}
+
+private val playerForegroundMemo = PlayerForegroundMemo()
+
+internal fun invalidatePlayerForegroundMemo() = playerForegroundMemo.clear()
+
+internal fun measuredPlayerTextForeground(original: Color, surface: Color, minimum: Float = TextContrast): Color =
+    measuredPlayerForeground(original, surface, minimum)
+
+internal fun measuredPlayerForeground(original: Color, surface: Color, minimum: Float): Color {
+    if (!original.isSpecified) return neutralForeground(surface)
+    if (!isNeutralForeground(original) || original.alpha == 0f) return original
+    val key = NeutralForegroundEndpointKey(NeutralForegroundDecision(surface, null), original, minimum,
+        plate = null, localSurface = null, glyph = false, enabled = true, measuredText = true)
+    return playerForegroundMemo.resolve(key) {
+        if (contrastAgainst(original, surface) >= minimum) original
+        else neutralForeground(surface).copy(alpha = original.alpha)
+    }
+}
+
+@Composable
+internal fun playerControlGlyphColor(
+    original: Color,
+    plate: Color = Color.Transparent,
+    minimum: Float = IconContrast,
+    enabled: Boolean = true,
+): Color {
+    val color = surfaceGlyphColor(original, plate, minimum, enabled)
+    val backdrop = LocalForegroundSurface.current
+    return if (enabled && backdrop != null)
+        measuredPlayerForeground(color, effectiveSurfaceColor(backdrop, plate), minimum) else color
+}
+
 /** Every role resolves both endpoints from its source ink and uses this single shared clock. */
 internal data class NeutralForegroundTransition(
     val from: List<WeightedNeutralDecision>,
     val to: NeutralForegroundDecision,
     val progress: Float,
+    private val memo: PlayerForegroundMemo? = null,
 ) {
     fun resolve(original: Color, minimum: Float = IconContrast, plate: Color? = null,
         localSurface: Color? = null, glyph: Boolean = false, enabled: Boolean = true): Color {
         if (!original.isSpecified || !isNeutralForeground(original) || original.alpha == 0f) return original
-        fun endpoint(decision: NeutralForegroundDecision): Color {
+        fun resolveEndpoint(decision: NeutralForegroundDecision): Color {
             val background = decision.surface ?: return original
             val actual = if (plate != null && plate.alpha > 0f)
                 effectiveSurfaceColor(localSurface ?: background, plate) else background
@@ -175,6 +235,13 @@ internal data class NeutralForegroundTransition(
             if (contrastAgainst(original, background) >= minOf(minimum, NeutralRetentionContrast)) return original
             return decision.anchor?.copy(alpha = original.alpha) ?: readableForeground(original, background, minimum)
         }
+        fun endpoint(decision: NeutralForegroundDecision): Color {
+            if (decision.surface == null || memo == null) return resolveEndpoint(decision)
+            val key = NeutralForegroundEndpointKey(decision, original, minimum, plate, localSurface, glyph, enabled)
+            return memo.resolve(key) { resolveEndpoint(decision) }
+        }
+        val end = endpoint(to)
+        if (progress >= 1f) return end
         var start = original
         var accumulated = 0f
         for ((decision, weight) in from) if (weight > 0f) {
@@ -182,9 +249,8 @@ internal data class NeutralForegroundTransition(
                 else lerp(start, endpoint(decision), weight / (accumulated + weight))
             accumulated += weight
         }
-        val end = endpoint(to)
         return when {
-            progress >= 1f || start == end -> end
+            start == end -> end
             progress <= 0f -> start
             else -> lerp(start, end, progress)
         }
@@ -196,12 +262,12 @@ internal data class NeutralForegroundTransition(
 }
 
 @Composable
-internal fun rememberNeutralForegroundFade(surface: Color?, initial: Color): NeutralForegroundTransition {
+internal fun rememberNeutralForegroundFade(surface: Color?, initial: Color): State<NeutralForegroundTransition> {
     val original = remember { NeutralForegroundDecision(null, null) }
     var from by remember { mutableStateOf(listOf(WeightedNeutralDecision(original, 1f))) }
     var to by remember { mutableStateOf(original) }
     val clock = remember { Animatable(1f) }
-    val decision = NeutralForegroundDecision(surface, surface?.let(::neutralForeground))
+    val decision = remember(surface) { NeutralForegroundDecision(surface, surface?.let(::neutralForeground)) }
     LaunchedEffect(decision) {
         if (decision != to) {
             val retained = NeutralForegroundTransition(from, to, clock.value).frozenBlend()
@@ -211,7 +277,8 @@ internal fun rememberNeutralForegroundFade(surface: Color?, initial: Color): Neu
             clock.animateTo(1f, tween(180))
         }
     }
-    return NeutralForegroundTransition(from, to, clock.value)
+    // Let the foreground consumers observe the clock instead of invalidating the entire player.
+    return remember { derivedStateOf { NeutralForegroundTransition(from, to, clock.value, playerForegroundMemo) } }
 }
 
 /** Semantic ink before any ancestor surface adjustment, for controls with their own plate. */
@@ -223,7 +290,7 @@ internal fun surfaceSourcePalette(): ColorPalette =
 @Composable
 internal fun surfaceGlyphColor(original: Color, plate: Color? = null, minimum: Float = IconContrast,
     enabled: Boolean = true): Color {
-    val transition = LocalNeutralForegroundTransition.current
+    val transition = LocalNeutralForegroundTransition.current?.value
     val commonNeutral = LocalNeutralForegroundOverride.current
     val surface = LocalForegroundSurface.current ?: LocalSurfaceBackdropColor.current ?:
         LocalNeutralForegroundSurface.current ?: transition?.to?.surface ?: transition?.from?.firstOrNull()?.decision?.surface

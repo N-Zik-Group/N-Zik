@@ -17,6 +17,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.positionInWindow
@@ -24,6 +25,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.IntSize
 import app.n_zik.android.components.glass.backdrop.Backdrop
+import app.n_zik.android.components.glass.contrastAgainst
+import app.n_zik.android.components.glass.effectiveSurfaceColor
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -41,7 +44,10 @@ internal val LocalPlayerBackdropSampling = compositionLocalOf<PlayerBackdropSamp
 
 /** Reads only the dedicated background layers; player foreground never enters this source. */
 @Stable
-internal class PlayerBackdropSampling(internal val initialSourceVersion: Int? = null) {
+internal class PlayerBackdropSampling(
+    internal val initialSourceVersion: Int? = null,
+    private val previousSurface: Color? = null,
+) {
     var coordinates: LayoutCoordinates? = null
     var isActive by mutableStateOf(false)
         internal set
@@ -50,6 +56,7 @@ internal class PlayerBackdropSampling(internal val initialSourceVersion: Int? = 
     private var sample by mutableStateOf<BackdropSample?>(null)
     var commonSurface by mutableStateOf<Color?>(null)
         private set
+    val foregroundSurface: Color? get() = commonSurface ?: previousSurface.takeUnless { finished }
     internal val hasDecision: Boolean get() = commonSurface != null
     private val regions = mutableMapOf<Any, Rect>()
 
@@ -79,7 +86,7 @@ internal class PlayerBackdropSampling(internal val initialSourceVersion: Int? = 
     }
 
     /** [boundsInWindow] must describe the actual text/control region, not the whole player. */
-    fun colorAt(boundsInWindow: Rect): Color? {
+    fun colorAt(boundsInWindow: Rect, textFilm: Color? = null): Color? {
         val current = sample ?: return null
         val size = current.size
         if (size.width <= 0 || size.height <= 0) return null
@@ -91,33 +98,43 @@ internal class PlayerBackdropSampling(internal val initialSourceVersion: Int? = 
             (boundsInWindow.right - origin.x) / size.width,
             (boundsInWindow.bottom - origin.y) / size.height,
         )
-        return averagePlayerBackdrop(current.pixels, SampleSize, normalized)
+        return averagePlayerBackdrop(current.pixels, SampleSize, normalized, textFilm)
     }
 }
 
 private data class BackdropSample(val pixels: IntArray, val origin: Offset, val size: IntSize)
 
-private class RegionColorCache(var color: Color? = null)
+private class PlayerBackdropSurfaceCache(var color: Color? = null)
 
 /** Register real control bounds, but share one settled background decision across the player. */
 @Composable
-internal fun rememberPlayerBackdropRegionColor(bounds: Rect?): Color? {
+internal fun rememberPlayerBackdropRegionColor(
+    bounds: Rect?,
+    useLocalSample: Boolean = false,
+    textFilm: Color? = null,
+): Color? {
     val sampling = LocalPlayerBackdropSampling.current
-    val cached = remember(sampling) { RegionColorCache() }
+    val lastLocal = remember { PlayerBackdropSurfaceCache() }
     val token = remember(sampling) { Any() }
     DisposableEffect(sampling, token) {
         onDispose { sampling?.removeRegion(token) }
     }
-    val current = sampling?.commonSurface
+    val hasDecision = sampling?.hasDecision == true
+    val local = remember(sampling, bounds, useLocalSample, hasDecision, textFilm) {
+        if (useLocalSample && hasDecision && bounds != null) sampling.colorAt(bounds, textFilm) else null
+    }
     SideEffect {
         sampling?.registerRegion(token, bounds)
-        if (current != null) cached.color = current
+        if (local != null) lastLocal.color = local
     }
-    return current ?: cached.color
+    val waitingLocal = useLocalSample && sampling?.finished == false
+    return local ?: lastLocal.color.takeIf { waitingLocal } ?: sampling?.foregroundSurface?.let {
+        if (textFilm != null) effectiveSurfaceColor(it, textFilm) else it
+    }
 }
 
 /** Normalized region sampling is independent of Android rendering and easy to exercise. */
-internal fun averagePlayerBackdrop(pixels: IntArray, size: IntSize, region: Rect): Color? {
+internal fun averagePlayerBackdrop(pixels: IntArray, size: IntSize, region: Rect, textFilm: Color? = null): Color? {
     if (size.width <= 0 || size.height <= 0 || pixels.size != size.width * size.height ||
         !region.left.isFinite() || !region.top.isFinite() || !region.right.isFinite() || !region.bottom.isFinite() ||
         region.width <= 0f || region.height <= 0f || region.right <= 0f || region.bottom <= 0f ||
@@ -131,6 +148,7 @@ internal fun averagePlayerBackdrop(pixels: IntArray, size: IntSize, region: Rect
     var blue = 0L
     var count = 0
     val total = (right - left) * (bottom - top)
+    val textSurfaces = textFilm?.let { ArrayList<Pair<Float, Color>>(total) }
     for (y in top until bottom) for (x in left until right) {
         val pixel = pixels[y * size.width + x]
         // Rounded clipping can leave a few transparent edge pixels in an otherwise usable region.
@@ -139,10 +157,22 @@ internal fun averagePlayerBackdrop(pixels: IntArray, size: IntSize, region: Rect
         green += (pixel ushr 8) and 255
         blue += pixel and 255
         count++
+        if (textSurfaces != null && textFilm != null) {
+            val surface = effectiveSurfaceColor(Color(pixel), textFilm)
+            textSurfaces.add(surface.luminance() to surface)
+        }
     }
     // Sparse or mostly translucent recordings cannot describe the displayed background.
-    return if (count == 0 || count * 10 < total * 9) null
-        else Color((red / count).toInt(), (green / count).toInt(), (blue / count).toInt())
+    if (count == 0 || count * 10 < total * 9) return null
+    if (textSurfaces != null) {
+        // Choose the ink that stays legible across a larger part of a mottled background.
+        // Ignore isolated pixels at the two ends so a sliver of artwork cannot flip the whole line.
+        textSurfaces.sortBy { it.first }
+        val dark = textSurfaces[(count - 1) / 4].second
+        val light = textSurfaces[(count - 1) * 3 / 4].second
+        return if (contrastAgainst(Color.White, light) >= contrastAgainst(Color.Black, dark)) dark else light
+    }
+    return Color((red / count).toInt(), (green / count).toInt(), (blue / count).toInt())
 }
 
 @Composable
@@ -151,18 +181,24 @@ internal fun rememberPlayerBackdropSampling(
     active: Boolean,
     decisionKey: Any = Unit,
     backgroundTransitionMs: Int = 0,
+    renderedBackgroundReady: Boolean? = null,
 ): PlayerBackdropSampling {
-    val state = remember(backdrop, decisionKey) { PlayerBackdropSampling(backdrop.contentVersion) }
+    val lastSurface = remember(backdrop) { PlayerBackdropSurfaceCache() }
+    val state = remember(backdrop, decisionKey) { PlayerBackdropSampling(backdrop.contentVersion, lastSurface.color) }
     val layer = rememberGraphicsLayer()
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
-    SideEffect { state.isActive = active }
-    LaunchedEffect(state, active, density, layoutDirection, backgroundTransitionMs) {
-        if (!active || state.hasDecision) return@LaunchedEffect
+    val sampledSurface = state.commonSurface
+    SideEffect {
+        state.isActive = active
+        sampledSurface?.let { lastSurface.color = it }
+    }
+    LaunchedEffect(state, active, density, layoutDirection, backgroundTransitionMs, renderedBackgroundReady) {
+        if (!active || state.hasDecision || renderedBackgroundReady == false) return@LaunchedEffect
         // A failed hidden prewarm may retry when the player becomes visible again.
         state.finished = false
         // Let the existing cover-color fade finish before freezing its new background.
-        delay(maxOf(DecisionSettleMs, backgroundTransitionMs.toLong() + 50L))
+        delay(if (renderedBackgroundReady == true) 50L else maxOf(DecisionSettleMs, backgroundTransitionMs.toLong() + 50L))
         withContext(NzikDispatchers.UI) {
             var warned = false
             var attempts = 0
@@ -175,7 +211,7 @@ internal fun rememberPlayerBackdropSampling(
                     val origin = coordinates.positionInWindow()
                     val version = backdrop.contentVersion
                     // Never decide from the previous track's retained background recording.
-                    if (version == null || version != state.initialSourceVersion) {
+                    if (renderedBackgroundReady == true || version == null || version != state.initialSourceVersion) {
                         try {
                             layer.record(density, layoutDirection, SampleSize) {
                                 // Preserve full-scene draw dimensions while rasterizing only a tiny GPU target.

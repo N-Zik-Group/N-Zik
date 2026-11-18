@@ -1,6 +1,7 @@
 package app.n_zik.android.components.player
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.LinearEasing
@@ -8,6 +9,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -33,6 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
+import app.n_zik.android.cleanPrefix
 import app.n_zik.android.utils.cropVideoThumbnailsKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.core.coil.ImageCacheFactory
@@ -65,13 +69,21 @@ internal class PlayerCoverFrameState<T> {
 internal const val PLAYER_COVER_FADE_MS = 500
 
 @Composable
-internal fun PlayerCoverCrossfade(frame: PlayerCoverFrame<Painter>, modifier: Modifier = Modifier) {
+@OptIn(ExperimentalAnimationApi::class)
+internal fun PlayerCoverCrossfade(
+    frame: PlayerCoverFrame<Painter>,
+    modifier: Modifier = Modifier,
+    onSettled: ((Boolean) -> Unit)? = null,
+) {
     val cropVideo by rememberPreference(cropVideoThumbnailsKey, true)
-    Crossfade(
-        targetState = frame,
+    val transition = updateTransition(frame, label = "playerCoverFade")
+    if (onSettled != null) {
+        val settled = transition.currentState == frame && !transition.isRunning
+        SideEffect { onSettled(settled) }
+    }
+    transition.Crossfade(
         modifier = modifier,
         animationSpec = tween(PLAYER_COVER_FADE_MS, easing = FastOutSlowInEasing),
-        label = "playerCoverFade",
     ) { visible ->
         val source = rememberDisplayArtworkSource(visible.identity.artworkUri)
         Image(
@@ -87,7 +99,7 @@ internal fun PlayerCoverCrossfade(frame: PlayerCoverFrame<Painter>, modifier: Mo
 
 /** One committed cover frame serves both the visible background and its enclosing glass capture. */
 @Composable
-fun PlayerCurrentCover(
+internal fun PlayerCurrentCover(
     mediaId: String,
     artworkUri: String,
     blurAdjuster: BlurAdjuster,
@@ -96,13 +108,16 @@ fun PlayerCurrentCover(
     isShowingLyrics: Boolean,
     isShowingVisualizer: Boolean,
     modifier: Modifier = Modifier,
+    publishArtworkColors: Boolean = false,
+    onBackdropSettled: ((PlayerCoverFrame<Painter>?) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val identity = PlayerCoverIdentity(mediaId, artworkUri)
     val frames = remember { PlayerCoverFrameState<Painter>() }
     frames.request(identity)
     val fallback = painterResource(R.drawable.ic_launcher_box)
-    if (artworkUri.isBlank() || artworkUri == "null") {
+    val artworkSource = rememberDisplayArtworkSource(artworkUri)?.let(::cleanPrefix)
+    if (artworkSource.isNullOrBlank() || artworkSource == "null") {
         LaunchedEffect(identity) {
             if (frames.displayed != null) delay(ARTWORK_METADATA_GRACE_MS)
             frames.complete(identity, fallback)
@@ -112,20 +127,26 @@ fun PlayerCurrentCover(
             thumbnailUrl = artworkUri,
             onSuccess = { frames.complete(identity, it.result.image.asPainter(context)) },
             onError = { frames.complete(identity, fallback) },
+            publishArtworkColors = publishArtworkColors,
         )
     }
     val frame = frames.displayed
+    if (onBackdropSettled != null && frame == null) {
+        SideEffect { onBackdropSettled(null) }
+    }
     BoxWithConstraints(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         val squareSize = maxOf(maxWidth, maxHeight)
         val scale = sqrt(maxWidth.value * maxWidth.value + maxHeight.value * maxHeight.value) / squareSize.value
+        val targetBlurRadius = if (showThumbnail || (isShowingLyrics && !isShowingVisualizer) || !noBlur)
+            blurAdjuster.strength else 0f
+        val targetBackdropAlpha = (blurAdjuster.backdrop / 100f).coerceIn(0f, 1f)
         val blurRadius by animateFloatAsState(
-            targetValue = if (showThumbnail || (isShowingLyrics && !isShowingVisualizer) || !noBlur)
-                blurAdjuster.strength else 0f,
+            targetValue = targetBlurRadius,
             animationSpec = tween(PLAYER_COVER_FADE_MS, easing = FastOutSlowInEasing),
             label = "playerCoverBlur",
         )
         val backdropAlpha by animateFloatAsState(
-            targetValue = (blurAdjuster.backdrop / 100f).coerceIn(0f, 1f),
+            targetValue = targetBackdropAlpha,
             animationSpec = tween(PLAYER_COVER_FADE_MS, easing = FastOutSlowInEasing),
             label = "playerCoverBackdrop",
         )
@@ -141,6 +162,14 @@ fun PlayerCurrentCover(
                 modifier = Modifier.fillMaxSize()
                     .then(if (blurRadius > 0f) Modifier.blur(blurRadius.dp) else Modifier)
                     .graphicsLayer { scaleX = scale; scaleY = scale; rotationZ = angle },
+                onSettled = onBackdropSettled?.let { report ->
+                    { settled ->
+                        report(frame.takeIf {
+                            settled && frame.identity == identity &&
+                                blurRadius == targetBlurRadius && backdropAlpha == targetBackdropAlpha
+                        })
+                    }
+                },
             )
         }
         Box(Modifier.fillMaxSize().background(Color.Black.copy(

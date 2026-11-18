@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -96,8 +97,8 @@ class PlayerGlassActionsTest {
                 val scene = rememberCanvasBackdrop { drawRect(Color.White) }
                 val decision = NeutralForegroundDecision(Color.White, Color.Black)
                 CompositionLocalProvider(LocalGlassContainerBackdrop provides scene,
-                    LocalNeutralForegroundTransition provides NeutralForegroundTransition(
-                        listOf(WeightedNeutralDecision(decision, 1f)), decision, 1f)) {
+                    LocalNeutralForegroundTransition provides rememberUpdatedState(NeutralForegroundTransition(
+                        listOf(WeightedNeutralDecision(decision, 1f)), decision, 1f))) {
                     SurfaceForegroundContent(Color.White) {
                         Box(Modifier.size(300.dp, 100.dp).background(Color.White)) {
                             val actions = listOf(PlayerActionSlot("play") {

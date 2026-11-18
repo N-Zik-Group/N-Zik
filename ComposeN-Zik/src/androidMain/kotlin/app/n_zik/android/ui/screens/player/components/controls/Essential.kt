@@ -130,6 +130,7 @@ import app.n_zik.android.components.player.monochromeControlsColor
 import app.n_zik.android.components.player.placeholderCompositeBase
 import app.n_zik.android.components.glass.TextContrast
 import app.n_zik.android.components.glass.surfaceGlyphColor
+import app.n_zik.android.components.glass.playerControlGlyphColor
 import app.n_zik.android.components.glass.surfaceProgressTrackColor
 import app.n_zik.android.components.player.playerTextOutlineColor
 import app.n_zik.android.components.player.playerTransportGlyph
@@ -472,7 +473,7 @@ fun ControlsEssential(
     val nextGlyph = playerTransportGlyph(controlsColor, transportSettings, enabled = nextEnabled)
     val playPlate = playerTransportPlate(transportSettings, nativePlayPlate,
         hasGlassPlate = playerPlayButtonType != PlayerPlayButtonType.Disabled)
-    val playGlyph = surfaceGlyphColor(playColor, playPlate)
+    val playGlyph = playerControlGlyphColor(playColor, playPlate)
     val playerBackgroundColors by rememberPreference(playerBackgroundColorsKey,PlayerBackgroundColors.AnimatedGradient)
     var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
     val currentMediaItem = player.currentMediaItem
@@ -503,7 +504,7 @@ fun ControlsEssential(
         if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) {
             Icon(
                 painter = painterResource(id = getUnlikedIcon()),
-                tint = colorPalette().text,
+                tint = playerTransportGlyph(colorPalette().text, transportSettings),
                 contentDescription = null,
                 modifier = Modifier
                     .size(26.dp)

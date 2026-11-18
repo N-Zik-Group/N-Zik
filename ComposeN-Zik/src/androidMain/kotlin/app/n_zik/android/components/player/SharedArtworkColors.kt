@@ -2,6 +2,7 @@ package app.n_zik.android.components.player
 
 import android.content.Context
 import android.graphics.Bitmap
+import app.n_zik.android.components.glass.invalidatePlayerForegroundMemo
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -130,6 +131,7 @@ object SharedArtworkColors {
     fun invalidate(uri: String? = null) {
         // A bounded global invalidation also covers learned URL aliases and replaced local files.
         repository.invalidate()
+        invalidatePlayerForegroundMemo()
     }
 
     suspend fun load(

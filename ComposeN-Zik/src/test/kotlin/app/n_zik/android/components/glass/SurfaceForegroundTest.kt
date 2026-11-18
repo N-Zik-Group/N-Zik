@@ -45,6 +45,63 @@ class SurfaceForegroundTest {
     private val lowFilm = GlassSettings(enabled = true, film = .08f, dialogDimming = .8f, menuDimming = .8f,
         optimizationEnabled = false)
 
+    @Test fun `player text follows the measured zone and its Glass tint`() {
+        val darkTitleBand = Color(0xFF202020)
+        assertEquals(Color.White, measuredPlayerTextForeground(Color.Black, darkTitleBand))
+        assertEquals(Color.Black, measuredPlayerTextForeground(Color.Black, Color.White))
+        val lightGlassPlate = effectiveSurfaceColor(darkTitleBand, Color.White.copy(alpha = .9f))
+        assertEquals(Color.Black, measuredPlayerTextForeground(Color.White, lightGlassPlate))
+        assertEquals(Color.Red, measuredPlayerTextForeground(Color.Red, darkTitleBand))
+    }
+
+    @Test fun `active transport glyph contrasts against a bare background or its own Glass film`() {
+        val gray = Color(0xFF6C6C6C)
+        val film = Color.White.copy(alpha = .8f)
+        var bare = Color.Unspecified
+        var glazed = Color.Unspecified
+        var themeAccent = Color.Unspecified
+        compose.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                SurfaceForegroundContent(gray) {
+                    val plainControl = playerControlGlyphColor(gray)
+                    val glassControl = playerControlGlyphColor(Color.White, film)
+                    val accentControl = playerControlGlyphColor(Color.Red)
+                    SideEffect { bare = plainControl; glazed = glassControl; themeAccent = accentControl }
+                }
+            }
+        }
+        compose.runOnIdle {
+            assertTrue(contrastAgainst(bare, gray) >= IconContrast)
+            assertTrue(contrastAgainst(glazed, effectiveSurfaceColor(gray, film)) >= IconContrast)
+            assertEquals(Color.Red, themeAccent)
+        }
+    }
+
+    @Test fun `foreground memo separates the native surface and the Glass plate`() {
+        val memo = PlayerForegroundMemo()
+        val transition = NeutralForegroundTransition(
+            from = emptyList(),
+            to = NeutralForegroundDecision(Color.White, Color.Black),
+            progress = 1f,
+            memo = memo,
+        )
+        assertEquals(Color.Black, transition.resolve(Color.Black, TextContrast))
+        assertEquals(Color.White, transition.resolve(Color.Black, TextContrast, plate = Color.Black.copy(alpha = .95f)))
+        assertEquals(Color.Black, transition.resolve(Color.Black, TextContrast))
+    }
+
+    @Test fun `foreground memo drops a calculated result when artwork is cleared`() {
+        val memo = PlayerForegroundMemo()
+        val key = NeutralForegroundEndpointKey(
+            NeutralForegroundDecision(Color.White, Color.Black), Color.Black, TextContrast,
+            plate = null, localSurface = null, glyph = false, enabled = true,
+        )
+        assertEquals(Color.Black, memo.resolve(key) { Color.Black })
+        assertEquals(Color.Black, memo.resolve(key) { error("The same endpoint should be reused") })
+        memo.clear()
+        assertEquals(Color.White, memo.resolve(key) { Color.White })
+    }
+
     @Test fun `film is evaluated after the scrim and glyphs keep readable accents`() {
         val surface = effectiveSurfaceColor(Color.White, Color.White.copy(alpha = .08f), Color.Black.copy(alpha = .8f))
         assertEquals(Color.White, neutralForeground(surface))
@@ -295,7 +352,8 @@ class SurfaceForegroundTest {
                         val custom = surfaceGlyphColor(Color.Red)
                         val neutralGlyph = surfaceGlyphColor(colorPalette().text)
                         val inactiveTrack = surfaceProgressTrackColor(Color.Magenta, colorPalette().text)
-                        SideEffect { first = ink; colored = custom; glyph = neutralGlyph; track = inactiveTrack; progress = common.progress }
+                        val transitionProgress = common.value.progress
+                        SideEffect { first = ink; colored = custom; glyph = neutralGlyph; track = inactiveTrack; progress = transitionProgress }
                     }
                     SurfaceForegroundContent(surface.value) {
                         val ink = colorPalette().text

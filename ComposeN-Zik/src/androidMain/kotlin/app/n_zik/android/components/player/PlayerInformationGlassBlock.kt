@@ -294,12 +294,14 @@ fun PlayerInformationGlassRegion(
         LocalGlassContainerBackdrop provides childBackdrop,
         LocalGlassMaterialSource provides if (precedingInformation != null) childBackdrop
             else LocalGlassMaterialSource.current) {
-        val backdrop = rememberPlayerBackdropRegionColor(sampleRegion) ?: LocalSurfaceBackdropColor.current
         val film = LocalPlayerInformationFilm.current
+        val surface = rememberPlayerBackdropRegionColor(sampleRegion, useLocalSample = true, textFilm = film)
+            ?: LocalSurfaceBackdropColor.current?.let { effectiveSurfaceColor(it, film) }
         val regionContent: @Composable () -> Unit = {
             if (vertical) Column(capture) { content() } else Box(capture) { content() }
         }
-        SurfaceForegroundContent(backdrop?.let { effectiveSurfaceColor(it, film) },
+        SurfaceForegroundContent(surface,
+            preferMeasuredText = true,
             content = regionContent)
     }
 }

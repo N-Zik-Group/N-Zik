@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.Composable
-import app.n_zik.android.components.glass.surfaceGlyphColor
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -158,7 +157,7 @@ fun PlayerTransportIconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
-    val foreground = if (enabled) surfaceGlyphColor(color) else color
+    val foreground = if (enabled) playerTransportGlyph(color, rememberGlassSettings(GlassScope.PlayerTransport)) else color
     val canvasSize = LocalTransportCanvasSize.current
     if (canvasSize != null) {
         BoxWithConstraints(modifier, contentAlignment = androidx.compose.ui.Alignment.Center) {

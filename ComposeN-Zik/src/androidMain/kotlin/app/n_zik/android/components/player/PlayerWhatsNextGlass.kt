@@ -21,11 +21,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
@@ -38,16 +45,20 @@ import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.LocalGlassScope
+import app.n_zik.android.components.glass.LocalForegroundSourcePalette
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.glassGlobalIndication
 import app.n_zik.android.components.glass.glassMaterial
 import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.glass.inScope
+import app.n_zik.android.components.glass.measuredPlayerTextForeground
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.isLandscape
+
+internal val LocalPlayerWhatsNextTextColor = compositionLocalOf<Color?> { null }
 
 /** Extra room around the 40 dp button is reserved only by the material plate. */
 fun playerWhatsNextGlassExtraHeight(settings: GlassSettings): Dp =
@@ -64,22 +75,30 @@ fun PlayerWhatsNextGlassSurface(
 ) {
     val scoped = settings.inScope(GlassScope.PlayerActions)
     val material = scoped.usesGlassMaterial(GlassArea.ActionButtons)
+    val actionGlass = scoped.forArea(GlassArea.ActionButtons)
+    val film = if (material) glassFilmColor(actionGlass, nativeBackground, menu = false) else nativeBackground
+    var bounds by remember { mutableStateOf<Rect?>(null) }
+    val backdrop = rememberPlayerBackdropRegionColor(bounds, useLocalSample = true, textFilm = film)
+    val sourceText = LocalForegroundSourcePalette.current?.text
+    val textColor = if (backdrop != null && sourceText != null)
+        measuredPlayerTextForeground(sourceText, backdrop) else null
     val parent = LocalGlassContainerBackdrop.current
     val shape = uiRoundnessShape()
     Box(Modifier.fillMaxWidth().windowInsetsPadding(horizontalInsets), contentAlignment = Alignment.Center) {
         GlassMaterialContainerScope(
-            modifier = Modifier.playerActionToolbarWidth(landscape).playerActionPanelBounds().testTag("player.whatsNext.surface"),
+            modifier = Modifier.playerActionToolbarWidth(landscape).playerActionPanelBounds()
+                .onGloballyPositioned { bounds = it.boundsInWindow() }.testTag("player.whatsNext.surface"),
             includeParent = true,
             sectionFilm = if (material) null else nativeBackground,
-            foregroundFill = if (material) glassFilmColor(scoped.forArea(GlassArea.ActionButtons),
-                nativeBackground, menu = false) else null,
+            foregroundFill = if (material) film else null,
             material = if (material) ({ exported ->
-                Modifier.glassMaterial(scoped.forArea(GlassArea.ActionButtons), shape,
+                Modifier.glassMaterial(actionGlass, shape,
                     ownBackdrop = parent, separateWindow = parent == null, exportedBackdrop = exported,
                     filmColor = nativeBackground)
             }) else null,
         ) { surface ->
             CompositionLocalProvider(LocalGlassScope provides GlassScope.PlayerActions,
+                LocalPlayerWhatsNextTextColor provides textColor,
                 LocalGlassMaterialSource provides LocalGlassContainerBackdrop.current) {
                 renderSlot(if (material) surface.padding(horizontal = 6.dp, vertical = playerWhatsNextGlassExtraHeight(scoped) / 2)
                     else surface.background(nativeBackground)

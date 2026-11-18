@@ -121,6 +121,7 @@ import app.n_zik.android.components.player.monochromeControlsColor
 import app.n_zik.android.components.player.placeholderCompositeBase
 import app.n_zik.android.components.glass.TextContrast
 import app.n_zik.android.components.glass.surfaceGlyphColor
+import app.n_zik.android.components.glass.playerControlGlyphColor
 import app.n_zik.android.components.glass.surfaceProgressTrackColor
 import app.n_zik.android.components.player.playerTextOutlineColor
 import app.n_zik.android.components.player.playerTransportGlyph
@@ -712,7 +713,7 @@ if (isBuffering && shouldBePlaying) {
               Image(
                   painter = painterResource(R.drawable.play_skip_back),
                   contentDescription = null,
-                  colorFilter = ColorFilter.tint(surfaceGlyphColor(controlsColorAccent, enabled = previousEnabled)),
+                  colorFilter = ColorFilter.tint(playerControlGlyphColor(controlsColorAccent, enabled = previousEnabled)),
                   modifier = Modifier
                       .padding(10.dp)
                       .size(34.dp)
@@ -753,7 +754,7 @@ if (isBuffering && shouldBePlaying) {
               Image(
                   painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
                   contentDescription = null,
-                  colorFilter = ColorFilter.tint(surfaceGlyphColor(controlsColorAccent)),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
+                  colorFilter = ColorFilter.tint(playerControlGlyphColor(controlsColorAccent)),
                   modifier = Modifier
                       .rotate(rotationAngle)
                       .size(44.dp)
@@ -796,7 +797,7 @@ if (isBuffering && shouldBePlaying) {
               Image(
                   painter = painterResource(R.drawable.play_skip_forward),
                   contentDescription = null,
-                  colorFilter = ColorFilter.tint(surfaceGlyphColor(controlsColorAccent, enabled = nextEnabled)),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
+                  colorFilter = ColorFilter.tint(playerControlGlyphColor(controlsColorAccent, enabled = nextEnabled)),
                   modifier = Modifier
                       .padding(10.dp)
                       .size(34.dp)

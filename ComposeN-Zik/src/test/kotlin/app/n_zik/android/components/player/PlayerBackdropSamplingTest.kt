@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
+import app.n_zik.android.components.glass.measuredPlayerTextForeground
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -11,6 +12,17 @@ import org.junit.Assert.assertFalse
 import org.junit.Test
 
 class PlayerBackdropSamplingTest {
+    @Test fun `text takes the darker part of a mixed band into account before choosing ink`() {
+        val size = IntSize(8, 1)
+        val region = Rect(0f, 0f, 1f, 1f)
+        val pixels = intArrayOf(0xff686247.toInt(), 0xff686247.toInt(), 0xff686247.toInt(),
+            0xff827a65.toInt(), 0xff827a65.toInt(), 0xff8b8167.toInt(), 0xff8b8167.toInt(), 0xffa09578.toInt())
+        val bare = requireNotNull(averagePlayerBackdrop(pixels, size, region, textFilm = Color.Transparent))
+        val glass = requireNotNull(averagePlayerBackdrop(pixels, size, region, textFilm = Color.White.copy(alpha = .7f)))
+        assertEquals(Color.White, measuredPlayerTextForeground(Color.Black, bare))
+        assertEquals(Color.Black, measuredPlayerTextForeground(Color.White, glass))
+    }
+
     @Test fun `rounded transparent corners allow opaque background but sparse samples are rejected`() {
         val pixels = IntArray(100) { 0xFF900000.toInt() }
         pixels[0] = 0
@@ -46,6 +58,28 @@ class PlayerBackdropSamplingTest {
         state.publish(IntArray(32 * 64) { 0xFF900000.toInt() }, Offset.Zero, IntSize(100, 200))
         assertTrue(state.hasDecision)
         assertEquals(Color(0xFF900000), state.commonSurface)
+    }
+
+    @Test fun `foreground keeps the previous rendered surface until the next valid sample`() {
+        val state = PlayerBackdropSampling(previousSurface = Color.Black)
+        state.registerRegion("title", Rect(0f, 0f, 100f, 200f))
+        assertFalse(state.hasDecision)
+        assertEquals(Color.Black, state.foregroundSurface)
+
+        state.publish(IntArray(32 * 64), Offset.Zero, IntSize(100, 200))
+        assertFalse(state.hasDecision)
+        assertEquals(Color.Black, state.foregroundSurface)
+
+        state.publish(IntArray(32 * 64) { -1 }, Offset.Zero, IntSize(100, 200))
+        assertTrue(state.hasDecision)
+        assertEquals(Color.White, state.foregroundSurface)
+    }
+
+    @Test fun `foreground falls back to its theme after a failed background sample`() {
+        val state = PlayerBackdropSampling(previousSurface = Color.Black)
+        assertEquals(Color.Black, state.foregroundSurface)
+        state.finished = true
+        assertNull(state.foregroundSurface)
     }
 
     @Test fun `regions follow the rendered backdrop rather than the cover dominant`() {

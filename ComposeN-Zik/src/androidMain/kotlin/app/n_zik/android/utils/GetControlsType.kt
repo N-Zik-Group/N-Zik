@@ -97,7 +97,7 @@ fun GetControls(
         )
 
     var transportRegion by remember { mutableStateOf<Rect?>(null) }
-    val surface = rememberPlayerBackdropRegionColor(transportRegion)
+    val surface = rememberPlayerBackdropRegionColor(transportRegion, useLocalSample = true)
     val transportContent: @Composable () -> Unit = {
     PlayerTransportCenter {
     Row(
