@@ -22,6 +22,7 @@ import coil3.request.SuccessResult
 import coil3.request.crossfade
 import kotlinx.coroutines.CompletableDeferred
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.random.Random
 import org.junit.Before
 import androidx.core.graphics.ColorUtils
 import androidx.compose.foundation.Image
@@ -39,6 +40,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.SolidColor
@@ -53,6 +59,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.ui.styling.Appearance
@@ -123,6 +130,113 @@ class RandomStaticImagePlaceholderTest {
                 assertEquals(index + 1, draws)
                 assertSame(staticImagePlaceholderVectors[index], latest)
             }
+        }
+    }
+
+    @Test fun `cache refreshes do not reroll pending remote facade shapes`() {
+        val release = CompletableDeferred<Unit>()
+        val requests = AtomicInteger()
+        val draws = AtomicInteger()
+        val source = mutableStateOf("https://example.test/first.png")
+        val loader = ImageLoader.Builder(context).crossfade(false).components {
+            add(object : Interceptor {
+                override suspend fun intercept(chain: Interceptor.Chain): SuccessResult {
+                    requests.incrementAndGet()
+                    release.await()
+                    return SuccessResult(Bitmap.createBitmap(24, 24, Bitmap.Config.ARGB_8888).asImage(),
+                        chain.request, DataSource.NETWORK)
+                }
+            })
+        }.build()
+        mockkObject(ImageCacheFactory, Random.Default)
+        every { ImageCacheFactory.LOADER } returns loader
+        every { Random.Default.nextInt(staticImagePlaceholderVectors.size) } answers {
+            draws.getAndIncrement() % staticImagePlaceholderVectors.size
+        }
+        try {
+            compose.setContent {
+                CompositionLocalProvider(LocalAppearance provides appearance(DefaultDarkColorPalette)) {
+                    Column {
+                        ImageCacheFactory.Thumbnail(source.value, shape = null, modifier = Modifier.size(48.dp).testTag("stableThumbnail"))
+                        ImageCacheFactory.AsyncImage(source.value, shape = null, modifier = Modifier.size(48.dp).testTag("stableAsync"))
+                        ImageCacheFactory.SubcomposeImage(source.value, modifier = Modifier.size(48.dp).testTag("stableSubcompose"))
+                        val painter = rememberImageLoadingViewportPainter(ImageCacheFactory.Painter(source.value))
+                        Image(painter, null, Modifier.size(48.dp).imageLoadingViewport(painter).testTag("stablePainter"))
+                    }
+                }
+            }
+            compose.waitUntil { requests.get() >= 4 }
+            compose.waitForIdle()
+            val tags = listOf("stableThumbnail", "stableAsync", "stableSubcompose", "stablePainter")
+            val initial = tags.associateWith { pixels(it) }
+            assertEquals(4, draws.get())
+            repeat(3) {
+                compose.runOnIdle { ImageCacheFactory.refreshArtworkQuality() }
+                compose.waitForIdle()
+                assertEquals("Global cache/quality updates keep the same visual identities", 4, draws.get())
+                tags.forEach { tag -> assertArrayEquals("Pending shape remains static: $tag", initial.getValue(tag), pixels(tag)) }
+            }
+            compose.runOnIdle { source.value = "https://example.test/second.png" }
+            compose.waitForIdle()
+            assertEquals("A different logical source still gets a fresh choice", 8, draws.get())
+        } finally {
+            loader.shutdown()
+            unmockkObject(ImageCacheFactory, Random.Default)
+        }
+    }
+
+    @Test fun `pending model resolution and cache revisions keep the same local loading shape`() {
+        val release = CompletableDeferred<Unit>()
+        val requests = AtomicInteger()
+        val draws = AtomicInteger()
+        val model = mutableStateOf<String?>(null)
+        val revision = mutableIntStateOf(0)
+        val loader = ImageLoader.Builder(context).crossfade(false).components {
+            add(object : Interceptor {
+                override suspend fun intercept(chain: Interceptor.Chain): SuccessResult {
+                    requests.incrementAndGet()
+                    release.await()
+                    return SuccessResult(Bitmap.createBitmap(24, 24, Bitmap.Config.ARGB_8888).asImage(),
+                        chain.request, DataSource.NETWORK)
+                }
+            })
+        }.build()
+        mockkObject(ImageCacheFactory, Random.Default)
+        every { ImageCacheFactory.LOADER } returns loader
+        every { Random.Default.nextInt(staticImagePlaceholderVectors.size) } answers {
+            draws.getAndIncrement() % staticImagePlaceholderVectors.size
+        }
+        try {
+            compose.setContent {
+                CompositionLocalProvider(LocalAppearance provides appearance(DefaultDarkColorPalette)) {
+                    Box(Modifier.size(48.dp, 96.dp)) {
+                        ImageCacheFactory.LocalAsyncImage(model.value, null,
+                            modifier = Modifier.size(48.dp, 96.dp).testTag("resolving"),
+                            cacheKey = "revision-${revision.intValue}", fallback = R.drawable.checkmark,
+                            fallbackDelayMs = 20, shape = null,
+                            isResolvingModel = model.value == null, loadIdentity = "creator-avatar")
+                    }
+                }
+            }
+            compose.waitForIdle()
+            val initial = pixels("resolving")
+            compose.mainClock.autoAdvance = false
+            compose.mainClock.advanceTimeBy(1_000)
+            assertArrayEquals("Resolving a model must not time out to a fallback", initial, pixels("resolving"))
+            compose.mainClock.autoAdvance = true
+            compose.runOnIdle { model.value = "https://example.test/avatar.png" }
+            compose.waitForIdle()
+            compose.waitUntil { requests.get() >= 1 }
+            compose.waitForIdle()
+            assertArrayEquals("The same glyph continues into actual image decoding", initial, pixels("resolving"))
+            compose.runOnIdle { revision.intValue++ }
+            compose.waitForIdle()
+            assertArrayEquals("Cache revisions do not change the pending glyph", initial, pixels("resolving"))
+            assertEquals(1, draws.get())
+        } finally {
+            compose.mainClock.autoAdvance = true
+            loader.shutdown()
+            unmockkObject(ImageCacheFactory, Random.Default)
         }
     }
 
@@ -254,7 +368,117 @@ class RandomStaticImagePlaceholderTest {
         }
     }
 
+    @Test fun `Crop and FillBounds keep one shared loading glyph contained and restore its viewport`() {
+        val scale = mutableStateOf(ContentScale.Crop)
+        val viewportOnly = mutableStateOf(false)
+        compose.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance(DefaultDarkColorPalette)) {
+                val painter = rememberThemedImageLoadingPainter("shared-rectangles")
+                val squarePainter = rememberImageLoadingViewportPainter(painter)
+                val portraitPainter = rememberImageLoadingViewportPainter(painter)
+                val landscapePainter = rememberImageLoadingViewportPainter(painter)
+                Column {
+                    Image(squarePainter, null, Modifier.size(48.dp).imageLoadingViewport(squarePainter).testTag("squareGlyph"),
+                        contentScale = scale.value)
+                    val portraitFrame = if (viewportOnly.value) Modifier.imageLoadingViewport(portraitPainter)
+                        else Modifier.imageLoadingBackground(portraitPainter)
+                    val landscapeFrame = if (viewportOnly.value) Modifier.imageLoadingViewport(landscapePainter)
+                        else Modifier.imageLoadingBackground(landscapePainter)
+                    Image(portraitPainter, null, Modifier.size(48.dp, 192.dp).then(portraitFrame).testTag("portraitGlyph"),
+                        contentScale = scale.value)
+                    Image(landscapePainter, null, Modifier.size(192.dp, 48.dp).then(landscapeFrame).testTag("landscapeGlyph"),
+                        contentScale = scale.value)
+                    Image(painter, null, Modifier.size(96.dp).testTag("unscopedGlyph"))
+                }
+            }
+        }
+        val accent = DefaultDarkColorPalette.accent.toArgb()
+        fun inkBounds(tag: String): Pair<Int, Int> {
+            val bitmap = compose.onNodeWithTag(tag).captureToImage().asAndroidBitmap()
+            val ink = buildList {
+                for (y in 0 until bitmap.height) for (x in 0 until bitmap.width)
+                    if (bitmap.getPixel(x, y) == accent) add(x to y)
+            }
+            assertTrue("The loading symbol is visible in $tag", ink.isNotEmpty())
+            val left = ink.minOf { it.first }; val right = ink.maxOf { it.first }
+            val top = ink.minOf { it.second }; val bottom = ink.maxOf { it.second }
+            val shortEdge = minOf(bitmap.width, bitmap.height)
+            assertTrue("$tag keeps horizontal margins", left > 0 && right < bitmap.width - 1)
+            assertTrue("$tag keeps vertical margins", top > 0 && bottom < bitmap.height - 1)
+            assertTrue("$tag fits the short edge", maxOf(right - left + 1, bottom - top + 1) <= shortEdge * .9f)
+            assertTrue("$tag remains proportionally visible", minOf(right - left + 1, bottom - top + 1) >= shortEdge * .3f)
+            return (right - left + 1) to (bottom - top + 1)
+        }
+        for (direct in listOf(false, true)) for (mode in listOf(ContentScale.Crop, ContentScale.FillBounds)) {
+            compose.runOnIdle { scale.value = mode; viewportOnly.value = direct }
+            val square = inkBounds("squareGlyph")
+            assertEquals("Portrait preserves the same undistorted symbol", square, inkBounds("portraitGlyph"))
+            assertEquals("Landscape preserves the same undistorted symbol", square, inkBounds("landscapeGlyph"))
+            val large = inkBounds("unscopedGlyph")
+            assertTrue("A prior frame cannot constrain a later unscoped drawing", large.first >= square.first * 1.7f)
+        }
+    }
+
+    @Test fun `viewport proxy preserves successful rectangular artwork geometry alpha and tint`() {
+        val bitmap = Bitmap.createBitmap(24, 48, Bitmap.Config.ARGB_8888)
+        bitmap.eraseColor(android.graphics.Color.RED)
+        for (y in 0 until 24) for (x in 0 until 24) bitmap.setPixel(x, y, android.graphics.Color.BLUE)
+        val scale = mutableStateOf(ContentScale.Fit)
+        compose.setContent {
+            val source = remember { BitmapPainter(bitmap.asImageBitmap()) }
+            val framed = rememberImageLoadingViewportPainter(source)
+            SideEffect { assertEquals(source.intrinsicSize, framed.intrinsicSize) }
+            Column {
+                Image(source, null, Modifier.size(96.dp, 48.dp).background(Color.Magenta).testTag("directSuccess"),
+                    contentScale = scale.value, alpha = .5f, colorFilter = ColorFilter.tint(Color.Cyan, BlendMode.Multiply))
+                Image(framed, null, Modifier.size(96.dp, 48.dp).background(Color.Magenta)
+                    .imageLoadingViewport(framed).testTag("framedSuccess"),
+                    contentScale = scale.value, alpha = .5f, colorFilter = ColorFilter.tint(Color.Cyan, BlendMode.Multiply))
+            }
+        }
+        for (mode in listOf(ContentScale.Fit, ContentScale.Crop, ContentScale.FillBounds)) {
+            compose.runOnIdle { scale.value = mode }
+            assertArrayEquals("The viewport only affects placeholders, preserving successful $mode artwork",
+                pixels("directSuccess"), pixels("framedSuccess"))
+        }
+    }
+
+    @Test fun `switching absent image identity restarts its fallback timeout`() {
+        val identity = mutableStateOf("first")
+        compose.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance(DefaultDarkColorPalette)) {
+                Box(Modifier.size(48.dp)) {
+                    ImageCacheFactory.LocalAsyncImage(null, null, loadIdentity = identity.value,
+                        fallback = null, fallbackDelayMs = 1_000, shape = null,
+                        modifier = Modifier.size(48.dp).testTag("absent"))
+                }
+            }
+        }
+        compose.waitForIdle()
+        compose.mainClock.autoAdvance = false
+        compose.mainClock.advanceTimeBy(2_000)
+        compose.waitForIdle()
+        compose.onNodeWithTag("absent").assertDoesNotExist()
+        // Let Compose complete placement when recreating the previously removed image node.
+        compose.mainClock.autoAdvance = true
+        compose.runOnIdle { identity.value = "second" }
+        compose.waitForIdle()
+        compose.onNodeWithTag("absent").assertIsDisplayed()
+        compose.mainClock.autoAdvance = false
+        compose.mainClock.advanceTimeBy(2_000)
+        compose.waitForIdle()
+        compose.onNodeWithTag("absent").assertDoesNotExist()
+    }
+
     @Test fun `successful transparent artwork removes rectangular loading plate without restarting request`() {
+        assertTransparentTransition(ContentScale.Crop)
+    }
+
+    @Test fun `transparent Fit artwork also clears the loading plate from its margins`() {
+        assertTransparentTransition(ContentScale.Fit)
+    }
+
+    private fun assertTransparentTransition(scale: ContentScale) {
         val release = CompletableDeferred<Unit>()
         val requests = AtomicInteger()
         val successes = AtomicInteger()
@@ -273,10 +497,10 @@ class RandomStaticImagePlaceholderTest {
         try {
             compose.setContent {
                 CompositionLocalProvider(LocalAppearance provides appearance(DefaultDarkColorPalette)) {
-                    Box(Modifier.size(96.dp, 48.dp).background(Color.Magenta)) {
+                    Box(Modifier.size(48.dp, 192.dp).background(Color.Magenta)) {
                         ImageCacheFactory.LocalAsyncImage("controlled", null,
-                            contentScale = ContentScale.Fit, shape = null,
-                            modifier = Modifier.size(96.dp, 48.dp).testTag("transition"),
+                            contentScale = scale, shape = null,
+                            modifier = Modifier.size(48.dp, 192.dp).testTag("transition"),
                             onSuccess = { successes.incrementAndGet() })
                     }
                 }
@@ -289,10 +513,68 @@ class RandomStaticImagePlaceholderTest {
             release.complete(Unit)
             compose.waitUntil { successes.get() == 1 }
             compose.waitForIdle()
-            assertTrue("Both transparent artwork and Fit margins reveal the parent",
+            assertTrue("Transparent artwork reveals the parent after loading",
                 pixels("transition").all { it == Color.Magenta.toArgb() })
             assertEquals("Loading callbacks invalidate drawing without rebuilding the request", 1, requests.get())
         } finally {
+            loader.shutdown()
+            unmockkObject(ImageCacheFactory)
+        }
+    }
+
+    @Test fun `raw Coil Crop keeps its outgoing loading glyph contained during crossfade`() {
+        val release = CompletableDeferred<Unit>()
+        val requests = AtomicInteger()
+        val successes = AtomicInteger()
+        val transparent = Bitmap.createBitmap(24, 24, Bitmap.Config.ARGB_8888)
+        val loader = ImageLoader.Builder(context).crossfade(2000).components {
+            add(object : Interceptor {
+                override suspend fun intercept(chain: Interceptor.Chain): SuccessResult {
+                    requests.incrementAndGet()
+                    release.await()
+                    return SuccessResult(transparent.asImage(), chain.request, DataSource.NETWORK)
+                }
+            })
+        }.build()
+        mockkObject(ImageCacheFactory)
+        every { ImageCacheFactory.LOADER } returns loader
+        try {
+            compose.setContent {
+                CompositionLocalProvider(LocalAppearance provides appearance(DefaultDarkColorPalette)) {
+                    val painter = rememberImageLoadingViewportPainter(
+                        ImageCacheFactory.Painter("https://example.test/portrait.png",
+                            onSuccess = { successes.incrementAndGet() }))
+                    Box(Modifier.size(48.dp, 192.dp).background(Color.Magenta)) {
+                        Image(painter, null, Modifier.size(48.dp, 192.dp)
+                            .imageLoadingViewport(painter).testTag("rawCrossfade"), contentScale = ContentScale.Crop)
+                    }
+                }
+            }
+            compose.waitUntil { requests.get() == 1 }
+            fun assertContained() {
+                val bitmap = compose.onNodeWithTag("rawCrossfade").captureToImage().asAndroidBitmap()
+                val plate = bitmap.getPixel(0, 0)
+                val ink = buildList {
+                    for (y in 0 until bitmap.height) for (x in 0 until bitmap.width)
+                        if (bitmap.getPixel(x, y) != plate) add(x to y)
+                }
+                assertTrue("The loading glyph is still visible", ink.isNotEmpty())
+                assertTrue("The glyph leaves horizontal margins", ink.minOf { it.first } > 0 && ink.maxOf { it.first } < bitmap.width - 1)
+                assertTrue("The glyph fits the short edge vertically", ink.maxOf { it.second } - ink.minOf { it.second } < bitmap.width)
+            }
+            assertContained()
+            compose.mainClock.autoAdvance = false
+            release.complete(Unit)
+            compose.waitUntil { successes.get() == 1 }
+            compose.mainClock.advanceTimeByFrame()
+            assertContained()
+            compose.mainClock.autoAdvance = true
+            compose.waitUntil(timeoutMillis = 5000) {
+                pixels("rawCrossfade").all { it == Color.Magenta.toArgb() }
+            }
+            assertEquals("The viewport decorator never restarts the request", 1, requests.get())
+        } finally {
+            compose.mainClock.autoAdvance = true
             loader.shutdown()
             unmockkObject(ImageCacheFactory)
         }

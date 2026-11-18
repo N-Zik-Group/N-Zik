@@ -360,6 +360,8 @@ fun ProfileFaceAvatar(
     faceName: String,
     size: Dp = 48.dp,
     modifier: Modifier = Modifier,
+    isLoadingPhoto: Boolean = false,
+    photoLoadIdentity: Any? = null,
 ) {
     val initialsName = when (avatar) {
         is FaceAvatar.Initials -> avatar.name
@@ -369,13 +371,14 @@ fun ProfileFaceAvatar(
         // The initials are always rendered underneath: the photo covers them when
         // loaded, and a failing photo load keeps them visible.
         ProfileInitialsFace(initialsName, size)
-        if (avatar is FaceAvatar.Photo) {
-            val isUrl = avatar.source.startsWith("http://", ignoreCase = true) ||
-                avatar.source.startsWith("https://", ignoreCase = true)
-            val model: Any = remember(avatar.source) { if (isUrl) avatar.source else File(avatar.source) }
-            val revision = ImageCacheFactory.rememberLocalArtworkRevision(avatar.source)
-            val cacheKey = remember(avatar.source, revision) {
-                if (isUrl) null else ImageCacheFactory.generateCacheKeySync(avatar.source, ImageCacheFactory.NetworkQuality.HIGH)
+        if (avatar is FaceAvatar.Photo || isLoadingPhoto) {
+            val source = (avatar as? FaceAvatar.Photo)?.source
+            val isUrl = source?.startsWith("http://", ignoreCase = true) == true ||
+                source?.startsWith("https://", ignoreCase = true) == true
+            val model = remember(source) { source?.let { if (isUrl) it else File(it) } }
+            val revision = ImageCacheFactory.rememberLocalArtworkRevision(source)
+            val cacheKey = remember(source, revision) {
+                if (isUrl || source == null) null else ImageCacheFactory.generateCacheKeySync(source, ImageCacheFactory.NetworkQuality.HIGH)
             }
             ImageCacheFactory.LocalAsyncImage(
                 model = model,
@@ -384,6 +387,8 @@ fun ProfileFaceAvatar(
                 contentScale = ContentScale.Crop,
                 fallback = null,
                 shape = null,
+                isResolvingModel = isLoadingPhoto,
+                loadIdentity = photoLoadIdentity ?: source,
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(artistThumbnailShape()),

@@ -209,15 +209,21 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
     val hasPublicationChanges = catalogLoaded && hasCreatorPublicationChanges(
         published, login, displayName, description, avatar, banner,
     )
-    val avatarImage by produceState<Any?>(null, catalog, publicProfile, avatar) {
-        val profile = publicProfile
-        value = if (avatar != null) avatar?.takeIf(String::isNotEmpty)?.let(Uri::parse)
-        else profile?.let { creatorEditorImage(catalog, it, it.avatar) } ?: "https://avatars.githubusercontent.com/u/$id?s=256"
+    val avatarImage by key(catalog, publicProfile, avatar) {
+        produceState(CreatorImageResolution()) {
+            val profile = publicProfile
+            val model = if (avatar != null) avatar?.takeIf(String::isNotEmpty)?.let(Uri::parse)
+            else profile?.let { creatorEditorImage(catalog, it, it.avatar) }
+            value = CreatorImageResolution(model ?: "https://avatars.githubusercontent.com/u/$id?s=256", false)
+        }
     }
-    val bannerImage by produceState<Any?>(null, catalog, publicProfile, banner) {
-        val profile = publicProfile
-        value = if (banner != null) banner?.takeIf(String::isNotEmpty)?.let(Uri::parse)
-        else profile?.let { creatorEditorImage(catalog, it, it.banner) }
+    val bannerImage by key(catalog, publicProfile, banner) {
+        produceState(CreatorImageResolution()) {
+            val profile = publicProfile
+            val model = if (banner != null) banner?.takeIf(String::isNotEmpty)?.let(Uri::parse)
+            else profile?.let { creatorEditorImage(catalog, it, it.banner) }
+            value = CreatorImageResolution(model, false)
+        }
     }
     val scope = rememberCoroutineScope()
     fun cropImage(uri: Uri?, size: Size, onSelected: (String) -> Unit) {
@@ -265,17 +271,24 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
         content = {
             Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(Modifier.fillMaxWidth().aspectRatio(2.2f).clip(uiRoundnessShape())) {
-                    val custom = bannerImage
-                    if (custom == null) {
+                    val custom = bannerImage.model
+                    if (custom == null && !bannerImage.isResolving) {
                         CreatorDemoBanner(id)
                     } else {
-                        ImageCacheFactory.LocalAsyncImage(custom, null, modifier = Modifier.matchParentSize(), contentScale = ContentScale.Crop, fallback = null, shape = null)
+                        ImageCacheFactory.LocalAsyncImage(
+                            custom, null, modifier = Modifier.matchParentSize(), contentScale = ContentScale.Crop,
+                            fallback = null, shape = null, isResolvingModel = bannerImage.isResolving,
+                            loadIdentity = listOf("creator-editor-banner", id, banner),
+                        )
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Box(Modifier.size(56.dp).clip(artistThumbnailShape())) {
-                        val image = avatarImage ?: "https://avatars.githubusercontent.com/u/$id?s=256"
-                        ImageCacheFactory.LocalAsyncImage(image, null, modifier = Modifier.matchParentSize(), contentScale = ContentScale.Crop, shape = null)
+                        ImageCacheFactory.LocalAsyncImage(
+                            avatarImage.model, null, modifier = Modifier.matchParentSize(), contentScale = ContentScale.Crop,
+                            shape = null, isResolvingModel = avatarImage.isResolving,
+                            loadIdentity = listOf("creator-editor-avatar", id, avatar),
+                        )
                     }
                     Column(Modifier.weight(1f)) {
                         StoreText(displayName, style = typography().m)

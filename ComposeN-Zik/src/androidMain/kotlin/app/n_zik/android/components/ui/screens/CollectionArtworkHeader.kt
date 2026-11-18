@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.sp
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.components.glass.GlassArtworkBackdrop
 import app.n_zik.android.components.glass.GlassToolbarRow
+import app.n_zik.android.core.coil.imageLoadingViewport
+import app.n_zik.android.core.coil.rememberImageLoadingViewportPainter
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.themed.AutoResizeText
 import app.n_zik.android.ui.components.themed.FontSizeRange
@@ -45,15 +47,16 @@ internal fun CollectionArtworkHeader(
     GlassArtworkBackdrop(hasArtwork = !isLandscape) { artworkBackdrop ->
         Box(Modifier.fillMaxWidth()) {
             if (!isLandscape) {
+                val viewportPainter = rememberImageLoadingViewportPainter(artwork)
                 Image(
-                    painter = artwork,
+                    painter = viewportPainter,
                     contentDescription = null,
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier.then(artworkBackdrop).aspectRatio(4f / 3).fillMaxWidth()
                         .align(Alignment.Center).fadingEdge(
                             top = WindowInsets.systemBars.asPaddingValues().calculateTopPadding() + Dimensions.fadeSpacingTop,
                             bottom = Dimensions.fadeSpacingBottom,
-                        ),
+                        ).imageLoadingViewport(viewportPainter),
                 )
             }
             Column(Modifier.align(Alignment.BottomCenter), horizontalAlignment = Alignment.CenterHorizontally) {

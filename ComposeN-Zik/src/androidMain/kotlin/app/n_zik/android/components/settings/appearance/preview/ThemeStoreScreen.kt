@@ -39,6 +39,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -1144,22 +1145,27 @@ internal fun storeTagLabel(tag: String): String = when (canonicalStoreTag(tag)) 
 }
 
 
+internal data class CreatorImageResolution(val model: Any? = null, val isResolving: Boolean = true)
+
 @Composable
-private fun CreatorImage(catalog: ThemeStoreCatalog, profile: CreatorProfile?, media: CreatorMedia?, modifier: Modifier, contentScale: ContentScale = ContentScale.FillBounds, fallback: @Composable () -> Unit) {
-    val image by produceState<Any?>(null, catalog, profile, media) {
-        value = null
-        if (profile != null && media != null) {
-            try {
-                value = catalog.creatorImage(profile, media)
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (error: Exception) {
-                Timber.tag("ThemeStore").w(error, "Could not load creator image")
-            }
+private fun CreatorImage(catalog: ThemeStoreCatalog, profile: CreatorProfile?, media: CreatorMedia?, authorId: Long, modifier: Modifier, contentScale: ContentScale = ContentScale.FillBounds, fallback: @Composable () -> Unit) {
+    val image by key(catalog, profile, media) {
+        produceState(CreatorImageResolution()) {
+            val model = if (profile != null && media != null) {
+                try {
+                    catalog.creatorImage(profile, media)
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    Timber.tag("ThemeStore").w(error, "Could not load creator image")
+                    null
+                }
+            } else null
+            value = CreatorImageResolution(model, false)
         }
     }
-    var loaded by remember(image) { mutableStateOf(false) }
-    if (!loaded) fallback()
+    var loaded by remember(image.model) { mutableStateOf(false) }
+    if (!image.isResolving && !loaded) fallback()
     // Older CDN responses can still reference the original banner with transparent margins.
     val imageModifier = if (contentScale == ContentScale.FillBounds && media?.asset?.sha256 == "21fc3f12b97e7c9b2a16aa87fac5becbe313542db5bcddfb0d887f8470970c84") {
         modifier.graphicsLayer {
@@ -1173,14 +1179,16 @@ private fun CreatorImage(catalog: ThemeStoreCatalog, profile: CreatorProfile?, m
             scaleY = 1.1f
         }
     } else modifier
-    if (image != null) {
+    if (image.isResolving || image.model != null) {
         ImageCacheFactory.LocalAsyncImage(
-            model = image,
+            model = image.model,
             contentDescription = null,
             modifier = imageModifier,
             contentScale = contentScale,
             fallback = null,
             shape = null,
+            isResolvingModel = image.isResolving,
+            loadIdentity = listOf("creator-banner", authorId),
             onSuccess = { loaded = true },
         )
     }
@@ -1207,7 +1215,7 @@ private fun CreatorCard(
     ThemeCardSurface {
         Box {
             Box(Modifier.matchParentSize().clip(uiRoundnessShape())) {
-                CreatorImage(catalog, profile, profile?.banner, Modifier.matchParentSize(), ContentScale.Crop) {
+                CreatorImage(catalog, profile, profile?.banner, author.githubId, Modifier.matchParentSize(), ContentScale.Crop) {
                     CreatorDemoBanner(author.githubId, Modifier.matchParentSize())
                 }
                 Box(Modifier.matchParentSize().background(Color.Black.copy(alpha = 0.70f)))
@@ -1262,20 +1270,23 @@ internal fun CreatorAvatar(
     modifier: Modifier = Modifier,
 ) {
     val name = profile?.displayName ?: author.login
-    val image by produceState<Any?>(null, catalog, profile) {
-        value = null
-        if (profile != null) {
-            try {
-                value = catalog.creatorImage(profile, profile.avatar)
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (error: Exception) {
-                Timber.tag("ThemeStore").w(error, "Could not load creator avatar")
-            }
+    val image by key(catalog, profile) {
+        produceState(CreatorImageResolution()) {
+            val model = if (profile != null) {
+                try {
+                    catalog.creatorImage(profile, profile.avatar)
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    Timber.tag("ThemeStore").w(error, "Could not load creator avatar")
+                    null
+                }
+            } else null
+            value = CreatorImageResolution(model, false)
         }
     }
     val offline by OfflineMode.rememberEnabled()
-    val source = when (val model = image) {
+    val source = when (val model = image.model) {
         is File -> model.path
         is String -> model.takeUnless { offline }
         else -> if (profile == null && !offline) "https://avatars.githubusercontent.com/u/${author.githubId}?s=256" else null
@@ -1285,6 +1296,8 @@ internal fun CreatorAvatar(
         faceName = name,
         size = size,
         modifier = modifier.glassImageRim(artistThumbnailShape()).clip(artistThumbnailShape()),
+        isLoadingPhoto = image.isResolving,
+        photoLoadIdentity = listOf("creator-avatar", author.githubId),
     )
 }
 
@@ -1292,21 +1305,26 @@ internal fun CreatorAvatar(
 internal fun CreatorDemoBanner(githubId: Long, modifier: Modifier = Modifier.fillMaxSize()) {
     val context = LocalContext.current.applicationContext
     val offline by OfflineMode.rememberEnabled()
-    val banner by produceState<File?>(null, context, githubId, offline) {
-        value = try {
-            ThemePreviewAssets.banner(context, githubId)
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (error: Exception) {
-            Timber.tag("ThemeStore").d(error, "Demo creator banner unavailable")
-            null
+    val banner by key(context, githubId, offline) {
+        produceState(CreatorImageResolution()) {
+            val model = try {
+                ThemePreviewAssets.banner(context, githubId)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                Timber.tag("ThemeStore").d(error, "Demo creator banner unavailable")
+                null
+            }
+            value = CreatorImageResolution(model, false)
         }
     }
     Box(modifier.background(colorPalette().background1)) {
-        banner?.let { asset ->
+        if (banner.isResolving || banner.model != null) {
             ImageCacheFactory.LocalAsyncImage(
-                model = asset, contentDescription = null, modifier = Modifier.matchParentSize(),
+                model = banner.model, contentDescription = null, modifier = Modifier.matchParentSize(),
                 contentScale = ContentScale.Crop, shape = null,
+                isResolvingModel = banner.isResolving,
+                loadIdentity = listOf("creator-demo-banner", githubId),
             )
         }
     }
@@ -1333,7 +1351,7 @@ private fun CreatorProfileHeader(
             val bannerHeight = maxWidth / 2.2f
             val bannerShape = uiRoundnessShape()
             Box(Modifier.fillMaxWidth().height(bannerHeight).glassImageRim(bannerShape).clip(bannerShape)) {
-                CreatorImage(catalog, profile, profile?.banner, Modifier.fillMaxSize()) {
+                CreatorImage(catalog, profile, profile?.banner, author.githubId, Modifier.fillMaxSize()) {
                     CreatorDemoBanner(author.githubId)
                 }
             }

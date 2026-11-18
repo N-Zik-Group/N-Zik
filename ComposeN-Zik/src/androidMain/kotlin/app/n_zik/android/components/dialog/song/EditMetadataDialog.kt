@@ -2,14 +2,12 @@ package app.n_zik.android.components.dialog.song
 
 import app.n_zik.android.appTextResources
 import android.content.ContentUris
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,17 +29,14 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -56,7 +51,7 @@ import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.core.coil.rememberThemedImageLoadingPainter
+import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -253,16 +248,6 @@ class EditMetadataDialog internal constructor(
         internal fun readCoverArtBytes(context: Context, uri: Uri): ByteArray? =
             context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
 
-        /**
-         * Decodes the in-memory cover art [bytes] on [NzikDispatchers.MEDIA] (issue #606 M1).
-         * It used to run inside a `remember` in [CoverArtField], i.e. on Main during composition.
-         * Returns `null` when the bytes are not a decodable image, so the caller simply shows no
-         * picture.
-         */
-        internal suspend fun decodeCoverBitmap(bytes: ByteArray): Bitmap? =
-            withContext(NzikDispatchers.MEDIA) {
-                app.n_zik.android.components.ui.screens.profiles.decodeLimitedBitmap(bytes, 512)
-            }
     }
 
     private fun resolveFilePath(context: Context, songId: String): String? {
@@ -425,32 +410,16 @@ class EditMetadataDialog internal constructor(
                 .padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
             if (coverBytes != null) {
-                // Keyed on the bytes: a new pick cancels the previous decode, so only the latest
-                // image is ever shown.
-                key(coverBytes) {
-                    val decoded by produceState<Pair<Boolean, Bitmap?>>(initialValue = false to null, coverBytes) {
-                        value = true to decodeCoverBitmap(coverBytes)
-                    }
-                    val bitmap = decoded.second
-                    val coverModifier = Modifier.size(56.dp)
+                ImageCacheFactory.LocalAsyncImage(
+                    model = coverBytes,
+                    contentDescription = stringResource(R.string.metadata_cover_art),
+                    contentScale = ContentScale.Crop,
+                    fallback = null,
+                    shape = null,
+                    modifier = Modifier.size(56.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .glassImageRim(RoundedCornerShape(8.dp))
-                    if (bitmap != null) {
-                        Image(
-                            bitmap = bitmap.asImageBitmap(),
-                            contentDescription = stringResource(R.string.metadata_cover_art),
-                            contentScale = ContentScale.Crop,
-                            modifier = coverModifier,
-                        )
-                    } else if (!decoded.first) {
-                        Image(
-                            painter = rememberThemedImageLoadingPainter(coverBytes),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = coverModifier,
-                        )
-                    }
-                }
+                        .glassImageRim(RoundedCornerShape(8.dp)),
+                )
             } else {
                 Canvas(
                     modifier = Modifier

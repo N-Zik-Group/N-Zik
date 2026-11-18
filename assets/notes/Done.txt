@@ -46,3 +46,18 @@ Fixed:
 - fix(rewind): remove jelly gesture retention from overview period cards
   - Use local non-retaining feedback for month, year and all-time cards in RewindHomeScreen while keeping their collage material and native click targets.
   - Preserve the remaining Rewind effects and verify actual period callbacks plus parent scrolling from a drag started on a card with global jelly enabled.
+- fix(image-loading): fit static loading glyphs inside every artwork frame
+  - Measure each rendering sink and apply its viewport inside a delegating painter's actual draw, preventing portrait, landscape and video Crop thumbnails from clipping or stretching the glyph.
+  - Scope and restore shared placeholder geometry inside Image's clipping layer, including Coil's independently redrawn outgoing crossfade. Preserve intrinsic size, loaded image scaling, alpha, color filters and custom resource placeholders.
+  - Apply the same per-sink treatment to raw factory painters in collection headers, album/artist artwork, contributor avatars, rotating covers and both player layouts.
+- fix(image-loading): keep random shapes stable throughout model resolution and cache updates
+  - Key remote placeholder selection by the logical source instead of global storeVersion, quality, size or file revisions. Preserve request/cache invalidation while avoiding new random choices when another thumbnail finishes loading.
+  - Separate LocalAsyncImage's visual loadIdentity from cacheKey and support isResolvingModel before a file exists. Pause the null-model fallback timeout during resolution and restart its state/timer for a different logical source.
+  - Use stable creator/role identities through profile discovery and asset resolution; retain explicit editor image selections as new logical sources without including published media revision metadata.
+- fix(theme-store): show the shared image loader during creator asset resolution
+  - Render avatars, banners, demo assets and creator-editor images through ImageCacheFactory from initial model resolution until image decoding completes. Preserve verified catalog assets, offline filtering, CDN crop corrections and final initials or demo fallbacks.
+  - Move metadata-cover and preview-gallery loading displays to LocalAsyncImage, remove the obsolete bespoke metadata decoder and replace helper-only tests with real bounded, off-main PNG decoding coverage.
+  - Verify 57 focused tests covering stable random selection, pending/resolved/failed/offline avatars, rectangular geometry, crossfade, transparent success, cache revisions and native/Glass controls. Install the debug on the existing Pixel VM and in Downloads; human testing approved before publication.
+- fix(artist): give unfollowed buttons the native raised surface in Pitch Black
+  - Resolve the unfollowed background through surfaceColor before applying Glass, matching the gray Settings-card surface while retaining the black Pure Black mode fill.
+  - Preserve accent/red followed and disliked roles, contrast handling, dimensions and click callbacks; verify every Glass material mode.

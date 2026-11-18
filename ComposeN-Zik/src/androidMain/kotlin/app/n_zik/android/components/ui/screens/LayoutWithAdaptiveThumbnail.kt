@@ -17,6 +17,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 
+import app.n_zik.android.core.coil.imageLoadingViewport
+import app.n_zik.android.core.coil.rememberImageLoadingViewportPainter
 import app.n_zik.android.utils.isLandscape
 import app.n_zik.android.components.glass.glassImageRim
 import app.n_zik.android.thumbnailShape
@@ -37,14 +39,16 @@ fun DynamicOrientationLayout(
                 modifier = Modifier.fillMaxWidth( .5f ).padding(thumbnailContentPadding)
             ) {
                 
+                val viewportPainter = rememberImageLoadingViewportPainter(thumbnail)
                 Image(
-                    painter = thumbnail,
+                    painter = viewportPainter,
                     contentDescription = null,
                     contentScale = ContentScale.FillBounds,
                     modifier = Modifier.fillMaxSize( .5f )
                         .aspectRatio( 1f )
                         .clip( shape ?: thumbnailShape() )
                         .glassImageRim(shape ?: thumbnailShape())
+                        .imageLoadingViewport(viewportPainter)
                 )
             }
             content()

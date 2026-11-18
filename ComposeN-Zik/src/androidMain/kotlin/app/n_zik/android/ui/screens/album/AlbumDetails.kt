@@ -3,6 +3,8 @@ package app.n_zik.android.ui.screens.album
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.core.coil.imageLoadingViewport
+import app.n_zik.android.core.coil.rememberImageLoadingViewportPainter
 import app.n_zik.android.uiRoundnessShape
 
 
@@ -365,9 +367,10 @@ fun AlbumDetails(
                 ) {
                     item( "header" ) {
                     Box( Modifier.fillMaxWidth() ) {
+                        val viewportPainter = rememberImageLoadingViewportPainter(thumbnailPainter)
                         if (!isLandscape)
                             Image(
-                                painter = thumbnailPainter,
+                                painter = viewportPainter,
                                 contentDescription = null,
                                 contentScale = ContentScale.FillWidth,
                                 modifier = Modifier.aspectRatio( 4f / 3 )      // Limit height
@@ -379,6 +382,7 @@ fun AlbumDetails(
                                             .calculateTopPadding() + Dimensions.fadeSpacingTop,
                                         bottom = Dimensions.fadeSpacingBottom
                                     )
+                                    .imageLoadingViewport(viewportPainter)
                             )
 
                         AutoResizeText(

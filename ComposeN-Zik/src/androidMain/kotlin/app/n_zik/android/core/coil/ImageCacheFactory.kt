@@ -440,8 +440,8 @@ object ImageCacheFactory {
             })
         }
 
-        val loadingPainter = rememberThemedImageLoadingPainter(
-            listOf(sourceUrl, validUrl, version, localRevision, decision.sourceSize, decision.quality),
+        val loadingPainter = rememberFramedImageLoadingPainter(
+            thumbnailUrl,
         )
 
         if (currentUrl == null) {
@@ -545,7 +545,7 @@ object ImageCacheFactory {
         }
 
         val loadingPainter = rememberThemedImageLoadingPainter(
-            listOf(sourceUrl, validUrl, version, localRevision, decision.sourceSize, decision.quality),
+            thumbnailUrl,
             placeholder,
         )
 
@@ -664,8 +664,8 @@ object ImageCacheFactory {
             mutableStateOf(validUrl?.thumbnail(decision.sourceSize))
         }
 
-        val loadingPainter = rememberThemedImageLoadingPainter(
-            listOf(sourceUrl, validUrl, version, localRevision, decision.sourceSize, decision.quality),
+        val loadingPainter = rememberFramedImageLoadingPainter(
+            thumbnailUrl,
         )
 
         if (currentUrl == null) {
@@ -763,8 +763,8 @@ object ImageCacheFactory {
             })
         }
 
-        val loadingPainter = rememberThemedImageLoadingPainter(
-            listOf(sourceUrl, validUrl, version, localRevision, decision.sourceSize, decision.quality),
+        val loadingPainter = rememberFramedImageLoadingPainter(
+            thumbnailUrl,
         )
 
         if (currentUrl == null) {
@@ -862,6 +862,9 @@ object ImageCacheFactory {
      * content replacement behind a stable path (a re-downloaded file at the same URI)
      * forces Coil to re-read it — a bare file:// URI is string-equal across rewrites,
      * which would otherwise keep the previously decoded bitmap.
+     * [isResolvingModel] keeps the loading frame while a caller resolves a model asynchronously.
+     * [loadIdentity] can hold that frame stable across null-to-model resolution. Cache-key
+     * changes still refresh the image request without choosing another loading glyph.
      */
     @Composable
     fun LocalAsyncImage(
@@ -874,15 +877,21 @@ object ImageCacheFactory {
         @DrawableRes fallback: Int? = R.drawable.ic_launcher_box,
         fallbackDelayMs: Long = 4_000L,
         shape: Shape? = RectangleShape,
+        isResolvingModel: Boolean = false,
+        loadIdentity: Any? = model,
         onSuccess: ((State.Success) -> Unit)? = null,
     ) {
         val imageModifier = if (shape == null) modifier else modifier.glassImageRim(shape)
-        val loadingPainter = rememberThemedImageLoadingPainter(listOf(model, cacheKey), placeholder)
+        // Visual identity is independent of request/cache invalidations and model resolution.
+        val loadingPainter = rememberFramedImageLoadingPainter(loadIdentity, placeholder)
         if (model == null) {
-            var showFallback by remember { mutableStateOf(false) }
-            LaunchedEffect(Unit) {
-                kotlinx.coroutines.delay(fallbackDelayMs)
-                showFallback = true
+            var showFallback by remember(loadIdentity) { mutableStateOf(false) }
+            LaunchedEffect(loadIdentity, isResolvingModel, fallbackDelayMs) {
+                showFallback = false
+                if (!isResolvingModel) {
+                    kotlinx.coroutines.delay(fallbackDelayMs)
+                    showFallback = true
+                }
             }
             val painter = if (showFallback) fallback?.let { painterResource(it) } else loadingPainter
             if (painter != null) Image(

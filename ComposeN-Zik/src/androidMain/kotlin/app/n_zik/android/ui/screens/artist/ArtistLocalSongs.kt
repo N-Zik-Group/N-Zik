@@ -3,6 +3,8 @@ package app.n_zik.android.ui.screens.artist
 import android.content.Context
 import androidx.media3.datasource.cache.Cache
 import androidx.compose.ui.res.pluralStringResource
+import app.n_zik.android.core.coil.imageLoadingViewport
+import app.n_zik.android.core.coil.rememberImageLoadingViewportPainter
 import app.n_zik.android.utils.durationTextToMillis
 import app.n_zik.android.utils.formatAsDuration
 import app.n_zik.android.components.glass.GlassArtworkBackdrop
@@ -682,9 +684,10 @@ fun ArtistHeader(
 
     GlassArtworkBackdrop(hasArtwork = !isLandscape) { artworkBackdrop ->
     Box(Modifier.fillMaxWidth()) {
+        val viewportPainter = rememberImageLoadingViewportPainter(thumbnailPainter)
         if (!isLandscape)
             Image(
-                painter = thumbnailPainter,
+                painter = viewportPainter,
                 contentDescription = null,
                 contentScale = ContentScale.FillWidth,
                 modifier = Modifier.then(artworkBackdrop)
@@ -695,6 +698,7 @@ fun ArtistHeader(
                         top = WindowInsets.systemBars.asPaddingValues().calculateTopPadding() + Dimensions.fadeSpacingTop,
                         bottom = Dimensions.fadeSpacingBottom
                     )
+                    .imageLoadingViewport(viewportPainter)
             )
 
         Column(Modifier.align(Alignment.BottomCenter)) {

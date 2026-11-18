@@ -38,6 +38,8 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
+import app.n_zik.android.core.coil.imageLoadingViewport
+import app.n_zik.android.core.coil.rememberImageLoadingViewportPainter
 import app.n_zik.android.enums.ThumbnailCoverType
 import app.n_zik.android.utils.VinylSizeKey
 import app.n_zik.android.utils.rememberPreference
@@ -96,6 +98,7 @@ fun RotateThumbnailCover(
                 contentDescription = stringResource(R.string.accessibility_disc_background)
             )
 
+        val viewportPainter = rememberImageLoadingViewportPainter(painter)
         if (type in listOf(ThumbnailCoverType.Vinyl, ThumbnailCoverType.CDwithCover))
             Image(
                 modifier = Modifier
@@ -110,8 +113,9 @@ fun RotateThumbnailCover(
                     .rotate(rotationDegrees)
                     .aspectRatio(1.0f)
                     .align(Alignment.Center)
-                    .clip(roundedShape),
-                painter = painter,
+                    .clip(roundedShape)
+                    .imageLoadingViewport(viewportPainter),
+                painter = viewportPainter,
                 contentDescription = stringResource(R.string.accessibility_song_album_cover)
             )
 

@@ -20,6 +20,12 @@ import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.Typography
+import app.n_zik.android.ui.styling.applyPitchBlack
+import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.utils.colorPaletteModeKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.putEnum
+import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.R
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassAreaMode
@@ -39,6 +45,38 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ArtistFollowButtonTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `unfollowed Pitch Black uses raised settings surface in every material mode`() {
+        val context = RuntimeEnvironment.getApplication()
+        setActiveProfile("default", context)
+        context.preferences.edit().clear().putEnum(colorPaletteModeKey, ColorPaletteMode.PitchBlack).commit()
+        val mode = mutableStateOf(GlassAreaMode.Disabled)
+        compose.setContent {
+            val shape = RoundedCornerShape(8.dp)
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                DefaultDarkColorPalette.applyPitchBlack, Typography.fallback, shape, shape, shape,
+            )) {
+                ArtistFollowButton(null, {}, Modifier.testTag("follow"),
+                    GlassSettings(quality = GlassQuality.Performance, film = 1f, rim = 0f,
+                        areaModes = mapOf(GlassArea.ActionButtons to mode.value)))
+            }
+        }
+        fun assertFill(expected: Color) {
+            val image = compose.onNodeWithTag("follow").captureToImage().toPixelMap()
+            val pixel = image[12, image.height / 2]
+            assertEquals(expected.red, pixel.red, .025f)
+            assertEquals(expected.green, pixel.green, .025f)
+            assertEquals(expected.blue, pixel.blue, .025f)
+        }
+        GlassAreaMode.entries.forEach { selected ->
+            compose.runOnIdle { mode.value = selected }
+            assertFill(Color(0xFF1A1A1A))
+        }
+        compose.runOnIdle {
+            context.preferences.edit().putEnum(colorPaletteModeKey, ColorPaletteMode.PureBlack).commit()
+        }
+        assertFill(Color.Black)
+    }
 
     @Test fun `follow palette updates without toggling follow state in every material mode`() {
         val palette = mutableStateOf(DefaultDarkColorPalette.copy(accent = Color.Red))

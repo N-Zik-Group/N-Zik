@@ -33,6 +33,8 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.components.glass.glassImageBorder
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.coil.imageLoadingViewport
+import app.n_zik.android.core.coil.rememberImageLoadingViewportPainter
 import app.n_zik.android.uiRoundnessShape
 
 import com.google.gson.annotations.SerializedName
@@ -76,13 +78,15 @@ data class Developer(
                     .background(backgroundColor, uiRoundnessShape()),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val viewportPainter = rememberImageLoadingViewportPainter(avatarPainter)
                 Image(
-                    painter = avatarPainter,
+                    painter = viewportPainter,
                     contentDescription = null,
                     modifier = Modifier
                         .size(40.dp)
                         .clip( uiRoundnessShape() )
-                        .glassImageBorder(uiRoundnessShape(), BorderStroke(1.dp, Color.White)),
+                        .glassImageBorder(uiRoundnessShape(), BorderStroke(1.dp, Color.White))
+                        .imageLoadingViewport(viewportPainter),
                     contentScale = ContentScale.Fit
                 )
 

@@ -30,6 +30,7 @@ import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.components.glass.GlassActionCellHeight
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassSettings
@@ -164,6 +165,7 @@ internal fun ArtistFollowButton(
     settings: GlassSettings = rememberGlassSettings(),
 ) {
         val colorPalette = colorPalette()
+        val unfollowedBackground = surfaceColor(colorPalette.background2)
 
         val buttonProps: Triple<Int, Color, Color> = run {
             val text = when(likeState) {
@@ -174,7 +176,7 @@ internal fun ArtistFollowButton(
             val background = when(likeState) {
                 true -> colorPalette.accent
                 false -> colorPalette.red
-                null -> colorPalette.background2
+                null -> unfollowedBackground
             }
             val foreground = when(likeState) {
                 true -> colorPalette.onAccent

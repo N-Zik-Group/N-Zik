@@ -53,6 +53,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.PlaybackParameters
 import kotlinx.coroutines.coroutineScope
+import app.n_zik.android.core.coil.imageLoadingViewport
+import app.n_zik.android.core.coil.rememberImageLoadingViewportPainter
 import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
 import app.n_zik.android.utils.DEFAULT_HOLD_TO_SPEED_UP_RATE
 import app.n_zik.android.utils.HOLD_TO_SPEED_UP_RATE_RANGE
@@ -386,6 +388,7 @@ fun Thumbnail(
                 Box(Modifier.matchParentSize().layerBackdrop(overlayArtworkBackdrop)) {
                 if ((!isShowingLyrics && !isShowingVisualizer) || (isShowingVisualizer && showvisthumbnail) || (isShowingLyrics && showlyricsthumbnail))
                     if (artImageAvailable) {
+                        val viewportPainter = rememberImageLoadingViewportPainter(coverPainter)
                         if (showCoverThumbnailAnimation)
                             RotateThumbnailCoverAnimation(
                                 painter = coverPainter,
@@ -406,7 +409,7 @@ fun Thumbnail(
                             )
                         else
                             Image (
-                                painter = coverPainter,
+                                painter = viewportPainter,
                                 contentDescription = null,
                                 contentScale = if (cropVideoThumbnails) ContentScale.Crop else ContentScale.Fit,
                                 modifier = Modifier
@@ -423,6 +426,7 @@ fun Thumbnail(
                                     .fillMaxSize()
                                     .clip(thumbnailShape())
                                     .glassImageRim(thumbnailShape())
+                                    .imageLoadingViewport(viewportPainter)
                             )
 
                     } else {

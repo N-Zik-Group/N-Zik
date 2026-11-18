@@ -30,6 +30,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.core.coil.imageLoadingViewport
+import app.n_zik.android.core.coil.rememberImageLoadingViewportPainter
 import app.n_zik.android.uiRoundnessShape
 
 import com.google.gson.annotations.SerializedName
@@ -75,13 +77,15 @@ data class Translator(
                     .background(backgroundColor, uiRoundnessShape()),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val viewportPainter = rememberImageLoadingViewportPainter(avatarPainter)
                 Image(
-                    painter = avatarPainter,
+                    painter = viewportPainter,
                     contentDescription = null,
                     modifier = Modifier
                         .size(40.dp)
                         .clip( uiRoundnessShape() )
-                        .glassImageBorder(uiRoundnessShape(), BorderStroke(1.dp, Color.White)),
+                        .glassImageBorder(uiRoundnessShape(), BorderStroke(1.dp, Color.White))
+                        .imageLoadingViewport(viewportPainter),
                     contentScale = ContentScale.Fit
                 )
 

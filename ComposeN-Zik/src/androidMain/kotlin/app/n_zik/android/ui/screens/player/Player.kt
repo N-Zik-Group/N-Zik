@@ -1,5 +1,7 @@
 package app.n_zik.android.ui.screens.player
 
+import app.n_zik.android.core.coil.imageLoadingViewport
+import app.n_zik.android.core.coil.rememberImageLoadingViewportPainter
 import app.n_zik.android.ui.screens.player.components.LocalPlayerMusicVideo
 import app.n_zik.android.ui.screens.player.components.PlayerMusicVideo
 import app.n_zik.android.ui.screens.player.components.PlayerAudioVideoToggle
@@ -1808,11 +1810,12 @@ fun Player(
                                                  type = coverThumbnailAnimation
                                              )
                                          else {
+                                             val viewportPainter = rememberImageLoadingViewportPainter(coverPainter)
                                              Image(
-                                                 painter = coverPainter,
+                                                 painter = viewportPainter,
                                                  contentDescription = "",
                                                  contentScale = ContentScale.Fit,
-                                                 modifier = Modifier.fillMaxSize()
+                                                 modifier = Modifier.fillMaxSize().imageLoadingViewport(viewportPainter)
                                              )
                                              if (isDragged && it == player.currentMediaItemIndex) {
                                                  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -2516,11 +2519,12 @@ fun Player(
                                                  type = coverThumbnailAnimation
                                              )
                                          else {
+                                             val viewportPainter = rememberImageLoadingViewportPainter(coverPainter)
                                              Image(
-                                                 painter = coverPainter,
+                                                 painter = viewportPainter,
                                                  contentDescription = "",
                                                  contentScale = ContentScale.Fit,
-                                                 modifier = Modifier.fillMaxSize()
+                                                 modifier = Modifier.fillMaxSize().imageLoadingViewport(viewportPainter)
                                              )
                                              if (isDragged && expandedplayer && it == player.currentMediaItemIndex) {
                                                  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
