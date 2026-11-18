@@ -329,13 +329,13 @@
     <string name="recovery_theme_backup_restore_action">Temaların geri yükle</string>
     <string name="recovery_theme_backup_restore_description">Bu profil için kullanılan en son tema yedeğini açın.</string>
     <string name="updates_status_and_last_check">%1$s · %2$s</string>
-    <string name="recovery_action_failed">Could not complete the recovery action.</string>
-    <string name="recovery_reopen_after_restoring_settings">Reopen the Rescue Center after restoring settings.</string>
-    <string name="recovery_settings_file_empty">The settings file is empty.</string>
-    <string name="recovery_profile_changed_during_import">The selected profile changed during settings import. Select it again and retry.</string>
-    <string name="recovery_no_importable_settings">The file contains no settings that can be imported.</string>
-    <string name="recovery_finish_pending_profile_operation">Finish the pending profile reset or restore first.</string>
-    <string name="recovery_no_database_to_reset">There is no database to reset.</string>
+    <string name="recovery_action_failed">Kurtarma işlemi tamamlanamadı.</string>
+    <string name="recovery_reopen_after_restoring_settings">Ayarları geri yükledikten sonra Kurtarma Merkezi’ni yeniden açın.</string>
+    <string name="recovery_settings_file_empty">Ayarlar dosyası boş.</string>
+    <string name="recovery_profile_changed_during_import">Ayarların içe aktarılması sırasında seçilen profil değişti. Profili yeniden seçin ve işlemi tekrar deneyin.</string>
+    <string name="recovery_no_importable_settings">Dosyada içe aktarılabilecek herhangi bir ayarlar bulunmamaktadır.</string>
+    <string name="recovery_finish_pending_profile_operation">Öncelikle bekleyen profil sıfırlama veya geri yükleme işlemini tamamlayın.</string>
+    <string name="recovery_no_database_to_reset">Sıfırlanacak bir veritabanı yok.</string>
     <string name="updates_current_version_format">v%1$s</string>
     <string name="updates_version_and_status">%1$s • %2$s</string>
 </resources>
