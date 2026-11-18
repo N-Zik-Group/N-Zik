@@ -103,6 +103,7 @@ import app.n_zik.android.enums.TransitionEffect
 import app.n_zik.android.components.settings.common.SettingsCardSurface
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.ui.DownloadIconButton
 import app.n_zik.android.components.ui.UiButton
 import app.n_zik.android.components.ui.UiTextButton
 import app.n_zik.android.components.ui.screens.home.GlassHomeChips
@@ -1002,13 +1003,15 @@ private fun ThemeCardDownloadRow(download: ThemeCardDownload) {
         }
         val onDownload = download.onDownload
         if (!download.downloaded && !download.pending && onDownload != null) {
-            StoreIconAction(onClick = onDownload) {
-                Icon(painterResource(icon), stringResource(R.string.theme_store_download), Modifier.size(16.dp), tint = colorPalette().text)
-            }
+            DownloadIconButton(
+                onClick = onDownload,
+                icon = icon,
+                color = colorPalette().text,
+                modifier = Modifier.size(20.dp),
+                contentDescription = stringResource(R.string.theme_store_download),
+            )
         } else {
-            Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
-                Icon(painterResource(icon), null, Modifier.size(16.dp), tint = colorPalette().textSecondary)
-            }
+            Icon(painterResource(icon), null, Modifier.size(20.dp), tint = colorPalette().textSecondary)
         }
     }
 }
