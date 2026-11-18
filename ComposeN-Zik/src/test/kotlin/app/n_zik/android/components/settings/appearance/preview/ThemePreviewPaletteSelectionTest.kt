@@ -33,6 +33,38 @@ class ThemePreviewPaletteSelectionTest {
     }
 
     @Test
+    fun gallerySceneKeysSurvivePaletteAndGlassChanges() {
+        fun previews(variant: String, ext: String) = listOf(
+            StorePreview("previews/home-$variant.$ext", "home", "home"),
+            StorePreview("previews/player-$variant.$ext", "player", "player"),
+            StorePreview("previews/player-$variant.png", "player", "alternate"),
+        )
+
+        val normal = galleryPreviewSceneKeys(previews("light-normal", "webp"))
+        val glass = galleryPreviewSceneKeys(previews("dark-glass", "jpg"))
+        assertEquals(normal, glass)
+        assertEquals(3, normal.toSet().size)
+    }
+
+    @Test
+    fun openGalleryKeepsSceneOrderAndLatestVariantWhenAnAssetIsMissing() {
+        fun scenes(vararg previews: StorePreview): List<Pair<StorePreview, String>> =
+            previews.toList().let { it.zip(galleryPreviewSceneKeys(it)) }
+
+        val lightHome = StorePreview("previews/home-light-normal.webp", "home", "light-home")
+        val lightPlayer = StorePreview("previews/player-light-normal.webp", "player", "light-player")
+        val darkHome = StorePreview("previews/home-dark-normal.webp", "home", "dark-home")
+        val darkPlayer = StorePreview("previews/player-dark-normal.webp", "player", "dark-player")
+        val glassHome = StorePreview("previews/home-dark-glass.webp", "home", "glass-home")
+        val glassQueue = StorePreview("previews/queue-dark-glass.webp", "queue", "glass-queue")
+
+        val opened = scenes(lightHome, lightPlayer)
+        val dark = updateGalleryViewerScenes(opened, scenes(darkPlayer, darkHome))
+        assertEquals(scenes(darkHome, darkPlayer), dark)
+        assertEquals(scenes(glassHome, darkPlayer), updateGalleryViewerScenes(dark, scenes(glassQueue, glassHome)))
+    }
+
+    @Test
     fun manualGalleryChoiceSurvivesRecompositionUntilTheAppPaletteChanges() {
         val appDark = mutableStateOf(false)
         val appGlass = mutableStateOf(false)

@@ -48,6 +48,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -943,11 +944,13 @@ private fun ThemeStoreCard(
         value = null
         if (showCatalogInfo) value = catalog.reviews(theme)
     }
-    val imageDescription = publishedPreview?.caption
     ThemeCardSurface(modifier = modifier, onClick = open) {
-        val image = preview
         Box(Modifier.fillMaxWidth().aspectRatio(StorePreviewAspectRatio), contentAlignment = Alignment.Center) {
-            StorePreviewImage(image?.file, imageDescription, showImageRim = false, fitPortraitFrame = true)
+            if (publishedPreview != null) {
+                FadingStorePreviewImage(preview?.file, publishedPreview.caption)
+            } else {
+                StorePreviewImage(null, null, showImageRim = false, fitPortraitFrame = true)
+            }
         }
         Column(Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = if (open == null) 10.dp else 0.dp)) {
             val author = if (showLocalCreator) localThemeCreatorName(theme) else theme.author.login
@@ -1138,16 +1141,61 @@ internal fun StorePreviewImage(
     description: String?,
     showImageRim: Boolean = true,
     fitPortraitFrame: Boolean = false,
+    modifier: Modifier = Modifier,
+    crossfade: Boolean? = null,
+    onSuccess: (() -> Unit)? = null,
 ) {
     val fitImage = fitPortraitFrame && file != null
     ImageCacheFactory.LocalAsyncImage(
         model = file,
         cacheKey = file?.absolutePath,
         contentDescription = description,
-        modifier = Modifier.fillMaxSize().then(if (fitImage) Modifier.background(Color.Black) else Modifier),
+        modifier = modifier.fillMaxSize().then(if (fitImage) Modifier.background(Color.Black) else Modifier),
         contentScale = if (fitImage) ContentScale.Fit else ContentScale.Crop,
         shape = if (showImageRim) uiRoundnessShape() else null,
+        crossfade = crossfade,
+        onSuccess = onSuccess?.let { report -> { _ -> report() } },
     )
+}
+
+private data class StorePreviewFrame(val file: File, val description: String?)
+
+/** Keeps the decoded image on screen until the new variant can replace it. */
+@Composable
+internal fun FadingStorePreviewImage(file: File?, description: String?) {
+    var current by remember { mutableStateOf<StorePreviewFrame?>(null) }
+    var revealing by remember { mutableStateOf<StorePreviewFrame?>(null) }
+    val requested = file?.let { StorePreviewFrame(it, description) }
+    val latestRequest by rememberUpdatedState(requested)
+    val incoming = revealing ?: requested?.takeIf { it.file != current?.file }
+    val opacity = remember(incoming?.file) { Animatable(0f) }
+    LaunchedEffect(revealing) {
+        val next = revealing ?: return@LaunchedEffect
+        if (current != null) opacity.animateTo(1f, tween(250))
+        current = next
+        revealing = null
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        if (current == null && incoming == null) {
+            StorePreviewImage(null, description, showImageRim = false, fitPortraitFrame = true)
+        }
+        for (frame in listOfNotNull(current, incoming)) key(frame.file) {
+            val overlaysCurrent = current != null && frame.file != current?.file
+            val reportReady: (() -> Unit)? = if (frame.file == current?.file) null else ({
+                if (revealing == null && latestRequest?.file == frame.file) revealing = frame
+            })
+            StorePreviewImage(
+                frame.file,
+                if (overlaysCurrent) null else frame.description,
+                showImageRim = false,
+                fitPortraitFrame = true,
+                modifier = if (overlaysCurrent) Modifier.graphicsLayer { alpha = opacity.value } else Modifier,
+                crossfade = false,
+                onSuccess = reportReady,
+            )
+        }
+    }
 }
 
 @Composable

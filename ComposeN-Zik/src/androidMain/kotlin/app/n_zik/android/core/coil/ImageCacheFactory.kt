@@ -1010,6 +1010,7 @@ object ImageCacheFactory {
         shape: Shape? = RectangleShape,
         isResolvingModel: Boolean = false,
         loadIdentity: Any? = model,
+        crossfade: Boolean? = null,
         onSuccess: ((State.Success) -> Unit)? = null,
     ) {
         val imageModifier = if (shape == null) modifier else modifier.glassImageRim(shape)
@@ -1039,6 +1040,7 @@ object ImageCacheFactory {
         val request = ImageRequest.Builder(appContext())
             .data(model)
             .apply { if (cacheKey != null) { diskCacheKey(cacheKey); memoryCacheKey(cacheKey) } }
+            .apply { if (crossfade != null) crossfade(crossfade) }
             .build()
 
         AsyncImage(
