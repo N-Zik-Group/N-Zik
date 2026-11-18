@@ -87,43 +87,43 @@
     </plurals>
     <plurals name="maintenance_pass_deferred_count">
         <item quantity="one">%1$d Élément reporté</item>
-        <item quantity="other">%1$d Éléments reportés</item>
+        <item quantity="other">%1$d éléments reportés</item>
     </plurals>
     <plurals name="maintenance_pass_skipped_count">
-        <item quantity="one">%1$d Élément ignoré</item>
-        <item quantity="other">%1$d Éléments ignorés</item>
+        <item quantity="one">%1$d élément ignoré</item>
+        <item quantity="other">%1$d éléments ignorés</item>
     </plurals>
     <plurals name="maintenance_dedup_flagged_count">
-        <item quantity="one">%1$d Ligne signalée</item>
-        <item quantity="other">%1$d Lignes signalées</item>
+        <item quantity="one">Ligne %1$d signalée</item>
+        <item quantity="other">%1$d lignes ont été signalées</item>
     </plurals>
     <plurals name="maintenance_dedup_merged_count">
-        <item quantity="one">%1$d Ligne fusionnée</item>
-        <item quantity="other">%1$d Lignes fusionnées</item>
+        <item quantity="one">Ligne %1$d fusionnée</item>
+        <item quantity="other">%1$d lignes fusionnées</item>
     </plurals>
     <plurals name="recovery_profile_deleted_count">
         <item quantity="one">Profil %1$d supprimé</item>
-        <item quantity="other">Profils %1$d supprimés</item>
+        <item quantity="other">%1$d profils supprimés</item>
     </plurals>
     <plurals name="recovery_profile_reset_count">
-        <item quantity="one">Réinitialiser le profil %1$d . Relancer l\'application</item>
-        <item quantity="other">Réinitialiser les profils %1$d . Relancer l\'application</item>
+        <item quantity="one">Réinitialiser le profil %1$d. Relancer l\'application</item>
+        <item quantity="other">Réinitialiser %1$d profils. Relancer l\'application</item>
     </plurals>
     <plurals name="recovery_profile_restored_count">
-        <item quantity="one">Profil %1$d restauré : relancer l\'application</item>
-        <item quantity="other">Profils %1$d restaurés : relancer l\'application</item>
+        <item quantity="one">Profil %1$d restauré : relancez l\'application</item>
+        <item quantity="other">Restauration de %1$d profils : relancez l\'application</item>
     </plurals>
     <plurals name="album_loading_song_count">
         <item quantity="one">Chargement de %1$d titre…</item>
         <item quantity="other">Chargement de %1$d titres…</item>
     </plurals>
     <plurals name="artist_deduplication_result_count">
-        <item quantity="one">%1$d artiste en double fusionné avec l\'artiste droit</item>
-        <item quantity="other">%1$d artistes dupliqués fusionnés avec le bon artiste</item>
+        <item quantity="one">Fusion de %1$d artiste en double avec le bon artiste</item>
+        <item quantity="other">%1$d artistes en double ont été fusionnés avec le bon artiste</item>
     </plurals>
     <plurals name="artist_link_cleanup_result_count">
-        <item quantity="one">Suppression du lien d\'artiste incorrect %1$d</item>
-        <item quantity="other">Suppression des liens d\'artiste incorrects %1$d</item>
+        <item quantity="one">Suppression du lien erroné vers l\'artiste %1$d</item>
+        <item quantity="other">Suppression de %1$d liens vers des artistes erronés</item>
     </plurals>
     <plurals name="library_song_count_with_duration">
         <item quantity="one">%1$d titre • %2$s</item>
@@ -154,8 +154,8 @@
         <item quantity="other">Mise à jour de %1$d titres</item>
     </plurals>
     <plurals name="rewind_home_year_play_count">
-        <item quantity="one">%1$s · %2$s lu</item>
-        <item quantity="other">%1$s · %2$s lus</item>
+        <item quantity="one">%1$s · %2$s écoute</item>
+        <item quantity="other">%1$s · %2$s écoutes</item>
     </plurals>
     <plurals name="rewind_listening_day_count_without">
         <item quantity="one">%1$s jour sans écouter de musique.</item>
