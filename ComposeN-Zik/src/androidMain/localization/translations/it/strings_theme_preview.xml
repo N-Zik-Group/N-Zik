@@ -3,6 +3,7 @@
     <string name="theme_preview_gallery_description">Scopri come il tuo tema appare attraverso N-Zik con le anteprime Normale e Vetro.</string>
     <string name="theme_store_preview_section">Anteprima tema</string>
     <string name="theme_preview_generate">Genera immagini di anteprima</string>
+    <string name="theme_preview_keep_open">Mantenere N-Zik aperto ed evitare di interrompere la generazione di anteprima fino al termine.</string>
     <string name="theme_preview_replace">Sostituisci immagine</string>
     <string name="theme_preview_scene_failed">Impossibile catturare %1$s.</string>
     <string name="theme_preview_replacement_failed">Scegli un\'immagine ritratto valida fino a 16 megapixel.</string>
