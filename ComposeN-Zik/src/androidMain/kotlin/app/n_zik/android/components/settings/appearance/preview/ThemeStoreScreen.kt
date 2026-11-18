@@ -1169,8 +1169,14 @@ internal fun FadingStorePreviewImage(file: File?, description: String?) {
     val latestRequest by rememberUpdatedState(requested)
     val incoming = revealing ?: requested?.takeIf { it.file != current?.file }
     val opacity = remember(incoming?.file) { Animatable(0f) }
-    LaunchedEffect(revealing) {
+    val returningToCurrent = current != null && requested?.file == current?.file
+    LaunchedEffect(revealing, returningToCurrent) {
         val next = revealing ?: return@LaunchedEffect
+        if (returningToCurrent) {
+            opacity.animateTo(0f, tween(250))
+            revealing = null
+            return@LaunchedEffect
+        }
         if (current != null) opacity.animateTo(1f, tween(250))
         current = next
         revealing = null
