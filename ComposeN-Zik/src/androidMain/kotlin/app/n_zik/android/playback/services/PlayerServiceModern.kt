@@ -168,7 +168,6 @@ import app.n_zik.android.download.utils.DownloadValidator
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.download.services.MyDownloadService
 import app.n_zik.android.playback.utils.SessionBitmapLoader
-import app.n_zik.android.utils.TimerJob
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.audioQualityFormatKey
 import app.n_zik.android.utils.imageQualityFormatKey
@@ -222,7 +221,6 @@ import app.n_zik.android.utils.showDownloadButtonBackgroundPlayerKey
 import app.n_zik.android.utils.showLikeButtonBackgroundPlayerKey
 import app.n_zik.android.utils.skipMediaOnErrorKey
 import app.n_zik.android.utils.skipSilenceKey
-import app.n_zik.android.utils.timer
 import app.n_zik.android.utils.toggleRepeatMode
 import app.n_zik.android.utils.shuffleQueue
 import app.n_zik.android.utils.volumeNormalizationKey
@@ -458,7 +456,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
     lateinit var audioQualityFormat: AudioQualityFormat
     lateinit var imageQualityFormat: ImageQualityFormat
-    private var timerJob: TimerJob? = null
+    private val sleepTimer = PlaybackSleepTimer(coroutineScope)
     private var widgetProgressJob: Job? = null
     lateinit var nzikRadio: NZikRadio
 
@@ -1328,8 +1326,6 @@ class PlayerServiceModern : MediaLibraryService(),
             //downloadCache.release()
             loudnessEnhancer?.release()
             audioVolumeObserver.unregister()
-            timerJob?.cancel()
-            timerJob = null
             notificationManager?.cancel(NotificationId)
             notificationManager?.cancelAll()
             notificationManager = null
@@ -1347,6 +1343,7 @@ class PlayerServiceModern : MediaLibraryService(),
             Timber.tag("PlayerServiceModern").e("Failed onDestroy "+it.stackTraceToString())
         }
         // Teardown must also run when an unrelated, partially initialized dependency failed.
+        sleepTimer.cancel()
         releasePlaybackPlayersOnDestroy()
         coroutineScope.cancel()
         super.onDestroy()
@@ -3056,39 +3053,37 @@ class PlayerServiceModern : MediaLibraryService(),
         val downloadCache: Cache
             get() = this@PlayerServiceModern.downloadCache
 
-        val sleepTimerMillisLeft: StateFlow<Long?>?
-            get() = timerJob?.millisLeft
+        val sleepTimerMillisLeft: StateFlow<Long?>
+            get() = sleepTimer.millisLeft
 
         fun startSleepTimer(delayMillis: Long) {
-            timerJob?.cancel()
+            sleepTimer.start(
+                delayMillis,
+                onExpiration = {
+                    val notification = NotificationCompat
+                        .Builder(this@PlayerServiceModern, channelId(SleepTimerNotificationChannelId, getActiveProfile(this@PlayerServiceModern)))
+                        .setContentTitle(appTextResources().getString(R.string.player_sleep_timer_finished_message))
+                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                        .setAutoCancel(true)
+                        .setOnlyAlertOnce(true)
+                        .setShowWhen(true)
+                        .setSmallIcon(R.drawable.ic_launcher_monochrome)
+                        .build()
 
-            timerJob = coroutineScope.timer(delayMillis) {
-                val notification = NotificationCompat
-                    .Builder(this@PlayerServiceModern, channelId(SleepTimerNotificationChannelId, getActiveProfile(this@PlayerServiceModern)))
-                    .setContentTitle(appTextResources().getString(R.string.player_sleep_timer_finished_message))
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setAutoCancel(true)
-                    .setOnlyAlertOnce(true)
-                    .setShowWhen(true)
-                    .setSmallIcon(R.drawable.ic_launcher_monochrome)
-                    .build()
-
-                notificationManager?.let { manager ->
-                    manager.notify(SleepTimerNotificationId, notification)
-                    PermissionUsageJournal.record(this@PlayerServiceModern, PermissionFeature.PLAYBACK, JournalPermission.NOTIFICATIONS, PermissionEventKind.USED)
-                }
-
-                coroutineScope.launch {
-                    delay(1000)
+                    notificationManager?.let { manager ->
+                        manager.notify(SleepTimerNotificationId, notification)
+                        PermissionUsageJournal.record(this@PlayerServiceModern, PermissionFeature.PLAYBACK, JournalPermission.NOTIFICATIONS, PermissionEventKind.USED)
+                    }
+                },
+                onShutdown = {
                     stopSelf()
                     exitProcess(0)
-                }
-            }
+                },
+            )
         }
 
         fun cancelSleepTimer() {
-            timerJob?.cancel()
-            timerJob = null
+            sleepTimer.cancel()
         }
 
         val isLoadingRadio: Boolean

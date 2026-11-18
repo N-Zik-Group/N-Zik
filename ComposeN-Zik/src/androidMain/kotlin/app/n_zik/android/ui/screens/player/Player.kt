@@ -171,7 +171,6 @@ import app.n_zik.android.components.player.isPlayerHorizontalSwipeEnabled
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -781,10 +780,6 @@ fun Player(
     val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
     val isDraggedFS by pagerStateFS.interactionSource.collectIsDraggedAsState()
 
-    var delayedSleepTimer by remember {
-        mutableStateOf(false)
-    }
-
     val sleepTimerMillisLeft by (binder?.sleepTimerMillisLeft
         ?: flowOf(null))
         .collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
@@ -809,20 +804,6 @@ fun Player(
     }
     val timeRemaining by timeRemainingState
 
-    LaunchedEffect(binder, delayedSleepTimer, sleepTimerMillisLeft) {
-        snapshotFlow { timeRemainingState.value }.collect { timeRemaining ->
-            val sleepTimerRemaining = sleepTimerMillisLeft
-            if (sleepTimerRemaining != null) {
-                if (sleepTimerRemaining < timeRemaining.toLong() && !delayedSleepTimer) {
-                    binder?.cancelSleepTimer()
-                    binder?.startSleepTimer(timeRemaining.toLong())
-                    delayedSleepTimer = true
-                    Toaster.n(R.string.player_sleep_timer_end_of_song_message)
-                }
-            }
-        }
-    }
-
     val windowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
 
     val artistInfos = mediaItem.artistIdsWithFallback()
@@ -839,10 +820,7 @@ fun Player(
             sleepTimerMillisLeft = sleepTimerMillisLeft,
             timeRemaining = timeRemaining.toLong(),
             onDismiss = { isShowingSleepTimerDialog = false },
-            onCancelSleepTimer = { 
-                binder?.cancelSleepTimer()
-                delayedSleepTimer = false
-            },
+            onCancelSleepTimer = { binder?.cancelSleepTimer() },
             onStartSleepTimer = { time -> binder?.startSleepTimer(time) }
         )
     }
