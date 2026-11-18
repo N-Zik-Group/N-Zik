@@ -2401,6 +2401,7 @@ class MainActivity :
 
                             // Keep the card mounted through the slide to the dismissed anchor.
                             if (shouldComposePlayerSheet(mediaPresent, playerSheetState.isDismissed)) {
+                                val artworkInMotion = remember { mutableStateOf(false) }
                                 Box(
                                     modifier = Modifier.fillMaxSize()
                                         .graphicsLayer {
@@ -2413,7 +2414,7 @@ class MainActivity :
                                     // step, only this subtree (mini-player + full player)
 //
                                     // animates the transition
-                                    PaletteFade {
+                                    PaletteFade(artworkInMotion = artworkInMotion) {
                                         CustomBottomSheet(
                                             state = playerSheetState,
                                             modifier = Modifier.fillMaxWidth(),
@@ -2496,7 +2497,7 @@ class MainActivity :
                                                 }
                                             }
                                         ) {
-                                            Player(navController) {
+                                            Player(navController, artworkInMotion = artworkInMotion) {
                                                 coroutineScope.launch {
                                                     playerSheetState.hide()
                                                 }
@@ -2589,7 +2590,8 @@ class MainActivity :
                     val player = currentBinder.player
 
                     val paletteArtworkListener = DynamicPaletteArtworkListener(player) {
-                        setDynamicPalette(player, animateTheme = true)
+                        // The expanded player owns its scoped PaletteFade. Its covered screen needs only the target.
+                        setDynamicPalette(player, animateTheme = !playerSheetState.isExpanded)
                     }
                     player.addListener(paletteArtworkListener)
                     paletteArtworkListener.publishCurrentArtwork()

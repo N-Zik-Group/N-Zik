@@ -2,6 +2,7 @@ package app.n_zik.android.components.player.slide
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import app.n_zik.android.components.player.shouldHoldPlayerArtworkBackground
 import app.n_zik.android.enums.PlayerSwipeSensitivity
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -15,6 +16,21 @@ import kotlinx.coroutines.test.runTest
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class SlideHelpersTest {
+
+    @Test
+    fun `artwork background waits for the latest playback index while the carousel moves`() {
+        assertTrue(shouldHoldPlayerArtworkBackground(settledPage = 4, playingPage = 5, requestedPage = 5, dragging = false))
+        assertTrue(shouldHoldPlayerArtworkBackground(settledPage = 5, playingPage = 6, requestedPage = 6, dragging = false))
+        assertFalse(shouldHoldPlayerArtworkBackground(settledPage = 6, playingPage = 6, requestedPage = 6, dragging = false))
+    }
+
+    @Test
+    fun `artwork background stays live during a finger preview and outside the carousel`() {
+        assertFalse(shouldHoldPlayerArtworkBackground(settledPage = 4, playingPage = 5, requestedPage = 5, dragging = true))
+        assertFalse(shouldHoldPlayerArtworkBackground(settledPage = null, playingPage = 5, requestedPage = 5, dragging = false))
+        assertFalse(shouldHoldPlayerArtworkBackground(settledPage = 4, playingPage = -1, requestedPage = -1, dragging = false))
+        assertFalse(shouldHoldPlayerArtworkBackground(settledPage = 4, playingPage = 5, requestedPage = -1, dragging = false))
+    }
 
     @Test
     fun `rapid swipes cancel the old delayed playback request`() = runTest {

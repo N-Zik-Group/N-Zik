@@ -1,6 +1,7 @@
 package app.n_zik.android.components.player
 
 import android.app.Application
+import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,8 +13,10 @@ import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.LookaheadScope
@@ -44,6 +47,7 @@ import app.n_zik.android.components.player.slide.slideSettledPageEffect
 import app.n_zik.android.enums.PlayerSwipeSensitivity
 import app.n_zik.android.playback.services.PlayerServiceModern
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -52,6 +56,36 @@ import kotlin.math.abs
 @androidx.annotation.OptIn(UnstableApi::class)
 class PlayerCarouselPagerBudgetTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test
+    fun `interrupted next recenters playback when the finger returns to the starting page`() {
+        val playingIndex = mutableStateOf(0)
+        val player = mockk<Player>(relaxed = true)
+        every { player.currentMediaItemIndex } answers { playingIndex.value }
+        lateinit var pager: PagerState
+        var interrupted = false
+        compose.setContent {
+            pager = rememberPagerState { 4 }
+            pager.LaunchedEffectScrollToPage(player, 0, playingIndex.value, false, paceArtworkMotion = true)
+            VerticalPager(pager, Modifier.size(250.dp), beyondViewportPageCount = 2) {
+                Box(Modifier.fillMaxSize())
+            }
+            LaunchedEffect(pager) {
+                snapshotFlow { pager.isScrollInProgress && pager.currentPageOffsetFraction > 0.001f }.first { it }
+                pager.scroll(MutatePriority.UserInput) {
+                    val stride = pager.layoutInfo.pageSize + pager.layoutInfo.pageSpacing
+                    scrollBy(-(pager.currentPage + pager.currentPageOffsetFraction) * stride)
+                }
+                interrupted = true
+            }
+        }
+        compose.runOnIdle { playingIndex.value = 1 }
+        compose.runOnIdle {
+            assertTrue(interrupted)
+            assertEquals(1, pager.settledPage)
+            assertEquals(0f, pager.currentPageOffsetFraction, 0.001f)
+        }
+    }
 
     @Test fun `Small landscape with minus50 spacing keeps a thousand track queue lazy`() {
         val activePages = mutableSetOf<Int>()

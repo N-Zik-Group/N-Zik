@@ -211,6 +211,35 @@ class AppearanceRecompositionTest {
     }
 
     @Test
+    fun `player palette waits for artwork motion and fades to the latest target`() {
+        val target = mutableStateOf(red)
+        val artworkInMotion = mutableStateOf(false)
+        val displayed = mutableListOf<Appearance>()
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides target.value) {
+                PaletteFade(durationMillis = 320, artworkInMotion = artworkInMotion) {
+                    PaletteReader { displayed += it }
+                }
+            }
+        }
+        advanceFrames(32)
+        composeRule.runOnIdle {
+            artworkInMotion.value = true
+            target.value = blue
+        }
+        advanceFrames(400)
+        composeRule.runOnIdle {
+            assertEquals(red, displayed.last())
+            artworkInMotion.value = false
+        }
+        advanceFrames(180)
+        composeRule.runOnIdle { assertIntermediate(displayed.last(), red, blue) }
+        advanceFrames(400)
+        composeRule.runOnIdle { assertEquals(blue, displayed.last()) }
+    }
+
+    @Test
     fun `nested scoped fade keeps a stable target during global frames`() {
         val target = mutableStateOf(red)
         val fadeFrom = mutableStateOf<Appearance?>(null)

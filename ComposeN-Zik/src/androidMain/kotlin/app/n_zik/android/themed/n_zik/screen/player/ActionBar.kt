@@ -50,7 +50,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -89,6 +88,7 @@ import app.n_zik.android.components.shuffleButtonIcon
 import app.n_zik.android.components.menu.player.AddToPlaylistPlayerMenu
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.components.menu.player.PlayerMenu
+import app.n_zik.android.components.glass.neutralForeground
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.player.rememberPlayerActionToolbarLayout
 import app.n_zik.android.components.player.playerActionQueueTap
@@ -103,6 +103,8 @@ import app.n_zik.android.components.player.PlayerActionPanel
 import app.n_zik.android.components.player.PlayerActionIcon
 import app.n_zik.android.components.player.PlayerDownloadAction
 import app.n_zik.android.components.player.playerTextOutlineColor
+import app.n_zik.android.components.player.LocalPlayerWhatsNextTextColor
+import app.n_zik.android.components.player.textOutlineColor
 import app.n_zik.android.utils.DisposableListener
 import app.n_zik.android.utils.actionspacedevenlyKey
 import app.n_zik.android.utils.addNext
@@ -116,7 +118,6 @@ import app.n_zik.android.utils.getDownloadState
 import app.n_zik.android.utils.isDownloadedSong
 import app.n_zik.android.utils.isLandscape
 import app.n_zik.android.utils.manageDownload
-import app.n_zik.android.utils.mediaItems
 import app.n_zik.android.utils.miniQueueExpandedKey
 import app.n_zik.android.utils.playAtIndex
 import app.n_zik.android.utils.playerBackgroundColorsKey
@@ -176,6 +177,7 @@ private class PagerViewPort(
 @Composable
 fun BoxScope.ActionBar(
     navController: NavController,
+    mediaItems: List<MediaItem>,
     showQueueState: MutableState<Boolean>,
     rotateState: MutableState<Boolean>,
     showVisualizerState: MutableState<Boolean>,
@@ -268,8 +270,6 @@ fun BoxScope.ActionBar(
                 ) {
                     var currentIndex by remember { mutableIntStateOf( player.currentMediaItemIndex ) }
                     var nextIndex by remember { mutableIntStateOf( player.nextMediaItemIndex ) }
-                    val mediaItems = remember { mutableStateListOf<MediaItem>() }
-
                     val pagerStateQueue = rememberPagerState( pageCount = { mediaItems.size } )
 
                     player.DisposableListener {
@@ -280,10 +280,6 @@ fun BoxScope.ActionBar(
                             }
 
                             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-                                mediaItems.clear()
-                                for (i in 0 until timeline.windowCount) {
-                                    mediaItems.add(timeline.getWindow(i, Timeline.Window()).mediaItem)
-                                }
                                 currentIndex = player.currentMediaItemIndex
                                 nextIndex = player.nextMediaItemIndex
                             }
@@ -291,10 +287,7 @@ fun BoxScope.ActionBar(
                     }
 
                     // Instant update and snap when the queue itself changes
-                    LaunchedEffect( player.mediaItems ) {
-                        mediaItems.clear()
-                        mediaItems.addAll( player.mediaItems )
-
+                    LaunchedEffect(mediaItems) {
                         val targetPage = nextIndex.coerceIn( 0, pagerStateQueue.pageCount.coerceAtLeast(1) - 1 )
                         pagerStateQueue.requestScrollToPage(targetPage)
                     }
@@ -327,6 +320,11 @@ fun BoxScope.ActionBar(
                     val viewPort = remember {
                         PagerViewPort( showSongsState, pagerStateQueue )
                     }
+                    val palette = colorPalette()
+                    val measuredText = LocalPlayerWhatsNextTextColor.current
+                    val queueText = measuredText ?: palette.text
+                    val queueOutline = if (measuredText != null) textOutlineColor(neutralForeground(measuredText) == Color.Black, 0.65f)
+                        else playerTextOutlineColor(palette.isDark, 0.65f)
 
                     HorizontalPager(
                         state = pagerStateQueue,
@@ -334,7 +332,7 @@ fun BoxScope.ActionBar(
                         pageSpacing = 10.dp,
                         modifier = Modifier.weight(1f)
                     ) { index ->
-                        val mediaItemAtIndex by remember { derivedStateOf { mediaItems[index] } }
+                        val mediaItemAtIndex = mediaItems.getOrNull(index) ?: return@HorizontalPager
 
                         Row(
                             horizontalArrangement = Arrangement.Center,
@@ -391,7 +389,7 @@ fun BoxScope.ActionBar(
                                     BasicText(
                                         text = titleText,
                                         style = TextStyle(
-                                            color = colorPalette().text,
+                                            color = queueText,
                                             fontSize = typography().xxxs.semiBold.fontSize,
                                         ),
                                         maxLines = 1,
@@ -406,7 +404,7 @@ fun BoxScope.ActionBar(
                                             ),
                                             // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
                                             color = if (!textOutline) Color.Transparent
-                                            else playerTextOutlineColor(colorPalette().isDark, 0.65f),
+                                            else queueOutline,
                                             fontSize = typography().xxxs.semiBold.fontSize,
                                         ),
                                         maxLines = 1,
@@ -425,7 +423,7 @@ fun BoxScope.ActionBar(
                                     BasicText(
                                         text = artistsText,
                                         style = TextStyle(
-                                            color = colorPalette().text,
+                                            color = queueText,
                                             fontSize = typography().xxxs.semiBold.fontSize,
                                         ),
                                         maxLines = 1,
@@ -440,7 +438,7 @@ fun BoxScope.ActionBar(
                                             ),
                                             // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
                                             color = if ( !textOutline ) Color.Transparent
-                                            else playerTextOutlineColor( colorPalette().isDark, 0.65f ),
+                                            else queueOutline,
                                             fontSize = typography().xxxs.semiBold.fontSize,
                                         ),
                                         maxLines = 1,

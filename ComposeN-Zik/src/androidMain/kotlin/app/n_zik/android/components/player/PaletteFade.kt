@@ -6,15 +6,19 @@ import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.lerpTo
 import app.n_zik.android.components.theme.LocalPaletteFadeTarget
 import app.n_zik.android.components.theme.withColor
+import kotlinx.coroutines.flow.first
 
 /**
  * Pure transition model for the scoped palette fade (no Compose, unit-testable).
@@ -40,13 +44,13 @@ class PaletteFadeModel {
      * @return true when a fade should be started, false for the first target
      * or when the target is unchanged
      */
-    fun retarget(newTarget: ColorPalette, displayedFraction: Float): Boolean {
+    fun retarget(newTarget: ColorPalette, displayedFraction: Float, resume: Boolean = false): Boolean {
         val target = targetPalette
         if (target == null) {
             targetPalette = newTarget
             return false
         }
-        if (target == newTarget) return false
+        if (target == newTarget && (!resume || fromPalette == null)) return false
         val origin = fromPalette ?: target
         fromPalette = origin.lerpTo(target, displayedFraction)
         targetPalette = newTarget
@@ -83,6 +87,7 @@ class PaletteFadeModel {
 @Composable
 fun PaletteFade(
     durationMillis: Int = 350,
+    artworkInMotion: State<Boolean>? = null,
     content: @Composable () -> Unit,
 ) {
     val targetAppearance = LocalPaletteFadeTarget.current ?: LocalAppearance.current
@@ -96,13 +101,20 @@ fun PaletteFade(
     // target never flashes before the fade starts from the previous one.
     var displayed by remember { mutableStateOf<ColorPalette?>(null) }
 
-    LaunchedEffect(targetPalette) {
+    val moving = artworkInMotion?.value == true
+    LaunchedEffect(targetPalette, moving) {
         if (displayed == null) {
             model.retarget(targetPalette, 1f)
             displayed = targetPalette
             return@LaunchedEffect
         }
-        if (!model.retarget(targetPalette, fraction.value)) {
+        if (moving) return@LaunchedEffect
+        if (artworkInMotion != null) {
+            // Let the new pager request reach the player before deciding whether to fade.
+            withFrameNanos { }
+            snapshotFlow { artworkInMotion.value }.first { moving -> !moving }
+        }
+        if (!model.retarget(targetPalette, fraction.value, resume = artworkInMotion != null)) {
             model.endFade()
             displayed = targetPalette
             return@LaunchedEffect

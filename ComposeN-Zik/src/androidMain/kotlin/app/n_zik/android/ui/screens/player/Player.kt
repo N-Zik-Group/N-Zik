@@ -1,5 +1,9 @@
 package app.n_zik.android.ui.screens.player
 
+import app.n_zik.android.components.theme.LocalPaletteFadeTarget
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.MutableState
+
 import app.n_zik.android.core.coil.imageLoadingViewport
 import app.n_zik.android.core.coil.rememberImageLoadingViewportPainter
 import app.n_zik.android.ui.screens.player.components.LocalPlayerMusicVideo
@@ -39,8 +43,6 @@ import app.n_zik.android.components.glass.glassQueuePanelBackground
 import app.n_zik.android.components.glass.LocalGlassOverlayBackdrop
 import app.n_zik.android.components.glass.glassPlayerSceneSource
 import app.n_zik.android.components.glass.glassSceneOverlayBackdrop
-import app.n_zik.android.components.glass.GlassRenderer
-import app.n_zik.android.components.glass.glassRenderer
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
@@ -87,6 +89,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -105,7 +108,6 @@ import app.n_zik.android.components.player.slide.flingBehaviorFor
 import app.n_zik.android.components.player.slide.itemZIndexFor
 import app.n_zik.android.components.player.slide.playerThumbnailCover
 import app.n_zik.android.components.player.slide.slideSettledPageEffect
-import app.n_zik.android.components.player.slide.SLIDE_SETTLE_DURATION_MS
 import app.n_zik.android.components.PLAYER_SHEET_HANDOVER_PROGRESS
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -153,6 +155,8 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import app.n_zik.android.components.player.rememberPlayerArtworkPagerState
+import app.n_zik.android.components.player.animatePlayerArtworkScrollToPage
+import app.n_zik.android.components.player.shouldHoldPlayerArtworkBackground
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.SideEffect
@@ -163,6 +167,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
@@ -361,8 +366,11 @@ import kotlinx.coroutines.withContext
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.player.PlayerCurrentCover
+import app.n_zik.android.components.player.PlayerCoverFrame
+import androidx.compose.ui.graphics.painter.Painter
 import app.n_zik.android.components.glass.rememberGlassArtwork
 import app.n_zik.android.components.player.rememberArtworkDisplayColors
+import app.n_zik.android.components.player.ArtworkDisplayColors
 import app.n_zik.android.components.player.BlurAdjuster
 import app.n_zik.android.components.player.m3eDarkenBy
 import app.n_zik.android.components.player.playerTextOutlineColor
@@ -398,6 +406,13 @@ internal data class PlayerDynamicPaletteResult(
     val muted: Int,
     val lightMuted: Int,
     val darkMuted: Int,
+)
+
+private data class PlayerBackgroundArtwork(
+    val mediaId: String,
+    val coverUrl: String?,
+    val display: ArtworkDisplayColors?,
+    val palette: ColorPalette,
 )
 
 /** Computes the palette and background swatches from one shared cover extraction. */
@@ -443,6 +458,7 @@ internal suspend fun computePlayerDynamicPalette(
 @Composable
 fun Player(
     navController: NavController,
+    artworkInMotion: MutableState<Boolean>? = null,
     onDismiss: () -> Unit,
 ) {
     // Essentails
@@ -544,6 +560,7 @@ fun Player(
         true
     }
     var nullableMediaItem by nullableMediaItemState
+    var requestedArtworkPage by remember(player, playerUpdateTrigger) { mutableIntStateOf(C.INDEX_UNSET) }
 
     var shouldBePlaying by remember(playerUpdateTrigger) {
         mutableStateOf(player.shouldBePlaying)
@@ -741,11 +758,18 @@ fun Player(
 
     player.DisposableListener(playerUpdateTrigger) {
         object : Player.Listener {
+            private var observedArtworkPage = player.currentMediaItemIndex
+
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 isActuallyPlaying = isPlaying
             }
 
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                val page = player.currentMediaItemIndex
+                if (observedArtworkPage != page) {
+                    observedArtworkPage = page
+                    requestedArtworkPage = page
+                }
                 nullableMediaItem = mediaItem
             }
 
@@ -882,23 +906,53 @@ fun Player(
     fun coverUrl(item: MediaItem?): String? =
         playingArtwork?.takeIf { it.mediaId == item?.mediaId }?.uri ?: item?.mediaMetadata?.artworkUri?.toString()
     val currentCoverUrl = coverUrl(currentSwipedMediaItem)
+    val visiblePlayerArtwork = playerContentVisible && !appRunningInBackground
+    val fullscreenPagerOwnsArtwork = showFullScreenArtworkPager && !fullCoverPresentation
+    val carouselOwnsArtwork = !showInlineVideo && playerType == PlayerType.Modern &&
+        showLandscapeArtworkColumn && coverArtworkVisible &&
+        (!isLandscape || !fullCoverPresentation) && !fullscreenPagerOwnsArtwork
+    val thumbnailOwnsArtwork = !showInlineVideo && playerType == PlayerType.Essential &&
+        showLandscapeArtworkColumn && coverArtworkVisible
+    val colorArtworkItem = when {
+        carouselOwnsArtwork -> mediaItems.getOrNull(pagerState.currentPage) ?: mediaItem
+        thumbnailOwnsArtwork -> mediaItem
+        else -> currentSwipedMediaItem
+    }
+    if (visiblePlayerArtwork) ImageCacheFactory.ObserveDisplayedArtwork()
     val coverDisplay = rememberArtworkDisplayColors(
-        currentCoverUrl, !lightTheme, awaitArtworkMetadata = currentSwipedMediaItem.mediaId == mediaItem.mediaId,
+        coverUrl(colorArtworkItem), !lightTheme, awaitArtworkMetadata = colorArtworkItem.mediaId == mediaItem.mediaId,
     )
     val dynamicColorPalette = coverDisplay?.palette?.let { palette ->
         if (coverDisplay.forceDark) palette.copy(accent = coverDisplay.foreground ?: palette.text) else palette
     } ?: color
-    val coverColors = coverDisplay?.colors
     SideEffect { videoSession?.controlPalette = dynamicColorPalette }
-    val dominant = coverColors?.dominant ?: dynamicColorPalette.accent.toArgb()
+    val carouselMovesArtwork = visiblePlayerArtwork && carouselOwnsArtwork && (!isLandscape || !isShowingLyrics)
+    val holdBackgroundArtwork = shouldHoldPlayerArtworkBackground(
+        settledPage = if (carouselMovesArtwork) pagerState.settledPage else null,
+        playingPage = player.currentMediaItemIndex,
+        requestedPage = requestedArtworkPage,
+        dragging = carouselMovesArtwork && isDragged,
+    )
+    val nextBackgroundArtwork = PlayerBackgroundArtwork(mediaItem.mediaId, currentCoverUrl, coverDisplay, dynamicColorPalette)
+    val retainedBackgroundArtwork = remember(playerUpdateTrigger, isLandscape) { mutableStateOf(nextBackgroundArtwork) }
+    val backgroundArtwork = if (holdBackgroundArtwork) retainedBackgroundArtwork.value else nextBackgroundArtwork
+    if (!holdBackgroundArtwork) SideEffect { retainedBackgroundArtwork.value = nextBackgroundArtwork }
+    val finishArtworkScroll: (Int) -> Unit = { page ->
+        if (requestedArtworkPage == page) requestedArtworkPage = C.INDEX_UNSET
+    }
+
+    val backgroundDisplay = backgroundArtwork.display
+    val backgroundPalette = backgroundArtwork.palette
+    val coverColors = backgroundDisplay?.colors
+    val dominant = coverColors?.dominant ?: backgroundPalette.accent.toArgb()
     val vibrant = coverColors?.vibrant ?: dominant
     val lightVibrant = coverColors?.lightVibrant ?: dominant
     val darkVibrant = coverColors?.darkVibrant ?: dominant
     val muted = coverColors?.muted ?: dominant
     val lightMuted = coverColors?.lightMuted ?: dominant
     val darkMuted = coverColors?.darkMuted ?: dominant
-    val coverBackground = if (coverColors != null || coverDisplay?.forceDark == true)
-        coverDisplay?.background ?: dynamicColorPalette.background1 else dynamicColorPalette.background1
+    val coverBackground = if (coverColors != null || backgroundDisplay?.forceDark == true)
+        backgroundDisplay?.background ?: backgroundPalette.background1 else backgroundPalette.background1
 
     val coverBackgroundTransitionMs = 350
     val fadingCoverBackground = if (
@@ -913,7 +967,7 @@ fun Player(
     } else coverBackground
 
     fun coverGradientColor(swatch: Int): Color =
-        if (coverDisplay?.forceDark == true) coverBackground
+        if (backgroundDisplay?.forceDark == true) coverBackground
         else m3eSaturate(swatch, lightTheme).m3eDarkenBy(lightTheme)
 
     val view = LocalView.current
@@ -948,19 +1002,35 @@ fun Player(
         playerContentVisible && !appRunningInBackground && !playerUnderlayCovered)
     val playerTransition = LocalPlayerSheetGlassTransition.current
         ?: rememberPlayerSheetGlassTransition(playerSheetState)
-    val opticalPlayerBackground = glassSettings.enabled && glassRenderer(glassSettings) != GlassRenderer.Tint
     val blurAdjuster = BlurAdjuster()
-    // Glass changes the overlay film, not the sampled scene. Retain that scene and retarget the fade.
-    val contrastDecisionKey = listOf(mediaItem.mediaId, currentCoverUrl, coverColors, coverBackground,
-        isLandscape, playerBackgroundColors, color.background0, color.background1, color.background2,
-        color.background3, color.background4, color.accent,
+    val waitForBlurredCover = playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor
+    var settledBackdrop by remember(waitForBlurredCover) { mutableStateOf<PlayerCoverFrame<Painter>?>(null) }
+    val backgroundArtworkPager = when {
+        showFullScreenArtworkPager -> pagerStateFS
+        carouselOwnsArtwork -> pagerState
+        else -> null
+    }
+    if (artworkInMotion != null) {
+        val artworkMoving = visiblePlayerArtwork && backgroundArtworkPager != null &&
+            (backgroundArtworkPager.isScrollInProgress || backgroundArtworkPager.settledPage != player.currentMediaItemIndex)
+        SideEffect { artworkInMotion.value = artworkMoving }
+        DisposableEffect(artworkInMotion) { onDispose { artworkInMotion.value = false } }
+    }
+    val targetPalette = LocalPaletteFadeTarget.current?.colorPalette ?: color
+    val sampledTheme = targetPalette.takeUnless { waitForBlurredCover }
+    val sampledCoverBackground = if (backgroundDisplay == null) sampledTheme?.background1 else coverBackground
+    // Key the recording to the final palette. Animated values would restart the sampler every frame.
+    val contrastDecisionKey = listOf(backgroundArtwork.mediaId, backgroundArtwork.coverUrl, coverColors, sampledCoverBackground,
+        isLandscape, playerBackgroundColors, sampledTheme?.background0, sampledTheme?.background1, sampledTheme?.background2,
+        sampledTheme?.background3, sampledTheme?.background4, sampledTheme?.accent,
         colorPaletteMode, animatedGradient, blackgradient, bottomgradient,
-        blurAdjuster.strength, blurAdjuster.backdrop)
+        blurAdjuster.strength, blurAdjuster.backdrop, settledBackdrop)
     var contrastDecisionReady by remember(contrastDecisionKey, playerContentVisible) { mutableStateOf(false) }
     val samplePlayerBackground = !appRunningInBackground && !playerUnderlayCovered &&
-        (playerContentVisible || !contrastDecisionReady)
-    val capturePlayerBackground = (samplePlayerBackground && !contrastDecisionReady) || playerGlassSourceCaptureActive(
+        (playerContentVisible || !contrastDecisionReady) && (sampledTheme == null || color == sampledTheme)
+    val captureGlassSource = playerGlassSourceCaptureActive(
         glassSettings, playerTransition, inheritedOpticsEnabled)
+    val capturePlayerBackground = (samplePlayerBackground && !contrastDecisionReady) || captureGlassSource
     val playerBackground = rememberGlassPlayerBackground()
     val playerCoverBackground = rememberLayerBackdrop()
     val playerControlsBackdrop = rememberCombinedBackdrop(playerCoverBackground, playerBackground.backdrop)
@@ -968,19 +1038,27 @@ fun Player(
     val backgroundSampling = rememberPlayerBackdropSampling(playerControlsBackdrop, samplePlayerBackground,
         contrastDecisionKey,
         backgroundTransitionMs = if (playerBackgroundColors == PlayerBackgroundColors.CoverColor ||
-            playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient) coverBackgroundTransitionMs else 0)
+            playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient) coverBackgroundTransitionMs else 0,
+        renderedBackgroundReady = if (waitForBlurredCover) {
+            settledBackdrop?.identity?.artworkUri == backgroundArtwork.coverUrl.orEmpty() &&
+                backgroundArtworkPager?.isScrollInProgress != true
+        } else null,
+    )
     SideEffect { contrastDecisionReady = backgroundSampling.finished }
+    val queueNavigationSurface = if (isQueuePanelVisible && !usesQueueToolbarGlass()) color.background1 else null
     PlayerSystemBarAppearance(active = playerSheetState.isExpanded && playerContentVisible,
-        sampling = backgroundSampling, fallbackSurface = color.background0)
+        sampling = backgroundSampling, fallbackSurface = color.background0,
+        navigationSurfaceOverride = queueNavigationSurface)
     val informationSettings = rememberGlassSettings(GlassScope.PlayerHeader)
     val informationFilm = if (informationSettings.usesGlassMaterial(GlassArea.ActionButtons))
         glassFilmColor(informationSettings.forArea(GlassArea.ActionButtons), null, menu = false) else Color.Transparent
-    val commonNeutral = rememberNeutralForegroundFade(backgroundSampling.commonSurface?.let {
+    val commonNeutral = rememberNeutralForegroundFade(backgroundSampling.foregroundSurface?.let {
         effectiveSurfaceColor(it, informationFilm)
     }, if (isNeutralForeground(color.text)) color.text else neutralForeground(color.background0))
     val playerVisibleBackdrop = rememberLayerBackdrop()
     val queuePlayerBackdrop = rememberLayerBackdrop()
-    val capturePlayerScene = playerGlassSceneCaptureActive(glassSettings, playerSheetState.isExpanded, capturePlayerBackground)
+    val capturePlayerScene = playerGlassSceneCaptureActive(glassSettings, playerSheetState.isExpanded, captureGlassSource)
+    val captureQueueUnderlay = capturePlayerScene && (showQueue || isQueuePanelVisible)
 
     @Composable
     fun PlayerBlurredCover(
@@ -992,13 +1070,18 @@ fun Player(
         isShowingVisualizer: Boolean,
         modifier: Modifier = Modifier,
         captureBackdrop: Boolean = true,
+        publishArtworkColors: Boolean = false,
     ) {
         // Sampling and Glass may toggle during sheet motion; the cover must retain its identity.
         Box(Modifier.fillMaxSize().then(
             if (capturePlayerBackground && captureBackdrop) Modifier.layerBackdrop(playerCoverBackground) else Modifier
         )) {
             PlayerCurrentCover(thumbnailUrl, thumbnailUrl, blurAdjuster, showThumbnail, noBlur,
-                isShowingLyrics, isShowingVisualizer, modifier)
+                isShowingLyrics, isShowingVisualizer, modifier, publishArtworkColors,
+                onBackdropSettled = if (captureBackdrop && waitForBlurredCover) {
+                    { settledBackdrop = it }
+                } else null,
+            )
         }
     }
 
@@ -1023,7 +1106,7 @@ fun Player(
     }
 
     if (animatedGradient == AnimatedGradient.Random){
-        LaunchedEffect(mediaItem.mediaId){
+        LaunchedEffect(backgroundArtwork.mediaId){
             valueGrad = (2..13).random()
         }
         tempGradient = gradients[valueGrad]
@@ -1052,8 +1135,9 @@ fun Player(
 
     if (!isGradientBackgroundEnabled) {
         if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor && (playerType == PlayerType.Essential || (showthumbnail && (!albumCoverRotation)))) {
-            // A cached clip layer inside the capture span would retain the suppressed foreground.
-            if (opticalPlayerBackground) playerForegroundClip = Modifier.clip(uiRoundnessShape())
+            // Contrast sampling also captures the background without optical Glass.
+            // Keep the cached clip after the capture boundary in both cases.
+            playerForegroundClip = Modifier.clip(uiRoundnessShape())
             containerModifier = containerModifier
                 .background(
                     Brush.verticalGradient(
@@ -1070,7 +1154,7 @@ fun Player(
                         0.25f
                     ) else Color.Black.copy(0.25f) else Color.Transparent else Color.Transparent
                 )
-                .then(if (opticalPlayerBackground) Modifier else Modifier.clip(uiRoundnessShape())).combinedClickable(
+                .combinedClickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
                     onClick = {
@@ -1165,7 +1249,7 @@ fun Player(
                     AnimatedGradient.M3EMorphingTheme, AnimatedGradient.M3EMorphingCover -> {
                         val isThemeGradient = type == AnimatedGradient.FluidThemeColorGradient ||
                             type == AnimatedGradient.M3EMorphingTheme
-                        val gradientPalette = if (isThemeGradient) color else dynamicColorPalette
+                        val gradientPalette = if (isThemeGradient) color else backgroundPalette
                         val shaderA = rememberPlayerFluidShader(sizeShader,
                             gradientPalette.background0, gradientPalette.background2)
                         val brushA by animatePlayerBrushRotation(shaderA, sizeShader, 20_000, true, decorationsActive)
@@ -1197,7 +1281,7 @@ fun Player(
                                 M = if (isTheme) color.background1 else coverGradientColor(muted),
                                 LM = if (isTheme) color.accent else coverGradientColor(lightMuted),
                                 DM = if (isTheme) colorPalette().background2 else coverGradientColor(darkMuted),
-                                skipToken = player.currentMediaItem?.mediaId
+                                skipToken = if (isTheme) mediaItem.mediaId else backgroundArtwork.mediaId
                             )
                         }
                     }
@@ -1337,6 +1421,8 @@ fun Player(
             contentPadding = playerThumbnailPadding(thumbnailSizeDp),
         ) {
             Thumbnail(
+                currentArtworkUrl = coverUrl(mediaItem),
+                publishArtworkColors = visiblePlayerArtwork && thumbnailOwnsArtwork && !fullscreenPagerOwnsArtwork,
                 thumbnailTapEnabledKey = thumbnailTapEnabled,
                 isShowingLyrics = isShowingLyrics,
                 onShowLyrics = { isShowingLyrics = it },
@@ -1431,7 +1517,7 @@ fun Player(
     blurAdjuster.Render()
 
     val artworkControlsSource = rememberPlayerArtworkControlsBackdrop(
-        controlsSource, artworkShadowOverflow, capturePlayerBackground)
+        controlsSource, artworkShadowOverflow, captureGlassSource)
     CompositionLocalProvider(
         LocalPlayerTransportGeometry provides remember { PlayerTransportGeometry() },
         LocalGlassOpticsEnabled provides playerQueueOpticsEnabled(inheritedOpticsEnabled, isQueuePanelVisible),
@@ -1445,7 +1531,7 @@ fun Player(
         LocalGlassMaterialSource provides artworkControlsSource,
         LocalGlassContainerBackdrop provides artworkControlsSource,
         LocalGlassOverlayBackdrop provides if (capturePlayerScene && playerSheetState.isExpanded) playerVisibleBackdrop
-            else if (capturePlayerBackground) glassSceneOverlayBackdrop(playerVisibleBackdrop) else LocalGlassOverlayBackdrop.current,
+            else if (captureGlassSource) glassSceneOverlayBackdrop(playerVisibleBackdrop) else LocalGlassOverlayBackdrop.current,
     ) {
     Box(
         modifier = Modifier
@@ -1461,6 +1547,7 @@ fun Player(
             val bar: @Composable BoxScope.() -> Unit = {
                 ActionBar(
                     navController,
+                    mediaItems,
                     showQueueState,
                     rotateState,
                     showVisualizerState,
@@ -1482,7 +1569,7 @@ fun Player(
         }
 
 
-        Box(Modifier.fillMaxSize().then(if (capturePlayerScene) Modifier.layerBackdrop(queuePlayerBackdrop) else Modifier)) {
+        Box(Modifier.fillMaxSize().then(if (captureQueueUnderlay) Modifier.layerBackdrop(queuePlayerBackdrop) else Modifier)) {
         if (isLandscape) {
          Box{
              if (showFullScreenArtworkPager) {
@@ -1549,6 +1636,7 @@ fun Player(
 
                      if (fullCoverPresentation) FullCoverPagerPage() else PlayerBlurredCover(
                          thumbnailUrl = coverUrl(mediaItems.getOrNull(it)).orEmpty(),
+                         publishArtworkColors = visiblePlayerArtwork && it == pagerStateFS.currentPage,
                          captureBackdrop = false,
                          blurAdjuster = blurAdjuster,
                          showThumbnail = showthumbnail,
@@ -1603,7 +1691,9 @@ fun Player(
              }
 
              PlayerBlurredCover(
-                 thumbnailUrl = currentCoverUrl.orEmpty(),
+                 thumbnailUrl = backgroundArtwork.coverUrl.orEmpty(),
+                 publishArtworkColors = visiblePlayerArtwork && !fullscreenPagerOwnsArtwork &&
+                     !carouselOwnsArtwork && !thumbnailOwnsArtwork,
                  blurAdjuster = blurAdjuster,
                  showThumbnail = showthumbnail,
                  noBlur = noblur,
@@ -1696,6 +1786,8 @@ fun Player(
                                        appRunningInBackground,
                                        playerContentVisible = playerContentVisible,
                                        skipAnimation = isShowingLyrics,
+                                       paceArtworkMotion = true,
+                                       onSynchronized = finishArtworkScroll,
                                    )
 
                                   pagerState.slideSettledPageEffect(
@@ -1730,7 +1822,9 @@ fun Player(
                                      ) {
 
                                      val coverPainter = ImageCacheFactory.Painter(
-                                         thumbnailUrl = coverUrl(mediaItems.getOrNull(it)).orEmpty()
+                                         thumbnailUrl = coverUrl(mediaItems.getOrNull(it)).orEmpty(),
+                                         publishArtworkColors = visiblePlayerArtwork && carouselOwnsArtwork &&
+                                             !fullscreenPagerOwnsArtwork && it == pagerState.currentPage,
                                      )
 
                                       val coverModifier = Modifier.playerThumbnailCover(
@@ -2074,6 +2168,7 @@ fun Player(
                         ) {
                             if (fullCoverPresentation) FullCoverPagerPage() else PlayerBlurredCover(
                                 thumbnailUrl = coverUrl(mediaItems.getOrNull(it)).orEmpty(),
+                                publishArtworkColors = visiblePlayerArtwork && it == pagerStateFS.currentPage,
                                 captureBackdrop = false,
                                 blurAdjuster = blurAdjuster,
                                 showThumbnail = showthumbnail,
@@ -2220,7 +2315,9 @@ fun Player(
                 }
 
                PlayerBlurredCover(
-                   thumbnailUrl = currentCoverUrl.orEmpty(),
+                   thumbnailUrl = backgroundArtwork.coverUrl.orEmpty(),
+                   publishArtworkColors = visiblePlayerArtwork && !fullscreenPagerOwnsArtwork &&
+                       !carouselOwnsArtwork && !thumbnailOwnsArtwork,
                    blurAdjuster = blurAdjuster,
                    showThumbnail = showthumbnail,
                    noBlur = noblur,
@@ -2383,6 +2480,8 @@ fun Player(
                                        player.currentMediaItemIndex,
                                        appRunningInBackground,
                                        playerContentVisible = playerContentVisible,
+                                       paceArtworkMotion = true,
+                                       onSynchronized = finishArtworkScroll,
                                    )
 
                                    pagerState.slideSettledPageEffect(
@@ -2439,7 +2538,9 @@ fun Player(
                                  ){
 
                                      val coverPainter = ImageCacheFactory.Painter(
-                                         thumbnailUrl = coverUrl(mediaItems.getOrNull(it)).orEmpty()
+                                         thumbnailUrl = coverUrl(mediaItems.getOrNull(it)).orEmpty(),
+                                         publishArtworkColors = visiblePlayerArtwork && carouselOwnsArtwork &&
+                                             !fullscreenPagerOwnsArtwork && it == pagerState.currentPage,
                                      )
 
                                       val coverModifier = Modifier.playerThumbnailCover(
@@ -2716,7 +2817,7 @@ fun Player(
 
         if (isQueuePanelVisible) {
             val queueUnderlay = rememberPlayerQueueBackdrop(
-                if (capturePlayerScene) queuePlayerBackdrop else artworkControlsSource,
+                if (captureQueueUnderlay) queuePlayerBackdrop else artworkControlsSource,
             ) { queuePanelHeightFraction.value }
             // The queue is the foreground surface; a global modal still covers it.
             CompositionLocalProvider(
@@ -2866,14 +2967,14 @@ fun Player(
 
 
         // Nav bar background for queue
-        if (isQueuePanelVisible && !usesQueueToolbarGlass()) {
+        if (queueNavigationSurface != null) {
             val navBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(navBarHeight)
                     .align(Alignment.BottomCenter)
-                    .background(colorPalette().background1)
+                    .background(queueNavigationSurface)
             )
         }
 
@@ -2882,6 +2983,11 @@ fun Player(
     }
     }
 }
+
+private val playerTrackArtworkTransition = tween<Float>(
+    durationMillis = 330,
+    easing = CubicBezierEasing(.37f, 0f, .63f, 1f),
+)
 
 @Composable
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -2892,6 +2998,8 @@ fun PagerState.LaunchedEffectScrollToPage(
     appRunningInBackground: Boolean,
     playerContentVisible: Boolean = true,
     skipAnimation: Boolean = false,
+    paceArtworkMotion: Boolean = false,
+    onSynchronized: (Int) -> Unit = {},
 ) {
     val pagerState = this
     var synchronized by remember(pagerState) { mutableStateOf(false) }
@@ -2899,16 +3007,20 @@ fun PagerState.LaunchedEffectScrollToPage(
         val animate = synchronized && !appRunningInBackground && playerContentVisible && !skipAnimation
         synchronized = true
         val targetIndex = player.currentMediaItemIndex
-        if (pagerState.currentPage != targetIndex || pagerState.targetPage != targetIndex ||
-            (!pagerState.isScrollInProgress && kotlin.math.abs(pagerState.currentPageOffsetFraction) > 0.001f)) {
-            if (animate) {
-                pagerState.animateScrollToPage(
-                    targetIndex,
-                    animationSpec = tween(SLIDE_SETTLE_DURATION_MS, easing = FastOutSlowInEasing)
-                )
-            } else {
-                pagerState.scrollToPage(targetIndex)
+        try {
+            if (pagerState.currentPage != targetIndex || pagerState.targetPage != targetIndex ||
+                (!pagerState.isScrollInProgress && kotlin.math.abs(pagerState.currentPageOffsetFraction) > 0.001f)
+            ) {
+                when {
+                    !animate -> pagerState.scrollToPage(targetIndex)
+                    paceArtworkMotion -> pagerState.animatePlayerArtworkScrollToPage(
+                        targetIndex, playerTrackArtworkTransition, { player.currentMediaItemIndex },
+                    )
+                    else -> pagerState.animateScrollToPage(targetIndex, animationSpec = playerTrackArtworkTransition)
+                }
             }
+        } finally {
+            onSynchronized(index)
         }
     }
 }
