@@ -5,7 +5,9 @@ import android.content.Context
 import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.annotation.OptIn
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
@@ -45,12 +47,27 @@ import timber.log.Timber
 class NZikRadio(
     private val context: Context,
     private val binder: PlayerServiceModern.Binder,
-    private val coroutineScope: CoroutineScope
+    private val coroutineScope: CoroutineScope,
+    private val setShuffleOrder: (IntArray) -> Unit,
 ) {
     var isRadioActive by mutableStateOf(false)
         private set
 
     private var radioJob: Job? = null
+    private var lastAutoFillTail: QueueTail? = null
+    private var previousAutoFillBoundary: QueueEntry? = null
+
+    // Crossfade clones the playlist into a second player, where window UIDs can change.
+    private data class QueueEntry(val index: Int, val item: MediaItem)
+
+    private data class QueueTail(
+        val entry: QueueEntry,
+        val firstItem: MediaItem,
+        val itemCount: Int,
+        val shuffleEnabled: Boolean,
+    )
+
+    private data class AutoFillPosition(val tail: QueueTail, val remaining: Int, val hasPreviousBoundary: Boolean)
 
     /**
      * Test seam (issue #880): the dispatcher the fetch job runs on. Overridden with an
@@ -180,29 +197,68 @@ class NZikRadio(
         isRadioActive = false
         radioJob?.cancel()
         radioJob = null
+        lastAutoFillTail = null
+        previousAutoFillBoundary = null
         
         if (showToast) {
             Toaster.i(R.string.radio_stopped_message)
         }
     }
 
-    /**
-     * Silent Auto-Fill (When queue is about to end)
-     */
+    /** Silently extends the queue when at most ten tracks remain in playback order. */
+    @MainThread
     fun autoFillQueue() {
         // Guest lock (spec-listen-together-guest-lock-hardening): in a room the host owns the
         // queue. The auto-fill fetch+inject would only be no-op'd by the central guard (a
 //
         // throttled "host controls playback" toast + a wasted Innertube fetch and DB insert on
         // every host-side track transition), so skip it entirely while locked.
-        if (listenTogetherGuestLock.value) return
-        // If neither Radio nor AutoFill is enabled, do nothing.
-        if ((!isRadioActive && !isAutoFillEnabled) || isLoading) return
-        
-        val currentMediaItem = binder.player.currentMediaItem?.takeUnless { it.isLocal } ?: return
-        
-        // AutoFill: Silent fetch (No toast)
-        fetchAndInject(currentMediaItem.mediaId, null, append = true, source = "auto-fill")
+        val player = binder.player
+        if (isLoading || radioJob?.isActive == true) return
+        val position = findAutoFillPosition(player) ?: return
+        if (position.remaining > 0 && (position.hasPreviousBoundary || position.tail == lastAutoFillTail)) return
+
+        val currentMediaItem = player.currentMediaItem?.takeUnless { it.isLocal } ?: return
+        lastAutoFillTail = position.tail
+        fetchAndInject(
+            currentMediaItem.mediaId,
+            initialPlaylistId = null,
+            append = true,
+            source = "auto-fill",
+            autoFillTail = position.tail,
+        )
+    }
+
+    private fun findAutoFillPosition(player: Player): AutoFillPosition? {
+        if (listenTogetherGuestLock.value || (!isRadioActive && !isAutoFillEnabled)) return null
+        if (player.repeatMode != Player.REPEAT_MODE_OFF) return null
+        val count = player.mediaItemCount
+        var index = player.currentMediaItemIndex
+        if (index !in 0 until count) return null
+
+        val shuffle = player.shuffleModeEnabled
+        if (!shuffle && count - index > AUTO_FILL_REMAINING_TRACKS + 1) return null
+
+        val timeline = player.currentTimeline
+        var hasPreviousBoundary = false
+        val previousBoundary = previousAutoFillBoundary
+        for (remaining in 0..AUTO_FILL_REMAINING_TRACKS) {
+            if (previousBoundary != null && index == previousBoundary.index && player.getMediaItemAt(index) == previousBoundary.item) {
+                hasPreviousBoundary = true
+            }
+            val next = if (shuffle) {
+                timeline.getNextWindowIndex(index, Player.REPEAT_MODE_OFF, true)
+            } else {
+                (index + 1).takeIf { it < count } ?: C.INDEX_UNSET
+            }
+            if (next == C.INDEX_UNSET) {
+                val entry = QueueEntry(index, player.getMediaItemAt(index))
+                val tail = QueueTail(entry, player.getMediaItemAt(0), count, shuffle)
+                return AutoFillPosition(tail, remaining, hasPreviousBoundary)
+            }
+            index = next
+        }
+        return null
     }
 
     fun showReminderIfNeeded() {
@@ -233,7 +289,8 @@ class NZikRadio(
         initialPlaylistId: String?,
         append: Boolean,
         isExplicit: Boolean = false,
-        source: String = "start"
+        source: String = "start",
+        autoFillTail: QueueTail? = null,
     ) {
         radioJob = coroutineScope.launch(fetchDispatcher) {
             // F4 (offline audit, 2026-10-22): offline the fetch can only fail at DNS — skip the
@@ -277,10 +334,7 @@ class NZikRadio(
                 // Issue #880: a pre-filter empty fetch (Innertube error or legitimately empty
                 // page) must be traced — the queue is left intact and nothing is injected. The
 //
-                // auto-fill retries at the next non-repeat track transition only while the
-                // queue has >1 item (no transition, no retry, on an exhausted 1-item queue;
-//
-                // with the radio OFF the AutoFill setting must be enabled as well).
+                // auto-fill can retry when the final track starts.
                 traceEmptyFetch(videoId, playlistId, isExplicit, source, "the Innertube fetch came back empty")
                 isLoading = false
                 return@launch
@@ -301,8 +355,7 @@ class NZikRadio(
                 // Issue #880 (EMPTY_AFTER_FILTERS): the discover/dislike filters removed every
                 // song — same trace policy as a pre-filter empty fetch: no trim, nothing
 //
-                // injected; toast only for explicit starts (a silent retry happens at the next
-                // non-repeat track transition only while the queue has >1 item).
+                // injected; toast only for explicit starts.
                 traceEmptyFetch(videoId, playlistId, isExplicit, source, "the discover/dislike filters removed every song")
                 isLoading = false
                 return@launch
@@ -314,7 +367,11 @@ class NZikRadio(
 
             // 4. Inject into Player
             withContext(NzikDispatchers.UI) {
-                injectIntoPlayer(filteredItems, append)
+                if (autoFillTail != null) {
+                    if (findAutoFillPosition(binder.player)?.tail != autoFillTail) return@withContext
+                    previousAutoFillBoundary = autoFillTail.entry
+                }
+                injectIntoPlayer(filteredItems, append, extendShuffleOrder = autoFillTail != null)
             }
 
             isLoading = false
@@ -330,19 +387,18 @@ class NZikRadio(
      * the explicit-start toast is "No Connection" while offline, else `state_radio_fetch_error`;
      * an offline fetch is skipped up front in [fetchAndInject] (F4), so this offline branch only
      * covers a network drop mid-fetch (the fetch started online; the player may not have
-     * errored yet). The auto-fill retry is
-     * CONDITIONAL (next non-repeat track transition, queue >1 item; AutoFill setting when the
-     * radio is OFF), hence no "the radio will retry" wording. The toast hops to the UI
+     * errored yet). Auto-fill can retry when a later transition reaches the final track,
+     * provided AutoFill is enabled or the radio is still ON. The toast hops to the UI
      * dispatcher (Toaster is @MainThread; the fetch runs on the DATA pool).
      */
     private suspend fun traceEmptyFetch(videoId: String, playlistId: String?, isExplicit: Boolean, source: String, reason: String) {
         val radioOutcome = when (source) {
             "explicit start" ->
-                "radio stays ON; auto-fill retries at the next non-repeat track transition only while the queue has >1 item"
+                "radio stays ON; auto-fill can retry on the final track"
             "auto-fill" ->
-                "silent fetch (no toast), radio left as the caller set it; retries at the next non-repeat track transition only while the queue has >1 item"
+                "silent fetch (no toast), radio unchanged; auto-fill can retry on the final track"
             else ->
-                "silent fetch (no toast), the implicit start stopped the radio first; a retry needs the AutoFill (auto-continue) setting enabled, the next non-repeat track transition, and the queue to have >1 item"
+                "silent fetch (no toast), the implicit start stopped the radio first; a retry on the final track needs AutoFill enabled"
         }
         Timber.tag("NZikRadio").e(
             "Radio fetch is empty (videoId=%s, playlistId=%s, source=%s): %s — queue left intact, %s",
@@ -374,9 +430,8 @@ class NZikRadio(
         // Apply Discover Filter (remove known songs)
         if (isDiscoverEnabled) {
             filtered = filtered.filter { item ->
-                val isMapped = Database.songPlaylistMapTable.isMappedSync(item.mediaId)
-                val isLiked = Database.songTable.isLikedDirect(item.mediaId)
-                !(isMapped && isLiked) // Keep if NOT (mapped AND liked)
+                !Database.songPlaylistMapTable.isMappedSync(item.mediaId) &&
+                    !Database.songTable.isLikedDirect(item.mediaId)
             }
         }
 
@@ -410,7 +465,7 @@ class NZikRadio(
     }
 
     @MainThread
-    private fun injectIntoPlayer(items: List<MediaItem>, append: Boolean) {
+    private fun injectIntoPlayer(items: List<MediaItem>, append: Boolean, extendShuffleOrder: Boolean) {
         // Issue #880: nothing to inject -> the remaining queue must be left intact (no trim, no
         // injection). The trace (Timber log, toast for explicit starts) happens in
 //
@@ -431,7 +486,27 @@ class NZikRadio(
             player.removeMediaItems(1, endIndex)
         }
 
+        val extendedShuffleOrder = if (extendShuffleOrder && player.shuffleModeEnabled) {
+            val timeline = player.currentTimeline
+            val order = IntArray(endIndex + items.size) { it }
+            var next = timeline.getFirstWindowIndex(true)
+            repeat(endIndex) { slot ->
+                order[slot] = next
+                next = timeline.getNextWindowIndex(next, Player.REPEAT_MODE_OFF, true)
+            }
+            order
+        } else null
+
         player.addMediaItems(items)
+        // Media3 normally inserts new items at random points in the shuffled order.
+        // Keep the queue already played ahead of the newly fetched songs.
+        if (extendedShuffleOrder != null) {
+            setShuffleOrder(extendedShuffleOrder)
+        }
+    }
+
+    private companion object {
+        const val AUTO_FILL_REMAINING_TRACKS = 10
     }
 }
 

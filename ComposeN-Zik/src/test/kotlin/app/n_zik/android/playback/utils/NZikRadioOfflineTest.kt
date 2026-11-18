@@ -62,6 +62,7 @@ class NZikRadioOfflineTest {
         mockPlayer = mockk<ExoPlayer>(relaxed = true)
         every { binder.player } returns mockPlayer
         every { mockPlayer.currentMediaItem } returns null
+        every { mockPlayer.mediaItemCount } returns 1
 
         mockkStatic("app.n_zik.android.utils.PreferencesKt")
         every { context.preferences } returns sharedPreferences
@@ -77,7 +78,7 @@ class NZikRadioOfflineTest {
 
         // Deterministic fetch: the job runs to completion synchronously on the test thread
         // (same seam as NZikRadioTest.setupFetchHarness).
-        nZikRadio = NZikRadio(context, binder, CoroutineScope(Dispatchers.Unconfined))
+        nZikRadio = NZikRadio(context, binder, CoroutineScope(Dispatchers.Unconfined)) { }
         nZikRadio.fetchDispatcher = UnconfinedTestDispatcher()
         mockkStatic("app.n_zik.innertube.requests.NextPageKt")
     }

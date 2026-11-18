@@ -18,7 +18,9 @@ import app.n_zik.android.utils.discoverKey
 import app.n_zik.android.utils.autoLoadSongsInQueueKey
 import app.n_zik.android.utils.preferences
 import androidx.core.os.bundleOf
-import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
 import io.mockk.*
 import app.n_zik.innertube.Innertube
@@ -47,7 +49,8 @@ class NZikRadioTest {
     private lateinit var editor: SharedPreferences.Editor
     private lateinit var binder: PlayerServiceModern.Binder
     private lateinit var mockPlayer: ExoPlayer
-    private lateinit var nZikRadio: NZikRadio
+    private lateinit var nZikRadio: NZikRadio
+    private var shuffleOrder: IntArray? = null
 
     @BeforeEach
     fun setup() {
@@ -92,7 +95,9 @@ class NZikRadioTest {
         every { Toaster.i(any<String>()) } just Runs
         every { Toaster.e(any<Int>()) } just Runs
 
-        nZikRadio = NZikRadio(context, binder, CoroutineScope(Dispatchers.Unconfined))
+        nZikRadio = NZikRadio(context, binder, CoroutineScope(Dispatchers.Unconfined)) { order ->
+            shuffleOrder = order
+        }
     }
 
     @AfterEach
@@ -217,7 +222,12 @@ class NZikRadioTest {
         )
 
     /** Stubs a SUCCESSFUL radio fetch for [videoId]: the seed call (no playlistId) returns a page whose first item points at [playlistId], then the playlist call returns [radioIds] (shuffled by `Shuffler.shuffle` before injection). */
-    private fun stubRadioFetch(videoId: String, playlistId: String, radioIds: List<String>) {
+    private fun stubRadioFetch(
+        videoId: String,
+        playlistId: String,
+        radioIds: List<String>,
+        gate: CompletableDeferred<Unit>? = null,
+    ) {
         coEvery { Innertube.nextPage(videoId = videoId) } returns nextPageResult(
             Result.success(
                 Innertube.NextPage(
@@ -229,17 +239,25 @@ class NZikRadioTest {
                 )
             )
         )
-        coEvery { Innertube.nextPage(videoId = videoId, playlistId = playlistId) } returns nextPageResult(
-            Result.success(
-                Innertube.NextPage(
-                    itemsPage = Innertube.ItemsPage(
-                        items = radioIds.map { songItem(it) },
-                        continuation = null
-                    ),
-                    playlistId = playlistId
-                )
-            )
-        )
+        val result = Result.success(
+            Innertube.NextPage(
+                itemsPage = Innertube.ItemsPage(
+                    items = radioIds.map { songItem(it) },
+                    continuation = null
+                ),
+                playlistId = playlistId
+            )
+        )
+        val request = coEvery { Innertube.nextPage(videoId = videoId, playlistId = playlistId) }
+        if (gate == null) {
+            request returns nextPageResult(result)
+        } else {
+            request coAnswers {
+                gate.await()
+                // The suspension boundary keeps the Result boxed on resume.
+                result
+            }
+        }
     }
 
     /** Stubs an EMPTY/failed radio fetch: every `nextPage` for [videoId] comes back null. */
@@ -614,8 +632,100 @@ class NZikRadioTest {
         verify(exactly = 0) { mockPlayer.moveMediaItem(any(), any()) }
     }
 
-    /** RETRY (pact "réessaie silencieusement à la transition suivante"): after an explicit start whose fetch came back empty (radio stays ON), a subsequent `autoFillQueue()` — which `loadFromRadio` drives on each track transition while the queue has >1 item — retries the fetch, and a successful retry fills the queue — silently. */
-    @Test
+    @Test
+    fun `autoFillQueue starts with ten tracks left and waits for the new batch on later skips`() {
+        setupState(autoFillEnabled = true, discoverEnabled = false)
+        setupFetchHarness()
+        val queue = (0..11).map { mediaItem("track$it") }.toMutableList()
+        stubQueue(queue)
+        var index = 0
+        every { mockPlayer.currentMediaItemIndex } answers { index }
+        every { mockPlayer.currentMediaItem } answers { queue[index] }
+        val gate = CompletableDeferred<Unit>()
+        stubRadioFetch("track1", "PL_threshold", listOf("r1", "r2"), gate)
+        nZikRadio.autoFillQueue()
+        coVerify(exactly = 0) { Innertube.nextPage(videoId = "track0") }
+        index = 1
+        nZikRadio.autoFillQueue()
+        index = 2
+        nZikRadio.autoFillQueue()
+        gate.complete(Unit)
+        assertEquals(setOf("r1", "r2"), queue.drop(12).map { it.mediaId }.toSet())
+        index = 3
+        nZikRadio.autoFillQueue()
+        index = 11
+        nZikRadio.autoFillQueue()
+        coVerify(exactly = 1) { Innertube.nextPage(videoId = any()) }
+    }
+
+    @Test
+    fun `autoFillQueue skips the queue when repeat is enabled`() {
+        setupState(autoFillEnabled = true, discoverEnabled = false)
+        setupFetchHarness()
+        val queue = mutableListOf(mediaItem("A"), mediaItem("B"))
+        stubQueue(queue)
+        every { mockPlayer.currentMediaItemIndex } returns 1
+        every { mockPlayer.currentMediaItem } returns queue[1]
+        every { mockPlayer.repeatMode } returns Player.REPEAT_MODE_ONE
+
+        nZikRadio.autoFillQueue()
+
+        coVerify(exactly = 0) { Innertube.nextPage(videoId = any()) }
+        assertEquals(listOf("A", "B"), queue.map { it.mediaId })
+    }
+
+    @Test
+    fun `autoFillQueue appends after the final shuffled track and waits for the new tail`() {
+        setupState(autoFillEnabled = true, discoverEnabled = false)
+        setupFetchHarness()
+        val queue = mutableListOf(mediaItem("A"), mediaItem("B"), mediaItem("C"))
+        stubQueue(queue)
+        every { mockPlayer.currentMediaItemIndex } returns 1
+        every { mockPlayer.currentMediaItem } returns queue[1]
+        every { mockPlayer.shuffleModeEnabled } returns true
+        val timeline = mockk<Timeline>()
+        every { mockPlayer.currentTimeline } returns timeline
+        every { timeline.getFirstWindowIndex(true) } returns 2
+        every { timeline.getNextWindowIndex(2, Player.REPEAT_MODE_OFF, true) } returns 0
+        every { timeline.getNextWindowIndex(0, Player.REPEAT_MODE_OFF, true) } returns 1
+        every { timeline.getNextWindowIndex(1, Player.REPEAT_MODE_OFF, true) } answers { if (queue.size > 3) 3 else -1 }
+        every { timeline.getNextWindowIndex(3, Player.REPEAT_MODE_OFF, true) } returns 4
+        every { timeline.getNextWindowIndex(4, Player.REPEAT_MODE_OFF, true) } returns -1
+        stubRadioFetch("B", "PL_shuffle", listOf("r1", "r2"))
+
+        nZikRadio.autoFillQueue()
+        nZikRadio.autoFillQueue()
+
+        coVerify(exactly = 1) { Innertube.nextPage(videoId = "B") }
+        assertEquals(listOf("A", "B", "C"), queue.take(3).map { it.mediaId })
+        assertEquals(setOf("r1", "r2"), queue.drop(3).map { it.mediaId }.toSet())
+        assertArrayEquals(intArrayOf(2, 0, 1, 3, 4), shuffleOrder)
+    }
+
+    @Test
+    fun `autoFillQueue does not duplicate a fetch or append after the queue is extended during the fetch`() {
+        setupState(autoFillEnabled = true, discoverEnabled = false)
+        setupFetchHarness()
+        val queue = mutableListOf(mediaItem("A"), mediaItem("B"))
+        stubQueue(queue)
+        every { mockPlayer.currentMediaItemIndex } returns 1
+        every { mockPlayer.currentMediaItem } returns queue[1]
+        val gate = CompletableDeferred<Unit>()
+        stubRadioFetch("B", "PL_late", listOf("r1", "r2"), gate)
+
+        nZikRadio.autoFillQueue()
+        assertTrue(nZikRadio.isLoading)
+        nZikRadio.autoFillQueue()
+        queue.add(mediaItem("C"))
+        gate.complete(Unit)
+
+        coVerify(exactly = 1) { Innertube.nextPage(videoId = "B") }
+        assertEquals(listOf("A", "B", "C"), queue.map { it.mediaId })
+        assertFalse(nZikRadio.isLoading)
+    }
+
+    /** After an empty explicit start, AutoFill can retry silently when the queue reaches its tail. */
+    @Test
     fun `after an empty fetch the next autoFillQueue with a successful fetch fills the queue`() {
         setupState(autoFillEnabled = true, discoverEnabled = false)
         setupFetchHarness()
@@ -718,7 +828,7 @@ class NZikRadioTest {
         coVerify(exactly = 1) { Innertube.nextPage(videoId = "Z", playlistId = "PL_880_j") }
     }
 
-    /** EMPTY_AFTER_FILTERS via the DISCOVER filter (not just the disliked-songs filter): every fetched song is mapped AND liked, so the discover filter removes the whole list — same trace policy as an empty fetch: queue intact, nothing injected, radio ON, error toast (explicit start). */
+    /** A song in a playlist or in favorites is enough for Discover to exclude it. */
     @Test
     fun `list emptied by the discover filter keeps the queue intact, nothing injected, same trace as an empty fetch`() {
         setupState(autoFillEnabled = true, discoverEnabled = true)
@@ -730,14 +840,14 @@ class NZikRadioTest {
         modelForcePlayReplacesQueue(queue)
         stubRadioFetch("Z", "PL_880_k", listOf("r1", "r2"))
 
-        // The discover filter removes every fetched song (mapped AND liked)
+        // r1 is in a playlist only, and r2 is a favorite only.
         val mapTable = mockk<SongPlaylistMapTable>(relaxed = true)
         every { Database.songPlaylistMapTable } returns mapTable
         coEvery { mapTable.isMappedSync("r1") } returns true
-        coEvery { mapTable.isMappedSync("r2") } returns true
+        coEvery { mapTable.isMappedSync("r2") } returns false
         val songTable = mockk<SongTable>(relaxed = true)
         every { Database.songTable } returns songTable
-        coEvery { songTable.isLikedDirect("r1") } returns true
+        coEvery { songTable.isLikedDirect("r1") } returns false
         coEvery { songTable.isLikedDirect("r2") } returns true
 
         nZikRadio.startRadio(mediaItem("Z"), isExplicit = true)

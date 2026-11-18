@@ -941,7 +941,9 @@ class PlayerServiceModern : MediaLibraryService(),
 
         QuickPicksRepository.refreshIfNeeded()
 
-        nzikRadio = NZikRadio(this, binder, coroutineScope)
+        nzikRadio = NZikRadio(this, binder, coroutineScope) { indices ->
+            player.setShuffleOrder(DefaultShuffleOrder(indices, System.currentTimeMillis()))
+        }
 
         // Issue #866 (gh-866): observe the radio state from the service side (NZikRadio stays
         // untouched) — re-render the command buttons on every start/stop (explicit or implicit
