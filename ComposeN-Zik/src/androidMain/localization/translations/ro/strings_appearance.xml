@@ -219,6 +219,7 @@
     <string name="theme_light_palette_text_secondary_description">Alege culoarea textului secundar din paleta deschisă.</string>
     <string name="theme_mode_description">Alegeți când aplicația își folosește paleta deschisă sau întunecată.</string>
     <string name="theme_mode_pitch_black">Negru complet</string>
+    <string name="theme_mode_pure_black">Negru pur</string>
     <string name="theme_palette_custom">Personalizat</string>
     <string name="theme_palette_description">Alege paleta de culori folosită în întreaga aplicație.</string>
     <string name="theme_palette_dynamic">Dinamic</string>
@@ -266,6 +267,7 @@
     <string name="theme_store_compatibility">Compatibilitate N-Zik</string>
     <string name="theme_store_submission_minimum_version">Versiunea minimă N-Zik</string>
     <string name="theme_store_submission_minimum_description">Cea mai veche versiune care poate aplica această temă. Teme noi sunt implicite pentru versiunea %3$d. Utilizați N-Zik %1$s (codul versiunii %2$d).</string>
+    <string name="theme_store_submission_feature_requires_update">Această temă necesită codul de versiune Android N-Zik %1$d înainte de a putea fi publicată.</string>
     <string name="theme_store_submission_version_code_label">Codul minim al versiunii</string>
     <string name="theme_store_submission_find_version_code">Găsește versiunile și codurile N-Zik</string>
     <string name="theme_store_submission_version_with_code">%1$s (cod %2$d)</string>
