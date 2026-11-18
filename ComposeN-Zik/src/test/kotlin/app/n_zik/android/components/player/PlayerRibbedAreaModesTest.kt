@@ -85,10 +85,9 @@ class PlayerRibbedAreaModesTest {
             assertEquals(Color.Blue, image[image.width / 2, image.height / 2])
             assertEquals(Color.Black, image[0, 0])
         }
-        // The legacy Blue argument belongs to the native fallback; selected material keeps
-        // its full shared film even when the optical sampling budget is zero.
+        // A fully opaque film keeps the button's selected native hue when the optical budget is zero.
         for (image in listOf(glass, cheapContour)) {
-            assertEquals(Color(0xFF4A4A4E), image[image.width / 2, image.height / 2])
+            assertEquals(Color.Blue, image[image.width / 2, image.height / 2])
             assertEquals(Color.Black, image[0, 0])
         }
         compose.runOnIdle { master.value = false }

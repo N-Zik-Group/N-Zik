@@ -6,13 +6,39 @@ import app.n_zik.android.components.glass.contrastAgainst
 import app.n_zik.android.components.glass.readableGlyphForeground
 import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.enums.ColorPaletteName
+import app.n_zik.android.enums.PlayerBackgroundColors
 import app.n_zik.android.enums.PlayerPlayButtonType
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.colorPaletteOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PlayButtonBackgroundTest {
+    @Test
+    fun `every named palette and mode preserves its play plate rules across player backgrounds`() {
+        var configurations = 0
+        for (name in ColorPaletteName.entries) for (mode in ColorPaletteMode.entries) {
+            val systemDarkModes = if (mode == ColorPaletteMode.System) listOf(false, true) else listOf(false)
+            for (systemDark in systemDarkModes) {
+                val palette = colorPaletteOf(name, mode, systemDark)
+                for (background in PlayerBackgroundColors.entries) for (shape in PlayerPlayButtonType.entries) {
+                    val gradient = background in listOf(PlayerBackgroundColors.CoverColorGradient, PlayerBackgroundColors.ThemeColorGradient)
+                    val expected = when {
+                        shape in listOf(PlayerPlayButtonType.Disabled, PlayerPlayButtonType.CircularRibbed) -> Color.Transparent
+                        name.isAlwaysDark || mode == ColorPaletteMode.PureBlack -> Color.Black
+                        gradient -> palette.background1
+                        else -> palette.background2
+                    }
+                    assertEquals("$name/$mode/systemDark=$systemDark/$background/$shape", expected,
+                        playButtonContainerColor(shape, name, palette, gradient, mode))
+                    configurations++
+                }
+            }
+        }
+        assertEquals(1_470, configurations)
+    }
+
     @Test
     fun pureBlackModeOwnsNativePlateWhileShapedAndDisabledContainersStayTransparent() {
         for (name in ColorPaletteName.entries) {

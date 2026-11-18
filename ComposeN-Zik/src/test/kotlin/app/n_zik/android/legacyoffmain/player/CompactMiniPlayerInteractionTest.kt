@@ -178,7 +178,7 @@ class CompactMiniPlayerInteractionTest {
     @Test
     @Config(sdk = [32])
     @GraphicsMode(GraphicsMode.Mode.NATIVE)
-    fun collapsedMiniPlayButtonAppliesFilmOnceToTheLiveNavigationSource() {
+    fun collapsedMiniTransportAppliesRoleFilmOnceOverLiveBody() {
         progress = 0f
         context.preferences.edit().putString(backgroundProgressKey, BackgroundProgress.Disabled.name).commit()
         var sourceColor by mutableStateOf(Color.Blue)
@@ -194,7 +194,9 @@ class CompactMiniPlayerInteractionTest {
                     .captureToImage().toPixelMap()
                 // Stay inside the rounded pane and outside the central control glyph.
                 val actual = pixels[(pixels.width * .2f).toInt(), (pixels.height * .2f).toInt()]
-                val expected = DefaultDarkColorPalette.background2.copy(alpha = settings.film).compositeOver(sourceColor)
+                val film = DefaultDarkColorPalette.background2.copy(alpha = settings.film)
+                val body = film.compositeOver(sourceColor)
+                val expected = film.compositeOver(body)
                 assertEquals("red from a single film for $description", expected.red, actual.red, .03f)
                 assertEquals("green from a single film for $description", expected.green, actual.green, .03f)
                 assertEquals("blue from a single film for $description", expected.blue, actual.blue, .03f)

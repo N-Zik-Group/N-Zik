@@ -41,18 +41,23 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.R
+import app.n_zik.android.enums.AnimatedGradient
 import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.utils.colorPaletteModeKey
 import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.enums.FontType
+import app.n_zik.android.enums.PlayerBackgroundColors
+import app.n_zik.android.enums.PlayerControlsColors
+import app.n_zik.android.enums.PlayerControlsType
 import app.n_zik.android.enums.PlayerPlayButtonType
 import app.n_zik.android.ui.screens.player.components.controls.ControlsEssential
 import app.n_zik.android.ui.screens.player.components.controls.ControlsModern
@@ -61,7 +66,10 @@ import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
+import app.n_zik.android.utils.animatedGradientKey
 import app.n_zik.android.utils.jumpPreviousKey
+import app.n_zik.android.utils.playerBackgroundColorsKey
+import app.n_zik.android.utils.playerControlsColorsKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassAreaMode
@@ -69,8 +77,10 @@ import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.GlassContextArea
 import app.n_zik.android.components.glass.GlassQuality
+import app.n_zik.android.components.glass.GlassTintSource
 import app.n_zik.android.components.glass.glassMaterial
 import app.n_zik.android.components.glass.LocalGlassPreviewSettings
+import app.n_zik.android.components.glass.LocalGlassArtworkColor
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.luminance
 import app.n_zik.android.components.glass.LocalNeutralForegroundOverride
@@ -292,6 +302,167 @@ class PlayerTransportGlassTest {
         }
         verify(exactly = 10) { binder.gracefulPause() }
         assertEquals(10, holds)
+    }
+
+    @Config(qualifiers = "w700dp-h400dp")
+    @Test fun `transport controls remain actionable across all shapes color sources backgrounds and Glass area modes`() {
+        val layout = mutableStateOf(PlayerControlsType.Essential)
+        val style = mutableStateOf(PlayerPlayButtonType.Default)
+        val background = mutableStateOf(PlayerBackgroundColors.ThemeColor)
+        val animatedBackground = mutableStateOf(AnimatedGradient.M3EMorphingCover)
+        // null represents the global Glass toggle. Disabled is a local override with Glass still on.
+        val area = mutableStateOf<GlassAreaMode?>(null)
+        val quality = mutableStateOf(GlassQuality.Performance)
+        val tintSource = mutableStateOf(GlassTintSource.None)
+        val themeAccent = Color(0xFF0062E8)
+        val coverAccent = Color(0xFFD0006D)
+        val palette = DefaultDarkColorPalette.copy(
+            accent = themeAccent,
+            text = Color(0xFF6C6C6C),
+            iconButtonPlayer = Color(0xFF6C6C6C),
+            background1 = Color(0xFF242424),
+            background2 = Color(0xFF343434),
+            background4 = Color(0xFF444444),
+        )
+        val artworkPalette = palette.copy(accent = coverAccent)
+        val backdrops = mapOf(
+            PlayerBackgroundColors.CoverColor to Color(0xFF2A3638),
+            PlayerBackgroundColors.ThemeColor to Color(0xFFE2E2E2),
+            PlayerBackgroundColors.CoverColorGradient to Color(0xFF6C6C6C),
+            PlayerBackgroundColors.ThemeColorGradient to Color(0xFF292929),
+            PlayerBackgroundColors.BlurredCoverColor to Color(0xFFB7B7B7),
+            PlayerBackgroundColors.ColorPalette to Color(0xFF62686C),
+        )
+        // The controls receive the sampled background tone, independent of which shader drew it.
+        // Exercise the animated patterns' settings using representative dark, midtone and light samples.
+        val animatedTones = listOf(Color(0xFF262D35), Color(0xFF656A71), Color(0xFFD4D2CD))
+        val backgroundOptions = backdrops.keys.map { it to null } +
+            AnimatedGradient.entries.map { PlayerBackgroundColors.AnimatedGradient to it }
+        val labels = ApplicationProvider.getApplicationContext<Application>().resources.run {
+            listOf(R.string.player_action_previous, R.string.player_action_play, R.string.player_action_next)
+                .map(::getString)
+        }
+        val glass = GlassSettings(quality = GlassQuality.Performance, film = .65f,
+            rippleEnabled = false, jellyEnabled = false)
+        val transportArea = GlassContextArea(GlassScope.PlayerTransport, GlassArea.ActionButtons)
+        compose.setContent {
+            AppearanceProvider(palette) {
+                val tone = if (background.value == PlayerBackgroundColors.AnimatedGradient)
+                    animatedTones[animatedBackground.value.ordinal % animatedTones.size]
+                    else backdrops.getValue(background.value)
+                val gradient = background.value == PlayerBackgroundColors.CoverColorGradient ||
+                    background.value == PlayerBackgroundColors.ThemeColorGradient
+                val scene = rememberCanvasBackdrop { drawRect(tone) }
+                val currentMode = area.value
+                CompositionLocalProvider(
+                    LocalGlassPreviewSettings provides glass.copy(
+                        enabled = currentMode != null,
+                        quality = quality.value,
+                        source = tintSource.value,
+                        contextModes = if (currentMode == null) emptyMap() else mapOf(transportArea to currentMode),
+                    ),
+                    LocalGlassContainerBackdrop provides scene,
+                    LocalGlassArtworkColor provides coverAccent,
+                ) {
+                    SurfaceForegroundContent(tone) {
+                        Row(Modifier.width(560.dp).background(tone),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically) {
+                            if (layout.value == PlayerControlsType.Modern) {
+                                ControlsModern(player, binder, { 0L }, 1f, false, false,
+                                    style.value, gradient, {}, artworkPalette)
+                            } else {
+                                ControlsEssential(player, binder, { 0L }, 1f, false, null, "transport-matrix",
+                                    style.value, false, gradient, {}, artworkPalette)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        var cases = 0
+        var pixelCases = 0
+        val actions = compose.onAllNodes(hasClickAction())
+        val play = compose.onNode(hasClickAction() and hasContentDescription(labels[1]))
+        val off = Triple(null, GlassQuality.Performance, GlassTintSource.None)
+        val glassVariants = listOf(off) + GlassAreaMode.entries.flatMap { mode ->
+            GlassQuality.entries.flatMap { profile -> GlassTintSource.entries.map { Triple(mode, profile, it) } }
+        }
+        for (variant in PlayerControlsType.entries) for (shape in PlayerPlayButtonType.entries) {
+            for (colorSource in PlayerControlsColors.entries) for ((backgroundMode, pattern) in backgroundOptions) {
+                for ((glassMode, profile, tint) in glassVariants) {
+                    val case = "$variant / $shape / $colorSource / ${pattern ?: backgroundMode} / ${glassMode ?: "global Glass off"} / $profile / $tint"
+                    compose.runOnIdle {
+                        layout.value = variant
+                        style.value = shape
+                        background.value = backgroundMode
+                        if (pattern != null) animatedBackground.value = pattern
+                        area.value = glassMode
+                        quality.value = profile
+                        tintSource.value = tint
+                        if (preferences.getString(playerControlsColorsKey, null) != colorSource.name ||
+                            preferences.getString(playerBackgroundColorsKey, null) != backgroundMode.name ||
+                            (pattern != null && preferences.getString(animatedGradientKey, null) != pattern.name)
+                        ) {
+                            val edit = preferences.edit().putString(playerControlsColorsKey, colorSource.name)
+                                .putString(playerBackgroundColorsKey, backgroundMode.name)
+                            if (pattern != null) edit.putString(animatedGradientKey, pattern.name)
+                            edit.commit()
+                        }
+                    }
+                    val nodes = actions.fetchSemanticsNodes()
+                    assertEquals(case, if (variant == PlayerControlsType.Essential) 5 else 3, nodes.size)
+                    val orderedLabels = nodes.flatMap { it.config.getOrNull(SemanticsProperties.ContentDescription).orEmpty() }
+                        .filter { it in labels }
+                    assertEquals(case, labels, orderedLabels)
+                    assertTrue(case, nodes.all { it.boundsInRoot.width > 0f && it.boundsInRoot.height > 0f })
+                    assertTrue(case, nodes.zipWithNext().all { (left, right) -> left.boundsInRoot.right <= right.boundsInRoot.left })
+                    cases++
+
+                    if (backgroundMode == PlayerBackgroundColors.CoverColorGradient &&
+                        profile == GlassQuality.Performance && tint == GlassTintSource.None) {
+                        val pixels = play.captureToImage().toPixelMap()
+                        val backdrop = backdrops.getValue(backgroundMode)
+                        val inside = pixels[pixels.width / 4, pixels.height / 2]
+                        if (shape == PlayerPlayButtonType.Rectangular || shape == PlayerPlayButtonType.Square) {
+                            assertTrue("$case: configured Play plate is visibly painted",
+                                contrastAgainst(inside, backdrop) > 1.1f)
+                        }
+                        if (variant == PlayerControlsType.Essential && shape == PlayerPlayButtonType.Disabled) {
+                            val margin = pixels[pixels.width / 8, pixels.height / 2]
+                            assertTrue("$case: background-free Play exposes the artwork",
+                                contrastAgainst(margin, backdrop) < 1.05f)
+                        }
+                        val glyphPixels = buildList {
+                            for (y in pixels.height * 2 / 5 until pixels.height * 3 / 5) {
+                                for (x in pixels.width * 2 / 5 until pixels.width * 3 / 5) add(pixels[x, y])
+                            }
+                        }
+                        val expectedAccent = when {
+                            variant == PlayerControlsType.Essential && shape == PlayerPlayButtonType.Disabled ||
+                                colorSource == PlayerControlsColors.Theme -> themeAccent
+                            colorSource == PlayerControlsColors.Cover -> coverAccent
+                            else -> null
+                        }
+                        if (expectedAccent != null) {
+                            assertTrue("$case: painted Play keeps the chosen accent", glyphPixels.any {
+                                kotlin.math.abs(it.red - expectedAccent.red) < .03f &&
+                                    kotlin.math.abs(it.green - expectedAccent.green) < .03f &&
+                                    kotlin.math.abs(it.blue - expectedAccent.blue) < .03f
+                            })
+                        } else {
+                            val plate = if (shape == PlayerPlayButtonType.Disabled) backdrop else inside
+                            val contrast = glyphPixels.maxOf { contrastAgainst(it, plate) }
+                            assertTrue("$case: painted Play has visible contrast ($contrast)", contrast >= 2.8f)
+                        }
+                        pixelCases++
+                    }
+                }
+            }
+        }
+        assertEquals("meaningful action configurations", 42_090, cases)
+        assertEquals("Play accent and contrast captures", 150, pixelCases)
     }
 
     @Test fun `small Essential surfaces match skip envelope without moving slots or enlarging glyphs`() {

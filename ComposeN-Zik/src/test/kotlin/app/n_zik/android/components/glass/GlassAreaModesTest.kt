@@ -83,6 +83,30 @@ class GlassAreaModesTest {
         assertFalse(contour.copy(enabled = false).usesGlassContour(GlassArea.Nav))
     }
 
+    @Test fun `player Glass zone pairs keep independent modes and the shared fallback`() {
+        val playerScopes = GlassScope.entries.filter { it.name.startsWith("Player") ||
+            it == GlassScope.Lyrics || it == GlassScope.Visualizer || it == GlassScope.Queue }
+        val zones = playerScopes.flatMap { scope -> scope.areas.map { GlassContextArea(scope, it) } }
+        for ((index, first) in zones.withIndex()) for (second in zones.drop(index + 1)) {
+            for (firstMode in GlassAreaMode.entries) for (secondMode in GlassAreaMode.entries) {
+                for (shared in GlassAreaMode.entries) for (masterEnabled in listOf(false, true)) {
+                    val settings = GlassSettings(enabled = masterEnabled, rim = .55f,
+                        areaModes = mapOf(first.area to shared, second.area to shared),
+                        contextModes = mapOf(first to firstMode, second to secondMode))
+                    val label = "$first=$firstMode/$second=$secondMode/shared=$shared/enabled=$masterEnabled"
+                    for ((zone, expected) in listOf(first to firstMode, second to secondMode)) {
+                        val scoped = settings.inScope(zone.scope)
+                        assertEquals(label, expected, scoped.mode(zone.area))
+                        assertEquals(label, masterEnabled && expected.hasMaterial, scoped.usesGlassMaterial(zone.area))
+                        assertEquals(label, masterEnabled && expected.hasContour, scoped.usesGlassContour(zone.area))
+                        assertEquals(label, shared, settings.mode(zone.area))
+                    }
+                }
+            }
+        }
+        assertEquals(11, zones.size)
+    }
+
     @Test fun `images normalize unsupported material modes and invalid saved values retain legacy fallback`() {
         val store = GlassStore(context)
         assertEquals(GlassAreaMode.ContourOnly, store.read().mode(GlassArea.Images))
