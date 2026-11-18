@@ -219,6 +219,7 @@
     <string name="theme_light_palette_text_secondary_description">Vyberte barvu sekundárního textu v lehké paletě.</string>
     <string name="theme_mode_description">Vyberte pokud aplikace používá svou světlou nebo tmavou paletu.</string>
     <string name="theme_mode_pitch_black">Úplně černý</string>
+    <string name="theme_mode_pure_black">Čistě černý</string>
     <string name="theme_palette_custom">Přizpůsobené</string>
     <string name="theme_palette_description">Vyberte barevnou paletu používanou v celé aplikaci.</string>
     <string name="theme_palette_dynamic">Dynamický</string>
@@ -266,6 +267,7 @@
     <string name="theme_store_compatibility">Kompatibilita N-Zik</string>
     <string name="theme_store_submission_minimum_version">Minimální verze N-Zik</string>
     <string name="theme_store_submission_minimum_description">Nejstarší verze, která může použít tento motiv. Nové motivy výchozí pro kód verze %3$d. Používáte N-Zik %1$s (kód verze %2$d).</string>
+    <string name="theme_store_submission_feature_requires_update">Tento motiv vyžaduje kód verze N-Zik Android %1$d , než jej bude možné publikovat.</string>
     <string name="theme_store_submission_version_code_label">Minimální kód verze</string>
     <string name="theme_store_submission_find_version_code">Najít verze a kódy N-Zik</string>
     <string name="theme_store_submission_version_with_code">%1$s (kód %2$d)</string>
