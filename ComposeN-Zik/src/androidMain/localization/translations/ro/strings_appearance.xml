@@ -366,6 +366,7 @@
     <string name="theme_store_followed">Creatorul a urmat</string>
     <string name="theme_store_unfollowed">Creatorul nu este urmărit</string>
     <string name="theme_store_download">Descarcă tema</string>
+    <string name="theme_store_not_downloaded">Nu s-a descărcat</string>
     <string name="theme_store_downloading">Se descarcă…</string>
     <string name="theme_store_download_saved">Temă descărcată</string>
     <string name="theme_store_download_failed">Nu s-a putut descărca această temă.</string>
