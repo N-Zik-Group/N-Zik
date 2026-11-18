@@ -1264,10 +1264,14 @@ class MainActivity :
             }
 
             val artworkColorGeneration by app.n_zik.android.components.player.SharedArtworkColors.generation.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
-            LaunchedEffect(artworkColorGeneration) {
-                if (artworkColorGeneration > 0) binder?.player?.let { player ->
-                    setDynamicPalette(player, animateTheme = true)
-                }
+            val localArtworkRevision by app.n_zik.android.playback.services.automotive.models.ArtworkRevisions.changes
+                .collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
+            LaunchedEffect(artworkColorGeneration, localArtworkRevision) {
+                val player = binder?.player ?: return@LaunchedEffect
+                val uri = (player.mediaMetadata.artworkUri ?: player.currentMediaItem?.mediaMetadata?.artworkUri)?.toString()
+                if (artworkColorGeneration > 0 || localArtworkRevision > 0 &&
+                    app.n_zik.android.core.coil.ImageCacheFactory.isLocalArtworkSource(uri)
+                ) setDynamicPalette(player, animateTheme = true)
             }
 
             // Issue #881 (gh-881): tolerant saver (spec M5).

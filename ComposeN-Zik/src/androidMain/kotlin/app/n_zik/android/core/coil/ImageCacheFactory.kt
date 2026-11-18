@@ -7,7 +7,9 @@ import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,6 +26,12 @@ import androidx.core.net.toUri
 import app.n_zik.android.R
 import app.n_zik.android.components.image.keepsOriginalArtwork
 import app.n_zik.android.components.glass.glassImageRim
+import app.n_zik.android.components.player.ArtworkSource
+import app.n_zik.android.components.player.DisplayedArtwork
+import app.n_zik.android.components.player.DisplayedArtworkResult
+import app.n_zik.android.components.player.SharedArtworkColors
+import app.n_zik.android.utils.profilePreferences
+import coil3.BitmapImage
 import coil3.ImageLoader
 import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
@@ -65,7 +73,9 @@ import app.n_zik.android.core.profiles.settingsProfileFor
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okio.Path.Companion.toOkioPath
 // import Timber
@@ -79,6 +89,7 @@ import app.n_zik.android.core.network.client.NetworkClientFactory
 import androidx.compose.foundation.Image
 import okhttp3.Request
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okio.buffer
 import timber.log.Timber
 
@@ -118,11 +129,13 @@ object ImageCacheFactory {
         val cacheDir = coilDiskCacheDir(app)
         val maxSizeBytes = configuredImageCacheBytes(preferences)
         if (isLegacyStorageShared(app, profile, ProfileDataItem.IMAGES)) {
-            ReadOnlyCoilCache(checkNotNull(cacheDir.parentFile).canonicalFile.resolve(cacheDir.name), maxSizeBytes)
+            ReadOnlyCoilCache(checkNotNull(cacheDir.parentFile).canonicalFile.resolve(cacheDir.name),
+                maxSizeBytes, diskRevisions::resolve)
         } else {
             CleanupCoilCache(
                 DiskCache.Builder().directory(cacheDir.toPath().toOkioPath()).maxSizeBytes(maxSizeBytes).build(),
                 diskMutationLock,
+                diskRevisions::resolve,
             )
         }
     }
@@ -159,6 +172,7 @@ object ImageCacheFactory {
     private val cooldownMap = ConcurrentHashMap<String, Long>()
     private val cacheKeyMap = ConcurrentHashMap<String, String>()
     private val storeVersion = MutableStateFlow(0)
+    private val diskRevisions = ArtworkDiskRevisions()
 
     internal object PlaylistThumbnailStore {
         private const val PREFS_NAME = PLAYLIST_THUMBNAIL_STORE
@@ -291,7 +305,15 @@ object ImageCacheFactory {
 
     fun generateCacheKeySync(url: String?, quality: NetworkQuality): String {
         if (url.isNullOrBlank()) return "empty"
+        val baseKey = artworkBaseKey(url, quality)
+        return when {
+            isLocalArtworkSource(url) -> "$baseKey-local-${ArtworkRevisions.current()}"
+            isRemoteArtworkSource(url) -> diskRevisions.key(baseKey)
+            else -> baseKey
+        }
+    }
 
+    private fun artworkBaseKey(url: String, quality: NetworkQuality): String {
         val id = url.getYouTubeId()
         if (id != null && (url.contains("pl_c") || url.contains("podcasts"))) {
             val resSuffix = if (url.isYouTubeHighRes()) "HIGH" else "LOW"
@@ -299,16 +321,17 @@ object ImageCacheFactory {
         }
 
         val cacheKey = "${url}_${quality.size}"
-        val baseKey = cacheKeyMap.getOrPut(cacheKey) {
+        return cacheKeyMap.getOrPut(cacheKey) {
             try {
                 val md = MessageDigest.getInstance("MD5")
                 val digest = md.digest(url.toByteArray())
                 digest.fold("") { str, it -> str + "%02x".format(it) }
             } catch (e: Exception) { "${url.hashCode()}_${quality.size}" }
         }
-        // Keep the memoized map stable; revision-specific keys belong only to Coil's bounded caches.
-        return if (isLocalArtworkSource(url)) "$baseKey-local-${ArtworkRevisions.current()}" else baseKey
     }
+
+    private fun isRemoteArtworkSource(url: String): Boolean =
+        url.startsWith("https://", ignoreCase = true) || url.startsWith("http://", ignoreCase = true)
 
     internal fun isLocalArtworkSource(source: String?): Boolean {
         if (source.isNullOrBlank()) return false
@@ -324,6 +347,55 @@ object ImageCacheFactory {
         return ArtworkRevisions.changes.collectAsStateWithLifecycle(context = NzikDispatchers.DATA).value
     }
 
+    internal fun artworkColorSource(url: String?, profile: String): ArtworkSource? =
+        displayArtworkSource(url, profile)?.let(::cleanPrefix)?.takeUnless { it.isBlank() || it == "null" }
+            ?.let { currentArtworkSource(it, profile) }
+
+    private fun currentArtworkSource(uri: String, profile: String) = ArtworkSource(
+        profile, uri, if (isLocalArtworkSource(uri)) ArtworkRevisions.current() else 0L,
+        remoteArtworkRevision(uri),
+    )
+
+    private fun remoteArtworkRevision(url: String): Long =
+        if (isRemoteArtworkSource(url)) diskRevisions.current(artworkBaseKey(url, NetworkQuality.HIGH)) else 0L
+
+    internal fun isCurrentArtworkSource(source: ArtworkSource): Boolean =
+        source == currentArtworkSource(source.uri, source.profile)
+
+    internal fun artworkFileRevision(uri: String): String {
+        val file = when {
+            uri.startsWith("file:", ignoreCase = true) -> Uri.parse(uri).path?.let(::File)
+            File(uri).isAbsolute -> File(uri)
+            else -> null
+        }
+        return file?.let { "${it.lastModified()}:${it.length()}" }.orEmpty()
+    }
+
+    @Composable
+    internal fun rememberArtworkProfile(): String {
+        val context = LocalContext.current.applicationContext
+        val preferences = context.profilePreferences
+        var profile by remember(preferences) { mutableStateOf(getActiveProfile(context)) }
+        DisposableEffect(preferences) {
+            val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+                profile = getActiveProfile(context)
+            }
+            preferences.registerOnSharedPreferenceChangeListener(listener)
+            profile = getActiveProfile(context)
+            onDispose { preferences.unregisterOnSharedPreferenceChangeListener(listener) }
+        }
+        return profile
+    }
+
+    @Composable
+    internal fun ObserveDisplayedArtwork() {
+        val profile = rememberArtworkProfile()
+        DisposableEffect(profile) {
+            val remove = SharedArtworkColors.displayed.showPlayer(profile)
+            onDispose(remove)
+        }
+    }
+
     fun clearCacheForKey(url: String?, quality: NetworkQuality, invalidateColors: Boolean = true) {
         if (url == null) return
         val key = generateCacheKeySync(url, quality)
@@ -333,13 +405,30 @@ object ImageCacheFactory {
             Timber.tag("ImageCacheFactory").w("Unable to evict image cache key (%s)", error.javaClass.simpleName)
         }
         // Publish only after pixel eviction, so new-generation readers cannot see old cache entries.
-        if (invalidateColors) app.n_zik.android.components.player.SharedArtworkColors.invalidate(url)
+        if (invalidateColors) SharedArtworkColors.invalidate(url)
     }
 
     /** Explicit update actions must report failed eviction instead of claiming a complete cover reset. */
-    internal fun clearCacheForKeyOrThrow(url: String, quality: NetworkQuality) {
-        evictCacheKey(generateCacheKeySync(url, quality))
-        app.n_zik.android.components.player.SharedArtworkColors.invalidate(url)
+    internal fun refreshArtworkSourcesOrThrow(urls: Set<String>) = synchronized(diskMutationLock) {
+        val sources = urls.flatMapTo(mutableSetOf()) { url ->
+            val effective = displayArtworkSource(url)?.let(::cleanPrefix) ?: url
+            buildSet {
+                add(url)
+                add(effective)
+                if (effective.toHttpUrlOrNull() != null) addAll(coverSourceCandidates(effective))
+                effective.thumbnail(ORIGINAL_SOURCE_SIZE)?.let(::add)
+            }
+        }
+        val keys = sources.flatMapTo(mutableSetOf()) { url ->
+            NetworkQuality.entries.map { generateCacheKeySync(url, it) }
+        }
+        keys.forEach(::evictCacheKey)
+        diskRevisions.refresh(sources.filter(::isRemoteArtworkSource).flatMapTo(mutableSetOf()) { url ->
+            NetworkQuality.entries.map { artworkBaseKey(url, it) }
+        })
+        ArtworkRevisions.invalidate()
+        storeVersion.update { it + 1 }
+        SharedArtworkColors.invalidate()
     }
 
     private fun evictCacheKey(key: String) {
@@ -529,7 +618,8 @@ object ImageCacheFactory {
         @DrawableRes fallback: Int = R.drawable.ic_launcher_box,
         onLoading: ((State.Loading) -> Unit)? = null,
         onSuccess: ((State.Success) -> Unit)? = null,
-        onError: ((State.Error) -> Unit)? = null
+        onError: ((State.Error) -> Unit)? = null,
+        publishArtworkColors: Boolean = false,
     ): AsyncImagePainter {
         val sourceUrl = rememberDisplayArtworkSource(thumbnailUrl)
         val transformArtwork = rememberVideoArtworkPainterTransform(sourceUrl, contentScale)
@@ -538,7 +628,8 @@ object ImageCacheFactory {
         val decision = getDownloadDecision(validUrl)
         val version by storeVersion.collectAsStateWithLifecycle()
         val localRevision = rememberLocalArtworkRevision(validUrl)
-        var currentUrl by remember(validUrl, version, localRevision, decision.sourceSize) {
+        val remoteRevision = validUrl?.takeUnless(::isLocalArtworkSource)?.let(::remoteArtworkRevision) ?: 0L
+        var currentUrl by remember(validUrl, version, localRevision, remoteRevision, decision.sourceSize) {
             mutableStateOf(validUrl?.thumbnail(decision.sourceSize).also { modUrl ->
                 // if (validUrl != null) Timber.tag("ImageCache").d("URL: original=%s, modified=%s", validUrl, modUrl)
             })
@@ -564,13 +655,30 @@ object ImageCacheFactory {
             )
         }
 
+        val fileUrl = validUrl?.takeIf(::isFileArtwork)
+        var fileRevision by remember(fileUrl, localRevision) { mutableStateOf<String?>(null) }
+        if (fileUrl != null) LaunchedEffect(fileUrl, localRevision) {
+            fileRevision = withContext(NzikDispatchers.DATA) { artworkFileRevision(fileUrl) }
+        }
+        val attemptedUrl = currentUrl
+        val stamp = fileRevision.orEmpty()
+        val cacheKey = generateCacheKeySync(attemptedUrl, decision.quality).withFileRevision(stamp)
+        val requestedData = attemptedUrl.takeIf { fileUrl == null || fileRevision != null }
+        val requestProfile = if (publishArtworkColors) rememberArtworkProfile()
+            else remember(validUrl, version, localRevision) { getActiveProfile(appContext()) }
+        val colorSource = validUrl?.let { ArtworkSource(requestProfile, it, localRevision, remoteRevision) }
+        fun isCurrentRequest(): Boolean = requestedData != null && attemptedUrl == currentUrl &&
+            getActiveProfile(appContext()) == requestProfile &&
+            (colorSource == null || isCurrentArtworkSource(colorSource)) &&
+            generateCacheKeySync(attemptedUrl, decision.quality).withFileRevision(stamp) == cacheKey
 
         val request = ImageRequest.Builder(appContext())
-            .data(currentUrl)
-            .diskCacheKey(generateCacheKeySync(currentUrl, decision.quality))
-            .memoryCacheKey(generateCacheKeySync(currentUrl, decision.quality))
+            .data(requestedData)
+            .diskCacheKey(cacheKey)
+            .memoryCacheKey(cacheKey)
             .listener(
                 onSuccess = { _, result ->
+                    if (!isCurrentRequest()) return@listener
                     val dataSource = result.dataSource
                     if (dataSource != DataSource.MEMORY_CACHE) {
                         val id = currentUrl?.getYouTubeId()
@@ -583,25 +691,16 @@ object ImageCacheFactory {
                     }
                 },
                 onError = { _, result ->
-                    val errorMsg = result.throwable.message ?: ""
-                    //Timber.tag("ImageCache").e(result.throwable, "Error: original=%s, modified=%s, error=%s", validUrl, currentUrl, errorMsg)
-                    val id = currentUrl?.getYouTubeId()
-
-                    if (currentUrl != validUrl && id != null &&
-                        (currentUrl?.contains("i.ytimg.com/pl_c/") == true || currentUrl?.contains("podcasts") == true)) {
-
-                        clearCacheForKey(currentUrl, decision.quality, invalidateColors = false)
-                        PlaylistThumbnailStore.clear(id)
-                        currentUrl = validUrl
-                        return@listener
-                    }
-
-                    if (errorMsg.contains("404") && currentUrl?.contains("i.ytimg.com/vi/") == true) {
-                        val fallback = currentUrl.getNextYouTubeFallback()
-                        if (fallback != null) {
-                            currentUrl = fallback
-                            return@listener
+                    if (!isCurrentRequest()) return@listener
+                    val next = nextPainterArtwork(attemptedUrl, validUrl, result)
+                    if (next != null) {
+                        if (next == validUrl) {
+                            attemptedUrl?.getYouTubeId()?.let { id ->
+                                clearCacheForKey(attemptedUrl, decision.quality, invalidateColors = false)
+                                PlaylistThumbnailStore.clear(id)
+                            }
                         }
+                        currentUrl = next
                     }
                 }
             )
@@ -620,7 +719,10 @@ object ImageCacheFactory {
             sizedRequest.newBuilder().crossfade(false).build()
         } else sizedRequest
         val errorPainter = painterResource(error)
-        return rememberAsyncImagePainter(
+        fun matches(result: ImageRequest): Boolean =
+            result.data == requestedData && result.memoryCacheKey == cacheKey && isCurrentRequest()
+
+        val painter = rememberAsyncImagePainter(
             model = painterRequest,
             imageLoader = LOADER,
             contentScale = contentScale,
@@ -635,12 +737,41 @@ object ImageCacheFactory {
             onState = { state ->
                 when (state) {
                     is State.Loading -> onLoading?.invoke(state)
-                    is State.Success -> onSuccess?.invoke(state)
-                    is State.Error -> onError?.invoke(state)
+                    is State.Success -> if (matches(state.result.request)) onSuccess?.invoke(state)
+                    is State.Error -> if (matches(state.result.request) &&
+                        nextPainterArtwork(attemptedUrl, validUrl, state.result) == null
+                    ) onError?.invoke(state)
                     State.Empty -> Unit
                 }
             },
         )
+        if (publishArtworkColors && colorSource != null && requestedData != null) {
+            DisposableEffect(colorSource, painter, requestedData, cacheKey) {
+                val remove = SharedArtworkColors.displayed.register(colorSource, painter.state.mapNotNull { frame ->
+                    when (frame) {
+                        is State.Success -> if (matches(frame.result.request)) {
+                            (frame.result.image as? BitmapImage)?.let {
+                                DisplayedArtworkResult.Ready(DisplayedArtwork(it.bitmap, stamp))
+                            } ?: DisplayedArtworkResult.Unavailable
+                        } else null
+                        is State.Error -> DisplayedArtworkResult.Unavailable.takeIf {
+                            matches(frame.result.request) && nextPainterArtwork(attemptedUrl, validUrl, frame.result) == null
+                        }
+                        is State.Loading, State.Empty -> null
+                    }
+                })
+                onDispose(remove)
+            }
+        }
+        return painter
+    }
+
+    private fun nextPainterArtwork(url: String?, source: String?, result: ErrorResult): String? {
+        if (url == null) return null
+        if (url != source && url.getYouTubeId() != null &&
+            (url.contains("i.ytimg.com/pl_c/") || url.contains("podcasts"))
+        ) return source
+        return if (result.throwable.message.orEmpty().contains("404")) url.getNextYouTubeFallback() else null
     }
 
     @Composable
@@ -950,16 +1081,20 @@ object ImageCacheFactory {
             )
         } ?: defaultDecision
         var currentUrl = url.thumbnail(decision.sourceSize)
+        val fileRevision = if (isFileArtwork(url)) withContext(NzikDispatchers.DATA) {
+            artworkFileRevision(url)
+        } else ""
         // Timber.tag("ImageCache").d("URL (loadBitmap): original=%s, modified=%s", url, currentUrl)
         var lastError: String? = null
 
         while (currentUrl != null) {
             val isLocalFile = isFileArtwork(currentUrl)
 
+            val cacheKey = generateCacheKeySync(currentUrl, decision.quality).withFileRevision(fileRevision)
             val requestBuilder = ImageRequest.Builder(appContext())
                 .data(currentUrl)
-                .diskCacheKey(generateCacheKeySync(currentUrl, decision.quality))
-                .memoryCacheKey(generateCacheKeySync(currentUrl, decision.quality))
+                .diskCacheKey(cacheKey)
+                .memoryCacheKey(cacheKey)
                 .allowHardware(allowHardware)
                 .networkCachePolicy(if (cacheOnly) CachePolicy.DISABLED else CachePolicy.ENABLED)
                 .scale(if (cropToSquare) Scale.FILL else Scale.FIT)
@@ -1020,26 +1155,29 @@ object ImageCacheFactory {
     }
 
     suspend fun preloadImage(thumbnailUrl: String?) {
-        if (thumbnailUrl.isNullOrBlank() || thumbnailUrl == "null") {
-            return
-        }
-
-        val decision = getDownloadDecision(thumbnailUrl)
-        val finalUrl = thumbnailUrl.thumbnail(decision.sourceSize)
+        val source = artworkColorSource(thumbnailUrl, getActiveProfile(appContext())) ?: return
+        val fileRevision = if (isFileArtwork(source.uri)) withContext(NzikDispatchers.DATA) {
+            artworkFileRevision(source.uri)
+        } else ""
+        val decision = getDownloadDecision(source.uri)
+        val finalUrl = source.uri.thumbnail(decision.sourceSize)
         // Timber.tag("ImageCache").d("URL (preload): original=%s, modified=%s", thumbnailUrl, finalUrl)
 
         suspend fun executeWithFallback(url: String) {
+            if (!isCurrentArtworkSource(source)) return
+            val cacheKey = generateCacheKeySync(url, decision.quality).withFileRevision(fileRevision)
             val request = ImageRequest.Builder(appContext())
                 .data(url)
                 .apply { if (isFileArtwork(url) || decision.original) size(1000, 1000) }
-                .diskCacheKey(generateCacheKeySync(url, decision.quality))
-                .memoryCacheKey(generateCacheKeySync(url, decision.quality))
+                .diskCacheKey(cacheKey)
+                .memoryCacheKey(cacheKey)
                 .build()
 
             val result = LOADER.execute(request)
+            if (!isCurrentArtworkSource(source) || getActiveProfile(appContext()) != source.profile) return
             if (result is SuccessResult) {
                 if (decision.useNetwork) {
-                    CacheMetadataStore.save(thumbnailUrl, decision.quality)
+                    CacheMetadataStore.save(source.uri, decision.quality)
                 }
             } else if (result is ErrorResult) {
                 val errorMsg = result.throwable.message ?: ""
@@ -1057,7 +1195,10 @@ object ImageCacheFactory {
     }
 
     private fun isFileArtwork(url: String?): Boolean =
-        url != null && (url.startsWith("file://") || url.startsWith("/"))
+        url != null && (url.startsWith("file:", ignoreCase = true) || File(url).isAbsolute)
+
+    private fun String.withFileRevision(revision: String): String =
+        if (revision.isEmpty()) this else "$this-$revision"
 
     fun isImageCached(thumbnailUrl: String?): Boolean = CacheMetadataStore.get(thumbnailUrl ?: "") != null
 
@@ -1105,17 +1246,19 @@ object ImageCacheFactory {
         }
     }
 
-    internal fun clearImageCacheOrThrow() {
+    internal fun clearImageCacheOrThrow() = synchronized(diskMutationLock) {
+        var diskCleared = false
         try {
             LOADER.memoryCache?.clear()
             DISK_CACHE.clear()
+            diskCleared = true
             PlaylistThumbnailStore.clearAll()
             CacheMetadataStore.clearAll()
             cacheKeyMap.clear()
             cooldownMap.clear()
         } finally {
             // Refresh observers even when only part of the cache could be cleared.
-            app.n_zik.android.components.player.SharedArtworkColors.invalidate()
+            if (diskCleared) invalidateClearedArtwork() else SharedArtworkColors.invalidate()
         }
     }
 
@@ -1149,9 +1292,16 @@ object ImageCacheFactory {
                 cooldownMap.clear()
                 metadataCleared && (!clearDisk || cache.size == 0L)
             } finally {
-                app.n_zik.android.components.player.SharedArtworkColors.invalidate()
+                if (clearDisk) invalidateClearedArtwork() else SharedArtworkColors.invalidate()
             }
         }
+    }
+
+    private fun invalidateClearedArtwork() {
+        diskRevisions.clear()
+        ArtworkRevisions.invalidate()
+        storeVersion.update { it + 1 }
+        SharedArtworkColors.invalidate()
     }
 
     fun getCacheSize(): Long = try { DISK_CACHE.size } catch (e: Exception) { 0L }

@@ -144,6 +144,8 @@ fun Thumbnail(
     showthumbnail: Boolean,
     modifier: Modifier = Modifier,
     verticalPadding: Dp = 8.dp,
+    currentArtworkUrl: String? = null,
+    publishArtworkColors: Boolean = false,
 ) {
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
@@ -252,8 +254,12 @@ fun Thumbnail(
             mutableStateOf(true)
         }
 
+        val isCurrentWindow = currentWindow == window
+        val artworkUrl = currentArtworkUrl.takeIf { isCurrentWindow }
+            ?: currentWindow.mediaItem.mediaMetadata.artworkUri?.toString()
         val coverPainter = ImageCacheFactory.Painter(
-            thumbnailUrl = currentWindow.mediaItem.mediaMetadata.artworkUri.toString(),
+            thumbnailUrl = artworkUrl,
+            publishArtworkColors = publishArtworkColors && isCurrentWindow,
             onError = { 
                 artImageAvailable = false 
                 // Retry loading after a short delay
@@ -261,7 +267,7 @@ fun Thumbnail(
                     delay(1000) // Wait 1 second
                     if (!artImageAvailable) {
                         // Try to preload the image
-                        ImageCacheFactory.preloadImage(currentWindow.mediaItem.mediaMetadata.artworkUri.toString())
+                        ImageCacheFactory.preloadImage(artworkUrl)
                     }
                 }
             },

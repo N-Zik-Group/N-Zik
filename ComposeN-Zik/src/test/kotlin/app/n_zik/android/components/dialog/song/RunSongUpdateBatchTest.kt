@@ -176,7 +176,7 @@ class RunSongUpdateBatchTest {
         }
 
         mockkObject(SongUpdateCoverReset)
-        every { SongUpdateCoverReset.reset(any(), any(), any(), any()) } just runs
+        every { SongUpdateCoverReset.reset(any(), any(), any(), any(), any()) } just runs
 
         mockkObject(SongUpdatePlaybackRefresh)
         coEvery { SongUpdatePlaybackRefresh.publish(any(), any(), any(), any()) } just runs
@@ -473,7 +473,7 @@ class RunSongUpdateBatchTest {
         }
         assertEquals("https://provider/cover", updatedRows.first { it.id == "video_00001" }.thumbnailUrl)
         assertEquals("modified:custom2", updatedRows.first { it.id == "video_00002" }.thumbnailUrl)
-        verify(exactly = 1) { SongUpdateCoverReset.reset(any(), "video_00001", "modified:custom1", "active") }
-        verify(exactly = 0) { SongUpdateCoverReset.reset(any(), "video_00002", any(), "active") }
+        verify(exactly = 1) { SongUpdateCoverReset.reset(any(), "video_00001", "modified:custom1", "active", "https://provider/cover") }
+        verify(exactly = 0) { SongUpdateCoverReset.reset(any(), "video_00002", any(), "active", any()) }
     }
 }

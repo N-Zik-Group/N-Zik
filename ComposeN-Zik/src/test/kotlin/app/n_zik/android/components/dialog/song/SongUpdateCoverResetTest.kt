@@ -2,6 +2,7 @@ package app.n_zik.android.components.dialog.song
 
 import java.io.File
 import android.content.Context
+import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.coil.ImageCacheFactory
@@ -16,6 +17,7 @@ import io.mockk.unmockkAll
 import io.mockk.verify
 import org.junit.After
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -42,7 +44,7 @@ class SongUpdateCoverResetTest {
         every { getActiveProfile(context) } returns "active"
         every { coversDir(context, "active") } returns covers
         mockkObject(ImageCacheFactory)
-        every { ImageCacheFactory.clearCacheForKeyOrThrow(any(), any()) } just runs
+        every { ImageCacheFactory.refreshArtworkSourcesOrThrow(any()) } just runs
         mockkObject(ArtworkRevisions)
         every { ArtworkRevisions.invalidate() } just runs
     }
@@ -51,7 +53,7 @@ class SongUpdateCoverResetTest {
     fun teardown() = unmockkAll()
 
     @Test
-    fun resetRemovesOnlyTheOwnedCoverAndEvictsEveryQuality() {
+    fun resetRemovesOnlyTheOwnedCoverAndRefreshesItsSourcesTogether() {
         val owned = File(covers, "cover_video.jpg").apply { writeText("custom") }
         val otherSong = File(covers, "cover_other.jpg").apply { writeText("other") }
         val otherProfile = File(temporary.newFolder("other-profile"), "cover_video.jpg").apply { writeText("other") }
@@ -63,10 +65,11 @@ class SongUpdateCoverResetTest {
         assertTrue(otherSong.exists())
         assertTrue(otherProfile.exists())
         assertTrue(userFile.exists())
-        ImageCacheFactory.NetworkQuality.entries.forEach { quality ->
-            verify { ImageCacheFactory.clearCacheForKeyOrThrow(owned.canonicalPath, quality) }
+        verify(exactly = 1) {
+            ImageCacheFactory.refreshArtworkSourcesOrThrow(
+                setOf(userFile.toURI().toString(), owned.canonicalPath, Uri.fromFile(owned).toString())
+            )
         }
-        verify(exactly = 1) { ArtworkRevisions.invalidate() }
     }
 
     @Test
@@ -82,7 +85,7 @@ class SongUpdateCoverResetTest {
         every { getActiveProfile(context) } returns "other-profile"
         SongUpdateCoverReset.reset(context, "video", "modified:custom", "active")
         assertTrue(owned.exists())
-        verify(exactly = 0) { ImageCacheFactory.clearCacheForKeyOrThrow(any(), any()) }
+        verify(exactly = 0) { ImageCacheFactory.refreshArtworkSourcesOrThrow(any()) }
         verify(exactly = 0) { ArtworkRevisions.invalidate() }
     }
 
@@ -98,14 +101,14 @@ class SongUpdateCoverResetTest {
             assertTrue(child.exists())
             assertTrue(other.exists())
         }
-        verify(exactly = 0) { ImageCacheFactory.clearCacheForKeyOrThrow(any(), any()) }
+        verify(exactly = 0) { ImageCacheFactory.refreshArtworkSourcesOrThrow(any()) }
         verify(exactly = 0) { ArtworkRevisions.invalidate() }
     }
 
     @Test
     fun `cover cache failure and cancellation propagate after owned file removal`() {
         val failure = java.io.IOException("Cache failure")
-        every { ImageCacheFactory.clearCacheForKeyOrThrow(any(), any()) } throws failure
+        every { ImageCacheFactory.refreshArtworkSourcesOrThrow(any()) } throws failure
         try {
             SongUpdateCoverReset.reset(context, "video", null, "active")
             org.junit.Assert.fail("Cache failure must propagate")
@@ -113,7 +116,7 @@ class SongUpdateCoverResetTest {
             org.junit.Assert.assertSame(failure, actual)
         }
         val cancellation = kotlinx.coroutines.CancellationException("Cancelled update")
-        every { ImageCacheFactory.clearCacheForKeyOrThrow(any(), any()) } throws cancellation
+        every { ImageCacheFactory.refreshArtworkSourcesOrThrow(any()) } throws cancellation
         try {
             SongUpdateCoverReset.reset(context, "video", null, "active")
             org.junit.Assert.fail("Cancellation must propagate")
@@ -130,7 +133,7 @@ class SongUpdateCoverResetTest {
         val diskCache = io.mockk.mockk<coil3.disk.DiskCache>()
         every { ImageCacheFactory.LOADER } returns loader
         every { ImageCacheFactory.DISK_CACHE } returns diskCache
-        every { ImageCacheFactory.clearCacheForKeyOrThrow(any(), any()) } answers { callOriginal() }
+        every { ImageCacheFactory.refreshArtworkSourcesOrThrow(any()) } answers { callOriginal() }
         every { diskCache.remove(any()) } throws failure
         try {
             SongUpdateCoverReset.reset(context, "video", null, "active")
@@ -139,6 +142,44 @@ class SongUpdateCoverResetTest {
             org.junit.Assert.assertSame(failure, actual)
         }
         verify(exactly = 0) { ArtworkRevisions.invalidate() }
+    }
+
+    @Test
+    fun `same URL refresh evicts old pixels before rolling over the source and painter keys`() {
+        val url = "https://yt3.ggpht.com/cover-refresh=w120-h120"
+        val variant = "https://yt3.ggpht.com/cover-refresh=w700-h700"
+        val quality = ImageCacheFactory.NetworkQuality.MEDIUM
+        val loader = io.mockk.mockk<coil3.ImageLoader>(relaxed = true)
+        val diskCache = io.mockk.mockk<coil3.disk.DiskCache>()
+        val before = ImageCacheFactory.artworkColorSource(url, "active")
+        val oldKey = ImageCacheFactory.generateCacheKeySync(variant, quality)
+        every { ImageCacheFactory.LOADER } returns loader
+        every { ImageCacheFactory.DISK_CACHE } returns diskCache
+        every { ImageCacheFactory.refreshArtworkSourcesOrThrow(any()) } answers { callOriginal() }
+        every { diskCache.remove(any()) } answers {
+            org.junit.Assert.assertEquals(before, ImageCacheFactory.artworkColorSource(url, "active"))
+            true
+        }
+
+        SongUpdateCoverReset.reset(context, "video", url, "active")
+
+        verify(exactly = 1) { diskCache.remove(oldKey) }
+        verify(exactly = 1) { ArtworkRevisions.invalidate() }
+        assertNotEquals(before, ImageCacheFactory.artworkColorSource(url, "active"))
+        assertNotEquals(oldKey, ImageCacheFactory.generateCacheKeySync(variant, quality))
+    }
+
+    @Test
+    fun `refresh invalidates both the outgoing source and a different replacement source`() {
+        val previous = "https://example.com/previous.jpg"
+        val replacement = "https://example.com/replacement.jpg"
+        val file = checkNotNull(SongUpdateCoverReset.ownedCover(covers, "video"))
+        SongUpdateCoverReset.reset(context, "video", previous, "active", replacement)
+        verify(exactly = 1) {
+            ImageCacheFactory.refreshArtworkSourcesOrThrow(
+                setOf(previous, replacement, file.absolutePath, Uri.fromFile(file).toString())
+            )
+        }
     }
 
 }

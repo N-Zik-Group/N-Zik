@@ -86,7 +86,7 @@ class ArtworkColorSnapshotTest {
         val scope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
         try {
             val repository = ArtworkColorRepository(scope)
-            val key = ArtworkColorKey("default", "same-cover", "1", "HIGH", 0)
+            val key = ArtworkColorKey("default", "same-cover", "1", 0)
             val gate = CompletableDeferred<Unit>()
             val loads = AtomicInteger()
             val quantizations = AtomicInteger()

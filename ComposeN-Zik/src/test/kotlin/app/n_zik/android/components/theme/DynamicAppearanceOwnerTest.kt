@@ -263,7 +263,7 @@ class DynamicAppearanceOwnerTest {
             lightPalette = null, darkPalette = null, lightColors = null, darkColors = null,
             fallbackDominant = Color.White, isMonochrome = true)
         val repository = app.n_zik.android.components.player.ArtworkColorRepository(backgroundScope)
-        val source = app.n_zik.android.components.player.ArtworkColorKey("default", "white", "1", "HIGH", 0)
+        val source = app.n_zik.android.components.player.ArtworkColorKey("default", "white", "1", 0)
         var analyses = 0
         val owner = DynamicAppearanceOwner(preferences, this, { false }, { _, _ -> error("compatibility loader unused") },
             { appearance }, { next, _ -> appearance = next }, { bars += it }, { widgets += it },

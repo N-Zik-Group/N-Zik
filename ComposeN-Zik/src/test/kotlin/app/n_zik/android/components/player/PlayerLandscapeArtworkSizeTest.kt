@@ -245,8 +245,10 @@ class PlayerLandscapeArtworkSizeTest {
         assertEquals(android.graphics.Color.RED, decoded.getPixel(8, 8))
         // These tests measure the real painter's rendered bounds. Cache the decoded PNG so
         // asynchronous file decoding does not become a second condition for measuring layout.
-        artworkCache[MemoryCache.Key("local-artwork-fixture")] = MemoryCache.Value(decoded.asImage())
-        return Uri.fromFile(png)
+        val uri = Uri.fromFile(png)
+        val revision = ImageCacheFactory.artworkFileRevision(uri.toString())
+        artworkCache[MemoryCache.Key("local-artwork-fixture-$revision")] = MemoryCache.Value(decoded.asImage())
+        return uri
     }
 
     private fun bounds(tag: String) = compose.onNodeWithTag(tag, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot

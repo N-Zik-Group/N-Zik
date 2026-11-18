@@ -70,8 +70,9 @@ class AutoSessionRemoteArtworkPolicyTest {
         assertEquals(listOf(url), requests.map { it.data })
         val key = MessageDigest.getInstance("MD5").digest(url.toByteArray())
             .joinToString("") { "%02x".format(it) }
-        assertEquals(key, requests.single().diskCacheKey)
-        assertEquals(key, requests.single().memoryCacheKey)
+        val requestKey = "$key#nzik-artwork-revision=0"
+        assertEquals(requestKey, requests.single().diskCacheKey)
+        assertEquals(requestKey, requests.single().memoryCacheKey)
         verify { ImageCacheFactory.getDownloadDecision(url) }
     }
 
@@ -99,7 +100,7 @@ class AutoSessionRemoteArtworkPolicyTest {
             .putString("policy-playlist", "|$learned").commit()
         val requests = load(original, failUrl = learned)
         assertEquals(listOf(learned, original), requests.map { it.data })
-        assertEquals("playlist_policy-playlist_HIGH", requests.first().diskCacheKey)
+        assertEquals("playlist_policy-playlist_HIGH#nzik-artwork-revision=0", requests.first().diskCacheKey)
         verify { ImageCacheFactory.clearCacheForKey(learned, ImageCacheFactory.NetworkQuality.HIGH, invalidateColors = false) }
         assertFalse(context.getSharedPreferences(
             ImageCacheFactory.profileMetadataStoreName(context, "playlist_thumbnail_store"), 0,

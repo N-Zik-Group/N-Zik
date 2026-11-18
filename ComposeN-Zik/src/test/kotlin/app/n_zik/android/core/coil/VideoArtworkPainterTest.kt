@@ -3,10 +3,12 @@ package app.n_zik.android.core.coil
 import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.os.Looper
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.foundation.shape.CircleShape
 import app.n_zik.android.ui.styling.Appearance
@@ -29,7 +31,10 @@ import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.appContext
+import app.n_zik.android.components.player.ArtworkColorSnapshot
+import app.n_zik.android.components.player.SharedArtworkColors
 import app.n_zik.android.playback.services.ArtworkContentProvider
+import app.n_zik.android.utils.coroutines.NzikDispatchers
 import coil3.ImageLoader
 import coil3.asImage
 import coil3.compose.AsyncImagePainter
@@ -44,14 +49,20 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicReference
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
@@ -66,6 +77,7 @@ class VideoArtworkPainterTest {
     private lateinit var loader: ImageLoader
     private lateinit var source: Bitmap
     private var sourceDataSource = DataSource.MEMORY_CACHE
+    private var requestGate: CompletableDeferred<Unit>? = null
     private var previousCrop: Boolean? = null
     private lateinit var previousProfile: String
 
@@ -80,6 +92,7 @@ class VideoArtworkPainterTest {
                 override suspend fun intercept(chain: Interceptor.Chain): SuccessResult {
                     requests.incrementAndGet()
                     requestedModels += chain.request.data.toString()
+                    requestGate?.await()
                     return SuccessResult(source.asImage(), chain.request, sourceDataSource)
                 }
             })
@@ -101,6 +114,42 @@ class VideoArtworkPainterTest {
 
     @Test fun `mounted wide video responds to crop changes through the real painter factory`() =
         checkMountedPainter(160, 80, VIDEO_URL, appliesCrop = true)
+
+    @Test fun `delayed real painter supplies shared colors without canonical decode`() {
+        val url = "https://example.com/elected-painter.jpg"
+        val gate = CompletableDeferred<Unit>()
+        requestGate = gate
+        source = Bitmap.createBitmap(40, 40, Bitmap.Config.ARGB_8888).apply {
+            eraseColor(Color.rgb(10, 155, 215))
+        }
+        val colors = AtomicReference<Result<ArtworkColorSnapshot?>?>()
+        compose.setContent {
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                ColorPalette.fallback, Typography.fallback, CircleShape, CircleShape, CircleShape,
+            )) {
+                ImageCacheFactory.ObserveDisplayedArtwork()
+                Image(
+                    painter = ImageCacheFactory.Painter(url, publishArtworkColors = true),
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                )
+                LaunchedEffect(url) {
+                    launch(NzikDispatchers.DATA) {
+                        delay(55)
+                        gate.complete(Unit)
+                    }
+                    colors.set(runCatching { SharedArtworkColors.load(context, url) })
+                }
+            }
+        }
+        compose.waitUntil(10_000) {
+            shadowOf(Looper.getMainLooper()).idle()
+            colors.get() != null
+        }
+        val snapshot = checkNotNull(colors.get()?.getOrThrow())
+        assertTrue(snapshot.artworkSamples.any { it.blue > .7f && it.red < .15f })
+        assertEquals(1, requests.get())
+    }
 
     @Test fun `mounted tall video responds to crop changes through the real painter factory`() =
         checkMountedPainter(80, 160, VIDEO_URL, appliesCrop = true)

@@ -577,7 +577,7 @@ internal suspend fun runSongUpdateCore(
         }
         if (selection.thumbnail && !fetchedSong?.thumbnailUrl.isNullOrBlank()) {
             progress.failureIssue = SongUpdateIssue.COVER_RESET
-            SongUpdateCoverReset.reset(context, entry.id, previousThumbnail, requestProfile)
+            SongUpdateCoverReset.reset(context, entry.id, previousThumbnail, requestProfile, fetchedSong?.thumbnailUrl)
         }
         committedRow
     }

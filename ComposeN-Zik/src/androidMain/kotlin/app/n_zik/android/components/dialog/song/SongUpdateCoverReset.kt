@@ -11,12 +11,11 @@ import app.n_zik.android.components.image.OWNED_COVER_EXTENSION_PATTERN
 import app.n_zik.android.core.profiles.coversDir
 import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.core.profiles.isLegacyStorageShared
-import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import timber.log.Timber
 
 /** Removes only the active profile's song-owned cover after a provider cover refresh. */
 internal object SongUpdateCoverReset {
-    fun reset(context: Context, songId: String, previousUrl: String?, requestProfile: String) {
+    fun reset(context: Context, songId: String, previousUrl: String?, requestProfile: String, refreshedUrl: String? = null) {
         if (getActiveProfile(context) != requestProfile) return
         if (isLegacyStorageShared(context, requestProfile, ProfileDataItem.IMAGES)) {
             throw IOException("The historical shared cover directory is still protected")
@@ -33,13 +32,11 @@ internal object SongUpdateCoverReset {
         if (file.exists() && !file.delete()) {
             throw IOException("Could not remove song-owned cover")
         }
-        val keys = setOfNotNull(previousUrl?.let(::cleanPrefix), file.absolutePath, Uri.fromFile(file).toString())
-        keys.forEach { key ->
-            ImageCacheFactory.NetworkQuality.entries.forEach { quality ->
-                ImageCacheFactory.clearCacheForKeyOrThrow(key, quality)
-            }
-        }
-        ArtworkRevisions.invalidate()
+        val keys = setOfNotNull(
+            previousUrl?.let(::cleanPrefix), refreshedUrl?.let(::cleanPrefix),
+            file.absolutePath, Uri.fromFile(file).toString(),
+        )
+        ImageCacheFactory.refreshArtworkSourcesOrThrow(keys)
     }
 
     // Never treat a URL or an arbitrary stored local path as a deletion target.

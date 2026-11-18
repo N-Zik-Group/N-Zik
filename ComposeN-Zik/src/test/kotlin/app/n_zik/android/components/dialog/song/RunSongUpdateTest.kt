@@ -165,7 +165,7 @@ class RunSongUpdateTest {
         }
 
         mockkObject(SongUpdateCoverReset)
-        every { SongUpdateCoverReset.reset(any(), any(), any(), any()) } just runs
+        every { SongUpdateCoverReset.reset(any(), any(), any(), any(), any()) } just runs
 
         mockkObject(SongUpdatePlaybackRefresh)
         coEvery { SongUpdatePlaybackRefresh.publish(any(), any(), any(), any()) } just runs
@@ -310,7 +310,7 @@ class RunSongUpdateTest {
         val updated = slot<Song>()
         coVerify(exactly = 1) { songTable.updateReplace(capture(updated)) }
         assertEquals("https://fetched/thumb", updated.captured.thumbnailUrl)
-        verify(exactly = 1) { SongUpdateCoverReset.reset(any(), "video_00001", "https://stored/thumb", "active") }
+        verify(exactly = 1) { SongUpdateCoverReset.reset(any(), "video_00001", "https://stored/thumb", "active", "https://fetched/thumb") }
         assertEquals("Stored title", updated.captured.title)
     }
 
@@ -395,7 +395,7 @@ class RunSongUpdateTest {
             runSongUpdate(binder, entry, SongUpdateSelection(title = true))
         }
 
-        verify(exactly = 0) { SongUpdateCoverReset.reset(any(), any(), any(), any()) }
+        verify(exactly = 0) { SongUpdateCoverReset.reset(any(), any(), any(), any(), any()) }
         verify(exactly = 0) { cache.removeResource(any()) }
         verify(exactly = 0) { downloadCache.removeResource(any()) }
         verify(exactly = 0) { WaveformExtractor.deleteWaveformOrThrow(any(), any()) }
@@ -609,7 +609,7 @@ class RunSongUpdateTest {
         val updated = slot<Song>()
         coVerify { songTable.updateReplace(capture(updated)) }
         assertEquals("modified:file:///custom.jpg", updated.captured.thumbnailUrl)
-        verify(exactly = 0) { SongUpdateCoverReset.reset(any(), any(), any(), any()) }
+        verify(exactly = 0) { SongUpdateCoverReset.reset(any(), any(), any(), any(), any()) }
     }
 
     @Test
@@ -624,7 +624,7 @@ class RunSongUpdateTest {
         verify(exactly = 1) { internal.beginTransaction() }
         verify(exactly = 0) { internal.setTransactionSuccessful() }
         verify(exactly = 1) { internal.endTransaction() }
-        verify(exactly = 0) { SongUpdateCoverReset.reset(any(), any(), any(), any()) }
+        verify(exactly = 0) { SongUpdateCoverReset.reset(any(), any(), any(), any(), any()) }
         verify(exactly = 0) { cache.removeResource(any()) }
         verify(exactly = 0) { downloadCache.removeResource(any()) }
         verify(exactly = 0) { WaveformExtractor.deleteWaveformOrThrow(any(), any()) }
@@ -653,7 +653,7 @@ class RunSongUpdateTest {
         }
         verify(exactly = 0) { internal.beginTransaction() }
         coVerify(exactly = 0) { songTable.updateReplace(any()) }
-        verify(exactly = 0) { SongUpdateCoverReset.reset(any(), any(), any(), any()) }
+        verify(exactly = 0) { SongUpdateCoverReset.reset(any(), any(), any(), any(), any()) }
     }
 
     @Test
@@ -726,7 +726,7 @@ class RunSongUpdateTest {
             it.title == storedRow.title && it.artistsText == storedRow.artistsText &&
                 it.thumbnailUrl == storedRow.thumbnailUrl && it.totalPlayTimeMs == 0L
         }) }
-        verify(exactly = 0) { SongUpdateCoverReset.reset(any(), any(), any(), any()) }
+        verify(exactly = 0) { SongUpdateCoverReset.reset(any(), any(), any(), any(), any()) }
         coVerify(exactly = 0) { artistTable.upsert(any<List<Artist>>()) }
         coVerify(exactly = 0) { SongUpdatePlaybackRefresh.publish(any(), any(), any(), any()) }
         verify { cache.removeResource(entry.id) }
@@ -804,7 +804,7 @@ class RunSongUpdateTest {
         val report = runSongUpdateReport(binder, entry, SongUpdateSelection(title = true, authors = true, thumbnail = true))
         assertTrue(report.partial)
         assertEquals(setOf(SongUpdateIssue.MISSING_ARTISTS, SongUpdateIssue.MISSING_COVER), report.issues)
-        verify(exactly = 0) { SongUpdateCoverReset.reset(any(), any(), any(), any()) }
+        verify(exactly = 0) { SongUpdateCoverReset.reset(any(), any(), any(), any(), any()) }
     }
 
     @Test
@@ -819,7 +819,7 @@ class RunSongUpdateTest {
     @Test
     fun `cover failure after committed metadata is partial`() = runBlocking {
         coEvery { Innertube.song(entry.id) } returns fetchResult(Result.success(songItem("Fresh", emptyList(), "https://provider/cover")))
-        every { SongUpdateCoverReset.reset(any(), any(), any(), any()) } throws java.io.IOException("Disk failure")
+        every { SongUpdateCoverReset.reset(any(), any(), any(), any(), any()) } throws java.io.IOException("Disk failure")
         val report = runSongUpdateReport(binder, entry, SongUpdateSelection(thumbnail = true))
         assertTrue(report.partial)
         assertEquals(setOf(SongUpdateIssue.COVER_RESET), report.issues)
@@ -868,7 +868,7 @@ class RunSongUpdateTest {
         val report = runSongUpdateReport(binder, entry, SongUpdateSelection(thumbnail = true))
         assertEquals(setOf(SongUpdateIssue.WRONG_SONG), report.issues)
         assertEquals(false, report.anyCompleted)
-        verify(exactly = 0) { SongUpdateCoverReset.reset(any(), any(), any(), any()) }
+        verify(exactly = 0) { SongUpdateCoverReset.reset(any(), any(), any(), any(), any()) }
     }
 
 

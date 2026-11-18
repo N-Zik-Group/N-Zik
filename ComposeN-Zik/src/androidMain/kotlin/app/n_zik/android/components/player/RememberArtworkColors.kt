@@ -10,9 +10,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.coil.rememberDisplayArtworkSource
 import app.n_zik.android.utils.preferences
-import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.components.theme.DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -33,14 +33,7 @@ fun rememberArtworkDisplayColors(
     awaitArtworkMetadata: Boolean = false,
 ): ArtworkDisplayColors? {
     val context = LocalContext.current.applicationContext
-    var profile by remember(context) { mutableStateOf(getActiveProfile(context)) }
-    DisposableEffect(context) {
-        val prefs = context.profilePreferences
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> profile = getActiveProfile(context) }
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        profile = getActiveProfile(context)
-        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
-    }
+    val profile = ImageCacheFactory.rememberArtworkProfile()
     val preferences = remember(context, profile) { context.preferences }
     var keepDark by remember(preferences) { mutableStateOf(preferences.getBoolean(
         dynamicThemeRespectBrightnessKey, DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT)) }
@@ -55,9 +48,10 @@ fun rememberArtworkDisplayColors(
         onDispose { preferences.unregisterOnSharedPreferenceChangeListener(listener) }
     }
     val generation by SharedArtworkColors.generation.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
+    val localRevision = ImageCacheFactory.rememberLocalArtworkRevision(rememberDisplayArtworkSource(uri))
     var raw by remember(profile) { mutableStateOf<ArtworkColorSnapshot?>(null) }
     val missingUri = uri.isNullOrBlank() || uri == "null"
-    LaunchedEffect(uri, profile, revision, generation, awaitArtworkMetadata) {
+    LaunchedEffect(uri, profile, revision, generation, localRevision, awaitArtworkMetadata) {
         if (missingUri && awaitArtworkMetadata && raw != null) delay(ARTWORK_METADATA_GRACE_MS)
         try {
             val loaded = SharedArtworkColors.load(context, uri, revision)
