@@ -2,7 +2,7 @@ package app.n_zik.android.utils
 
 import android.graphics.BlurMaskFilter
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
@@ -19,30 +19,26 @@ fun Modifier.dropShadow(
     offsetY: Dp = 4.dp,
     offsetX: Dp = 0.dp,
     spread: Dp = 0.dp
-) = this.drawBehind {
-    val shadowSize = Size(size.width + spread.toPx(), size.height + spread.toPx())
+) = this.drawWithCache {
+    val spreadPx = spread.toPx()
+    val shadowSize = Size(size.width + spreadPx, size.height + spreadPx)
     val shadowOutline = shape.createOutline(shadowSize, layoutDirection, this)
-    // Create a Paint object
-    val paint = Paint()
-// Apply specified color
-    paint.color = color
-
-// Check for valid blur radius
-    if (blur.toPx() > 0) {
-        paint.asFrameworkPaint().apply {
-            // Apply blur to the Paint
-            maskFilter = BlurMaskFilter(blur.toPx(), BlurMaskFilter.Blur.NORMAL)
+    val blurPx = blur.toPx()
+    val shadowOffsetX = offsetX.toPx()
+    val shadowOffsetY = offsetY.toPx()
+    val paint = Paint().apply {
+        this.color = color
+        if (blurPx > 0f) {
+            asFrameworkPaint().maskFilter = BlurMaskFilter(blurPx, BlurMaskFilter.Blur.NORMAL)
         }
     }
-    drawIntoCanvas { canvas ->
-        // Save the canvas state
-        canvas.save()
-        // Translate to specified offsets
-        canvas.translate(offsetX.toPx(), offsetY.toPx())
-        // Draw the shadow
-        canvas.drawOutline(shadowOutline, paint)
-        // Restore the canvas state
-        canvas.restore()
+    onDrawBehind {
+        drawIntoCanvas { canvas ->
+            canvas.save()
+            canvas.translate(shadowOffsetX, shadowOffsetY)
+            canvas.drawOutline(shadowOutline, paint)
+            canvas.restore()
+        }
     }
 }
 
