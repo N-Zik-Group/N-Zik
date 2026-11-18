@@ -1,5 +1,8 @@
 package app.n_zik.android.components.settings.appearance.preview
 
+import app.n_zik.android.BuildConfig
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 import android.content.ActivityNotFoundException
 import android.content.SharedPreferences
 import android.graphics.BitmapFactory
@@ -220,6 +223,16 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
     var loading by remember { mutableStateOf(true) }
     var themes by remember { mutableStateOf<List<StoreTheme>?>(null) }
     var downloads by remember(library) { mutableStateOf(library.downloads()) }
+    val downloadQueue = rememberThemeStoreDownloadQueue(profileId)
+    val pendingDownloads by remember(downloadQueue) { downloadQueue?.activeDownloads ?: kotlinx.coroutines.flow.flowOf(emptySet<String>()) }
+        .collectAsStateWithLifecycle(initialValue = emptySet(), context = NzikDispatchers.DATA)
+    val downloadedIds = remember(downloads) { downloads.mapTo(mutableSetOf(), SavedTheme::id) }
+    fun downloadControl(theme: StoreTheme): ThemeCardDownload {
+        val id = "${theme.themeId}:${theme.revision}"
+        return ThemeCardDownload(id in downloadedIds, id in pendingDownloads,
+            downloadQueue?.takeIf { !offline && theme.supportAt(BuildConfig.VERSION_CODE) == StoreSupport.Supported }
+                ?.let { queue -> { queue.enqueue(theme) } })
+    }
     var follows by remember(library) { mutableStateOf(library.follows()) }
     var publicationSettingVersion by remember(library) { mutableIntStateOf(0) }
     DisposableEffect(preferences, library) {
@@ -418,7 +431,7 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                         }
                     }
                     items(matchingThemes, key = { it.themeId }) { theme ->
-                        ThemeStoreCard(theme, catalog, glass, suspended = "${theme.themeId}:theme" in pendingReports, modifier = Modifier.animateItem(fadeInSpec = tween(200), fadeOutSpec = tween(150)), official = verifiedIds?.contains(theme.author.githubId) == true, showCatalogInfo = true, refreshVersion = retry, onWithdraw = if (theme.author.githubId == ownCreatorId) ({ withdrawalTheme = theme }) else null, onOpen = { onOpenTheme(theme) })
+                        ThemeStoreCard(theme, catalog, glass, suspended = "${theme.themeId}:theme" in pendingReports, modifier = Modifier.animateItem(fadeInSpec = tween(200), fadeOutSpec = tween(150)), official = verifiedIds?.contains(theme.author.githubId) == true, showCatalogInfo = true, refreshVersion = retry, download = downloadControl(theme), onWithdraw = if (theme.author.githubId == ownCreatorId) ({ withdrawalTheme = theme }) else null, onOpen = { onOpenTheme(theme) })
                     }
                 }
                 return@LazyVerticalGrid
@@ -514,7 +527,7 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                                             }
                                         }
                                         items(matches.take(4), key = { "${category.routeKey}:${it.themeId}" }) { theme ->
-                                            ThemeStoreCard(theme, catalog, glass, suspended = "${theme.themeId}:theme" in pendingReports, official = verifiedIds?.contains(theme.author.githubId) == true, modifier = tabContentModifier, showCatalogInfo = true, refreshVersion = retry, onOpen = { onOpenTheme(theme) })
+                                            ThemeStoreCard(theme, catalog, glass, suspended = "${theme.themeId}:theme" in pendingReports, official = verifiedIds?.contains(theme.author.githubId) == true, modifier = tabContentModifier, showCatalogInfo = true, refreshVersion = retry, download = downloadControl(theme), onOpen = { onOpenTheme(theme) })
                                         }
                                     }
                                 }
@@ -565,7 +578,7 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                                     }
                                 }
                                 items(filtered, key = { it.themeId }) { theme ->
-                                    ThemeStoreCard(theme, catalog, glass, suspended = "${theme.themeId}:theme" in pendingReports, official = verifiedIds?.contains(theme.author.githubId) == true, modifier = tabContentModifier.animateItem(fadeInSpec = tween(200), fadeOutSpec = tween(150)), showCatalogInfo = true, refreshVersion = retry, onOpen = { onOpenTheme(theme) })
+                                    ThemeStoreCard(theme, catalog, glass, suspended = "${theme.themeId}:theme" in pendingReports, official = verifiedIds?.contains(theme.author.githubId) == true, modifier = tabContentModifier.animateItem(fadeInSpec = tween(200), fadeOutSpec = tween(150)), showCatalogInfo = true, refreshVersion = retry, download = downloadControl(theme), onOpen = { onOpenTheme(theme) })
                                 }
                             }
                         }
@@ -908,6 +921,7 @@ private fun ThemeStoreCard(
     modifier: Modifier = Modifier,
     showCatalogInfo: Boolean = false,
     refreshVersion: Int = 0,
+    download: ThemeCardDownload? = null,
     onWithdraw: (() -> Unit)? = null,
     onOpen: (() -> Unit)? = null,
 ) {
@@ -958,12 +972,43 @@ private fun ThemeStoreCard(
                 }
             }
         }
+        if (!blocked && download != null) ThemeCardDownloadRow(download)
         if (blocked && !offline) {
             Box(Modifier.fillMaxWidth().padding(end = 4.dp, bottom = 10.dp), contentAlignment = Alignment.CenterEnd) {
                 StoreSeeButton(R.string.theme_store_report_follow_up, onOpen = { followUp = true })
             }
         } else if (open != null) {
             StoreCardSeeAction(open, Modifier.padding(end = 4.dp, bottom = 10.dp), onWithdraw.takeUnless { offline })
+        }
+    }
+}
+
+private data class ThemeCardDownload(val downloaded: Boolean, val pending: Boolean, val onDownload: (() -> Unit)?)
+
+@Composable
+private fun ThemeCardDownloadRow(download: ThemeCardDownload) {
+    val (label, icon) = when {
+        download.downloaded -> R.string.theme_store_download_saved to R.drawable.downloaded
+        download.pending -> R.string.theme_store_downloading to R.drawable.download_progress
+        else -> R.string.theme_store_not_downloaded to R.drawable.download
+    }
+    Row(
+        Modifier.fillMaxWidth().padding(start = 12.dp, end = 8.dp, top = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.weight(1f)) {
+            StoreText(stringResource(label), secondary = true, style = typography().xxs)
+        }
+        val onDownload = download.onDownload
+        if (!download.downloaded && !download.pending && onDownload != null) {
+            StoreIconAction(onClick = onDownload) {
+                Icon(painterResource(icon), stringResource(R.string.theme_store_download), Modifier.size(16.dp), tint = colorPalette().text)
+            }
+        } else {
+            Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                Icon(painterResource(icon), null, Modifier.size(16.dp), tint = colorPalette().textSecondary)
+            }
         }
     }
 }
