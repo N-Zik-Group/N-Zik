@@ -366,6 +366,7 @@
     <string name="theme_store_followed">关注的创建者</string>
     <string name="theme_store_unfollowed">取消关注的创建者</string>
     <string name="theme_store_download">下载主题</string>
+    <string name="theme_store_not_downloaded">未下载</string>
     <string name="theme_store_downloading">正在下载…</string>
     <string name="theme_store_download_saved">主题已下载</string>
     <string name="theme_store_download_failed">无法下载此主题。</string>
