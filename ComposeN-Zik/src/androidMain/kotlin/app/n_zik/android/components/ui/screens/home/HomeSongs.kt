@@ -1,6 +1,7 @@
 package app.n_zik.android.components.ui.screens.home
 
 import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.compactPlayTimeLabel
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
@@ -676,7 +677,7 @@ fun HomeSongs(
                                             var text = if (songSort.sortBy == SongSortBy.PlayCount) {
                                                 song.playCount.toString()
                                             } else {
-                                                song.formattedTotalPlayTime
+                                                compactPlayTimeLabel(song.totalPlayTimeMs)
                                             }
                                             var typography = typography().xxs
                                             var alignment = Alignment.BottomCenter

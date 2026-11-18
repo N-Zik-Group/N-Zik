@@ -2,6 +2,7 @@ package app.n_zik.android.components.settings.common
 
 import java.net.Proxy
 import java.util.Locale
+import app.n_zik.android.utils.minutesLabel
 import app.n_zik.android.utils.secondsLabel
 
 import app.n_zik.android.enums.AlbumSwipeAction
@@ -117,7 +118,7 @@ internal fun settingsEntryChoiceLabels(
         "general.audio_effects.settings_audio_reverb" to PresetsReverb.entries.map { resolveString(it.textRes) },
         "ui.settings_use_font_type.settings_use_font_type" to FontType.entries.map { it.name },
         "appearance.player_behavior_and_visuals.songs_number_to_show" to SongsNumber.entries.map { it.name },
-        "general.playback.min_listening_time" to ExoPlayerMinTimeForEvent.entries.map { it.name },
+        "general.playback.min_listening_time" to ExoPlayerMinTimeForEvent.entries.map { secondsLabel(it.asSeconds, locale) },
         "other.proxy.proxy_mode" to Proxy.Type.values().map { it.name },
         "accounts.sync_data_with_ytm_account.sync_direction" to SyncDirection.entries.map { resolveString(it.stringResource) },
         "network.quality.audio_quality_format" to
@@ -145,7 +146,10 @@ internal fun settingsEntryChoiceLabels(
             resources(R.string.profile_name_source_local, R.string.profile_display_name_source_youtube, R.string.profile_identity_source_discord, R.string.profile_identity_source_lastfm),
         "general.playback.pause_between_songs" to PauseBetweenSongs.entries.map { secondsLabel(it.name.toInt(), locale) },
         "general.playback.exclude_songs_with_duration_limit" to
-            DurationInMinutes.entries.map { if (it == DurationInMinutes.Disabled) resolveString(R.string.common_option_disabled) else "${it.name}m" },
+            DurationInMinutes.entries.map {
+                if (it == DurationInMinutes.Disabled) resolveString(R.string.common_option_disabled)
+                else minutesLabel(it.asMinutes, locale)
+            },
         "general.playback.crossfade_duration" to listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20).map { secondsLabel(it, locale) },
         "general.queue_management.max_songs_in_queue" to
             MaxSongs.entries.map { if (it == MaxSongs.Unlimited) resolveString(R.string.common_limit_unlimited_label) else it.name },

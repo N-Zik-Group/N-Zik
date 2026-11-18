@@ -432,9 +432,9 @@ fun AlbumDetails(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         val year = album?.year ?: "0000"
-                        val totalDuration = items.sumOf {
+                        val totalDuration = formatAsTime(items.sumOf {
                             durationTextToMillis(it.durationText ?: "")
-                        }.let( ::formatAsTime )
+                        })
 
                         BasicText(
                             text = stringResource(

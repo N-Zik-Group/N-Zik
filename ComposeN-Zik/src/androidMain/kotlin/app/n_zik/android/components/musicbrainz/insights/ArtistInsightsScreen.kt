@@ -69,6 +69,7 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.addNext
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.center
+import app.n_zik.android.utils.compactPlayTimeLabel
 import app.n_zik.android.utils.color
 import app.n_zik.android.utils.forcePlay
 import app.n_zik.android.utils.secondary
@@ -446,7 +447,7 @@ private fun ArtistStatsRow(stats: ArtistStats) {
         StatItem(stringResource(R.string.metadata_musicbrainz_stat_albums), stats.distinctAlbumsCount.toString(), modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
         StatItem(stringResource(R.string.metadata_musicbrainz_stat_liked_songs), stats.likedSongsCount.toString(), modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
         StatItem(stringResource(R.string.metadata_musicbrainz_stat_bookmarked_albums), stats.bookmarkedAlbumsCount.toString(), modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
-        StatItem(stringResource(R.string.metadata_musicbrainz_stat_time), formatPlayTime(stats.totalPlayTimeMs), modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
+        StatItem(stringResource(R.string.metadata_musicbrainz_stat_time), compactPlayTimeLabel(stats.totalPlayTimeMs), modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
     }
 }
 
@@ -468,14 +469,5 @@ private fun StatItem(label: String, value: String, modifier: Modifier = Modifier
                 .fillMaxWidth()
                 .basicMarquee(iterations = Int.MAX_VALUE)
         )
-    }
-}
-
-private fun formatPlayTime(ms: Long): String {
-    val hours = ms / 3_600_000
-    return when {
-        hours < 1 -> "${ms / 60_000}min"
-        hours < 24 -> "${hours}h"
-        else -> "${hours / 24}d"
     }
 }

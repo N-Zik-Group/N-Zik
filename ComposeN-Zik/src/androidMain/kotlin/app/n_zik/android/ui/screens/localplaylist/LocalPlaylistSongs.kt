@@ -168,6 +168,7 @@ import app.n_zik.android.utils.excludeMediaItems
 import app.n_zik.android.utils.forcePlayAtIndex
 import app.n_zik.android.utils.forcePlayFromBeginning
 import app.n_zik.android.utils.formatAsTime
+import app.n_zik.android.utils.compactPlayTimeLabel
 
 import app.n_zik.android.utils.isAtLeastAndroid14
 import app.n_zik.android.utils.isLandscape
@@ -1603,7 +1604,7 @@ fun LocalPlaylistSongs(
                                     val text = if (sort.sortBy == PlaylistSongSortBy.PlayCount) {
                                         song.playCount.toString()
                                     } else {
-                                        song.formattedTotalPlayTime
+                                        compactPlayTimeLabel(song.totalPlayTimeMs)
                                     }
                                     Box(
                                         modifier = Modifier

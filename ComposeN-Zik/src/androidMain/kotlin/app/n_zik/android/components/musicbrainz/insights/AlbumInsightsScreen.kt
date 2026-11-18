@@ -64,6 +64,7 @@ import app.n_zik.android.typography
 import app.n_zik.android.utils.addNext
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.center
+import app.n_zik.android.utils.compactPlayTimeLabel
 import app.n_zik.android.utils.color
 import app.n_zik.android.utils.forcePlay
 import app.n_zik.android.utils.secondary
@@ -499,7 +500,7 @@ private fun AlbumStatsRow(stats: AlbumStats) {
         StatItem(stringResource(R.string.metadata_musicbrainz_stat_songs), stats.tracksCount.toString())
         StatItem(stringResource(R.string.metadata_musicbrainz_stat_listens), stats.playCount.toString())
         StatItem(stringResource(R.string.metadata_musicbrainz_stat_liked_songs), stats.likedSongsCount.toString())
-        StatItem(stringResource(R.string.metadata_musicbrainz_stat_time), formatPlayTime(stats.totalPlayTimeMs))
+        StatItem(stringResource(R.string.metadata_musicbrainz_stat_time), compactPlayTimeLabel(stats.totalPlayTimeMs))
     }
 }
 
@@ -515,14 +516,5 @@ private fun StatItem(label: String, value: String) {
             style = typography().xxs,
             color = colorPalette().textSecondary
         )
-    }
-}
-
-private fun formatPlayTime(ms: Long): String {
-    val hours = ms / 3_600_000
-    return when {
-        hours < 1 -> "${ms / 60_000}min"
-        hours < 24 -> "${hours}h"
-        else -> "${hours / 24}d"
     }
 }

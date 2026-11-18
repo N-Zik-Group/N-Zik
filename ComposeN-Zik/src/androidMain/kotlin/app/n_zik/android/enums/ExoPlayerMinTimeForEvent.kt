@@ -2,6 +2,7 @@ package app.n_zik.android.enums
 
 import androidx.compose.runtime.Composable
 import app.n_zik.android.core.enums.TextView
+import app.n_zik.android.utils.secondsLabel
 
 enum class ExoPlayerMinTimeForEvent(
     val asSeconds: Int
@@ -23,7 +24,7 @@ enum class ExoPlayerMinTimeForEvent(
 
     override val text: String
         @Composable
-        get() = this.name
+        get() = secondsLabel(asSeconds)
 }
 
 

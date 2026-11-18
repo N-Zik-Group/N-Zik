@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
 import app.n_zik.android.core.enums.TextView
+import app.n_zik.android.utils.minutesLabel
 
 
 enum class DurationInMinutes(
@@ -34,7 +35,7 @@ enum class DurationInMinutes(
         @Composable
         get() = when( this ) {
             Disabled -> stringResource( R.string.common_option_disabled )
-            else -> "${this.name}m"
+            else -> minutesLabel(asMinutes)
         }
 }
 
@@ -57,7 +58,7 @@ enum class DurationInMilliseconds(
         @Composable
         get() = when( this )  {
             Disabled -> stringResource( R.string.common_option_disabled )
-            else -> this.name
+            else -> stringResource(R.string.common_duration_milliseconds_format, asMillis)
         }
 }
 

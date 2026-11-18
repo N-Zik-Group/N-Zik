@@ -158,14 +158,7 @@ fun GeneralPlaybackCard(
                 modifier = Modifier.settingsSearchTarget("general.playback.min_listening_time"),
                 title = stringResource(R.string.recommendations_minimum_playback_duration_label),
                 text = stringResource(R.string.player_minimum_listening_time_description),
-                selectedValueText = when (exoPlayerMinTimeForEvent) {
-                    ExoPlayerMinTimeForEvent.`10s` -> "10s"
-                    ExoPlayerMinTimeForEvent.`15s` -> "15s"
-                    ExoPlayerMinTimeForEvent.`20s` -> "20s"
-                    ExoPlayerMinTimeForEvent.`30s` -> "30s"
-                    ExoPlayerMinTimeForEvent.`40s` -> "40s"
-                    ExoPlayerMinTimeForEvent.`60s` -> "60s"
-                },
+                selectedValueText = exoPlayerMinTimeForEvent.text,
                 onClick = { showMinListeningTimeDialog = true },
                 icon = R.drawable.time
             )
@@ -175,16 +168,7 @@ fun GeneralPlaybackCard(
                     title = stringResource(R.string.recommendations_minimum_listening_time_description),
                     selectedValue = exoPlayerMinTimeForEvent,
                     onValueSelected = { exoPlayerMinTimeForEvent = it },
-                    valueText = {
-                        when (it) {
-                            ExoPlayerMinTimeForEvent.`10s` -> "10s"
-                            ExoPlayerMinTimeForEvent.`15s` -> "15s"
-                            ExoPlayerMinTimeForEvent.`20s` -> "20s"
-                            ExoPlayerMinTimeForEvent.`30s` -> "30s"
-                            ExoPlayerMinTimeForEvent.`40s` -> "40s"
-                            ExoPlayerMinTimeForEvent.`60s` -> "60s"
-                        }
-                    },
+                    valueText = { it.text },
                     values = ExoPlayerMinTimeForEvent.values().toList(),
                     onDismiss = { showMinListeningTimeDialog = false }
                 )
@@ -194,17 +178,7 @@ fun GeneralPlaybackCard(
                 modifier = Modifier.settingsSearchTarget("general.playback.exclude_songs_with_duration_limit"),
                 title = stringResource(R.string.settings_playback_duration_limit_label),
                 text = stringResource(R.string.player_exclude_songs_with_duration_limit_description),
-                selectedValueText = when (excludeSongWithDurationLimit) {
-                    DurationInMinutes.Disabled -> stringResource(R.string.common_option_disabled)
-                    DurationInMinutes.`3` -> "3m"
-                    DurationInMinutes.`5` -> "5m"
-                    DurationInMinutes.`10` -> "10m"
-                    DurationInMinutes.`15` -> "15m"
-                    DurationInMinutes.`20` -> "20m"
-                    DurationInMinutes.`25` -> "25m"
-                    DurationInMinutes.`30` -> "30m"
-                    DurationInMinutes.`60` -> "60m"
-                },
+                selectedValueText = excludeSongWithDurationLimit.text,
                 onClick = { showExcludeSongsDialog = true },
                 icon = R.drawable.playbackduration
             )
@@ -214,19 +188,7 @@ fun GeneralPlaybackCard(
                     title = stringResource(R.string.settings_playback_duration_limit_description),
                     selectedValue = excludeSongWithDurationLimit,
                     onValueSelected = { excludeSongWithDurationLimit = it },
-                    valueText = {
-                        when (it) {
-                            DurationInMinutes.Disabled -> stringResource(R.string.common_option_disabled)
-                            DurationInMinutes.`3` -> "3m"
-                            DurationInMinutes.`5` -> "5m"
-                            DurationInMinutes.`10` -> "10m"
-                            DurationInMinutes.`15` -> "15m"
-                            DurationInMinutes.`20` -> "20m"
-                            DurationInMinutes.`25` -> "25m"
-                            DurationInMinutes.`30` -> "30m"
-                            DurationInMinutes.`60` -> "60m"
-                        }
-                    },
+                    valueText = { it.text },
                     values = DurationInMinutes.values().toList(),
                     onDismiss = { showExcludeSongsDialog = false }
                 )

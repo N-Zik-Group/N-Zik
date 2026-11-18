@@ -669,9 +669,9 @@ fun AlbumDetails(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                val totalDuration = items.sumOf {
+                                val totalDuration = formatAsTime(items.sumOf {
                                     durationTextToMillis(it.durationText ?: "")
-                                }.let(::formatAsTime)
+                                })
 
                                 BasicText(
                                     text = pluralStringResource(

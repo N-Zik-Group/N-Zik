@@ -65,9 +65,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import app.n_zik.android.core.utils.Toaster
 import java.io.File
-import java.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.minutes
 import timber.log.Timber
 import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper
@@ -443,14 +441,6 @@ fun durationTextToMillis(duration: String): Long {
     }
 }
 
-
-fun formatAsTime(millis: Long): String {
-    //if (millis == 0L) return ""
-    val timePart1 = Duration.ofMillis(millis).toMinutes().minutes
-    val timePart2 = Duration.ofMillis(millis).seconds % 60
-
-    return "${timePart1} ${timePart2}s"
-}
 
 @JvmName("ResultInnertubeItemsPageCompleted")
 suspend fun Result<Innertube.ItemsPage<Innertube.SongItem>?>.completed(
