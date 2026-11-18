@@ -8,8 +8,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import java.util.Locale
 
-private fun compactDurationLabel(locale: Locale, vararg units: Measure): String =
-    MeasureFormat.getInstance(locale, MeasureFormat.FormatWidth.SHORT).formatMeasures(*units)
+private val localizedUnitName = Regex("(\\p{L}\\p{M}*)[\\p{L}\\p{M}.]*(?:\\p{Zs}+[\\p{L}\\p{M}.]+)*")
+
+private fun compactDurationLabel(locale: Locale, vararg units: Measure): String {
+    val formatter = MeasureFormat.getInstance(locale, MeasureFormat.FormatWidth.SHORT)
+    return units.joinToString(" ") { measure ->
+        val localizedMeasure = formatter.formatMeasures(measure)
+        // The localized formatter owns grouping, spacing and unit placement.
+        val match = localizedUnitName.find(localizedMeasure)
+        if (match == null || localizedMeasure.none(Char::isDigit)) localizedMeasure
+        else localizedMeasure.replaceRange(match.range, match.groupValues[1])
+    }
+}
 
 internal fun secondsLabel(seconds: Int, locale: Locale): String =
     compactDurationLabel(locale, Measure(seconds, MeasureUnit.SECOND))
@@ -51,8 +61,7 @@ internal fun formatAsTime(millis: Long, locale: Locale): String {
         if (days > 0) add(Measure(days, MeasureUnit.DAY))
         if (hours > 0) add(Measure(hours, MeasureUnit.HOUR))
         if (minutes > 0) add(Measure(minutes, MeasureUnit.MINUTE))
-        val remainder = seconds % 60
-        if (remainder > 0 || isEmpty()) add(Measure(remainder, MeasureUnit.SECOND))
+        if (isEmpty()) add(Measure(seconds, MeasureUnit.SECOND))
     }
     return compactDurationLabel(locale, *parts.toTypedArray())
 }
