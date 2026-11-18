@@ -87,7 +87,8 @@ import app.n_zik.android.components.glass.GlassCustomChip
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.TextContrast
-import app.n_zik.android.components.glass.readableForeground
+import app.n_zik.android.components.glass.glassPaneForeground
+import app.n_zik.android.components.glass.glassSurfaceDarkness
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.surfaceBackdropColor
 import app.n_zik.android.components.glass.usesGlassMaterial
@@ -1630,7 +1631,8 @@ internal fun DiscordPreviewChip(
 ) {
     val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
     GlassCustomChip(color, onClick, modifier, settings = settings) { chipModifier ->
-        val ink = if (material) readableForeground(foreground, surfaceBackdropColor(), TextContrast) else foreground
+        val ink = if (material) glassPaneForeground(foreground, surfaceBackdropColor(),
+            TextContrast, glassSurfaceDarkness(settings)) else foreground
         Text(
             text = label,
             style = typography().s.copy(color = ink),

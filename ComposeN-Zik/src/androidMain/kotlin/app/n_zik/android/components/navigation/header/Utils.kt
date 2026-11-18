@@ -36,7 +36,9 @@ import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.effectiveSurfaceColor
 import app.n_zik.android.components.glass.glassFilmColor
-import app.n_zik.android.components.glass.readableGlyphForeground
+import app.n_zik.android.components.glass.IconContrast
+import app.n_zik.android.components.glass.glassPaneForeground
+import app.n_zik.android.components.glass.glassSurfaceDarkness
 import app.n_zik.android.components.glass.surfaceBackdropColor
 
 /** Matches the visible N-ZIK logo bounds without resizing its glyphs. */
@@ -58,9 +60,9 @@ internal fun HeaderIcon(
     val glass = rememberGlassSettings()
     val material = glass.usesGlassMaterial(GlassArea.Header)
     val filmRole = surfaceColor(colorPalette().background1)
-    val foreground = if (material) readableGlyphForeground(tint, effectiveSurfaceColor(
+    val foreground = if (material) glassPaneForeground(tint, effectiveSurfaceColor(
         surfaceBackdropColor(), glassFilmColor(glass.forArea(GlassArea.Header), filmRole, menu = false),
-    )) else tint
+    ), IconContrast, glassSurfaceDarkness(glass), glyph = true) else tint
     val icon: @Composable () -> Unit = {
         Icon(
             imageVector = ImageVector.vectorResource(iconId),

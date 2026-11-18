@@ -39,9 +39,9 @@ private fun TextFieldColors.clearContainer(): TextFieldColors = copy(
 )
 
 /** Resolve only enabled neutral ink; semantic colors and disabled roles retain their meaning. */
-private fun TextFieldColors.onGlass(surface: Color): TextFieldColors {
-    fun text(color: Color) = readableForeground(color, surface, TextContrast)
-    fun glyph(color: Color) = readableGlyphForeground(color, surface)
+private fun TextFieldColors.onGlass(surface: Color, darkness: Float): TextFieldColors {
+    fun text(color: Color) = glassPaneForeground(color, surface, TextContrast, darkness)
+    fun glyph(color: Color) = glassPaneForeground(color, surface, IconContrast, darkness, glyph = true)
     return clearContainer().copy(
         focusedTextColor = text(focusedTextColor), unfocusedTextColor = text(unfocusedTextColor),
         errorTextColor = text(errorTextColor), cursorColor = glyph(cursorColor),
@@ -82,10 +82,11 @@ private fun InputGlassContent(
         content(colors, textStyle)
         return
     }
-    SurfaceForegroundContent(surface) {
+    val darkness = glassSurfaceDarkness(settings)
+    SurfaceForegroundContent(surface, glassInkDarkness = darkness) {
         val ink = if (enabled && textStyle.color.isSpecified)
-            textStyle.copy(color = readableForeground(textStyle.color, surface, TextContrast)) else textStyle
-        content(colors.onGlass(surface), ink)
+            textStyle.copy(color = glassPaneForeground(textStyle.color, surface, TextContrast, darkness)) else textStyle
+        content(colors.onGlass(surface, darkness), ink)
     }
 }
 

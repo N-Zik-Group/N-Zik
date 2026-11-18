@@ -221,10 +221,12 @@ fun glassSurfaceTint(settings: GlassSettings): Color {
 /** Retains source saturation and tone, including achromatic colours with no defined hue. */
 internal fun blendGlassTint(base: Color, tint: Color, strength: Float): Color {
     if (!tint.isSpecified || strength <= 0f) return base
-    val neutral = tint.red == tint.green && tint.green == tint.blue
-    val sourceBase = if (neutral) {
+    val chroma = maxOf(tint.red, tint.green, tint.blue) - minOf(tint.red, tint.green, tint.blue)
+    val sourceBase = if (chroma < .02f) {
         val tone = (base.red + base.green + base.blue) / 3f
-        Color(tone, tone, tone, base.alpha)
+        val neutralBase = Color(tone, tone, tone, base.alpha)
+        // Keep exact grays neutral without bringing the colored base back in one frame.
+        if (chroma == 0f) neutralBase else lerp(neutralBase, base, chroma / .02f)
     } else base
     return lerp(sourceBase, tint.copy(alpha = 1f), strength.coerceIn(0f, 1f))
 }

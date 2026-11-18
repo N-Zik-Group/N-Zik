@@ -213,5 +213,5 @@ private fun pageButtonColors(colors: ButtonColors, settings: GlassSettings, mate
     val plate = glassFilmColor(settings.forArea(GlassArea.ActionButtons), colors.containerColor, menu = false)
     val surface = effectiveSurfaceColor(surfaceBackdropColor(), plate)
     return colors.copy(containerColor = Color.Transparent, disabledContainerColor = Color.Transparent,
-        contentColor = readableForeground(colors.contentColor, surface, TextContrast))
+        contentColor = glassPaneForeground(colors.contentColor, surface, TextContrast, glassSurfaceDarkness(settings)))
 }

@@ -84,9 +84,10 @@ internal fun GlassExplicitBadge(
             drawHighlight = false, settings = settings,
         )
     }
-    val ink = if (settings.usesGlassMaterial(GlassArea.ActionButtons)) readableGlyphForeground(
+    val ink = if (settings.usesGlassMaterial(GlassArea.ActionButtons)) glassPaneForeground(
         colorPalette().text, effectiveSurfaceColor(surfaceBackdropColor(),
             glassFilmColor(settings.forArea(GlassArea.ActionButtons), role = null, menu = false)),
+        IconContrast, glassSurfaceDarkness(settings), glyph = true,
     ) else colorPalette().text
     CompositionLocalProvider(LocalGlassContainerBackdrop provides rendered) {
         Box(badgeModifier) {

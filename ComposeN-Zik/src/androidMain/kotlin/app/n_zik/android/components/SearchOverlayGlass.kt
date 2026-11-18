@@ -17,8 +17,9 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.glass.effectiveSurfaceColor
 import app.n_zik.android.components.glass.glassFilmColor
-import app.n_zik.android.components.glass.readableForeground
-import app.n_zik.android.components.glass.readableGlyphForeground
+import app.n_zik.android.components.glass.IconContrast
+import app.n_zik.android.components.glass.glassPaneForeground
+import app.n_zik.android.components.glass.glassSurfaceDarkness
 import app.n_zik.android.components.glass.surfaceBackdropColor
 import app.n_zik.android.components.glass.TextContrast
 import app.n_zik.android.components.glass.GlassArea
@@ -127,7 +128,8 @@ internal fun searchOverlayForegroundColor(
     area: GlassArea = GlassArea.ActionButtons,
     glyph: Boolean = false,
 ): Color {
-    val surface = searchOverlaySurfaceColor(fill, area) ?: return original
-    return if (glyph) readableGlyphForeground(original, surface)
-        else readableForeground(original, surface, TextContrast)
+    val settings = rememberGlassSettings().inScope(GlassScope.Search)
+    val surface = searchOverlaySurfaceColor(fill, area, settings) ?: return original
+    return glassPaneForeground(original, surface, if (glyph) IconContrast else TextContrast,
+        glassSurfaceDarkness(settings), glyph = glyph)
 }

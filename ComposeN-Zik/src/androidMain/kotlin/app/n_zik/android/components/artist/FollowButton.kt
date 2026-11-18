@@ -42,7 +42,8 @@ import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.effectiveSurfaceColor
 import app.n_zik.android.components.glass.glassFilmColor
-import app.n_zik.android.components.glass.readableForeground
+import app.n_zik.android.components.glass.glassPaneForeground
+import app.n_zik.android.components.glass.glassSurfaceDarkness
 import app.n_zik.android.components.glass.TextContrast
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.core.database.Database
@@ -195,8 +196,9 @@ internal fun ArtistFollowButton(
             val background = colorPalette.background0
             val drawBackground: DrawScope.() -> Unit = remember(background) { { drawRect(background) } }
             val backdrop = rememberCanvasBackdrop(drawBackground)
-            val foreground = readableForeground(buttonProps.third, effectiveSurfaceColor(background,
-                glassFilmColor(settings.forArea(GlassArea.ActionButtons), buttonProps.second, menu = false)), TextContrast)
+            val foreground = glassPaneForeground(buttonProps.third, effectiveSurfaceColor(background,
+                glassFilmColor(settings.forArea(GlassArea.ActionButtons), buttonProps.second, menu = false)),
+                TextContrast, glassSurfaceDarkness(settings))
             LiquidButton(
                 onClick = onClick,
                 backdrop = backdrop,

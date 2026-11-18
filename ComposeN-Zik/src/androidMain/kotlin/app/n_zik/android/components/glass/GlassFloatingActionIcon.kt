@@ -53,7 +53,8 @@ fun GlassFloatingActionIcon(
     // Pages export a live content sibling here; never sample a page containing this action.
     val backdrop = LocalGlassContainerBackdrop.current ?: rememberCanvasBackdrop(drawBackground)
     val film = glassFilmColor(settings.forArea(GlassArea.ActionButtons), filmColor, menu = false)
-    val foreground = if (enabled) readableGlyphForeground(tint, effectiveSurfaceColor(surfaceBackdropColor(), film)) else tint
+    val foreground = if (enabled) glassPaneForeground(tint, effectiveSurfaceColor(surfaceBackdropColor(), film),
+        IconContrast, glassSurfaceDarkness(settings), glyph = true) else tint
     val glyph: @Composable () -> Unit = {
         Icon(icon, contentDescription, Modifier.size(iconSize).then(iconModifier),
             tint = if (enabled) foreground else foreground.copy(alpha = foreground.alpha * .5f))

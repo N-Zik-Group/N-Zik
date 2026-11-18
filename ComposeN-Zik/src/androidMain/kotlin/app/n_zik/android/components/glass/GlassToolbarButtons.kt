@@ -295,7 +295,11 @@ fun GlassToolbarIcon(
 @Composable
 private fun toolbarForeground(style: ToolbarStyle, color: Color, enabled: Boolean = true): Color {
     if (!enabled || !style.settings.usesGlassMaterial(GlassArea.ActionButtons)) return color
-    if (style.count > 1 || style.grouped) return readableGlyphForeground(color, LocalGlassActionGroupSurface.current ?: surfaceBackdropColor())
-    val film = glassFilmColor(style.settings.forArea(GlassArea.ActionButtons), glassActionFilmColor(), menu = false)
-    return readableGlyphForeground(color, effectiveSurfaceColor(surfaceBackdropColor(), film))
+    val surface = if (style.count > 1 || style.grouped) {
+        LocalGlassActionGroupSurface.current ?: surfaceBackdropColor()
+    } else {
+        val film = glassFilmColor(style.settings.forArea(GlassArea.ActionButtons), glassActionFilmColor(), menu = false)
+        effectiveSurfaceColor(surfaceBackdropColor(), film)
+    }
+    return glassPaneForeground(color, surface, IconContrast, glassSurfaceDarkness(style.settings), glyph = true)
 }

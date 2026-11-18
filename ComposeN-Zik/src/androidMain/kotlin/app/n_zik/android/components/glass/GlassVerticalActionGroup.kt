@@ -90,10 +90,13 @@ fun GlassVerticalActionGroup(
             content = {
                 val column = this
                 if (settings.usesGlassMaterial(area)) {
-                    val plate = glassFilmColor(settings.forArea(area), film, menu = false)
+                    val areaSettings = settings.forArea(area)
+                    val plate = glassFilmColor(areaSettings, film, menu = false)
                     val foregroundSurface = effectiveSurfaceColor(surfaceBackdropColor(), plate)
                     CompositionLocalProvider(LocalGlassActionGroupSurface provides foregroundSurface) {
-                        SurfaceForegroundContent(foregroundSurface) { content(column) }
+                        SurfaceForegroundContent(foregroundSurface, glassInkDarkness = glassSurfaceDarkness(areaSettings)) {
+                            content(column)
+                        }
                     }
                 } else content(column)
             },

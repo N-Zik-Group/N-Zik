@@ -140,10 +140,11 @@ fun GlassToastHost(
             val material = settings.usesGlassMaterial(GlassArea.Menus)
             val surface = if (material) effectiveSurfaceColor(surfaceBackdropColor(),
                 glassFilmColor(settings.forArea(GlassArea.Menus), Color(message.background), menu = false)) else null
-            val textColor = surface?.let { readableForeground(Color(message.foreground), it, TextContrast) }
-                ?: Color(message.foreground)
-            val iconColor = surface?.let { readableGlyphForeground(Color(message.foreground), it) }
-                ?: Color(message.foreground)
+            val originalInk = Color(message.foreground)
+            val darkness = if (material) glassSurfaceDarkness(settings) else 0f
+            val textColor = surface?.let { glassPaneForeground(originalInk, it, TextContrast, darkness) } ?: originalInk
+            val iconColor = surface?.let { glassPaneForeground(originalInk, it, IconContrast, darkness, glyph = true) }
+                ?: originalInk
             Row(
                 Modifier.padding(start = 24.dp, end = 24.dp, bottom = clearance + 8.dp)
                     .widthIn(max = 480.dp)

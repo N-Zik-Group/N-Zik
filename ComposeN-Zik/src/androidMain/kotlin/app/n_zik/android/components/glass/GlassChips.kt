@@ -49,7 +49,9 @@ internal fun GlassCustomChip(
             .glassChipBackground(color, shape, settings)
             .clickable(interactionSource = source, indication = if (source == null) LocalIndication.current else null,
                 enabled = enabled, role = role, onClick = onClick)
-        if (material) SurfaceForegroundContent(chipForegroundSurface(settings, color)) { content(chip) }
+        if (material) SurfaceForegroundContent(
+            chipForegroundSurface(settings, color), glassInkDarkness = glassSurfaceDarkness(settings),
+        ) { content(chip) }
         else content(chip)
     }
 }
@@ -98,6 +100,7 @@ fun GlassFilterChip(
             else -> colors.containerColor
         }
         val surface = if (material) chipForegroundSurface(settings, film) else null
+        val inkDarkness = if (material) glassSurfaceDarkness(settings) else 0f
         // The 48dp touch spacer stays outside the visible surface in both renderers.
         // Otherwise a global indication would paint the spacer above/below the 32dp chip.
         Box(Modifier.minimumInteractiveComponentSize().then(modifier), contentAlignment = Alignment.Center) {
@@ -106,16 +109,16 @@ fun GlassFilterChip(
                     modifier = if (material) feedback.glassChipBackground(film, shape, settings)
                         else feedback.glassAreaContour(settings, GlassArea.ActionButtons, shape),
                     enabled = enabled, shape = shape,
-                    colors = if (material) colors.copy(containerColor = Color.Transparent,
+                    colors = if (surface != null) colors.copy(containerColor = Color.Transparent,
                         selectedContainerColor = Color.Transparent,
                         disabledContainerColor = Color.Transparent,
                         disabledSelectedContainerColor = Color.Transparent,
-                        labelColor = readableForeground(colors.labelColor, checkNotNull(surface), TextContrast),
-                        selectedLabelColor = readableForeground(colors.selectedLabelColor, surface, TextContrast),
-                        leadingIconColor = readableGlyphForeground(colors.leadingIconColor, surface),
-                        trailingIconColor = readableGlyphForeground(colors.trailingIconColor, surface),
-                        selectedLeadingIconColor = readableGlyphForeground(colors.selectedLeadingIconColor, surface),
-                        selectedTrailingIconColor = readableGlyphForeground(colors.selectedTrailingIconColor, surface)) else colors,
+                        labelColor = glassPaneForeground(colors.labelColor, surface, TextContrast, inkDarkness),
+                        selectedLabelColor = glassPaneForeground(colors.selectedLabelColor, surface, TextContrast, inkDarkness),
+                        leadingIconColor = glassPaneForeground(colors.leadingIconColor, surface, IconContrast, inkDarkness, glyph = true),
+                        trailingIconColor = glassPaneForeground(colors.trailingIconColor, surface, IconContrast, inkDarkness, glyph = true),
+                        selectedLeadingIconColor = glassPaneForeground(colors.selectedLeadingIconColor, surface, IconContrast, inkDarkness, glyph = true),
+                        selectedTrailingIconColor = glassPaneForeground(colors.selectedTrailingIconColor, surface, IconContrast, inkDarkness, glyph = true)) else colors,
                     border = if (material) null else FilterChipDefaults.filterChipBorder(enabled, selected),
                     interactionSource = source)
             }
@@ -141,6 +144,7 @@ fun GlassSuggestionChip(
     val glassShape = if (material) shape ?: uiRoundnessShape() else nativeShape
     val surface = if (material) chipForegroundSurface(settings,
         if (enabled) colors.containerColor else colors.disabledContainerColor) else null
+    val inkDarkness = if (material) glassSurfaceDarkness(settings) else 0f
     GlassChipFeedback(material, enabled, glassShape, settings) { feedback, source ->
         Box(Modifier.minimumInteractiveComponentSize().then(modifier), contentAlignment = Alignment.Center) {
             CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
@@ -149,11 +153,11 @@ fun GlassSuggestionChip(
                         if (enabled) colors.containerColor else colors.disabledContainerColor, glassShape, settings)
                         else feedback.glassAreaContour(settings, GlassArea.ActionButtons, nativeShape),
                     enabled = enabled, shape = glassShape,
-                    colors = if (material) colors.copy(containerColor = Color.Transparent,
+                    colors = if (surface != null) colors.copy(containerColor = Color.Transparent,
                         disabledContainerColor = Color.Transparent,
-                        labelColor = readableForeground(colors.labelColor, checkNotNull(surface), TextContrast),
-                        leadingIconContentColor = readableGlyphForeground(colors.leadingIconContentColor, surface),
-                        trailingIconContentColor = readableGlyphForeground(colors.trailingIconContentColor, surface)) else colors,
+                        labelColor = glassPaneForeground(colors.labelColor, surface, TextContrast, inkDarkness),
+                        leadingIconContentColor = glassPaneForeground(colors.leadingIconContentColor, surface, IconContrast, inkDarkness, glyph = true),
+                        trailingIconContentColor = glassPaneForeground(colors.trailingIconContentColor, surface, IconContrast, inkDarkness, glyph = true)) else colors,
                     border = if (material) null else border, interactionSource = source)
             }
         }

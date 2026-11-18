@@ -51,6 +51,7 @@ import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.Typography
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.ui.toggles.Switch
+import app.n_zik.android.components.ui.toggles.switchColor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
@@ -301,6 +302,12 @@ class GlassSwitchTest {
             compose.runOnIdle { checked.value = true }
             assertThumbOnRight(false)
         }
+    }
+
+    @Test fun `a resting classic switch follows the displayed palette without another color animation`() {
+        assertEquals(Color.Red, switchColor(Color.Red, Color.Yellow, 0f))
+        assertEquals(Color.Blue, switchColor(Color.Blue, Color.Green, 0f))
+        assertEquals(Color.Green, switchColor(Color.Blue, Color.Green, 1f))
     }
 
     @Test fun `passive switch leaves gestures and accessibility to its owner row`() {

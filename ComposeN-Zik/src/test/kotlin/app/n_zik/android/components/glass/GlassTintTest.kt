@@ -81,6 +81,14 @@ class GlassTintTest {
         assertEquals(base, blendGlassTint(base, Color.Red, 0f))
     }
 
+    @Test fun `a gray artwork tint gradually restores the colored glass base`() {
+        val base = Color(0xFF23232A)
+        val neutral = blendGlassTint(base, Color(0xFF808080), .6f)
+        val nearlyNeutral = blendGlassTint(base, Color(0xFF818080), .6f)
+        assertTrue(kotlin.math.abs(nearlyNeutral.blue - neutral.blue) < .008f)
+        assertTrue(kotlin.math.abs(nearlyNeutral.red - neutral.red) < .008f)
+    }
+
     @Test fun `enum sources follow their own live theme artwork and system colours`() {
         val accent = mutableStateOf(Color(0xFF9EAFBC))
         val artwork = mutableStateOf(Color.White)

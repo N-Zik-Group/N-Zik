@@ -228,10 +228,13 @@ fun GlassActionGroup(
                 verticalAlignment = Alignment.CenterVertically, content = {
                     val row = this
                     if (drawSurface && settings.usesGlassMaterial(area)) {
-                        val film = glassFilmColor(settings.forArea(area), actionFilm, menu = false)
+                        val areaSettings = settings.forArea(area)
+                        val film = glassFilmColor(areaSettings, actionFilm, menu = false)
                         val surface = effectiveSurfaceColor(surfaceBackdropColor(), film)
                         CompositionLocalProvider(LocalGlassActionGroupSurface provides surface) {
-                            SurfaceForegroundContent(surface) { content(row) }
+                            SurfaceForegroundContent(surface, glassInkDarkness = glassSurfaceDarkness(areaSettings)) {
+                                content(row)
+                            }
                         }
                     } else GlassArtworkContent(settings, settings.usesGlassMaterial(area)) { content(row) }
                 })

@@ -60,8 +60,9 @@ import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.LiquidButton
 import app.n_zik.android.components.glass.glassFilmColor
-import app.n_zik.android.components.glass.readableForeground
-import app.n_zik.android.components.glass.readableGlyphForeground
+import app.n_zik.android.components.glass.IconContrast
+import app.n_zik.android.components.glass.glassPaneForeground
+import app.n_zik.android.components.glass.glassSurfaceDarkness
 import app.n_zik.android.components.glass.surfaceBackdropColor
 import app.n_zik.android.components.glass.TextContrast
 import app.n_zik.android.components.glass.SurfaceForegroundContent
@@ -160,6 +161,7 @@ fun UnifiedSearchBar(
             glassSettings.forArea(GlassArea.SearchBars), barFill, menu = false,
         ) else barFill
         val barSurface = effectiveSurfaceColor(pageFill, foregroundFill)
+        val barDarkness = if (glassBar) glassSurfaceDarkness(glassSettings) else 0f
         GlassMaterialContainerScope(
             modifier = Modifier.weight(1f),
             materialSource = sourceBackdrop.takeIf { glassBar },
@@ -215,7 +217,7 @@ fun UnifiedSearchBar(
                                     )
                                 },
                                 textStyle = typography().xs.semiBold.let {
-                                    if (glassBar) it.copy(color = readableForeground(it.color, barSurface, TextContrast)) else it
+                                    if (glassBar) it.copy(color = glassPaneForeground(it.color, barSurface, TextContrast, barDarkness)) else it
                                 },
                                 singleLine = true,
                                 maxLines = 1,
@@ -225,7 +227,8 @@ fun UnifiedSearchBar(
                                     keyboardController?.hide()
                                     focusManager.clearFocus(force = true)
                                 }),
-                                cursorBrush = SolidColor(if (glassBar) readableGlyphForeground(colorPalette().text, barSurface) else colorPalette().text),
+                                cursorBrush = SolidColor(if (glassBar) glassPaneForeground(colorPalette().text, barSurface,
+                                    IconContrast, barDarkness, glyph = true) else colorPalette().text),
                                 decorationBox = { innerTextField ->
                                     if (input.text.isEmpty()) {
                                         BasicText(
@@ -233,7 +236,7 @@ fun UnifiedSearchBar(
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
                                             style = typography().xs.semiBold.secondary.let {
-                                                if (glassBar) it.copy(color = readableForeground(it.color, barSurface, TextContrast)) else it
+                                                if (glassBar) it.copy(color = glassPaneForeground(it.color, barSurface, TextContrast, barDarkness)) else it
                                             },
                                         )
                                     }
@@ -300,7 +303,8 @@ internal fun SearchBarBubbleButton(bubble: SearchBarBubble, glassSettings: Glass
     val bubbleSurface = effectiveSurfaceColor(surfaceBackdropColor(), if (glassBubble)
         glassFilmColor(glassSettings.forArea(GlassArea.SearchBars), bubbleFill, menu = false) else bubbleFill)
     val nativeInk = if (bubble.active) colorPalette().text else colorPalette().favoritesIcon
-    val bubbleInk = if (glassBubble) readableGlyphForeground(nativeInk, bubbleSurface) else nativeInk
+    val bubbleInk = if (glassBubble) glassPaneForeground(nativeInk, bubbleSurface, IconContrast,
+        glassSurfaceDarkness(glassSettings), glyph = true) else nativeInk
     if (glassBubble) {
         val backdrop = rememberInlineGlassBackdrop(colorPalette().background0)
         LiquidButton(

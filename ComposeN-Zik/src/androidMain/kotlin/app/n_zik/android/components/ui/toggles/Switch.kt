@@ -1,7 +1,7 @@
 package app.n_zik.android.components.ui.toggles
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.indication
@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.exactUiRoundnessShape
@@ -59,8 +60,10 @@ fun Switch(
     val shape = exactUiRoundnessShape()
     val indication = LocalIndication.current
     val feedback = if (onCheckedChange != null) Modifier.indication(interactions, indication) else Modifier
-    val trackColor by animateColorAsState(if (checked) checkedTrackColor else uncheckedTrackColor)
-    val thumbColor by animateColorAsState(if (checked) checkedThumbColor else uncheckedThumbColor)
+    // Animate the checked state only. The palette already has its own shared animation.
+    val checkProgress by animateFloatAsState(if (checked) 1f else 0f, label = "switchChecked")
+    val trackColor = switchColor(uncheckedTrackColor, checkedTrackColor, checkProgress)
+    val thumbColor = switchColor(uncheckedThumbColor, checkedThumbColor, checkProgress)
 
     Box(
         modifier = modifier.then(input)
@@ -78,4 +81,10 @@ fun Switch(
                 .background(thumbColor, shape = shape)
         )
     }
+}
+
+internal fun switchColor(unchecked: Color, checked: Color, progress: Float): Color = when {
+    progress <= 0f -> unchecked
+    progress >= 1f -> checked
+    else -> lerp(unchecked, checked, progress)
 }

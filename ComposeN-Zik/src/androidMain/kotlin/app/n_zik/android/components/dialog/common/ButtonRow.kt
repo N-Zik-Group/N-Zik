@@ -29,14 +29,15 @@ import app.n_zik.android.components.glass.glassDialogButtonBackground
 import app.n_zik.android.components.glass.GlassDialogButtonFeedback
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import app.n_zik.android.colorPalette
-import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.IconContrast
 import app.n_zik.android.components.glass.TextContrast
-import app.n_zik.android.components.glass.forArea
-import app.n_zik.android.components.glass.glassFilmColor
+import app.n_zik.android.components.glass.dialogButtonForegroundSurface
+import app.n_zik.android.components.glass.effectiveSurfaceColor
+import app.n_zik.android.components.glass.glassPaneForeground
+import app.n_zik.android.components.glass.glassSurfaceDarkness
 import app.n_zik.android.components.glass.rememberGlassSettings
-import app.n_zik.android.components.glass.surfaceGlyphColor
-import app.n_zik.android.components.glass.usesGlassDialogButtonMaterial
+import app.n_zik.android.components.glass.surfaceBackdropColor
+import app.n_zik.android.components.theme.paletteDarkness
 import app.n_zik.android.R
 import app.n_zik.android.typography
 import app.n_zik.android.utils.medium
@@ -132,11 +133,14 @@ private fun DialogPill(button: DialogButton, modifier: Modifier) {
     val iconOnly = button.icon != null && button.text.isEmpty()
     val nativeFill = pillColor(button, palette)
     val settings = rememberGlassSettings()
-    val plate = if (settings.usesGlassDialogButtonMaterial())
-        glassFilmColor(settings.forArea(GlassArea.DialogButtons), nativeFill) else nativeFill
+    val glassPlate = dialogButtonForegroundSurface(settings, nativeFill)
+    val plate = glassPlate ?: effectiveSurfaceColor(surfaceBackdropColor(), nativeFill)
+    val darkness = if (glassPlate == null) paletteDarkness() else glassSurfaceDarkness(settings)
     val originalForeground = resolvedColor(button, palette)
-    val label = if (button.enabled) surfaceGlyphColor(originalForeground, plate, TextContrast) else originalForeground
-    val glyph = if (button.enabled) surfaceGlyphColor(originalForeground, plate, IconContrast) else originalForeground
+    val label = if (button.enabled) glassPaneForeground(originalForeground, plate, TextContrast, darkness)
+        else originalForeground
+    val glyph = if (button.enabled) glassPaneForeground(originalForeground, plate, IconContrast, darkness, glyph = true)
+        else originalForeground
     val style = (if (button.primary) typography().xs.semiBold else typography().xs.medium)
         .copy(color = label, textAlign = TextAlign.Center)
     GlassDialogButtonFeedback(button.enabled && dialogInputEnabled, uiRoundnessShape()) { feedback, source ->

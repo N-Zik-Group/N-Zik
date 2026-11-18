@@ -101,8 +101,8 @@ fun CustomModalBottomSheet(
                     exportedBackdrop = exported,
                 ) },
             ) {
-                val foreground = if (contentColor.isSpecified)
-                    readableForeground(contentColor, surfaceBackdropColor(), TextContrast) else LocalContentColor.current
+                val foreground = if (contentColor.isSpecified) glassPaneForeground(contentColor, surfaceBackdropColor(),
+                    TextContrast, LocalGlassInkDarkness.current ?: glassSurfaceDarkness(glass)) else LocalContentColor.current
                 CompositionLocalProvider(LocalContentColor provides foreground) {
                     dragHandle?.let { CenteredMenuSheetDragHandle(it) }
                     content()
