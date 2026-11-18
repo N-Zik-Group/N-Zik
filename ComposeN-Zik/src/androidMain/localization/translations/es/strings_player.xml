@@ -410,4 +410,5 @@
     <string name="player_statistics_field_value">%1$s: %2$s</string>
     <string name="audio_output_devices_unavailable">No se pudo cargar los dispositivos de audio.</string>
     <string name="visualizer_position_format">%1$d/%2$d</string>
+    <string name="player_video_unavailable_search_hint">No se pudo encontrar un vídeo. Mantenga pulsado el botón de Video para buscar manualmente.</string>
 </resources>

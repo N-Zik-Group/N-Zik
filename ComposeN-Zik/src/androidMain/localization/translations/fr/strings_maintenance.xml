@@ -324,10 +324,10 @@
     <string name="updates_install_generic_error">Impossible d\'installer la mise à jour.</string>
     <string name="updates_channel_available_format">Mise à jour %1$s disponible</string>
     <string name="recovery_theme_backup_title">Thèmes</string>
-    <string name="recovery_theme_backup_no_match">Seuls les thèmes appartenant aux profils disponibles dans cette vue peuvent être restaurés ici.</string>
+    <string name="recovery_theme_backup_no_match">Seuls les thèmes appartenant à des profils disponibles dans cette vue peuvent être restaurés ici.</string>
     <string name="recovery_theme_backup_operation_failed">Impossible de terminer l\'opération de sauvegarde du thème.</string>
     <string name="recovery_theme_backup_restore_action">Restaurer les thèmes</string>
-    <string name="recovery_theme_backup_restore_description">Ouvrir la dernière sauvegarde de thème utilisée pour ce profil.</string>
+    <string name="recovery_theme_backup_restore_description">Ouvrez la dernière sauvegarde de thème utilisée pour ce profil.</string>
     <string name="updates_status_and_last_check">%1$s · %2$s</string>
     <string name="recovery_action_failed">Impossible de terminer l\'action de récupération.</string>
     <string name="recovery_reopen_after_restoring_settings">Réouvrir le Centre de Secours après la restauration des paramètres.</string>

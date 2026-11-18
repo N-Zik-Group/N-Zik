@@ -478,6 +478,7 @@
     <string name="theme_store_local_saved">ローカルテーマを更新しました。</string>
     <string name="theme_store_local_save_failed">ローカルテーマを更新できませんでした。</string>
     <string name="theme_store_publish_description">テーマストアに新しいテーマを提案します。</string>
+    <string name="theme_store_published_creator_required">テーマを公開するには、テーマストアでクリエイタープロフィールを承認して公開する必要があります。</string>
     <string name="theme_store_edit_description">公開されたテーマの新しいリビジョンを送信します。</string>
     <string name="theme_store_submissions_in_progress_description">審査待ちの提出物を追跡</string>
     <string name="theme_store_submissions_history_description">以前の提出物に関する決定を参照してください。</string>

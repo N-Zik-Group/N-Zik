@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="backup_export_themes_description">Sauvegarder les thèmes téléchargés et locaux dans un ZIP</string>
-    <string name="backup_import_themes_description">Restaurer les thèmes téléchargés et locaux à partir d’un ZIP</string>
-    <string name="backup_export_select_all_description">Sélectionner tous les types de données à exporter</string>
+    <string name="backup_export_themes_description">Enregistrer les thèmes téléchargés et locaux dans une sauvegarde au format ZIP</string>
+    <string name="backup_import_themes_description">Restaurer des thèmes téléchargés et locaux à partir d\'une sauvegarde au format ZIP</string>
+    <string name="backup_export_select_all_description">Sélectionnez tous les types de données à exporter</string>
     <string name="backup_import_already_running">Une importation de sauvegarde est déjà en cours.</string>
-    <string name="backup_import_select_all_description">Sélectionner tous les types de données à importer</string>
-    <string name="backup_include_github_identity_credentials">Inclure les identifiants du compte GitHub</string>
+    <string name="backup_import_select_all_description">Sélectionnez tous les types de données à importer</string>
+    <string name="backup_include_github_identity_credentials">Ajouter les identifiants de connexion GitHub</string>
     <string name="storage_image_quality_title">Qualité d\'image</string>
     <string name="storage_image_quality_description">S\'applique aux illustrations en ligne ainsi qu\'aux nouvelles couvertures et photos de profil. L\'option « Original » utilise la meilleure qualité disponible et peut nécessiter davantage d\'espace de stockage et de données.</string>
     <string name="storage_image_quality_optimized">Optimisé</string>
@@ -46,8 +46,8 @@
     <string name="storage_info_diagnostics">Journaux d\'erreurs et de débogage enregistrés pour ce profil.</string>
     <string name="storage_info_temporary">Fichiers temporaires associés à ce profil.</string>
     <string name="storage_cleanup_unverified">La fonction de nettoyage ne sera pas disponible tant que l\'identité du propriétaire de l\'espace de stockage et les fichiers n\'auront pas été vérifiés.</string>
-    <string name="storage_cleanup_active_files">Ces fichiers ne sont pas disponibles pour le nettoyage pendant que le profil est utilisé.</string>
-    <string name="storage_separation_retry">Séparation en attente · Redémarrez pour réessayer</string>
+    <string name="storage_cleanup_active_files">Ces fichiers ne peuvent pas être nettoyés tant que le profil est en cours d\'utilisation.</string>
+    <string name="storage_separation_retry">Séparation en cours · Redémarrer pour réessayer</string>
     <string name="storage_separation_conflict">La destination contient déjà des fichiers différents.</string>
     <string name="storage_separation_quota">La limite de la destination ne permet pas de conserver l\'audio vérifié hors ligne.</string>
     <string name="storage_separation_space">L\'espace de stockage est insuffisant pour vérifier la copie.</string>
@@ -283,7 +283,7 @@
     <string name="storage_cleanup_option_network_cache">Cache réseau</string>
     <string name="storage_cleanup_option_diagnostic_logs">Journaux de diagnostic</string>
     <string name="storage_cleanup_option_temporary_files">Fichiers temporaires</string>
-    <string name="storage_cleanup_option_theme_catalog">Cache du magasin de thèmes</string>
+    <string name="storage_cleanup_option_theme_catalog">Cache de la boutique de thèmes</string>
     <string name="storage_cleanup_option_fetched_lyrics">Paroles récupérées automatiquement</string>
     <string name="storage_cleanup_option_offline_downloads">Audio téléchargé</string>
     <string name="storage_cleanup_completed">Le nettoyage est terminé.</string>

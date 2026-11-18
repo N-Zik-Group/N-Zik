@@ -410,4 +410,5 @@
     <string name="player_statistics_field_value">%1$s: %2$s</string>
     <string name="audio_output_devices_unavailable">Kunne ikke indlæse lydenheder.</string>
     <string name="visualizer_position_format">%1$d/%2$d</string>
+    <string name="player_video_unavailable_search_hint">Kunne ikke finde en video. Hold knappen Video for at søge manuelt.</string>
 </resources>

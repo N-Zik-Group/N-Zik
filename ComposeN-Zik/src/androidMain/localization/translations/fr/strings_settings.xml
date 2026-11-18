@@ -216,7 +216,7 @@ Volume BAS : titre précédent</string>
     <string name="settings_interface_corner_radius_label">Arrondi de l\'interface utilisateur</string>
     <string name="settings_interface_hide_status_bar_label">Masquer la barre d\'état</string>
     <string name="settings_interface_right_to_left_label">Mise en page de droite à gauche</string>
-    <string name="settings_interface_right_to_left_description">Miroir l\'interface indépendamment de la langue de l\'application.</string>
+    <string name="settings_interface_right_to_left_description">Reproduire l\'interface indépendamment de la langue de l\'application.</string>
     <string name="settings_interface_page_description">La section « Interface Utilisateur » contient des paramètres permettant de modifier l\'interface générale et la navigation.</string>
     <string name="settings_interface_page_title">Interface Utilisateur</string>
     <string name="settings_interface_title">Interface Utilisateur</string>
@@ -400,8 +400,8 @@ Volume BAS : titre précédent</string>
     <string name="settings_player_timeline_size_label">Taille de la chronologie du lecteur</string>
     <string name="settings_player_timeline_transparent_label">Barre de chronologie transparente</string>
     <string name="settings_player_opening_mode_label">Mode d\'ouverture du lecteur</string>
-    <string name="settings_player_opening_mode_description">Choisissez le mode à utiliser lorsque vous ouvrez le lecteur.</string>
-    <string name="settings_player_opening_mode_remember_last">Se souvenir du dernier mode</string>
+    <string name="settings_player_opening_mode_description">Choisissez le mode à utiliser lors de l\'ouverture du lecteur.</string>
+    <string name="settings_player_opening_mode_remember_last">Mémoriser le dernier mode</string>
     <string name="settings_player_top_action_bar_visible_label">Afficher la barre d\'actions supérieure</string>
     <string name="settings_player_vertical_swipe_expansion_description">Cela n\'affecte que lorsque le lecteur étendu est désactivé</string>
     <string name="settings_preference_saved_message">Préférence enregistrée</string>

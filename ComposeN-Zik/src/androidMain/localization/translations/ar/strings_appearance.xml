@@ -478,6 +478,7 @@
     <string name="theme_store_local_saved">تم تحديث الموضوع المحلي.</string>
     <string name="theme_store_local_save_failed">تعذر تحديث السمة المحلية.</string>
     <string name="theme_store_publish_description">اقتراح موضوع جديد لمتجر الموضوع.</string>
+    <string name="theme_store_published_creator_required">يجب قبول الملف الشخصي للمنشئ الخاص بك ونشرها في متجر السمة قبل أن تتمكن من نشر السمة.</string>
     <string name="theme_store_edit_description">تقديم مراجعة جديدة لموضوع منشور.</string>
     <string name="theme_store_submissions_in_progress_description">تتبع التقارير التي تنتظر الاستعراض.</string>
     <string name="theme_store_submissions_history_description">انظر القرارات المتعلقة بتقديمكم السابق.</string>
