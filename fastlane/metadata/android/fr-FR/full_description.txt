@@ -12,7 +12,7 @@ Un frontend multilingue YouTube Music pour Android, axé sur les performances, l
 
 🎨 <b>Boutique de Thèmes (BÊTA)</b>
 - Parcourez et téléchargez les thèmes de la communauté, prévisualisez-les dans les styles « Normal » et « Glass », puis choisissez les paramètres d'apparence à appliquer.
-- Créez des thèmes locaux ou partagez vos designs avec la communauté. Importer et exporter des thèmes sous forme de fichiers ZIP.
+- Créez des thèmes locaux ou partagez vos créations avec la communauté. Importer et exporter des thèmes sous forme de fichiers ZIP.
 
 🫧 <b>Effet Glass (BETA, facultatif)</b>
 Désactivé à l’installation. Activez dans Paramètres : natif, contour seul ou Glass par catégorie, qualité réglable. Peut alourdir le rendu et consommer plus de batterie ; réduisez la qualité ou désactivez si besoin.
@@ -33,8 +33,8 @@ Crédits Glass : Square / Convx Project (GPL-3.0) ; Kyant0 AndroidLiquidGlass / 
 - Sauvegarde auto, intervalles et rétention personnalisés
 
 🔗 <b>Intégrations</b>
-- Basculer entre les comptes Google et les chaînes YouTube. Chaque profil N-Zik utilise une chaîne YouTube Music active pour les recommandations et la lecture.
-- Synchronisation expérimentale de la bibliothèque YouTube Music dans les versions Debug et Dev.
+- Passer d'un compte Google à un autre et d'une chaîne YouTube à une autre. Chaque profil N-Zik utilise une chaîne YouTube Music active pour les recommandations et la lecture.
+- Synchronisation bidirectionnelle expérimentale de la bibliothèque YouTube Music dans les versions « Debug » et « Dev ».
 - Scrobbling Last.fm avec Now Playing et love/unlove
 - Analyses MusicBrainz des artistes et des albums
 - Discord Rich Presence, mode avancé avec aperçu en direct
