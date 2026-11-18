@@ -3,6 +3,7 @@ package app.n_zik.android.ui.screens.player
 
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
+import app.n_zik.android.components.player.rememberMiniPlayerProgress
 
 import android.graphics.Bitmap
 
@@ -173,7 +174,6 @@ import app.n_zik.android.utils.showMiniPlayerVisualizerKey
 import app.n_zik.android.utils.showMiniPlayerQueueKey
 import app.n_zik.android.utils.showMiniPlayerDiscoverKey
 import app.n_zik.android.utils.shuffleQueue
-import app.n_zik.android.utils.positionAndDurationState
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.shouldBePlaying
 import app.n_zik.android.enums.QueueLoopType
@@ -186,7 +186,6 @@ import kotlinx.coroutines.launch
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.sync.YouTubeSync
 import app.n_zik.android.core.utils.Toaster
-import kotlin.math.absoluteValue
 import androidx.compose.runtime.LaunchedEffect
 import app.n_zik.android.core.coil.thumbnail
 import app.n_zik.android.components.player.MiniPlayerSwipeAction
@@ -456,15 +455,6 @@ fun MiniPlayer(
     // Get player sheet state for gesture handling
     val playerSheetState = LocalPlayerSheetState.current
 
-    // Issue #881 (gh-881), Phase 3.3: unconditional position poll — the previous hand-over
-    // gate left the cache frozen whenever gate and visible UI disagreed.
-
-    // See positionAndDurationState KDoc in PlayerState.kt.
-    val positionAndDurationState = player.positionAndDurationState(playerUpdateTrigger)
-    val durationState = remember(positionAndDurationState) {
-        derivedStateOf { positionAndDurationState.value.second }
-    }
-
     // rememberSwipeToDismissBoxState keeps the confirmValueChange it got at the first composition:
     // read what the swipe needs through these, or it uses the sheet and mini-player type of that
 
@@ -534,6 +524,8 @@ fun MiniPlayer(
             .collect { dismissState.reset() }
     }
     val backgroundProgress by rememberPreference(backgroundProgressKey, BackgroundProgress.MiniPlayer)
+    val showProgress = backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.MiniPlayer
+    val progressFraction = if (showProgress) rememberMiniPlayerProgress(player, playerUpdateTrigger) else ({ 0f })
     val effectRotationEnabled by rememberPreference(effectRotationKey, false)
     val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = stringResource(R.string.player_debug_should_be_playing))
     val playPauseRoundness by shouldBePlayingTransition.animateDp(
@@ -726,12 +718,7 @@ fun MiniPlayer(
                     exportedBackdrop = controlsBackdrop,
                     foldInProgress = folding.takeIf { isFloating || NavigationBarPosition.Bottom.isCurrent() },
                     progressColor = colorPalette.favoritesOverlay,
-                    progressFraction = {
-                        if (backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.MiniPlayer)
-                            positionAndDurationState.value.first.toFloat() /
-                                (durationState.value.absoluteValue.takeIf { it > 0 } ?: 1L)
-                        else 0f
-                    },
+                    progressFraction = progressFraction,
                 )
             )
             Row(

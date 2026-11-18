@@ -114,6 +114,7 @@ fun Modifier.glassMiniPlayerBackground(
     motionOptimized: Boolean = false,
     foldInProgress: (() -> Boolean)? = null,
 ): Modifier {
+    val fraction = { progressFraction().let { if (it.isFinite()) it.coerceIn(0f, 1f) else 0f } }
     if (!settings.usesGlassMaterial(GlassArea.MiniPlayer)) {
         if (exportedBackdrop != null) {
             // Action badges can remain Glass while the body is native. Export the actual
@@ -122,11 +123,11 @@ fun Modifier.glassMiniPlayerBackground(
             return drawPlainBackdrop(empty, { shape }, {}, exportedBackdrop = exportedBackdrop,
                 onDrawSurface = {
                     drawRect(originalColor)
-                    drawRect(progressColor, size = Size(progressFraction() * size.width, size.maxDimension))
+                    drawRect(progressColor, size = Size(fraction() * size.width, size.maxDimension))
                 }).glassAreaContour(settings, GlassArea.MiniPlayer, shape)
         }
         return background(originalColor).drawBehind {
-            drawRect(progressColor, size = Size(progressFraction() * size.width, size.maxDimension))
+            drawRect(progressColor, size = Size(fraction() * size.width, size.maxDimension))
         }.glassAreaContour(settings, GlassArea.MiniPlayer, shape)
     }
     val baseFilm = glassRoleFilmTint(settings, originalColor)
@@ -142,8 +143,7 @@ fun Modifier.glassMiniPlayerBackground(
         drawShadow = !motionOptimized,
         foldInProgress = foldInProgress,
         onDrawTint = {
-            val fraction = progressFraction().let { if (it.isFinite()) it.coerceIn(0f, 1f) else 0f }
-            val split = size.width * fraction
+            val split = size.width * fraction()
             clipRect(right = split) { drawRect(progressFilm.copy(alpha = opacity)) }
             clipRect(left = split) { drawRect(baseFilm.copy(alpha = opacity)) }
         },
