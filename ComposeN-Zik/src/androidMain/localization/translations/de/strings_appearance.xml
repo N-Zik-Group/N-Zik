@@ -366,6 +366,7 @@
     <string name="theme_store_followed">Ersteller gefolgt</string>
     <string name="theme_store_unfollowed">Ersteller nicht gefolgt</string>
     <string name="theme_store_download">Theme herunterladen</string>
+    <string name="theme_store_not_downloaded">Nicht heruntergeladen</string>
     <string name="theme_store_downloading">Herunterladen…</string>
     <string name="theme_store_download_saved">Theme heruntergeladen</string>
     <string name="theme_store_download_failed">Dieses Theme konnte nicht heruntergeladen werden.</string>
