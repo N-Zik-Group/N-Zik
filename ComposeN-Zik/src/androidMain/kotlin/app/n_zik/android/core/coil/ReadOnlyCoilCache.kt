@@ -13,6 +13,7 @@ import timber.log.Timber
 internal class ReadOnlyCoilCache(
     source: File,
     override val maxSize: Long,
+    private val resolveKey: (String) -> String? = { it },
 ) : DiskCache {
     private val root = source.absoluteFile
     override val directory = root.toPathForCoil()
@@ -26,7 +27,7 @@ internal class ReadOnlyCoilCache(
     override val size: Long get() = entries.values.sumOf { (metadata, image) -> metadata + image }
 
     override fun openSnapshot(key: String): DiskCache.Snapshot? {
-        val hash = key.encodeUtf8().sha256().hex()
+        val hash = resolveKey(key)?.encodeUtf8()?.sha256()?.hex() ?: return null
         val (metadataLength, dataLength) = entries[hash] ?: return null
         val metadataFile = root.resolve("$hash.0")
         val dataFile = root.resolve("$hash.1")
