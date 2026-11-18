@@ -72,3 +72,4 @@ Player and Theme Store follow-up:
 - feat(theme-store): show download state and a direct download action on Explore and creator cards. Use a profile-scoped WorkManager request to save the exact theme revision after the screen closes and retry transient network failures.
   - Reuse the 20 dp, borderless song download control. Verify that disk theme stays downloaded after Back and Android Home and that its creator card shows the same state.
 - test(player): exercise 42,090 transport combinations, including all seven background families and Glass settings. Apply and undo all eight official theme documents across five palette modes with Glass off and on.
+- fix(theme-store): synchronize the 64 bundled Stock preview hashes with the published preview index.
