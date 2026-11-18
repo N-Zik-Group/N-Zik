@@ -3,7 +3,7 @@
     <string name="theme_preview_gallery_description">Normal ve Cam önizlemeleriyle temanızın N-Zik\'te nasıl göründüğüne bir göz atın.</string>
     <string name="theme_store_preview_section">Tema önizlemeleri</string>
     <string name="theme_preview_generate">Önizleme resimleri oluştur</string>
-    <string name="theme_preview_keep_open">Keep N-Zik open and avoid interrupting preview generation until it finishes.</string>
+    <string name="theme_preview_keep_open">N-Zik\'i açık tutun ve işlem tamamlanana kadar önizleme oluşturma sürecini kesintiye uğratmayın.</string>
     <string name="theme_preview_replace">Resmi değiştir</string>
     <string name="theme_preview_scene_failed">%1$s yakalanamadı.</string>
     <string name="theme_preview_replacement_failed">En fazla 16 megapiksel çözünürlükte geçerli bir portre fotoğrafı seçin.</string>
