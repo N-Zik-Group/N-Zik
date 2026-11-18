@@ -5,11 +5,16 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LoadingIndicatorDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.DefaultAlpha
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.SolidColor
@@ -17,8 +22,10 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.graphics.withSaveLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.roundToIntSize
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
@@ -146,8 +153,16 @@ internal fun rememberImageLoadingViewportPainter(source: Painter): Painter =
 internal fun rememberFramedImageLoadingPainter(loadIdentity: Any?, @DrawableRes placeholder: Int? = null): Painter =
     rememberImageLoadingViewportPainter(rememberThemedImageLoadingPainter(loadIdentity, placeholder))
 
+/** Share the viewport of a centered image with its loading painter. */
 internal fun Modifier.imageLoadingViewport(painter: Painter): Modifier =
     if (painter is ImageLoadingViewportPainter) onSizeChanged { painter.viewport = it.toSize() } else this
+
+private class ImageLoadingViewport(val size: Size, val origin: Offset, val scaledSize: Size) {
+    fun boundsAt(childSize: Size): Rect = Rect(
+        origin + Offset((childSize.width - scaledSize.width) / 2f, (childSize.height - scaledSize.height) / 2f),
+        size,
+    )
+}
 
 private class ImageLoadingViewportPainter(val source: Painter) : Painter() {
     var viewport = Size.Unspecified
@@ -164,8 +179,10 @@ private class ImageLoadingViewportPainter(val source: Painter) : Painter() {
         // Scope inside Image's clipping layer: its independent redraws bypass outer draw modifiers.
         // Coil also keeps the outgoing painter private after emitting State.Success.
         if (viewport.width.isFinite() && viewport.height.isFinite()) {
-            withImageLoadingViewport(loading, viewport) {
-                withImageLoadingViewport(source, viewport) {
+            val position = Alignment.Center.align(size.roundToIntSize(), viewport.roundToIntSize(), layoutDirection)
+            val frame = ImageLoadingViewport(viewport, Offset(-position.x.toFloat(), -position.y.toFloat()), size)
+            withImageLoadingViewport(loading, frame) {
+                withImageLoadingViewport(source, frame) {
                     with(source) { draw(size, alpha, filter) }
                 }
             }
@@ -173,22 +190,30 @@ private class ImageLoadingViewportPainter(val source: Painter) : Painter() {
     }
 }
 
-private fun withImageLoadingViewport(painter: Painter?, viewport: Size, draw: () -> Unit) {
+private fun withImageLoadingViewport(painter: Painter?, frame: ImageLoadingViewport, draw: () -> Unit) {
     when (painter) {
-        is ImagePlaceholderBackgroundPainter -> withPlaceholderViewport(painter, viewport, draw)
-        is ImageLoadingViewportPainter -> withImageLoadingViewport(painter.source, viewport, draw)
-        is AsyncImagePainter -> withImageLoadingViewport(painter.state.value.painter, viewport, draw)
-        is CrossfadePainter -> withImageLoadingViewport(painter.start, viewport) {
-            withImageLoadingViewport(painter.end, viewport, draw)
+        is ImagePlaceholderBackgroundPainter -> withPlaceholderViewport(painter, frame, draw)
+        is ImageLoadingViewportPainter -> withImageLoadingViewport(painter.source, frame, draw)
+        is AsyncImagePainter -> withImageLoadingViewport(painter.state.value.painter, frame, draw)
+        is CrossfadePainter -> withImageLoadingViewport(painter.start, frame) {
+            withImageLoadingViewport(painter.end, frame, draw)
         }
         else -> draw()
     }
 }
 
-private inline fun withPlaceholderViewport(painter: ImagePlaceholderBackgroundPainter, viewport: Size, draw: () -> Unit) {
-    val previous = painter.viewportSize
-    painter.viewportSize = viewport
-    try { draw() } finally { painter.viewportSize = previous }
+private inline fun withPlaceholderViewport(
+    painter: ImagePlaceholderBackgroundPainter,
+    frame: ImageLoadingViewport,
+    draw: () -> Unit,
+) {
+    val previous = painter.viewport
+    painter.viewport = frame
+    try {
+        draw()
+    } finally {
+        painter.viewport = previous
+    }
 }
 
 /** Covers Fit margins without changing intrinsic geometry or observing state in composition. */
@@ -208,16 +233,39 @@ private class ImagePlaceholderBackgroundPainter(
     val background: Color,
     glyphColor: Color?,
 ) : Painter() {
-    var viewportSize = Size.Unspecified
+    var viewport: ImageLoadingViewport? = null
     private val glyphFilter = glyphColor?.let { ColorFilter.tint(it) }
+    private val layerPaint by lazy { Paint() }
+    private var alpha = DefaultAlpha
+    private var colorFilter: ColorFilter? = null
     override val intrinsicSize get() = source.intrinsicSize
 
+    override fun applyAlpha(alpha: Float): Boolean {
+        this.alpha = alpha
+        return true
+    }
+
+    override fun applyColorFilter(colorFilter: ColorFilter?): Boolean {
+        this.colorFilter = colorFilter
+        return true
+    }
+
     override fun DrawScope.onDraw() {
-        // Painter's default layer applies caller alpha/filter to the complete composed frame.
-        drawRect(background)
-        val frame = viewportSize
-        val side = if (frame.width.isFinite() && frame.height.isFinite())
-            min(size.minDimension, frame.minDimension) else size.minDimension
+        // Coil centers the outgoing placeholder inside the crossfade's own draw bounds.
+        val frame = viewport?.boundsAt(size) ?: Rect(Offset.Zero, size)
+        val side = min(size.minDimension, frame.size.minDimension)
+        if (alpha == DefaultAlpha && colorFilter == null) {
+            drawFrame(frame, side)
+        } else {
+            // Compose the glyph and plate together before applying the crossfade or caller alpha.
+            layerPaint.alpha = alpha
+            layerPaint.colorFilter = colorFilter
+            drawContext.canvas.withSaveLayer(frame, layerPaint) { drawFrame(frame, side) }
+        }
+    }
+
+    private fun DrawScope.drawFrame(frame: Rect, side: Float) {
+        drawRect(background, topLeft = frame.topLeft, size = frame.size)
         if (side > 0f) translate((size.width - side) / 2f, (size.height - side) / 2f) {
             with(source) { draw(Size(side, side), colorFilter = glyphFilter) }
         }

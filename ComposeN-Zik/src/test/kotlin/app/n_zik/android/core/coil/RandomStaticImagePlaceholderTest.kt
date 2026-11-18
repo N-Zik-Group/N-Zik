@@ -368,7 +368,7 @@ class RandomStaticImagePlaceholderTest {
         }
     }
 
-    @Test fun `Crop and FillBounds keep one shared loading glyph contained and restore its viewport`() {
+    @Test fun `Fit Crop and FillBounds fill shared loading frames and contain the glyph`() {
         val scale = mutableStateOf(ContentScale.Crop)
         val viewportOnly = mutableStateOf(false)
         compose.setContent {
@@ -392,9 +392,12 @@ class RandomStaticImagePlaceholderTest {
                 }
             }
         }
+        val plate = DefaultDarkColorPalette.background1.toArgb()
         val accent = DefaultDarkColorPalette.accent.toArgb()
         fun inkBounds(tag: String): Pair<Int, Int> {
             val bitmap = compose.onNodeWithTag(tag).captureToImage().asAndroidBitmap()
+            assertEquals("$tag fills the first corner", plate, bitmap.getPixel(0, 0))
+            assertEquals("$tag fills the last corner", plate, bitmap.getPixel(bitmap.width - 1, bitmap.height - 1))
             val ink = buildList {
                 for (y in 0 until bitmap.height) for (x in 0 until bitmap.width)
                     if (bitmap.getPixel(x, y) == accent) add(x to y)
@@ -409,7 +412,7 @@ class RandomStaticImagePlaceholderTest {
             assertTrue("$tag remains proportionally visible", minOf(right - left + 1, bottom - top + 1) >= shortEdge * .3f)
             return (right - left + 1) to (bottom - top + 1)
         }
-        for (direct in listOf(false, true)) for (mode in listOf(ContentScale.Crop, ContentScale.FillBounds)) {
+        for (direct in listOf(false, true)) for (mode in listOf(ContentScale.Fit, ContentScale.Crop, ContentScale.FillBounds)) {
             compose.runOnIdle { scale.value = mode; viewportOnly.value = direct }
             val square = inkBounds("squareGlyph")
             assertEquals("Portrait preserves the same undistorted symbol", square, inkBounds("portraitGlyph"))
@@ -417,6 +420,24 @@ class RandomStaticImagePlaceholderTest {
             val large = inkBounds("unscopedGlyph")
             assertTrue("A prior frame cannot constrain a later unscoped drawing", large.first >= square.first * 1.7f)
         }
+    }
+
+    @Test fun `rectangular Fit loading fills the measured shape while respecting its clip`() {
+        compose.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance(DefaultDarkColorPalette)) {
+                val painter = rememberFramedImageLoadingPainter("clipped-rectangle")
+                Box(Modifier.size(48.dp, 193.dp).background(Color.Magenta).testTag("clippedFit")) {
+                    Image(painter, null, Modifier.size(48.dp, 193.dp).clip(CircleShape).imageLoadingViewport(painter),
+                        contentScale = ContentScale.Fit)
+                }
+            }
+        }
+        val bitmap = compose.onNodeWithTag("clippedFit").captureToImage().asAndroidBitmap()
+        val plate = DefaultDarkColorPalette.background1.toArgb()
+        assertEquals(Color.Magenta.toArgb(), bitmap.getPixel(0, 0))
+        assertEquals(Color.Magenta.toArgb(), bitmap.getPixel(bitmap.width - 1, bitmap.height - 1))
+        assertEquals(plate, bitmap.getPixel(bitmap.width / 2, 2))
+        assertEquals(plate, bitmap.getPixel(bitmap.width / 2, bitmap.height - 3))
     }
 
     @Test fun `viewport proxy preserves successful rectangular artwork geometry alpha and tint`() {
@@ -523,10 +544,18 @@ class RandomStaticImagePlaceholderTest {
     }
 
     @Test fun `raw Coil Crop keeps its outgoing loading glyph contained during crossfade`() {
+        assertRawCrossfade(ContentScale.Crop)
+    }
+
+    @Test fun `raw Coil Fit fades the entire outgoing rectangular loading frame`() {
+        assertRawCrossfade(ContentScale.Fit)
+    }
+
+    private fun assertRawCrossfade(scale: ContentScale) {
         val release = CompletableDeferred<Unit>()
         val requests = AtomicInteger()
         val successes = AtomicInteger()
-        val transparent = Bitmap.createBitmap(24, 24, Bitmap.Config.ARGB_8888)
+        val transparent = Bitmap.createBitmap(24, 48, Bitmap.Config.ARGB_8888)
         val loader = ImageLoader.Builder(context).crossfade(2000).components {
             add(object : Interceptor {
                 override suspend fun intercept(chain: Interceptor.Chain): SuccessResult {
@@ -542,11 +571,11 @@ class RandomStaticImagePlaceholderTest {
             compose.setContent {
                 CompositionLocalProvider(LocalAppearance provides appearance(DefaultDarkColorPalette)) {
                     val painter = rememberImageLoadingViewportPainter(
-                        ImageCacheFactory.Painter("https://example.test/portrait.png",
+                        ImageCacheFactory.Painter("https://example.test/portrait.png", contentScale = scale,
                             onSuccess = { successes.incrementAndGet() }))
                     Box(Modifier.size(48.dp, 192.dp).background(Color.Magenta)) {
                         Image(painter, null, Modifier.size(48.dp, 192.dp)
-                            .imageLoadingViewport(painter).testTag("rawCrossfade"), contentScale = ContentScale.Crop)
+                            .imageLoadingViewport(painter).testTag("rawCrossfade"), contentScale = scale)
                     }
                 }
             }
@@ -554,6 +583,8 @@ class RandomStaticImagePlaceholderTest {
             fun assertContained() {
                 val bitmap = compose.onNodeWithTag("rawCrossfade").captureToImage().asAndroidBitmap()
                 val plate = bitmap.getPixel(0, 0)
+                assertTrue("The loading plate covers the Fit margins", plate != Color.Magenta.toArgb())
+                assertEquals(plate, bitmap.getPixel(bitmap.width - 1, bitmap.height - 1))
                 val ink = buildList {
                     for (y in 0 until bitmap.height) for (x in 0 until bitmap.width)
                         if (bitmap.getPixel(x, y) != plate) add(x to y)
