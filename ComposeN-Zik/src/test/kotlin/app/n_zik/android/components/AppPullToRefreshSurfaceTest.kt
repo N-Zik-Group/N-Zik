@@ -38,6 +38,7 @@ import app.n_zik.android.components.glass.GlassQuality
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LocalGlassPreviewSettings
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -66,6 +67,18 @@ class AppPullToRefreshSurfaceTest {
     fun restoreProfile() {
         context.preferences.edit().clear().commit()
         context.profilePreferences.edit().putString(activeProfileKey, previousProfile).commit()
+    }
+
+    @Test
+    fun `refresh ink follows the displayed palette and black surface coverage`() {
+        val accent = DefaultDarkColorPalette.accent
+        assertEquals(Color.Black, pullRefreshNativeInk(accent, darkness = 0f, blackCoverage = 0f))
+        assertEquals(Color.White, pullRefreshNativeInk(accent, darkness = 1f, blackCoverage = 0f))
+        assertEquals(Color.Black, pullRefreshNativeInk(accent, darkness = 1f, blackCoverage = 1f))
+        val midMode = pullRefreshNativeInk(accent, darkness = .5f, blackCoverage = 0f)
+        val midBlack = pullRefreshNativeInk(accent, darkness = 1f, blackCoverage = .5f)
+        assertTrue(midMode.red in .15f.. .85f)
+        assertEquals(midMode, midBlack)
     }
 
     @Test

@@ -16,7 +16,10 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -33,7 +36,6 @@ import app.n_zik.android.navigationSurfaceColor
 import app.n_zik.android.components.glass.IconContrast
 import app.n_zik.android.components.glass.contrastAgainst
 import app.n_zik.android.components.glass.effectiveSurfaceColor
-import app.n_zik.android.components.glass.neutralForeground
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils
 import kotlin.math.max
@@ -95,12 +97,13 @@ internal fun rememberImageLoadingPainter(
     @DrawableRes placeholder: Int? = null,
     backgroundColor: Color? = null,
     glyphColor: Color? = null,
+    glyphOutlineAlpha: Float = 0f,
 ): Painter = if (placeholder != null) {
     painterResource(placeholder)
 } else {
     val source = rememberVectorPainter(rememberStaticImagePlaceholderVector(loadIdentity))
-    if (backgroundColor == null) source else remember(source, backgroundColor, glyphColor) {
-        ImagePlaceholderBackgroundPainter(source, backgroundColor, glyphColor)
+    if (backgroundColor == null) source else remember(source, backgroundColor, glyphColor, glyphOutlineAlpha) {
+        ImagePlaceholderBackgroundPainter(source, backgroundColor, glyphColor, glyphOutlineAlpha)
     }
 }
 
@@ -116,21 +119,49 @@ internal fun rememberThemedImageLoadingPainter(
     val navigation = navigationSurfaceColor()
     val (background, glyph) = remember(navigation, palette.background0, palette.accent) {
         val plate = effectiveSurfaceColor(palette.background0.copy(alpha = 1f), navigation)
-        plate to visibleImagePlaceholderAccent(palette.accent, plate)
+        plate to resolveImagePlaceholderInk(palette.accent, plate)
     }
-    rememberImageLoadingPainter(loadIdentity, backgroundColor = background, glyphColor = glyph)
+    rememberImageLoadingPainter(loadIdentity, backgroundColor = background,
+        glyphColor = glyph.fill, glyphOutlineAlpha = glyph.outlineAlpha)
 }
 
-/** Retains accent hue/saturation while adding only the lightness needed for visibility. */
-private fun visibleImagePlaceholderAccent(accent: Color, background: Color): Color {
+internal data class ImagePlaceholderInk(val fill: Color, val outlineAlpha: Float = 0f)
+
+/** Keep the plate and shape stable while the accent follows the displayed palette. */
+internal fun resolveImagePlaceholderInk(accent: Color, background: Color): ImagePlaceholderInk {
     val minimum = IconContrast + .05f // Keep a small margin for native pixel quantization.
-    if (contrastAgainst(accent, background) >= minimum) return accent
+    val originalDeficit = minimum - contrastAgainst(accent, background)
+    if (originalDeficit <= 0f) return ImagePlaceholderInk(accent)
     val opaque = accent.copy(alpha = 1f)
-    if (contrastAgainst(opaque, background) >= minimum) return opaque
+    val deficit = minimum - contrastAgainst(opaque, background)
+    val backgroundLuminance = background.luminance()
+    val adjusted = when {
+        deficit <= 0f -> opaque
+        backgroundLuminance <= .15f -> contrastAdjustedAccent(opaque, background, minimum, 1f)
+        backgroundLuminance >= .21f -> contrastAdjustedAccent(opaque, background, minimum, 0f)
+        else -> {
+            lerp(contrastAdjustedAccent(opaque, background, minimum, 1f),
+                contrastAdjustedAccent(opaque, background, minimum, 0f),
+                smoothInkWeight((backgroundLuminance - .15f) / .06f))
+        }
+    }
+    val promoted = lerp(accent, opaque, smoothInkWeight(originalDeficit / .2f))
+    val fill = lerp(promoted, adjusted, smoothInkWeight(deficit / .2f))
+    // Both edges stay available while a smoothly blended fill crosses the plate color.
+    val outline = ((minimum - contrastAgainst(fill, background)) / .65f).coerceIn(0f, 1f)
+    return ImagePlaceholderInk(fill, outline)
+}
+
+private fun smoothInkWeight(weight: Float): Float {
+    val clamped = weight.coerceIn(0f, 1f)
+    return clamped * clamped * (3f - 2f * clamped)
+}
+
+/** Retains accent hue and saturation while adding only the lightness needed for visibility. */
+private fun contrastAdjustedAccent(opaque: Color, background: Color, minimum: Float, endpoint: Float): Color {
     val hsl = FloatArray(3)
     ColorUtils.colorToHSL(opaque.toArgb(), hsl)
     val originalLightness = hsl[2]
-    val endpoint = if (neutralForeground(background) == Color.White) 1f else 0f
     var low = 0f
     var high = 1f
     fun candidate(amount: Float): Color {
@@ -232,6 +263,7 @@ private class ImagePlaceholderBackgroundPainter(
     private val source: Painter,
     val background: Color,
     glyphColor: Color?,
+    private val outlineAlpha: Float,
 ) : Painter() {
     var viewport: ImageLoadingViewport? = null
     private val glyphFilter = glyphColor?.let { ColorFilter.tint(it) }
@@ -267,7 +299,20 @@ private class ImagePlaceholderBackgroundPainter(
     private fun DrawScope.drawFrame(frame: Rect, side: Float) {
         drawRect(background, topLeft = frame.topLeft, size = frame.size)
         if (side > 0f) translate((size.width - side) / 2f, (size.height - side) / 2f) {
-            with(source) { draw(Size(side, side), colorFilter = glyphFilter) }
+            val glyphSize = Size(side, side)
+            if (outlineAlpha > 0f) {
+                val center = Offset(side / 2f, side / 2f)
+                scale(1.14f, pivot = center) {
+                    with(source) { draw(glyphSize, alpha = outlineAlpha, colorFilter = DarkPlaceholderEdge) }
+                }
+                scale(1.07f, pivot = center) {
+                    with(source) { draw(glyphSize, alpha = outlineAlpha, colorFilter = LightPlaceholderEdge) }
+                }
+            }
+            with(source) { draw(glyphSize, colorFilter = glyphFilter) }
         }
     }
 }
+
+private val DarkPlaceholderEdge = ColorFilter.tint(Color.Black)
+private val LightPlaceholderEdge = ColorFilter.tint(Color.White)

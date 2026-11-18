@@ -62,6 +62,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
+import app.n_zik.android.components.glass.contrastAgainst
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
@@ -608,6 +609,23 @@ class RandomStaticImagePlaceholderTest {
             compose.mainClock.autoAdvance = true
             loader.shutdown()
             unmockkObject(ImageCacheFactory)
+        }
+    }
+
+    @Test fun `low-contrast placeholder ink crosses black and white smoothly`() {
+        val accent = Color(0xff777777)
+        val frames = (95..145).map { tone ->
+            val plate = Color(tone, tone, tone)
+            plate to resolveImagePlaceholderInk(accent, plate)
+        }
+        assertTrue(contrastAgainst(frames.first().second.fill, frames.first().first) >= 3f)
+        assertTrue(contrastAgainst(frames.last().second.fill, frames.last().first) >= 3f)
+        assertEquals(0f, frames.first().second.outlineAlpha, .001f)
+        assertEquals(0f, frames.last().second.outlineAlpha, .001f)
+        assertTrue(frames.any { it.second.outlineAlpha == 1f })
+        frames.zipWithNext { (_, before), (_, after) ->
+            assertTrue("The same moving plate must never flip the accent in one frame",
+                kotlin.math.abs(before.fill.red - after.fill.red) < .16f)
         }
     }
 

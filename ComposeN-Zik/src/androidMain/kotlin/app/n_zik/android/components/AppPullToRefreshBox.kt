@@ -22,8 +22,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -33,17 +39,28 @@ import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassIndicatorSilhouette
 import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.IconContrast
+import app.n_zik.android.components.glass.contrastAgainst
 import app.n_zik.android.components.glass.effectiveSurfaceColor
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.glass.glassMaterial
-import app.n_zik.android.components.glass.neutralForeground
+import app.n_zik.android.components.glass.glassPaneForeground
+import app.n_zik.android.components.glass.glassSurfaceDarkness
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.rememberInlineGlassBackdrop
-import app.n_zik.android.components.glass.usesGlassContour
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.pullrefresh.rememberPullRefreshOverlayInsetProvider
+import app.n_zik.android.components.theme.LocalNativeSurfaceMix
+import app.n_zik.android.components.theme.paletteDarkness
+import app.n_zik.android.isPitchBlackSurface
+
+internal fun pullRefreshNativeInk(fill: Color, darkness: Float, blackCoverage: Float): Color {
+    val lightInkFraction = darkness * (1f - blackCoverage)
+    val preferred = lerp(Color.Black, Color.White, lightInkFraction)
+    return glassPaneForeground(preferred, fill, IconContrast, lightInkFraction)
+}
 
 @Composable
 fun AppPullToRefreshBox(
@@ -71,20 +88,13 @@ fun AppPullToRefreshBox(
             val placement = Modifier.align(Alignment.TopCenter).offset {
                 IntOffset(0, with(density) { indicatorInset().roundToPx() })
             }
-            val area = GlassArea.PullToRefresh
-            if (settings.usesGlassMaterial(area) || settings.usesGlassContour(area)) {
-                StyledPullRefreshIndicator(
-                    pullRefreshState, isRefreshing, settings, colorPalette.accent, placement, useLiveGlassBackdrop,
-                )
-            } else {
-                PullToRefreshDefaults.LoadingIndicator(
-                    state = pullRefreshState,
-                    isRefreshing = isRefreshing,
-                    modifier = placement,
-                    containerColor = colorPalette.accent,
-                    color = neutralForeground(colorPalette.accent),
-                )
-            }
+            val blackCoverage = LocalNativeSurfaceMix.current?.let { it.pitchBlack + it.pureBlack }
+                ?: if (isPitchBlackSurface()) 1f else 0f
+            val nativeInk = pullRefreshNativeInk(colorPalette.accent, paletteDarkness(), blackCoverage)
+            StyledPullRefreshIndicator(
+                pullRefreshState, isRefreshing, settings, colorPalette.accent, nativeInk,
+                placement, useLiveGlassBackdrop,
+            )
         },
         content = content
     )
@@ -96,6 +106,7 @@ private fun StyledPullRefreshIndicator(
     isRefreshing: Boolean,
     settings: GlassSettings,
     nativeFill: Color,
+    nativeInk: Color,
     modifier: Modifier,
     useLiveGlassBackdrop: Boolean,
 ) {
@@ -103,13 +114,18 @@ private fun StyledPullRefreshIndicator(
     val shape = PullToRefreshDefaults.indicatorShape
     val material = settings.usesGlassMaterial(area)
     val page = LocalAppearance.current.colorPalette.background0
-    val film = if (material && useLiveGlassBackdrop) glassFilmColor(settings.forArea(area), nativeFill, menu = false)
-        else nativeFill
-    val nativeColor = neutralForeground(effectiveSurfaceColor(page, film))
-    val plate = if (material && useLiveGlassBackdrop) {
+    val areaSettings = settings.forArea(area)
+    val liveGlass = material && useLiveGlassBackdrop
+    val fill = if (liveGlass) glassFilmColor(areaSettings, nativeFill, menu = false) else nativeFill
+    val surface = effectiveSurfaceColor(page, fill)
+    val glyphColor = if (liveGlass) glassPaneForeground(
+        Color.Unspecified, surface, IconContrast, glassSurfaceDarkness(areaSettings),
+    ) else nativeInk
+    val edgeAlpha = ((IconContrast - contrastAgainst(glyphColor, surface)) / .65f).coerceIn(0f, 1f)
+    val plate = if (liveGlass) {
         val backdrop = rememberInlineGlassBackdrop(page)
         Modifier.glassMaterial(
-            settings.forArea(area), shape, ownBackdrop = backdrop, filmColor = nativeFill, drawShadow = false,
+            areaSettings, shape, ownBackdrop = backdrop, filmColor = nativeFill, drawShadow = false,
         )
     } else {
         Modifier.background(nativeFill, shape).glassAreaContour(settings, area, shape)
@@ -121,14 +137,37 @@ private fun StyledPullRefreshIndicator(
         elevation = PullToRefreshDefaults.LoadingIndicatorElevation,
     ) {
         Box(Modifier.matchParentSize().then(plate), contentAlignment = Alignment.Center) {
-            if (material) {
-                GlassIndicatorSilhouette(settings, area, nativeColor) { glyph ->
-                    PullRefreshGlyph(state, isRefreshing, nativeColor, glyph)
+            val outline = pullRefreshOutline(edgeAlpha)
+            Box(outline) {
+                if (material) {
+                    GlassIndicatorSilhouette(settings, area, glyphColor) { glyph ->
+                        PullRefreshGlyph(state, isRefreshing, glyphColor, glyph)
+                    }
+                } else {
+                    PullRefreshGlyph(state, isRefreshing, glyphColor)
                 }
-            } else {
-                PullRefreshGlyph(state, isRefreshing, nativeColor)
             }
         }
+    }
+}
+
+/** The two edge tones remain legible as the glyph passes through its plate color. */
+@Composable
+private fun pullRefreshOutline(alpha: Float): Modifier {
+    if (alpha == 0f) return Modifier
+    val edge = remember { Paint() }
+    return Modifier.drawWithContent {
+        val bounds = Rect(Offset.Zero, size)
+        edge.alpha = alpha
+        edge.colorFilter = ColorFilter.tint(Color.Black)
+        drawContext.canvas.saveLayer(bounds, edge)
+        scale(1.13f) { this@drawWithContent.drawContent() }
+        drawContext.canvas.restore()
+        edge.colorFilter = ColorFilter.tint(Color.White)
+        drawContext.canvas.saveLayer(bounds, edge)
+        scale(1.06f) { this@drawWithContent.drawContent() }
+        drawContext.canvas.restore()
+        drawContent()
     }
 }
 
