@@ -398,9 +398,9 @@
     <string name="settings_player_timeline_label">Zaman çizelgesi</string>
     <string name="settings_player_timeline_size_label">Oynatıcı Zaman Çizelgesi Boyutu</string>
     <string name="settings_player_timeline_transparent_label">Şeffaf Zaman Çizelgesi Çubuğu</string>
-    <string name="settings_player_opening_mode_label">Player opening mode</string>
-    <string name="settings_player_opening_mode_description">Choose the mode to use when you open the player.</string>
-    <string name="settings_player_opening_mode_remember_last">Remember last mode</string>
+    <string name="settings_player_opening_mode_label">Oynatıcı açılış modu</string>
+    <string name="settings_player_opening_mode_description">Oynatıcıyı açtığınızda kullanılacak modu seçin.</string>
+    <string name="settings_player_opening_mode_remember_last">Son modu hatırla</string>
     <string name="settings_player_top_action_bar_visible_label">Üst eylem çubuğunu göster</string>
     <string name="settings_player_vertical_swipe_expansion_description">Sadece Genişletilmiş Oynatıcı kapalıyken etkiler</string>
     <string name="settings_preference_saved_message">Tercih Kaydedildi</string>
@@ -504,5 +504,5 @@
     <string name="settings_local_music_summary_title">Cihaz içi kütüphane özeti</string>
     <string name="settings_local_music_summary_description">Bu profil için algılanan müzikleri ve klasörleri görüntüleyin.</string>
     <string name="settings_local_music_summary_count">%1$s: %2$d</string>
-    <string name="settings_local_music_start_folder_path_example">Music/Live</string>
+    <string name="settings_local_music_start_folder_path_example">Müzik/Canlı</string>
 </resources>
