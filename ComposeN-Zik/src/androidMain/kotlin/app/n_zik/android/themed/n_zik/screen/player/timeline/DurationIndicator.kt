@@ -2,7 +2,7 @@ package app.n_zik.android.themed.n_zik.screen.player.timeline
 
 import androidx.media3.common.Player
 import app.n_zik.android.components.player.PlayerSkipTimeGlass
-import app.n_zik.android.components.player.durationOutlineColorOf
+import app.n_zik.android.components.player.playerTextOutlineColor
 import app.n_zik.android.components.player.displayedTimeRemainingOf
 
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +22,6 @@ import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -128,21 +127,9 @@ private fun RowScope.SkipTimeButton(
 }
 
 @Composable
-private fun outlineColorState(): State<Color> {
+private fun timelineOutlineColor(): Color {
     val textOutline by rememberPreference( textoutlineKey, false )
-    // Read the palette in the composable scope: `colorPalette()` is @Composable and the
-    // derivedStateOf lambda below is not a composable context
-    val palette = colorPalette()
-
-    // The decision is pinned by the pure helper (spec-achromatic-ramp-luminance-cap, loopback 2,
-    // VG-3): keyed on the effective tone, and the text-outline opt-out now applies in light
-
-    // mode too (the legacy light-mode branch ignored it).
-    return remember {
-        derivedStateOf {
-            durationOutlineColorOf( textOutline, palette )
-        }
-    }
+    return if (textOutline) playerTextOutlineColor(colorPalette().isDark, .5f) else Color.Transparent
 }
 
 @Composable
@@ -219,7 +206,7 @@ fun DurationIndicator(
          *
          * When it's updated, all [OutlinedText] are updated as well.
          */
-        val outlineColor by outlineColorState()
+        val outlineColor = timelineOutlineColor()
 
         // Scrubbing position
         Box(

@@ -36,7 +36,9 @@ import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.glass.glassGlobalIndication
-import app.n_zik.android.components.glass.readableGlyphForeground
+import app.n_zik.android.components.glass.IconContrast
+import app.n_zik.android.components.glass.glassPaneForeground
+import app.n_zik.android.components.glass.glassSurfaceDarkness
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.surfaceBackdropColor
 import app.n_zik.android.components.glass.usesGlassMaterial
@@ -164,5 +166,6 @@ private fun MiniPlayerIconSurface(
 private fun miniPlayerGlyphColor(settings: GlassSettings, color: Color, enabled: Boolean): Color {
     if (!enabled || !settings.usesGlassMaterial(GlassArea.MiniPlayer)) return color
     val film = glassFilmColor(settings.forArea(GlassArea.MiniPlayer), surfaceColor(colorPalette().background2), menu = false)
-    return readableGlyphForeground(color, effectiveSurfaceColor(surfaceBackdropColor(), film))
+    return glassPaneForeground(color, effectiveSurfaceColor(surfaceBackdropColor(), film),
+        IconContrast, glassSurfaceDarkness(settings), glyph = true)
 }

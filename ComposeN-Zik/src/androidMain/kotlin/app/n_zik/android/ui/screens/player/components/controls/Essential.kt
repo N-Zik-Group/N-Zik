@@ -127,7 +127,7 @@ import app.n_zik.android.components.player.playerTransportPlayBackground
 import app.n_zik.android.components.player.playerTransportSurface
 import app.n_zik.android.components.glass.surfaceSourcePalette
 import app.n_zik.android.components.player.monochromeControlsColor
-import app.n_zik.android.components.player.placeholderCompositeBase
+import app.n_zik.android.components.player.playerPlaceholderCompositeBase
 import app.n_zik.android.components.glass.TextContrast
 import app.n_zik.android.components.glass.surfaceGlyphColor
 import app.n_zik.android.components.glass.playerControlGlyphColor
@@ -136,6 +136,8 @@ import app.n_zik.android.components.player.playerTextOutlineColor
 import app.n_zik.android.components.player.playerTransportGlyph
 import app.n_zik.android.components.player.playerTransportPlate
 import app.n_zik.android.components.player.playButtonNativeColor
+import app.n_zik.android.components.theme.LocalNativeSurfaceMix
+import androidx.compose.ui.graphics.lerp
 
 
 @UnstableApi
@@ -252,7 +254,7 @@ fun InfoAlbumAndArtistEssential(
                                 else colorPalette().text,*/
                                     // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
                                     colorPalette().textDisabled.copy(0.35f)
-                                        .compositeOver(placeholderCompositeBase(colorPalette().isDark))
+                                        .compositeOver(playerPlaceholderCompositeBase(colorPalette().isDark))
                                 else colorPalette().text,
                                 fontStyle = typography().l.bold.fontStyle,
                                 fontWeight = typography().l.bold.fontWeight,
@@ -362,7 +364,7 @@ fun InfoAlbumAndArtistEssential(
                             else colorPalette().text,*/
                         // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
                         colorPalette().textDisabled.copy(0.35f)
-                            .compositeOver(placeholderCompositeBase(colorPalette().isDark))
+                            .compositeOver(playerPlaceholderCompositeBase(colorPalette().isDark))
                         else colorPalette().text,
                     fontStyle = typography().m.bold.fontStyle,
                     fontSize = typography().m.bold.fontSize,
@@ -457,18 +459,22 @@ fun ControlsEssential(
     )
 
     var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
+    val surfaceMix = LocalNativeSurfaceMix.current
+    val playContainer = app.n_zik.android.components.player.playButtonContainerColor(
+        playerPlayButtonType, colorPaletteName, colorPalette(), isGradientBackgroundEnabled, colorPaletteMode,
+        blackCoverage = surfaceMix?.transportBlack,
+    )
     val nativePlayPlate = when (playerPlayButtonType) {
-        PlayerPlayButtonType.CircularRibbed -> playButtonNativeColor(colorPaletteName, when (colorPaletteName) {
-            ColorPaletteName.PureBlack, ColorPaletteName.ModernBlack -> colorPalette().background4
-            else -> if (isGradientBackgroundEnabled) colorPalette().background1 else colorPalette().background2
-        }, colorPaletteMode)
-        else -> app.n_zik.android.components.player.playButtonContainerColor(
-            playerPlayButtonType, colorPaletteName, colorPalette(), isGradientBackgroundEnabled, colorPaletteMode,
+        PlayerPlayButtonType.CircularRibbed -> playButtonNativeColor(colorPaletteName,
+            if (isGradientBackgroundEnabled) colorPalette().background1 else colorPalette().background2,
+            colorPaletteMode, blackCoverage = surfaceMix?.transportBlack,
         )
+        else -> playContainer
     }
-    val playColor = if (playerPlayButtonType == PlayerPlayButtonType.Disabled ||
-        (colorPaletteName == ColorPaletteName.Dynamic && (colorPaletteMode == ColorPaletteMode.PitchBlack || colorPaletteMode == ColorPaletteMode.PureBlack)))
-        colorPalette().accent else controlsColor
+    val dynamicBlackAccent = surfaceMix?.dynamicTransportAccent ?: if (colorPaletteName == ColorPaletteName.Dynamic &&
+        (colorPaletteMode == ColorPaletteMode.PitchBlack || colorPaletteMode == ColorPaletteMode.PureBlack)) 1f else 0f
+    val playColor = if (playerPlayButtonType == PlayerPlayButtonType.Disabled) colorPalette().accent
+        else lerp(controlsColor, colorPalette().accent, dynamicBlackAccent)
     val previousGlyph = playerTransportGlyph(controlsColor, transportSettings, enabled = previousEnabled)
     val nextGlyph = playerTransportGlyph(controlsColor, transportSettings, enabled = nextEnabled)
     val playPlate = playerTransportPlate(transportSettings, nativePlayPlate,
@@ -572,13 +578,7 @@ fun ControlsEssential(
             .clip(transportPlayShape)
             .playerTransportPlayBackground(
                 type = playerPlayButtonType,
-                original = app.n_zik.android.components.player.playButtonContainerColor(
-                    type = playerPlayButtonType,
-                    paletteName = colorPaletteName,
-                    mode = colorPaletteMode,
-                    palette = colorPalette(),
-                    gradient = isGradientBackgroundEnabled,
-                )
+                original = playContainer,
             )
             .width(playerPlayButtonType.width.dp)
             .height(playerPlayButtonType.height.dp)

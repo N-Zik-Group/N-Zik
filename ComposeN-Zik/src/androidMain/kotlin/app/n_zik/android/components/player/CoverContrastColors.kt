@@ -3,6 +3,7 @@ package app.n_zik.android.components.player
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.lerp
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.GlassSettings
@@ -13,9 +14,10 @@ import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.glass.inScope
 import app.n_zik.android.components.glass.neutralForeground
-import app.n_zik.android.components.glass.surfaceForegroundIsLight
 import app.n_zik.android.components.glass.playerControlGlyphColor
+import app.n_zik.android.components.glass.surfaceNeutralForeground
 import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.theme.LocalPaletteDarkness
 import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.ui.styling.ColorPalette
 
@@ -47,6 +49,20 @@ internal fun monochromeControlsColor(palette: ColorPalette): Color = palette.tex
 /** The base color for the dimmed title/artist placeholder `compositeOver` (spec-achromatic-ramp-luminance-cap, 2026-09-28): white on a dark-tone ramp, black on a light-tone one — the placeholder (`textDisabled` at 0.35 alpha) must read as a ghost of the tone, not as white on a light background or black on a dark one. */
 internal fun placeholderCompositeBase(effectiveIsDark: Boolean): Color =
     if (effectiveIsDark) Color.White else Color.Black
+
+/** Resolve the placeholder from the shared displayed palette fraction, including retargets. */
+@Composable
+internal fun playerPlaceholderCompositeBase(effectiveIsDark: Boolean): Color =
+    placeholderCompositeBase(LocalPaletteDarkness.current ?: if (effectiveIsDark) 1f else 0f)
+
+internal fun placeholderCompositeBase(darkness: Float): Color =
+    lerp(Color.Black, Color.White, darkness.coerceIn(0f, 1f))
+
+/** The halo follows the displayed ink rather than thresholding an interpolated color. */
+internal fun opposingTextOutlineColor(foreground: Color, alpha: Float): Color {
+    val lightness = (foreground.red + foreground.green + foreground.blue) / 3f
+    return lerp(Color.White, Color.Black, lightness.coerceIn(0f, 1f)).copy(alpha = alpha)
+}
 
 /**
  * Re-caps a restored dynamic palette (spec-achromatic-ramp-luminance-cap, loopback 2, EC-1):
@@ -134,5 +150,7 @@ internal fun playerTransportPlate(
 }
 
 @Composable
-internal fun playerTextOutlineColor(effectiveIsDark: Boolean, alpha: Float): Color =
-    textOutlineColor(surfaceForegroundIsLight(effectiveIsDark), alpha)
+internal fun playerTextOutlineColor(effectiveIsDark: Boolean, alpha: Float): Color {
+    val darkness = LocalPaletteDarkness.current ?: if (effectiveIsDark) 1f else 0f
+    return opposingTextOutlineColor(surfaceNeutralForeground(placeholderCompositeBase(darkness)), alpha)
+}

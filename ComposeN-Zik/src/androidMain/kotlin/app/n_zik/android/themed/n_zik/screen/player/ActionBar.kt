@@ -88,7 +88,6 @@ import app.n_zik.android.components.shuffleButtonIcon
 import app.n_zik.android.components.menu.player.AddToPlaylistPlayerMenu
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.components.menu.player.PlayerMenu
-import app.n_zik.android.components.glass.neutralForeground
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.player.rememberPlayerActionToolbarLayout
 import app.n_zik.android.components.player.playerActionQueueTap
@@ -104,7 +103,7 @@ import app.n_zik.android.components.player.PlayerActionIcon
 import app.n_zik.android.components.player.PlayerDownloadAction
 import app.n_zik.android.components.player.playerTextOutlineColor
 import app.n_zik.android.components.player.LocalPlayerWhatsNextTextColor
-import app.n_zik.android.components.player.textOutlineColor
+import app.n_zik.android.components.player.opposingTextOutlineColor
 import app.n_zik.android.utils.DisposableListener
 import app.n_zik.android.utils.actionspacedevenlyKey
 import app.n_zik.android.utils.addNext
@@ -323,7 +322,7 @@ fun BoxScope.ActionBar(
                     val palette = colorPalette()
                     val measuredText = LocalPlayerWhatsNextTextColor.current
                     val queueText = measuredText ?: palette.text
-                    val queueOutline = if (measuredText != null) textOutlineColor(neutralForeground(measuredText) == Color.Black, 0.65f)
+                    val queueOutline = if (measuredText != null) opposingTextOutlineColor(measuredText, 0.65f)
                         else playerTextOutlineColor(palette.isDark, 0.65f)
 
                     HorizontalPager(

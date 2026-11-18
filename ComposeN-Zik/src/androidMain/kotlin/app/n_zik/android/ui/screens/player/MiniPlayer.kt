@@ -843,6 +843,7 @@ fun MiniPlayer(
                             },
                             backgroundColor = playButtonNativeColor(
                                 colorPaletteName, colorPalette().background2, colorPaletteMode,
+                                blackCoverage = LocalNativeSurfaceMix.current?.transportBlack,
                             ),
                             contentDescription = stringResource(
                                 if (shouldBePlaying) R.string.player_notification_pause else R.string.player_action_play,

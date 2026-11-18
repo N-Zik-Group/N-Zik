@@ -27,7 +27,9 @@ import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.glassFilmColor
-import app.n_zik.android.components.glass.readableGlyphForeground
+import app.n_zik.android.components.glass.IconContrast
+import app.n_zik.android.components.glass.glassPaneForeground
+import app.n_zik.android.components.glass.glassSurfaceDarkness
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.surfaceBackdropColor
 import app.n_zik.android.components.glass.usesGlassMaterial
@@ -69,7 +71,7 @@ fun GlassMiniPlayerPlayPauseButton(
             shape = shape,
             backdropScale = 1f,
         ) {
-            SurfaceForegroundContent(foregroundSurface) {
+            SurfaceForegroundContent(foregroundSurface, glassInkDarkness = glassSurfaceDarkness(controlSettings)) {
                 Box(Modifier.fillMaxSize(), content = content)
             }
         }
@@ -87,4 +89,5 @@ fun GlassMiniPlayerPlayPauseButton(
 /** Explicit caller glyphs resolve inside the actual play/pause seat. */
 @Composable
 internal fun miniPlayerPlayPauseGlyphColor(settings: GlassSettings, color: Color): Color =
-    if (settings.usesGlassMaterial(GlassArea.MiniPlayer)) readableGlyphForeground(color, surfaceBackdropColor()) else color
+    if (settings.usesGlassMaterial(GlassArea.MiniPlayer)) glassPaneForeground(color, surfaceBackdropColor(),
+        IconContrast, glassSurfaceDarkness(settings), glyph = true) else color

@@ -53,6 +53,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.lerp
+import app.n_zik.android.components.theme.LocalNativeSurfaceMix
+import app.n_zik.android.components.theme.paletteDarkness
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -145,7 +147,7 @@ import app.n_zik.android.components.player.LocalPlayerArtworkPaint
 import app.n_zik.android.components.player.rememberPlayerColorFade
 import app.n_zik.android.components.theme.LocalPaletteFadeTarget
 import app.n_zik.android.components.glass.TextContrast
-import app.n_zik.android.components.glass.readableForeground
+import app.n_zik.android.components.glass.glassPaneForeground
 import dev.rebelonion.translator.Translator
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.shape.CircleShape
@@ -294,6 +296,8 @@ fun LyricsScreen(
         var isRotated by rememberSaveable(saver = TolerantBoolStateSaver("lyrics.isRotated")) { mutableStateOf(false) }
         val rotationAngle by animateFloatAsState(targetValue = if (isRotated) 360F else 0f, animationSpec = tween(durationMillis = 200), label = "")
         val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
+        val lyricsBlackInk = LocalNativeSurfaceMix.current?.lyricsBlackInk
+            ?: if (colorPaletteName == ColorPaletteName.PureBlack) 1f else 0f
 
         DialogPresence(visible = showLyricsSizeDialog) {
             LyricsSizeDialog(
@@ -458,7 +462,7 @@ fun LyricsScreen(
                     }
                     val coverForeground = paint?.lyricsForeground ?: coverForegroundState?.value ?: defaultCoverForeground
                     val dominantColor = if (coverBackground != null && actualLyricsType != LyricsType.Unsynced)
-                        readableForeground(coverForeground, coverBackground, TextContrast).toArgb()
+                        glassPaneForeground(coverForeground, coverBackground, TextContrast, paletteDarkness()).toArgb()
                     else coverForeground.toArgb()
                     when {
                         actualLyricsType == LyricsType.Karaoke && hasWordTimings -> {
@@ -706,7 +710,7 @@ fun LyricsScreen(
                         Image(
                             painter = painterResource(if (playback?.isPlaying == true) R.drawable.pause else R.drawable.play),
                             contentDescription = null,
-                            colorFilter = ColorFilter.tint(if (colorPaletteName == ColorPaletteName.PureBlack) Color.Black else colorPalette().text),
+                            colorFilter = ColorFilter.tint(lerp(colorPalette().text, Color.Black, lyricsBlackInk)),
                             modifier = Modifier
                                 .playerTransportFeedback(playInteraction)
                                 .clip(uiRoundnessShape()).clickable(
