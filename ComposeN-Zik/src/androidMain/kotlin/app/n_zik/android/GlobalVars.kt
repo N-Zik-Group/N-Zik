@@ -181,7 +181,11 @@ fun surfaceColor(base: Color): Color = nativeSurface(base)
 
 /** Native navigation coverage; Glass retains ownership of its own opacity. */
 @Composable
-fun navigationSurfaceColor(): Color = nativeSurface(colorPalette().background1, navigation = true)
+fun navigationSurfaceColor(floating: Boolean = false): Color {
+    val base = colorPalette().background1
+    val fill = if (floating) base.copy(alpha = minOf(base.alpha, .95f)) else base
+    return nativeSurface(fill, navigation = true)
+}
 
 /** Native content surface within raised menus and dialogs. */
 @Composable

@@ -69,8 +69,8 @@ internal fun FloatingDockNavigation(
 ) {
     val settings = rememberGlassSettings()
     val shape = uiRoundnessShape()
-    val nativeColor = navigationSurfaceColor()
     val useGlass = settings.usesGlassMaterial(GlassArea.Nav)
+    val nativeColor = navigationSurfaceColor(floating = !useGlass)
     val folding = remember(dock) { { dock.navigationProgress.let { it > 0f && it < 1f } } }
     val surface = if (useGlass)
         Modifier.glassMaterial(settings.forArea(GlassArea.Nav), shape, filmColor = nativeColor, foldInProgress = folding)
