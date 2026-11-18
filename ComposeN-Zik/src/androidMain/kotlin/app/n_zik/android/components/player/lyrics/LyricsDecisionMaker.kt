@@ -25,50 +25,61 @@ object LyricsDecisionMaker {
         globalLastKaraokeAttemptMediaId: String?,
         globalLastSyncedAttemptMediaId: String?,
         globalLastUnSyncedAttemptMediaId: String?,
-        now: Long
+        now: Long,
+        forceAutoRetry: Boolean = false,
     ): FetchNeeds {
+        val karaoke = allLyrics.find { it.type == LyricsType.Karaoke.name && !it.data.isNullOrBlank() }
+        val synced = allLyrics.find { it.type == LyricsType.Synced.name && !it.data.isNullOrBlank() }
+        val unsynced = allLyrics.find { it.type == LyricsType.Unsynced.name && !it.data.isNullOrBlank() }
+        val karaokeNotAttempted = globalLastKaraokeAttemptMediaId != mediaId
+        val syncedNotAttempted = globalLastSyncedAttemptMediaId != mediaId
+        val unsyncedNotAttempted = globalLastUnSyncedAttemptMediaId != mediaId
         val currentLyrics = when (lyricsType) {
             LyricsType.Auto -> {
-                allLyrics.find { it.type == LyricsType.Karaoke.name }
-                    ?: allLyrics.find { it.type == LyricsType.Synced.name }
-                    ?: allLyrics.find { it.type == LyricsType.Unsynced.name }
+                // Old releases sometimes stored a line-only response as Karaoke.
+                karaoke?.takeIf { it.isEdited || hasWordTimings(it.data) } ?: synced ?: karaoke ?: unsynced
             }
-            LyricsType.Karaoke -> allLyrics.find { it.type == LyricsType.Karaoke.name }
-            LyricsType.Synced -> allLyrics.find { it.type == LyricsType.Synced.name }
-                ?: allLyrics.find { it.type == LyricsType.Karaoke.name }
-            LyricsType.Unsynced -> allLyrics.find { it.type == LyricsType.Unsynced.name }
+            LyricsType.Karaoke -> karaoke
+            LyricsType.Synced -> synced ?: karaoke
+            LyricsType.Unsynced -> unsynced
         }
 
-        // Each active check is decided from its own row only; the cascade above is for display
-        // purposes.
-        //
-        // Active checks per mode: Karaoke -> K, Synced -> K+S, Unsynced -> U, Auto -> K+S+U.
-        // Absent rows are always wanted so fallback rows stay maintained,
-        //
-        // and every dedup-based hunt below stays dedup-gated. One extra gate: the Karaoke
-        // hunt stays off in Synced mode when the displayed row already carries word timings.
-        val needKaraokeFetch = (lyricsType == LyricsType.Karaoke || lyricsType == LyricsType.Synced || lyricsType == LyricsType.Auto) &&
+        if (lyricsType == LyricsType.Auto) {
+            if (currentLyrics == null || forceAutoRetry) {
+                return FetchNeeds(currentLyrics, karaokeNotAttempted, syncedNotAttempted, unsyncedNotAttempted)
+            }
+            val refresh = !currentLyrics.isEdited && isTtlExpired(currentLyrics.lastFetchedAt, now)
+            return FetchNeeds(
+                currentLyrics = currentLyrics,
+                needKaraokeFetch = refresh && karaokeNotAttempted && currentLyrics.type == LyricsType.Karaoke.name,
+                needSyncedFetch = refresh && syncedNotAttempted && currentLyrics.type == LyricsType.Synced.name,
+                needUnsyncedFetch = refresh && unsyncedNotAttempted && currentLyrics.type == LyricsType.Unsynced.name,
+            )
+        }
+
+        // Manual modes look up their requested format even if displaying a fallback.
+        val needKaraokeFetch = (lyricsType == LyricsType.Karaoke || lyricsType == LyricsType.Synced) &&
             fetchNeededFor(
-                row = allLyrics.find { it.type == LyricsType.Karaoke.name },
-                dedupOk = globalLastKaraokeAttemptMediaId != mediaId,
+                row = karaoke,
+                dedupOk = karaokeNotAttempted,
                 absentRowCondition = lyricsType != LyricsType.Synced || !hasWordTimings(currentLyrics?.data),
                 isUnsynced = false,
                 now = now
             )
 
-        val needSyncedFetch = (lyricsType == LyricsType.Synced || lyricsType == LyricsType.Auto) &&
+        val needSyncedFetch = lyricsType == LyricsType.Synced &&
             fetchNeededFor(
-                row = allLyrics.find { it.type == LyricsType.Synced.name },
-                dedupOk = globalLastSyncedAttemptMediaId != mediaId,
+                row = synced,
+                dedupOk = syncedNotAttempted,
                 absentRowCondition = true,
                 isUnsynced = false,
                 now = now
             )
 
-        val needUnsyncedFetch = (lyricsType == LyricsType.Unsynced || lyricsType == LyricsType.Auto) &&
+        val needUnsyncedFetch = lyricsType == LyricsType.Unsynced &&
             fetchNeededFor(
-                row = allLyrics.find { it.type == LyricsType.Unsynced.name },
-                dedupOk = globalLastUnSyncedAttemptMediaId != mediaId,
+                row = unsynced,
+                dedupOk = unsyncedNotAttempted,
                 absentRowCondition = true,
                 isUnsynced = true,
                 now = now

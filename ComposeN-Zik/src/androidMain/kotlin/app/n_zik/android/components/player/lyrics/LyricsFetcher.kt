@@ -75,7 +75,8 @@ internal fun LyricsFetcher(
     var previousCheckLyrics by remember { mutableStateOf(checkLyrics) }
     var previousProviders by remember { mutableStateOf(enabledProviders) }
     LaunchedEffect(mediaId, lyricsType, checkLyrics, mediaMetadata.title, mediaMetadata.artist, enabledProviders) {
-        if (checkLyrics != previousCheckLyrics) {
+        val explicitlyRetried = checkLyrics != previousCheckLyrics
+        if (explicitlyRetried) {
             globalLastSyncedAttemptMediaId = null
             globalLastKaraokeAttemptMediaId = null
             globalLastUnSyncedAttemptMediaId = null
@@ -113,7 +114,8 @@ internal fun LyricsFetcher(
             onCheckedKugouUpdated = onCheckedKugouUpdated,
             onCheckedInnertubeUpdated = onCheckedInnertubeUpdated,
             onFetchingStateChanged = onFetchingStateChanged,
-            enabledProviders = enabledProviders
+            enabledProviders = enabledProviders,
+            forceAutoRetry = explicitlyRetried,
         )
     }
 }

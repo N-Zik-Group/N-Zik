@@ -10,7 +10,6 @@ import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.models.Lyrics
 import com.metrolist.music.betterlyrics.BetterLyrics
 import com.metrolist.music.betterlyrics.TTMLParser
-import io.mockk.coEvery
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -131,6 +130,7 @@ class LyricsFetchWorkerTest {
         worker: LyricsFetchWorker,
         lyricsType: LyricsType,
         enabledProviders: Set<LyricsProvider> = LyricsProvider.entries.toSet(),
+        forceAutoRetry: Boolean = false,
         durationProvider: () -> Long = { 213_000L }
     ) {
         worker.fetch(
@@ -148,7 +148,8 @@ class LyricsFetchWorkerTest {
             onCheckedKugouUpdated = { checkedKugou += it },
             onCheckedInnertubeUpdated = { checkedInnertube += it },
             onFetchingStateChanged = { fetchingStates += it },
-            enabledProviders = enabledProviders
+            enabledProviders = enabledProviders,
+            forceAutoRetry = forceAutoRetry,
         )
     }
 
@@ -419,74 +420,73 @@ class LyricsFetchWorkerTest {
         assertTrue(stamp >= before && stamp <= after)
     }
 
-    @Test
-    fun `expired word-timed row keeps its data and stamp when every source fails`() = runTest {
-        setupMocks()
-        resetGlobals()
-        val expired = Lyrics(
-            songId = "song1",
-            type = LyricsType.Karaoke.name,
-            data = "[00:00.00]Old\n<Old:0.0:1.0>",
-            lastFetchedAt = System.currentTimeMillis() - 31L * 24 * 60 * 60 * 1000
-        )
-        every { lyricsDao.findAllBySongId(any()) } returns flowOf(listOf(expired))
-        // Every source fails, like a network outage.
-        lrcLibLyricsResult = Result.failure(Exception("network down"))
-        lrcLibLyricsUnsyncedResult = Result.failure(Exception("network down"))
-        kuGouLyricsResult = Result.failure(Exception("network down"))
-        innertubeLyricsResult = Result.failure(Exception("network down"))
-
-        fetch(worker(testScheduler), LyricsType.Auto)
-
-        assertTrue(upserts.isEmpty()) // nothing written: stored row and its stamp are untouched
-        coVerify(exactly = 1) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
-        assertEquals(1, lrcLibLyricsCalls) // the whole fallback chain was attempted
-        assertEquals(1, kuGouLyricsCalls)
-        assertEquals(1, lrcLibLyricsUnsyncedCalls)
-        assertEquals(1, innertubeLyricsCalls)
-    }
-
-    @Test
-    fun `fresh word-timed karaoke row is not re-fetched when only a Synced sibling is missing`() = runTest {
-        setupMocks()
-        resetGlobals()
-        val fresh = Lyrics(
-            songId = "song1",
-            type = LyricsType.Karaoke.name,
-            data = "[00:00.00]Fresh\n<Fresh:0.0:1.0>",
-            lastFetchedAt = System.currentTimeMillis() - 10L * 24 * 60 * 60 * 1000
-        )
-        every { lyricsDao.findAllBySongId(any()) } returns flowOf(listOf(fresh))
-        lrcLibLyricsResult = Result.success(LrcLib.Lyrics("[00:01.00]synced from LrcLib"))
-
-        fetch(worker(testScheduler), LyricsType.Auto)
-
-        // BetterLyrics would rewrite and re-stamp the fresh Karaoke row: it must stay untouched.
-        coVerify(exactly = 0) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
-        assertEquals(1, lrcLibLyricsCalls)
-        assertTrue(upserts.none { it.type == LyricsType.Karaoke.name })
-        assertEquals(listOf(LyricsType.Synced.name), upserts.map { it.type })
-    }
-
-    @Test
-    fun `only the Unsynced check runs when karaoke and synced rows are fresh and unsynced is missing`() = runTest {
-        setupMocks()
-        resetGlobals()
-        val freshStamp = System.currentTimeMillis() - 10L * 24 * 60 * 60 * 1000
-        val karaoke = Lyrics("song1", LyricsType.Karaoke.name, "[00:00.00]K\n<K:0.0:1.0>", lastFetchedAt = freshStamp)
-        val synced = Lyrics("song1", LyricsType.Synced.name, "[00:00.00]S\n<S:0.0:1.0>", lastFetchedAt = freshStamp)
-        every { lyricsDao.findAllBySongId(any()) } returns flowOf(listOf(karaoke, synced))
-        lrcLibLyricsUnsyncedResult = Result.success(LrcLib.Lyrics("[00:01.00]plain lyrics text")) // plainText comes from timestamped lines
-
-        fetch(worker(testScheduler), LyricsType.Auto)
-
-        coVerify(exactly = 0) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
-        assertEquals(0, lrcLibLyricsCalls)
-        assertEquals(0, kuGouLyricsCalls)
-        assertEquals(1, lrcLibLyricsUnsyncedCalls)
-        assertEquals(listOf(LyricsType.Unsynced.name), upserts.map { it.type })
-    }
-
+    @Test
+    fun `expired word-timed cache is retained when its provider fails`() = runTest {
+        setupMocks()
+        resetGlobals()
+        val expired = Lyrics(
+            songId = "song1",
+            type = LyricsType.Karaoke.name,
+            data = "[00:00.00]Old\n<Old:0.0:1.0>",
+            lastFetchedAt = System.currentTimeMillis() - 31L * 24 * 60 * 60 * 1000,
+        )
+        every { lyricsDao.findAllBySongId(any()) } returns flowOf(listOf(expired))
+
+        fetch(worker(testScheduler), LyricsType.Auto)
+        fetch(worker(testScheduler), LyricsType.Auto)
+
+        assertEquals(listOf(expired, expired), lyricsUpdates)
+        assertTrue(upserts.isEmpty())
+        coVerify(exactly = 1) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
+        assertEquals(0, lrcLibLyricsCalls)
+        assertEquals(0, kuGouLyricsCalls)
+        assertEquals(0, lrcLibLyricsUnsyncedCalls)
+        assertEquals(0, innertubeLyricsCalls)
+    }
+
+    @Test
+    fun `opening Auto with fresh Karaoke does not fill absent sibling rows`() = runTest {
+        setupMocks()
+        resetGlobals()
+        val fresh = Lyrics(
+            songId = "song1",
+            type = LyricsType.Karaoke.name,
+            data = "[00:00.00]Fresh\n<Fresh:0.0:1.0>",
+            lastFetchedAt = System.currentTimeMillis(),
+        )
+        every { lyricsDao.findAllBySongId(any()) } returns flowOf(listOf(fresh))
+
+        fetch(worker(testScheduler), LyricsType.Auto)
+
+        assertEquals(fresh, lyricsUpdates.single())
+        coVerify(exactly = 0) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
+        assertEquals(0, lrcLibLyricsCalls)
+        assertEquals(0, kuGouLyricsCalls)
+        assertEquals(0, lrcLibLyricsUnsyncedCalls)
+        assertEquals(0, innertubeLyricsCalls)
+        assertTrue(upserts.isEmpty())
+    }
+
+    @Test
+    fun `reopening Auto with fresh line timings keeps the cached result`() = runTest {
+        setupMocks()
+        resetGlobals()
+        val fresh = Lyrics("song1", LyricsType.Synced.name, "[00:00.00]Fresh", lastFetchedAt = System.currentTimeMillis())
+        every { lyricsDao.findAllBySongId(any()) } returns flowOf(listOf(fresh))
+
+        fetch(worker(testScheduler), LyricsType.Auto)
+        fetch(worker(testScheduler), LyricsType.Auto)
+
+        assertEquals(listOf(fresh, fresh), lyricsUpdates)
+        assertEquals(listOf(false, false), fetchingStates)
+        coVerify(exactly = 0) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
+        assertEquals(0, lrcLibLyricsCalls)
+        assertEquals(0, kuGouLyricsCalls)
+        assertEquals(0, lrcLibLyricsUnsyncedCalls)
+        assertEquals(0, innertubeLyricsCalls)
+        assertTrue(upserts.isEmpty())
+    }
+
     @Test
     fun `empty LrcLib result does not wipe an existing non-empty unsynced row`() = runTest {
         setupMocks()
@@ -705,5 +705,37 @@ class LyricsFetchWorkerTest {
         assertEquals(listOf(true), checkedLrc)
         assertEquals(listOf(true), checkedKugou)
         assertEquals(listOf(true), checkedInnertube)
+    }
+
+    @Test
+    fun `manually retrying Auto can replace a fresh result and stops at first success`() = runTest {
+        setupMocks()
+        resetGlobals()
+        val fresh = Lyrics("song1", LyricsType.Unsynced.name, "Fresh", lastFetchedAt = System.currentTimeMillis())
+        every { lyricsDao.findAllBySongId(any()) } returns flowOf(listOf(fresh))
+        val syncedLyrics = "[00:01.00]New lyrics"
+        lrcLibLyricsResult = Result.success(LrcLib.Lyrics(syncedLyrics))
+
+        fetch(worker(testScheduler), LyricsType.Auto, setOf(LyricsProvider.LrcLib, LyricsProvider.KuGou), forceAutoRetry = true)
+
+        assertEquals(fresh, lyricsUpdates.single())
+        assertEquals(syncedLyrics, upserts.single().data)
+        assertEquals(1, lrcLibLyricsCalls)
+        assertEquals(0, kuGouLyricsCalls)
+        assertEquals(0, lrcLibLyricsUnsyncedCalls)
+    }
+
+    @Test
+    fun `reopening Auto after all enabled sources miss does not try them again`() = runTest {
+        setupMocks()
+        resetGlobals()
+        val providers = setOf(LyricsProvider.KuGou, LyricsProvider.YouTube)
+
+        fetch(worker(testScheduler), LyricsType.Auto, providers)
+        fetch(worker(testScheduler), LyricsType.Auto, providers)
+
+        assertEquals(1, kuGouLyricsCalls)
+        assertEquals(1, innertubeLyricsCalls)
+        assertEquals(listOf(true, true), errorUpdates)
     }
 }

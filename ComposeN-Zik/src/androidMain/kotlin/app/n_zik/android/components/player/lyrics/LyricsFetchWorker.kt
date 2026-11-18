@@ -88,21 +88,24 @@ class LyricsFetchWorker(
         onCheckedKugouUpdated: (Boolean) -> Unit,
         onCheckedInnertubeUpdated: (Boolean) -> Unit,
         onFetchingStateChanged: (Boolean) -> Unit,
-        enabledProviders: Set<LyricsProvider> = LyricsProvider.entries.toSet()
+        enabledProviders: Set<LyricsProvider> = LyricsProvider.entries.toSet(),
+        forceAutoRetry: Boolean = false,
     ) = withContext(dataDispatcher) {
         // Room emissions from our own writes must not retry a stale row during this collection.
         val attempted = mutableSetOf<Lookup>()
+        var pendingAutoRetry = forceAutoRetry && lyricsType == LyricsType.Auto
         Database.lyricsTable.findAllBySongId(mediaId).collect { allLyrics ->
             val needs = LyricsDecisionMaker.evaluateFetchNeeds(
                 mediaId = mediaId,
                 lyricsType = lyricsType,
-                allLyrics = allLyrics.filterNot { it.data.isNullOrBlank() },
+                allLyrics = allLyrics,
                 globalLastKaraokeAttemptMediaId = globalLastKaraokeAttemptMediaId,
                 globalLastSyncedAttemptMediaId = globalLastSyncedAttemptMediaId,
                 globalLastUnSyncedAttemptMediaId = globalLastUnSyncedAttemptMediaId,
-                now = System.currentTimeMillis()
+                now = System.currentTimeMillis(),
+                forceAutoRetry = pendingAutoRetry,
             )
-            val cached = preferredCache(lyricsType, needs.currentLyrics, allLyrics)
+            val cached = needs.currentLyrics
             val lookups = lookupsFor(lyricsType, needs).filter { lookup ->
                 lookup.provider in enabledProviders && lookup !in attempted
             }
@@ -117,6 +120,9 @@ class LyricsFetchWorker(
                 }
             }
             if (lookups.isEmpty()) return@collect
+            val refreshWordTimedCache = lyricsType == LyricsType.Auto && !pendingAutoRetry &&
+                cached?.type == LyricsType.Karaoke.name && hasWordTimings(cached.data.orEmpty())
+            pendingAutoRetry = false
 
             try {
                 val needsTrackMetadata = lookups.any { it != Lookup.YouTubeUnsynced }
@@ -132,7 +138,7 @@ class LyricsFetchWorker(
                 for ((index, lookup) in lookups.withIndex()) {
                     val lyrics = lookupLyrics(
                         lookup, lyricsType, mediaId, artistName.orEmpty(), title.orEmpty(), album, duration
-                    )
+                    )?.takeUnless { refreshWordTimedCache && it.type != LyricsType.Karaoke.name }
                     currentCoroutineContext().ensureActive()
                     attempted.add(lookup)
                     // A line-only BetterLyrics response is useful in Auto, but should not replace a
@@ -188,21 +194,16 @@ class LyricsFetchWorker(
         }
     }
 
-    private fun preferredCache(mode: LyricsType, current: Lyrics?, rows: List<Lyrics>): Lyrics? {
-        if (current == null || mode != LyricsType.Auto || current.type != LyricsType.Karaoke.name || current.isEdited ||
-            hasWordTimings(current.data.orEmpty())
-        ) return current
-        // Older Auto runs could store a BetterLyrics line-only result in the Karaoke row.
-        return rows.find { it.type == LyricsType.Synced.name && it.isEdited && !it.data.isNullOrBlank() }
-            ?: current
-    }
-
     private fun lookupsFor(type: LyricsType, needs: FetchNeeds): List<Lookup> = buildList {
         if ((type == LyricsType.Auto || type == LyricsType.Karaoke) && needs.needKaraokeFetch) {
             add(Lookup.BetterKaraoke)
         }
         if (needs.needSyncedFetch) {
-            if (type == LyricsType.Synced) add(Lookup.BetterSynced)
+            if (type == LyricsType.Synced ||
+                (!needs.needKaraokeFetch && needs.currentLyrics?.type == LyricsType.Synced.name)
+            ) {
+                add(Lookup.BetterSynced)
+            }
             add(Lookup.LrcSynced)
             add(Lookup.KuGouSynced)
         }

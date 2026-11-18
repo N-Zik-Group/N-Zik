@@ -96,7 +96,8 @@ class LyricsDecisionMakerTest {
     private fun needsFor(
         lyricsType: LyricsType,
         allLyrics: List<Lyrics>,
-        now: Long = NOW
+        now: Long = NOW,
+        forceAutoRetry: Boolean = false,
     ) = LyricsDecisionMaker.evaluateFetchNeeds(
         mediaId = "song1",
         lyricsType = lyricsType,
@@ -104,7 +105,8 @@ class LyricsDecisionMakerTest {
         globalLastKaraokeAttemptMediaId = "otherSong",
         globalLastSyncedAttemptMediaId = "otherSong",
         globalLastUnSyncedAttemptMediaId = "otherSong",
-        now = now
+        now = now,
+        forceAutoRetry = forceAutoRetry,
     )
 
     @Test
@@ -157,28 +159,26 @@ class LyricsDecisionMakerTest {
     }
 
     @Test
-    fun `checks stay independent per row in Auto even when the displayed row is edited`() {
-        // Per-row rule: only the edited row's own check is off; the other checks decide from
-        // their own (absent) rows, so the dedup-based hunt still runs.
+    fun `Auto uses edited lyrics without looking for alternatives`() {
         val edited = Lyrics("song1", LyricsType.Unsynced.name, "my own text", isEdited = true, lastFetchedAt = NOW - TTL - 1)
 
         val needs = needsFor(LyricsType.Auto, listOf(edited))
 
-        assertTrue(needs.needKaraokeFetch)
-        assertTrue(needs.needSyncedFetch)
+        assertFalse(needs.needKaraokeFetch)
+        assertFalse(needs.needSyncedFetch)
         assertFalse(needs.needUnsyncedFetch)
         assertSame(edited, needs.currentLyrics)
     }
 
     @Test
-    fun `Auto mode with a fresh word-timed Karaoke row keeps its own check off but maintains absent fallbacks`() {
+    fun `Auto uses fresh Karaoke without maintaining missing fallbacks`() {
         val karaoke = Lyrics("song1", LyricsType.Karaoke.name, wordTimedData, lastFetchedAt = NOW - 10L * 24 * 60 * 60 * 1000)
 
         val needs = needsFor(LyricsType.Auto, listOf(karaoke))
 
         assertFalse(needs.needKaraokeFetch)
-        assertTrue(needs.needSyncedFetch) // absent fallback row: fetched to stay maintained (dedup-gated)
-        assertTrue(needs.needUnsyncedFetch) // absent fallback row: fetched to stay maintained (dedup-gated)
+        assertFalse(needs.needSyncedFetch)
+        assertFalse(needs.needUnsyncedFetch)
         assertSame(karaoke, needs.currentLyrics)
     }
 
@@ -205,14 +205,14 @@ class LyricsDecisionMakerTest {
     }
 
     @Test
-    fun `Auto mode with only a stored unsynced row still hunts Karaoke and Synced independently`() {
+    fun `Auto uses fresh plain text without querying timed providers`() {
         val unsynced = Lyrics("song1", LyricsType.Unsynced.name, "plain text", lastFetchedAt = NOW - 1)
 
         val needs = needsFor(LyricsType.Auto, listOf(unsynced))
 
-        assertTrue(needs.needKaraokeFetch)
-        assertTrue(needs.needSyncedFetch)
-        assertFalse(needs.needUnsyncedFetch) // fresh unsynced row: TTL not expired
+        assertFalse(needs.needKaraokeFetch)
+        assertFalse(needs.needSyncedFetch)
+        assertFalse(needs.needUnsyncedFetch)
         assertSame(unsynced, needs.currentLyrics)
     }
 
@@ -228,14 +228,26 @@ class LyricsDecisionMakerTest {
     }
 
     @Test
-    fun `not edited lyrics keep the upgrade behaviour`() {
+    fun `Auto revalidates the expired display format only`() {
         val stored = Lyrics("song1", LyricsType.Unsynced.name, "plain text")
 
         val needs = needsFor(LyricsType.Auto, listOf(stored))
 
+        assertFalse(needs.needKaraokeFetch)
+        assertFalse(needs.needSyncedFetch)
+        assertTrue(needs.needUnsyncedFetch) // no stamp yet: treated as expired, fetched once
+        assertSame(stored, needs.currentLyrics)
+    }
+
+    @Test
+    fun `explicit Auto retry bypasses a fresh cached result`() {
+        val stored = Lyrics("song1", LyricsType.Synced.name, "[00:01.00]text", lastFetchedAt = NOW)
+
+        val needs = needsFor(LyricsType.Auto, listOf(stored), forceAutoRetry = true)
+
         assertTrue(needs.needKaraokeFetch)
         assertTrue(needs.needSyncedFetch)
-        assertTrue(needs.needUnsyncedFetch) // no stamp yet: treated as expired, fetched once
+        assertTrue(needs.needUnsyncedFetch)
         assertSame(stored, needs.currentLyrics)
     }
 
