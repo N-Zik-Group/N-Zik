@@ -1,14 +1,9 @@
 package app.n_zik.android.components.glass
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -31,6 +26,7 @@ internal val LocalNeutralForegroundTransition = compositionLocalOf<State<Neutral
 internal val LocalForegroundSourcePalette = compositionLocalOf<ColorPalette?> { null }
 private val LocalForegroundSurface = compositionLocalOf<Color?> { null }
 private val LocalForegroundScrim = compositionLocalOf { Color.Transparent }
+internal val LocalGlassInkDarkness = compositionLocalOf<Float?> { null }
 
 internal const val TextContrast = 4.5f
 internal const val IconContrast = 3f
@@ -86,6 +82,40 @@ internal fun readableGlyphForeground(
         (original.blue + direction).coerceIn(0f, 1f), original.alpha)
 }
 
+private fun smoothGlassStep(fraction: Float): Float {
+    val x = fraction.coerceIn(0f, 1f)
+    return x * x * (3f - 2f * x)
+}
+
+/** Follow the visible plate continuously when neutral ink needs to change polarity. */
+internal fun glassPaneForeground(
+    original: Color,
+    surface: Color,
+    minimum: Float,
+    darkness: Float,
+    glyph: Boolean = false,
+    enabled: Boolean = true,
+): Color {
+    if (original.isSpecified && (!isNeutralForeground(original) || original.alpha == 0f)) return original
+    // Black and white have equal contrast near a relative luminance of 0.18.
+    // Blend across that range instead of switching either anchor in one frame.
+    val darkInk = smoothGlassStep((surface.luminance() - .12f) / .12f)
+    if (!original.isSpecified) return lerp(Color.White, Color.Black, darkInk)
+    val deficit = minOf(minimum, NeutralRetentionContrast) - contrastAgainst(original, surface)
+    if (deficit <= 0f) return original
+    // In a light/dark fade the palette already interpolates its ink. Ease out
+    // corrective ink through the middle so it cannot reverse that transition.
+    val stableInk = 1f - smoothGlassStep(darkness / .25f) * smoothGlassStep((1f - darkness) / .25f)
+    val correction = smoothGlassStep(deficit / .18f) * stableInk
+    if (glyph && isGentleGlyph(original, enabled)) {
+        val shift = (.08f - .16f * darkInk) * correction
+        return Color((original.red + shift).coerceIn(0f, 1f),
+            (original.green + shift).coerceIn(0f, 1f),
+            (original.blue + shift).coerceIn(0f, 1f), original.alpha)
+    }
+    return lerp(original, lerp(Color.White, Color.Black, darkInk).copy(alpha = original.alpha), correction)
+}
+
 @Composable
 internal fun surfaceBackdropColor(): Color =
     LocalSurfaceBackdropColor.current ?: LocalAppearance.current.colorPalette.background0.copy(alpha = 1f)
@@ -115,6 +145,7 @@ internal fun SurfaceForegroundContent(
     surface: Color?,
     scrim: Color = Color.Transparent,
     preferMeasuredText: Boolean = false,
+    glassInkDarkness: Float? = LocalGlassInkDarkness.current,
     content: @Composable () -> Unit,
 ) {
     val appearance = LocalAppearance.current
@@ -128,6 +159,7 @@ internal fun SurfaceForegroundContent(
     fun ink(original: Color, minimum: Float, glyph: Boolean = false): Color =
         if (preferMeasuredText && !glyph && surface != null) measuredPlayerTextForeground(original, surface, minimum)
         else if (transition != null) transition.resolve(original, minimum, glyph = glyph)
+        else if (glassInkDarkness != null && surface != null) glassPaneForeground(original, surface, minimum, glassInkDarkness, glyph)
         else if (glyph && surface != null && isNeutralForeground(original) && isGentleGlyph(original, true))
             readableGlyphForeground(original, commonSurface ?: surface, minimum)
         else if (commonNeutral != null && isNeutralForeground(original) && original.alpha > 0f) {
@@ -152,6 +184,7 @@ internal fun SurfaceForegroundContent(
         LocalSurfaceBackdropColor provides if (adapt) surface else LocalSurfaceBackdropColor.current,
         LocalForegroundSurface provides if (adapt) surface else LocalForegroundSurface.current,
         LocalForegroundScrim provides if (adapt) scrim else LocalForegroundScrim.current,
+        LocalGlassInkDarkness provides glassInkDarkness,
         content = content,
     )
 }
@@ -232,7 +265,7 @@ internal data class NeutralForegroundTransition(
                 return readableGlyphForeground(original, actual, minimum, enabled)
             if (plate != null && plate.alpha > 0f)
                 return readableForeground(original, actual, minimum)
-            if (contrastAgainst(original, background) >= minOf(minimum, NeutralRetentionContrast)) return original
+            if (contrastAgainst(original, background) >= minimum) return original
             return decision.anchor?.copy(alpha = original.alpha) ?: readableForeground(original, background, minimum)
         }
         fun endpoint(decision: NeutralForegroundDecision): Color {
@@ -262,23 +295,18 @@ internal data class NeutralForegroundTransition(
 }
 
 @Composable
-internal fun rememberNeutralForegroundFade(surface: Color?, initial: Color): State<NeutralForegroundTransition> {
-    val original = remember { NeutralForegroundDecision(null, null) }
-    var from by remember { mutableStateOf(listOf(WeightedNeutralDecision(original, 1f))) }
-    var to by remember { mutableStateOf(original) }
-    val clock = remember { Animatable(1f) }
-    val decision = remember(surface) { NeutralForegroundDecision(surface, surface?.let(::neutralForeground)) }
-    LaunchedEffect(decision) {
-        if (decision != to) {
-            val retained = NeutralForegroundTransition(from, to, clock.value).frozenBlend()
-            clock.snapTo(0f)
-            from = retained
-            to = decision
-            clock.animateTo(1f, tween(180))
+internal fun rememberNeutralForegroundForSurface(
+    surface: () -> Color?,
+): State<NeutralForegroundTransition> {
+    // The surface already interpolates, so another ink tween would trail it.
+    val currentSurface = rememberUpdatedState(surface)
+    return remember {
+        derivedStateOf {
+            val color = currentSurface.value()
+            val decision = NeutralForegroundDecision(color, color?.let(::neutralForeground))
+            NeutralForegroundTransition(emptyList(), decision, 1f, playerForegroundMemo)
         }
     }
-    // Let the foreground consumers observe the clock instead of invalidating the entire player.
-    return remember { derivedStateOf { NeutralForegroundTransition(from, to, clock.value, playerForegroundMemo) } }
 }
 
 /** Semantic ink before any ancestor surface adjustment, for controls with their own plate. */
@@ -310,6 +338,9 @@ internal fun surfaceGlyphColor(original: Color, plate: Color? = null, minimum: F
     val actual = plate?.let { effectiveSurfaceColor(surface, it) } ?: surface
     val decisionSurface = if (plate == null || plate.alpha == 0f)
         LocalNeutralForegroundSurface.current ?: actual else actual
+    LocalGlassInkDarkness.current?.let {
+        return glassPaneForeground(ink, decisionSurface, minimum, it, glyph = true, enabled = enabled)
+    }
     val target = if (isGentleGlyph(ink, enabled)) readableGlyphForeground(ink, decisionSurface, minimum, enabled)
         else if (contrastAgainst(ink, decisionSurface) >= minOf(minimum, NeutralRetentionContrast)) ink
         else if (commonNeutral != null && (plate == null || plate.alpha == 0f)) commonNeutral.copy(alpha = ink.alpha)

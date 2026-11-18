@@ -1,16 +1,15 @@
 package app.n_zik.android.components.theme
 
 import android.content.SharedPreferences
-import androidx.compose.ui.graphics.Color
 import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.ColorPalette
-import app.n_zik.android.ui.styling.dynamicColorPaletteOf
 import app.n_zik.android.utils.colorPaletteModeKey
 import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.components.player.ARTWORK_METADATA_GRACE_MS
+import app.n_zik.android.components.player.ArtworkDisplayColors
 import app.n_zik.android.components.player.ArtworkColorSnapshot
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
@@ -35,12 +34,14 @@ internal class DynamicAppearanceOwner(
     private val saveWidget: (ColorPalette) -> Unit,
     private val extractionDispatcher: CoroutineDispatcher = NzikDispatchers.DATA,
     private val loadArtwork: (suspend (String) -> ArtworkColorSnapshot?)? = null,
+    private val publishArtwork: ((ArtworkDisplayColors?, Boolean) -> Unit)? = null,
 ) {
     private data class Artwork(val url: String?, val isDark: Boolean)
     private var currentArtwork: Artwork? = null
     private var extractedArtwork: Artwork? = null
     private var extractedPalette: ColorPalette? = null
     private var extractedSnapshot: ArtworkColorSnapshot? = null
+    private var publishedMode = preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
     private var job: Job? = null
     private var request = 0L
     private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
@@ -67,7 +68,12 @@ internal class DynamicAppearanceOwner(
         job = null
     }
 
-    fun refresh(url: String?, animate: Boolean = false, awaitArtworkMetadata: Boolean = false) {
+    fun refresh(
+        url: String?,
+        animate: Boolean = false,
+        awaitArtworkMetadata: Boolean = false,
+        shouldAnimate: () -> Boolean = { animate },
+    ) {
         cancel()
         if (!isDynamic()) return
         val mode = preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
@@ -85,10 +91,10 @@ internal class DynamicAppearanceOwner(
                 job = scope.launch {
                     // Media3 may publish the artwork URI in a separate metadata event.
                     delay(ARTWORK_METADATA_GRACE_MS)
-                    if (isDynamic()) publishPalette(fallback(dark), animate)
+                    if (isDynamic()) publishPalette(dynamicArtworkFallback(dark), shouldAnimate())
                 }
             } else {
-                publishPalette(fallback(dark), animate)
+                publishPalette(dynamicArtworkFallback(dark), shouldAnimate())
             }
             return
         }
@@ -101,9 +107,9 @@ internal class DynamicAppearanceOwner(
                 coroutineContext.ensureActive()
                 if (version != request || !isDynamic()) return@launch
                 extractedArtwork = artwork
-                extractedPalette = raw ?: fallback(dark)
+                extractedPalette = raw ?: dynamicArtworkFallback(dark)
                 extractedSnapshot = snapshot
-                publishPalette(extractedPalette ?: fallback(dark), animate)
+                publishPalette(extractedPalette ?: dynamicArtworkFallback(dark), shouldAnimate())
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -115,19 +121,21 @@ internal class DynamicAppearanceOwner(
     private fun isDynamic() =
         preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic) == ColorPaletteName.Dynamic
 
-    private fun fallback(dark: Boolean) =
-        dynamicColorPaletteOf(Color(0.54509807f, 0.36078432f, 0.9647059f), dark)
-
     private fun publishPalette(raw: ColorPalette, animate: Boolean) {
         val currentArtwork = currentArtwork ?: return
         val keepDark = preferences.getBoolean(dynamicThemeRespectBrightnessKey, DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT)
-        val palette = extractedSnapshot?.display(currentArtwork.isDark, keepDark)?.palette
-            ?: raw.keepMonochromeColorsDark(keepDark)
+        val display = extractedSnapshot?.display(currentArtwork.isDark, keepDark)
+        val palette = display?.palette ?: raw.keepMonochromeColorsDark(keepDark)
         val current = appearance()
+        val mode = preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
         val next = current.copy(colorPalette = palette, typography = current.typography.withColor(palette.text))
-            .forPaletteMode(preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark))
+            .forPaletteMode(mode)
         systemBars(next.colorPalette.isDark)
-        if (current != next) publish(next, animate)
+        if (current != next || mode != publishedMode) {
+            publishedMode = mode
+            publish(next, animate)
+        }
+        publishArtwork?.invoke(display, animate)
         saveWidget(next.colorPalette)
     }
 }

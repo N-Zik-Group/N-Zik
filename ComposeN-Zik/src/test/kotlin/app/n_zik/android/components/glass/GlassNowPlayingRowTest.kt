@@ -245,7 +245,7 @@ class GlassNowPlayingRowTest {
             val overlayBackdrop = rememberLayerBackdrop()
             SideEffect {
                 publishedColor = artworkColor
-                host.artworkColor = artworkColor
+                host.artworkTint = GlassArtworkTint(artworkColor)
             }
             CompositionLocalProvider(
                 LocalAppearance provides Appearance(

@@ -15,6 +15,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.enums.ColorPaletteMode
@@ -29,6 +31,9 @@ import app.n_zik.android.utils.verticalFadingEdge
 import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
 import app.n_zik.android.components.player.lyrics.utils.HtmlDecoder
+import app.n_zik.android.components.glass.LocalSurfaceBackdropColor
+import app.n_zik.android.components.glass.measuredPlayerTextForeground
+import app.n_zik.android.components.player.LocalPlayerBackdropSampling
 
 /** Vertical spacing (dp) for header/footer in lyrics views. */
 private val LYRICS_SPACING = 24.dp
@@ -79,16 +84,30 @@ fun UnsyncedLyricsView(
         translatedText = decodedText
     }
 
+    val scrim = if (isDisplayed && !showlyricsthumbnail) when (lyricsBackground) {
+        LyricsBackground.Black -> Color.Black.copy(alpha = .4f)
+        LyricsBackground.White -> Color.White.copy(alpha = .4f)
+        else -> Color.Transparent
+    } else Color.Transparent
+    val coverInk = if (lyricsColor == LyricsColor.Cover) {
+        // Even the brightest cover is dark under the on-cover scene scrim.
+        val underlay = if (showlyricsthumbnail) LyricsCoverScrim.compositeOver(Color.White)
+            else LocalSurfaceBackdropColor.current ?: LocalPlayerBackdropSampling.current?.foregroundSurface
+        val highlight = if (!showlyricsthumbnail) when (lyricsHighlight) {
+            LyricsHighlight.Black -> Color.Black.copy(alpha = .5f)
+            LyricsHighlight.White -> Color.White.copy(alpha = .5f)
+            else -> Color.Transparent
+        } else Color.Transparent
+        underlay?.let {
+            val surface = highlight.compositeOver(scrim.compositeOver(it))
+            measuredPlayerTextForeground(Color(dominantColor), surface).toArgb()
+        } ?: dominantColor
+    } else dominantColor
+
     Column(
         modifier = Modifier
             .verticalFadingEdge()
-            .background(
-                if (isDisplayed && !showlyricsthumbnail) if (lyricsBackground == LyricsBackground.Black) Color.Black.copy(
-                    0.4f
-                ) else if (lyricsBackground == LyricsBackground.White) Color.White.copy(
-                    0.4f
-                ) else Color.Transparent else Color.Transparent
-            ),
+            .background(scrim),
     ) {
         Box(
             modifier = Modifier
@@ -111,7 +130,7 @@ fun UnsyncedLyricsView(
                 lyricsSizeAnimate = false, // Not used for unsynced
                 lyricsColor = lyricsColor,
                 lyricsCustomColor = lyricsCustomColor,
-                dominantColor = dominantColor,
+                dominantColor = coverInk,
                 lyricsHighlight = lyricsHighlight,
                 clickLyricsText = clickLyricsText,
                 onClick = onDismiss

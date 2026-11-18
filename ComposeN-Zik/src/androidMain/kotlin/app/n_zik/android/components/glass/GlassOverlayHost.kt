@@ -122,9 +122,7 @@ class GlassMenuHostState {
     var foregroundBackdrop by mutableStateOf<Backdrop?>(null)
         internal set
     val modalBackdrop: Backdrop? get() = foregroundBackdrop ?: sceneBackdrop ?: overlayBackdrop ?: backdrop
-    var artworkColor by mutableStateOf<Color?>(null)
-    var artworkForceDark by mutableStateOf(false)
-    var backdropLuminance by mutableStateOf(0f)
+    internal var artworkTint by mutableStateOf(GlassArtworkTint())
     var standaloneSettings by mutableStateOf(false)
     val dialogs = GlassDialogHostState()
     internal val nativeOverlays = mutableStateListOf<Any>()

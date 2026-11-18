@@ -31,7 +31,17 @@ fun rememberArtworkDisplayColors(
     isDark: Boolean,
     revision: String? = null,
     awaitArtworkMetadata: Boolean = false,
-): ArtworkDisplayColors? {
+): ArtworkDisplayColors? = rememberArtworkDisplayResult(uri, isDark, revision, awaitArtworkMetadata).colors
+
+internal data class ArtworkDisplayResult(val colors: ArtworkDisplayColors?, val resolved: Boolean)
+
+@Composable
+internal fun rememberArtworkDisplayResult(
+    uri: String?,
+    isDark: Boolean,
+    revision: String? = null,
+    awaitArtworkMetadata: Boolean = false,
+): ArtworkDisplayResult {
     val context = LocalContext.current.applicationContext
     val profile = ImageCacheFactory.rememberArtworkProfile()
     val preferences = remember(context, profile) { context.preferences }
@@ -51,20 +61,25 @@ fun rememberArtworkDisplayColors(
     val localRevision = ImageCacheFactory.rememberLocalArtworkRevision(rememberDisplayArtworkSource(uri))
     var raw by remember(profile) { mutableStateOf<ArtworkColorSnapshot?>(null) }
     val missingUri = uri.isNullOrBlank() || uri == "null"
-    LaunchedEffect(uri, profile, revision, generation, localRevision, awaitArtworkMetadata) {
-        if (missingUri && awaitArtworkMetadata && raw != null) delay(ARTWORK_METADATA_GRACE_MS)
+    val request = remember(uri, profile, revision, generation, localRevision, awaitArtworkMetadata) { Any() }
+    var completedRequest by remember { mutableStateOf<Any?>(null) }
+    LaunchedEffect(request) {
+        if (missingUri && awaitArtworkMetadata) delay(ARTWORK_METADATA_GRACE_MS)
         try {
             val loaded = SharedArtworkColors.load(context, uri, revision)
             currentCoroutineContext().ensureActive()
             raw = loaded
+            completedRequest = request
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
             raw = null
+            completedRequest = request
             Timber.tag("ArtworkColors").w(error, "Unable to analyze artwork")
         }
     }
-    return remember(missingUri, awaitArtworkMetadata, raw, isDark, keepDark) {
+    val colors = remember(missingUri, awaitArtworkMetadata, raw, isDark, keepDark) {
         raw?.takeUnless { missingUri && !awaitArtworkMetadata }?.display(isDark, keepDark)
     }
+    return ArtworkDisplayResult(colors, completedRequest === request)
 }

@@ -32,18 +32,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.isSpecified
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.DialogWindowProvider
-import androidx.core.graphics.ColorUtils
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
 import app.n_zik.android.utils.hideStatusBarKey
 import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.menu.CenteredMenuSheetDragHandle
 import app.n_zik.android.components.menu.MenuSheetDragHandle
@@ -104,8 +101,8 @@ fun CustomModalBottomSheet(
                     exportedBackdrop = exported,
                 ) },
             ) {
-                val foreground = if (colorPalette().isDark) glassArtworkForeground(glass, contentColor)
-                    else LocalContentColor.current
+                val foreground = if (contentColor.isSpecified)
+                    readableForeground(contentColor, surfaceBackdropColor(), TextContrast) else LocalContentColor.current
                 CompositionLocalProvider(LocalContentColor provides foreground) {
                     dragHandle?.let { CenteredMenuSheetDragHandle(it) }
                     content()
@@ -179,16 +176,10 @@ fun CustomModalBottomSheet(
                 else Modifier,
             ).windowInsetsPadding(contentWindowInsets())) {
                 val view = LocalView.current
-                val colorPalette = colorPalette()
                 (view.parent as? DialogWindowProvider)?.window?.let { window ->
                     val hideStatusBar by rememberPreference(hideStatusBarKey, false)
-                    val useEstimatedContrast = !colorPalette.isDark && containerColor != Color.Transparent
-                    val legacyLightBars = ColorUtils.calculateLuminance(sheetContainerColor.toArgb()) > 0.5
-                    val lightNavigation = if (useEstimatedContrast)
-                        neutralForeground(effectiveSurfaceColor(nativeUnderlay, foregroundFill)) == Color.Black
-                    else legacyLightBars
-                    val lightStatus = if (useEstimatedContrast)
-                        neutralForeground(nativeUnderlay) == Color.Black else legacyLightBars
+                    val lightNavigation = neutralForeground(effectiveSurfaceColor(nativeUnderlay, foregroundFill)) == Color.Black
+                    val lightStatus = neutralForeground(nativeUnderlay) == Color.Black
                     DisposableEffect(window, lightNavigation, lightStatus, hideStatusBar) {
 
                         val applyInsets = {
@@ -246,7 +237,8 @@ fun CustomModalBottomSheet(
                     GlassRippleProvider(glass) {
                         Column(Modifier.fillMaxWidth()) {
                             if (containerColor != Color.Transparent) {
-                                SurfaceForegroundContent(effectiveSurfaceColor(nativeUnderlay, foregroundFill)) {
+                                val darkness = if (glassSheet) glassSurfaceDarkness(glass.forArea(GlassArea.Menus)) else null
+                                SurfaceForegroundContent(effectiveSurfaceColor(nativeUnderlay, foregroundFill), glassInkDarkness = darkness) {
                                     dragHandle?.let { NativeMenuSheetDragHandle(sheetState, onDismissRequest, it) }
                                     content()
                                 }

@@ -1155,7 +1155,7 @@ class MainActivity :
         setInterfaceContent {
             // Issue #881 (gh-881), Phase 3.1: lifecycle + first-frame probe (frozen UI after wake).
             UiFrameClockDiagnostics()
-            val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
+            val selectedPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
 
             //TODO: Check internet connection
 
@@ -1224,10 +1224,31 @@ class MainActivity :
             }
 
             var fadeFromAppearance by remember { mutableStateOf<Appearance?>(null) }
+            var artworkTint by remember(preferences) {
+                mutableStateOf(app.n_zik.android.components.glass.GlassArtworkTint())
+            }
+            val glassMenuHost = remember { GlassMenuHostState() }
+            LaunchedEffect(glassMenuHost, selectedPaletteName) {
+                if (selectedPaletteName != ColorPaletteName.Dynamic) {
+                    snapshotFlow { glassMenuHost.artworkTint }.collect { artworkTint = it }
+                }
+            }
+
+            fun appearanceSurfaceMix(palette: ColorPalette) = nativeSurfaceMix(
+                preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark),
+                preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic),
+                palette,
+            )
+
+            var surfaceMix by remember { mutableStateOf(appearanceSurfaceMix(appearance.colorPalette)) }
 
             fun updateAppearance(newAppearance: Appearance, animateGlobal: Boolean = false) {
+                val target = newAppearance.forPaletteMode(preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark))
+                val targetSurfaceMix = appearanceSurfaceMix(target.colorPalette)
+                if (target == appearance && targetSurfaceMix == surfaceMix) return
                 fadeFromAppearance = if (animateGlobal) appearance else null
-                appearance = newAppearance.forPaletteMode(preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark))
+                appearance = target
+                surfaceMix = targetSurfaceMix
             }
 
             val dynamicAppearanceOwner = remember(preferences, coroutineScope) {
@@ -1239,9 +1260,19 @@ class MainActivity :
                     loadArtwork = { url ->
                         app.n_zik.android.components.player.SharedArtworkColors.load(this@MainActivity, url)
                     },
+                    publishArtwork = { colors, animate ->
+                        val nextTint = app.n_zik.android.components.glass.GlassArtworkTint(
+                            colors?.dominant, if (colors?.forceDark == true) 1f else 0f,
+                        )
+                        if (artworkTint != nextTint) {
+                            if (animate && fadeFromAppearance == null) fadeFromAppearance = appearance
+                            artworkTint = nextTint
+                        }
+                    },
                     appearance = { appearance },
                     publish = { next, animate -> updateAppearance(next, animate) },
-                    systemBars = ::setSystemBarAppearance,
+                    // Compose updates the bars from the displayed page color below.
+                    systemBars = {},
                     saveWidget = { palette ->
                         savePaletteForWidget(palette)
                         val service = binder
@@ -1257,10 +1288,15 @@ class MainActivity :
                 onDispose { dynamicAppearanceOwner.close() }
             }
 
-            fun setDynamicPalette(player: Player?, animateTheme: Boolean = false) {
+            fun setDynamicPalette(
+                player: Player?,
+                animateTheme: Boolean = false,
+                shouldAnimate: () -> Boolean = { animateTheme },
+            ) {
                 val item = player?.currentMediaItem
                 val artworkUri = item?.let { player.mediaMetadata.artworkUri ?: it.mediaMetadata.artworkUri }
-                dynamicAppearanceOwner.refresh(artworkUri?.toString(), animateTheme, awaitArtworkMetadata = item != null)
+                dynamicAppearanceOwner.refresh(artworkUri?.toString(), animateTheme,
+                    awaitArtworkMetadata = item != null, shouldAnimate = shouldAnimate)
             }
 
             val artworkColorGeneration by app.n_zik.android.components.player.SharedArtworkColors.generation.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
@@ -1452,7 +1488,6 @@ class MainActivity :
                                         colorPalette = colorPalette,
                                         typography = appearance.typography.withColor(colorPalette.text),
                                     ).forPaletteMode(colorPaletteMode)
-                                    setSystemBarAppearance(normalized.colorPalette.isDark)
 
                                     updateAppearance(
                                         normalized,
@@ -1526,11 +1561,6 @@ class MainActivity :
                 }
             }
 
-            val rippleConfiguration =
-                remember(appearance.colorPalette.text, appearance.colorPalette.isDark) {
-                    RippleConfiguration(color = appearance.colorPalette.text)
-                }
-
             val shimmerTheme = remember {
                 defaultShimmerTheme.copy(
                     animationSpec = infiniteRepeatable(
@@ -1547,16 +1577,6 @@ class MainActivity :
                         Color.Unspecified.copy(alpha = 0.25f),
                     ),
                 )
-            }
-
-            // Saved palettes retain accent + darkness, not the Pitch Black mode. Normalize
-            // before the first frame, without waiting for a binder or playback callback.
-            val finalAppearance = remember(appearance, colorPaletteMode) {
-                appearance.forPaletteMode(colorPaletteMode)
-            }
-
-            SideEffect {
-                setSystemBarAppearance(finalAppearance.colorPalette.isDark)
             }
 
             val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -1631,7 +1651,6 @@ class MainActivity :
                 scaffoldBars.reveal()
             }
 
-            val glassMenuHost = remember { GlassMenuHostState() }
             val floatingDockState = remember { FloatingDockState() }
             val classicDock = dockNavigationPosition == NavigationBarPosition.Bottom
             val topDock = dockNavigationPosition == NavigationBarPosition.Top
@@ -1720,10 +1739,13 @@ class MainActivity :
             val bottomBarOffsetState = scaffoldBars.bottomOffset
 
             ProvideAnimatedAppearance(
-                target = finalAppearance,
+                target = appearance,
                 fadeFrom = fadeFromAppearance,
-                onFadeComplete = { fadeFromAppearance = null }
+                onFadeComplete = { fadeFromAppearance = null },
+                targetNativeSurfaceMix = surfaceMix,
+                targetArtworkTint = if (selectedPaletteName == ColorPaletteName.Dynamic) artworkTint else null,
             ) {
+                PageSystemBarAppearance()
                 BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxSize()
@@ -2172,7 +2194,9 @@ class MainActivity :
                             LocalGlassMenuHost provides glassMenuHost,
                             app.n_zik.android.components.glass.LocalGlassPlayerOverlayActive provides
                                 (!playerSheetState.isDismissed && !playerSheetState.isCollapsed),
-                            LocalRippleConfiguration provides rippleConfiguration,
+                            LocalRippleConfiguration provides LocalAppearance.current.colorPalette.text.let { color ->
+                                remember(color) { RippleConfiguration(color = color) }
+                            },
                             LocalShimmerTheme provides shimmerTheme,
                             LocalPlayerServiceBinder provides binder,
                             LocalPlayerMusicVideo provides videoSession.takeUnless { pipState.value },
@@ -2206,7 +2230,7 @@ class MainActivity :
                                 enabled = sceneGlassSettings.enabled && glassRenderer(sceneGlassSettings) != GlassRenderer.Tint,
                                 needsLiveBackdrop = toastNeedsLiveBackdrop || miniQueueVisible,
                                 refreshKey = listOf(
-                                    currentMediaId, finalAppearance.colorPalette,
+                                    currentMediaId, appearance.colorPalette,
                                     navController.currentBackStackEntryAsState().value?.id,
                                     playerSheetState.isDismissed, playerSheetState.isCollapsed,
                                     playerSheetState.isExpanded,
@@ -2410,11 +2434,6 @@ class MainActivity :
                                             compositingStrategy = CompositingStrategy.ModulateAlpha
                                         }
                                 ) {
-                                    // Palette fade scope: the global palette switches in one
-                                    // step, only this subtree (mini-player + full player)
-//
-                                    // animates the transition
-                                    PaletteFade(artworkInMotion = artworkInMotion) {
                                         CustomBottomSheet(
                                             state = playerSheetState,
                                             modifier = Modifier.fillMaxWidth(),
@@ -2497,13 +2516,14 @@ class MainActivity :
                                                 }
                                             }
                                         ) {
-                                            Player(navController, artworkInMotion = artworkInMotion) {
-                                                coroutineScope.launch {
-                                                    playerSheetState.hide()
+                                            PaletteFade(artworkInMotion = artworkInMotion) {
+                                                Player(navController, artworkInMotion = artworkInMotion) {
+                                                    coroutineScope.launch {
+                                                        playerSheetState.hide()
+                                                    }
                                                 }
                                             }
                                         }
-                                    }
                                 }
                             }
 
@@ -2591,7 +2611,7 @@ class MainActivity :
 
                     val paletteArtworkListener = DynamicPaletteArtworkListener(player) {
                         // The expanded player owns its scoped PaletteFade. Its covered screen needs only the target.
-                        setDynamicPalette(player, animateTheme = !playerSheetState.isExpanded)
+                        setDynamicPalette(player) { !playerSheetState.isExpanded }
                     }
                     player.addListener(paletteArtworkListener)
                     paletteArtworkListener.publishCurrentArtwork()
@@ -3024,6 +3044,13 @@ class MainActivity :
             colorPalette = customColorPalette(colorPalette, this@MainActivity, isSystemInDarkTheme)
         }
         colorPalette
+    }
+
+    @Composable
+    private fun PageSystemBarAppearance() {
+        val background = LocalAppearance.current.colorPalette.background0
+        val dark = app.n_zik.android.components.glass.neutralForeground(background) == Color.White
+        SideEffect { setSystemBarAppearance(dark) }
     }
 
     private fun setSystemBarAppearance(isDark: Boolean) {

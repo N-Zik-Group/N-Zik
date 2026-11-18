@@ -24,17 +24,27 @@ data class ArtworkColorSnapshot internal constructor(
         val originalColors = if (isDark) darkColors else lightColors
         val source = originalColors?.dominant?.let(::Color) ?: fallbackDominant
         val forceDark = keepDark && isMonochrome && source != null
-        val palette = if (forceDark) dynamicColorPaletteOf(source ?: Color.Gray, true) else originalPalette
-        val background = if (forceDark) palette?.background1
-            else originalColors?.let { m3eCoverBackgroundColor(it.dominant, !isDark) } ?: source
-        val foreground = if (forceDark) palette?.text
-            else originalColors?.let { Color(m3eCoverForegroundArgb(it.dominant, !isDark)) } ?: source
-        val colors = if (forceDark && background != null) {
+        val isExtremeBlack = fallbackDominant == Color.Black && artworkSamples.all { it == Color.Black }
+        val palette = when {
+            forceDark || isExtremeBlack -> dynamicColorPaletteOf(source ?: Color.Gray, isDark || forceDark)
+            else -> originalPalette
+        }
+        val background = when {
+            isExtremeBlack -> Color.Black
+            forceDark -> palette?.background1
+            else -> originalColors?.let { m3eCoverBackgroundColor(it.dominant, !isDark) } ?: source
+        }
+        val foreground = when {
+            isExtremeBlack -> Color.White
+            forceDark -> palette?.text
+            else -> originalColors?.let { Color(m3eCoverForegroundArgb(it.dominant, !isDark)) } ?: source
+        }
+        val colors = if ((forceDark || isExtremeBlack) && background != null) {
             val value = background.toArgb()
             M3ECoverColors(value, value, value, value, value, value, value)
         } else originalColors
         return ArtworkDisplayColors(palette, colors, if (forceDark) background else source,
-            background, foreground, forceDark, isMonochrome, artworkSamples)
+            background, foreground, forceDark, isMonochrome, artworkSamples, isExtremeBlack)
     }
 }
 
@@ -47,6 +57,7 @@ data class ArtworkDisplayColors(
     val forceDark: Boolean,
     val isMonochrome: Boolean,
     internal val artworkSamples: List<Color> = emptyList(),
+    internal val isExtremeBlack: Boolean = false,
 )
 
 /** One normal quantization; the existing pure-white/black recovery is shared too. */

@@ -33,15 +33,17 @@ import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassIndicatorSilhouette
 import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.effectiveSurfaceColor
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
+import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.glass.glassMaterial
+import app.n_zik.android.components.glass.neutralForeground
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.rememberInlineGlassBackdrop
 import app.n_zik.android.components.glass.usesGlassContour
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.pullrefresh.rememberPullRefreshOverlayInsetProvider
-import app.n_zik.android.isPitchBlackSurface
 
 @Composable
 fun AppPullToRefreshBox(
@@ -53,7 +55,6 @@ fun AppPullToRefreshBox(
 ) {
     val pullRefreshState = rememberPullToRefreshState()
     val colorPalette = LocalAppearance.current.colorPalette
-    val pitchBlack = isPitchBlackSurface()
     val settings = rememberGlassSettings()
     var viewportCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val indicatorInset = rememberPullRefreshOverlayInsetProvider {
@@ -70,11 +71,10 @@ fun AppPullToRefreshBox(
             val placement = Modifier.align(Alignment.TopCenter).offset {
                 IntOffset(0, with(density) { indicatorInset().roundToPx() })
             }
-            val nativeColor = if (pitchBlack || !colorPalette.isDark) Color.Black else Color.White
             val area = GlassArea.PullToRefresh
             if (settings.usesGlassMaterial(area) || settings.usesGlassContour(area)) {
                 StyledPullRefreshIndicator(
-                    pullRefreshState, isRefreshing, settings, colorPalette.accent, nativeColor, placement, useLiveGlassBackdrop,
+                    pullRefreshState, isRefreshing, settings, colorPalette.accent, placement, useLiveGlassBackdrop,
                 )
             } else {
                 PullToRefreshDefaults.LoadingIndicator(
@@ -82,7 +82,7 @@ fun AppPullToRefreshBox(
                     isRefreshing = isRefreshing,
                     modifier = placement,
                     containerColor = colorPalette.accent,
-                    color = nativeColor,
+                    color = neutralForeground(colorPalette.accent),
                 )
             }
         },
@@ -96,15 +96,18 @@ private fun StyledPullRefreshIndicator(
     isRefreshing: Boolean,
     settings: GlassSettings,
     nativeFill: Color,
-    nativeColor: Color,
     modifier: Modifier,
     useLiveGlassBackdrop: Boolean,
 ) {
     val area = GlassArea.PullToRefresh
     val shape = PullToRefreshDefaults.indicatorShape
     val material = settings.usesGlassMaterial(area)
+    val page = LocalAppearance.current.colorPalette.background0
+    val film = if (material && useLiveGlassBackdrop) glassFilmColor(settings.forArea(area), nativeFill, menu = false)
+        else nativeFill
+    val nativeColor = neutralForeground(effectiveSurfaceColor(page, film))
     val plate = if (material && useLiveGlassBackdrop) {
-        val backdrop = rememberInlineGlassBackdrop(LocalAppearance.current.colorPalette.background0)
+        val backdrop = rememberInlineGlassBackdrop(page)
         Modifier.glassMaterial(
             settings.forArea(area), shape, ownBackdrop = backdrop, filmColor = nativeFill, drawShadow = false,
         )

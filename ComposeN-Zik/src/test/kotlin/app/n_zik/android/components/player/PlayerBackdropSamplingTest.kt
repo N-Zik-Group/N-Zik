@@ -12,6 +12,23 @@ import org.junit.Assert.assertFalse
 import org.junit.Test
 
 class PlayerBackdropSamplingTest {
+    @Test fun `preview updates each region without freezing the intermediate frame`() {
+        val state = PlayerBackdropSampling(previousSurface = Color.Gray)
+        val top = Rect(0f, 0f, 100f, 100f)
+        val bottom = Rect(0f, 100f, 100f, 200f)
+        val size = IntSize(100, 200)
+        state.registerRegion("controls", bottom)
+        val pixels = IntArray(32 * 64) { if (it / 32 < 32) -1 else 0xFF000000.toInt() }
+        state.publish(pixels, Offset.Zero, size, settled = false)
+        assertEquals(Color.White, state.colorAt(top))
+        assertEquals(Color.Black, state.foregroundSurface)
+        assertFalse(state.finished)
+
+        state.publish(IntArray(32 * 64) { -1 }, Offset.Zero, size)
+        assertEquals(Color.White, state.colorAt(bottom))
+        assertEquals(Color.White, state.commonSurface)
+        assertTrue(state.finished)
+    }
     @Test fun `text takes the darker part of a mixed band into account before choosing ink`() {
         val size = IntSize(8, 1)
         val region = Rect(0f, 0f, 1f, 1f)

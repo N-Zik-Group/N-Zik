@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 
@@ -20,7 +21,7 @@ private class NativeRippleLocals(
     val indication: Indication,
 )
 
-private val LocalNativeRippleLocals = staticCompositionLocalOf<NativeRippleLocals?> { null }
+private val LocalNativeRippleLocals = compositionLocalOf<NativeRippleLocals?> { null }
 
 /** Changes only indication styling, leaving native click, long-click and scroll handling intact. */
 @Composable

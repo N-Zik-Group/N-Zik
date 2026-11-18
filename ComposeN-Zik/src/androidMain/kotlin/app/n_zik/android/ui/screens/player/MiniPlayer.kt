@@ -221,6 +221,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import app.n_zik.android.LocalIsShowingVisualizer
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.ui.platform.LocalDensity
 import app.n_zik.android.utils.discoverKey
 import app.n_zik.android.LocalIsShowingLyrics
@@ -233,6 +234,11 @@ import android.content.Context
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.player.rememberArtworkDisplayColors
+import app.n_zik.android.components.player.rememberPlayerColorFade
+import app.n_zik.android.components.theme.LocalPaletteFadeTarget
+import androidx.compose.ui.graphics.lerp
+import app.n_zik.android.components.glass.LocalGlassArtworkTint
+import app.n_zik.android.components.theme.LocalNativeSurfaceMix
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -414,19 +420,29 @@ fun MiniPlayer(
     val activeButtons = expandedButtons
 
     val color = colorPalette()
+    val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
     val lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
 
-    val coverDisplay = rememberArtworkDisplayColors(mediaItem.mediaMetadata.artworkUri?.toString(), !lightTheme)
-
     val playerControlsColors by rememberPreference(playerControlsColorsKey, PlayerControlsColors.Monochrome)
-    val controlsColorText = when (playerControlsColors) {
-        PlayerControlsColors.Cover -> if (coverDisplay?.forceDark == true)
-            coverDisplay.foreground ?: color.accent else coverDisplay?.palette?.accent ?: color.accent
+    val controlsColorTextState = when (playerControlsColors) {
+        PlayerControlsColors.Cover -> {
+            val appArtwork = LocalGlassArtworkTint.current
+            if (colorPaletteName == ColorPaletteName.Dynamic && appArtwork != null) {
+                rememberUpdatedState(lerp(color.accent, color.text, appArtwork.value.darkness))
+            } else {
+                val coverDisplay = rememberArtworkDisplayColors(
+                    mediaItem.mediaMetadata.artworkUri?.toString(), !lightTheme, awaitArtworkMetadata = true,
+                )
+                val coverAccent = if (coverDisplay?.forceDark == true) coverDisplay.foreground else coverDisplay?.palette?.accent
+                val themeAccent = LocalPaletteFadeTarget.current?.colorPalette?.accent ?: color.accent
+                rememberPlayerColorFade(coverAccent ?: themeAccent, active = true, interpolate = ::lerp)
+            }
+        }
         // Monochrome follows the effective palette tone, not a hardcoded white
         // (spec-achromatic-ramp-luminance-cap)
-        PlayerControlsColors.Monochrome -> monochromeControlsColor(colorPalette())
-        else -> colorPalette().accent
+        PlayerControlsColors.Monochrome -> rememberUpdatedState(monochromeControlsColor(color))
+        else -> rememberUpdatedState(color.accent)
     }
 
     fun toggleLike() {
@@ -518,7 +534,6 @@ fun MiniPlayer(
             .collect { dismissState.reset() }
     }
     val backgroundProgress by rememberPreference(backgroundProgressKey, BackgroundProgress.MiniPlayer)
-    val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
     val effectRotationEnabled by rememberPreference(effectRotationKey, false)
     val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = stringResource(R.string.player_debug_should_be_playing))
     val playPauseRoundness by shouldBePlayingTransition.animateDp(
@@ -678,6 +693,9 @@ fun MiniPlayer(
         }
     ) {
         val colorPalette = colorPalette()
+        val nativeBackground = surfaceColor(colorPalette.background2)
+        val miniPlayerBlack = LocalNativeSurfaceMix.current?.miniPlayerBlack
+            ?: if (colorPaletteName == ColorPaletteName.PureBlack || colorPaletteName == ColorPaletteName.ModernBlack) 1f else 0f
         Box(
             modifier = Modifier
                 .then(
@@ -704,10 +722,7 @@ fun MiniPlayer(
                 .glassMiniPlayerBodyVisibility(glass, miniBodyProgress)
                 .glassMiniPlayerBackground(
                     glass, shape, glassBackdrop,
-                    when (colorPaletteName) {
-                        ColorPaletteName.PureBlack, ColorPaletteName.ModernBlack -> Color.Black
-                        else -> surfaceColor(colorPalette.background2)
-                    },
+                    lerp(nativeBackground, Color.Black, miniPlayerBlack),
                     exportedBackdrop = controlsBackdrop,
                     foldInProgress = folding.takeIf { isFloating || NavigationBarPosition.Bottom.isCurrent() },
                     progressColor = colorPalette.favoritesOverlay,
@@ -862,7 +877,7 @@ fun MiniPlayer(
                                 Image(
                                     painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
                                     contentDescription = null,
-                                    colorFilter = ColorFilter.tint(miniPlayerPlayPauseGlyphColor(glass, controlsColorText)),
+                                    colorFilter = ColorFilter.tint(miniPlayerPlayPauseGlyphColor(glass, controlsColorTextState.value)),
                                     modifier = Modifier
                                         .rotate(rotationAngle)
                                         .align(Alignment.Center)
@@ -874,7 +889,7 @@ fun MiniPlayer(
                         MiniPlayerSlotButton(
                             button = button,
                             likeState = likeState,
-                            controlsColorText = controlsColorText,
+                            controlsColorTextState = controlsColorTextState,
                             rotationAngle = rotationAngle,
                             onLikeClick = ::toggleLike,
                             onAudioOutputClick = {
@@ -978,7 +993,7 @@ private fun Modifier.miniFoldSize(
 private fun MiniPlayerSlotButton(
     button: MiniPlayerButton?,
     likeState: Boolean?,
-    controlsColorText: androidx.compose.ui.graphics.Color,
+    controlsColorTextState: State<Color>,
     rotationAngle: Float,
     onLikeClick: () -> Unit,
     onAudioOutputClick: () -> Unit,
@@ -996,6 +1011,7 @@ private fun MiniPlayerSlotButton(
     onClosePlayer: () -> Unit
 ) {
     if (button == null) return
+    val controlsColorText = controlsColorTextState.value
     val requestQueue = LocalMiniPlayerQueueRequest.current
 
     // Listen Together guest lock (spec-listen-together): guests in a room cannot

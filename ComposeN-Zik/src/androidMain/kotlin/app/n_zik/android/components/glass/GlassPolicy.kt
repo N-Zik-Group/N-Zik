@@ -8,6 +8,7 @@ import android.os.Build
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
@@ -18,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.utils.rememberPreference
@@ -25,17 +27,36 @@ import app.n_zik.android.utils.activeProfileKey
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.theme.paletteDarkness
 
 val LocalGlassArtworkColor = staticCompositionLocalOf<Color?> { null }
+internal val LocalGlassArtworkTint = staticCompositionLocalOf<State<GlassArtworkTint>?> { null }
 
 @Composable
-internal fun glassSurfaceIsDark(settings: GlassSettings): Boolean =
-    colorPalette().isDark || glassArtworkForcesDark(settings)
+internal fun currentGlassArtworkTint(): GlassArtworkTint? =
+    LocalGlassArtworkTint.current?.value ?: LocalGlassMenuHost.current?.artworkTint
+
+@Composable
+internal fun glassSurfaceDarkness(settings: GlassSettings): Float =
+    maxOf(paletteDarkness(), glassArtworkDarkness(settings))
 
 @Composable
 internal fun glassArtworkForcesDark(settings: GlassSettings): Boolean =
-    settings.source == GlassTintSource.Artwork &&
-        LocalGlassMenuHost.current?.artworkForceDark == true
+    glassArtworkDarkness(settings) > 0f
+
+@Composable
+internal fun glassArtworkDarkness(settings: GlassSettings): Float =
+    if (settings.source == GlassTintSource.Artwork) currentGlassArtworkTint()?.darkness ?: 0f else 0f
+
+@Composable
+internal fun glassArtworkColor(): Color? {
+    val scoped = LocalGlassArtworkTint.current
+    if (scoped == null) LocalGlassArtworkColor.current?.let { return it }
+    val artwork = currentGlassArtworkTint()?.color
+    if (artwork == null) return null
+    return if (artwork.alpha == 1f) artwork else lerp(colorPalette().accent, artwork.copy(alpha = 1f), artwork.alpha)
+}
+
 const val glassEnabledKey = "liquidGlassEnabled"
 
 /** Fresh installations opt in explicitly; persisted choices remain authoritative. */
@@ -390,7 +411,7 @@ fun glassForeground(tint: Color): Color = if (tint.luminance() > .45f) Color(0xF
 fun glassTint(settings: GlassSettings): Color = when (settings.source) {
     GlassTintSource.None -> Color.Unspecified
     GlassTintSource.ThemeAccent -> colorPalette().accent
-    GlassTintSource.Artwork -> LocalGlassArtworkColor.current ?: LocalGlassMenuHost.current?.artworkColor ?: colorPalette().accent
+    GlassTintSource.Artwork -> glassArtworkColor() ?: colorPalette().accent
     GlassTintSource.SystemAccent -> if (Build.VERSION.SDK_INT >= 31) Color(LocalContext.current.getColor(android.R.color.system_accent1_400)) else Color.Unspecified
     GlassTintSource.Custom -> Color(settings.customColor)
 }

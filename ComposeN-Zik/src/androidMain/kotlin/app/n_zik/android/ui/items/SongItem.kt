@@ -58,7 +58,6 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.colorPalette
-import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.enums.DownloadedStateMedia
 import kotlinx.coroutines.launch
 import app.n_zik.android.models.Song
@@ -76,7 +75,6 @@ import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.ui.styling.favoritesOverlay
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.asSong
-import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.utils.conditional
 import app.n_zik.android.utils.downloadedStateMedia
 import app.n_zik.android.utils.getLikeState
@@ -365,7 +363,6 @@ fun SongItem(
     val isSongMappedToPlaylist by remember {
         Database.songPlaylistMapTable.isMapped( mediaItem.mediaId )
     }.collectAsStateWithLifecycle(false, context = NzikDispatchers.DATA)
-    val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
 
     val context = LocalContext.current
     val colorPalette = LocalAppearance.current.colorPalette
@@ -453,7 +450,7 @@ fun SongItem(
                     if ( playlistindicator && isSongMappedToPlaylist ) {
                         IconButton(
                             icon = R.drawable.add_in_playlist,
-                            color = if (colorPaletteName == ColorPaletteName.PureBlack) Color.Black else colorPalette().text,
+                            color = colorPalette().text,
                             enabled = true,
                             onClick = {
                                 menuState.display {
@@ -554,7 +551,7 @@ fun SongItem(
                 if ( playlistindicator && isSongMappedToPlaylist ) {
                     IconButton(
                         icon = R.drawable.add_in_playlist,
-                        color = if (colorPaletteName == ColorPaletteName.PureBlack) Color.Black else colorPalette().text,
+                        color = colorPalette().text,
                         enabled = true,
                         onClick = {
                             menuState.display {

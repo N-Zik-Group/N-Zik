@@ -40,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -125,7 +126,6 @@ import app.n_zik.android.models.ui.toUiMedia
 import app.n_zik.android.playback.services.canResolvePlayerVideo
 import app.n_zik.android.playback.services.resolvePlayerVideo
 import app.n_zik.android.typography
-import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.ui.styling.collapsedPlayerProgressBar
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.GetControls
@@ -154,7 +154,7 @@ internal class PlayerMusicVideo(
         private set
     var fullscreen by mutableStateOf(false)
     var failed by mutableStateOf(false)
-    var controlPalette by mutableStateOf<ColorPalette?>(null)
+    var controlArtworkAccent by mutableStateOf<State<Color>?>(null)
     var manualSearchQuery by mutableStateOf<String?>(null)
     var ready by mutableStateOf(false)
     var player by mutableStateOf<ExoPlayer?>(null)
@@ -742,7 +742,9 @@ private fun FullscreenVideoControls(
             likedAt = song?.likedAt,
             mediaId = media.mediaId,
             onBlurScaleChange = {},
-            dynamicColorPalette = session.controlPalette ?: colorPalette(),
+            dynamicColorPalette = colorPalette().let { palette ->
+                session.controlArtworkAccent?.value?.let { palette.copy(accent = it) } ?: palette
+            },
             installMedleyEffect = false,
         )
     }

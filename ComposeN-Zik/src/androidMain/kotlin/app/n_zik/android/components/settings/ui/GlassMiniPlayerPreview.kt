@@ -64,7 +64,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.glass.LocalGlassArtworkColor
+import app.n_zik.android.components.glass.glassArtworkColor
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import app.n_zik.android.components.glass.glassMiniPlayerBackground
@@ -172,7 +172,7 @@ internal fun GlassMiniPlayerPreview(
     val controlsColors by rememberPreference(playerControlsColorsKey, PlayerControlsColors.Monochrome)
     val controlsColor = when (controlsColors) {
         PlayerControlsColors.Monochrome -> monochromeControlsColor(colors)
-        PlayerControlsColors.Cover -> LocalGlassArtworkColor.current ?: colors.accent
+        PlayerControlsColors.Cover -> glassArtworkColor() ?: colors.accent
         else -> colors.accent
     }
     val backdrop = LocalGlassBackdrop.current

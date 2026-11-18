@@ -57,7 +57,7 @@ class ArtworkColorSnapshotTest {
     }
 
     // JUnit's synchronous entry point waits for the production MEDIA extraction.
-    @Test fun `white and black recover once centrally while off retains filtered palette fallback`() = runBlocking {
+    @Test fun `extreme black has a neutral palette and black player surface in either brightness policy`() = runBlocking {
         for (color in listOf(android.graphics.Color.WHITE, android.graphics.Color.BLACK)) {
             var calls = 0
             val raw = analyzeArtworkColors(bitmap(color)) { image, unfiltered ->
@@ -65,13 +65,24 @@ class ArtworkColorSnapshotTest {
                 Palette.from(image).maximumColorCount(8).apply { if (unfiltered) clearFilters() }.generate()
             }
             assertEquals(2, calls)
-            assertEquals(null, raw.display(false, false).palette)
             val recovered = requireNotNull(raw.display(false, false).dominant)
-            if (color == android.graphics.Color.WHITE) assertTrue(recovered.luminance() > .9f)
-            else assertTrue(recovered.luminance() < .01f)
-            assertFalse(raw.display(false, false).forceDark)
+            val black = color == android.graphics.Color.BLACK
+            if (black) assertEquals(Color.Black, recovered)
+            else assertTrue(recovered.luminance() > .9f)
             assertEquals(listOf(recovered), raw.display(false, false).artworkSamples)
             for (dark in listOf(false, true)) {
+                val normal = raw.display(dark, false)
+                assertFalse(normal.forceDark)
+                assertEquals(black, normal.isExtremeBlack)
+                if (black) {
+                    val palette = requireNotNull(normal.palette)
+                    assertEquals(dark, palette.isDark)
+                    assertEquals(palette.accent.red, palette.accent.blue, .001f)
+                    assertEquals(Color.Black, normal.background)
+                    assertEquals(Color.White, normal.foreground)
+                } else {
+                    assertEquals(null, normal.palette)
+                }
                 val display = raw.display(dark, true)
                 assertEquals(listOf(recovered), display.artworkSamples)
                 assertTrue(display.forceDark)

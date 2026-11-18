@@ -2,6 +2,7 @@ package app.n_zik.android.components.navigation
 
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.glassNativeSurfaceTint
 import app.n_zik.android.navigationSurfaceColor
@@ -18,7 +19,7 @@ import app.n_zik.android.components.glass.GlassRenderer
 import app.n_zik.android.components.glass.glassRenderer
 import androidx.compose.runtime.DisposableEffect
 import app.n_zik.android.components.glass.LocalGlassBackdrop
-import app.n_zik.android.components.glass.LocalGlassArtworkColor
+import app.n_zik.android.components.glass.PublishGlassArtworkTint
 import app.n_zik.android.components.glass.GlassMenuHostState
 import app.n_zik.android.components.glass.GlassOverlayHost
 import app.n_zik.android.components.glass.GlassDialogOverlayHost
@@ -29,10 +30,8 @@ import app.n_zik.android.enums.PlayerPosition
 import app.n_zik.android.utils.playerPositionKey
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.colorPalette
-import app.n_zik.android.components.glass.rememberGlassArtworkDisplayColors
 import app.n_zik.android.LocalPlayerServiceBinder
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.Constraints
@@ -198,6 +197,15 @@ fun NavHostController.navigateClean(route: String, context: Context) {
     }
 }
 
+@Composable
+private fun navigationStatusColor(settings: GlassSettings): Color {
+    val base = navigationSurfaceColor()
+    if (!settings.usesGlassMaterial(GlassArea.Nav)) return base
+    // The Glass film slider owns coverage independently of native navigation alpha.
+    val tinted = glassNativeSurfaceTint(settings, base.copy(alpha = 1f))
+    return tinted.copy(alpha = tinted.alpha * settings.film.coerceIn(0f, 1f))
+}
+
 @RequiresApi(Build.VERSION_CODES.O)
 @androidx.annotation.OptIn()
 @OptIn(
@@ -263,19 +271,7 @@ fun AppNavigation(
         ?: remember { mutableStateOf(0) }
     // Crossfade replaces the player facade without replacing the service binder.
     val player = remember(binder, playerGeneration, preview) { preview?.player ?: binder?.player }
-    val artworkDisplay = rememberGlassArtworkDisplayColors(
-        player, glassSettings.enabled || glassMenuHost.standaloneSettings, colorPalette().isDark,
-    )
-    val artworkColor = artworkDisplay?.dominant
-    val artworkLuminance by animateFloatAsState(
-        targetValue = artworkColor?.luminance() ?: 0f,
-        animationSpec = tween(600), label = "glassBackdropLuminance",
-    )
-    SideEffect {
-        glassMenuHost.artworkColor = artworkColor
-        glassMenuHost.artworkForceDark = artworkDisplay?.forceDark == true
-        glassMenuHost.backdropLuminance = artworkLuminance
-    }
+    PublishGlassArtworkTint(glassMenuHost, player, glassSettings.enabled || glassMenuHost.standaloneSettings)
     val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Fade)
 
     @Composable
@@ -396,11 +392,6 @@ fun AppNavigation(
     val headerRowHeightPx = with(density) { (if (hasSideNavBarVisible) 0.dp else APP_HEADER_HEIGHT).toPx() }
     val headerHeightPx = with(density) { (if (hasSideNavBarVisible) 0.dp else APP_HEADER_HEIGHT).roundToPx() } + statusBarTopPx
     val navBaseColor = navigationSurfaceColor()
-    val navStatusColor = if (glassSettings.usesGlassMaterial(GlassArea.Nav)) {
-        // Glass coverage belongs to the film slider, independently of native navigation alpha.
-        val tinted = glassNativeSurfaceTint(glassSettings, navBaseColor.copy(alpha = 1f))
-        tinted.copy(alpha = tinted.alpha * glassSettings.film.coerceIn(0f, 1f))
-    } else navBaseColor
     val homeTopMiniAnchor = LocalHomeTopMiniPlayerAnchor.current
     val scrollTopBarOffset = LocalTopBarOffset.current
     val topBarOffsetState = remember(headerHeightPx, scrollTopBarOffset, hasSideNavBarVisible) {
@@ -424,7 +415,6 @@ fun AppNavigation(
         LocalUnifiedTopGlassSurface provides unifiedTopBackdrop.takeIf {
             hasTopNavBarVisible && glassSettings.usesGlassMaterial(GlassArea.Nav)
         },
-        LocalGlassArtworkColor provides artworkColor,
         LocalGlassMenuHost provides glassMenuHost,
         app.n_zik.android.components.ui.screens.home.LocalHomeTopCover provides (isBarlessScreen || hasSideNavBarVisible),
         app.n_zik.android.components.ui.screens.home.LocalHomeLandscapeTopCover provides isBarlessScreen,
@@ -471,11 +461,11 @@ fun AppNavigation(
                 horizontalStartInsetPx = statusBarLeftPx.toFloat(),
                 horizontalEndInsetPx = statusBarRightPx.toFloat(),
                 headerHeightPx = headerRowHeightPx,
-                color = navStatusColor,
+                color = navBaseColor,
                 headerColor = if (hasSideNavBarVisible || glassSettings.usesGlassMaterial(GlassArea.Header) ||
                     (hasTopNavBarVisible && glassSettings.usesGlassMaterial(GlassArea.Nav)) ||
                     (isHome && isLandscape)) null
-                    else if (hasTopNavBarVisible) navStatusColor else colorPalette().background0,
+                    else if (hasTopNavBarVisible) navBaseColor else colorPalette().background0,
                 headerOffsetPx = { topBarOffsetState.value },
             ),
         headerClipBottomPx = if (hasTopNavBarVisible) {
@@ -524,7 +514,7 @@ fun AppNavigation(
                         else maxOf(headerOpacity, homeOpacity)
                     },
                     source = pageBackdrop,
-                    upperFilmColor = if (sharedHomeGlass.topNavigation) navStatusColor else null,
+                    upperFilmColor = if (sharedHomeGlass.topNavigation) navigationStatusColor(glassSettings) else null,
                     upperHeightPx = { sharedHomeGlass.navigationBottomPx },
                 )
                 for (toolbar in sharedHomeGlass.toolbars) androidx.compose.runtime.key(toolbar) {
@@ -567,7 +557,7 @@ fun AppNavigation(
                 LocalGlassBackdrop provides pageBackdrop.takeIf { captureGlass },
             ) {
                 AppHeader(navController).Draw(
-                    backgroundOverride = navStatusColor.takeIf { hasTopNavBarVisible },
+                    backgroundOverride = if (hasTopNavBarVisible) navigationStatusColor(glassSettings) else null,
                     statusBackgroundVisible = hasTopNavBarVisible,
                 )
             }

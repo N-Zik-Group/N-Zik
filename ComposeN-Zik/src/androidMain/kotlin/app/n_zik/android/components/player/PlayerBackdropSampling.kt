@@ -6,9 +6,11 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
@@ -38,7 +40,7 @@ import kotlin.math.floor
 
 private val SampleSize = IntSize(32, 64)
 private const val SampleIntervalMs = 120L
-private const val DecisionSettleMs = 120L
+private const val MaxPreviewSamples = 4
 
 internal val LocalPlayerBackdropSampling = compositionLocalOf<PlayerBackdropSampling?> { null }
 
@@ -47,6 +49,7 @@ internal val LocalPlayerBackdropSampling = compositionLocalOf<PlayerBackdropSamp
 internal class PlayerBackdropSampling(
     internal val initialSourceVersion: Int? = null,
     private val previousSurface: Color? = null,
+    private val provisionalSurface: State<Color?>? = null,
 ) {
     var coordinates: LayoutCoordinates? = null
     var isActive by mutableStateOf(false)
@@ -54,9 +57,15 @@ internal class PlayerBackdropSampling(
     var finished by mutableStateOf(false)
         internal set
     private var sample by mutableStateOf<BackdropSample?>(null)
+    private var measuredPreview by mutableStateOf<Color?>(null)
+    internal var measurementVersion by mutableIntStateOf(0)
+        private set
     var commonSurface by mutableStateOf<Color?>(null)
         private set
-    val foregroundSurface: Color? get() = commonSurface ?: previousSurface.takeUnless { finished }
+    val hasProvisionalSurface: Boolean get() = (!finished && measuredPreview != null) || provisionalSurface?.value != null
+    val foregroundSurface: Color?
+        get() = commonSurface ?: measuredPreview.takeUnless { finished } ?: provisionalSurface?.value ?:
+            previousSurface.takeUnless { finished }
     internal val hasDecision: Boolean get() = commonSurface != null
     private val regions = mutableMapOf<Any, Rect>()
 
@@ -67,11 +76,14 @@ internal class PlayerBackdropSampling(
 
     internal fun removeRegion(token: Any) { regions.remove(token) }
 
-    internal fun publish(pixels: IntArray, origin: Offset, size: IntSize) {
+    internal fun publish(pixels: IntArray, origin: Offset, size: IntSize, settled: Boolean = true) {
         if (hasDecision) return
         val previous = sample
         if (previous == null || previous.origin != origin || previous.size != size ||
-            !previous.pixels.contentEquals(pixels)) sample = BackdropSample(pixels, origin, size)
+            !previous.pixels.contentEquals(pixels)) {
+            sample = BackdropSample(pixels, origin, size)
+            measurementVersion++
+        }
         val valid = regions.values.filter {
             it.left.isFinite() && it.top.isFinite() && it.right.isFinite() && it.bottom.isFinite() &&
                 it.right > origin.x && it.bottom > origin.y &&
@@ -80,13 +92,17 @@ internal class PlayerBackdropSampling(
         if (valid.isNotEmpty()) {
             val union = Rect(valid.minOf { it.left }, valid.minOf { it.top },
                 valid.maxOf { it.right }, valid.maxOf { it.bottom })
-            commonSurface = colorAt(union)
-            if (commonSurface != null) finished = true
+            val surface = colorAt(union) ?: return
+            if (settled) {
+                commonSurface = surface
+                finished = true
+            } else measuredPreview = surface
         }
     }
 
     /** [boundsInWindow] must describe the actual text/control region, not the whole player. */
     fun colorAt(boundsInWindow: Rect, textFilm: Color? = null): Color? {
+        if (finished && !hasDecision) return null
         val current = sample ?: return null
         val size = current.size
         if (size.width <= 0 || size.height <= 0) return null
@@ -119,15 +135,15 @@ internal fun rememberPlayerBackdropRegionColor(
     DisposableEffect(sampling, token) {
         onDispose { sampling?.removeRegion(token) }
     }
-    val hasDecision = sampling?.hasDecision == true
-    val local = remember(sampling, bounds, useLocalSample, hasDecision, textFilm) {
-        if (useLocalSample && hasDecision && bounds != null) sampling.colorAt(bounds, textFilm) else null
+    val version = if (useLocalSample) sampling?.measurementVersion else null
+    val local = remember(sampling, bounds, version, sampling?.finished, textFilm) {
+        if (version != null && version > 0 && bounds != null) sampling?.colorAt(bounds, textFilm) else null
     }
     SideEffect {
         sampling?.registerRegion(token, bounds)
         if (local != null) lastLocal.color = local
     }
-    val waitingLocal = useLocalSample && sampling?.finished == false
+    val waitingLocal = useLocalSample && sampling?.finished == false && !sampling.hasProvisionalSurface
     return local ?: lastLocal.color.takeIf { waitingLocal } ?: sampling?.foregroundSurface?.let {
         if (textFilm != null) effectiveSurfaceColor(it, textFilm) else it
     }
@@ -180,11 +196,14 @@ internal fun rememberPlayerBackdropSampling(
     backdrop: Backdrop,
     active: Boolean,
     decisionKey: Any = Unit,
-    backgroundTransitionMs: Int = 0,
+    previewActive: Boolean = false,
     renderedBackgroundReady: Boolean? = null,
+    provisionalSurface: State<Color?>? = null,
 ): PlayerBackdropSampling {
     val lastSurface = remember(backdrop) { PlayerBackdropSurfaceCache() }
-    val state = remember(backdrop, decisionKey) { PlayerBackdropSampling(backdrop.contentVersion, lastSurface.color) }
+    val state = remember(backdrop, decisionKey) {
+        PlayerBackdropSampling(backdrop.contentVersion, lastSurface.color, provisionalSurface)
+    }
     val layer = rememberGraphicsLayer()
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
@@ -193,16 +212,20 @@ internal fun rememberPlayerBackdropSampling(
         state.isActive = active
         sampledSurface?.let { lastSurface.color = it }
     }
-    LaunchedEffect(state, active, density, layoutDirection, backgroundTransitionMs, renderedBackgroundReady) {
-        if (!active || state.hasDecision || renderedBackgroundReady == false) return@LaunchedEffect
+    LaunchedEffect(state, active, previewActive, density, layoutDirection, renderedBackgroundReady) {
+        if ((!active && !previewActive) || state.hasDecision) return@LaunchedEffect
         // A failed hidden prewarm may retry when the player becomes visible again.
         state.finished = false
-        // Let the existing cover-color fade finish before freezing its new background.
-        delay(if (renderedBackgroundReady == true) 50L else maxOf(DecisionSettleMs, backgroundTransitionMs.toLong() + 50L))
+        // Allow the scene to draw the new frame before reading its small backdrop.
+        delay(32L)
         withContext(NzikDispatchers.UI) {
             var warned = false
             var attempts = 0
-            while (isActive && !state.hasDecision && attempts < 8) {
+            var previewVersion: Int? = null
+            var previewSize = IntSize.Zero
+            var previewOrigin = Offset.Zero
+            val maxAttempts = if (active) 8 else MaxPreviewSamples
+            while (isActive && !state.hasDecision && attempts < maxAttempts) {
                 // Bound idle polls too: a hidden retained player may never redraw its source.
                 attempts++
                 val coordinates = state.coordinates?.takeIf { it.isAttached }
@@ -211,7 +234,9 @@ internal fun rememberPlayerBackdropSampling(
                     val origin = coordinates.positionInWindow()
                     val version = backdrop.contentVersion
                     // Never decide from the previous track's retained background recording.
-                    if (renderedBackgroundReady == true || version == null || version != state.initialSourceVersion) {
+                    val recordingReady = renderedBackgroundReady == true || version == null || version != state.initialSourceVersion
+                    val newPreview = version == null || version != previewVersion || size != previewSize || origin != previewOrigin
+                    if (recordingReady && (active || newPreview)) {
                         try {
                             layer.record(density, layoutDirection, SampleSize) {
                                 // Preserve full-scene draw dimensions while rasterizing only a tiny GPU target.
@@ -230,7 +255,13 @@ internal fun rememberPlayerBackdropSampling(
                             try {
                                 val pixels = IntArray(SampleSize.width * SampleSize.height)
                                 software.getPixels(pixels, 0, SampleSize.width, 0, 0, SampleSize.width, SampleSize.height)
-                                state.publish(pixels, origin, size)
+                                state.publish(pixels, origin, size, settled = active)
+                                if (!active) {
+                                    previewVersion = version
+                                    previewSize = size
+                                    previewOrigin = origin
+                                    state.foregroundSurface?.let { lastSurface.color = it }
+                                }
                                 if (state.hasDecision) Timber.tag("PlayerBackdropSampling").d(
                                     "Background sample ready: %dx%d, opaque=%d/%d", size.width, size.height,
                                     pixels.count { (it ushr 24) >= 250 }, pixels.size,
@@ -247,7 +278,7 @@ internal fun rememberPlayerBackdropSampling(
                 }
                 delay(SampleIntervalMs)
             }
-            if (isActive) state.finished = true
+            if (active && isActive) state.finished = true
         }
     }
     return state

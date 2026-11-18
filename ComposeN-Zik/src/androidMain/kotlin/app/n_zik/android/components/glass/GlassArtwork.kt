@@ -1,25 +1,88 @@
 package app.n_zik.android.components.glass
 
 import android.graphics.Bitmap
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.media3.common.Player
+import app.n_zik.android.colorPalette
 import app.n_zik.android.components.player.ArtworkDisplayColors
+import app.n_zik.android.components.player.ArtworkDisplayResult
 import app.n_zik.android.components.player.SharedArtworkColors
-import app.n_zik.android.components.player.rememberArtworkDisplayColors
+import app.n_zik.android.components.player.rememberArtworkDisplayResult
+import app.n_zik.android.components.theme.LocalPaletteFadeTarget
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 
 internal data class GlassArtwork(val mediaId: String?, val uri: String?)
+
+/** Transparent artwork blends back to the live theme accent while its coverage fades out. */
+@Immutable
+internal data class GlassArtworkTint(val color: Color? = null, val darkness: Float = 0f) {
+    val luminance: Float = color?.let { it.luminance() * it.alpha } ?: 0f
+
+    fun lerpTo(target: GlassArtworkTint, fraction: Float): GlassArtworkTint {
+        if (fraction == 0f) return this
+        if (fraction == 1f) return target
+        val from = color ?: target.color?.copy(alpha = 0f)
+        val to = target.color ?: color?.copy(alpha = 0f)
+        return GlassArtworkTint(
+            color = if (from != null && to != null && from != to) lerp(from, to, fraction) else from,
+            darkness = darkness + (target.darkness - darkness) * fraction,
+        )
+    }
+}
+
+/** Only Glass surfaces observe the frame, keeping navigation layout out of the animation. */
+@Composable
+internal fun PublishGlassArtworkTint(host: GlassMenuHostState, player: Player?, enabled: Boolean) {
+    val appTint = LocalGlassArtworkTint.current
+    if (appTint != null) {
+        LaunchedEffect(host, appTint) {
+            snapshotFlow { appTint.value }.collect { host.artworkTint = it }
+        }
+        return
+    }
+    val isDark = LocalPaletteFadeTarget.current?.colorPalette?.isDark ?: colorPalette().isDark
+    val target = resolvedGlassArtworkTint(rememberGlassArtworkResult(player, enabled, isDark), enabled)
+    val fraction = remember(host) { Animatable(1f) }
+    val animate = enabled && isGlassMotionAllowed()
+    LaunchedEffect(host, target, animate) {
+        // The host already contains the artwork shown by the Dynamic provider.
+        // Keep that frame while the fixed-theme provider resolves its first request.
+        if (target == null) return@LaunchedEffect
+        val current = host.artworkTint
+        if (animate && current != target) {
+            fraction.snapTo(0f)
+            fraction.animateTo(1f, tween(350)) {
+                host.artworkTint = current.lerpTo(target, value)
+            }
+        }
+        host.artworkTint = target
+    }
+}
+
+internal fun resolvedGlassArtworkTint(result: ArtworkDisplayResult, enabled: Boolean): GlassArtworkTint? {
+    if (!enabled) return GlassArtworkTint()
+    if (!result.resolved) return null
+    val colors = result.colors
+    return GlassArtworkTint(colors?.dominant, if (colors?.forceDark == true) 1f else 0f)
+}
 
 private fun Player.glassArtwork(): GlassArtwork {
     val item = currentMediaItem
@@ -63,9 +126,13 @@ fun rememberGlassArtworkColor(player: Player?, enabled: Boolean, isDark: Boolean
 }
 
 @Composable
-internal fun rememberGlassArtworkDisplayColors(player: Player?, enabled: Boolean, isDark: Boolean): ArtworkDisplayColors? {
+internal fun rememberGlassArtworkDisplayColors(player: Player?, enabled: Boolean, isDark: Boolean): ArtworkDisplayColors? =
+    rememberGlassArtworkResult(player, enabled, isDark).colors
+
+@Composable
+private fun rememberGlassArtworkResult(player: Player?, enabled: Boolean, isDark: Boolean): ArtworkDisplayResult {
     val artwork = rememberGlassArtwork(player)
-    return rememberArtworkDisplayColors(
+    return rememberArtworkDisplayResult(
         artwork?.uri.takeIf { enabled }, isDark, awaitArtworkMetadata = enabled && artwork?.mediaId != null,
     )
 }

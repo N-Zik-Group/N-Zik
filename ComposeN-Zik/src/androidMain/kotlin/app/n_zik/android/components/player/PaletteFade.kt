@@ -6,16 +6,23 @@ import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalRippleConfiguration
+import androidx.compose.material3.RippleConfiguration
 import androidx.compose.runtime.withFrameNanos
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.lerpTo
+import app.n_zik.android.components.theme.LocalPaletteDarkness
 import app.n_zik.android.components.theme.LocalPaletteFadeTarget
 import app.n_zik.android.components.theme.withColor
 import kotlinx.coroutines.flow.first
@@ -29,6 +36,7 @@ import kotlinx.coroutines.flow.first
  */
 class PaletteFadeModel {
     private var fromPalette: ColorPalette? = null
+    private var fromDarkness = 0f
     private var targetPalette: ColorPalette? = null
 
     /** True while a fade is in progress. */
@@ -52,6 +60,7 @@ class PaletteFadeModel {
         }
         if (target == newTarget && (!resume || fromPalette == null)) return false
         val origin = fromPalette ?: target
+        fromDarkness = darknessAt(displayedFraction)
         fromPalette = origin.lerpTo(target, displayedFraction)
         targetPalette = newTarget
         return true
@@ -66,11 +75,21 @@ class PaletteFadeModel {
         return from.lerpTo(requireNotNull(targetPalette), fraction)
     }
 
+    fun darknessAt(fraction: Float): Float {
+        val target = if (requireNotNull(targetPalette).isDark) 1f else 0f
+        return if (fromPalette == null) target else fromDarkness + (target - fromDarkness) * fraction
+    }
+
     /** Marks the fade as finished; [paletteAt] then returns the target. */
     fun endFade() {
         fromPalette = null
     }
 }
+
+internal val LocalPlayerArtworkPaintTarget = staticCompositionLocalOf<MutableState<PlayerArtworkPaint?>?> { null }
+internal val LocalPlayerArtworkPaint = staticCompositionLocalOf<State<PlayerArtworkPaint?>?> { null }
+
+private data class PlayerPaletteFrame(val palette: ColorPalette, val darkness: Float, val paint: PlayerArtworkPaint?)
 
 /**
  * Fades the [LocalAppearance] color palette and typography within [content]
@@ -85,27 +104,35 @@ class PaletteFadeModel {
  * transition begins from the old palette.
  */
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun PaletteFade(
     durationMillis: Int = 350,
     artworkInMotion: State<Boolean>? = null,
     content: @Composable () -> Unit,
 ) {
     val targetAppearance = LocalPaletteFadeTarget.current ?: LocalAppearance.current
-    val targetPalette = targetAppearance.colorPalette
-
     val model = remember { PaletteFadeModel() }
     val fraction = remember { Animatable(1f) }
     // Palette currently shown by this scope. Null before the first target is
     // known; afterwards it always holds the last displayed palette, so a new
 //
     // target never flashes before the fade starts from the previous one.
-    var displayed by remember { mutableStateOf<ColorPalette?>(null) }
+    var displayed by remember { mutableStateOf<PlayerPaletteFrame?>(null) }
+    val artworkTarget = remember { mutableStateOf<PlayerArtworkPaint?>(null) }
+    val displayedPaint = remember { derivedStateOf { displayed?.paint } }
+    val targetPaint = artworkTarget.value
+    val targetPalette = targetPaint?.themePalette ?: targetAppearance.colorPalette
 
     val moving = artworkInMotion?.value == true
-    LaunchedEffect(targetPalette, moving) {
+    LaunchedEffect(targetPalette, targetPaint, moving) {
+        val fromPaint = displayed?.paint ?: targetPaint
+        fun publish(progress: Float) {
+            val paint = if (progress == 1f || targetPaint == null) targetPaint else fromPaint?.at(targetPaint, progress)
+            displayed = PlayerPaletteFrame(model.paletteAt(progress), model.darknessAt(progress), paint)
+        }
         if (displayed == null) {
             model.retarget(targetPalette, 1f)
-            displayed = targetPalette
+            publish(1f)
             return@LaunchedEffect
         }
         if (moving) return@LaunchedEffect
@@ -114,9 +141,10 @@ fun PaletteFade(
             withFrameNanos { }
             snapshotFlow { artworkInMotion.value }.first { moving -> !moving }
         }
-        if (!model.retarget(targetPalette, fraction.value, resume = artworkInMotion != null)) {
+        val paletteChanged = model.retarget(targetPalette, fraction.value, resume = artworkInMotion != null)
+        if (!paletteChanged && fromPaint == targetPaint) {
             model.endFade()
-            displayed = targetPalette
+            publish(1f)
             return@LaunchedEffect
         }
         fraction.snapTo(0f)
@@ -124,19 +152,23 @@ fun PaletteFade(
             targetValue = 1f,
             animationSpec = tween(durationMillis, easing = FastOutSlowInEasing)
         ) {
-            displayed = model.paletteAt(value)
+            publish(value)
         }
         model.endFade()
-        displayed = targetPalette
+        publish(1f)
     }
 
-    val palette = displayed ?: targetPalette
+    val palette = displayed?.palette ?: targetPalette
     CompositionLocalProvider(
         LocalAppearance provides targetAppearance.copy(
             colorPalette = palette,
             typography = targetAppearance.typography.withColor(palette.text),
         ),
+        LocalPaletteDarkness provides (displayed?.darkness ?: if (palette.isDark) 1f else 0f),
+        LocalRippleConfiguration provides remember(palette.text) { RippleConfiguration(color = palette.text) },
         LocalPaletteFadeTarget provides targetAppearance,
+        LocalPlayerArtworkPaintTarget provides artworkTarget,
+        LocalPlayerArtworkPaint provides displayedPaint,
     ) {
         content()
     }

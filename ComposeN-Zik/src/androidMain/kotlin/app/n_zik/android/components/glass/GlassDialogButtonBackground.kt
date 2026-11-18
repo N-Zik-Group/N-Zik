@@ -28,6 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.components.theme.paletteDarkness
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.uiRoundnessShape
 
@@ -47,9 +48,10 @@ private fun DialogButtonForeground(surface: Color?, content: @Composable () -> U
         return
     }
     val contentColor = LocalContentColor.current
-    SurfaceForegroundContent(surface) {
-        CompositionLocalProvider(LocalContentColor provides readableForeground(
-            contentColor, surface, TextContrast), content = content)
+    val darkness = LocalGlassInkDarkness.current ?: paletteDarkness()
+    SurfaceForegroundContent(surface, glassInkDarkness = darkness) {
+        CompositionLocalProvider(LocalContentColor provides glassPaneForeground(
+            contentColor, surface, TextContrast, darkness), content = content)
     }
 }
 
@@ -144,13 +146,10 @@ internal fun GlassDialogOutlinedButton(
     val nativeBounds = remember { GlassNativeSurfaceBounds() }
     val plate = dialogButtonForegroundSurface(settings, foregroundFilm)?.takeIf { enabled }
         ?.let { effectiveSurfaceColor(it, colors.containerColor) }
-    val foregroundColors = if (plate != null) colors.copy(
-        contentColor = readableForeground(colors.contentColor, plate, TextContrast),
-    ) else colors
     NativePageButtonFeedback(settings.usesGlassDialogButtonMaterial(), enabled, shape,
         interactionSource, nativeBounds, settings) { feedback, source ->
         OutlinedButton(onClick = onClick, modifier = feedback.then(modifier), enabled = enabled,
-            shape = shape, colors = foregroundColors, elevation = elevation, border = border,
+            shape = shape, colors = colors, elevation = elevation, border = border,
             contentPadding = contentPadding, interactionSource = source) {
             DialogButtonForeground(plate) { content() }
             NativeButtonSurfaceProbe(nativeBounds, contentRows = 1)

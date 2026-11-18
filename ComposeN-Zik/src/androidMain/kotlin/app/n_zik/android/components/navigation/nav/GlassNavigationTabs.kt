@@ -39,7 +39,8 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
-import app.n_zik.android.colorPalette
+import androidx.compose.ui.graphics.lerp as lerpColor
+import app.n_zik.android.components.theme.paletteDarkness
 import app.n_zik.android.components.glass.GlassRenderer
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassArea
@@ -207,7 +208,7 @@ internal fun GlassNavigationTabs(
     val shape = uiRoundnessShape()
     val panelShape = containerShape ?: shape
     val originalFilm = navigationSurfaceColor()
-    val wash = (if (colorPalette().isDark) Color.Black else Color.White)
+    val wash = lerpColor(Color.White, Color.Black, paletteDarkness())
         .copy(alpha = settings.indicatorOpacity.coerceIn(0f, 1f))
     val foregroundSurface = effectiveSurfaceColor(surfaceBackdropColor(),
         glassFilmColor(settings, originalFilm, menu = false))

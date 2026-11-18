@@ -46,7 +46,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import app.n_zik.android.components.player.LocalPlayerCoverOverlay
+import app.n_zik.android.components.player.LocalPlayerArtworkPaint
 import app.n_zik.android.components.glass.glassOverlayCanvasViewport
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.GlassOverlayControls
@@ -102,6 +104,7 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import app.n_zik.android.components.menu.visualizer.VisualizerSettingsMenu
 import app.n_zik.android.components.player.rememberArtworkDisplayColors
+import app.n_zik.android.components.player.rememberPlayerColorFade
 import app.n_zik.android.ui.components.LocalMenuState
 import androidx.compose.foundation.shape.CircleShape
 import app.n_zik.android.utils.visualizerLineThicknessKey
@@ -201,20 +204,15 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
             val paletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
             val requestedDark = paletteMode == ColorPaletteMode.Dark || (paletteMode == ColorPaletteMode.PitchBlack || paletteMode == ColorPaletteMode.PureBlack) ||
                 (paletteMode == ColorPaletteMode.System && isSystemInDarkTheme())
-            val coverDisplay = rememberArtworkDisplayColors(currentArtworkUri?.toString(), requestedDark)
-            val dominantColor = if (coverDisplay?.colors != null || coverDisplay?.forceDark == true)
-                coverDisplay.foreground?.toArgb() ?: android.graphics.Color.WHITE else android.graphics.Color.WHITE
-
-            val accentColor = colorPalette().accent
-            val color = remember(visualizerWhiteColorOption, visualizerCustomColor, accentColor, dominantColor) {
-                when (visualizerWhiteColorOption) {
-                    enums.VisualizerWhiteColorOption.White -> android.graphics.Color.WHITE
-                    enums.VisualizerWhiteColorOption.Theme -> accentColor.toArgb()
-                    enums.VisualizerWhiteColorOption.Cover -> dominantColor
-                    enums.VisualizerWhiteColorOption.Custom -> visualizerCustomColor
-                }
-            }
-
+            val scopedArtworkPaint = LocalPlayerArtworkPaint.current
+            val coverTint = if (visualizerWhiteColorOption == enums.VisualizerWhiteColorOption.Cover && scopedArtworkPaint == null) {
+                val coverDisplay = rememberArtworkDisplayColors(
+                    currentArtworkUri?.toString(), requestedDark, awaitArtworkMetadata = true,
+                )
+                val target = coverDisplay?.takeIf { it.colors != null || it.forceDark }?.foreground ?: Color.White
+                rememberPlayerColorFade(target, active = true, interpolate = ::lerp)
+            } else null
+            val themeTint = colorPalette().accent
 
             // These bitmaps supply actual artwork pixels to the painters, never color extraction.
             LaunchedEffect(currentArtworkUri) {
@@ -244,12 +242,15 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
 
             val visualizerLineThickness by rememberPreference(visualizerLineThicknessKey, 6f)
             
-            val visualizersList = remember(bitmapCover, circleBitmap, color, visualizerLineThickness) {
-                createVisualizersList(bitmapCover, circleBitmap, color, visualizerLineThickness)
+            val visualizersList = remember(bitmapCover, circleBitmap, visualizerLineThickness) {
+                createVisualizersList(bitmapCover, circleBitmap, android.graphics.Color.WHITE, visualizerLineThickness)
             }
+            val visualizerPaints = remember(visualizersList) { visualizersList.map(Painter::tintPaints) }
             
             var currentVisualizer by rememberPreference(currentVisualizerKey, 0)
             if (currentVisualizer < 0 || currentVisualizer >= visualizersList.size) currentVisualizer = 0
+            val selectedPainter = visualizersList[currentVisualizer]
+            val tintPaints = visualizerPaints[currentVisualizer]
 
             val showVisualizerButtons by rememberPreference(showVisualizerButtonsKey, true)
 
@@ -275,20 +276,25 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
                         indication = glassGlobalIndication(null)
                     ) { controlsTimerKey++ },
                 scene = {
+                    LaunchedEffect(visualizerView, helper, selectedPainter) {
+                        visualizerView.setup(helper, selectedPainter)
+                        visualizerView.invalidate()
+                    }
                     AndroidView(
                         modifier = Modifier
                             .fillMaxWidth()
                             .fillMaxHeight(),
                         factory = { visualizerView },
-                        update = {
-                            // Read states to trigger real-time updates
-                            visualizerLineThickness.hashCode()
-                            visualizerWhiteColorOption.hashCode()
-                            visualizerCustomColor.hashCode()
-                            dominantColor.hashCode()
-                            bitmapCover.hashCode()
-
-                            it.setup(helper, visualizersList[currentVisualizer])
+                        update = { view ->
+                            val tint = when (visualizerWhiteColorOption) {
+                                enums.VisualizerWhiteColorOption.White -> android.graphics.Color.WHITE
+                                enums.VisualizerWhiteColorOption.Theme -> themeTint.toArgb()
+                                enums.VisualizerWhiteColorOption.Cover ->
+                                    (scopedArtworkPaint?.value?.visualizerForeground ?: coverTint?.value ?: Color.White).toArgb()
+                                enums.VisualizerWhiteColorOption.Custom -> visualizerCustomColor
+                            }
+                            tintPaints.forEach { it.setColor(tint) }
+                            view.invalidate()
                         }
                     )
 
@@ -351,6 +357,26 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
             }
         }
     }
+}
+
+private class VisualizerTintPaint(private val paint: Paint) {
+    // Some layers specify their own opacity independently from the selected tint.
+    private val fixedAlpha = paint.alpha.takeIf { it != 255 }
+
+    fun setColor(color: Int) {
+        paint.color = color
+        fixedAlpha?.let { paint.alpha = it }
+    }
+}
+
+private fun Painter.tintPaints(): List<VisualizerTintPaint> = when (this) {
+    is Compose -> painters.flatMap { it.tintPaints() }
+    is Move -> painters.flatMap { it.tintPaints() }
+    is Rotate -> painters.flatMap { it.tintPaints() }
+    is Scale -> painters.flatMap { it.tintPaints() }
+    is Shake -> painters.flatMap { it.tintPaints() }
+    is Icon -> emptyList()
+    else -> listOf(VisualizerTintPaint(paint))
 }
 
 fun createVisualizersList(background: Bitmap, circleBitmap: Bitmap, color: Int, visualizerLineThickness: Float = 6f): List<Painter> {

@@ -43,8 +43,7 @@ class GlassArtworkContentTest {
         var glyph = Color.Unspecified
         compose.setContent {
             val host = remember { GlassMenuHostState() }
-            host.artworkColor = Color(0xFF242424)
-            host.artworkForceDark = true
+            host.artworkTint = GlassArtworkTint(Color(0xFF242424), darkness = 1f)
             CompositionLocalProvider(
                 LocalAppearance provides Appearance(source,
                     typographyOf(source.text, true, false, FontType.Rubik),
@@ -82,8 +81,7 @@ class GlassArtworkContentTest {
         var pane = Color.Unspecified
         compose.setContent {
             val host = remember { GlassMenuHostState() }
-            host.artworkColor = Color(0xFF242424)
-            host.artworkForceDark = true
+            host.artworkTint = GlassArtworkTint(Color(0xFF242424), darkness = 1f)
             CompositionLocalProvider(
                 LocalAppearance provides Appearance(colored,
                     typographyOf(colored.text, true, false, FontType.Rubik),
@@ -125,8 +123,7 @@ class GlassArtworkContentTest {
         var pane = Color.Unspecified
         compose.setContent {
             val host = remember { GlassMenuHostState() }
-            host.artworkColor = Color(0xFF242424)
-            host.artworkForceDark = forceDark.value
+            host.artworkTint = GlassArtworkTint(Color(0xFF242424), darkness = if (forceDark.value) 1f else 0f)
             CompositionLocalProvider(
                 LocalAppearance provides Appearance(custom,
                     typographyOf(custom.text, true, false, FontType.Rubik),

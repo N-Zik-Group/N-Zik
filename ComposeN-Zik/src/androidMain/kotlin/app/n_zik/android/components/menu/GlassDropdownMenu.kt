@@ -35,9 +35,11 @@ import app.n_zik.android.components.glass.LocalGlassMenuTrigger
 import app.n_zik.android.components.glass.currentGlassOverlayBackdrop
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
+import app.n_zik.android.components.glass.glassSurfaceDarkness
 import app.n_zik.android.components.glass.glassMaterial
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.theme.LocalNativeSurfaceMix
 import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.isPitchBlackSurface
 import app.n_zik.android.utils.colorPaletteModeKey
@@ -79,9 +81,14 @@ fun GlassDropdownMenu(
     var anchor by remember { mutableStateOf<Rect?>(null) }
     val glassEnabled = settings.usesGlassMaterial(GlassArea.Dropdowns)
     val paletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
-    val originalContainerColor = dropdownContainerColor(
-        if (containerColor.isSpecified) containerColor else MenuDefaults.containerColor, paletteMode, glassEnabled,
-        blackPalette = isPitchBlackSurface(),
+    val base = if (containerColor.isSpecified) containerColor else MenuDefaults.containerColor
+    val surfaceMix = LocalNativeSurfaceMix.current
+    val originalContainerColor = if (surfaceMix == null || glassEnabled || base.alpha == 0f) {
+        dropdownContainerColor(base, paletteMode, glassEnabled, blackPalette = isPitchBlackSurface())
+    } else surfaceMix.color(
+        base,
+        dropdownContainerColor(base, ColorPaletteMode.PitchBlack, glassEnabled = false),
+        dropdownContainerColor(base, ColorPaletteMode.PureBlack, glassEnabled = false),
     )
     if (host != null) {
         Box(Modifier.size(0.dp).onGloballyPositioned { coordinates ->
@@ -124,7 +131,8 @@ fun GlassDropdownMenu(
         content = {
             val fill = if (glassEnabled) glassFilmColor(settings.forArea(GlassArea.Dropdowns), originalContainerColor)
                 else originalContainerColor
-            SurfaceForegroundContent(effectiveSurfaceColor(surfaceBackdropColor(), fill)) { content() }
+            val darkness = if (glassEnabled) glassSurfaceDarkness(settings.forArea(GlassArea.Dropdowns)) else null
+            SurfaceForegroundContent(effectiveSurfaceColor(surfaceBackdropColor(), fill), glassInkDarkness = darkness) { content() }
         },
     )
 }

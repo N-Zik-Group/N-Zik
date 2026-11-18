@@ -330,18 +330,17 @@ class SurfaceForegroundTest {
         }
     }
 
-    @Test fun `one fade updates neutral siblings together and preserves colored ink`() {
+    @Test fun `neutral siblings follow the same displayed surface and preserve colored ink`() {
         val surface = mutableStateOf<Color?>(null)
         var first = Color.Unspecified
         var second = Color.Unspecified
         var colored = Color.Unspecified
         var glyph = Color.Unspecified
-        var progress = 1f
         var track = Color.Unspecified
         val target = readableForeground(Color.White, Color.White, IconContrast)
         compose.mainClock.autoAdvance = false
         compose.setContent {
-            val common = rememberNeutralForegroundFade(surface.value, Color.White)
+            val common = rememberNeutralForegroundForSurface { surface.value }
             TestTheme(lowFilm) {
                 CompositionLocalProvider(
                     LocalAppearance provides appearance.copy(colorPalette = DefaultDarkColorPalette.copy(text = Color.White)),
@@ -352,8 +351,7 @@ class SurfaceForegroundTest {
                         val custom = surfaceGlyphColor(Color.Red)
                         val neutralGlyph = surfaceGlyphColor(colorPalette().text)
                         val inactiveTrack = surfaceProgressTrackColor(Color.Magenta, colorPalette().text)
-                        val transitionProgress = common.value.progress
-                        SideEffect { first = ink; colored = custom; glyph = neutralGlyph; track = inactiveTrack; progress = transitionProgress }
+                        SideEffect { first = ink; colored = custom; glyph = neutralGlyph; track = inactiveTrack }
                     }
                     SurfaceForegroundContent(surface.value) {
                         val ink = colorPalette().text
@@ -364,34 +362,15 @@ class SurfaceForegroundTest {
         }
         compose.runOnIdle { surface.value = Color.White }
         repeat(2) { compose.mainClock.advanceTimeByFrame(); compose.waitForIdle() }
-        compose.mainClock.advanceTimeBy(80)
-        compose.runOnIdle {
-            assertEquals(first, second)
-            assertEquals(first, glyph)
-            assertEquals(first, track)
-            assertTrue("Entry fade must be in progress at 80 ms: progress=$progress, ink=$first", progress > 0f && progress < 1f)
-            assertTrue(first.red > target.red && first.red < 1f)
-            assertEquals(Color.Red, colored)
-        }
-        compose.mainClock.advanceTimeBy(250)
         compose.runOnIdle {
             assertEquals(target, first)
             assertEquals(first, second)
+            assertEquals(first, glyph)
             assertEquals(first, track)
             assertEquals(Color.Red, colored)
             surface.value = null
         }
         repeat(2) { compose.mainClock.advanceTimeByFrame(); compose.waitForIdle() }
-        compose.mainClock.advanceTimeBy(80)
-        compose.runOnIdle {
-            assertEquals(first, second)
-            assertEquals(first, glyph)
-            assertEquals(first, track)
-            assertTrue("Exit fade must be in progress at 80 ms: progress=$progress, ink=$first", progress > 0f && progress < 1f)
-            assertTrue(first.red > target.red && first.red < 1f)
-            assertEquals(Color.Red, colored)
-        }
-        compose.mainClock.advanceTimeBy(250)
         compose.runOnIdle {
             assertEquals(Color.White, first)
             assertEquals(first, second)

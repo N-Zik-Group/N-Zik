@@ -13,8 +13,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import app.n_zik.android.components.glass.readableGlyphForeground
-import app.n_zik.android.components.glass.readableForeground
+import app.n_zik.android.components.glass.glassPaneForeground
+import app.n_zik.android.components.glass.IconContrast
+import app.n_zik.android.components.glass.glassSurfaceDarkness
 import app.n_zik.android.components.glass.TextContrast
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
@@ -53,14 +54,16 @@ internal fun GlassNavigationTab(
     labelAbove: Boolean = false,
     onClick: () -> Unit,
 ) {
-    val nativeIndication = if (!rememberGlassSettings().usesGlassMaterial(GlassArea.Nav)) LocalIndication.current else null
+    val settings = rememberGlassSettings()
+    val nativeIndication = if (!settings.usesGlassMaterial(GlassArea.Nav)) LocalIndication.current else null
     val replica = LocalGlassTabReplica.current
     val scale = LocalGlassTabScale.current
     val originalInk = if (replica) colorPalette().text else color
     val surface = if (selected || replica) LocalGlassNavigationSelectedSurface.current
         else LocalGlassNavigationSurface.current
-    val ink = surface?.let { readableGlyphForeground(originalInk, it) } ?: originalInk
-    val labelInk = surface?.let { readableForeground(originalInk, it, TextContrast) } ?: originalInk
+    val darkness = if (surface != null) glassSurfaceDarkness(settings) else 0f
+    val ink = surface?.let { glassPaneForeground(originalInk, it, IconContrast, darkness, glyph = true) } ?: originalInk
+    val labelInk = surface?.let { glassPaneForeground(originalInk, it, TextContrast, darkness) } ?: originalInk
     // The material owns its mask; magnified Glass glyphs need room beyond their resting slot.
     val tabModifier = (if (nativeIndication != null) Modifier.clip(uiRoundnessShape()) else Modifier)
             .then(if (replica) Modifier else Modifier

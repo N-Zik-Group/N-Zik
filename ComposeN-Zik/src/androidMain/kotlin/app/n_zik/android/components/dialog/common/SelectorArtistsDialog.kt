@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -50,6 +51,7 @@ import app.n_zik.android.utils.medium
 import app.n_zik.innertube.YtMusic
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.player.textOutlineColor
+import app.n_zik.android.components.theme.paletteDarkness
 
 /** Artist thumbnail pager using the shared title and dismissal bands. */
 @Composable
@@ -144,8 +146,9 @@ inline fun SelectorArtistsDialog(
                                     text = cleanPrefix(it1),
                                     style = typography().xs.medium.merge(TextStyle(
                                         drawStyle = Stroke(width = 1.0f, join = StrokeJoin.Round),
-                                        // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
-                                        color = textOutlineColor(colorPalette().isDark, 0.5f)
+                                        color = lerp(
+                                            textOutlineColor(false, .5f), textOutlineColor(true, .5f), paletteDarkness(),
+                                        )
                                     )),
                                     maxLines = 3,
                                     overflow = TextOverflow.Ellipsis,

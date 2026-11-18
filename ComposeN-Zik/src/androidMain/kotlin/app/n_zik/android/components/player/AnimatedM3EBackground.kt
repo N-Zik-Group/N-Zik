@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
@@ -65,6 +66,7 @@ fun Modifier.animatedM3EBackground(
     DM: Color,
     skipToken: Any? = null,
     active: Boolean = true,
+    artworkSwatches: State<List<Color>>? = null,
 ): Modifier = composed {
     val accumulatedTime = remember { mutableFloatStateOf(0f) }
 
@@ -371,6 +373,7 @@ fun Modifier.animatedM3EBackground(
         onDrawBehind {
             val time = accumulatedTime.floatValue
             if (visibilityProgress <= 0.01f) return@onDrawBehind
+            val swatches = artworkSwatches?.value
 
             shapes.forEach { shape ->
                 val scaleFactor = shape.radiusScale
@@ -382,7 +385,13 @@ fun Modifier.animatedM3EBackground(
                 val currentX = radius + shape.x * spanX
                 val currentY = radius + shape.y * spanY
 
-                val shapeColor = colors[shape.colorIndex].copy(alpha = 0.4f * visibilityProgress)
+                val swatchIndex = when (shape.colorIndex) {
+                    0 -> 1 // Vibrant
+                    1 -> 3 // Dark vibrant
+                    else -> 4 // Muted
+                }
+                val fill = swatches?.getOrNull(swatchIndex) ?: colors[shape.colorIndex]
+                val shapeColor = fill.copy(alpha = 0.4f * visibilityProgress)
 
                 withTransform({
                     translate(left = currentX, top = currentY)

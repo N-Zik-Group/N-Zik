@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.theme.paletteDarkness
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.DialogFrame
@@ -700,13 +701,11 @@ internal fun AudioDeviceStatusMenu(error: String?, onRetry: () -> Unit) {
                     .padding(32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Readable red keyed on the effective tone: M3 error tokens are not remapped by the
-                // app's theming (spec-achromatic-ramp-luminance-cap)
                 Icon(
                     imageVector = Icons.Outlined.Error,
                     contentDescription = null,
                     modifier = Modifier.size(48.dp),
-                    tint = Color.hsl(0f, 0.8f, if (colorPalette().isDark) 0.65f else 0.35f)
+                    tint = Color.hsl(0f, .8f, .35f + .30f * paletteDarkness())
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 // Keyed on the effective tone, not the un-remapped M3 onSurface token

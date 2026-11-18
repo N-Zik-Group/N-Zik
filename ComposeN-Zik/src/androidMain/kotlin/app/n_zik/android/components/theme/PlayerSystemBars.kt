@@ -82,12 +82,13 @@ internal fun PlayerSystemBarAppearance(
     val right = WindowInsets.navigationBars.getRight(density, direction)
     val last = remember(activity) { PlayerBarSample() }
     // Observe completion even though coordinates and the recording generation are plain fields.
-    val sampledSurface = sampling.commonSurface
+    val version = sampling.measurementVersion
+    val sampledSurface = sampling.foregroundSurface
     val coordinates = sampling.coordinates?.takeIf { it.isAttached }
     val origin = coordinates?.positionInWindow()
     val size = coordinates?.size
-    val colors = remember(active, sampling, sampledSurface, origin, size, top, bottom, left, right) {
-        if (!active || sampledSurface == null || origin == null || size == null) return@remember null
+    val colors = remember(active, sampling, version, sampledSurface, origin, size, top, bottom, left, right) {
+        if (!active || version == 0 || sampledSurface == null || origin == null || size == null) return@remember null
         val width = size.width.toFloat()
         val height = size.height.toFloat()
         // Avoid rounded screen corners, whose transparent pixels are outside the displayed pane.
@@ -101,14 +102,16 @@ internal fun PlayerSystemBarAppearance(
         }
         (status ?: sampledSurface) to (sampling.colorAt(navigationRegion, textFilm = Color.Transparent) ?: sampledSurface)
     }
+    val hasProvisional = sampling.hasProvisionalSurface
+    val visibleFallback = if (hasProvisional) sampling.foregroundSurface ?: fallbackSurface else fallbackSurface
     val backgroundAppearance = if (active) resolvePlayerSystemBarAppearance(colors?.first, colors?.second,
-        fallbackSurface, sampling.finished, last.settled) else null
+        visibleFallback, sampling.finished, last.settled.takeUnless { hasProvisional }) else null
     val appearance = if (navigationSurfaceOverride == null) backgroundAppearance else backgroundAppearance?.copy(
         navigationIsDark = neutralForeground(navigationSurfaceOverride) == Color.White,
     )
     SideEffect {
         // The queue can come and go while a cover is loading. Retain the sampled bar colors.
-        if (!active || colors != null || sampling.finished) last.settled = backgroundAppearance
+        if (!active || sampling.finished) last.settled = backgroundAppearance
         activity?.setPlayerSystemBarAppearance(appearance)
     }
     DisposableEffect(activity) {

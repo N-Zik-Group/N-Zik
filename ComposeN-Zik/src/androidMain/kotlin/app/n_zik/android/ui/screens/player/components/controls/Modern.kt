@@ -499,12 +499,13 @@ fun ControlsModern(
       }
 
       if (playerPlayButtonType == PlayerPlayButtonType.CircularRibbed){
+          val playShape = playerTransportPlayShape(playerPlayButtonType, rotationAngle)
           Box(
              contentAlignment = Alignment.Center,
              modifier = Modifier
                  .playerTransportAction(playPauseLabel)
-                 .playerTransportFeedback(playInteraction, playerTransportPlayShape(playerPlayButtonType, rotationAngle))
-                 .clip(playerTransportPlayShape(playerPlayButtonType, rotationAngle))
+                 .playerTransportFeedback(playInteraction, playShape)
+                 .clip(playShape)
                  .combinedClickable(
                      indication = playerTransportIndication(nativeControlIndication()),
                      interactionSource = playInteraction,

@@ -10,6 +10,9 @@ import app.n_zik.android.components.glass.rememberGlassRawPressFeedback
 
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterExitState
+import app.n_zik.android.components.player.rememberPlayerCoverIdentity
+import app.n_zik.android.components.player.ReportPresentedPlayerCover
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -146,6 +149,8 @@ fun Thumbnail(
     verticalPadding: Dp = 8.dp,
     currentArtworkUrl: String? = null,
     publishArtworkColors: Boolean = false,
+    onArtworkPresented: (() -> Unit)? = null,
+    rotationActive: Boolean = true,
 ) {
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
@@ -250,15 +255,15 @@ fun Thumbnail(
         contentAlignment = Alignment.Center, label = ""
     ) { currentWindow ->
 
-        var artImageAvailable by remember {
-            mutableStateOf(true)
-        }
-
         val isCurrentWindow = currentWindow == window
         val artworkUrl = currentArtworkUrl.takeIf { isCurrentWindow }
             ?: currentWindow.mediaItem.mediaMetadata.artworkUri?.toString()
+        val coverIdentity = rememberPlayerCoverIdentity(currentWindow.mediaItem.mediaId, artworkUrl.orEmpty())
+        var artImageAvailable by remember(coverIdentity) { mutableStateOf(true) }
+        val artworkDrawn = remember(coverIdentity) { mutableStateOf(false) }
         val coverPainter = ImageCacheFactory.Painter(
             thumbnailUrl = artworkUrl,
+            onArtworkDrawn = { artworkDrawn.value = true },
             publishArtworkColors = publishArtworkColors && isCurrentWindow,
             onError = { 
                 artImageAvailable = false 
@@ -274,6 +279,13 @@ fun Thumbnail(
             onSuccess = { 
                 artImageAvailable = true 
             }
+        )
+
+        if (onArtworkPresented != null) ReportPresentedPlayerCover(
+            identity = coverIdentity,
+            ready = artworkDrawn.value || !artImageAvailable,
+            active = isCurrentWindow && transition.currentState == EnterExitState.Visible && !transition.isRunning,
+            onPresented = onArtworkPresented,
         )
 
         val thumbnailType by rememberPreference(thumbnailTypeKey, ThumbnailType.Modern)
@@ -399,6 +411,7 @@ fun Thumbnail(
                             RotateThumbnailCoverAnimation(
                                 painter = coverPainter,
                                 isSongPlaying = player.isPlaying,
+                                rotationActive = rotationActive && isCurrentWindow,
                                 modifier = Modifier
                                     .glassImageRim(CircleShape)
                                     .then(coverPressFeedback.modifier())

@@ -4,10 +4,6 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image
@@ -23,6 +19,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,8 +44,15 @@ import coil3.compose.asPainter
 import kotlin.math.sqrt
 import kotlinx.coroutines.delay
 
-/** A media ID alone is insufficient when metadata refreshes the artwork URI. */
-internal data class PlayerCoverIdentity(val mediaId: String, val artworkUri: String)
+/** Local artwork can be replaced in place while the song and its URI remain the same. */
+internal data class PlayerCoverIdentity(val mediaId: String, val artworkUri: String, val localRevision: Long = 0L)
+
+@Composable
+internal fun rememberPlayerCoverIdentity(mediaId: String, artworkUri: String): PlayerCoverIdentity {
+    val source = rememberDisplayArtworkSource(artworkUri)
+    val revision = ImageCacheFactory.rememberLocalArtworkRevision(source)
+    return remember(mediaId, artworkUri, revision) { PlayerCoverIdentity(mediaId, artworkUri, revision) }
+}
 
 internal data class PlayerCoverFrame<T>(val identity: PlayerCoverIdentity, val image: T)
 
@@ -63,6 +68,24 @@ internal class PlayerCoverFrameState<T> {
 
     fun complete(identity: PlayerCoverIdentity, image: T) {
         if (identity == requested) displayed = PlayerCoverFrame(identity, image)
+    }
+}
+
+/** Publishes only after the decoded painter and the visible layout have both reached a frame. */
+@Composable
+internal fun ReportPresentedPlayerCover(
+    identity: PlayerCoverIdentity,
+    ready: Boolean,
+    active: Boolean,
+    onPresented: () -> Unit,
+) {
+    val report by rememberUpdatedState(onPresented)
+    LaunchedEffect(identity, ready, active) {
+        if (ready && active) {
+            withFrameNanos { }
+            withFrameNanos { }
+            report()
+        }
     }
 }
 
@@ -109,20 +132,23 @@ internal fun PlayerCurrentCover(
     isShowingVisualizer: Boolean,
     modifier: Modifier = Modifier,
     publishArtworkColors: Boolean = false,
+    allowOwnRotation: Boolean = true,
+    committedRevision: Long? = null,
     onBackdropSettled: ((PlayerCoverFrame<Painter>?) -> Unit)? = null,
 ) {
     val context = LocalContext.current
-    val identity = PlayerCoverIdentity(mediaId, artworkUri)
+    val identity = rememberPlayerCoverIdentity(mediaId, artworkUri)
+    val canRequest = committedRevision == null || committedRevision == identity.localRevision
     val frames = remember { PlayerCoverFrameState<Painter>() }
     frames.request(identity)
     val fallback = painterResource(R.drawable.ic_launcher_box)
     val artworkSource = rememberDisplayArtworkSource(artworkUri)?.let(::cleanPrefix)
-    if (artworkSource.isNullOrBlank() || artworkSource == "null") {
+    if (canRequest && (artworkSource.isNullOrBlank() || artworkSource == "null")) {
         LaunchedEffect(identity) {
             if (frames.displayed != null) delay(ARTWORK_METADATA_GRACE_MS)
             frames.complete(identity, fallback)
         }
-    } else key(identity) {
+    } else if (canRequest) key(identity) {
         ImageCacheFactory.Painter(
             thumbnailUrl = artworkUri,
             onSuccess = { frames.complete(identity, it.result.image.asPainter(context)) },
@@ -150,18 +176,23 @@ internal fun PlayerCurrentCover(
             animationSpec = tween(PLAYER_COVER_FADE_MS, easing = FastOutSlowInEasing),
             label = "playerCoverBackdrop",
         )
-        val angle by rememberInfiniteTransition(label = "currentCoverRotation").animateFloat(
-            initialValue = 0f,
-            targetValue = if (blurAdjuster.isCoverRotating) 360f else 0f,
-            animationSpec = infiniteRepeatable(tween(30000, easing = LinearEasing)),
-            label = "currentCoverAngle",
+        val ownsRotation = allowOwnRotation && blurAdjuster.isCoverRotating
+        val angle = rememberCoverSpin(
+            active = ownsRotation && frame != null,
+            playing = true,
+            rotationMillis = 30_000,
+            coastDegrees = 0f,
         )
         Box(Modifier.requiredSize(squareSize)) {
             if (frame != null) PlayerCoverCrossfade(
                 frame = frame,
                 modifier = Modifier.fillMaxSize()
                     .then(if (blurRadius > 0f) Modifier.blur(blurRadius.dp) else Modifier)
-                    .graphicsLayer { scaleX = scale; scaleY = scale; rotationZ = angle },
+                    .graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                        rotationZ = if (ownsRotation) angle.value else 0f
+                    },
                 onSettled = onBackdropSettled?.let { report ->
                     { settled ->
                         report(frame.takeIf {

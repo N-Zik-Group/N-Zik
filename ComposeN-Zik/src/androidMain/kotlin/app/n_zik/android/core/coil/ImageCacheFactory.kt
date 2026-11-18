@@ -35,6 +35,8 @@ import coil3.BitmapImage
 import coil3.ImageLoader
 import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import coil3.compose.AsyncImagePainter
 import coil3.compose.AsyncImagePainter.State
 import coil3.compose.SubcomposeAsyncImage
@@ -620,6 +622,7 @@ object ImageCacheFactory {
         onSuccess: ((State.Success) -> Unit)? = null,
         onError: ((State.Error) -> Unit)? = null,
         publishArtworkColors: Boolean = false,
+        onArtworkDrawn: (() -> Unit)? = null,
     ): AsyncImagePainter {
         val sourceUrl = rememberDisplayArtworkSource(thumbnailUrl)
         val transformArtwork = rememberVideoArtworkPainterTransform(sourceUrl, contentScale)
@@ -719,8 +722,16 @@ object ImageCacheFactory {
             sizedRequest.newBuilder().crossfade(false).build()
         } else sizedRequest
         val errorPainter = painterResource(error)
+        val reportScope = if (onArtworkDrawn != null) rememberCoroutineScope() else null
         fun matches(result: ImageRequest): Boolean =
             result.data == requestedData && result.memoryCacheKey == cacheKey && isCurrentRequest()
+
+        fun drawnPainter(source: androidx.compose.ui.graphics.painter.Painter, request: ImageRequest) =
+            if (reportScope != null && onArtworkDrawn != null && matches(request)) {
+                ArtworkPresentedPainter(source) {
+                    reportScope.launch { if (matches(request)) onArtworkDrawn() }
+                }
+            } else source
 
         val painter = rememberAsyncImagePainter(
             model = painterRequest,
@@ -729,8 +740,9 @@ object ImageCacheFactory {
             transform = { state ->
                 when (state) {
                     is State.Loading -> state.copy(painter = loadingPainter)
-                    is State.Success -> state.copy(painter = transformArtwork(state.painter))
-                    is State.Error -> state.copy(painter = errorPainter)
+                    is State.Success -> state.copy(painter = drawnPainter(transformArtwork(state.painter), state.result.request))
+                    is State.Error -> state.copy(painter = if (onArtworkDrawn != null && nextPainterArtwork(attemptedUrl, validUrl, state.result) == null)
+                        drawnPainter(errorPainter, state.result.request) else errorPainter)
                     State.Empty -> state
                 }
             },

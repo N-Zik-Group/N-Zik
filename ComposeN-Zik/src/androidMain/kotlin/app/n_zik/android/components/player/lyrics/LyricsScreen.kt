@@ -51,6 +51,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.isSpecified
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -139,6 +141,11 @@ import kotlinx.coroutines.withContext
 import app.n_zik.android.components.menu.lyrics.LyricsSettingsMenu
 import app.n_zik.android.components.dialog.player.ShowOffsetDialog
 import app.n_zik.android.components.player.rememberArtworkDisplayColors
+import app.n_zik.android.components.player.LocalPlayerArtworkPaint
+import app.n_zik.android.components.player.rememberPlayerColorFade
+import app.n_zik.android.components.theme.LocalPaletteFadeTarget
+import app.n_zik.android.components.glass.TextContrast
+import app.n_zik.android.components.glass.readableForeground
 import dev.rebelonion.translator.Translator
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.shape.CircleShape
@@ -327,9 +334,22 @@ fun LyricsScreen(
         }
 
         var lyricsCustomColor by rememberPreference(lyricsCustomColorKey, android.graphics.Color.WHITE)
-        val coverDisplay = rememberArtworkDisplayColors(mediaMetadata.artworkUri?.toString(), !lightTheme)
-        val dominantColor = if (coverDisplay?.colors != null || coverDisplay?.forceDark == true)
-            coverDisplay.foreground?.toArgb() ?: android.graphics.Color.DKGRAY else android.graphics.Color.DKGRAY
+        val defaultCoverForeground = Color(android.graphics.Color.DKGRAY)
+        val scopedArtworkPaint = LocalPlayerArtworkPaint.current
+        val useCoverBackground = lyricsColor == LyricsColor.Cover && showBackgroundLyrics && showlyricsthumbnail
+        val useStandaloneCoverColors = lyricsColor == LyricsColor.Cover && scopedArtworkPaint == null
+        val coverDisplay = if (useStandaloneCoverColors) rememberArtworkDisplayColors(
+            mediaMetadata.artworkUri?.toString(), !lightTheme, awaitArtworkMetadata = true,
+        ) else null
+        val coverBackgroundState = if (useStandaloneCoverColors && useCoverBackground) {
+            val themeAccent = LocalPaletteFadeTarget.current?.colorPalette?.accent ?: colorPalette().accent
+            val target = coverDisplay?.takeIf { it.forceDark }?.background ?: themeAccent
+            rememberPlayerColorFade(target, active = true, interpolate = ::lerp)
+        } else null
+        val coverForegroundState = if (useStandaloneCoverColors) {
+            val target = coverDisplay?.takeIf { it.colors != null || it.forceDark }?.foreground ?: defaultCoverForeground
+            rememberPlayerColorFade(target, active = true, interpolate = ::lerp)
+        } else null
 
         LyricsFetcher(
             mediaId = mediaId,
@@ -391,7 +411,7 @@ fun LyricsScreen(
         val overlayCanvasViewport = Modifier.glassOverlayCanvasViewport(rememberGlassSettings(), showThumbnail = showlyricsthumbnail)
         var transportHeightPx by remember { mutableIntStateOf(0) }
         LyricsGlassScene(
-            background = if (!showlyricsthumbnail) Color.Transparent else Color.Black.copy(0.8f),
+            background = if (showlyricsthumbnail) LyricsCoverScrim else Color.Transparent,
             modifier = modifier
                 .pointerInput(Unit) { detectTapGestures(onTap = { onDismiss() }) }
                 .fillMaxSize()
@@ -426,7 +446,20 @@ fun LyricsScreen(
                 }
 
                 if (text?.isNotEmpty() == true) {
-                    val hasWordTimings = text.lines().any { it.trim().startsWith("<") && it.contains(":") && it.contains(">") }
+                    val hasWordTimings = remember(text) {
+                        text.lineSequence().any { it.trim().startsWith("<") && it.contains(":") && it.contains(">") }
+                    }
+                    val paint = if (lyricsColor == LyricsColor.Cover) scopedArtworkPaint?.value else null
+                    val coverBackground = when {
+                        !useCoverBackground -> null
+                        scopedArtworkPaint != null ->
+                            paint?.lyricsSurface?.takeIf { it.isSpecified } ?: colorPalette().accent
+                        else -> coverBackgroundState?.value
+                    }
+                    val coverForeground = paint?.lyricsForeground ?: coverForegroundState?.value ?: defaultCoverForeground
+                    val dominantColor = if (coverBackground != null && actualLyricsType != LyricsType.Unsynced)
+                        readableForeground(coverForeground, coverBackground, TextContrast).toArgb()
+                    else coverForeground.toArgb()
                     when {
                         actualLyricsType == LyricsType.Karaoke && hasWordTimings -> {
                             KaraokeLyricsView(
@@ -438,7 +471,7 @@ fun LyricsScreen(
                                 isLandscape = isLandscape,
                                 trailingContent = trailingContent,
                                 showBackgroundLyrics = showBackgroundLyrics,
-                                forcedCoverBackground = coverDisplay?.takeIf { it.forceDark }?.background,
+                                forcedCoverBackground = coverBackground,
                                 lyricsBackground = lyricsBackground,
                                 showSecondLine = showSecondLine,
                                 translateEnabled = translateEnabled && languageDestination != null,
@@ -478,7 +511,7 @@ fun LyricsScreen(
                                 isLandscape = isLandscape,
                                 trailingContent = trailingContent,
                                 showBackgroundLyrics = showBackgroundLyrics,
-                                forcedCoverBackground = coverDisplay?.takeIf { it.forceDark }?.background,
+                                forcedCoverBackground = coverBackground,
                                 lyricsBackground = lyricsBackground,
                                 showSecondLine = showSecondLine,
                                 translateEnabled = translateEnabled && languageDestination != null,

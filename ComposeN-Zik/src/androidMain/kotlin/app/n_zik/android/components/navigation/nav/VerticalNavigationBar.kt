@@ -3,7 +3,6 @@ package app.n_zik.android.components.navigation.nav
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.forArea
 import androidx.annotation.OptIn
-import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,7 +24,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import app.n_zik.android.colorPalette
 import app.n_zik.android.enums.NavigationBarType
 import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.ui.styling.Dimensions
@@ -67,9 +64,7 @@ class VerticalNavigationBar(
         buttons { index, text, iconId ->
             tabIndices.register(index, index)
             buttonList.register(index) {
-                val textColor by transition.animateColor(label = "sideTabInk") {
-                    if (it == index) colorPalette().text else colorPalette().textDisabled
-                }
+                val textColor = navigationTabInk(transition, index)
                 GlassNavigationTab(text, iconId, index == tabIndex,
                     NavigationBarType.IconAndText.isCurrent(), textColor,
                     sidePosition = NavigationBarPosition.current()) { onTabChanged(index) }

@@ -31,7 +31,16 @@ data class ColorPalette(
     val textDisabled: Color,
     val isDark: Boolean,
     val iconButtonPlayer: Color,
+    internal val transitionRoles: TransitionRoles? = null,
 ) {
+    @Immutable
+    data class TransitionRoles(
+        val progress: Color,
+        val favorite: Color,
+        val shimmer: Color,
+        val primaryButton: Color,
+    )
+
     companion object : Saver<ColorPalette, Any> {
         /** Process-wide fallback (dark default) for corrupted payloads — the dark default is the app's own default mode (issue #881, gh-881). */
         val fallback: ColorPalette get() = DefaultDarkColorPalette
@@ -256,43 +265,26 @@ fun dynamicColorPaletteOf(
     isDark = isDark
 )
 
-inline val ColorPalette.collapsedPlayerProgressBar: Color
-    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this === PureBlackColorPalette) {
-        text
-    } else {
-        accent
-    }
+private val ColorPalette.usesDefaultRoleColors: Boolean
+    get() = this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this === PureBlackColorPalette
 
+private val ColorPalette.usesBlackButtonFill: Boolean
+    get() = this === PureBlackColorPalette || this === ModernBlackColorPalette
 
+val ColorPalette.collapsedPlayerProgressBar: Color
+    get() = transitionRoles?.progress ?: if (usesDefaultRoleColors) text else accent
 
-inline val ColorPalette.favoritesIcon: Color
-    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this === PureBlackColorPalette) {
-        red
-    } else {
-        accent
-    }
+val ColorPalette.favoritesIcon: Color
+    get() = transitionRoles?.favorite ?: if (usesDefaultRoleColors) red else accent
 
-inline val ColorPalette.shimmer: Color
-    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this === PureBlackColorPalette) {
-        Color(0xff838383)
-    } else {
-        accent
-    }
+val ColorPalette.shimmer: Color
+    get() = transitionRoles?.shimmer ?: if (usesDefaultRoleColors) Color(0xff838383) else accent
 
-inline val ColorPalette.primaryButton: Color
-    get() = if (this === PureBlackColorPalette || this === ModernBlackColorPalette) {
-        Color(0xFF272727)
-    } else {
-        background2
-    }
+val ColorPalette.primaryButton: Color
+    get() = transitionRoles?.primaryButton ?: if (usesBlackButtonFill) Color(0xFF272727) else background2
 
-
-inline val ColorPalette.favoritesOverlay: Color
-    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this === PureBlackColorPalette) {
-        red.copy(alpha = 0.4f)
-    } else {
-        accent.copy(alpha = 0.4f)
-    }
+val ColorPalette.favoritesOverlay: Color
+    get() = favoritesIcon.copy(alpha = 0.4f)
 
 inline val ColorPalette.overlay: Color
     get() = PureBlackColorPalette.background0.copy(alpha = 0.5f)
@@ -315,6 +307,17 @@ inline val ColorPalette.applyPitchBlack: ColorPalette
     )
 
 fun ColorPalette.lerpTo(target: ColorPalette, fraction: Float): ColorPalette {
+    if (fraction <= 0f) return this
+    if (fraction >= 1f) return target
+    // Dynamic endpoints already derive these roles from interpolated palette fields.
+    val roles = if (transitionRoles != null || target.transitionRoles != null ||
+        usesDefaultRoleColors || target.usesDefaultRoleColors || usesBlackButtonFill || target.usesBlackButtonFill
+    ) ColorPalette.TransitionRoles(
+        progress = lerp(collapsedPlayerProgressBar, target.collapsedPlayerProgressBar, fraction),
+        favorite = lerp(favoritesIcon, target.favoritesIcon, fraction),
+        shimmer = lerp(shimmer, target.shimmer, fraction),
+        primaryButton = lerp(primaryButton, target.primaryButton, fraction),
+    ) else null
     return ColorPalette(
         background0 = lerp(background0, target.background0, fraction),
         background1 = lerp(background1, target.background1, fraction),
@@ -330,6 +333,7 @@ fun ColorPalette.lerpTo(target: ColorPalette, fraction: Float): ColorPalette {
         textDisabled = lerp(textDisabled, target.textDisabled, fraction),
         isDark = target.isDark,
         iconButtonPlayer = lerp(iconButtonPlayer, target.iconButtonPlayer, fraction),
+        transitionRoles = roles,
     )
 }
 

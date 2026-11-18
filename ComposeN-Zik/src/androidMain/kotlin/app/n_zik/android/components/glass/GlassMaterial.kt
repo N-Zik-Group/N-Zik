@@ -206,10 +206,14 @@ internal fun glassFilmOpacity(configured: Float, overlay: Boolean, progress: Flo
 
 @Composable
 fun glassSurfaceTint(settings: GlassSettings): Color {
-    val brightness = LocalGlassMenuHost.current?.backdropLuminance
+    val brightness = currentGlassArtworkTint()?.luminance
         ?: LocalGlassArtworkColor.current?.luminance() ?: 0f
-    val base = if (!glassSurfaceIsDark(settings)) Color(0xFFFAFAFA) else {
-        lerp(Color(0xFF4A4A4E), Color(0xFF23232A), ((brightness - 0.42f) / 0.3f).coerceIn(0f, 1f))
+    val light = Color(0xFFFAFAFA)
+    val dark = lerp(Color(0xFF4A4A4E), Color(0xFF23232A), ((brightness - 0.42f) / 0.3f).coerceIn(0f, 1f))
+    val base = when (val darkness = glassSurfaceDarkness(settings)) {
+        0f -> light
+        1f -> dark
+        else -> lerp(light, dark, darkness)
     }
     return blendGlassTint(base, glassTint(settings), settings.tintStrength)
 }
@@ -229,8 +233,13 @@ internal fun blendGlassTint(base: Color, tint: Color, strength: Float): Color {
 @Composable
 internal fun glassNativeSurfaceTint(settings: GlassSettings, base: Color): Color {
     if (!base.isSpecified || base.alpha == 0f) return base
-    val sourceBase = if (glassArtworkForcesDark(settings))
-        (LocalGlassArtworkColor.current ?: LocalGlassMenuHost.current?.artworkColor)?.copy(alpha = base.alpha) ?: base else base
+    val darkness = glassArtworkDarkness(settings)
+    val artwork = if (darkness > 0f) glassArtworkColor()?.copy(alpha = base.alpha) else null
+    val sourceBase = when {
+        artwork == null -> base
+        darkness == 1f -> artwork
+        else -> lerp(base, artwork, darkness)
+    }
     return blendGlassTint(sourceBase, glassTint(settings), settings.tintStrength).copy(alpha = base.alpha)
 }
 
@@ -297,9 +306,8 @@ fun Modifier.glassMaterial(
     val rimAlpha = (highlightAlpha * settings.rim / 0.55f).coerceIn(0f, 1f)
     val cornerShape = glassOpticalShape(shape)
     val menuOpacity = menuFilmProgress.coerceIn(0f, 1f)
-    val dark = glassSurfaceIsDark(settings)
     val fallback = renderer == GlassRenderer.Tint || (cornerShape == null && customLens == null) || backdrop == null
-    val opacity = glassFilmOpacity(settings.film, menu, menuOpacity, fallback, dark)
+    val opacity = glassFilmOpacity(settings.film, menu, menuOpacity, fallback)
     if (fallback) {
         val exportedRim = if (exportedBackdrop != null) remember(shape, rimColor, rimAlpha, excludeBottomRim) {
             cachedGlassRimDraw(shape, SolidColor(rimColor.copy(alpha = rimAlpha)), excludeBottomRim)

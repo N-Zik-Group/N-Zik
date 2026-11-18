@@ -15,7 +15,8 @@ import app.n_zik.android.components.player.TOP_NAV_BAR_HEIGHT
 import androidx.compose.runtime.CompositionLocalProvider
 import app.n_zik.android.ui.components.navigation.nav.LocalIsManyButtons
 import app.n_zik.android.uiRoundnessShape
-import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.Transition
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -50,6 +51,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.PlatformTextStyle
@@ -63,6 +65,7 @@ import app.n_zik.android.core.navigation.shouldShowSearchShortcut
 import app.n_zik.android.colorPalette
 import app.n_zik.android.navigationSurfaceColor
 import app.n_zik.android.isPitchBlackSurface
+import app.n_zik.android.components.theme.LocalNativeSurfaceMix
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.enums.NavigationBarType
@@ -77,6 +80,20 @@ import app.n_zik.android.components.navigation.header.LocalUnifiedTopGlassSurfac
 import app.n_zik.android.components.ui.screens.home.LocalSharedHomeHeaderGlass
 import app.n_zik.android.typography
 import app.n_zik.android.utils.semiBold
+
+/** Animate selection independently while reading colors from the currently displayed theme. */
+@Composable
+internal fun navigationTabInk(selection: Transition<Int>, index: Int): Color {
+    val selected by selection.animateFloat(label = "navigationTabSelection") { tab ->
+        if (tab == index) 1f else 0f
+    }
+    val palette = colorPalette()
+    return when (val progress = selected.coerceIn(0f, 1f)) {
+        0f -> palette.textDisabled
+        1f -> palette.text
+        else -> lerp(palette.textDisabled, palette.text, progress)
+    }
+}
 
 /** Native Top keeps the native type scale and icon size while mirroring Bottom vertically. */
 @Composable
@@ -177,9 +194,7 @@ class HorizontalNavigationBar(
             SideEffect { DockToolbarCatalogue.register(listOf(descriptor)) }
             tabIndices.register(index, index)
             buttonList.register(index) {
-                val color by transition.animateColor(label = "") {
-                    if (it == index) colorPalette().text else colorPalette().textDisabled
-                }
+                val color = navigationTabInk(transition, index)
                 val button: Button =
                     if (NavigationBarType.IconOnly.isCurrent())
                         Button(iconId, color, 12.dp, if (isFloating) 24.dp else 20.dp)
@@ -352,6 +367,12 @@ class HorizontalNavigationBar(
 
 
                 val backgroundColor = navigationSurfaceColor()
+                val nativeColor = if (isFloating && !useGlass) {
+                    val mix = LocalNativeSurfaceMix.current
+                    val black = mix?.let { (it.pitchBlack + it.pureBlack).coerceIn(0f, 1f) }
+                        ?: if (isPitchBlackSurface()) 1f else 0f
+                    backgroundColor.copy(alpha = 0.95f - 0.05f * black)
+                } else backgroundColor
 
                 Box(
                     modifier = Modifier
@@ -363,7 +384,7 @@ class HorizontalNavigationBar(
                             Modifier.background(colorPalette().background0) else Modifier)
                         .then(if (useGlass) Modifier else Modifier.clip(roundedCornerShape))
                         .then(if (useGlass) Modifier
-                              else Modifier.background(if (isFloating && !isPitchBlackSurface()) backgroundColor.copy(alpha = 0.95f) else backgroundColor)
+                              else Modifier.background(nativeColor)
                                   .glassAreaContour(glassSettings, GlassArea.Nav, roundedCornerShape))
                 ) {
 

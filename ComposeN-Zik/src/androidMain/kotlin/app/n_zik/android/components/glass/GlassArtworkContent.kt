@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.isSpecified
+import androidx.compose.ui.graphics.lerp
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.components.theme.withColor
 
@@ -16,6 +18,7 @@ internal fun GlassArtworkContent(
     content: @Composable () -> Unit,
 ) {
     val appearance = LocalAppearance.current
+    val paneDarkness = if (active && settings.enabled) glassSurfaceDarkness(settings) else null
     if (surface != null) {
         // A concrete plate owns its ink independently of a surrounding player transition.
         CompositionLocalProvider(
@@ -24,14 +27,19 @@ internal fun GlassArtworkContent(
             LocalNeutralForegroundSurface provides null,
             LocalNeutralForegroundAmount provides 1f,
         ) {
-            SurfaceForegroundContent(surface, content = content)
+            SurfaceForegroundContent(surface, glassInkDarkness = paneDarkness, content = content)
         }
         return
     }
-    val forced = active && settings.enabled && glassArtworkForcesDark(settings)
+    val darkness = if (active && settings.enabled) glassArtworkDarkness(settings) else 0f
+    val forced = darkness > 0f
     val palette = appearance.colorPalette
-    val artworkSurface = surface ?: glassSurfaceTint(settings)
-    fun neutralRole(original: Color): Color = readableForeground(original, artworkSurface, IconContrast)
+    val artworkSurface = if (forced) glassSurfaceTint(settings) else Color.Transparent
+    fun neutralRole(original: Color): Color {
+        val corrected = glassPaneForeground(original, artworkSurface, IconContrast, paneDarkness ?: darkness)
+        return if (darkness == 1f || original == corrected || !original.isSpecified) corrected
+            else lerp(original, corrected, darkness)
+    }
     val foregroundPalette = if (forced) palette.copy(
         text = neutralRole(palette.text),
         textSecondary = neutralRole(palette.textSecondary),
@@ -47,6 +55,7 @@ internal fun GlassArtworkContent(
     CompositionLocalProvider(
         LocalAppearance provides effective,
         LocalContentColor provides contentColor,
+        LocalGlassInkDarkness provides paneDarkness,
         content = content,
     )
 }
@@ -54,6 +63,11 @@ internal fun GlassArtworkContent(
 /** Explicit glyph colors may have been evaluated outside the surface's content provider. */
 @Composable
 internal fun glassArtworkForeground(settings: GlassSettings, original: Color, active: Boolean = true): Color =
-    if (active && settings.enabled && glassArtworkForcesDark(settings) && isNeutralForeground(original))
-        readableGlyphForeground(original, glassSurfaceTint(settings), IconContrast)
-    else original
+    if (active && settings.enabled && isNeutralForeground(original)) {
+        val darkness = glassArtworkDarkness(settings)
+        if (darkness <= 0f) original else {
+            val corrected = glassPaneForeground(original, glassSurfaceTint(settings), IconContrast,
+                glassSurfaceDarkness(settings), glyph = true)
+            if (darkness == 1f || original == corrected) corrected else lerp(original, corrected, darkness)
+        }
+    } else original

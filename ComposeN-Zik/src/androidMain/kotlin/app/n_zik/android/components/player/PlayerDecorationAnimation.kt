@@ -1,6 +1,11 @@
 package app.n_zik.android.components.player
 
 import android.graphics.Matrix
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -33,6 +38,29 @@ fun rememberPlayerDecorationsActive(visible: Boolean): Boolean {
         onDispose { lifecycle.removeObserver(observer) }
     }
     return visible && started
+}
+
+/** Retains the rendered angle without invalidating composition while the cover turns. */
+@Composable
+internal fun rememberCoverSpin(
+    active: Boolean,
+    playing: Boolean,
+    rotationMillis: Int,
+    coastDegrees: Float,
+): State<Float> {
+    val angle = remember { Animatable(0f) }
+    LaunchedEffect(active, playing, rotationMillis, coastDegrees) {
+        if (!active) return@LaunchedEffect
+        if (playing) {
+            // One complete turn returns to the same transform, including on repeat.
+            val start = angle.value % 360f
+            angle.snapTo(start)
+            angle.animateTo(start + 360f, infiniteRepeatable(tween(rotationMillis, easing = LinearEasing)))
+        } else if (angle.value > 0f && coastDegrees > 0f) {
+            angle.animateTo(angle.value + coastDegrees, tween(1_250, easing = LinearOutSlowInEasing))
+        }
+    }
+    return angle.asState()
 }
 
 /** Each active run starts with a fresh timestamp; hidden wall time never becomes motion. */

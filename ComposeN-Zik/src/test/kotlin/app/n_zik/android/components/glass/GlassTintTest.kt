@@ -6,16 +6,21 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.FontType
+import app.n_zik.android.components.player.ArtworkDisplayColors
+import app.n_zik.android.components.player.ArtworkDisplayResult
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultLightColorPalette
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -26,6 +31,41 @@ import org.robolectric.annotation.Config
 @Config(sdk = [33], application = Application::class)
 class GlassTintTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `glass theme handoff waits for artwork then distinguishes a missing cover from a disabled source`() {
+        val current = ArtworkDisplayColors(null, null, Color.Red, null, null, true, true)
+        assertNull(resolvedGlassArtworkTint(ArtworkDisplayResult(null, resolved = false), enabled = true))
+        assertNull(resolvedGlassArtworkTint(ArtworkDisplayResult(current, resolved = false), enabled = true))
+        assertEquals(GlassArtworkTint(Color.Red, 1f),
+            resolvedGlassArtworkTint(ArtworkDisplayResult(current, resolved = true), enabled = true))
+        assertEquals(GlassArtworkTint(), resolvedGlassArtworkTint(ArtworkDisplayResult(null, resolved = true), enabled = true))
+        assertEquals(GlassArtworkTint(), resolvedGlassArtworkTint(ArtworkDisplayResult(current, resolved = false), enabled = false))
+    }
+
+    @Test fun `neutral glass ink advances through a light dark fade without an intermediate polarity flash`() {
+        val lightSurface = Color(.97f, .97f, .97f)
+        val darkSurface = Color(.13f, .13f, .13f)
+        val lightInk = Color(.88f, .88f, .88f)
+        val frames = (0..120).map { index ->
+            val darkness = index / 120f
+            val surface = lerp(lightSurface, darkSurface, darkness)
+            glassPaneForeground(lerp(darkSurface, lightInk, darkness), surface, TextContrast, darkness)
+        }
+        assertTrue(contrastAgainst(frames.first(), lightSurface) >= TextContrast)
+        assertTrue(contrastAgainst(frames.last(), darkSurface) >= TextContrast)
+        assertTrue(frames.zipWithNext().all { (a, b) -> b.red >= a.red && b.red - a.red < .035f })
+    }
+
+    @Test fun `artwork contribution fades coherently into the live theme fallback`() {
+        val from = GlassArtworkTint(Color.White, darkness = 1f)
+        val fallback = GlassArtworkTint()
+        val halfway = from.lerpTo(fallback, .5f)
+        assertEquals(.5f, halfway.color!!.alpha, .01f)
+        assertEquals(.5f, halfway.darkness, 0f)
+        assertEquals(.5f, halfway.luminance, .01f)
+        assertEquals(halfway, halfway.lerpTo(GlassArtworkTint(Color.Red), 0f))
+        assertEquals(fallback, from.lerpTo(fallback, 1f))
+    }
 
     @Test fun `neutral sources stay neutral and full strength preserves actual source colour`() {
         val base = Color(0xFF23232A)
@@ -83,11 +123,11 @@ class GlassTintTest {
     }
     @Test fun `dark artwork policy reaches native glass roles in light theme without changing custom sources`() {
         val source = mutableStateOf(GlassTintSource.Artwork)
-        val forced = mutableStateOf(true)
+        val artworkDarkness = mutableStateOf(1f)
         val effectiveArtwork = Color(0xFF242424)
         var surface = Color.Unspecified
         var native = Color.Unspecified
-        var dark = false
+        var darkness = 0f
         compose.setContent {
             CompositionLocalProvider(
                 LocalAppearance provides Appearance(
@@ -99,26 +139,36 @@ class GlassTintTest {
                 ),
                 LocalGlassArtworkColor provides effectiveArtwork,
                 LocalGlassMenuHost provides androidx.compose.runtime.remember { GlassMenuHostState() }.also {
-                    it.artworkColor = effectiveArtwork
-                    it.artworkForceDark = forced.value
+                    it.artworkTint = GlassArtworkTint(effectiveArtwork, darkness = artworkDarkness.value)
                 },
             ) {
                 val settings = GlassSettings(source = source.value, customColor = Color.Red.toArgb(), tintStrength = .5f)
                 surface = glassSurfaceTint(settings)
                 native = glassNativeSurfaceTint(settings, Color.White.copy(alpha = .7f))
-                dark = glassSurfaceIsDark(settings)
+                darkness = glassSurfaceDarkness(settings)
             }
         }
+        var darkSurface = Color.Unspecified
+        var darkNative = Color.Unspecified
         compose.runOnIdle {
-            org.junit.Assert.assertTrue(dark)
+            assertEquals(1f, darkness, 0f)
             org.junit.Assert.assertTrue(surface.red < .5f)
             org.junit.Assert.assertTrue(native.red < .5f)
+            assertEquals(.7f, native.alpha, .01f)
+            darkSurface = surface
+            darkNative = native
+            artworkDarkness.value = .5f
+        }
+        compose.runOnIdle {
+            assertEquals(.5f, darkness, 0f)
+            org.junit.Assert.assertTrue(surface.red > darkSurface.red)
+            org.junit.Assert.assertTrue(native.red > darkNative.red)
             assertEquals(.7f, native.alpha, .01f)
             source.value = GlassTintSource.Custom
         }
         compose.runOnIdle {
-            org.junit.Assert.assertFalse(dark)
-            forced.value = false
+            assertEquals(0f, darkness, 0f)
+            artworkDarkness.value = 0f
         }
         compose.runOnIdle {
             assertEquals(blendGlassTint(Color.White.copy(alpha = .7f), Color.Red, .5f).copy(alpha = .7f), native)

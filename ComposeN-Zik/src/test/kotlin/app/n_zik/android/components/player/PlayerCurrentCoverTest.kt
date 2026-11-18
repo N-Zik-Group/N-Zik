@@ -60,4 +60,17 @@ class PlayerCurrentCoverTest {
         assertEquals(fresh, frames.displayed?.identity)
         assertEquals("fresh", frames.displayed?.image)
     }
+
+    @Test fun `in-place local replacement keeps the outgoing frame until its own revision is ready`() {
+        val frames = PlayerCoverFrameState<String>()
+        val previous = PlayerCoverIdentity("A", "file:///cover.jpg", localRevision = 1)
+        val replacement = previous.copy(localRevision = 2)
+        frames.request(previous)
+        frames.complete(previous, "outgoing")
+        frames.request(replacement)
+        frames.complete(previous, "stale")
+        assertEquals("outgoing", frames.displayed?.image)
+        frames.complete(replacement, "replacement")
+        assertEquals(PlayerCoverFrame(replacement, "replacement"), frames.displayed)
+    }
 }

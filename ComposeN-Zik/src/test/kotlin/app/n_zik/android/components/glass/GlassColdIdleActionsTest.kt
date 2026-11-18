@@ -206,8 +206,7 @@ class GlassColdIdleActionsTest {
         compose.runOnIdle {
             assertTrue("the unrelated parent redraw must actually run", parentPaints > firstPaints)
             assertEquals("no media or composition change may repair the initial surface", firstCompositions, compositions)
-            assertEquals(null, host.artworkColor)
-            assertEquals(0f, host.backdropLuminance, 0f)
+            assertEquals(GlassArtworkTint(), host.artworkTint)
         }
     }
 

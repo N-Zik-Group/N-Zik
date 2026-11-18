@@ -6,6 +6,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -22,14 +23,8 @@ import kotlin.math.sqrt
 @OptIn(UnstableApi::class)
 fun Modifier.animatedGradient(
     animating: Boolean,
-    D: Color,
-    V: Color,
-    LV: Color,
-    DV: Color,
-    M: Color,
-    LM: Color,
-    DM: Color
-    ): Modifier = composed {
+    swatches: State<List<Color>>,
+): Modifier = composed {
     val rotation = remember { Animatable(0f) }
 
     LaunchedEffect(rotation, animating) {
@@ -47,6 +42,7 @@ fun Modifier.animatedGradient(
     }
 
     drawWithCache {
+        val colors = swatches.value
         val rectSize = sqrt(size.width * size.width + size.height * size.height)
         val topLeft = Offset(
             x = -(rectSize - size.width) / 2,
@@ -54,25 +50,25 @@ fun Modifier.animatedGradient(
         )
 
         val brush1 = Brush.linearGradient(
-            0f to D,
-            0.33f to LV,
-            0.66f to V,
-            1f to DV,
+            0f to colors[0],
+            0.33f to colors[2],
+            0.66f to colors[1],
+            1f to colors[3],
             start = topLeft,
             end = Offset(rectSize * 0.7f, rectSize * 0.7f),
         )
 
         val brush2 = Brush.linearGradient(
-            0f to D,
-            0.33f to LM,
-            0.66f to M,
-            1f to DM,
+            0f to colors[0],
+            0.33f to colors[5],
+            0.66f to colors[4],
+            1f to colors[6],
             start = Offset(rectSize, 0f),
             end = Offset(0f, rectSize),
         )
 
         val maskBrush = Brush.linearGradient(
-            0f to D,
+            0f to colors[0],
             1f to Color.Transparent,
             start = Offset(rectSize / 2f, 0f),
             end = Offset(rectSize / 2f, rectSize),

@@ -69,7 +69,7 @@ import app.n_zik.android.components.glass.GlassRippleProvider
 import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassTintSource
-import app.n_zik.android.components.glass.LocalGlassArtworkColor
+import app.n_zik.android.components.glass.glassArtworkColor
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.LocalGlassPreviewSettings
@@ -330,7 +330,7 @@ internal fun GlassPreview(config: GlassSettings, maxPaneHeight: Dp = 166.dp) {
 private fun GlassPreviewPane(config: GlassSettings, maxPaneHeight: Dp) {
     // Only the stage is recorded. Sampling its foreground would create a RenderNode cycle.
     val stage = rememberLayerBackdrop()
-    val accent = LocalGlassArtworkColor.current ?: LocalGlassMenuHost.current?.artworkColor ?: colorPalette().accent
+    val accent = glassArtworkColor() ?: colorPalette().accent
     BoxWithConstraints(Modifier.fillMaxWidth().clip(uiRoundnessShape())) {
         val nativeWidth = 360.dp
         val verticalPadding = 12.dp

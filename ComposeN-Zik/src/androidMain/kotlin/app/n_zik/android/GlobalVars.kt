@@ -30,6 +30,8 @@ import app.n_zik.android.utils.showStatsInNavbarKey
 import app.n_zik.android.utils.ytAccountNameKey
 import app.n_zik.android.utils.ytAccountThumbnailKey
 import app.n_zik.android.components.menu.straightBottomMenuShape
+import app.n_zik.android.components.theme.LocalNativeSurfaceMix
+import app.n_zik.android.components.theme.NativeSurfaceMix
 
 @Composable
 fun typography() = LocalAppearance.current.typography
@@ -146,8 +148,24 @@ internal fun hasBlackPaletteSurfaces(name: ColorPaletteName, palette: ColorPalet
     name == ColorPaletteName.PureBlack || name == ColorPaletteName.ModernBlack ||
         palette === PureBlackColorPalette || palette === ModernBlackColorPalette
 
+internal fun nativeSurfaceMix(mode: ColorPaletteMode, name: ColorPaletteName, palette: ColorPalette): NativeSurfaceMix {
+    val namedBlack = name == ColorPaletteName.PureBlack || name == ColorPaletteName.ModernBlack
+    val pure = mode == ColorPaletteMode.PureBlack
+    val pitch = !pure && (mode == ColorPaletteMode.PitchBlack || hasBlackPaletteSurfaces(name, palette))
+    return NativeSurfaceMix(
+        pitchBlack = if (pitch) 1f else 0f,
+        pureBlack = if (pure) 1f else 0f,
+        miniPlayerBlack = if (namedBlack) 1f else 0f,
+    )
+}
+
 @Composable
 private fun nativeSurface(base: Color, recessed: Boolean = false, navigation: Boolean = false): Color {
+    LocalNativeSurfaceMix.current?.let { mix ->
+        return mix.color(base,
+            nativeSurfaceColor(base, ColorPaletteMode.PitchBlack, false, recessed, navigation),
+            nativeSurfaceColor(base, ColorPaletteMode.PureBlack, false, recessed, navigation))
+    }
     val mode = rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark).value
     val palette = colorPalette()
     val name = rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic).value

@@ -4,6 +4,7 @@ import android.app.Application
 import android.os.Looper
 import java.time.Duration
 import kotlin.math.abs
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,6 +32,12 @@ import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.Typography
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.player.PaletteFade
+import app.n_zik.android.components.player.LocalPlayerArtworkPaint
+import app.n_zik.android.components.player.LocalPlayerArtworkPaintTarget
+import app.n_zik.android.components.player.PlayerArtworkPaint
+import app.n_zik.android.components.glass.GlassArtworkTint
+import app.n_zik.android.components.glass.LocalGlassArtworkTint
+import app.n_zik.android.components.navigation.nav.navigationTabInk
 import app.n_zik.android.typography
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -52,6 +59,74 @@ class AppearanceRecompositionTest {
     private val red = appearance(Color.Red)
     private val blue = appearance(Color.Blue)
     private val green = appearance(Color.Green)
+
+    @Test
+    fun `global glass tint and page palette are sampled on the same frame`() {
+        val target = mutableStateOf(red)
+        val fadeFrom = mutableStateOf<Appearance?>(null)
+        val samples = mutableListOf<Triple<Color, Color?, Color>>()
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            val next = target.value
+            ProvideAnimatedAppearance(next, fadeFrom.value, 320, {},
+                targetArtworkTint = GlassArtworkTint(next.colorPalette.text)) {
+                val text = colorPalette().text
+                val tint = LocalGlassArtworkTint.current?.value?.color
+                val selectedInk = navigationTabInk(updateTransition(0, label = "selected tab"), 0)
+                SideEffect { samples += Triple(text, tint, selectedInk) }
+            }
+        }
+        composeRule.runOnIdle {
+            fadeFrom.value = red
+            target.value = blue
+        }
+        advanceFrames(160)
+        composeRule.runOnIdle {
+            assertTrue(samples.any { (text, _, _) -> text != red.colorPalette.text && text != blue.colorPalette.text })
+            assertTrue(samples.all { (text, tint, selectedInk) -> text == tint && text == selectedInk })
+        }
+    }
+
+    @Test
+    fun `scoped theme palette starts with the presented artwork paint`() {
+        val target = mutableStateOf(red)
+        val artworkPalette = mutableStateOf(red.colorPalette)
+        val moving = mutableStateOf(false)
+        val samples = mutableListOf<Pair<Color, Color>>()
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            val incoming = target.value
+            CompositionLocalProvider(LocalAppearance provides incoming) {
+                PaletteFade(durationMillis = 320, artworkInMotion = moving) {
+                    val localPalette = artworkPalette.value
+                    val color = localPalette.text
+                    val paint = LocalPlayerArtworkPaintTarget.current
+                    SideEffect {
+                        paint?.value = PlayerArtworkPaint(color, color, null, null, GlassArtworkTint(color),
+                            themePalette = localPalette)
+                    }
+                    val displayed = LocalPlayerArtworkPaint.current?.value?.accent
+                    val text = colorPalette().text
+                    SideEffect { if (displayed != null) samples += text to displayed }
+                }
+            }
+        }
+        advanceFrames(96)
+        composeRule.runOnIdle { moving.value = true; artworkPalette.value = blue.colorPalette }
+        advanceFrames(160)
+        composeRule.runOnIdle {
+            assertEquals(red.colorPalette.text to red.colorPalette.text, samples.last())
+            moving.value = false
+        }
+        advanceFrames(180)
+        composeRule.runOnIdle {
+            assertTrue(samples.any { (text, _) -> text != red.colorPalette.text && text != blue.colorPalette.text })
+            assertTrue(samples.all { (text, paint) -> text == paint })
+            target.value = green
+        }
+        advanceFrames(400)
+        composeRule.runOnIdle { assertEquals(blue.colorPalette.text to blue.colorPalette.text, samples.last()) }
+    }
 
     @Test
     @GraphicsMode(GraphicsMode.Mode.NATIVE)
