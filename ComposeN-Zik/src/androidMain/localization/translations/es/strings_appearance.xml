@@ -219,6 +219,7 @@
     <string name="theme_light_palette_text_secondary_description">Elija el color del texto secundario en la paleta de luz.</string>
     <string name="theme_mode_description">Elegir cuándo la aplicación utiliza su paleta clara o oscura.</string>
     <string name="theme_mode_pitch_black">Negro intenso</string>
+    <string name="theme_mode_pure_black">Negro puro</string>
     <string name="theme_palette_custom">Personalizado</string>
     <string name="theme_palette_description">Elija la paleta de colores usada en toda la aplicación.</string>
     <string name="theme_palette_dynamic">Dinámico</string>
@@ -266,6 +267,7 @@
     <string name="theme_store_compatibility">Compatibilidad con N-Zik</string>
     <string name="theme_store_submission_minimum_version">Versión N-Zik mínima</string>
     <string name="theme_store_submission_minimum_description">La versión más antigua que puede aplicar este tema. Los nuevos temas predeterminan el código de versión %3$d. Estás usando N-Zik %1$s (código de versión %2$d).</string>
+    <string name="theme_store_submission_feature_requires_update">Este tema requiere N-Zik Android versión código %1$d antes de que pueda ser publicado.</string>
     <string name="theme_store_submission_version_code_label">Código de versión mínimo</string>
     <string name="theme_store_submission_find_version_code">Buscar versiones y códigos N-Zik</string>
     <string name="theme_store_submission_version_with_code">%1$s (código %2$d)</string>
