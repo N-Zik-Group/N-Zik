@@ -199,7 +199,7 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
                 }
             }
             val paletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
-            val requestedDark = paletteMode == ColorPaletteMode.Dark || paletteMode == ColorPaletteMode.PitchBlack ||
+            val requestedDark = paletteMode == ColorPaletteMode.Dark || (paletteMode == ColorPaletteMode.PitchBlack || paletteMode == ColorPaletteMode.PureBlack) ||
                 (paletteMode == ColorPaletteMode.System && isSystemInDarkTheme())
             val coverDisplay = rememberArtworkDisplayColors(currentArtworkUri?.toString(), requestedDark)
             val dominantColor = if (coverDisplay?.colors != null || coverDisplay?.forceDark == true)

@@ -30,6 +30,10 @@ import app.n_zik.android.components.glass.glassSettingsCardRim
 import app.n_zik.android.components.glass.glassTint
 import app.n_zik.android.components.glass.rememberInlineGlassBackdrop
 import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.GlassArtworkContent
+import app.n_zik.android.components.glass.effectiveSurfaceColor
+import app.n_zik.android.components.glass.forArea
+import app.n_zik.android.components.glass.glassFilmColor
 
 /** Uses one Glass surface, retaining the original native card when its material is disabled. */
 @Composable
@@ -46,11 +50,14 @@ internal fun SettingsCardSurface(
 ) {
     val surfaceSettings = if (foregroundRim) settings.copy(rim = 0f) else settings
     val sourceBackdrop = rememberInlineGlassBackdrop(backgroundColor)
+    val glassCard = settings.usesGlassMaterial(GlassArea.SettingsCards)
+    val foregroundSurface = if (glassCard) effectiveSurfaceColor(backgroundColor,
+        glassFilmColor(surfaceSettings.forArea(GlassArea.SettingsCards), containerColor, menu = false)) else null
     if (settings.usesGlassMaterial(GlassArea.ActionButtons) || settings.enabled && settings.mode(GlassArea.Switches) != GlassAreaMode.Disabled) {
-        val glassCard = settings.usesGlassMaterial(GlassArea.SettingsCards)
         GlassMaterialContainerScope(
             modifier = Modifier,
             materialSource = sourceBackdrop.takeIf { glassCard },
+            foregroundFill = foregroundSurface,
             sectionFilm = if (glassCard && !foregroundRim) null else containerColor.compositeOver(backgroundColor),
             material = if (glassCard && !foregroundRim) { exported ->
                 Modifier.clip(shape).glassSettingsCardBackground(
@@ -87,8 +94,10 @@ internal fun SettingsCardSurface(
             modifier = modifier
                 .clip(shape)
                 .glassSettingsCardBackground(backgroundColor, containerColor, shape, surfaceSettings, sourceBackdrop = sourceBackdrop),
-            content = content,
-        )
+        ) {
+            val column = this
+            GlassArtworkContent(settings, surface = foregroundSurface) { content(column) }
+        }
     } else {
         val tint = if (settings.usesGlassContour(GlassArea.SettingsCards)) glassTint(settings) else Color.Unspecified
         Card(

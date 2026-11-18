@@ -10,6 +10,7 @@ import org.junit.Assert.assertTrue
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
@@ -46,6 +47,11 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.R
+import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.enums.ColorPaletteName
+import app.n_zik.android.utils.colorPaletteModeKey
+import app.n_zik.android.utils.colorPaletteNameKey
+import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.enums.PlayerPlayButtonType
 import app.n_zik.android.ui.screens.player.components.controls.ControlsEssential
@@ -66,6 +72,10 @@ import app.n_zik.android.components.glass.GlassQuality
 import app.n_zik.android.components.glass.glassMaterial
 import app.n_zik.android.components.glass.LocalGlassPreviewSettings
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.luminance
+import app.n_zik.android.components.glass.LocalNeutralForegroundOverride
+import app.n_zik.android.components.glass.SurfaceForegroundContent
+import app.n_zik.android.components.glass.contrastAgainst
 import app.n_zik.android.components.glass.GlassStore
 import app.n_zik.android.components.glass.glassFilmKey
 import app.n_zik.android.components.glass.glassRimKey
@@ -420,51 +430,273 @@ class PlayerTransportGlassTest {
         }
     }
 
-    @Test fun `transport and Essential play share configured film instead of native colour opacity`() {
+    @Test fun `transport retains native RGB while film alone controls coverage in live and tint renderers`() {
         val film = mutableStateOf(0f)
         val material = mutableStateOf(true)
-        val native = Color.Red.copy(alpha = .2f)
+        val native = mutableStateOf(Color.Red.copy(alpha = .2f))
+        val quality = mutableStateOf(GlassQuality.Performance)
+        var nativeFill = Color.Unspecified
+        var contrastPlate = Color.Unspecified
+        var expectedPlate = Color.Unspecified
         compose.setContent {
             AppearanceProvider {
                 val shape = RoundedCornerShape(0.dp)
-                val settings = GlassSettings(quality = GlassQuality.Performance, film = film.value, rim = 0f,
+                val scene = rememberCanvasBackdrop { drawRect(Color.Blue) }
+                val settings = GlassSettings(quality = quality.value, film = film.value, rim = 0f,
+                    blur = 0f, vibrancy = 0f, depth = 0f, amount = 0f,
                     areaModes = mapOf(GlassArea.ActionButtons to GlassAreaMode.Disabled),
                     contextModes = mapOf(GlassContextArea(GlassScope.PlayerTransport, GlassArea.ActionButtons) to
                         if (material.value) GlassAreaMode.GlassOnly else GlassAreaMode.Disabled))
-                Row(Modifier.background(Color.Black)) {
-                    Box(Modifier.size(60.dp).testTag("transport.film")
-                        .playerTransportFilledBackground(native, shape, settings))
-                    Box(Modifier.size(60.dp).testTag("essential.film")
-                        .playerTransportPlayBackground(PlayerPlayButtonType.Default, native, settings))
-                    Box(Modifier.size(100.dp).testTag("ribbed.film")) {
-                        PlayerTransportRibbedSurface(native, settings = settings)
+                nativeFill = playerTransportNativeFill(native.value, settings)
+                contrastPlate = playerTransportPlate(settings, native.value)
+                expectedPlate = glassFilmColor(settings, native.value, menu = false)
+                CompositionLocalProvider(LocalGlassContainerBackdrop provides scene) {
+                    Row(Modifier.background(Color.Blue)) {
+                        Box(Modifier.size(60.dp).testTag("transport.film")
+                            .playerTransportFilledBackground(native.value, shape, settings))
+                        Box(Modifier.size(60.dp).testTag("essential.film")
+                            .playerTransportPlayBackground(PlayerPlayButtonType.Default, native.value, settings))
+                        Box(Modifier.size(100.dp).testTag("ribbed.film")) {
+                            PlayerTransportRibbedSurface(native.value, settings = settings)
+                        }
                     }
-                    Box(Modifier.size(60.dp).testTag("shared.film")
-                        .glassMaterial(settings, shape, separateWindow = true))
                 }
             }
         }
         fun center(tag: String): Color {
-            val image = compose.onNodeWithTag(tag).captureToImage().toPixelMap()
-            return image[image.width / 2, image.height / 2]
+            val pixels = compose.onNodeWithTag(tag).captureToImage().toPixelMap()
+            return pixels[pixels.width / 2, pixels.height / 2]
         }
-        for (opacity in listOf(0f, .5f, 1f)) {
-            compose.runOnIdle { film.value = opacity }
-            for (tag in listOf("transport.film", "essential.film", "ribbed.film")) {
-                val expected = center("shared.film")
-                val actual = center(tag)
-                assertEquals(expected.red, actual.red, .02f)
-                assertEquals(expected.green, actual.green, .02f)
-                assertEquals(expected.blue, actual.blue, .02f)
+        for (renderer in listOf(GlassQuality.Performance, GlassQuality.Balanced)) {
+            for (role in listOf(Color.Red, Color.Black, Color.Gray)) {
+                for (alpha in listOf(.1f, .95f, 1f)) for (opacity in listOf(0f, .5f, 1f)) {
+                    compose.runOnIdle { quality.value = renderer; native.value = role.copy(alpha = alpha); film.value = opacity }
+                    val expected = role.copy(alpha = opacity).compositeOver(Color.Blue)
+                    for (tag in listOf("transport.film", "essential.film", "ribbed.film")) {
+                        val actual = center(tag)
+                        assertEquals("$tag red", expected.red, actual.red, .02f)
+                        assertEquals("$tag green", expected.green, actual.green, .02f)
+                        assertEquals("$tag blue", expected.blue, actual.blue, .02f)
+                    }
+                    compose.runOnIdle {
+                        assertEquals(Color.Transparent, nativeFill)
+                        assertEquals(expectedPlate, contrastPlate)
+                    }
+                }
             }
         }
-        compose.runOnIdle { material.value = false }
+        compose.runOnIdle { material.value = false; native.value = Color.Red.copy(alpha = .2f) }
         for (tag in listOf("transport.film", "essential.film")) {
-            val expected = native.compositeOver(Color.Black)
+            val expected = native.value.compositeOver(Color.Blue)
             val actual = center(tag)
             assertEquals(expected.red, actual.red, .02f)
             assertEquals(expected.green, actual.green, .02f)
             assertEquals(expected.blue, actual.blue, .02f)
+        }
+        compose.runOnIdle { assertEquals(native.value, nativeFill); assertEquals(native.value, contrastPlate) }
+    }
+
+    @Test fun `actual Glass play and skip glyphs contrast with their painted plates over bright artwork`() {
+        preferences.edit().putString(colorPaletteNameKey, ColorPaletteName.Default.name)
+            .putString(colorPaletteModeKey, ColorPaletteMode.Light.name).commit()
+        val modern = mutableStateOf(true)
+        val style = mutableStateOf(PlayerPlayButtonType.Default)
+        val quality = mutableStateOf(GlassQuality.Performance)
+        // Light semantic ink and bright artwork deliberately disagree with the native dark plates.
+        val palette = DefaultDarkColorPalette.copy(isDark = false, text = Color.Black,
+            iconButtonPlayer = Color.Black, background1 = Color.Black, background2 = Color.Black,
+            background4 = Color.Black)
+        compose.setContent {
+            AppearanceProvider(palette) {
+                val scene = rememberCanvasBackdrop { drawRect(Color.White) }
+                val settings = GlassSettings(quality = quality.value, film = 1f, rim = 0f,
+                    blur = 0f, vibrancy = 0f, depth = 0f, amount = 0f)
+                CompositionLocalProvider(LocalGlassPreviewSettings provides settings,
+                    LocalGlassContainerBackdrop provides scene,
+                    LocalNeutralForegroundOverride provides Color.Black) {
+                    SurfaceForegroundContent(Color.White) {
+                        Row(Modifier.background(Color.White)) {
+                            if (modern.value) ControlsModern(binder.player, binder, { 0L }, 1f, false, false,
+                                style.value, false, {}, palette)
+                            else ControlsEssential(binder.player, binder, { 0L }, 1f, false, null, "plate-contrast-test",
+                                style.value, false, true, {}, palette)
+                        }
+                    }
+                }
+            }
+        }
+        for (renderer in listOf(GlassQuality.Performance, GlassQuality.Balanced)) {
+            for (variant in listOf(true, false)) {
+                for (type in listOf(PlayerPlayButtonType.Default, PlayerPlayButtonType.CircularRibbed)) {
+                    compose.runOnIdle { quality.value = renderer; modern.value = variant; style.value = type }
+                    val first = if (variant) 0 else 1
+                    for (index in first..first + 2) {
+                        val pixels = compose.onAllNodes(hasClickAction())[index].captureToImage().toPixelMap()
+                        val plate = pixels[pixels.width / 4, pixels.height / 2]
+                        val glyphPixels = buildList {
+                            for (y in pixels.height * 2 / 5 until pixels.height * 3 / 5) {
+                                for (x in pixels.width * 2 / 5 until pixels.width * 3 / 5) add(pixels[x, y])
+                            }
+                        }
+                        val glyph = if (plate.luminance() < .5f) glyphPixels.maxBy { it.luminance() }
+                            else glyphPixels.minBy { it.luminance() }
+                        assertTrue("$renderer Modern=$variant $type action=$index painted glyph contrast",
+                            contrastAgainst(glyph, plate) >= 3f)
+                        if (variant || index == first + 1) {
+                            assertEquals("Native dark plate must actually be painted", Color.Black, plate)
+                            assertTrue("Dark own plate must keep a light glyph despite the parent's black neutral",
+                                glyph.luminance() > .7f)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test fun `actual Modern translucent plates retain native color without filled shadow pollution`() {
+        preferences.edit().putString(colorPaletteNameKey, ColorPaletteName.Default.name)
+            .putString(colorPaletteModeKey, ColorPaletteMode.Light.name).commit()
+        val backdrop = Color(0xFFFFC9DB)
+        val native = mutableStateOf(Color(0xFFFFDDE7))
+        val film = mutableStateOf(0f)
+        val style = mutableStateOf(PlayerPlayButtonType.Default)
+        val quality = mutableStateOf(GlassQuality.Performance)
+        var expectedPlate = Color.Unspecified
+        compose.setContent {
+            val palette = DefaultDarkColorPalette.copy(isDark = false, text = Color.Black,
+                iconButtonPlayer = Color.Black, background2 = native.value)
+            AppearanceProvider(palette) {
+                val scene = rememberCanvasBackdrop { drawRect(backdrop) }
+                val settings = GlassSettings(quality = quality.value, film = film.value, rim = 0f,
+                    blur = 0f, vibrancy = 0f, depth = 0f, amount = 0f)
+                expectedPlate = glassFilmColor(settings, native.value.copy(alpha = .95f), menu = false)
+                    .compositeOver(backdrop)
+                CompositionLocalProvider(LocalGlassPreviewSettings provides settings,
+                    LocalGlassContainerBackdrop provides scene,
+                    LocalNeutralForegroundOverride provides Color.Black) {
+                    SurfaceForegroundContent(backdrop) {
+                        Row(Modifier.background(backdrop)) {
+                            ControlsModern(binder.player, binder, { 0L }, 1f, false, false,
+                                style.value, false, {}, palette)
+                        }
+                    }
+                }
+            }
+        }
+        for (renderer in listOf(GlassQuality.Performance, GlassQuality.Balanced)) {
+            for (role in listOf(Color(0xFFFFDDE7), Color.Black)) {
+                for (opacity in listOf(0f, .5f)) {
+                    for (type in listOf(PlayerPlayButtonType.Default, PlayerPlayButtonType.CircularRibbed)) {
+                        compose.runOnIdle {
+                            quality.value = renderer; native.value = role; film.value = opacity; style.value = type
+                        }
+                        for (index in 0..2) {
+                            val pixels = compose.onAllNodes(hasClickAction())[index].captureToImage().toPixelMap()
+                            val plate = pixels[pixels.width / 4, pixels.height / 2]
+                            val label = "$renderer $type film=$opacity role=$role action=$index"
+                            assertEquals("$label red plate", expectedPlate.red, plate.red, .025f)
+                            assertEquals("$label green plate", expectedPlate.green, plate.green, .025f)
+                            assertEquals("$label blue plate", expectedPlate.blue, plate.blue, .025f)
+                            val glyphPixels = buildList {
+                                for (y in pixels.height * 2 / 5 until pixels.height * 3 / 5) {
+                                    for (x in pixels.width * 2 / 5 until pixels.width * 3 / 5) add(pixels[x, y])
+                                }
+                            }
+                            val glyph = glyphPixels.maxBy { contrastAgainst(it, plate) }
+                            assertTrue("$label visible glyph", contrastAgainst(glyph, plate) >= 3f)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test fun `Modern shadow darkens the outside while translucent interiors stay clear`() {
+        preferences.edit().putString(colorPaletteNameKey, ColorPaletteName.Default.name)
+            .putString(colorPaletteModeKey, ColorPaletteMode.Light.name).commit()
+        val backdrop = Color(0xFFFFC9DB)
+        val role = Color(0xFFFFDDE7)
+        val enabled = mutableStateOf(true)
+        val film = mutableStateOf(0f)
+        val quality = mutableStateOf(GlassQuality.Performance)
+        val style = mutableStateOf(PlayerPlayButtonType.Default)
+        var expectedPlate = Color.Unspecified
+        compose.setContent {
+            val palette = DefaultDarkColorPalette.copy(isDark = false, text = Color.Black,
+                iconButtonPlayer = Color.Black, background2 = role)
+            AppearanceProvider(palette) {
+                val scene = rememberCanvasBackdrop { drawRect(backdrop) }
+                val settings = GlassSettings(enabled = enabled.value, quality = quality.value,
+                    film = film.value, rim = 0f, blur = 0f, vibrancy = 0f, depth = 0f, amount = 0f)
+                expectedPlate = glassFilmColor(settings, role.copy(alpha = .95f), menu = false)
+                    .compositeOver(backdrop)
+                CompositionLocalProvider(LocalGlassPreviewSettings provides settings,
+                    LocalGlassContainerBackdrop provides scene) {
+                    SurfaceForegroundContent(backdrop) {
+                        Row(Modifier.testTag("modern.shadow.host").background(backdrop).padding(20.dp)) {
+                            ControlsModern(binder.player, binder, { 0L }, 1f, false, false,
+                                style.value, false, {}, palette)
+                        }
+                    }
+                }
+            }
+        }
+        fun outsideAndPlate(): Pair<Color, Color> {
+            val host = compose.onNodeWithTag("modern.shadow.host")
+            val hostBounds = host.fetchSemanticsNode().boundsInRoot
+            val control = compose.onAllNodes(hasClickAction())[0].fetchSemanticsNode().boundsInRoot
+            val pixels = host.captureToImage().toPixelMap()
+            val y = (control.center.y - hostBounds.top).toInt()
+            val outsideX = (control.left - hostBounds.left - 3f).toInt()
+            val insideX = (control.left - hostBounds.left + control.width / 4f).toInt()
+            return pixels[outsideX, y] to pixels[insideX, y]
+        }
+        for (renderer in listOf(GlassQuality.Performance, GlassQuality.Balanced)) {
+            for (opacity in listOf(0f, .5f)) {
+                for (type in listOf(PlayerPlayButtonType.Default, PlayerPlayButtonType.CircularRibbed)) {
+                    compose.runOnIdle { quality.value = renderer; film.value = opacity; style.value = type }
+                    val (outside, plate) = outsideAndPlate()
+                    val label = "$renderer $type film=$opacity"
+                    assertTrue("$label slight shadow outside silhouette", outside.red < backdrop.red - .005f)
+                    assertTrue("$label shadow stays gentle", outside.red > backdrop.red - .2f)
+                    assertEquals("$label unchanged interior red", expectedPlate.red, plate.red, .025f)
+                    assertEquals("$label unchanged interior green", expectedPlate.green, plate.green, .025f)
+                    assertEquals("$label unchanged interior blue", expectedPlate.blue, plate.blue, .025f)
+                }
+            }
+        }
+        compose.runOnIdle { enabled.value = false }
+        val (nativeShadow, _) = outsideAndPlate()
+        assertTrue("Native mode retains its outside shadow", nativeShadow.red < backdrop.red - .005f)
+    }
+
+    @Test fun `actual Essential and Modern play plates are black in PureBlack mode with a colored nonblack palette`() {
+        preferences.edit().putBoolean(glassEnabledKey, false)
+            .putString(colorPaletteNameKey, ColorPaletteName.Default.name)
+            .putString(colorPaletteModeKey, ColorPaletteMode.PureBlack.name).commit()
+        val modern = mutableStateOf(false)
+        val style = mutableStateOf(PlayerPlayButtonType.Default)
+        val palette = DefaultDarkColorPalette.copy(background1 = Color.Red, background2 = Color.Green,
+            background4 = Color.Blue, text = Color.Cyan, accent = Color.Cyan)
+        compose.setContent {
+            AppearanceProvider(palette) {
+                Row(Modifier.background(Color.Magenta)) {
+                    if (modern.value) ControlsModern(binder.player, binder, { 0L }, 1f, false, false,
+                        style.value, false, {}, palette)
+                    else ControlsEssential(binder.player, binder, { 0L }, 1f, false, null, "pure-black-test",
+                        style.value, false, true, {}, palette)
+                }
+            }
+        }
+        for (variant in listOf(false, true)) {
+            for (type in listOf(PlayerPlayButtonType.Default, PlayerPlayButtonType.CircularRibbed)) {
+                compose.runOnIdle { modern.value = variant; style.value = type }
+                val pixels = compose.onAllNodes(hasClickAction())[if (variant) 1 else 2]
+                    .captureToImage().toPixelMap()
+                // Sample inside the native plate, away from the central glyph and ribbed edge.
+                val actual = pixels[pixels.width / 4, pixels.height / 2]
+                assertEquals("Modern=$variant style=$type actual inner plate", Color.Black, actual)
+            }
         }
     }
 

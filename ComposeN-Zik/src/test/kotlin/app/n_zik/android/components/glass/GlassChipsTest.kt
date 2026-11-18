@@ -20,6 +20,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
@@ -77,6 +78,65 @@ import java.util.concurrent.TimeUnit
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassChipsTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `real chip labels use their own film while preserving chromatic and disabled ink`() {
+        val glass = mutableStateOf(true)
+        val selected = mutableStateOf(false)
+        val enabled = mutableStateOf(true)
+        val chromatic = mutableStateOf(false)
+        var filterInk = Color.Unspecified
+        var keywordInk = Color.Unspecified
+        compose.setContent {
+            val shape = RoundedCornerShape(12.dp)
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                colorPalette = DefaultDarkColorPalette,
+                typography = typographyOf(Color.White, true, false, FontType.Rubik),
+                thumbnailShape = shape, uiRoundnessShape = shape, artistThumbnailShape = shape),
+                LocalSurfaceBackdropColor provides Color.White) {
+                Column(Modifier.background(Color.White)) {
+                    val ink = if (chromatic.value) Color.Red else Color.Black
+                    val settings = GlassSettings(enabled = glass.value, film = 1f, rim = 0f,
+                        quality = GlassQuality.Performance, blur = 0f)
+                    GlassFilterChip(selected.value, {}, {
+                        val color = LocalContentColor.current
+                        SideEffect { filterInk = color }
+                        Box(Modifier.size(12.dp).background(color).testTag("filter.ink"))
+                    }, enabled = enabled.value, settings = settings,
+                        colors = FilterChipDefaults.filterChipColors(containerColor = Color.Black,
+                            selectedContainerColor = Color.Black, labelColor = ink, selectedLabelColor = ink,
+                            disabledLabelColor = Color.Red.copy(alpha = .4f)))
+                    GlassSuggestionChip({}, {
+                        val color = LocalContentColor.current
+                        SideEffect { keywordInk = color }
+                        Box(Modifier.size(12.dp).background(color).testTag("keyword.ink"))
+                    }, enabled = enabled.value, settings = settings,
+                        colors = SuggestionChipDefaults.suggestionChipColors(containerColor = Color.Black,
+                            labelColor = ink, disabledLabelColor = Color.Red.copy(alpha = .4f)))
+                }
+            }
+        }
+        fun ink(tag: String): Color {
+            val pixels = compose.onNodeWithTag(tag, useUnmergedTree = true).captureToImage().toPixelMap()
+            return pixels[pixels.width / 2, pixels.height / 2]
+        }
+        for (isSelected in listOf(false, true)) {
+            compose.runOnIdle { selected.value = isSelected }
+            assertEquals(Color.White, ink("filter.ink"))
+            assertEquals(Color.White, ink("keyword.ink"))
+        }
+        compose.runOnIdle { chromatic.value = true }
+        assertEquals(Color.Red, ink("filter.ink"))
+        assertEquals(Color.Red, ink("keyword.ink"))
+        compose.runOnIdle { chromatic.value = false; glass.value = false }
+        assertEquals(Color.Black, ink("filter.ink"))
+        assertEquals(Color.Black, ink("keyword.ink"))
+        compose.runOnIdle { glass.value = true; enabled.value = false }
+        // Disabled colors are left to Material, including the caller's alpha.
+        compose.runOnIdle {
+            assertEquals(Color.Red.copy(alpha = .4f), filterInk)
+            assertEquals(Color.Red.copy(alpha = .4f), keywordInk)
+        }
+    }
 
     @Test fun `custom chips preserve native alpha geometry and clicks without sampling their page`() {
         val glass = mutableStateOf(false)

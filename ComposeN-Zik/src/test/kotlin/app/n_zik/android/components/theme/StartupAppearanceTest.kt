@@ -89,11 +89,13 @@ class StartupAppearanceTest {
     @Test
     fun `dynamic restoration applies pitch black before any playback callback`() {
         val saved = original.copy(colorPalette = dynamicColorPaletteOf(Color.Blue, true))
-        val restored = roundTrip(saved, ColorPaletteName.Dynamic, ColorPaletteMode.PitchBlack)
-        assertEquals(Color.Black, restored.colorPalette.background0)
-        assertEquals(Color.Black, restored.colorPalette.background4)
-        assertEquals(restoredPalette(saved).accent, restored.colorPalette.accent)
-        assertEquals(Color.White, restored.typography.s.color)
+        for (mode in listOf(ColorPaletteMode.PitchBlack, ColorPaletteMode.PureBlack)) {
+            val restored = roundTrip(saved, ColorPaletteName.Dynamic, mode, systemIsDark = false)
+            assertEquals(Color.Black, restored.colorPalette.background0)
+            assertEquals(Color.Black, restored.colorPalette.background4)
+            assertEquals(restoredPalette(saved).accent, restored.colorPalette.accent)
+            assertEquals(Color.White, restored.typography.s.color)
+        }
     }
 
     @Test

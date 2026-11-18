@@ -440,6 +440,10 @@ object ImageCacheFactory {
             })
         }
 
+        val loadingPainter = rememberThemedImageLoadingPainter(
+            listOf(sourceUrl, validUrl, version, localRevision, decision.sourceSize, decision.quality),
+        )
+
         if (currentUrl == null) {
             var showFallback by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) {
@@ -447,13 +451,15 @@ object ImageCacheFactory {
                 showFallback = true
             }
             Image(
-                painter = painterResource(if (showFallback) R.drawable.ic_launcher_box else R.drawable.loader),
+                painter = if (showFallback) painterResource(R.drawable.ic_launcher_box) else loadingPainter,
                 contentDescription = null,
-                modifier = imageModifier.fillMaxSize(),
+                modifier = imageModifier.fillMaxSize().imageLoadingBackground(loadingPainter) { !showFallback },
                 contentScale = resolvedScale
             )
             return
         }
+
+        val loading = remember(currentUrl) { mutableStateOf(true) }
 
         val request = ImageRequest.Builder(appContext())
             .data(currentUrl)
@@ -504,10 +510,13 @@ object ImageCacheFactory {
             imageLoader = LOADER,
             contentDescription = contentDescription,
             contentScale = resolvedScale,
-            modifier = imageModifier,
-            placeholder = painterResource(R.drawable.loader),
+            modifier = imageModifier.imageLoadingBackground(loadingPainter) { loading.value },
+            placeholder = loadingPainter,
             error = painterResource(R.drawable.ic_launcher_box),
-            fallback = painterResource(R.drawable.ic_launcher_box)
+            fallback = painterResource(R.drawable.ic_launcher_box),
+            onLoading = { loading.value = true },
+            onSuccess = { loading.value = false },
+            onError = { loading.value = false },
         )
     }
 
@@ -535,6 +544,11 @@ object ImageCacheFactory {
             })
         }
 
+        val loadingPainter = rememberThemedImageLoadingPainter(
+            listOf(sourceUrl, validUrl, version, localRevision, decision.sourceSize, decision.quality),
+            placeholder,
+        )
+
         // A null model never resolves in Coil (the placeholder would show forever). Load the
         // fallback box as a resource so the painter settles on a drawable instead of hanging.
         if (currentUrl == null) {
@@ -544,7 +558,7 @@ object ImageCacheFactory {
                     .build(),
                 imageLoader = LOADER,
                 contentScale = contentScale,
-                placeholder = painterResource(placeholder ?: R.drawable.loader),
+                placeholder = loadingPainter,
                 error = painterResource(error),
                 fallback = painterResource(fallback)
             )
@@ -605,7 +619,6 @@ object ImageCacheFactory {
         val painterRequest = if (isVideoArtwork(sourceUrl) && contentScale == ContentScale.Crop) {
             sizedRequest.newBuilder().crossfade(false).build()
         } else sizedRequest
-        val loadingPainter = painterResource(placeholder ?: R.drawable.loader)
         val errorPainter = painterResource(error)
         return rememberAsyncImagePainter(
             model = painterRequest,
@@ -651,6 +664,10 @@ object ImageCacheFactory {
             mutableStateOf(validUrl?.thumbnail(decision.sourceSize))
         }
 
+        val loadingPainter = rememberThemedImageLoadingPainter(
+            listOf(sourceUrl, validUrl, version, localRevision, decision.sourceSize, decision.quality),
+        )
+
         if (currentUrl == null) {
             var showFallback by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) {
@@ -658,9 +675,9 @@ object ImageCacheFactory {
                 showFallback = true
             }
             Image(
-                painter = painterResource(if (showFallback) R.drawable.ic_launcher_box else R.drawable.loader),
+                painter = if (showFallback) painterResource(R.drawable.ic_launcher_box) else loadingPainter,
                 contentDescription = null,
-                modifier = imageModifier.fillMaxSize(),
+                modifier = imageModifier.fillMaxSize().imageLoadingBackground(loadingPainter) { !showFallback },
                 contentScale = resolvedScale
             )
             return
@@ -704,9 +721,9 @@ object ImageCacheFactory {
             modifier = imageModifier,
             loading = {
                 Image(
-                    painter = painterResource(R.drawable.loader),
+                    painter = loadingPainter,
                     contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().imageLoadingBackground(loadingPainter),
                     contentScale = resolvedScale
                 )
             },
@@ -746,6 +763,10 @@ object ImageCacheFactory {
             })
         }
 
+        val loadingPainter = rememberThemedImageLoadingPainter(
+            listOf(sourceUrl, validUrl, version, localRevision, decision.sourceSize, decision.quality),
+        )
+
         if (currentUrl == null) {
             var showFallback by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) {
@@ -753,13 +774,15 @@ object ImageCacheFactory {
                 showFallback = true
             }
             Image(
-                painter = painterResource(if (showFallback) R.drawable.ic_launcher_box else R.drawable.loader),
+                painter = if (showFallback) painterResource(R.drawable.ic_launcher_box) else loadingPainter,
                 contentDescription = null,
-                modifier = imageModifier.fillMaxSize(),
+                modifier = imageModifier.fillMaxSize().imageLoadingBackground(loadingPainter) { !showFallback },
                 contentScale = resolvedScale
             )
             return
         }
+
+        val loading = remember(currentUrl) { mutableStateOf(true) }
 
         val request = ImageRequest.Builder(appContext())
             .data(currentUrl)
@@ -808,13 +831,14 @@ object ImageCacheFactory {
             imageLoader = LOADER,
             contentDescription = contentDescription,
             contentScale = resolvedScale,
-            modifier = imageModifier,
-            placeholder = painterResource(R.drawable.loader),
+            modifier = imageModifier.imageLoadingBackground(loadingPainter) { loading.value },
+            placeholder = loadingPainter,
             error = painterResource(R.drawable.ic_launcher_box),
             fallback = painterResource(R.drawable.ic_launcher_box),
-            onLoading = onLoading,
-            onSuccess = onSuccess,
+            onLoading = { state -> loading.value = true; onLoading?.invoke(state) },
+            onSuccess = { state -> loading.value = false; onSuccess?.invoke(state) },
             onError = { state ->
+                loading.value = false
                 val errorMsg = state.result.throwable.message ?: ""
                 if (errorMsg.contains("404") && currentUrl?.contains("i.ytimg.com/vi/") == true) {
                     val fallback = currentUrl.getNextYouTubeFallback()
@@ -846,28 +870,31 @@ object ImageCacheFactory {
         contentScale: ContentScale = ContentScale.Crop,
         modifier: Modifier = Modifier,
         cacheKey: String? = null,
-        @DrawableRes placeholder: Int = R.drawable.loader,
+        @DrawableRes placeholder: Int? = null,
         @DrawableRes fallback: Int? = R.drawable.ic_launcher_box,
         fallbackDelayMs: Long = 4_000L,
         shape: Shape? = RectangleShape,
         onSuccess: ((State.Success) -> Unit)? = null,
     ) {
         val imageModifier = if (shape == null) modifier else modifier.glassImageRim(shape)
+        val loadingPainter = rememberThemedImageLoadingPainter(listOf(model, cacheKey), placeholder)
         if (model == null) {
             var showFallback by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) {
                 kotlinx.coroutines.delay(fallbackDelayMs)
                 showFallback = true
             }
-            val drawable = if (showFallback) fallback else placeholder
-            if (drawable != null) Image(
-                painter = painterResource(drawable),
+            val painter = if (showFallback) fallback?.let { painterResource(it) } else loadingPainter
+            if (painter != null) Image(
+                painter = painter,
                 contentDescription = contentDescription,
-                modifier = imageModifier.fillMaxSize(),
+                modifier = imageModifier.fillMaxSize().imageLoadingBackground(loadingPainter) { !showFallback },
                 contentScale = contentScale
             )
             return
         }
+
+        val loading = remember(listOf(model, cacheKey)) { mutableStateOf(true) }
 
         val request = ImageRequest.Builder(appContext())
             .data(model)
@@ -879,10 +906,12 @@ object ImageCacheFactory {
             imageLoader = LOADER,
             contentDescription = contentDescription,
             contentScale = contentScale,
-            modifier = imageModifier,
-            placeholder = painterResource(placeholder),
+            modifier = imageModifier.imageLoadingBackground(loadingPainter) { loading.value },
+            placeholder = loadingPainter,
             error = fallback?.let { painterResource(it) },
-            onSuccess = onSuccess,
+            onLoading = { loading.value = true },
+            onSuccess = { state -> loading.value = false; onSuccess?.invoke(state) },
+            onError = { loading.value = false },
         )
     }
 

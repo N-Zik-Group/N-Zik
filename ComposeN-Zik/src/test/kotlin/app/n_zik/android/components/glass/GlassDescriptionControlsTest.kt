@@ -238,6 +238,26 @@ class GlassDescriptionControlsTest {
         assertEquals(idle.x, glyphPosition().x, .1f)
     }
 
+    @Test fun `explicit neutral glyph contrasts with its actual custom white film`() {
+        compose.setContent {
+            AppearanceProvider {
+                ExplicitBadge(Color.Red, Modifier.size(24.dp).testTag("white.badge"),
+                    GlassSettings(quality = GlassQuality.Performance, source = GlassTintSource.Custom,
+                        customColor = 0xFFFFFFFF.toInt(), tintStrength = 1f, film = 1f, rim = 0f))
+            }
+        }
+        val image = compose.onNodeWithTag("white.badge").captureToImage().toPixelMap()
+        var darkGlyphPixels = 0
+        var whiteFilmPixels = 0
+        for (y in 2 until image.height - 2) for (x in 2 until image.width - 2) {
+            val pixel = image[x, y]
+            if (pixel.red < .2f && pixel.green < .2f && pixel.blue < .2f) darkGlyphPixels++
+            if (pixel.red > .98f && pixel.green > .98f && pixel.blue > .98f) whiteFilmPixels++
+        }
+        assertTrue("The white film must be drawn", whiteFilmPixels > 0)
+        assertTrue("The E glyph must remain visible on the white film", darkGlyphPixels > 0)
+    }
+
     @Composable private fun AppearanceProvider(content: @Composable () -> Unit) {
         val shape = RoundedCornerShape(24.dp)
         CompositionLocalProvider(LocalAppearance provides Appearance(

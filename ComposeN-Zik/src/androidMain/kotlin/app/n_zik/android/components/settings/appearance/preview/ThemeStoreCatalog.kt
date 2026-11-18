@@ -490,12 +490,14 @@ internal class ThemeStoreCatalog(
 
     suspend fun appearance(theme: StoreTheme, saved: SavedTheme?): StoreAppearance =
         runInterruptible(NzikDispatchers.DATA) {
-            val bytes = saved?.document?.encodeToByteArray()
+            val savedBytes = saved?.document?.encodeToByteArray()
                 ?.takeIf { it.size <= ThemeDocumentLimit && it.sha256() == theme.appearance.sha256 }
-                ?: verifiedAppearance(theme)
+            val localCopy = savedBytes != null && saved?.imported == true && saved.theme == theme
+            val bytes = savedBytes ?: verifiedAppearance(theme)
             val document = bytes.decodeToString(throwOnInvalidSequence = true)
             val settings = parseThemeAppearance(document, allowEmptyCategories = false,
-                advertisedMinVersionCode = theme.compatibility.minVersionCode ?: 0)
+                advertisedMinVersionCode = theme.compatibility.minVersionCode ?: 0,
+                validateFeatureCompatibility = !localCopy)
             StoreAppearance(document, bytes.size, settings.toStoreGroups())
         }
 

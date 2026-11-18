@@ -75,6 +75,7 @@ class PlayerWhatsNextGlassTest {
 
     @Test fun `upcoming floating button reflects its rendered plate instead of bypassing to raw player pixels`() {
         val film = mutableStateOf(.45f)
+        val nativeRole = mutableStateOf(Color.Black)
         val color = mutableStateOf(Color.Blue)
         val optics = GlassSettings(enabled = true, blur = 0f, film = 0f, rim = 0f,
             depth = 0f, amount = 0f, vibrancy = 0f)
@@ -84,7 +85,7 @@ class PlayerWhatsNextGlassTest {
             CompositionLocalProvider(LocalGlassContainerBackdrop provides player,
                 LocalGlassMaterialSource provides player, LocalGlassBackdrop provides unrelated) {
                 Box(Modifier.requiredWidth(320.dp).height(100.dp).background(Color.Blue).testTag("next.material.scene")) {
-                    PlayerWhatsNextGlassSurface(Color.Black, optics.copy(film = film.value), false, WindowInsets(0)) { surface ->
+                    PlayerWhatsNextGlassSurface(nativeRole.value, optics.copy(film = film.value), false, WindowInsets(0)) { surface ->
                         Row(surface.fillMaxWidth().height(40.dp), verticalAlignment = Alignment.CenterVertically) {
                             PlayerWhatsNextAction(R.drawable.play, Color.Transparent, {}, settings = optics)
                         }
@@ -113,6 +114,13 @@ class PlayerWhatsNextGlassTest {
         assertTrue("Mounted button must observe plate film updates", kotlin.math.abs(initial.blue - updated.blue) > .025f)
         compose.runOnIdle { color.value = Color(0.3f, 0.1f, 0.9f) }
         assertButtonMatchesPlate()
+        for (role in listOf(Color.Blue, Color.Magenta)) {
+            compose.runOnIdle { nativeRole.value = role.copy(alpha = .3f); film.value = 1f }
+            val actual = assertButtonMatchesPlate()
+            assertEquals("Native role red survives while Glass owns coverage", role.red, actual.red, .02f)
+            assertEquals("Native role green survives while Glass owns coverage", role.green, actual.green, .02f)
+            assertEquals("Native role blue survives while Glass owns coverage", role.blue, actual.blue, .02f)
+        }
     }
 
     @Test fun `landscape square cover and native carousel viewport end above unchanged toolbar bottom`() {

@@ -18,21 +18,41 @@ import org.junit.jupiter.api.Test
 class AppearanceFadeTest {
     @Test
     fun `restored palette obeys pitch black without losing its dynamic accent`() {
-        val normalized = fromAppearance.forPaletteMode(ColorPaletteMode.PitchBlack)
-        assertEquals(Color.Black, normalized.colorPalette.background0)
-        assertEquals(Color.Black, normalized.colorPalette.background1)
-        assertEquals(Color.Black, normalized.colorPalette.background2)
-        assertEquals(Color.Black, normalized.colorPalette.background3)
-        assertEquals(Color.Black, normalized.colorPalette.background4)
-        assertEquals(fromAppearance.colorPalette.accent, normalized.colorPalette.accent)
-        assertEquals(Color.White, normalized.typography.s.color)
-        assertTrue(normalized.colorPalette.isDark)
-        assertSame(normalized, normalized.forPaletteMode(ColorPaletteMode.PitchBlack))
+        for (mode in listOf(ColorPaletteMode.PitchBlack, ColorPaletteMode.PureBlack)) {
+            val normalized = fromAppearance.forPaletteMode(mode)
+            assertEquals(Color.Black, normalized.colorPalette.background0)
+            assertEquals(Color.Black, normalized.colorPalette.background1)
+            assertEquals(Color.Black, normalized.colorPalette.background2)
+            assertEquals(Color.Black, normalized.colorPalette.background3)
+            assertEquals(Color.Black, normalized.colorPalette.background4)
+            assertEquals(fromAppearance.colorPalette.accent, normalized.colorPalette.accent)
+            assertEquals(Color.White, normalized.typography.s.color)
+            assertTrue(normalized.colorPalette.isDark)
+            assertSame(normalized, normalized.forPaletteMode(mode))
+            assertEquals(fromAppearance.colorPalette.onAccent, normalized.colorPalette.onAccent)
+            assertEquals(fromAppearance.colorPalette.red, normalized.colorPalette.red)
+            assertEquals(fromAppearance.colorPalette.blue, normalized.colorPalette.blue)
+            assertEquals(fromAppearance.colorPalette.textSecondary, normalized.colorPalette.textSecondary)
+            assertEquals(fromAppearance.colorPalette.textDisabled, normalized.colorPalette.textDisabled)
+            assertEquals(fromAppearance.colorPalette.iconButtonPlayer, normalized.colorPalette.iconButtonPlayer)
+        }
+    }
+
+    @Test
+    fun `black modes repair stale typography even when palette is already black`() {
+        for (mode in listOf(ColorPaletteMode.PitchBlack, ColorPaletteMode.PureBlack)) {
+            val black = fromAppearance.forPaletteMode(mode)
+            val stale = black.copy(typography = typography(Color.Black))
+            val repaired = stale.forPaletteMode(mode)
+            assertEquals(Color.White, repaired.typography.s.color)
+            assertEquals(black.colorPalette, repaired.colorPalette)
+            assertSame(repaired, repaired.forPaletteMode(mode))
+        }
     }
 
     @Test
     fun `other modes keep their selected palette unchanged`() {
-        for (mode in ColorPaletteMode.entries.filter { it != ColorPaletteMode.PitchBlack }) {
+        for (mode in ColorPaletteMode.entries.filter { it != ColorPaletteMode.PitchBlack && it != ColorPaletteMode.PureBlack }) {
             assertSame(fromAppearance, fromAppearance.forPaletteMode(mode))
         }
     }

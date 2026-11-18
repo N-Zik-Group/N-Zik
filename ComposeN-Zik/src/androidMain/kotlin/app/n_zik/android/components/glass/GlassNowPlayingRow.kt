@@ -130,8 +130,16 @@ internal fun GlassSongRowSurface(
         material -> surface.then(queueCapture.modifier)
         else -> queueCapture.modifier.then(surface)
     }
+    val foregroundSurface = if (material) {
+        val background = effectiveSurfaceColor(surfaceBackdropColor(), backgroundColor)
+        val film = if (sceneBackdrop != null) queueNowPlayingFilm(settings, highlightColor ?: Color.Transparent)
+            else glassFilmColor(settings.forArea(GlassArea.NowPlaying), role = null, menu = false)
+        val plate = effectiveSurfaceColor(background, film)
+        if (sceneBackdrop == null && settings.source == GlassTintSource.None)
+            effectiveSurfaceColor(plate, highlightColor ?: Color.Transparent) else plate
+    } else null
     CompositionLocalProvider(LocalGlassContainerBackdrop provides backdrop,
         LocalGlassMaterialSource provides materialSource) {
-        GlassArtworkContent(settings, material) { content(capturedSurface) }
+        GlassArtworkContent(settings, material, foregroundSurface) { content(capturedSurface) }
     }
 }

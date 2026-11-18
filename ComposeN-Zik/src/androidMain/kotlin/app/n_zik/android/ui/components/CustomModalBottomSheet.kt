@@ -108,7 +108,7 @@ fun CustomModalBottomSheet(
             contentWindowInsets = contentWindowInsets
         ) {
             val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
-            val isPicthBlack = colorPaletteMode == ColorPaletteMode.PitchBlack
+            val isPicthBlack = colorPaletteMode == ColorPaletteMode.PitchBlack || colorPaletteMode == ColorPaletteMode.PureBlack
             val isDark =
                 colorPaletteMode == ColorPaletteMode.Dark || isPicthBlack || (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme())
 

@@ -68,7 +68,7 @@ internal fun customColorPalette(
     )
 
     return when (colorPaletteMode) {
-        ColorPaletteMode.Dark, ColorPaletteMode.PitchBlack -> customThemeDark
+        ColorPaletteMode.Dark, ColorPaletteMode.PitchBlack, ColorPaletteMode.PureBlack -> customThemeDark
         ColorPaletteMode.Light -> customThemeLight
         ColorPaletteMode.System -> when (isSystemInDarkTheme) {
             true -> customThemeDark

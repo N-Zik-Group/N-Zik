@@ -38,6 +38,23 @@ import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.glassMaterial
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.isPitchBlackSurface
+import app.n_zik.android.utils.colorPaletteModeKey
+import app.n_zik.android.utils.rememberPreference
+
+/** Native black coverage must not replace Glass film or explicitly transparent hosts. */
+internal fun dropdownContainerColor(
+    original: Color,
+    mode: ColorPaletteMode,
+    glassEnabled: Boolean,
+    blackPalette: Boolean = false,
+): Color = when {
+    glassEnabled || original.alpha == 0f -> original
+    mode == ColorPaletteMode.PureBlack -> Color.Black.copy(alpha = .90f)
+    mode == ColorPaletteMode.PitchBlack || blackPalette -> original.copy(alpha = .90f)
+    else -> original
+}
 
 /** Uses the app overlay when possible; separate windows retain the shared fallback. */
 @Composable
@@ -61,7 +78,11 @@ fun GlassDropdownMenu(
     val currentDismiss = rememberUpdatedState(onDismissRequest)
     var anchor by remember { mutableStateOf<Rect?>(null) }
     val glassEnabled = settings.usesGlassMaterial(GlassArea.Dropdowns)
-    val originalContainerColor = if (containerColor.isSpecified) containerColor else MenuDefaults.containerColor
+    val paletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
+    val originalContainerColor = dropdownContainerColor(
+        if (containerColor.isSpecified) containerColor else MenuDefaults.containerColor, paletteMode, glassEnabled,
+        blackPalette = isPitchBlackSurface(),
+    )
     if (host != null) {
         Box(Modifier.size(0.dp).onGloballyPositioned { coordinates ->
             val parent = coordinates.parentLayoutCoordinates ?: coordinates

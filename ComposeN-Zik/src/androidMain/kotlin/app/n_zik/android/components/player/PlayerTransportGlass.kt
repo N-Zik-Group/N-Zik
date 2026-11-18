@@ -39,6 +39,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
+import app.n_zik.android.components.glass.backdrop.internal.ShapeProvider
+import app.n_zik.android.components.glass.backdrop.shadow.Shadow
+import app.n_zik.android.components.glass.backdrop.shadow.ShadowElement
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.enums.PlayerPlayButtonType
@@ -80,19 +84,28 @@ fun playerTransportPlayShape(type: PlayerPlayButtonType, rotation: Float = 0f): 
     }
 }
 
-/** Passive transport material; native fills never override the shared Glass film. */
-@Suppress("UNUSED_PARAMETER") // Native-colour callers keep their source-compatible signature.
+/** A gentle outer shadow whose cleared interior preserves translucent transport plates. */
+@Composable
+internal fun Modifier.playerTransportOuterShadow(shape: Shape = uiRoundnessShape()): Modifier {
+    val provider = remember(shape) { ShapeProvider { shape } }
+    val shadow = remember { Shadow(radius = 8.dp, offset = DpOffset(0.dp, 2.dp),
+        color = Color.Black.copy(alpha = .36f)) }
+    return then(remember(provider, shadow) { ShadowElement(provider) { shadow } })
+}
+
+/** Passive transport material retains native RGB while the Glass film owns coverage. */
 @Composable
 fun Modifier.playerTransportSurface(
     filmColor: Color? = null,
     shape: Shape = uiRoundnessShape(),
     settings: GlassSettings = rememberGlassSettings(GlassScope.PlayerTransport),
+    drawShadow: Boolean = true,
 ): Modifier {
     val settings = settings.inScope(GlassScope.PlayerTransport)
     return if (settings.usesGlassMaterial(GlassArea.ActionButtons)) {
-        glassMaterial(settings.forArea(GlassArea.ActionButtons), shape,
+        glassMaterial(settings.forArea(GlassArea.ActionButtons), shape, filmColor = filmColor,
             ownBackdrop = LocalGlassContainerBackdrop.current,
-            separateWindow = LocalGlassContainerBackdrop.current == null)
+            separateWindow = LocalGlassContainerBackdrop.current == null, drawShadow = drawShadow)
     } else glassAreaContour(settings, GlassArea.ActionButtons, shape)
 }
 
@@ -118,13 +131,14 @@ fun Modifier.playerTransportFeedback(
     shape: Shape = uiRoundnessShape(),
     enabled: Boolean = true,
     settings: GlassSettings = rememberGlassSettings(GlassScope.PlayerTransport),
+    clipContent: Boolean = true,
 ): Modifier = playerControlPressMotion(interactionSource,
     enabled = enabled && !LocalTransportFeedbackOwned.current)
     .retainGlassButtonGesture(enabled && settings.enabled)
     .glassButtonFeedback(interactionSource, shape,
         enabled && settings.enabled && !LocalTransportFeedbackOwned.current, retainPressUntilUp = true,
         animateMotion = settings.inScope(GlassScope.PlayerTransport).usesGlassMaterial(GlassArea.ActionButtons),
-        settings = settings)
+        settings = settings, clipContent = clipContent)
 
 @Composable
 fun playerTransportIndication(native: androidx.compose.foundation.Indication?, settings: GlassSettings = rememberGlassSettings(GlassScope.PlayerTransport)): androidx.compose.foundation.Indication? =
@@ -262,7 +276,6 @@ fun Modifier.playerTransportPlayBackground(
 }
 
 /** Uses the existing scene through the artwork's alpha-derived outline, without capturing a control. */
-@Suppress("UNUSED_PARAMETER") // The native artwork still owns this colour when Glass is disabled.
 @Composable
 fun PlayerTransportRibbedSurface(
     filmColor: Color,
@@ -290,6 +303,7 @@ fun PlayerTransportRibbedSurface(
     // The exact clip, SDF lens and normal highlight share the same rotating local coordinates.
     Box(modifier.size(100.dp).clip(PlayerTransportRibbedShape)
         .glassMaterial(settings.forArea(GlassArea.ActionButtons).copy(rim = 0f), PlayerTransportRibbedShape,
+            filmColor = filmColor,
             ownBackdrop = LocalGlassContainerBackdrop.current,
             separateWindow = LocalGlassContainerBackdrop.current == null,
             applyEdgeEffects = false, drawShadow = false, customLens = customLens)

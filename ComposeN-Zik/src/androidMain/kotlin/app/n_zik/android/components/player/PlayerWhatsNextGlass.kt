@@ -42,6 +42,7 @@ import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.glassGlobalIndication
 import app.n_zik.android.components.glass.glassMaterial
+import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.glass.inScope
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
@@ -70,9 +71,12 @@ fun PlayerWhatsNextGlassSurface(
             modifier = Modifier.playerActionToolbarWidth(landscape).playerActionPanelBounds().testTag("player.whatsNext.surface"),
             includeParent = true,
             sectionFilm = if (material) null else nativeBackground,
+            foregroundFill = if (material) glassFilmColor(scoped.forArea(GlassArea.ActionButtons),
+                nativeBackground, menu = false) else null,
             material = if (material) ({ exported ->
                 Modifier.glassMaterial(scoped.forArea(GlassArea.ActionButtons), shape,
-                    ownBackdrop = parent, separateWindow = parent == null, exportedBackdrop = exported)
+                    ownBackdrop = parent, separateWindow = parent == null, exportedBackdrop = exported,
+                    filmColor = nativeBackground)
             }) else null,
         ) { surface ->
             CompositionLocalProvider(LocalGlassScope provides GlassScope.PlayerActions,

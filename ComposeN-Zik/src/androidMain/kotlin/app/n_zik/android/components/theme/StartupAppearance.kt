@@ -17,7 +17,7 @@ internal fun startupAppearance(
     if (paletteName != ColorPaletteName.Dynamic) return configured.forPaletteMode(paletteMode)
 
     val themeIsDark = paletteMode == ColorPaletteMode.Dark ||
-        paletteMode == ColorPaletteMode.PitchBlack ||
+        (paletteMode == ColorPaletteMode.PitchBlack || paletteMode == ColorPaletteMode.PureBlack) ||
         (paletteMode == ColorPaletteMode.System && systemIsDark)
     val palette = restored.colorPalette.m3eRecapRestoredDynamicPalette(paletteName, themeIsDark)
         .keepMonochromeColorsDark(respectThemeBrightness)

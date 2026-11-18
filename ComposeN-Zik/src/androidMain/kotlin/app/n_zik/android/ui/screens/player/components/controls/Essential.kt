@@ -134,6 +134,7 @@ import app.n_zik.android.components.glass.surfaceProgressTrackColor
 import app.n_zik.android.components.player.playerTextOutlineColor
 import app.n_zik.android.components.player.playerTransportGlyph
 import app.n_zik.android.components.player.playerTransportPlate
+import app.n_zik.android.components.player.playButtonNativeColor
 
 
 @UnstableApi
@@ -456,16 +457,16 @@ fun ControlsEssential(
 
     var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
     val nativePlayPlate = when (playerPlayButtonType) {
-        PlayerPlayButtonType.CircularRibbed -> when (colorPaletteName) {
+        PlayerPlayButtonType.CircularRibbed -> playButtonNativeColor(colorPaletteName, when (colorPaletteName) {
             ColorPaletteName.PureBlack, ColorPaletteName.ModernBlack -> colorPalette().background4
             else -> if (isGradientBackgroundEnabled) colorPalette().background1 else colorPalette().background2
-        }
+        }, colorPaletteMode)
         else -> app.n_zik.android.components.player.playButtonContainerColor(
-            playerPlayButtonType, colorPaletteName, colorPalette(), isGradientBackgroundEnabled,
+            playerPlayButtonType, colorPaletteName, colorPalette(), isGradientBackgroundEnabled, colorPaletteMode,
         )
     }
     val playColor = if (playerPlayButtonType == PlayerPlayButtonType.Disabled ||
-        (colorPaletteName == ColorPaletteName.Dynamic && colorPaletteMode == ColorPaletteMode.PitchBlack))
+        (colorPaletteName == ColorPaletteName.Dynamic && (colorPaletteMode == ColorPaletteMode.PitchBlack || colorPaletteMode == ColorPaletteMode.PureBlack)))
         colorPalette().accent else controlsColor
     val previousGlyph = playerTransportGlyph(controlsColor, transportSettings, enabled = previousEnabled)
     val nextGlyph = playerTransportGlyph(controlsColor, transportSettings, enabled = nextEnabled)
@@ -573,6 +574,7 @@ fun ControlsEssential(
                 original = app.n_zik.android.components.player.playButtonContainerColor(
                     type = playerPlayButtonType,
                     paletteName = colorPaletteName,
+                    mode = colorPaletteMode,
                     palette = colorPalette(),
                     gradient = isGradientBackgroundEnabled,
                 )
@@ -584,21 +586,12 @@ fun ControlsEssential(
 
         if (playerPlayButtonType == PlayerPlayButtonType.CircularRibbed &&
             !PlayerTransportRibbedSurface(
-                filmColor = when (colorPaletteName) {
-                    ColorPaletteName.PureBlack, ColorPaletteName.ModernBlack -> colorPalette().background4
-                    else -> if (isGradientBackgroundEnabled) colorPalette().background1 else colorPalette().background2
-                },
+                filmColor = nativePlayPlate,
                 modifier = Modifier.fillMaxSize().rotate(rotationAngle),
             ))
             Image(
                 painter = painterResource(R.drawable.a13shape),
-                colorFilter = ColorFilter.tint(
-                    when (colorPaletteName) {
-                        ColorPaletteName.PureBlack, ColorPaletteName.ModernBlack -> colorPalette().background4
-                        else -> if (isGradientBackgroundEnabled) colorPalette().background1
-                        else colorPalette().background2
-                    }
-                ),
+                colorFilter = ColorFilter.tint(nativePlayPlate),
                 modifier = Modifier
                     .fillMaxSize()
                     .rotate(rotationAngle)

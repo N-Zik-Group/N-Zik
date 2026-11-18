@@ -26,16 +26,19 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
-import app.n_zik.android.components.glass.glassArtworkForeground
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LiquidButton
-import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.defaultMiniPlayerControlBackdrop
+import app.n_zik.android.components.glass.effectiveSurfaceColor
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
+import app.n_zik.android.components.glass.backdrop.Backdrop
+import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.glass.glassGlobalIndication
+import app.n_zik.android.components.glass.readableGlyphForeground
 import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.surfaceBackdropColor
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgress
 import app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgressProvider
@@ -59,6 +62,7 @@ fun GlassMiniPlayerIconButton(
     // Glass seats stay uniform; this option preserves the native glyph size.
     preserveNativeGeometry: Boolean = false,
 ) {
+    val glyphColor = miniPlayerGlyphColor(settings, color, enabled)
     MiniPlayerIconSurface(
         enabled, rotationAngle, alpha, contentDescription, onClick, onLongClick, settings, backdrop, preserveNativeGeometry,
         nativePressMotion = icon == R.drawable.play_skip_back || icon == R.drawable.play_skip_forward,
@@ -66,7 +70,7 @@ fun GlassMiniPlayerIconButton(
         Image(
             painter = painterResource(icon),
             contentDescription = null,
-            colorFilter = ColorFilter.tint(glassArtworkForeground(settings, color, settings.usesGlassMaterial(GlassArea.MiniPlayer))),
+            colorFilter = ColorFilter.tint(glyphColor),
             modifier = Modifier.size(it).testTag("mini.player.glyph"),
         )
     }
@@ -88,6 +92,7 @@ fun GlassMiniPlayerIconButton(
     // Glass seats stay uniform; this option preserves the native glyph size.
     preserveNativeGeometry: Boolean = false,
 ) {
+    val glyphColor = miniPlayerGlyphColor(settings, color, enabled)
     MiniPlayerIconSurface(
         enabled, rotationAngle, alpha, contentDescription, onClick, onLongClick, settings, backdrop, preserveNativeGeometry,
         nativePressMotion = false,
@@ -95,7 +100,7 @@ fun GlassMiniPlayerIconButton(
         Image(
             imageVector = icon,
             contentDescription = null,
-            colorFilter = ColorFilter.tint(glassArtworkForeground(settings, color, settings.usesGlassMaterial(GlassArea.MiniPlayer))),
+            colorFilter = ColorFilter.tint(glyphColor),
             modifier = Modifier.size(it).testTag("mini.player.glyph"),
         )
     }
@@ -152,4 +157,12 @@ private fun MiniPlayerIconSurface(
             ) { icon(if (preserveNativeGeometry) 24.dp else 22.dp) }
         }
     }
+}
+
+/** Mini-player seats retain background2 even when the surrounding scene is bright. */
+@Composable
+private fun miniPlayerGlyphColor(settings: GlassSettings, color: Color, enabled: Boolean): Color {
+    if (!enabled || !settings.usesGlassMaterial(GlassArea.MiniPlayer)) return color
+    val film = glassFilmColor(settings.forArea(GlassArea.MiniPlayer), surfaceColor(colorPalette().background2), menu = false)
+    return readableGlyphForeground(color, effectiveSurfaceColor(surfaceBackdropColor(), film))
 }

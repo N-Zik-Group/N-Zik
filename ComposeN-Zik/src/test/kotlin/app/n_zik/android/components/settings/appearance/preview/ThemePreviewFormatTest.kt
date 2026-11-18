@@ -53,6 +53,50 @@ import app.n_zik.android.utils.navigationBarPositionKey
 
 class ThemePreviewFormatTest {
     @Test
+    fun `pure black mode round trips locally in V2 with independent palette and Glass overrides`() {
+        val plain = mapOf(colorPaletteNameKey to "Dynamic", colorPaletteModeKey to "PureBlack",
+            glassEnabledKey to true, customThemeDark_Background0Key to Color.Red.hashCode())
+        val optics = mapOf(GlassArea.Nav.preferenceKey to "GlassOnly", GlassArea.MiniPlayer.preferenceKey to "Disabled")
+        val encoded = encodeThemeAppearance(plain, optics, schemaVersion = ThemeAppearanceV2)
+        val parsed = parseThemeAppearance(encoded)
+        assertEquals(parsed, parseThemeAppearance(encoded, false, advertisedMinVersionCode = 99,
+            validateFeatureCompatibility = false))
+        val colors = parsed.getValue(ThemeCategory.COLORS).plain
+        assertEquals("Dynamic", colors[colorPaletteNameKey])
+        assertEquals("PureBlack", colors[colorPaletteModeKey])
+        assertEquals(ThemePureBlackMinimumVersionCode, themeAppearanceFeatureMinimumVersionCode(parsed))
+        val combined = parsed.values.flatMap { it.plain.entries }.associate { it.toPair() }
+        val glass = parsed.getValue(ThemeCategory.GLASS).glass
+        assertEquals("GlassOnly", glass[GlassArea.Nav.preferenceKey])
+        assertEquals("Disabled", glass[GlassArea.MiniPlayer.preferenceKey])
+        assertEquals(encoded, encodeThemeAppearance(combined, glass, schemaVersion = ThemeAppearanceV2))
+        assertThrows(IllegalArgumentException::class.java) {
+            parseThemeAppearance(encoded, false, advertisedMinVersionCode = 100)
+        }
+        assertEquals(parsed, parseThemeAppearance(encoded, false, advertisedMinVersionCode = 101))
+        assertThrows(IllegalArgumentException::class.java) { encodeThemeAppearance(plain, optics, schemaVersion = 1) }
+        val legacyModeError = assertThrows(IllegalArgumentException::class.java) {
+            parseThemeAppearance("""{"schemaVersion":1,"categories":{"colors":{"palette":"dynamic","mode":"pure-black"}}}""")
+        }
+        assertEquals("Pure Black mode requires theme appearance V2", legacyModeError.message)
+    }
+
+    @Test
+    fun `pure black feature floor does not reinterpret the named palette or schema floor`() {
+        val namedPalette = """{"schemaVersion":2,"categories":{"colors":{"palette":"pure-black","mode":"dark"}}}"""
+        assertEquals(99, themeAppearancePublicationMinimumVersionCode(namedPalette))
+        assertEquals(0, themeAppearanceFeatureMinimumVersionCode(parseThemeAppearance(namedPalette)))
+        parseThemeAppearance(namedPalette, false, advertisedMinVersionCode = 99)
+        assertThrows(IllegalArgumentException::class.java) {
+            parseThemeAppearance(namedPalette.replace("\"dark\"", "\"unknown-mode\""))
+        }
+        assertEquals(null, submissionMinimumVersionCode("101", 100, null, requiredMinimum = 101))
+        assertEquals(null, submissionMinimumVersionCode("101", 100, 101, requiredMinimum = 101))
+        assertEquals(null, submissionMinimumVersionCode("100", 101, null, requiredMinimum = 101))
+        assertEquals(101, submissionMinimumVersionCode("101", 101, null, requiredMinimum = 101))
+    }
+
+    @Test
     fun `system font preference delegates font choice to Android`() {
         val document = encodeThemeAppearance(
             mapOf(useSystemFontKey to true, fontTypeKey to FontType.Poppins.name),

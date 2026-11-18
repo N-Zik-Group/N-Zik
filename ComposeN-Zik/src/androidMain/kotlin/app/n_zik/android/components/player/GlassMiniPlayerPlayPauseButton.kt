@@ -17,18 +17,19 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.glass.GlassRenderer
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LiquidButton
-import app.n_zik.android.components.glass.backdrop.Backdrop
+import app.n_zik.android.components.glass.SurfaceForegroundContent
 import app.n_zik.android.components.glass.defaultMiniPlayerControlBackdrop
+import app.n_zik.android.components.glass.effectiveSurfaceColor
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
-import app.n_zik.android.components.glass.glassFilmOpacity
-import app.n_zik.android.components.glass.glassRenderer
+import app.n_zik.android.components.glass.backdrop.Backdrop
+import app.n_zik.android.components.glass.glassFilmColor
+import app.n_zik.android.components.glass.readableGlyphForeground
 import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.surfaceBackdropColor
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgress
 import app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgressProvider
@@ -53,12 +54,9 @@ fun GlassMiniPlayerPlayPauseButton(
     val modifier = Modifier.semantics { this.contentDescription = contentDescription }
     val interactionSource = remember { MutableInteractionSource() }
     if (glass) {
-        val controlSettings = settings.forArea(GlassArea.MiniPlayer).copy(film = glassFilmOpacity(
-            configured = settings.film,
-            overlay = true,
-            fallback = backdrop == null || glassRenderer(settings) == GlassRenderer.Tint,
-            dark = colorPalette().isDark,
-        ))
+        val controlSettings = settings.forArea(GlassArea.MiniPlayer)
+        val film = glassFilmColor(controlSettings, backgroundColor, menu = false)
+        val foregroundSurface = effectiveSurfaceColor(surfaceBackdropColor(), film)
         LiquidButton(
             onClick = onClick,
             backdrop = backdrop,
@@ -71,7 +69,9 @@ fun GlassMiniPlayerPlayPauseButton(
             shape = shape,
             backdropScale = 1f,
         ) {
-            Box(Modifier.fillMaxSize(), content = content)
+            SurfaceForegroundContent(foregroundSurface) {
+                Box(Modifier.fillMaxSize(), content = content)
+            }
         }
     } else {
         Box(
@@ -83,3 +83,8 @@ fun GlassMiniPlayerPlayPauseButton(
         )
     }
 }
+
+/** Explicit caller glyphs resolve inside the actual play/pause seat. */
+@Composable
+internal fun miniPlayerPlayPauseGlyphColor(settings: GlassSettings, color: Color): Color =
+    if (settings.usesGlassMaterial(GlassArea.MiniPlayer)) readableGlyphForeground(color, surfaceBackdropColor()) else color

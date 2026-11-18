@@ -1,5 +1,19 @@
 package app.n_zik.android.components
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.graphics.toArgb
+import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.R
+import app.n_zik.android.components.glass.GlassTintSource
+import app.n_zik.android.components.glass.LocalGlassPreviewSettings
+import app.n_zik.android.components.ui.screens.find.FindUiState
+import app.n_zik.android.components.ui.screens.find.MusicAudioSearchContent
+import app.n_zik.android.recognition.RecognizedTrack
 import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -47,7 +61,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [32], application = Application::class)
+@Config(sdk = [32], application = Application::class, qualifiers = "w440dp-h1000dp-mdpi")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class SearchOverlayGlassTest {
     @get:Rule val compose = createComposeRule()
@@ -166,6 +180,71 @@ class SearchOverlayGlassTest {
                 distance(red, blue) > .025f)
             // A red source behind the 85% black overlay must stay dark at zero tint.
             assertTrue("Glass $role must include the visible overlay scrim", red.red < .5f)
+        }
+    }
+
+    @Test fun `actual voice and music panels resolve labels and result actions against their own white film`() {
+        val context = ApplicationProvider.getApplicationContext<Application>()
+        val shape = RoundedCornerShape(12.dp)
+        val white = GlassSettings(source = GlassTintSource.Custom, customColor = Color.White.toArgb(),
+            tintStrength = 1f, film = 1f, quality = GlassQuality.Performance, rim = 0f)
+        val settings = mutableStateOf(white)
+        val voice = mutableStateOf(true)
+        val error = mutableStateOf<String?>("Recognition error")
+        val result = mutableStateOf<FindUiState>(FindUiState.Error("Recognition error"))
+        var cancels = 0
+        var retries = 0
+        var plays = 0
+        var searches = 0
+        compose.setContent {
+            CompositionLocalProvider(LocalAppearance provides
+                Appearance(DefaultDarkColorPalette, Typography.fallback, shape, shape, shape),
+                LocalGlassPreviewSettings provides settings.value) {
+                Box(Modifier.background(Color.Black)) {
+                    if (voice.value) VoiceSearchOverlay(true, "", false, error.value,
+                        onRetry = { retries++ }, onCancel = { cancels++ })
+                    else MusicAudioSearchContent(result.value, 0, false, false,
+                        onDismiss = { cancels++ }, onRetry = { retries++ },
+                        onPlay = { plays++ }, onSearch = { searches++ })
+                }
+            }
+        }
+        fun ink(text: String): Color {
+            val layouts = mutableListOf<TextLayoutResult>()
+            compose.onNodeWithText(text, useUnmergedTree = true)
+                .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+            return layouts.single().layoutInput.style.color
+        }
+        val cancel = context.getString(R.string.common_action_cancel)
+        val retry = context.getString(R.string.voice_search_retry)
+        val details = context.getString(R.string.recognition_action_more_details)
+        for (isVoice in listOf(true, false)) {
+            compose.runOnIdle { voice.value = isVoice }
+            for (material in listOf(true, false)) {
+                compose.runOnIdle { settings.value = white.copy(enabled = material) }
+                assertEquals(if (material) Color.Black else Color.White, ink(cancel))
+                assertEquals(if (material) Color.Black else Color.White, ink(retry))
+                assertEquals("The message remains on the black scrim", Color.White, ink("Recognition error"))
+                compose.onNodeWithText(cancel).performClick()
+                compose.onNodeWithText(retry).performClick()
+            }
+        }
+        compose.runOnIdle { settings.value = white; voice.value = true; error.value = null }
+        assertEquals(Color.Black, ink(cancel))
+        compose.runOnIdle { voice.value = false; result.value = FindUiState.Idle }
+        assertEquals(Color.Black, ink(cancel))
+        compose.runOnIdle { result.value = FindUiState.Success(RecognizedTrack("Known title", "Known artist")) }
+        compose.mainClock.advanceTimeBy(500)
+        assertEquals(Color.Black, ink("Known title"))
+        assertEquals("Readable secondary gray retains its tone", DefaultDarkColorPalette.textSecondary, ink("Known artist"))
+        assertEquals(Color.Black.copy(alpha = DefaultDarkColorPalette.onAccent.alpha), ink(details))
+        compose.onNodeWithText(details).performClick()
+        compose.onNodeWithContentDescription(context.getString(R.string.player_action_play)).performClick()
+        compose.runOnIdle {
+            assertEquals(4, cancels)
+            assertEquals(4, retries)
+            assertEquals(1, plays)
+            assertEquals(1, searches)
         }
     }
 

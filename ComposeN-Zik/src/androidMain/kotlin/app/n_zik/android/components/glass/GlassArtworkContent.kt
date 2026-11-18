@@ -16,8 +16,16 @@ internal fun GlassArtworkContent(
     content: @Composable () -> Unit,
 ) {
     val appearance = LocalAppearance.current
-    if (!appearance.colorPalette.isDark && surface != null) {
-        SurfaceForegroundContent(surface, content = content)
+    if (surface != null) {
+        // A concrete plate owns its ink independently of a surrounding player transition.
+        CompositionLocalProvider(
+            LocalNeutralForegroundTransition provides null,
+            LocalNeutralForegroundOverride provides null,
+            LocalNeutralForegroundSurface provides null,
+            LocalNeutralForegroundAmount provides 1f,
+        ) {
+            SurfaceForegroundContent(surface, content = content)
+        }
         return
     }
     val forced = active && settings.enabled && glassArtworkForcesDark(settings)

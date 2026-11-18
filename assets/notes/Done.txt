@@ -1,0 +1,48 @@
+Added:
+- feat(theme): add a Pure Black mode while retaining Pitch Black accent behavior
+  - Extend ColorPaletteMode and normalize startup, live dynamic colors, widgets, editor and portable previews without replacing the selected palette or its accent roles.
+  - Use black native backgrounds and control plates; retain the requested 90 percent navbar/dropdown coverage and the existing independent Glass settings.
+  - Support local V2 export/import and collection details during development. Require Android code 101 for public themes using the new mode; keep schema V2 minimum 99 and V1 unchanged.
+  - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
+
+Improved:
+- improve(image-loading): vary static expressive placeholders across image loads
+  - Prebuild the seven Material loader shapes in StaticImagePlaceholder and remember one choice per logical source/revision, without animation or changes during unrelated recompositions.
+  - Give standard placeholders the shared navigation surface and the theme accent. Preserve readable accents exactly; adjust opacity and HSL lightness only when needed for contrast, retaining hue and saturation.
+  - Cover all five ImageCacheFactory facades, including local/null sources, and add pending frames to metadata-cover decoding and the generated-preview gallery. Keep custom resources, fallback timing, image scaling, Glass contours and capture scenes intact.
+  - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
+
+Fixed:
+- fix(navigation): match native black-theme navbar coverage to the dropdown
+  - Share navigationSurfaceColor across floating, classic, top and side navigation, tab containers and status fill. Use 90 percent native coverage for Pitch Black, Pure Black and Modern Black while preserving other palette colors.
+  - Keep Glass film opacity controlled by its slider and avoid multiplying the new native alpha into the status film a second time.
+- fix(player): use black native playback plates in Pure Black and Modern Black
+  - Keep mini-player bodies and the central play/pause plate black, including ribbed shapes in Essential and Modern controls. Resolve foreground contrast against the actual native plate.
+  - Preserve the other palettes, previous/next controls, progress overlays, Glass configuration and existing motion.
+- fix(glass): resolve control foregrounds against the film actually drawn
+  - Pass native control roles through Essential/Modern transport material, including ribbed play plates; adapt the player and mini-player glyphs to those local plates instead of a generic theme tint.
+  - Align page buttons, horizontal/vertical action groups, standalone/floating actions, chips, fields and search with their actual film coverage. Preserve native rendering when Glass is off, chromatic roles and disabled opacity.
+  - Give legacy dialog controls an explicit foreground film, and retain the caller's exact neutral ink before entering a local foreground scope.
+  - Resolve player action icons and download progress against their effective opaque surface so the cover's shared neutral transition cannot override their own plates or apply film coverage twice.
+  - Cover full rectangular Fit loading frames and remove their backgrounds on successful transparent artwork without restarting its request.
+  - Verify assembleDebug and 200 focused tests across 23 classes. Install on the existing Pixel VM; verify the full Modern Black Glass player, mini-player, next track and pause actions. Keep publication and version changes pending user approval.
+- fix(player): remove native shadow underpaint beneath translucent Modern Glass controls
+  - Disable the three Modern doubleShadowDrop modifiers and CustomElevatedButton's inner filled native shadow only while transport material is active. These black interiors previously showed through the transparent native fill and made the plate darker than its contrast estimate.
+  - Retain native and ContourOnly shadows, and let Glass own its hollow optical shadow. Preserve the same film color and user-controlled opacity policy used by menus.
+  - Verify 20 focused tests, including actual ordinary/ribbed controls over bright pink at zero and midpoint film in Performance/Balanced, with painted RGB and visible glyph assertions. Rebuild and replace the debug APK on the existing Pixel and in Downloads.
+- fix(mini-player): reflect live progress through controls while retaining the play plate
+  - Export the material-only body for every film value and let controls sample its rendered progress instead of bypassing to the raw page. Keep artwork, text and controls outside the captured source.
+  - Forward body/parent revision dependencies through the composite backdrop so progress redraws update retained controls in the queue as well as the resting mini-player.
+  - Give play/pause the same native palette/mode role policy as full-player play controls, with its own mini-player Glass film and foreground resolution.
+- fix(glass): complete the second background and foreground audit
+  - Honor explicit local film surfaces in dark palettes and isolate their ink from the player's shared neutral transition. Apply exact surfaces to settings cards and active-song rows without changing native branches or chromatic roles.
+  - Resolve toast text/icons and both navigation passes on their actual material. Follow the selected tab's wash fade and press shading so a bright custom film remains readable during held input.
+  - Preserve the native background2 role in the upcoming-song panel instead of replacing it with a generic gray Glass plate.
+  - Retain a gentle hollow black shadow around Modern transport controls; bypass only the outer feedback mask that clipped it, while retaining plate, glyph and highlight clipping.
+  - Strengthen playerTransportOuterShadow from 18 to 36 percent black coverage after human preview, preserving its 8 dp radius, 2 dp offset and fully cleared interior.
+  - Resolve captured HeaderIcon and artist Follow labels against their exact role film, retaining native colors, chromatic roles and click callbacks.
+  - Resolve Discord preview mode/link labels within their actual chip surface, including native chips inside a Glass card.
+  - Resolve voice/music search action and recognized-track foregrounds against their actual role film and page scrim; retain recording/permission/state ownership and exported card sources.
+- fix(rewind): remove jelly gesture retention from overview period cards
+  - Use local non-retaining feedback for month, year and all-time cards in RewindHomeScreen while keeping their collage material and native click targets.
+  - Preserve the remaining Rewind effects and verify actual period callbacks plus parent scrolling from a drag started on a card with global jelly enabled.

@@ -138,11 +138,19 @@ internal val automaticPreviews = (requiredPreviews + optionalAutomaticPreviews).
 }
 internal const val SubmissionPreviewLimit = 4 * 1024 * 1024
 private val SubmissionPreviewMimeTypes = arrayOf("image/png", "image/jpeg", "image/webp", "image/gif")
-internal fun submissionMinimumVersionCode(input: String, current: Int, previous: Int?): Int? =
+internal fun submissionMinimumVersionCode(input: String, current: Int, previous: Int?, requiredMinimum: Int = FirstThemeStoreVersionCode): Int? =
     input.trim().toIntOrNull()?.takeIf { code ->
-        code >= FirstThemeStoreVersionCode &&
+        code >= requiredMinimum && maxOf(FirstThemeStoreVersionCode, current) >= requiredMinimum &&
             (code == previous || code <= maxOf(FirstThemeStoreVersionCode, current))
     }
+
+/** Untouched defaults follow selected content; manual and legacy draft inputs retain ownership. */
+internal fun submissionMinimumVersionInput(
+    input: String,
+    automatic: Boolean,
+    requiredMinimum: Int,
+    previous: Int?,
+): String = if (automatic) maxOf(requiredMinimum, submissionDefaultMinimumVersionCode(previous)).toString() else input
 
 internal fun submissionDefaultMinimumVersionCode(previous: Int?): Int =
     maxOf(FirstThemeStoreVersionCode, previous ?: FirstThemeStoreVersionCode)
@@ -313,23 +321,6 @@ private fun ThemeSubmissionForm(
     var title by rememberSaveable(key) { mutableStateOf(draft?.optString("title") ?: existing?.title.orEmpty()) }
     var description by rememberSaveable(key) { mutableStateOf(draft?.optString("description") ?: existing?.description.orEmpty()) }
     var tags by rememberSaveable(key) { mutableStateOf(draft?.optString("tags") ?: existing?.tags?.joinToString(", ").orEmpty()) }
-    val previousMinimum = existing?.compatibility?.minVersionCode
-    val schemaMinimum = if (themeAppearanceSchemaFor(BuildConfig.VERSION_CODE) == ThemeAppearanceV2)
-        ThemeAppearanceV2MinimumVersionCode else FirstThemeStoreVersionCode
-    val currentVersionCode = BuildConfig.VERSION_CODE
-    var minimumVersionInput by rememberSaveable(key) {
-        mutableStateOf(draft?.takeIf { it.has("minVersionCode") }?.optString("minVersionCode")
-            ?.let(::submissionDraftMinimumVersionInput)
-            ?: maxOf(schemaMinimum, submissionDefaultMinimumVersionCode(previousMinimum)).toString())
-    }
-    val minimumVersionCode = submissionMinimumVersionCode(minimumVersionInput, currentVersionCode, previousMinimum)
-        ?.takeIf { it >= schemaMinimum }
-    val minimumVersionLabel = when (minimumVersionCode) {
-        currentVersionCode -> stringResource(R.string.theme_store_submission_version_with_code,
-            BuildConfig.VERSION_NAME.substringBefore('-'), currentVersionCode)
-        null -> ""
-        else -> stringResource(R.string.theme_store_submission_version_code, minimumVersionCode)
-    }
     val canUseReservedTags by produceState(false, catalog, id, localOnly) {
         if (!localOnly) {
             try {
@@ -379,6 +370,29 @@ private fun ThemeSubmissionForm(
     }
     val included = availableCategories.filter { selection and (1 shl it.ordinal) != 0 }
     val appearance = remember(fullAppearance, selection) { selectThemeAppearanceCategories(fullAppearance, included.toSet()) }
+    val previousMinimum = existing?.compatibility?.minVersionCode
+    val schemaMinimum = if (localOnly) {
+        if (themeAppearanceSchemaFor(BuildConfig.VERSION_CODE) == ThemeAppearanceV2)
+            ThemeAppearanceV2MinimumVersionCode else FirstThemeStoreVersionCode
+    } else themeAppearancePublicationMinimumVersionCode(appearance)
+    val currentVersionCode = BuildConfig.VERSION_CODE
+    var minimumVersionManualInput by rememberSaveable(key) {
+        mutableStateOf(draft?.takeIf { it.has("minVersionCode") }?.optString("minVersionCode")
+            ?.let(::submissionDraftMinimumVersionInput).orEmpty())
+    }
+    var minimumVersionAutomatic by rememberSaveable(key) {
+        mutableStateOf(draft?.takeIf { it.has("minVersionCode") }?.optBoolean("minimumVersionAutomatic", false) ?: true)
+    }
+    val minimumVersionInput = submissionMinimumVersionInput(
+        minimumVersionManualInput, minimumVersionAutomatic, schemaMinimum, previousMinimum,
+    )
+    val minimumVersionCode = submissionMinimumVersionCode(minimumVersionInput, currentVersionCode, previousMinimum, schemaMinimum)
+    val minimumVersionLabel = when (minimumVersionCode) {
+        currentVersionCode -> stringResource(R.string.theme_store_submission_version_with_code,
+            BuildConfig.VERSION_NAME.substringBefore('-'), currentVersionCode)
+        null -> ""
+        else -> stringResource(R.string.theme_store_submission_version_code, minimumVersionCode)
+    }
     val followsSystem = remember(appearance) { themePreviewFollowsSystem(appearance) }
     val requiredSlots = remember(followsSystem) { previewSlotsForMode(requiredPreviews, followsSystem) }
     val optionalSlots = remember(followsSystem) { previewSlotsForMode(optionalAutomaticPreviews, followsSystem) }
@@ -533,6 +547,7 @@ private fun ThemeSubmissionForm(
         val previous = draftPreviewUris(drafts.getString(key, null))
         val data = JSONObject().put("id", themeId).put("title", title).put("description", description)
             .put("minVersionCode", minimumVersionInput)
+            .put("minimumVersionAutomatic", minimumVersionAutomatic)
             .put("tags", tags).put("appearance", appearance).put("previews", JSONObject(previews.toMap()))
             .put("captions", captions)
             .put("previewSelection", previewSelectionState)
@@ -545,10 +560,14 @@ private fun ThemeSubmissionForm(
     }
     suspend fun packageTheme(): Pair<StoreTheme, Map<String, ByteArray>> = withContext(NzikDispatchers.DATA) {
         require(validTags)
+        if (!localOnly) require(currentVersionCode >= schemaMinimum) {
+            "This theme requires Android version code $schemaMinimum before publication"
+        }
         val compatibility = StoreCompatibility(checkNotNull(minimumVersionCode))
         val files = mutableMapOf<String, ByteArray>()
         val appearanceBytes = appearance.encodeToByteArray()
-        parseThemeAppearance(appearance)
+        parseThemeAppearance(appearance, allowEmptyCategories = false,
+            advertisedMinVersionCode = if (localOnly) null else compatibility.minVersionCode)
         files["appearance.json"] = appearanceBytes
         files["reviews.json"] = """{"schemaVersion":1,"reviews":[]}""".encodeToByteArray()
         val gallery = gallerySlots.map { slot ->
@@ -776,7 +795,10 @@ private fun ThemeSubmissionForm(
                                 TextField(
                                     value = minimumVersionInput,
                                     onValueChange = { value ->
-                                        if (value.length <= 10 && value.all { it in '0'..'9' }) minimumVersionInput = value
+                                        if (value.length <= 10 && value.all { it in '0'..'9' }) {
+                                            minimumVersionManualInput = value
+                                            minimumVersionAutomatic = false
+                                        }
                                     },
                                     modifier = Modifier.fillMaxWidth(),
                                     label = { Text(stringResource(R.string.theme_store_submission_version_code_label)) },
@@ -800,7 +822,9 @@ private fun ThemeSubmissionForm(
                                     },
                                     modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp),
                                 )
-                                if (minimumVersionCode == null) {
+                                if (!localOnly && schemaMinimum > currentVersionCode) {
+                                    SettingsDescription(stringResource(R.string.theme_store_submission_feature_requires_update, schemaMinimum))
+                                } else if (minimumVersionCode == null) {
                                     SettingsDescription(stringResource(
                                         if (schemaMinimum >= currentVersionCode) R.string.theme_store_submission_version_required
                                         else R.string.theme_store_submission_version_range,
@@ -879,7 +903,6 @@ private fun ThemeSubmissionForm(
                                         model = model,
                                         contentDescription = captionFor(slot).ifBlank { submissionPreviewLabel(slot) },
                                         modifier = Modifier.fillMaxSize(),
-                                        placeholder = R.drawable.loader,
                                         contentScale = ContentScale.Fit,
                                         shape = null,
                                     )
@@ -915,7 +938,7 @@ private fun ThemeSubmissionForm(
                                                                 } else {
                                                                     ImageCacheFactory.LocalAsyncImage(model = model,
                                                                         contentDescription = label, modifier = Modifier.fillMaxSize(),
-                                                                        placeholder = R.drawable.loader, contentScale = ContentScale.Fit)
+                                                                        contentScale = ContentScale.Fit)
                                                                 }
                                                             }
                                                         }

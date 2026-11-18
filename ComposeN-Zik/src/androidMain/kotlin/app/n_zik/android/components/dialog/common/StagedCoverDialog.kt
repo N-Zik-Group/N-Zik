@@ -407,6 +407,7 @@ abstract class StagedCoverDialog internal constructor(
     @Composable
     private fun CoverAction(label: Int, icon: Int, enabled: Boolean, onClick: () -> Unit) {
         GlassDialogOutlinedButton(
+            foregroundFilm = surfaceColor(colorPalette().background2),
             onClick = onClick,
             enabled = enabled,
             modifier = Modifier.fillMaxWidth().glassDialogButtonBackground(

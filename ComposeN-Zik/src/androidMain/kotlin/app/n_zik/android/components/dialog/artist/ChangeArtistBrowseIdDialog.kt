@@ -161,6 +161,7 @@ class ChangeArtistBrowseIdDialog private constructor(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 IconButton(
+                    foregroundFilm = surfaceColor(colorPalette().background2),
                     onClick = { performSearch() },
                     modifier = Modifier.glassDialogButtonBackground(
                         backgroundColor = Color.Transparent,

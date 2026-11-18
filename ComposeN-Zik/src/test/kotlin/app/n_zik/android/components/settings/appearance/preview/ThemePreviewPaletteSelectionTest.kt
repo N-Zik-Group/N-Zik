@@ -4,6 +4,9 @@ import android.app.Application
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.junit4.createComposeRule
+import org.junit.Assert.assertEquals
+import app.n_zik.android.utils.colorPaletteModeKey
+import app.n_zik.android.utils.colorPaletteNameKey
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -16,6 +19,18 @@ import org.robolectric.annotation.Config
 @Config(sdk = [32], application = Application::class)
 class ThemePreviewPaletteSelectionTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test
+    fun pureBlackPreviewKeepsDynamicPaletteAndUsesFixedModeCaptures() {
+        val document = """{"schemaVersion":2,"categories":{"colors":{"palette":"dynamic","mode":"pure-black"}}}"""
+        for (glass in listOf(false, true)) {
+            val preferences = themePreviewPreferences(document, glass).plain
+            assertEquals("Dynamic", preferences[colorPaletteNameKey])
+            assertEquals("PureBlack", preferences[colorPaletteModeKey])
+        }
+        assertFalse(themePreviewFollowsSystem(document))
+        assertEquals(requiredPreviews, previewSlotsForMode(requiredPreviews, themePreviewFollowsSystem(document)))
+    }
 
     @Test
     fun manualGalleryChoiceSurvivesRecompositionUntilTheAppPaletteChanges() {

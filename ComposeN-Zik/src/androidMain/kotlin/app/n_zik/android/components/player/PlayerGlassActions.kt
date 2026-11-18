@@ -33,6 +33,7 @@ import app.n_zik.android.components.glass.effectiveSurfaceColor
 import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.glass.surfaceForegroundScrim
 import app.n_zik.android.components.glass.surfaceGlyphColor
+import app.n_zik.android.components.glass.surfaceBackdropColor
 import app.n_zik.android.components.glass.surfaceProgressTrackColor
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
@@ -162,6 +163,7 @@ private data class PlayerToolbarStyle(
 }
 private val LocalPlayerToolbar = staticCompositionLocalOf<PlayerToolbarStyle?> { null }
 private val LocalPlayerSlotIndex = staticCompositionLocalOf { 0 }
+private val LocalPlayerActionSurface = staticCompositionLocalOf<Color?> { null }
 
 @Composable
 private fun Modifier.playerVisibleToolbarBounds(settings: GlassSettings, background: Color, nativeHeight: Dp): Modifier {
@@ -230,7 +232,8 @@ fun PlayerActionToolbar(
     val contrastBackdrop = LocalSurfaceBackdropColor.current
     val contrastScrim = surfaceForegroundScrim()
     val shape = uiRoundnessShape()
-    val plate = if (glass) glassFilmColor(settings.forArea(GlassArea.ActionButtons), null, menu = false) else nativeBackground
+    val plate = if (glass) glassFilmColor(settings.forArea(GlassArea.ActionButtons), nativeBackground, menu = false) else nativeBackground
+    val actionSurface = if (glass) effectiveSurfaceColor(contrastBackdrop ?: surfaceBackdropColor(), plate) else null
     val slots: @Composable () -> Unit = {
         actions.forEachIndexed { index, action -> key(action.id) {
             CompositionLocalProvider(LocalPlayerSlotIndex provides index,
@@ -238,7 +241,9 @@ fun PlayerActionToolbar(
         } }
     }
     val content: @Composable () -> Unit = {
-        SurfaceForegroundContent(contrastBackdrop?.let { effectiveSurfaceColor(it, plate) }, content = slots)
+        CompositionLocalProvider(LocalPlayerActionSurface provides actionSurface) {
+            SurfaceForegroundContent(contrastBackdrop?.let { effectiveSurfaceColor(it, plate) }, content = slots)
+        }
     }
     val glassRowModifier = Modifier.playerActionToolbarWidth(landscape)
         .then(if (contrastScrim.alpha > 0f && actions.size > 1) Modifier.background(contrastScrim, shape) else Modifier)
@@ -285,7 +290,7 @@ fun PlayerActionToolbar(
                         .playerVisibleToolbarBounds(settings, nativeBackground, actions.maxOf { it.nativeHeight })
                         .testTag("player.actionToolbar.material")
                         .glassMaterial(settings.forArea(GlassArea.ActionButtons), uiRoundnessShape(),
-                            ownBackdrop = LocalGlassContainerBackdrop.current)
+                            ownBackdrop = LocalGlassContainerBackdrop.current, filmColor = nativeBackground)
                         .glassActionGroupSeparators(settings, GlassArea.ActionButtons, boundary,
                             separatorBefore = if (boundary > 0.dp) setOf(1) else emptySet(),
                             fromPhysicalLeft = true))
@@ -316,7 +321,8 @@ fun PlayerActionIcon(
         return
     }
     PlayerActionCell(enabled, onClick, onLongClick) {
-        Image(painterResource(icon), null, colorFilter = ColorFilter.tint(if (enabled) surfaceGlyphColor(color) else color), modifier = modifier)
+        Image(painterResource(icon), null, colorFilter = ColorFilter.tint(if (enabled)
+            surfaceGlyphColor(color, LocalPlayerActionSurface.current) else color), modifier = modifier)
     }
 }
 
@@ -387,7 +393,7 @@ private fun PlayerActionCell(
                 .testTag(if (glass) "player.actionToolbar.material" else "player.actionToolbar.native")
                 .background(style.contrastScrim, shape)
                 .then(if (glass) Modifier.glassMaterial(style.settings.forArea(GlassArea.ActionButtons), uiRoundnessShape(),
-                    ownBackdrop = LocalGlassContainerBackdrop.current) else Modifier.background(style.nativeBackground, uiRoundnessShape())
+                    ownBackdrop = LocalGlassContainerBackdrop.current, filmColor = style.nativeBackground) else Modifier.background(style.nativeBackground, uiRoundnessShape())
                     .glassAreaContour(style.settings, GlassArea.ActionButtons, uiRoundnessShape())))
             cell()
         }
@@ -416,10 +422,11 @@ fun PlayerDownloadAction(
         downloadState == Download.STATE_RESTARTING
     val progress = if (mediaId != null) getDownloadProgress(mediaId) else 0f
     PlayerActionCell(enabled, if (active) onCancelButtonClicked else onClick) {
-        if (!active) Image(painterResource(icon), null, colorFilter = ColorFilter.tint(if (enabled) surfaceGlyphColor(color) else color), modifier = modifier)
+        if (!active) Image(painterResource(icon), null, colorFilter = ColorFilter.tint(if (enabled)
+            surfaceGlyphColor(color, LocalPlayerActionSurface.current) else color), modifier = modifier)
         else Box(modifier, contentAlignment = Alignment.Center) {
-            val arc = surfaceGlyphColor(colorPalette().accent)
-            val track = surfaceProgressTrackColor(arc, colorPalette().textDisabled)
+            val arc = surfaceGlyphColor(colorPalette().accent, LocalPlayerActionSurface.current)
+            val track = surfaceProgressTrackColor(arc, colorPalette().textDisabled, LocalPlayerActionSurface.current)
             val stroke = Stroke(with(LocalDensity.current) { DOWNLOAD_INDICATOR_STROKE_WIDTH.dp.toPx() })
             val progressModifier = Modifier.size(DOWNLOAD_INDICATOR_SIZE_NORMAL.dp)
             if (progress > .01f && downloadState == Download.STATE_DOWNLOADING)

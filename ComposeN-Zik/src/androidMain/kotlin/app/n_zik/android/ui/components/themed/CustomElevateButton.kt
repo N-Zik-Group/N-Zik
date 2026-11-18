@@ -12,7 +12,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -24,6 +23,11 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.utils.doubleShadowDrop
 import app.n_zik.android.components.player.playerTransportFeedback
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassScope
+import app.n_zik.android.components.glass.inScope
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.player.playerTransportIndication
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.material3.ripple
@@ -40,6 +44,8 @@ fun CustomElevatedButton(
     enabled: Boolean = true,
     content: @Composable BoxScope.() -> Unit
 ) {
+    val transportMaterial = glassTransport && rememberGlassSettings(GlassScope.PlayerTransport)
+        .inScope(GlassScope.PlayerTransport).usesGlassMaterial(GlassArea.ActionButtons)
     val interSource = remember { MutableInteractionSource() }
     val isPressed by interSource.collectIsPressedAsState()
 
@@ -54,11 +60,12 @@ fun CustomElevatedButton(
 
     Box(
         modifier = Modifier
-            .then(if (glassTransport) Modifier.playerTransportFeedback(interSource, shape, enabled = enabled) else Modifier)
+            // The button clips its own content below; feedback must let the hollow outer shadow extend.
+            .then(if (glassTransport) Modifier.playerTransportFeedback(interSource, shape, enabled = enabled,
+                clipContent = !transportMaterial) else Modifier)
             .then(modifier)
-            // Apply shadow effect
-            .doubleShadowDrop(shape, shadowOffset, shadowBlur)
-            //.background(Color(0xFF010203), shape)
+            // Native shadows fill the interior and would cover the translucent Glass plate.
+            .then(if (transportMaterial) Modifier else Modifier.doubleShadowDrop(shape, shadowOffset, shadowBlur))
             .background(backgroundColor, shape)
             .clip(shape)
             .let {

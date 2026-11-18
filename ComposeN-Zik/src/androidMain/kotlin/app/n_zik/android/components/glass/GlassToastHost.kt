@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
@@ -136,6 +137,13 @@ fun GlassToastHost(
     Box(modifier.fillMaxSize().onGloballyPositioned { hostBottom = it.boundsInWindow().bottom }, contentAlignment = Alignment.BottomCenter) {
         if (enabled && message != null) {
             val shape = uiRoundnessShape()
+            val material = settings.usesGlassMaterial(GlassArea.Menus)
+            val surface = if (material) effectiveSurfaceColor(surfaceBackdropColor(),
+                glassFilmColor(settings.forArea(GlassArea.Menus), Color(message.background), menu = false)) else null
+            val textColor = surface?.let { readableForeground(Color(message.foreground), it, TextContrast) }
+                ?: Color(message.foreground)
+            val iconColor = surface?.let { readableGlyphForeground(Color(message.foreground), it) }
+                ?: Color(message.foreground)
             Row(
                 Modifier.padding(start = 24.dp, end = 24.dp, bottom = clearance + 8.dp)
                     .widthIn(max = 480.dp)
@@ -156,10 +164,10 @@ fun GlassToastHost(
                 val drawable = remember(message) { message.icon?.constantState?.newDrawable()?.mutate() ?: message.icon }
                 if (drawable != null) Canvas(Modifier.size(24.dp)) {
                     drawIntoCanvas { canvas ->
-                        drawToastIcon(drawable, canvas.nativeCanvas, size.width.toInt(), size.height.toInt(), message.foreground)
+                        drawToastIcon(drawable, canvas.nativeCanvas, size.width.toInt(), size.height.toInt(), iconColor.toArgb())
                     }
                 }
-                Text(message.text, color = Color(message.foreground), fontSize = 14.sp)
+                Text(message.text, color = textColor, fontSize = 14.sp)
             }
         }
     }

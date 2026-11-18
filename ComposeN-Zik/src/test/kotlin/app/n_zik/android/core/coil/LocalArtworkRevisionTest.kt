@@ -7,6 +7,12 @@ import android.net.Uri
 import android.os.Looper
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.foundation.shape.CircleShape
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.ColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.Typography
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -122,18 +128,22 @@ class LocalArtworkRevisionTest {
             assertTrue(diagnostic(), failures.isEmpty() && successes.any { matches(it.second) })
         }
         compose.setContent {
-            val owner = LocalLifecycleOwner.current
-            SideEffect { lifecycle.set(owner.lifecycle.currentState.toString()) }
-            ImageCacheFactory.AsyncImage(
-                thumbnailUrl = stableModel,
-                shape = null,
-                modifier = Modifier.size(48.dp),
-                onLoading = { loadingRequests.incrementAndGet() },
-                onError = { failures += it.result.throwable },
-                onSuccess = { state ->
-                    successes += state.result.request.memoryCacheKey to state.result.image.toBitmap().getPixel(8, 8)
-                }
-            )
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                ColorPalette.fallback, Typography.fallback, CircleShape, CircleShape, CircleShape,
+            )) {
+                val owner = LocalLifecycleOwner.current
+                SideEffect { lifecycle.set(owner.lifecycle.currentState.toString()) }
+                ImageCacheFactory.AsyncImage(
+                    thumbnailUrl = stableModel,
+                    shape = null,
+                    modifier = Modifier.size(48.dp),
+                    onLoading = { loadingRequests.incrementAndGet() },
+                    onError = { failures += it.result.throwable },
+                    onSuccess = { state ->
+                        successes += state.result.request.memoryCacheKey to state.result.image.toBitmap().getPixel(8, 8)
+                    }
+                )
+            }
         }
         awaitPixels("Initial red cover") { Color.red(it) > 240 && Color.blue(it) < 15 }
         val firstKey = successes.last().first

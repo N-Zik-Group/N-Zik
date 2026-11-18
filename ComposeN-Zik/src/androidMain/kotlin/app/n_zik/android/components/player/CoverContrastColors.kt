@@ -130,7 +130,7 @@ internal fun playerTransportPlate(
 ): Color {
     val transport = settings.inScope(GlassScope.PlayerTransport)
     return if (hasGlassPlate && transport.usesGlassMaterial(GlassArea.ActionButtons))
-        glassFilmColor(transport.forArea(GlassArea.ActionButtons), role = null, menu = false) else nativePlate
+        glassFilmColor(transport.forArea(GlassArea.ActionButtons), role = nativePlate, menu = false) else nativePlate
 }
 
 @Composable

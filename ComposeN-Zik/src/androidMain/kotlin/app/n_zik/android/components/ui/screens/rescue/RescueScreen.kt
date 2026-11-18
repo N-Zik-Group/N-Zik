@@ -21,6 +21,7 @@ import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.core.profiles.ProtectedProfileHistory
 import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.core.profiles.profileStorageIdentity
+import app.n_zik.android.core.coil.rememberImageLoadingPainter
 import app.n_zik.android.components.ui.chipsViewport
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -995,7 +996,8 @@ fun RescueScreen() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        painter = painterResource(if (running) R.drawable.loader else R.drawable.checkmark),
+                        painter = if (running) rememberImageLoadingPainter("rescue-process-stopping")
+                            else painterResource(R.drawable.checkmark),
                         contentDescription = null,
                         modifier = Modifier.size(20.dp),
                         tint = MaterialTheme.colorScheme.primary

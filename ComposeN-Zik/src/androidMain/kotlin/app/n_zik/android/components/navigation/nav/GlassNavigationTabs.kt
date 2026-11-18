@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
@@ -44,7 +45,7 @@ import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.glassAreaContour
-import app.n_zik.android.surfaceColor
+import app.n_zik.android.navigationSurfaceColor
 import app.n_zik.android.components.glass.InteractiveHighlight
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.backdrop.Backdrop
@@ -59,6 +60,9 @@ import app.n_zik.android.components.glass.backdrop.highlight.Highlight
 import app.n_zik.android.components.glass.backdrop.shadow.InnerShadow
 import app.n_zik.android.components.glass.backdrop.shadow.Shadow
 import app.n_zik.android.components.glass.glassMaterial
+import app.n_zik.android.components.glass.glassFilmColor
+import app.n_zik.android.components.glass.effectiveSurfaceColor
+import app.n_zik.android.components.glass.surfaceBackdropColor
 import app.n_zik.android.components.glass.glassOpticsProgress
 import app.n_zik.android.components.glass.drawGlassOptics
 import app.n_zik.android.components.glass.glassRenderer
@@ -71,6 +75,8 @@ import kotlin.math.roundToInt
 import kotlin.math.sign
 
 internal val LocalGlassTabReplica = staticCompositionLocalOf { false }
+internal val LocalGlassNavigationSurface = staticCompositionLocalOf<Color?> { null }
+internal val LocalGlassNavigationSelectedSurface = staticCompositionLocalOf<Color?> { null }
 internal val LocalGlassTabScale = staticCompositionLocalOf { { 1f } }
 
 internal val GlassNavigationBarHeight = 64.dp
@@ -127,7 +133,7 @@ internal fun GlassNavigationTabs(
     val inset = with(density) { 4.dp.roundToPx() }
     if (!settings.usesGlassMaterial(GlassArea.Nav)) {
         val nativeShape = containerShape ?: uiRoundnessShape()
-        Box(modifier.then(if (drawContainer) Modifier.background(surfaceColor(colorPalette().background1), nativeShape)
+        Box(modifier.then(if (drawContainer) Modifier.background(navigationSurfaceColor(), nativeShape)
             .glassAreaContour(settings, GlassArea.Nav, nativeShape) else Modifier)) {
             GlassTabLayout(vertical, inset, Modifier.fillMaxSize(), content)
         }
@@ -200,9 +206,23 @@ internal fun GlassNavigationTabs(
     val surfaceBackdrop = externalSurfaceBackdrop ?: ownSurfaceBackdrop
     val shape = uiRoundnessShape()
     val panelShape = containerShape ?: shape
-    val originalFilm = surfaceColor(colorPalette().background1)
+    val originalFilm = navigationSurfaceColor()
     val wash = (if (colorPalette().isDark) Color.Black else Color.White)
         .copy(alpha = settings.indicatorOpacity.coerceIn(0f, 1f))
+    val foregroundSurface = effectiveSurfaceColor(surfaceBackdropColor(),
+        glassFilmColor(settings, originalFilm, menu = false))
+    val foregroundContent: @Composable () -> Unit = {
+        // Match the selector's draw order, including the backdrop crossfade and press shading.
+        val press = animation.pressProgress
+        val selectedSurface = if (optical) {
+            val behind = wash.copy(alpha = wash.alpha * (1f - opticsProgress)).compositeOver(foregroundSurface)
+            val sampled = foregroundSurface.copy(alpha = opticsProgress).compositeOver(behind)
+            val washed = wash.copy(alpha = wash.alpha * (1f - press) * opticsProgress).compositeOver(sampled)
+            Color.Black.copy(alpha = .03f * press * opticsProgress).compositeOver(washed)
+        } else wash.compositeOver(foregroundSurface)
+        CompositionLocalProvider(LocalGlassNavigationSurface provides foregroundSurface,
+            LocalGlassNavigationSelectedSurface provides selectedSurface, content = content)
+    }
     val panelTranslation = Modifier.graphicsLayer {
         if (vertical) translationY = panelOffset else translationX = panelOffset
     }
@@ -235,7 +255,7 @@ internal fun GlassNavigationTabs(
             vertical, inset,
             // Departing glyphs may outlive a shrinking tab strip; the material keeps its own clip.
             panelTranslation.fillMaxSize(),
-            content,
+            foregroundContent,
         )
         if (optical) {
             CompositionLocalProvider(
@@ -246,7 +266,7 @@ internal fun GlassNavigationTabs(
                     vertical, inset,
                     Modifier.fillMaxSize().clearAndSetSemantics {}.alpha(0f)
                         .layerBackdrop(tabsBackdrop).then(panelTranslation),
-                    content,
+                    foregroundContent,
                 )
             }
         }

@@ -1,0 +1,158 @@
+package app.n_zik.android.core.coil
+
+import androidx.annotation.DrawableRes
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LoadingIndicatorDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.path
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import app.n_zik.android.colorPalette
+import app.n_zik.android.navigationSurfaceColor
+import app.n_zik.android.components.glass.IconContrast
+import app.n_zik.android.components.glass.contrastAgainst
+import app.n_zik.android.components.glass.effectiveSurfaceColor
+import app.n_zik.android.components.glass.neutralForeground
+import androidx.compose.ui.graphics.toArgb
+import androidx.core.graphics.ColorUtils
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.random.Random
+
+/** Immutable frozen frames of the same expressive polygon family as the Material loader. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+internal val staticImagePlaceholderVectors: List<ImageVector> by lazy {
+    val polygons = LoadingIndicatorDefaults.IndeterminateIndicatorPolygons
+    var scale = 1f
+    for (polygon in polygons) {
+        val bounds = polygon.calculateBounds()
+        val maxBounds = polygon.calculateMaxBounds()
+        scale = min(scale, max(
+            (bounds[2] - bounds[0]) / (maxBounds[2] - maxBounds[0]),
+            (bounds[3] - bounds[1]) / (maxBounds[3] - maxBounds[1]),
+        ))
+    }
+    scale *= LoadingIndicatorDefaults.IndicatorSize.value /
+        min(LoadingIndicatorDefaults.ContainerWidth.value, LoadingIndicatorDefaults.ContainerHeight.value)
+    polygons.mapIndexed { index, source ->
+        val polygon = source.normalized()
+        val bounds = polygon.calculateBounds(approximate = false)
+        val centerX = (bounds[0] + bounds[2]) / 2f
+        val centerY = (bounds[1] + bounds[3]) / 2f
+        // Preserve the former shared placeholder's rotation, neutral fill and intrinsic geometry.
+        fun x(y: Float) = 12f - (y - centerY) * 24f * scale
+        fun y(x: Float) = 12f + (x - centerX) * 24f * scale
+        ImageVector.Builder("StaticImagePlaceholder$index", 24.dp, 24.dp, 24f, 24f).apply {
+            path(fill = SolidColor(Color(0xff666666))) {
+                val first = polygon.cubics.first()
+                moveTo(x(first.anchor0Y), y(first.anchor0X))
+                polygon.cubics.forEach { cubic ->
+                    curveTo(x(cubic.control0Y), y(cubic.control0X),
+                        x(cubic.control1Y), y(cubic.control1X),
+                        x(cubic.anchor1Y), y(cubic.anchor1X))
+                }
+                close()
+            }
+        }.build()
+    }
+}
+
+/** The identity contains source/revision values, never a freshly rebuilt Coil request. */
+@Composable
+internal fun rememberStaticImagePlaceholderVector(
+    loadIdentity: Any?,
+    chooseIndex: (Int) -> Int = { Random.nextInt(it) },
+): ImageVector = remember(loadIdentity) {
+    staticImagePlaceholderVectors[chooseIndex(staticImagePlaceholderVectors.size)]
+}
+
+@Composable
+internal fun rememberImageLoadingPainter(
+    loadIdentity: Any?,
+    @DrawableRes placeholder: Int? = null,
+    backgroundColor: Color? = null,
+    glyphColor: Color? = null,
+): Painter = if (placeholder != null) {
+    painterResource(placeholder)
+} else {
+    val source = rememberVectorPainter(rememberStaticImagePlaceholderVector(loadIdentity))
+    if (backgroundColor == null) source else remember(source, backgroundColor, glyphColor) {
+        ImagePlaceholderBackgroundPainter(source, backgroundColor, glyphColor)
+    }
+}
+
+/** Custom resources and non-image glyphs keep their own background policy. */
+@Composable
+internal fun rememberThemedImageLoadingPainter(
+    loadIdentity: Any?,
+    @DrawableRes placeholder: Int? = null,
+): Painter = if (placeholder != null) {
+    rememberImageLoadingPainter(loadIdentity, placeholder)
+} else {
+    val palette = colorPalette()
+    val navigation = navigationSurfaceColor()
+    val (background, glyph) = remember(navigation, palette.background0, palette.accent) {
+        val plate = effectiveSurfaceColor(palette.background0.copy(alpha = 1f), navigation)
+        plate to visibleImagePlaceholderAccent(palette.accent, plate)
+    }
+    rememberImageLoadingPainter(loadIdentity, backgroundColor = background, glyphColor = glyph)
+}
+
+/** Retains accent hue/saturation while adding only the lightness needed for visibility. */
+private fun visibleImagePlaceholderAccent(accent: Color, background: Color): Color {
+    val minimum = IconContrast + .05f // Keep a small margin for native pixel quantization.
+    if (contrastAgainst(accent, background) >= minimum) return accent
+    val opaque = accent.copy(alpha = 1f)
+    if (contrastAgainst(opaque, background) >= minimum) return opaque
+    val hsl = FloatArray(3)
+    ColorUtils.colorToHSL(opaque.toArgb(), hsl)
+    val originalLightness = hsl[2]
+    val endpoint = if (neutralForeground(background) == Color.White) 1f else 0f
+    var low = 0f
+    var high = 1f
+    fun candidate(amount: Float): Color {
+        hsl[2] = originalLightness + (endpoint - originalLightness) * amount
+        return Color(ColorUtils.HSLToColor(hsl))
+    }
+    repeat(16) {
+        val middle = (low + high) / 2f
+        if (contrastAgainst(candidate(middle), background) >= minimum) high = middle else low = middle
+    }
+    return candidate(high)
+}
+
+/** Covers Fit margins without changing the painter's intrinsic geometry or observing state in composition. */
+internal fun Modifier.imageLoadingBackground(
+    painter: Painter,
+    isLoading: () -> Boolean = { true },
+): Modifier = if (painter is ImagePlaceholderBackgroundPainter) {
+    drawBehind {
+        if (isLoading()) drawRect(painter.background)
+    }
+} else this
+
+/** The background belongs only to the loading frame, never the decoded artwork. */
+private class ImagePlaceholderBackgroundPainter(
+    private val source: Painter,
+    val background: Color,
+    glyphColor: Color?,
+) : Painter() {
+    private val glyphFilter = glyphColor?.let { ColorFilter.tint(it) }
+    override val intrinsicSize get() = source.intrinsicSize
+
+    override fun DrawScope.onDraw() {
+        // Painter's default layer applies caller alpha/filter to the complete composed frame.
+        drawRect(background)
+        with(source) { draw(size, colorFilter = glyphFilter) }
+    }
+}

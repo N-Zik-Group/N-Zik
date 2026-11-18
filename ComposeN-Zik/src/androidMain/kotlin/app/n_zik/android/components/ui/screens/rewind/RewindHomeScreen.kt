@@ -9,6 +9,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -71,8 +72,8 @@ import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.ui.screens.rewind.slides.rewindCollageFrame
-import app.n_zik.android.components.ui.screens.rewind.slides.RewindActionFeedback
-import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.PageButtonFeedback
+import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.GlassFilterChip
 import app.n_zik.android.components.glass.GlassSectionAction
 import app.n_zik.android.components.glass.GlassSectionActions
@@ -506,9 +507,24 @@ private fun RewindHomeSortArrow(
     )
 }
 
+/** Card artwork keeps Glass; native feedback lets overview drags scroll the parent page. */
+@Composable
+private fun RewindHomeCardFeedback(
+    content: @Composable (Modifier, MutableInteractionSource?) -> Unit,
+) {
+    PageButtonFeedback(
+        material = false,
+        enabled = true,
+        shape = uiRoundnessShape(),
+        interactionSource = null,
+        settings = rememberGlassSettings().copy(jellyEnabled = false),
+        content = content,
+    )
+}
+
 /** One tappable home row (a year, or the all-time row): a strip collage of the period's top song/album/artist/playlist behind the label + totals, with the same dark-scrim treatment as the month cells. */
 @Composable
-private fun RewindHomeYearRow(
+internal fun RewindHomeYearRow(
     label: String,
     stats: String,
     tops: TopArtworks,
@@ -528,7 +544,7 @@ private fun RewindHomeYearRow(
         !tops.album.isNullOrBlank() ||
         !tops.artist.isNullOrBlank() ||
         tops.playlist != null
-    RewindActionFeedback(uiRoundnessShape(), area = GlassArea.MoodCards) { feedback, source ->
+    RewindHomeCardFeedback { feedback, source ->
         Box(
             modifier = Modifier.then(feedback)
                 .fillMaxWidth()
@@ -701,7 +717,7 @@ private fun RewindHomeLauncherBox(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun RewindHomeMonthCell(
+internal fun RewindHomeMonthCell(
     modifier: Modifier = Modifier,
     month: MonthlyStat,
     empty: Boolean,
@@ -722,7 +738,7 @@ private fun RewindHomeMonthCell(
             !tops.artist.isNullOrBlank() ||
             !tops.album.isNullOrBlank() ||
             tops.playlist != null)
-    RewindActionFeedback(uiRoundnessShape(), area = GlassArea.MoodCards) { feedback, source ->
+    RewindHomeCardFeedback { feedback, source ->
         Box(
             modifier = modifier.then(feedback)
                 .aspectRatio(0.92f)

@@ -1407,8 +1407,8 @@ class MainActivity :
 
                                 val newIsDark = colorPaletteMode == ColorPaletteMode.Dark ||
                                         colorPaletteMode == ColorPaletteMode.PitchBlack ||
+                                        colorPaletteMode == ColorPaletteMode.PureBlack ||
                                         (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
-                                val newIsPitchBlack = colorPaletteMode == ColorPaletteMode.PitchBlack
 
                                 var colorPalette = colorPaletteOf(
                                     colorPaletteName,
@@ -1444,20 +1444,14 @@ class MainActivity :
                                         )
                                     }
 
-                                    setSystemBarAppearance(colorPalette.isDark)
+                                    val normalized = appearance.copy(
+                                        colorPalette = colorPalette,
+                                        typography = appearance.typography.withColor(colorPalette.text),
+                                    ).forPaletteMode(colorPaletteMode)
+                                    setSystemBarAppearance(normalized.colorPalette.isDark)
 
                                     updateAppearance(
-                                        appearance.copy(
-                                            colorPalette = if (!newIsPitchBlack) colorPalette else colorPalette.copy(
-                                                background0 = Color.Black,
-                                                background1 = Color.Black,
-                                                background2 = Color.Black,
-                                                background3 = Color.Black,
-                                                background4 = Color.Black,
-                                                text = Color.White
-                                            ),
-                                            typography = appearance.typography.withColor(if (!newIsPitchBlack) colorPalette.text else Color.White),
-                                        ),
+                                        normalized,
                                         animateGlobal = true
                                     )
                                 }
@@ -3002,6 +2996,7 @@ class MainActivity :
         val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
         val paletteIsDark = colorPaletteMode == ColorPaletteMode.Dark ||
             colorPaletteMode == ColorPaletteMode.PitchBlack ||
+            colorPaletteMode == ColorPaletteMode.PureBlack ||
             (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
         var colorPalette =
             colorPaletteOf(colorPaletteName, colorPaletteMode, isSystemInDarkTheme)

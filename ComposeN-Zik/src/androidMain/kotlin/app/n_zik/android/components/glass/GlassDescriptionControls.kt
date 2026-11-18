@@ -84,12 +84,15 @@ internal fun GlassExplicitBadge(
             drawHighlight = false, settings = settings,
         )
     }
+    val ink = if (settings.usesGlassMaterial(GlassArea.ActionButtons)) readableGlyphForeground(
+        colorPalette().text, effectiveSurfaceColor(surfaceBackdropColor(),
+            glassFilmColor(settings.forArea(GlassArea.ActionButtons), role = null, menu = false)),
+    ) else colorPalette().text
     CompositionLocalProvider(LocalGlassContainerBackdrop provides rendered) {
         Box(badgeModifier) {
             Image(
                 painter = painterResource(R.drawable.explicit_glass_glyph), contentDescription = contentDescription,
-                colorFilter = ColorFilter.tint(glassArtworkForeground(settings, colorPalette().text,
-                    settings.usesGlassMaterial(GlassArea.ActionButtons))),
+                colorFilter = ColorFilter.tint(ink),
                 modifier = Modifier.matchParentSize().clip(shape)
                     .glassChipBackground(Color.Transparent, shape, settings, filmColor = null,
                         allowInNativeQueue = true)

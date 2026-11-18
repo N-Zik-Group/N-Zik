@@ -101,7 +101,7 @@ fun VoiceSearchOverlay(
                             BasicText(
                                 text = stringResource(R.string.common_action_cancel),
                                 style = TextStyle(
-                                    color = Color.White,
+                                    color = searchOverlayForegroundColor(Color.White, Color.White.copy(alpha = .2f)),
                                     fontSize = 16.sp
                                 )
                             )
@@ -115,7 +115,7 @@ fun VoiceSearchOverlay(
                             BasicText(
                                 text = stringResource(R.string.voice_search_retry),
                                 style = TextStyle(
-                                    color = Color.White,
+                                    color = searchOverlayForegroundColor(Color.White, colorPalette().accent),
                                     fontSize = 16.sp
                                 )
                             )
@@ -154,7 +154,7 @@ fun VoiceSearchOverlay(
                         BasicText(
                             text = stringResource(R.string.common_action_cancel),
                             style = TextStyle(
-                                color = Color.White,
+                                color = searchOverlayForegroundColor(Color.White, Color.White.copy(alpha = .2f)),
                                 fontSize = 16.sp
                             )
                         )

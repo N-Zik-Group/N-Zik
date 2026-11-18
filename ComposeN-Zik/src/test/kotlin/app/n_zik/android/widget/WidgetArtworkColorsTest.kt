@@ -32,6 +32,25 @@ class WidgetArtworkColorsTest {
 
     private fun cover(color: Int) = Bitmap.createBitmap(24, 24, Bitmap.Config.ARGB_8888).apply { eraseColor(color) }
 
+    // The test synchronously exercises the suspend bitmap extraction API.
+    @Test fun `pure black widget colors keep dark artwork accents and opaque backgrounds`() = runBlocking {
+        setActiveProfile("default", context)
+        val bitmap = cover(android.graphics.Color.rgb(30, 120, 200))
+        val raw = requireNotNull(SharedArtworkColors.fromBitmap(bitmap))
+        context.preferences.edit().putString(colorPaletteModeKey, "PureBlack")
+            .putBoolean(dynamicThemeRespectBrightnessKey, false).commit()
+        try {
+            val actual = widgetArtworkPalette(context, raw)
+            val expected = requireNotNull(raw.display(true, false).palette)
+            assertEquals(expected.accent, actual.accent)
+            assertEquals(expected.onAccent, actual.onAccent)
+            assertEquals(Color.Black, actual.background0)
+            assertEquals(Color.Black, actual.background4)
+            assertEquals(Color.White, actual.text)
+            assertTrue(actual.isDark)
+        } finally { context.preferences.edit().clear().commit() }
+    }
+
     @Test fun `widget policy uses complete dark roles and restores original roles without reloading`() = runBlocking {
         setActiveProfile("default", context)
         val bitmap = cover(android.graphics.Color.rgb(160, 160, 160))

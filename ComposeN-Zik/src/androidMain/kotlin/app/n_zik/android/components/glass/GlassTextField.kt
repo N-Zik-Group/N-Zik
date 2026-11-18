@@ -1,5 +1,7 @@
 package app.n_zik.android.components.glass
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.LocalTextStyle
@@ -9,9 +11,12 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
@@ -32,6 +37,57 @@ private fun TextFieldColors.clearContainer(): TextFieldColors = copy(
     focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent,
     disabledContainerColor = Color.Transparent, errorContainerColor = Color.Transparent,
 )
+
+/** Resolve only enabled neutral ink; semantic colors and disabled roles retain their meaning. */
+private fun TextFieldColors.onGlass(surface: Color): TextFieldColors {
+    fun text(color: Color) = readableForeground(color, surface, TextContrast)
+    fun glyph(color: Color) = readableGlyphForeground(color, surface)
+    return clearContainer().copy(
+        focusedTextColor = text(focusedTextColor), unfocusedTextColor = text(unfocusedTextColor),
+        errorTextColor = text(errorTextColor), cursorColor = glyph(cursorColor),
+        errorCursorColor = glyph(errorCursorColor),
+        focusedLeadingIconColor = glyph(focusedLeadingIconColor),
+        unfocusedLeadingIconColor = glyph(unfocusedLeadingIconColor),
+        errorLeadingIconColor = glyph(errorLeadingIconColor),
+        focusedTrailingIconColor = glyph(focusedTrailingIconColor),
+        unfocusedTrailingIconColor = glyph(unfocusedTrailingIconColor),
+        errorTrailingIconColor = glyph(errorTrailingIconColor),
+        focusedLabelColor = text(focusedLabelColor), unfocusedLabelColor = text(unfocusedLabelColor),
+        errorLabelColor = text(errorLabelColor),
+        focusedPlaceholderColor = text(focusedPlaceholderColor),
+        unfocusedPlaceholderColor = text(unfocusedPlaceholderColor),
+        errorPlaceholderColor = text(errorPlaceholderColor),
+        focusedSupportingTextColor = text(focusedSupportingTextColor),
+        unfocusedSupportingTextColor = text(unfocusedSupportingTextColor),
+        errorSupportingTextColor = text(errorSupportingTextColor),
+        focusedIndicatorColor = glyph(focusedIndicatorColor),
+        unfocusedIndicatorColor = glyph(unfocusedIndicatorColor),
+        errorIndicatorColor = glyph(errorIndicatorColor),
+    )
+}
+
+@Composable
+private fun InputGlassContent(
+    settings: GlassSettings,
+    material: Boolean,
+    role: Color,
+    colors: TextFieldColors,
+    textStyle: TextStyle,
+    enabled: Boolean,
+    content: @Composable (TextFieldColors, TextStyle) -> Unit,
+) {
+    val surface = if (material) effectiveSurfaceColor(surfaceBackdropColor(),
+        glassFilmColor(settings.forArea(GlassArea.SearchBars), role, menu = false)) else null
+    if (surface == null) {
+        content(colors, textStyle)
+        return
+    }
+    SurfaceForegroundContent(surface) {
+        val ink = if (enabled && textStyle.color.isSpecified)
+            textStyle.copy(color = readableForeground(textStyle.color, surface, TextContrast)) else textStyle
+        content(colors.onGlass(surface), ink)
+    }
+}
 
 @Composable
 fun GlassTextField(
@@ -57,17 +113,22 @@ fun GlassTextField(
 ) {
     val glass = rememberGlassSettings()
     val material = glass.usesGlassMaterial(GlassArea.SearchBars)
-    val role = if (isError) colors.errorContainerColor else if (!enabled) colors.disabledContainerColor
-        else colors.unfocusedContainerColor
-    TextField(
-        value = value, onValueChange = onValueChange,
-        modifier = modifier.inputGlass(glass, shape, role.takeUnless { it == Color.Transparent } ?: colorPalette().background1),
-        enabled = enabled, readOnly = readOnly, textStyle = textStyle, label = label, placeholder = placeholder,
-        leadingIcon = leadingIcon, trailingIcon = trailingIcon, isError = isError,
-        visualTransformation = visualTransformation, keyboardOptions = keyboardOptions, keyboardActions = keyboardActions,
-        singleLine = singleLine, maxLines = maxLines, minLines = minLines, shape = shape,
-        colors = if (material) colors.clearContainer() else colors,
-    )
+    val interactions = remember { MutableInteractionSource() }
+    val focused by interactions.collectIsFocusedAsState()
+    val role = (if (!enabled) colors.disabledContainerColor else if (isError) colors.errorContainerColor
+        else if (focused) colors.focusedContainerColor else colors.unfocusedContainerColor)
+        .takeIf { it.isSpecified && it.alpha > 0f } ?: colorPalette().background1
+    InputGlassContent(glass, material, role, colors, textStyle, enabled) { fieldColors, fieldStyle ->
+        TextField(
+            value = value, onValueChange = onValueChange,
+            modifier = modifier.inputGlass(glass, shape, role),
+            enabled = enabled, readOnly = readOnly, textStyle = fieldStyle, label = label, placeholder = placeholder,
+            leadingIcon = leadingIcon, trailingIcon = trailingIcon, isError = isError,
+            visualTransformation = visualTransformation, keyboardOptions = keyboardOptions, keyboardActions = keyboardActions,
+            singleLine = singleLine, maxLines = maxLines, minLines = minLines, shape = shape,
+            colors = fieldColors, interactionSource = interactions,
+        )
+    }
 }
 
 @Composable
@@ -94,17 +155,22 @@ fun GlassTextField(
 ) {
     val glass = rememberGlassSettings()
     val material = glass.usesGlassMaterial(GlassArea.SearchBars)
-    val role = if (isError) colors.errorContainerColor else if (!enabled) colors.disabledContainerColor
-        else colors.unfocusedContainerColor
-    TextField(
-        value = value, onValueChange = onValueChange,
-        modifier = modifier.inputGlass(glass, shape, role.takeUnless { it == Color.Transparent } ?: colorPalette().background1),
-        enabled = enabled, readOnly = readOnly, textStyle = textStyle, label = label, placeholder = placeholder,
-        leadingIcon = leadingIcon, trailingIcon = trailingIcon, isError = isError,
-        visualTransformation = visualTransformation, keyboardOptions = keyboardOptions, keyboardActions = keyboardActions,
-        singleLine = singleLine, maxLines = maxLines, minLines = minLines, shape = shape,
-        colors = if (material) colors.clearContainer() else colors,
-    )
+    val interactions = remember { MutableInteractionSource() }
+    val focused by interactions.collectIsFocusedAsState()
+    val role = (if (!enabled) colors.disabledContainerColor else if (isError) colors.errorContainerColor
+        else if (focused) colors.focusedContainerColor else colors.unfocusedContainerColor)
+        .takeIf { it.isSpecified && it.alpha > 0f } ?: colorPalette().background1
+    InputGlassContent(glass, material, role, colors, textStyle, enabled) { fieldColors, fieldStyle ->
+        TextField(
+            value = value, onValueChange = onValueChange,
+            modifier = modifier.inputGlass(glass, shape, role),
+            enabled = enabled, readOnly = readOnly, textStyle = fieldStyle, label = label, placeholder = placeholder,
+            leadingIcon = leadingIcon, trailingIcon = trailingIcon, isError = isError,
+            visualTransformation = visualTransformation, keyboardOptions = keyboardOptions, keyboardActions = keyboardActions,
+            singleLine = singleLine, maxLines = maxLines, minLines = minLines, shape = shape,
+            colors = fieldColors, interactionSource = interactions,
+        )
+    }
 }
 
 @Composable
@@ -131,15 +197,20 @@ fun GlassOutlinedTextField(
 ) {
     val glass = rememberGlassSettings()
     val material = glass.usesGlassMaterial(GlassArea.SearchBars)
-    val role = if (isError) colors.errorContainerColor else if (!enabled) colors.disabledContainerColor
-        else colors.unfocusedContainerColor
-    OutlinedTextField(
-        value = value, onValueChange = onValueChange,
-        modifier = modifier.inputGlass(glass, shape, role.takeUnless { it == Color.Transparent } ?: colorPalette().background1),
-        enabled = enabled, readOnly = readOnly, textStyle = textStyle, label = label, placeholder = placeholder,
-        leadingIcon = leadingIcon, trailingIcon = trailingIcon, isError = isError,
-        visualTransformation = visualTransformation, keyboardOptions = keyboardOptions, keyboardActions = keyboardActions,
-        singleLine = singleLine, maxLines = maxLines, minLines = minLines, shape = shape,
-        colors = if (material) colors.clearContainer() else colors,
-    )
+    val interactions = remember { MutableInteractionSource() }
+    val focused by interactions.collectIsFocusedAsState()
+    val role = (if (!enabled) colors.disabledContainerColor else if (isError) colors.errorContainerColor
+        else if (focused) colors.focusedContainerColor else colors.unfocusedContainerColor)
+        .takeIf { it.isSpecified && it.alpha > 0f } ?: colorPalette().background1
+    InputGlassContent(glass, material, role, colors, textStyle, enabled) { fieldColors, fieldStyle ->
+        OutlinedTextField(
+            value = value, onValueChange = onValueChange,
+            modifier = modifier.inputGlass(glass, shape, role),
+            enabled = enabled, readOnly = readOnly, textStyle = fieldStyle, label = label, placeholder = placeholder,
+            leadingIcon = leadingIcon, trailingIcon = trailingIcon, isError = isError,
+            visualTransformation = visualTransformation, keyboardOptions = keyboardOptions, keyboardActions = keyboardActions,
+            singleLine = singleLine, maxLines = maxLines, minLines = minLines, shape = shape,
+            colors = fieldColors, interactionSource = interactions,
+        )
+    }
 }

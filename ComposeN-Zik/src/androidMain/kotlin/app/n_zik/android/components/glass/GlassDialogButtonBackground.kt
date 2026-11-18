@@ -4,7 +4,6 @@ import app.n_zik.android.components.ui.reservedIconActionCanvas
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,8 +13,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,11 +26,32 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.draw.clip
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.uiRoundnessShape
+
+/** Matches the film explicitly supplied by callers that draw their own dialog-action plate. */
+@Composable
+private fun dialogButtonForegroundSurface(settings: GlassSettings, role: Color?): Color? {
+    if (role == null || !settings.usesGlassDialogButtonMaterial()) return null
+    val backdrop = LocalSurfaceBackdropColor.current ?: surfaceColor(colorPalette().background1)
+    return effectiveSurfaceColor(backdrop,
+        glassFilmColor(settings.forArea(GlassArea.DialogButtons), role, menu = true))
+}
+
+@Composable
+private fun DialogButtonForeground(surface: Color?, content: @Composable () -> Unit) {
+    if (surface == null) {
+        content()
+        return
+    }
+    val contentColor = LocalContentColor.current
+    SurfaceForegroundContent(surface) {
+        CompositionLocalProvider(LocalContentColor provides readableForeground(
+            contentColor, surface, TextContrast), content = content)
+    }
+}
 
 /** One native action source moves the entire material and foreground without another ripple. */
 @Composable
@@ -53,18 +75,24 @@ internal fun GlassDialogIconButton(
     enabled: Boolean = true,
     colors: IconButtonColors = IconButtonDefaults.iconButtonColors(),
     interactionSource: MutableInteractionSource? = null,
+    foregroundFilm: Color? = null,
     content: @Composable () -> Unit,
 ) {
     val shape = uiRoundnessShape()
     val settings = rememberGlassSettings()
     val nativeBounds = remember { GlassNativeSurfaceBounds() }
+    val plate = dialogButtonForegroundSurface(settings, foregroundFilm)?.takeIf { enabled }
+        ?.let { effectiveSurfaceColor(it, colors.containerColor) }
+    val foregroundColors = if (plate != null) colors.copy(
+        contentColor = readableGlyphForeground(colors.contentColor, plate),
+    ) else colors
     NativePageButtonFeedback(settings.usesGlassDialogButtonMaterial(), enabled, shape,
         interactionSource, nativeBounds, settings) { feedback, source ->
         androidx.compose.material3.IconButton(
             onClick = onClick, modifier = feedback.then(modifier), enabled = enabled,
-            colors = colors, interactionSource = source, shape = shape,
+            colors = foregroundColors, interactionSource = source, shape = shape,
         ) {
-            GlassArtworkContent(settings, settings.usesGlassDialogButtonMaterial()) { content() }
+            DialogButtonForeground(plate) { content() }
             NativeButtonSurfaceProbe(nativeBounds)
         }
     }
@@ -80,6 +108,7 @@ internal fun GlassDialogIconButton(
     color: Color,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    foregroundFilm: Color? = null,
 ) {
     val settings = rememberGlassSettings()
     if (!settings.usesGlassDialogButtonMaterial()) {
@@ -87,8 +116,10 @@ internal fun GlassDialogIconButton(
         return
     }
     val shape = uiRoundnessShape()
+    val plate = dialogButtonForegroundSurface(settings, foregroundFilm)
+    val ink = if (enabled && plate != null) readableGlyphForeground(color, plate) else color
     GlassDialogButtonFeedback(enabled, shape, settings) { feedback, source ->
-        Image(painterResource(icon), contentDescription = null, colorFilter = ColorFilter.tint(glassArtworkForeground(settings, color)),
+        Image(painterResource(icon), contentDescription = null, colorFilter = ColorFilter.tint(ink),
             modifier = feedback.then(modifier.reservedIconActionCanvas(shape,
                 interactionSource = source, indication = null, enabled = enabled, onClick = onClick, role = Role.Button)))
     }
@@ -106,16 +137,22 @@ internal fun GlassDialogOutlinedButton(
     border: BorderStroke? = ButtonDefaults.outlinedButtonBorder(enabled),
     contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
     interactionSource: MutableInteractionSource? = null,
+    foregroundFilm: Color? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
     val settings = rememberGlassSettings()
     val nativeBounds = remember { GlassNativeSurfaceBounds() }
+    val plate = dialogButtonForegroundSurface(settings, foregroundFilm)?.takeIf { enabled }
+        ?.let { effectiveSurfaceColor(it, colors.containerColor) }
+    val foregroundColors = if (plate != null) colors.copy(
+        contentColor = readableForeground(colors.contentColor, plate, TextContrast),
+    ) else colors
     NativePageButtonFeedback(settings.usesGlassDialogButtonMaterial(), enabled, shape,
         interactionSource, nativeBounds, settings) { feedback, source ->
         OutlinedButton(onClick = onClick, modifier = feedback.then(modifier), enabled = enabled,
-            shape = shape, colors = colors, elevation = elevation, border = border,
+            shape = shape, colors = foregroundColors, elevation = elevation, border = border,
             contentPadding = contentPadding, interactionSource = source) {
-            GlassArtworkContent(settings, settings.usesGlassDialogButtonMaterial()) { content() }
+            DialogButtonForeground(plate) { content() }
             NativeButtonSurfaceProbe(nativeBounds, contentRows = 1)
         }
     }

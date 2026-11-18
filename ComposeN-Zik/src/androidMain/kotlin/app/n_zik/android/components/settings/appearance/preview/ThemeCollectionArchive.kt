@@ -138,7 +138,8 @@ internal fun prepareThemeCollectionRestore(
     val pending = available.filter { it.id in selectedIds && library.download(it.id) == null }
     // Validate the complete selection before changing the library or publishing preview files.
     val validated = pending.map { (_, directory, theme, storeOrigin) ->
-        val document = validateThemeArchiveDocuments(theme) { path, limit -> zip.read(directory + path, limit) }
+        val document = validateThemeArchiveDocuments(theme,
+            read = { path, limit -> zip.read(directory + path, limit) }, validateFeatureCompatibility = false)
         for (preview in theme.previews) {
             validateThemeArchivePreview(preview, zip.read(directory + preview.path, SubmissionPreviewLimit))
         }

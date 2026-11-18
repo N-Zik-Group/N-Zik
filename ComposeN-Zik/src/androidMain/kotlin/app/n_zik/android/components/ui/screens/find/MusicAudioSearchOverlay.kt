@@ -1,5 +1,8 @@
 package app.n_zik.android.components.ui.screens.find
 
+import app.n_zik.android.components.searchOverlayForegroundColor
+import app.n_zik.android.components.searchOverlaySurfaceColor
+import app.n_zik.android.components.glass.LocalSurfaceBackdropColor
 import app.n_zik.android.components.searchOverlayAction
 import app.n_zik.android.components.searchOverlaySurface
 import app.n_zik.android.components.glass.GlassArea
@@ -87,7 +90,7 @@ import timber.log.Timber
 
 // State
 
-private sealed interface FindUiState {
+internal sealed interface FindUiState {
     data object Idle : FindUiState
     data object Listening : FindUiState
     data class Success(val track: RecognizedTrack) : FindUiState
@@ -239,6 +242,25 @@ fun MusicAudioSearchOverlay(
     DisposableEffect(Unit) { onDispose { recognitionJob?.cancel(); recorder.stop() } }
 
     // ── UI ──────────────────────────────────────────────────────────────────
+    MusicAudioSearchContent(state, duration, isSpeaking, isPlaying,
+        onDismiss = handleDismiss, onRetry = { startListening() },
+        onPlay = { playRecognizedTrack(it) }, onSearch = { track ->
+            onOpenSearch(listOf(track.title, track.subtitle).filter { it.isNotBlank() }.joinToString(" "))
+        })
+}
+
+/** Presentation only; recording and network effects remain in the owning overlay. */
+@Composable
+internal fun MusicAudioSearchContent(
+    state: FindUiState,
+    duration: Int,
+    isSpeaking: Boolean,
+    isPlaying: Boolean,
+    onDismiss: () -> Unit,
+    onRetry: () -> Unit,
+    onPlay: (RecognizedTrack) -> Unit,
+    onSearch: (RecognizedTrack) -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -278,13 +300,13 @@ fun MusicAudioSearchOverlay(
             ) {
                 Box(
                     modifier = Modifier
-                        .searchOverlayAction(RoundedCornerShape(12.dp), Color.White.copy(alpha = 0.2f), onClick = { handleDismiss() })
+                        .searchOverlayAction(RoundedCornerShape(12.dp), Color.White.copy(alpha = 0.2f), onClick = onDismiss)
                         .padding(horizontal = 32.dp, vertical = 12.dp)
                 ) {
                     BasicText(
                         text = stringResource(R.string.common_action_cancel),
                         style = TextStyle(
-                            color = Color.White,
+                            color = searchOverlayForegroundColor(Color.White, Color.White.copy(alpha = .2f)),
                             fontSize = 16.sp
                         )
                     )
@@ -292,13 +314,13 @@ fun MusicAudioSearchOverlay(
 
                 Box(
                     modifier = Modifier
-                        .searchOverlayAction(RoundedCornerShape(12.dp), colorPalette().accent, onClick = { startListening() })
+                        .searchOverlayAction(RoundedCornerShape(12.dp), colorPalette().accent, onClick = onRetry)
                         .padding(horizontal = 32.dp, vertical = 12.dp)
                 ) {
                     BasicText(
                         text = stringResource(R.string.voice_search_retry),
                         style = TextStyle(
-                            color = Color.White,
+                            color = searchOverlayForegroundColor(Color.White, colorPalette().accent),
                             fontSize = 16.sp
                         )
                     )
@@ -341,13 +363,13 @@ fun MusicAudioSearchOverlay(
 
             Box(
                 modifier = Modifier
-                    .searchOverlayAction(RoundedCornerShape(12.dp), Color.White.copy(alpha = 0.2f), onClick = { handleDismiss() })
+                    .searchOverlayAction(RoundedCornerShape(12.dp), Color.White.copy(alpha = 0.2f), onClick = onDismiss)
                     .padding(horizontal = 32.dp, vertical = 12.dp)
             ) {
                 BasicText(
                     text = stringResource(R.string.common_action_cancel),
                     style = TextStyle(
-                        color = Color.White,
+                        color = searchOverlayForegroundColor(Color.White, Color.White.copy(alpha = .2f)),
                         fontSize = 16.sp
                     )
                 )
@@ -366,25 +388,21 @@ fun MusicAudioSearchOverlay(
                     RecognizedTrackCard(
                         track    = success.track,
                         isPlaying = isPlaying,
-                        onPlay   = { playRecognizedTrack(success.track) },
-                        onSearch = {
-                            val q = listOf(success.track.title, success.track.subtitle)
-                                .filter { it.isNotBlank() }.joinToString(" ")
-                            onOpenSearch(q)
-                        }
+                        onPlay   = { onPlay(success.track) },
+                        onSearch = { onSearch(success.track) }
                     )
 
                     // Close button at the bottom of results
                     Box(
                         modifier = Modifier
-                            .searchOverlayAction(RoundedCornerShape(12.dp), Color.White.copy(alpha = 0.2f), onClick = { handleDismiss() })
+                            .searchOverlayAction(RoundedCornerShape(12.dp), Color.White.copy(alpha = 0.2f), onClick = onDismiss)
                             .padding(horizontal = 32.dp, vertical = 12.dp)
                             .align(Alignment.CenterHorizontally)
                     ) {
                         BasicText(
                             text = stringResource(R.string.common_action_cancel),
                             style = TextStyle(
-                                color = Color.White,
+                                color = searchOverlayForegroundColor(Color.White, Color.White.copy(alpha = .2f)),
                                 fontSize = 16.sp
                             )
                         )
@@ -405,12 +423,14 @@ private fun RecognizedTrackCard(
     onSearch: () -> Unit
 ) {
     val cardBackdrop = rememberLayerBackdrop()
+    val cardFill = colorPalette().background2
+    val cardSurface = searchOverlaySurfaceColor(cardFill, GlassArea.SettingsCards)
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .searchOverlaySurface(
                 nativeShape = RoundedCornerShape(18.dp),
-                fill = colorPalette().background2,
+                fill = cardFill,
                 area = GlassArea.SettingsCards,
                 nativeBorder = colorPalette().accent.copy(alpha = 0.18f),
                 exportedBackdrop = cardBackdrop,
@@ -439,7 +459,7 @@ private fun RecognizedTrackCard(
             Text(
                 track.title,
                 style = typography().s,
-                color = colorPalette().text,
+                color = searchOverlayForegroundColor(colorPalette().text, cardFill, GlassArea.SettingsCards),
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
@@ -447,7 +467,7 @@ private fun RecognizedTrackCard(
             Text(
                 track.subtitle,
                 style = typography().xs,
-                color = colorPalette().textSecondary,
+                color = searchOverlayForegroundColor(colorPalette().textSecondary, cardFill, GlassArea.SettingsCards),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -455,7 +475,8 @@ private fun RecognizedTrackCard(
                 Text(genre, style = typography().xxs, color = colorPalette().accent)
             }
             Spacer(Modifier.height(4.dp))
-            CompositionLocalProvider(LocalGlassContainerBackdrop provides cardBackdrop,
+            CompositionLocalProvider(LocalSurfaceBackdropColor provides (cardSurface ?: cardFill),
+                LocalGlassContainerBackdrop provides cardBackdrop,
                 LocalGlassMaterialSource provides cardBackdrop) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -470,13 +491,13 @@ private fun RecognizedTrackCard(
                         if (isPlaying) {
                             InlineCircularLoader(
                                 modifier = Modifier.size(18.dp),
-                                color = colorPalette().onAccent,
+                                color = searchOverlayForegroundColor(colorPalette().onAccent, colorPalette().accent),
                             )
                         } else {
                             androidx.compose.material3.Icon(
                                 painter = painterResource(R.drawable.play),
                                 contentDescription = stringResource(R.string.player_action_play),
-                                tint = colorPalette().onAccent,
+                                tint = searchOverlayForegroundColor(colorPalette().onAccent, colorPalette().accent, glyph = true),
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -489,7 +510,7 @@ private fun RecognizedTrackCard(
                         Text(
                             stringResource(R.string.recognition_action_more_details),
                             style = typography().xxs,
-                            color = colorPalette().onAccent,
+                            color = searchOverlayForegroundColor(colorPalette().onAccent, colorPalette().accent),
                             fontWeight = FontWeight.SemiBold
                         )
                     }

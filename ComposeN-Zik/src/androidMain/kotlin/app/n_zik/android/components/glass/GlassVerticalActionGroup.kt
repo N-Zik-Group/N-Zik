@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -86,7 +87,16 @@ fun GlassVerticalActionGroup(
                 }
             },
             horizontalAlignment = Alignment.CenterHorizontally,
-            content = { val column = this; GlassArtworkContent(settings, settings.usesGlassMaterial(area)) { content(column) } },
+            content = {
+                val column = this
+                if (settings.usesGlassMaterial(area)) {
+                    val plate = glassFilmColor(settings.forArea(area), film, menu = false)
+                    val foregroundSurface = effectiveSurfaceColor(surfaceBackdropColor(), plate)
+                    CompositionLocalProvider(LocalGlassActionGroupSurface provides foregroundSurface) {
+                        SurfaceForegroundContent(foregroundSurface) { content(column) }
+                    }
+                } else content(column)
+            },
         )
     }
 }

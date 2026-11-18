@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
-import app.n_zik.android.surfaceColor
+import app.n_zik.android.navigationSurfaceColor
 import app.n_zik.android.components.navigation.nav.bottomNavigationBarShape
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.navigation.nav.topNavigationBarShape
@@ -65,7 +65,7 @@ internal fun ClassicBottomDockNavigation(
     val glass = settings.usesGlassMaterial(GlassArea.Nav)
     val actionShape = uiRoundnessShape()
     val shape = if (top) topNavigationBarShape(actionShape) else bottomNavigationBarShape(actionShape)
-    val color = surfaceColor(colorPalette().background1)
+    val color = navigationSurfaceColor()
     val unifiedSurface = (LocalSharedHomeHeaderGlass.current
         ?.takeIf { it.topNavigation && it.owner != null }?.surface
         ?: LocalUnifiedTopGlassSurface.current).takeIf { top && glass }

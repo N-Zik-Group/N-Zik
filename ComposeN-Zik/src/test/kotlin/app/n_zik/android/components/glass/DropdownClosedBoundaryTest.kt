@@ -36,6 +36,11 @@ import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.Typography
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.menu.GlassDropdownMenu
+import app.n_zik.android.components.menu.dropdownContainerColor
+import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.enums.ColorPaletteName
+import app.n_zik.android.hasBlackPaletteSurfaces
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -50,6 +55,24 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DropdownClosedBoundaryTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `black dropdowns use ninety percent native coverage and preserve Glass and explicit transparency`() {
+        val film = Color(0xFF1A1A1A)
+        assertEquals(Color.Black.copy(alpha = .90f), dropdownContainerColor(film, ColorPaletteMode.PureBlack, glassEnabled = false))
+        for (name in listOf(ColorPaletteName.PureBlack, ColorPaletteName.ModernBlack)) {
+            val blackPalette = hasBlackPaletteSurfaces(name, DefaultDarkColorPalette.copy(text = Color.White))
+            assertEquals(film.copy(alpha = .90f), dropdownContainerColor(film, ColorPaletteMode.Dark, false, blackPalette))
+            assertEquals(film, dropdownContainerColor(film, ColorPaletteMode.Dark, true, blackPalette))
+            assertEquals(Color.Transparent, dropdownContainerColor(Color.Transparent, ColorPaletteMode.Dark, false, blackPalette))
+        }
+        assertEquals(film.copy(alpha = .90f), dropdownContainerColor(film, ColorPaletteMode.PitchBlack, false))
+        assertEquals(film, dropdownContainerColor(film, ColorPaletteMode.PureBlack, glassEnabled = true))
+        assertEquals(Color.Transparent, dropdownContainerColor(Color.Transparent, ColorPaletteMode.PureBlack, glassEnabled = false))
+        for (mode in listOf(ColorPaletteMode.Light, ColorPaletteMode.Dark, ColorPaletteMode.System)) {
+            assertEquals(film, dropdownContainerColor(film, mode, glassEnabled = false))
+            assertEquals(film, dropdownContainerColor(film, mode, glassEnabled = true))
+        }
+    }
 
     @Test fun `shared optical dropdown has a visible lower rim and rounded lower corners`() =
         assertClosedBoundary(shared = true, quality = GlassQuality.Balanced)

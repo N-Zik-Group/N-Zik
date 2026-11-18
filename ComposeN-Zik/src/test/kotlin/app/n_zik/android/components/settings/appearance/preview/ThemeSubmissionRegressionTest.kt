@@ -28,6 +28,22 @@ class ThemeSubmissionRegressionTest {
     @get:Rule val folder = TemporaryFolder()
 
     @Test
+    fun untouchedMinimumTracksSelectedFeaturesWithoutReplacingManualDraftOrFutureMinimums() {
+        assertEquals("99", submissionMinimumVersionInput("", automatic = true, requiredMinimum = 99, previous = null))
+        assertEquals("101", submissionMinimumVersionInput("99", automatic = true, requiredMinimum = 101, previous = null))
+        assertEquals("99", submissionMinimumVersionInput("101", automatic = true, requiredMinimum = 99, previous = null))
+        assertEquals("105", submissionMinimumVersionInput("", automatic = true, requiredMinimum = 101, previous = 105))
+        for (manualOrDraft in listOf("", "99", "100", "105")) {
+            assertEquals(manualOrDraft,
+                submissionMinimumVersionInput(manualOrDraft, automatic = false, requiredMinimum = 101, previous = 105))
+        }
+        val automaticDraft = submissionMinimumVersionInput("99", automatic = true, requiredMinimum = 101, previous = null)
+        assertEquals("101", automaticDraft)
+        assertNull(submissionMinimumVersionCode(automaticDraft, current = 100, previous = null, requiredMinimum = 101))
+        assertEquals(101, submissionMinimumVersionCode(automaticDraft, current = 101, previous = null, requiredMinimum = 101))
+    }
+
+    @Test
     fun minimumCompatibilityMustUseASupportedVersionCode() {
         assertEquals(97, submissionMinimumVersionCode("97", current = 99, previous = null))
         assertEquals(99, submissionMinimumVersionCode(" 99 ", current = 99, previous = null))

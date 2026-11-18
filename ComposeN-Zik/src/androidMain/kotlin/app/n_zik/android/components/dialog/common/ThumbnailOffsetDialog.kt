@@ -84,6 +84,7 @@ fun ThumbnailOffsetDialog(
                     .fillMaxWidth()
             ) {
                 IconButton(
+                    foregroundFilm = surfaceColor(colorPalette().background2),
                     onClick = {
                         imageCoverSize = defaultImageCoverSize
                     },
@@ -119,6 +120,7 @@ fun ThumbnailOffsetDialog(
                         .fillMaxWidth()
                 ) {
                     IconButton(
+                        foregroundFilm = surfaceColor(colorPalette().background2),
                         onClick = {
                             thumbnailFadeEx = defaultFade
                         },
@@ -151,6 +153,7 @@ fun ThumbnailOffsetDialog(
                         .fillMaxWidth()
                 ) {
                     IconButton(
+                        foregroundFilm = surfaceColor(colorPalette().background2),
                         onClick = {
                             thumbnailFade = defaultFade
                         },
@@ -184,6 +187,7 @@ fun ThumbnailOffsetDialog(
                     .fillMaxWidth()
             ) {
                 IconButton(
+                    foregroundFilm = surfaceColor(colorPalette().background2),
                     onClick = {
                         thumbnailSpacing = defaultSpacing
                     },
@@ -216,6 +220,7 @@ fun ThumbnailOffsetDialog(
                     .fillMaxWidth()
             ) {
                 IconButton(
+                    foregroundFilm = surfaceColor(colorPalette().background2),
                     onClick = {
                         thumbnailSpacingL = defaultSpacing
                     },

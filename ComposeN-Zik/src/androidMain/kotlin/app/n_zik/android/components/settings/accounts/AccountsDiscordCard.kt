@@ -84,6 +84,13 @@ import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.glass.CustomModalBottomSheet
 import app.n_zik.android.components.glass.GlassCustomChip
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.TextContrast
+import app.n_zik.android.components.glass.readableForeground
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.surfaceBackdropColor
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
@@ -331,8 +338,10 @@ internal fun AccountsDiscordCard(search: Search) {
                                         1 -> previewMode == 0
                                         else -> previewMode == 1
                                     }
-                                    GlassCustomChip(
+                                    DiscordPreviewChip(
+                                        label = stringResource(labelRes),
                                         color = if (selected) chipPalette.accent else chipPalette.accent.copy(alpha = 0.15f),
+                                        foreground = if (selected) chipPalette.onAccent else chipPalette.accent,
                                         onClick = {
                                             when (index) {
                                                 0 -> previewMode = -1
@@ -340,17 +349,7 @@ internal fun AccountsDiscordCard(search: Search) {
                                                 else -> previewMode = if (previewMode == 1) -1 else 1
                                             }
                                         },
-                                    ) { chipModifier ->
-                                        Text(
-                                            text = stringResource(labelRes),
-                                            style = typography().s.copy(
-                                                color = if (selected) chipPalette.onAccent else chipPalette.accent
-                                            ),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            modifier = chipModifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                                        )
-                                    }
+                                    )
                                 }
                             }
 
@@ -1583,16 +1582,12 @@ private fun DiscordRpcPreviewCard(
                             content.buttons.forEach { button ->
                                 // Tap = open the button link in the external browser (the
                                 // real Discord buttons open the same URL).
-                                GlassCustomChip(palette.accent.copy(alpha = 0.15f),
-                                    onClick = { cardContext.openDiscordButtonUrl(button.url) }) { chipModifier ->
-                                    Text(
-                                        text = button.label,
-                                        style = typography().s.copy(color = Color.White),
-                                        modifier = chipModifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                }
+                                DiscordPreviewChip(
+                                    label = button.label,
+                                    color = palette.accent.copy(alpha = 0.15f),
+                                    foreground = Color.White,
+                                    onClick = { cardContext.openDiscordButtonUrl(button.url) },
+                                )
                             }
                         }
                     }
@@ -1621,6 +1616,29 @@ private fun DiscordRpcPreviewCard(
 private fun formatPreviewTime(ms: Long): String {
     val totalSeconds = (ms / 1000L).coerceAtLeast(0L)
     return "${totalSeconds / 60}:${(totalSeconds % 60).toString().padStart(2, '0')}"
+}
+
+/** Preview labels resolve after their own chip film, independently of the surrounding card. */
+@Composable
+internal fun DiscordPreviewChip(
+    label: String,
+    color: Color,
+    foreground: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    settings: GlassSettings = rememberGlassSettings(),
+) {
+    val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
+    GlassCustomChip(color, onClick, modifier, settings = settings) { chipModifier ->
+        val ink = if (material) readableForeground(foreground, surfaceBackdropColor(), TextContrast) else foreground
+        Text(
+            text = label,
+            style = typography().s.copy(color = ink),
+            modifier = chipModifier.padding(horizontal = 10.dp, vertical = 4.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
 }
 
 /** Discord section only: opens a preview card button URL in the external browser — the real Discord buttons open the same link, and the preview must let the user verify where each button points. */

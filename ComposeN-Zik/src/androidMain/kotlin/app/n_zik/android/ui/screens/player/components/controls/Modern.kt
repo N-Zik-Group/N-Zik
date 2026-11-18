@@ -110,6 +110,7 @@ import app.n_zik.android.components.player.PlayerTransportRibbedSurface
 import app.n_zik.android.components.player.playerTransportPlayShape
 import app.n_zik.android.components.player.playerTransportNativeFill
 import app.n_zik.android.components.player.playerTransportSurface
+import app.n_zik.android.components.player.playerTransportOuterShadow
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.GlassScope
@@ -124,6 +125,11 @@ import app.n_zik.android.components.glass.surfaceProgressTrackColor
 import app.n_zik.android.components.player.playerTextOutlineColor
 import app.n_zik.android.components.player.playerTransportGlyph
 import app.n_zik.android.components.player.playerTransportPlate
+import app.n_zik.android.components.player.playButtonNativeColor
+import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.enums.ColorPaletteName
+import app.n_zik.android.utils.colorPaletteModeKey
+import app.n_zik.android.utils.colorPaletteNameKey
 
 
 @UnstableApi
@@ -414,7 +420,10 @@ fun ControlsModern(
     val transportSettings = rememberGlassSettings(GlassScope.PlayerTransport).inScope(GlassScope.PlayerTransport)
     val transportGlass = transportSettings.usesGlassMaterial(GlassArea.ActionButtons)
     val transportFilm = colorPalette().background2.copy(0.95f)
-    val transportPlate = playerTransportPlate(transportSettings, transportFilm)
+    val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
+    val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
+    val playFilm = playButtonNativeColor(colorPaletteName, transportFilm, colorPaletteMode)
+    val transportPlate = playerTransportPlate(transportSettings, playFilm)
     val playerControlsColors by rememberPreference(playerControlsColorsKey, PlayerControlsColors.Monochrome)
     val controlsColorText = when (playerControlsColors) {
         PlayerControlsColors.Cover -> dynamicColorPalette.accent
@@ -471,11 +480,11 @@ fun ControlsModern(
           },
           modifier = Modifier
               .size(55.dp)
-              .doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp)
+              .then(if (transportGlass) Modifier.playerTransportOuterShadow() else Modifier.doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp))
               .clip(uiRoundnessShape())
               .playerTransportAction(previousLabel)
               .alpha(if (previousEnabled) 1f else 0.38f)
-              .playerTransportSurface(transportFilm, settings = transportSettings)
+              .playerTransportSurface(transportFilm, settings = transportSettings, drawShadow = false)
       ) {
           Image(
               painter = painterResource(R.drawable.play_skip_back),
@@ -531,10 +540,10 @@ fun ControlsModern(
                       tint = Color.Black.copy(0.75f)
                   )
               }
-              if (!PlayerTransportRibbedSurface(transportFilm,
+              if (!PlayerTransportRibbedSurface(playFilm,
                       Modifier.rotate(rotationAngle), transportSettings)) Image(
                   painter = painterResource(R.drawable.a13shape),
-                  colorFilter = ColorFilter.tint(colorPalette().background2.copy(0.95f)),
+                  colorFilter = ColorFilter.tint(playFilm),
                   modifier = Modifier
                       .rotate(rotationAngle)
                       .dropShadow(
@@ -566,7 +575,7 @@ fun ControlsModern(
                   Image(
                       painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
                       contentDescription = null,
-                      colorFilter = ColorFilter.tint(playerTransportGlyph(controlsColorText, transportSettings, transportFilm)),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
+                      colorFilter = ColorFilter.tint(playerTransportGlyph(controlsColorText, transportSettings, playFilm)),
                       modifier = Modifier
                           .rotate(rotationAngle)
                           .align(Alignment.Center)
@@ -578,7 +587,7 @@ fun ControlsModern(
       else {
           CustomElevatedButton(
           glassTransport = true,
-              backgroundColor = playerTransportNativeFill(transportFilm, transportSettings),
+              backgroundColor = playerTransportNativeFill(playFilm, transportSettings),
               onClick = {
                   if (shouldBePlaying) {
                       if (binder == null) player.pause() else binder.gracefulPause()
@@ -594,13 +603,13 @@ fun ControlsModern(
                   else onShowSpeedPlayerDialog()
               },
               modifier = Modifier
-                  .doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp)
+                  .then(if (transportGlass) Modifier.playerTransportOuterShadow() else Modifier.doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp))
                   .clip(uiRoundnessShape())
 
                   .playerTransportAction(playPauseLabel)
                   .width(playerPlayButtonType.width.dp)
                   .height(playerPlayButtonType.height.dp)
-                  .playerTransportSurface(transportFilm, settings = transportSettings)
+                  .playerTransportSurface(playFilm, settings = transportSettings, drawShadow = false)
 
           ) {
 if (isBuffering && shouldBePlaying) {
@@ -619,7 +628,7 @@ if (isBuffering && shouldBePlaying) {
                   Image(
                       painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
                       contentDescription = null,
-                      colorFilter = ColorFilter.tint(playerTransportGlyph(controlsColorText, transportSettings, transportFilm)),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
+                      colorFilter = ColorFilter.tint(playerTransportGlyph(controlsColorText, transportSettings, playFilm)),
                       modifier = Modifier
                           .rotate(rotationAngle)
                           .align(Alignment.Center)
@@ -661,11 +670,11 @@ if (isBuffering && shouldBePlaying) {
         },
         modifier = Modifier
             .size(55.dp)
-            .doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp)
+            .then(if (transportGlass) Modifier.playerTransportOuterShadow() else Modifier.doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp))
             .clip(uiRoundnessShape())
             .playerTransportAction(nextLabel)
             .alpha(if (nextEnabled) 1f else 0.38f)
-            .playerTransportSurface(transportFilm, settings = transportSettings)
+            .playerTransportSurface(transportFilm, settings = transportSettings, drawShadow = false)
 
       ) {
           Image(

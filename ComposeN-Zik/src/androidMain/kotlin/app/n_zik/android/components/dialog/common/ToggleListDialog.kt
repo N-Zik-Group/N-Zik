@@ -328,6 +328,7 @@ private fun ToggleRow(
 
         if (onRowAction != null) {
             IconButton(
+                foregroundFilm = surfaceColor(colorPalette().background2),
                 onClick = { onRowAction() },
                 modifier = Modifier
                     .size(24.dp)

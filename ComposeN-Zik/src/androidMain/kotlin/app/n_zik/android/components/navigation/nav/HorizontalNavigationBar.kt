@@ -61,7 +61,8 @@ import androidx.navigation.NavController
 import app.n_zik.android.core.navigation.currentSearchShortcutRoute
 import app.n_zik.android.core.navigation.shouldShowSearchShortcut
 import app.n_zik.android.colorPalette
-import app.n_zik.android.surfaceColor
+import app.n_zik.android.navigationSurfaceColor
+import app.n_zik.android.isPitchBlackSurface
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.enums.NavigationBarType
@@ -350,7 +351,7 @@ class HorizontalNavigationBar(
                 }
 
 
-                val backgroundColor = surfaceColor(colorPalette().background1)
+                val backgroundColor = navigationSurfaceColor()
 
                 Box(
                     modifier = Modifier
@@ -362,7 +363,7 @@ class HorizontalNavigationBar(
                             Modifier.background(colorPalette().background0) else Modifier)
                         .then(if (useGlass) Modifier else Modifier.clip(roundedCornerShape))
                         .then(if (useGlass) Modifier
-                              else Modifier.background(if (isFloating) backgroundColor.copy(alpha = 0.95f) else backgroundColor)
+                              else Modifier.background(if (isFloating && !isPitchBlackSurface()) backgroundColor.copy(alpha = 0.95f) else backgroundColor)
                                   .glassAreaContour(glassSettings, GlassArea.Nav, roundedCornerShape))
                 ) {
 

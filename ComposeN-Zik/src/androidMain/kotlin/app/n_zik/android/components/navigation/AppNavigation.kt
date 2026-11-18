@@ -4,7 +4,7 @@ import app.n_zik.android.components.settings.appearance.preview.LocalThemePrevie
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.glassNativeSurfaceTint
-import app.n_zik.android.surfaceColor
+import app.n_zik.android.navigationSurfaceColor
 import app.n_zik.android.LocalBottomBarOffset
 import app.n_zik.android.components.navigation.dock.LocalFloatingDock
 import app.n_zik.android.components.navigation.dock.PersistentHorizontalNavigation
@@ -395,9 +395,10 @@ fun AppNavigation(
     val statusBarRightPx = WindowInsets.safeDrawing.getRight(density, androidx.compose.ui.unit.LayoutDirection.Ltr)
     val headerRowHeightPx = with(density) { (if (hasSideNavBarVisible) 0.dp else APP_HEADER_HEIGHT).toPx() }
     val headerHeightPx = with(density) { (if (hasSideNavBarVisible) 0.dp else APP_HEADER_HEIGHT).roundToPx() } + statusBarTopPx
-    val navBaseColor = surfaceColor(colorPalette().background1)
+    val navBaseColor = navigationSurfaceColor()
     val navStatusColor = if (glassSettings.usesGlassMaterial(GlassArea.Nav)) {
-        val tinted = glassNativeSurfaceTint(glassSettings, navBaseColor)
+        // Glass coverage belongs to the film slider, independently of native navigation alpha.
+        val tinted = glassNativeSurfaceTint(glassSettings, navBaseColor.copy(alpha = 1f))
         tinted.copy(alpha = tinted.alpha * glassSettings.film.coerceIn(0f, 1f))
     } else navBaseColor
     val homeTopMiniAnchor = LocalHomeTopMiniPlayerAnchor.current

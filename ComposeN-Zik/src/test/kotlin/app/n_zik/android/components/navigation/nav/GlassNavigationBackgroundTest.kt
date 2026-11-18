@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,21 +20,30 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.ModernBlackColorPalette
 import app.n_zik.android.ui.styling.Typography
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
+import app.n_zik.android.colorPalette
+import app.n_zik.android.R
+import app.n_zik.android.surfaceColor
+import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.utils.colorPaletteModeKey
 import app.n_zik.android.components.glass.GlassQuality
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassTintSource
@@ -60,6 +70,91 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassNavigationBackgroundTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `dark navigation tabs retain readable neutral ink on a custom white film`() {
+        var optical by mutableStateOf(false)
+        var enabled by mutableStateOf(true)
+        compose.setContent {
+            val shape = RoundedCornerShape(0.dp)
+            val backdrop = rememberCanvasBackdrop { drawRect(Color.Black) }
+            CompositionLocalProvider(LocalAppearance provides Appearance(ModernBlackColorPalette,
+                Typography.fallback, shape, shape, shape), LocalGlassBackdrop provides if (optical) backdrop else null) {
+                GlassNavigationTabs(0, listOf(0, 1), {},
+                    GlassSettings(enabled = enabled, source = GlassTintSource.Custom,
+                        customColor = Color.White.toArgb(), tintStrength = 1f, film = 1f,
+                        rim = 0f, blur = 0f, vibrancy = 0f, indicatorOpacity = 0f), false,
+                    Modifier.size(200.dp, 56.dp)) {
+                    GlassNavigationTab("Selected", R.drawable.play, true, true, Color.White, onClick = {})
+                    GlassNavigationTab("Other", R.drawable.play, false, true, Color.Magenta, onClick = {})
+                }
+            }
+        }
+        fun hasInk(index: Int, ink: Color): Boolean {
+            val pixels = compose.onAllNodesWithTag("horizontalNavigationTabIcon", useUnmergedTree = true)[index]
+                .captureToImage().toPixelMap()
+            return (0 until pixels.height).any { y -> (0 until pixels.width).any { x -> pixels[x, y] == ink } }
+        }
+        for (live in listOf(false, true)) {
+            compose.runOnIdle { optical = live }
+            assertTrue("Selected neutral glyph adapts on the actual white plate", hasInk(0, Color.Black))
+            assertTrue("Chromatic tab roles stay exact", hasInk(1, Color.Magenta))
+        }
+        compose.runOnIdle { enabled = false }
+        assertTrue("Native navigation retains the caller's original role", hasInk(0, Color.White))
+    }
+
+    @Test fun `selected white film ink follows the rendered wash throughout a held optical press`() {
+        compose.setContent {
+            val shape = RoundedCornerShape(0.dp)
+            val backdrop = rememberCanvasBackdrop { drawRect(Color.Black) }
+            CompositionLocalProvider(LocalAppearance provides Appearance(ModernBlackColorPalette.copy(text = Color.White),
+                Typography.fallback, shape, shape, shape), LocalGlassBackdrop provides backdrop) {
+                Box(Modifier.size(200.dp, 64.dp).testTag("pressedNavigation")) {
+                    GlassNavigationTabs(0, listOf(0, 1), {},
+                        GlassSettings(source = GlassTintSource.Custom, customColor = Color.White.toArgb(),
+                            tintStrength = 1f, film = 1f, indicatorOpacity = 1f,
+                            blur = 0f, rim = 0f, depth = 0f, amount = 0f, vibrancy = 0f),
+                        false, Modifier.fillMaxSize()) {
+                        GlassNavigationTab("Selected", R.drawable.play, true, true, Color.White, onClick = {})
+                        GlassNavigationTab("Other", R.drawable.play, false, true, Color.Magenta, onClick = {})
+                    }
+                }
+            }
+        }
+        fun assertVisibleInk(expected: Color) {
+            val root = compose.onNodeWithTag("pressedNavigation")
+            val rootBounds = root.fetchSemanticsNode().boundsInRoot
+            val pixels = root.captureToImage().toPixelMap()
+            val icon = compose.onAllNodesWithTag("horizontalNavigationTabIcon", useUnmergedTree = true)[0]
+            val label = compose.onNodeWithText("Selected")
+            for (node in listOf(icon, label)) {
+                val bounds = node.fetchSemanticsNode().boundsInRoot
+                val left = (bounds.left - rootBounds.left).toInt().coerceAtLeast(0)
+                val top = (bounds.top - rootBounds.top).toInt().coerceAtLeast(0)
+                val right = (bounds.right - rootBounds.left).toInt().coerceAtMost(pixels.width)
+                val bottom = (bounds.bottom - rootBounds.top).toInt().coerceAtMost(pixels.height)
+                assertTrue("Selected icon and label remain visible with $expected ink", (top until bottom).any { y ->
+                    (left until right).any { x ->
+                        val color = pixels[x, y]
+                        kotlin.math.abs(color.red - expected.red) < .04f &&
+                            kotlin.math.abs(color.green - expected.green) < .04f &&
+                            kotlin.math.abs(color.blue - expected.blue) < .04f
+                    }
+                })
+            }
+        }
+        assertVisibleInk(Color.White)
+        compose.mainClock.autoAdvance = false
+        compose.onNodeWithTag("pressedNavigation").performTouchInput {
+            down(Offset(width / 4f, center.y))
+        }
+        compose.mainClock.advanceTimeBy(600)
+        assertVisibleInk(Color.Black)
+        compose.onNodeWithTag("pressedNavigation").performTouchInput { up() }
+        compose.mainClock.autoAdvance = true
+        compose.waitForIdle()
+        assertVisibleInk(Color.White)
+    }
 
     @Before fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
@@ -151,6 +246,50 @@ class GlassNavigationBackgroundTest {
         assertFill(Color.Blue)
         compose.runOnIdle { settings = settings.copy(enabled = false, nav = true) }
         assertFill(Color.Blue)
+    }
+
+    @Test fun `native PitchBlack navigation matches dropdown coverage and restores the dark palette`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        context.preferences.edit().putString(colorPaletteModeKey, ColorPaletteMode.PitchBlack.name).commit()
+        val background = Color.Red
+        val nativeColor = Color.Blue.copy(alpha = .7f)
+        var palette by mutableStateOf(ColorPalette.fallback.copy(background0 = Color.Black, background1 = nativeColor))
+        compose.setContent {
+            val shape = RoundedCornerShape(0.dp)
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                palette,
+                Typography.fallback, shape, shape, shape,
+            )) {
+                Column {
+                    Box(Modifier.size(160.dp, 64.dp).background(background).testTag("native-pitch-black")) {
+                        GlassNavigationTabs(0, listOf(0, 1), {}, GlassSettings(enabled = false),
+                            false, Modifier.fillMaxSize()) {
+                            Box(Modifier.fillMaxSize())
+                            Box(Modifier.fillMaxSize())
+                        }
+                    }
+                    // Same native container role used by the hamburger's DropdownMenu.
+                    Box(Modifier.size(160.dp, 64.dp).background(background).testTag("dropdown-pitch-black")) {
+                        Box(Modifier.fillMaxSize().background(surfaceColor(colorPalette().background0).copy(alpha = .90f)))
+                    }
+                }
+            }
+        }
+        fun sample(tag: String): Color {
+            val pixels = compose.onNodeWithTag(tag).captureToImage().toPixelMap()
+            return pixels[pixels.width * 3 / 4, pixels.height / 2]
+        }
+        assertColor(Color(0xFF1A1A1A).copy(alpha = .90f).compositeOver(background),
+            sample("native-pitch-black"), "PitchBlack coverage")
+        assertColor(sample("dropdown-pitch-black"), sample("native-pitch-black"), "dropdown parity")
+        compose.runOnIdle {
+            context.preferences.edit().putString(colorPaletteModeKey, ColorPaletteMode.Dark.name).commit()
+        }
+        assertColor(nativeColor.compositeOver(background), sample("native-pitch-black"), "restored Dark coverage")
+        compose.runOnIdle { palette = ModernBlackColorPalette }
+        assertColor(Color(0xFF1A1A1A).copy(alpha = .90f).compositeOver(background),
+            sample("native-pitch-black"), "ModernBlack native coverage")
+        assertColor(sample("dropdown-pitch-black"), sample("native-pitch-black"), "ModernBlack dropdown parity")
     }
 
     @Test fun `external parent film and content remain behind the selector at rest and throughout pressure`() {

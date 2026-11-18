@@ -71,7 +71,7 @@ internal class DynamicAppearanceOwner(
         cancel()
         if (!isDynamic()) return
         val mode = preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
-        val dark = mode == ColorPaletteMode.Dark || mode == ColorPaletteMode.PitchBlack ||
+        val dark = mode == ColorPaletteMode.Dark || (mode == ColorPaletteMode.PitchBlack || mode == ColorPaletteMode.PureBlack) ||
             (mode == ColorPaletteMode.System && systemIsDark())
         val artwork = Artwork(url, dark)
         currentArtwork = artwork

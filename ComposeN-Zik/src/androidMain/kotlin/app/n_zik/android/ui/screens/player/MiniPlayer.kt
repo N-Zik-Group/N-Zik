@@ -196,7 +196,9 @@ import app.n_zik.android.components.player.GlassMiniPlayerIconButton
 import app.n_zik.android.components.player.rememberPlayerSkipAvailability
 import app.n_zik.android.playback.utils.playNextIfAvailable
 import app.n_zik.android.playback.utils.seekPreviousIfAvailable
+import app.n_zik.android.components.player.miniPlayerPlayPauseGlyphColor
 import app.n_zik.android.components.player.GlassMiniPlayerPlayPauseButton
+import app.n_zik.android.components.player.playButtonNativeColor
 import app.n_zik.android.components.player.SwipeActionLatch
 import app.n_zik.android.components.player.WithDoubledTouchSlop
 import app.n_zik.android.components.player.rememberMiniPlayerSheetGestureState
@@ -204,7 +206,9 @@ import app.n_zik.android.components.player.miniPlayerSwipeAction
 import app.n_zik.android.components.player.monochromeControlsColor
 import androidx.compose.foundation.isSystemInDarkTheme
 import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.utils.colorPaletteModeKey
+import app.n_zik.android.utils.colorPaletteNameKey
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.ui.components.themed.IconButton
@@ -514,6 +518,7 @@ fun MiniPlayer(
             .collect { dismissState.reset() }
     }
     val backgroundProgress by rememberPreference(backgroundProgressKey, BackgroundProgress.MiniPlayer)
+    val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
     val effectRotationEnabled by rememberPreference(effectRotationKey, false)
     val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = stringResource(R.string.player_debug_should_be_playing))
     val playPauseRoundness by shouldBePlayingTransition.animateDp(
@@ -559,14 +564,11 @@ fun MiniPlayer(
     val controlMaterial = rememberMiniPlayerControlBackdrop(
         if (useGlass) parentMaterial else null, controlsBackdrop, miniBodyProgress,
     )
-    // Controls apply their optics once to the same source as the body. Native bodies
-    // still export their actual fill/progress for independently enabled child badges.
+    // Keep the raw scene available to other descendants, while controls sample the
+    // material-only export so the moving progress remains visible through their seats.
     val controlSource = if (!useGlass) controlMaterial
         else if (glassBackdrop === parentMaterial) LocalGlassMaterialSource.current ?: glassBackdrop
         else glassBackdrop
-    // Some controls need the rendered body when the body is native or the film is
-    // zero. Otherwise they sample the independent scene directly.
-    val exportControlBody = !useGlass || glass.film <= 0f || controlSource == null
     val visibleMiniPlayerBackdrop = rememberLayerBackdrop()
     val miniOverlayBackdrop = glassSceneOverlayBackdrop(visibleMiniPlayerBackdrop)
     val shape = uiRoundnessShape()
@@ -701,8 +703,12 @@ fun MiniPlayer(
                 .clip(shape)
                 .glassMiniPlayerBodyVisibility(glass, miniBodyProgress)
                 .glassMiniPlayerBackground(
-                    glass, shape, glassBackdrop, surfaceColor(colorPalette.background2),
-                    exportedBackdrop = controlsBackdrop.takeIf { exportControlBody },
+                    glass, shape, glassBackdrop,
+                    when (colorPaletteName) {
+                        ColorPaletteName.PureBlack, ColorPaletteName.ModernBlack -> Color.Black
+                        else -> surfaceColor(colorPalette.background2)
+                    },
+                    exportedBackdrop = controlsBackdrop,
                     foldInProgress = folding.takeIf { isFloating || NavigationBarPosition.Bottom.isCurrent() },
                     progressColor = colorPalette.favoritesOverlay,
                     progressFraction = {
@@ -833,7 +839,9 @@ fun MiniPlayer(
                                 }
                                 if (effectRotationEnabled) isRotated = !isRotated
                             },
-                            backgroundColor = colorPalette().background2,
+                            backgroundColor = playButtonNativeColor(
+                                colorPaletteName, colorPalette().background2, colorPaletteMode,
+                            ),
                             contentDescription = stringResource(
                                 if (shouldBePlaying) R.string.player_notification_pause else R.string.player_action_play,
                             ),
@@ -854,7 +862,7 @@ fun MiniPlayer(
                                 Image(
                                     painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
                                     contentDescription = null,
-                                    colorFilter = ColorFilter.tint(controlsColorText),
+                                    colorFilter = ColorFilter.tint(miniPlayerPlayPauseGlyphColor(glass, controlsColorText)),
                                     modifier = Modifier
                                         .rotate(rotationAngle)
                                         .align(Alignment.Center)

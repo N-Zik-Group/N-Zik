@@ -34,6 +34,10 @@ import app.n_zik.android.components.glass.glassMenuTrigger
 import androidx.compose.runtime.SideEffect
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.effectiveSurfaceColor
+import app.n_zik.android.components.glass.glassFilmColor
+import app.n_zik.android.components.glass.readableGlyphForeground
+import app.n_zik.android.components.glass.surfaceBackdropColor
 
 /** Matches the visible N-ZIK logo bounds without resizing its glyphs. */
 internal val HeaderActionCanvasSize = 36.dp
@@ -52,6 +56,11 @@ internal fun HeaderIcon(
     onClick: () -> Unit
 ) {
     val glass = rememberGlassSettings()
+    val material = glass.usesGlassMaterial(GlassArea.Header)
+    val filmRole = surfaceColor(colorPalette().background1)
+    val foreground = if (material) readableGlyphForeground(tint, effectiveSurfaceColor(
+        surfaceBackdropColor(), glassFilmColor(glass.forArea(GlassArea.Header), filmRole, menu = false),
+    )) else tint
     val icon: @Composable () -> Unit = {
         Icon(
             imageVector = ImageVector.vectorResource(iconId),
@@ -62,15 +71,15 @@ internal fun HeaderIcon(
                 else -> R.string.common_menu_label
             }),
             modifier = Modifier.size(if (glass.usesGlassMaterial(GlassArea.Header)) GlassActionIconSize else size),
-            tint = tint,
+            tint = foreground,
         )
     }
-    if (glass.usesGlassMaterial(GlassArea.Header)) {
+    if (material) {
         LiquidButton(
             onClick = onClick,
             backdrop = LocalGlassBackdrop.current,
             settings = glass.forArea(GlassArea.Header),
-            filmColor = surfaceColor(colorPalette().background1),
+            filmColor = filmRole,
             modifier = modifier.size(HeaderActionCanvasSize),
             contentHeight = HeaderActionCanvasSize,
             contentPadding = 0.dp,

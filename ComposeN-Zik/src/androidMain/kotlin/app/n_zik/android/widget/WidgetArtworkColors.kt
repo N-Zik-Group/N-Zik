@@ -26,9 +26,9 @@ internal fun widgetArtworkPalette(context: Context, snapshot: ArtworkColorSnapsh
     val preferences = context.preferences
     val systemDark = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
     val mode = preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
-    val dark = mode == ColorPaletteMode.Dark || mode == ColorPaletteMode.PitchBlack || mode == ColorPaletteMode.System && systemDark
+    val dark = mode == ColorPaletteMode.Dark || (mode == ColorPaletteMode.PitchBlack || mode == ColorPaletteMode.PureBlack) || mode == ColorPaletteMode.System && systemDark
     val keepDark = preferences.getBoolean(dynamicThemeRespectBrightnessKey, DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT)
     val palette = snapshot?.display(dark, keepDark)?.palette
         ?: colorPaletteOf(ColorPaletteName.Dynamic, mode, systemDark)
-    return if (mode == ColorPaletteMode.PitchBlack) palette.applyPitchBlack else palette
+    return if (mode == ColorPaletteMode.PitchBlack || mode == ColorPaletteMode.PureBlack) palette.applyPitchBlack else palette
 }

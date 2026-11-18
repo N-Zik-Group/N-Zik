@@ -15,6 +15,12 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.components.glass.effectiveSurfaceColor
+import app.n_zik.android.components.glass.glassFilmColor
+import app.n_zik.android.components.glass.readableForeground
+import app.n_zik.android.components.glass.readableGlyphForeground
+import app.n_zik.android.components.glass.surfaceBackdropColor
+import app.n_zik.android.components.glass.TextContrast
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.GlassSettings
@@ -97,4 +103,31 @@ internal fun Modifier.searchOverlayAction(
         .clickable(interactionSource = source,
             indication = if (material) null else glassGlobalIndication(if (nativeIndication) LocalIndication.current else null),
             onClick = onClick)
+}
+
+/** Mirror the material's role film and apply the overlay scrim only to the page source. */
+@Composable
+internal fun searchOverlaySurfaceColor(
+    fill: Color,
+    area: GlassArea = GlassArea.ActionButtons,
+    settings: GlassSettings = rememberGlassSettings().inScope(GlassScope.Search),
+): Color? {
+    if (!settings.usesGlassMaterial(area)) return null
+    val scrim = if (LocalGlassMaterialSource.current != null || LocalGlassContainerBackdrop.current != null)
+        Color.Transparent else Color.Black.copy(alpha = .85f)
+    return effectiveSurfaceColor(surfaceBackdropColor(),
+        glassFilmColor(settings.forArea(area), fill, menu = false), scrim)
+}
+
+/** Explicit labels and glyphs cannot inherit the palette's surface adjustment. */
+@Composable
+internal fun searchOverlayForegroundColor(
+    original: Color,
+    fill: Color,
+    area: GlassArea = GlassArea.ActionButtons,
+    glyph: Boolean = false,
+): Color {
+    val surface = searchOverlaySurfaceColor(fill, area) ?: return original
+    return if (glyph) readableGlyphForeground(original, surface)
+        else readableForeground(original, surface, TextContrast)
 }

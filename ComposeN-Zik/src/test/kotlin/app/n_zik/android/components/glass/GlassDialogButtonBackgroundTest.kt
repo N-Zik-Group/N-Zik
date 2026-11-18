@@ -1,6 +1,8 @@
 package app.n_zik.android.components.glass
 
 import android.app.Application
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -227,6 +229,41 @@ class GlassDialogButtonBackgroundTest {
         compose.runOnIdle { config.value = original.copy(quality = GlassQuality.Performance) }
         check(role.value.copy(alpha = glassFilmOpacity(.5f, overlay = true, fallback = true))
             .compositeOver(originalSurface))
+    }
+
+    @Test @Config(sdk = [32])
+    fun `outlined dialog label follows its own role film and preserves colored content`() {
+        val role = mutableStateOf(Color.White)
+        var label = Color.Unspecified
+        var semantic = Color.Unspecified
+        val settings = GlassSettings(quality = GlassQuality.Performance, film = 1f,
+            tintStrength = 0f, rim = 0f, depth = 0f)
+        compose.setContent {
+            val shape = RoundedCornerShape(12.dp)
+            CompositionLocalProvider(LocalGlassPreviewSettings provides settings,
+                LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                    typographyOf(Color.White, true, false, FontType.Rubik), shape, shape, shape)) {
+                GlassDialogOutlinedButton({}, foregroundFilm = role.value,
+                    modifier = Modifier.testTag("role.button")
+                        .glassDialogButtonBackground(role.value, shape, settings = settings),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)) {
+                    Text("Own film", onTextLayout = { label = it.layoutInput.style.color })
+                    Text("Semantic", color = Color.Magenta,
+                        onTextLayout = { semantic = it.layoutInput.style.color })
+                }
+            }
+        }
+        compose.runOnIdle {
+            assertEquals(Color.Black, label)
+            assertEquals(Color.Magenta, semantic)
+        }
+        val image = compose.onNodeWithTag("role.button").captureToImage().toPixelMap()
+        assertColor(Color.White, image[8, image.height / 2])
+        compose.runOnIdle { role.value = Color.Black }
+        compose.runOnIdle {
+            assertEquals(Color.White, label)
+            assertEquals(Color.Magenta, semantic)
+        }
     }
 
     private fun assertColor(expected: Color, actual: Color) {

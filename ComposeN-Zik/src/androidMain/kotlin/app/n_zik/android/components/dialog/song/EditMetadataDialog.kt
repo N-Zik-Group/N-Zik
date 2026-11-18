@@ -31,6 +31,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -55,6 +56,7 @@ import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.coil.rememberThemedImageLoadingPainter
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -425,19 +427,29 @@ class EditMetadataDialog internal constructor(
             if (coverBytes != null) {
                 // Keyed on the bytes: a new pick cancels the previous decode, so only the latest
                 // image is ever shown.
-                val bitmap = produceState<Bitmap?>(initialValue = null, coverBytes) {
-                    value = decodeCoverBitmap(coverBytes)
-                }.value
-                if (bitmap != null) {
-                    Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = stringResource(R.string.metadata_cover_art),
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .glassImageRim(RoundedCornerShape(8.dp))
-                    )
+                key(coverBytes) {
+                    val decoded by produceState<Pair<Boolean, Bitmap?>>(initialValue = false to null, coverBytes) {
+                        value = true to decodeCoverBitmap(coverBytes)
+                    }
+                    val bitmap = decoded.second
+                    val coverModifier = Modifier.size(56.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .glassImageRim(RoundedCornerShape(8.dp))
+                    if (bitmap != null) {
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = stringResource(R.string.metadata_cover_art),
+                            contentScale = ContentScale.Crop,
+                            modifier = coverModifier,
+                        )
+                    } else if (!decoded.first) {
+                        Image(
+                            painter = rememberThemedImageLoadingPainter(coverBytes),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = coverModifier,
+                        )
+                    }
                 }
             } else {
                 Canvas(
@@ -449,6 +461,7 @@ class EditMetadataDialog internal constructor(
             }
 
             OutlinedButton(
+                foregroundFilm = surfaceColor(colorPalette().background2),
                 onClick = onChangeCover,
                 modifier = Modifier
                     .weight(1f)

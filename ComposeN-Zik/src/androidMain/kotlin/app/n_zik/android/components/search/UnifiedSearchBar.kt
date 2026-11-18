@@ -59,6 +59,13 @@ import app.n_zik.android.components.glass.GlassMaterialContainerScope
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.LiquidButton
+import app.n_zik.android.components.glass.glassFilmColor
+import app.n_zik.android.components.glass.readableForeground
+import app.n_zik.android.components.glass.readableGlyphForeground
+import app.n_zik.android.components.glass.surfaceBackdropColor
+import app.n_zik.android.components.glass.TextContrast
+import app.n_zik.android.components.glass.SurfaceForegroundContent
+import app.n_zik.android.components.glass.effectiveSurfaceColor
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.glassSearchBarBackground
@@ -149,9 +156,14 @@ fun UnifiedSearchBar(
         val pageFill = colorPalette().background0
         val glassBar = glassSettings.usesGlassMaterial(GlassArea.SearchBars)
         val sourceBackdrop = rememberInlineGlassBackdrop(pageFill)
+        val foregroundFill = if (glassBar) glassFilmColor(
+            glassSettings.forArea(GlassArea.SearchBars), barFill, menu = false,
+        ) else barFill
+        val barSurface = effectiveSurfaceColor(pageFill, foregroundFill)
         GlassMaterialContainerScope(
             modifier = Modifier.weight(1f),
             materialSource = sourceBackdrop.takeIf { glassBar },
+            foregroundFill = foregroundFill.takeIf { glassBar },
             sectionFilm = if (glassBar) null else barFill.compositeOver(pageFill),
             material = if (glassBar) { exported ->
                 Modifier.glassSearchBarBackground(
@@ -181,57 +193,63 @@ fun UnifiedSearchBar(
                     .padding(horizontal = 20.dp, vertical = 16.dp)
                     .testTag("unified_search_bar"),
             ) {
-                CompositionLocalProvider(LocalGlassMaterialSource provides LocalGlassContainerBackdrop.current) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        LeadingIconBadge(
-                            iconRes = R.drawable.search,
-                            contentDescription = stringResource(R.string.search_title),
-                            modifier = Modifier.size(20.dp),
-                        )
+                SearchBarForegroundContent(barSurface.takeIf { glassBar }) {
+                    CompositionLocalProvider(LocalGlassMaterialSource provides LocalGlassContainerBackdrop.current) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            LeadingIconBadge(
+                                iconRes = R.drawable.search,
+                                contentDescription = stringResource(R.string.search_title),
+                                modifier = Modifier.size(20.dp),
+                            )
 
-                        Spacer(modifier = Modifier.width(12.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
 
-                        BasicTextField(
-                            value = input,
-                            onValueChange = { newValue ->
-                                onInputChanged(
-                                    newValue.copy(
-                                        text = newValue.text,
-                                        selection = newValue.selection
+                            BasicTextField(
+                                value = input,
+                                onValueChange = { newValue ->
+                                    onInputChanged(
+                                        newValue.copy(
+                                            text = newValue.text,
+                                            selection = newValue.selection
+                                        )
                                     )
-                                )
-                            },
-                            textStyle = typography().xs.semiBold,
-                            singleLine = true,
-                            maxLines = 1,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            keyboardActions = KeyboardActions(onSearch = {
-                                onSearch()
-                                keyboardController?.hide()
-                                focusManager.clearFocus(force = true)
-                            }),
-                            cursorBrush = SolidColor(colorPalette().text),
-                            decorationBox = { innerTextField ->
-                                if (input.text.isEmpty()) {
-                                    BasicText(
-                                        text = stringResource(placeholderRes),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        style = typography().xs.semiBold.secondary,
-                                    )
-                                }
+                                },
+                                textStyle = typography().xs.semiBold.let {
+                                    if (glassBar) it.copy(color = readableForeground(it.color, barSurface, TextContrast)) else it
+                                },
+                                singleLine = true,
+                                maxLines = 1,
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                                keyboardActions = KeyboardActions(onSearch = {
+                                    onSearch()
+                                    keyboardController?.hide()
+                                    focusManager.clearFocus(force = true)
+                                }),
+                                cursorBrush = SolidColor(if (glassBar) readableGlyphForeground(colorPalette().text, barSurface) else colorPalette().text),
+                                decorationBox = { innerTextField ->
+                                    if (input.text.isEmpty()) {
+                                        BasicText(
+                                            text = stringResource(placeholderRes),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            style = typography().xs.semiBold.secondary.let {
+                                                if (glassBar) it.copy(color = readableForeground(it.color, barSurface, TextContrast)) else it
+                                            },
+                                        )
+                                    }
 
-                                innerTextField()
-                            },
-                            modifier = (
-                                if (textFieldTestTag != null) Modifier.weight(1f).testTag(textFieldTestTag)
-                                else Modifier.weight(1f)
-                                ).onFocusChanged { focused ->
-                                    isFocused = focused.isFocused
-                                    onFocused(focused.isFocused)
-                                }
-                                .focusRequester(focusRequester),
-                        )
+                                    innerTextField()
+                                },
+                                modifier = (
+                                    if (textFieldTestTag != null) Modifier.weight(1f).testTag(textFieldTestTag)
+                                    else Modifier.weight(1f)
+                                    ).onFocusChanged { focused ->
+                                        isFocused = focused.isFocused
+                                        onFocused(focused.isFocused)
+                                    }
+                                    .focusRequester(focusRequester),
+                            )
+                        }
                     }
                 }
             }
@@ -277,14 +295,20 @@ fun UnifiedSearchBar(
 @Composable
 internal fun SearchBarBubbleButton(bubble: SearchBarBubble, glassSettings: GlassSettings) {
     val actionShape = uiRoundnessShape()
-    if (glassSettings.usesGlassMaterial(GlassArea.SearchBars)) {
+    val bubbleFill = surfaceColor(colorPalette().background2)
+    val glassBubble = glassSettings.usesGlassMaterial(GlassArea.SearchBars)
+    val bubbleSurface = effectiveSurfaceColor(surfaceBackdropColor(), if (glassBubble)
+        glassFilmColor(glassSettings.forArea(GlassArea.SearchBars), bubbleFill, menu = false) else bubbleFill)
+    val nativeInk = if (bubble.active) colorPalette().text else colorPalette().favoritesIcon
+    val bubbleInk = if (glassBubble) readableGlyphForeground(nativeInk, bubbleSurface) else nativeInk
+    if (glassBubble) {
         val backdrop = rememberInlineGlassBackdrop(colorPalette().background0)
         LiquidButton(
             onClick = bubble.onClick,
             backdrop = backdrop,
             modifier = Modifier.size(48.dp).testTag("unified_search_bubble_${bubble.iconRes}"),
             settings = glassSettings.forArea(GlassArea.SearchBars),
-            filmColor = surfaceColor(colorPalette().background2),
+            filmColor = bubbleFill,
             contentHeight = 48.dp,
             contentPadding = 0.dp,
             shape = actionShape,
@@ -292,7 +316,7 @@ internal fun SearchBarBubbleButton(bubble: SearchBarBubble, glassSettings: Glass
             Icon(
                 painter = painterResource(bubble.iconRes),
                 contentDescription = stringResource(bubble.contentDescriptionRes),
-                tint = if (bubble.active) colorPalette().text else colorPalette().favoritesIcon,
+                tint = bubbleInk,
                 modifier = Modifier.size(20.dp),
             )
         }
@@ -306,7 +330,7 @@ internal fun SearchBarBubbleButton(bubble: SearchBarBubble, glassSettings: Glass
             .size(48.dp)
             .glassSearchBarBackground(
                 backgroundColor = colorPalette().background0,
-                containerColor = surfaceColor(colorPalette().background2),
+                containerColor = bubbleFill,
                 shape = shape,
                 shadowColor = Color.Transparent,
                 settings = glassSettings,
@@ -319,8 +343,13 @@ internal fun SearchBarBubbleButton(bubble: SearchBarBubble, glassSettings: Glass
         Icon(
             painter = painterResource(bubble.iconRes),
             contentDescription = stringResource(bubble.contentDescriptionRes),
-            tint = if (bubble.active) colorPalette().text else colorPalette().favoritesIcon,
+            tint = bubbleInk,
             modifier = Modifier.size(20.dp),
         )
     }
+}
+
+@Composable
+private fun SearchBarForegroundContent(surface: Color?, content: @Composable () -> Unit) {
+    if (surface == null) content() else SurfaceForegroundContent(surface, content = content)
 }

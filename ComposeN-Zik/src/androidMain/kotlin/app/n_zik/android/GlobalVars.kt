@@ -9,12 +9,15 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.enums.ColorPaletteName
+import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.ui.styling.BoundedCornerSize
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.ModernBlackColorPalette
 import app.n_zik.android.ui.styling.PureBlackColorPalette
 import app.n_zik.android.utils.autosyncKey
 import app.n_zik.android.utils.colorPaletteModeKey
+import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.utils.bassboostEnabledKey
 import app.n_zik.android.utils.handleAudioFocusEnabledKey
 import app.n_zik.android.utils.isConnectionMeteredEnabledKey
@@ -121,23 +124,56 @@ fun isHandleAudioFocusEnabled() = appContext().preferences.getBoolean(handleAudi
 fun isPauseOnHeadphoneDisconnectEnabled() = appContext().preferences.getBoolean(pauseOnHeadphoneDisconnectKey, true)
 fun isBassBoostEnabled() = appContext().preferences.getBoolean(bassboostEnabledKey, false)
 
-/** Surface color for elevated components (cards, sheets, burger menu, navigation bar): [base] normally, dark gray in pitch black (see [isPitchBlackSurface]). */
-@Composable
-fun surfaceColor(base: Color): Color =
-    if (isPitchBlackSurface()) Color(0xFF1A1A1A) else base
-
-/** Darker menu and dialog content within elevated PitchBlack bands. */
-@Composable
-fun recessedSurfaceColor(base: Color): Color =
-    if (isPitchBlackSurface()) Color(0xFF101010) else base
-
-/** True when the active palette renders surfaces on pure black. */
-@Composable
-fun isPitchBlackSurface(): Boolean {
-    val colorPaletteMode = rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark).value
-    return colorPalette() === PureBlackColorPalette ||
-        colorPalette() === ModernBlackColorPalette ||
-        colorPaletteMode == ColorPaletteMode.PitchBlack
+/** Resolve native fills before Glass applies its own material and opacity. */
+internal fun nativeSurfaceColor(
+    base: Color,
+    mode: ColorPaletteMode,
+    blackPalette: Boolean,
+    recessed: Boolean = false,
+    navigation: Boolean = false,
+): Color = when {
+    mode == ColorPaletteMode.PureBlack -> if (navigation) Color.Black.copy(alpha = .90f) else Color.Black
+    mode == ColorPaletteMode.PitchBlack || blackPalette -> when {
+        navigation -> Color(0xFF1A1A1A).copy(alpha = .90f)
+        recessed -> Color(0xFF101010)
+        else -> Color(0xFF1A1A1A)
+    }
+    else -> base
 }
 
+/** Preference identity survives local palette copies used for foreground contrast. */
+internal fun hasBlackPaletteSurfaces(name: ColorPaletteName, palette: ColorPalette): Boolean =
+    name == ColorPaletteName.PureBlack || name == ColorPaletteName.ModernBlack ||
+        palette === PureBlackColorPalette || palette === ModernBlackColorPalette
 
+@Composable
+private fun nativeSurface(base: Color, recessed: Boolean = false, navigation: Boolean = false): Color {
+    val mode = rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark).value
+    val palette = colorPalette()
+    val name = rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic).value
+    return nativeSurfaceColor(
+        base, mode, hasBlackPaletteSurfaces(name, palette),
+        recessed, navigation,
+    )
+}
+
+/** Native raised surface, preserving each mode's coverage policy. */
+@Composable
+fun surfaceColor(base: Color): Color = nativeSurface(base)
+
+/** Native navigation coverage; Glass retains ownership of its own opacity. */
+@Composable
+fun navigationSurfaceColor(): Color = nativeSurface(colorPalette().background1, navigation = true)
+
+/** Native content surface within raised menus and dialogs. */
+@Composable
+fun recessedSurfaceColor(base: Color): Color = nativeSurface(base, recessed = true)
+
+/** Black modes and named black palettes share accent foreground and floating coverage rules. */
+@Composable
+fun isPitchBlackSurface(): Boolean {
+    val mode = rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark).value
+    val name = rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic).value
+    return hasBlackPaletteSurfaces(name, colorPalette()) ||
+        mode == ColorPaletteMode.PitchBlack || mode == ColorPaletteMode.PureBlack
+}

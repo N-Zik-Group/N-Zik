@@ -347,7 +347,7 @@ private val INITIALS_BACKGROUNDS = listOf(
  * The face avatar: a photo (URL or local file) over the deterministic initials, both
  * clipped to the artist roundness ([artistThumbnailShape] — the same shape the artist
  * logo uses). While the photo is loading the app-wide Coil loader shows (the same
- * `R.drawable.loader` placeholder the other thumbnails use); a failing photo load keeps
+ * static expressive placeholder the other thumbnails use); a failing photo load keeps
  * the initials visible, so the face always renders something (spec decision Q1). Every
  * logo of the app renders through this composable, so the treatment applies everywhere
  * it is called; the clickable callers clip to the shape before their `.clickable`,

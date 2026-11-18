@@ -64,7 +64,7 @@ internal fun toolbarItemShape(override: Shape? = null): Shape = override ?: uiRo
 
 private data class ToolbarStyle(val count: Int, val settings: GlassSettings,
     val cellWidth: Dp = GlassActionCellWidth, val wide: Boolean = false, val itemShape: Shape? = null,
-    val compact: Boolean = false)
+    val compact: Boolean = false, val grouped: Boolean = false)
 private val LocalToolbarStyle = staticCompositionLocalOf<ToolbarStyle?> { null }
 
 /** Retains the original toolbar controls and overflow; only their icon presentation changes. */
@@ -216,7 +216,7 @@ fun GlassToolbarColumn(
         Column(modifier, horizontalAlignment = Alignment.CenterHorizontally, content = content)
         return
     }
-    CompositionLocalProvider(LocalToolbarStyle provides ToolbarStyle(actionCount, settings, GlassStandaloneActionSize)) {
+    CompositionLocalProvider(LocalToolbarStyle provides ToolbarStyle(actionCount, settings, GlassStandaloneActionSize, grouped = true)) {
         GlassActionGroup(settings, GlassArea.ActionButtons,
             modifier.width(GlassStandaloneActionSize), separatorBefore = emptySet()) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, content = content)
@@ -229,7 +229,7 @@ fun GlassToolbarLoading(): Boolean {
     val style = LocalToolbarStyle.current ?: return false
     Box(Modifier.size(if (style.count == 1) GlassStandaloneActionSize else style.cellWidth, GlassActionCellHeight),
         contentAlignment = Alignment.Center) {
-        InlineCircularLoader(Modifier.size(GlassActionIconSize), color = glassArtworkForeground(style.settings, colorPalette().text, style.settings.usesGlassMaterial(GlassArea.ActionButtons)))
+        InlineCircularLoader(Modifier.size(GlassActionIconSize), color = toolbarForeground(style, colorPalette().text))
     }
     return true
 }
@@ -253,7 +253,7 @@ fun GlassToolbarIcon(
     val fallbackBackdrop = rememberCanvasBackdrop(drawBackground)
     val backdrop = LocalGlassContainerBackdrop.current ?: LocalGlassBackdrop.current ?: fallbackBackdrop
     val itemShape = toolbarItemShape(style.itemShape)
-    val foreground = glassArtworkForeground(style.settings, tint, style.settings.usesGlassMaterial(GlassArea.ActionButtons))
+    val foreground = toolbarForeground(style, tint, enabled)
     val glyph: @Composable () -> Unit = {
         val iconSize = if (style.wide && !style.compact) (size - 8.dp).coerceIn(GlassActionIconSize, 24.dp) else GlassActionIconSize
         Icon(icon, contentDescription, Modifier.size(iconSize).then(if (modifierOnContainer || style.compact) Modifier else modifier),
@@ -289,4 +289,13 @@ fun GlassToolbarIcon(
             shape = itemShape) { glyph() }
     }
     return true
+}
+
+/** Group cells inherit their capsule; only standalone controls composite another film. */
+@Composable
+private fun toolbarForeground(style: ToolbarStyle, color: Color, enabled: Boolean = true): Color {
+    if (!enabled || !style.settings.usesGlassMaterial(GlassArea.ActionButtons)) return color
+    if (style.count > 1 || style.grouped) return readableGlyphForeground(color, LocalGlassActionGroupSurface.current ?: surfaceBackdropColor())
+    val film = glassFilmColor(style.settings.forArea(GlassArea.ActionButtons), glassActionFilmColor(), menu = false)
+    return readableGlyphForeground(color, effectiveSurfaceColor(surfaceBackdropColor(), film))
 }

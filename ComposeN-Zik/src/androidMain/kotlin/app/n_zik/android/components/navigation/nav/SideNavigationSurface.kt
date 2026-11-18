@@ -11,7 +11,6 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.LayoutDirection
 import app.n_zik.android.enums.NavigationBarPosition
-import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassScreenEdge
 import app.n_zik.android.components.glass.GlassSettings
@@ -22,7 +21,7 @@ import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.glassMaterial
 import app.n_zik.android.components.glass.usesGlassMaterial
-import app.n_zik.android.surfaceColor
+import app.n_zik.android.navigationSurfaceColor
 import app.n_zik.android.uiRoundnessShape
 
 /** One side-panel silhouette for full navigation and header-only rails, with or without Glass. */
@@ -34,7 +33,7 @@ internal fun SideNavigationSurface(
 ) {
     val right = NavigationBarPosition.Right.isCurrent()
     val shape = sideNavigationBarShape(uiRoundnessShape(), right, LocalLayoutDirection.current)
-    val film = surfaceColor(colorPalette().background1)
+    val film = navigationSurfaceColor()
     val density = LocalDensity.current
     val safeInsets = WindowInsets.safeDrawing
     val edgeInset = if (right) safeInsets.getRight(density, LayoutDirection.Ltr)

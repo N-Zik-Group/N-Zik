@@ -100,6 +100,7 @@ inline fun StringListDialog(
                                 modifier = Modifier.weight(1f)
                             )
                             IconButton(
+                                foregroundFilm = surfaceColor(colorPalette().background2),
                                 onClick = {
                                     removingItem = item
                                     showStringRemoveDialog = true

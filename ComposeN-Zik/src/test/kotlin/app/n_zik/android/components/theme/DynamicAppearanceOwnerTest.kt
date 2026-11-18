@@ -214,6 +214,31 @@ class DynamicAppearanceOwnerTest {
         } finally { owner.close() }
     }
 
+    @Test fun `pure black on light system retains artwork accents through each track update`() = runTest {
+        val extractionModes = mutableListOf<Boolean>()
+        val owner = DynamicAppearanceOwner(preferences, this, { false }, { url, isDark ->
+            extractionModes += isDark
+            dynamicColorPaletteOf(if (url == "red") Color.Red else Color.Blue, isDark)
+        }, { appearance }, { next, _ -> appearance = next }, { bars += it }, { widgets += it },
+            StandardTestDispatcher(testScheduler))
+        preference(colorPaletteModeKey, "PureBlack")
+        owner.start()
+        try {
+            for (url in listOf("red", "blue")) {
+                owner.refresh(url)
+                testScheduler.runCurrent()
+                val expected = dynamicColorPaletteOf(if (url == "red") Color.Red else Color.Blue, true)
+                assertEquals(expected.accent, appearance.colorPalette.accent)
+                assertEquals(expected.onAccent, appearance.colorPalette.onAccent)
+                assertEquals(Color.Black, appearance.colorPalette.background0)
+                assertEquals(Color.Black, appearance.colorPalette.background4)
+                assertEquals(Color.White, appearance.typography.s.color)
+                assertTrue(bars.last())
+            }
+            assertEquals(listOf(true, true), extractionModes)
+        } finally { owner.close() }
+    }
+
     @Test fun `leaving Dynamic and disposing prevents late publication and preference callbacks`() = runTest {
         val pending = CompletableDeferred<ColorPalette>()
         val owner = DynamicAppearanceOwner(preferences, this, { true }, { _, _ ->

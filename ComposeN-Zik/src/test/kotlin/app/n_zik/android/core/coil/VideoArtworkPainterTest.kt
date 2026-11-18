@@ -7,6 +7,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.foundation.shape.CircleShape
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.ColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.Typography
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -178,10 +184,14 @@ class VideoArtworkPainterTest {
         var painter: AsyncImagePainter? = null
         var success: AsyncImagePainter.State.Success? = null
         compose.setContent {
-            val loaded = ImageCacheFactory.Painter(url, contentScale = requested, onSuccess = { success = it })
-            SideEffect { painter = loaded }
-            Image(loaded, null, Modifier.size(80.dp).background(ComposeColor.Black)
-                .testTag("cover"), contentScale = ContentScale.Fit)
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                ColorPalette.fallback, Typography.fallback, CircleShape, CircleShape, CircleShape,
+            )) {
+                val loaded = ImageCacheFactory.Painter(url, contentScale = requested, onSuccess = { success = it })
+                SideEffect { painter = loaded }
+                Image(loaded, null, Modifier.size(80.dp).background(ComposeColor.Black)
+                    .testTag("cover"), contentScale = ContentScale.Fit)
+            }
         }
         compose.waitUntil(10_000) { success != null }
         compose.waitForIdle()

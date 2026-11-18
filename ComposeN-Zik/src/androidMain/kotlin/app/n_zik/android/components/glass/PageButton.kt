@@ -42,6 +42,7 @@ fun PageButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
+    val resolvedColors = pageButtonColors(colors, settings, material)
     val nativeBounds = remember { GlassNativeSurfaceBounds() }
     NativePageButtonFeedback(material, enabled, shape, interactionSource, nativeBounds, settings) { feedback, source ->
         Button(
@@ -49,7 +50,7 @@ fun PageButton(
             modifier = modifier.then(feedback).pageButtonMaterial(enabled, shape, colors, settings),
             enabled = enabled,
             shape = shape,
-            colors = if (material) colors.copy(containerColor = Color.Transparent, disabledContainerColor = Color.Transparent) else colors,
+            colors = resolvedColors,
             elevation = elevation,
             border = if (material || settings.usesGlassContour(GlassArea.ActionButtons)) null else border,
             contentPadding = contentPadding,
@@ -77,6 +78,7 @@ fun PageTextButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
+    val resolvedColors = pageButtonColors(colors, settings, material)
     val nativeBounds = remember { GlassNativeSurfaceBounds() }
     NativePageButtonFeedback(material, enabled, shape, interactionSource, nativeBounds, settings) { feedback, source ->
         TextButton(
@@ -84,7 +86,7 @@ fun PageTextButton(
             modifier = modifier.then(feedback).pageButtonMaterial(enabled, shape, colors, settings),
             enabled = enabled,
             shape = shape,
-            colors = if (material) colors.copy(containerColor = Color.Transparent, disabledContainerColor = Color.Transparent) else colors,
+            colors = resolvedColors,
             elevation = elevation,
             border = if (material || settings.usesGlassContour(GlassArea.ActionButtons)) null else border,
             contentPadding = contentPadding,
@@ -202,4 +204,14 @@ private fun Modifier.pageButtonMaterial(
         filmColor = roleFill,
         drawShadow = false,
     )
+}
+
+/** Resolve Material's explicit content role on the same film used by pageButtonMaterial. */
+@Composable
+private fun pageButtonColors(colors: ButtonColors, settings: GlassSettings, material: Boolean): ButtonColors {
+    if (!material) return colors
+    val plate = glassFilmColor(settings.forArea(GlassArea.ActionButtons), colors.containerColor, menu = false)
+    val surface = effectiveSurfaceColor(surfaceBackdropColor(), plate)
+    return colors.copy(containerColor = Color.Transparent, disabledContainerColor = Color.Transparent,
+        contentColor = readableForeground(colors.contentColor, surface, TextContrast))
 }

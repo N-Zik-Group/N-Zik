@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.geometry.Offset
@@ -59,6 +60,13 @@ import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.GlassQuality
+import app.n_zik.android.components.glass.LocalNeutralForegroundTransition
+import app.n_zik.android.components.glass.NeutralForegroundDecision
+import app.n_zik.android.components.glass.NeutralForegroundTransition
+import app.n_zik.android.components.glass.WeightedNeutralDecision
+import app.n_zik.android.components.glass.SurfaceForegroundContent
+import app.n_zik.android.components.glass.contrastAgainst
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -79,6 +87,50 @@ class PlayerGlassActionsTest {
     @get:Rule val compose = createComposeRule()
     private val settings = GlassSettings(film = 0f, rim = 0f, blur = 0f,
         vibrancy = 0f, depth = 0f, amount = 0f)
+
+    @Test fun `actual player action glyphs use their own film during a bright cover transition`() {
+        val film = mutableStateOf(1f)
+        val single = mutableStateOf(false)
+        compose.setContent {
+            AppearanceProvider(RoundedCornerShape(12.dp)) {
+                val scene = rememberCanvasBackdrop { drawRect(Color.White) }
+                val decision = NeutralForegroundDecision(Color.White, Color.Black)
+                CompositionLocalProvider(LocalGlassContainerBackdrop provides scene,
+                    LocalNeutralForegroundTransition provides NeutralForegroundTransition(
+                        listOf(WeightedNeutralDecision(decision, 1f)), decision, 1f)) {
+                    SurfaceForegroundContent(Color.White) {
+                        Box(Modifier.size(300.dp, 100.dp).background(Color.White)) {
+                            val actions = listOf(PlayerActionSlot("play") {
+                                PlayerActionIcon(R.drawable.play, Color.Black, {}, Modifier.size(24.dp))
+                            }, PlayerActionSlot("download") {
+                                PlayerDownloadAction({}, {}, R.drawable.play, Color.Black,
+                                    Modifier.size(24.dp), downloadState = Download.STATE_COMPLETED)
+                            })
+                            PlayerActionToolbar(if (single.value) actions.take(1) else actions, true,
+                                settings = settings.copy(quality = GlassQuality.Performance, film = film.value),
+                                nativeBackground = Color.Black, landscape = true)
+                        }
+                    }
+                }
+            }
+        }
+        for (isSingle in listOf(false, true)) for (opacity in listOf(1f, 0f)) {
+            compose.runOnIdle { single.value = isSingle; film.value = opacity }
+            val plate = if (opacity == 1f) Color.Black else Color.White
+            val expectedGlyph = if (opacity == 1f) Color.White else Color.Black
+            repeat(if (isSingle) 1 else 2) { index ->
+                val pixels = compose.onAllNodes(hasClickAction())[index].captureToImage().toPixelMap()
+                val center = buildList {
+                    for (y in pixels.height * 2 / 5 until pixels.height * 3 / 5)
+                        for (x in pixels.width * 2 / 5 until pixels.width * 3 / 5) add(pixels[x, y])
+                }
+                val glyph = if (opacity == 1f) center.maxBy { it.luminance() }
+                    else center.minBy { it.luminance() }
+                assertEquals("single=$isSingle film=$opacity action=$index", expectedGlyph, glyph)
+                assertTrue(contrastAgainst(glyph, plate) >= 3f)
+            }
+        }
+    }
 
     @Test fun `single lower action moves its complete material beyond the resting canvas`() {
         compose.mainClock.autoAdvance = false

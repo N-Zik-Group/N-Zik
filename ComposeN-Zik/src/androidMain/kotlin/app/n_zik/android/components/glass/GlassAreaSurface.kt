@@ -40,13 +40,14 @@ internal fun Modifier.glassMiniPlayerBodyVisibility(settings: GlassSettings, pro
         alpha = miniPlayerGlassBodyAlpha(progress())
     } else this
 
-/** Clear controls inherit the body film; controls with their own film sample its raw input once. */
+/** Controls sample the visible body, including progress, before applying their own role film. */
 @Composable
+@Suppress("UNUSED_PARAMETER") // Existing callers pass their independent mini-player settings.
 internal fun defaultMiniPlayerControlBackdrop(settings: GlassSettings): Backdrop? {
     val local = LocalGlassBackdrop.current
     val material = LocalGlassMaterialSource.current
     val host = LocalGlassMenuHost.current
-    return if (local is RenderedMaterialBackdrop && settings.film <= 0f) local
+    return if (local is RenderedMaterialBackdrop) local
         else material ?: local ?: host?.backdrop
 }
 
@@ -59,6 +60,17 @@ internal fun rememberMiniPlayerControlBackdrop(
 ): Backdrop = remember(parent, body, progress) {
     val rendered = if (parent == null) body else object : Backdrop {
         override val isCoordinatesDependent = true
+
+        override val contentVersion: Int?
+            get() {
+                // Read both even when one is unversioned: the body's published material
+                // revision must invalidate retained control captures after progress moves.
+                val parentVersion = parent.contentVersion
+                val bodyVersion = body.contentVersion
+                val opacityVersion = miniPlayerGlassBodyAlpha(progress()).toBits()
+                return if (parentVersion == null || bodyVersion == null) null
+                    else (31 * parentVersion + bodyVersion) * 31 + opacityVersion
+            }
 
         override fun DrawScope.drawBackdrop(
             density: Density,

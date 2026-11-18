@@ -167,6 +167,74 @@ class ThemeCollectionArchiveTest {
         assertEquals(theme.title, library.download(imported.id)?.name)
     }
 
+    // Archive import and detail loading expose suspend APIs, so this test waits synchronously.
+    @Test
+    fun pureBlackImportedArchiveOpensDetailsWithoutWeakeningRemoteOrHashValidation() = runBlocking {
+        val base = theme("12345678-1111-2222-3333-123456789021")
+        val document = """{"schemaVersion":2,"categories":{"colors":{"palette":"dynamic","mode":"pure-black"}}}"""
+        val bytes = document.encodeToByteArray()
+        val manifest = requireNotNull(base.theme).copy(schemaVersion = 2,
+            appearance = StoreFile("appearance.json", bytes.sha256()), compatibility = StoreCompatibility(99))
+        val files = mutableMapOf(
+            "manifest.json" to Json.encodeToString(manifest).encodeToByteArray(),
+            "appearance.json" to bytes,
+            "reviews.json" to """{"schemaVersion":1,"reviews":[]}""".encodeToByteArray(),
+        )
+        manifest.previews.forEach { files[it.path] = preview }
+        val archive = ByteArrayOutputStream().also { writeThemeArchive(it, files) }.toByteArray()
+        val imported = readThemeArchive(context, archive.inputStream())
+        val localTheme = requireNotNull(imported.theme)
+        assertTrue(imported.imported)
+        assertTrue(localTheme.themeId != manifest.themeId)
+        var requests = 0
+        val catalog = ThemeStoreCatalog(File(context.cacheDir, "pure-black-details"), appVersionCode = 100,
+            fetch = { _, _ -> requests++; bytes })
+        assertEquals(document, catalog.appearance(localTheme, imported).document)
+        assertEquals(0, requests)
+
+        assertTrue(runCatching { catalog.appearance(manifest, null) }.exceptionOrNull() is IllegalArgumentException)
+        assertEquals(1, requests)
+        assertTrue(runCatching {
+            catalog.appearance(localTheme, imported.copy(imported = false))
+        }.exceptionOrNull() is IllegalArgumentException)
+        assertTrue(runCatching {
+            catalog.appearance(manifest, imported)
+        }.exceptionOrNull() is IllegalArgumentException)
+        assertEquals(1, requests)
+        assertTrue(runCatching {
+            catalog.appearance(localTheme, imported.copy(document = document + " "))
+        }.exceptionOrNull() is IllegalArgumentException)
+        assertEquals(2, requests)
+
+        val tooOld = localTheme.copy(compatibility = StoreCompatibility(98))
+        assertTrue(runCatching {
+            catalog.appearance(tooOld, imported.copy(theme = tooOld))
+        }.exceptionOrNull() is IllegalArgumentException)
+        assertEquals(document, catalog.appearance(manifest.copy(compatibility = StoreCompatibility(101)), null).document)
+        assertEquals(3, requests)
+    }
+
+    @Test
+    fun pureBlackArchiveSeparatesLocalImportFromPublicCompatibility() {
+        val saved = theme("12345678-1111-2222-3333-123456789020")
+        val document = """{"schemaVersion":2,"categories":{"colors":{"palette":"dynamic","mode":"pure-black"}}}"""
+        val bytes = document.encodeToByteArray()
+        val manifest = requireNotNull(saved.theme).copy(
+            schemaVersion = 2, appearance = StoreFile("appearance.json", bytes.sha256()),
+            compatibility = StoreCompatibility(99),
+        )
+        val read = { path: String, _: Int ->
+            if (path == "appearance.json") bytes else "{\"schemaVersion\":1,\"reviews\":[]}".encodeToByteArray()
+        }
+        assertThrows(IllegalArgumentException::class.java) { validateThemeArchiveDocuments(manifest, read) }
+        assertEquals(document, validateThemeArchiveDocuments(manifest, read, validateFeatureCompatibility = false))
+        assertEquals(document, validateThemeArchiveDocuments(manifest.copy(compatibility = StoreCompatibility(101)), read))
+        assertThrows(IllegalArgumentException::class.java) {
+            validateThemeArchiveDocuments(manifest.copy(compatibility = StoreCompatibility(98)), read,
+                validateFeatureCompatibility = false)
+        }
+    }
+
     @Test
     fun versionTwoArchiveRequiresCompatibilityCodeNinetyNine() {
         val saved = theme("12345678-1111-2222-3333-123456789019")

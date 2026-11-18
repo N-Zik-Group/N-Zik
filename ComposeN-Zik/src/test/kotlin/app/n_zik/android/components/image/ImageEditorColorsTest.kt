@@ -45,6 +45,28 @@ import com.yalantis.ucrop.R as CropR
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ImageEditorColorsTest {
     @Test
+    fun `pure black editor normalizes cached Dynamic surfaces while preserving the artwork accent`() {
+        val context: Context = ApplicationProvider.getApplicationContext()
+        val prefs = context.preferences
+        prefs.edit().clear().putEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
+            .putEnum(colorPaletteModeKey, ColorPaletteMode.PureBlack)
+            .putLong("widget_palette_timestamp", 1L)
+            .putInt("widget_palette_background1", Color.WHITE)
+            .putInt("widget_palette_background2", Color.GRAY)
+            .putInt("widget_palette_text", Color.BLACK)
+            .putInt("widget_palette_accent", Color.CYAN)
+            .putBoolean("widget_palette_isDark", false).commit()
+        try {
+            val options = ImageEditorColors.resolve(context).options(context).optionBundle
+            assertEquals(Color.BLACK, options.getInt(UCrop.Options.EXTRA_TOOL_BAR_COLOR))
+            assertEquals(Color.WHITE, options.getInt(UCrop.Options.EXTRA_UCROP_WIDGET_COLOR_TOOLBAR))
+            assertEquals(Color.CYAN, options.getInt(UCrop.Options.EXTRA_UCROP_COLOR_CONTROLS_WIDGET_ACTIVE))
+            assertFalse(options.getBoolean(UCrop.Options.EXTRA_STATUS_BAR_LIGHT, true))
+            assertOptionsContrast(ImageEditorColors.resolve(context), context)
+        } finally { prefs.edit().clear().commit() }
+    }
+
+    @Test
     fun `library options use NZik colors and expose crop rotate zoom and free handles`() {
         val context: Context = ApplicationProvider.getApplicationContext()
         val colors = ImageEditorColors(Color.BLACK, Color.DKGRAY, Color.WHITE, Color.CYAN, true)

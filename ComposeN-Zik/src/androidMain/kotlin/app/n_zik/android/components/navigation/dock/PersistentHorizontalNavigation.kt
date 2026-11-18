@@ -31,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.utils.LANDSCAPE_BARS_ANIMATION_MS
-import app.n_zik.android.colorPalette
 import app.n_zik.android.components.navigation.CommittedNavigationPresentation
 import app.n_zik.android.components.navigation.navigationPresentationInput
 import app.n_zik.android.components.glass.GlassArea
@@ -39,7 +38,7 @@ import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.navigation.header.UnifiedTopNavigationGlass
-import app.n_zik.android.surfaceColor
+import app.n_zik.android.navigationSurfaceColor
 import kotlin.math.roundToInt
 
 /** The presentation stays outside NavHost; only the current entry's registered tabs change. */
@@ -108,7 +107,7 @@ private fun HorizontalNavigationPresentation(
             ) {
                 val displayed = if (hasTabs) registration else lastVisibleRegistration.value
                 if (top && settings.usesGlassMaterial(GlassArea.Nav)) {
-                    UnifiedTopNavigationGlass(settings, surfaceColor(colorPalette().background1), backdrop, topPx) {
+                    UnifiedTopNavigationGlass(settings, navigationSurfaceColor(), backdrop, topPx) {
                         displayed?.body?.invoke()
                     }
                 } else {

@@ -29,6 +29,9 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.dp
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -57,6 +60,41 @@ import org.robolectric.util.ReflectionHelpers
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassToastHostTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `white Glass toast resolves neutral ink while preserving caller colors and native mode`() {
+        val material = mutableStateOf(true)
+        lateinit var view: View
+        compose.setContent {
+            view = LocalView.current
+            val shape = RoundedCornerShape(12.dp)
+            CompositionLocalProvider(LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                typographyOf(Color.White, true, false, FontType.Rubik), shape, shape, shape)) {
+                Box(Modifier.size(360.dp, 640.dp).background(Color.Black)) {
+                    GlassToastHost(null, 24.dp, settings = GlassSettings(
+                        quality = GlassQuality.Performance, source = GlassTintSource.Custom,
+                        customColor = android.graphics.Color.WHITE, tintStrength = 1f, film = 1f, rim = 0f,
+                        areaModes = mapOf(GlassArea.Menus to if (material.value) GlassAreaMode.GlassAndContour
+                            else GlassAreaMode.ContourOnly)))
+                }
+            }
+        }
+        compose.runOnIdle {
+            val info = ReflectionHelpers.getField<Any>(view, "mAttachInfo")
+            ReflectionHelpers.setField(info, "mWindowVisibility", View.VISIBLE)
+            assertTrue(GlassToastDispatcher.tryShow("Own white film", Toast.LENGTH_LONG, null,
+                android.graphics.Color.BLACK, android.graphics.Color.WHITE))
+        }
+        compose.mainClock.advanceTimeBy(500)
+        fun textColor(): Color {
+            val layouts = mutableListOf<TextLayoutResult>()
+            compose.onNodeWithText("Own white film", useUnmergedTree = true)
+                .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+            return layouts.single().layoutInput.style.color
+        }
+        assertEquals(Color.Black, textColor())
+        compose.runOnIdle { material.value = false }
+        assertEquals(Color.White, textColor())
+    }
 
     @Test fun `performance toast retains configured material without recording a backdrop`() {
         lateinit var view: View

@@ -60,6 +60,7 @@ fun LyricsSizeDialog(
                     .fillMaxWidth()
             ) {
                 IconButton(
+                    foregroundFilm = surfaceColor(colorPalette().background2),
                     onClick = {
                         lyricsSize = 20f
                     },
@@ -92,6 +93,7 @@ fun LyricsSizeDialog(
                     .fillMaxWidth()
             ) {
                 IconButton(
+                    foregroundFilm = surfaceColor(colorPalette().background2),
                     onClick = {
                         lyricsSizeL = 20f
                     },

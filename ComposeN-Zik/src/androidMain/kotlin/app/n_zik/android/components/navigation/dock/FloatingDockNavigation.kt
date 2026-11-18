@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
-import app.n_zik.android.surfaceColor
+import app.n_zik.android.navigationSurfaceColor
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.toast.trackToastObstruction
 import app.n_zik.android.components.glass.GlassArea
@@ -69,7 +69,7 @@ internal fun FloatingDockNavigation(
 ) {
     val settings = rememberGlassSettings()
     val shape = uiRoundnessShape()
-    val nativeColor = surfaceColor(colorPalette().background1)
+    val nativeColor = navigationSurfaceColor()
     val useGlass = settings.usesGlassMaterial(GlassArea.Nav)
     val folding = remember(dock) { { dock.navigationProgress.let { it > 0f && it < 1f } } }
     val surface = if (useGlass)

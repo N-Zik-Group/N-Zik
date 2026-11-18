@@ -42,7 +42,7 @@ internal fun readThemeArchive(context: Context, source: InputStream): SavedTheme
             val theme = parseStoreTheme(manifest.decodeToString(throwOnInvalidSequence = true), allowLocalAuthor = true)
             val expected = themeArchivePaths(theme)
             require(zip.size() == expected.size && zip.entries().asSequence().all { !it.isDirectory && it.name in expected })
-            val document = validateThemeArchiveDocuments(theme, ::read)
+            val document = validateThemeArchiveDocuments(theme, ::read, validateFeatureCompatibility = false)
             cacheThemeArchivePreviews(context, theme) { read(it, SubmissionPreviewLimit) }
             // A local package must never overwrite an online download with the same ID.
             val localId = localThemeArchiveId(manifest)
@@ -65,12 +65,17 @@ internal fun themeArchivePaths(theme: StoreTheme): Set<String> {
     return theme.previews.map { it.path }.toSet() + setOf("manifest.json", "appearance.json", "reviews.json")
 }
 
-internal fun validateThemeArchiveDocuments(theme: StoreTheme, read: (String, Int) -> ByteArray): String {
+internal fun validateThemeArchiveDocuments(
+    theme: StoreTheme,
+    read: (String, Int) -> ByteArray,
+    validateFeatureCompatibility: Boolean = true,
+): String {
     val appearance = read(theme.appearance.path, ThemeDocumentLimit)
     require(appearance.sha256() == theme.appearance.sha256)
     val document = appearance.decodeToString(throwOnInvalidSequence = true)
     parseThemeAppearance(document, allowEmptyCategories = false,
-        advertisedMinVersionCode = theme.compatibility.minVersionCode ?: 0)
+        advertisedMinVersionCode = theme.compatibility.minVersionCode ?: 0,
+        validateFeatureCompatibility = validateFeatureCompatibility)
     parseStoreReviews(read("reviews.json", ThemeMetadataLimit).decodeToString(throwOnInvalidSequence = true))
     return document
 }

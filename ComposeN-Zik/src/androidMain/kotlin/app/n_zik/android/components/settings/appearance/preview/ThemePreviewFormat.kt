@@ -307,6 +307,18 @@ internal data class ThemeSettings(val plain: Map<String, Any>, val glass: Map<St
 
 internal const val ThemeAppearanceV2 = 2
 internal const val ThemeAppearanceV2MinimumVersionCode = 99
+internal const val ThemePureBlackMinimumVersionCode = 101
+
+/** Feature compatibility is independent of the portable document schema. */
+internal fun themeAppearanceFeatureMinimumVersionCode(settings: Map<ThemeCategory, ThemeSettings>): Int =
+    if (settings[ThemeCategory.COLORS]?.plain?.get(colorPaletteModeKey) == ColorPaletteMode.PureBlack.name)
+        ThemePureBlackMinimumVersionCode else 0
+
+internal fun themeAppearancePublicationMinimumVersionCode(source: String): Int {
+    val schema = requireNotNull(themeAppearanceSchema(Json.parseToJsonElement(source) as JsonObject))
+    val schemaMinimum = if (schema == ThemeAppearanceV2) ThemeAppearanceV2MinimumVersionCode else FirstThemeStoreVersionCode
+    return maxOf(schemaMinimum, themeAppearanceFeatureMinimumVersionCode(parseThemeAppearance(source, allowEmptyCategories = true)))
+}
 
 internal fun themeAppearanceSchemaFor(versionCode: Int): Int =
     if (versionCode >= ThemeAppearanceV2MinimumVersionCode) ThemeAppearanceV2 else 1
@@ -325,6 +337,7 @@ internal fun parseThemeAppearance(
     source: String,
     allowEmptyCategories: Boolean,
     advertisedMinVersionCode: Int? = null,
+    validateFeatureCompatibility: Boolean = true,
 ): Map<ThemeCategory, ThemeSettings> {
     val root = Json.parseToJsonElement(source) as? JsonObject ?: error("Invalid theme document")
     val schemaVersion = themeAppearanceSchema(root)
@@ -337,12 +350,22 @@ internal fun parseThemeAppearance(
     }
     val categories = root["categories"] as? JsonObject ?: error("Invalid theme categories")
     require(allowEmptyCategories || categories.isNotEmpty()) { "The theme contains no categories" }
-    return categories.map { (name, content) ->
+    val settings = categories.map { (name, content) ->
         val fields = ImportThemeFields(content, schemaVersion)
         val category = ThemeCategory.entries.firstOrNull { it.wireKey == name }
             ?: error("Unknown theme category $name")
         category to fields.readCategory(category, schemaVersion)
     }.toMap()
+    val featureMinimum = themeAppearanceFeatureMinimumVersionCode(settings)
+    require(featureMinimum == 0 || schemaVersion == ThemeAppearanceV2) {
+        "Pure Black mode requires theme appearance V2"
+    }
+    if (validateFeatureCompatibility && advertisedMinVersionCode != null && featureMinimum > 0) {
+        require(advertisedMinVersionCode >= featureMinimum) {
+            "Pure Black mode requires Android version code $featureMinimum"
+        }
+    }
+    return settings
 }
 
 internal fun encodeThemeAppearance(
@@ -353,6 +376,9 @@ internal fun encodeThemeAppearance(
 ): String =
     buildJsonObject {
         require(schemaVersion in 1..ThemeAppearanceV2)
+        require(schemaVersion == ThemeAppearanceV2 || plain[colorPaletteModeKey] != ColorPaletteMode.PureBlack.name) {
+            "Pure Black mode requires theme appearance V2"
+        }
         put("schemaVersion", schemaVersion)
         put("categories", buildJsonObject {
             ThemeCategory.entries.forEach { category ->

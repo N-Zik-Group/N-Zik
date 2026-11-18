@@ -76,6 +76,8 @@ private data class GlassGroupMenuMotion(
 internal fun glassGroupPhysicalOffset(logical: Float, mirrored: Boolean): Int =
     if (mirrored) -logical.roundToInt() else logical.roundToInt()
 
+internal val LocalGlassActionGroupSurface = staticCompositionLocalOf<Color?> { null }
+
 private val LocalGlassGroupMenuMotion = staticCompositionLocalOf<GlassGroupMenuMotion?> { null }
 
 /** A single optical capsule with independently clickable, animated action cells. */
@@ -225,7 +227,13 @@ fun GlassActionGroup(
             Row(modifier = if (settings.usesGlassMaterial(area) && !separated && !transferred) Modifier.clip(joinShape) else Modifier,
                 verticalAlignment = Alignment.CenterVertically, content = {
                     val row = this
-                    GlassArtworkContent(settings, settings.usesGlassMaterial(area)) { content(row) }
+                    if (drawSurface && settings.usesGlassMaterial(area)) {
+                        val film = glassFilmColor(settings.forArea(area), actionFilm, menu = false)
+                        val surface = effectiveSurfaceColor(surfaceBackdropColor(), film)
+                        CompositionLocalProvider(LocalGlassActionGroupSurface provides surface) {
+                            SurfaceForegroundContent(surface) { content(row) }
+                        }
+                    } else GlassArtworkContent(settings, settings.usesGlassMaterial(area)) { content(row) }
                 })
         }
     }

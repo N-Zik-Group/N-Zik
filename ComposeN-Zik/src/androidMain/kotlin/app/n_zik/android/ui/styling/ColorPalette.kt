@@ -142,7 +142,7 @@ fun colorPaletteOf(
         ColorPaletteName.Default, ColorPaletteName.Dynamic,
         ColorPaletteName.MaterialYou, ColorPaletteName.Customized, ColorPaletteName.CustomColor -> when (colorPaletteMode) {
             ColorPaletteMode.Light -> DefaultLightColorPalette
-            ColorPaletteMode.Dark, ColorPaletteMode.PitchBlack -> DefaultDarkColorPalette
+            ColorPaletteMode.Dark, ColorPaletteMode.PitchBlack, ColorPaletteMode.PureBlack -> DefaultDarkColorPalette
             ColorPaletteMode.System -> when (isSystemInDarkMode) {
                 true -> DefaultDarkColorPalette
                 false -> DefaultLightColorPalette

@@ -12,13 +12,16 @@ import androidx.compose.material.icons.filled.Computer
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.GraphicsLayerScope
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -37,6 +40,8 @@ import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassAreaMode
 import app.n_zik.android.components.glass.GlassMenuHostState
 import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.forArea
+import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
@@ -50,6 +55,7 @@ import app.n_zik.android.components.glass.backdrop.BackdropEffectScope
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.surfaceColor
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.onNodeWithTag
 import org.junit.Assert.assertEquals
@@ -67,6 +73,122 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassMiniPlayerBackdropTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `stable non-null mini parent refreshes retained control seats when only progress moves`() {
+        var fraction by mutableStateOf(0f)
+        var iconFilm = Color.Transparent
+        var playFilm = Color.Transparent
+        var composite: Backdrop? = null
+        val settings = GlassSettings(enabled = true, film = .35f, blur = 0f, rim = 0f,
+            depth = 0f, amount = 0f, vibrancy = 0f, tintStrength = 0f)
+        compose.setContent {
+            val shape = RoundedCornerShape(10.dp)
+            val drawParent: DrawScope.() -> Unit = remember { { drawRect(Color.Blue) } }
+            // An unversioned queue underlay must retain that contract while the body
+            // still publishes observable revisions to the composite's consumers.
+            val parent = rememberCanvasBackdrop(drawParent)
+            val body = rememberLayerBackdrop()
+            val deployment: () -> Float = remember { { 0f } }
+            val controls = rememberMiniPlayerControlBackdrop(parent, body, deployment)
+            composite = controls
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(ColorPalette.fallback, Typography.fallback, shape, shape, shape),
+                LocalDensity provides Density(1f),
+            ) {
+                iconFilm = glassFilmColor(settings.forArea(GlassArea.MiniPlayer),
+                    surfaceColor(ColorPalette.fallback.background2), menu = false)
+                playFilm = glassFilmColor(settings.forArea(GlassArea.MiniPlayer), Color.Black, menu = false)
+                Box(Modifier.size(160.dp, 64.dp).background(Color.Blue).testTag("retained.mini")) {
+                    Box(Modifier.matchParentSize().glassMiniPlayerBackground(settings, shape, parent, Color.Black,
+                        progressColor = Color.Red.copy(alpha = .8f), progressFraction = { fraction },
+                        exportedBackdrop = body))
+                    CompositionLocalProvider(LocalGlassBackdrop provides controls,
+                        LocalGlassContainerBackdrop provides controls, LocalGlassMaterialSource provides parent) {
+                        Row(Modifier.align(Alignment.Center).graphicsLayer().background(Color.Magenta)) {
+                            Controls(settings)
+                        }
+                    }
+                }
+            }
+        }
+        compose.runOnIdle { assertEquals(null, requireNotNull(composite).contentVersion) }
+        for (position in listOf(0f, .35f, .5f, .65f, 1f, 0f)) {
+            compose.runOnIdle { fraction = position }
+            val sceneNode = compose.onNodeWithTag("retained.mini")
+            val bounds = sceneNode.fetchSemanticsNode().boundsInRoot
+            // Capture only the common ancestor. Capturing a button independently
+            // can refresh its retained layer and conceal the missing notification.
+            val scene = sceneNode.captureToImage().toPixelMap()
+            for ((name, film) in listOf("Previous" to iconFilm, "Play" to playFilm, "Output" to iconFilm)) {
+                val button = compose.onNodeWithContentDescription(name).fetchSemanticsNode().boundsInRoot
+                val x = (button.center.x - bounds.left).toInt()
+                val y = (button.top + button.height / 4f - bounds.top).toInt()
+                val expected = film.compositeOver(scene[x, 8])
+                val actual = scene[x, y]
+                assertEquals("$name red at $position", expected.red, actual.red, .035f)
+                assertEquals("$name green at $position", expected.green, actual.green, .035f)
+                assertEquals("$name blue at $position", expected.blue, actual.blue, .035f)
+            }
+        }
+    }
+
+    @Test fun `moving progress crosses real mini control seats with their own film and play background`() {
+        var fraction by mutableStateOf(0f)
+        var film by mutableStateOf(.35f)
+        var enabled by mutableStateOf(true)
+        var page by mutableStateOf(Color.Blue)
+        val playRole = Color(0xFF204060)
+        var iconFilm = Color.Transparent
+        var playFilm = Color.Transparent
+        compose.setContent {
+            val shape = RoundedCornerShape(10.dp)
+            val raw = rememberCanvasBackdrop { drawRect(page) }
+            val body = rememberLayerBackdrop()
+            val controls = rememberMiniPlayerControlBackdrop(null, body) { 0f }
+            val settings = GlassSettings(enabled = true, film = film, blur = 0f, rim = 0f,
+                depth = 0f, amount = 0f, vibrancy = 0f, tintStrength = 0f)
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(ColorPalette.fallback, Typography.fallback, shape, shape, shape),
+                LocalDensity provides Density(1f),
+            ) {
+                iconFilm = glassFilmColor(settings.forArea(GlassArea.MiniPlayer),
+                    surfaceColor(ColorPalette.fallback.background2), menu = false)
+                playFilm = glassFilmColor(settings.forArea(GlassArea.MiniPlayer), playRole, menu = false)
+                Box(Modifier.size(160.dp, 64.dp).background(page).testTag("moving.mini")) {
+                    Box(Modifier.matchParentSize().glassMiniPlayerBackground(settings, shape, raw, Color.Black,
+                        progressColor = Color.Red.copy(alpha = .8f), progressFraction = { fraction },
+                        exportedBackdrop = body))
+                    CompositionLocalProvider(LocalGlassBackdrop provides controls,
+                        LocalGlassContainerBackdrop provides controls, LocalGlassMaterialSource provides raw) {
+                        Row(Modifier.align(Alignment.Center).background(Color.Magenta)) {
+                            GlassMiniPlayerIconButton(R.drawable.play_skip_back, Color.Transparent, {},
+                                "Moving previous", enabled = enabled, settings = settings)
+                            GlassMiniPlayerPlayPauseButton({}, playRole, "Moving play", settings = settings) {}
+                        }
+                    }
+                }
+            }
+        }
+        for (opacity in listOf(.35f, .7f, 0f)) for (active in listOf(true, false)) {
+            compose.runOnIdle { film = opacity; enabled = active }
+            for (position in listOf(0f, .35f, .5f, .65f, 1f)) {
+                compose.runOnIdle { fraction = position; page = if (active) Color.Blue else Color.Green }
+                val sceneNode = compose.onNodeWithTag("moving.mini")
+                val scene = sceneNode.captureToImage().toPixelMap()
+                for ((name, ownFilm) in listOf("Moving previous" to iconFilm, "Moving play" to playFilm)) {
+                    val button = compose.onNodeWithContentDescription(name)
+                    val pixels = button.captureToImage().toPixelMap()
+                    val x = (button.fetchSemanticsNode().boundsInRoot.center.x -
+                        sceneNode.fetchSemanticsNode().boundsInRoot.left).toInt()
+                    val expected = ownFilm.compositeOver(scene[x, 8])
+                    val actual = pixels[pixels.width / 2, pixels.height / 4]
+                    assertEquals("$name red at $position film $opacity", expected.red, actual.red, .035f)
+                    assertEquals("$name green at $position film $opacity", expected.green, actual.green, .035f)
+                    assertEquals("$name blue at $position film $opacity", expected.blue, actual.blue, .035f)
+                }
+            }
+        }
+    }
 
     @Test fun `mini controls retain rendered body film when legacy owner also supplies raw material source`() {
         var film by mutableStateOf(.35f)

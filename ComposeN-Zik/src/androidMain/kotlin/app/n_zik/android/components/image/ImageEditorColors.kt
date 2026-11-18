@@ -137,7 +137,7 @@ internal data class ImageEditorColors(val background: Int, val surface: Int, val
             val mode = prefs.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
             val name = prefs.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
             val systemDark = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
-            val dark = mode == ColorPaletteMode.Dark || mode == ColorPaletteMode.PitchBlack || (mode == ColorPaletteMode.System && systemDark)
+            val dark = mode == ColorPaletteMode.Dark || (mode == ColorPaletteMode.PitchBlack || mode == ColorPaletteMode.PureBlack) || (mode == ColorPaletteMode.System && systemDark)
             var palette = colorPaletteOf(name, mode, systemDark)
             when (name) {
                 ColorPaletteName.CustomColor -> palette = dynamicColorPaletteOf(Color(prefs.getInt(customColorKey, Color.Green.hashCode())), dark)
@@ -146,15 +146,16 @@ internal data class ImageEditorColors(val background: Int, val surface: Int, val
                     .getOrNull()?.let { palette = dynamicColorPaletteOf(Color(it), dark) }
                 else -> Unit
             }
-            if (mode == ColorPaletteMode.PitchBlack) palette = palette.applyPitchBlack
+            if (mode == ColorPaletteMode.PitchBlack || mode == ColorPaletteMode.PureBlack) palette = palette.applyPitchBlack
             // MainActivity publishes the fully resolved artwork palette for non-Compose consumers.
             val dynamic = name == ColorPaletteName.Dynamic && prefs.contains("widget_palette_timestamp")
+            val pureBlack = mode == ColorPaletteMode.PureBlack
             return if (dynamic) ImageEditorColors(
-                prefs.getInt("widget_palette_background1", palette.background1.toArgb()),
-                prefs.getInt("widget_palette_background2", palette.background2.toArgb()),
-                prefs.getInt("widget_palette_text", palette.text.toArgb()),
+                if (pureBlack) Color.Black.toArgb() else prefs.getInt("widget_palette_background1", palette.background1.toArgb()),
+                if (pureBlack) Color.Black.toArgb() else prefs.getInt("widget_palette_background2", palette.background2.toArgb()),
+                if (pureBlack) Color.White.toArgb() else prefs.getInt("widget_palette_text", palette.text.toArgb()),
                 prefs.getInt("widget_palette_accent", palette.accent.toArgb()),
-                prefs.getBoolean("widget_palette_isDark", palette.isDark),
+                pureBlack || prefs.getBoolean("widget_palette_isDark", palette.isDark),
             ) else ImageEditorColors(palette.background0.toArgb(), palette.background1.toArgb(), palette.text.toArgb(), palette.accent.toArgb(), palette.isDark)
         }
     }

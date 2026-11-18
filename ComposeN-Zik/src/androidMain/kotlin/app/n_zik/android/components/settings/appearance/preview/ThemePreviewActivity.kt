@@ -63,6 +63,8 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import app.n_zik.android.core.coil.rememberThemedImageLoadingPainter
+import app.n_zik.android.core.coil.imageLoadingBackground
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -881,15 +883,28 @@ internal fun GalleryActions(
         }
         items(gallery.entries.toList(), key = { it.key.name }) { (target, file) ->
             var bitmap by remember(file, file.lastModified()) { mutableStateOf<Bitmap?>(null) }
+            var decoded by remember(file, file.lastModified()) { mutableStateOf(false) }
             LaunchedEffect(file, file.lastModified()) {
                 bitmap = withContext(NzikDispatchers.DATA) {
                     val options = android.graphics.BitmapFactory.Options().apply { inSampleSize = 4 }
                     android.graphics.BitmapFactory.decodeFile(file.path, options)
                 }
+                decoded = true
             }
             Column(Modifier.padding(horizontal = 16.dp)) {
                 PreviewText(target.name)
-                bitmap?.let { Image(it.asImageBitmap(), target.name, Modifier.fillMaxWidth().height(260.dp)) }
+                val imageModifier = Modifier.fillMaxWidth().height(260.dp)
+                val image = bitmap
+                if (image != null) {
+                    Image(image.asImageBitmap(), target.name, imageModifier)
+                } else if (!decoded) {
+                    val loadingPainter = rememberThemedImageLoadingPainter(listOf(file.absolutePath, file.lastModified()))
+                    Image(
+                        painter = loadingPainter,
+                        contentDescription = null,
+                        modifier = imageModifier.imageLoadingBackground(loadingPainter),
+                    )
+                }
                 ButtonRow(listOf(DialogButton(stringResource(R.string.theme_preview_replace), {
                     replacementFailed = false
                     replacement = target
