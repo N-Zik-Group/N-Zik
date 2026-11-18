@@ -45,15 +45,23 @@ class ThemeStoreDownloadTest {
             ),
         )
         var queueResponse = "corrupt".encodeToByteArray()
+        var connectionFailure: IOException? = null
         val onlineStore = ThemeStoreCatalog(folder.root) { path, _ ->
             when (path.substringBefore('?').removePrefix(theme.directory)) {
                 theme.appearance.path -> appearance
                 theme.previews[0].path -> cover
-                theme.previews[1].path -> queueResponse
+                theme.previews[1].path -> connectionFailure?.let { throw it } ?: queueResponse
                 else -> error("Unexpected path ${path}")
             }
         }
-        assertTrue(runCatching { onlineStore.downloadForOffline(theme) }.exceptionOrNull() is IllegalStateException)
+        val disconnected = IOException("Connection interrupted")
+        connectionFailure = disconnected
+        val interrupted = runCatching { onlineStore.downloadForOffline(theme) }.exceptionOrNull() as? IOException
+        assertEquals(disconnected.message, interrupted?.message)
+
+        connectionFailure = null
+        val rejected = runCatching { onlineStore.downloadForOffline(theme) }.exceptionOrNull()
+        assertTrue("Corrupt preview must fail without a network retry, got $rejected", rejected != null && rejected !is IOException)
 
         queueResponse = queue
         assertEquals(appearance.decodeToString(), onlineStore.downloadForOffline(theme).document)
