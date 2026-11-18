@@ -72,7 +72,7 @@ internal suspend fun ThemeStoreCatalog.downloadForOffline(
     require(theme.supportAt(BuildConfig.VERSION_CODE) == StoreSupport.Supported)
     val verified = cachedAppearance ?: appearance(theme, null)
     for (preview in theme.previews) {
-        val file = checkNotNull(preview(theme, preview))
+        val file = requirePreview(theme, preview)
         kotlinx.coroutines.withContext(app.n_zik.android.utils.coroutines.NzikDispatchers.DATA) {
             val bytes = file.inputStream().use { it.readThemeBytes(SubmissionPreviewLimit) }
             validateThemeArchivePreview(preview, bytes)

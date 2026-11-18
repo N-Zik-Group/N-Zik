@@ -13,9 +13,9 @@ import app.n_zik.android.MainActivity
 import app.n_zik.android.R
 import timber.log.Timber
 
-internal class ThemeDownloadNotification(private val context: Context, private val theme: StoreTheme) {
+internal class ThemeDownloadNotification(private val context: Context, private val theme: StoreTheme, ownerId: String? = null) {
     private val manager = context.getSystemService(NotificationManager::class.java)
-    private val tag = "theme-download:${theme.themeId}:${theme.revision}"
+    private val tag = "theme-download:${theme.themeId}:${theme.revision}" + if (ownerId == null) "" else ":$ownerId"
 
     fun show(result: Boolean? = null) {
         val notifications = manager ?: return

@@ -96,6 +96,7 @@ import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -252,7 +253,6 @@ private fun ThemeStoreDetailContent(
     onOpenCreator: () -> Unit,
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val offline by OfflineMode.rememberEnabled()
     val accountId = signedInCreatorId()
     val ownsPublishedTheme = !localPackage && accountId != null && accountId == theme.author.githubId
@@ -288,7 +288,10 @@ private fun ThemeStoreDetailContent(
     LaunchedEffect(theme, catalog, retry, downloaded, supported) {
         if (supported) appearance = loadDetail("appearance") { catalog.appearance(theme, downloaded) } ?: appearance
     }
-    var downloading by remember { mutableStateOf(false) }
+    val downloadQueue = rememberThemeStoreDownloadQueue(profileId)
+    val pendingDownloads by remember(downloadQueue) { downloadQueue?.activeDownloads ?: kotlinx.coroutines.flow.flowOf(emptySet<String>()) }
+        .collectAsStateWithLifecycle(initialValue = emptySet(), context = NzikDispatchers.DATA)
+    val downloading = id in pendingDownloads
     var followed by remember { mutableStateOf(library.follows().any { it.githubId == theme.author.githubId }) }
     var publicationAlerts by remember(library, theme.author) { mutableStateOf(library.publicationsEnabled(theme.author.githubId)) }
     val publicationCatalog by produceState<List<StoreTheme>?>(null, catalog, retry) {
@@ -560,35 +563,8 @@ private fun ThemeStoreDetailContent(
                             isUpdate -> R.string.common_action_update
                             else -> R.string.theme_store_download
                         }),
-                        {
-                            downloading = true
-                            scope.launch {
-                                val notification = ThemeDownloadNotification(context.applicationContext, theme)
-                                notification.show()
-                                try {
-                                    val parsed = catalog.downloadForOffline(theme, appearance)
-                                    if (getActiveProfile(context) == profileId) {
-                                        val saved = SavedTheme(theme.title, parsed.document, theme)
-                                        library.save(saved)
-                                        appearance = parsed
-                                        Toaster.s(R.string.theme_store_download_saved)
-                                        notification.show(result = true)
-                                    } else {
-                                        notification.cancel()
-                                    }
-                                } catch (cancelled: CancellationException) {
-                                    notification.cancel()
-                                    throw cancelled
-                                } catch (error: Exception) {
-                                    notification.show(result = false)
-                                    Timber.tag("ThemeStore").w(error, "Could not download theme")
-                                    Toaster.e(R.string.theme_store_download_failed)
-                                } finally {
-                                    downloading = false
-                                }
-                            }
-                        },
-                        enabled = !downloading,
+                        { downloadQueue?.enqueue(theme) },
+                        enabled = !downloading && !offline && downloadQueue != null,
                         primary = true,
                     )))
                 } else if (downloaded != null) {

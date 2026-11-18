@@ -98,6 +98,15 @@ internal class ThemeStoreLibrary(private val preferences: SharedPreferences) {
         }
     }
 
+    /** Commit before reporting success so a restarted worker can distinguish a finished download. */
+    fun saveQueuedDownload(theme: SavedTheme): Boolean = synchronized(downloadMutationLock) {
+        if (download(theme.id) != null) return@synchronized true
+        preferences.edit()
+            .putString(downloadPrefix + theme.id, Json.encodeToString(theme))
+            .putLong(savedTimePrefix + theme.id, System.currentTimeMillis())
+            .commit()
+    }
+
     fun saveLocalEdit(original: SavedTheme, edited: SavedTheme): SavedTheme = synchronized(downloadMutationLock) {
         val before = requireNotNull(original.theme)
         val after = requireNotNull(edited.theme)

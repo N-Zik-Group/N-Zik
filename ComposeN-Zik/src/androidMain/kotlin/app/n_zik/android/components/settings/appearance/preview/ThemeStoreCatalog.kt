@@ -376,37 +376,42 @@ internal class ThemeStoreCatalog(
 
     suspend fun preview(theme: StoreTheme, preview: StorePreview): File? {
         require(preview in theme.previews)
-        val lock = catalogPreviewLocks[preview.sha256.take(2).toInt(16) % catalogPreviewLocks.size]
-        return lock.withLock {
-            runInterruptible(NzikDispatchers.DATA) { previewFile(theme, preview) }
-        }
-    }
-
-    private fun previewFile(theme: StoreTheme, preview: StorePreview): File? {
-        val file = File(directory, "${preview.sha256}.${preview.path.substringAfterLast('.')}")
         return try {
-            val cached = try {
-                if (file.isFile) file.inputStream().use { it.readThemeBytes(PreviewLimit) } else null
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (error: Exception) {
-                Timber.tag("ThemeStore").w(error, "Could not read cached preview for %s", theme.themeId)
-                null
-            }
-            if (cached?.sha256() != preview.sha256) {
-                val previewDirectory = if (theme.themeId == BundledThemeId) StockPreviewDirectory else theme.directory
-                val bytes = fetch("$previewDirectory${preview.path}?sha=${preview.sha256}", PreviewLimit)
-                require(bytes.sha256() == preview.sha256)
-                check(directory.isDirectory || directory.mkdirs() || directory.isDirectory)
-                writeThemeFile(AtomicFile(file), bytes)
-            }
-            file
+            requirePreview(theme, preview)
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
             Timber.tag("ThemeStore").w(error, "Could not load preview for %s", theme.themeId)
             null
         }
+    }
+
+    internal suspend fun requirePreview(theme: StoreTheme, preview: StorePreview): File {
+        require(preview in theme.previews)
+        val lock = catalogPreviewLocks[preview.sha256.take(2).toInt(16) % catalogPreviewLocks.size]
+        return lock.withLock {
+            runInterruptible(NzikDispatchers.DATA) { previewFile(theme, preview) }
+        }
+    }
+
+    private fun previewFile(theme: StoreTheme, preview: StorePreview): File {
+        val file = File(directory, "${preview.sha256}.${preview.path.substringAfterLast('.')}")
+        val cached = try {
+            if (file.isFile) file.inputStream().use { it.readThemeBytes(PreviewLimit) } else null
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            Timber.tag("ThemeStore").w(error, "Could not read cached preview for %s", theme.themeId)
+            null
+        }
+        if (cached?.sha256() != preview.sha256) {
+            val previewDirectory = if (theme.themeId == BundledThemeId) StockPreviewDirectory else theme.directory
+            val bytes = fetch("$previewDirectory${preview.path}?sha=${preview.sha256}", PreviewLimit)
+            require(bytes.sha256() == preview.sha256)
+            check(directory.isDirectory || directory.mkdirs() || directory.isDirectory)
+            writeThemeFile(AtomicFile(file), bytes)
+        }
+        return file
     }
 
     suspend fun verifiedCreatorIds(): Set<Long> = runInterruptible(NzikDispatchers.DATA) {
