@@ -366,6 +366,7 @@
     <string name="theme_store_followed">Maker gevolgd</string>
     <string name="theme_store_unfollowed">Maker wordt niet gevolgd</string>
     <string name="theme_store_download">Thema downloaden</string>
+    <string name="theme_store_not_downloaded">Niet gedownload</string>
     <string name="theme_store_downloading">Downloading…</string>
     <string name="theme_store_download_saved">Thema gedownload</string>
     <string name="theme_store_download_failed">Kon dit thema niet downloaden.</string>
