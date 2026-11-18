@@ -366,6 +366,7 @@
     <string name="theme_store_followed">Ακολουθείς δημιουργός</string>
     <string name="theme_store_unfollowed">Δημιουργός αδιάθετος</string>
     <string name="theme_store_download">Λήψη θέματος</string>
+    <string name="theme_store_not_downloaded">Δεν έχει ληφθεί</string>
     <string name="theme_store_downloading">Λήψη…</string>
     <string name="theme_store_download_saved">Το θέμα λήφθηκε</string>
     <string name="theme_store_download_failed">Δεν ήταν δυνατή η λήψη αυτού του θέματος.</string>

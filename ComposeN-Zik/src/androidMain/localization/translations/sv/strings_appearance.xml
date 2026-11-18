@@ -366,6 +366,7 @@
     <string name="theme_store_followed">Skaparen följde</string>
     <string name="theme_store_unfollowed">Skaparen avföljde</string>
     <string name="theme_store_download">Ladda ner tema</string>
+    <string name="theme_store_not_downloaded">Inte hämtad</string>
     <string name="theme_store_downloading">Laddar ner…</string>
     <string name="theme_store_download_saved">Tema hämtat</string>
     <string name="theme_store_download_failed">Kunde inte ladda ner detta tema.</string>

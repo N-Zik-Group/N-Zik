@@ -366,6 +366,7 @@
     <string name="theme_store_followed">作成者がフォローしています</string>
     <string name="theme_store_unfollowed">作成者がフォロー解除されました</string>
     <string name="theme_store_download">テーマをダウンロード</string>
+    <string name="theme_store_not_downloaded">ダウンロードされていない</string>
     <string name="theme_store_downloading">Downloading…</string>
     <string name="theme_store_download_saved">テーマをダウンロードしました</string>
     <string name="theme_store_download_failed">このテーマをダウンロードできませんでした。</string>

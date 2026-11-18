@@ -366,6 +366,7 @@
     <string name="theme_store_followed">Twórca śledził</string>
     <string name="theme_store_unfollowed">Twórca przestał obserwować</string>
     <string name="theme_store_download">Pobierz motyw</string>
+    <string name="theme_store_not_downloaded">Nie pobrano</string>
     <string name="theme_store_downloading">Pobieranie…</string>
     <string name="theme_store_download_saved">Motyw pobrany</string>
     <string name="theme_store_download_failed">Nie można pobrać tego motywu.</string>
