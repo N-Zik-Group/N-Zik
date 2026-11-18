@@ -61,3 +61,14 @@ Fixed:
 - fix(artist): give unfollowed buttons the native raised surface in Pitch Black
   - Resolve the unfollowed background through surfaceColor before applying Glass, matching the gray Settings-card surface while retaining the black Pure Black mode fill.
   - Preserve accent/red followed and disliked roles, contrast handling, dimensions and click callbacks; verify every Glass material mode.
+
+Player and Theme Store follow-up:
+- fix(player): cancel the sleep timer on the first confirmation, including end-of-track grace. Verify the first Stop press on the Xperia with Release64.
+- perf(player): keep the existing carousel cover count and pace button-driven motion across late frames. Reuse the observed queue for controls, keep the artwork position synchronized after interrupted gestures, and defer the artwork palette fade until the pager settles.
+  - Verify the same streamed track transition on the Xperia using Next and swipes in Normal and Glass. Median Next P95 across three runs dropped from 250 to 150 ms in Normal and from 300 to 200 ms in Glass. Visible stutter remains.
+- fix(player): resolve foreground contrast from the settled cover and the actual Glass or native plate. Cache artwork colors and neutral contrast endpoints in memory, and clear them when the image cache is cleared.
+- fix(player): choose status-bar and Android navigation icon contrast separately, including the opaque queue footer. Verify gesture and three-button navigation on the Xperia.
+- fix(images): size the static placeholder background to the entire artwork viewport, including portrait and video thumbnails. Keep revision-aware requests while sharing the disk entry for the same artwork.
+- feat(theme-store): show download state and a direct download action on Explore and creator cards. Use a profile-scoped WorkManager request to save the exact theme revision after the screen closes and retry transient network failures.
+  - Reuse the 20 dp, borderless song download control. Verify that disk theme stays downloaded after Back and Android Home and that its creator card shows the same state.
+- test(player): exercise 42,090 transport combinations, including all seven background families and Glass settings. Apply and undo all eight official theme documents across five palette modes with Glass off and on.
