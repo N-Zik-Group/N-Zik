@@ -219,6 +219,7 @@
     <string name="theme_light_palette_text_secondary_description">Işık paletinden ikincil metin için rengi seçin.</string>
     <string name="theme_mode_description">Uygulamanın ışık veya koyu renk paletini ne zaman kullanacağını seçin.</string>
     <string name="theme_mode_pitch_black">Zifiri Siyah</string>
+    <string name="theme_mode_pure_black">Saf Siyah</string>
     <string name="theme_palette_custom">Özelleştirilmiş</string>
     <string name="theme_palette_description">Uygulamanın genelinde kullanılacak renk paletini seçin.</string>
     <string name="theme_palette_dynamic">Dinamik</string>
@@ -266,6 +267,7 @@
     <string name="theme_store_compatibility">N-Zik uyumluluğu</string>
     <string name="theme_store_submission_minimum_version">Minimum N-Zik sürümü</string>
     <string name="theme_store_submission_minimum_description">Bu temayı uygulayabilen en eski sürüm. Yeni temalarda varsayılan sürüm kodu %3$d. Şu anda N-Zik %1$s (sürüm kodu %2$d) kullanıyorsunuz.</string>
+    <string name="theme_store_submission_feature_requires_update">This theme requires N-Zik Android version code %1$d before it can be published.</string>
     <string name="theme_store_submission_version_code_label">Minimum sürüm kodu</string>
     <string name="theme_store_submission_find_version_code">N-Zik sürümlerini ve kodlarını bulun</string>
     <string name="theme_store_submission_version_with_code">%1$s (kod %2$d)</string>
