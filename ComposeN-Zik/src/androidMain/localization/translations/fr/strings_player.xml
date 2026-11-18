@@ -83,11 +83,11 @@
     <string name="lyrics_editor_modify_text">Modifier le texte</string>
     <string name="lyrics_editor_import_file">Importer un fichier de paroles</string>
     <string name="lyrics_editor_import_preview">Aperçu de l\'importation · %1$s</string>
-    <string name="lyrics_editor_import_preview_note">N-Zik enregistre la version affichée ici. Si le fichier contient également une version en texte brut séparée, cette version est laissée dans le fichier original.</string>
-    <string name="lyrics_editor_import_saved_other_mode">Importer sous %1$s. Sélectionnez cette option dans les paramètres de mode de paroles pour la voir.</string>
+    <string name="lyrics_editor_import_preview_note">N-Zik enregistre la version présentée ici. Si le fichier contient également une version en texte brut distincte, celle-ci est conservée dans le fichier d\'origine.</string>
+    <string name="lyrics_editor_import_saved_other_mode">L\'importation a été enregistrée sous le nom %1$s. Sélectionnez cette option dans les paramètres du mode « paroles » pour l\'afficher.</string>
     <string name="lyrics_editor_export_file">Exporter le fichier de paroles</string>
-    <string name="lyrics_editor_import_error">Impossible de lire ce fichier de paroles</string>
-    <string name="lyrics_editor_export_error">Impossible d\'exporter le fichier Lyricsfile.</string>
+    <string name="lyrics_editor_import_error">Impossible de lire ce fichier de paroles.</string>
+    <string name="lyrics_editor_export_error">Impossible d\'exporter le fichier de paroles.</string>
     <string name="lyrics_empty">Pas de paroles</string>
     <string name="lyrics_fetch_error_message">Une erreur est apparue lors de la récupération des paroles</string>
     <string name="lyrics_provider_fetch_error_message">Impossible de récupérer les paroles de %1$s</string>
@@ -115,8 +115,8 @@
     <string name="lyrics_offset">Décalage des paroles</string>
     <string name="lyrics_popup_messages_description">Afficher les messages popup liés aux paroles dans le lecteur.</string>
     <string name="lyrics_provider_settings_title">Fournisseurs de paroles</string>
-    <string name="lyrics_provider_minimum_one">Garder au moins un fournisseur activé par mode.</string>
-    <string name="lyrics_provider_format_word_timed">Mot par mot</string>
+    <string name="lyrics_provider_minimum_one">Veillez à ce qu\'au moins un fournisseur soit activé par mode.</string>
+    <string name="lyrics_provider_format_word_timed">Mot à mot</string>
     <string name="lyrics_provider_format_line_timed">Ligne par ligne</string>
     <string name="lyrics_provider_format_plain_text">Texte brut</string>
     <string name="lyrics_provider_betterlyrics_karaoke_label">%1$s (karaoké)</string>
@@ -187,10 +187,10 @@
     <string name="player_artwork_size_description">Ajustez la taille de l\'illustration du lecteur en fonction de l\'orientation actuelle.</string>
     <string name="player_artwork_technical_info_description">Afficher les informations de lecture technique dans le lecteur.</string>
     <string name="player_artwork_technical_info_title">Statistiques pour les geeks</string>
-    <string name="player_artwork_hold_to_speed_up_title">Maintenez pour accélérer</string>
-    <string name="player_artwork_hold_to_speed_up_description">Appuyez et maintenez la pochette pour accélérer temporairement la lecture</string>
-    <string name="player_artwork_hold_to_speed_up_rate_title">Accélérer la vitesse</string>
-    <string name="player_artwork_hold_to_speed_up_rate_description">Vitesse de lecture pendant que vous maintenez l\'illustration.</string>
+    <string name="player_artwork_hold_to_speed_up_title">Maintenez enfoncé pour accélérer</string>
+    <string name="player_artwork_hold_to_speed_up_description">Appuyez longuement sur l\'illustration pour accélérer temporairement la lecture</string>
+    <string name="player_artwork_hold_to_speed_up_rate_title">Augmenter la vitesse</string>
+    <string name="player_artwork_hold_to_speed_up_rate_description">Vitesse de lecture lorsque vous maintenez l\'illustration en sélection.</string>
     <string name="player_artwork_transition_circular">Circulaire</string>
     <string name="player_auto_load_songs_in_queue">Charger automatiquement les titres dans la file d\'attente</string>
     <string name="player_auto_load_songs_in_queue_description">Ajoute des titres quand la file d\'attente est sur le point de se terminer</string>
@@ -399,8 +399,8 @@
     <string name="audio_output_load_failed">Impossible de charger les appareils : %1$s</string>
     <string name="player_audio_mode">Audio</string>
     <string name="player_video_mode">Vidéo</string>
-    <string name="player_video_fullscreen">Passer en plein écran</string>
-    <string name="player_video_exit_fullscreen">Quitter le plein écran</string>
+    <string name="player_video_fullscreen">Passer en mode plein écran</string>
+    <string name="player_video_exit_fullscreen">Quitter le mode plein écran</string>
     <string name="player_video_unavailable">Impossible de trouver une vidéo</string>
     <string name="player_video_search_manually">Rechercher manuellement</string>
     <string name="player_video_play">Lire</string>
@@ -410,5 +410,5 @@
     <string name="player_statistics_field_value">%1$s : %2$s</string>
     <string name="audio_output_devices_unavailable">Impossible de charger les périphériques audio.</string>
     <string name="visualizer_position_format">%1$d/%2$d</string>
-    <string name="player_video_unavailable_search_hint">Impossible de trouver une vidéo. Maintenez le bouton Vidéo pour rechercher manuellement.</string>
+    <string name="player_video_unavailable_search_hint">Impossible de trouver une vidéo. Maintenez le bouton « Vidéo » enfoncé pour effectuer une recherche manuelle.</string>
 </resources>
