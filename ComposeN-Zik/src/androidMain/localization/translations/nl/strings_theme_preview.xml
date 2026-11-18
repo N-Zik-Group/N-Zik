@@ -3,6 +3,7 @@
     <string name="theme_preview_gallery_description">Zie hoe uw thema er over N-Zik uitziet met Normaal en Glazen voorbeelden.</string>
     <string name="theme_store_preview_section">Voorvertoning thema</string>
     <string name="theme_preview_generate">Voorbeeld genereren</string>
+    <string name="theme_preview_keep_open">Houd N-Zik open en vermijd de generatie van voorvertoningen te onderbreken totdat het klaar is.</string>
     <string name="theme_preview_replace">Afbeelding vervangen</string>
     <string name="theme_preview_scene_failed">Kon niet vastleggen %1$s.</string>
     <string name="theme_preview_replacement_failed">Kies een geldige portret afbeelding tot 16 megapixels.</string>
