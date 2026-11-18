@@ -366,6 +366,7 @@
     <string name="theme_store_followed">Tekijä seurasi</string>
     <string name="theme_store_unfollowed">Tekijä ei seurannut</string>
     <string name="theme_store_download">Lataa teema</string>
+    <string name="theme_store_not_downloaded">Ei ladattu</string>
     <string name="theme_store_downloading">Ladataan…</string>
     <string name="theme_store_download_saved">Teema ladattu</string>
     <string name="theme_store_download_failed">Ei voitu ladata tätä teemaa.</string>
