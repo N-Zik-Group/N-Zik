@@ -88,6 +88,30 @@ class AppearanceRecompositionTest {
     }
 
     @Test
+    fun `taking over from a fixed glass tint during an app fade keeps the visible tint`() {
+        val target = mutableStateOf(red)
+        val fadeFrom = mutableStateOf<Appearance?>(null)
+        val carriedTint = GlassArtworkTint(Color.Cyan)
+        val targetTint = mutableStateOf<GlassArtworkTint?>(null)
+        val samples = mutableListOf<GlassArtworkTint>()
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            ProvideAnimatedAppearance(target.value, fadeFrom.value, 320, {}, targetArtworkTint = targetTint.value) {
+                val scoped = LocalGlassArtworkTint.current?.value
+                SideEffect { if (scoped != null) samples += scoped }
+            }
+        }
+        composeRule.runOnIdle { fadeFrom.value = red; target.value = blue }
+        advanceFrames(80)
+        composeRule.runOnIdle { targetTint.value = carriedTint }
+        advanceFrames(100)
+        composeRule.runOnIdle {
+            assertTrue(samples.isNotEmpty())
+            assertTrue(samples.all { it == carriedTint })
+        }
+    }
+
+    @Test
     fun `scoped theme palette starts with the presented artwork paint`() {
         val target = mutableStateOf(red)
         val artworkPalette = mutableStateOf(red.colorPalette)

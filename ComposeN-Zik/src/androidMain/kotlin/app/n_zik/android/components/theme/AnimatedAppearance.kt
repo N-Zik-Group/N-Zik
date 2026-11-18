@@ -37,11 +37,21 @@ private val Appearance.darkness: Float get() = if (colorPalette.isDark) 1f else 
 internal val LocalNativeSurfaceMix = compositionLocalOf<NativeSurfaceMix?> { null }
 
 /** Tracks the coverage of the native black surface styles during a theme change. */
-internal data class NativeSurfaceMix(val pitchBlack: Float, val pureBlack: Float, val miniPlayerBlack: Float = 0f) {
+internal data class NativeSurfaceMix(
+    val pitchBlack: Float,
+    val pureBlack: Float,
+    val miniPlayerBlack: Float = 0f,
+    val transportBlack: Float = maxOf(pureBlack, miniPlayerBlack),
+    val dynamicTransportAccent: Float = 0f,
+    val lyricsBlackInk: Float = 0f,
+) {
     fun at(target: NativeSurfaceMix, fraction: Float) = NativeSurfaceMix(
         pitchBlack + (target.pitchBlack - pitchBlack) * fraction,
         pureBlack + (target.pureBlack - pureBlack) * fraction,
         miniPlayerBlack + (target.miniPlayerBlack - miniPlayerBlack) * fraction,
+        transportBlack + (target.transportBlack - transportBlack) * fraction,
+        dynamicTransportAccent + (target.dynamicTransportAccent - dynamicTransportAccent) * fraction,
+        lyricsBlackInk + (target.lyricsBlackInk - lyricsBlackInk) * fraction,
     )
 
     fun color(base: Color, pitchBlack: Color, pureBlack: Color): Color {
@@ -161,7 +171,10 @@ internal fun ProvideAnimatedAppearance(
         displayed.takeIf { fadeFrom != null } ?: AppearanceFrame(target, target.darkness, targetNativeSurfaceMix, targetArtworkTint),
     )
     val frame = currentFrame.value
-    val artworkTint = remember { derivedStateOf { currentFrame.value.artworkTint ?: GlassArtworkTint() } }
+    val carriedArtworkTint = rememberUpdatedState(targetArtworkTint)
+    val artworkTint = remember {
+        derivedStateOf { currentFrame.value.artworkTint ?: carriedArtworkTint.value ?: GlassArtworkTint() }
+    }
     CompositionLocalProvider(
         LocalAppearance provides frame.appearance,
         LocalPaletteDarkness provides frame.darkness,

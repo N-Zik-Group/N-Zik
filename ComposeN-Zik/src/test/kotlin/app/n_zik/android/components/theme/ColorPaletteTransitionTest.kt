@@ -2,6 +2,10 @@ package app.n_zik.android.components.theme
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
+import app.n_zik.android.components.player.playButtonNativeColor
+import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.enums.ColorPaletteName
+import app.n_zik.android.nativeSurfaceMix
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.DefaultLightColorPalette
 import app.n_zik.android.ui.styling.ModernBlackColorPalette
@@ -17,6 +21,18 @@ import org.junit.Assert.assertSame
 import org.junit.Test
 
 class ColorPaletteTransitionTest {
+    @Test
+    fun `black play plate follows the visible palette and stays black between black roles`() {
+        val normal = nativeSurfaceMix(ColorPaletteMode.Dark, ColorPaletteName.Default, DefaultDarkColorPalette)
+        val named = nativeSurfaceMix(ColorPaletteMode.Dark, ColorPaletteName.ModernBlack, ModernBlackColorPalette)
+        val mode = nativeSurfaceMix(ColorPaletteMode.PureBlack, ColorPaletteName.Dynamic, DefaultDarkColorPalette)
+        val base = Color(0xCC808080)
+        assertEquals(lerp(base, Color.Black, .5f), playButtonNativeColor(
+            ColorPaletteName.ModernBlack, base, blackCoverage = normal.at(named, .5f).transportBlack,
+        ))
+        assertEquals(1f, named.at(mode, .5f).transportBlack, 0f)
+    }
+
     @Test
     fun `default icon roles remain familiar during a light to dark fade`() {
         val from = DefaultLightColorPalette

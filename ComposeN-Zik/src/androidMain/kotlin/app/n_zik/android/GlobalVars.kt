@@ -156,6 +156,9 @@ internal fun nativeSurfaceMix(mode: ColorPaletteMode, name: ColorPaletteName, pa
         pitchBlack = if (pitch) 1f else 0f,
         pureBlack = if (pure) 1f else 0f,
         miniPlayerBlack = if (namedBlack) 1f else 0f,
+        dynamicTransportAccent = if (name == ColorPaletteName.Dynamic &&
+            (mode == ColorPaletteMode.PitchBlack || pure)) 1f else 0f,
+        lyricsBlackInk = if (name == ColorPaletteName.PureBlack) 1f else 0f,
     )
 }
 
