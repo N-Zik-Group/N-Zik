@@ -73,3 +73,11 @@ Player and Theme Store follow-up:
   - Reuse the 20 dp, borderless song download control. Verify that disk theme stays downloaded after Back and Android Home and that its creator card shows the same state.
 - test(player): exercise 42,090 transport combinations, including all seven background families and Glass settings. Apply and undo all eight official theme documents across five palette modes with Glass off and on.
 - fix(theme-store): synchronize the 64 bundled Stock preview hashes with the published preview index.
+
+Palette transitions and playback follow-up:
+- fix(player): wait for the presented artwork, then synchronize the background, transport accents, Glass, lyrics and visualizer. Keep a neutral anthracite gradient for black artwork and resolve contrast against the rendered region under the controls and Android bars.
+- fix(theme): carry the displayed palette through navigation, ripple feedback, mini-player surfaces and Glass menus and dialogs. Keep the artwork tint visible while switching between Dynamic and fixed themes.
+- perf(player): share the rotation angle for the cover and disc, and stop decorative rotation when it is hidden or another layer owns it.
+- fix(theme-store): retain the displayed screenshot until the replacement is decoded and keep an open preview on the selected scene when its variant changes.
+- fix(locale): localize duration units in playback, library statistics and settings.
+- fix(lyrics): reuse available lyrics in Auto mode and stop provider lookup after the first usable result.
