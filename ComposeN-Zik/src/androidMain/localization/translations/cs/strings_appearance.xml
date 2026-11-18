@@ -366,6 +366,7 @@
     <string name="theme_store_followed">Tvůrce následoval</string>
     <string name="theme_store_unfollowed">Tvůrce nesledoval</string>
     <string name="theme_store_download">Stáhnout motiv</string>
+    <string name="theme_store_not_downloaded">Nenahráno</string>
     <string name="theme_store_downloading">Stahování…</string>
     <string name="theme_store_download_saved">Motiv stažen</string>
     <string name="theme_store_download_failed">Nemohu stáhnout tento motiv.</string>
