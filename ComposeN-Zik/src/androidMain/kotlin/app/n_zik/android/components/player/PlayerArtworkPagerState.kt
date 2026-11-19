@@ -31,18 +31,6 @@ fun rememberPlayerArtworkPagerState(
         pageCount = pageCount)
 }
 
-/**
- * A seek from playback can precede the page motion. A drag previews its artwork
- * immediately and commits the seek only when the pager settles.
- */
-internal fun shouldHoldPlayerArtworkBackground(
-    settledPage: Int?,
-    playingPage: Int,
-    requestedPage: Int,
-    dragging: Boolean,
-): Boolean = settledPage != null && playingPage >= 0 && requestedPage == playingPage &&
-    settledPage != playingPage && !dragging
-
 internal suspend fun PagerState.animatePlayerArtworkScrollToPage(
     page: Int,
     animationSpec: AnimationSpec<Float>,

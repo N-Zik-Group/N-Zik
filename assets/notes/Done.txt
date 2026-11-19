@@ -17,6 +17,9 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(player): start the palette fade when the incoming artwork is presented
+  - Keep the displayed palette until the correct cover has drawn and its colors are ready. Match the report to the visible track and artwork revision in Essential, the Modern carousel, fullscreen artwork and the blurred backdrop.
+  - Let the player finish its color fade during cover motion. Keep incidental app palette changes from interrupting the player transition.
 - fix(player): preserve the expanded layout preference after video picture-in-picture (issue https://github.com/N-Zik-Group/N-Zik/issues/1013)
   - Keep landscape expansion in temporary player state so entering video PiP or recreating the player cannot overwrite the portrait preference for the active profile.
   - Keep the landscape expand action available when shown. Verify both portrait choices on the Pixel by returning through Android's PiP expand control.

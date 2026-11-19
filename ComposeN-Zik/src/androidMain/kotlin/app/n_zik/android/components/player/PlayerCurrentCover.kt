@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
@@ -108,6 +109,7 @@ internal const val PLAYER_COVER_FADE_MS = 500
 internal fun PlayerCoverCrossfade(
     frame: PlayerCoverFrame<Painter>,
     modifier: Modifier = Modifier,
+    onIncomingArtworkDrawn: (() -> Unit)? = null,
     onSettled: ((Boolean) -> Unit)? = null,
 ) {
     val cropVideo by rememberPreference(cropVideoThumbnailsKey, true)
@@ -121,13 +123,19 @@ internal fun PlayerCoverCrossfade(
         animationSpec = tween(PLAYER_COVER_FADE_MS, easing = FastOutSlowInEasing),
     ) { visible ->
         val source = rememberDisplayArtworkSource(visible.identity.artworkUri)
+        val reportDraw = if (visible.identity == frame.identity && onIncomingArtworkDrawn != null) {
+            Modifier.drawWithContent {
+                drawContent()
+                onIncomingArtworkDrawn()
+            }
+        } else Modifier
         Image(
             painter = visible.image,
             contentDescription = stringResource(R.string.accessibility_blurred_background),
             // The theme covers the whole rotation-safe surface; a fitted video leaves
             // empty strips above and below the player even when its foreground is cropped.
             contentScale = if (cropVideo && isVideoArtwork(source)) ContentScale.Crop else ContentScale.Fit,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().then(reportDraw),
         )
     }
 }
@@ -147,6 +155,8 @@ internal fun PlayerCurrentCover(
     allowOwnRotation: Boolean = true,
     committedRevision: Long? = null,
     onBackdropSettled: ((PlayerCoverFrame<Painter>?) -> Unit)? = null,
+    presentationMediaId: String? = null,
+    onArtworkPresented: ((PlayerCoverIdentity) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val identity = rememberPlayerCoverIdentity(mediaId, artworkUri)
@@ -170,6 +180,13 @@ internal fun PlayerCurrentCover(
         )
     }
     val frame = frames.displayed
+    var drawnIdentity by remember { mutableStateOf<PlayerCoverIdentity?>(null) }
+    if (presentationMediaId != null && onArtworkPresented != null) {
+        val presentation = identity.copy(mediaId = presentationMediaId)
+        ReportPresentedPlayerCover(presentation, ready = drawnIdentity == identity, active = true) {
+            onArtworkPresented(presentation)
+        }
+    }
     if (onBackdropSettled != null && frame == null) {
         SideEffect { onBackdropSettled(null) }
     }
@@ -206,6 +223,11 @@ internal fun PlayerCurrentCover(
                         scaleY = scale
                         rotationZ = if (ownsRotation) angle.value else 0f
                     },
+                onIncomingArtworkDrawn = if (presentationMediaId != null &&
+                    frame.identity == identity && drawnIdentity != identity
+                ) {
+                    { drawnIdentity = identity }
+                } else null,
                 onSettled = onBackdropSettled?.let { report ->
                     { settled ->
                         report(frame.takeIf {

@@ -124,8 +124,8 @@ fun PaletteFade(
     val targetPaint = artworkTarget.value
     val targetPalette = targetPaint?.themePalette ?: targetAppearance.colorPalette
 
-    val moving = artworkInMotion?.value == true
-    LaunchedEffect(targetPalette, targetPaint, moving) {
+    val waitForAmbientPalette = targetPaint?.themePalette == null && artworkInMotion?.value == true
+    LaunchedEffect(targetPalette, targetPaint, waitForAmbientPalette) {
         val fromPaint = displayed?.paint ?: targetPaint
         fun publish(progress: Float) {
             val paint = if (progress == 1f || targetPaint == null) targetPaint else fromPaint?.at(targetPaint, progress)
@@ -136,7 +136,7 @@ fun PaletteFade(
             publish(1f)
             return@LaunchedEffect
         }
-        if (moving) return@LaunchedEffect
+        if (waitForAmbientPalette) return@LaunchedEffect
         if (artworkInMotion != null && targetPaint?.themePalette == null) {
             // Ambient palette updates can precede the player's pager request. Scoped artwork paint
             // is already committed by the visible player, after its cover and layout gates.

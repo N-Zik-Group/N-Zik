@@ -11,6 +11,7 @@ import app.n_zik.android.components.glass.rememberGlassRawPressFeedback
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.EnterExitState
+import app.n_zik.android.components.player.PlayerCoverIdentity
 import app.n_zik.android.components.player.rememberPlayerCoverIdentity
 import app.n_zik.android.components.player.ReportPresentedPlayerCover
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -134,7 +135,7 @@ import androidx.media3.datasource.HttpDataSource
 @ExperimentalAnimationApi
 @UnstableApi
 @Composable
-fun Thumbnail(
+internal fun Thumbnail(
     thumbnailTapEnabledKey: Boolean,
     isShowingLyrics: Boolean,
     onShowLyrics: (Boolean) -> Unit,
@@ -149,7 +150,7 @@ fun Thumbnail(
     verticalPadding: Dp = 8.dp,
     currentArtworkUrl: String? = null,
     publishArtworkColors: Boolean = false,
-    onArtworkPresented: (() -> Unit)? = null,
+    onArtworkPresented: ((PlayerCoverIdentity) -> Unit)? = null,
     rotationActive: Boolean = true,
 ) {
     val context = LocalContext.current
@@ -284,9 +285,9 @@ fun Thumbnail(
 
         if (onArtworkPresented != null) ReportPresentedPlayerCover(
             identity = coverIdentity,
-            ready = artworkDrawn.value || !artImageAvailable,
-            active = isCurrentWindow && transition.currentState == EnterExitState.Visible && !transition.isRunning,
-            onPresented = onArtworkPresented,
+            ready = artworkDrawn.value,
+            active = isCurrentWindow && transition.targetState == EnterExitState.Visible,
+            onPresented = { onArtworkPresented(coverIdentity) },
         )
 
         val thumbnailType by rememberPreference(thumbnailTypeKey, ThumbnailType.Modern)

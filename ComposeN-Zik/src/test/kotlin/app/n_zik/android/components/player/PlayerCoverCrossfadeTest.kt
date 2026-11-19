@@ -98,9 +98,13 @@ class PlayerCoverCrossfadeTest {
     @Test fun `loaded cover fades instead of switching immediately`() {
         val frame = mutableStateOf(PlayerCoverFrame<Painter>(PlayerCoverIdentity("a", "a"), ColorPainter(Color.Red)))
         var backdropSettled = false
+        var drawn: PlayerCoverIdentity? = null
         compose.mainClock.autoAdvance = false
         compose.setContent {
-            PlayerCoverCrossfade(frame.value, Modifier.size(80.dp).testTag("cover")) { backdropSettled = it }
+            val current = frame.value
+            PlayerCoverCrossfade(current, Modifier.size(80.dp).testTag("cover"),
+                onIncomingArtworkDrawn = { drawn = current.identity },
+            ) { backdropSettled = it }
         }
         fun pixel() = compose.onNodeWithTag("cover").captureToImage().toPixelMap().let {
             it[it.width / 2, it.height / 2]
@@ -116,6 +120,7 @@ class PlayerCoverCrossfadeTest {
         val middle = pixel()
         assertTrue("Both images participate during the fade", middle.red > 0.05f && middle.blue > 0.05f)
         assertFalse(backdropSettled)
+        assertTrue(drawn == frame.value.identity)
         compose.mainClock.advanceTimeBy(PLAYER_COVER_FADE_MS.toLong())
         assertTrue("The replacement finishes fully visible", pixel().blue > 0.9f)
         assertTrue(backdropSettled)

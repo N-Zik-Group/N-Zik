@@ -154,7 +154,6 @@ import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import app.n_zik.android.components.player.rememberPlayerArtworkPagerState
 import app.n_zik.android.components.player.animatePlayerArtworkScrollToPage
-import app.n_zik.android.components.player.shouldHoldPlayerArtworkBackground
 import app.n_zik.android.components.player.shouldWaitForPlayerBackdrop
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -572,7 +571,6 @@ fun Player(
         true
     }
     var nullableMediaItem by nullableMediaItemState
-    var requestedArtworkPage by remember(player, playerUpdateTrigger) { mutableIntStateOf(C.INDEX_UNSET) }
 
     var shouldBePlaying by remember(playerUpdateTrigger) {
         mutableStateOf(player.shouldBePlaying)
@@ -770,18 +768,11 @@ fun Player(
 
     player.DisposableListener(playerUpdateTrigger) {
         object : Player.Listener {
-            private var observedArtworkPage = player.currentMediaItemIndex
-
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 isActuallyPlaying = isPlaying
             }
 
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                val page = player.currentMediaItemIndex
-                if (observedArtworkPage != page) {
-                    observedArtworkPage = page
-                    requestedArtworkPage = page
-                }
                 nullableMediaItem = mediaItem
             }
 
@@ -917,7 +908,6 @@ fun Player(
     val playingArtwork = rememberGlassArtwork(player)
     fun coverUrl(item: MediaItem?): String? =
         playingArtwork?.takeIf { it.mediaId == item?.mediaId }?.uri ?: item?.mediaMetadata?.artworkUri?.toString()
-    val currentCoverUrl = coverUrl(currentSwipedMediaItem)
     val visiblePlayerArtwork = playerContentVisible && !appRunningInBackground
     val fullscreenPagerOwnsArtwork = showFullScreenArtworkPager && !fullCoverPresentation
     val carouselOwnsArtwork = !showInlineVideo && playerType == PlayerType.Modern &&
@@ -925,11 +915,7 @@ fun Player(
         (!isLandscape || !fullCoverPresentation) && !fullscreenPagerOwnsArtwork
     val thumbnailOwnsArtwork = !showInlineVideo && playerType == PlayerType.Essential &&
         showLandscapeArtworkColumn && coverArtworkVisible
-    val colorArtworkItem = when {
-        carouselOwnsArtwork -> mediaItem
-        thumbnailOwnsArtwork -> mediaItem
-        else -> currentSwipedMediaItem
-    }
+    val colorArtworkItem = if (fullscreenPagerOwnsArtwork) currentSwipedMediaItem else mediaItem
     if (visiblePlayerArtwork) ImageCacheFactory.ObserveDisplayedArtwork()
     val coverDisplayResult = rememberArtworkDisplayResult(
         coverUrl(colorArtworkItem), !lightTheme, awaitArtworkMetadata = colorArtworkItem.mediaId == mediaItem.mediaId,
@@ -940,36 +926,27 @@ fun Player(
     val useArtworkTheme = paletteName == ColorPaletteName.Dynamic
     val artworkFallback = remember(lightTheme) { dynamicArtworkFallback(!lightTheme) }
     val targetCover = rememberPlayerCoverIdentity(mediaItem.mediaId, coverUrl(mediaItem).orEmpty())
+    val paletteCover = if (colorArtworkItem.mediaId == mediaItem.mediaId) targetCover
+        else rememberPlayerCoverIdentity(colorArtworkItem.mediaId, coverUrl(colorArtworkItem).orEmpty())
     var presentedCover by remember(player, playerUpdateTrigger, isLandscape) { mutableStateOf<PlayerCoverIdentity?>(null) }
     val drawsArtwork = !showCoverThumbnailAnimation || (
         coverThumbnailAnimation != ThumbnailCoverType.CD &&
             (coverThumbnailAnimation != ThumbnailCoverType.Vinyl || !carouselOwnsArtwork || imageCoverSize > 0f)
         )
-    val expectsForegroundCover = visiblePlayerArtwork && drawsArtwork && (carouselOwnsArtwork || thumbnailOwnsArtwork)
-    val waitingForCover = expectsForegroundCover && targetCover.artworkUri.isNotBlank() &&
-        targetCover.artworkUri != "null" && presentedCover != targetCover
+    val hasForegroundArtwork =
+        fullscreenPagerOwnsArtwork || (drawsArtwork && (carouselOwnsArtwork || thumbnailOwnsArtwork))
+    val expectsForegroundCover = visiblePlayerArtwork && hasForegroundArtwork
+    val waitingForCover = expectsForegroundCover && paletteCover.artworkUri.isNotBlank() &&
+        paletteCover.artworkUri != "null" && presentedCover != paletteCover
     val dynamicColorPalette = coverDisplay?.palette?.let { palette ->
         if (coverDisplay.forceDark) palette.copy(accent = coverDisplay.foreground ?: palette.text) else palette
     } ?: if (useArtworkTheme) artworkFallback else globalTargetPalette
-    val carouselMovesArtwork = visiblePlayerArtwork && carouselOwnsArtwork && (!isLandscape || !isShowingLyrics)
-    val holdBackgroundArtwork = waitingForCover || (visiblePlayerArtwork && !coverDisplayResult.resolved) ||
-        shouldHoldPlayerArtworkBackground(
-            settledPage = if (carouselMovesArtwork) pagerState.settledPage else null,
-            playingPage = player.currentMediaItemIndex,
-            requestedPage = requestedArtworkPage,
-            dragging = carouselMovesArtwork && isDragged,
-        )
-    val backgroundCoverUrl = if (carouselOwnsArtwork || thumbnailOwnsArtwork) targetCover.artworkUri else currentCoverUrl
-    val backgroundCoverRevision = if (backgroundCoverUrl == targetCover.artworkUri) targetCover.localRevision
-        else rememberPlayerCoverIdentity(colorArtworkItem.mediaId, backgroundCoverUrl.orEmpty()).localRevision
-    val nextBackgroundArtwork = PlayerBackgroundArtwork(mediaItem.mediaId, backgroundCoverUrl,
-        backgroundCoverRevision, coverDisplay, dynamicColorPalette)
+    val holdBackgroundArtwork = waitingForCover || (visiblePlayerArtwork && !coverDisplayResult.resolved)
+    val nextBackgroundArtwork = PlayerBackgroundArtwork(paletteCover.mediaId, paletteCover.artworkUri,
+        paletteCover.localRevision, coverDisplay, dynamicColorPalette)
     val retainedBackgroundArtwork = remember(playerUpdateTrigger) { mutableStateOf(nextBackgroundArtwork) }
     val backgroundArtwork = if (holdBackgroundArtwork) retainedBackgroundArtwork.value else nextBackgroundArtwork
     if (!holdBackgroundArtwork) SideEffect { retainedBackgroundArtwork.value = nextBackgroundArtwork }
-    val finishArtworkScroll: (Int) -> Unit = { page ->
-        if (requestedArtworkPage == page) requestedArtworkPage = C.INDEX_UNSET
-    }
 
     val backgroundDisplay = backgroundArtwork.display
     val backgroundPalette = backgroundArtwork.palette
@@ -1032,6 +1009,7 @@ fun Player(
         ?: rememberPlayerSheetGlassTransition(playerSheetState)
     val blurAdjuster = BlurAdjuster()
     val waitForBlurredCover = playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor
+    var presentedBackdrop by remember(waitForBlurredCover, isLandscape) { mutableStateOf<PlayerCoverIdentity?>(null) }
     var settledBackdrop by remember(waitForBlurredCover) { mutableStateOf<PlayerCoverFrame<Painter>?>(null) }
     val backgroundArtworkPager = when {
         showFullScreenArtworkPager -> pagerStateFS
@@ -1085,10 +1063,16 @@ fun Player(
         lyricsForeground = coverForeground ?: Color.DarkGray,
         visualizerForeground = coverForeground ?: Color.White,
         lyricsSurface = backgroundDisplay?.takeIf { it.forceDark }?.background ?: targetPalette.accent,
-        themePalette = artworkThemePalette,
+        themePalette = targetPalette,
     )
     val artworkPaintTarget = LocalPlayerArtworkPaintTarget.current
-    if (!holdBackgroundArtwork) SideEffect { artworkPaintTarget?.value = targetArtworkPaint }
+    val backdropOwnsPresentation = visiblePlayerArtwork && waitForBlurredCover && !expectsForegroundCover
+    val backdropPresented = presentedBackdrop == PlayerCoverIdentity(
+        backgroundArtwork.mediaId, backgroundArtwork.coverUrl.orEmpty(), backgroundArtwork.coverRevision,
+    )
+    if (!holdBackgroundArtwork && (!backdropOwnsPresentation || backdropPresented)) {
+        SideEffect { artworkPaintTarget?.value = targetArtworkPaint }
+    }
     val scopedArtworkPaint = LocalPlayerArtworkPaint.current
     val latestArtworkTarget = rememberUpdatedState(targetArtworkPaint)
     val artworkPaint = remember(scopedArtworkPaint) {
@@ -1182,15 +1166,24 @@ fun Player(
         publishArtworkColors: Boolean = false,
         allowOwnRotation: Boolean = decorationsActive,
         committedRevision: Long? = null,
+        fullscreenPresentationMediaId: String? = null,
     ) {
         // Sampling and Glass may toggle during sheet motion; the cover must retain its identity.
         Box(Modifier.fillMaxSize().then(
             if (capturePlayerBackground && captureBackdrop) Modifier.layerBackdrop(playerCoverBackground) else Modifier
         )) {
+            val presentationMediaId = fullscreenPresentationMediaId
+                ?: backgroundArtwork.mediaId.takeIf { captureBackdrop && backdropOwnsPresentation }
             PlayerCurrentCover(thumbnailUrl, thumbnailUrl, blurAdjuster, showThumbnail, noBlur,
                 isShowingLyrics, isShowingVisualizer, modifier, publishArtworkColors,
                 allowOwnRotation = allowOwnRotation,
                 committedRevision = committedRevision,
+                presentationMediaId = presentationMediaId,
+                onArtworkPresented = when {
+                    fullscreenPresentationMediaId != null -> { identity -> presentedCover = identity }
+                    presentationMediaId != null -> { identity -> presentedBackdrop = identity }
+                    else -> null
+                },
                 onBackdropSettled = if (captureBackdrop && waitForBlurredCover) {
                     { settledBackdrop = it }
                 } else null,
@@ -1447,7 +1440,7 @@ fun Player(
                 publishArtworkColors = visiblePlayerArtwork && thumbnailOwnsArtwork && !fullscreenPagerOwnsArtwork,
                 rotationActive = decorationsActive,
                 onArtworkPresented = if (expectsForegroundCover && thumbnailOwnsArtwork) {
-                    { presentedCover = targetCover }
+                    { identity -> presentedCover = identity }
                 } else null,
                 thumbnailTapEnabledKey = thumbnailTapEnabled,
                 isShowingLyrics = isShowingLyrics,
@@ -1642,6 +1635,9 @@ fun Player(
 
                      if (fullCoverPresentation) FullCoverPagerPage() else PlayerBlurredCover(
                          thumbnailUrl = coverUrl(mediaItems.getOrNull(it)).orEmpty(),
+                         fullscreenPresentationMediaId = mediaItems.getOrNull(it)?.mediaId?.takeIf { _ ->
+                             expectsForegroundCover && it == pagerStateFS.currentPage
+                         },
                          publishArtworkColors = visiblePlayerArtwork && it == pagerStateFS.currentPage,
                          captureBackdrop = false,
                          allowOwnRotation = decorationsActive && isSettledCover && !rotateFullscreenCover,
@@ -1790,7 +1786,6 @@ fun Player(
                                        playerContentVisible = playerContentVisible,
                                        skipAnimation = isShowingLyrics,
                                        paceArtworkMotion = true,
-                                       onSynchronized = finishArtworkScroll,
                                    )
 
                                   pagerState.slideSettledPageEffect(
@@ -1837,8 +1832,7 @@ fun Player(
                                          identity = pageCover,
                                          ready = artworkDrawn.value,
                                          active = expectsForegroundCover && pageCover == targetCover &&
-                                             it == player.currentMediaItemIndex && it == pagerState.settledPage &&
-                                             !pagerState.isScrollInProgress,
+                                             it == player.currentMediaItemIndex && it == pagerState.currentPage,
                                      ) { presentedCover = pageCover }
 
                                       val coverModifier = Modifier.playerThumbnailCover(
@@ -2154,6 +2148,9 @@ fun Player(
                         ) {
                             if (fullCoverPresentation) FullCoverPagerPage() else PlayerBlurredCover(
                                 thumbnailUrl = coverUrl(mediaItems.getOrNull(it)).orEmpty(),
+                                fullscreenPresentationMediaId = mediaItems.getOrNull(it)?.mediaId?.takeIf { _ ->
+                                    expectsForegroundCover && it == pagerStateFS.currentPage
+                                },
                                 publishArtworkColors = visiblePlayerArtwork && it == pagerStateFS.currentPage,
                                 captureBackdrop = false,
                                 allowOwnRotation = decorationsActive && isSettledCover && !rotateFullscreenCover,
@@ -2464,7 +2461,6 @@ fun Player(
                                        appRunningInBackground,
                                        playerContentVisible = playerContentVisible,
                                        paceArtworkMotion = true,
-                                       onSynchronized = finishArtworkScroll,
                                    )
 
                                    pagerState.slideSettledPageEffect(
@@ -2533,8 +2529,7 @@ fun Player(
                                          identity = pageCover,
                                          ready = artworkDrawn.value,
                                          active = expectsForegroundCover && pageCover == targetCover &&
-                                             it == player.currentMediaItemIndex && it == pagerState.settledPage &&
-                                             !pagerState.isScrollInProgress,
+                                             it == player.currentMediaItemIndex && it == pagerState.currentPage,
                                      ) { presentedCover = pageCover }
 
                                       val coverModifier = Modifier.playerThumbnailCover(

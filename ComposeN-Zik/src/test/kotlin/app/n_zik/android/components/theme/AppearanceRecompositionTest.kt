@@ -136,19 +136,19 @@ class AppearanceRecompositionTest {
             }
         }
         advanceFrames(96)
-        composeRule.runOnIdle { moving.value = true; artworkPalette.value = blue.colorPalette }
+        composeRule.runOnIdle { moving.value = true; target.value = green }
         advanceFrames(160)
         composeRule.runOnIdle {
             assertEquals(red.colorPalette.text to red.colorPalette.text, samples.last())
-            moving.value = false
+            artworkPalette.value = blue.colorPalette
         }
         advanceFrames(180)
         composeRule.runOnIdle {
             assertTrue(samples.any { (text, _) -> text != red.colorPalette.text && text != blue.colorPalette.text })
             assertTrue(samples.all { (text, paint) -> text == paint })
-            target.value = green
+            moving.value = false
         }
-        advanceFrames(400)
+        advanceFrames(220)
         composeRule.runOnIdle { assertEquals(blue.colorPalette.text to blue.colorPalette.text, samples.last()) }
     }
 
