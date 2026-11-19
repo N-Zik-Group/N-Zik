@@ -462,6 +462,16 @@ internal suspend fun computePlayerDynamicPalette(
     )
 }
 
+@Composable
+internal fun rememberPlayerExpansionState(
+    isLandscape: Boolean,
+    portraitPreference: MutableState<Boolean>,
+): MutableState<Boolean> {
+    // Video can force landscape or replace the player composition during PiP.
+    // Landscape layout changes must stay out of the persisted portrait preference.
+    return if (isLandscape) remember { mutableStateOf(true) } else portraitPreference
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation", "RememberReturnType", "NewApi")
@@ -542,21 +552,10 @@ fun Player(
     val statsfornerds by rememberPreference( statsfornerdsKey, false )
     val topPadding by rememberPreference( topPaddingKey, true )
     var swipeAnimationNoThumbnail by rememberPreference( swipeAnimationsNoThumbnailKey, SwipeAnimationNoThumbnail.Sliding )
-    val expandPlayerState = rememberPreference( expandedplayerKey, false )
-    var expandedplayer by expandPlayerState
-    // Landscape forces the expanded layout (left artwork column + stacked carousel).
-    // The portrait expand state is captured before that and restored when coming
-    // back, so portrait keeps the layout the user left it in.
     val playerInLandscape = isLandscape
-    var portraitExpandedPlayer by remember { mutableStateOf(expandedplayer) }
-    LaunchedEffect( playerInLandscape ) {
-        if ( playerInLandscape ) {
-            portraitExpandedPlayer = expandedplayer
-            expandedplayer = true
-        } else {
-            expandedplayer = portraitExpandedPlayer
-        }
-    }
+    val portraitExpansionPreference = rememberPreference(expandedplayerKey, false)
+    val expandPlayerState = rememberPlayerExpansionState(playerInLandscape, portraitExpansionPreference)
+    val expandedplayer by expandPlayerState
     // Animate the bottom gradient start so it does not flash on expand/back.
     val playerGradientStartY by animateFloatAsState(
         targetValue = if ( playerInLandscape ) 600f else if ( expandedplayer ) 1300f else 950f,
