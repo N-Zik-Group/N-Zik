@@ -102,13 +102,16 @@ class PageButtonTest {
         }
     }
 
-    @Test fun `page role film uses safe canvas and keeps foreground sharp including disabled fill`() {
+    @Test fun `page role film uses the theme fallback and keeps foreground sharp including disabled fill`() {
         val role = mutableStateOf(DefaultDarkColorPalette.accent)
         val enabled = mutableStateOf(true)
         val settings = GlassSettings(film = .5f, rim = 0f, blur = 0f, vibrancy = 0f, depth = 0f, amount = 0f)
         val disabled = Color.Blue.copy(alpha = .4f)
+        var fallbackRole = Color.Unspecified
         compose.setContent {
             PageButtonAppearance {
+                val themedFilm = glassActionFilmColor()
+                SideEffect { fallbackRole = themedFilm }
                 val forbidden = rememberCanvasBackdrop { error("The page capture must never sample its own button") }
                 CompositionLocalProvider(LocalGlassBackdrop provides forbidden) {
                     Box(Modifier.background(DefaultDarkColorPalette.background0), contentAlignment = Alignment.Center) {
@@ -134,6 +137,8 @@ class PageButtonTest {
                 compose.runOnIdle { role.value = fill }
                 check(fill)
             }
+        compose.runOnIdle { role.value = Color.Transparent }
+        check(fallbackRole)
         compose.runOnIdle { enabled.value = false }
         check(disabled)
     }

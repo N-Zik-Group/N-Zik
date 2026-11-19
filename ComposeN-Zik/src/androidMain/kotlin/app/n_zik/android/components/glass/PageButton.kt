@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.unit.dp
@@ -196,7 +197,7 @@ private fun Modifier.pageButtonMaterial(
     val background = colorPalette().background0
     val drawBackground: DrawScope.() -> Unit = remember(background) { { drawRect(background) } }
     val backdrop = LocalGlassContainerBackdrop.current ?: rememberCanvasBackdrop(drawBackground)
-    val roleFill = if (enabled) colors.containerColor else colors.disabledContainerColor
+    val roleFill = pageButtonFilmRole(if (enabled) colors.containerColor else colors.disabledContainerColor)
     return glassMaterial(
         settings = settings.forArea(GlassArea.ActionButtons),
         shape = shape,
@@ -210,8 +211,12 @@ private fun Modifier.pageButtonMaterial(
 @Composable
 private fun pageButtonColors(colors: ButtonColors, settings: GlassSettings, material: Boolean): ButtonColors {
     if (!material) return colors
-    val plate = glassFilmColor(settings.forArea(GlassArea.ActionButtons), colors.containerColor, menu = false)
+    val plate = glassFilmColor(settings.forArea(GlassArea.ActionButtons), pageButtonFilmRole(colors.containerColor), menu = false)
     val surface = effectiveSurfaceColor(surfaceBackdropColor(), plate)
     return colors.copy(containerColor = Color.Transparent, disabledContainerColor = Color.Transparent,
         contentColor = glassPaneForeground(colors.contentColor, surface, TextContrast, glassSurfaceDarkness(settings)))
 }
+
+@Composable
+private fun pageButtonFilmRole(color: Color): Color =
+    if (color.isSpecified && color.alpha > 0f) color else glassActionFilmColor()
