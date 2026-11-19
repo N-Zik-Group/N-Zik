@@ -41,6 +41,8 @@ internal data class PlayerQueueSnapshot(
     val allSongs: List<Song>,
     val rowsByUid: Map<Any, PlayerQueueRow>,
 ) {
+    fun initialPlaceholderCount(windowCount: Int): Int = if (source.isEmpty()) windowCount else 0
+
     companion object {
         val Empty = PlayerQueueSnapshot(emptyList(), "", emptyList(), emptyList(),
             emptyList(), emptyList(), emptyMap())
@@ -165,9 +167,11 @@ internal suspend fun playerQueueDuration(
 
 /** Parent recompositions reuse the result; disabled duration performs no metadata parsing. */
 @Composable
-fun rememberPlayerQueueDuration(mediaItems: List<MediaItem>, enabled: Boolean): Long {
-    val duration by produceState(0L, mediaItems, enabled) {
-        if (enabled) value = playerQueueDuration(mediaItems)
+fun rememberPlayerQueueDuration(mediaItems: List<MediaItem>, enabled: Boolean): Long? {
+    if (!enabled) return null
+    if (mediaItems.isEmpty()) return 0L
+    val duration by produceState<Pair<List<MediaItem>, Long>?>(null, mediaItems) {
+        value = mediaItems to playerQueueDuration(mediaItems)
     }
-    return if (enabled) duration else 0L
+    return duration?.takeIf { it.first == mediaItems }?.second
 }

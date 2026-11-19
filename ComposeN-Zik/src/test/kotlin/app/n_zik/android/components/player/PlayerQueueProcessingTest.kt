@@ -2,6 +2,7 @@ package app.n_zik.android.components.player
 
 import android.app.Application
 import android.os.Bundle
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.referentialEqualityPolicy
 import androidx.compose.runtime.snapshots.Snapshot
@@ -15,6 +16,7 @@ import app.n_zik.android.utils.durationTextToMillis
 import io.mockk.every
 import io.mockk.mockk
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CompletableDeferred
@@ -46,6 +48,45 @@ class PlayerQueueProcessingTest {
     private fun window(uid: String, item: MediaItem) = Timeline.Window().apply {
         this.uid = uid
         mediaItem = item
+    }
+
+    @Test
+    fun `first nonempty timeline supplies placeholders until its rows arrive`() {
+        val windows = listOf(window("first", media("first", "First")), window("second", media("second", "Second")))
+        val release = CompletableDeferred<Unit>()
+        var snapshot = PlayerQueueSnapshot.Empty
+        compose.setContent {
+            snapshot = rememberPlayerQueueSnapshot(windows, "", normalizeQueue = { source, previous ->
+                release.await()
+                normalizePlayerQueue(source, previous)
+            })
+        }
+        compose.runOnIdle {
+            assertEquals(2, snapshot.initialPlaceholderCount(windows.size))
+            assertEquals(0, snapshot.initialPlaceholderCount(0))
+            release.complete(Unit)
+        }
+        compose.waitUntil(5_000) { snapshot.rows.size == 2 }
+        compose.runOnIdle { assertEquals(0, snapshot.initialPlaceholderCount(windows.size)) }
+    }
+
+    @Test
+    fun `queue duration gives pending for a new timeline and zero for a true empty timeline`() {
+        val source = mutableStateOf(listOf(media("first", "First", duration = "1:00")))
+        val readings = CopyOnWriteArrayList<Pair<String?, Long?>>()
+        compose.setContent {
+            val items = source.value
+            val total = rememberPlayerQueueDuration(items, enabled = true)
+            SideEffect { readings.add(items.firstOrNull()?.mediaId to total) }
+        }
+        compose.waitUntil(5_000) { ("first" to 60_000L) in readings }
+        applySnapshotChanges { source.value = listOf(media("second", "Second", duration = "2:00")) }
+        compose.waitUntil(5_000) { ("second" to 120_000L) in readings }
+        applySnapshotChanges { source.value = emptyList() }
+        compose.waitUntil(5_000) { (null to 0L) in readings }
+        assertTrue(("first" to null) in readings)
+        assertTrue(("second" to null) in readings)
+        assertFalse(("second" to 60_000L) in readings)
     }
 
     @Test

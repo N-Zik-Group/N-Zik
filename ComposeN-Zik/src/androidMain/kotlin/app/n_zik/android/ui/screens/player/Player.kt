@@ -287,6 +287,7 @@ import app.n_zik.android.enums.ThumbnailType
 import app.n_zik.android.models.ui.toUiMedia
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.LocalMenuState
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 import app.n_zik.android.ui.components.themed.NowPlayingSongIndicator
 import app.n_zik.android.extensions.nextvisualizer.views.NextVisualizer
 import app.n_zik.android.components.menu.player.PlayerMenu
@@ -2696,34 +2697,44 @@ fun Player(
                                 )
 
                                 Box {
-                                    BasicText(
-                                        text = " ${formatAsTime(totalPlayTimes)}",
-                                        style = typography().xxs.semiBold.merge(
-                                            TextStyle(
-                                                textAlign = TextAlign.Center,
-                                                color = colorPalette().text,
-                                            )
-                                        ),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                    BasicText(
-                                        text = " ${formatAsTime(totalPlayTimes)}",
-                                        style = typography().xxs.semiBold.merge(
-                                            TextStyle(
-                                                textAlign = TextAlign.Center,
-                                                drawStyle = Stroke(
-                                                    width = 1f,
-                                                    join = StrokeJoin.Round
-                                                ),
-                                                // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
-                                                color = if (!textoutline) Color.Transparent
-                                                else playerTextOutlineColor(colorPalette().isDark, 0.5f),
-                                            )
-                                        ),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
+                                    if (totalPlayTimes == null) {
+                                        ItemTextPlaceholder(
+                                            text = null,
+                                            style = typography().xxs.semiBold,
+                                            modifier = Modifier.width(56.dp),
+                                            width = 1f,
+                                        )
+                                    } else {
+                                        val durationText = " ${formatAsTime(totalPlayTimes)}"
+                                        BasicText(
+                                            text = durationText,
+                                            style = typography().xxs.semiBold.merge(
+                                                TextStyle(
+                                                    textAlign = TextAlign.Center,
+                                                    color = colorPalette().text,
+                                                )
+                                            ),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                        )
+                                        BasicText(
+                                            text = durationText,
+                                            style = typography().xxs.semiBold.merge(
+                                                TextStyle(
+                                                    textAlign = TextAlign.Center,
+                                                    drawStyle = Stroke(
+                                                        width = 1f,
+                                                        join = StrokeJoin.Round
+                                                    ),
+                                                    // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
+                                                    color = if (!textoutline) Color.Transparent
+                                                    else playerTextOutlineColor(colorPalette().isDark, 0.5f),
+                                                )
+                                            ),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                        )
+                                    }
                                 }
                             }
                         }

@@ -4,6 +4,7 @@ import app.n_zik.android.utils.percentLabel
 
 import android.annotation.SuppressLint
 import android.text.format.Formatter
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -26,6 +28,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -34,18 +38,26 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheSpan
@@ -60,7 +72,9 @@ import app.n_zik.android.enums.DownloadQualityFormat
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.playback.services.playbackDataCache
 import app.n_zik.android.typography
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.components.themed.IconButton
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
 import app.n_zik.android.ui.styling.onOverlay
 import app.n_zik.android.ui.styling.overlay
 import app.n_zik.android.utils.blackgradientKey
@@ -72,11 +86,13 @@ import app.n_zik.android.utils.playerTypeKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.showthumbnailKey
 import app.n_zik.android.utils.statsfornerdsKey
+import app.n_zik.android.utils.shimmerEffect
 import app.n_zik.android.utils.transparentBackgroundPlayerActionBarKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlin.math.roundToInt
 import timber.log.Timber
 import androidx.compose.ui.geometry.Offset
+import app.n_zik.android.uiRoundnessShape
 
 @SuppressLint("LongLogTag")
 @UnstableApi
@@ -107,15 +123,26 @@ fun StatsForNerds(
         }
 
         var format by remember(cleanMediaId) { mutableStateOf<Format?>(null) }
+        var formatPending by remember(cleanMediaId) { mutableStateOf(true) }
+        val forceShimmer = forceLoadingShimmerPreview()
+        val showFormatShimmer = formatPending || forceShimmer
+        val formatIsLocal = if (formatPending) cleanMediaId.startsWith(LOCAL_KEY_PREFIX)
+            else format?.songId?.startsWith(LOCAL_KEY_PREFIX)
         LaunchedEffect(cleanMediaId) {
             while (true) {
                 playbackDataCache[cleanMediaId]?.let { if (it != playbackData) playbackData = it }
                 cachedBytes = binder.cache.getCachedBytes(cleanMediaId, 0, -1)
                 downloadCachedBytes = binder.downloadCache.getCachedBytes(cleanMediaId, 0, -1)
-                val dbFormat = kotlinx.coroutines.withContext(NzikDispatchers.DATA) {
-                    Database.formatTable.findBySongIdDirect(cleanMediaId)
+                try {
+                    format = withContext(NzikDispatchers.DATA) {
+                        Database.formatTable.findBySongIdDirect(cleanMediaId)
+                    }
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    if (formatPending) Timber.tag("StatsForNerds").w(error, "Unable to read playback format")
                 }
-                if (dbFormat != format) format = dbFormat
+                formatPending = false
                 delay(1000)
             }
         }
@@ -206,7 +233,7 @@ fun StatsForNerds(
                         overflow = TextOverflow.Visible,
                         style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                     )
-                    if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
+                    if (formatIsLocal == false) {
                         BasicText(
                             text = stringResource(R.string.player_statistics_itag_label),
                             maxLines = 1,
@@ -246,7 +273,7 @@ fun StatsForNerds(
                         style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                     )
 
-                    if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == true)
+                    if (formatIsLocal == true)
                         BasicText(
                             text = stringResource(R.string.library_cached_title),
                             maxLines = 1,
@@ -255,7 +282,7 @@ fun StatsForNerds(
                             style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                         )
 
-                    if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
+                    if (formatIsLocal == false) {
                         BasicText(
                             text = if (downloadCachedBytes == 0L) stringResource(R.string.library_cached_title)
                             else stringResource(R.string.library_downloaded_title),
@@ -308,7 +335,7 @@ fun StatsForNerds(
                         overflow = TextOverflow.Visible,
                         style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                     )
-                    if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
+                    if (formatIsLocal == false) {
                         BasicText(
                             text = stringResource(R.string.player_statistics_volume_label),
                             maxLines = 1,
@@ -331,8 +358,9 @@ fun StatsForNerds(
                         style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                     )
 
-                    if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
-                        BasicText(
+                    if (formatIsLocal == false) {
+                        MediaFormatStatText(
+                            loading = showFormatShimmer,
                             text = format?.itag?.toString()
                                 ?: stringResource(R.string.audio_quality_format_unknown),
                             maxLines = 1,
@@ -340,7 +368,8 @@ fun StatsForNerds(
                             overflow = TextOverflow.Visible,
                             style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                         )
-                        BasicText(
+                        MediaFormatStatText(
+                            loading = showFormatShimmer,
                             text = format?.let { getQuality(it) } ?: stringResource(R.string.audio_quality_format_unknown),
                             maxLines = 1,
                             modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
@@ -348,7 +377,8 @@ fun StatsForNerds(
                             style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                         )
                         if (downloadCachedBytes != 0L) {
-                            BasicText(
+                            MediaFormatStatText(
+                                loading = showFormatShimmer,
                                 text = format?.let { getDownloadQuality(it) } ?: stringResource(R.string.audio_quality_format_unknown),
                                 maxLines = 1,
                                 modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
@@ -357,14 +387,16 @@ fun StatsForNerds(
                             )
                         }
                     }
-                    BasicText(
+                    MediaFormatStatText(
+                        loading = showFormatShimmer,
                         text = format?.bitrate?.let { stringResource(R.string.player_statistics_kilobits_per_second, it / 1000) } ?: stringResource(R.string.audio_quality_format_unknown),
                         maxLines = 1,
                         modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                         overflow = TextOverflow.Visible,
                         style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                     )
-                    BasicText(
+                    MediaFormatStatText(
+                        loading = showFormatShimmer,
                         text = format?.contentLength?.let { 
                             if (it > 0) Formatter.formatShortFileSize(context, it) 
                             else stringResource(R.string.audio_quality_format_unknown)
@@ -375,7 +407,7 @@ fun StatsForNerds(
                         style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                     )
 
-                    if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == true) {
+                    if (formatIsLocal == true) {
                          BasicText(
                             text = percentLabel(100),
                             maxLines = 1,
@@ -385,8 +417,9 @@ fun StatsForNerds(
                         )
                     }
 
-                    if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
-                        BasicText(
+                    if (formatIsLocal == false) {
+                        MediaFormatStatText(
+                            loading = showFormatShimmer,
                             text = cacheSizeText(
                                 if (downloadCachedBytes == 0L) cachedBytes else downloadCachedBytes,
                                 format?.contentLength,
@@ -397,14 +430,16 @@ fun StatsForNerds(
                             style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                         )
 
-                        BasicText(
+                        MediaFormatStatText(
+                            loading = showFormatShimmer,
                             text = format?.loudnessDb?.let { stringResource(R.string.player_decibels_value, it) } ?: stringResource(R.string.audio_quality_format_unknown),
                             maxLines = 1,
                             modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                             overflow = TextOverflow.Visible,
                             style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                         )
-                        BasicText(
+                        MediaFormatStatText(
+                            loading = showFormatShimmer,
                             text = format?.perceptualLoudnessDb?.let { stringResource(R.string.player_decibels_value, it) } ?: stringResource(R.string.audio_quality_format_unknown),
                             maxLines = 1,
                             modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
@@ -412,21 +447,24 @@ fun StatsForNerds(
                             style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                         )
                     }
-                    BasicText(
+                    MediaFormatStatText(
+                        loading = showFormatShimmer,
                         text = format?.let { getContainer(it) } ?: stringResource(R.string.audio_quality_format_unknown),
                         maxLines = 1,
                         modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                         overflow = TextOverflow.Visible,
                         style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                     )
-                    BasicText(
+                    MediaFormatStatText(
+                        loading = showFormatShimmer,
                         text = format?.let { getCodec(it) } ?: stringResource(R.string.audio_quality_format_unknown),
                         maxLines = 1,
                         modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                         overflow = TextOverflow.Visible,
                         style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                     )
-                    BasicText(
+                    MediaFormatStatText(
+                        loading = showFormatShimmer,
                         text = format?.sampleRate?.let { stringResource(R.string.player_statistics_kilohertz, it / 1000) } ?: stringResource(R.string.audio_quality_format_unknown),
                         maxLines = 1,
                         modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
@@ -450,7 +488,7 @@ fun StatsForNerds(
                         overflow = TextOverflow.Visible,
                         style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                     )
-                    if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
+                    if (formatIsLocal == false) {
                         BasicText(
                             text = percentLabel((binder.player.volume * 100).roundToInt()),
                             maxLines = 1,
@@ -482,13 +520,11 @@ fun StatsForNerds(
                         modifier = modifier.weight(1f)
                             .padding(end = 4.dp)
                     ) {
-                        if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
-                            BasicText(
-                                text = stringResource(
-                                    R.string.player_statistics_field_value,
-                                    stringResource(R.string.settings_network_quality_title),
-                                    format?.let { getQuality(it) } ?: stringResource(R.string.audio_quality_format_unknown),
-                                ),
+                        if (formatIsLocal == false) {
+                            MediaFormatStatText(
+                                loading = showFormatShimmer,
+                                label = stringResource(R.string.settings_network_quality_title),
+                                text = format?.let { getQuality(it) } ?: stringResource(R.string.audio_quality_format_unknown),
                                 maxLines = 1,
                                 modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
                                 overflow = TextOverflow.Visible,
@@ -501,13 +537,11 @@ fun StatsForNerds(
                         modifier = modifier.weight(1f)
                     ) {
                         Timber.tag("StatsForNerds").d("modern player bitrate: ${format?.bitrate}")
-                        BasicText(
-                            text = stringResource(
-                                R.string.player_statistics_field_value,
-                                stringResource(R.string.player_statistics_bitrate_label),
-                                format?.bitrate?.let { stringResource(R.string.player_statistics_kilobits_per_second, it / 1000) }
+                        MediaFormatStatText(
+                            loading = showFormatShimmer,
+                            label = stringResource(R.string.player_statistics_bitrate_label),
+                            text = format?.bitrate?.let { stringResource(R.string.player_statistics_kilobits_per_second, it / 1000) }
                                     ?: stringResource(R.string.audio_quality_format_unknown),
-                            ),
                             maxLines = 1,
                             modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
                             overflow = TextOverflow.Visible,
@@ -518,13 +552,11 @@ fun StatsForNerds(
                         contentAlignment = Alignment.Center,
                         modifier = modifier.weight(1f)
                     ) {
-                        BasicText(
-                            text = stringResource(
-                                R.string.player_statistics_field_value,
-                                stringResource(R.string.common_size_label),
-                                format?.contentLength?.let { Formatter.formatShortFileSize(context, it) }
+                        MediaFormatStatText(
+                            loading = showFormatShimmer,
+                            label = stringResource(R.string.common_size_label),
+                            text = format?.contentLength?.let { Formatter.formatShortFileSize(context, it) }
                                     ?: stringResource(R.string.audio_quality_format_unknown),
-                            ),
                             maxLines = 1,
                             modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
                             overflow = TextOverflow.Visible,
@@ -572,17 +604,15 @@ fun StatsForNerds(
                                   style = typography().xs.medium.color(colorPalette().text)
                               )
                           }
-                          if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
+                          if (formatIsLocal == false) {
                               Box(
                                   contentAlignment = Alignment.Center,
                                   modifier = modifier.weight(1f)
                               ) {
-                          BasicText(
-                              text = stringResource(
-                                  R.string.player_statistics_field_value,
-                                  stringResource(R.string.player_statistics_itag_label),
-                                  format?.itag?.toString() ?: stringResource(R.string.audio_quality_format_unknown),
-                              ),
+                          MediaFormatStatText(
+                              loading = showFormatShimmer,
+                              label = stringResource(R.string.player_statistics_itag_label),
+                              text = format?.itag?.toString() ?: stringResource(R.string.audio_quality_format_unknown),
                               maxLines = 1,
                               modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
                               overflow = TextOverflow.Visible,
@@ -600,7 +630,7 @@ fun StatsForNerds(
                               .padding(vertical = 5.dp)
                               .fillMaxWidth(if (isLandscape) 0.8f else 1f)
                       ) {
-                          if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == true) {
+                          if (formatIsLocal == true) {
                               Box(
                                   contentAlignment = Alignment.Center,
                                   modifier = modifier.weight(1f)
@@ -614,20 +644,19 @@ fun StatsForNerds(
                                   )
                               }
                           }
-                          if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
+                          if (formatIsLocal == false) {
                               Box(
                                   contentAlignment = Alignment.Center,
                                   modifier = modifier.weight(1f)
                               ) {
-                                  BasicText(
-                                      text = stringResource(
-                                          R.string.player_statistics_cache_status,
-                                          stringResource(if (downloadCachedBytes == 0L) R.string.library_cached_title else R.string.library_downloaded_title),
-                                          cacheSizeText(
+                                  MediaFormatStatText(
+                                      loading = showFormatShimmer,
+                                      label = stringResource(if (downloadCachedBytes == 0L) R.string.library_cached_title else R.string.library_downloaded_title),
+                                      template = R.string.player_statistics_cache_status,
+                                      text = cacheSizeText(
                                               if (downloadCachedBytes == 0L) cachedBytes else downloadCachedBytes,
                                               format?.contentLength,
                                           ),
-                                      ),
                                       maxLines = 1,
                                       modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
                                       overflow = TextOverflow.Visible,
@@ -638,12 +667,10 @@ fun StatsForNerds(
                                    contentAlignment = Alignment.Center,
                                    modifier = modifier.weight(1f)
                                ) {
-                                   BasicText(
-                                       text = stringResource(
-                                           R.string.player_statistics_field_value,
-                                           stringResource(R.string.player_statistics_loudness_label),
-                                           format?.loudnessDb?.let { stringResource(R.string.player_decibels_value, it) } ?: stringResource(R.string.audio_quality_format_unknown),
-                                       ),
+                                   MediaFormatStatText(
+                                       loading = showFormatShimmer,
+                                       label = stringResource(R.string.player_statistics_loudness_label),
+                                       text = format?.loudnessDb?.let { stringResource(R.string.player_decibels_value, it) } ?: stringResource(R.string.audio_quality_format_unknown),
                                        maxLines = 1,
                                        modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
                                        overflow = TextOverflow.Visible,
@@ -655,12 +682,10 @@ fun StatsForNerds(
                                         contentAlignment = Alignment.Center,
                                         modifier = modifier.weight(1f)
                                     ) {
-                                        BasicText(
-                                            text = stringResource(
-                                                R.string.player_statistics_field_value,
-                                                stringResource(R.string.downloads_quality),
-                                                format?.let { getDownloadQuality(it) } ?: stringResource(R.string.audio_quality_format_unknown),
-                                            ),
+                                        MediaFormatStatText(
+                                            loading = showFormatShimmer,
+                                            label = stringResource(R.string.downloads_quality),
+                                            text = format?.let { getDownloadQuality(it) } ?: stringResource(R.string.audio_quality_format_unknown),
                                             maxLines = 1,
                                             modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
                                             overflow = TextOverflow.Visible,
@@ -683,12 +708,10 @@ fun StatsForNerds(
                                 contentAlignment = Alignment.Center,
                                 modifier = modifier.weight(1f)
                             ) {
-                                     BasicText(
-                                         text = stringResource(
-                                             R.string.player_statistics_field_value,
-                                             stringResource(R.string.player_statistics_container_label),
-                                             format?.let { getContainer(it) } ?: stringResource(R.string.audio_quality_format_unknown),
-                                         ),
+                                     MediaFormatStatText(
+                                         loading = showFormatShimmer,
+                                         label = stringResource(R.string.player_statistics_container_label),
+                                         text = format?.let { getContainer(it) } ?: stringResource(R.string.audio_quality_format_unknown),
                                          maxLines = 1,
                                          modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
                                          overflow = TextOverflow.Visible,
@@ -699,12 +722,10 @@ fun StatsForNerds(
                                     contentAlignment = Alignment.Center,
                                     modifier = modifier.weight(1f)
                                 ) {
-                                     BasicText(
-                                         text = stringResource(
-                                             R.string.player_statistics_field_value,
-                                             stringResource(R.string.player_statistics_codec_label),
-                                             format?.let { getCodec(it) } ?: stringResource(R.string.audio_quality_format_unknown),
-                                         ),
+                                     MediaFormatStatText(
+                                         loading = showFormatShimmer,
+                                         label = stringResource(R.string.player_statistics_codec_label),
+                                         text = format?.let { getCodec(it) } ?: stringResource(R.string.audio_quality_format_unknown),
                                          maxLines = 1,
                                          modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
                                          overflow = TextOverflow.Visible,
@@ -715,29 +736,25 @@ fun StatsForNerds(
                                    contentAlignment = Alignment.Center,
                                    modifier = modifier.weight(1f)
                                ) {
-                                    BasicText(
-                                        text = stringResource(
-                                            R.string.player_statistics_field_value,
-                                            stringResource(R.string.player_statistics_sample_rate_label),
-                                            format?.sampleRate?.let { stringResource(R.string.player_statistics_kilohertz, it / 1000) } ?: stringResource(R.string.audio_quality_format_unknown),
-                                        ),
+                                    MediaFormatStatText(
+                                        loading = showFormatShimmer,
+                                        label = stringResource(R.string.player_statistics_sample_rate_label),
+                                        text = format?.sampleRate?.let { stringResource(R.string.player_statistics_kilohertz, it / 1000) } ?: stringResource(R.string.audio_quality_format_unknown),
                                         maxLines = 1,
                                         modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
                                         overflow = TextOverflow.Visible,
                                         style = typography().xs.medium.color(colorPalette().text)
                                     )
                                }
-                               if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
+                               if (formatIsLocal == false) {
                                Box(
                                    contentAlignment = Alignment.Center,
                                    modifier = modifier.weight(1f)
                                ) {
-                                    BasicText(
-                                        text = stringResource(
-                                            R.string.player_statistics_field_value,
-                                            stringResource(R.string.player_statistics_perceptual_loudness_label),
-                                            format?.perceptualLoudnessDb?.let { stringResource(R.string.player_decibels_value, it) } ?: stringResource(R.string.audio_quality_format_unknown),
-                                        ),
+                                    MediaFormatStatText(
+                                        loading = showFormatShimmer,
+                                        label = stringResource(R.string.player_statistics_perceptual_loudness_label),
+                                        text = format?.perceptualLoudnessDb?.let { stringResource(R.string.player_decibels_value, it) } ?: stringResource(R.string.audio_quality_format_unknown),
                                         maxLines = 1,
                                         modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
                                         overflow = TextOverflow.Visible,
@@ -783,7 +800,7 @@ fun StatsForNerds(
                             }
                        }
                        // Row 5: Volume only (Player Hash and Cipher Since removed — InnerTubeX handles cipher internally)
-                       if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
+                       if (formatIsLocal == false) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center,
@@ -818,6 +835,51 @@ fun StatsForNerds(
     }
 }
 
+@Composable
+private fun MediaFormatStatText(
+    text: String,
+    loading: Boolean,
+    maxLines: Int,
+    modifier: Modifier,
+    overflow: TextOverflow,
+    style: TextStyle,
+    label: String? = null,
+    @StringRes template: Int = R.string.player_statistics_field_value,
+) {
+    if (!loading) {
+        BasicText(
+            text = if (label == null) text else stringResource(template, label, text),
+            maxLines = maxLines,
+            modifier = modifier,
+            overflow = overflow,
+            style = style,
+        )
+    } else if (label == null) {
+        MeasuredMetadataPlaceholder(text, style, maxLines = maxLines)
+    } else {
+        val valueMarker = "\uFFFC"
+        val formatted = stringResource(template, label, valueMarker)
+        val placeholderId = "format-value"
+        BasicText(
+            text = buildAnnotatedString {
+                append(formatted.substringBefore(valueMarker))
+                appendInlineContent(placeholderId, valueMarker)
+                append(formatted.substringAfter(valueMarker, ""))
+            },
+            maxLines = maxLines,
+            modifier = modifier,
+            overflow = overflow,
+            style = style,
+            inlineContent = mapOf(
+                placeholderId to InlineTextContent(
+                    Placeholder(1.8.em, 0.75.em, PlaceholderVerticalAlign.TextCenter)
+                ) {
+                    Spacer(Modifier.fillMaxSize().clip(uiRoundnessShape()).shimmerEffect())
+                }
+            ),
+        )
+    }
+}
 
 @Composable
 private fun cacheSizeText(bytes: Long, totalBytes: Long?): String {

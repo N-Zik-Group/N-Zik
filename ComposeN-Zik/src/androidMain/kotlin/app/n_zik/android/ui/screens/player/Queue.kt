@@ -383,7 +383,10 @@ fun Queue(
                 queueGlassSettings,
             )
             val queueBackground = colorPalette().background0.copy(alpha = backgroundAlpha)
-            val currentMediaId = if (forceShimmer) player.currentMediaItemIdAsState(player).value else null
+            val timelineWindows = windowsInQueue
+            val placeholderCount = queueSnapshot.initialPlaceholderCount(timelineWindows.size)
+            val currentMediaId = if (forceShimmer || placeholderCount > 0)
+                player.currentMediaItemIdAsState(player).value else null
             val hasReorderSlot = !positionLock.isLocked()
             val showReorderHandle = hasReorderSlot && search.inputValue.isEmpty()
 
@@ -434,6 +437,19 @@ fun Queue(
                 if (!forceShimmer && search.inputValue.isNotBlank() && !queueSearchPending && rowsOnDisplay.isEmpty()) {
                     item(key = "search_no_results") {
                         SearchEmptySpace(Modifier.fillParentMaxSize())
+                    }
+                }
+                items(placeholderCount, key = { timelineWindows[it].uid.toString() }) { index ->
+                    QueueGlassRowObjects(index, false) {
+                        QueueSongShimmer(
+                            song = null,
+                            background = itemBackground,
+                            isCurrent = timelineWindows[index].mediaItem.mediaId == currentMediaId,
+                            hasReorderSlot = hasReorderSlot,
+                            showReorderHandle = showReorderHandle,
+                            showSelection = itemSelector.isActive,
+                            handleAlpha = guestLockAlpha,
+                        )
                     }
                 }
                 itemsIndexed(

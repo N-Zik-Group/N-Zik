@@ -87,7 +87,6 @@ import app.n_zik.android.ui.items.ArtistItemPlaceholder
 import app.n_zik.android.components.menu.artist.LocalArtistItemMenu
 import app.n_zik.android.ui.items.PlaylistItem
 import app.n_zik.android.ui.items.PlaylistItemPlaceholder
-import app.n_zik.android.ui.items.SongItemPlaceholder
 import app.n_zik.android.components.musicbrainz.insights.RankedInsightsSongPlaceholder
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.settings.common.SettingsEntry
@@ -677,10 +676,19 @@ fun StatisticsPage(
                 if (categoryLoading) {
                     items(limit.coerceIn(1, 8), key = { "stats-loading-${statisticsCategory.name}-$it" }) {
                         when (statisticsCategory) {
-                            StatisticsCategory.Songs -> SongItemPlaceholder()
-                            StatisticsCategory.Artists -> ArtistItemPlaceholder(artistThumbnailSizeDp, alternative = true)
-                            StatisticsCategory.Albums -> AlbumItemPlaceholder(albumThumbnailSizeDp, alternative = true, metadataLines = 2)
-                            StatisticsCategory.Playlists -> PlaylistItemPlaceholder(playlistThumbnailSizeDp, alternative = true, showChannel = false)
+                            StatisticsCategory.Songs -> RankedInsightsSongPlaceholder(null, it + 1)
+                            StatisticsCategory.Artists ->
+                                RankedStatisticsCard(artistThumbnailSizeDp, artistThumbnailShape(), it + 1) {
+                                    ArtistItemPlaceholder(artistThumbnailSizeDp, alternative = true)
+                                }
+                            StatisticsCategory.Albums ->
+                                RankedStatisticsCard(albumThumbnailSizeDp, thumbnailShape(), it + 1) {
+                                    AlbumItemPlaceholder(albumThumbnailSizeDp, alternative = true, metadataLines = 2)
+                                }
+                            StatisticsCategory.Playlists ->
+                                RankedStatisticsCard(playlistThumbnailSizeDp, thumbnailShape(), it + 1) {
+                                    PlaylistItemPlaceholder(playlistThumbnailSizeDp, alternative = true, showChannel = false)
+                                }
                         }
                     }
                 } else if (isCurrentListEmpty) {

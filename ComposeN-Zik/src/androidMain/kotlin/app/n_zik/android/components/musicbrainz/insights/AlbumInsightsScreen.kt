@@ -480,9 +480,9 @@ private fun AlbumHeader(
 }
 
 @Composable
-internal fun RankedInsightsSongPlaceholder(song: Song, rank: Int) {
+internal fun RankedInsightsSongPlaceholder(song: Song?, rank: Int) {
     Box(Modifier.fillMaxWidth()) {
-        SongItemPlaceholder(title = song.cleanTitle(), artist = song.cleanArtistsText())
+        SongItemPlaceholder(title = song?.cleanTitle(), artist = song?.cleanArtistsText())
         RankedInsightsArtworkOverlay(
             rank = rank,
             modifier = Modifier.align(Alignment.CenterStart).padding(start = 16.dp)
