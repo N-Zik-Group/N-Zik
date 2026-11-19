@@ -2266,7 +2266,6 @@ fun Player(
                                                 mediaItem.toUiMedia(durationState.value)
                                             },
                                             mediaId = mediaItem.mediaId,
-                                            displayedMediaId = displayItem.mediaId,
                                             title = displayItem.titleWithFallback(),
                                             artist = cleanPrefix(displayItem.artistTextWithFallback()),
                                             artistIds = displayLinks.artists,

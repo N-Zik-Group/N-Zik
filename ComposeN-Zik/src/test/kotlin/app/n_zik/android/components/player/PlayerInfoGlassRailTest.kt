@@ -5,7 +5,9 @@ import android.graphics.Bitmap
 import android.os.Looper
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.requiredSize
@@ -61,6 +63,7 @@ import app.n_zik.android.R
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassAreaMode
 import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.SurfaceForegroundContent
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
@@ -115,6 +118,37 @@ class PlayerInfoGlassRailTest {
         compose.mainClock.advanceTimeBy(300)
         old.assertDoesNotExist()
         next.assertExists()
+    }
+
+    @Test fun `resolving an album link leaves its Glass glyph visually stable`() {
+        val hasAlbumLink = mutableStateOf(false)
+        compose.setContent {
+            AppearanceProvider {
+                val settings = GlassSettings(enabled = true, film = .1f)
+                SurfaceForegroundContent(Color.White) {
+                    PlayerInfoGlassRail(true, settings) {
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            PlayerInfoIconButton({}, R.drawable.album, Color.White,
+                                Modifier.size(26.dp).albumIconBounds(), enabled = hasAlbumLink.value, settings = settings)
+                            PlayerInfoIconButton({}, R.drawable.person, Color.White,
+                                Modifier.size(24.dp).artistIconBounds(), settings = settings)
+                        }
+                    }
+                }
+            }
+        }
+        compose.onNodeWithTag("player.infoRail.surface").assertExists()
+        val glyph = compose.onNodeWithTag("player.infoIcon.glyph.${R.drawable.album}", useUnmergedTree = true)
+        val before = glyph.captureToImage().toPixelMap()
+        compose.runOnIdle { hasAlbumLink.value = true }
+        val after = glyph.captureToImage().toPixelMap()
+        assertEquals(before.width, after.width)
+        assertEquals(before.height, after.height)
+        for (x in 0 until before.width) {
+            for (y in 0 until before.height) {
+                assertEquals(before[x, y], after[x, y])
+            }
+        }
     }
 
     @Test fun `standalone information feedback can expand beyond its resting canvas when material is disabled`() {

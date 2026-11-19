@@ -150,8 +150,7 @@ fun InfoAlbumAndArtistModern(
     isExplicit: Boolean,
     artist: String?,
     onCollapse: () -> Unit,
-    disableScrollingText: Boolean = false,
-    displayedMediaId: String = mediaId,
+    disableScrollingText: Boolean = false
 ) {
     val glassTextFeedback = rememberGlassSettings().enabled
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
@@ -183,7 +182,6 @@ fun InfoAlbumAndArtistModern(
                         R.drawable.unknown else R.drawable.album,
                     color = colorPalette().text,
                     enabled = albumId != null,
-                    displayedMediaId = displayedMediaId,
                     onClick = {
                         if (albumId != null) {
                             //onGoToAlbum(albumId)
@@ -325,7 +323,6 @@ fun InfoAlbumAndArtistModern(
                     displayedArtistCount > 1 -> R.drawable.people
                     else -> R.drawable.person
                 },
-                displayedMediaId = displayedMediaId,
                 color = colorPalette().text,
                 enabled = !artistIds.isNullOrEmpty(),
                 onClick = {

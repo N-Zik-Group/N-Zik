@@ -161,8 +161,7 @@ fun Controls(
     duration: () -> Long,
     isExplicit: Boolean,
     dynamicColorPalette: ColorPalette,
-    modifier: Modifier = Modifier,
-    displayedMediaId: String = mediaId,
+    modifier: Modifier = Modifier
 ) {
     val preview = LocalThemePreview.current
     val binder = LocalPlayerServiceBinder.current
@@ -232,7 +231,6 @@ fun Controls(
                                 title = title,
                                 albumId = albumId,
                                 mediaId = mediaId,
-                                displayedMediaId = displayedMediaId,
                                 likedAt = currentSong?.likedAt,
                                 onCollapse = onCollapse,
                                 disableScrollingText = disableScrollingText,
@@ -337,7 +335,6 @@ fun Controls(
                             title = title,
                             albumId = albumId,
                             mediaId = mediaId,
-                            displayedMediaId = displayedMediaId,
                             likedAt = currentSong?.likedAt,
                             onCollapse = onCollapse,
                             disableScrollingText = disableScrollingText,
@@ -455,7 +452,6 @@ fun Controls(
                         title = title,
                         albumId = albumId,
                         mediaId = mediaId,
-                        displayedMediaId = displayedMediaId,
                         likedAt = currentSong?.likedAt,
                         onCollapse = onCollapse,
                         disableScrollingText = disableScrollingText,

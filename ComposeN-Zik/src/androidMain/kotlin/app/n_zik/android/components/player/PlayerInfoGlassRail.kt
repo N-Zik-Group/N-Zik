@@ -104,7 +104,6 @@ fun PlayerInfoIconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     settings: GlassSettings = rememberGlassSettings(GlassScope.PlayerInformation),
-    displayedMediaId: String? = null,
 ) {
     val settings = settings.inScope(GlassScope.PlayerInformation)
     val interaction = remember { MutableInteractionSource() }
@@ -135,14 +134,14 @@ fun PlayerInfoIconButton(
                 indication = if (settings.enabled) null else ripple(bounded = true),
                 enabled = enabled, onClick = onClick), contentAlignment = Alignment.Center) {
             Crossfade(
-                targetState = displayedMediaId to icon,
+                targetState = icon,
                 animationSpec = tween(220),
                 modifier = Modifier.requiredSize(glyphWidth, glyphHeight).graphicsLayer {
                     scaleX = if (settings.enabled) .85f else 1f
                     scaleY = if (settings.enabled) .85f else 1f
                 },
                 label = "playerInfoGlyph",
-            ) { (_, glyph) ->
+            ) { glyph ->
                 Image(painterResource(glyph), null, colorFilter = glyphTint,
                     modifier = Modifier.fillMaxSize().testTag("player.infoIcon.glyph.$glyph"))
             }

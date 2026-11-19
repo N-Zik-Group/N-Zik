@@ -23,7 +23,7 @@ Fixed:
 - fix(updater): render download, progress and install on one Glass surface
   - Use matching surface colors for page actions and changelog controls, keep actual release notes visible during refresh, and preserve the selected tint and film opacity.
 - fix(player): keep artwork navigation and information transitions consistent
-  - Keep title, glyphs and album and artist links on the displayed track. Crossfade the glyphs without changing their opacity when links resolve.
+  - Keep title, glyphs and album and artist links on the displayed track. Crossfade only when the symbol changes. Resolving links leaves identical glyphs steady.
   - Reuse artwork shadow bounds, pace fullscreen artwork navigation after slow frames, and keep the thumbnail transition tied to the playlist entry.
 - fix(collections): show content-shaped loading states and progress on collection pages
   - Keep collection headers and actions in place. Give album title placeholders the available header width, preserve the artist scroll position and use a horizontal shelf for alternative album versions.
