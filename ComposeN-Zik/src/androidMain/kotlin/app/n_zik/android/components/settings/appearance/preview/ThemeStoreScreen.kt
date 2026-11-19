@@ -267,21 +267,32 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
     val publicationAlertsFor: (Long) -> Boolean = remember(library, publicationSettingVersion) {
         { id -> library.publicationsEnabled(id) }
     }
-    val creators by produceState<List<CreatorProfile>>(emptyList(), catalog, retry) {
-        value = emptyList()
-        if (offline) return@produceState
+    var loadedCreators by remember(catalog) { mutableStateOf<List<CreatorProfile>?>(null) }
+    var creatorsLoading by remember(catalog) { mutableStateOf(!offline) }
+    var creatorsFailed by remember(catalog) { mutableStateOf(false) }
+    val creators = loadedCreators.orEmpty()
+    LaunchedEffect(catalog, retry, offline) {
+        if (offline) {
+            creatorsLoading = false
+            return@LaunchedEffect
+        }
+        creatorsLoading = true
+        creatorsFailed = false
         try {
-            value = catalog.creators()
+            loadedCreators = catalog.creators()
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
+            creatorsFailed = true
             Timber.tag("ThemeStore").w(error, "Could not load creators")
+        } finally {
+            creatorsLoading = false
         }
     }
     val glass = rememberGlassSettings().enabled
     var lastSync by remember(catalog) { mutableStateOf<Long?>(null) }
 
-    LaunchedEffect(catalog, retry, library, owner) {
+    LaunchedEffect(catalog, retry, library, owner, offline) {
         loading = true
         if (themes == null) catalog.cachedState()?.let {
             themes = it.themes
@@ -411,21 +422,24 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                 }
                 return@LazyVerticalGrid
             }
+            val creatorsPending = creatorsLoading && loadedCreators == null
+            val themesPending = loading && themes == null
+            val retryCatalog = { expireThemeStoreReads(); retry++; Unit }
             if (creatorId != null) {
                 val profile = creators.firstOrNull { it.githubId == creatorId }
                 val authored = byAuthor[creatorId].orEmpty()
-                if (loading && themes == null && profile == null) {
-                    item(key = "creator-profile-loading", span = { GridItemSpan(maxLineSpan) }) { CreatorProfilePlaceholder() }
-                    items(4, key = { "creator-theme-loading:$it" }) { ThemeStoreCardPlaceholder() }
-                    return@LazyVerticalGrid
-                }
                 val matchingThemes = authored.filter { it.title.contains(query.text.trim(), ignoreCase = true) }
                 val author = profile?.let { StoreAuthor(it.githubId, it.login) } ?: authored.firstOrNull()?.author
                 if (author != null) {
                     item(key = "creator-profile", span = { GridItemSpan(maxLineSpan) }) {
                         CreatorProfileHeader(
                             onEditProfile = onEditCreator.takeIf { author.githubId == ownCreatorId },
-                            profile, author, authored.size.takeUnless { themes == null && loading }, catalog, follows.any { it.githubId == creatorId },
+                            profile = profile,
+                            author = author,
+                            themeCount = authored.size.takeIf { themes != null },
+                            catalog = catalog,
+                            followed = follows.any { it.githubId == creatorId },
+                            themeCountPending = themesPending,
                             query = query,
                             onQueryChanged = { query = it },
                             official = verifiedIds?.contains(creatorId) == true,
@@ -444,21 +458,55 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                             )
                         }
                     }
-                    if (loading && themes == null) {
-                        items(4, key = { "creator-theme-loading:$it" }) { ThemeStoreCardPlaceholder() }
+                    if (!loading && themes == null) {
+                        item(key = "creator-theme-error", span = { GridItemSpan(maxLineSpan) }) {
+                            StoreCatalogFailure(retryCatalog)
+                        }
                     }
                     items(matchingThemes, key = { it.themeId }) { theme ->
                         ThemeStoreCard(theme, catalog, glass, suspended = "${theme.themeId}:theme" in pendingReports, modifier = Modifier.animateItem(fadeInSpec = tween(200), fadeOutSpec = tween(150)), official = verifiedIds?.contains(theme.author.githubId) == true, showCatalogInfo = true, refreshVersion = retry, download = downloadControl(theme), onWithdraw = if (theme.author.githubId == ownCreatorId) ({ withdrawalTheme = theme }) else null, onOpen = { onOpenTheme(theme) })
                     }
                 }
+                if (author == null) {
+                    item(key = "creator-profile-status", span = { GridItemSpan(maxLineSpan) }) {
+                        when {
+                            themesPending || creatorsPending -> Column {
+                                CreatorProfilePlaceholder()
+                                UnifiedSearchBar(
+                                    input = query,
+                                    onInputChanged = { query = it },
+                                    placeholderRes = R.string.theme_store_search_creator_themes,
+                                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                                    onClear = { query = TextFieldValue() },
+                                )
+                            }
+                            creatorsFailed || themes == null -> StoreCatalogFailure(retryCatalog)
+                            else -> StoreEmptyMessage(
+                                R.string.theme_store_no_published_themes,
+                                Modifier.heightIn(min = emptyContentHeight),
+                            )
+                        }
+                    }
+                }
+                if (themesPending) {
+                    items(4, key = { "creator-theme-loading:$it" }, contentType = { "theme-placeholder" }) {
+                        ThemeStoreCardPlaceholder()
+                    }
+                }
                 return@LazyVerticalGrid
             }
             if (section == ThemeStoreSection.Authors) {
-                if (loading && authorIds.isEmpty()) {
-                    items(5, key = { "creator-loading:$it" }, span = { GridItemSpan(maxLineSpan) }) {
-                        CreatorCardPlaceholder()
+                if (authorIds.isEmpty()) {
+                    if (themesPending || creatorsPending) {
+                        items(5, key = { "creator-loading:$it" }, span = { GridItemSpan(maxLineSpan) }, contentType = { "creator-placeholder" }) {
+                            CreatorCardPlaceholder()
+                        }
+                    } else {
+                        item(key = "creator-list-status", span = { GridItemSpan(maxLineSpan) }) {
+                            if (creatorsFailed || themes == null) StoreCatalogFailure(retryCatalog)
+                            else StoreEmptyMessage(R.string.theme_store_no_results, Modifier.heightIn(min = emptyContentHeight))
+                        }
                     }
-                    return@LazyVerticalGrid
                 }
                 items(authorIds, key = { "creator:$it" }, span = { GridItemSpan(maxLineSpan) }) { id ->
                     CreatorCard(
@@ -696,7 +744,7 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                 }
                 StoreTab.Creator -> item(span = { GridItemSpan(maxLineSpan) }) {
                     Box(tabContentModifier.fillMaxWidth()) {
-                        ThemeStoreCreator(onEditCreator, retry, themes, creators, downloads.filter { it.imported && it.theme != null }, onOpenCreator, onSubmitTheme)
+                        ThemeStoreCreator(onEditCreator, retry, themes, themesPending, creators, creatorsPending, creatorsFailed, downloads.filter { it.imported && it.theme != null }, onOpenCreator, onSubmitTheme)
                     }
                 }
             }
@@ -803,6 +851,16 @@ private fun StoreSectionHeader(label: Int, themeCount: Int? = null, onSeeAll: ((
 }
 
 @Composable
+private fun StoreCatalogFailure(onRetry: () -> Unit) {
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        SettingsDescription(stringResource(R.string.theme_store_catalog_unavailable), textAlign = TextAlign.Center)
+        UiButton(onClick = onRetry) {
+            androidx.compose.material3.Text(stringResource(R.string.common_action_retry))
+        }
+    }
+}
+
+@Composable
 private fun StoreEmptyMessage(textRes: Int, modifier: Modifier) {
     Box(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         SettingsDescription(stringResource(textRes), Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
@@ -810,7 +868,18 @@ private fun StoreEmptyMessage(textRes: Int, modifier: Modifier) {
 }
 
 @Composable
-private fun ThemeStoreCreator(onEditCreator: () -> Unit, refreshVersion: Int, themes: List<StoreTheme>?, creators: List<CreatorProfile>, localThemes: List<SavedTheme>, onOpenCreator: (Long) -> Unit, onSubmitTheme: (String) -> Unit) {
+private fun ThemeStoreCreator(
+    onEditCreator: () -> Unit,
+    refreshVersion: Int,
+    themes: List<StoreTheme>?,
+    themesPending: Boolean,
+    creators: List<CreatorProfile>,
+    creatorsPending: Boolean,
+    creatorsFailed: Boolean,
+    localThemes: List<SavedTheme>,
+    onOpenCreator: (Long) -> Unit,
+    onSubmitTheme: (String) -> Unit,
+) {
     val ownId = signedInCreatorId()
     val canPublish = creators.any { it.githubId == ownId }
     val offline by OfflineMode.rememberEnabled()
@@ -829,13 +898,19 @@ private fun ThemeStoreCreator(onEditCreator: () -> Unit, refreshVersion: Int, th
                     }.orEmpty(),
                     icon = R.drawable.ui,
                     isEnabled = !offline,
+                    descriptionLoading = !offline && themesPending,
                     onClick = { onOpenCreator(ownId) },
                 )
                 OtherSettingsEntry(
                     title = stringResource(R.string.theme_store_creator_publish_theme),
-                    text = stringResource(if (canPublish) R.string.theme_store_publish_description else R.string.theme_store_published_creator_required),
+                    text = when {
+                        canPublish -> stringResource(R.string.theme_store_publish_description)
+                        creatorsFailed && !offline -> stringResource(R.string.theme_store_catalog_unavailable)
+                        else -> stringResource(R.string.theme_store_published_creator_required)
+                    },
                     icon = R.drawable.ui,
                     isEnabled = !offline && canPublish,
+                    descriptionLoading = !offline && creatorsPending,
                     onClick = { if (canPublish) onSubmitTheme("new") },
                 )
                 OtherSettingsEntry(
@@ -966,14 +1041,7 @@ private fun ThemeStoreCard(
             sizeLoading = false
         }
     }
-    var reviewsLoading by remember(catalog, theme, showCatalogInfo, refreshVersion) { mutableStateOf(showCatalogInfo) }
-    val reviews by produceState<StoreReviewSummary?>(null, catalog, theme, showCatalogInfo, refreshVersion) {
-        try {
-            value = if (showCatalogInfo) catalog.reviews(theme) else null
-        } finally {
-            reviewsLoading = false
-        }
-    }
+    val reviewRead = rememberStoreReviews(catalog, theme, showCatalogInfo && !offline, refreshVersion)
     ThemeCardSurface(modifier = modifier, onClick = open) {
         Box(Modifier.fillMaxWidth().aspectRatio(StorePreviewAspectRatio), contentAlignment = Alignment.Center) {
             if (shimmer && !blocked) {
@@ -992,8 +1060,8 @@ private fun ThemeStoreCard(
             } else if (showCatalogInfo) {
                 Row(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                     Box(Modifier.weight(1f)) {
-                        val review = reviews
-                        if (reviewsLoading && review == null) {
+                        val review = reviewRead.summary
+                        if (reviewRead.initialPending) {
                             StoreLoadingLine(null, typography().xxs, width = 0.5f)
                         } else if (review != null) {
                             val label = if (review.count == 0) stringResource(R.string.theme_store_no_reviews)
@@ -1003,6 +1071,10 @@ private fun ThemeStoreCard(
                                 if (shimmer) StoreLoadingLine(label, typography().xxs)
                                 else StoreText(label, secondary = true, style = typography().xxs)
                             }
+                        } else if (!offline) {
+                            val label = stringResource(R.string.theme_store_reviews_unavailable)
+                            if (shimmer) StoreLoadingLine(label, typography().xxs)
+                            else StoreText(label, secondary = true, style = typography().xxs)
                         }
                     }
                     if (sizeLoading && appearanceSize == null) Box(Modifier.width(32.dp)) {
@@ -1495,6 +1567,7 @@ private fun CreatorProfileHeader(
     author: StoreAuthor,
     themeCount: Int?,
     catalog: ThemeStoreCatalog,
+    themeCountPending: Boolean,
     followed: Boolean,
     query: TextFieldValue,
     onQueryChanged: (TextFieldValue) -> Unit,
@@ -1563,8 +1636,8 @@ private fun CreatorProfileHeader(
             onClear = { onQueryChanged(TextFieldValue()) },
         )
         Box(Modifier.padding(top = 8.dp)) {
-            if (themeCount == null) StoreLoadingLine(null, typography().xs.copy(fontWeight = FontWeight.SemiBold))
-            else StoreSectionHeader(R.string.theme_store_published_theme_count, themeCount = themeCount)
+            if (themeCountPending) StoreLoadingLine(null, typography().xs.copy(fontWeight = FontWeight.SemiBold))
+            else themeCount?.let { StoreSectionHeader(R.string.theme_store_published_theme_count, themeCount = it) }
         }
     }
 }

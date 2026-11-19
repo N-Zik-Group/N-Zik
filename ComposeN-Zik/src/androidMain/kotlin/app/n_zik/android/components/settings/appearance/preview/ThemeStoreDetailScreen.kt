@@ -286,10 +286,9 @@ private fun ThemeStoreDetailContent(
         if (offline || localPackage) return@produceState
         value = loadDetail("creator") { catalog.creators().firstOrNull { it.githubId == theme.author.githubId } }
     }
-    val reviews by produceState<StoreReviewSummary?>(null, theme, catalog, retry) {
-        if (offline || localPackage) return@produceState
-        value = catalog.reviews(theme)
-    }
+    var reviewRetry by remember { mutableIntStateOf(0) }
+    val reviewRead = rememberStoreReviews(catalog, theme, !offline && !localPackage, retry, reviewRetry)
+    val reviews = reviewRead.summary
     val id = "${theme.themeId}:${theme.revision}"
     val downloaded = builtIn ?: downloads.firstOrNull { it.id == id }
     val appVersion = BuildConfig.VERSION_CODE
@@ -354,7 +353,10 @@ private fun ThemeStoreDetailContent(
                 dismiss()
             }
         }
-        DetailDialog.Reviews -> ThemeReviewsDialog(theme, reviews, catalog, offline, dismiss)
+        DetailDialog.Reviews -> ThemeReviewsDialog(theme, reviewRead, catalog, offline, {
+            expireThemeStoreReviews(theme)
+            reviewRetry++
+        }, dismiss)
         DetailDialog.UpdateSettings -> ValueSelectorDialog(
             title = stringResource(R.string.theme_store_update_settings),
             titleSecondary = stringResource(R.string.theme_store_update_apply_manually),
@@ -536,7 +538,12 @@ private fun ThemeStoreDetailContent(
             ThemeCardSurface {
                 Column {
                     if (!localPackage) {
-                        DetailRow(reviewLabel(reviews), R.drawable.star_brilliant, shimmer) { dialog = DetailDialog.Reviews }
+                        val summaryPending = reviewRead.initialPending
+                        DetailRow(
+                            if (summaryPending) stringResource(R.string.theme_store_reviews) else reviewLabel(reviews),
+                            R.drawable.star_brilliant,
+                            shimmer || summaryPending,
+                        ) { dialog = DetailDialog.Reviews }
                         if (builtIn == null) {
                             DetailRow(revisionLabel(theme), R.drawable.alternative_version, shimmer) { dialog = DetailDialog.Revisions }
                         }
@@ -916,10 +923,45 @@ internal fun rememberPendingThemeStoreReports(refreshVersion: Int): Set<String> 
     return reports[accountId].orEmpty()
 }
 
+internal data class StoreReviewRead(val summary: StoreReviewSummary?, val initialPending: Boolean)
+
 @Composable
-private fun ThemeReviewsDialog(theme: StoreTheme, reviews: StoreReviewSummary?, catalog: ThemeStoreCatalog, offline: Boolean, dismiss: () -> Unit) {
+internal fun rememberStoreReviews(
+    catalog: ThemeStoreCatalog,
+    theme: StoreTheme,
+    enabled: Boolean,
+    refreshVersion: Int,
+    retry: Int = 0,
+): StoreReviewRead {
+    var summary by remember(catalog, theme.themeId, theme.revision) { mutableStateOf<StoreReviewSummary?>(null) }
+    var loading by remember(catalog, theme.themeId, theme.revision) { mutableStateOf(enabled) }
+    LaunchedEffect(catalog, theme, enabled, refreshVersion, retry) {
+        if (!enabled) {
+            loading = false
+            return@LaunchedEffect
+        }
+        loading = true
+        try {
+            catalog.reviews(theme)?.let { summary = it }
+        } finally {
+            loading = false
+        }
+    }
+    return StoreReviewRead(summary, enabled && loading && summary == null)
+}
+
+@Composable
+private fun ThemeReviewsDialog(
+    theme: StoreTheme,
+    reviewRead: StoreReviewRead,
+    catalog: ThemeStoreCatalog,
+    offline: Boolean,
+    onRetry: () -> Unit,
+    dismiss: () -> Unit,
+) {
     val context = LocalContext.current
     val shimmer = forceLoadingShimmerPreview()
+    val reviews = reviewRead.summary
     val scope = rememberCoroutineScope()
     val authorId = signedInCreatorId()
     val pending = rememberPendingThemeStoreReports(0)
@@ -1030,6 +1072,7 @@ private fun ThemeReviewsDialog(theme: StoreTheme, reviews: StoreReviewSummary?, 
                                 else -> editing = true
                             }
                         },
+                        enabled = !reviewRead.initialPending,
                         primary = authorId != null && !offline,
                         textColor = colorPalette().textSecondary.takeIf { authorId == null || offline },
                         placement = DialogButtonPlacement.End,
@@ -1040,8 +1083,26 @@ private fun ThemeReviewsDialog(theme: StoreTheme, reviews: StoreReviewSummary?, 
         },
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (shimmer) StoreLoadingLine(reviewLabel(reviews), typography().s)
-            else StoreText(reviewLabel(reviews))
+            if (reviewRead.initialPending) {
+                StoreLoadingLine(null, typography().s)
+                repeat(2) {
+                    Column(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Spacer(Modifier.size(30.dp).clip(artistThumbnailShape()).shimmerEffect())
+                            Box(Modifier.weight(1f)) { StoreLoadingLine(null, typography().s, width = 0.45f) }
+                            DetailIcon(R.drawable.star_brilliant, Modifier.size(14.dp))
+                            Box(Modifier.width(48.dp)) { StoreLoadingLine(null, typography().s, width = 1f) }
+                        }
+                        StoreLoadingLine(null, typography().xxs, width = 0.85f)
+                    }
+                }
+            } else {
+                if (shimmer) StoreLoadingLine(reviewLabel(reviews), typography().s)
+                else StoreText(reviewLabel(reviews))
+                if (reviews == null && !offline) {
+                    UiTextButton(onClick = onRetry) { StoreText(stringResource(R.string.common_action_retry)) }
+                }
+            }
             reviews?.comments.orEmpty().forEach { review ->
                 Column(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {

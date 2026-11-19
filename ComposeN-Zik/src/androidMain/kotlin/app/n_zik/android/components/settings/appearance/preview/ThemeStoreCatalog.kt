@@ -539,6 +539,10 @@ internal fun expireThemeStoreIndex() {
     storeReads.remove(ThemeCatalogV2Path)
 }
 
+internal fun expireThemeStoreReviews(theme: StoreTheme) {
+    storeReads.remove(theme.directory + "reviews.json")
+}
+
 internal fun expireThemeStoreReads() {
     storeReads.evictAll()
 }
