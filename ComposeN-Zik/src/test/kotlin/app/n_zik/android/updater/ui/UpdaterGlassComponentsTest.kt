@@ -70,6 +70,53 @@ import org.robolectric.annotation.GraphicsMode
 class UpdaterGlassComponentsTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun `Glass action buttons use the single download surface even with native settings cards`() {
+        val settings = GlassSettings(enabled = true, areaModes = mapOf(
+            GlassArea.SettingsCards to GlassAreaMode.Disabled,
+            GlassArea.ActionButtons to GlassAreaMode.GlassAndContour,
+        ))
+        assertTrue(settings.usesSingleUpdaterDownloadSurface())
+        assertTrue(!settings.copy(enabled = false).usesSingleUpdaterDownloadSurface())
+    }
+
+    @Test fun `a standalone install action leaves the surrounding footer clear`() {
+        val settings = GlassSettings(enabled = true, film = .65f, blur = 0f, rim = 0f, depth = 0f)
+        var installs = 0
+        compose.setContent {
+            val shape = RoundedCornerShape(12.dp)
+            val source = rememberCanvasBackdrop { drawRect(Color.Blue) }
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(DefaultDarkColorPalette.copy(background0 = Color.Red),
+                    Typography.fallback, shape, shape, shape),
+                LocalGlassPreviewSettings provides settings,
+                LocalGlassBackdrop provides source,
+            ) {
+                UpdaterGlassScope {
+                    Box(Modifier.size(180.dp, 90.dp).background(Color.Blue)) {
+                        UpdaterBottomPanel(
+                            modifier = Modifier.size(180.dp, 90.dp).testTag("install-footer"),
+                            backdrop = source,
+                            drawSurface = false,
+                        ) {
+                            UpdaterCard(drawSurface = false) {
+                                UpdaterActionCard(onClick = { installs++ }, modifier = Modifier.size(92.dp, 48.dp)) {
+                                    Text("Install")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        val footer = compose.onNodeWithTag("install-footer")
+        val pixels = footer.captureToImage().toPixelMap()
+        val remainingSurface = pixels[pixels.width - 15, pixels.height / 2]
+        assertEquals(0f, remainingSurface.red, .02f)
+        assertEquals(1f, remainingSurface.blue, .02f)
+        compose.onNodeWithText("Install").performClick()
+        compose.runOnIdle { assertEquals(1, installs) }
+    }
+
     @Test fun `Jelly moves the updater glyph inside a fixed touch target`() {
         val settings = GlassSettings(enabled = true, quality = GlassQuality.Performance,
             jellyEnabled = true, rippleEnabled = false,

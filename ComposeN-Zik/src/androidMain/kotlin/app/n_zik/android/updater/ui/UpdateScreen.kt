@@ -193,6 +193,7 @@ private fun UpdateScreenContent(navController: NavController) {
 
     val footerBackdrop = rememberLayerBackdrop()
     val updaterGlass = rememberGlassSettings()
+    val singleDownloadSurface = updaterGlass.usesSingleUpdaterDownloadSurface()
     val captureFooterBackdrop = updaterGlass.usesGlassMaterial(GlassArea.SettingsCards) &&
         glassContentCaptureEnabled(updaterGlass)
     Scaffold(
@@ -202,7 +203,8 @@ private fun UpdateScreenContent(navController: NavController) {
         bottomBar = {
             // Floating Action button at the bottom
             UpdaterBottomPanel(
-                backdrop = footerBackdrop,
+                backdrop = footerBackdrop.takeIf { captureFooterBackdrop },
+                drawSurface = !singleDownloadSurface || downloadState !is UpdateDownloadManager.DownloadState.Completed,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(rememberPageChromeContentPadding(topInsetProvider = { 0.dp }))
@@ -216,7 +218,8 @@ private fun UpdateScreenContent(navController: NavController) {
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = colorPalette().background1),
                             shape = uiRoundnessShape(),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            drawSurface = !singleDownloadSurface,
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxWidth().padding(16.dp)
@@ -809,9 +812,8 @@ private fun UpdateScreenContent(navController: NavController) {
                     Updater.currentChangelog?.takeIf { it.isNotBlank() }
                         ?: currentChangelog
                 } else {
-                    Updater.latestChangelog?.takeIf { it.isNotBlank() }
-                        ?: Updater.githubRelease?.body?.takeIf { it.isNotBlank() }
-                        ?: currentChangelog
+                    Updater.latestChangelog?.takeIf { it.isNotBlank() } ?: if (Updater.isFetchingChangelog) "" else
+                        Updater.githubRelease?.body?.takeIf { it.isNotBlank() } ?: currentChangelog
                 }
 
                 val translator = remember { Translator(NetworkClientFactory.getTranslatorClient()) }
@@ -885,7 +887,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                         )
                                     }
                                 }
-                                if (Updater.isFetchingChangelog) {
+                                if (changelogTextToDisplay.isBlank()) {
                                     Box(
                                         modifier = Modifier.fillMaxWidth().padding(32.dp),
                                         contentAlignment = Alignment.Center
@@ -1058,7 +1060,8 @@ fun ChangelogCard(rawText: String, translatedText: String?, colorPaletteMode: Co
                     containerColor = Color.Transparent
                 ),
                 shape = uiRoundnessShape(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                glassContainerColor = surfaceColor(colorPalette().background1),
             ) {
                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                     Row(

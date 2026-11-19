@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import app.n_zik.android.components.glass.PageButtonFeedback
 import app.n_zik.android.components.glass.glassChipBackground
+import app.n_zik.android.components.glass.glassActionFilmColor
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -34,6 +35,7 @@ import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.GlassScope
+import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LocalGlassScope
 import app.n_zik.android.components.glass.PageButton
 import app.n_zik.android.components.glass.rememberGlassSettings
@@ -48,6 +50,10 @@ internal fun UpdaterGlassScope(content: @Composable () -> Unit) {
     CompositionLocalProvider(LocalGlassScope provides GlassScope.SettingsProfiles, content = content)
 }
 
+internal fun GlassSettings.usesSingleUpdaterDownloadSurface(): Boolean =
+    usesGlassMaterial(GlassArea.SettingsCards) || usesGlassContour(GlassArea.SettingsCards) ||
+        usesGlassMaterial(GlassArea.ActionButtons) || usesGlassContour(GlassArea.ActionButtons)
+
 /** Preserve each native card's dimensions and colours; share SettingsCards optics. */
 @Composable
 internal fun UpdaterCard(
@@ -56,8 +62,14 @@ internal fun UpdaterCard(
     shape: Shape = uiRoundnessShape(),
     colors: CardColors = CardDefaults.cardColors(),
     elevation: CardElevation = CardDefaults.cardElevation(),
+    drawSurface: Boolean = true,
+    glassContainerColor: Color = colors.containerColor,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    if (!drawSurface) {
+        Column(modifier, content = content)
+        return
+    }
     val settings = rememberGlassSettings()
     UpdaterPressFeedback(onClick) { feedback ->
         val cardModifier = modifier.then(feedback)
@@ -69,7 +81,8 @@ internal fun UpdaterCard(
             SettingsCardSurface(
                 modifier = cardModifier,
                 shape = shape,
-                containerColor = colors.containerColor,
+                containerColor = if (settings.usesGlassMaterial(GlassArea.SettingsCards)) glassContainerColor
+                    else colors.containerColor,
                 backgroundColor = colorPalette().background0,
                 shadowColor = Color.Transparent,
                 shadowElevation = 0.dp,
@@ -115,7 +128,9 @@ internal fun UpdaterIconAction(
     val settings = rememberGlassSettings()
     val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
     PageButtonFeedback(material, true, shape, null, settings, animateContentLayer = true) { feedback, source ->
-        val surface = Modifier.glassChipBackground(Color.Transparent, shape, settings)
+        val surface = Modifier.glassChipBackground(
+            Color.Transparent, shape, settings, filmColor = glassActionFilmColor(),
+        )
         val click = Modifier.combinedClickable(
             interactionSource = source,
             indication = if (source == null) LocalIndication.current else null,
@@ -155,8 +170,19 @@ private fun UpdaterPressFeedback(
 internal fun UpdaterBottomPanel(
     modifier: Modifier = Modifier,
     backdrop: app.n_zik.android.components.glass.backdrop.Backdrop? = null,
+    drawSurface: Boolean = true,
     content: @Composable androidx.compose.foundation.layout.BoxScope.() -> Unit,
 ) {
+    if (!drawSurface) {
+        val source = backdrop ?: LocalGlassContainerBackdrop.current ?: LocalGlassBackdrop.current
+        CompositionLocalProvider(
+            LocalGlassContainerBackdrop provides source,
+            LocalGlassMaterialSource provides source,
+        ) {
+            Box(modifier, content = content)
+        }
+        return
+    }
     val shape = app.n_zik.android.components.navigation.nav.bottomNavigationBarShape(uiRoundnessShape())
     val settings = rememberGlassSettings()
     if (settings.usesGlassMaterial(GlassArea.SettingsCards)) {
