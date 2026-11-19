@@ -33,11 +33,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import app.n_zik.android.components.Sort
 import app.n_zik.android.components.glass.GlassToolbarRow
+import app.n_zik.android.components.glass.PageButton
 import app.n_zik.android.components.glass.glassChipBackground
 import app.n_zik.android.utils.Preference
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -56,7 +59,6 @@ import androidx.compose.ui.util.fastDistinctBy
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
-import app.n_zik.android.appContext
 import app.n_zik.android.compose.persist.persist
 import app.n_zik.innertube.YtMusic
 import app.n_zik.innertube.requests.HistoryPage
@@ -77,8 +79,12 @@ import app.n_zik.android.ui.items.SongItemPlaceholder
 import app.n_zik.android.utils.shimmerEffect
 import app.n_zik.android.ui.components.themed.Title
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
-import app.n_zik.android.utils.enableYouTubeSyncKey
+import app.n_zik.android.components.ui.screens.home.quickpicks.QuickPicksAccountIdentity
+import app.n_zik.android.components.ui.screens.home.quickpicks.currentQuickPicksAccountIdentity
+import app.n_zik.android.utils.encryptedPreferencesUpdateTrigger
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.syncImportHistoryKey
+import app.n_zik.android.utils.useLoginForBrowseKey
 import app.n_zik.android.utils.addNext
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.asSong
@@ -90,8 +96,9 @@ import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -127,13 +134,13 @@ import app.n_zik.android.components.OfflineContent
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.utils.historySortMenuOrderKey
 import androidx.compose.foundation.text.BasicText
-import app.n_zik.android.utils.encryptedPreferences
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.typography
 import java.time.ZoneId
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.time.LocalDate
+import timber.log.Timber
 
 @kotlin.OptIn(ExperimentalTextApi::class)
 @OptIn(UnstableApi::class)
@@ -187,14 +194,8 @@ fun HistoryList(
 
     val sort = Sort<HistorySortOrder>(Preference.HISTORY_SORT_BY, Preference.HISTORY_SORT_ORDER, historySortMenuOrderKey, "hist")
 
-    var isCoreSyncEnabled by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        isCoreSyncEnabled = withContext(NzikDispatchers.DATA) {
-            appContext().encryptedPreferences.getBoolean(enableYouTubeSyncKey, false)
-        }
-    }
-
-    val loadedEvents by remember(sort.sortBy, sort.sortOrder, parentalControlEnabled) {
+    var localHistoryRetry by remember { mutableIntStateOf(0) }
+    val eventResults = remember(sort.sortBy, sort.sortOrder, parentalControlEnabled) {
         Database.eventTable
                 .allWithSong()
                 .distinctUntilChanged()
@@ -233,36 +234,58 @@ fun HistoryList(
                         }
                     }
                 }
-    }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
-    val events = loadedEvents.orEmpty()
+                .map { Result.success(it) }
+                .catch { error ->
+                    Timber.tag("History").w(error, "Unable to read listening history")
+                    emit(Result.failure(error))
+                }
+    }
+    val loadedEvents by key(localHistoryRetry) {
+        eventResults.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
+    }
+    val events = loadedEvents?.getOrNull().orEmpty()
 
     val buttonsList = mutableListOf(HistoryType.History to stringResource(R.string.library_history_title))
     val syncImportHistory by rememberPreference(syncImportHistoryKey, false)
-    if (isCoreSyncEnabled && syncImportHistory) {
+    val useLoginForBrowse by rememberPreference(useLoginForBrowseKey, true)
+    val sessionGeneration = encryptedPreferencesUpdateTrigger
+    val profileId = getActiveProfile(context)
+    val onlineHistoryOwner = remember(profileId, sessionGeneration, useLoginForBrowse, syncImportHistory) {
+        if (syncImportHistory && isYouTubeSyncEnabled()) {
+            YouTubeHistoryOwner(profileId, currentQuickPicksAccountIdentity())
+        } else null
+    }
+    if (onlineHistoryOwner != null) {
         buttonsList += HistoryType.YTMHistory to stringResource(R.string.sync_youtube_history_title)
     }
 
-    var historyType by rememberPreference(historyTypeKey, HistoryType.History)
+    var selectedHistoryType by rememberPreference(historyTypeKey, HistoryType.History)
+    val historyType = if (onlineHistoryOwner == null) HistoryType.History else selectedHistoryType
+    var isYTMLoading by remember(onlineHistoryOwner) { mutableStateOf(false) }
+    var didYTMRefreshFail by remember(onlineHistoryOwner) { mutableStateOf(false) }
+    var youtubeHistoryRetry by remember { mutableIntStateOf(0) }
 
-    var isLocalLoading by remember { mutableStateOf(true) }
-    var isYTMLoading by remember { mutableStateOf(false) }
+    var cachedHistory by persist<CachedYouTubeHistory>("home/history/accountPage")
+    val historyPage = cachedHistory?.takeIf { it.owner == onlineHistoryOwner }?.page
+    LaunchedEffect(historyType, onlineHistoryOwner, sessionGeneration, youtubeHistoryRetry) {
+        val owner = onlineHistoryOwner ?: return@LaunchedEffect
+        if (historyType != HistoryType.YTMHistory) return@LaunchedEffect
 
-    LaunchedEffect(events) {
-        if (events.isNotEmpty()) {
-            isLocalLoading = false
-        }
-    }
+        fun ownerStillCurrent(): Boolean =
+            owner.profileId == getActiveProfile(context) && owner.account == currentQuickPicksAccountIdentity() &&
+                isYouTubeSyncEnabled()
 
-    LaunchedEffect(Unit) {
-        delay(1500)
-        isLocalLoading = false
-    }
-
-    var historyPage by persist<Result<HistoryPage>>("home/history/pageResult")
-    LaunchedEffect(historyType) {
-        if (historyType == HistoryType.YTMHistory && isYouTubeSyncEnabled()) {
-            isYTMLoading = true
-            historyPage = withContext(NzikDispatchers.DATA) { YtMusic.getHistory(setLogin = true) }
+        isYTMLoading = true
+        try {
+            val result = withContext(NzikDispatchers.DATA) {
+                if (!ownerStillCurrent()) return@withContext null
+                YtMusic.getHistory(setLogin = true)
+            } ?: return@LaunchedEffect
+            (result.exceptionOrNull() as? CancellationException)?.let { throw it }
+            if (sessionGeneration != encryptedPreferencesUpdateTrigger || !ownerStillCurrent()) return@LaunchedEffect
+            result.getOrNull()?.let { cachedHistory = CachedYouTubeHistory(owner, it) }
+            didYTMRefreshFail = result.isFailure
+        } finally {
             isYTMLoading = false
         }
     }
@@ -276,7 +299,7 @@ fun HistoryList(
         }.filterValues { it.isNotEmpty() }
     }
     val filteredHistorySections = remember(historyPage, search.inputValue, parentalControlEnabled) {
-        historyPage?.getOrNull()?.sections.orEmpty().map { section ->
+        historyPage?.sections.orEmpty().map { section ->
             section.title to section.songs.map { it.asMediaItem }.filter { mediaItem ->
                 mediaItem.mediaId.isNotEmpty() &&
                     (!parentalControlEnabled || mediaItem.mediaMetadata.title?.startsWith(EXPLICIT_PREFIX, true) != true) &&
@@ -330,7 +353,7 @@ fun HistoryList(
                         chips = buttonsList,
                         contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp),
                         currentValue = historyType,
-                        onValueUpdate = { historyType = it },
+                        onValueUpdate = { selectedHistoryType = it },
                         modifier = Modifier.weight(1f)
                     )
                     Row(
@@ -349,21 +372,57 @@ fun HistoryList(
 
         val forceShimmer = forceLoadingShimmerPreview()
         val isLoading = forceShimmer || when (historyType) {
-            HistoryType.History -> isLocalLoading && events.isEmpty()
-            HistoryType.YTMHistory -> isYTMLoading || (historyPage == null && isYouTubeSyncEnabled())
+            HistoryType.History -> loadedEvents == null
+            HistoryType.YTMHistory -> historyPage == null && (isYTMLoading || !didYTMRefreshFail)
+        }
+        val loadFailed = when (historyType) {
+            HistoryType.History -> loadedEvents?.isFailure == true
+            HistoryType.YTMHistory -> didYTMRefreshFail && !isYTMLoading
         }
         val showKnownHistoryShimmer = forceShimmer && when (historyType) {
             HistoryType.History -> filteredEvents.isNotEmpty()
             HistoryType.YTMHistory -> filteredHistorySections.isNotEmpty()
         }
+        val historyFailureWithoutCache = loadFailed &&
+            (historyType == HistoryType.History || historyPage == null)
+        val showRetry = loadFailed && !forceShimmer && !(search.isFocused && search.inputValue.isBlank())
+        val savedSearchSection: @Composable () -> Unit = {
+            SearchHistorySection(
+                visible = search.isFocused && historyMatches.isNotEmpty(),
+                queries = historyMatches,
+                onQueryClick = { search.input = TextFieldValue(it); recordHistoryQuery(it); search.isFocused = false },
+                onQueryDelete = {
+                    savedSearches.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_HISTORY, it)
+                },
+                onQueryDeleteAll = {
+                    savedSearches.value = SearchHistoryStore.deleteAll(context.preferences, SearchHistoryStore.PAGE_HISTORY)
+                },
+            )
+        }
+        val failureContent: @Composable (Modifier) -> Unit = { modifier ->
+            Column(
+                modifier = modifier,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                BasicText(
+                    text = stringResource(if (historyType == HistoryType.YTMHistory && !isOnline)
+                        R.string.common_load_failed_no_connection else R.string.common_load_failed),
+                    style = typography().m.semiBold.copy(color = colorPalette().textSecondary),
+                    modifier = Modifier.padding(bottom = 12.dp),
+                )
+                PageButton(onClick = {
+                    if (historyType == HistoryType.History) localHistoryRetry++ else youtubeHistoryRetry++
+                }) {
+                    BasicText(stringResource(R.string.common_action_retry), style = typography().s)
+                }
+            }
+        }
 
         SearchEmptyFeedback(
             query = search.inputValue,
             empty = noSearchResults,
-            loading = isLoading || when (historyType) {
-                HistoryType.History -> loadedEvents == null
-                HistoryType.YTMHistory -> historyPage?.isSuccess != true || historyPage?.getOrNull() == null
-            }
+            loading = isLoading || loadFailed
         )
 
         // Wiped with a plain alpha while the bar is focused with a blank
@@ -392,13 +451,30 @@ fun HistoryList(
                             .fillMaxWidth()
                             .graphicsLayer { if (!forceShimmer) alpha = searchFocus.contentAlpha },
                     ) {
+                        stickyHeader {
+                            HistorySectionTitle(
+                                title = stringResource(R.string.calendar_today),
+                                shimmer = true,
+                            )
+                        }
                         item { SongItemPlaceholders(count = 4) }
                     }
                 }
-            } else if (
+            } else if (historyFailureWithoutCache) {
+                LazyColumn(
+                    state = lazyListState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = rememberPageChromeContentPadding(topInsetProvider = { 0.dp }),
+                ) {
+                    item(key = "search_history") { savedSearchSection() }
+                    if (showRetry) item(key = "history_error") {
+                        failureContent(Modifier.fillParentMaxSize())
+                    }
+                }
+            } else if (!loadFailed && (
                 (search.inputValue.isBlank() && historyMatches.isEmpty() && historyType == HistoryType.History && events.isEmpty()) ||
-                (search.inputValue.isBlank() && historyMatches.isEmpty() && historyType == HistoryType.YTMHistory && historyPage?.getOrNull()?.sections.isNullOrEmpty())
-            ) {
+                (search.inputValue.isBlank() && historyMatches.isEmpty() && historyType == HistoryType.YTMHistory && historyPage?.sections.isNullOrEmpty())
+            )) {
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -463,22 +539,13 @@ fun HistoryList(
                     // above the bar), so it reads as emerging from the bar
                     // while the content below is pushed down; the exit shrinks
                     // back into the bar; the page content wipe never touches it
-                    item(key = "search_history") {
-                        SearchHistorySection(
-                            visible = search.isFocused && historyMatches.isNotEmpty(),
-                            queries = historyMatches,
-                            onQueryClick = { search.input = TextFieldValue(it); recordHistoryQuery(it); search.isFocused = false },
-                            onQueryDelete = {
-                                savedSearches.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_HISTORY, it)
-                            },
-                            onQueryDeleteAll = {
-                                savedSearches.value = SearchHistoryStore.deleteAll(context.preferences, SearchHistoryStore.PAGE_HISTORY)
-                            },
-                        )
+                    item(key = "search_history") { savedSearchSection() }
+                    if (showRetry) item(key = "history_error") {
+                        failureContent(Modifier.fillMaxWidth().padding(vertical = 12.dp))
                     }
 
 
-                    if (noSearchResults) {
+                    if (noSearchResults && !loadFailed) {
                         item(key = "search_no_results") {
                             SearchEmptySpace(fillRemainingViewport = true)
                         }
@@ -606,6 +673,10 @@ fun HistoryList(
     }
 }
 }
+
+private data class YouTubeHistoryOwner(val profileId: String, val account: QuickPicksAccountIdentity)
+
+private data class CachedYouTubeHistory(val owner: YouTubeHistoryOwner, val page: HistoryPage)
 
 @Composable
 private fun HistorySectionTitle(title: String, modifier: Modifier = Modifier, shimmer: Boolean = false) {
