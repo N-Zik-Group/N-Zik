@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
@@ -36,7 +39,6 @@ import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.withContext
 import app.n_zik.android.colorPalette
 import androidx.compose.foundation.layout.PaddingValues
@@ -45,116 +47,175 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import app.n_zik.android.components.OfflineContent
+import app.n_zik.android.components.ui.UiButton
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
-@PublishedApi
-internal suspend fun <T : Innertube.Item> loadInitialItemsPage(
+private const val PAGE_TIMEOUT_MS = 30_000L
+private const val MAX_NO_PROGRESS_PAGES = 3
+
+private class ItemsPageLoadState(initialPending: Boolean) {
+    var initialPending by mutableStateOf(initialPending)
+    var loadingMore by mutableStateOf(false)
+    var continuationFailed by mutableStateOf(false)
+    var initialRetry by mutableIntStateOf(0)
+    var continuationRetry by mutableIntStateOf(0)
+}
+
+private suspend fun <T : Innertube.Item> requestItemsPage(
     provider: suspend (String?) -> Result<Innertube.ItemsPage<T>?>?,
-): Result<Innertube.ItemsPage<T>>? = withContext(NzikDispatchers.DATA) { provider(null) }
-    ?.onFailure { Timber.tag("ItemsPage").e(it, "Failed to load initial items") }
-    ?.map { it ?: Innertube.ItemsPage<T>(null, null) }
+    continuation: String?,
+): Result<Innertube.ItemsPage<T>?>? = try {
+    withTimeoutOrNull(PAGE_TIMEOUT_MS) {
+        withContext(NzikDispatchers.DATA) { provider(continuation) }
+    }?.onFailure {
+        currentCoroutineContext().ensureActive()
+        Timber.tag("ItemsPage").w(it, "Failed to load items")
+    }
+} catch (cancelled: CancellationException) {
+    throw cancelled
+} catch (error: Exception) {
+    Timber.tag("ItemsPage").w(error, "Failed to load items")
+    Result.failure(error)
+}
+
+@Composable
+private fun <T : Innertube.Item> rememberItemsPageLoad(
+    tag: String,
+    searchQuery: String?,
+    pageState: MutableState<Innertube.ItemsPage<T>?>,
+    provider: (suspend (String?) -> Result<Innertube.ItemsPage<T>?>?)?,
+    isOnline: Boolean,
+    forceShimmer: Boolean,
+    isNearEnd: () -> Boolean,
+): ItemsPageLoadState {
+    val updatedProvider by rememberUpdatedState(provider)
+    val updatedIsNearEnd by rememberUpdatedState(isNearEnd)
+    val state = remember(tag, searchQuery, pageState) {
+        ItemsPageLoadState(pageState.value == null && provider != null)
+    }
+    val hasProvider = provider != null
+    LaunchedEffect(state, hasProvider, isOnline, state.initialRetry) {
+        val load = updatedProvider
+        if (pageState.value != null || load == null) {
+            state.initialPending = false
+            return@LaunchedEffect
+        }
+        state.initialPending = true
+        try {
+            requestItemsPage(load, null)?.onSuccess { page ->
+                pageState.value = page ?: Innertube.ItemsPage(null, null)
+            }
+        } finally {
+            state.initialPending = false
+        }
+    }
+    LaunchedEffect(state, hasProvider, isOnline, forceShimmer, state.continuationRetry) {
+        val load = updatedProvider ?: return@LaunchedEffect
+        if (!isOnline || forceShimmer || state.continuationFailed) return@LaunchedEffect
+        var retry = state.continuationRetry > 0
+        val requestedTokens = mutableSetOf<String>()
+        var noProgressPages = 0
+        while (true) {
+            val page = snapshotFlow {
+                pageState.value?.takeIf { it.continuation != null && (retry || updatedIsNearEnd()) }
+            }.first { it != null } ?: return@LaunchedEffect
+            val token = page.continuation ?: return@LaunchedEffect
+            retry = false
+            state.loadingMore = true
+            try {
+                requestedTokens.add(token)
+                val result = requestItemsPage(load, token)
+                if (result == null || result.isFailure) {
+                    state.continuationFailed = true
+                    return@LaunchedEffect
+                }
+                val next = result.getOrNull()
+                if (next == null) {
+                    pageState.value = page.copy(continuation = null)
+                    return@LaunchedEffect
+                }
+
+                val merged = withContext(NzikDispatchers.DATA) { page + next }
+                noProgressPages = if (merged.items.orEmpty().size > page.items.orEmpty().size) {
+                    0
+                } else {
+                    noProgressPages + 1
+                }
+                val stalled = next.continuation != null &&
+                    (next.continuation in requestedTokens || noProgressPages >= MAX_NO_PROGRESS_PAGES)
+                pageState.value = if (stalled) merged.copy(continuation = token) else merged
+                if (stalled) {
+                    state.continuationFailed = true
+                    return@LaunchedEffect
+                }
+                delay(250) // Let the loaded rows reach the viewport before checking its end again.
+            } finally {
+                state.loadingMore = false
+            }
+        }
+    }
+    return state
+}
+
+@Composable
+private fun ItemsPageRetry(onRetry: () -> Unit) {
+    Column(
+        Modifier.fillMaxWidth().padding(vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(stringResource(R.string.common_load_failed))
+        UiButton(onClick = onRetry) { Text(stringResource(R.string.common_action_retry)) }
+    }
+}
 
 /** Chrome clearance is supplied by the page host and shared by loading and loaded content. */
 @ExperimentalAnimationApi
 @Composable
-inline fun <T : Innertube.Item> ItemsPage(
+fun <T : Innertube.Item> ItemsPage(
     tag: String,
-    crossinline headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,
-    crossinline itemContent: @Composable LazyItemScope.(T) -> Unit,
-    noinline itemPlaceholderContent: @Composable (T?) -> Unit,
+    headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,
+    itemContent: @Composable LazyItemScope.(T) -> Unit,
+    itemPlaceholderContent: @Composable (T?) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(bottom = Dimensions.bottomSpacer),
     initialPlaceholderCount: Int = 8,
     continuationPlaceholderCount: Int = 3,
     emptyItemsText: String = "",
     filterContentType: ContentType = ContentType.All,
-    noinline itemsPageProvider: (suspend (String?) -> Result<Innertube.ItemsPage<T>?>?)? = null,
-    loadedItemsState: androidx.compose.runtime.MutableState<List<T>>? = null,
+    itemsPageProvider: (suspend (String?) -> Result<Innertube.ItemsPage<T>?>?)? = null,
+    loadedItemsState: MutableState<List<T>>? = null,
     searchQuery: String? = null,
-    noinline showEmptyMessage: (String) -> Unit = { Toaster.i(it) },
+    showEmptyMessage: (String) -> Unit = { Toaster.i(it) },
 ) {
-    val updatedItemsPageProvider by rememberUpdatedState(itemsPageProvider)
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(LocalContext.current)
     val forceShimmer = forceLoadingShimmerPreview()
 
     val lazyListState = rememberLazyListState()
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
-    var itemsPage by key(tag, searchQuery) { persist<Innertube.ItemsPage<T>?>(tag) }
-    var hasScrolledToTop by remember { mutableStateOf(false) }
-
-    var isLoadingMore by remember(tag, searchQuery) { mutableStateOf(false) }
-    var initialLoadPending by remember(tag, searchQuery) { mutableStateOf(itemsPage == null && itemsPageProvider != null) }
-
-    LaunchedEffect(tag, searchQuery, lazyListState, updatedItemsPageProvider, forceShimmer) {
-        if (forceShimmer) return@LaunchedEffect
-        val currentItemsPageProvider = updatedItemsPageProvider ?: return@LaunchedEffect
-
-        while (true) {
-            val shouldLoad = snapshotFlow {
-                val info = lazyListState.layoutInfo
-                val total = info.totalItemsCount
-                val lastVisible = info.visibleItemsInfo.lastOrNull()?.index ?: 0
-                val hasContinuation = itemsPage?.continuation != null
-                (hasContinuation && total > 0 && lastVisible >= total - 20) && !isLoadingMore
-            }
-                .distinctUntilChanged()
-                .first { it }
-
-            if (shouldLoad) {
-                isLoadingMore = true
-                try {
-                    val currentContinuation = itemsPage?.continuation
-                    withContext(NzikDispatchers.DATA) {
-                        currentItemsPageProvider(currentContinuation)
-                    }?.onSuccess { newPage ->
-                        if (newPage == null) {
-                            if (itemsPage == null) {
-                                itemsPage = Innertube.ItemsPage(null, null)
-                            }
-                        } else {
-                            val merged = withContext(NzikDispatchers.DATA) {
-                                itemsPage + newPage
-                            }
-                            itemsPage = merged
-                            loadedItemsState?.value = merged.items ?: emptyList()
-                        }
-                    }?.onFailure {
-                        Timber.tag("ItemsPage").e(it, "Failed to load more items")
-                        delay(2000) // Avoid rapid retry on failure
-                    }
-                    delay(250) // Allow UI to recompose and update layout info
-                } finally {
-                    isLoadingMore = false
-                }
-            }
-        }
-    }
-
-    LaunchedEffect(tag, searchQuery, itemsPage, updatedItemsPageProvider, isOnline) {
-        val provider = updatedItemsPageProvider
-        if (itemsPage != null || provider == null) {
-            initialLoadPending = false
-            return@LaunchedEffect
-        }
-        initialLoadPending = true
-        try {
-            loadInitialItemsPage(provider)?.onSuccess {
-                itemsPage = it
-                loadedItemsState?.value = it.items.orEmpty()
-            }
-        } finally {
-            initialLoadPending = false
-        }
+    val pageState = key(tag, searchQuery) { persist<Innertube.ItemsPage<T>?>(tag) }
+    val itemsPage by pageState
+    var hasScrolledToTop by remember(tag, searchQuery) { mutableStateOf(false) }
+    val loadState = rememberItemsPageLoad(tag, searchQuery, pageState, itemsPageProvider, isOnline, forceShimmer) {
+        val layout = lazyListState.layoutInfo
+        val lastVisible = layout.visibleItemsInfo.lastOrNull()?.index ?: -1
+        layout.totalItemsCount > 0 && lastVisible >= 0 && lastVisible >= layout.totalItemsCount - 20
     }
 
     LaunchedEffect(itemsPage?.items?.isNotEmpty()) {
@@ -193,7 +254,7 @@ inline fun <T : Innertube.Item> ItemsPage(
     SearchEmptyFeedback(
         query = searchQuery.orEmpty(),
         empty = itemsPage != null && itemsPage?.continuation == null && visibleItems.isEmpty(),
-        loading = forceShimmer || initialLoadPending || isLoadingMore,
+        loading = forceShimmer || loadState.initialPending || loadState.loadingMore,
         showMessage = showEmptyMessage,
     )
     Box(
@@ -218,13 +279,15 @@ inline fun <T : Innertube.Item> ItemsPage(
             }
 
             if (itemsPage == null) {
-                if (forceShimmer || (isOnline && initialLoadPending)) {
+                if (forceShimmer || (isOnline && loadState.initialPending)) {
                     items(initialPlaceholderCount, key = { "loading_$it" }) {
                         itemPlaceholderContent(null)
                     }
                 } else {
                     item(key = "loading_status") {
-                        if (isOnline) {
+                        if (isOnline && itemsPageProvider != null) {
+                            ItemsPageRetry { loadState.initialRetry++ }
+                        } else if (isOnline) {
                             SearchNoResults(
                                 text = stringResource(R.string.common_load_failed),
                                 fillRemainingViewport = true,
@@ -257,9 +320,16 @@ inline fun <T : Innertube.Item> ItemsPage(
                 }
             }
 
-            if (itemsPage?.continuation != null) {
+            if (itemsPage?.continuation != null && (forceShimmer || loadState.loadingMore)) {
                 val count = if (visibleItems.isEmpty()) initialPlaceholderCount else continuationPlaceholderCount
-                items(count, key = { "loading_more_$it" }) { itemPlaceholderContent(null) }
+                items(count, key = { "loading_more_$it" }, contentType = { "placeholder" }) { itemPlaceholderContent(null) }
+            } else if (itemsPage?.continuation != null && loadState.continuationFailed && isOnline) {
+                item(key = "continuation_retry") {
+                    ItemsPageRetry {
+                        loadState.continuationFailed = false
+                        loadState.continuationRetry++
+                    }
+                }
             }
         }
 
@@ -270,96 +340,36 @@ inline fun <T : Innertube.Item> ItemsPage(
 /** Chrome clearance is supplied by the page host and shared by loading and loaded content. */
 @ExperimentalAnimationApi
 @Composable
-inline fun <T : Innertube.Item> ItemsGridPage(
+fun <T : Innertube.Item> ItemsGridPage(
     tag: String,
-    crossinline headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,
-    noinline itemContent: @Composable LazyGridItemScope.(T) -> Unit,
-    noinline itemPlaceholderContent: @Composable (T?) -> Unit,
+    headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,
+    itemContent: @Composable LazyGridItemScope.(T) -> Unit,
+    itemPlaceholderContent: @Composable (T?) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(bottom = Dimensions.bottomSpacer),
     initialPlaceholderCount: Int = 8,
     continuationPlaceholderCount: Int = 6,
     emptyItemsText: String = "",
     filterContentType: ContentType = ContentType.All,
-    noinline itemsPageProvider: (suspend (String?) -> Result<Innertube.ItemsPage<T>?>?)? = null,
+    itemsPageProvider: (suspend (String?) -> Result<Innertube.ItemsPage<T>?>?)? = null,
     thumbnailSizeDp: Dp,
-    loadedItemsState: androidx.compose.runtime.MutableState<List<T>>? = null,
+    loadedItemsState: MutableState<List<T>>? = null,
     searchQuery: String? = null,
-    noinline showEmptyMessage: (String) -> Unit = { Toaster.i(it) },
+    showEmptyMessage: (String) -> Unit = { Toaster.i(it) },
 ) {
-    val updatedItemsPageProvider by rememberUpdatedState(itemsPageProvider)
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(LocalContext.current)
     val forceShimmer = forceLoadingShimmerPreview()
 
     val lazyGridState = rememberLazyGridState()
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
-    var itemsPage by key(tag, searchQuery) { persist<Innertube.ItemsPage<T>?>(tag) }
-    var hasScrolledToTop by remember { mutableStateOf(false) }
-
-    var isLoadingMore by remember(tag, searchQuery) { mutableStateOf(false) }
-    var initialLoadPending by remember(tag, searchQuery) { mutableStateOf(itemsPage == null && itemsPageProvider != null) }
-
-    LaunchedEffect(tag, searchQuery, lazyGridState, updatedItemsPageProvider, forceShimmer) {
-        if (forceShimmer) return@LaunchedEffect
-        val currentItemsPageProvider = updatedItemsPageProvider ?: return@LaunchedEffect
-
-        while (true) {
-            val shouldLoad = snapshotFlow {
-                val info = lazyGridState.layoutInfo
-                val total = info.totalItemsCount
-                val lastVisible = info.visibleItemsInfo.lastOrNull()?.index ?: 0
-                val hasContinuation = itemsPage?.continuation != null
-                (hasContinuation && total > 0 && lastVisible >= total - 20) && !isLoadingMore
-            }
-                .distinctUntilChanged()
-                .first { it }
-
-            if (shouldLoad) {
-                isLoadingMore = true
-                try {
-                    val currentContinuation = itemsPage?.continuation
-                    withContext(NzikDispatchers.DATA) {
-                        currentItemsPageProvider(currentContinuation)
-                    }?.onSuccess { newPage ->
-                        if (newPage == null) {
-                            if (itemsPage == null) {
-                                itemsPage = Innertube.ItemsPage(null, null)
-                            }
-                        } else {
-                            val merged = withContext(NzikDispatchers.DATA) {
-                                itemsPage + newPage
-                            }
-                            itemsPage = merged
-                            loadedItemsState?.value = merged.items ?: emptyList()
-                        }
-                    }?.onFailure {
-                        Timber.tag("ItemsPage").e(it, "Failed to load more items")
-                        delay(2000) // Avoid rapid retry on failure
-                    }
-                    delay(250) // Allow UI to recompose and update layout info
-                } finally {
-                    isLoadingMore = false
-                }
-            }
-        }
-    }
-
-    LaunchedEffect(tag, searchQuery, itemsPage, updatedItemsPageProvider, isOnline) {
-        val provider = updatedItemsPageProvider
-        if (itemsPage != null || provider == null) {
-            initialLoadPending = false
-            return@LaunchedEffect
-        }
-        initialLoadPending = true
-        try {
-            loadInitialItemsPage(provider)?.onSuccess {
-                itemsPage = it
-                loadedItemsState?.value = it.items.orEmpty()
-            }
-        } finally {
-            initialLoadPending = false
-        }
+    val pageState = key(tag, searchQuery) { persist<Innertube.ItemsPage<T>?>(tag) }
+    val itemsPage by pageState
+    var hasScrolledToTop by remember(tag, searchQuery) { mutableStateOf(false) }
+    val loadState = rememberItemsPageLoad(tag, searchQuery, pageState, itemsPageProvider, isOnline, forceShimmer) {
+        val layout = lazyGridState.layoutInfo
+        val lastVisible = layout.visibleItemsInfo.lastOrNull()?.index ?: -1
+        layout.totalItemsCount > 0 && lastVisible >= 0 && lastVisible >= layout.totalItemsCount - 20
     }
 
     LaunchedEffect(itemsPage?.items?.isNotEmpty()) {
@@ -398,7 +408,7 @@ inline fun <T : Innertube.Item> ItemsGridPage(
     SearchEmptyFeedback(
         query = searchQuery.orEmpty(),
         empty = itemsPage != null && itemsPage?.continuation == null && visibleItems.isEmpty(),
-        loading = forceShimmer || initialLoadPending || isLoadingMore,
+        loading = forceShimmer || loadState.initialPending || loadState.loadingMore,
         showMessage = showEmptyMessage,
     )
     Box(
@@ -426,13 +436,15 @@ inline fun <T : Innertube.Item> ItemsGridPage(
             }
 
             if (itemsPage == null) {
-                if (forceShimmer || (isOnline && initialLoadPending)) {
+                if (forceShimmer || (isOnline && loadState.initialPending)) {
                     items(initialPlaceholderCount, key = { "loading_$it" }) {
                         itemPlaceholderContent(null)
                     }
                 } else {
                     item(key = "loading_status", span = { GridItemSpan(maxLineSpan) }) {
-                        if (isOnline) {
+                        if (isOnline && itemsPageProvider != null) {
+                            ItemsPageRetry { loadState.initialRetry++ }
+                        } else if (isOnline) {
                             SearchNoResults(
                                 text = stringResource(R.string.common_load_failed),
                                 fillRemainingViewport = true,
@@ -467,9 +479,16 @@ inline fun <T : Innertube.Item> ItemsGridPage(
                 }
             }
 
-            if (itemsPage?.continuation != null) {
+            if (itemsPage?.continuation != null && (forceShimmer || loadState.loadingMore)) {
                 val count = if (visibleItems.isEmpty()) initialPlaceholderCount else continuationPlaceholderCount
-                items(count, key = { "loading_more_$it" }) { itemPlaceholderContent(null) }
+                items(count, key = { "loading_more_$it" }, contentType = { "placeholder" }) { itemPlaceholderContent(null) }
+            } else if (itemsPage?.continuation != null && loadState.continuationFailed && isOnline) {
+                item(key = "continuation_retry", span = { GridItemSpan(maxLineSpan) }) {
+                    ItemsPageRetry {
+                        loadState.continuationFailed = false
+                        loadState.continuationRetry++
+                    }
+                }
             }
         }
 

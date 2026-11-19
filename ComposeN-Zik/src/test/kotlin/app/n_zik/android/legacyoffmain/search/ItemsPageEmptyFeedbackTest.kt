@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.Density
 import android.app.Application
 import android.content.Context
 import android.content.ContextWrapper
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Looper
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.WindowInsets
@@ -24,7 +26,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.performClick
+import androidx.test.core.app.ApplicationProvider
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -51,6 +58,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowNetworkCapabilities
+import kotlinx.coroutines.CompletableDeferred
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -101,7 +110,7 @@ class ItemsPageEmptyFeedbackTest {
                     headerContent = { header() },
                     contentPadding = contentPadding,
                     itemContent = {},
-                    itemPlaceholderContent = {},
+                    itemPlaceholderContent = { Box(Modifier.height(20.dp).testTag("pending-page")) },
                     emptyItemsText = "Collection is empty",
                     itemsPageProvider = provider,
                     thumbnailSizeDp = 96.dp,
@@ -114,13 +123,88 @@ class ItemsPageEmptyFeedbackTest {
                     headerContent = { header() },
                     contentPadding = contentPadding,
                     itemContent = {},
-                    itemPlaceholderContent = {},
+                    itemPlaceholderContent = { Box(Modifier.height(20.dp).testTag("pending-page")) },
                     emptyItemsText = "Collection is empty",
                     itemsPageProvider = provider,
                     showEmptyMessage = { messages += it },
                 )
             }
         }
+    }
+
+    private fun enableNetwork() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val manager = checkNotNull(context.getSystemService(ConnectivityManager::class.java))
+        val capabilities = ShadowNetworkCapabilities.newInstance()
+        Shadows.shadowOf(capabilities).addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        Shadows.shadowOf(capabilities).addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+        Shadows.shadowOf(manager).setNetworkCapabilities(checkNotNull(manager.activeNetwork), capabilities)
+    }
+
+    @Test
+    fun initialRequestShowsPlaceholdersUntilAnEmptyResultInGrid() {
+        enableNetwork()
+        page.value = null
+        val result = CompletableDeferred<Result<Innertube.ItemsPage<Innertube.VideoItem>?>>()
+        val provider: suspend (String?) -> Result<Innertube.ItemsPage<Innertube.VideoItem>?> = { result.await() }
+        composeRule.setContent { content(grid = true, query = null, provider = provider) }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag("pending-page").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("Collection is empty").assertDoesNotExist()
+        result.complete(Result.success(Innertube.ItemsPage(emptyList(), null)))
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Collection is empty").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("Collection is empty").assertIsDisplayed()
+    }
+
+    @Test
+    fun failedContinuationKeepsItsPageAndWaitsForAnExplicitRetry() {
+        enableNetwork()
+        val item = mockk<Innertube.VideoItem> { every { key } returns "saved-video" }
+        page.value = Innertube.ItemsPage(listOf(item), "next-page")
+        val calls = AtomicInteger()
+        val provider: suspend (String?) -> Result<Innertube.ItemsPage<Innertube.VideoItem>?> = { token ->
+            check(token == "next-page")
+            if (calls.incrementAndGet() == 1) Result.failure(IllegalStateException("Network unavailable"))
+            else Result.success(null)
+        }
+        composeRule.setContent { content(grid = false, provider = provider) }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Retry").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.runOnIdle {
+            assertEquals(1, calls.get())
+            assertEquals(listOf(item), page.value?.items)
+        }
+        composeRule.onAllNodesWithTag("pending-page").assertCountEquals(0)
+        composeRule.onNodeWithText("Retry").performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) { page.value?.continuation == null }
+        composeRule.runOnIdle {
+            assertEquals(2, calls.get())
+            assertEquals(listOf(item), page.value?.items)
+        }
+    }
+
+    @Test
+    fun repeatedContinuationTokenStopsAutomaticPagingInGrid() {
+        enableNetwork()
+        page.value = Innertube.ItemsPage(emptyList(), "repeated")
+        val calls = AtomicInteger()
+        val provider: suspend (String?) -> Result<Innertube.ItemsPage<Innertube.VideoItem>?> = { token ->
+            calls.incrementAndGet()
+            Result.success(Innertube.ItemsPage(emptyList(), token))
+        }
+        composeRule.setContent { content(grid = true, provider = provider) }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Retry").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.runOnIdle {
+            assertEquals(1, calls.get())
+            assertEquals(0, messages.size)
+        }
+        composeRule.onAllNodesWithTag("pending-page").assertCountEquals(0)
     }
 
     @Test
