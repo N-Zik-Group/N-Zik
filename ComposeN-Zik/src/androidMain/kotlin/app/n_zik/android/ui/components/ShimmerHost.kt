@@ -1,25 +1,70 @@
 package app.n_zik.android.ui.components
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.withInfiniteAnimationFrameNanos
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.geometry.Offset // Add this import
-import com.valentinilk.shimmer.shimmer
+import androidx.compose.ui.platform.LocalContext
+import app.n_zik.android.MainActivity
+import app.n_zik.android.compose.persist.findActivityNullable
+import app.n_zik.android.ui.styling.ColorPalette
+import app.n_zik.android.utils.shimmerEffect
+import kotlinx.coroutines.flow.collectLatest
+
+private const val SHIMMER_PERIOD_NANOS = 1_600_000_000L
+
+internal fun shimmerPhaseAt(frameNanos: Long): Float =
+    (frameNanos % SHIMMER_PERIOD_NANOS).toFloat() / SHIMMER_PERIOD_NANOS
+
+@Stable
+internal class ShimmerClock {
+    var attached by mutableIntStateOf(0)
+    var phase by mutableFloatStateOf(0f)
+}
+
+internal val LocalShimmerClock = staticCompositionLocalOf<ShimmerClock?> { null }
+internal val LocalShimmerPalette = staticCompositionLocalOf<ColorPalette?> { null }
+
+@Composable
+internal fun rememberShimmerClock(): ShimmerClock {
+    val clock = remember { ShimmerClock() }
+    LaunchedEffect(clock) {
+        snapshotFlow { clock.attached > 0 }.collectLatest { active ->
+            if (active) {
+                while (true) {
+                    withInfiniteAnimationFrameNanos { clock.phase = shimmerPhaseAt(it) }
+                }
+            }
+        }
+    }
+    return clock
+}
+
+@Composable
+@PublishedApi
+internal fun forceLoadingShimmerPreview(): Boolean =
+    (LocalContext.current.findActivityNullable() as? MainActivity)?.forceLoadingShimmer == true
+
+@Composable
+internal fun ArtworkShimmerPlaceholder(modifier: Modifier = Modifier, aspectRatio: Float = 1f) {
+    Spacer(modifier.fillMaxWidth().aspectRatio(aspectRatio).shimmerEffect())
+}
 
 @Composable
 fun ShimmerHost(
@@ -28,40 +73,10 @@ fun ShimmerHost(
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    // gh-606 M11: was a hand-rolled `LaunchedEffect { while(true) { ...; delay(16) } }` loop
-    // (an approximate ~60 FPS clock). Replaced with the same idiomatic infinite-animation
-
-    // pattern already used elsewhere in this M11 lot (SeekBarWaved/FluidGradient/BlurredCover):
-    // synced to Compose's real frame clock instead of a fixed delay. 1600ms tween covers the
-
-    // same 0..1000 range the old loop did in ~100 steps of 10f at ~16ms/step, so the visual
-    // cadence is unchanged.
-    val shimmerTranslateAnim by rememberInfiniteTransition(label = "shimmer").animateFloat(
-        initialValue = 0f,
-        targetValue = 1000f,
-        animationSpec = infiniteRepeatable(tween(1600, easing = LinearEasing)),
-        label = "shimmer"
-    )
-
-    Column(
-        horizontalAlignment = horizontalAlignment,
-        verticalArrangement = verticalArrangement,
-        modifier = modifier
-            .shimmer()
-            .graphicsLayer(alpha = 0.99f)
-            .drawWithContent {
-                drawContent()
-                drawRect(
-                    brush = Brush.linearGradient(
-                        colors = listOf(Color.Black, Color.Transparent),
-                        start = Offset(shimmerTranslateAnim, 0f),
-                        end = Offset(shimmerTranslateAnim + 200f, 0f)
-                    ),
-                    blendMode = BlendMode.DstIn
-                )
-            },
-        content = content
-    )
+    val clock = LocalShimmerClock.current ?: rememberShimmerClock()
+    CompositionLocalProvider(LocalShimmerClock provides clock) {
+        Column(modifier, verticalArrangement, horizontalAlignment, content)
+    }
 }
 
 

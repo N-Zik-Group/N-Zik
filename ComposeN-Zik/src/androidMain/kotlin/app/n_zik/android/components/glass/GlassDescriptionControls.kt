@@ -6,6 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.draw.clip
@@ -16,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.colorPalette
+import app.n_zik.android.typography
+import app.n_zik.android.utils.semiBold
 
 /** Glass keeps the transparent mini-player glyph; Material retains its filled native badge. */
 @Composable
@@ -45,17 +49,36 @@ fun GlassDescriptionTranslate(
 /** Adds a text-button surface while retaining the exact native label when Glass is off. */
 @Composable
 fun GlassDescriptionExpansion(
+    label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     settings: GlassSettings = rememberGlassSettings(),
-    content: @Composable () -> Unit,
 ) {
-    if (settings.usesGlassMaterial(GlassArea.ActionButtons) || settings.usesGlassContour(GlassArea.ActionButtons)) {
+    val ink = colorPalette().text
+    val style = typography().xs.semiBold
+    if (settings.usesGlassMaterial(GlassArea.ActionButtons)) {
+        val actionSettings = settings.forArea(GlassArea.ActionButtons)
+        val film = glassActionFilmColor()
+        val surface = effectiveSurfaceColor(surfaceBackdropColor(), glassFilmColor(actionSettings, film, menu = false))
+        LiquidButton(
+            onClick = onClick,
+            backdrop = toolbarActionBackdrop(),
+            modifier = modifier.padding(top = 8.dp),
+            settings = actionSettings,
+            filmColor = film,
+            contentHeight = GlassStandaloneActionSize,
+            contentPadding = 12.dp,
+            shape = toolbarItemShape(),
+        ) {
+            val foreground = glassPaneForeground(ink, surface, TextContrast, glassSurfaceDarkness(actionSettings))
+            BasicText(label, style = style.copy(color = foreground))
+        }
+    } else if (settings.usesGlassContour(GlassArea.ActionButtons)) {
         PageTextButton(onClick = onClick, modifier = modifier, shape = uiRoundnessShape(), settings = settings) {
-            content()
+            BasicText(label, Modifier.padding(top = 8.dp), style = style.copy(color = ink))
         }
     } else {
-        content()
+        BasicText(label, modifier.padding(top = 8.dp), style = style.copy(color = ink))
     }
 }
 

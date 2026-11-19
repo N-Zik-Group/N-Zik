@@ -22,14 +22,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.Dp
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.utils.shimmerEffect
 
 /** Custom text chips retain their original layout and one native clickable, including row scrolling. */
 @Composable
@@ -90,9 +93,11 @@ fun GlassFilterChip(
     shape: Shape = uiRoundnessShape(),
     colors: SelectableChipColors = FilterChipDefaults.filterChipColors(),
     settings: GlassSettings = rememberGlassSettings(),
+    shimmer: Boolean = false,
 ) {
     val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
-    GlassChipFeedback(material, enabled, shape, settings) { feedback, source ->
+    val interactive = enabled && !shimmer
+    GlassChipFeedback(material, interactive, shape, settings) { feedback, source ->
         val film = when {
             !enabled && selected -> colors.disabledSelectedContainerColor
             !enabled -> colors.disabledContainerColor
@@ -106,9 +111,12 @@ fun GlassFilterChip(
         Box(Modifier.minimumInteractiveComponentSize().then(modifier), contentAlignment = Alignment.Center) {
             CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
                 FilterChip(selected, onClick, label,
-                    modifier = if (material) feedback.glassChipBackground(film, shape, settings)
-                        else feedback.glassAreaContour(settings, GlassArea.ActionButtons, shape),
-                    enabled = enabled, shape = shape,
+                    modifier = when {
+                        shimmer -> Modifier.clip(shape).shimmerEffect().drawWithContent {}.clearAndSetSemantics {}
+                        material -> feedback.glassChipBackground(film, shape, settings)
+                        else -> feedback.glassAreaContour(settings, GlassArea.ActionButtons, shape)
+                    },
+                    enabled = interactive, shape = shape,
                     colors = if (surface != null) colors.copy(containerColor = Color.Transparent,
                         selectedContainerColor = Color.Transparent,
                         disabledContainerColor = Color.Transparent,

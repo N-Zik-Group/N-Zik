@@ -2,12 +2,10 @@ package app.n_zik.android.ui.components.themed
 
 import app.n_zik.android.uiRoundnessShape
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,10 +20,10 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
-import com.valentinilk.shimmer.shimmer
 import app.n_zik.android.colorPalette
 import app.n_zik.android.thumbnailShape
-import app.n_zik.android.ui.styling.shimmer
+import app.n_zik.android.ui.components.ArtworkShimmerPlaceholder
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.utils.isLandscape
 import app.n_zik.android.utils.thumbnailSizeDpKey
 import app.n_zik.android.utils.rememberPreference
@@ -80,12 +78,8 @@ fun adaptiveThumbnailContent(
             }
             //.size(thumbnailSizeDp)
 
-        if (isLoading) {
-            Spacer(
-                modifier = modifier
-                    .shimmer()
-                    .background(colorPalette().shimmer)
-            )
+        if (isLoading || forceLoadingShimmerPreview()) {
+            ArtworkShimmerPlaceholder(modifier)
         } else {
             ImageCacheFactory.AsyncImage(
                 shape = glassImageShapeIntersection(shape ?: thumbnailShape(), uiRoundnessShape()),

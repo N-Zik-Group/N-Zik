@@ -23,6 +23,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.ui.styling.Dimensions
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
 import app.n_zik.android.uiRoundnessShape
 
 @Composable
@@ -30,6 +31,7 @@ fun FolderItem(
     text: String,
     modifier: Modifier = Modifier,
     backgroundColor: Color = colorPalette().background0,
+    shimmer: Boolean = false,
     onClick: () -> Unit = {}
 ) {
     Row(
@@ -38,7 +40,7 @@ fun FolderItem(
         modifier = modifier.fillMaxWidth()
                            .clip( uiRoundnessShape() )
                            .background( backgroundColor )
-                           .clip(uiRoundnessShape()).clickable( onClick = onClick )
+                           .clip(uiRoundnessShape()).clickable(enabled = !shimmer, onClick = onClick)
                            .padding(
                                vertical = Dimensions.itemsVerticalPadding,
                                horizontal = 16.dp
@@ -56,7 +58,8 @@ fun FolderItem(
             )
         }
 
-        BasicText(
+        if (shimmer) MeasuredMetadataPlaceholder(text, typography().m)
+        else BasicText(
             text = text,
             style = typography().m.copy( colorPalette().text )
         )

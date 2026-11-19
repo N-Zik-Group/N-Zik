@@ -13,8 +13,10 @@ import androidx.compose.ui.platform.LocalDensity
 import kotlin.math.roundToInt
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.colorPalette
 import app.n_zik.android.ui.components.tab.toolbar.Button
 import app.n_zik.android.ui.components.tab.toolbar.EllipsisMenuComponent
+import app.n_zik.android.ui.components.tab.toolbar.Icon
 import app.n_zik.android.ui.components.navigation.header.TabToolBar
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassStandaloneActionSize
@@ -61,7 +63,7 @@ internal fun CollectionToolbar(
     }
 }
 
-/** Album editing controls retain their overflow menu and use the same visible action cells. */
+/** Keeps the same action cells when disabled. The bookmark owns its own availability. */
 @Composable
 internal fun CollectionButtonToolbar(
     bookmark: @Composable () -> Unit,
@@ -72,6 +74,7 @@ internal fun CollectionButtonToolbar(
     originalBookmarkGap: Dp = 15.dp,
     originalNativeBookmarkWidth: Dp = bookmarkWidth,
     actionCellWidth: Dp = CollectionActionCellWidth,
+    enabled: Boolean = true,
 ) {
     BoxWithConstraints(modifier.fillMaxWidth()) {
         // Preserve the original .8f toolbar measurement and overflow policy.
@@ -91,7 +94,19 @@ internal fun CollectionButtonToolbar(
             val visibleCount = capacity - 1
             buttons.take(visibleCount) + EllipsisMenuComponent.init { buttons.drop(visibleCount) }
         }
-        val actions = visible.map { button -> @Composable { button.ToolBarButton() } }
+        val actions = visible.map { button ->
+            @Composable {
+                if (enabled) button.ToolBarButton()
+                else if (button is Icon) TabToolBar.Icon(
+                    icon = button.icon,
+                    tint = colorPalette().textDisabled,
+                    size = button.sizeDp,
+                    enabled = false,
+                    modifier = button.modifier,
+                    onClick = {},
+                )
+            }
+        }
         CollectionToolbar(bookmark, actions, settings = settings, bookmarkWidth = bookmarkWidth,
             actionCellWidth = actionCellWidth, trailingSeparator = visible.size < buttons.size)
     }

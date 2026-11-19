@@ -26,6 +26,8 @@ import app.n_zik.android.components.glass.GlassToolbarRow
 import app.n_zik.android.core.coil.imageLoadingViewport
 import app.n_zik.android.core.coil.rememberImageLoadingViewportPainter
 import app.n_zik.android.typography
+import app.n_zik.android.ui.components.ArtworkShimmerPlaceholder
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.components.themed.AutoResizeText
 import app.n_zik.android.ui.components.themed.FontSizeRange
 import app.n_zik.android.ui.styling.Dimensions
@@ -41,23 +43,29 @@ internal fun CollectionArtworkHeader(
     disableScrollingText: Boolean,
     subtitle: @Composable () -> Unit = {},
     frameAction: Boolean = true,
+    isLoading: Boolean = false,
+    fullWidthTitleShimmer: Boolean = false,
     action: @Composable () -> Unit,
 ) {
     val type = typography().l.semiBold
-    GlassArtworkBackdrop(hasArtwork = !isLandscape) { artworkBackdrop ->
+    val showShimmer = forceLoadingShimmerPreview() || isLoading
+    GlassArtworkBackdrop(hasArtwork = !isLandscape && !showShimmer) { artworkBackdrop ->
         Box(Modifier.fillMaxWidth()) {
             if (!isLandscape) {
-                val viewportPainter = rememberImageLoadingViewportPainter(artwork)
-                Image(
-                    painter = viewportPainter,
-                    contentDescription = null,
-                    contentScale = ContentScale.FillWidth,
-                    modifier = Modifier.then(artworkBackdrop).aspectRatio(4f / 3).fillMaxWidth()
-                        .align(Alignment.Center).fadingEdge(
-                            top = WindowInsets.systemBars.asPaddingValues().calculateTopPadding() + Dimensions.fadeSpacingTop,
-                            bottom = Dimensions.fadeSpacingBottom,
-                        ).imageLoadingViewport(viewportPainter),
-                )
+                val artworkModifier = Modifier.then(artworkBackdrop).aspectRatio(4f / 3).fillMaxWidth()
+                    .align(Alignment.Center).fadingEdge(
+                        top = WindowInsets.systemBars.asPaddingValues().calculateTopPadding() + Dimensions.fadeSpacingTop,
+                        bottom = Dimensions.fadeSpacingBottom,
+                    )
+                if (showShimmer) {
+                    ArtworkShimmerPlaceholder(artworkModifier, aspectRatio = 4f / 3)
+                } else {
+                    val viewportPainter = rememberImageLoadingViewportPainter(artwork)
+                    Image(
+                        painter = viewportPainter, contentDescription = null, contentScale = ContentScale.FillWidth,
+                        modifier = artworkModifier.imageLoadingViewport(viewportPainter),
+                    )
+                }
             }
             Column(Modifier.align(Alignment.BottomCenter), horizontalAlignment = Alignment.CenterHorizontally) {
                 AutoResizeText(
@@ -70,8 +78,13 @@ internal fun CollectionArtworkHeader(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center,
+                    shimmer = showShimmer,
                     modifier = Modifier.padding(horizontal = 30.dp).then(
-                        if (disableScrollingText) Modifier else Modifier.basicMarquee(iterations = Int.MAX_VALUE)
+                        when {
+                            showShimmer && fullWidthTitleShimmer -> Modifier.fillMaxWidth()
+                            disableScrollingText || showShimmer -> Modifier
+                            else -> Modifier.basicMarquee(iterations = Int.MAX_VALUE)
+                        }
                     ),
                 )
                 subtitle()

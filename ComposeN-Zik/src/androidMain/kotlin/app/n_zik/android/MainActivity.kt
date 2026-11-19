@@ -37,11 +37,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -153,8 +150,9 @@ import androidx.annotation.RequiresApi
 import com.kieronquinn.monetcompat.core.MonetActivityAccessException
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.kieronquinn.monetcompat.interfaces.MonetColorsChangedListener
-import com.valentinilk.shimmer.LocalShimmerTheme
-import com.valentinilk.shimmer.defaultShimmerTheme
+import app.n_zik.android.ui.components.LocalShimmerClock
+import app.n_zik.android.ui.components.LocalShimmerPalette
+import app.n_zik.android.ui.components.rememberShimmerClock
 import dev.kdrag0n.monet.theme.ColorScheme
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.requests.playlistPage
@@ -594,6 +592,9 @@ class MainActivity :
 
     }
 
+    internal var forceLoadingShimmer by mutableStateOf(false)
+        private set
+
     private var binder by mutableStateOf<PlayerServiceModern.Binder?>(null)
     private var widgetLocaleRefreshPending = false
     private var intentUriData by mutableStateOf<Uri?>(null)
@@ -892,6 +893,7 @@ class MainActivity :
     @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        forceLoadingShimmer = BuildConfig.DEBUG && intent.getBooleanExtra("nzik_debug_force_shimmer", false)
         val startup = (application as? MainApplication)?.libraryStartup
         @Suppress("DEPRECATION")
         val savedLaunchIntents = savedInstanceState?.getParcelableArrayList<Intent>(DEFERRED_LAUNCH_INTENTS)
@@ -1561,23 +1563,7 @@ class MainActivity :
                 }
             }
 
-            val shimmerTheme = remember {
-                defaultShimmerTheme.copy(
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(
-                            durationMillis = 800,
-                            easing = LinearEasing,
-                            delayMillis = 250,
-                        ),
-                        repeatMode = RepeatMode.Restart
-                    ),
-                    shaderColors = listOf(
-                        Color.Unspecified.copy(alpha = 0.25f),
-                        Color.White.copy(alpha = 0.50f),
-                        Color.Unspecified.copy(alpha = 0.25f),
-                    ),
-                )
-            }
+            val shimmerClock = rememberShimmerClock()
 
             val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
             // Phone in landscape on the Songs/Album/Artist/Library tabs: app header and nav bar
@@ -2197,7 +2183,8 @@ class MainActivity :
                             LocalRippleConfiguration provides LocalAppearance.current.colorPalette.text.let { color ->
                                 remember(color) { RippleConfiguration(color = color) }
                             },
-                            LocalShimmerTheme provides shimmerTheme,
+                            LocalShimmerClock provides shimmerClock,
+                            LocalShimmerPalette provides LocalAppearance.current.colorPalette,
                             LocalPlayerServiceBinder provides binder,
                             LocalPlayerMusicVideo provides videoSession.takeUnless { pipState.value },
                             LocalFloatingDock provides pageDock,
@@ -2858,6 +2845,12 @@ class MainActivity :
     @UnstableApi
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        if (BuildConfig.DEBUG && intent.hasExtra("nzik_debug_force_shimmer")) {
+            forceLoadingShimmer = intent.getBooleanExtra("nzik_debug_force_shimmer", false)
+            if (intent.action == null && intent.data == null &&
+                intent.extras?.keySet() == setOf("nzik_debug_force_shimmer")
+            ) return
+        }
         if (!libraryUiStarted || awaitingDeferredNavigation || !libraryIntentConsumersIdle() || deferredLaunchIntents.hasPending) {
             deferredLaunchIntents.offer(intent)
             return

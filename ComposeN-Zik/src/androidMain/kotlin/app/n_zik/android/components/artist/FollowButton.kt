@@ -164,6 +164,7 @@ internal fun ArtistFollowButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     settings: GlassSettings = rememberGlassSettings(),
+    enabled: Boolean = true,
 ) {
         val colorPalette = colorPalette()
         val unfollowedBackground = surfaceColor(colorPalette.background2)
@@ -204,12 +205,15 @@ internal fun ArtistFollowButton(
                 backdrop = backdrop,
                 modifier = bounds,
                 settings = settings.forArea(GlassArea.ActionButtons),
+                enabled = enabled,
                 filmColor = buttonProps.second,
                 contentHeight = height,
                 contentPadding = 0.dp,
                 shape = shape,
             ) {
-                BasicText(stringResource(buttonProps.first), style = typography().s.copy(color = foreground))
+                BasicText(stringResource(buttonProps.first), style = typography().s.copy(
+                    color = if (enabled) foreground else colorPalette.textDisabled,
+                ))
             }
             return
         }
@@ -218,12 +222,12 @@ internal fun ArtistFollowButton(
                                .clip(shape)
                                .background(buttonProps.second)
                                .glassAreaContour(settings, GlassArea.ActionButtons, shape)
-                               .clickable(onClick = onClick),
+                               .clickable(enabled = enabled, onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
             BasicText(
                 text = stringResource( buttonProps.first ),
-                style = typography().s.copy( color = buttonProps.third ),
+                style = typography().s.copy(color = if (enabled) buttonProps.third else colorPalette.textDisabled),
             )
         }
 }

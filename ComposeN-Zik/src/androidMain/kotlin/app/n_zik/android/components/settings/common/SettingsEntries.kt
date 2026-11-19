@@ -64,7 +64,9 @@ import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.components.ui.sliders.Slider
 import app.n_zik.android.components.ui.toggles.Switch
 import app.n_zik.android.typography
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.utils.shimmerEffect
 import java.text.NumberFormat
 import java.text.ParsePosition
 import java.util.Locale
@@ -560,16 +562,19 @@ fun OtherSettingsEntry(
     isEnabled: Boolean = true,
     selectedValueText: String? = null,
     trailingContent: (@Composable () -> Unit)? = null,
+    shimmer: Boolean = false,
     titlePrefix: (@Composable () -> Unit)? = null,
+    shimmerText: Boolean = false,
 ) {
+    val clickable = isEnabled && !shimmer
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clip(uiRoundnessShape())
-            .alpha(if (isEnabled) 1f else 0.5f)
-            .semantics { if (!isEnabled) this[SemanticsProperties.Disabled] = Unit }
-            .clickable(enabled = isEnabled, onClick = onClick),
+            .alpha(if (isEnabled || shimmer) 1f else 0.5f)
+            .semantics { if (!clickable) this[SemanticsProperties.Disabled] = Unit }
+            .clickable(enabled = clickable, onClick = onClick),
         color = Color.Transparent
     ) {
         Box(
@@ -583,7 +588,9 @@ fun OtherSettingsEntry(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Box(
+                if (shimmer) {
+                    Spacer(Modifier.size(32.dp).clip(uiRoundnessShape()).shimmerEffect())
+                } else Box(
                     modifier = Modifier
                         .size(32.dp)
                         .iconBadgeBackground(
@@ -603,7 +610,9 @@ fun OtherSettingsEntry(
                 Column(
                     modifier = Modifier.weight(1f)
                 ) {
-                    if (titlePrefix == null) {
+                    if (shimmer || shimmerText) {
+                        MeasuredMetadataPlaceholder(title, typography().s.semiBold)
+                    } else if (titlePrefix == null) {
                         BasicText(text = title, style = typography().s.semiBold.copy(color = colorPalette().text))
                     } else {
                         Row(verticalAlignment = Alignment.CenterVertically,
@@ -614,21 +623,24 @@ fun OtherSettingsEntry(
                     }
                     if (text.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(2.dp))
-                        BasicText(
+                        if (shimmer || shimmerText) MeasuredMetadataPlaceholder(text, typography().xs)
+                        else BasicText(
                             text = text,
                             style = typography().xs.copy(
                                 color = colorPalette().textSecondary
                             )
                         )
                     }
-                    SelectedSettingValue(selectedValueText)
+                    if (!shimmer) SelectedSettingValue(selectedValueText)
                 }
 
                 if (trailingContent != null) {
                     trailingContent()
                 }
 
-                Icon(
+                if (shimmer) {
+                    Spacer(Modifier.size(16.dp).clip(uiRoundnessShape()).shimmerEffect())
+                } else Icon(
                     painter = painterResource(R.drawable.chevron_forward),
                     tint = colorPalette().textSecondary,
                     contentDescription = null,
@@ -689,7 +701,8 @@ fun OtherInfoSettingsEntry(
     text: String,
     icon: Int,
     modifier: Modifier = Modifier,
-    selectedValueText: String? = null
+    selectedValueText: String? = null,
+    shimmerText: Boolean = false,
 ) {
     Surface(
         modifier = modifier
@@ -729,7 +742,8 @@ fun OtherInfoSettingsEntry(
                 Column(
                     modifier = Modifier.weight(1f)
                 ) {
-                    BasicText(
+                    if (shimmerText) MeasuredMetadataPlaceholder(title, typography().s.semiBold)
+                    else BasicText(
                         text = title,
                         style = typography().s.semiBold.copy(
                             color = colorPalette().text
@@ -737,7 +751,8 @@ fun OtherInfoSettingsEntry(
                     )
                     if (text.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(2.dp))
-                        BasicText(
+                        if (shimmerText) MeasuredMetadataPlaceholder(text, typography().xs)
+                        else BasicText(
                             text = text,
                             style = typography().xs.copy(
                                 color = colorPalette().textSecondary

@@ -2,6 +2,7 @@
 package app.n_zik.android.ui.items
 
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.thumbnailShape
 import app.n_zik.android.utils.artistTextWithFallback
 import app.n_zik.android.utils.titleWithFallback
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -717,68 +719,83 @@ fun SongItem(
     }
 }
 
+internal const val FullSongListPlaceholderCount = 12
+
+@Composable
+internal fun SongItemPlaceholders(count: Int, modifier: Modifier = Modifier, showThumbnail: Boolean = true) {
+    Column(modifier) {
+        repeat(count) { index ->
+            SongItemPlaceholder(trackNumber = if (showThumbnail) null else index + 1)
+        }
+    }
+}
+
 /** New component that more closely resembles the final SongItem currently in use. */
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
-fun SongItemPlaceholder( modifier: Modifier = Modifier ) {
+fun SongItemPlaceholder(
+    modifier: Modifier = Modifier,
+    trackNumber: Int? = null,
+    title: String? = null,
+    artist: String? = null,
+    onDevice: Boolean = false,
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy( 12.dp ),
         modifier = modifier.fillMaxWidth()
                            .padding(
-                               vertical = 8.dp,
+                               vertical = Dimensions.itemsVerticalPadding,
                                horizontal = 16.dp
                            )
     ) {
-        Box(
-            Modifier.size( Dimensions.thumbnails.song )
-                    .clip( uiRoundnessShape() )
-                    .shimmerEffect()
-        )
+        val artworkSlot = Modifier.size(Dimensions.thumbnails.song)
+        if (trackNumber == null) {
+            Box(artworkSlot.clip(thumbnailShape()).shimmerEffect())
+        } else {
+            Box(artworkSlot, contentAlignment = Alignment.Center) {
+                BasicText(trackNumber.toString(), style = typography().s.semiBold.copy(color = colorPalette().textDisabled))
+            }
+        }
 
         Column(
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth( .7f )
-            ) {
-                BasicText(
-                    text = "",
-                    style = typography().xs.semiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight( 1f ).shimmerEffect()
-                )
+            val titleStyle = typography().xs.semiBold
+            Box(Modifier.fillMaxWidth()) {
+                if (title == null) {
+                    BasicText("", style = titleStyle, maxLines = 1,
+                        modifier = Modifier.fillMaxWidth(0.7f).clip(uiRoundnessShape()).shimmerEffect())
+                } else {
+                    MeasuredMetadataPlaceholder(title, titleStyle, maxLines = 1)
+                }
             }
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Box( Modifier.weight( 1f ).fillMaxWidth() ) {
-                    BasicText(
-                        text = "",
-                        style = typography().xs.semiBold.secondary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Clip,
-                        modifier = Modifier.fillMaxWidth( .3f ).shimmerEffect()
-                    )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val artistStyle = typography().xs.semiBold.secondary
+                Box(Modifier.weight(1f)) {
+                    if (artist == null) {
+                        BasicText("", style = artistStyle, maxLines = 1,
+                            modifier = Modifier.fillMaxWidth(0.3f).clip(uiRoundnessShape()).shimmerEffect())
+                    } else {
+                        MeasuredMetadataPlaceholder(artist, artistStyle, maxLines = 1)
+                    }
                 }
 
                 BasicText(
-                    text = "0:00",
+                    text = "--:--",
                     style = typography().xxs.secondary.medium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding( top = 4.dp )
+                    modifier = Modifier.padding(top = 4.dp, start = 5.dp)
                 )
 
                 Spacer(modifier = Modifier.padding( horizontal = 4.dp ))
 
                 IconButton(
                     onClick = {},
-                    icon = DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED.iconId,
+                    icon = if (onDevice) R.drawable.folder else DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED.iconId,
                     color = colorPalette().textDisabled,
                     modifier = Modifier.size( 20.dp ),
                     enabled = false

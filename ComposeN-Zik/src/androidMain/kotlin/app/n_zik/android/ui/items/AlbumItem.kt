@@ -45,9 +45,8 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.models.Album
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
-import app.n_zik.android.ui.components.themed.TextPlaceholder
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 import app.n_zik.android.ui.styling.Dimensions
-import app.n_zik.android.ui.styling.shimmer
 import app.n_zik.android.utils.conditional
 import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.utils.rememberPreference
@@ -270,32 +269,33 @@ fun AlbumItem(
 fun AlbumItemPlaceholder(
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
-    alternative: Boolean = false
+    alternative: Boolean = false,
+    metadataLines: Int = if (alternative) 1 else 2,
+    title: String? = null,
+    metadata: List<String>? = null,
+    finalMetadataIsYear: Boolean = true,
 ) {
     ItemContainer(
         alternative = alternative,
         thumbnailSizeDp = thumbnailSizeDp,
         modifier = modifier
     ) {
-        Spacer(
-            modifier = Modifier
-                .background(color = colorPalette().shimmer, shape = thumbnailShape())
-                .size(thumbnailSizeDp)
-        )
+        ItemArtworkPlaceholder(thumbnailSizeDp, alternative, thumbnailShape())
 
         ItemInfoContainer(
+            modifier = if (alternative) Modifier.fillMaxWidth() else Modifier,
             horizontalAlignment = if (alternative) Alignment.CenterHorizontally else Alignment.Start
         ) {
-            TextPlaceholder()
-
-            if (!alternative) {
-                TextPlaceholder()
+            ItemTextPlaceholder(title, typography().xs.semiBold)
+            repeat(metadataLines) { index ->
+                val year = finalMetadataIsYear && index == metadataLines - 1
+                ItemTextPlaceholder(
+                    metadata?.getOrNull(index),
+                    style = if (year) typography().xxs.semiBold.secondary else typography().xs.semiBold.secondary,
+                    modifier = if (year) Modifier.padding(top = 4.dp) else Modifier,
+                    width = 0.42f,
+                )
             }
-
-            TextPlaceholder(
-                modifier = Modifier
-                    .padding(top = 4.dp)
-            )
         }
     }
 }
@@ -363,51 +363,6 @@ fun AlbumPlaceholder(
     }
 }
 
-
-@Composable
-fun AlbumItemGridPlaceholder(
-    thumbnailSizeDp: Dp,
-    modifier: Modifier = Modifier,
-    alternative: Boolean = false,
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        repeat(3) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = modifier.padding(
-                    vertical = Dimensions.itemsVerticalPadding,
-                    horizontal = 0.dp
-                )
-            ) {
-                Box(
-                    Modifier.size(thumbnailSizeDp - 8.dp)
-                        .clip(thumbnailShape())
-                        .shimmerEffect()
-                )
-                Box(
-                    Modifier
-                        .padding(top = 8.dp)
-                        .width((thumbnailSizeDp - 8.dp) * 0.8f)
-                        .height(12.dp)
-                        .clip(uiRoundnessShape())
-                        .shimmerEffect()
-                )
-                Box(
-                    Modifier
-                        .padding(top = 4.dp)
-                        .width((thumbnailSizeDp - 8.dp) * 0.4f)
-                        .height(10.dp)
-                        .clip(uiRoundnessShape())
-                        .shimmerEffect()
-                )
-            }
-        }
-    }
-}
 
 @Composable
 fun AlbumItemListPlaceholder(

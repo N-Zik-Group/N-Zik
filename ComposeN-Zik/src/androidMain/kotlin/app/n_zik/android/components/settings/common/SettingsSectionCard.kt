@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.material3.HorizontalDivider
@@ -72,6 +73,7 @@ fun SettingsSectionCard(
     headerAction: (@Composable () -> Unit)? = null,
     horizontalPadding: androidx.compose.ui.unit.Dp = 16.dp,
     bottomSpacing: androidx.compose.ui.unit.Dp = 16.dp,
+    shimmerHeader: Boolean = false,
 ) {
     val context = LocalContext.current
     val highlighted = LocalSettingsTargets.current?.highlighted
@@ -150,7 +152,9 @@ fun SettingsSectionCard(
                             Spacer(modifier = Modifier.width(12.dp))
 
                             Column(Modifier.weight(1f)) {
-                                BasicText(
+                                if (shimmerHeader) {
+                                    MeasuredMetadataPlaceholder(displayTitle, typography().xs.semiBold, maxLines = 1)
+                                } else BasicText(
                                     text = displayTitle,
                                     style = typography().xs.semiBold.copy(color = colorPalette().accent),
                                     maxLines = 1,
@@ -158,7 +162,9 @@ fun SettingsSectionCard(
                                 )
                                 if (expanded != null && !description.isNullOrEmpty()) {
                                     Spacer(Modifier.height(2.dp))
-                                    BasicText(
+                                    if (shimmerHeader) {
+                                        MeasuredMetadataPlaceholder(description, typography().xxs.secondary, maxLines = 2)
+                                    } else BasicText(
                                         text = description,
                                         style = typography().xxs.secondary.copy(color = colorPalette().textSecondary),
                                         maxLines = 2, overflow = TextOverflow.Ellipsis,

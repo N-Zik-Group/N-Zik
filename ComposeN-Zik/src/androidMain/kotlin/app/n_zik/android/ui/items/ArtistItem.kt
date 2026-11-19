@@ -1,20 +1,15 @@
 package app.n_zik.android.ui.items
 
 import androidx.compose.foundation.Image
-import app.n_zik.android.uiRoundnessShape
 
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.aspectRatio
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 
@@ -48,7 +43,7 @@ import app.n_zik.android.typography
 import app.n_zik.android.utils.conditional
 import app.n_zik.android.utils.secondary
 import app.n_zik.android.utils.semiBold
-import app.n_zik.android.utils.shimmerEffect
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 import app.n_zik.android.core.coil.ImageCacheFactory
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.ui.components.themed.HeaderIconButton
@@ -254,36 +249,19 @@ fun ArtistItemPlaceholder(
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
     alternative: Boolean = false,
+    showSubscribers: Boolean = !alternative,
+    title: String? = null,
+    subscribers: String? = null,
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            Modifier.size(thumbnailSizeDp)
-                .clip(artistThumbnailShape())
-                .shimmerEffect()
-        )
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.weight(1f)
+    ItemContainer(alternative, thumbnailSizeDp, modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        ItemArtworkPlaceholder(thumbnailSizeDp, alternative, artistThumbnailShape())
+        ItemInfoContainer(
+            Modifier.fillMaxWidth(),
+            horizontalAlignment = if (alternative) Alignment.CenterHorizontally else Alignment.Start,
         ) {
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .height(16.dp)
-                    .clip(uiRoundnessShape())
-                    .shimmerEffect()
-            )
-            Box(
-                Modifier
-                    .fillMaxWidth(0.6f)
-                    .height(12.dp)
-                    .clip(uiRoundnessShape())
-                    .shimmerEffect()
+            ItemTextPlaceholder(title?.let(::cleanPrefix), typography().xs.semiBold)
+            if (showSubscribers) ItemTextPlaceholder(
+                subscribers, typography().xxs.semiBold.secondary, Modifier.padding(top = 4.dp), width = 0.45f,
             )
         }
     }

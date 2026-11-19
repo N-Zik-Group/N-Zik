@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.compose.persist.persist
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.utils.plus
-import app.n_zik.android.ui.components.ShimmerHost
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.utils.center
 import app.n_zik.android.utils.secondary
 import app.n_zik.android.R
@@ -38,20 +38,23 @@ inline fun <T : Innertube.Item> ItemsList(
     tag: String,
     crossinline headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,
     crossinline itemContent: @Composable LazyItemScope.(T) -> Unit,
-    noinline itemPlaceholderContent: @Composable () -> Unit,
+    noinline itemPlaceholderContent: @Composable (Int) -> Unit,
     modifier: Modifier = Modifier,
     initialPlaceholderCount: Int = 8,
     continuationPlaceholderCount: Int = 3,
     emptyItemsText: String = "",
     noinline itemsPageProvider: (suspend (String?) -> Result<Innertube.ItemsPage<T>?>?)? = null,
+    knownItems: List<T>? = null,
 ) {
     val updatedItemsPageProvider by rememberUpdatedState(itemsPageProvider)
+    val forceShimmer = forceLoadingShimmerPreview()
 
     val lazyListState = rememberLazyListState()
 
     var itemsPage by persist<Innertube.ItemsPage<T>?>(tag)
 
-    LaunchedEffect(lazyListState, updatedItemsPageProvider) {
+    LaunchedEffect(lazyListState, updatedItemsPageProvider, forceShimmer, knownItems) {
+        if (forceShimmer || knownItems != null) return@LaunchedEffect
         val currentItemsPageProvider = updatedItemsPageProvider ?: return@LaunchedEffect
 
         snapshotFlow { lazyListState.layoutInfo.visibleItemsInfo.any { it.key == "loading" } }
@@ -89,13 +92,13 @@ inline fun <T : Innertube.Item> ItemsList(
 
              */
 
-            items(
-                items = itemsPage?.items ?: emptyList(),
-                key = Innertube.Item::key,
-                itemContent = itemContent
-            )
+            val loadedItems = knownItems ?: itemsPage?.items.orEmpty()
+            itemsIndexed(loadedItems, key = { _, item -> item.key }) { index, item ->
+                if (forceShimmer) itemPlaceholderContent(index)
+                else itemContent(item)
+            }
 
-            if (itemsPage != null && itemsPage?.items.isNullOrEmpty()) {
+            if (!forceShimmer && (knownItems != null || itemsPage != null) && loadedItems.isEmpty()) {
                 item(key = "empty") {
                     SearchNoResults(
                         modifier = Modifier.fillParentMaxSize(),
@@ -104,19 +107,13 @@ inline fun <T : Innertube.Item> ItemsList(
                 }
             }
 
-            if (!(itemsPage != null && itemsPage?.continuation == null)) {
-                item(key = "loading") {
-                    val isFirstLoad = itemsPage?.items.isNullOrEmpty()
-                    ShimmerHost(
-                        modifier = Modifier
-                            .run {
-                                if (isFirstLoad) fillParentMaxSize() else this
-                            }
-                    ) {
-                        repeat(if (isFirstLoad) initialPlaceholderCount else continuationPlaceholderCount) {
-                            itemPlaceholderContent()
-                        }
-                    }
+            val showInitialPlaceholders = loadedItems.isEmpty() && (forceShimmer || (knownItems == null && itemsPage == null))
+            val showContinuation = !forceShimmer && knownItems == null && itemsPage?.continuation != null
+            if (showInitialPlaceholders || showContinuation) {
+                val initial = loadedItems.isEmpty()
+                val count = if (initial) initialPlaceholderCount else continuationPlaceholderCount
+                items(count, key = { index -> if (index == 0) "loading" else "loading_$index" }) { index ->
+                    itemPlaceholderContent(index)
                 }
             }
 

@@ -9,6 +9,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.utils.shimmerEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -38,6 +42,7 @@ fun AutoResizeText(
     softWrap: Boolean = true,
     maxLines: Int = Int.MAX_VALUE,
     style: TextStyle = LocalTextStyle.current,
+    shimmer: Boolean = false,
 ) {
     var fontSizeValue by remember { mutableStateOf(fontSizeRange.max.value) }
     var readyToDraw by remember { mutableStateOf(false) }
@@ -74,7 +79,9 @@ fun AutoResizeText(
                 readyToDraw = true
             }
         },
-        modifier = modifier.drawWithContent { if (readyToDraw) drawContent() }
+        modifier = if (shimmer) {
+            modifier.clearAndSetSemantics {}.clip(uiRoundnessShape()).shimmerEffect().drawWithContent {}
+        } else modifier.drawWithContent { if (readyToDraw) drawContent() }
     )
 }
 

@@ -1,54 +1,60 @@
 package app.n_zik.android.utils
 
-import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.IntSize
-import app.n_zik.android.ui.styling.shimmer
+import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
+import app.n_zik.android.ui.components.LocalShimmerClock
+import app.n_zik.android.ui.components.LocalShimmerPalette
 
-/** A loading effect that goes from top left to bottom right in 2000 millis (2s). */
+/** Draws the same screen-space sweep in each clipped loading shape. */
 fun Modifier.shimmerEffect(): Modifier = composed {
-    var size by remember { mutableStateOf( IntSize.Zero ) }
-    val transition = rememberInfiniteTransition( "infiniteTransition" )
-    val startOffsetX by transition.animateFloat(
-        initialValue = -2 * size.width.toFloat(),
-        targetValue = 2 * size.width.toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 2000,
-                easing = FastOutLinearInEasing
-            ),
-        ),
-        label = "offsetXAnimatedTransition"
-    )
+    val clock = LocalShimmerClock.current
+    val palette = LocalShimmerPalette.current ?: colorPalette()
+    val viewport = LocalConfiguration.current
+    val density = LocalDensity.current
+    val width = with(density) { viewport.screenWidthDp.dp.toPx() }.coerceAtLeast(1f)
+    val height = with(density) { viewport.screenHeightDp.dp.toPx() }
+    var position by remember { mutableStateOf(Offset.Zero) }
+    DisposableEffect(clock) {
+        if (clock != null) clock.attached++
+        onDispose { if (clock != null) clock.attached-- }
+    }
 
-    background(
-        brush = Brush.linearGradient(
-            colors = listOf(
-                colorPalette().background1,
-                colorPalette().shimmer.copy( alpha = .3f ),
-                colorPalette().background1
-            ),
-            start = Offset(startOffsetX, 0f),
-            end = Offset(startOffsetX + size.width.toFloat(), size.height.toFloat())
+    onGloballyPositioned { position = it.positionInRoot() }.drawWithCache {
+        val band = width * .4f
+        val start = -band - height * .25f
+        val distance = width + band - start
+        val sheen = palette.text.copy(alpha = .12f)
+        val sweep = Brush.linearGradient(
+            listOf(Color.Transparent, sheen, Color.Transparent),
+            start = Offset.Zero,
+            end = Offset(band, band * .25f),
         )
-    ).onGloballyPositioned {
-        size = it.size
+        onDrawBehind {
+            drawRect(palette.background2)
+            if (clock != null) {
+                val x = start + distance * clock.phase - position.x
+                val y = -position.y
+                translate(x, y) { drawRect(sweep, topLeft = Offset(-x, -y), size = size) }
+            }
+        }
     }
 }
 

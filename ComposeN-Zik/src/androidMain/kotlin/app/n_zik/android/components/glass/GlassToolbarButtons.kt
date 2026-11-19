@@ -56,6 +56,7 @@ import app.n_zik.android.ui.components.tab.toolbar.Button
 import app.n_zik.android.ui.components.tab.toolbar.EllipsisMenuComponent
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.uiRoundnessShape
 
 /** Individual toolbar controls use the same roundness policy as native short and long actions. */
@@ -248,10 +249,7 @@ fun GlassToolbarIcon(
     modifierOnContainer: Boolean = false,
 ): Boolean {
     val style = LocalToolbarStyle.current ?: return false
-    val background = colorPalette().background0
-    val drawBackground: DrawScope.() -> Unit = remember(background) { { drawRect(background) } }
-    val fallbackBackdrop = rememberCanvasBackdrop(drawBackground)
-    val backdrop = LocalGlassContainerBackdrop.current ?: LocalGlassBackdrop.current ?: fallbackBackdrop
+    val backdrop = toolbarActionBackdrop()
     val itemShape = toolbarItemShape(style.itemShape)
     val foreground = toolbarForeground(style, tint, enabled)
     val glyph: @Composable () -> Unit = {
@@ -289,6 +287,14 @@ fun GlassToolbarIcon(
             shape = itemShape) { glyph() }
     }
     return true
+}
+
+@Composable
+internal fun toolbarActionBackdrop(): Backdrop {
+    val background = colorPalette().background0
+    val drawBackground: DrawScope.() -> Unit = remember(background) { { drawRect(background) } }
+    val fallback = rememberCanvasBackdrop(drawBackground)
+    return LocalGlassContainerBackdrop.current ?: LocalGlassBackdrop.current ?: fallback
 }
 
 /** Group cells inherit their capsule; only standalone controls composite another film. */

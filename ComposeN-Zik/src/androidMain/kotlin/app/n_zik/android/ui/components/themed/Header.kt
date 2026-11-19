@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -35,7 +36,8 @@ import app.n_zik.android.R
 import app.n_zik.android.components.ui.header.HeaderBadgeBox
 import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.ui.styling.Dimensions
-import app.n_zik.android.ui.styling.shimmer
+import app.n_zik.android.utils.shimmerEffect
+import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.bold
 import app.n_zik.android.utils.conditional
 import app.n_zik.android.utils.medium
@@ -104,8 +106,9 @@ fun HeaderPlaceholder(
     ) {
         Box(
             modifier = Modifier
-                .background(colorPalette().shimmer)
                 .fillMaxWidth(remember { 0.25f + Random.nextFloat() * 0.5f })
+                .clip(uiRoundnessShape())
+                .shimmerEffect()
         ) {
             BasicText(
                 text = "",

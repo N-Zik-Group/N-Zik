@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
@@ -59,9 +58,11 @@ class GlassDescriptionControlsTest {
         var clicks = 0
         compose.setContent {
             AppearanceProvider {
-                GlassDescriptionExpansion({ clicks++ }, settings = GlassSettings(enabled = enabled.value)) {
-                    BasicText("Show more")
-                }
+                GlassDescriptionExpansion(
+                    label = "Show more",
+                    onClick = { clicks++ },
+                    settings = GlassSettings(enabled = enabled.value),
+                )
             }
         }
         compose.onAllNodes(hasClickAction()).assertCountEquals(0)

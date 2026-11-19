@@ -43,6 +43,7 @@ internal data class GlassSectionAction(
     val loading: Boolean = false,
     val separateBefore: Boolean = false,
     val onLongClick: (() -> Unit)? = null,
+    val enabled: Boolean = true,
     val onClick: () -> Unit,
 )
 
@@ -70,6 +71,7 @@ internal fun GlassSectionActions(
                     backdrop = backdrop,
                     modifier = Modifier.size(GlassStandaloneActionSize),
                     settings = settings.forArea(GlassArea.ActionButtons),
+                    enabled = singleAction.enabled,
                     filmColor = glassActionFilmColor(),
                     contentHeight = GlassStandaloneActionSize,
                     contentPadding = 0.dp,
@@ -77,7 +79,7 @@ internal fun GlassSectionActions(
                 ) {
                     Icon(
                         painterResource(singleAction.icon), singleAction.contentDescription,
-                        tint = colorPalette().textSecondary,
+                        tint = if (singleAction.enabled) colorPalette().textSecondary else colorPalette().textDisabled,
                         modifier = Modifier.size(GlassActionIconSize).then(singleAction.iconModifier),
                     )
                 }
@@ -98,10 +100,11 @@ internal fun GlassSectionActions(
                     GlassActionGroupItem(
                         onClick = action.onClick,
                         onLongClick = action.onLongClick,
+                        enabled = action.enabled,
                     ) {
                         Icon(
                             painterResource(action.icon), action.contentDescription,
-                            tint = colorPalette().textSecondary,
+                            tint = if (action.enabled) colorPalette().textSecondary else colorPalette().textDisabled,
                             modifier = Modifier.size(GlassActionIconSize).then(action.iconModifier),
                         )
                     }
@@ -131,8 +134,9 @@ internal fun GlassSectionActions(
                             endSpacing = action.nativeEndPadding,
                             iconModifier = action.iconModifier,
                             iconSize = action.nativeIconSize,
-                            color = action.nativeColor ?: colorPalette().textSecondary,
+                            color = action.nativeColor ?: if (action.enabled) colorPalette().textSecondary else colorPalette().textDisabled,
                             settings = settings,
+                            enabled = action.enabled,
                             onLongClick = action.onLongClick,
                             onClick = action.onClick,
                         )
@@ -155,6 +159,7 @@ internal fun NativeSectionIconAction(
     settings: GlassSettings = rememberGlassSettings(),
     endSpacing: Dp = 0.dp,
     onLongClick: (() -> Unit)? = null,
+    enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
     val shape = uiRoundnessShape()
@@ -162,7 +167,7 @@ internal fun NativeSectionIconAction(
         Box(Modifier.size(NativeIconActionSize)
             .glassAreaContour(settings, GlassArea.ActionButtons, shape)
             .reservedIconActionCanvas(shape, remember { MutableInteractionSource() },
-                glassGlobalIndication(nativeControlIndication()), enabled = true,
+                glassGlobalIndication(nativeControlIndication()), enabled = enabled,
                 onClick = onClick, onLongClick = onLongClick), contentAlignment = Alignment.Center) {
             Icon(painterResource(icon), contentDescription, tint = color,
                 modifier = Modifier.size(iconSize).then(iconModifier))

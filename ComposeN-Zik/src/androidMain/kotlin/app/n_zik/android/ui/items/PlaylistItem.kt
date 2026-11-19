@@ -57,10 +57,9 @@ import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.models.Song
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
-import app.n_zik.android.ui.components.themed.TextPlaceholder
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 import app.n_zik.android.ui.styling.onOverlay
 import app.n_zik.android.ui.styling.overlay
-import app.n_zik.android.ui.styling.shimmer
 import app.n_zik.android.utils.checkFileExists
 import app.n_zik.android.utils.color
 import app.n_zik.android.utils.conditional
@@ -437,23 +436,24 @@ fun PlaylistItemPlaceholder(
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
     alternative: Boolean = false,
+    showChannel: Boolean = true,
+    showTitle: Boolean = true,
+    title: String? = null,
+    channel: String? = null,
 ) {
     ItemContainer(
         alternative = alternative,
         thumbnailSizeDp = thumbnailSizeDp,
         modifier = modifier
     ) {
-        Spacer(
-            modifier = Modifier
-                .background(color = colorPalette().shimmer, shape = thumbnailShape())
-                .size(thumbnailSizeDp)
-        )
+        ItemArtworkPlaceholder(thumbnailSizeDp, alternative, thumbnailShape())
 
         ItemInfoContainer(
-            horizontalAlignment = if (alternative) Alignment.CenterHorizontally else Alignment.Start,
+            modifier = if (alternative) Modifier.fillMaxWidth() else Modifier,
+            horizontalAlignment = if (alternative && !showChannel) Alignment.CenterHorizontally else Alignment.Start,
         ) {
-            TextPlaceholder()
-            TextPlaceholder()
+            if (showTitle) ItemTextPlaceholder(title, typography().xs.semiBold)
+            if (showChannel) ItemTextPlaceholder(channel, typography().xs.semiBold.secondary, width = 0.45f)
         }
     }
 }

@@ -2,22 +2,15 @@ package app.n_zik.android.ui.items
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import app.n_zik.android.uiRoundnessShape
 
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +27,8 @@ import app.n_zik.android.ui.styling.overlay
 import app.n_zik.android.utils.color
 import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.utils.conditional
+import app.n_zik.android.utils.disableScrollingTextKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.medium
 import app.n_zik.android.utils.secondary
 import app.n_zik.android.utils.semiBold
@@ -41,14 +36,13 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.n_zik.android.utils.shimmerEffect
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 import app.n_zik.android.core.coil.ImageCacheFactory
-import app.n_zik.android.core.database.Database
 import app.n_zik.android.ui.components.themed.HeaderIconButton
 import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.utils.getLikedIcon
 import app.n_zik.android.utils.getDislikedIcon
 import app.n_zik.android.R
-import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun VideoItem(
@@ -106,20 +100,7 @@ fun VideoItem(
             )
 
             duration?.let {
-                BasicText(
-                    text = duration,
-                    style = typography().xxs.medium.color(colorPalette().onOverlay),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .padding(all = 4.dp)
-                        .background(
-                            color = colorPalette().overlay,
-                            shape = uiRoundnessShape()
-                        )
-                        .padding(horizontal = 4.dp, vertical = 2.dp)
-                        .align(Alignment.BottomEnd)
-                )
+                VideoDurationBadge(it, Modifier.align(Alignment.BottomEnd))
             }
 
             if (likeState != null)
@@ -174,48 +155,59 @@ fun VideoItem(
 fun VideoItemPlaceholder(
     thumbnailHeightDp: Dp,
     thumbnailWidthDp: Dp,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    alternative: Boolean = false,
+    metadataLines: Int = 1,
+    title: String? = null,
+    uploader: String? = null,
+    views: String? = null,
+    video: Innertube.VideoItem? = null,
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            Modifier.size(width = thumbnailWidthDp, height = thumbnailHeightDp)
-                .clip(thumbnailShape())
-                .shimmerEffect()
-        )
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.weight(1f)
-        ) {
+    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    ItemContainer(alternative, thumbnailWidthDp, modifier) {
+        Box {
             Box(
-                Modifier
-                    .fillMaxWidth()
-                    .height(16.dp)
-                    .clip(uiRoundnessShape())
+                Modifier.size(width = thumbnailWidthDp, height = thumbnailHeightDp)
+                    .clip(thumbnailShape())
                     .shimmerEffect()
             )
-            Box(
-                Modifier
-                    .fillMaxWidth(0.6f)
-                    .height(12.dp)
-                    .clip(uiRoundnessShape())
-                    .shimmerEffect()
+            if (video == null || video.durationText != null) {
+                VideoDurationBadge("--:--", Modifier.align(Alignment.BottomEnd))
+            }
+        }
+        ItemInfoContainer {
+            ItemTextPlaceholder(
+                video?.title ?: title,
+                typography().xs.semiBold,
+                maxLines = if (disableScrollingText) 2 else 1,
             )
-            Box(
-                Modifier
-                    .padding(top = 4.dp)
-                    .fillMaxWidth(0.4f)
-                    .height(10.dp)
-                    .clip(uiRoundnessShape())
-                    .shimmerEffect()
+            if (video != null || metadataLines > 0) {
+                val author = video?.authors?.artistEntryNames()?.joinToString(", ") ?: uploader
+                ItemTextPlaceholder(author, typography().xs.semiBold.secondary, width = 0.55f)
+            }
+            val viewCount = video?.viewsText ?: views
+            if (viewCount != null || (video == null && metadataLines > 1)) ItemTextPlaceholder(
+                viewCount,
+                typography().xxs.medium.secondary,
+                Modifier.padding(top = 4.dp),
+                width = 0.4f,
             )
         }
     }
+}
+
+@Composable
+private fun VideoDurationBadge(duration: String, modifier: Modifier) {
+    BasicText(
+        text = duration,
+        style = typography().xxs.medium.color(colorPalette().onOverlay),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = modifier
+            .padding(4.dp)
+            .background(colorPalette().overlay, uiRoundnessShape())
+            .padding(horizontal = 4.dp, vertical = 2.dp),
+    )
 }
 
 
