@@ -17,6 +17,14 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(loading): keep available data visible while background requests run
+  - Preserve account-scoped Quick Picks and listening history, resolve creator and review loading independently, and expose retry without dropping existing search results.
+  - Use real loading states in the profile and maintenance screens, playlist pickers, listening statistics and player queue. Show a compact shimmer for the player clock and bring the four initial lyrics placeholders closer together.
+- fix(updater): render download, progress and install on one Glass surface
+  - Use matching surface colors for page actions and changelog controls, keep actual release notes visible during refresh, and preserve the selected tint and film opacity.
+- fix(player): keep artwork navigation and information transitions consistent
+  - Keep title, glyphs and album and artist links on the displayed track. Crossfade the glyphs without changing their opacity when links resolve.
+  - Reuse artwork shadow bounds, pace fullscreen artwork navigation after slow frames, and keep the thumbnail transition tied to the playlist entry.
 - fix(collections): show content-shaped loading states and progress on collection pages
   - Keep collection headers and actions in place. Give album title placeholders the available header width, preserve the artist scroll position and use a horizontal shelf for alternative album versions.
   - Report loaded songs or episodes during album, playlist and podcast pagination. Show the total and duration when ready and preserve real empty and error states.
