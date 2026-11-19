@@ -33,7 +33,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import app.n_zik.android.components.navigation.Skeleton
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.dialog.common.DialogPresence
@@ -72,6 +74,7 @@ import app.n_zik.android.components.import.ImportProfileState
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.core.backup.ProfileStateArchive
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.core.notifications.cancelProfileNotifications
 import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.core.profiles.profileSharedItems
@@ -82,6 +85,7 @@ import app.n_zik.android.download.services.MyDownloadService
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.shortcuts.registerAppShortcuts
 import app.n_zik.android.typography
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.FaceAvatar
 import app.n_zik.android.utils.ProfileFace
@@ -122,7 +126,10 @@ fun ProfileScreen(
     val defaultName = stringResource(R.string.profile_base_name)
 
     var state by remember { mutableStateOf<ProfilePageState?>(null) }
+    var readFailed by remember { mutableStateOf(false) }
     var refresh by remember { mutableStateOf(0) }
+    var loadedVersion by remember { mutableStateOf(-1) }
+    var rowActionInProgress by remember { mutableStateOf(false) }
 
     var showAddPopup by remember { mutableStateOf(false) }
     var showRemovePopup by remember { mutableStateOf(false) }
@@ -155,44 +162,55 @@ fun ProfileScreen(
     //
     // [refresh] re-resolves everything after a create / rename / delete.
     LaunchedEffect(refresh) {
-        state = withContext(NzikDispatchers.DATA) {
-            val ids = context.readProfileIds()
-            ProfilePageState(
-                activeId = getActiveProfile(context),
-                hasState = ProfileStateArchive.hasState(context),
-                rows = (listOf(DEFAULT_PROFILE_ID) + ids).map { id ->
-                    val displayName = resolveProfileDisplayName(
-                        id,
-                        context.profileDisplayName(id),
-                        defaultName
-                    )
-                    // The profile's OWN data sizes (its dirs — spec-profile-data-separation).
-                    val sizes = profileDataSizes(context, id)
-                    ProfileRow(
-                        id = id,
-                        displayName = displayName,
-                        face = runCatching { loadProfileFace(context, id, defaultName) }
-                            .getOrElse { ProfileFace(displayName, FaceAvatar.Initials(displayName)) },
-                        lastUsed = context.profileLastUsed(id),
-                        // File.length() returns 0 for a missing file — null renders
-                        // "No data" instead of a misleading "0 B".
-                        dbSizeBytes = runCatching {
-                            context.getDatabasePath(Database.fileNameForProfile(id)).length().takeIf { it > 0L }
-                        }.getOrNull(),
-                        settingsSizeBytes = runCatching { profilePrefsFile(context, id).length().takeIf { it > 0L } }.getOrNull(),
-                        imagesSizeBytes = sizes.imagesBytes,
-                        songCacheSizeBytes = sizes.songCacheBytes,
-                        downloadsSizeBytes = sizes.downloadsBytes,
-                        sharedItems = context.profileSharedItems(id),
-                    )
-                },
-            )
+        val version = refresh
+        readFailed = false
+        try {
+            state = withContext(NzikDispatchers.DATA) {
+                val ids = context.readProfileIds()
+                ProfilePageState(
+                    activeId = getActiveProfile(context),
+                    hasState = ProfileStateArchive.hasState(context),
+                    rows = (listOf(DEFAULT_PROFILE_ID) + ids).map { id ->
+                        val displayName = resolveProfileDisplayName(
+                            id,
+                            context.profileDisplayName(id),
+                            defaultName
+                        )
+                        // The profile's OWN data sizes (its dirs — spec-profile-data-separation).
+                        val sizes = profileDataSizes(context, id)
+                        ProfileRow(
+                            id = id,
+                            displayName = displayName,
+                            face = runCatching { loadProfileFace(context, id, defaultName) }
+                                .getOrElse { ProfileFace(displayName, FaceAvatar.Initials(displayName)) },
+                            lastUsed = context.profileLastUsed(id),
+                            // File.length() returns 0 for a missing file — null renders
+                            // "No data" instead of a misleading "0 B".
+                            dbSizeBytes = runCatching {
+                                context.getDatabasePath(Database.fileNameForProfile(id)).length().takeIf { it > 0L }
+                            }.getOrNull(),
+                            settingsSizeBytes = runCatching { profilePrefsFile(context, id).length().takeIf { it > 0L } }.getOrNull(),
+                            imagesSizeBytes = sizes.imagesBytes,
+                            songCacheSizeBytes = sizes.songCacheBytes,
+                            downloadsSizeBytes = sizes.downloadsBytes,
+                            sharedItems = context.profileSharedItems(id),
+                        )
+                    },
+                )
+            }
+            loadedVersion = version
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            Timber.tag("ProfilesScreen").w(error, "Could not read profile cards")
+            readFailed = true
         }
     }
 
     // The user profile IDs (the base profile is implicit, never listed).
     val profileIds: List<String> =
         state?.rows?.filter { it.id != DEFAULT_PROFILE_ID }?.map { it.id }.orEmpty()
+    fun canUseProfileRows() = loadedVersion == refresh && !readFailed && !rowActionInProgress
 
     Skeleton(
         navController,
@@ -242,7 +260,7 @@ fun ProfileScreen(
                         downloadsSizeBytes = row.downloadsSizeBytes,
                         sharedItems = row.sharedItems,
                         isActive = row.id == page.activeId,
-                        onSwitch = if (row.id == page.activeId) {
+                        onSwitch = if (!canUseProfileRows() || row.id == page.activeId) {
                             null
                         } else {
                             {
@@ -250,15 +268,17 @@ fun ProfileScreen(
                                 showChangePopup = true
                             }
                         },
-                        onRename = {
-                            profileToRename = row.id
-                            showRenamePopup = true
-                        },
+                        onRename = if (canUseProfileRows()) {
+                            {
+                                profileToRename = row.id
+                                showRenamePopup = true
+                            }
+                        } else null,
                         // The active profile cannot be deleted: after a delete,
                         // activeProfile would point at the gone ID
                         //
                         // (a fresh empty profile with no "active" row).
-                        onDelete = if (row.id == DEFAULT_PROFILE_ID || row.id == page.activeId) {
+                        onDelete = if (!canUseProfileRows() || row.id == DEFAULT_PROFILE_ID || row.id == page.activeId) {
                             null
                         } else {
                             {
@@ -271,36 +291,69 @@ fun ProfileScreen(
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
                 }
-                item(key = "add", contentType = 2) {
-                    // Same card style as the export / import cards below.
-                    ProfileStateActionCard(
-                        icon = R.drawable.add,
-                        title = stringResource(R.string.profile_action_add),
-                        description = stringResource(R.string.profile_add_description),
-                        onClick = { showAddPopup = true },
+            } else if (!readFailed) {
+                item(key = "profile_loading", contentType = 1) {
+                    ProfileCard(
+                        face = null,
+                        lastUsed = null,
+                        dbSizeBytes = null,
+                        settingsSizeBytes = null,
+                        imagesSizeBytes = null,
+                        songCacheSizeBytes = null,
+                        downloadsSizeBytes = null,
+                        isActive = false,
+                        onSwitch = null,
+                        onRename = null,
+                        onDelete = null,
+                        modifier = Modifier.padding(vertical = 8.dp),
                     )
                 }
-                item(key = "export_state", contentType = 3) {
+            }
+            if (readFailed) {
+                item(key = "retry_profiles", contentType = 2) {
                     ProfileStateActionCard(
-                        icon = R.drawable.export_outline,
-                        title = stringResource(R.string.profile_action_export),
-                        description = if (page.hasState) {
-                            stringResource(R.string.backup_export_accounts_description)
-                        } else {
-                            stringResource(R.string.recovery_no_profile_state)
-                        },
-                        enabled = page.hasState,
-                        onClick = { exportProfileState.export() },
+                        icon = R.drawable.refresh,
+                        title = stringResource(R.string.common_action_retry),
+                        description = stringResource(R.string.common_load_failed),
+                        onClick = { refresh++ },
                     )
                 }
-                item(key = "import_state", contentType = 4) {
-                    ProfileStateActionCard(
-                        icon = R.drawable.import_outline,
-                        title = stringResource(R.string.profile_action_import),
-                        description = stringResource(R.string.backup_import_accounts_description),
-                        onClick = { showImportConfirm = true },
-                    )
-                }
+            }
+            item(key = "add", contentType = 2) {
+                // Same card style as the export / import cards below.
+                ProfileStateActionCard(
+                    icon = R.drawable.add,
+                    title = stringResource(R.string.profile_action_add),
+                    description = stringResource(R.string.profile_add_description),
+                    enabled = page != null,
+                    onClick = { showAddPopup = true },
+                )
+            }
+            item(key = "export_state", contentType = 3) {
+                ProfileStateActionCard(
+                    icon = R.drawable.export_outline,
+                    title = stringResource(R.string.profile_action_export),
+                    description = if (page == null && !readFailed) {
+                        null
+                    } else if (page == null) {
+                        stringResource(R.string.common_load_failed)
+                    } else if (page.hasState) {
+                        stringResource(R.string.backup_export_accounts_description)
+                    } else {
+                        stringResource(R.string.recovery_no_profile_state)
+                    },
+                    enabled = page?.hasState == true,
+                    onClick = { exportProfileState.export() },
+                )
+            }
+            item(key = "import_state", contentType = 4) {
+                ProfileStateActionCard(
+                    icon = R.drawable.import_outline,
+                    title = stringResource(R.string.profile_action_import),
+                    description = stringResource(R.string.backup_import_accounts_description),
+                    enabled = page != null,
+                    onClick = { showImportConfirm = true },
+                )
             }
         }
 
@@ -352,7 +405,8 @@ fun ProfileScreen(
             initialValue = renameRow.displayName,
             placeholder = stringResource(R.string.profile_name_input_hint),
             onDismiss = { showRenamePopup = false },
-            onSetValue = { name ->
+            onSetValue = rename@{ name ->
+                if (!canUseProfileRows()) return@rename
                 val trimmedName = name.trim()
                 // Confirming the name as-is stores nothing: for the base profile the
                 // dialog opens on the resolved default name, and storing that as a
@@ -401,22 +455,19 @@ fun ProfileScreen(
             confirmText = stringResource(R.string.common_action_remove),
             text = stringResource(R.string.profile_remove_confirmation),
             onDismiss = { showRemovePopup = false },
-            onConfirm = {
+            onConfirm = delete@{
+                if (!canUseProfileRows()) return@delete
+                val profile = removingProfile
+                rowActionInProgress = true
                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                    // The deletion does real file I/O (names file, prefs, database,
-                    // avatar): keep it off the UI thread, like the page reads.
-                    val profile = removingProfile
-                    RescueFiles.deleteRegisteredProfile(context, profile)
-                    withContext(NzikDispatchers.UI) {
-                        // The deleted profile's shortcut must vanish from the launcher right
-                        // away (spec-profile-shortcuts: the shortcut set is re-registered after
-                        //
-                        // every profile add / rename / delete, same call as the settings dialog).
-                        // The names file was rewritten above, so this re-registration no longer
-                        //
-                        // sees the deleted profile.
-                        registerAppShortcuts(context)
-                        refresh++
+                    try {
+                        RescueFiles.deleteRegisteredProfile(context, profile)
+                        withContext(NzikDispatchers.UI) { registerAppShortcuts(context) }
+                    } finally {
+                        withContext(NzikDispatchers.UI) {
+                            refresh++
+                            rowActionInProgress = false
+                        }
                     }
                 }
             }
@@ -456,14 +507,31 @@ fun ProfileScreen(
             confirmText = stringResource(R.string.profile_switch_dialog_title),
             text = stringResource(R.string.profile_restart_required),
             onDismiss = { showChangePopup = false },
-            onConfirm = {
-                executeProfileSwitch(profileToSwitch, context)
-                // Close the app with exit 0 (no problem occurred): the new profile's stores
-                // can only be loaded in a fresh process.
-                //
-                // The process exit deliberately lives HERE (not in executeProfileSwitch) so the
-                // switch wiring stays pinnable under Robolectric without killing the test JVM (ProfileSwitchTest).
-                exitProcess(0)
+            onConfirm = switch@{
+                if (!canUseProfileRows()) return@switch
+                val target = profileToSwitch
+                rowActionInProgress = true
+                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                    val app = context.applicationContext
+                    val switched = try {
+                        executeRegisteredProfileSwitch(target, app)
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (error: Exception) {
+                        Timber.tag("ProfilesScreen").w(error, "Could not switch profiles")
+                        // A failure after persisting the selection still requires a restart.
+                        getActiveProfile(app) == target
+                    }
+                    withContext(NzikDispatchers.UI) {
+                        if (switched) {
+                            (context as? Activity)?.finishAffinity()
+                            exitProcess(0)
+                        }
+                        refresh++
+                        rowActionInProgress = false
+                        Toaster.i(R.string.common_load_failed)
+                    }
+                }
             }
         )
 
@@ -504,6 +572,15 @@ fun ProfileScreen(
         )
     }
 }
+
+internal fun executeRegisteredProfileSwitch(profile: String, context: Context): Boolean =
+    DatabaseRestoreJournal.withProfileStorageMutation(context) {
+        if (profile != DEFAULT_PROFILE_ID && profile !in context.readProfileIds()) {
+            return@withProfileStorageMutation false
+        }
+        executeProfileSwitch(profile, context)
+        true
+    }
 
 
 /**
@@ -558,7 +635,7 @@ internal fun executeProfileSwitch(profile: String, context: Context) {
 private fun ProfileStateActionCard(
     icon: Int,
     title: String,
-    description: String,
+    description: String?,
     onClick: () -> Unit,
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
@@ -597,7 +674,9 @@ private fun ProfileStateActionCard(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(modifier = Modifier.height(2.dp))
-                BasicText(
+                if (description == null) {
+                    ItemTextPlaceholder(null, typography().xxs, width = 0.62f)
+                } else BasicText(
                     text = description,
                     style = typography().xxs.copy(color = palette.textSecondary),
                 )

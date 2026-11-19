@@ -61,6 +61,8 @@ import app.n_zik.android.updater.services.UpdateDownloadManager
 import app.n_zik.android.typography
 import app.n_zik.android.utils.debug.purgeDebugLogs
 import timber.log.Timber
+import kotlinx.coroutines.CancellationException
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 
 /** Shows live health and opens the detailed maintenance sheet from Settings. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,13 +74,19 @@ fun MaintenanceSettingsCard(
     val palette = colorPalette()
     var showSheet by remember { mutableStateOf(false) }
     var snapshot by remember { mutableStateOf<MaintenanceSnapshot?>(null) }
+    var snapshotReadFailed by remember { mutableStateOf(false) }
 
     // Same one-shot snapshot as the sheet: the loader dispatches its disk I/O to the
     // DATA dispatcher and guards each chunk, so one failure only blanks its own row.
     LaunchedEffect(Unit) {
-        snapshot = runCatching { loadMaintenanceSnapshot(context) }
-            .onFailure { Timber.tag("MaintenanceSettingsCard").w(it, "Failed to load the maintenance health") }
-            .getOrNull()
+        try {
+            snapshot = loadMaintenanceSnapshot(context)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            Timber.tag("MaintenanceSettingsCard").w(error, "Failed to load the maintenance health")
+            snapshotReadFailed = true
+        }
     }
 
     // The live states the health row depends on (the sheet observes the same Flows)
@@ -89,7 +97,7 @@ fun MaintenanceSettingsCard(
 
     val health = maintenanceHealth(snapshot, discordError, updateState, downloadsFailed)
     val healthText = when (health) {
-        MaintenanceHealth.NoData -> stringResource(R.string.maintenance_no_data)
+        MaintenanceHealth.NoData -> if (snapshotReadFailed) stringResource(R.string.maintenance_no_data) else null
         MaintenanceHealth.Operational -> stringResource(R.string.maintenance_all_systems_ok)
         is MaintenanceHealth.NeedsAttention ->
             context.resources.getQuantityString(
@@ -185,7 +193,7 @@ fun MaintenanceSettingsCard(
 @Composable
 private fun MaintenanceHealthRow(
     title: String,
-    status: String,
+    status: String?,
     icon: Int,
     statusColor: Color? = null,
 ) {
@@ -231,7 +239,9 @@ private fun MaintenanceHealthRow(
                     ),
                 )
                 Spacer(modifier = Modifier.height(2.dp))
-                BasicText(
+                if (status == null) {
+                    ItemTextPlaceholder(null, typography().xs, width = 0.45f)
+                } else BasicText(
                     text = status,
                     style = typography().xs.copy(
                         color = statusColor ?: palette.textSecondary,

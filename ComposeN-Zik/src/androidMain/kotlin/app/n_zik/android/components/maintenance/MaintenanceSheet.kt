@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -127,6 +128,9 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import kotlinx.coroutines.CancellationException
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
+import app.n_zik.android.utils.shimmerEffect
 import java.io.File
 import java.time.Instant
 import java.time.ZoneId
@@ -991,6 +995,7 @@ fun MaintenanceSheet(
 
     var refreshTick by remember { mutableIntStateOf(0) }
     var snapshot by remember { mutableStateOf<MaintenanceSnapshot?>(null) }
+    var snapshotReadFailed by remember { mutableStateOf(false) }
     var dedupExpanded by remember { mutableStateOf(false) }
     var convergenceExpanded by remember { mutableStateOf(false) }
     var dbCleanupExpanded by remember { mutableStateOf(false) }
@@ -1020,9 +1025,15 @@ fun MaintenanceSheet(
     LaunchedEffect(showSheet, refreshTick) {
         if (!showSheet) return@LaunchedEffect
         Timber.tag(TAG).d("Loading maintenance state")
-        snapshot = runCatching { loadMaintenanceSnapshot(context) }
-            .onFailure { Timber.tag(TAG).w(it, "Failed to load the maintenance state") }
-            .getOrNull()
+        snapshotReadFailed = false
+        try {
+            snapshot = loadMaintenanceSnapshot(context)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            Timber.tag(TAG).w(error, "Failed to load the maintenance state")
+            snapshotReadFailed = true
+        }
     }
 
     // Cap the content at ~80% of the screen; the menu rows scroll inside.
@@ -1370,6 +1381,11 @@ fun MaintenanceSheet(
     val lastfmColor = palette.textSecondary
 
     val content = MaintenanceMenuContent(
+        readPhase = when {
+            snap != null -> MaintenanceReadPhase.Ready
+            snapshotReadFailed -> MaintenanceReadPhase.Unavailable
+            else -> MaintenanceReadPhase.Pending
+        },
         dedupSummary = dedupSummary,
         dedupNoData = dedupNoData,
         dedupGroups = dedupGroups,
@@ -1478,6 +1494,14 @@ fun MaintenanceSheet(
             title = stringResource(R.string.maintenance_title),
             headerTrailing = refreshTrailing,
         ) {
+            if (snapshotReadFailed) {
+                ListMenu.Entry(
+                    text = stringResource(R.string.common_load_failed),
+                    subtitle = stringResource(R.string.common_action_retry),
+                    icon = { SettingIcon(R.drawable.refresh, palette.accent) },
+                    onClick = { refreshTick++ },
+                )
+            }
             MaintenanceListContent(
                 content = content,
                 dedupExpanded = dedupExpanded,
@@ -1507,8 +1531,11 @@ fun MaintenanceSheet(
     }
 }
 
+private enum class MaintenanceReadPhase { Ready, Pending, Unavailable }
+
 /** One-line-per-value display model of the Maintenance menu rows, resolved in the sheet body (composable context): each row carries its single-line status and its status color (the LT menu's shared content pattern). */
 private class MaintenanceMenuContent(
+    val readPhase: MaintenanceReadPhase,
     // Boot passes
     val dedupSummary: String,
     val dedupNoData: Boolean,
@@ -1642,7 +1669,7 @@ private fun ColumnScope.MaintenanceListContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                StatusTrailing(content.dedupSummary, palette.textSecondary, statusColumnWidth)
+                StatusTrailing(content.dedupSummary, palette.textSecondary, statusColumnWidth, content.readPhase)
                 Icon(
                     painter = painterResource(if (dedupExpanded) R.drawable.chevron_up else R.drawable.chevron_down),
                     contentDescription = null,
@@ -1651,6 +1678,7 @@ private fun ColumnScope.MaintenanceListContent(
                 )
             }
         },
+        enabled = content.readPhase == MaintenanceReadPhase.Ready,
         onClick = onToggleDedup,
     )
     // Animated expansion (the settings-card specs): enter + exit motion, the detail
@@ -1711,7 +1739,7 @@ private fun ColumnScope.MaintenanceListContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                StatusTrailing(content.convergenceStatus, content.convergenceColor, statusColumnWidth)
+                StatusTrailing(content.convergenceStatus, content.convergenceColor, statusColumnWidth, content.readPhase)
                 Icon(
                     painter = painterResource(if (convergenceExpanded) R.drawable.chevron_up else R.drawable.chevron_down),
                     contentDescription = null,
@@ -1720,6 +1748,7 @@ private fun ColumnScope.MaintenanceListContent(
                 )
             }
         },
+        enabled = content.readPhase == MaintenanceReadPhase.Ready,
         onClick = onToggleConvergence,
     )
     AnimatedVisibility(
@@ -1753,7 +1782,7 @@ private fun ColumnScope.MaintenanceListContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                StatusTrailing(content.dbCleanupStatus, content.dbCleanupColor, statusColumnWidth)
+                StatusTrailing(content.dbCleanupStatus, content.dbCleanupColor, statusColumnWidth, content.readPhase)
                 Icon(
                     painter = painterResource(if (dbCleanupExpanded) R.drawable.chevron_up else R.drawable.chevron_down),
                     contentDescription = null,
@@ -1762,6 +1791,7 @@ private fun ColumnScope.MaintenanceListContent(
                 )
             }
         },
+        enabled = content.readPhase == MaintenanceReadPhase.Ready,
         onClick = onToggleDbCleanup,
     )
     AnimatedVisibility(
@@ -1818,7 +1848,7 @@ private fun ColumnScope.MaintenanceListContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                StatusTrailing(content.downloadRevalidationStatus, palette.textSecondary, statusColumnWidth)
+                StatusTrailing(content.downloadRevalidationStatus, palette.textSecondary, statusColumnWidth, content.readPhase)
                 Icon(
                     painter = painterResource(if (downloadRevalidationExpanded) R.drawable.chevron_up else R.drawable.chevron_down),
                     contentDescription = null,
@@ -1827,6 +1857,7 @@ private fun ColumnScope.MaintenanceListContent(
                 )
             }
         },
+        enabled = content.readPhase == MaintenanceReadPhase.Ready,
         onClick = onToggleDownloadRevalidation,
     )
     AnimatedVisibility(
@@ -1881,7 +1912,7 @@ private fun ColumnScope.MaintenanceListContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                StatusTrailing(content.downloadSelfHealStatus, palette.textSecondary, statusColumnWidth)
+                StatusTrailing(content.downloadSelfHealStatus, palette.textSecondary, statusColumnWidth, content.readPhase)
                 Icon(
                     painter = painterResource(if (downloadSelfHealExpanded) R.drawable.chevron_up else R.drawable.chevron_down),
                     contentDescription = null,
@@ -1890,6 +1921,7 @@ private fun ColumnScope.MaintenanceListContent(
                 )
             }
         },
+        enabled = content.readPhase == MaintenanceReadPhase.Ready,
         onClick = onToggleDownloadSelfHeal,
     )
     AnimatedVisibility(
@@ -1938,30 +1970,30 @@ private fun ColumnScope.MaintenanceListContent(
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_sync_ytm),
         icon = { SettingIcon(R.drawable.sync, palette.accent) },
-        trailingContent = { StatusTrailing(content.syncStatus, content.syncColor, statusColumnWidth) },
+        trailingContent = { StatusTrailing(content.syncStatus, content.syncColor, statusColumnWidth, if (content.syncColor == palette.accent) MaintenanceReadPhase.Ready else content.readPhase) },
     )
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_library),
         icon = { SettingIcon(R.drawable.library, palette.accent) },
-        trailingContent = { StatusTrailing(content.libraryStatus, palette.textSecondary, statusColumnWidth) },
+        trailingContent = { StatusTrailing(content.libraryStatus, palette.textSecondary, statusColumnWidth, content.readPhase) },
     )
     // Active profile's settings size (the profile sheet's Settings row source, labeled
     // "Settings size" like the "Database size" row)
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_settings_size),
         icon = { SettingIcon(R.drawable.settings, palette.accent) },
-        trailingContent = { StatusTrailing(content.settingsStatus, palette.textSecondary, statusColumnWidth) },
+        trailingContent = { StatusTrailing(content.settingsStatus, palette.textSecondary, statusColumnWidth, content.readPhase) },
     )
     // DB file size: its own row (separated from the library counts)
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_db_size),
         icon = { SettingIcon(R.drawable.data_migration, palette.accent) },
-        trailingContent = { StatusTrailing(content.dbSizeStatus, palette.textSecondary, statusColumnWidth) },
+        trailingContent = { StatusTrailing(content.dbSizeStatus, palette.textSecondary, statusColumnWidth, content.readPhase) },
     )
     ListMenu.Entry(
         text = stringResource(R.string.metadata_musicbrainz_title),
         icon = { SettingIcon(R.drawable.globe, palette.accent) },
-        trailingContent = { StatusTrailing(content.mbStatus, content.mbColor, statusColumnWidth) },
+        trailingContent = { StatusTrailing(content.mbStatus, content.mbColor, statusColumnWidth, content.readPhase) },
     )
 
     MenuSectionTitle(stringResource(R.string.maintenance_section_caches_downloads))
@@ -1970,17 +2002,17 @@ private fun ColumnScope.MaintenanceListContent(
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_image_cache),
         icon = { SettingIcon(R.drawable.image, palette.accent) },
-        trailingContent = { StatusTrailing(content.imagesStatus, palette.textSecondary, statusColumnWidth) },
+        trailingContent = { StatusTrailing(content.imagesStatus, palette.textSecondary, statusColumnWidth, content.readPhase) },
     )
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_song_cache),
         icon = { SettingIcon(R.drawable.music_file, palette.accent) },
-        trailingContent = { StatusTrailing(content.songCacheStatus, palette.textSecondary, statusColumnWidth) },
+        trailingContent = { StatusTrailing(content.songCacheStatus, palette.textSecondary, statusColumnWidth, content.readPhase) },
     )
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_song_download_cache),
         icon = { SettingIcon(R.drawable.download, palette.accent) },
-        trailingContent = { StatusTrailing(content.downloadsCacheStatus, palette.textSecondary, statusColumnWidth) },
+        trailingContent = { StatusTrailing(content.downloadsCacheStatus, palette.textSecondary, statusColumnWidth, content.readPhase) },
     )
     // Downloads: expandable row (chevron trailing, one line per download underneath)
     ListMenu.Entry(
@@ -2054,7 +2086,7 @@ private fun ColumnScope.MaintenanceListContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                StatusTrailing(content.jobsStatus, content.jobsColor, statusColumnWidth)
+                StatusTrailing(content.jobsStatus, content.jobsColor, statusColumnWidth, content.readPhase)
                 Icon(
                     painter = painterResource(if (jobsExpanded) R.drawable.chevron_up else R.drawable.chevron_down),
                     contentDescription = null,
@@ -2063,6 +2095,7 @@ private fun ColumnScope.MaintenanceListContent(
                 )
             }
         },
+        enabled = content.readPhase == MaintenanceReadPhase.Ready,
         onClick = onToggleJobs,
     )
     AnimatedVisibility(
@@ -2113,29 +2146,29 @@ private fun ColumnScope.MaintenanceListContent(
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_yt_session),
         icon = { SettingIcon(R.drawable.logo_youtube, palette.accent) },
-        trailingContent = { StatusTrailing(content.ytStatus, content.ytColor, statusColumnWidth) },
+        trailingContent = { StatusTrailing(content.ytStatus, content.ytColor, statusColumnWidth, content.readPhase) },
     )
     ListMenu.Entry(
         text = stringResource(R.string.listen_together_title),
         icon = { SettingIcon(R.drawable.people, palette.accent) },
-        trailingContent = { StatusTrailing(content.ltStatus, content.ltColor, statusColumnWidth) },
+        trailingContent = { StatusTrailing(content.ltStatus, content.ltColor, statusColumnWidth, content.readPhase) },
     )
     ListMenu.Entry(
         text = stringResource(R.string.settings_discord_title),
         icon = { SettingIcon(R.drawable.logo_discord, palette.accent) },
-        trailingContent = { StatusTrailing(content.discordStatus, content.discordColor, statusColumnWidth) },
+        trailingContent = { StatusTrailing(content.discordStatus, content.discordColor, statusColumnWidth, if (content.discordColor == palette.red) MaintenanceReadPhase.Ready else content.readPhase) },
     )
     ListMenu.Entry(
         text = stringResource(R.string.settings_lastfm_title),
         icon = { SettingIcon(R.drawable.logo_lastfm, palette.accent) },
-        trailingContent = { StatusTrailing(content.lastfmStatus, content.lastfmColor, statusColumnWidth) },
+        trailingContent = { StatusTrailing(content.lastfmStatus, content.lastfmColor, statusColumnWidth, content.readPhase) },
     )
 
     MenuSectionTitle(stringResource(R.string.maintenance_section_system))
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_backup),
         icon = { SettingIcon(R.drawable.backup, palette.accent) },
-        trailingContent = { StatusTrailing(content.backupStatus, content.backupColor, statusColumnWidth) },
+        trailingContent = { StatusTrailing(content.backupStatus, content.backupColor, statusColumnWidth, content.readPhase) },
     )
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_auto_update),
@@ -2145,7 +2178,7 @@ private fun ColumnScope.MaintenanceListContent(
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_battery),
         icon = { SettingIcon(R.drawable.battery_opti, palette.accent) },
-        trailingContent = { StatusTrailing(content.batteryStatus, content.batteryColor, statusColumnWidth) },
+        trailingContent = { StatusTrailing(content.batteryStatus, content.batteryColor, statusColumnWidth, content.readPhase) },
     )
     // Last crash: View + Export live in the entry's trailing slot (the debug-logs
     // pattern) — View opens the crash log dialog (full content + copy + export +
@@ -2160,7 +2193,7 @@ private fun ColumnScope.MaintenanceListContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                StatusTrailing(content.crashStatus, content.crashColor, statusColumnWidth)
+                StatusTrailing(content.crashStatus, content.crashColor, statusColumnWidth, content.readPhase)
                 if (content.crashViewVisible) {
                     TextButton(onClick = content.onViewCrash) {
                         Text(
@@ -2196,8 +2229,12 @@ private fun ColumnScope.MaintenanceListContent(
                             .clip(CircleShape)
                             .background(palette.textSecondary),
                 )
-                Text(
-                    text = content.debugStatus,
+                if (content.readPhase == MaintenanceReadPhase.Pending) {
+                    ItemTextPlaceholder(null, typography().xs, modifier = Modifier.width(statusColumnWidth), width = 0.68f)
+                } else Text(
+                    text = if (content.readPhase == MaintenanceReadPhase.Unavailable) {
+                        stringResource(R.string.common_load_failed)
+                    } else content.debugStatus,
                     style = typography().xs,
                     color = palette.textSecondary,
                     maxLines = 1,
@@ -2272,31 +2309,37 @@ private fun PassSummaryLine(text: String?, color: Color) {
  * scrolls within the column, honoring the scrolling-text setting.
  */
 @Composable
-private fun StatusTrailing(status: String, color: Color, columnWidth: Dp) {
+private fun StatusTrailing(
+    status: String,
+    color: Color,
+    columnWidth: Dp,
+    readPhase: MaintenanceReadPhase = MaintenanceReadPhase.Ready,
+) {
     val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
+    val statusColor = if (readPhase == MaintenanceReadPhase.Unavailable) colorPalette().textSecondary else color
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Box(
-            modifier =
-                Modifier
-                    .size(8.dp)
-                    .clip(CircleShape)
-                    .background(color),
-        )
-        Text(
-            text = status,
-            style = typography().xs,
-            color = color,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .width(columnWidth)
-                .conditional(!isScrollingTextDisabled) {
+        val dot = Modifier.size(8.dp).clip(CircleShape)
+        if (readPhase == MaintenanceReadPhase.Pending) {
+            Spacer(dot.shimmerEffect())
+            Box(Modifier.width(columnWidth)) {
+                ItemTextPlaceholder(null, typography().xs, width = 0.68f)
+            }
+        } else {
+            Box(dot.background(statusColor))
+            Text(
+                text = if (readPhase == MaintenanceReadPhase.Unavailable) stringResource(R.string.common_load_failed) else status,
+                style = typography().xs,
+                color = statusColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.width(columnWidth).conditional(!isScrollingTextDisabled) {
                     basicMarquee(iterations = Int.MAX_VALUE)
                 },
-        )
+            )
+        }
     }
 }
 

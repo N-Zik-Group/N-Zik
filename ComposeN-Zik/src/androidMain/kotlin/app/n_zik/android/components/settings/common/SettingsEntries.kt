@@ -64,6 +64,7 @@ import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.components.ui.sliders.Slider
 import app.n_zik.android.components.ui.toggles.Switch
 import app.n_zik.android.typography
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.shimmerEffect
@@ -565,8 +566,10 @@ fun OtherSettingsEntry(
     shimmer: Boolean = false,
     titlePrefix: (@Composable () -> Unit)? = null,
     shimmerText: Boolean = false,
+    selectedValueLoading: Boolean = false,
+    descriptionLoading: Boolean = false,
 ) {
-    val clickable = isEnabled && !shimmer
+    val clickable = isEnabled && !shimmer && !selectedValueLoading
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -621,7 +624,10 @@ fun OtherSettingsEntry(
                             BasicText(text = title, style = typography().s.semiBold.copy(color = colorPalette().text))
                         }
                     }
-                    if (text.isNotEmpty()) {
+                    if (descriptionLoading) {
+                        Spacer(Modifier.height(2.dp))
+                        ItemTextPlaceholder(null, typography().xs, width = 0.48f)
+                    } else if (text.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(2.dp))
                         if (shimmer || shimmerText) MeasuredMetadataPlaceholder(text, typography().xs)
                         else BasicText(
@@ -631,7 +637,12 @@ fun OtherSettingsEntry(
                             )
                         )
                     }
-                    if (!shimmer) SelectedSettingValue(selectedValueText)
+                    if (selectedValueLoading) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ItemTextPlaceholder(null, typography().xs.copy(fontWeight = FontWeight.Bold), width = 0.48f)
+                    } else if (!shimmer) {
+                        SelectedSettingValue(selectedValueText)
+                    }
                 }
 
                 if (trailingContent != null) {

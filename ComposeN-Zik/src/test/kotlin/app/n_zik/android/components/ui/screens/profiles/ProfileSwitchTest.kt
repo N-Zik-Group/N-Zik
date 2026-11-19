@@ -8,10 +8,12 @@ import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.utils.encryptedPreferences
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.setActiveProfile
+import app.n_zik.android.utils.writeProfileEntries
 import app.n_zik.android.core.notifications.profileChannelIds
 import io.mockk.every
 import io.mockk.mockkStatic
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -37,6 +39,15 @@ import org.robolectric.annotation.Config
 class ProfileSwitchTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
+
+    @Test
+    fun `removed profile cannot become active from an older card`() {
+        setActiveProfile("work", context)
+        context.writeProfileEntries(listOf("work" to "Work"))
+
+        assertFalse(executeRegisteredProfileSwitch("removed", context))
+        assertEquals("work", getActiveProfile(context))
+    }
 
     @Test
     fun `switching profiles cancels the left profile notifications and ensures the incoming channels`() {

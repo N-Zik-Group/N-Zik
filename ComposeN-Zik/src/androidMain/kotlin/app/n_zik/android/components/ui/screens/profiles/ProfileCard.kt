@@ -86,6 +86,8 @@ import app.n_zik.android.extensions.lastfm.lastfmSessionKey
 import app.n_zik.android.extensions.lastfm.lastfmUsernameKey
 import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.typography
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
+import app.n_zik.android.utils.shimmerEffect
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.FACE_INITIALS_COLOR_COUNT
 import app.n_zik.android.utils.FACE_SOURCE_PROFILE
@@ -421,7 +423,7 @@ private fun ProfileInitialsFace(name: String, size: Dp) {
 /** The NZik profile card (Profiles page + Accounts tab): face (avatar + resolved name), separate/shared data line, database size, last use (relative), and the switch / rename / delete actions (null hides the action; the card click switches when an action is provided). */
 @Composable
 fun ProfileCard(
-    face: ProfileFace,
+    face: ProfileFace?,
     lastUsed: Long?,
     dbSizeBytes: Long?,
     settingsSizeBytes: Long?,
@@ -451,53 +453,52 @@ fun ProfileCard(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 ProfileAvatarFrame(size = 48.dp, area = GlassArea.SettingsCards) {
-                    ProfileFaceAvatar(avatar = face.avatar, faceName = face.name, size = 48.dp)
+                    if (face == null) {
+                        Spacer(Modifier.size(48.dp).clip(artistThumbnailShape()).shimmerEffect())
+                    } else {
+                        ProfileFaceAvatar(avatar = face.avatar, faceName = face.name, size = 48.dp)
+                    }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    BasicText(
-                        text = face.name,
-                        style = typography().s.semiBold.copy(color = palette.text),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    BasicText(
-                        // The status line reflects the profile's sharing state
-                        // (spec-profile-data-separation): the profile-scoped data
-//
-                        // (database, settings, encrypted sessions) is always separate,
-                        // the four heavy data items follow their sharing toggles.
-                        text = if (sharedItems.isEmpty()) {
-                            stringResource(R.string.profile_data_status_all_separate)
-                        } else {
-                            // stringResource is @Composable: the item labels cannot be resolved
-                            // inside a joinToString lambda, so each is resolved here in the
-//
-                            // composable scope, keeping the ALL order.
-                            val downloadsLabel = stringResource(R.string.profile_data_downloads)
-                            val mediaCacheLabel = stringResource(R.string.profile_data_media_cache)
-                            val imagesLabel = stringResource(R.string.profile_data_images)
-                            val waveformsLabel = stringResource(R.string.profile_data_waveforms)
-                            fun labelsOf(items: Set<ProfileDataItem>) =
-                                (if (ProfileDataItem.DOWNLOADS in items) listOf(downloadsLabel) else emptyList()) +
-                                (if (ProfileDataItem.MEDIA_CACHE in items) listOf(mediaCacheLabel) else emptyList()) +
-                                (if (ProfileDataItem.IMAGES in items) listOf(imagesLabel) else emptyList()) +
-                                (if (ProfileDataItem.WAVEFORMS in items) listOf(waveformsLabel) else emptyList())
-                                    .joinToString(", ")
-                            // The line lists BOTH sides (spec-profile-data-separation): the
-                            // heavy items that stay separate (comma-prefixed, so the format
-//
-                            // string keeps "database, settings, sessions" when none do) and
-                            // the shared ones.
-                            val separateHeavy = labelsOf(ProfileDataItem.ALL.toSet() - sharedItems)
-                            stringResource(
-                                R.string.profile_data_status_shared,
-                                separateHeavy.takeIf { it.isNotEmpty() }?.let { ", $it" }.orEmpty(),
-                                labelsOf(sharedItems),
-                            )
-                        },
-                        style = typography().xxs.copy(color = palette.textSecondary),
-                    )
+                    if (face == null) {
+                        ItemTextPlaceholder(null, typography().s.semiBold, width = 0.64f)
+                        Spacer(modifier = Modifier.height(2.dp))
+                        ItemTextPlaceholder(null, typography().xxs, width = 0.85f)
+                    } else {
+                        BasicText(
+                            text = face.name,
+                            style = typography().s.semiBold.copy(color = palette.text),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        BasicText(
+                            // Database, settings and sessions stay separate. The larger stores follow the sharing toggles.
+                            text = if (sharedItems.isEmpty()) {
+                                stringResource(R.string.profile_data_status_all_separate)
+                            } else {
+                                // Resolve localized labels before joining them in their display order.
+                                val downloadsLabel = stringResource(R.string.profile_data_downloads)
+                                val mediaCacheLabel = stringResource(R.string.profile_data_media_cache)
+                                val imagesLabel = stringResource(R.string.profile_data_images)
+                                val waveformsLabel = stringResource(R.string.profile_data_waveforms)
+                                fun labelsOf(items: Set<ProfileDataItem>) =
+                                    (if (ProfileDataItem.DOWNLOADS in items) listOf(downloadsLabel) else emptyList()) +
+                                    (if (ProfileDataItem.MEDIA_CACHE in items) listOf(mediaCacheLabel) else emptyList()) +
+                                    (if (ProfileDataItem.IMAGES in items) listOf(imagesLabel) else emptyList()) +
+                                    (if (ProfileDataItem.WAVEFORMS in items) listOf(waveformsLabel) else emptyList())
+                                        .joinToString(", ")
+                                // Prefix extra separate stores with a comma after the fixed set of stores.
+                                val separateHeavy = labelsOf(ProfileDataItem.ALL.toSet() - sharedItems)
+                                stringResource(
+                                    R.string.profile_data_status_shared,
+                                    separateHeavy.takeIf { it.isNotEmpty() }?.let { ", $it" }.orEmpty(),
+                                    labelsOf(sharedItems),
+                                )
+                            },
+                            style = typography().xxs.copy(color = palette.textSecondary),
+                        )
+                    }
                 }
                 if (isActive) {
                     BasicText(
@@ -516,36 +517,36 @@ fun ProfileCard(
             ProfileCardInfoRow(
                 icon = R.drawable.data_migration,
                 label = stringResource(R.string.profile_database),
-                value = dbSizeBytes?.let { formatBytes(it) } ?: stringResource(R.string.profile_no_data),
+                value = if (face == null) null else dbSizeBytes?.let { formatBytes(it) } ?: stringResource(R.string.profile_no_data),
             )
             ProfileCardInfoRow(
                 icon = R.drawable.settings,
                 label = stringResource(R.string.settings_title),
-                value = settingsSizeBytes?.let { formatBytes(it) } ?: stringResource(R.string.profile_no_data),
+                value = if (face == null) null else settingsSizeBytes?.let { formatBytes(it) } ?: stringResource(R.string.profile_no_data),
             )
             // Shared data (app-level, identical on every card) — the same sources
             // and labels as the maintenance sheet.
             ProfileCardInfoRow(
                 icon = R.drawable.image,
                 label = stringResource(R.string.maintenance_image_cache),
-                value = imagesSizeBytes?.let { formatBytes(it) } ?: stringResource(R.string.profile_no_data),
+                value = if (face == null) null else imagesSizeBytes?.let { formatBytes(it) } ?: stringResource(R.string.profile_no_data),
             )
             // The shared icons match the Settings (data) page entries: image,
             // music_file (song cache) and download.
             ProfileCardInfoRow(
                 icon = R.drawable.music_file,
                 label = stringResource(R.string.maintenance_song_cache),
-                value = songCacheSizeBytes?.let { formatBytes(it) } ?: stringResource(R.string.profile_no_data),
+                value = if (face == null) null else songCacheSizeBytes?.let { formatBytes(it) } ?: stringResource(R.string.profile_no_data),
             )
             ProfileCardInfoRow(
                 icon = R.drawable.download,
                 label = stringResource(R.string.maintenance_downloads),
-                value = downloadsSizeBytes?.let { formatBytes(it) } ?: stringResource(R.string.profile_no_data),
+                value = if (face == null) null else downloadsSizeBytes?.let { formatBytes(it) } ?: stringResource(R.string.profile_no_data),
             )
             ProfileCardInfoRow(
                 icon = R.drawable.history,
                 label = stringResource(R.string.profile_last_used),
-                value = lastUsedRelativeText(context, lastUsed) ?: stringResource(R.string.profile_never_used),
+                value = if (face == null) null else lastUsedRelativeText(context, lastUsed) ?: stringResource(R.string.profile_never_used),
             )
 
             if (onToggleShare != null) {
@@ -584,7 +585,12 @@ fun ProfileCard(
                 )
             }
 
-            if (onRename != null || onDelete != null) {
+            if (face == null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    Spacer(Modifier.size(48.dp).clip(uiRoundnessShape()).shimmerEffect())
+                }
+            } else if (onRename != null || onDelete != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -625,7 +631,7 @@ fun ProfileCard(
 
 /** One stat row of the card (the shared settings icon-box pattern: icon + label + value). */
 @Composable
-private fun ProfileCardInfoRow(icon: Int, label: String, value: String) {
+private fun ProfileCardInfoRow(icon: Int, label: String, value: String?) {
     val palette = colorPalette()
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -652,7 +658,9 @@ private fun ProfileCardInfoRow(icon: Int, label: String, value: String) {
             style = typography().xxs.copy(color = palette.textSecondary),
         )
         Spacer(modifier = Modifier.weight(1f))
-        BasicText(
+        if (value == null) {
+            ItemTextPlaceholder(null, typography().xxs.semiBold, width = 0.24f)
+        } else BasicText(
             text = value,
             style = typography().xs.copy(color = palette.text),
         )

@@ -45,9 +45,11 @@ import app.n_zik.android.core.profiles.profileDownloadSpanBytes
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.LaunchedEffect
 import android.content.SharedPreferences
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import kotlinx.coroutines.withContext
 
 /** Owns cache limits and location preferences. */
@@ -76,10 +78,40 @@ private fun DataCacheSettings(
     var restartService by restartState
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val store by produceState<SharedPreferences?>(null, target) {
-        value = withContext(NzikDispatchers.DATA) { profileDataPrefs(context, target.id) }
+    var read by remember(target) { mutableStateOf<Result<SharedPreferences>?>(null) }
+    var retry by remember(target) { mutableStateOf(0) }
+    LaunchedEffect(target, retry) {
+        read = try {
+            Result.success(withContext(NzikDispatchers.DATA) { profileDataPrefs(context, target.id) })
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            Timber.tag("DataCache").w(error, "Could not read profile cache preferences")
+            Result.failure(error)
+        }
     }
-    val preferences = store ?: return
+    val result = read
+    val preferences = result?.getOrNull()
+    if (preferences == null) {
+        if (result == null) {
+            DataCacheOption.entries.forEach { option ->
+                if (option != DataCacheOption.Location || search.inputValue.isBlank() ||
+                    stringResource(option.title).contains(search.inputValue, true)
+                ) {
+                    DataCacheOptionEntry(option, loading = true, onClick = {})
+                }
+            }
+            SettingsDescription(stringResource(R.string.settings_cache_private_location_description), important = true)
+        } else {
+            OtherSettingsEntry(
+                title = stringResource(R.string.common_load_failed),
+                text = stringResource(R.string.common_action_retry),
+                icon = R.drawable.refresh,
+                onClick = { read = null; retry++ },
+            )
+        }
+        return
+    }
     val isActive = getActiveProfile(context) == target.id
     var pendingLocation by remember(target, preferences) {
         mutableStateOf(ProfileCacheLocationMigration.requested(context, target))
@@ -137,12 +169,9 @@ private fun DataCacheSettings(
     val artworkQualityLabel: @Composable (Boolean) -> String = {
         stringResource(if (it) R.string.storage_image_quality_original else R.string.storage_image_quality_optimized)
     }
-    OtherSettingsEntry(
-        title = artworkQualityTitle,
-        text = stringResource(R.string.storage_image_quality_description),
+    DataCacheOptionEntry(
+        DataCacheOption.ArtworkQuality,
         selectedValueText = artworkQualityLabel(originalArtwork),
-        icon = R.drawable.cover_edit,
-        modifier = Modifier.settingsSearchTarget("data.cache.artwork_quality"),
         onClick = { showArtworkQualityDialog = true },
     )
     DialogPresence(visible = showArtworkQualityDialog) {
@@ -162,15 +191,12 @@ private fun DataCacheSettings(
     }
     var showImageCacheDialog by remember { mutableStateOf(false) }
 
-    OtherSettingsEntry(
-        modifier = Modifier.settingsSearchTarget("data.cache.image_cache_max_size"),
-        title = stringResource(R.string.settings_cache_image_size_limit_label),
-        text = stringResource(R.string.cache_image_limit_description),
+    DataCacheOptionEntry(
+        DataCacheOption.Images,
         selectedValueText = when (coilDiskCacheMaxSize) {
             CoilDiskCacheMaxSize.Custom -> "${stringResource(R.string.common_option_custom)}: ${coilCustomDiskCache}MB"
             else -> coilDiskCacheMaxSize.text
         },
-        icon = R.drawable.image,
         onClick = { showImageCacheDialog = true },
     )
 
@@ -212,16 +238,13 @@ private fun DataCacheSettings(
 
     var showSongCacheDialog by remember { mutableStateOf(false) }
 
-    OtherSettingsEntry(
-        modifier = Modifier.settingsSearchTarget("data.cache.song_cache_max_size"),
-        title = stringResource(R.string.settings_cache_song_size_limit_label),
-        text = stringResource(R.string.cache_streaming_limit_description),
+    DataCacheOptionEntry(
+        DataCacheOption.Songs,
         selectedValueText = when (exoPlayerDiskCacheMaxSize) {
             ExoPlayerDiskCacheMaxSize.Custom -> "${stringResource(R.string.common_option_custom)}: ${exoPlayerCustomCache}MB"
             ExoPlayerDiskCacheMaxSize.Disabled -> stringResource(R.string.common_action_turn_off)
             else -> exoPlayerDiskCacheMaxSize.text
         },
-        icon = R.drawable.music_file,
         onClick = { showSongCacheDialog = true },
     )
 
@@ -263,12 +286,9 @@ private fun DataCacheSettings(
 
     var showDownloadCacheDialog by remember { mutableStateOf(false) }
 
-    OtherSettingsEntry(
-        modifier = Modifier.settingsSearchTarget("data.cache.song_download_max_size"),
-        title = stringResource(R.string.settings_downloads_storage_limit_label),
-        text = stringResource(R.string.cache_downloads_limit_description),
+    DataCacheOptionEntry(
+        DataCacheOption.Downloads,
         selectedValueText = exoPlayerDiskDownloadCacheMaxSize.text,
-        icon = R.drawable.download,
         onClick = { showDownloadCacheDialog = true },
     )
 
@@ -292,12 +312,9 @@ private fun DataCacheSettings(
 
     var showCacheLocationDialog by remember { mutableStateOf(false) }
     if (search.inputValue.isBlank() || stringResource(R.string.settings_cache_location_label).contains(search.inputValue, true)) {
-        OtherSettingsEntry(
-            modifier = Modifier.settingsSearchTarget("data.cache.set_cache_location"),
-            title = stringResource(R.string.settings_cache_location_label),
-            text = stringResource(R.string.cache_location_description),
+        DataCacheOptionEntry(
+            DataCacheOption.Location,
             selectedValueText = exoPlayerCacheLocation.text,
-            icon = R.drawable.folder,
             onClick = { showCacheLocationDialog = true }
         )
     }
@@ -330,3 +347,27 @@ private fun DataCacheSettings(
 
     if (isActive) RestartPlayerService(restartService, onRestart = { restartService = false })
 }
+
+private enum class DataCacheOption(val title: Int, val description: Int, val icon: Int, val searchId: String) {
+    ArtworkQuality(R.string.storage_image_quality_title, R.string.storage_image_quality_description, R.drawable.cover_edit, "data.cache.artwork_quality"),
+    Images(R.string.settings_cache_image_size_limit_label, R.string.cache_image_limit_description, R.drawable.image, "data.cache.image_cache_max_size"),
+    Songs(R.string.settings_cache_song_size_limit_label, R.string.cache_streaming_limit_description, R.drawable.music_file, "data.cache.song_cache_max_size"),
+    Downloads(R.string.settings_downloads_storage_limit_label, R.string.cache_downloads_limit_description, R.drawable.download, "data.cache.song_download_max_size"),
+    Location(R.string.settings_cache_location_label, R.string.cache_location_description, R.drawable.folder, "data.cache.set_cache_location"),
+}
+
+@Composable
+private fun DataCacheOptionEntry(
+    option: DataCacheOption,
+    selectedValueText: String? = null,
+    loading: Boolean = false,
+    onClick: () -> Unit,
+) = OtherSettingsEntry(
+    title = stringResource(option.title),
+    text = stringResource(option.description),
+    icon = option.icon,
+    modifier = Modifier.settingsSearchTarget(option.searchId),
+    selectedValueText = selectedValueText,
+    selectedValueLoading = loading,
+    onClick = onClick,
+)
