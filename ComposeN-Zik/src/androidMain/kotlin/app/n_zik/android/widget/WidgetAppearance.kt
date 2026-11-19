@@ -147,13 +147,15 @@ internal object WidgetAppearance {
         artwork: Map<Int, WidgetArtwork>,
     ) {
         observeIdlePreferences(context)
-        val density = context.resources.displayMetrics.density
+        val appContext = context.applicationContext
+        val density = appContext.resources.displayMetrics.density
         val key = MeasurementKey(views.layoutId,
             (options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 200) * density).roundToInt().coerceAtLeast(1),
             (options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 100) * density).roundToInt().coerceAtLeast(1),
-            density, context.resources.configuration.fontScale, durationVisible)
+            density, appContext.resources.configuration.fontScale, durationVisible)
         val bounds = measurements.get(key) ?: withContext(NzikDispatchers.UI) {
-            val root = views.apply(context, FrameLayout(context))
+            // An AppCompat activity inflater can replace framework ImageViews with incompatible subclasses.
+            val root = views.apply(appContext, FrameLayout(appContext))
             val heightMode = if (root.layoutParams?.height == ViewGroup.LayoutParams.WRAP_CONTENT)
                 View.MeasureSpec.AT_MOST else View.MeasureSpec.EXACTLY
             root.measure(View.MeasureSpec.makeMeasureSpec(key.width, View.MeasureSpec.EXACTLY),

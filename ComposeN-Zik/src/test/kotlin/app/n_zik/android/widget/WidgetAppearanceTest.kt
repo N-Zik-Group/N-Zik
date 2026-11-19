@@ -12,6 +12,7 @@ import android.util.SizeF
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.RemoteViews
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.geometry.Size
@@ -39,10 +40,12 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
@@ -131,6 +134,37 @@ class WidgetAppearanceTest {
             assertTrue(thread.get().startsWith("nzik-media-"))
         } finally {
             unmockkObject(WidgetRoundness.Companion)
+        }
+    }
+
+    // Robolectric invokes this synchronous test while widget measurement is suspend.
+    @Test fun `widget measurement from an AppCompat activity keeps framework image views`() = runBlocking {
+        val controller = Robolectric.buildActivity(AppCompatActivity::class.java)
+        controller.get().setTheme(androidx.appcompat.R.style.Theme_AppCompat)
+        controller.setup()
+        try {
+            val activity = controller.get()
+            val views = RemoteViews(activity.packageName, R.layout.widget_compact_wide).apply {
+                setImageViewResource(R.id.widget_wide_play_pause, R.drawable.ic_widget_pause)
+            }
+            val failure = assertThrows(RemoteViews.ActionException::class.java) {
+                views.apply(activity, FrameLayout(activity))
+            }
+            assertTrue(failure.message.orEmpty().contains("AppCompatImageView"))
+            assertTrue(failure.message.orEmpty().contains("setImageResource"))
+
+            val options = Bundle().apply {
+                putInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 317)
+                putInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 87)
+            }
+            WidgetAppearance.apply(activity, views, options, false,
+                mapOf(R.id.widget_wide_album_art to WidgetArtwork(null)))
+
+            val root = views.apply(context, FrameLayout(context))
+            val artwork = root.findViewById<ImageView>(R.id.widget_wide_album_art)
+            assertTrue(artwork.drawable is BitmapDrawable)
+        } finally {
+            controller.pause().stop().destroy()
         }
     }
 
