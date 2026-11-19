@@ -19,6 +19,8 @@ import android.view.View
 import android.widget.RemoteViews
 import androidx.compose.ui.graphics.toArgb
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
@@ -160,18 +162,20 @@ object PlaylistWidgetManager {
                 title = state.title,
                 artist = state.artist,
                 albumArt = albumArt,
-                isPlaying = state.isPlaying,
+                isPlaying = state.playback.isPlaying,
                 isLiked = state.isLiked,
-                duration = state.duration,
-                currentPosition = state.currentPosition,
+                duration = state.playback.durationMs,
+                currentPosition = state.playback.positionMs,
                 palette = palette,
                 artworkUri = state.artworkUri,
+                playback = state.playback,
             ) }
+            currentCoroutineContext().ensureActive()
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
     }
 
-    suspend fun updateWidgets(
+    internal suspend fun updateWidgets(
         context: Context,
         title: String,
         artist: String,
@@ -184,6 +188,8 @@ object PlaylistWidgetManager {
         artworkUri: String? = null,
         artworkColors: ArtworkColorSnapshot? = null,
         artworkColorsResolved: Boolean = false,
+        playback: WidgetPlaybackSnapshot =
+            WidgetPlaybackSnapshot(duration, currentPosition, SystemClock.elapsedRealtime(), isPlaying),
     ) {
         val (snapshot, profileId) = withContext(NzikDispatchers.MEDIA) {
             val profile = getActiveProfile(context)
@@ -195,10 +201,8 @@ object PlaylistWidgetManager {
             title = title,
             artist = artist,
             artworkBitmap = artworkBitmap,
-            isPlaying = isPlaying,
             isLiked = isLiked,
-            duration = duration,
-            currentPosition = currentPosition,
+            playback = playback,
             artworkColors = snapshot,
             artworkUri = artworkUri,
             profileId = profileId,
@@ -222,11 +226,13 @@ object PlaylistWidgetManager {
                     albumArt = artworkBitmap,
                     isPlaying = isPlaying,
                     isLiked = isLiked,
-                    duration = duration,
-                    currentPosition = currentPosition,
+                    duration = playback.durationMs,
+                    currentPosition = playback.positionMs,
                     palette = resolvedPalette,
                     artworkUri = artworkUri,
+                    playback = playback,
                 ) }
+                currentCoroutineContext().ensureActive()
                 appWidgetManager.updateAppWidget(widgetId, views)
             }
         }
@@ -247,6 +253,8 @@ object PlaylistWidgetManager {
         currentPosition: Long,
         palette: ColorPalette,
         artworkUri: String?,
+        playback: WidgetPlaybackSnapshot =
+            WidgetPlaybackSnapshot(duration, currentPosition, SystemClock.elapsedRealtime(), isPlaying),
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_playlist)
         views.setPlaybackDescriptions(
@@ -268,21 +276,12 @@ object PlaylistWidgetManager {
             if (isLiked) R.drawable.ic_widget_heart_nav else R.drawable.ic_widget_heart_outline_nav,
         )
 
-        val progressLevel = if (duration > 0) {
-            ((currentPosition.toDouble() / duration.toDouble()) * 10000).toInt().coerceIn(0, 10000)
-        } else {
-            0
-        }
-        views.setInt(R.id.widget_playlist_progress_fill, "setImageLevel", progressLevel)
-
         if (duration > 0) {
             views.setViewVisibility(R.id.widget_playlist_chronometer, View.VISIBLE)
             views.setViewVisibility(R.id.widget_playlist_total_duration, View.VISIBLE)
             views.setViewVisibility(R.id.widget_progress_track, View.VISIBLE)
             views.setViewVisibility(R.id.widget_playlist_progress_fill, View.VISIBLE)
-            val baseTime = SystemClock.elapsedRealtime() - currentPosition
-            views.setChronometer(R.id.widget_playlist_chronometer, baseTime, null, isPlaying)
-            views.setTextViewText(R.id.widget_playlist_total_duration, " / ${formatDuration(duration)}")
+            views.setTextViewText(R.id.widget_playlist_total_duration, " / ${formatWidgetDuration(duration)}")
         } else {
             views.setViewVisibility(R.id.widget_playlist_chronometer, View.GONE)
             views.setViewVisibility(R.id.widget_playlist_total_duration, View.GONE)
@@ -382,14 +381,8 @@ object PlaylistWidgetManager {
             artwork[artIds[index]] = WidgetArtwork(pick.artworkBitmap, pick.isArtist, pick.artworkSource)
         }
         WidgetAppearance.apply(context, views, options, duration > 0, artwork)
+        views.setWidgetPlaybackTiming(playback, R.id.widget_playlist_chronometer, R.id.widget_playlist_progress_fill)
         return views
-    }
-
-    private fun formatDuration(durationMs: Long): String {
-        val totalSeconds = durationMs / 1000
-        val minutes = totalSeconds / 60
-        val seconds = totalSeconds % 60
-        return "%d:%02d".format(minutes, seconds)
     }
 
     private fun getOpenAppIntent(context: Context): PendingIntent {
@@ -418,14 +411,12 @@ object PlaylistWidgetManager {
         )
     }
 
-    data class WidgetState(
+    private data class WidgetState(
         val title: String,
         val artist: String,
         val artworkBitmap: Bitmap?,
-        val isPlaying: Boolean,
         val isLiked: Boolean,
-        val duration: Long,
-        val currentPosition: Long,
+        val playback: WidgetPlaybackSnapshot,
         val artworkColors: ArtworkColorSnapshot? = null,
         val artworkUri: String? = null,
         val profileId: String? = null,

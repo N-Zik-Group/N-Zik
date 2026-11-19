@@ -15,6 +15,8 @@ import android.view.View
 import android.widget.RemoteViews
 import kotlin.math.roundToInt
 import androidx.compose.ui.graphics.toArgb
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 
 import app.n_zik.android.cleanPrefix
@@ -45,7 +47,7 @@ object NZikWidgetManager {
         )
     }
 
-    suspend fun updateWidgets(
+    internal suspend fun updateWidgets(
         context: Context,
         title: String,
         artist: String,
@@ -55,6 +57,8 @@ object NZikWidgetManager {
         duration: Long = 0,
         currentPosition: Long = 0,
         artworkUri: String? = null,
+        playback: WidgetPlaybackSnapshot =
+            WidgetPlaybackSnapshot(duration, currentPosition, SystemClock.elapsedRealtime(), isPlaying),
     ) {
         val (albumArt, snapshot) = withContext(NzikDispatchers.MEDIA) {
             val appWidgetManager = AppWidgetManager.getInstance(context)
@@ -88,11 +92,13 @@ object NZikWidgetManager {
                         albumArt,
                         isPlaying,
                         isLiked,
-                        duration,
-                        currentPosition,
+                        playback.durationMs,
+                        playback.positionMs,
                         palette,
-                        artworkUri
+                        artworkUri,
+                        playback,
                     ) }
+                    currentCoroutineContext().ensureActive()
                     appWidgetManager.updateAppWidget(widgetId, views)
                 }
             }
@@ -105,8 +111,9 @@ object NZikWidgetManager {
                     val options = appWidgetManager.getAppWidgetOptions(widgetId)
                     val turntableViews = WidgetAppearance.responsive(options) { sizedOptions ->
                         createTurntableRemoteViewsForSize(context, sizedOptions, albumArt, isPlaying,
-                            isLiked, duration, currentPosition, palette, artworkUri)
+                            isLiked, playback.durationMs, playback.positionMs, palette, artworkUri, playback)
                     }
+                    currentCoroutineContext().ensureActive()
                     appWidgetManager.updateAppWidget(widgetId, turntableViews)
                 }
             }
@@ -121,11 +128,10 @@ object NZikWidgetManager {
             artworkBitmap = albumArt,
             isPlaying = isPlaying,
             isLiked = isLiked,
-            duration = duration,
-            currentPosition = currentPosition,
             artworkUri = artworkUri,
             artworkColors = snapshot,
             artworkColorsResolved = true,
+            playback = playback,
         )
     }
 
@@ -141,6 +147,8 @@ object NZikWidgetManager {
         currentPosition: Long,
         palette: ColorPalette,
         artworkUri: String?,
+        playback: WidgetPlaybackSnapshot =
+            WidgetPlaybackSnapshot(duration, currentPosition, SystemClock.elapsedRealtime(), isPlaying),
     ): RemoteViews {
         val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
         val minHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
@@ -152,10 +160,10 @@ object NZikWidgetManager {
                 createCompactSquareRemoteViews(context, isPlaying, palette)
             }
             minWidth >= 180 && isShort -> {
-                createCompactWideRemoteViews(context, title, artist, isPlaying, isLiked, palette, duration, currentPosition)
+                createCompactWideRemoteViews(context, title, artist, isPlaying, isLiked, palette, duration)
             }
             else -> {
-                createRemoteViews(context, title, artist, isPlaying, isLiked, duration, currentPosition, palette)
+                createRemoteViews(context, title, artist, isPlaying, isLiked, duration, palette)
             }
         }
 
@@ -224,6 +232,10 @@ object NZikWidgetManager {
             R.id.widget_compact_album_art to WidgetArtwork(albumArt, source = artworkUri),
             R.id.widget_wide_album_art to WidgetArtwork(albumArt, source = artworkUri),
         ))
+        when {
+            isFullWidget -> views.setWidgetPlaybackTiming(playback, R.id.widget_chronometer, R.id.widget_progress_fill)
+            isCompactWide -> views.setWidgetPlaybackTiming(playback, R.id.widget_wide_chronometer)
+        }
         return views
     }
 
@@ -234,7 +246,6 @@ object NZikWidgetManager {
         isPlaying: Boolean,
         isLiked: Boolean,
         duration: Long = 0,
-        currentPosition: Long = 0,
         palette: ColorPalette
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_music_player)
@@ -257,20 +268,11 @@ object NZikWidgetManager {
         views.setImageViewResource(R.id.widget_like_button, likeIcon)
 
         if (duration > 0) {
-            val level = ((currentPosition.toDouble() / duration.toDouble()) * 10000).toInt()
-            views.setInt(R.id.widget_progress_fill, "setImageLevel", level)
-        } else {
-            views.setInt(R.id.widget_progress_fill, "setImageLevel", 0)
-        }
-
-        if (duration > 0) {
             views.setViewVisibility(R.id.widget_chronometer, View.VISIBLE)
             views.setViewVisibility(R.id.widget_total_duration, View.VISIBLE)
             views.setViewVisibility(R.id.widget_progress_track, View.VISIBLE)
             views.setViewVisibility(R.id.widget_progress_fill, View.VISIBLE)
-            val baseTime = SystemClock.elapsedRealtime() - currentPosition
-            views.setChronometer(R.id.widget_chronometer, baseTime, null, isPlaying)
-            views.setTextViewText(R.id.widget_total_duration, " / ${formatDuration(duration)}")
+            views.setTextViewText(R.id.widget_total_duration, " / ${formatWidgetDuration(duration)}")
         } else {
             views.setViewVisibility(R.id.widget_chronometer, View.GONE)
             views.setViewVisibility(R.id.widget_total_duration, View.GONE)
@@ -326,7 +328,6 @@ object NZikWidgetManager {
         isLiked: Boolean,
         palette: ColorPalette,
         duration: Long,
-        currentPosition: Long,
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_compact_wide)
         views.setPlaybackDescriptions(
@@ -341,9 +342,7 @@ object NZikWidgetManager {
         views.setTextViewText(R.id.widget_wide_song_title, widgetDisplayTitle(title))
         views.setTextViewText(R.id.widget_wide_artist_name, cleanPrefix(artist))
         views.setViewVisibility(R.id.widget_wide_time, if (duration > 0) View.VISIBLE else View.GONE)
-        views.setChronometer(R.id.widget_wide_chronometer,
-            SystemClock.elapsedRealtime() - currentPosition.coerceAtLeast(0), "%s", isPlaying && duration > 0)
-        views.setTextViewText(R.id.widget_wide_total_duration, " / ${formatDuration(duration.coerceAtLeast(0))}")
+        views.setTextViewText(R.id.widget_wide_total_duration, " / ${formatWidgetDuration(duration.coerceAtLeast(0))}")
 
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause_low else R.drawable.ic_widget_play_low
         views.setImageViewResource(R.id.widget_wide_play_pause, playPauseIcon)
@@ -372,8 +371,10 @@ object NZikWidgetManager {
         currentPosition: Long,
         palette: ColorPalette,
         artworkUri: String?,
+        playback: WidgetPlaybackSnapshot =
+            WidgetPlaybackSnapshot(duration, currentPosition, SystemClock.elapsedRealtime(), isPlaying),
     ): RemoteViews {
-        val views = createTurntableRemoteViews(context, isPlaying, isLiked, duration, currentPosition, palette)
+        val views = createTurntableRemoteViews(context, isPlaying, isLiked, duration, palette)
         val density = context.resources.displayMetrics.density
         val width = (options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 110) * density).roundToInt()
         val height = (options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 110) * density).roundToInt()
@@ -387,6 +388,7 @@ object NZikWidgetManager {
             padding + verticalExcess - verticalExcess / 2)
         WidgetAppearance.apply(context, views, options, duration > 0,
             mapOf(R.id.widget_turntable_album_art to WidgetArtwork(albumArt, source = artworkUri)))
+        views.setWidgetPlaybackTiming(playback, R.id.widget_turntable_chronometer)
         return views
     }
 
@@ -395,7 +397,6 @@ object NZikWidgetManager {
         isPlaying: Boolean,
         isLiked: Boolean,
         duration: Long = 0,
-        currentPosition: Long = 0,
         palette: ColorPalette
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_turntable)
@@ -417,9 +418,7 @@ object NZikWidgetManager {
         if (duration > 0) {
             views.setViewVisibility(R.id.widget_turntable_chronometer, View.VISIBLE)
             views.setViewVisibility(R.id.widget_turntable_total_duration, View.VISIBLE)
-            val baseTime = SystemClock.elapsedRealtime() - currentPosition
-            views.setChronometer(R.id.widget_turntable_chronometer, baseTime, null, isPlaying)
-            views.setTextViewText(R.id.widget_turntable_total_duration, formatDuration(duration))
+            views.setTextViewText(R.id.widget_turntable_total_duration, formatWidgetDuration(duration))
         } else {
             views.setViewVisibility(R.id.widget_turntable_chronometer, View.GONE)
             views.setViewVisibility(R.id.widget_turntable_total_duration, View.GONE)
@@ -434,13 +433,6 @@ object NZikWidgetManager {
         applyWidgetTheme(views, palette)
 
         return views
-    }
-
-    private fun formatDuration(durationMs: Long): String {
-        val totalSeconds = durationMs / 1000
-        val minutes = totalSeconds / 60
-        val seconds = totalSeconds % 60
-        return "%d:%02d".format(minutes, seconds)
     }
 
     private fun getOpenAppIntent(context: Context): PendingIntent {

@@ -274,6 +274,7 @@ import androidx.compose.runtime.Stable
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import app.n_zik.android.widget.NZikWidgetManager
+import app.n_zik.android.widget.WidgetPlaybackSnapshot
 import app.n_zik.android.utils.crossfadeEnabledKey
 import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException
@@ -457,7 +458,6 @@ class PlayerServiceModern : MediaLibraryService(),
     lateinit var audioQualityFormat: AudioQualityFormat
     lateinit var imageQualityFormat: ImageQualityFormat
     private val sleepTimer = PlaybackSleepTimer(coroutineScope)
-    private var widgetProgressJob: Job? = null
     lateinit var nzikRadio: NZikRadio
 
     val currentMediaItem = MutableStateFlow<MediaItem?>(null)
@@ -1714,26 +1714,6 @@ class PlayerServiceModern : MediaLibraryService(),
          * Last.fm scrobbling
          */
         lastFmScrobbleManager?.onPlayingStateChanged(isPlaying, item, duration)
-        updateWidgets()
-
-        // Start/stop the per-second widget progress refresh
-        if (isPlaying) {
-            if (widgetProgressJob?.isActive != true) {
-                widgetProgressJob = coroutineScope.launch(NzikDispatchers.UI) {
-                    while (true) {
-                        delay(1000)
-                        if (player.isPlaying) {
-                            updateWidgets()
-                        } else {
-                            break
-                        }
-                    }
-                }
-            }
-        } else {
-            widgetProgressJob?.cancel()
-            widgetProgressJob = null
-        }
     }
 
     /** Item 5 (upstream parity MS L2884-2897): a playback speed change re-sends the Discord presence ~1 s later, only while actively playing (playWhenReady && STATE_READY) — the timestamps and the "[1.50x]" suffix must reflect the new speed. */
@@ -2093,6 +2073,16 @@ class PlayerServiceModern : MediaLibraryService(),
             if (!player.playWhenReady) {
                 waitingForNetwork.value = false
             }
+        }
+        if (events.containsAny(
+                Player.EVENT_IS_PLAYING_CHANGED,
+                Player.EVENT_POSITION_DISCONTINUITY,
+                Player.EVENT_PLAYBACK_PARAMETERS_CHANGED,
+                Player.EVENT_PLAYBACK_STATE_CHANGED,
+                Player.EVENT_TIMELINE_CHANGED,
+            )
+        ) {
+            updateWidgets()
         }
     }
 
@@ -2548,19 +2538,20 @@ class PlayerServiceModern : MediaLibraryService(),
     private var widgetRenderJob: Job? = null
 
     private fun startWidgetUpdates() {
-        widgetUpdateJob?.cancel()
+        if (widgetUpdateJob?.isActive == true) return
         widgetUpdateJob = coroutineScope.launch(NzikDispatchers.UI) {
-            while (isActive) {
-                if (player.isPlaying) {
+            while (isActive && player.isPlaying) {
+                delay(1000)
+                if (player.isPlaying && widgetRenderJob?.isActive != true) {
                     updateWidgets()
                 }
-                kotlinx.coroutines.delay(1000)
             }
         }
     }
 
     private fun stopWidgetUpdates() {
         widgetUpdateJob?.cancel()
+        widgetUpdateJob = null
     }
 
     /** Re-render paused widgets without starting playback or waking a stopped service. */
@@ -2570,8 +2561,10 @@ class PlayerServiceModern : MediaLibraryService(),
 
     @MainThread
     fun updateWidgets() {
+        if (isDestroying || !::guestGuardPlayer.isInitialized) return
         widgetRenderJob?.cancel()
-        val currentMediaId = binder.player.currentMediaItem?.mediaId
+        val widgetPlayer = binder.player
+        val currentMediaId = widgetPlayer.currentMediaItem?.mediaId
         if (currentMediaId == null) {
             widgetRenderJob = coroutineScope.launch(NzikDispatchers.DATA) {
                 NZikWidgetManager.updateIdleWidgets(applicationContext)
@@ -2579,34 +2572,31 @@ class PlayerServiceModern : MediaLibraryService(),
             return
         }
 
-        val status = Triple(
-            binder.player.mediaMetadata.title?.toString() ?: "",
-            binder.player.mediaMetadata.artist?.toString() ?: "",
-            binder.player.isPlaying
+        val playback = WidgetPlaybackSnapshot(
+            durationMs = widgetPlayer.duration.coerceAtLeast(0),
+            positionMs = widgetPlayer.currentPosition.coerceAtLeast(0),
+            sampledAtElapsedRealtimeMs = SystemClock.elapsedRealtime(),
+            isPlaying = widgetPlayer.isPlaying,
+            speed = widgetPlayer.playbackParameters.speed,
         )
-
-        val playerDuration = binder.player.duration.coerceAtLeast(0)
-        val playerPosition = binder.player.currentPosition.coerceAtLeast(0)
+        val metadata = widgetPlayer.mediaMetadata
         val currentBitmap = bitmapProvider.bitmap
-        val artworkUri = (binder.player.mediaMetadata.artworkUri
-            ?: binder.player.currentMediaItem?.mediaMetadata?.artworkUri)?.toString()
+        val artworkUri = (metadata.artworkUri ?: widgetPlayer.currentMediaItem?.mediaMetadata?.artworkUri)?.toString()
 
         widgetRenderJob = coroutineScope.launch(NzikDispatchers.DATA) {
-            // New Widget architecture (NZik)
-            val songId = currentMediaId?.split("/")?.lastOrNull() ?: currentMediaId
-            val currentSong = if (songId != null) Database.songTable.findByIdDirect(songId) else null
+            val songId = currentMediaId.substringAfterLast('/')
+            val currentSong = Database.songTable.findByIdDirect(songId)
             val isLiked = currentSong?.likedAt != null
 
             NZikWidgetManager.updateWidgets(
                 context = applicationContext,
-                title = status.first,
-                artist = status.second,
+                title = metadata.title?.toString().orEmpty(),
+                artist = metadata.artist?.toString().orEmpty(),
                 artworkBitmap = currentBitmap,
-                isPlaying = status.third,
+                isPlaying = playback.isPlaying,
                 isLiked = isLiked,
-                duration = playerDuration,
-                currentPosition = playerPosition,
                 artworkUri = artworkUri,
+                playback = playback,
             )
         }
     }
