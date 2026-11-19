@@ -140,10 +140,11 @@ fun ArtistVideos(
                     }
                 }
             },
-            itemPlaceholderContent = {
+            itemPlaceholderContent = { item ->
                 VideoItemPlaceholder(
                     thumbnailHeightDp = thumbnailHeightDp,
-                    thumbnailWidthDp = thumbnailWidthDp
+                    thumbnailWidthDp = thumbnailWidthDp,
+                    video = item as? Innertube.VideoItem,
                 )
             },
             itemsPageProvider = { continuation ->

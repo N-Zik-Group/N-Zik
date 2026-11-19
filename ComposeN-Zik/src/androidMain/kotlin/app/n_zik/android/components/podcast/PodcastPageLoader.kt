@@ -17,14 +17,13 @@ internal enum class PodcastPageStatus { Loading, Error, Empty, Content }
 internal data class PodcastPageLoadState(
     val status: PodcastPageStatus = PodcastPageStatus.Loading,
     val page: Innertube.Podcast? = null,
+    val loadedEpisodeCount: Int = 0,
 )
 
 /** Keeps failed requests retryable without turning coroutine cancellation into a UI error. */
 internal class PodcastPageLoader(
     initialPage: Innertube.Podcast? = null,
-    private val fetchPage: suspend (String) -> Innertube.Podcast = { id ->
-        withContext(NzikDispatchers.DATA) { loadCompletePodcastPage(id) }
-    },
+    private val fetchPage: (suspend (String) -> Innertube.Podcast)? = null,
 ) {
     private val mutableState = MutableStateFlow(initialPage?.loadedState() ?: PodcastPageLoadState())
     val state = mutableState.asStateFlow()
@@ -33,7 +32,15 @@ internal class PodcastPageLoader(
         currentCoroutineContext().ensureActive()
         mutableState.update { PodcastPageLoadState() }
         try {
-            val page = fetchPage(browseId)
+            val page = if (fetchPage != null) {
+                fetchPage(browseId)
+            } else {
+                withContext(NzikDispatchers.DATA) {
+                    loadCompletePodcastPage(browseId, onEpisodeCount = { count ->
+                        mutableState.update { it.copy(loadedEpisodeCount = count) }
+                    })
+                }
+            }
             currentCoroutineContext().ensureActive()
             mutableState.update { page.loadedState() }
         } catch (cancelled: CancellationException) {

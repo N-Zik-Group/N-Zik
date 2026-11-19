@@ -3,7 +3,9 @@ package app.n_zik.android.components.podcast
 import android.app.Application
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -34,6 +36,22 @@ import org.robolectric.annotation.Config
 @Config(sdk = [33], application = Application::class)
 class PodcastLoadingStatusTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `loading summary switches to the actual localized episode count`() {
+        val loadedCount = mutableIntStateOf(0)
+        val resources = RuntimeEnvironment.getApplication().resources
+        val loading = resources.getString(R.string.common_loading_message)
+        compose.setContent { Text(podcastEpisodeLoadingLabel(loadedCount.intValue)) }
+
+        compose.onNodeWithText(loading).assertIsDisplayed()
+        for (count in listOf(1, 17)) {
+            compose.runOnIdle { loadedCount.intValue = count }
+            val summary = resources.getQuantityString(
+                R.plurals.podcast_episode_count_with_duration, count, count, loading,
+            )
+            compose.onNodeWithText(summary).assertIsDisplayed()
+        }
+    }
 
     @Test fun `retry pill remains visible and invokes one action in Material and Glass`() {
         val glassEnabled = mutableStateOf(false)

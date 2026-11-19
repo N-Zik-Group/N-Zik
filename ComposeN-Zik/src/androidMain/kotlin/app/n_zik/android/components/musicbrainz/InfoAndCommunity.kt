@@ -7,6 +7,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -43,6 +45,9 @@ import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.ui.screens.album.Translate
 import app.n_zik.android.components.ui.InlineCircularLoader
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
+import app.n_zik.android.utils.shimmerEffect
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.typography
 import app.n_zik.android.utils.align
@@ -74,10 +79,12 @@ fun InfoAndCommunity(
     lastSyncFailed: Boolean = false,
     pausedForSeconds: Long = 0,
     isSyncing: Boolean = false,
+    isLoading: Boolean = false,
     onResyncClick: () -> Unit = {},
     onInsightsClick: () -> Unit = {},
 ) {
     var readMore by remember { mutableStateOf(true) }
+    val forceShimmer = forceLoadingShimmerPreview() || isLoading
     val glass = rememberGlassSettings()
     val materialActions = glass.usesGlassMaterial(GlassArea.ActionButtons)
 
@@ -112,27 +119,26 @@ fun InfoAndCommunity(
                     text = stringResource(R.string.metadata_info_and_community_title),
                     style = typography().m.semiBold
                 )
-                Text(
-                    text = when {
-                        pausedForSeconds > 0 -> stringResource(
-                            R.string.metadata_musicbrainz_last_sync_paused,
-                            (pausedForSeconds / 60).coerceAtLeast(1)
-                        )
-                        lastSyncAt == null -> stringResource(R.string.metadata_musicbrainz_last_sync_never)
-                        lastSyncFailed -> stringResource(
-                            R.string.metadata_musicbrainz_last_sync_failed,
-                            DateUtils.getRelativeTimeSpanString(lastSyncAt).toString()
-                        )
-                        else -> stringResource(
-                            R.string.metadata_musicbrainz_last_sync,
-                            DateUtils.getRelativeTimeSpanString(lastSyncAt).toString()
-                        )
-                    },
-                    style = if (pausedForSeconds > 0 || lastSyncFailed)
-                        typography().xxs.semiBold.color(colorPalette().red)
-                    else
-                        typography().xxs.secondary
-                )
+                val syncText = when {
+                    pausedForSeconds > 0 -> stringResource(
+                        R.string.metadata_musicbrainz_last_sync_paused,
+                        (pausedForSeconds / 60).coerceAtLeast(1)
+                    )
+                    lastSyncAt == null -> stringResource(R.string.metadata_musicbrainz_last_sync_never)
+                    lastSyncFailed -> stringResource(
+                        R.string.metadata_musicbrainz_last_sync_failed,
+                        DateUtils.getRelativeTimeSpanString(lastSyncAt).toString()
+                    )
+                    else -> stringResource(
+                        R.string.metadata_musicbrainz_last_sync,
+                        DateUtils.getRelativeTimeSpanString(lastSyncAt).toString()
+                    )
+                }
+                val syncStyle = if (pausedForSeconds > 0 || lastSyncFailed)
+                    typography().xxs.semiBold.color(colorPalette().red)
+                else typography().xxs.secondary
+                if (forceShimmer) MeasuredMetadataPlaceholder(syncText, syncStyle)
+                else Text(text = syncText, style = syncStyle)
             }
             val resyncDescription = stringResource(R.string.metadata_musicbrainz_resync)
             val expandDescription = stringResource(R.string.metadata_info_and_community_title)
@@ -188,11 +194,19 @@ fun InfoAndCommunity(
                     }
                     .padding(bottom = 8.dp)
             ) {
-                RatingBar(rating, ratingVotes)
-                if (rating != null)
-                    Spacer(modifier = Modifier.padding(horizontal = 20.dp))
-
-                InfoBar(year, countryCode)
+                if (forceShimmer) {
+                    if (rating != null && rating != 0f) {
+                        CommunityPlaceholder(Modifier.padding(vertical = 8.dp).width(if ((ratingVotes ?: 0) > 0) 80.dp else 44.dp).height(16.dp))
+                    }
+                    if (rating != null) Spacer(Modifier.padding(horizontal = 20.dp))
+                    if (year != null) {
+                        CommunityPlaceholder(Modifier.padding(vertical = 8.dp).width(if (countryCode == null) 48.dp else 65.dp).height(16.dp))
+                    }
+                } else {
+                    RatingBar(rating, ratingVotes)
+                    if (rating != null) Spacer(Modifier.padding(horizontal = 20.dp))
+                    InfoBar(year, countryCode)
+                }
             }
 
             AnimatedVisibility(readMore && !keywords.isNullOrEmpty()) {
@@ -206,7 +220,7 @@ fun InfoAndCommunity(
                         style = typography().xs.semiBold
                     )
 
-                    KeywordChips(keywords)
+                    KeywordChips(keywords, isLoading = isLoading)
                 }
             }
 
@@ -220,7 +234,13 @@ fun InfoAndCommunity(
                         color = colorPalette().text,
                         style = typography().xs.semiBold
                     )
-                    ExternalLinksSection(links)
+                    if (forceShimmer) {
+                        Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            links.orEmpty().filter { it.platform.isNotBlank() }.forEach { _ ->
+                                CommunityPlaceholder(Modifier.size(20.dp))
+                            }
+                        }
+                    } else ExternalLinksSection(links)
                 }
             }
 
@@ -249,7 +269,13 @@ fun InfoAndCommunity(
                                     .align(Alignment.Top)
                             )
 
-                            BasicText(
+                            if (forceShimmer) {
+                                MeasuredMetadataPlaceholder(
+                                    translatedBio ?: description,
+                                    typography().xxs.secondary.align(TextAlign.Justify),
+                                    Modifier.padding(horizontal = 8.dp).weight(1f),
+                                )
+                            } else BasicText(
                                 text = translatedBio ?: description,
                                 style = typography().xxs.secondary.align(TextAlign.Justify),
                                 modifier = Modifier
@@ -297,4 +323,9 @@ fun InfoAndCommunity(
             )
         }
     }
+}
+
+@Composable
+private fun CommunityPlaceholder(modifier: Modifier) {
+    Spacer(modifier.clip(uiRoundnessShape()).shimmerEffect())
 }

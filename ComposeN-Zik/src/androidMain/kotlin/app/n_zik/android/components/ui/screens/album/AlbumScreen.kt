@@ -107,7 +107,13 @@ import app.n_zik.android.ui.components.themed.Enqueue
 import app.n_zik.android.components.ui.HeaderIconAction
 import app.n_zik.android.components.ui.CollectionButtonToolbar
 import app.n_zik.android.ui.components.themed.ItemsList
-import app.n_zik.android.components.ui.FullPageLoader
+import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
+import app.n_zik.android.ui.components.themed.HeaderIconButton
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
+import app.n_zik.android.ui.items.SongItemPlaceholder
+import app.n_zik.android.ui.items.SongItemPlaceholders
 import app.n_zik.android.ui.components.themed.MultiFloatingActionsContainer
 import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
@@ -186,6 +192,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.CancellationException
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.player.addNextOffMain
 import app.n_zik.android.utils.player.enqueueOffMain
@@ -194,6 +201,35 @@ import app.n_zik.android.ui.components.SwipeablePlaylistItem
 import timber.log.Timber
 
 private const val ALBUM_INSIGHTS_ROUTE = "albumInsights"
+
+@Composable
+internal fun AlbumSongsPageStatus(loadedSongsCount: Int, loading: Boolean, loadFailed: Boolean) {
+    CollectionPageStatus {
+        if (loading) {
+            Column(Modifier.align(Alignment.TopCenter), horizontalAlignment = Alignment.CenterHorizontally) {
+                SongItemPlaceholders(count = 4, showThumbnail = false)
+                if (loadedSongsCount > 0) {
+                    Spacer(Modifier.height(8.dp))
+                    BasicText(
+                        text = pluralStringResource(R.plurals.album_loading_song_count, loadedSongsCount, loadedSongsCount),
+                        style = typography().xxs.copy(color = colorPalette().textDisabled),
+                    )
+                }
+            }
+        } else {
+            val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(LocalContext.current)
+            val offlineMode by OfflineMode.rememberEnabled()
+            BasicText(
+                text = stringResource(when {
+                    !loadFailed -> R.string.common_empty_items
+                    offlineMode || !isOnline -> R.string.common_load_failed_no_connection
+                    else -> R.string.common_load_failed
+                }),
+                style = typography().s.copy(color = colorPalette().textSecondary),
+            )
+        }
+    }
+}
 
 @OptIn(UnstableApi::class, ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 @ExperimentalTextApi
@@ -227,21 +263,22 @@ fun AlbumScreen(
 
     var alternatives by persistList<Innertube.AlbumItem>("album/$browseId/alternatives")
     var description by rememberSaveable { mutableStateOf("") }
-    var loadedSongsCount by remember { mutableIntStateOf(0) }
-    LaunchedEffect(Unit) {
+    var loadedSongsCount by remember(browseId) { mutableIntStateOf(0) }
+    var songLoadResult by remember(browseId, preview) { mutableStateOf<Result<Unit>?>(null) }
+    LaunchedEffect(browseId, preview) {
         if (preview != null) return@LaunchedEffect
         val cleanedBrowseId = browseId.removePrefix(MODIFIED_PREFIX)
 
-        withContext(NzikDispatchers.DATA) {
+        songLoadResult = withContext(NzikDispatchers.DATA) {
             YtMusic.getAlbum(cleanedBrowseId, true, onProgress = { count ->
                 launch(NzikDispatchers.UI) { loadedSongsCount = count }
             })
         }
-            .onSuccess { online ->
+            .mapCatching { online ->
                 val onlineAlbum = online.album
                 val authorsText: String? = onlineAlbum.authors.artistEntryNames().joinToString(", ")
 
-                Database.asyncTransaction {
+                Database.awaitWriteBatch {
                     transaction {
                         val now = System.currentTimeMillis()
                         val inserted = albumTable.insertMetadata(
@@ -300,6 +337,10 @@ fun AlbumScreen(
 
                 alternatives = online.otherVersions
                 description = online.description ?: ""
+            }
+            .onFailure { error ->
+                if (error is CancellationException) throw error
+                Timber.tag("AlbumScreen").w(error, "Unable to load album tracks")
             }
     }
 
@@ -415,6 +456,8 @@ fun AlbumScreen(
                         alternatives = alternatives,
                         description = description,
                         loadedSongsCount = loadedSongsCount,
+                        songsLoading = preview == null && songLoadResult == null,
+                        songsLoadFailed = songLoadResult?.isFailure == true,
                         mbSyncing = mbSyncing,
                         onMbSyncingChange = { mbSyncing = it },
                         mbPausedSeconds = mbPausedSeconds,
@@ -458,7 +501,9 @@ fun AlbumDetails(
     mbPausedSeconds: Long = 0,
     onMbPausedSecondsChange: (Long) -> Unit = {},
     onSearchClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    songsLoading: Boolean = false,
+    songsLoadFailed: Boolean = false,
 ) {
     PersistMapCleanup("album/$browseId/songs")
 
@@ -483,6 +528,8 @@ fun AlbumDetails(
     val items = remember(rawItems, parentalControlEnabled) {
         rawItems.filter { !parentalControlEnabled || it.title.startsWith(EXPLICIT_PREFIX, true) != true }
     }
+    val forceSongPlaceholders = forceLoadingShimmerPreview()
+    val initialSongsLoading = songsLoading && items.isEmpty()
 
     val itemSelector = ItemSelector<Song>()
 
@@ -582,27 +629,18 @@ fun AlbumDetails(
 
     val floatingBackdrop = rememberGlassFloatingActionBackdrop()
 
-    DynamicOrientationLayout(thumbnailPainter, thumbnailContentPadding = rememberPageChromeContentPadding()) {
+    DynamicOrientationLayout(
+        thumbnailPainter,
+        thumbnailContentPadding = rememberPageChromeContentPadding(),
+        isLoading = initialSongsLoading,
+    ) {
         Box(
             Modifier.fillMaxSize()
                 .background(colorPalette().background0),
             contentAlignment = Alignment.Center
         ) {
-            if (items.isEmpty()) {
-                CollectionPageStatus {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        FullPageLoader()
-                        if (loadedSongsCount > 0) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            BasicText(
-                                text = pluralStringResource(R.plurals.album_loading_song_count, loadedSongsCount, loadedSongsCount),
-                                style = typography().xxs.copy(
-                                    color = colorPalette().textDisabled
-                                )
-                            )
-                        }
-                    }
-                }
+            if (items.isEmpty() && !initialSongsLoading) {
+                AlbumSongsPageStatus(loadedSongsCount, forceSongPlaceholders, songsLoadFailed)
             } else {
                 val albumSongIds = remember(items) { items.map { it.id } }
                 val likeStatesMap by remember(albumSongIds) {
@@ -641,8 +679,22 @@ fun AlbumDetails(
                             .background(colorPalette().background0)
                     ) {
                         item("header") {
-                            CollectionArtworkHeader(album?.title ?: "...", thumbnailPainter, disableScrollingText) {
-                                HeaderIconAction(
+                            CollectionArtworkHeader(
+                                album?.title ?: "...",
+                                thumbnailPainter,
+                                disableScrollingText,
+                                isLoading = initialSongsLoading,
+                                fullWidthTitleShimmer = true,
+                            ) {
+                                if (initialSongsLoading && album?.shareUrl == null) {
+                                    HeaderIconButton(
+                                        icon = R.drawable.share_social,
+                                        color = colorPalette().textDisabled,
+                                        iconSize = 24.dp,
+                                        enabled = false,
+                                        onClick = {},
+                                    )
+                                } else HeaderIconAction(
                                     icon = R.drawable.share_social,
                                     color = colorPalette().text,
                                     iconSize = 24.dp,
@@ -673,23 +725,34 @@ fun AlbumDetails(
                                     durationTextToMillis(it.durationText ?: "")
                                 })
 
-                                BasicText(
-                                    text = pluralStringResource(
-                                        R.plurals.library_song_count_with_duration,
-                                        items.size,
-                                        items.size,
-                                        totalDuration,
-                                    ),
-                                    style = typography().xs.medium,
-                                    maxLines = 1
+                                val summary = pluralStringResource(
+                                    R.plurals.library_song_count_with_duration, items.size, items.size, totalDuration,
                                 )
+                                val style = typography().xs.medium
+                                if (initialSongsLoading) BasicText(
+                                    if (loadedSongsCount > 0) {
+                                        pluralStringResource(R.plurals.album_loading_song_count, loadedSongsCount, loadedSongsCount)
+                                    } else stringResource(R.string.common_loading_message),
+                                    style = style.copy(color = colorPalette().textSecondary),
+                                    maxLines = 1,
+                                )
+                                else if (forceSongPlaceholders) MeasuredMetadataPlaceholder(summary, style, maxLines = 1)
+                                else BasicText(summary, style = style, maxLines = 1)
                             }
                         }
 
                         item("action_buttons") {
                             CollectionButtonToolbar(
                                 modifier = Modifier.padding(top = 8.dp),
-                                bookmark = { bookmark.ToolBarButton() },
+                                bookmark = {
+                                    if (initialSongsLoading && album == null) TabToolBar.Icon(
+                                        icon = bookmark.icon,
+                                        tint = colorPalette().textDisabled,
+                                        enabled = false,
+                                        onClick = {},
+                                    )
+                                    else bookmark.ToolBarButton()
+                                },
                                 originalNativeBookmarkWidth = 48.dp,
                                 buttons = listOf(
                                     downloadALlDialog,
@@ -705,10 +768,11 @@ fun AlbumDetails(
                                     enqueue,
                                     addToPlaylist,
                                 ),
+                                enabled = !initialSongsLoading,
                             )
                         }
 
-                        item("info_and_community") {
+                        if (!initialSongsLoading) item("info_and_community") {
                             InfoAndCommunity(
                                 rating = album?.rating,
                                 ratingVotes = album?.ratingVotes,
@@ -716,40 +780,40 @@ fun AlbumDetails(
                                 countryCode = null,
                                 keywords = album?.keywords,
                                 links = album?.links,
-                        bio = album?.wikipediaInfo ?: description,
-                        translate = translate,
-                        translator = translator,
-                        languageDestination = languageDestination,
-                        lastSyncAt = album?.mbLastFetch,
-                        lastSyncFailed = album?.mbLastFetch != null && album?.genres == null,
-                        pausedForSeconds = mbPausedSeconds,
-                        isSyncing = mbSyncing,
-                        onResyncClick = {
-                            album?.id?.let { id ->
-                                coroutineScope.launch(NzikDispatchers.DATA) {
-                                    onMbSyncingChange(true)
-                                    try {
-                                        val success = MBMetadataHelper.Default.onAlbumViewed(id, force = true)
-                                        val paused = MBMetadataHelper.Default.circuitOpenRemainingSeconds()
-                                        onMbPausedSecondsChange(paused)
-                                        when {
-                                            success -> Toaster.s(R.string.metadata_musicbrainz_resync_success)
-                                            paused > 0 -> Toaster.e(
-                                                appTextResources().getString(R.string.metadata_musicbrainz_resync_paused, (paused / 60).coerceAtLeast(1))
-                                            )
-                                            else -> Toaster.e(R.string.metadata_musicbrainz_resync_error)
+                                bio = album?.wikipediaInfo ?: description,
+                                translate = translate,
+                                translator = translator,
+                                languageDestination = languageDestination,
+                                lastSyncAt = album?.mbLastFetch,
+                                lastSyncFailed = album?.mbLastFetch != null && album?.genres == null,
+                                pausedForSeconds = mbPausedSeconds,
+                                isSyncing = mbSyncing,
+                                onResyncClick = {
+                                    album?.id?.let { id ->
+                                        coroutineScope.launch(NzikDispatchers.DATA) {
+                                            onMbSyncingChange(true)
+                                            try {
+                                                val success = MBMetadataHelper.Default.onAlbumViewed(id, force = true)
+                                                val paused = MBMetadataHelper.Default.circuitOpenRemainingSeconds()
+                                                onMbPausedSecondsChange(paused)
+                                                when {
+                                                    success -> Toaster.s(R.string.metadata_musicbrainz_resync_success)
+                                                    paused > 0 -> Toaster.e(
+                                                        appTextResources().getString(R.string.metadata_musicbrainz_resync_paused, (paused / 60).coerceAtLeast(1))
+                                                    )
+                                                    else -> Toaster.e(R.string.metadata_musicbrainz_resync_error)
+                                                }
+                                            } finally {
+                                                onMbSyncingChange(false)
+                                            }
                                         }
-                                    } finally {
-                                        onMbSyncingChange(false)
                                     }
+                                },
+                                onInsightsClick = {
+                                    navController.navigate("$ALBUM_INSIGHTS_ROUTE/$browseId")
                                 }
-                            }
-                        },
-                        onInsightsClick = {
-                            navController.navigate("$ALBUM_INSIGHTS_ROUTE/$browseId")
+                            )
                         }
-                    )
-                }
 
                         item("songsTitle") {
                             BasicText(
@@ -759,10 +823,20 @@ fun AlbumDetails(
                             )
                         }
 
-                        itemsIndexed(
+                        if (initialSongsLoading) item("album-songs-preview") {
+                            SongItemPlaceholders(count = 4, showThumbnail = false)
+                        } else itemsIndexed(
                             items = items,
                             key = { _, song -> song.id }
                         ) { index, song ->
+                            if (forceSongPlaceholders) {
+                                SongItemPlaceholder(
+                                    trackNumber = index + 1,
+                                    title = song.cleanTitle(),
+                                    artist = song.cleanArtistsText(),
+                                )
+                                return@itemsIndexed
+                            }
 
                             SwipeablePlaylistItem(
                                 mediaItem = song.asMediaItem,
@@ -827,14 +901,10 @@ fun AlbumDetails(
                                 ItemsList(
                                     tag = "album/$browseId/alternatives_list",
                                     headerContent = {},
-                                    initialPlaceholderCount = 1,
+                                    initialPlaceholderCount = alternatives.size,
                                     continuationPlaceholderCount = 1,
                                     emptyItemsText = stringResource(R.string.album_no_alternative_version),
-                                    itemsPageProvider = {
-                                        Result.success(
-                                            Innertube.ItemsPage(alternatives, null)
-                                        )
-                                    },
+                                    knownItems = alternatives,
                                     itemContent = { album ->
                                         AlbumItem(
                                             alternative = true,
@@ -860,8 +930,15 @@ fun AlbumDetails(
                                             disableScrollingText = disableScrollingText
                                         )
                                     },
-                                    itemPlaceholderContent = {
-                                        AlbumItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
+                                    itemPlaceholderContent = { index ->
+                                        val alternative = alternatives.getOrNull(index)
+                                        AlbumItemPlaceholder(
+                                            thumbnailSizeDp = thumbnailAlbumSizeDp,
+                                            alternative = true,
+                                            metadataLines = if (alternative?.year.isNullOrBlank()) 0 else 1,
+                                            title = alternative?.info?.name?.let(::cleanPrefix),
+                                            metadata = alternative?.year?.let(::listOf),
+                                        )
                                     }
                                 )
                             }
@@ -870,7 +947,7 @@ fun AlbumDetails(
 
                 GlassFloatingActions(floatingBackdrop) {
                     val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
-                    if (showFloatingIcon)
+                    if (showFloatingIcon && !initialSongsLoading)
                         MultiFloatingActionsContainer(
                             // Issue #866 (gh-866): app-wide shuffle confirmation flash (the click
                             // goes through SongShuffler, which triggers the flash).

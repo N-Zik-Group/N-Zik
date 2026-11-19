@@ -6,6 +6,7 @@ import app.n_zik.android.components.podcast.PodcastBookmarkAction
 import app.n_zik.android.components.podcast.PodcastEmptyEpisodes
 import app.n_zik.android.components.podcast.PodcastLoadingStatus
 import app.n_zik.android.components.podcast.PodcastPageLoader
+import app.n_zik.android.components.podcast.podcastEpisodeLoadingLabel
 import app.n_zik.android.components.podcast.PodcastPageStatus
 import androidx.compose.foundation.layout.PaddingValues
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
@@ -24,6 +25,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -97,6 +99,11 @@ import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
 import app.n_zik.android.components.ui.screens.LayoutWithAdaptiveThumbnail
 import app.n_zik.android.ui.components.themed.PlaylistsItemMenu
 import app.n_zik.android.components.SongItem
+import app.n_zik.android.ui.components.ArtworkShimmerPlaceholder
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
+import app.n_zik.android.ui.items.FullSongListPlaceholderCount
+import app.n_zik.android.ui.items.SongItemPlaceholder
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
 import app.n_zik.android.components.search.UnifiedSearchBar
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.ui.styling.Dimensions
@@ -227,6 +234,9 @@ fun Podcast(
     }
 
     val lazyListState = rememberLazyListState()
+    val forceShimmer = forceLoadingShimmerPreview()
+    val initialLoading = podcastPage == null && podcastLoadState.status == PodcastPageStatus.Loading
+    val showShimmer = initialLoading || forceShimmer
 
     LayoutWithAdaptiveThumbnail(
         thumbnailContent = thumbnailContent,
@@ -260,7 +270,7 @@ fun Podcast(
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            if (podcastPage == null) {
+            if (podcastPage == null && !initialLoading) {
                 PodcastLoadingStatus(
                     status = podcastLoadState.status,
                     isOnline = isOnline,
@@ -281,88 +291,78 @@ fun Podcast(
                         key = "header"
                     ) {
 
-                    val modifierArt = if (isLandscape) Modifier.fillMaxWidth() else Modifier.fillMaxWidth().aspectRatio(4f / 3)
-
-                    GlassArtworkBackdrop(hasArtwork = !isLandscape && podcastPage != null) { artworkBackdrop ->
-                    Box(
-                        modifier = modifierArt
-                    ) {
-                        if (podcastPage != null) {
-                            if(!isLandscape)
-                                ImageCacheFactory.AsyncImage(
-                                    shape = null,
-                                    thumbnailUrl = podcastPage?.thumbnail?.firstOrNull()?.url?.resize(1000, 1000),
-                                    contentDescription = stringResource(R.string.accessibility_loading),
-                                    modifier = Modifier.then(artworkBackdrop)
-                                        .fillMaxWidth()
-                                        .align(Alignment.Center)
-                                        .fadingEdge(
-                                            top = WindowInsets.systemBars
-                                                .asPaddingValues()
-                                                .calculateTopPadding() + Dimensions.fadeSpacingTop,
-                                            bottom = Dimensions.fadeSpacingBottom
-                                        )
-                                )
-
+                    val titleStyle = typography().l.semiBold
+                    val summaryStyle = typography().xs.medium
+                    val episodeCount = podcastPage?.listEpisode.orEmpty().size
+                    val summary = pluralStringResource(
+                        R.plurals.podcast_episode_count_with_duration,
+                        episodeCount, episodeCount, formatAsTime(totalPlayTimes),
+                    )
+                    val artworkModifier = if (isLandscape) Modifier.fillMaxWidth()
+                        else Modifier.fillMaxWidth().aspectRatio(4f / 3f)
+                    GlassArtworkBackdrop(hasArtwork = !isLandscape && !showShimmer) { artworkBackdrop ->
+                        Box(artworkModifier) {
+                            if (!isLandscape) {
+                                val imageModifier = Modifier.then(artworkBackdrop).fillMaxWidth()
+                                    .align(Alignment.Center)
+                                    .fadingEdge(
+                                        top = WindowInsets.systemBars.asPaddingValues().calculateTopPadding() + Dimensions.fadeSpacingTop,
+                                        bottom = Dimensions.fadeSpacingBottom,
+                                    )
+                                if (showShimmer) {
+                                    ArtworkShimmerPlaceholder(imageModifier, aspectRatio = 4f / 3f)
+                                } else {
+                                    ImageCacheFactory.AsyncImage(
+                                        shape = null, thumbnailUrl = podcastPage?.thumbnail?.firstOrNull()?.url?.resize(1000, 1000),
+                                        contentDescription = stringResource(R.string.accessibility_loading),
+                                        modifier = imageModifier,
+                                    )
+                                }
+                            }
                             AutoResizeText(
-                                text = podcastPage?.title ?: "",
-                                style = typography().l.semiBold,
+                                text = podcastPage?.title ?: stringResource(R.string.podcast_title),
+                                style = titleStyle,
                                 fontSizeRange = FontSizeRange(32.sp, 38.sp),
-                                fontWeight = typography().l.semiBold.fontWeight,
-                                fontFamily = typography().l.semiBold.fontFamily,
-                                color = typography().l.semiBold.color,
+                                fontWeight = titleStyle.fontWeight,
+                                fontFamily = titleStyle.fontFamily,
+                                color = titleStyle.color,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                                    .padding(horizontal = 30.dp)
-                                    .padding(bottom = 20.dp)
+                                shimmer = showShimmer,
+                                modifier = Modifier.align(Alignment.BottomCenter)
+                                    .padding(horizontal = 30.dp).padding(bottom = 20.dp),
                             )
-
-                            val episodeCount = podcastPage?.listEpisode.orEmpty().size
-                            BasicText(
-                                text = pluralStringResource(
-                                    R.plurals.podcast_episode_count_with_duration,
-                                    episodeCount,
-                                    episodeCount,
-                                    formatAsTime(totalPlayTimes),
-                                ),
-                                style = typography().xs.medium,
-                                maxLines = 1,
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                            )
-
-
+                            val summaryModifier = Modifier.align(Alignment.BottomCenter)
+                            if (initialLoading) {
+                                BasicText(
+                                    podcastEpisodeLoadingLabel(podcastLoadState.loadedEpisodeCount),
+                                    style = summaryStyle.copy(color = colorPalette().textSecondary),
+                                    maxLines = 1,
+                                    modifier = summaryModifier,
+                                )
+                            } else if (forceShimmer) {
+                                MeasuredMetadataPlaceholder(summary, summaryStyle, summaryModifier, maxLines = 1)
+                            } else {
+                                BasicText(summary, style = summaryStyle, maxLines = 1, modifier = summaryModifier)
+                            }
                             GlassToolbarRow(
                                 actionCount = 1,
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(top = 5.dp, end= 5.dp),
+                                modifier = Modifier.align(Alignment.TopEnd).padding(top = 5.dp, end = 5.dp),
                             ) {
                                 HeaderIconButton(
                                     icon = R.drawable.share_social,
                                     color = colorPalette().text,
                                     iconSize = 24.dp,
                                     onClick = {
-                                        (ExternalUris.youtubeMusicPlaylist(browseId.removePrefix(MODIFIED_PREFIX).removePrefix("VL"))).let { url ->
-                                            val sendIntent = Intent().apply {
-                                                action = Intent.ACTION_SEND
-                                                type = "text/plain"
-                                                putExtra(Intent.EXTRA_TEXT, url)
-                                            }
-
-                                            context.startActivity(Intent.createChooser(sendIntent, null))
-                                        }
-                                    }
+                                        val url = ExternalUris.youtubeMusicPlaylist(browseId.removePrefix(MODIFIED_PREFIX).removePrefix("VL"))
+                                        val intent = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, url)
+                                        context.startActivity(Intent.createChooser(intent, null))
+                                    },
                                 )
                             }
-
                         }
                     }
-                    }
-
                 }
 
                 item(
@@ -616,7 +616,20 @@ fun Podcast(
                                 },
                             )
                             CollectionToolbar(bookmark = bookmarkAction, actions = toolbarActions)
-
+                        } else {
+                            val actionIcons = listOf(
+                                R.drawable.search_circle,
+                                R.drawable.download,
+                                R.drawable.downloaded,
+                                R.drawable.enqueue,
+                                shuffleButtonIcon(),
+                                radioButtonIcon(),
+                                R.drawable.add_in_playlist,
+                            )
+                            CollectionToolbar(
+                                bookmark = { DisabledPodcastAction(R.drawable.bookmark_outline) },
+                                actions = actionIcons.map { icon -> @Composable { DisabledPodcastAction(icon) } },
+                            )
                         }
                     }
                     Row (
@@ -680,20 +693,26 @@ fun Podcast(
                     }
                 }
 
-                itemsIndexed(
-                    items = podcastPage?.listEpisode?.filter {item ->
-                        if (!filter.isNullOrBlank()) {
-                            item.asMediaItem.mediaMetadata.title?.contains(
-                                filterCharSequence,
-                                true
-                            ) ?: false
-                                    || item.asMediaItem.mediaMetadata.artist?.contains(
-                                filterCharSequence,
-                                true
-                            ) ?: false
-                        } else true
-                    } ?: emptyList())
-                { index, song ->
+                val episodes = podcastPage?.listEpisode.orEmpty()
+                if (initialLoading && episodes.isEmpty()) {
+                    items(FullSongListPlaceholderCount, key = { "episode-loading-$it" }) {
+                        SongItemPlaceholder()
+                    }
+                }
+                val seenEpisodeIds = HashSet<String>()
+                val visibleEpisodes = episodes.mapIndexedNotNull { index, episode ->
+                    val key = if (seenEpisodeIds.add(episode.videoId)) "episode-id-${episode.videoId}"
+                        else "episode-repeat-$index"
+                    val matches = filter.isNullOrBlank() ||
+                        episode.title.contains(filterCharSequence, ignoreCase = true) ||
+                        episode.author.toString().contains(filterCharSequence, ignoreCase = true)
+                    if (matches) key to episode else null
+                }
+                itemsIndexed(items = visibleEpisodes, key = { _, (key, _) -> key }) { index, (_, song) ->
+                    if (showShimmer) {
+                        SongItemPlaceholder(title = song.title, artist = song.author)
+                        return@itemsIndexed
+                    }
                     val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
                     downloadState = getDownloadState(song.asMediaItem.mediaId)
                     val isDownloaded = if (!isLocal) isDownloadedSong(song.asMediaItem.mediaId) else true
@@ -773,9 +792,14 @@ fun Podcast(
     }
 }
 
-
-
-
-
-
-
+@Composable
+private fun DisabledPodcastAction(icon: Int) {
+    HeaderIconButton(
+        icon = icon,
+        color = colorPalette().textDisabled,
+        enabled = false,
+        iconSize = if (icon == R.drawable.search_circle) 24.dp else 20.dp,
+        modifier = Modifier.padding(horizontal = 5.dp),
+        onClick = {},
+    )
+}

@@ -28,11 +28,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -42,6 +44,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -79,19 +87,28 @@ import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.components.navigation.Skeleton
 import app.n_zik.android.ui.components.SwipeablePlaylistItem
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.ui.components.themed.Enqueue
 import app.n_zik.android.components.ui.HeaderIconAction
 import app.n_zik.android.components.ui.CollectionButtonToolbar
-import app.n_zik.android.components.ui.FullPageLoader
+import app.n_zik.android.components.ui.CollectionToolbar
 import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.ui.items.AlbumItem
+import app.n_zik.android.ui.items.AlbumItemPlaceholder
 import app.n_zik.android.ui.items.ArtistItem
+import app.n_zik.android.ui.items.ArtistItemPlaceholder
 import app.n_zik.android.ui.items.PlaylistItem
+import app.n_zik.android.ui.items.PlaylistItemPlaceholder
+import app.n_zik.android.ui.items.SongItemPlaceholder
+import app.n_zik.android.ui.items.SongItemPlaceholders
 import app.n_zik.android.ui.items.VideoItem
+import app.n_zik.android.ui.items.VideoItemPlaceholder
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.px
 import app.n_zik.android.ui.screens.artist.ArtistLocalSongs
@@ -128,6 +145,9 @@ import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.shuffleButtonIconRes
 import app.n_zik.android.components.artist.FollowButton
+import app.n_zik.android.components.artist.ArtistFollowButton
+import app.n_zik.android.components.tab.SongShuffler
+import app.n_zik.android.ui.components.themed.HeaderIconButton
 import app.n_zik.android.components.artist.artistStatisticsText
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
@@ -141,7 +161,7 @@ import app.n_zik.android.components.tab.Radio
 import app.n_zik.android.components.ui.screens.DynamicOrientationLayout
 import app.n_zik.android.components.ui.screens.album.Translate
 import app.n_zik.android.core.coil.ImageCacheFactory
-import app.n_zik.android.components.OfflineAwareLoader
+import app.n_zik.android.components.OfflineContent
 import app.n_zik.android.components.ui.InlineCircularLoader
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.LikeStateManager
@@ -205,9 +225,12 @@ fun ArtistScreen(
     val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Fade)
     val playerPosition by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
 
-    var selectedTabIndex by remember { mutableStateOf(0) }
+    var selectedTabIndex by rememberSaveable(browseId) { mutableStateOf(0) }
 
-    var localArtist: Artist? by remember { mutableStateOf(null) }
+    val retained: ArtistScreenData = if (preview == null) viewModel(key = "artist:$browseId", factory = ArtistScreenData.Factory)
+    else remember(preview) { ArtistScreenData() }
+    var localArtist by retained.localArtist
+    var localArtistResolved by retained.localArtistResolved
     var mbSyncing by remember { mutableStateOf(false) }
     var mbPausedSeconds by remember { mutableStateOf(0L) }
     LaunchedEffect(Unit) {
@@ -216,12 +239,17 @@ fun ArtistScreen(
             .findById(browseId)
             .flowOn(NzikDispatchers.DATA)
             .distinctUntilChanged()
-            .collect { localArtist = it }
+            .collect {
+                localArtist = it
+                localArtistResolved = true
+            }
     }
 
-    var artistPage: ArtistPage? by remember(preview) {
-        mutableStateOf(preview?.let { app.n_zik.android.components.settings.appearance.preview.themePreviewArtistPage() })
+    var fetchedPage by retained.artistPage
+    val previewPage = remember(preview) {
+        preview?.let { app.n_zik.android.components.settings.appearance.preview.themePreviewArtistPage() }
     }
+    val artistPage = fetchedPage ?: previewPage
 
     val context = LocalContext.current
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
@@ -233,80 +261,89 @@ fun ArtistScreen(
         if (offlineMode && selectedTabIndex != 1) selectedTabIndex = 1
     }
 
-    val scope = rememberCoroutineScope()
+    var artistFetchInProgress by retained.fetching
+    var artistFetchFailed by retained.failed
 
     fun fetchArtistPage() {
-        scope.launch {
-            withContext(NzikDispatchers.DATA) {
-                YtMusic.getArtistPage(browseId.removePrefix(MODIFIED_PREFIX))
-            }
-                .onSuccess { online ->
-                    artistPage = online
+        if (artistFetchInProgress) return
+        artistFetchInProgress = true
+        artistFetchFailed = false
+        retained.viewModelScope.launch {
+            try {
+                withContext(NzikDispatchers.DATA) {
+                    YtMusic.getArtistPage(browseId.removePrefix(MODIFIED_PREFIX))
+                }
+                    .onSuccess { online ->
+                        fetchedPage = online
 
-                    Database.asyncTransaction {
-                        transaction {
-                            val now = System.currentTimeMillis()
-                            val inserted = artistTable.insertMetadata(
-                                id = browseId,
-                                name = online.artist.title,
-                                thumbnailUrl = online.artist.thumbnail?.url,
-                                timestamp = now,
-                                isYoutubeArtist = false,
-                                position = -1
-                            )
-                            if (inserted == -1L) {
-                                val current = artistTable.findByIdDirect(browseId)
-                                artistTable.updateMetadata(
+                        Database.asyncTransaction {
+                            transaction {
+                                val now = System.currentTimeMillis()
+                                val inserted = artistTable.insertMetadata(
                                     id = browseId,
-                                    name = PropUtils.retainIfModified(current?.name, online.artist.title),
-                                    thumbnailUrl = PropUtils.retainIfModified(current?.thumbnailUrl, online.artist.thumbnail?.url),
-                                    isYoutubeArtist = current?.isYoutubeArtist == true,
-                                    position = current?.position ?: -1
+                                    name = online.artist.title,
+                                    thumbnailUrl = online.artist.thumbnail?.url,
+                                    timestamp = now,
+                                    isYoutubeArtist = false,
+                                    position = -1
                                 )
-                            }
-
-                            online.sections
-                                .fastFirstOrNull { section ->
-                                    section.items.fastAll { it is Innertube.SongItem }
+                                if (inserted == -1L) {
+                                    val current = artistTable.findByIdDirect(browseId)
+                                    artistTable.updateMetadata(
+                                        id = browseId,
+                                        name = PropUtils.retainIfModified(current?.name, online.artist.title),
+                                        thumbnailUrl = PropUtils.retainIfModified(current?.thumbnailUrl, online.artist.thumbnail?.url),
+                                        isYoutubeArtist = current?.isYoutubeArtist == true,
+                                        position = current?.position ?: -1
+                                    )
                                 }
-                                ?.items
-                                ?.map { (it as Innertube.SongItem).asMediaItem }
-                                ?.also {
-                                    artistTable.findByIdDirect(browseId)?.let { artist -> mapIgnore(artist, *it.toTypedArray()) }
-                                }
 
-                            // Store the YouTube description so the Insights page can reuse it
-                            // as a bio fallback without refetching the artist page.
-                            val ytDescription = online.description?.takeIf { it.isNotBlank() }
-                            if (ytDescription != null) {
-                                artistTable.findByIdDirect(browseId)?.let { current ->
-                                    if (current.description != ytDescription) {
-                                        artistTable.update(current.copy(description = ytDescription))
+                                online.sections
+                                    .fastFirstOrNull { section ->
+                                        section.items.fastAll { it is Innertube.SongItem }
+                                    }
+                                    ?.items
+                                    ?.map { (it as Innertube.SongItem).asMediaItem }
+                                    ?.also {
+                                        artistTable.findByIdDirect(browseId)?.let { artist -> mapIgnore(artist, *it.toTypedArray()) }
+                                    }
+
+                                // Store the YouTube description so the Insights page can reuse it
+                                // as a bio fallback without refetching the artist page.
+                                val ytDescription = online.description?.takeIf { it.isNotBlank() }
+                                if (ytDescription != null) {
+                                    artistTable.findByIdDirect(browseId)?.let { current ->
+                                        if (current.description != ytDescription) {
+                                            artistTable.update(current.copy(description = ytDescription))
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    val itemsToFetch = online.sections.flatMap { it.items }
-                        .filter { (it is Innertube.VideoItem && it.durationText == null) || (it is Innertube.SongItem && it.durationText == null) }
-                        .map { it.key }
-                        .distinct()
+                        val itemsToFetch = online.sections.flatMap { it.items }
+                            .filter { (it is Innertube.VideoItem && it.durationText == null) || (it is Innertube.SongItem && it.durationText == null) }
+                            .map { it.key }
+                            .distinct()
 
-                    if (itemsToFetch.isNotEmpty()) {
-                        Innertube.queue(videoIds = itemsToFetch)?.onSuccess { queueItems ->
-                            val durationsMap = queueItems?.associate { it.key to it.durationText } ?: emptyMap()
-                            artistPage = artistPage?.withUpdatedVideoDurations(durationsMap)
+                        if (itemsToFetch.isNotEmpty()) {
+                            Innertube.queue(videoIds = itemsToFetch)?.onSuccess { queueItems ->
+                                val durationsMap = queueItems?.associate { it.key to it.durationText } ?: emptyMap()
+                                fetchedPage = fetchedPage?.withUpdatedVideoDurations(durationsMap)
+                            }
                         }
                     }
-                }
+                    .onFailure { artistFetchFailed = true }
+            } finally {
+                artistFetchInProgress = false
+            }
         }
     }
 
     // Refetch when full offline mode turns off (overview becomes visible again);
     // never triggers while the mode is on.
-    LaunchedEffect(offlineMode) {
-        if (preview == null && !offlineMode) fetchArtistPage()
+    LaunchedEffect(offlineMode, isOnline) {
+        if (preview == null && !offlineMode && isOnline && fetchedPage == null) fetchArtistPage()
     }
 
     LaunchedEffect(localArtist?.id) {
@@ -354,33 +391,129 @@ fun ArtistScreen(
         val contentPadding = rememberPageChromeContentPadding(
             PaddingValues(bottom = Dimensions.bottomSpacer), topContentInset
         )
-        // Full offline mode: the overview (online data) tab is removed, so the
-        // content is always the local library tab regardless of the raw index.
-        when (artistScreenTabIndex(offlineMode, currentTabIndex)) {
-            0 -> {
-                if (artistPage == null) {
-                    CollectionPageStatus(contentPadding) {
-                        OfflineAwareLoader(
-                            isOnline = isOnline,
-                            modifier = Modifier.fillMaxSize(),
-                            onReconnect = ::fetchArtistPage
+        saveableStateHolder.SaveableStateProvider(currentTabIndex) {
+            val listState = rememberLazyListState()
+            // Full offline mode: the overview (online data) tab is removed, so the
+            // content is always the local library tab regardless of the raw index.
+            when (artistScreenTabIndex(offlineMode, currentTabIndex)) {
+                0 -> {
+                    if (artistPage != null) {
+                        ArtistOverview(
+                            navController, localArtist, artistPage, thumbnailPainter,
+                            mbSyncing, { mbSyncing = it },
+                            mbPausedSeconds, { mbPausedSeconds = it }, contentPadding, listState
                         )
+                    } else if (!isOnline) {
+                        CollectionPageStatus(contentPadding) { OfflineContent() }
+                    } else if (artistFetchFailed) {
+                        CollectionPageStatus(contentPadding) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(stringResource(R.string.common_load_failed))
+                                TextButton(onClick = ::fetchArtistPage) {
+                                    Text(stringResource(R.string.common_action_retry))
+                                }
+                            }
+                        }
+                    } else {
+                        ArtistLoadingContent(localArtist?.name, thumbnailPainter, contentPadding, listState,
+                            overview = true, cachedArtist = localArtist)
                     }
+                }
+                1 -> {
+                    if (localArtist != null) {
+                        ArtistLocalSongs(navController, localArtist, artistPage, thumbnailPainter, retained.songs, contentPadding, listState)
+                    } else if (preview != null || (localArtistResolved && (offlineMode || !isOnline || artistFetchFailed))) {
+                        CollectionPageStatus(contentPadding) {
+                            Text(stringResource(R.string.artist_songs_unavailable_message))
+                        }
+                    } else {
+                        ArtistLoadingContent(artistPage?.artist?.title, thumbnailPainter, contentPadding, listState, overview = false)
+                    }
+                }
+            }
+        }
+    }
+}
+
+private class ArtistScreenData : ViewModel() {
+    val localArtist = mutableStateOf<Artist?>(null)
+    val localArtistResolved = mutableStateOf(false)
+    val artistPage = mutableStateOf<ArtistPage?>(null)
+    val songs = mutableStateOf<List<Song>?>(null)
+    val fetching = mutableStateOf(false)
+    val failed = mutableStateOf(false)
+
+    companion object {
+        val Factory = viewModelFactory { initializer { ArtistScreenData() } }
+    }
+}
+
+@androidx.annotation.OptIn(UnstableApi::class)
+@Composable
+private fun ArtistLoadingContent(
+    title: String?,
+    artwork: Painter,
+    contentPadding: PaddingValues,
+    listState: LazyListState,
+    overview: Boolean,
+    cachedArtist: Artist? = null,
+) {
+    val follow: @Composable () -> Unit = {
+        ArtistFollowButton(likeState = null, onClick = {}, enabled = false)
+    }
+    DynamicOrientationLayout(artwork, artistThumbnailShape(), contentPadding, isLoading = true) {
+        LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = contentPadding) {
+            item("header") {
+                CollectionArtworkHeader(
+                    title = title ?: stringResource(R.string.library_artists_title),
+                    artwork = artwork,
+                    disableScrollingText = true,
+                    subtitle = { ItemTextPlaceholder(null, typography().s, width = 0.45f) },
+                    isLoading = true,
+                    action = {
+                        HeaderIconButton(icon = R.drawable.share_social, color = colorPalette().textDisabled,
+                            iconSize = 24.dp, enabled = false, onClick = {})
+                    },
+                )
+            }
+            item("action_buttons") {
+                val padding = Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 8.dp)
+                if (overview) {
+                    CollectionButtonToolbar(
+                        bookmark = follow,
+                        buttons = listOf(SongShuffler { emptyList() }, PlayNext {}, Enqueue {}, Radio { emptyList() },
+                            ItemSelector<Song>(), DownloadAllSongsDialog { emptyList() }, DeleteAllDownloadedSongsDialog { emptyList() }),
+                        bookmarkWidth = 100.dp, originalBookmarkGap = 10.dp,
+                        actionCellWidth = GlassActionCellWidth, enabled = false, modifier = padding,
+                    )
                 } else {
-                    ArtistOverview(
-                        navController, localArtist, artistPage, thumbnailPainter,
-                        mbSyncing, { mbSyncing = it },
-                        mbPausedSeconds, { mbPausedSeconds = it }, contentPadding
+                    CollectionToolbar(
+                        bookmark = follow,
+                        actions = listOf(R.drawable.download, R.drawable.downloaded, R.drawable.enqueue, R.drawable.shuffle)
+                            .map { icon ->
+                                @Composable {
+                                    HeaderIconButton(icon = icon, color = colorPalette().textDisabled,
+                                        iconSize = 24.dp, enabled = false, onClick = {})
+                                }
+                            },
+                        bookmarkWidth = 100.dp, actionCellWidth = GlassActionCellWidth, modifier = padding,
                     )
                 }
             }
-            1 -> {
-                if (localArtist == null) {
-                    CollectionPageStatus(contentPadding) { FullPageLoader() }
-                } else {
-                    ArtistLocalSongs(navController, localArtist, artistPage, thumbnailPainter, contentPadding)
-                }
+            if (overview) item("info_and_community") {
+                InfoAndCommunity(
+                    rating = cachedArtist?.rating,
+                    ratingVotes = cachedArtist?.ratingVotes,
+                    year = cachedArtist?.beginYear?.toString(),
+                    countryCode = cachedArtist?.countryCode,
+                    keywords = cachedArtist?.keywords,
+                    links = cachedArtist?.links,
+                    bio = cachedArtist?.wikipediaBio,
+                    lastSyncAt = cachedArtist?.mbLastFetch,
+                    isLoading = true,
+                )
             }
+            item("songs") { SongItemPlaceholders(count = 6) }
         }
     }
 }
@@ -399,14 +532,15 @@ fun ArtistOverview(
     mbPausedSeconds: Long = 0,
     onMbPausedSecondsChange: (Long) -> Unit = {},
     contentPadding: PaddingValues = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
+    lazyListState: LazyListState = rememberLazyListState(),
 ) {
     artistPage ?: return
+    val forceShimmer = forceLoadingShimmerPreview()
 
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
     val hapticFeedback = LocalHapticFeedback.current
-    val lazyListState = rememberLazyListState()
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
@@ -586,7 +720,9 @@ fun ArtistOverview(
                         subtitle = {
                             val statsText = artistStatisticsText(artistPage.subscribers, artistPage.listeners)
                             if (statsText.isNotBlank()) {
-                                BasicText(statsText, style = typography().s.copy(colorPalette().textSecondary))
+                                if (forceShimmer) {
+                                    MeasuredMetadataPlaceholder(statsText, typography().s, maxLines = 1)
+                                } else BasicText(statsText, style = typography().s.copy(colorPalette().textSecondary))
                             }
                         },
                     ) {
@@ -837,6 +973,10 @@ fun ArtistOverview(
 
                     if (section.items.fastAll { it is Innertube.SongItem })
                         songs.forEachIndexed { index, song ->
+                            if (forceShimmer) {
+                                SongItemPlaceholder(title = song.cleanTitle(), artist = song.cleanArtistsText())
+                                return@forEachIndexed
+                            }
                             SwipeablePlaylistItem(
                                 mediaItem = song.asMediaItem,
                                 onPlayNext = {
@@ -868,7 +1008,13 @@ fun ArtistOverview(
                                 items = section.items.fastMap { it as Innertube.AlbumItem },
                                 key = Innertube.AlbumItem::key
                             ) { album ->
-                                AlbumItem(
+                                if (forceShimmer) {
+                                    AlbumItemPlaceholder(
+                                        albumThumbnailSizeDp, alternative = true, title = album.title,
+                                        metadataLines = if (album.year.isNullOrBlank()) 0 else 1,
+                                        metadata = album.year?.let(::listOf),
+                                    )
+                                } else AlbumItem(
                                     album = album,
                                     alternative = true,
                                     thumbnailSizePx = albumThumbnailSizePx,
@@ -898,7 +1044,13 @@ fun ArtistOverview(
                                 items = section.items.fastMap { it as Innertube.PlaylistItem },
                                 key = Innertube.PlaylistItem::key
                             ) { playlist ->
-                                PlaylistItem(
+                                if (forceShimmer) {
+                                    PlaylistItemPlaceholder(
+                                        albumThumbnailSizeDp, alternative = true,
+                                        showTitle = playlist.title != null, title = playlist.title,
+                                        showChannel = playlist.channel?.name != null, channel = playlist.channel?.name,
+                                    )
+                                } else PlaylistItem(
                                     playlist = playlist,
                                     alternative = true,
                                     thumbnailSizePx = albumThumbnailSizePx,
@@ -930,7 +1082,9 @@ fun ArtistOverview(
                                 items = section.items.fastMap { it as Innertube.VideoItem },
                                 key = Innertube.VideoItem::key
                             ) { video ->
-                                VideoItem(
+                                if (forceShimmer) {
+                                    VideoItemPlaceholder(72.dp, 128.dp, alternative = true, video = video)
+                                } else VideoItem(
                                     video = video,
                                     thumbnailHeightDp = 72.dp,
                                     thumbnailWidthDp = 128.dp,
@@ -963,7 +1117,13 @@ fun ArtistOverview(
                                 items = section.items.fastMap { it as Innertube.ArtistItem },
                                 key = Innertube.ArtistItem::key
                             ) { artist ->
-                                ArtistItem(
+                                if (forceShimmer) {
+                                    ArtistItemPlaceholder(
+                                        albumThumbnailSizeDp, alternative = true, title = artist.title,
+                                        showSubscribers = artist.subscribersCountText != null,
+                                        subscribers = artist.subscribersCountText,
+                                    )
+                                } else ArtistItem(
                                     artist = artist,
                                     alternative = true,
                                     thumbnailSizePx = albumThumbnailSizePx,

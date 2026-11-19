@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,11 +45,12 @@ import app.n_zik.android.cleanPrefix
 import app.n_zik.android.models.Artist
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.tab.ItemSize
-import app.n_zik.android.components.ui.FullPageLoader
 import app.n_zik.android.ui.items.AlbumItem
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.onOverlay
 import app.n_zik.android.ui.styling.overlay
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
+import app.n_zik.android.ui.items.AlbumItemPlaceholder
 import app.n_zik.android.R
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.LocalPlayerServiceBinder
@@ -75,7 +75,6 @@ import app.n_zik.android.utils.forcePlay
 import app.n_zik.android.utils.secondary
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.Preference.HOME_ALBUM_ITEM_SIZE
-import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.uiRoundnessShape
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -103,14 +102,13 @@ fun ArtistInsightsScreen(
         PlaylistStateManager.getPlaylistStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
+    val forceShimmer = forceLoadingShimmerPreview()
     if (state.isLoading) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(colorPalette().background0),
-            contentAlignment = Alignment.Center
+            Modifier.fillMaxSize().background(colorPalette().background0)
+                .padding(rememberPageChromeContentPadding()),
         ) {
-            FullPageLoader()
+            InsightsLoadingHeader(if (androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp < 600) 160.dp else 200.dp, artistThumbnailShape())
         }
     } else {
         val artist = state.artist
@@ -144,7 +142,7 @@ fun ArtistInsightsScreen(
             if (!bio.isNullOrBlank()) {
                 item(key = "bio") {
                     InfoCard(title = stringResource(R.string.metadata_musicbrainz_insights_biography), icon = R.drawable.information) {
-                        Text(
+                        InsightsText(
                             text = bio,
                             style = typography().xs
                         )
@@ -206,7 +204,7 @@ fun ArtistInsightsScreen(
                 item(key = "top_songs") {
                     InfoCard(title = stringResource(R.string.metadata_musicbrainz_insights_top_songs), icon = R.drawable.musical_notes) {
                         state.topTracks.forEachIndexed { index, song ->
-                            InsightsSwipeableSongItem(
+                            if (forceShimmer) RankedInsightsSongPlaceholder(song, index + 1) else InsightsSwipeableSongItem(
                                 mediaItem = song.asMediaItem,
                                 onPlayNext = {
                                     binder?.player?.addNext(song.asMediaItem)
@@ -220,20 +218,7 @@ fun ArtistInsightsScreen(
                                     showThumbnail = true,
                                     backgroundColor = Color.Transparent,
                                     thumbnailOverlay = {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .clip(thumbnailShape())
-                                                .background(colorPalette().overlay)
-                                        ) {
-                                            BasicText(
-                                                text = "${index + 1}",
-                                                style = typography().s.semiBold.center.color(colorPalette().onOverlay),
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis,
-                                                modifier = Modifier.align(Alignment.Center)
-                                            )
-                                        }
+                                        RankedInsightsArtworkOverlay(index + 1, Modifier.fillMaxSize())
                                     },
                                     onClick = {
                                         binder?.stopRadio()
@@ -250,7 +235,12 @@ fun ArtistInsightsScreen(
                 item(key = "top_albums") {
                     InfoCard(title = stringResource(R.string.metadata_musicbrainz_insights_top_albums), icon = R.drawable.album) {
                         state.topAlbums.forEachIndexed { index, album ->
-                            AlbumItem(
+                            if (forceShimmer) {
+                                AlbumItemPlaceholder(
+                                    thumbnailSizeDp = Dimensions.thumbnails.song, alternative = false,
+                                    metadataLines = listOf(album.authorsText, album.year).count { !it.isNullOrBlank() },
+                                )
+                            } else AlbumItem(
                                 album = album,
                                 thumbnailSizePx = 0,
                                 thumbnailSizeDp = Dimensions.thumbnails.song,
@@ -305,7 +295,12 @@ fun ArtistInsightsScreen(
                             contentPadding = PaddingValues(horizontal = 4.dp)
                         ) {
                             items(state.albums, key = { it.id }) { album ->
-                                AlbumItem(
+                                if (forceShimmer) {
+                                    AlbumItemPlaceholder(
+                                        thumbnailSizeDp = gridItemSize.size.dp, alternative = true,
+                                        metadataLines = listOf(album.authorsText, album.year).count { !it.isNullOrBlank() },
+                                    )
+                                } else AlbumItem(
                                     album = album,
                                     thumbnailSizePx = gridItemSize.size.px,
                                     thumbnailSizeDp = gridItemSize.size.dp,
@@ -404,16 +399,15 @@ private fun ArtistHeader(artist: Artist) {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        ImageCacheFactory.Thumbnail(
+        InsightsThumbnail(
             shape = artistThumbnailShape(),
             thumbnailUrl = artist.thumbnailUrl,
             modifier = Modifier
                 .size(if (isNarrow) 160.dp else 200.dp)
-                .clip(artistThumbnailShape())
         )
         Spacer(Modifier.height(16.dp))
 
-        Text(
+        InsightsText(
             text = cleanPrefix(artist.name.orEmpty()),
             style = typography().l.semiBold
         )
@@ -431,7 +425,7 @@ private fun ArtistHeader(artist: Artist) {
         }.joinToString(" • ")
 
         if (infoText.isNotBlank()) {
-            Text(
+            InsightsText(
                 text = infoText,
                 style = typography().s,
                 color = colorPalette().textSecondary
@@ -455,11 +449,11 @@ private fun ArtistStatsRow(stats: ArtistStats) {
 @Composable
 private fun StatItem(label: String, value: String, modifier: Modifier = Modifier) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
-        Text(
+        InsightsText(
             text = value,
             style = typography().xs.semiBold
         )
-        Text(
+        InsightsText(
             text = label,
             style = typography().xxs,
             color = colorPalette().textSecondary,

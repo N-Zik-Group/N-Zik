@@ -9,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
@@ -19,6 +20,19 @@ import app.n_zik.android.components.OfflineAwareLoader
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.ui.screens.CollectionPageStatus
+
+@Composable
+internal fun podcastEpisodeLoadingLabel(loadedEpisodeCount: Int): String {
+    val loading = stringResource(R.string.common_loading_message)
+    return if (loadedEpisodeCount > 0) {
+        pluralStringResource(
+            R.plurals.podcast_episode_count_with_duration,
+            loadedEpisodeCount, loadedEpisodeCount, loading,
+        )
+    } else {
+        loading
+    }
+}
 
 /** Displays terminal failures and empty feeds separately from an active request. */
 @Composable

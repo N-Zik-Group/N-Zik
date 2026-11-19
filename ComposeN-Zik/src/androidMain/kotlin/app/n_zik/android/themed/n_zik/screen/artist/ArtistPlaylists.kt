@@ -1,7 +1,6 @@
 @file:Suppress("OPT_IN_USAGE", "OPT_IN_USAGE_ERROR")
 package app.n_zik.android.themed.n_zik.screen.artist
 
-import app.n_zik.android.components.ui.screens.CollectionPageStatus
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.annotation.OptIn
 import androidx.compose.ui.draw.clip
@@ -11,12 +10,14 @@ import app.n_zik.android.uiRoundnessShape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,19 +26,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.n_zik.android.R
-import io.ktor.client.call.body
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.models.BrowseResponse
 import app.n_zik.innertube.requests.ArtistItemsPage
 import app.n_zik.android.colorPalette
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.components.navigation.Skeleton
-import app.n_zik.android.ui.components.themed.Loader
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.ui.items.PlaylistItem
+import app.n_zik.android.ui.items.PlaylistItemPlaceholder
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.px
 import app.n_zik.android.utils.disableScrollingTextKey
@@ -49,6 +51,10 @@ import io.ktor.client.statement.bodyAsText
 import timber.log.Timber
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.components.AppPullToRefreshBox
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.typography
+import app.n_zik.android.utils.secondary
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 
 @OptIn(UnstableApi::class)
@@ -65,6 +71,7 @@ fun ArtistPlaylists(
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
     var isLoading by remember { mutableStateOf(true) }
+    var loadFailed by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
     val thumbnailSizeDp = Dimensions.thumbnails.album + 24.dp
     val thumbnailSizePx = thumbnailSizeDp.px
@@ -135,6 +142,7 @@ fun ArtistPlaylists(
             sectionContent // return the final sectionContent
         }
 
+        loadFailed = result.isFailure
         result.fold(
             onSuccess = { sectionContent ->
                 if (sectionContent == null) {
@@ -213,6 +221,7 @@ fun ArtistPlaylists(
                 playlists.addAll(fetched.filterNot { it in existing })
             },
             onFailure = {
+                if (it is CancellationException) throw it
                 Timber.tag("ArtistPlaylists").e("error ${it.message}")
                 Toaster.e(R.string.common_error_unknown)
             }
@@ -225,15 +234,13 @@ fun ArtistPlaylists(
         isRefreshing = false
     }
 
+    val forceShimmer = forceLoadingShimmerPreview()
     Skeleton(
         navController = navController,
         miniPlayer = miniPlayer,
         topInsetHandledByContent = true,
         navBarContent = {}
     ) {
-        if (isLoading) {
-            CollectionPageStatus { Loader() }
-        } else {
             AppPullToRefreshBox(
                 isRefreshing = isRefreshing,
                 onRefresh = {
@@ -250,23 +257,50 @@ fun ArtistPlaylists(
                     contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
                     modifier = Modifier.background(colorPalette().background0)
                 ) {
-                    items(
-                        items = playlists.distinctBy(Innertube.PlaylistItem::key),
+                    val visiblePlaylists = playlists.distinctBy(Innertube.PlaylistItem::key)
+                    if (isLoading && visiblePlaylists.isEmpty()) {
+                        items(8, key = { "artist-playlist-loading-$it" }) {
+                            PlaylistItemPlaceholder(
+                                thumbnailSizeDp,
+                                alternative = true,
+                                showChannel = false,
+                            )
+                        }
+                    } else if (visiblePlaylists.isEmpty()) {
+                        item(key = "status", span = { GridItemSpan(maxLineSpan) }) {
+                            BasicText(
+                                text = stringResource(if (loadFailed) R.string.common_load_failed else R.string.common_empty_items),
+                                style = typography().s.secondary,
+                                modifier = Modifier.padding(16.dp),
+                            )
+                        }
+                    } else items(
+                        items = visiblePlaylists,
                         key = Innertube.PlaylistItem::key
                     ) { playlist ->
-                        PlaylistItem(
-                            playlist = playlist,
-                            thumbnailSizePx = thumbnailSizePx,
-                            thumbnailSizeDp = thumbnailSizeDp,
-                            alternative = true,
-                            disableScrollingText = disableScrollingText,
-                            modifier = Modifier.clip(uiRoundnessShape()).clickable {
-                                NavRoutes.playlist.navigateHere(navController, playlist.key)
-                            }
-                        )
+                        if (isLoading || forceShimmer) {
+                            val channel = playlist.channel?.name
+                            PlaylistItemPlaceholder(
+                                thumbnailSizeDp,
+                                alternative = true,
+                                showChannel = channel != null,
+                                title = playlist.title?.let(::cleanPrefix),
+                                channel = channel,
+                            )
+                        } else {
+                            PlaylistItem(
+                                playlist = playlist,
+                                thumbnailSizePx = thumbnailSizePx,
+                                thumbnailSizeDp = thumbnailSizeDp,
+                                alternative = true,
+                                disableScrollingText = disableScrollingText,
+                                modifier = Modifier.clip(uiRoundnessShape()).clickable {
+                                    NavRoutes.playlist.navigateHere(navController, playlist.key)
+                                }
+                            )
+                        }
                     }
                 }
             }
-        }
     }
 }

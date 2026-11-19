@@ -63,6 +63,20 @@ class CompletePodcastSourceTest {
         assertEquals(listOf("first", "second"), episodes.map { it.videoId })
     }
 
+    @Test fun `episode counts update after each shelf without publishing a partial page`() = runBlocking {
+        val counts = mutableListOf<Int>()
+        val page = loadCompletePodcastPage(id, onEpisodeCount = { counts.add(it) }) { _, continuation ->
+            if (continuation == null) {
+                initial()
+            } else {
+                assertEquals(listOf(1), counts)
+                next()
+            }
+        }
+        assertEquals(listOf(1, 2), counts)
+        assertEquals(listOf("first", "second"), page.listEpisode.map { it.videoId })
+    }
+
     @Test fun `missing continuation shelf cannot return a partial source`() = runBlocking {
         val outcome = runCatching {
             loadCompletePodcastEpisodes(id) { _, continuation ->

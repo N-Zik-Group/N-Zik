@@ -43,13 +43,16 @@ import androidx.navigation.NavController
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.models.Album
 import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.tab.ItemSize
-import app.n_zik.android.components.ui.FullPageLoader
 import app.n_zik.android.ui.items.AlbumItem
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.onOverlay
 import app.n_zik.android.ui.styling.overlay
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
+import app.n_zik.android.ui.items.AlbumItemPlaceholder
+import app.n_zik.android.ui.items.SongItemPlaceholder
 import app.n_zik.android.R
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.LocalPlayerServiceBinder
@@ -70,7 +73,6 @@ import app.n_zik.android.utils.forcePlay
 import app.n_zik.android.utils.secondary
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.Preference.HOME_ALBUM_ITEM_SIZE
-import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.uiRoundnessShape
 
@@ -99,14 +101,13 @@ fun AlbumInsightsScreen(
         PlaylistStateManager.getPlaylistStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
+    val forceShimmer = forceLoadingShimmerPreview()
     if (state.isLoading) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(colorPalette().background0),
-            contentAlignment = Alignment.Center
+            Modifier.fillMaxSize().background(colorPalette().background0)
+                .padding(rememberPageChromeContentPadding()),
         ) {
-            FullPageLoader()
+            InsightsLoadingHeader(200.dp, thumbnailShape())
         }
     } else {
         val album = state.album
@@ -145,7 +146,7 @@ fun AlbumInsightsScreen(
             if (bio != null) {
                 item(key = "info") {
                     InfoCard(title = stringResource(R.string.common_information_title), icon = R.drawable.information) {
-                        Text(
+                        InsightsText(
                             text = bio,
                             style = typography().xs
                         )
@@ -187,7 +188,7 @@ fun AlbumInsightsScreen(
                         icon = R.drawable.musical_notes
                     ) {
                         state.tracks.forEachIndexed { index, song ->
-                            InsightsSwipeableSongItem(
+                            if (forceShimmer) RankedInsightsSongPlaceholder(song, index + 1) else InsightsSwipeableSongItem(
                                 mediaItem = song.asMediaItem,
                                 onPlayNext = {
                                     binder?.player?.addNext(song.asMediaItem)
@@ -201,20 +202,7 @@ fun AlbumInsightsScreen(
                                     showThumbnail = true,
                                     backgroundColor = Color.Transparent,
                                     thumbnailOverlay = {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .clip(thumbnailShape())
-                                                .background(colorPalette().overlay)
-                                        ) {
-                                            BasicText(
-                                                text = "${index + 1}",
-                                                style = typography().s.semiBold.center.color(colorPalette().onOverlay),
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis,
-                                                modifier = Modifier.align(Alignment.Center)
-                                            )
-                                        }
+                                        RankedInsightsArtworkOverlay(index + 1, Modifier.fillMaxSize())
                                     },
                                     onClick = {
                                         binder?.stopRadio()
@@ -234,7 +222,7 @@ fun AlbumInsightsScreen(
                         icon = R.drawable.musical_notes
                     ) {
                         state.topTracks.forEachIndexed { index, song ->
-                            InsightsSwipeableSongItem(
+                            if (forceShimmer) RankedInsightsSongPlaceholder(song, index + 1) else InsightsSwipeableSongItem(
                                 mediaItem = song.asMediaItem,
                                 onPlayNext = {
                                     binder?.player?.addNext(song.asMediaItem)
@@ -248,20 +236,7 @@ fun AlbumInsightsScreen(
                                     showThumbnail = true,
                                     backgroundColor = Color.Transparent,
                                     thumbnailOverlay = {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .clip(thumbnailShape())
-                                                .background(colorPalette().overlay)
-                                        ) {
-                                            BasicText(
-                                                text = "${index + 1}",
-                                                style = typography().s.semiBold.center.color(colorPalette().onOverlay),
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis,
-                                                modifier = Modifier.align(Alignment.Center)
-                                            )
-                                        }
+                                        RankedInsightsArtworkOverlay(index + 1, Modifier.fillMaxSize())
                                     },
                                     onClick = {
                                         binder?.stopRadio()
@@ -282,7 +257,12 @@ fun AlbumInsightsScreen(
                             contentPadding = PaddingValues(horizontal = 4.dp)
                         ) {
                             items(state.otherAlbums, key = { it.id }) { otherAlbum ->
-                                AlbumItem(
+                                if (forceShimmer) {
+                                    AlbumItemPlaceholder(
+                                        thumbnailSizeDp = gridItemSize.size.dp, alternative = true,
+                                        metadataLines = listOf(otherAlbum.authorsText, otherAlbum.year).count { !it.isNullOrBlank() },
+                                    )
+                                } else AlbumItem(
                                     album = otherAlbum,
                                     thumbnailSizePx = gridItemSize.size.px,
                                     thumbnailSizeDp = gridItemSize.size.dp,
@@ -348,7 +328,12 @@ fun AlbumInsightsScreen(
                             contentPadding = PaddingValues(horizontal = 4.dp)
                         ) {
                             items(state.singlesAndEps, key = { it.id }) { single ->
-                                AlbumItem(
+                                if (forceShimmer) {
+                                    AlbumItemPlaceholder(
+                                        thumbnailSizeDp = gridItemSize.size.dp, alternative = true,
+                                        metadataLines = listOf(single.authorsText, single.year).count { !it.isNullOrBlank() },
+                                    )
+                                } else AlbumItem(
                                     album = single,
                                     thumbnailSizePx = gridItemSize.size.px,
                                     thumbnailSizeDp = gridItemSize.size.dp,
@@ -448,15 +433,15 @@ private fun AlbumHeader(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        ImageCacheFactory.Thumbnail(
+        InsightsThumbnail(
             thumbnailUrl = album.thumbnailUrl,
+            shape = thumbnailShape(),
             modifier = Modifier
                 .size(200.dp)
-                .clip(thumbnailShape())
         )
         Spacer(Modifier.height(16.dp))
 
-        Text(
+        InsightsText(
             text = cleanPrefix(album.title.orEmpty()),
             style = typography().l.semiBold,
             maxLines = 2,
@@ -465,14 +450,17 @@ private fun AlbumHeader(
 
         Spacer(Modifier.height(4.dp))
 
-        Text(
-            text = cleanPrefix(artist?.name ?: album.authorsText.orEmpty()),
-            style = typography().m,
-            color = colorPalette().textSecondary,
-            modifier = if (onArtistClick != null) Modifier
-                .clip(uiRoundnessShape())
-                .clickable { onArtistClick() } else Modifier
-        )
+        val artistName = cleanPrefix(artist?.name ?: album.authorsText.orEmpty())
+        if (onArtistClick != null) {
+            Text(
+                text = artistName,
+                style = typography().m,
+                color = colorPalette().textSecondary,
+                modifier = Modifier.clip(uiRoundnessShape()).clickable(onClick = onArtistClick),
+            )
+        } else {
+            InsightsText(text = artistName, style = typography().m, color = colorPalette().textSecondary)
+        }
 
         Spacer(Modifier.height(8.dp))
 
@@ -482,12 +470,39 @@ private fun AlbumHeader(
         }.joinToString(" • ")
 
         if (infoText.isNotBlank()) {
-            Text(
+            InsightsText(
                 text = infoText,
                 style = typography().s,
                 color = colorPalette().textSecondary
             )
         }
+    }
+}
+
+@Composable
+internal fun RankedInsightsSongPlaceholder(song: Song, rank: Int) {
+    Box(Modifier.fillMaxWidth()) {
+        SongItemPlaceholder(title = song.cleanTitle(), artist = song.cleanArtistsText())
+        RankedInsightsArtworkOverlay(
+            rank = rank,
+            modifier = Modifier.align(Alignment.CenterStart).padding(start = 16.dp)
+                .size(Dimensions.thumbnails.song),
+        )
+    }
+}
+
+@Composable
+internal fun RankedInsightsArtworkOverlay(rank: Int, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.clip(thumbnailShape()).background(colorPalette().overlay),
+        contentAlignment = Alignment.Center,
+    ) {
+        BasicText(
+            text = rank.toString(),
+            style = typography().s.semiBold.center.color(colorPalette().onOverlay),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -507,11 +522,11 @@ private fun AlbumStatsRow(stats: AlbumStats) {
 @Composable
 private fun StatItem(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
+        InsightsText(
             text = value,
             style = typography().xs.semiBold
         )
-        Text(
+        InsightsText(
             text = label,
             style = typography().xxs,
             color = colorPalette().textSecondary

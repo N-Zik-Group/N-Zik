@@ -44,6 +44,12 @@ internal suspend fun loadCompletePodcastEpisodes(
 internal suspend fun loadCompletePodcastPage(
     browseId: String,
     browse: suspend (String?, String?) -> BrowsePodcastsResponse0624 = ::browsePodcastPage,
+): Innertube.Podcast = loadCompletePodcastPage(browseId, onEpisodeCount = null, browse = browse)
+
+internal suspend fun loadCompletePodcastPage(
+    browseId: String,
+    onEpisodeCount: ((Int) -> Unit)?,
+    browse: suspend (String?, String?) -> BrowsePodcastsResponse0624 = ::browsePodcastPage,
 ): Innertube.Podcast {
     require(browseId.startsWith("MPSP")) { "Not a podcast browse endpoint" }
     currentCoroutineContext().ensureActive()
@@ -59,6 +65,8 @@ internal suspend fun loadCompletePodcastPage(
     val episodes = parsePodcastData(requireNotNull(shelf.contents), author).toMutableList()
     val seen = mutableSetOf<String>()
     var next = continuationToken(shelf.continuations)
+    currentCoroutineContext().ensureActive()
+    onEpisodeCount?.invoke(episodes.size)
     while (next != null) {
         currentCoroutineContext().ensureActive()
         require(seen.size < 1000) { "Podcast continuation limit exceeded" }
@@ -68,6 +76,8 @@ internal suspend fun loadCompletePodcastPage(
         }
         episodes.addAll(parseContinuationPodcastEpisodes(requireNotNull(continuation.contents), author))
         next = continuationToken(continuation.continuations)
+        currentCoroutineContext().ensureActive()
+        onEpisodeCount?.invoke(episodes.size)
     }
     currentCoroutineContext().ensureActive()
     require(episodes.all { it.videoId.isNotBlank() && it.title.isNotBlank() }) { "Malformed podcast episode" }

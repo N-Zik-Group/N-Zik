@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -39,7 +38,6 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.semiBold
-import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.components.glass.LocalSwipeRestingBackground
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.models.NavigationEndpoint
@@ -110,7 +108,7 @@ fun RelatedArtistRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (artist.thumbnailUrl != null) {
-            ImageCacheFactory.Thumbnail(
+            InsightsThumbnail(
                 shape = artistThumbnailShape(),
                 thumbnailUrl = artist.thumbnailUrl,
                 modifier = Modifier
@@ -125,7 +123,7 @@ fun RelatedArtistRow(
                     .background(colorPalette().background1),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
+                InsightsText(
                     text = artist.name?.firstOrNull()?.uppercase() ?: "?",
                     style = typography().xs,
                     color = colorPalette().text
@@ -136,13 +134,13 @@ fun RelatedArtistRow(
         Spacer(Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(
+            InsightsText(
                 text = cleanPrefix(artist.name ?: stringResource(R.string.metadata_unknown_artist)),
                 style = typography().xs,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Text(
+            InsightsText(
                 text = relationType.replaceFirstChar { it.uppercase() },
                 style = typography().xxs,
                 color = colorPalette().textSecondary,
@@ -186,7 +184,7 @@ fun ExternalLinkRow(
 
         Spacer(Modifier.width(12.dp))
 
-        Text(
+        InsightsText(
             text = label,
             style = typography().xs.semiBold,
             modifier = Modifier.weight(1f)

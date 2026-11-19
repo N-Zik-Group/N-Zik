@@ -69,6 +69,7 @@ import kotlinx.coroutines.flow.flowOn
 import app.n_zik.android.core.utils.PropUtils
 import app.n_zik.android.MODIFIED_PREFIX
 import timber.log.Timber
+import kotlinx.coroutines.CancellationException
 
 
 @ExperimentalTextApi
@@ -103,8 +104,9 @@ fun AlbumScreen(
 
     var alternatives by persistList<Innertube.AlbumItem>( "album/$browseId/alternatives" )
     var description by rememberSaveable { mutableStateOf("") }
-    var loadedSongsCount by remember { mutableIntStateOf(0) }
-    LaunchedEffect( Unit ) {
+    var loadedSongsCount by remember(browseId) { mutableIntStateOf(0) }
+    var songLoadResult by remember(browseId) { mutableStateOf<Result<Unit>?>(null) }
+    LaunchedEffect(browseId) {
         Timber.tag("ALBUM-DETAILS-DEBUG").w("========== ALBUM DETAILS [GET ALBUM] ==========")
         Timber.tag("ALBUM-DETAILS-DEBUG").w("[GET ALBUM] browseId from navigation: $browseId")
         Timber.tag("ALBUM-DETAILS-DEBUG").w("[GET ALBUM] MODIFIED_PREFIX: ${app.n_zik.android.MODIFIED_PREFIX}")
@@ -112,8 +114,8 @@ fun AlbumScreen(
         Timber.tag("ALBUM-DETAILS-DEBUG").w("[GET ALBUM] Cleaned browseId: $cleanedBrowseId")
         Timber.tag("ALBUM-DETAILS-DEBUG").w("[GET ALBUM] Was prefix removed? ${browseId != cleanedBrowseId}")
 
-        YtMusic.getAlbum( browseId.removePrefix(MODIFIED_PREFIX), true, onProgress = { loadedSongsCount = it } )
-               .onSuccess { online ->
+        songLoadResult = YtMusic.getAlbum( browseId.removePrefix(MODIFIED_PREFIX), true, onProgress = { loadedSongsCount = it } )
+               .mapCatching { online ->
                    val onlineAlbum = online.album
                     val authorsText: String? = onlineAlbum.authors.parseArtists().joinToString(", ")
 
@@ -129,7 +131,7 @@ fun AlbumScreen(
                    }
                    Timber.tag("ALBUM-DETAILS-DEBUG").w("========== END ALBUM DETAILS [GET ALBUM] ==========")
 
-                    Database.asyncTransaction {
+                    Database.awaitWriteBatch {
                          val now = System.currentTimeMillis()
                          val inserted = albumTable.insertMetadata(
                              id = browseId,
@@ -174,6 +176,10 @@ fun AlbumScreen(
 
                    alternatives = online.otherVersions
                    description = online.description ?: ""
+               }
+               .onFailure { error ->
+                   if (error is CancellationException) throw error
+                   Timber.tag("AlbumScreen").w(error, "Unable to load album tracks")
                }
     }
 
@@ -262,6 +268,8 @@ fun AlbumScreen(
                                 alternatives = alternatives,
                                 description = description,
                                 loadedSongsCount = loadedSongsCount,
+                                songsLoading = songLoadResult == null,
+                                songsLoadFailed = songLoadResult?.isFailure == true,
                                 onSearchClick = {
                                     navController.navigate(NavRoutes.search.name)
                                 },

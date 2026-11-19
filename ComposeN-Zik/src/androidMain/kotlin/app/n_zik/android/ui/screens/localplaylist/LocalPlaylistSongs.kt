@@ -53,6 +53,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
+import app.n_zik.android.ui.items.ItemArtworkPlaceholder
+import app.n_zik.android.ui.items.ItemContainer
+import app.n_zik.android.ui.items.FullSongListPlaceholderCount
+import app.n_zik.android.ui.items.SongItemPlaceholder
+import app.n_zik.android.ui.items.SongItemPlaceholders
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -276,6 +282,7 @@ fun LocalPlaylistSongs(
 ) {
     // Essentials
     val context = LocalContext.current
+    val forceShimmer = forceLoadingShimmerPreview()
     val glassSettings = rememberGlassSettings()
     val glassActions = glassSettings.usesGlassMaterial(GlassArea.ActionButtons)
     val binder = LocalPlayerServiceBinder.current
@@ -290,7 +297,7 @@ fun LocalPlaylistSongs(
     // Full offline mode (spec-full-offline-mode): network toolbar actions removed,
     // the import dialog prunes its network choices; listen_on_yt is EXTERNAL and stays.
     val offlineMode by OfflineMode.rememberEnabled()
-    var onDeviceSelected by rememberPreference("localPlaylistOnDeviceOnly", false)
+    var onDeviceSelected by rememberSaveable(playlistId) { mutableStateOf(false) }
     val onDeviceOnly = forceOnDevice || onDeviceSelected
     var isRecommendationEnabled by remember { mutableStateOf(false) }
     var getAlbumVersion by remember { mutableStateOf(false) }
@@ -360,6 +367,12 @@ fun LocalPlaylistSongs(
                     .distinctUntilChanged()
         }
     }.collectAsStateWithLifecycle( null, context = NzikDispatchers.DATA )
+    val playlistTracks = loadedItems.orEmpty()
+    val hasDeviceTracks = playlistTracks.any { it.isLocal }
+    val deviceOnlyPlaylist = playlistTracks.isNotEmpty() && playlistTracks.all { it.isLocal }
+    LaunchedEffect(loadedItems, hasDeviceTracks) {
+        if (loadedItems != null && !hasDeviceTracks) onDeviceSelected = false
+    }
     val profile = getActiveProfile(context)
     val scan by remember(context, profile, onDeviceOnly) {
         if (onDeviceOnly) context.observeDeviceLibrary() else kotlinx.coroutines.flow.flowOf(null)
@@ -1241,7 +1254,14 @@ fun LocalPlaylistSongs(
                         .localPlaylistHeaderSurface(glassSettings, exported)
                 ) {
 
-                    playlist?.let {
+                    if (forceShimmer) {
+                        ItemContainer(
+                            alternative = true,
+                            thumbnailSizeDp = playlistThumbnailSizeDp,
+                        ) {
+                            ItemArtworkPlaceholder(playlistThumbnailSizeDp, card = true, shape = thumbnailShape())
+                        }
+                    } else playlist?.let {
                         Playlist(
                             playlist = it,
                             songCount = items.size,
@@ -1249,11 +1269,10 @@ fun LocalPlaylistSongs(
                             thumbnailSizePx = playlistThumbnailSizePx,
                             alternative = true,
                             showName = false,
-                            modifier = Modifier.padding(top = 14.dp),
                             disableScrollingText = disableScrollingText,
                             thumbnailUrl = thumbnailUrl.value.takeIf(String::isNotEmpty),
                             coverOverlay = {
-                                if (preview == null && (!it.isYoutubePlaylist || onDeviceOnly)) {
+                                if (preview == null && (forceOnDevice || deviceOnlyPlaylist)) {
                                     OnDeviceCoverBadge(Modifier.align(Alignment.TopEnd))
                                 }
                             },
@@ -1276,7 +1295,8 @@ fun LocalPlaylistSongs(
                             items.size
                         }
                         IconInfo(
-                            title = if (preview == null) totalSongs.toString()
+                            title = if (loadedItems == null || (onDeviceOnly && scan == null)) stringResource(R.string.common_loading_message)
+                                else if (preview == null) totalSongs.toString()
                                 else pluralStringResource(R.plurals.library_song_count, totalSongs, totalSongs),
                             icon = painterResource(R.drawable.musical_notes)
                         )
@@ -1288,10 +1308,12 @@ fun LocalPlaylistSongs(
                             0L
                         }
                         val totalDuration = items.sumOf { durationTextToMillis(it.durationText ?: "0:0") } + recommendedSongsDuration
-                        IconInfo(
-                            title = formatAsTime( totalDuration ),
-                            icon = painterResource(R.drawable.time)
-                        )
+                        if (loadedItems != null && (!onDeviceOnly || scan != null)) {
+                            IconInfo(
+                                title = formatAsTime(totalDuration),
+                                icon = painterResource(R.drawable.time)
+                            )
+                        }
                         if (isRecommendationEnabled) {
                             Spacer(modifier = Modifier.height(5.dp))
                             if (isRecommendationsLoading) {
@@ -1463,7 +1485,7 @@ fun LocalPlaylistSongs(
 
                 }
 
-                if (preview == null && !forceOnDevice) GlassHomeChips(
+                if (preview == null && !forceOnDevice && hasDeviceTracks) GlassHomeChips(
                     chips = listOf(
                         false to stringResource(R.string.common_option_all),
                         true to stringResource(R.string.library_on_device_title),
@@ -1489,11 +1511,18 @@ fun LocalPlaylistSongs(
                     }
                 }
             val displayedSongs = if (onDeviceOnly) itemsOnDisplay.filter { it.isLocal } else itemsOnDisplay
+            if (loadedItems == null && displayedSongs.isEmpty()) {
+                item(key = "loading_songs") { SongItemPlaceholders(count = FullSongListPlaceholderCount) }
+            }
             itemsIndexed(
                 items = displayedSongs,
                 key = { _, song -> song.id },
                 contentType = { _, song -> song },
             ) { index, song ->
+                if (forceShimmer) {
+                    SongItemPlaceholder(title = song.title, artist = song.artistsText, onDevice = song.isLocal)
+                    return@itemsIndexed
+                }
 
                     ReorderableItem(
                         reorderingState,

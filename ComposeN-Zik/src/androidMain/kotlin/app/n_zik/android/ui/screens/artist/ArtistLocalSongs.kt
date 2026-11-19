@@ -3,11 +3,10 @@ package app.n_zik.android.ui.screens.artist
 import android.content.Context
 import androidx.media3.datasource.cache.Cache
 import androidx.compose.ui.res.pluralStringResource
-import app.n_zik.android.core.coil.imageLoadingViewport
-import app.n_zik.android.core.coil.rememberImageLoadingViewportPainter
 import app.n_zik.android.utils.durationTextToMillis
 import app.n_zik.android.utils.formatAsDuration
-import app.n_zik.android.components.glass.GlassArtworkBackdrop
+import app.n_zik.android.components.ui.screens.CollectionArtworkHeader
+import app.n_zik.android.components.ui.HeaderIconAction
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.draw.clip
 
@@ -23,7 +22,6 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,9 +29,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,12 +52,15 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.LocalMenuState
-import app.n_zik.android.ui.components.ShimmerHost
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.ui.components.themed.HeaderIconButton
 import app.n_zik.android.components.ui.screens.LayoutWithAdaptiveThumbnail
 import app.n_zik.android.ui.components.themed.MultiFloatingActionsContainer
+import app.n_zik.android.ui.items.FullSongListPlaceholderCount
 import app.n_zik.android.ui.items.SongItemPlaceholder
+import app.n_zik.android.ui.items.SongItemPlaceholders
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.px
 import app.n_zik.android.utils.asMediaItem
@@ -77,32 +80,19 @@ import app.n_zik.android.utils.ExternalUris
 import app.n_zik.android.colorPalette
 import app.n_zik.android.core.utils.Toaster
 import android.content.Intent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.sp
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.SwipeablePlaylistItem
-import app.n_zik.android.ui.components.themed.AutoResizeText
-import app.n_zik.android.ui.components.themed.FontSizeRange
 import app.n_zik.android.utils.conditional
-import app.n_zik.android.utils.fadingEdge
 import app.n_zik.android.utils.isLandscape
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.components.artist.FollowButton
 import app.n_zik.android.components.artist.artistStatisticsText
 import app.n_zik.android.components.ui.CollectionToolbar
-import app.n_zik.android.components.glass.GlassToolbarRow
 import app.n_zik.android.components.glass.GlassActionCellWidth
 import app.n_zik.android.playback.utils.Shuffler
 import app.n_zik.android.utils.addNext
@@ -139,21 +129,23 @@ fun ArtistLocalSongs(
     localArtist: Artist?,
     artistPage: ArtistPage?,
     thumbnailPainter: Painter,
+    songsState: MutableState<List<Song>?>,
     contentPadding: PaddingValues = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
+    lazyListState: LazyListState = rememberLazyListState(),
 ) {
     localArtist ?: return
     val browseId = localArtist.id
     val context = LocalContext.current
+    val forceShimmer = forceLoadingShimmerPreview()
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
-    var songs by persist<List<Song>?>("artist/$browseId/localSongs")
+    var songs by songsState
     var downloadState by remember { mutableStateOf(Download.STATE_STOPPED) }
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
     var showConfirmDeleteDownloadDialog by remember { mutableStateOf(false) }
     var showConfirmDownloadAllDialog by remember { mutableStateOf(false) }
     val songThumbnailSizeDp = Dimensions.thumbnails.song
     val songThumbnailSizePx = songThumbnailSizeDp.px
-    val lazyListState = rememberLazyListState()
 
     LaunchedEffect(Unit) {
         Database.artistSongs(browseId).collect { songs = it }
@@ -201,14 +193,14 @@ fun ArtistLocalSongs(
         contentPadding = contentPadding,
         modifier = Modifier.fillMaxSize()
     ) {
-        item {
+        item("header") {
             ArtistHeader(
                 localArtist = localArtist,
                 artistPage = artistPage,
                 thumbnailPainter = thumbnailPainter
             )
         }
-        item {
+        item("action_buttons") {
             CollectionToolbar(
                 bookmark = { FollowButton { localArtist }.ToolBarButton() },
                 bookmarkWidth = 100.dp,
@@ -315,22 +307,21 @@ fun ArtistLocalSongs(
         }
         item {
             if (songCount > 0) {
-                Text(
-                    text = if (totalDurationMs > 0) {
-                        pluralStringResource(R.plurals.library_song_count_with_duration, songCount, songCount, formatAsDuration(totalDurationMs))
-                    } else {
-                        pluralStringResource(R.plurals.library_song_count, songCount, songCount)
-                    },
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = colorPalette().text,
-                    modifier = Modifier
-                        .padding(top = 12.dp, bottom = 5.dp)
-                        .fillMaxWidth()
-                        .wrapContentWidth(Alignment.CenterHorizontally)
-                )
+                val text = if (totalDurationMs > 0) {
+                    pluralStringResource(R.plurals.library_song_count_with_duration, songCount, songCount, formatAsDuration(totalDurationMs))
+                } else {
+                    pluralStringResource(R.plurals.library_song_count, songCount, songCount)
+                }
+                val style = MaterialTheme.typography.bodyLarge
+                val modifier = Modifier.padding(top = 12.dp, bottom = 5.dp)
+                    .fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally)
+                if (forceShimmer) MeasuredMetadataPlaceholder(text, style, modifier, maxLines = 1)
+                else Text(text, style = style, color = colorPalette().text, modifier = modifier)
             }
         }
-        if (songs.isNullOrEmpty()) {
+        if (songs == null) {
+            item(key = "loading") { SongItemPlaceholders(count = FullSongListPlaceholderCount) }
+        } else if (songs.isNullOrEmpty()) {
             item(key = "empty") {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
@@ -346,6 +337,10 @@ fun ArtistLocalSongs(
                 items = songs ?: emptyList(),
                 key = { _, song -> song.id }
             ) { index, song ->
+                if (forceShimmer) {
+                    SongItemPlaceholder(title = song.cleanTitle(), artist = song.cleanArtistsText())
+                    return@itemsIndexed
+                }
                 val isDownloaded = isDownloadedSong(song.asMediaItem.mediaId)
                 Box(
                     Modifier
@@ -410,6 +405,7 @@ fun ArtistLocalSongs(
     }
 
     val context = LocalContext.current
+    val forceShimmer = forceLoadingShimmerPreview()
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
@@ -603,7 +599,13 @@ fun ArtistLocalSongs(
                         items = songs,
                         key = { _, song -> song.id }
                     ) { index, song ->
-
+                        if (forceShimmer) {
+                            SongItemPlaceholder(
+                                modifier = Modifier.padding(vertical = 4.dp),
+                                title = song.cleanTitle(), artist = song.cleanArtistsText(),
+                            )
+                            return@itemsIndexed
+                        }
                         val isDownloaded = isDownloadedSong(song.asMediaItem.mediaId)
                         Box(
                             Modifier
@@ -640,11 +642,7 @@ fun ArtistLocalSongs(
                         }
                     }
                 } ?: item(key = "loading") {
-                    ShimmerHost {
-                        repeat(4) {
-                            SongItemPlaceholder()
-                        }
-                    }
+                    SongItemPlaceholders(count = FullSongListPlaceholderCount)
                 }
             }
 
@@ -680,75 +678,33 @@ fun ArtistHeader(
 ) {
     val context = LocalContext.current
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
-    val isLandscape = isLandscape
-
-    GlassArtworkBackdrop(hasArtwork = !isLandscape) { artworkBackdrop ->
-    Box(Modifier.fillMaxWidth()) {
-        val viewportPainter = rememberImageLoadingViewportPainter(thumbnailPainter)
-        if (!isLandscape)
-            Image(
-                painter = viewportPainter,
-                contentDescription = null,
-                contentScale = ContentScale.FillWidth,
-                modifier = Modifier.then(artworkBackdrop)
-                    .aspectRatio(4f / 3)
-                    .fillMaxWidth()
-                    .align(Alignment.Center)
-                    .fadingEdge(
-                        top = WindowInsets.systemBars.asPaddingValues().calculateTopPadding() + Dimensions.fadeSpacingTop,
-                        bottom = Dimensions.fadeSpacingBottom
-                    )
-                    .imageLoadingViewport(viewportPainter)
-            )
-
-        Column(Modifier.align(Alignment.BottomCenter)) {
-            AutoResizeText(
-                text = cleanPrefix(localArtist.name ?: "..."),
-                style = typography().l.semiBold,
-                fontSizeRange = FontSizeRange(32.sp, 38.sp),
-                fontWeight = typography().l.semiBold.fontWeight,
-                fontFamily = typography().l.semiBold.fontFamily,
-                color = typography().l.semiBold.color,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .padding(horizontal = 30.dp)
-                    .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                    .align(Alignment.CenterHorizontally)
-            )
+    CollectionArtworkHeader(
+        title = localArtist.name ?: "...",
+        artwork = thumbnailPainter,
+        disableScrollingText = disableScrollingText,
+        subtitle = {
             val statsText = artistStatisticsText(artistPage?.subscribers, artistPage?.listeners)
             if (statsText.isNotBlank()) {
-                BasicText(
-                    text = statsText,
-                    style = typography().s.copy(colorPalette().textSecondary),
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
+                if (forceLoadingShimmerPreview()) {
+                    MeasuredMetadataPlaceholder(statsText, typography().s, maxLines = 1)
+                } else BasicText(statsText, style = typography().s.copy(colorPalette().textSecondary))
             }
-        }
-
-        GlassToolbarRow(
-            actionCount = 1,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 5.dp, end = 5.dp)
-        ) {
-            HeaderIconButton(
-                icon = R.drawable.share_social,
-                color = colorPalette().text,
-                iconSize = 24.dp,
-                onClick = {
-                    val url = ExternalUris.youtubeMusicChannel(localArtist.id.removePrefix(MODIFIED_PREFIX))
-                    val sendIntent = Intent().apply {
-                        action = Intent.ACTION_SEND
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, url)
-                    }
-                    context.startActivity(Intent.createChooser(sendIntent, null))
+        },
+    ) {
+        HeaderIconAction(
+            icon = R.drawable.share_social,
+            color = colorPalette().text,
+            iconSize = 24.dp,
+            onClick = {
+                val url = ExternalUris.youtubeMusicChannel(localArtist.id.removePrefix(MODIFIED_PREFIX))
+                val sendIntent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, url)
                 }
-            )
-        }
-    }
+                context.startActivity(Intent.createChooser(sendIntent, null))
+            },
+        )
     }
 }
 

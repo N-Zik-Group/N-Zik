@@ -30,8 +30,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -125,9 +123,16 @@ import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
 import app.n_zik.android.components.ui.screens.LayoutWithAdaptiveThumbnail
 import app.n_zik.android.ui.components.themed.PlaylistsItemMenu
 import app.n_zik.android.ui.components.themed.adaptiveThumbnailContent
-import app.n_zik.android.ui.components.themed.Loader
+import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import app.n_zik.android.ui.components.ArtworkShimmerPlaceholder
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 
+import app.n_zik.android.ui.items.FullSongListPlaceholderCount
 import app.n_zik.android.ui.items.SongItemPlaceholder
+import app.n_zik.android.ui.items.SongItemPlaceholders
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.favoritesIcon
@@ -215,6 +220,7 @@ fun PlaylistSongList(
     val menuState = LocalMenuState.current
     val hapticFeedback = LocalHapticFeedback.current
     val lazyListState = rememberLazyListState()
+    val forceSongPlaceholders = forceLoadingShimmerPreview()
 
     // Listen Together guest lock (spec-listen-together-guest-lock-hardening): the
     // playlist radio control is a host-owned stateful control.
@@ -230,7 +236,9 @@ fun PlaylistSongList(
     var playlistPage by persist<PlaylistPage?>("playlist/$browseId/playlistPage")
     var continuation: String? by remember { mutableStateOf( null ) }
     var playlistSongs by persistList<Innertube.SongItem>("playlist/$browseId/songs")
-    var loadedSongsCount by remember { mutableIntStateOf(0) }
+    var initialPlaylistDetails by remember(browseId) { mutableStateOf<PlaylistPage?>(null) }
+    var loadedSongsCount by remember(browseId) { mutableIntStateOf(0) }
+    var initialLoadFailed by remember(browseId) { mutableStateOf(false) }
 
     val updatedItemsPageProvider: suspend (String?) -> Result<PlaylistPage> by rememberUpdatedState {
         if( it == null )
@@ -256,16 +264,29 @@ fun PlaylistSongList(
         loadedSongsCount = 0
         if (playlistPage == null) {
             withContext(NzikDispatchers.DATA) {
-                val firstPage = YtMusic.getPlaylist( browseId.removePrefix(MODIFIED_PREFIX) ).getOrNull() ?: return@withContext
+                val firstPage = YtMusic.getPlaylist(browseId.removePrefix(MODIFIED_PREFIX)).getOrElse { error ->
+                    if (error is CancellationException) throw error
+                    Timber.tag("PlaylistSongList").w(error, "Unable to load playlist tracks")
+                    initialLoadFailed = true
+                    return@withContext
+                }
+                initialPlaylistDetails = firstPage
                 val allSongs = firstPage.songs.toMutableList()
-                loadedSongsCount = allSongs.fastDistinctBy( Innertube.SongItem::key ).size
+                val loadedKeys = firstPage.songs.asSequence()
+                    .filter { !parentalControlEnabled || !it.explicit }
+                    .map(Innertube.SongItem::key)
+                    .toMutableSet()
+                loadedSongsCount = loadedKeys.size
                 var cont = firstPage.songsContinuation
                 var maxPages = 50
                 while (cont != null && maxPages-- > 0) {
                     val next = YtMusic.getPlaylistContinuation( cont ).getOrNull()
                     if (next != null) {
                         allSongs += next.songs
-                        loadedSongsCount = allSongs.fastDistinctBy( Innertube.SongItem::key ).size
+                        next.songs.forEach { song ->
+                            if (!parentalControlEnabled || !song.explicit) loadedKeys.add(song.key)
+                        }
+                        loadedSongsCount = loadedKeys.size
                         cont = next.continuation
                     } else {
                         cont = null
@@ -408,8 +429,11 @@ fun PlaylistSongList(
         mutableIntStateOf(0)
     }
 
+    val isInitialLoading = playlistPage == null && playlistSongs.isEmpty() && !initialLoadFailed
+    val showSongPlaceholders = forceSongPlaceholders || isInitialLoading
+    val headerPlaylist = (playlistPage ?: initialPlaylistDetails)?.playlist
     val thumbnailContent = adaptiveThumbnailContent(
-        isLoading = playlistPage == null,
+        isLoading = isInitialLoading,
         url = playlistPage?.playlist?.thumbnail?.url,
         isYoutubePlaylist = true
     )
@@ -434,20 +458,14 @@ fun PlaylistSongList(
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            if (playlistPage == null && playlistSongs.isEmpty()) {
+            if (playlistPage == null && playlistSongs.isEmpty() && initialLoadFailed) {
                 CollectionPageStatus {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Loader()
-                        if (loadedSongsCount > 0) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            BasicText(
-                                text = pluralStringResource(R.plurals.album_loading_song_count, loadedSongsCount, loadedSongsCount),
-                                style = typography().xxs.copy(
-                                    color = colorPalette().textDisabled
-                                )
-                            )
-                        }
-                    }
+                    val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
+                    val offlineMode by OfflineMode.rememberEnabled()
+                    BasicText(
+                        text = stringResource(if (offlineMode || !isOnline) R.string.common_load_failed_no_connection else R.string.common_load_failed),
+                        style = typography().s.copy(color = colorPalette().textSecondary),
+                    )
                 }
             } else {
                 val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
@@ -483,12 +501,14 @@ fun PlaylistSongList(
 
                     val modifierArt = Modifier.fillMaxWidth()
 
-                    GlassArtworkBackdrop(hasArtwork = !isLandscape && playlistPage != null) { artworkBackdrop ->
+                    GlassArtworkBackdrop(hasArtwork = !isLandscape && playlistPage != null && !forceSongPlaceholders) { artworkBackdrop ->
                     Box(
                         modifier = modifierArt
                     ) {
-                        if (playlistPage != null) {
-                            if(!isLandscape)
+                        if (headerPlaylist != null || isInitialLoading) {
+                            if (!isLandscape && showSongPlaceholders) {
+                                ArtworkShimmerPlaceholder()
+                            } else if (!isLandscape)
                                 Box {
                                     ImageCacheFactory.AsyncImage(
                                         shape = null,
@@ -525,8 +545,17 @@ fun PlaylistSongList(
                                         .offset(5.dp, 5.dp)
                                 )
 
-                            AutoResizeText(
-                                text = playlistPage?.playlist?.title ?: "",
+                            val headerTitle = headerPlaylist?.title
+                            if (showSongPlaceholders && headerTitle.isNullOrBlank()) {
+                                ItemTextPlaceholder(
+                                    text = null,
+                                    style = typography().l.semiBold.copy(fontSize = 38.sp),
+                                    modifier = Modifier.align(Alignment.BottomCenter)
+                                        .padding(horizontal = 30.dp)
+                                        .padding(bottom = 20.dp),
+                                )
+                            } else AutoResizeText(
+                                text = headerTitle.orEmpty(),
                                 style = typography().l.semiBold,
                                 fontSizeRange = FontSizeRange(32.sp, 38.sp),
                                 fontWeight = typography().l.semiBold.fontWeight,
@@ -535,24 +564,39 @@ fun PlaylistSongList(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Center,
+                                shimmer = showSongPlaceholders,
                                 modifier = Modifier
                                     .align(Alignment.BottomCenter)
                                     .padding(horizontal = 30.dp)
                                     .padding(bottom = 20.dp)
                             )
 
-                            BasicText(
-                                text = pluralStringResource(
+                            val playlistSummary = if (isInitialLoading) {
+                                if (loadedSongsCount > 0) {
+                                    pluralStringResource(R.plurals.album_loading_song_count, loadedSongsCount, loadedSongsCount)
+                                } else stringResource(R.string.common_loading_message)
+                            } else {
+                                val songCount = filteredPageSongs?.size ?: 0
+                                pluralStringResource(
                                     R.plurals.library_song_count_with_duration,
-                                    filteredPageSongs?.size ?: 0,
-                                    filteredPageSongs?.size ?: 0,
+                                    songCount,
+                                    songCount,
                                     formatAsTime(totalPlayTimes),
-                                ),
-                                style = typography().xs.medium,
+                                )
+                            }
+                            if (!isInitialLoading && showSongPlaceholders) {
+                                ItemTextPlaceholder(
+                                    text = playlistSummary,
+                                    style = typography().xs.medium,
+                                    modifier = Modifier.align(Alignment.BottomCenter),
+                                    width = 0.32f,
+                                )
+                            } else BasicText(
+                                text = playlistSummary,
+                                style = if (isInitialLoading) typography().xs.medium.copy(color = colorPalette().textSecondary)
+                                    else typography().xs.medium,
                                 maxLines = 1,
-                                modifier = Modifier
-                                    //.padding(top = 10.dp)
-                                    .align(Alignment.BottomCenter)
+                                modifier = Modifier.align(Alignment.BottomCenter),
                             )
 
 
@@ -914,6 +958,26 @@ fun PlaylistSongList(
 
 
 
+                        } else if (isInitialLoading) {
+                            val actionIcons = listOf(
+                                R.drawable.search_circle,
+                                R.drawable.download,
+                                R.drawable.downloaded,
+                                R.drawable.enqueue,
+                                shuffleButtonIcon(),
+                                radioButtonIcon(),
+                                R.drawable.add_in_playlist,
+                                R.drawable.heart,
+                            )
+                            CollectionToolbar(
+                                bookmark = {
+                                    DisabledPlaylistAction(
+                                        if (localPlaylist?.isYoutubePlaylist == true) R.drawable.bookmark
+                                        else R.drawable.bookmark_outline,
+                                    )
+                                },
+                                actions = actionIcons.map { icon -> @Composable { DisabledPlaylistAction(icon) } },
+                            )
                         } else {
                             BasicText(
                                 text = stringResource(R.string.playlist_operation_wait_message),
@@ -983,7 +1047,7 @@ fun PlaylistSongList(
                     }
                 }
 
-                playlistPage?.description?.let { description ->
+                (playlistPage ?: initialPlaylistDetails)?.description?.let { description ->
                     if( description.isNotBlank() ) {
                         item(
                             key = "playlistInfo"
@@ -997,7 +1061,7 @@ fun PlaylistSongList(
                             var translatedText by remember(nonTranslatedText, translationTarget) {
                                 mutableStateOf<String?>(null)
                             }
-                            if (translationTarget != null) {
+                            if (translationTarget != null && !showSongPlaceholders) {
                                 LaunchedEffect(nonTranslatedText, translationTarget) {
                                     translatedText = withContext(NzikDispatchers.DATA) {
                                         try {
@@ -1064,7 +1128,15 @@ fun PlaylistSongList(
                                         modifier = Modifier.offset(y = (-8).dp)
                                     )
 
-                                    BasicText(
+                                    if (showSongPlaceholders) {
+                                        MeasuredMetadataPlaceholder(
+                                            text = translatedText ?: nonTranslatedText,
+                                            style = typography().xs.secondary.align(TextAlign.Justify),
+                                            maxLines = if (isDescriptionExpanded) Int.MAX_VALUE else 3,
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = Modifier.padding(horizontal = 8.dp).weight(1f),
+                                        )
+                                    } else BasicText(
                                         text = translatedText ?: nonTranslatedText,
                                         style = typography().xs.secondary.align(TextAlign.Justify),
                                         maxLines = if (isDescriptionExpanded) Int.MAX_VALUE else 3,
@@ -1088,15 +1160,10 @@ fun PlaylistSongList(
 
                                 if (showMoreButton || isDescriptionExpanded) {
                                     GlassDescriptionExpansion(
+                                        label = stringResource(if (isDescriptionExpanded) R.string.common_action_show_less else R.string.common_action_show_more),
                                         onClick = { isDescriptionExpanded = !isDescriptionExpanded },
                                         modifier = Modifier.align(Alignment.CenterHorizontally),
-                                    ) {
-                                        BasicText(
-                                            text = if (isDescriptionExpanded) stringResource(R.string.common_action_show_less) else stringResource(R.string.common_action_show_more),
-                                            style = typography().xs.semiBold.copy(colorPalette().text),
-                                            modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally)
-                                        )
-                                    }
+                                    )
                                 }
 
                                 if (isDescriptionExpanded && attributionsIndex != -1) {
@@ -1113,7 +1180,21 @@ fun PlaylistSongList(
                 }
                 }
 
-                items(
+                if (showSongPlaceholders) {
+                    val knownSongs = if (isInitialLoading) {
+                        initialPlaylistDetails?.songs
+                            ?.fastFilter { !parentalControlEnabled || !it.explicit }
+                            ?.fastDistinctBy(Innertube.SongItem::key)
+                    } else playlistSongs
+                    items(
+                        count = knownSongs?.size ?: FullSongListPlaceholderCount,
+                        key = { index -> knownSongs?.getOrNull(index)?.key ?: "playlist-song-loading-$index" },
+                        contentType = { "song-placeholder" },
+                    ) { index ->
+                        val song = knownSongs?.getOrNull(index)?.asSong
+                        SongItemPlaceholder(title = song?.cleanTitle(), artist = song?.cleanArtistsText())
+                    }
+                } else items(
                     items = playlistSongs,
                     key = Innertube.SongItem::key
                 ) { ytSong ->
@@ -1174,8 +1255,8 @@ fun PlaylistSongList(
                     }
                 }
 
-                if (playlistPage != null && continuation != null) {
-                    item("loading") { SongItemPlaceholder() }
+                if (!forceSongPlaceholders && playlistPage != null && continuation != null) {
+                    item("loading") { SongItemPlaceholders(count = 1) }
                 }
             }
                 }
@@ -1203,6 +1284,18 @@ fun PlaylistSongList(
             }
         }
     }
+}
+
+@Composable
+private fun DisabledPlaylistAction(icon: Int) {
+    HeaderIconButton(
+        icon = icon,
+        color = colorPalette().textDisabled,
+        enabled = false,
+        iconSize = if (icon == R.drawable.search_circle) 24.dp else 20.dp,
+        modifier = Modifier.padding(horizontal = 5.dp),
+        onClick = {},
+    )
 }
 
 /**

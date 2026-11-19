@@ -3,8 +3,8 @@ package app.n_zik.android.ui.screens.album
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.core.coil.imageLoadingViewport
-import app.n_zik.android.core.coil.rememberImageLoadingViewportPainter
+import app.n_zik.android.components.ui.CollectionButtonToolbar
+import app.n_zik.android.components.ui.screens.CollectionArtworkHeader
 import app.n_zik.android.uiRoundnessShape
 
 
@@ -12,9 +12,7 @@ import android.content.Intent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,15 +21,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -47,7 +40,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -57,7 +49,6 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -80,18 +71,19 @@ import app.n_zik.android.typography
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.SwipeablePlaylistItem
 import app.n_zik.android.ui.components.navigation.header.TabToolBar
-import app.n_zik.android.ui.components.themed.AutoResizeText
 import app.n_zik.android.ui.components.themed.Enqueue
-import app.n_zik.android.ui.components.themed.FontSizeRange
 import app.n_zik.android.ui.components.themed.HeaderIconButton
 import app.n_zik.android.ui.components.themed.ItemsList
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
 import app.n_zik.android.ui.components.themed.MultiFloatingActionsContainer
 import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.ui.items.AlbumItem
 import app.n_zik.android.ui.items.AlbumItemPlaceholder
-import app.n_zik.android.ui.components.themed.Loader
+import app.n_zik.android.components.ui.screens.album.AlbumSongsPageStatus
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.items.SongItemPlaceholder
+import app.n_zik.android.ui.items.SongItemPlaceholders
 
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.px
@@ -101,19 +93,15 @@ import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.asSong
 import app.n_zik.android.utils.center
 import app.n_zik.android.utils.color
-import app.n_zik.android.utils.conditional
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.durationTextToMillis
 import app.n_zik.android.utils.enqueue
 import app.n_zik.android.utils.excludeMediaItems
-import app.n_zik.android.utils.fadingEdge
 import app.n_zik.android.utils.forcePlayAtIndex
 import app.n_zik.android.utils.formatAsTime
 import app.n_zik.android.core.network.client.NetworkClientFactory
-import app.n_zik.android.utils.isLandscape
 import app.n_zik.android.enums.Languages
 import app.n_zik.android.utils.otherLanguageAppAlbumKey
-import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.medium
 import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.utils.rememberPreference
@@ -172,7 +160,9 @@ fun AlbumDetails(
     description: String,
     loadedSongsCount: Int = 0,
     onSearchClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    songsLoading: Boolean = false,
+    songsLoadFailed: Boolean = false,
 ) {
     PersistMapCleanup( "album/${browseId}/songs" )
 
@@ -196,6 +186,7 @@ fun AlbumDetails(
     val items = remember(rawItems, parentalControlEnabled) {
         rawItems.filter { !parentalControlEnabled || it.title.startsWith(EXPLICIT_PREFIX, true) != true }
     }
+    val forceSongPlaceholders = forceLoadingShimmerPreview()
 
     val itemSelector = ItemSelector<Song>()
 
@@ -204,12 +195,6 @@ fun AlbumDetails(
 
     val bookmark = AlbumBookmark( browseId )
     
-    LaunchedEffect(items) {
-        if (items.isEmpty() && album == null) {
-            // Force fetch or similar if needed, but usually AlbumDetails is called with a pre-fetched album
-        }
-    }
-
     val deleteAllDownloadsDialog = DeleteAllDownloadedSongsDialog( ::getSongs )
     val downloadALlDialog = DownloadAllSongsDialog( ::getSongs )
     val shuffle = SongShuffler {
@@ -307,27 +292,15 @@ fun AlbumDetails(
     changeAuthors.Render()
     changeCover.Render()
 
+    val initialSongsLoading = songsLoading && items.isEmpty()
     DynamicOrientationLayout( thumbnailPainter ) {
         Box(
             Modifier.fillMaxSize()
                 .background( colorPalette().background0 ),
             contentAlignment = Alignment.Center
         ) {
-            if (items.isEmpty()) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Loader()
-                    if (loadedSongsCount > 0) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        BasicText(
-                            text = pluralStringResource(R.plurals.album_loading_song_count, loadedSongsCount, loadedSongsCount),
-                            style = typography().xxs.copy(
-                                color = colorPalette().textDisabled
-                            )
-                        )
-                    }
-                }
+            if (items.isEmpty() && !initialSongsLoading) {
+                AlbumSongsPageStatus(loadedSongsCount, forceSongPlaceholders, songsLoadFailed)
             } else {
                 val albumSongIds = remember(items) { items.map { it.id } }
                 val likeStatesMap by remember(albumSongIds) {
@@ -366,50 +339,22 @@ fun AlbumDetails(
                         .background( colorPalette().background0 )
                 ) {
                     item( "header" ) {
-                    Box( Modifier.fillMaxWidth() ) {
-                        val viewportPainter = rememberImageLoadingViewportPainter(thumbnailPainter)
-                        if (!isLandscape)
-                            Image(
-                                painter = viewportPainter,
-                                contentDescription = null,
-                                contentScale = ContentScale.FillWidth,
-                                modifier = Modifier.aspectRatio( 4f / 3 )      // Limit height
-                                    .fillMaxWidth()
-                                    .align(Alignment.Center)
-                                    .fadingEdge(
-                                        top = WindowInsets.systemBars
-                                            .asPaddingValues()
-                                            .calculateTopPadding() + Dimensions.fadeSpacingTop,
-                                        bottom = Dimensions.fadeSpacingBottom
-                                    )
-                                    .imageLoadingViewport(viewportPainter)
-                            )
-
-                        AutoResizeText(
-                            text = cleanPrefix( album?.title ?: "..." ),
-                            style = typography().l.semiBold,
-                            fontSizeRange = FontSizeRange(32.sp, 38.sp),
-                            fontWeight = typography().l.semiBold.fontWeight,
-                            fontFamily = typography().l.semiBold.fontFamily,
-                            color = typography().l.semiBold.color,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.align( Alignment.BottomCenter )
-                                .padding( horizontal = 30.dp )
-                                .conditional( !disableScrollingText ) {
-                                    basicMarquee(iterations = Int.MAX_VALUE)
-                                }
-                        )
-
+                    CollectionArtworkHeader(
+                        title = album?.title ?: "...",
+                        artwork = thumbnailPainter,
+                        disableScrollingText = disableScrollingText,
+                        isLoading = initialSongsLoading,
+                        fullWidthTitleShimmer = true,
+                        frameAction = false,
+                    ) {
+                        val shareUrl = album?.shareUrl
                         HeaderIconButton(
                             icon = R.drawable.share_social,
-                            color = colorPalette().text,
+                            color = if (shareUrl == null && initialSongsLoading) colorPalette().textDisabled else colorPalette().text,
                             iconSize = 24.dp,
-                            modifier = Modifier.align( Alignment.TopEnd )
-                                .padding( top = 5.dp, end = 5.dp ),
+                            enabled = shareUrl != null || !initialSongsLoading,
                             onClick = {
-                                album?.shareUrl?.let { url ->
+                                shareUrl?.let { url ->
                                     val sendIntent = Intent().apply {
                                         action = Intent.ACTION_SEND
                                         type = "text/plain"
@@ -436,49 +381,68 @@ fun AlbumDetails(
                             durationTextToMillis(it.durationText ?: "")
                         })
 
-                        BasicText(
-                            text = stringResource(
-                                R.string.album_year_and_song_summary,
-                                year,
-                                pluralStringResource(
-                                    R.plurals.library_song_count_with_duration,
-                                    items.size,
-                                    items.size,
-                                    totalDuration,
-                                ),
+                        val style = typography().xs.medium
+                        val summary = stringResource(
+                            R.string.album_year_and_song_summary,
+                            year,
+                            pluralStringResource(
+                                R.plurals.library_song_count_with_duration,
+                                items.size,
+                                items.size,
+                                totalDuration,
                             ),
-                            style = typography().xs.medium,
-                            maxLines = 1
                         )
+                        if (initialSongsLoading) BasicText(
+                            if (loadedSongsCount > 0) {
+                                pluralStringResource(R.plurals.album_loading_song_count, loadedSongsCount, loadedSongsCount)
+                            } else stringResource(R.string.common_loading_message),
+                            style = style.copy(color = colorPalette().textSecondary),
+                            maxLines = 1,
+                        )
+                        else if (forceSongPlaceholders) MeasuredMetadataPlaceholder(summary, style, maxLines = 1)
+                        else BasicText(summary, style = style, maxLines = 1)
                     }
                 }
 
                 item( "action_buttons" ) {
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        // Place this button alone so we can space it further from other buttons
-                        bookmark.ToolBarButton()
-
-                        Spacer( Modifier.width(15.dp) )
-
-                        TabToolBar.Buttons(
-                            downloadALlDialog,
-                            deleteAllDownloadsDialog,
-                            shuffle,
-                            radio,
-                            locator,
-                            itemSelector,
-                            changeTitle,
-                            changeAuthors,
-                            changeCover,
-                            playNext,
-                            enqueue,
-                            addToPlaylist,
-                            modifier = Modifier.fillMaxWidth( .8f )
+                    val buttons = listOf(
+                        downloadALlDialog,
+                        deleteAllDownloadsDialog,
+                        shuffle,
+                        radio,
+                        locator,
+                        itemSelector,
+                        changeTitle,
+                        changeAuthors,
+                        changeCover,
+                        playNext,
+                        enqueue,
+                        addToPlaylist,
+                    )
+                    if (initialSongsLoading) {
+                        CollectionButtonToolbar(
+                            bookmark = {
+                                if (album != null) bookmark.ToolBarButton()
+                                else HeaderIconButton(
+                                    onClick = {},
+                                    icon = R.drawable.bookmark,
+                                    color = colorPalette().textDisabled,
+                                    enabled = false,
+                                )
+                            },
+                            buttons = buttons,
+                            enabled = false,
                         )
+                    } else {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            bookmark.ToolBarButton()
+                            Spacer(Modifier.width(15.dp))
+                            TabToolBar.Buttons(buttons, modifier = Modifier.fillMaxWidth(.8f))
+                        }
                     }
                 }
 
@@ -570,15 +534,10 @@ fun AlbumDetails(
 
                             if (showMoreButton || isDescriptionExpanded) {
                                 GlassDescriptionExpansion(
+                                    label = stringResource(if (isDescriptionExpanded) R.string.common_action_show_less else R.string.common_action_show_more),
                                     onClick = { isDescriptionExpanded = !isDescriptionExpanded },
                                     modifier = Modifier.align(Alignment.CenterHorizontally),
-                                ) {
-                                    BasicText(
-                                        text = if (isDescriptionExpanded) stringResource(R.string.common_action_show_less) else stringResource(R.string.common_action_show_more),
-                                        style = typography().xs.semiBold.copy(colorPalette().text),
-                                        modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally)
-                                    )
-                                }
+                                )
                             }
 
                             if (isDescriptionExpanded && attributionsIndex != -1) {
@@ -604,10 +563,20 @@ fun AlbumDetails(
                 }
 
 
-                itemsIndexed(
+                if (initialSongsLoading) item("album-songs-preview") {
+                    SongItemPlaceholders(count = 4, showThumbnail = false)
+                } else itemsIndexed(
                     items = items,
                     key = { _, song -> song.id }
                 ) { index, song ->
+                    if (forceSongPlaceholders) {
+                        SongItemPlaceholder(
+                            trackNumber = index + 1,
+                            title = song.cleanTitle(),
+                            artist = song.cleanArtistsText(),
+                        )
+                        return@itemsIndexed
+                    }
 
                     SwipeablePlaylistItem(
                         mediaItem = song.asMediaItem,
@@ -680,14 +649,10 @@ fun AlbumDetails(
                         ItemsList(
                             tag = "album/$browseId/alternatives_list",
                             headerContent = {},
-                            initialPlaceholderCount = 1,
+                            initialPlaceholderCount = alternatives.size,
                             continuationPlaceholderCount = 1,
                             emptyItemsText = stringResource( R.string.album_no_alternative_version ),
-                            itemsPageProvider = {
-                                Result.success(
-                                    Innertube.ItemsPage( alternatives, null )
-                                )
-                            },
+                            knownItems = alternatives,
                             itemContent = { album ->
                                 AlbumItem(
                                     alternative = true,
@@ -713,8 +678,15 @@ fun AlbumDetails(
                                     disableScrollingText = disableScrollingText
                                 )
                             },
-                            itemPlaceholderContent = {
-                                AlbumItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
+                            itemPlaceholderContent = { index ->
+                                val alternative = alternatives.getOrNull(index)
+                                AlbumItemPlaceholder(
+                                    thumbnailSizeDp = thumbnailAlbumSizeDp,
+                                    alternative = true,
+                                    metadataLines = if (alternative?.year.isNullOrBlank()) 0 else 1,
+                                    title = alternative?.info?.name?.let(::cleanPrefix),
+                                    metadata = alternative?.year?.let(::listOf),
+                                )
                             }
                         )
                     }
@@ -724,7 +696,7 @@ fun AlbumDetails(
                 }
 
             val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
-            if ( showFloatingIcon )
+            if (showFloatingIcon && !initialSongsLoading)
                 MultiFloatingActionsContainer(
                     // Issue #866 (gh-866): app-wide shuffle confirmation flash (the click goes
                     // through SongShuffler, which triggers the flash).
