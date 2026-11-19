@@ -1,8 +1,7 @@
 package app.n_zik.android.ui.components.themed
 
-import app.n_zik.android.components.search.SearchEmptyFeedback
-import app.n_zik.android.components.search.SearchEmptySpace
-import kotlinx.coroutines.flow.onEach
+import app.n_zik.android.components.menu.playlist.PlaylistPickerFeedback
+import app.n_zik.android.components.menu.playlist.rememberPlaylistPickerRead
 
 
 import android.annotation.SuppressLint
@@ -23,7 +22,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -203,10 +201,8 @@ fun PlaylistsItemMenu(
                 val context = LocalContext.current
                 val sortBy by rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
                 val sortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Descending)
-                var playlistsLoaded by remember { mutableStateOf(false) }
-                val playlistPreviews by remember {
-                    Database.playlistTable.sortPreviews( sortBy, sortOrder ).onEach { playlistsLoaded = true }
-                }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
+                val playlistRead = rememberPlaylistPickerRead(sortBy, sortOrder)
+                val playlistPreviews = playlistRead.previews
 
                 val editablePreviews = playlistPreviews.filter { canEditPlaylistMembership(it.playlist) }
                 val pinnedPlaylists = editablePreviews.filter {
@@ -298,14 +294,7 @@ fun PlaylistsItemMenu(
                     val filteredUnpinnedPlaylists = unpinnedPlaylists.filter { it.playlist.name.contains(search.inputValue, true) }
 
                     val noPlaylistResults = filteredPinnedPlaylists.isEmpty() && filteredUnpinnedPlaylists.isEmpty() && (!isNetworkConnected(context) || filteredYoutubePlaylists.isEmpty())
-                    SearchEmptyFeedback(
-                        query = search.inputValue,
-                        empty = noPlaylistResults,
-                        loading = !playlistsLoaded
-                    )
-                    if (search.inputValue.isNotBlank() && noPlaylistResults) {
-                        SearchEmptySpace(Modifier.height(160.dp))
-                    }
+                    PlaylistPickerFeedback(playlistRead, search.inputValue, noPlaylistResults)
                     if (filteredPinnedPlaylists.isNotEmpty()) {
                         BasicText(
                             text = stringResource(R.string.playlist_pinned_title),

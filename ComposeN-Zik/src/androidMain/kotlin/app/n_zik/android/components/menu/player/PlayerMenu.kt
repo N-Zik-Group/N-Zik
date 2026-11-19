@@ -1,10 +1,8 @@
 package app.n_zik.android.components.menu.player
 
-import androidx.compose.foundation.layout.height
-import app.n_zik.android.components.search.SearchEmptyFeedback
-import app.n_zik.android.components.search.SearchEmptySpace
+import app.n_zik.android.components.menu.playlist.PlaylistPickerFeedback
+import app.n_zik.android.components.menu.playlist.rememberPlaylistPickerRead
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.onEach
 
 
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -83,7 +81,6 @@ import androidx.compose.ui.graphics.compositeOver
 import app.n_zik.android.enums.PlaylistSortBy
 import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.utils.Preference
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -255,10 +252,8 @@ fun AddToPlaylistItemMenu(
 
     val sortBy by rememberPreference(Preference.HOME_LIBRARY_PLAYLIST_SORT_BY.key, PlaylistSortBy.SongCount)
     val sortOrder by rememberPreference(Preference.HOME_LIBRARY_PLAYLIST_SORT_ORDER.key, SortOrder.Ascending)
-    var playlistsLoaded by remember { mutableStateOf(false) }
-    val playlistPreviews by remember {
-        Database.playlistTable.sortPreviews( sortBy, sortOrder ).onEach { playlistsLoaded = true }
-    }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
+    val playlistRead = rememberPlaylistPickerRead(sortBy, sortOrder)
+    val playlistPreviews = playlistRead.previews
 
     val playlistIds = rememberSongPlaylistIds(mediaItem.mediaId)
 
@@ -325,14 +320,7 @@ fun AddToPlaylistItemMenu(
         val filteredUnpinnedPlaylists = unpinnedPlaylists.filter { it.playlist.name.contains(search.inputValue, true) }
 
         val noPlaylistResults = filteredPinnedPlaylists.isEmpty() && filteredUnpinnedPlaylists.isEmpty() && (!isNetworkConnected(context) || filteredYoutubePlaylists.isEmpty())
-        SearchEmptyFeedback(
-            query = search.inputValue,
-            empty = noPlaylistResults,
-            loading = !playlistsLoaded
-        )
-        if (search.inputValue.isNotBlank() && noPlaylistResults) {
-            SearchEmptySpace(Modifier.height(160.dp))
-        }
+        PlaylistPickerFeedback(playlistRead, search.inputValue, noPlaylistResults)
         if (filteredPinnedPlaylists.isNotEmpty()) {
             BasicText(
                 text = stringResource(R.string.playlist_pinned_title),
@@ -492,10 +480,8 @@ fun AddToPlaylistArtistSongsMenu(
 
     val sortBy by rememberPreference(Preference.HOME_LIBRARY_PLAYLIST_SORT_BY.key, PlaylistSortBy.SongCount)
     val sortOrder by rememberPreference(Preference.HOME_LIBRARY_PLAYLIST_SORT_ORDER.key, SortOrder.Ascending)
-    var playlistsLoaded by remember { mutableStateOf(false) }
-    val playlistPreviews by remember {
-        Database.playlistTable.sortPreviews( sortBy, sortOrder ).onEach { playlistsLoaded = true }
-    }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
+    val playlistRead = rememberPlaylistPickerRead(sortBy, sortOrder)
+    val playlistPreviews = playlistRead.previews
 
     val editablePreviews = playlistPreviews.filter { canEditPlaylistMembership(it.playlist) }
     val pinnedPlaylists = editablePreviews.filter {
@@ -559,14 +545,7 @@ fun AddToPlaylistArtistSongsMenu(
         val filteredUnpinnedPlaylists = unpinnedPlaylists.filter { it.playlist.name.contains(search.inputValue, true) }
 
         val noPlaylistResults = filteredPinnedPlaylists.isEmpty() && filteredUnpinnedPlaylists.isEmpty() && (!isNetworkConnected(context) || filteredYoutubePlaylists.isEmpty())
-        SearchEmptyFeedback(
-            query = search.inputValue,
-            empty = noPlaylistResults,
-            loading = !playlistsLoaded
-        )
-        if (search.inputValue.isNotBlank() && noPlaylistResults) {
-            SearchEmptySpace(Modifier.height(160.dp))
-        }
+        PlaylistPickerFeedback(playlistRead, search.inputValue, noPlaylistResults)
         if (filteredPinnedPlaylists.isNotEmpty()) {
             BasicText(
                 text = stringResource(R.string.playlist_pinned_title),
