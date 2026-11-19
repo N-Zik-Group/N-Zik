@@ -88,11 +88,10 @@ import app.n_zik.android.components.glass.GlassOverlayControls
 import app.n_zik.android.components.glass.OverlayFade
 import app.n_zik.android.utils.lyricsTypeKey
 import app.n_zik.android.components.dialog.common.LyricsSizeDialog
-import app.n_zik.android.ui.components.themed.TextPlaceholder
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.PureBlackColorPalette
-import app.n_zik.android.ui.styling.onOverlayShimmer
 import app.n_zik.android.utils.align
 import app.n_zik.android.utils.center
 import app.n_zik.android.utils.color
@@ -138,7 +137,6 @@ import app.n_zik.android.typography
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.ui.saveable.TolerantStringStateSaver
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.menu.lyrics.LyricsSettingsMenu
 import app.n_zik.android.components.dialog.player.ShowOffsetDialog
@@ -182,6 +180,7 @@ fun LyricsScreen(
     OverlayFade(active = isDisplayed, hosted = fadeHosted) {
         val coroutineScope = rememberCoroutineScope()
         val context = LocalContext.current
+        val forceShimmer = forceLoadingShimmerPreview()
         val menuState = LocalMenuState.current
         val currentView = LocalView.current
         val binder = LocalPlayerServiceBinder.current
@@ -220,11 +219,12 @@ fun LyricsScreen(
             lyrics?.takeIf { it.songId == mediaId }?.type
                 ?.let { runCatching { LyricsType.valueOf(it) }.getOrNull() }
         }
+        val requestedLyricsType = if (lyricsType == LyricsType.Auto) LyricsType.Karaoke else lyricsType
 
         val mediaMetadata = mediaMetadataProvider()
         val editLyricsDialog = EditLyricsDialog(
             mediaId = mediaId,
-            lyricsType = actualLyricsType ?: (if (lyricsType != LyricsType.Auto) lyricsType else LyricsType.Karaoke),
+            lyricsType = actualLyricsType ?: requestedLyricsType,
             getLyrics = { lyrics },
             ensureSongInserted = ensureSongInserted,
             title = mediaMetadata.title?.toString()?.let(::cleanPrefix),
@@ -430,7 +430,7 @@ fun LyricsScreen(
 
             Box(Modifier.matchParentSize(), contentAlignment = Alignment.Center) {
                 AnimatedVisibility(
-                    visible = ((isError && text == null) || (invalidLrc && lyricsType != LyricsType.Unsynced)) && !noLyricsFound && !isFetching,
+                    visible = ((!forceShimmer && isError && text == null) || (invalidLrc && lyricsType != LyricsType.Unsynced)) && !noLyricsFound && !isFetching,
                     enter = slideInVertically { -it },
                     exit = slideOutVertically { -it },
                     modifier = Modifier.align(Alignment.TopCenter)
@@ -502,7 +502,8 @@ fun LyricsScreen(
                                 onDismiss = onDismiss,
                                 onInvalidLrc = { invalidLrc = it },
                                 showIntervalIndicator = showIntervalIndicator,
-                                showClipRectsDebug = showClipRectsDebug
+                                showClipRectsDebug = showClipRectsDebug,
+                                showShimmer = forceShimmer,
                             )
                         }
 
@@ -540,7 +541,8 @@ fun LyricsScreen(
                                 onDismiss = onDismiss,
                                 onInvalidLrc = { invalidLrc = it },
                                 showIntervalIndicator = showIntervalIndicator,
-                                karaokeRespectAgentPosition = karaokeRespectAgentPosition
+                                karaokeRespectAgentPosition = karaokeRespectAgentPosition,
+                                showShimmer = forceShimmer,
                             )
                         }
                         actualLyricsType == LyricsType.Unsynced -> {
@@ -565,13 +567,14 @@ fun LyricsScreen(
                                 lyricsHighlight = lyricsHighlight,
                                 thumbnailSize = thumbnailSize,
                                 clickLyricsText = clickLyricsText,
-                                onDismiss = onDismiss
+                                onDismiss = onDismiss,
+                                showShimmer = forceShimmer,
                             )
                         }
                     }
                 }
 
-                if (noLyricsFound && !isPicking && !isFetching) {
+                if (!forceShimmer && noLyricsFound && !isPicking && !isFetching) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
@@ -616,18 +619,8 @@ fun LyricsScreen(
                     }
                 }
 
-                if ((text == null && !isError && !noLyricsFound) || isFetching) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.shimmer()
-                    ) {
-                        repeat(4) {
-                            TextPlaceholder(
-                                color = colorPalette().onOverlayShimmer,
-                                modifier = Modifier.alpha(1f - it * 0.1f)
-                            )
-                        }
-                    }
+                if (text.isNullOrEmpty() && (forceShimmer || isFetching || text == null && !isError && !noLyricsFound)) {
+                    LyricsLoadingShimmer(actualLyricsType ?: requestedLyricsType, lyricsFontSize, customSize, lyricsAlignment)
                 }
 
             }

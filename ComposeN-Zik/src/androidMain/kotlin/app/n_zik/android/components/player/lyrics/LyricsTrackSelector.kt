@@ -34,11 +34,11 @@ import app.n_zik.android.components.dialog.common.DefaultDialog
 import app.n_zik.android.ui.components.themed.IconButton
 import androidx.compose.material3.Icon
 import app.n_zik.android.components.menu.ListMenu
-import app.n_zik.android.components.ui.InlineCircularLoader
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.lrclib.LrcLib
 import app.n_zik.lrclib.models.Track
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -118,9 +118,71 @@ fun LyricsTrackSelector(
     val menuState = LocalMenuState.current
     var loading by remember { mutableStateOf(true) }
     val tracks = remember { mutableStateListOf<Track>() }
-    var error by remember { mutableStateOf(false) }
     var title by remember { mutableStateOf(initialTitle) }
     var artistName by remember { mutableStateOf(initialArtistName) }
+
+    val searchFields: @Composable (Boolean) -> Unit = { enabled ->
+        Row {
+            TextField(
+                value = title,
+                onValueChange = { newTitle ->
+                    title = newTitle
+                },
+                singleLine = true,
+                enabled = enabled,
+                colors = trackSelectorTextFieldColors,
+                modifier = Modifier
+                    .padding(horizontal = 6.dp)
+                    .weight(1f)
+            )
+            TextField(
+                value = artistName,
+                onValueChange = { newArtistName ->
+                    artistName = newArtistName
+                },
+                singleLine = true,
+                enabled = enabled,
+                colors = trackSelectorTextFieldColors,
+                modifier = Modifier
+                    .padding(horizontal = 6.dp)
+                    .weight(1f)
+            )
+            IconButton(
+                icon = R.drawable.search,
+                enabled = enabled,
+                color = colorPalette().text,
+                onClick = {
+                    menuState.hide()
+                    onSearchRetry()
+                },
+                modifier = Modifier
+                    .background(
+                        shape = uiRoundnessShape(),
+                        color = surfaceColor(colorPalette().background2)
+                    )
+                    .padding(all = 4.dp)
+                    .size(24.dp)
+                    .align(Alignment.CenterVertically)
+                    .weight(0.2f)
+            )
+        }
+    }
+
+    fun showSearchRetry() {
+        menuState.display {
+            ListMenu.Menu(title = stringResource(R.string.lyrics_title)) {
+                ListMenu.Entry(
+                    text = stringResource(R.string.common_action_cancel),
+                    icon = { SettingIcon(R.drawable.chevron_back) },
+                    onClick = {
+                        menuState.hide()
+                        onDismiss()
+                    },
+                )
+                searchFields(true)
+            }
+        }
+    }
 
     LaunchedEffect(title, artistName) {
         onTitleChange(title)
@@ -151,67 +213,13 @@ fun LyricsTrackSelector(
                                 duration = Toast.LENGTH_LONG
                             )
                         }
-                if (pickable.isEmpty()){
-                        menuState.display {
-                        ListMenu.Menu(title = stringResource(R.string.lyrics_title)) {
-                            ListMenu.Entry(
-                                text = stringResource(R.string.common_action_cancel),
-                                icon = { SettingIcon(R.drawable.chevron_back) },
-                                onClick = {
-                                    menuState.hide()
-                                    onDismiss()
-                                }
-                            )
-                            Row {
-                                TextField(
-                                    value = title,
-                                    onValueChange = { newTitle ->
-                                        title = newTitle
-                                    },
-                                    singleLine = true,
-                                    colors = trackSelectorTextFieldColors,
-                                    modifier = Modifier
-                                        .padding(horizontal = 6.dp)
-                                        .weight(1f)
-                                )
-                                TextField(
-                                    value = artistName,
-                                    onValueChange = { newArtistName ->
-                                        artistName = newArtistName
-                                    },
-                                    singleLine = true,
-                                    colors = trackSelectorTextFieldColors,
-                                    modifier = Modifier
-                                        .padding(horizontal = 6.dp)
-                                        .weight(1f)
-                                )
-                                IconButton(
-                                    icon = R.drawable.search,
-                                    color = colorPalette().text,
-                                    onClick = {
-                                        menuState.hide()
-                                        onSearchRetry()
-                                    },
-                                    modifier = Modifier
-                                        .background(
-                                            shape = uiRoundnessShape(),
-                                            color = surfaceColor(colorPalette().background2)
-                                        )
-                                        .padding(all = 4.dp)
-                                        .size(24.dp)
-                                        .align(Alignment.CenterVertically)
-                                        .weight(0.2f)
-                                )
-                            }
-                        }
-                    }
-                }
+                if (pickable.isEmpty()) showSearchRetry()
 
                 tracks.clear()
                 tracks.addAll(pickable)
                 loading = false
-                error = false
             }?.onFailure {
+                if (it is CancellationException) throw it
                 if (playerEnableLyricsPopupMessage)
                     coroutineScope.launch {
                         Toaster.e(
@@ -222,10 +230,16 @@ fun LyricsTrackSelector(
                     }
 
                 loading = false
-                error = true
-            } ?: run { loading = false }
+                showSearchRetry()
+            } ?: run {
+                loading = false
+                showSearchRetry()
+            }
         }.onFailure {
-            Timber.tag("LyricsTrackSelector").e("get error 1 ${it.stackTraceToString()}")
+            if (it is CancellationException) throw it
+            Timber.tag("LyricsTrackSelector").e(it, "Lyrics search failed")
+            loading = false
+            showSearchRetry()
         }
     }
 
@@ -236,7 +250,25 @@ fun LyricsTrackSelector(
                 onDismiss()
             }
         ) {
-            InlineCircularLoader(modifier = Modifier.align(Alignment.CenterHorizontally))
+            ListMenu.Entry(
+                text = stringResource(R.string.common_action_cancel),
+                icon = { SettingIcon(R.drawable.chevron_back) },
+                onClick = onDismiss,
+            )
+            searchFields(false)
+            repeat(4) {
+                ListMenu.Entry(
+                    text = "",
+                    subtitle = "",
+                    icon = { SettingIcon(R.drawable.text) },
+                    loading = true,
+                )
+            }
+            ListMenu.Entry(
+                text = stringResource(R.string.common_action_cancel),
+                icon = { SettingIcon(R.drawable.chevron_back) },
+                onClick = onDismiss,
+            )
         }
     }
 
@@ -252,47 +284,7 @@ fun LyricsTrackSelector(
                             onDismiss()
                         }
                     )
-                    Row{
-                        TextField(
-                            value = title,
-                            onValueChange = { newTitle ->
-                                title = newTitle
-                            },
-                            singleLine = true,
-                            colors = trackSelectorTextFieldColors,
-                            modifier = Modifier
-                                .padding(horizontal = 6.dp)
-                                .weight(1f)
-                        )
-                        TextField(
-                            value = artistName,
-                            onValueChange = { newArtistName ->
-                                artistName = newArtistName
-                            },
-                            singleLine = true,
-                            colors = trackSelectorTextFieldColors,
-                            modifier = Modifier
-                                .padding(horizontal = 6.dp)
-                                .weight(1f)
-                        )
-                        IconButton(
-                            icon = R.drawable.search,
-                            color = colorPalette().text,
-                            onClick = {
-                                menuState.hide()
-                                onSearchRetry()
-                            },
-                            modifier = Modifier
-                                .background(
-                                    shape = uiRoundnessShape(),
-                                    color = surfaceColor(colorPalette().background2)
-                                )
-                                .padding(all = 4.dp)
-                                .size(24.dp)
-                                .align(Alignment.CenterVertically)
-                                .weight(0.2f)
-                        )
-                    }
+                    searchFields(true)
                     tracks.forEach {
                         ListMenu.Entry(
                             text = "${it.artistName} - ${it.trackName}",

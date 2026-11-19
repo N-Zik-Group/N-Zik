@@ -50,7 +50,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.components.player.lyricsThemeColor
 import app.n_zik.android.enums.lyrics.LyricsBackground
@@ -59,7 +58,6 @@ import app.n_zik.android.enums.lyrics.LyricsFontSize
 import app.n_zik.android.enums.lyrics.LyricsHighlight
 import app.n_zik.android.enums.lyrics.LyricsOutline
 import app.n_zik.android.colorPalette
-import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.verticalFadingEdge
 import kotlinx.coroutines.delay
@@ -73,6 +71,7 @@ import dev.rebelonion.translator.Translator
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import app.n_zik.android.enums.lyrics.LyricsAlignment
+import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import androidx.compose.ui.graphics.Path
 import androidx.compose.runtime.withFrameMillis
@@ -318,7 +317,8 @@ fun KaraokeLyricsView(
     onInvalidLrc: (Boolean) -> Unit,
     showIntervalIndicator: Boolean = true,
     showClipRectsDebug: Boolean = false,
-    forcedCoverBackground: Color? = null
+    forcedCoverBackground: Color? = null,
+    showShimmer: Boolean = false,
 ) {
     val density = LocalDensity.current
 
@@ -327,12 +327,14 @@ fun KaraokeLyricsView(
     var karaokeLines by remember { mutableStateOf<List<KaraokeLine>>(emptyList()) }
     var gapWindows by remember { mutableStateOf<Map<Int, Pair<Long, Long>>>(emptyMap()) }
     var initialGapWindow by remember { mutableStateOf<Pair<Long, Long>?>(null) }
+    var hasParsedLyrics by remember { mutableStateOf(false) }
     LaunchedEffect(text) {
         val parsed = withContext(NzikDispatchers.MEDIA) { parseKaraokeLrc(text) }
         val (initialGap, windows) = withContext(NzikDispatchers.MEDIA) { computeKaraokeGapWindows(parsed) }
         karaokeLines = parsed
         gapWindows = windows
         initialGapWindow = initialGap
+        hasParsedLyrics = true
         if (parsed.isEmpty()) onInvalidLrc(true) else onInvalidLrc(false)
     }
 
@@ -669,13 +671,7 @@ fun KaraokeLyricsView(
 
     val inactiveColor = accentColor.copy(alpha = 0.4f)
 
-    val textSize = when (fontSize) {
-        LyricsFontSize.Light -> typography().m.fontSize
-        LyricsFontSize.Medium -> typography().l.fontSize
-        LyricsFontSize.Heavy -> typography().xl.fontSize
-        LyricsFontSize.Large -> typography().xlxl.fontSize
-        else -> customSize.sp
-    }
+    val textSize = lyricsReadingFontSize(fontSize, customSize)
 
     var modifierBG = Modifier.verticalFadingEdge()
     if (showBackgroundLyrics && showlyricsthumbnail) modifierBG = modifierBG.background(if (lyricsColor == LyricsColor.Cover) forcedCoverBackground ?: colorPalette().accent else colorPalette().accent)
@@ -817,6 +813,7 @@ fun KaraokeLyricsView(
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = if (clickLyricsText) LocalIndication.current else null,
+                        enabled = !showShimmer,
                         onClick = {
                             if (clickLyricsText) onSeekTo(line.timeMs) else onDismiss()
                         }
@@ -851,7 +848,23 @@ fun KaraokeLyricsView(
 
                 val displayedText = translationCache[index] ?: line.text
 
-                if (line.words.isNotEmpty() && (isActiveLine || isStillAnimating)) {
+                if (showShimmer) {
+                    val weight = when {
+                        line.words.isNotEmpty() && (isActiveLine || isStillAnimating ||
+                            currentPositionMs > (line.words.maxOfOrNull { it.endMs } ?: line.timeMs)) -> FontWeight.Bold
+                        isActiveLine -> FontWeight.ExtraBold
+                        else -> FontWeight.Medium
+                    }
+                    LyricsTextShimmer(
+                        text = displayedText,
+                        style = TextStyle(
+                            fontSize = textSize,
+                            fontWeight = weight,
+                            textAlign = lineTextAlign,
+                            lineHeight = textSize * KARAOKE_LINE_HEIGHT_MULTIPLIER,
+                        ),
+                    )
+                } else if (line.words.isNotEmpty() && (isActiveLine || isStillAnimating)) {
                     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
 
                     Box(contentAlignment = Alignment.Center) {
@@ -1469,5 +1482,8 @@ fun KaraokeLyricsView(
             Spacer(modifier = Modifier.height(with(LocalConfiguration.current) { screenHeightDp.dp }))
         }
     }
-}
+        if (!hasParsedLyrics) {
+            LyricsLoadingShimmer(LyricsType.Karaoke, fontSize, customSize, lyricsAlignment, Modifier.align(Alignment.Center))
+        }
+    }
 }

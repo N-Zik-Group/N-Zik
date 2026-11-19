@@ -16,6 +16,7 @@ import app.n_zik.android.components.glass.glassQueueListBackground
 import app.n_zik.android.components.glass.queueContentBackground
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.GlassScope
+import app.n_zik.android.components.glass.GlassSongRowSurface
 
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchEmptySpace
@@ -59,6 +60,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -71,13 +74,13 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.navigation.NavController
 import app.n_zik.android.R
-import com.valentinilk.shimmer.shimmer
 import app.n_zik.android.compose.persist.persistList
 import app.n_zik.android.compose.persist.persistMap
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
+import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.core.network.OfflineMode
@@ -91,10 +94,13 @@ import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScroll
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.ui.items.SongItemPlaceholder
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.styling.Dimensions
+import app.n_zik.android.ui.styling.favoritesOverlay
 import app.n_zik.android.utils.DisposableListener
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.autoLoadSongsInQueueKey
+import app.n_zik.android.utils.currentMediaItemIdAsState
 import app.n_zik.android.utils.enqueue
 import app.n_zik.android.utils.isDownloadedSong
 import app.n_zik.android.utils.manageDownload
@@ -148,6 +154,7 @@ fun Queue(
 ) {
     // Essentials
     val context = LocalContext.current
+    val forceShimmer = forceLoadingShimmerPreview()
     val windowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
     val preview = LocalThemePreview.current
     val binder = LocalPlayerServiceBinder.current
@@ -376,6 +383,9 @@ fun Queue(
                 queueGlassSettings,
             )
             val queueBackground = colorPalette().background0.copy(alpha = backgroundAlpha)
+            val currentMediaId = if (forceShimmer) player.currentMediaItemIdAsState(player).value else null
+            val hasReorderSlot = !positionLock.isLocked()
+            val showReorderHandle = hasReorderSlot && search.inputValue.isEmpty()
 
             val queueSongIds = queueSnapshot.songIds
             val likeStatesMap by remember(queueSongIds) {
@@ -421,7 +431,7 @@ fun Queue(
                                    .glassQueueListBackground(queueBackground, queueGlassSettings)
 
             ) {
-                if (search.inputValue.isNotBlank() && !queueSearchPending && rowsOnDisplay.isEmpty()) {
+                if (!forceShimmer && search.inputValue.isNotBlank() && !queueSearchPending && rowsOnDisplay.isEmpty()) {
                     item(key = "search_no_results") {
                         SearchEmptySpace(Modifier.fillParentMaxSize())
                     }
@@ -432,6 +442,21 @@ fun Queue(
                 ) { displayIndex, row ->
                     val window = row.window
                     val song = row.song
+
+                    if (forceShimmer) {
+                        QueueGlassRowObjects(displayIndex, false) {
+                            QueueSongShimmer(
+                                song = song,
+                                background = itemBackground,
+                                isCurrent = currentMediaId == song.id,
+                                hasReorderSlot = hasReorderSlot,
+                                showReorderHandle = showReorderHandle,
+                                showSelection = itemSelector.isActive,
+                                handleAlpha = guestLockAlpha,
+                            )
+                        }
+                        return@itemsIndexed
+                    }
 
                     val isLocal by remember(song) { derivedStateOf { song.isLocal } }
                     val isDownloaded = isLocal || preview == null && isDownloadedSong(song.id)
@@ -452,7 +477,7 @@ fun Queue(
                                                } else Modifier)
                         ) {
                             // Drag anchor
-                            if ( !positionLock.isLocked() && search.inputValue.isEmpty() ) {
+                            if (showReorderHandle) {
                                 Box(
                                     modifier = Modifier.padding( end = 16.dp ) // Accommodate horizontal padding of SongItem
                                         .size( 24.dp )
@@ -566,7 +591,7 @@ fun Queue(
                                     backgroundColor = itemBackground,
                                     onLongClick = null, // null triggers SongItemMenu on long press
                                     trailingContent = {
-                                        if( !positionLock.isLocked() )
+                                        if (hasReorderSlot)
                                         // Create a fake box to store drag anchor and checkbox
                                             Box( Modifier.width( 24.dp ) )
                                     },
@@ -598,13 +623,17 @@ fun Queue(
                     }
                 }
 
-                if( binder?.isLoadingRadio == true ) {
-                    item {
-                        Column( Modifier.shimmer() ) {
-                            repeat(3) { index ->
-                                SongItemPlaceholder( Modifier.alpha( 1f - index * 0.125f ) )
-                            }
-                        }
+                if (binder?.isLoadingRadio == true) {
+                    items(3, key = { "loading_song_$it" }) {
+                        QueueSongShimmer(
+                            song = null,
+                            background = itemBackground,
+                            isCurrent = false,
+                            hasReorderSlot = hasReorderSlot,
+                            showReorderHandle = showReorderHandle,
+                            showSelection = itemSelector.isActive,
+                            handleAlpha = guestLockAlpha,
+                        )
                     }
                 }
             }
@@ -629,6 +658,53 @@ fun Queue(
     }
 }
 
+@Composable
+private fun QueueSongShimmer(
+    song: Song?,
+    background: Color,
+    isCurrent: Boolean,
+    hasReorderSlot: Boolean,
+    showReorderHandle: Boolean,
+    showSelection: Boolean,
+    handleAlpha: Float,
+) {
+    val palette = colorPalette()
+    val shape = uiRoundnessShape()
+    val reorderSpace = if (hasReorderSlot) 36.dp else 0.dp
+    val selectionSpace = if (showSelection) 52.dp else 0.dp
+    GlassSongRowSurface(background, palette.favoritesOverlay.takeIf { isCurrent }, shape) { rowBackground ->
+        Box(Modifier.fillMaxWidth().clip(shape).then(rowBackground)) {
+            SongItemPlaceholder(
+                modifier = Modifier.padding(end = reorderSpace + selectionSpace),
+                title = song?.cleanTitle(),
+                artist = song?.cleanArtistsText(),
+            )
+            if (showSelection) {
+                IconButton(
+                    icon = R.drawable.unchecked_outline,
+                    color = palette.textDisabled,
+                    enabled = false,
+                    onClick = {},
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                        .padding(end = 24.dp + reorderSpace)
+                        .size(24.dp),
+                )
+            }
+            if (showReorderHandle) {
+                IconButton(
+                    icon = R.drawable.reorder,
+                    color = palette.textDisabled,
+                    enabled = false,
+                    onClick = {},
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                        .padding(end = 16.dp)
+                        .size(24.dp)
+                        .alpha(handleAlpha),
+                )
+            }
+        }
+    }
+}
 
 
 

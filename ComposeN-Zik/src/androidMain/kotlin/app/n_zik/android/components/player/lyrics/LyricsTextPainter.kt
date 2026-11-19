@@ -40,7 +40,6 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.components.player.lyricsThemeColor
 import app.n_zik.android.enums.lyrics.LyricsAlignment
@@ -51,7 +50,6 @@ import app.n_zik.android.enums.lyrics.LyricsOutline
 import app.n_zik.android.ui.styling.PureBlackColorPalette
 import app.n_zik.android.utils.conditional
 import app.n_zik.android.colorPalette
-import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 
@@ -73,8 +71,25 @@ fun LyricsTextPainter(
     lyricsHighlight: LyricsHighlight,
     clickLyricsText: Boolean,
     textOnAccentBackground: Boolean = false,
+    showShimmer: Boolean = false,
     onClick: () -> Unit
 ) {
+    val textSize = lyricsReadingFontSize(fontSize, customSize)
+    if (showShimmer) {
+        val alignment = when (lyricsAlignment) {
+            LyricsAlignment.Left -> Alignment.CenterStart
+            LyricsAlignment.Center -> Alignment.Center
+            LyricsAlignment.Right -> Alignment.CenterEnd
+        }
+        Box(Modifier.fillMaxWidth(), contentAlignment = alignment) {
+            LyricsTextShimmer(
+                text = text,
+                style = TextStyle(fontSize = textSize, fontWeight = FontWeight.Medium, textAlign = lyricsAlignment.selected),
+                modifier = Modifier.padding(horizontal = 32.dp, vertical = if (isSync) 8.dp else 4.dp),
+            )
+        }
+        return
+    }
     val infiniteTransition = rememberInfiniteTransition()
 
     val offset by infiniteTransition.animateFloat(
@@ -185,13 +200,7 @@ fun LyricsTextPainter(
                         else if (lyricsOutline == LyricsOutline.Thememode)
                             if (colorPaletteMode == ColorPaletteMode.Light) Color.White else Color.Black
                         else Color.Transparent,
-                        fontSize = when (fontSize) {
-                            LyricsFontSize.Light -> typography().m.fontSize
-                            LyricsFontSize.Medium -> typography().l.fontSize
-                            LyricsFontSize.Heavy -> typography().xl.fontSize
-                            LyricsFontSize.Large -> typography().xlxl.fontSize
-                            else -> customSize.sp
-                        },
+                        fontSize = textSize,
                         textAlign = lyricsAlignment.selected,
                         drawStyle = Stroke(
                             width = when (fontSize) {
@@ -226,13 +235,7 @@ fun LyricsTextPainter(
                     style = TextStyle(
                         textAlign = lyricsAlignment.selected,
                         brush = if (lightTheme) brushrainbow else brushrainbowdark,
-                        fontSize = when (fontSize) {
-                            LyricsFontSize.Light -> typography().m.fontSize
-                            LyricsFontSize.Medium -> typography().l.fontSize
-                            LyricsFontSize.Heavy -> typography().xl.fontSize
-                            LyricsFontSize.Large -> typography().xlxl.fontSize
-                            else -> customSize.sp
-                        },
+                        fontSize = textSize,
                         fontWeight = FontWeight.Medium,
                         drawStyle = Stroke(
                             width = when (fontSize) {
@@ -266,13 +269,7 @@ fun LyricsTextPainter(
                 BasicText(
                     text = text,
                     style = TextStyle(
-                        fontSize = when (fontSize) {
-                            LyricsFontSize.Light -> typography().m.fontSize
-                            LyricsFontSize.Medium -> typography().l.fontSize
-                            LyricsFontSize.Heavy -> typography().xl.fontSize
-                            LyricsFontSize.Large -> typography().xlxl.fontSize
-                            else -> customSize.sp
-                        },
+                        fontSize = textSize,
                         fontWeight = FontWeight.Medium,
                         textAlign = lyricsAlignment.selected,
                         color = if (lyricsColor == LyricsColor.Thememode || lyricsColor == LyricsColor.White || lyricsColor == LyricsColor.Cover || lyricsColor == LyricsColor.Custom)
@@ -324,13 +321,7 @@ fun LyricsTextPainter(
                         else if (lyricsColor == LyricsColor.Thememode) lyricsThemeColor(colorPalette(), textOnAccentBackground)
                         else Color(lyricsCustomColor)
                     },
-                    fontSize = when (fontSize) {
-                        LyricsFontSize.Light -> typography().m.fontSize
-                        LyricsFontSize.Medium -> typography().l.fontSize
-                        LyricsFontSize.Heavy -> typography().xl.fontSize
-                        LyricsFontSize.Large -> typography().xlxl.fontSize
-                        else -> customSize.sp
-                    },
+                    fontSize = textSize,
                     textAlign = lyricsAlignment.selected,
                     shadow = Shadow(
                         color = Color.Black.copy(alpha = 0.5f),
@@ -364,13 +355,7 @@ fun LyricsTextPainter(
                     else if (lyricsColor == LyricsColor.Cover) Color(dominantColor)
                     else if (lyricsColor == LyricsColor.Thememode) lyricsThemeColor(colorPalette(), textOnAccentBackground)
                     else Color(lyricsCustomColor),
-                    fontSize = when (fontSize) {
-                        LyricsFontSize.Light -> typography().m.fontSize
-                        LyricsFontSize.Medium -> typography().l.fontSize
-                        LyricsFontSize.Heavy -> typography().xl.fontSize
-                        LyricsFontSize.Large -> typography().xlxl.fontSize
-                        else -> customSize.sp
-                    },
+                    fontSize = textSize,
                     textAlign = lyricsAlignment.selected,
                 ),
                 modifier = Modifier
@@ -407,13 +392,7 @@ fun LyricsTextPainter(
                 text = text,
                 style = TextStyle(
                     brush = if (lightTheme) brushrainbow else brushrainbowdark,
-                    fontSize = when (fontSize) {
-                        LyricsFontSize.Light -> typography().m.fontSize
-                        LyricsFontSize.Medium -> typography().l.fontSize
-                        LyricsFontSize.Heavy -> typography().xl.fontSize
-                        LyricsFontSize.Large -> typography().xlxl.fontSize
-                        else -> customSize.sp
-                    },
+                    fontSize = textSize,
                     fontWeight = FontWeight.Medium,
                     textAlign = lyricsAlignment.selected
                 ),

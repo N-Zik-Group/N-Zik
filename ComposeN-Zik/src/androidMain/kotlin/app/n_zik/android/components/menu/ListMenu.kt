@@ -30,6 +30,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 
 import app.n_zik.android.utils.conditional
 import app.n_zik.android.utils.disableScrollingTextKey
@@ -175,6 +176,7 @@ object ListMenu {
         subtitle: String? = null,
         onClick: () -> Unit = {},
         onLongClick: () -> Unit = {},
+        loading: Boolean = false,
         trailingContent: @Composable () -> Unit = {}
     ) {
         val alpha = if (enabled) 1f else 0.5f
@@ -187,7 +189,7 @@ object ListMenu {
                 .fillMaxWidth()
                 .clip(uiRoundnessShape())
                 .combinedClickable(
-                    enabled = enabled,
+                    enabled = enabled && !loading,
                     onClick = onClick,
                     onLongClick = onLongClick
                 )
@@ -198,7 +200,8 @@ object ListMenu {
             Column(
                 modifier = Modifier.weight( 1f )
             ) {
-                Text(
+                if (loading) ItemTextPlaceholder(null, typography().s.semiBold)
+                else Text(
                     text = text,
                     overflow = TextOverflow.Ellipsis,
                     color = colorPalette().text.copy(alpha = alpha),
@@ -213,7 +216,8 @@ object ListMenu {
 
                 subtitle?.let {
                     Spacer(modifier = Modifier.height(2.dp))
-                    Text(
+                    if (loading) ItemTextPlaceholder(null, typography().xs, width = 0.4f)
+                    else Text(
                         text = it,
                         overflow = TextOverflow.Ellipsis,
                         color = colorPalette().textSecondary.copy(alpha = alpha),

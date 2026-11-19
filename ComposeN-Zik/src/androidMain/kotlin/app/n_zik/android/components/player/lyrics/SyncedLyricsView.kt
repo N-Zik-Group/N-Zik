@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.components.player.lyricsThemeColor
 import app.n_zik.android.enums.lyrics.LyricsAlignment
+import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.enums.lyrics.LyricsBackground
 import app.n_zik.android.enums.lyrics.LyricsColor
 import app.n_zik.android.enums.lyrics.LyricsFontSize
@@ -162,7 +163,8 @@ fun SyncedLyricsView(
     onInvalidLrc: (Boolean) -> Unit,
     showIntervalIndicator: Boolean = true,
     karaokeRespectAgentPosition: Boolean = true,
-    forcedCoverBackground: Color? = null
+    forcedCoverBackground: Color? = null,
+    showShimmer: Boolean = false,
 ) {
     val density = LocalDensity.current
 
@@ -171,6 +173,7 @@ fun SyncedLyricsView(
     var syncedSentences by remember { mutableStateOf<List<SyncedSentence>>(emptyList()) }
     var gapWindows by remember { mutableStateOf<Map<Int, Pair<Long, Long>>>(emptyMap()) }
     var synchronizedLyrics by remember { mutableStateOf(SynchronizedLyrics(emptyList())) }
+    var hasParsedLyrics by remember { mutableStateOf(false) }
     LaunchedEffect(text) {
         val sentences = withContext(NzikDispatchers.MEDIA) {
             parseSyncedSentences(HtmlDecoder.decodeHtmlEntities(text))
@@ -179,6 +182,7 @@ fun SyncedLyricsView(
         syncedSentences = sentences
         gapWindows = windows
         synchronizedLyrics = SynchronizedLyrics(sentences.map { it.timeMs to it.text })
+        hasParsedLyrics = true
         if (sentences.isEmpty()) onInvalidLrc(true) else onInvalidLrc(false)
     }
 
@@ -494,6 +498,7 @@ if (showBackgroundLyrics && showlyricsthumbnail) modifierBG =
                             lyricsHighlight = lyricsHighlight,
                             clickLyricsText = clickLyricsText,
                             textOnAccentBackground = showBackgroundLyrics && showlyricsthumbnail,
+                            showShimmer = showShimmer,
                             onClick = {
                                 if (clickLyricsText) onSeekTo(sentence.timeMs) else onDismiss()
                             }
@@ -520,6 +525,9 @@ if (showBackgroundLyrics && showlyricsthumbnail) modifierBG =
             item(key = "footer", contentType = 2) {
                 Spacer(modifier = Modifier.height(thumbnailSize))
             }
+        }
+        if (!hasParsedLyrics) {
+            LyricsLoadingShimmer(LyricsType.Synced, fontSize, customSize, lyricsAlignment, Modifier.align(Alignment.Center))
         }
     }
 }

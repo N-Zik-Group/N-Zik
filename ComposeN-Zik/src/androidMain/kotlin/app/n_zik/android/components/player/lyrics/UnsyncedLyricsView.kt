@@ -61,7 +61,8 @@ fun UnsyncedLyricsView(
     @Suppress("UNUSED_PARAMETER") // Kept for API compatibility; centering now uses viewportHeight
     thumbnailSize: Dp,
     clickLyricsText: Boolean,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    showShimmer: Boolean = false,
 ) {
     val decodedText = remember(text) { HtmlDecoder.decodeHtmlEntities(text) }
     var translatedText by remember { mutableStateOf("") }
@@ -133,6 +134,7 @@ fun UnsyncedLyricsView(
                 dominantColor = coverInk,
                 lyricsHighlight = lyricsHighlight,
                 clickLyricsText = clickLyricsText,
+                showShimmer = showShimmer,
                 onClick = onDismiss
             )
         }
