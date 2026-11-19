@@ -6,6 +6,10 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- improve(shimmer): synchronize and size loading placeholders across the app
+  - Use a shared frame clock and palette through ShimmerHost. Match thumbnail, artist and text corners to the real components in Normal and Glass.
+  - Match row and grid geometry, visible text lines and controls in Home, Quick Picks, Discovery, the on-device library and search. Keep duration and download slots in song rows.
+  - Keep the two startup loading indicators and provide a debug-only switch for comparing the loaded and shimmer layouts on the Pixel.
 - improve(image-loading): vary static expressive placeholders across image loads
   - Prebuild the seven Material loader shapes in StaticImagePlaceholder and remember one choice per logical source/revision, without animation or changes during unrelated recompositions.
   - Give standard placeholders the shared navigation surface and the theme accent. Preserve readable accents exactly; adjust opacity and HSL lightness only when needed for contrast, retaining hue and saturation.
@@ -13,6 +17,17 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(collections): show content-shaped loading states and progress on collection pages
+  - Keep collection headers and actions in place. Give album title placeholders the available header width, preserve the artist scroll position and use a horizontal shelf for alternative album versions.
+  - Report loaded songs or episodes during album, playlist and podcast pagination. Show the total and duration when ready and preserve real empty and error states.
+  - Correct imported playlist badges and name the playlist menus. Match the loading rows in the lyrics and browse-ID selectors to their results.
+- fix(ui): cover additional screens with shared loading placeholders
+  - Keep the matching layouts in notifications, Rewind, statistics, storage, the permission journal, song and video information, the metadata editor, and audio output selection.
+  - Match Theme Store catalogs, tags and profile cards, and keep the submission form sections visible while data loads. Preserve the Creator tab and progress feedback for active operations.
+  - Verify 65 targeted tests and check the changed screens on the Pixel in Normal and Glass. Observe the real storage shimmer and a podcast progressing from 120 to 123 episodes before showing its duration.
+- fix(widget): synchronize widget time and progress with playback changes
+  - Capture position, duration, speed and monotonic sample time in WidgetPlaybackSnapshot, then project position at render time for the player and playlist widgets.
+  - Refresh on playback, timeline and seek events, and use one periodic refresh while the player is active.
 - fix(navigation): match native black-theme navbar coverage to the dropdown
   - Share navigationSurfaceColor across floating, classic, top and side navigation, tab containers and status fill. Use 90 percent native coverage for Pitch Black, Pure Black and Modern Black while preserving other palette colors.
   - Keep Glass film opacity controlled by its slider and avoid multiplying the new native alpha into the status film a second time.
