@@ -307,14 +307,15 @@ class HomeQuickPicksStateOfflineTest {
     }
 
     @Test
-    fun `offline refresh wipes the persisted state and reruns the local-only load`() {
+    fun `offline refresh retains the cached online page while rerunning the local loads`() {
         settleSharedLoad()
         val state = newState()
         // Pre-seed as if a previous online load had populated the persisted state.
-        state.homePageInit.value = HomePage(
+        val cachedHome = HomePage(
             sections = listOf(HomePage.Section("Charts", null, null, null, emptyList())),
             chips = null,
         )
+        state.homePageInit.value = cachedHome
         state.trendingList.value = listOf(
             Song(
                 id = "seed-1",
@@ -331,12 +332,12 @@ class HomeQuickPicksStateOfflineTest {
         state.refresh()
 
         assertEquals(1, state.refreshKey.value)
-        assertNull(state.homePageInit.value)
-        assertFalse(state.loadedData.value)
-        assertFalse(state.loadedQuickPicks.value)
-        assertTrue(state.trendingList.value.isEmpty())
+        assertEquals(cachedHome, state.homePageInit.value)
+        assertTrue(state.loadedData.value)
+        assertTrue(state.loadedQuickPicks.value)
 
         awaitLocalPhase(state)
+        assertEquals(cachedHome, state.homePageInit.value)
         assertTrue("the offline reload must mark the load done", state.loadedData.value)
         verifyNetworkPhasesSkipped()
         settleSharedLoad()

@@ -123,9 +123,11 @@ internal class QuickPicksObservationOwner(private val scope: CoroutineScope) {
     }
 }
 
+internal const val QUICK_PICKS_HOME_SECTION_TARGET = 15
+
 /** A successful merged page above the usable-section threshold ends the initial attempts. */
 internal suspend fun loadQuickPicksHomeAttempts(attempt: suspend () -> Int) {
     for (index in 0 until 3) {
-        if (attempt() > 15) break
+        if (attempt() > QUICK_PICKS_HOME_SECTION_TARGET) break
     }
 }

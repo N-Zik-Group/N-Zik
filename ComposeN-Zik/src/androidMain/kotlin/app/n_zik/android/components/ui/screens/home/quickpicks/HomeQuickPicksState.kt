@@ -17,6 +17,9 @@ import app.n_zik.android.enums.Countries
 import app.n_zik.android.enums.PlayEventsType
 import app.n_zik.android.models.Song
 import app.n_zik.android.utils.asSong
+import app.n_zik.android.utils.encryptedPreferencesUpdateTrigger
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.useLoginForBrowseKey
 import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
@@ -32,13 +35,14 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import timber.log.Timber
 import kotlin.time.Duration.Companion.days
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 
 @UnstableApi
-class HomeQuickPicksState(
+internal class HomeQuickPicksState(
     var trendingList: MutableState<List<Song>>,
     var trending: MutableState<Song?>,
     val trendingInit: Song?,
@@ -58,7 +62,8 @@ class HomeQuickPicksState(
     var recommendations: MutableState<List<Song>>,
     var ytmQuickPicks: MutableState<List<Song>>,
     var refreshing: MutableState<Boolean>,
-    var refreshKey: MutableState<Int>
+    var refreshKey: MutableState<Int>,
+    private val account: QuickPicksAccountIdentity = currentQuickPicksAccountIdentity(),
 ) {
     companion object {
         // Navigation must not cancel a shared network load.
@@ -78,18 +83,13 @@ class HomeQuickPicksState(
         val account: QuickPicksAccountIdentity,
     )
 
-    private fun accountIdentity(): QuickPicksAccountIdentity {
-        val session = Innertube.youtubeSessionSnapshot()
-        return quickPicksAccountIdentity(
-            session.cookie.orEmpty(), Innertube.useLoginForBrowse, session.dataSyncId, session.authUser,
-        )
-    }
+    private fun loadIdentity() = LoadIdentity(playEventType, selectedCountryCode, account)
 
-    private fun loadIdentity() = LoadIdentity(playEventType, selectedCountryCode, accountIdentity())
+    internal fun isCurrentAccount(): Boolean = account == currentQuickPicksAccountIdentity()
 
     @SuppressLint("SuspiciousIndentation")
     suspend fun loadData(force: Boolean = false): Boolean {
-        val account = accountIdentity()
+        if (!isCurrentAccount()) return false
         observeLocalData()
         if (!force && shouldSkipQuickPicksLoad(loadedData.value, homePageInit.value != null)) {
             // Repair an early-ready cache whose local loaded flag was lost.
@@ -116,49 +116,67 @@ class HomeQuickPicksState(
                 }
                 val quickPicksDeferred = async(NzikDispatchers.DATA) {
                     if (isYouTubeLoggedIn() && Innertube.useLoginForBrowse) {
-                        YtMusic.getQuickPicks(setLogin = true).getOrNull()
-                    } else null
+                        YtMusic.getQuickPicks(setLogin = true).getOrThrow()
+                    } else emptyList()
                 }
 
                 runCatching { chartsDeferred.await() }
                     .onSuccess { result ->
-                        chartsPageResult.value = result
-                        chartsPageInit.value = result?.getOrNull()
+                        chartsPageResult.value = result ?: Result.success(null)
+                        if (result?.isSuccess == true) chartsPageInit.value = result.getOrNull()
+                        result?.exceptionOrNull()?.let { error ->
+                            if (error is CancellationException) throw error
+                        }
                         Timber.tag("HomeQuickPicksState").d("Charts loaded")
                     }
                     .onFailure { e ->
+                        if (e is CancellationException) throw e
+                        chartsPageResult.value = Result.failure(e)
                         Timber.tag("HomeQuickPicksState").w(e, "Charts load failed")
                     }
 
                 runCatching { discoverDeferred.await() }
                     .onSuccess { result ->
-                        discoverPageResult.value = result
-                        discoverPageInit.value = result?.getOrNull()
+                        discoverPageResult.value = result ?: Result.success(null)
+                        if (result?.isSuccess == true) discoverPageInit.value = result.getOrNull()
+                        result?.exceptionOrNull()?.let { error ->
+                            if (error is CancellationException) throw error
+                        }
                         Timber.tag("HomeQuickPicksState").d("YouTube Discovery data loaded")
                     }
                     .onFailure { e ->
+                        if (e is CancellationException) throw e
+                        discoverPageResult.value = Result.failure(e)
                         Timber.tag("HomeQuickPicksState").w(e, "Discover load failed")
                     }
 
                 runCatching { quickPicksDeferred.await() }
                     .onSuccess { items ->
-                        if (items != null && items.isNotEmpty() && account == accountIdentity()) {
+                        if (isCurrentAccount()) {
                             ytmQuickPicks.value = items.map { it.asSong }
                             Timber.tag("HomeQuickPicksState").d("Lightweight Quick Picks loaded (${items.size} items)")
                         }
                     }
                     .onFailure { e ->
+                        if (e is CancellationException) throw e
                         Timber.tag("HomeQuickPicksState").w(e, "Quick picks load failed")
                     }
             }
 
             // Retry incomplete home data, preserving its existing merge order.
             if (online && (force || !shouldSkipQuickPicksLoad(loadedData.value, homePageInit.value != null))) {
-                var cumulativeSections = homePageInit.value?.sections.orEmpty()
-                var cumulativeChips = homePageInit.value?.chips.orEmpty()
+                val cachedHome = homePageInit.value
+                val replacingCachedHome = force && cachedHome != null
+                var cumulativeSections = if (replacingCachedHome) emptyList() else homePageInit.value?.sections.orEmpty()
+                var cumulativeChips = if (replacingCachedHome) emptyList() else homePageInit.value?.chips.orEmpty()
+                var refreshedHome: HomePage? = null
+                var latestResult: Result<HomePage>? = null
                 loadQuickPicksHomeAttempts {
+                    if (!isCurrentAccount()) throw CancellationException("YouTube account changed")
                     val result = YtMusic.getHomePage(setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)
-                    if (account != accountIdentity()) throw CancellationException("YouTube account changed")
+                    if (!isCurrentAccount()) throw CancellationException("YouTube account changed")
+                    result.exceptionOrNull()?.let { if (it is CancellationException) throw it }
+                    latestResult = result
                     result.getOrNull()?.let { page ->
                         val newSections = mutableListOf<HomePage.Section>()
                         val existingSections = cumulativeSections.toMutableList()
@@ -180,12 +198,23 @@ class HomeQuickPicksState(
 
                         cumulativeSections = existingSections + newSections
                         cumulativeChips = (cumulativeChips + (page.chips ?: emptyList())).distinctBy { it.title }
-                        homePageResult.value = Result.success(HomePage(sections = cumulativeSections, chips = cumulativeChips))
-                        homePageInit.value = homePageResult.value?.getOrNull()
+                        val merged = HomePage(sections = cumulativeSections, chips = cumulativeChips)
+                        refreshedHome = merged
+                        if (!replacingCachedHome) {
+                            homePageResult.value = Result.success(merged)
+                            homePageInit.value = merged
+                        }
                     }
                     if (result.getOrNull() != null) countUsableQuickPicksSections(cumulativeSections) else 0
                 }
 
+                if (replacingCachedHome && cachedHome != null) {
+                    refreshedHome?.takeIf { shouldReplaceCachedQuickPicksHome(cachedHome, it) }?.let { page ->
+                        homePageResult.value = Result.success(page)
+                        homePageInit.value = page
+                    }
+                }
+                if (homePageInit.value == null) homePageResult.value = latestResult
                 Timber.tag("HomeQuickPicksState").d("YouTube Music sections loaded: ${homePageInit.value?.sections?.size ?: 0}")
             }
 
@@ -194,9 +223,12 @@ class HomeQuickPicksState(
                 // Keep the cache flags consistent after cancellation.
                 Timber.tag("HomeQuickPicksState").d("LoadData cancelled, flags reset")
                 loadedData.value = false
-                if (trendingList.value.isEmpty()) loadedQuickPicks.value = false
+                if (isCurrentAccount() && trendingList.value.isEmpty()) loadedQuickPicks.value = false
             } else {
-                Timber.tag("HomeQuickPicksState").e("Failed loadData ${e.stackTraceToString()}")
+                Timber.tag("HomeQuickPicksState").e(e, "Failed to load Quick Picks")
+                if (homePageInit.value == null) homePageResult.value = Result.failure(e)
+                if (chartsPageResult.value == null) chartsPageResult.value = Result.failure(e)
+                if (discoverPageResult.value == null) discoverPageResult.value = Result.failure(e)
                 loadedData.value = false
             }
         }.onSuccess {
@@ -213,7 +245,7 @@ class HomeQuickPicksState(
             observationActivated = true
         }
         observations.start(observationToken, restart = restart) { publication ->
-            // Capture this state's parameters, never a later composition's settings.
+            var relatedRequested = false
             val songsFlow = when (playEventType) {
                 PlayEventsType.MostPlayed -> Database.eventTable
                     .findSongsMostPlayedBetween(from = from, limit = localCount)
@@ -221,25 +253,41 @@ class HomeQuickPicksState(
                 PlayEventsType.CasualPlayed -> Database.eventTable
                     .findSongsMostPlayedBetween(from = 0, limit = 100)
             }
-            songsFlow.distinctUntilChanged().collect { songs ->
+            songsFlow.distinctUntilChanged().catch { error ->
+                Timber.tag("HomeQuickPicksState").w(error, "Could not read local history")
+                observations.publish(publication) {
+                    loadedQuickPicks.value = true
+                    if (relatedPageResult.value == null) relatedPageResult.value = Result.failure(error)
+                }
+            }.collect { songs ->
                 val filtered = songs.distinctBy { it.id }
                     .filter { !parentalControlEnabled || !it.title.startsWith(EXPLICIT_PREFIX, true) }
                 val selected = if (playEventType == PlayEventsType.CasualPlayed) {
                     filtered.shuffled().take(localCount)
                 } else filtered.take(localCount)
-                var fetchRelated = false
                 observations.publish(publication) {
                     trendingList.value = selected
                     trending.value = selected.firstOrNull()
                     loadedQuickPicks.value = true
-                    fetchRelated = relatedPageResult.value == null
                 }
-                if (fetchRelated) {
-                    val related = Innertube.relatedPage(
-                        videoId = selected.firstOrNull { !it.isLocal }?.id ?: "4NRXx6U8ABQ",
-                        setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse,
-                    )
-                    observations.publish(publication) { relatedPageResult.value = related }
+                if (isCurrentAccount() && !relatedRequested && (restart || relatedPageResult.value == null)) {
+                    relatedRequested = true
+                    val related = try {
+                        Innertube.relatedPage(
+                            videoId = selected.firstOrNull { !it.isLocal }?.id ?: "4NRXx6U8ABQ",
+                            setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse,
+                        )
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (error: Exception) {
+                        Timber.tag("HomeQuickPicksState").w(error, "Could not load related music")
+                        Result.failure(error)
+                    }
+                    observations.publish(publication) {
+                        if (isCurrentAccount() && (related?.isSuccess == true || relatedPageResult.value?.getOrNull() == null)) {
+                            relatedPageResult.value = related ?: Result.success(null)
+                        }
+                    }
                 }
             }
         }
@@ -250,13 +298,13 @@ class HomeQuickPicksState(
         loads.request(
             identity = loadIdentity(),
             invalidate = invalidate,
-            onStart = { force -> prepareLoad(force) },
+            onStart = { force -> prepareLoad(force, clearCache = invalidate) },
         ) { force -> runLoad(force) }
     }
 
-    private fun prepareLoad(force: Boolean) {
-        if (force) {
-            refreshKey.value++
+    private fun prepareLoad(force: Boolean, clearCache: Boolean = false) {
+        if (force) refreshKey.value++
+        if (force && clearCache) {
             trendingList.value = emptyList()
             ytmQuickPicks.value = emptyList()
             recommendations.value = emptyList()
@@ -270,6 +318,11 @@ class HomeQuickPicksState(
             discoverPageInit.value = null
             chartsPageResult.value = null
             chartsPageInit.value = null
+        } else if (force) {
+            if (homePageInit.value == null) homePageResult.value = null
+            if (discoverPageInit.value == null) discoverPageResult.value = null
+            if (chartsPageInit.value == null) chartsPageResult.value = null
+            if (relatedPageResult.value?.getOrNull() == null) relatedPageResult.value = null
         }
         observeLocalData(restart = force)
     }
@@ -304,9 +357,44 @@ fun shouldSkipQuickPicksLoad(loadedData: Boolean, homePagePresent: Boolean): Boo
 internal fun countUsableQuickPicksSections(sections: List<HomePage.Section>): Int =
     sections.count { section -> section.items.any { !it?.key.isNullOrBlank() } }
 
+internal fun shouldReplaceCachedQuickPicksHome(cached: HomePage, refreshed: HomePage): Boolean {
+    val refreshedCount = countUsableQuickPicksSections(refreshed.sections)
+    return refreshedCount > QUICK_PICKS_HOME_SECTION_TARGET ||
+        refreshedCount >= countUsableQuickPicksSections(cached.sections)
+}
+
+internal fun currentQuickPicksAccountIdentity(): QuickPicksAccountIdentity {
+    val session = Innertube.youtubeSessionSnapshot()
+    return quickPicksAccountIdentity(
+        session.cookie.orEmpty(), Innertube.useLoginForBrowse, session.dataSyncId, session.authUser,
+    )
+}
+
+internal class QuickPicksAccountCache {
+    private var owner: QuickPicksAccountIdentity? = null
+    private var data: QuickPicksAccountData = QuickPicksAccountData()
+
+    fun forAccount(account: QuickPicksAccountIdentity): QuickPicksAccountData {
+        if (owner != account) {
+            owner = account
+            data = QuickPicksAccountData()
+        }
+        return data
+    }
+}
+
+internal class QuickPicksAccountData {
+    val relatedPageResult = mutableStateOf<Result<Innertube.RelatedPage?>?>(null)
+    val homePageResult = mutableStateOf<Result<HomePage?>?>(null)
+    val homePage = mutableStateOf<HomePage?>(null)
+    val quickPicks = mutableStateOf<List<Song>>(emptyList())
+    val recommendations = mutableStateOf<List<Song>>(emptyList())
+    val loaded = mutableStateOf(false)
+}
+
 @UnstableApi
 @Composable
-fun rememberHomeQuickPicksState(
+internal fun rememberHomeQuickPicksState(
     playEventType: PlayEventsType,
     selectedCountryCode: Countries,
     parentalControlEnabled: Boolean,
@@ -318,38 +406,39 @@ fun rememberHomeQuickPicksState(
     val trending = persist<Song?>("home/quickpicks/trending")
     val trendingInit = persist<Song?>(tag = "home/quickpicks/trending_init").value
 
-    val relatedPageResult = persist<Result<Innertube.RelatedPage?>?>(tag = "home/quickpicks/relatedPageResult")
-    
-    val discoverPageResult = persist<Result<Innertube.DiscoverPage?>?>("home/quickpicks/discoveryAlbumsResult")
-    val discoverPageInit = persist<Innertube.DiscoverPage?>("home/quickpicks/discoveryAlbumsInit")
-
-    val homePageResult = persist<Result<HomePage?>?>("home/quickpicks/homePageResult")
-    // Background loads and later page instances must share the same cache.
-    val homePageInit = if (preview == null) persist<HomePage>(tag = "home/quickpicks/homePageInit")
+    val useAuthenticatedBrowse = rememberPreference(useLoginForBrowseKey, true).value
+    val account = remember(useAuthenticatedBrowse, encryptedPreferencesUpdateTrigger) {
+        currentQuickPicksAccountIdentity()
+    }
+    val initialAccountCache = remember { QuickPicksAccountCache() }
+    val accountCache = persist("home/quickpicks/account-cache", initialAccountCache).value
+    val accountData = remember(accountCache, account) { accountCache.forAccount(account) }
+    val homePageInit = if (preview == null) accountData.homePage
         else remember { mutableStateOf<HomePage?>(themePreviewQuickPicksPage()) }
 
-    val ytmQuickPicks = persistList<Song>("home/quickpicks/ytmQuickPicks")
+    val discoverPageResult = persist<Result<Innertube.DiscoverPage?>?>("home/quickpicks/discoveryAlbumsResult")
+    val discoverPageInit = persist<Innertube.DiscoverPage?>("home/quickpicks/discoveryAlbumsInit")
 
     val chartsPageResult = persist<Result<Innertube.ChartsPage?>?>("home/quickpicks/chartsPageResult")
     val chartsPageInit = persist<Innertube.ChartsPage?>("home/quickpicks/chartsPageInit")
 
     val loadedQuickPicks = persist("home/quickpicks/loadedQuickPicks", preview != null)
-    val loadedData = persist("home/quickpicks/loadedData", preview != null)
-    
-    val recommendations = if (preview == null) persistList<Song>("home/quickpicks/recommendations_list")
+    val loadedData = if (preview == null) accountData.loaded else remember { mutableStateOf(true) }
+
+    val recommendations = if (preview == null) accountData.recommendations
         else remember { mutableStateOf(ThemePreviewDemo.songs.take(8)) }
     val refreshing = remember { mutableStateOf(false) }
     val refreshKey = remember { mutableIntStateOf(0) }
 
-    val state = remember(playEventType, selectedCountryCode, parentalControlEnabled, localCount) {
+    val state = remember(accountData, playEventType, selectedCountryCode, parentalControlEnabled, localCount) {
         HomeQuickPicksState(
             trendingList = trendingList,
             trending = trending,
             trendingInit = trendingInit,
-            relatedPageResult = relatedPageResult,
+            relatedPageResult = accountData.relatedPageResult,
             discoverPageResult = discoverPageResult,
             discoverPageInit = discoverPageInit,
-            homePageResult = homePageResult,
+            homePageResult = accountData.homePageResult,
             homePageInit = homePageInit,
             chartsPageResult = chartsPageResult,
             chartsPageInit = chartsPageInit,
@@ -360,9 +449,10 @@ fun rememberHomeQuickPicksState(
             parentalControlEnabled = parentalControlEnabled,
             localCount = localCount,
             recommendations = recommendations,
-            ytmQuickPicks = ytmQuickPicks,
+            ytmQuickPicks = accountData.quickPicks,
             refreshing = refreshing,
-            refreshKey = refreshKey
+            refreshKey = refreshKey,
+            account = account,
         )
     }
     return state
