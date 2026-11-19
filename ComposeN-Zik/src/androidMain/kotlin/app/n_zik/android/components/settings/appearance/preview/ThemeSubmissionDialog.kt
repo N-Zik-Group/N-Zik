@@ -82,7 +82,6 @@ import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.DialogButtonPlacement
 import app.n_zik.android.components.dialog.common.DefaultDialog
 import app.n_zik.android.components.ui.screens.home.GlassHomeChips
-import app.n_zik.android.components.ui.FullPageLoader
 import app.n_zik.android.components.glass.PageButton
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassRenderer
@@ -172,20 +171,20 @@ internal fun ThemeSubmissionPage(navController: NavController, miniPlayer: @Comp
     val creatingLocal = themeId == "local-new"
     val localOnly = creatingLocal || localKey != null
     val catalog = remember(context, localOnly) { themeStoreCatalog(context, localOnly) }
-    val published by produceState<List<StoreTheme>?>(null, catalog) {
-        value = if (localOnly) emptyList() else try {
+    val published = if (localOnly) emptyList() else produceState<List<StoreTheme>?>(null, catalog) {
+        value = try {
             catalog.refresh()
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (_: Exception) {
             catalog.cached() ?: emptyList()
         }
-    }
+    }.value
     val ownId = if (localOnly) null else signedInCreatorId()
     var creatorRetry by remember(themeId) { mutableIntStateOf(0) }
-    val publishedCreator by produceState<Result<Boolean>?>(null, catalog, ownId, creatorRetry) {
+    val publishedCreator = if (localOnly) Result.success(true) else produceState<Result<Boolean>?>(null, catalog, ownId, creatorRetry) {
         value = null
-        value = if (localOnly) Result.success(true) else try {
+        value = try {
             Result.success(catalog.creators().any { it.githubId == ownId })
         } catch (cancelled: CancellationException) {
             throw cancelled
@@ -193,7 +192,7 @@ internal fun ThemeSubmissionPage(navController: NavController, miniPlayer: @Comp
             timber.log.Timber.tag("ThemeStore").w(error, "Could not verify published creator profile")
             Result.failure(error)
         }
-    }
+    }.value
     val existing = localTheme?.theme ?: published.orEmpty().filter {
         it.themeId == themeId && it.author.githubId == ownId
     }.maxByOrNull(StoreTheme::revision)
@@ -224,7 +223,7 @@ internal fun ThemeSubmissionPage(navController: NavController, miniPlayer: @Comp
         val loaded = published
         val initial = publishedAppearance
         if (loaded == null || publishedCreator == null || (!localOnly && existing != null && initial == null)) {
-            FullPageLoader(modifier = Modifier.fillMaxSize().padding(padding))
+            ThemeSubmissionLoading(padding) { navController.popBackStack() }
         } else if (!localOnly && themeId == "new" && publishedCreator?.getOrNull() != true) {
             Column(Modifier.fillMaxSize().padding(padding),
                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
@@ -542,7 +541,6 @@ private fun ThemeSubmissionForm(
             emptyMap()
         }
     }
-    val sections = listOf(stringResource(R.string.theme_submission_section_information), stringResource(R.string.theme_submission_section_previews), stringResource(R.string.theme_submission_section_review))
     fun saveDraft() {
         val previous = draftPreviewUris(drafts.getString(key, null))
         val data = JSONObject().put("id", themeId).put("title", title).put("description", description)
@@ -696,52 +694,29 @@ private fun ThemeSubmissionForm(
         containerColor = colorPalette().background0,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
-            CompositionLocalProvider(
-                LocalIndependentGlassBackdrop provides LocalIndependentGlassBackdrop.current.takeUnless { captureFooter },
-            ) {
-                UpdaterBottomPanel(
-                    backdrop = footerBackdrop.takeIf { captureFooter },
-                    modifier = Modifier.fillMaxWidth()
-                        .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                ) {
-                    val palette = colorPalette()
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PageButton(
-                            onClick = ::navigateBack,
-                            modifier = Modifier.weight(1f),
-                            enabled = !busy && !importingPreview,
-                            elevation = null,
-                            colors = ButtonDefaults.buttonColors(containerColor = palette.red),
-                        ) {
-                            Text(if (step == 0) stringResource(R.string.common_action_cancel) else stringResource(R.string.theme_submission_back))
-                        }
-                        PageButton(
-                            onClick = {
-                                when {
-                                    step < 2 -> step++
-                                    localOnly -> saveLocalTheme()
-                                    else -> publish()
-                                }
-                            },
-                            modifier = Modifier.weight(1f),
-                            elevation = null,
-                            enabled = when (step) {
-                                0 -> informationValid
-                                1 -> !importingPreview && readyPreviews.containsAll(requiredSlots) && previewLimit?.let { gallerySlots.size <= it } == true
-                                else -> informationValid && !busy && !awaiting && (localOnly || (rights && canPublish))
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = palette.accent, contentColor = palette.onAccent),
-                        ) {
-                            Text(when {
-                                step < 2 -> stringResource(R.string.theme_submission_continue)
-                                localOnly -> stringResource(R.string.theme_store_local_save)
-                                else -> stringResource(R.string.theme_submission_submit_for_review)
-                            })
-                        }
+            SubmissionFooter(
+                backdrop = footerBackdrop.takeIf { captureFooter },
+                backLabel = if (step == 0) R.string.common_action_cancel else R.string.theme_submission_back,
+                continueLabel = when {
+                    step < 2 -> R.string.theme_submission_continue
+                    localOnly -> R.string.theme_store_local_save
+                    else -> R.string.theme_submission_submit_for_review
+                },
+                onBack = ::navigateBack,
+                onContinue = {
+                    when {
+                        step < 2 -> step++
+                        localOnly -> saveLocalTheme()
+                        else -> publish()
                     }
-                }
-            }
+                },
+                backEnabled = !busy && !importingPreview,
+                continueEnabled = when (step) {
+                    0 -> informationValid
+                    1 -> !importingPreview && readyPreviews.containsAll(requiredSlots) && previewLimit?.let { gallerySlots.size <= it } == true
+                    else -> informationValid && !busy && !awaiting && (localOnly || (rights && canPublish))
+                },
+            )
         },
     ) { footerPadding ->
         Column(
@@ -753,7 +728,7 @@ private fun ThemeSubmissionForm(
             if (!localOnly && !canPublish) {
                 SettingsDescription(stringResource(R.string.theme_store_published_creator_required))
             }
-            SubmissionStepper(sections, step)
+            SubmissionStepper(step)
             key(step) {
                 Column(
                     Modifier.weight(1f).fillMaxWidth()
@@ -763,65 +738,43 @@ private fun ThemeSubmissionForm(
                 ) {
                     when (step) {
                         0 -> {
-                            SettingsSectionCard(stringResource(R.string.theme_submission_information_title), R.drawable.ui, bottomSpacing = 0.dp, content = {
-                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    SubmissionField(title, { if (it.themeTextLength <= 100) title = it }, stringResource(R.string.theme_submission_title))
-                                    SubmissionField(description, { if (it.themeTextLength <= 1000) description = it }, stringResource(R.string.theme_submission_description), 3)
-                                    SubmissionField(tags, { tags = it }, stringResource(R.string.theme_store_tags_entry))
-                                    if (hasDuplicateTags || hasReservedTags) {
-                                        SettingsDescription(stringResource(
-                                            if (hasReservedTags) R.string.theme_store_tags_reserved
-                                            else R.string.theme_store_tags_duplicate,
-                                        ))
-                                    }
-                                    if (suggestedTags.isNotEmpty() && enteredTags.size < 8) {
-                                        GlassHomeChips<String?>(
-                                            chips = suggestedTags.map { it to storeTagLabel(it) },
-                                            currentValue = null,
-                                            onValueUpdate = { tag ->
-                                                if (tag != null) tags = (enteredTags + tag).joinToString(", ", postfix = ", ")
-                                            },
-                                        )
-                                    }
+                            SubmissionInformationCard(
+                                title = title,
+                                onTitleChanged = { if (it.themeTextLength <= 100) title = it },
+                                description = description,
+                                onDescriptionChanged = { if (it.themeTextLength <= 1000) description = it },
+                                tags = tags,
+                                onTagsChanged = { tags = it },
+                            ) {
+                                if (hasDuplicateTags || hasReservedTags) {
+                                    SettingsDescription(stringResource(
+                                        if (hasReservedTags) R.string.theme_store_tags_reserved
+                                        else R.string.theme_store_tags_duplicate,
+                                    ))
                                 }
-                            })
+                                if (suggestedTags.isNotEmpty() && enteredTags.size < 8) {
+                                    GlassHomeChips<String?>(
+                                        chips = suggestedTags.map { it to storeTagLabel(it) },
+                                        currentValue = null,
+                                        onValueUpdate = { tag ->
+                                            if (tag != null) tags = (enteredTags + tag).joinToString(", ", postfix = ", ")
+                                        },
+                                    )
+                                }
+                            }
                             if (!localOnly) SettingsSectionCard(stringResource(R.string.theme_submission_author), R.drawable.github_icon, bottomSpacing = 0.dp, content = {
                                 SubmissionAuthor(login)
                             })
-                            val minimumLabel = stringResource(R.string.theme_store_submission_minimum_version)
-                            SettingsSectionCard(minimumLabel, R.drawable.information, bottomSpacing = 0.dp, content = {
-                                SettingsDescription(stringResource(R.string.theme_store_submission_minimum_description,
-                                    BuildConfig.VERSION_NAME.substringBefore('-'), currentVersionCode, FirstThemeStoreVersionCode))
-                                TextField(
-                                    value = minimumVersionInput,
-                                    onValueChange = { value ->
-                                        if (value.length <= 10 && value.all { it in '0'..'9' }) {
-                                            minimumVersionManualInput = value
-                                            minimumVersionAutomatic = false
-                                        }
-                                    },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    label = { Text(stringResource(R.string.theme_store_submission_version_code_label)) },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                    singleLine = true,
-                                    isError = minimumVersionCode == null,
-                                    colors = app.n_zik.android.components.dialog.common.InputDialog.defaultTextFieldColors(),
-                                )
-                                val versionCodeLink = stringResource(R.string.theme_store_submission_find_version_code)
-                                val linkColor = colorPalette().accent
-                                Text(
-                                    text = buildAnnotatedString {
-                                        withLink(LinkAnnotation.Url(
-                                            url = UpdateEndpoints.REPO_URL + "/blob/main/Updater/README.md",
-                                            styles = TextLinkStyles(style = SpanStyle(
-                                                color = linkColor, textDecoration = TextDecoration.Underline,
-                                            )),
-                                        )) {
-                                            append(versionCodeLink)
-                                        }
-                                    },
-                                    modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp),
-                                )
+                            SubmissionMinimumVersionCard(
+                                value = minimumVersionInput,
+                                onValueChanged = { value ->
+                                    if (value.length <= 10 && value.all { it in '0'..'9' }) {
+                                        minimumVersionManualInput = value
+                                        minimumVersionAutomatic = false
+                                    }
+                                },
+                                invalid = minimumVersionCode == null,
+                            ) {
                                 if (!localOnly && schemaMinimum > currentVersionCode) {
                                     SettingsDescription(stringResource(R.string.theme_store_submission_feature_requires_update, schemaMinimum))
                                 } else if (minimumVersionCode == null) {
@@ -831,7 +784,7 @@ private fun ThemeSubmissionForm(
                                         schemaMinimum, maxOf(schemaMinimum, currentVersionCode),
                                     ))
                                 }
-                            })
+                            }
                             SettingsSectionCard(stringResource(R.string.theme_store_submission_included), R.drawable.ui,
                                 bottomSpacing = 0.dp, content = {
                                     if (initialAppearance != null || draft != null) {
@@ -1105,7 +1058,178 @@ private fun ThemeSubmissionForm(
 }
 
 @Composable
-private fun SubmissionStepper(sections: List<String>, step: Int) {
+private fun ThemeSubmissionLoading(padding: PaddingValues, dismiss: () -> Unit) {
+    val footerGlass = rememberGlassSettings()
+    val footerBackdrop = rememberLayerBackdrop()
+    val captureFooter = footerGlass.usesGlassMaterial(GlassArea.SettingsCards) &&
+        glassRenderer(footerGlass) != GlassRenderer.Tint
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = colorPalette().background0,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        bottomBar = {
+            SubmissionFooter(
+                backdrop = footerBackdrop.takeIf { captureFooter },
+                onBack = dismiss,
+                onContinue = {},
+                backLabel = R.string.common_action_cancel,
+                continueLabel = R.string.theme_submission_continue,
+                backEnabled = true,
+                continueEnabled = false,
+            )
+        },
+    ) { footerPadding ->
+        Column(
+            Modifier.fillMaxSize()
+                .background(colorPalette().background0)
+                .then(if (captureFooter) Modifier.layerBackdrop(footerBackdrop) else Modifier)
+                .padding(top = padding.calculateTopPadding()),
+        ) {
+            SubmissionStepper(step = 0)
+            Column(
+                Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())
+                    .padding(bottom = footerPadding.calculateBottomPadding() + 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                SubmissionInformationCard("", {}, "", {}, "", {}, loading = true)
+                SettingsSectionCard(
+                    stringResource(R.string.theme_submission_author),
+                    R.drawable.github_icon,
+                    bottomSpacing = 0.dp,
+                    content = {
+                        Column {
+                            StoreLoadingLine(null, typography().s, width = 0.42f)
+                            StoreLoadingLine(null, typography().xs, width = 0.34f)
+                        }
+                    },
+                )
+                SubmissionMinimumVersionCard(value = "", onValueChanged = {}, loading = true)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SubmissionMinimumVersionCard(
+    value: String,
+    onValueChanged: (String) -> Unit,
+    invalid: Boolean = false,
+    loading: Boolean = false,
+    validation: @Composable () -> Unit = {},
+) {
+    SettingsSectionCard(
+        stringResource(R.string.theme_store_submission_minimum_version),
+        R.drawable.information,
+        bottomSpacing = 0.dp,
+        content = {
+            SettingsDescription(stringResource(
+                R.string.theme_store_submission_minimum_description,
+                BuildConfig.VERSION_NAME.substringBefore('-'),
+                BuildConfig.VERSION_CODE,
+                FirstThemeStoreVersionCode,
+            ))
+            TextField(
+                value = value,
+                onValueChange = onValueChanged,
+                modifier = Modifier.fillMaxWidth().storeLoadingContent(loading),
+                enabled = !loading,
+                label = { Text(stringResource(R.string.theme_store_submission_version_code_label)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                isError = invalid,
+                colors = app.n_zik.android.components.dialog.common.InputDialog.defaultTextFieldColors(),
+            )
+            val versionCodeLink = stringResource(R.string.theme_store_submission_find_version_code)
+            val linkStyle = SpanStyle(color = colorPalette().accent, textDecoration = TextDecoration.Underline)
+            Text(
+                text = buildAnnotatedString {
+                    withLink(LinkAnnotation.Url(
+                        url = UpdateEndpoints.REPO_URL + "/blob/main/Updater/README.md",
+                        styles = TextLinkStyles(style = linkStyle),
+                    )) {
+                        append(versionCodeLink)
+                    }
+                },
+                modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp),
+            )
+            validation()
+        },
+    )
+}
+
+@Composable
+private fun SubmissionInformationCard(
+    title: String,
+    onTitleChanged: (String) -> Unit,
+    description: String,
+    onDescriptionChanged: (String) -> Unit,
+    tags: String,
+    onTagsChanged: (String) -> Unit,
+    loading: Boolean = false,
+    extraContent: @Composable () -> Unit = {},
+) {
+    SettingsSectionCard(
+        stringResource(R.string.theme_submission_information_title),
+        R.drawable.ui,
+        bottomSpacing = 0.dp,
+        content = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                SubmissionField(title, onTitleChanged, stringResource(R.string.theme_submission_title), loading = loading)
+                SubmissionField(description, onDescriptionChanged, stringResource(R.string.theme_submission_description), lines = 3, loading = loading)
+                SubmissionField(tags, onTagsChanged, stringResource(R.string.theme_store_tags_entry), loading = loading)
+                extraContent()
+            }
+        },
+    )
+}
+
+@Composable
+private fun SubmissionFooter(
+    backdrop: app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop?,
+    onBack: () -> Unit,
+    onContinue: () -> Unit,
+    backLabel: Int,
+    continueLabel: Int,
+    backEnabled: Boolean,
+    continueEnabled: Boolean,
+) {
+    CompositionLocalProvider(
+        LocalIndependentGlassBackdrop provides LocalIndependentGlassBackdrop.current.takeIf { backdrop == null },
+    ) {
+        UpdaterBottomPanel(
+            backdrop = backdrop,
+            modifier = Modifier.fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+        ) {
+            val palette = colorPalette()
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                PageButton(
+                    onClick = onBack,
+                    modifier = Modifier.weight(1f),
+                    enabled = backEnabled,
+                    elevation = null,
+                    colors = ButtonDefaults.buttonColors(containerColor = palette.red),
+                ) {
+                    Text(stringResource(backLabel))
+                }
+                PageButton(
+                    onClick = onContinue,
+                    modifier = Modifier.weight(1f),
+                    enabled = continueEnabled,
+                    elevation = null,
+                    colors = ButtonDefaults.buttonColors(containerColor = palette.accent, contentColor = palette.onAccent),
+                ) {
+                    Text(stringResource(continueLabel))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SubmissionStepper(step: Int) {
+    val sections = listOf(stringResource(R.string.theme_submission_section_information), stringResource(R.string.theme_submission_section_previews), stringResource(R.string.theme_submission_section_review))
     val palette = colorPalette()
     val glass = rememberGlassSettings()
     val area = GlassArea.ActionButtons
@@ -1146,8 +1270,8 @@ private fun SubmissionStepper(sections: List<String>, step: Int) {
 }
 
 @Composable
-private fun SubmissionField(value: String, onChange: (String) -> Unit, label: String, lines: Int = 1) {
-    TextField(value, onChange, Modifier.fillMaxWidth(), label = { Text(label) },
+private fun SubmissionField(value: String, onChange: (String) -> Unit, label: String, lines: Int = 1, loading: Boolean = false) {
+    TextField(value, onChange, Modifier.fillMaxWidth().storeLoadingContent(loading), enabled = !loading, label = { Text(label) },
         minLines = lines, singleLine = lines == 1, shape = uiRoundnessShape(),
         colors = app.n_zik.android.components.dialog.common.InputDialog.defaultTextFieldColors())
 }

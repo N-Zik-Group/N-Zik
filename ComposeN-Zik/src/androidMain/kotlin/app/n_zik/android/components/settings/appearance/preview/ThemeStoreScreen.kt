@@ -23,8 +23,10 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -35,7 +37,10 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.text.BasicText
-import app.n_zik.android.components.ui.FullPageLoader
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
+import app.n_zik.android.utils.secondary
+import app.n_zik.android.utils.shimmerEffect
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -383,7 +388,13 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                         showBetaBadge = creatorId == null && section == null,
                         onClick = {},
                     )
-                    lastSync?.let { StoreLastSync(it, Modifier.padding(bottom = 8.dp)) }
+                    lastSync?.let {
+                        StoreLastSync(
+                            it,
+                            Modifier.padding(bottom = 8.dp),
+                            shimmer = activeTab != StoreTab.Creator && forceLoadingShimmerPreview(),
+                        )
+                    }
                     if (section == null && creatorId == null) SettingsDialogTabRow(
                         labels = labels,
                         selectedTabIndex = availableTabs.indexOf(activeTab),
@@ -404,7 +415,8 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                 val profile = creators.firstOrNull { it.githubId == creatorId }
                 val authored = byAuthor[creatorId].orEmpty()
                 if (loading && themes == null && profile == null) {
-                    item(span = { GridItemSpan(maxLineSpan) }) { FullPageLoader() }
+                    item(key = "creator-profile-loading", span = { GridItemSpan(maxLineSpan) }) { CreatorProfilePlaceholder() }
+                    items(4, key = { "creator-theme-loading:$it" }) { ThemeStoreCardPlaceholder() }
                     return@LazyVerticalGrid
                 }
                 val matchingThemes = authored.filter { it.title.contains(query.text.trim(), ignoreCase = true) }
@@ -413,7 +425,7 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                     item(key = "creator-profile", span = { GridItemSpan(maxLineSpan) }) {
                         CreatorProfileHeader(
                             onEditProfile = onEditCreator.takeIf { author.githubId == ownCreatorId },
-                            profile, author, authored.size, catalog, follows.any { it.githubId == creatorId },
+                            profile, author, authored.size.takeUnless { themes == null && loading }, catalog, follows.any { it.githubId == creatorId },
                             query = query,
                             onQueryChanged = { query = it },
                             official = verifiedIds?.contains(creatorId) == true,
@@ -432,6 +444,9 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                             )
                         }
                     }
+                    if (loading && themes == null) {
+                        items(4, key = { "creator-theme-loading:$it" }) { ThemeStoreCardPlaceholder() }
+                    }
                     items(matchingThemes, key = { it.themeId }) { theme ->
                         ThemeStoreCard(theme, catalog, glass, suspended = "${theme.themeId}:theme" in pendingReports, modifier = Modifier.animateItem(fadeInSpec = tween(200), fadeOutSpec = tween(150)), official = verifiedIds?.contains(theme.author.githubId) == true, showCatalogInfo = true, refreshVersion = retry, download = downloadControl(theme), onWithdraw = if (theme.author.githubId == ownCreatorId) ({ withdrawalTheme = theme }) else null, onOpen = { onOpenTheme(theme) })
                     }
@@ -440,7 +455,9 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
             }
             if (section == ThemeStoreSection.Authors) {
                 if (loading && authorIds.isEmpty()) {
-                    item(span = { GridItemSpan(maxLineSpan) }) { FullPageLoader() }
+                    items(5, key = { "creator-loading:$it" }, span = { GridItemSpan(maxLineSpan) }) {
+                        CreatorCardPlaceholder()
+                    }
                     return@LazyVerticalGrid
                 }
                 items(authorIds, key = { "creator:$it" }, span = { GridItemSpan(maxLineSpan) }) { id ->
@@ -499,17 +516,14 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                         }
                     }
                     when {
+                        themes == null && loading -> {
+                            items(4, key = { "theme-loading:$it" }) { ThemeStoreCardPlaceholder(tabContentModifier) }
+                        }
                         themes == null -> item(span = { GridItemSpan(maxLineSpan) }) {
-                            Box(tabContentModifier.fillMaxWidth()) {
-                                if (loading) {
-                                    FullPageLoader()
-                                } else {
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                                        SettingsDescription(stringResource(R.string.theme_store_catalog_unavailable), Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
-                                        UiButton(onClick = { expireThemeStoreReads(); retry++ }) {
-                                            androidx.compose.material3.Text(stringResource(R.string.common_action_retry))
-                                        }
-                                    }
+                            Column(tabContentModifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                SettingsDescription(stringResource(R.string.theme_store_catalog_unavailable), Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                                UiButton(onClick = { expireThemeStoreReads(); retry++ }) {
+                                    androidx.compose.material3.Text(stringResource(R.string.common_action_retry))
                                 }
                             }
                         }
@@ -628,7 +642,10 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                             val theme = saved.theme
                             if (theme == null) {
                                 ThemeCardSurface(modifier = tabContentModifier) {
-                                    Box(Modifier.padding(12.dp)) { StoreText(saved.name, marquee = true) }
+                                    Box(Modifier.padding(12.dp)) {
+                                        if (forceLoadingShimmerPreview()) StoreLoadingLine(saved.name, typography().s)
+                                        else StoreText(saved.name, marquee = true)
+                                    }
                                 }
                             } else {
                                 val stock = saved.id == builtIn.id
@@ -696,6 +713,7 @@ private fun StoreTagFilters(
     onAdvanced: (List<String>) -> Unit,
 ) {
     var showFilters by rememberSaveable { mutableStateOf(false) }
+    val shimmer = forceLoadingShimmerPreview()
     if (tags.isNotEmpty()) {
         val filtersActive = selectedTags.isNotEmpty()
         val filterColor = if (filtersActive) colorPalette().red else colorPalette().accent
@@ -706,6 +724,7 @@ private fun StoreTagFilters(
                     currentValue = true,
                     onValueUpdate = { showFilters = true },
                     modifier = Modifier.weight(1f),
+                    shimmer = shimmer,
                 )
             } else {
                 GlassHomeChips(
@@ -714,6 +733,7 @@ private fun StoreTagFilters(
                     currentValue = effectiveTag,
                     onValueUpdate = onTag,
                     modifier = Modifier.weight(1f),
+                    shimmer = shimmer,
                 )
             }
             StoreIconAction(
@@ -772,10 +792,10 @@ private fun StoreSectionHeader(label: Int, themeCount: Int? = null, onSeeAll: ((
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        BasicText(
-            if (themeCount == null) stringResource(label) else stringResource(label, themeCount),
-            style = typography().xs.copy(color = colorPalette().text, fontWeight = FontWeight.SemiBold),
-        )
+        val title = if (themeCount == null) stringResource(label) else stringResource(label, themeCount)
+        val style = typography().xs.copy(color = colorPalette().text, fontWeight = FontWeight.SemiBold)
+        if (themeCount != null && forceLoadingShimmerPreview()) StoreLoadingLine(title, style)
+        else BasicText(title, style = style)
         if (onSeeAll != null) {
             StoreSeeButton(R.string.theme_store_see_all, onSeeAll)
         }
@@ -927,6 +947,7 @@ private fun ThemeStoreCard(
     onWithdraw: (() -> Unit)? = null,
     onOpen: (() -> Unit)? = null,
 ) {
+    val shimmer = forceLoadingShimmerPreview()
     val blocked = suspended && !official
     val offline by OfflineMode.rememberEnabled()
     var followUp by rememberSaveable(theme.themeId) { mutableStateOf(false) }
@@ -935,18 +956,29 @@ private fun ThemeStoreCard(
     }
     val publishedPreview = if (blocked) null else theme.playerPreview(glass, colorPalette().isDark)
     val open = onOpen.takeUnless { blocked }
-    val preview = rememberStorePreview(theme, publishedPreview, catalog, refreshVersion)
+    val preview = if (shimmer) null else rememberStorePreview(theme, publishedPreview, catalog, refreshVersion)
     val context = LocalContext.current
+    var sizeLoading by remember(catalog, theme, showCatalogInfo, refreshVersion) { mutableStateOf(showCatalogInfo) }
     val appearanceSize by produceState<Int?>(null, catalog, theme, showCatalogInfo, refreshVersion) {
-        value = if (showCatalogInfo) catalog.appearanceSize(theme) else null
+        try {
+            value = if (showCatalogInfo) catalog.appearanceSize(theme) else null
+        } finally {
+            sizeLoading = false
+        }
     }
+    var reviewsLoading by remember(catalog, theme, showCatalogInfo, refreshVersion) { mutableStateOf(showCatalogInfo) }
     val reviews by produceState<StoreReviewSummary?>(null, catalog, theme, showCatalogInfo, refreshVersion) {
-        value = null
-        if (showCatalogInfo) value = catalog.reviews(theme)
+        try {
+            value = if (showCatalogInfo) catalog.reviews(theme) else null
+        } finally {
+            reviewsLoading = false
+        }
     }
     ThemeCardSurface(modifier = modifier, onClick = open) {
         Box(Modifier.fillMaxWidth().aspectRatio(StorePreviewAspectRatio), contentAlignment = Alignment.Center) {
-            if (publishedPreview != null) {
+            if (shimmer && !blocked) {
+                Spacer(Modifier.matchParentSize().shimmerEffect())
+            } else if (publishedPreview != null) {
                 FadingStorePreviewImage(preview?.file, publishedPreview.caption)
             } else {
                 StorePreviewImage(null, null, showImageRim = false, fitPortraitFrame = true)
@@ -954,29 +986,36 @@ private fun ThemeStoreCard(
         }
         Column(Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = if (open == null) 10.dp else 0.dp)) {
             val author = if (showLocalCreator) localThemeCreatorName(theme) else theme.author.login
-            ThemeCardIdentity(theme.title, author, official)
+            ThemeCardIdentity(theme.title, author, official, shimmer)
             if (blocked) {
                 StoreText(stringResource(R.string.theme_store_report_theme_suspended), secondary = true)
             } else if (showCatalogInfo) {
                 Row(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                     Box(Modifier.weight(1f)) {
                         val review = reviews
-                        if (review?.count == 0) {
-                            StoreText(stringResource(R.string.theme_store_no_reviews), secondary = true, style = typography().xxs)
+                        if (reviewsLoading && review == null) {
+                            StoreLoadingLine(null, typography().xxs, width = 0.5f)
                         } else if (review != null) {
+                            val label = if (review.count == 0) stringResource(R.string.theme_store_no_reviews)
+                            else stringResource(R.string.theme_store_rating_count, review.average, review.count)
                             Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(painterResource(R.drawable.star_brilliant), null, Modifier.size(12.dp), tint = colorPalette().accent)
-                                StoreText(stringResource(R.string.theme_store_rating_count, review.average, review.count), secondary = true, style = typography().xxs)
+                                if (review.count > 0) Icon(painterResource(R.drawable.star_brilliant), null, Modifier.size(12.dp), tint = colorPalette().accent)
+                                if (shimmer) StoreLoadingLine(label, typography().xxs)
+                                else StoreText(label, secondary = true, style = typography().xxs)
                             }
                         }
                     }
-                    appearanceSize?.let {
-                        StoreText(android.text.format.Formatter.formatShortFileSize(context, it.toLong()), secondary = true, style = typography().xxs)
+                    if (sizeLoading && appearanceSize == null) Box(Modifier.width(32.dp)) {
+                        StoreLoadingLine(null, typography().xxs, width = 1f)
+                    } else appearanceSize?.let {
+                        val label = android.text.format.Formatter.formatShortFileSize(context, it.toLong())
+                        if (shimmer) StoreLoadingLine(label, typography().xxs)
+                        else StoreText(label, secondary = true, style = typography().xxs)
                     }
                 }
             }
         }
-        if (!blocked && download != null) ThemeCardDownloadRow(download)
+        if (!blocked && download != null) ThemeCardDownloadRow(download, shimmer)
         if (blocked && !offline) {
             Box(Modifier.fillMaxWidth().padding(end = 4.dp, bottom = 10.dp), contentAlignment = Alignment.CenterEnd) {
                 StoreSeeButton(R.string.theme_store_report_follow_up, onOpen = { followUp = true })
@@ -990,7 +1029,7 @@ private fun ThemeStoreCard(
 private data class ThemeCardDownload(val downloaded: Boolean, val pending: Boolean, val onDownload: (() -> Unit)?)
 
 @Composable
-private fun ThemeCardDownloadRow(download: ThemeCardDownload) {
+private fun ThemeCardDownloadRow(download: ThemeCardDownload, shimmer: Boolean) {
     val (label, icon) = when {
         download.downloaded -> R.string.theme_store_download_saved to R.drawable.downloaded
         download.pending -> R.string.theme_store_downloading to R.drawable.download_progress
@@ -1002,7 +1041,9 @@ private fun ThemeCardDownloadRow(download: ThemeCardDownload) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(Modifier.weight(1f)) {
-            StoreText(stringResource(label), secondary = true, style = typography().xxs)
+            val status = stringResource(label)
+            if (shimmer) StoreLoadingLine(status, typography().xxs)
+            else StoreText(status, secondary = true, style = typography().xxs)
         }
         val onDownload = download.onDownload
         if (!download.downloaded && !download.pending && onDownload != null) {
@@ -1020,15 +1061,18 @@ private fun ThemeCardDownloadRow(download: ThemeCardDownload) {
 }
 
 @Composable
-internal fun ThemeCardIdentity(title: String, author: String, official: Boolean) {
-    StoreText(title, style = typography().xs.copy(fontWeight = FontWeight.SemiBold), marquee = true)
+internal fun ThemeCardIdentity(title: String, author: String, official: Boolean, shimmer: Boolean = false) {
+    val titleStyle = typography().xs.copy(fontWeight = FontWeight.SemiBold)
+    if (shimmer) StoreLoadingLine(title, titleStyle)
+    else StoreText(title, style = titleStyle, marquee = true)
     Row(
         Modifier.fillMaxWidth().padding(top = 2.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(Modifier.weight(1f, fill = false)) {
-            StoreText(author, secondary = true, style = typography().xxs, marquee = true)
+            if (shimmer) StoreLoadingLine(author, typography().xxs)
+            else StoreText(author, secondary = true, style = typography().xxs, marquee = true)
         }
         OfficialCreatorBadge(official)
     }
@@ -1205,18 +1249,23 @@ internal fun FadingStorePreviewImage(file: File?, description: String?) {
 }
 
 @Composable
-internal fun StoreLastSync(timestamp: Long, modifier: Modifier = Modifier) {
+internal fun StoreLastSync(
+    timestamp: Long,
+    modifier: Modifier = Modifier,
+    shimmer: Boolean = forceLoadingShimmerPreview(),
+) {
     val context = LocalContext.current
     val date = java.util.Date(timestamp)
-    BasicText(
-        text = stringResource(
+    val label = stringResource(
             R.string.theme_store_last_sync,
             android.text.format.DateFormat.getDateFormat(context).format(date),
             android.text.format.DateFormat.getTimeFormat(context).format(date),
-        ),
-        modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp),
-        style = typography().xxs.copy(color = colorPalette().textSecondary, textAlign = TextAlign.Center),
     )
+    val style = typography().xxs.copy(color = colorPalette().textSecondary, textAlign = TextAlign.Center)
+    val line = modifier.fillMaxWidth().padding(horizontal = 20.dp)
+    if (shimmer) Box(line, contentAlignment = Alignment.Center) {
+        StoreLoadingLine(label, style)
+    } else BasicText(label, modifier = line, style = style)
 }
 
 @Composable
@@ -1314,13 +1363,17 @@ private fun CreatorCard(
     val author = profile?.let { StoreAuthor(it.githubId, it.login) } ?: themes.firstOrNull()?.author ?: fallbackAuthor ?: return
     val name = profile?.displayName ?: author.login
     val ownProfile = signedInCreatorId() == author.githubId
+    val shimmer = forceLoadingShimmerPreview()
     ThemeCardSurface {
         Box {
             Box(Modifier.matchParentSize().clip(uiRoundnessShape())) {
-                CreatorImage(catalog, profile, profile?.banner, author.githubId, Modifier.matchParentSize(), ContentScale.Crop) {
-                    CreatorDemoBanner(author.githubId, Modifier.matchParentSize())
+                if (shimmer) Spacer(Modifier.matchParentSize().shimmerEffect())
+                else {
+                    CreatorImage(catalog, profile, profile?.banner, author.githubId, Modifier.matchParentSize(), ContentScale.Crop) {
+                        CreatorDemoBanner(author.githubId, Modifier.matchParentSize())
+                    }
+                    Box(Modifier.matchParentSize().background(Color.Black.copy(alpha = 0.70f)))
                 }
-                Box(Modifier.matchParentSize().background(Color.Black.copy(alpha = 0.70f)))
             }
             Box(Modifier.matchParentSize().clip(uiRoundnessShape()).clickable(onClick = onOpen))
             Row(
@@ -1328,21 +1381,24 @@ private fun CreatorCard(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                CreatorAvatar(profile, author, catalog, 36.dp)
+                if (shimmer) Spacer(Modifier.size(36.dp).clip(artistThumbnailShape()).shimmerEffect())
+                else CreatorAvatar(profile, author, catalog, 36.dp)
                 Column(Modifier.weight(1f)) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Box(Modifier.weight(1f, fill = false)) {
-                            BasicText(name, Modifier.basicMarquee(iterations = Int.MAX_VALUE), style = typography().s.copy(color = Color.White), maxLines = 1)
+                            val style = typography().s.copy(color = Color.White)
+                            if (shimmer) StoreLoadingLine(name, style)
+                            else BasicText(name, Modifier.basicMarquee(iterations = Int.MAX_VALUE), style = style, maxLines = 1)
                         }
                         OfficialCreatorBadge(official)
                     }
-                    BasicText(
-                        stringResource(R.string.theme_store_author_theme_count, themes.size),
-                        style = typography().xxs.copy(color = Color.White.copy(alpha = 0.7f)),
-                    )
+                    val count = stringResource(R.string.theme_store_author_theme_count, themes.size)
+                    val countStyle = typography().xxs.copy(color = Color.White.copy(alpha = 0.7f))
+                    if (shimmer) StoreLoadingLine(count, countStyle)
+                    else BasicText(count, style = countStyle)
                 }
                 if (onEditProfile != null) {
                     app.n_zik.android.components.glass.PageButton(onClick = onEditProfile) {
@@ -1437,7 +1493,7 @@ private fun CreatorProfileHeader(
     onEditProfile: (() -> Unit)?,
     profile: CreatorProfile?,
     author: StoreAuthor,
-    themeCount: Int,
+    themeCount: Int?,
     catalog: ThemeStoreCatalog,
     followed: Boolean,
     query: TextFieldValue,
@@ -1448,12 +1504,16 @@ private fun CreatorProfileHeader(
     onTogglePublicationAlerts: () -> Unit,
     onFollow: () -> Unit,
 ) {
+    val shimmer = forceLoadingShimmerPreview()
+    val name = profile?.displayName ?: author.login
+    val handle = "@${author.login}"
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         BoxWithConstraints(Modifier.fillMaxWidth()) {
             val bannerHeight = maxWidth / 2.2f
             val bannerShape = uiRoundnessShape()
             Box(Modifier.fillMaxWidth().height(bannerHeight).glassImageRim(bannerShape).clip(bannerShape)) {
-                CreatorImage(catalog, profile, profile?.banner, author.githubId, Modifier.fillMaxSize()) {
+                if (shimmer) Spacer(Modifier.matchParentSize().shimmerEffect())
+                else CreatorImage(catalog, profile, profile?.banner, author.githubId, Modifier.fillMaxSize()) {
                     CreatorDemoBanner(author.githubId)
                 }
             }
@@ -1464,17 +1524,22 @@ private fun CreatorProfileHeader(
             ) {
             Box(Modifier.size(70.dp).offset(y = (-28).dp).background(colorPalette().background0, artistThumbnailShape()),
                 contentAlignment = Alignment.Center) {
-                CreatorAvatar(profile, author, catalog, 66.dp)
+                if (shimmer) Spacer(Modifier.size(66.dp).clip(artistThumbnailShape()).shimmerEffect())
+                else CreatorAvatar(profile, author, catalog, 66.dp)
             }
             Column(Modifier.weight(1f)) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Box(Modifier.weight(1f, fill = false)) { StoreText(profile?.displayName ?: author.login, style = typography().m, marquee = true) }
+                    Box(Modifier.weight(1f, fill = false)) {
+                        if (shimmer) StoreLoadingLine(name, typography().m)
+                        else StoreText(name, style = typography().m, marquee = true)
+                    }
                     OfficialCreatorBadge(official)
                 }
-                StoreText("@${author.login}", secondary = true, style = typography().xs)
+                if (shimmer) StoreLoadingLine(handle, typography().xs)
+                else StoreText(handle, secondary = true, style = typography().xs)
             }
             if (onEditProfile != null) {
                 app.n_zik.android.components.glass.PageButton(onClick = onEditProfile) {
@@ -1487,7 +1552,8 @@ private fun CreatorProfileHeader(
             }
         }
         profile?.bio?.takeIf { it.isNotBlank() }?.let {
-            SettingsDescription(it)
+            if (shimmer) MeasuredMetadataPlaceholder(it, typography().xxs.secondary, Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp))
+            else SettingsDescription(it)
         }
         UnifiedSearchBar(
             input = query,
@@ -1497,7 +1563,8 @@ private fun CreatorProfileHeader(
             onClear = { onQueryChanged(TextFieldValue()) },
         )
         Box(Modifier.padding(top = 8.dp)) {
-            StoreSectionHeader(R.string.theme_store_published_theme_count, themeCount = themeCount)
+            if (themeCount == null) StoreLoadingLine(null, typography().xs.copy(fontWeight = FontWeight.SemiBold))
+            else StoreSectionHeader(R.string.theme_store_published_theme_count, themeCount = themeCount)
         }
     }
 }

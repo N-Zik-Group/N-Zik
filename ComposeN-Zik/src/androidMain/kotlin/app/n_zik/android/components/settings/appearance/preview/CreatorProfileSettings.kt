@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
+import app.n_zik.android.utils.shimmerEffect
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -70,6 +72,7 @@ import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.themed.HeaderWithIcon
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import java.io.File
 import kotlinx.coroutines.launch
@@ -102,6 +105,7 @@ internal fun hasCreatorPublicationChanges(
 @Composable
 internal fun CreatorProfileSettingsEntry(
     onClick: () -> Unit,
+    shimmer: Boolean = false,
     themeEntries: @Composable () -> Unit,
 ) {
     val login by GitHubAccount.login.collectAsStateWithLifecycle()
@@ -111,6 +115,7 @@ internal fun CreatorProfileSettingsEntry(
             text = stringResource(if (login == null) R.string.theme_store_creator_sign_in else R.string.theme_store_creator_draft),
             icon = R.drawable.person,
             isEnabled = login != null,
+            shimmer = shimmer,
             onClick = onClick,
         )
         if (login != null) {
@@ -154,6 +159,7 @@ internal fun CreatorProfileSettings(navController: NavController, miniPlayer: @C
 @Composable
 private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
     val context = LocalContext.current
+    val shimmer = forceLoadingShimmerPreview()
     val offline by OfflineMode.rememberEnabled()
     val catalog = remember(context, offline) { themeStoreCatalog(context, offline) }
     val prefs = remember(context) { context.getSharedPreferences("theme_creator_drafts", android.content.Context.MODE_PRIVATE) }
@@ -194,7 +200,38 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
         }
     }
     if (loading) {
-        app.n_zik.android.components.ui.FullPageLoader()
+        SettingsSectionCard(
+            title = stringResource(R.string.theme_store_creator_profile),
+            icon = R.drawable.person,
+            horizontalPadding = 0.dp,
+            bottomSpacing = 0.dp,
+            content = {
+                Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    StoreLoadingShape(Modifier.fillMaxWidth().aspectRatio(2.2f))
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        androidx.compose.foundation.layout.Spacer(
+                            Modifier.size(56.dp).clip(artistThumbnailShape()).shimmerEffect(),
+                        )
+                        Column(Modifier.weight(1f)) {
+                            StoreLoadingLine(null, typography().m)
+                            StoreLoadingLine("@$login", typography().s, width = 0.45f)
+                        }
+                    }
+                }
+            },
+        )
+        SettingsSectionCard(
+            title = stringResource(R.string.theme_store_creator_identity),
+            icon = R.drawable.person,
+            horizontalPadding = 0.dp,
+            bottomSpacing = 0.dp,
+            content = {
+                Column(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    StoreLoadingShape(Modifier.fillMaxWidth().height(56.dp))
+                    StoreLoadingShape(Modifier.fillMaxWidth().height(76.dp))
+                }
+            },
+        )
         return
     }
     var name by rememberSaveable { mutableStateOf(saved?.optString("name")) }
@@ -272,7 +309,9 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
             Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(Modifier.fillMaxWidth().aspectRatio(2.2f).clip(uiRoundnessShape())) {
                     val custom = bannerImage.model
-                    if (custom == null && !bannerImage.isResolving) {
+                    if (shimmer) {
+                        StoreLoadingShape(Modifier.matchParentSize())
+                    } else if (custom == null && !bannerImage.isResolving) {
                         CreatorDemoBanner(id)
                     } else {
                         ImageCacheFactory.LocalAsyncImage(
@@ -284,18 +323,27 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Box(Modifier.size(56.dp).clip(artistThumbnailShape())) {
-                        ImageCacheFactory.LocalAsyncImage(
+                        if (shimmer) StoreLoadingShape(Modifier.matchParentSize())
+                        else ImageCacheFactory.LocalAsyncImage(
                             avatarImage.model, null, modifier = Modifier.matchParentSize(), contentScale = ContentScale.Crop,
                             shape = null, isResolvingModel = avatarImage.isResolving,
                             loadIdentity = listOf("creator-editor-avatar", id, avatar),
                         )
                     }
                     Column(Modifier.weight(1f)) {
-                        StoreText(displayName, style = typography().m)
-                        StoreText("@$login", secondary = true)
+                        if (shimmer) {
+                            StoreLoadingLine(displayName, typography().m)
+                            StoreLoadingLine("@$login", typography().s)
+                        } else {
+                            StoreText(displayName, style = typography().m)
+                            StoreText("@$login", secondary = true)
+                        }
                     }
                 }
-                if (description.isNotBlank()) StoreText(description, secondary = true)
+                if (description.isNotBlank()) {
+                    if (shimmer) StoreLoadingLine(description, typography().s)
+                    else StoreText(description, secondary = true)
+                }
             }
         },
     )
@@ -307,12 +355,14 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
         content = {
             Column(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 TextField(
-                    displayName, { if (it.themeTextLength <= 60) name = it }, Modifier.fillMaxWidth(),
+                    displayName, { if (it.themeTextLength <= 60) name = it }, Modifier.fillMaxWidth().storeLoadingContent(shimmer),
+                    enabled = !shimmer,
                     label = { Text(stringResource(R.string.theme_store_creator_display_name)) },
                     singleLine = true, shape = uiRoundnessShape(), colors = creatorFieldColors(),
                 )
                 TextField(
-                    description, { if (it.themeTextLength <= 280) bio = it }, Modifier.fillMaxWidth(),
+                    description, { if (it.themeTextLength <= 280) bio = it }, Modifier.fillMaxWidth().storeLoadingContent(shimmer),
+                    enabled = !shimmer,
                     label = { Text(stringResource(R.string.theme_store_creator_bio)) },
                     minLines = 2, maxLines = 5, shape = uiRoundnessShape(), colors = creatorFieldColors(),
                 )
@@ -326,8 +376,10 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
         bottomSpacing = 0.dp,
         content = {
             OtherSettingsEntry(stringResource(R.string.theme_store_creator_pick_avatar), "256 × 256", R.drawable.person,
+                shimmer = shimmer,
                 onClick = { imageChoice = CreatorImageChoice.Avatar })
             OtherSettingsEntry(stringResource(R.string.theme_store_creator_pick_banner), "1100 × 500", R.drawable.folder,
+                shimmer = shimmer,
                 onClick = { imageChoice = CreatorImageChoice.Banner })
         },
     )
@@ -337,10 +389,13 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
         horizontalPadding = 0.dp,
         bottomSpacing = 0.dp,
         content = {
-            SettingsDescription(stringResource(R.string.theme_store_creator_draft))
+            SettingsDescription(
+                stringResource(R.string.theme_store_creator_draft),
+                Modifier.storeLoadingContent(shimmer),
+            )
             PageButton(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-                enabled = displayName.isNotBlank(),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp).storeLoadingContent(shimmer),
+                enabled = !shimmer && displayName.isNotBlank(),
                 onClick = {
                     val draft = JSONObject().put("name", displayName.trim()).put("bio", description)
                     avatar?.let { draft.put("avatar", it) }
@@ -354,8 +409,8 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
     )
     val authPending by GitHubAccount.awaiting.collectAsStateWithLifecycle()
     PageButton(
-        modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
-        enabled = !offline && !packaging && !authPending && displayName.isNotBlank() && hasPublicationChanges,
+        modifier = Modifier.fillMaxWidth().padding(top = 20.dp).storeLoadingContent(shimmer),
+        enabled = !shimmer && !offline && !packaging && !authPending && displayName.isNotBlank() && hasPublicationChanges,
         onClick = { confirmPublish = true },
     ) { Text(stringResource(R.string.theme_store_creator_publish)) }
     val submit: () -> Unit = {

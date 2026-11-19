@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,7 +28,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicText
-import app.n_zik.android.components.ui.FullPageLoader
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import app.n_zik.android.components.glass.GlassTextField as TextField
@@ -60,6 +61,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
+import app.n_zik.android.artistThumbnailShape
+import app.n_zik.android.utils.shimmerEffect
 import app.n_zik.android.components.ui.NzikCheckbox
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.AppPullToRefreshBox
@@ -209,8 +212,18 @@ internal fun ThemeStoreDetailScreen(
             modifier = Modifier.fillMaxSize(),
         ) {
             val selected = theme
-            if (removedLocal != null) {
-                FullPageLoader(modifier = Modifier.fillMaxSize().padding(padding))
+            if (removedLocal != null || (selected == null && loading)) {
+                val ownsTheme = selected != null && signedInCreatorId() == selected.author.githubId
+                val showSettings = selected != null && downloads.any { it.id == "${selected.themeId}:${selected.revision}" }
+                ThemeDetailPlaceholder(
+                    padding, selected, localPackage, lastSync,
+                    showFollowActions = !ownsTheme,
+                    showWithdraw = ownsTheme && !offline,
+                    showSettings = showSettings,
+                ) {
+                    if (selected != null && removedLocal == null) ThemePreviewGallery(selected, catalog, retry)
+                    else ThemeGalleryPlaceholder()
+                }
             } else if (selected != null) {
                 key(profileId, selected.themeId, selected.revision) {
                     ThemeStoreDetailContent(selected, catalog, library, downloads, retry, padding, profileId, lastSync, localPackage, builtIn, onRemoved = ::leaveDetail, onRevision = { target ->
@@ -223,12 +236,8 @@ internal fun ThemeStoreDetailScreen(
             } else {
                 Column(Modifier.fillMaxSize().padding(padding), horizontalAlignment = Alignment.CenterHorizontally) {
                     DetailHeader()
-                    if (loading) {
-                        FullPageLoader()
-                    } else {
-                        SettingsDescription(stringResource(R.string.theme_store_catalog_unavailable), textAlign = TextAlign.Center)
-                        UiButton(onClick = { expireThemeStoreReads(); retry++ }) { Text(stringResource(R.string.common_action_retry)) }
-                    }
+                    SettingsDescription(stringResource(R.string.theme_store_catalog_unavailable), textAlign = TextAlign.Center)
+                    UiButton(onClick = { expireThemeStoreReads(); retry++ }) { Text(stringResource(R.string.common_action_retry)) }
                 }
             }
         }
@@ -254,6 +263,7 @@ private fun ThemeStoreDetailContent(
     onOpenCreator: () -> Unit,
 ) {
     val context = LocalContext.current
+    val shimmer = forceLoadingShimmerPreview()
     val offline by OfflineMode.rememberEnabled()
     val accountId = signedInCreatorId()
     val ownsPublishedTheme = !localPackage && accountId != null && accountId == theme.author.githubId
@@ -371,7 +381,7 @@ private fun ThemeStoreDetailContent(
             footer = { DetailCloseButton(dismiss) },
         ) {
             revisions.forEach { revision ->
-                DetailRow(revisionLabel(revision), R.drawable.alternative_version) {
+                DetailRow(revisionLabel(revision), R.drawable.alternative_version, shimmer) {
                     dismiss()
                     if (revision.revision != theme.revision) onRevision(revision.revision)
                 }
@@ -415,27 +425,29 @@ private fun ThemeStoreDetailContent(
         item {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Box(Modifier.weight(1f, fill = false)) {
-                    StoreText(theme.title, style = typography().xxl.copy(fontWeight = FontWeight.Bold))
+                    val style = typography().xxl.copy(fontWeight = FontWeight.Bold)
+                    if (shimmer) StoreLoadingLine(theme.title, style)
+                    else StoreText(theme.title, style = style)
                 }
             }
         }
         item {
-            BasicText(theme.description, style = typography().xxs.copy(color = colorPalette().textSecondary))
+            val style = typography().xxs.copy(color = colorPalette().textSecondary)
+            if (shimmer) StoreLoadingLine(theme.description, style, maxLines = Int.MAX_VALUE)
+            else BasicText(theme.description, style = style)
         }
         if (theme.tags.isNotEmpty()) {
             item {
-                GlassHomeChips<String?>(
-                    chips = theme.tags.canonicalStoreTags().map { it to storeTagLabel(it) },
-                    currentValue = null,
-                    onValueUpdate = { selected -> onOpenTag(selected) },
-                )
+                ThemeDetailTags(theme, shimmer = shimmer, onSelect = onOpenTag)
             }
         }
         if (localPackage) item {
             val authorName = localThemeCreatorName(theme)
             Row(Modifier.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                if (builtIn != null) {
+                if (shimmer) {
+                    Spacer(Modifier.size(40.dp).clip(artistThumbnailShape()).shimmerEffect())
+                } else if (builtIn != null) {
                     Icon(painterResource(R.drawable.ic_launcher_box), null,
                         Modifier.size(40.dp).clip(uiRoundnessShape()), tint = androidx.compose.ui.graphics.Color.Unspecified)
                 } else if (theme.author.githubId > 0) {
@@ -445,7 +457,9 @@ private fun ThemeStoreDetailContent(
                         avatar = app.n_zik.android.utils.FaceAvatar.Initials(authorName), faceName = authorName, size = 40.dp,
                     )
                 }
-                StoreText(authorName, style = typography().s.copy(fontWeight = FontWeight.Bold))
+                val style = typography().s.copy(fontWeight = FontWeight.Bold)
+                if (shimmer) StoreLoadingLine(authorName, style)
+                else StoreText(authorName, style = style)
                 OfficialCreatorBadge(builtIn != null)
             }
         }
@@ -460,15 +474,21 @@ private fun ThemeStoreDetailContent(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    CreatorAvatar(creator, theme.author, catalog, 40.dp)
+                    if (shimmer) Spacer(Modifier.size(40.dp).clip(artistThumbnailShape()).shimmerEffect())
+                    else CreatorAvatar(creator, theme.author, catalog, 40.dp)
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             Box(Modifier.weight(1f, fill = false)) {
-                                StoreText(creator?.displayName ?: theme.author.login, style = typography().s.copy(fontWeight = FontWeight.Bold))
+                                val name = creator?.displayName ?: theme.author.login
+                                val style = typography().s.copy(fontWeight = FontWeight.Bold)
+                                if (shimmer) StoreLoadingLine(name, style)
+                                else StoreText(name, style = style)
                             }
                             OfficialCreatorBadge(verifiedIds?.contains(theme.author.githubId) == true)
                         }
-                        StoreText("@${theme.author.login}", secondary = true, style = typography().xs)
+                        val handle = "@${theme.author.login}"
+                        if (shimmer) StoreLoadingLine(handle, typography().xs)
+                        else StoreText(handle, secondary = true, style = typography().xs)
                     }
                 }
                 if (!ownsPublishedTheme) {
@@ -516,21 +536,23 @@ private fun ThemeStoreDetailContent(
             ThemeCardSurface {
                 Column {
                     if (!localPackage) {
-                        DetailRow(reviewLabel(reviews), R.drawable.star_brilliant) { dialog = DetailDialog.Reviews }
+                        DetailRow(reviewLabel(reviews), R.drawable.star_brilliant, shimmer) { dialog = DetailDialog.Reviews }
                         if (builtIn == null) {
-                            DetailRow(revisionLabel(theme), R.drawable.alternative_version) { dialog = DetailDialog.Revisions }
+                            DetailRow(revisionLabel(theme), R.drawable.alternative_version, shimmer) { dialog = DetailDialog.Revisions }
                         }
-                        firstPublication?.let { DetailRow(stringResource(R.string.theme_store_published_on, it), R.drawable.calendar) }
+                        firstPublication?.let { DetailRow(stringResource(R.string.theme_store_published_on, it), R.drawable.calendar, shimmer) }
                         DetailRow(
                             appearance?.let { Formatter.formatShortFileSize(context, it.size.toLong()) }
                                 ?: stringResource(R.string.theme_store_size_unavailable),
                             R.drawable.download,
+                            shimmer,
                         )
                     }
                     if (builtIn == null) OtherInfoSettingsEntry(
                         title = stringResource(R.string.theme_store_compatibility),
                         text = compatibilityLabel(support),
                         icon = R.drawable.information,
+                        shimmerText = shimmer,
                     )
                     if (!offline && verifiedIds != null && !official && publicationCatalog.orEmpty().any { it.themeId == theme.themeId }) {
                         DetailRow(stringResource(R.string.theme_store_report_theme), R.drawable.information) {
@@ -595,6 +617,93 @@ private fun ThemeStoreDetailContent(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ThemeDetailPlaceholder(
+    padding: PaddingValues,
+    theme: StoreTheme?,
+    localPackage: Boolean,
+    lastSync: Long?,
+    showFollowActions: Boolean,
+    showWithdraw: Boolean,
+    showSettings: Boolean,
+    gallery: @Composable () -> Unit,
+) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = padding, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        item { DetailHeader() }
+        lastSync?.let { timestamp -> item { StoreLastSync(timestamp) } }
+        item { gallery() }
+        item { StoreLoadingLine(theme?.title, typography().xxl.copy(fontWeight = FontWeight.Bold)) }
+        item { StoreLoadingLine(theme?.description, typography().xxs, width = 0.85f, maxLines = Int.MAX_VALUE) }
+        if (theme != null && theme.tags.isNotEmpty()) {
+            item { ThemeDetailTags(theme, shimmer = true) {} }
+        }
+        item {
+            Row(
+                Modifier.padding(vertical = if (localPackage) 12.dp else 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Row(
+                    Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Spacer(Modifier.size(40.dp).clip(artistThumbnailShape()).shimmerEffect())
+                    Column(Modifier.weight(1f)) {
+                        StoreLoadingLine(theme?.author?.login, typography().s.copy(fontWeight = FontWeight.Bold))
+                        if (!localPackage) StoreLoadingLine(theme?.author?.login?.let { "@$it" }, typography().xs, width = 0.35f)
+                    }
+                }
+                if (!localPackage) {
+                    if (showFollowActions) {
+                        ArtistFollowButton(likeState = null, onClick = {}, enabled = false)
+                        CreatorPublicationBell(enabled = false, available = false, onToggle = {})
+                    }
+                    StoreIconAction(available = false, onClick = {}) {
+                        DetailIcon(R.drawable.share_social, Modifier.size(20.dp), stringResource(R.string.theme_store_share))
+                    }
+                    if (showWithdraw) StoreIconAction(available = false, onClick = {}) {
+                        DetailIcon(R.drawable.trash, Modifier.size(20.dp), stringResource(R.string.theme_store_withdraw))
+                    }
+                    if (showSettings) StoreIconAction(available = false, onClick = {}) {
+                        DetailIcon(R.drawable.settings, Modifier.size(20.dp), stringResource(R.string.theme_store_update_settings))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ThemeDetailTags(theme: StoreTheme, shimmer: Boolean = false, onSelect: (String?) -> Unit) {
+    GlassHomeChips<String?>(
+        chips = theme.tags.canonicalStoreTags().map { it to storeTagLabel(it) },
+        currentValue = null,
+        onValueUpdate = onSelect,
+        shimmer = shimmer,
+    )
+}
+
+@Composable
+private fun ThemeGalleryPlaceholder() {
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val width = (maxWidth - 16.dp) / 3
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(3) { ThemeGalleryCellPlaceholder(Modifier.width(width), null) }
+        }
+    }
+}
+
+@Composable
+private fun ThemeGalleryCellPlaceholder(modifier: Modifier, caption: String?) {
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        ThemeCardSurface(Modifier.fillMaxWidth().aspectRatio(StorePreviewAspectRatio)) {
+            StoreLoadingShape(Modifier.fillMaxSize())
+        }
+        StoreLoadingLine(caption, typography().xs)
     }
 }
 
@@ -707,8 +816,11 @@ private fun ThemePreviewGallery(theme: StoreTheme, catalog: ThemeStoreCatalog, r
             itemKey = { it.second },
             caption = { galleryPreviewLabel(it.first) },
         ) { (preview, _) ->
-            val file = rememberStorePreview(theme, preview, catalog, retry)?.file
-            FadingStorePreviewImage(file, galleryPreviewLabel(preview))
+            if (forceLoadingShimmerPreview()) StoreLoadingShape(Modifier.fillMaxSize())
+            else {
+                val file = rememberStorePreview(theme, preview, catalog, retry)?.file
+                FadingStorePreviewImage(file, galleryPreviewLabel(preview))
+            }
         }
     }
 }
@@ -722,6 +834,10 @@ private fun ThemeGalleryPreview(
     modifier: Modifier,
     onExpand: () -> Unit,
 ) {
+    if (forceLoadingShimmerPreview()) {
+        ThemeGalleryCellPlaceholder(modifier, galleryPreviewLabel(preview))
+        return
+    }
     val asset = rememberStorePreview(theme, preview, catalog, retry)
     val label = galleryPreviewLabel(preview)
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -746,9 +862,9 @@ private fun galleryPreviewLabel(preview: StorePreview): String = preview.caption
 }
 
 @Composable
-private fun DetailRow(title: String, icon: Int, onClick: (() -> Unit)? = null) {
-    if (onClick == null) OtherInfoSettingsEntry(title = title, text = "", icon = icon)
-    else OtherSettingsEntry(title = title, text = "", icon = icon, onClick = onClick)
+private fun DetailRow(title: String, icon: Int, shimmerText: Boolean = false, onClick: (() -> Unit)? = null) {
+    if (onClick == null) OtherInfoSettingsEntry(title = title, text = "", icon = icon, shimmerText = shimmerText)
+    else OtherSettingsEntry(title = title, text = "", icon = icon, shimmerText = shimmerText, onClick = onClick)
 }
 
 @Composable
@@ -803,6 +919,7 @@ internal fun rememberPendingThemeStoreReports(refreshVersion: Int): Set<String> 
 @Composable
 private fun ThemeReviewsDialog(theme: StoreTheme, reviews: StoreReviewSummary?, catalog: ThemeStoreCatalog, offline: Boolean, dismiss: () -> Unit) {
     val context = LocalContext.current
+    val shimmer = forceLoadingShimmerPreview()
     val scope = rememberCoroutineScope()
     val authorId = signedInCreatorId()
     val pending = rememberPendingThemeStoreReports(0)
@@ -923,18 +1040,28 @@ private fun ThemeReviewsDialog(theme: StoreTheme, reviews: StoreReviewSummary?, 
         },
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            StoreText(reviewLabel(reviews))
+            if (shimmer) StoreLoadingLine(reviewLabel(reviews), typography().s)
+            else StoreText(reviewLabel(reviews))
             reviews?.comments.orEmpty().forEach { review ->
                 Column(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        CreatorAvatar(null, review.author, catalog, 30.dp)
-                        Box(Modifier.weight(1f, fill = false)) { StoreText("@${review.author.login}") }
+                        if (shimmer) Spacer(Modifier.size(30.dp).clip(artistThumbnailShape()).shimmerEffect())
+                        else CreatorAvatar(null, review.author, catalog, 30.dp)
+                        val handle = "@${review.author.login}"
+                        Box(Modifier.weight(1f, fill = false)) {
+                            if (shimmer) StoreLoadingLine(handle, typography().s)
+                            else StoreText(handle)
+                        }
                         DetailIcon(R.drawable.star_brilliant, Modifier.size(14.dp))
-                        StoreText(stringResource(R.string.theme_store_review_rating, review.rating), secondary = true)
+                        val label = stringResource(R.string.theme_store_review_rating, review.rating)
+                        if (shimmer) StoreLoadingLine(label, typography().s)
+                        else StoreText(label, secondary = true)
                     }
                     val hidden = "${theme.themeId}:reviews:${theme.revision}" in pending ||
                         "${theme.themeId}:review:${theme.revision}:${review.author.githubId}" in pending
-                    SettingsDescription(if (hidden) stringResource(R.string.theme_store_report_message_hidden) else review.comment)
+                    val comment = if (hidden) stringResource(R.string.theme_store_report_message_hidden) else review.comment
+                    if (shimmer) StoreLoadingLine(comment, typography().xxs, maxLines = Int.MAX_VALUE)
+                    else SettingsDescription(comment)
                     if (!offline) UiTextButton(onClick = { reportedReviewer = review.author.githubId }) {
                         StoreText(stringResource(R.string.theme_store_report_review))
                     }

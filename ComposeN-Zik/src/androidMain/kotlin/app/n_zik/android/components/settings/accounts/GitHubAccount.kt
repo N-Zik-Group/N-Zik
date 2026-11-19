@@ -369,7 +369,11 @@ internal object GitHubAccount {
 }
 
 @Composable
-internal fun GitHubAccountCard(horizontalPadding: Dp? = null, showAppInstallation: Boolean = false) {
+internal fun GitHubAccountCard(
+    horizontalPadding: Dp? = null,
+    showAppInstallation: Boolean = false,
+    shimmer: Boolean = false,
+) {
     val context = LocalContext.current
     val login by GitHubAccount.login.collectAsStateWithLifecycle()
     val awaiting by GitHubAccount.awaiting.collectAsStateWithLifecycle()
@@ -405,6 +409,7 @@ internal fun GitHubAccountCard(horizontalPadding: Dp? = null, showAppInstallatio
             ),
             icon = R.drawable.github_icon,
             isEnabled = (!awaiting || code != null) && (!offline || login != null),
+            shimmer = shimmer,
             onClick = {
                 when {
                     login != null -> {
@@ -428,6 +433,7 @@ internal fun GitHubAccountCard(horizontalPadding: Dp? = null, showAppInstallatio
             text = stringResource(R.string.github_app_installation_description),
             icon = R.drawable.github_icon,
             isEnabled = !offline && !checkingFork,
+            shimmer = shimmer,
             onClick = { showInstallationManagement = true },
         )
         if (awaiting) OtherSettingsEntry(
@@ -435,6 +441,7 @@ internal fun GitHubAccountCard(horizontalPadding: Dp? = null, showAppInstallatio
             text = "",
             icon = R.drawable.github_icon,
             onClick = GitHubAccount::cancel,
+            shimmer = shimmer,
         )
     }
     val title = stringResource(R.string.common_brand_github)

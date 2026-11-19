@@ -1,5 +1,18 @@
 package app.n_zik.android.components.settings.appearance.preview
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import app.n_zik.android.typography
+import app.n_zik.android.utils.semiBold
+
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -88,7 +101,21 @@ internal fun CreatorSubmissionsCard(refreshVersion: Int) {
         ) {
             val entries = submissions?.filter { (it.state != "open") == history }
             if (loading && entries == null) {
-                app.n_zik.android.components.ui.FullPageLoader()
+                repeat(3) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(vertical = 4.dp).padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        StoreLoadingShape(Modifier.size(32.dp))
+                        Column(Modifier.weight(1f)) {
+                            StoreLoadingLine(null, typography().s.semiBold)
+                            Spacer(Modifier.height(2.dp))
+                            StoreLoadingLine(null, typography().xs, width = 0.42f)
+                        }
+                        StoreLoadingShape(Modifier.size(16.dp))
+                    }
+                }
             } else if (entries.isNullOrEmpty()) {
                 SettingsDescription(stringResource(if (entries == null) R.string.theme_store_creator_submissions_unavailable else R.string.theme_store_creator_submissions_empty))
             } else {
