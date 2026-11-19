@@ -25,6 +25,7 @@ import app.n_zik.android.uiRoundnessShape
 @Composable
 fun SearchSuggestionEditAction(
     onClick: () -> Unit,
+    enabled: Boolean = true,
     nativeContent: @Composable () -> Unit,
 ) {
     val settings = rememberGlassSettings()
@@ -33,6 +34,7 @@ fun SearchSuggestionEditAction(
             actions = listOf(GlassSectionAction(
                 icon = R.drawable.pencil,
                 contentDescription = stringResource(R.string.search_title),
+                enabled = enabled,
                 onClick = onClick,
             )),
             settings = settings,
@@ -42,7 +44,7 @@ fun SearchSuggestionEditAction(
         Box(Modifier.size(42.dp)
             .glassAreaContour(settings, GlassArea.ActionButtons, shape)
             .reservedIconActionCanvas(shape, remember { MutableInteractionSource() },
-                glassGlobalIndication(nativeControlIndication()), true, onClick),
+                glassGlobalIndication(nativeControlIndication()), enabled, onClick),
             contentAlignment = Alignment.Center,
         ) { nativeContent() }
     }

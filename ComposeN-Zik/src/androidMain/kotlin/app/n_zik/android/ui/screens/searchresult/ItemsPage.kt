@@ -1,7 +1,5 @@
 package app.n_zik.android.ui.screens.searchresult
 
-import androidx.compose.foundation.layout.padding
-
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchEmptySpace
@@ -33,6 +31,7 @@ import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.utils.plus
 import app.n_zik.android.enums.ContentType
 import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScrollToTop
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.utils.rememberPreference
@@ -48,7 +47,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import app.n_zik.android.components.OfflineAwareLoader
+import app.n_zik.android.components.OfflineContent
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
@@ -57,6 +56,12 @@ import timber.log.Timber
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.ui.unit.Dp
 
+@PublishedApi
+internal suspend fun <T : Innertube.Item> loadInitialItemsPage(
+    provider: suspend (String?) -> Result<Innertube.ItemsPage<T>?>?,
+): Result<Innertube.ItemsPage<T>>? = withContext(NzikDispatchers.DATA) { provider(null) }
+    ?.onFailure { Timber.tag("ItemsPage").e(it, "Failed to load initial items") }
+    ?.map { it ?: Innertube.ItemsPage<T>(null, null) }
 
 /** Chrome clearance is supplied by the page host and shared by loading and loaded content. */
 @ExperimentalAnimationApi
@@ -65,7 +70,7 @@ inline fun <T : Innertube.Item> ItemsPage(
     tag: String,
     crossinline headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,
     crossinline itemContent: @Composable LazyItemScope.(T) -> Unit,
-    noinline itemPlaceholderContent: @Composable () -> Unit,
+    noinline itemPlaceholderContent: @Composable (T?) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(bottom = Dimensions.bottomSpacer),
     initialPlaceholderCount: Int = 8,
@@ -79,6 +84,7 @@ inline fun <T : Innertube.Item> ItemsPage(
 ) {
     val updatedItemsPageProvider by rememberUpdatedState(itemsPageProvider)
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(LocalContext.current)
+    val forceShimmer = forceLoadingShimmerPreview()
 
     val lazyListState = rememberLazyListState()
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
@@ -87,8 +93,10 @@ inline fun <T : Innertube.Item> ItemsPage(
     var hasScrolledToTop by remember { mutableStateOf(false) }
 
     var isLoadingMore by remember(tag, searchQuery) { mutableStateOf(false) }
+    var initialLoadPending by remember(tag, searchQuery) { mutableStateOf(itemsPage == null && itemsPageProvider != null) }
 
-    LaunchedEffect(tag, searchQuery, lazyListState, updatedItemsPageProvider) {
+    LaunchedEffect(tag, searchQuery, lazyListState, updatedItemsPageProvider, forceShimmer) {
+        if (forceShimmer) return@LaunchedEffect
         val currentItemsPageProvider = updatedItemsPageProvider ?: return@LaunchedEffect
 
         while (true) {
@@ -104,43 +112,48 @@ inline fun <T : Innertube.Item> ItemsPage(
 
             if (shouldLoad) {
                 isLoadingMore = true
-                val currentContinuation = itemsPage?.continuation
-                withContext(NzikDispatchers.DATA) {
-                    currentItemsPageProvider(currentContinuation)
-                }?.onSuccess { newPage ->
-                    if (newPage == null) {
-                        if (itemsPage == null) {
-                            itemsPage = Innertube.ItemsPage(null, null)
+                try {
+                    val currentContinuation = itemsPage?.continuation
+                    withContext(NzikDispatchers.DATA) {
+                        currentItemsPageProvider(currentContinuation)
+                    }?.onSuccess { newPage ->
+                        if (newPage == null) {
+                            if (itemsPage == null) {
+                                itemsPage = Innertube.ItemsPage(null, null)
+                            }
+                        } else {
+                            val merged = withContext(NzikDispatchers.DATA) {
+                                itemsPage + newPage
+                            }
+                            itemsPage = merged
+                            loadedItemsState?.value = merged.items ?: emptyList()
                         }
-                    } else {
-                        val merged = withContext(NzikDispatchers.DATA) {
-                            itemsPage + newPage
-                        }
-                        itemsPage = merged
-                        loadedItemsState?.value = merged.items ?: emptyList()
+                    }?.onFailure {
+                        Timber.tag("ItemsPage").e(it, "Failed to load more items")
+                        delay(2000) // Avoid rapid retry on failure
                     }
-                }?.onFailure {
-                    Timber.tag("ItemsPage").e(it, "Failed to load more items")
-                    delay(2000) // Avoid rapid retry on failure
+                    delay(250) // Allow UI to recompose and update layout info
+                } finally {
+                    isLoadingMore = false
                 }
-                delay(250) // Allow UI to recompose and update layout info
-                isLoadingMore = false
             }
         }
     }
 
-    LaunchedEffect(tag, searchQuery, itemsPage, updatedItemsPageProvider) {
-        if (itemsPage == null && updatedItemsPageProvider != null) {
-            withContext(NzikDispatchers.DATA) {
-                updatedItemsPageProvider?.invoke(null)
-            }?.onSuccess {
-                if (it == null) {
-                    itemsPage = Innertube.ItemsPage(null, null)
-                } else {
-                    itemsPage = it
-                    loadedItemsState?.value = it.items ?: emptyList()
-                }
-            }?.onFailure { e -> Timber.tag("ItemsPage").e(e, "Failed to load initial items") }
+    LaunchedEffect(tag, searchQuery, itemsPage, updatedItemsPageProvider, isOnline) {
+        val provider = updatedItemsPageProvider
+        if (itemsPage != null || provider == null) {
+            initialLoadPending = false
+            return@LaunchedEffect
+        }
+        initialLoadPending = true
+        try {
+            loadInitialItemsPage(provider)?.onSuccess {
+                itemsPage = it
+                loadedItemsState?.value = it.items.orEmpty()
+            }
+        } finally {
+            initialLoadPending = false
         }
     }
 
@@ -180,7 +193,7 @@ inline fun <T : Innertube.Item> ItemsPage(
     SearchEmptyFeedback(
         query = searchQuery.orEmpty(),
         empty = itemsPage != null && itemsPage?.continuation == null && visibleItems.isEmpty(),
-        loading = isLoadingMore,
+        loading = forceShimmer || initialLoadPending || isLoadingMore,
         showMessage = showEmptyMessage,
     )
     Box(
@@ -189,69 +202,70 @@ inline fun <T : Innertube.Item> ItemsPage(
             .fillMaxHeight()
             .fillMaxWidth()
     ) {
-        if (itemsPage == null) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(contentPadding)
+        LazyColumn(
+            state = lazyListState,
+            contentPadding = contentPadding,
+            modifier = modifier
+                .fillMaxSize()
+        ) {
+            item(
+                key = "header",
+                contentType = "header",
             ) {
-                headerContent(null)
-                OfflineAwareLoader(
-                    isOnline = isOnline,
-                    modifier = Modifier.weight(1f).fillMaxWidth()
-                )
-            }
-        } else {
-            LazyColumn(
-                state = lazyListState,
-                contentPadding = contentPadding,
-                modifier = modifier
-                    .fillMaxSize()
-            ) {
-                item(
-                    key = "header",
-                    contentType = "header",
-                ) {
-                    Column {
-                        headerContent(null)
-                    }
+                Column {
+                    headerContent(null)
                 }
+            }
 
-                items(
-                    visibleItems,
-                    key = { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" },
-                    itemContent = itemContent
-                )
-
-                if (itemsPage != null && visibleItems.isEmpty() && itemsPage?.continuation == null) {
-                    item {
-                        if (searchQuery == null) {
+            if (itemsPage == null) {
+                if (forceShimmer || (isOnline && initialLoadPending)) {
+                    items(initialPlaceholderCount, key = { "loading_$it" }) {
+                        itemPlaceholderContent(null)
+                    }
+                } else {
+                    item(key = "loading_status") {
+                        if (isOnline) {
                             SearchNoResults(
-                                text = emptyItemsText.ifEmpty { stringResource(R.string.search_items_empty_message) },
+                                text = stringResource(R.string.common_load_failed),
                                 fillRemainingViewport = true,
                             )
                         } else {
-                            SearchEmptySpace(fillRemainingViewport = true)
+                            OfflineContent(Modifier.fillMaxWidth())
                         }
                     }
                 }
+                return@LazyColumn
+            }
 
-                if (!(itemsPage != null && itemsPage?.continuation == null)) {
-                    item {
-                        val isFirstLoad = itemsPage?.items.isNullOrEmpty()
-                        Column {
-                            repeat(if (isFirstLoad) initialPlaceholderCount else continuationPlaceholderCount) {
-                                itemPlaceholderContent()
-                            }
-                        }
+            items(
+                visibleItems,
+                key = { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" },
+            ) { item ->
+                if (forceShimmer) itemPlaceholderContent(item) else itemContent(item)
+            }
+
+            if (itemsPage != null && visibleItems.isEmpty() && itemsPage?.continuation == null) {
+                item {
+                    if (searchQuery == null) {
+                        SearchNoResults(
+                            text = emptyItemsText.ifEmpty { stringResource(R.string.search_items_empty_message) },
+                            fillRemainingViewport = true,
+                        )
+                    } else {
+                        SearchEmptySpace(fillRemainingViewport = true)
                     }
                 }
+            }
 
+            if (itemsPage?.continuation != null) {
+                val count = if (visibleItems.isEmpty()) initialPlaceholderCount else continuationPlaceholderCount
+                items(count, key = { "loading_more_$it" }) { itemPlaceholderContent(null) }
             }
         }
 
         FloatingActionsContainerWithScrollToTop(lazyListState = lazyListState)
     }
 }
-
 
 /** Chrome clearance is supplied by the page host and shared by loading and loaded content. */
 @ExperimentalAnimationApi
@@ -260,7 +274,7 @@ inline fun <T : Innertube.Item> ItemsGridPage(
     tag: String,
     crossinline headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,
     noinline itemContent: @Composable LazyGridItemScope.(T) -> Unit,
-    noinline itemPlaceholderContent: @Composable () -> Unit,
+    noinline itemPlaceholderContent: @Composable (T?) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(bottom = Dimensions.bottomSpacer),
     initialPlaceholderCount: Int = 8,
@@ -275,14 +289,19 @@ inline fun <T : Innertube.Item> ItemsGridPage(
 ) {
     val updatedItemsPageProvider by rememberUpdatedState(itemsPageProvider)
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(LocalContext.current)
+    val forceShimmer = forceLoadingShimmerPreview()
+
     val lazyGridState = rememberLazyGridState()
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
+
     var itemsPage by key(tag, searchQuery) { persist<Innertube.ItemsPage<T>?>(tag) }
     var hasScrolledToTop by remember { mutableStateOf(false) }
 
     var isLoadingMore by remember(tag, searchQuery) { mutableStateOf(false) }
+    var initialLoadPending by remember(tag, searchQuery) { mutableStateOf(itemsPage == null && itemsPageProvider != null) }
 
-    LaunchedEffect(tag, searchQuery, lazyGridState, updatedItemsPageProvider) {
+    LaunchedEffect(tag, searchQuery, lazyGridState, updatedItemsPageProvider, forceShimmer) {
+        if (forceShimmer) return@LaunchedEffect
         val currentItemsPageProvider = updatedItemsPageProvider ?: return@LaunchedEffect
 
         while (true) {
@@ -298,43 +317,48 @@ inline fun <T : Innertube.Item> ItemsGridPage(
 
             if (shouldLoad) {
                 isLoadingMore = true
-                val currentContinuation = itemsPage?.continuation
-                withContext(NzikDispatchers.DATA) {
-                    currentItemsPageProvider(currentContinuation)
-                }?.onSuccess { newPage ->
-                    if (newPage == null) {
-                        if (itemsPage == null) {
-                            itemsPage = Innertube.ItemsPage(null, null)
+                try {
+                    val currentContinuation = itemsPage?.continuation
+                    withContext(NzikDispatchers.DATA) {
+                        currentItemsPageProvider(currentContinuation)
+                    }?.onSuccess { newPage ->
+                        if (newPage == null) {
+                            if (itemsPage == null) {
+                                itemsPage = Innertube.ItemsPage(null, null)
+                            }
+                        } else {
+                            val merged = withContext(NzikDispatchers.DATA) {
+                                itemsPage + newPage
+                            }
+                            itemsPage = merged
+                            loadedItemsState?.value = merged.items ?: emptyList()
                         }
-                    } else {
-                        val merged = withContext(NzikDispatchers.DATA) {
-                            itemsPage + newPage
-                        }
-                        itemsPage = merged
-                        loadedItemsState?.value = merged.items ?: emptyList()
+                    }?.onFailure {
+                        Timber.tag("ItemsPage").e(it, "Failed to load more items")
+                        delay(2000) // Avoid rapid retry on failure
                     }
-                }?.onFailure {
-                    Timber.tag("ItemsPage").e(it, "Failed to load more items")
-                    delay(2000)
+                    delay(250) // Allow UI to recompose and update layout info
+                } finally {
+                    isLoadingMore = false
                 }
-                delay(250) // Allow UI to recompose and update layout info
-                isLoadingMore = false
             }
         }
     }
 
-    LaunchedEffect(tag, searchQuery, itemsPage, updatedItemsPageProvider) {
-        if (itemsPage == null && updatedItemsPageProvider != null) {
-            withContext(NzikDispatchers.DATA) {
-                updatedItemsPageProvider?.invoke(null)
-            }?.onSuccess {
-                if (it == null) {
-                    itemsPage = Innertube.ItemsPage(null, null)
-                } else {
-                    itemsPage = it
-                    loadedItemsState?.value = it.items ?: emptyList()
-                }
-            }?.onFailure { e -> Timber.tag("ItemsPage").e(e, "Failed to load initial items") }
+    LaunchedEffect(tag, searchQuery, itemsPage, updatedItemsPageProvider, isOnline) {
+        val provider = updatedItemsPageProvider
+        if (itemsPage != null || provider == null) {
+            initialLoadPending = false
+            return@LaunchedEffect
+        }
+        initialLoadPending = true
+        try {
+            loadInitialItemsPage(provider)?.onSuccess {
+                itemsPage = it
+                loadedItemsState?.value = it.items.orEmpty()
+            }
+        } finally {
+            initialLoadPending = false
         }
     }
 
@@ -374,7 +398,7 @@ inline fun <T : Innertube.Item> ItemsGridPage(
     SearchEmptyFeedback(
         query = searchQuery.orEmpty(),
         empty = itemsPage != null && itemsPage?.continuation == null && visibleItems.isEmpty(),
-        loading = isLoadingMore,
+        loading = forceShimmer || initialLoadPending || isLoadingMore,
         showMessage = showEmptyMessage,
     )
     Box(
@@ -383,68 +407,69 @@ inline fun <T : Innertube.Item> ItemsGridPage(
             .fillMaxHeight()
             .fillMaxWidth()
     ) {
-        if (itemsPage == null) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(contentPadding)
+        LazyVerticalGrid(
+            state = lazyGridState,
+            columns = GridCells.Adaptive(thumbnailSizeDp),
+            contentPadding = contentPadding,
+            modifier = modifier
+                .background(colorPalette().background0)
+                .fillMaxSize()
+        ) {
+            item(
+                key = "header",
+                contentType = 0,
+                span = { GridItemSpan(maxLineSpan) }
             ) {
-                headerContent(null)
-                OfflineAwareLoader(
-                    isOnline = isOnline,
-                    modifier = Modifier.weight(1f).fillMaxWidth()
-                )
-            }
-        } else {
-            LazyVerticalGrid(
-                state = lazyGridState,
-                columns = GridCells.Adaptive(thumbnailSizeDp),
-                contentPadding = contentPadding,
-                modifier = modifier
-                    .background(colorPalette().background0)
-                    .fillMaxSize()
-            ) {
-                item(
-                    key = "header",
-                    contentType = 0,
-                    span = { GridItemSpan(maxLineSpan) }
-                ) {
-                    Column {
-                        headerContent(null)
-                    }
+                Column {
+                    headerContent(null)
                 }
+            }
 
-                items(
-                    visibleItems,
-                    key = { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" },
-                    itemContent = itemContent
-                )
-
-                if (itemsPage != null && visibleItems.isEmpty() && itemsPage?.continuation == null) {
-                    item(
-                        span = { GridItemSpan(maxLineSpan) }
-                    ) {
-                        if (searchQuery == null) {
+            if (itemsPage == null) {
+                if (forceShimmer || (isOnline && initialLoadPending)) {
+                    items(initialPlaceholderCount, key = { "loading_$it" }) {
+                        itemPlaceholderContent(null)
+                    }
+                } else {
+                    item(key = "loading_status", span = { GridItemSpan(maxLineSpan) }) {
+                        if (isOnline) {
                             SearchNoResults(
-                                text = emptyItemsText.ifEmpty { stringResource(R.string.search_items_empty_message) },
+                                text = stringResource(R.string.common_load_failed),
                                 fillRemainingViewport = true,
                             )
                         } else {
-                            SearchEmptySpace(fillRemainingViewport = true)
+                            OfflineContent(Modifier.fillMaxWidth())
                         }
                     }
                 }
+                return@LazyVerticalGrid
+            }
 
-                if (!(itemsPage != null && itemsPage?.continuation == null)) {
-                    item(
-                        span = { GridItemSpan(maxLineSpan) }
-                    ) {
-                        val isFirstLoad = itemsPage?.items.isNullOrEmpty()
-                        Column {
-                            repeat(if (isFirstLoad) initialPlaceholderCount else continuationPlaceholderCount) {
-                                itemPlaceholderContent()
-                            }
-                        }
+            items(
+                visibleItems,
+                key = { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" },
+            ) { item ->
+                if (forceShimmer) itemPlaceholderContent(item) else itemContent(item)
+            }
+
+            if (itemsPage != null && visibleItems.isEmpty() && itemsPage?.continuation == null) {
+                item(
+                    span = { GridItemSpan(maxLineSpan) }
+                ) {
+                    if (searchQuery == null) {
+                        SearchNoResults(
+                            text = emptyItemsText.ifEmpty { stringResource(R.string.search_items_empty_message) },
+                            fillRemainingViewport = true,
+                        )
+                    } else {
+                        SearchEmptySpace(fillRemainingViewport = true)
                     }
                 }
+            }
+
+            if (itemsPage?.continuation != null) {
+                val count = if (visibleItems.isEmpty()) initialPlaceholderCount else continuationPlaceholderCount
+                items(count, key = { "loading_more_$it" }) { itemPlaceholderContent(null) }
             }
         }
 

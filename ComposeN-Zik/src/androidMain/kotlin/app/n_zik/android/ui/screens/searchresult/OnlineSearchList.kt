@@ -13,18 +13,15 @@ import app.n_zik.android.uiRoundnessShape
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -32,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.n_zik.innertube.Innertube
@@ -43,11 +39,7 @@ import app.n_zik.android.enums.ContentType
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.artistThumbnailShape
-import app.n_zik.android.typography
-import app.n_zik.android.ui.items.AlbumItemListPlaceholder
 import app.n_zik.android.ui.styling.Dimensions
-import app.n_zik.android.utils.conditional
-import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
@@ -74,9 +66,9 @@ import app.n_zik.android.enums.PlaylistSwipeAction
 import app.n_zik.android.utils.playlistSwipeLeftActionKey
 import app.n_zik.android.utils.playlistSwipeRightActionKey
 import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.ui.items.ArtistItemPlaceholder
 import app.n_zik.android.ui.items.SongItemPlaceholder
 import app.n_zik.android.ui.items.VideoItem
+import app.n_zik.android.ui.items.ItemArtworkPlaceholder
 import app.n_zik.android.ui.items.VideoItemPlaceholder
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.video.VideoItemMenu
@@ -333,110 +325,13 @@ fun OnlineSearchList(
                             )
                     }
 
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        BasicText(
-                            text = when (item) {
-                                is Innertube.AlbumItem -> item.title ?: ""
-                                is Innertube.PlaylistItem -> item.title ?: ""
-                                is Innertube.ArtistItem -> item.title ?: ""
-                                else -> ""
-                            },
-                            style = typography().s,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                        )
-                        if (item is Innertube.AlbumItem) {
-                            item.authors.artistEntryNames().joinToString(", ").let { authors ->
-                                if (authors.isNotBlank()) {
-                                    BasicText(
-                                        text = authors,
-                                        style = typography().xs.copy(color = Color.Gray),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                                    )
-                                }
-                            }
-                            item.year?.let { year ->
-                                if (year.isNotBlank()) {
-                                    BasicText(
-                                        text = year,
-                                        style = typography().xs.copy(color = Color.Gray),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                                    )
-                                }
-                            }
-                            item.description?.split(" â€¢ ")?.forEach { segment ->
-                                if (segment.isNotBlank()) {
-                                    BasicText(
-                                        text = segment,
-                                        style = typography().xs.copy(color = Color.Gray),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                                    )
-                                }
-                            }
-                        }
-                        if (item is Innertube.ArtistItem) {
-                            item.description?.split(" â€¢ ")?.forEach { segment ->
-                                if (segment.isNotBlank()) {
-                                    BasicText(
-                                        text = segment,
-                                        style = typography().xs.copy(color = Color.Gray),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                                    )
-                                }
-                            }
-                        }
-                        if (item is Innertube.PlaylistItem) {
-                            val channelMetadata = item.channel?.name
-                            if (channelMetadata?.isNotBlank() == true) {
-                                BasicText(
-                                    text = channelMetadata,
-                                    style = typography().xs.copy(color = Color.Gray),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                                )
-                            }
-                            if (tabIndex != 5) {
-                                item.description?.split(" â€¢ ")?.forEach { segment ->
-                                    if (segment.isNotBlank()) {
-                                        BasicText(
-                                            text = segment,
-                                            style = typography().xs.copy(color = Color.Gray),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    SearchResultCardText(
+                        item = item,
+                        tabIndex = tabIndex,
+                        centered = false,
+                        disableScrollingText = disableScrollingText,
+                        modifier = Modifier.weight(1f),
+                    )
                 }
             }
         }
@@ -471,12 +366,36 @@ fun OnlineSearchList(
         headerContent = headerContent,
         itemContent = { itemContent(it) },
         loadedItemsState = loadedItems,
-        itemPlaceholderContent = {
+        itemPlaceholderContent = { item ->
             when (tabIndex) {
-                0 -> Column { repeat(8) { SongItemPlaceholder() } }
-                2 -> Column { repeat(8) { ArtistItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp) } }
-                3 -> VideoItemPlaceholder(thumbnailWidthDp = 128.dp, thumbnailHeightDp = 72.dp)
-                else -> AlbumItemListPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
+                0 -> {
+                    val song = (item as? Innertube.SongItem)?.asMediaItem?.asSong
+                    SongItemPlaceholder(title = song?.cleanTitle(), artist = song?.cleanArtistsText())
+                }
+                3 -> VideoItemPlaceholder(
+                    thumbnailWidthDp = 128.dp,
+                    thumbnailHeightDp = 72.dp,
+                    video = item as? Innertube.VideoItem,
+                )
+                else -> Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    ItemArtworkPlaceholder(
+                        thumbnailSizeDp - 8.dp,
+                        card = false,
+                        shape = if (tabIndex == 2) artistThumbnailShape() else thumbnailShape(),
+                    )
+                    SearchResultCardText(
+                        item = item,
+                        tabIndex = tabIndex,
+                        centered = false,
+                        disableScrollingText = disableScrollingText,
+                        modifier = Modifier.weight(1f),
+                        loading = true,
+                    )
+                }
             }
         }
     )

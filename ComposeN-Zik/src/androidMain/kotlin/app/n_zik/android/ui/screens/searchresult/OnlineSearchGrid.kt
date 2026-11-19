@@ -13,7 +13,6 @@ import app.n_zik.android.uiRoundnessShape
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,14 +20,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.n_zik.innertube.Innertube
@@ -42,7 +38,6 @@ import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.SwipeablePlaylistItem
 import app.n_zik.android.utils.addNext
-import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.asSong
 import app.n_zik.android.utils.enqueue
@@ -52,9 +47,12 @@ import app.n_zik.android.utils.manageDownload
 import app.n_zik.android.colorPalette
 import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.enums.DownloadedStateMedia
-import app.n_zik.android.ui.items.ArtistItemPlaceholder
 import app.n_zik.android.ui.items.SongItemPlaceholder
 import app.n_zik.android.ui.items.VideoItem
+import app.n_zik.android.ui.items.ItemArtworkPlaceholder
+import app.n_zik.android.ui.items.ItemContainer
+import app.n_zik.android.artistThumbnailShape
+import app.n_zik.android.thumbnailShape
 import app.n_zik.android.ui.items.VideoItemPlaceholder
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.video.VideoItemMenu
@@ -70,14 +68,11 @@ import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.enums.NavRoutes
-import app.n_zik.android.typography
 import app.n_zik.android.ui.items.ArtistItem
 import app.n_zik.android.ui.items.AlbumItem
-import app.n_zik.android.ui.items.AlbumItemGridPlaceholder
 import app.n_zik.android.ui.items.PlaylistItem
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.px
-import app.n_zik.android.utils.conditional
 import app.n_zik.innertube.models.MusicShelfRenderer
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -255,93 +250,13 @@ fun OnlineSearchGrid(
                 else -> {}
             }
             if (item !is Innertube.SongItem && item !is Innertube.VideoItem) {
-                BasicText(
-                    text = (if (item is Innertube.AlbumItem) item.title else if (item is Innertube.PlaylistItem) item.title else if (item is Innertube.ArtistItem) item.title else "") ?: "",
-                    style = typography().s.copy(textAlign = TextAlign.Center),
-                    maxLines = 2,
-                    modifier = Modifier
-                        .width((thumbnailSizeDp - 8.dp) * 0.8f)
-                        .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                SearchResultCardText(
+                    item = item,
+                    tabIndex = tabIndex,
+                    centered = true,
+                    disableScrollingText = disableScrollingText,
+                    modifier = Modifier.width((thumbnailSizeDp - 8.dp) * 0.8f),
                 )
-            }
-            if (item is Innertube.AlbumItem) {
-                item.authors.artistEntryNames().joinToString(", ").let { authors ->
-                    if (authors.isNotBlank()) {
-                        BasicText(
-                            text = authors,
-                            style = typography().xs.copy(color = Color.Gray, textAlign = TextAlign.Center),
-                            maxLines = 1,
-                            modifier = Modifier
-                                .width((thumbnailSizeDp - 8.dp) * 0.8f)
-                                .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                        )
-                    }
-                }
-                item.year?.let { year ->
-                    if (year.isNotBlank()) {
-                        BasicText(
-                            text = year,
-                            style = typography().xs.copy(color = Color.Gray, textAlign = TextAlign.Center),
-                            maxLines = 1,
-                            modifier = Modifier
-                                .width((thumbnailSizeDp - 8.dp) * 0.8f)
-                                .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                        )
-                    }
-                }
-                item.description?.split(" â€¢ ")?.forEach { segment ->
-                    if (segment.isNotBlank()) {
-                        BasicText(
-                            text = segment,
-                            style = typography().xs.copy(color = Color.Gray, textAlign = TextAlign.Center),
-                            maxLines = 1,
-                            modifier = Modifier
-                                .width((thumbnailSizeDp - 8.dp) * 0.8f)
-                                .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                        )
-                    }
-                }
-            }
-            if (item is Innertube.ArtistItem) {
-                item.description?.split(" â€¢ ")?.forEach { segment ->
-                    if (segment.isNotBlank()) {
-                        BasicText(
-                            text = segment,
-                            style = typography().xs.copy(color = Color.Gray, textAlign = TextAlign.Center),
-                            maxLines = 1,
-                            modifier = Modifier
-                                .width((thumbnailSizeDp - 8.dp) * 0.8f)
-                                .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                        )
-                    }
-                }
-            }
-            if (item is Innertube.PlaylistItem) {
-                val channelMetadata = item.channel?.name
-                if (channelMetadata?.isNotBlank() == true) {
-                    BasicText(
-                        text = channelMetadata,
-                        style = typography().xs.copy(color = Color.Gray, textAlign = TextAlign.Center),
-                        maxLines = 1,
-                        modifier = Modifier
-                            .width((thumbnailSizeDp - 8.dp) * 0.8f)
-                            .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                    )
-                }
-                if (tabIndex != 5) {
-                    item.description?.split(" â€¢ ")?.forEach { segment ->
-                        if (segment.isNotBlank()) {
-                            BasicText(
-                                text = segment,
-                                style = typography().xs.copy(color = Color.Gray, textAlign = TextAlign.Center),
-                                maxLines = 1,
-                                modifier = Modifier
-                                    .width((thumbnailSizeDp - 8.dp) * 0.8f)
-                                    .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                            )
-                        }
-                    }
-                }
             }
         }
     }
@@ -376,12 +291,40 @@ fun OnlineSearchGrid(
         emptyItemsText = emptyItemsText,
         headerContent = headerContent,
         itemContent = { itemContent(it) },
-        itemPlaceholderContent = {
-            when (tabIndex) {
-                0 -> Column { repeat(8) { SongItemPlaceholder() } }
-                2 -> Column { repeat(8) { ArtistItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp) } }
-                3 -> VideoItemPlaceholder(thumbnailWidthDp = 128.dp, thumbnailHeightDp = 72.dp)
-                else -> AlbumItemGridPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
+        itemPlaceholderContent = { item ->
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(vertical = Dimensions.itemsVerticalPadding),
+            ) {
+                when (tabIndex) {
+                    0 -> {
+                        val song = (item as? Innertube.SongItem)?.asMediaItem?.asSong
+                        SongItemPlaceholder(title = song?.cleanTitle(), artist = song?.cleanArtistsText())
+                    }
+                    3 -> VideoItemPlaceholder(
+                        thumbnailWidthDp = 128.dp,
+                        thumbnailHeightDp = 72.dp,
+                        video = item as? Innertube.VideoItem,
+                    )
+                    else -> {
+                        ItemContainer(true, thumbnailSizeDp) {
+                            ItemArtworkPlaceholder(
+                                thumbnailSizeDp,
+                                card = true,
+                                shape = if (tabIndex == 2) artistThumbnailShape() else thumbnailShape(),
+                            )
+                        }
+                        SearchResultCardText(
+                            item = item,
+                            tabIndex = tabIndex,
+                            centered = true,
+                            disableScrollingText = disableScrollingText,
+                            modifier = Modifier.width((thumbnailSizeDp - 8.dp) * 0.8f),
+                            loading = true,
+                        )
+                    }
+                }
             }
         },
         thumbnailSizeDp = thumbnailSizeDp

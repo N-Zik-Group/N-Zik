@@ -50,6 +50,7 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.ui.components.LocalMenuState
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import app.n_zik.android.ui.components.themed.Header
 import app.n_zik.android.components.SongItem
@@ -65,6 +66,8 @@ import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
 import app.n_zik.android.components.settings.common.settingsSearchContentVisibility
 import app.n_zik.android.ui.styling.Dimensions
+import app.n_zik.android.ui.items.SongItemPlaceholders
+import app.n_zik.android.ui.items.SongItemPlaceholder
 import app.n_zik.android.ui.styling.px
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.disableScrollingTextKey
@@ -120,9 +123,11 @@ fun LocalSongSearch(
                 .distinctUntilChanged()
                 .map { textFieldValue.text to it }
     }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
-    val items = queryResults?.takeIf { it.first == textFieldValue.text }?.second.orEmpty()
-    val noSearchResults = textFieldValue.text.isNotBlank() && queryResults?.first == textFieldValue.text && items.isEmpty()
-    SearchEmptyFeedback(textFieldValue.text, noSearchResults, queryResults?.first != textFieldValue.text)
+    val forceShimmer = forceLoadingShimmerPreview()
+    val queryPending = queryResults?.first != textFieldValue.text
+    val items = queryResults?.takeIf { !queryPending }?.second.orEmpty()
+    val noSearchResults = textFieldValue.text.isNotBlank() && !queryPending && !forceShimmer && items.isEmpty()
+    SearchEmptyFeedback(textFieldValue.text, noSearchResults, queryPending || forceShimmer)
 
     // Saved searches: this tab's own store (not shared with the other
     // screens); paused by the "pause search history" setting
@@ -260,7 +265,7 @@ fun LocalSongSearch(
                     // down; the exit shrinks back into the bar
                     item(key = "search_history") {
                         SearchHistorySection(
-                            visible = historyVisible,
+                            visible = !forceShimmer && historyVisible,
                             queries = historyMatches,
                             onQueryClick = { onTextFieldValueChanged(TextFieldValue(it)); recordSearchQuery(it) },
                             onQueryDelete = {
@@ -273,7 +278,9 @@ fun LocalSongSearch(
                     }
 
 
-                    if (noSearchResults) {
+                    if ((forceShimmer && items.isEmpty()) || (queryPending && textFieldValue.text.isNotBlank())) {
+                        item(key = "search_song_loading") { SongItemPlaceholders(count = 4) }
+                    } else if (noSearchResults) {
                         item(key = "search_no_results") {
                             SearchEmptySpace(fillRemainingViewport = true)
                         }
@@ -282,6 +289,10 @@ fun LocalSongSearch(
                         items = items,
                         key = Song::id,
                     ) { song ->
+                        if (forceShimmer) {
+                            SongItemPlaceholder(title = song.cleanTitle(), artist = song.cleanArtistsText())
+                            return@items
+                        }
                         val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
                         downloadState = getDownloadState(song.asMediaItem.mediaId)
                         val isDownloaded = if (!isLocal) isDownloadedSong(song.asMediaItem.mediaId) else true

@@ -32,19 +32,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
-import app.n_zik.android.utils.medium
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
@@ -56,11 +53,10 @@ import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.InteractiveDialog
-import app.n_zik.android.components.ui.InlineCircularLoader
+import app.n_zik.android.components.dialog.common.BrowseIdSearchResultRow
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
-import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.requests.searchPage
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -178,7 +174,11 @@ class ChangePlaylistBrowseIdDialog private constructor(
             }
 
             if (isSearching) {
-                InlineCircularLoader(modifier = Modifier.align(Alignment.CenterHorizontally).padding(20.dp))
+                LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp)) {
+                    items(5, key = { "browse-id-loading-$it" }) {
+                        BrowseIdSearchResultRow(artworkShape = uiRoundnessShape(), loading = true)
+                    }
+                }
             } else if (results?.isEmpty() == true) {
                 Spacer(Modifier.height(160.dp))
             } else if (results != null) {
@@ -186,47 +186,24 @@ class ChangePlaylistBrowseIdDialog private constructor(
                     modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp)
                 ) {
                     items(results ?: return@LazyColumn, key = { it.key }, contentType = { "playlist" }) { item ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    val newId = "$MODIFIED_PREFIX${item.key}"
-                                    if (newId.isNotEmpty() && newId != MODIFIED_PREFIX) {
-                                        coroutineScope.launch {
-                                            appContext().preferences.edit().putString("old_browse_id_$newId", playlist.browseId ?: "").apply()
-                                            Database.playlistTable.updateBrowseId(playlist.id, newId)
-                                            Toaster.done()
-                                            hideDialog()
-                                            menuState?.hide()
-                                        }
+                        BrowseIdSearchResultRow(
+                            artworkShape = uiRoundnessShape(),
+                            thumbnailUrl = item.thumbnail?.url,
+                            title = item.title.orEmpty(),
+                            subtitle = item.channel?.name.orEmpty(),
+                            modifier = Modifier.clickable {
+                                val newId = "$MODIFIED_PREFIX${item.key}"
+                                if (newId.isNotEmpty() && newId != MODIFIED_PREFIX) {
+                                    coroutineScope.launch {
+                                        appContext().preferences.edit().putString("old_browse_id_$newId", playlist.browseId ?: "").apply()
+                                        Database.playlistTable.updateBrowseId(playlist.id, newId)
+                                        Toaster.done()
+                                        hideDialog()
+                                        menuState?.hide()
                                     }
                                 }
-                                .padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            ImageCacheFactory.Thumbnail(
-                                shape = uiRoundnessShape(),
-                                thumbnailUrl = item.thumbnail?.url,
-                                modifier = Modifier.size(40.dp).clip(uiRoundnessShape())
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column {
-                                Text(
-                                    text = item.title ?: "",
-                                    style = typography().xs.medium,
-                                    color = colorPalette().text,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Text(
-                                    text = item.channel?.name ?: "",
-                                    style = typography().xxs,
-                                    color = colorPalette().textDisabled,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        }
+                            },
+                        )
                     }
                 }
             }

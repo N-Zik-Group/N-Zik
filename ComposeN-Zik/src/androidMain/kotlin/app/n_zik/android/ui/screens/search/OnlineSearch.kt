@@ -80,6 +80,7 @@ import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.SearchDisplayOrder
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.LocalMenuState
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import app.n_zik.android.ui.components.themed.Header
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
@@ -89,10 +90,18 @@ import app.n_zik.android.components.menu.video.VideoItemMenu
 import app.n_zik.android.utils.asSong
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.ui.components.themed.TitleMiniSection
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 import app.n_zik.android.ui.items.AlbumItem
+import app.n_zik.android.ui.items.AlbumItemPlaceholder
 import app.n_zik.android.ui.items.ArtistItem
+import app.n_zik.android.ui.items.ArtistItemPlaceholder
 import app.n_zik.android.ui.items.PlaylistItem
+import app.n_zik.android.ui.items.PlaylistItemPlaceholder
+import app.n_zik.android.ui.items.SongItemPlaceholder
+import app.n_zik.android.core.database.artistEntryNames
+import app.n_zik.android.cleanPrefix
 import app.n_zik.android.ui.items.VideoItem
+import app.n_zik.android.ui.items.VideoItemPlaceholder
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.px
@@ -173,10 +182,11 @@ fun OnlineSearch(
     }
     */
 
+    val forceShimmer = forceLoadingShimmerPreview()
     SearchEmptyFeedback(
         query = textFieldValue.text,
         empty = suggestionsResult?.getOrNull()?.hasContent() == false && historyMatches.isEmpty(),
-        loading = suggestionsResult?.isSuccess != true
+        loading = forceShimmer || suggestionsResult?.isSuccess != true
     )
 
     val rippleIndication = glassGlobalIndication(ripple(bounded = false))
@@ -184,6 +194,28 @@ fun OnlineSearch(
     val coroutineScope = rememberCoroutineScope()
 
     val lazyListState = rememberLazyListState()
+    val searchHistoryContent: @Composable () -> Unit = {
+        SearchHistorySection(
+            visible = historyMatches.isNotEmpty(),
+            queries = historyMatches,
+            onQueryClick = { query ->
+                recordOnlineQuery(query)
+                onSearch(query.replace("/", "", true))
+            },
+            onQueryDelete = {
+                history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_ONLINE, it)
+            },
+            onQueryDeleteAll = {
+                history.value = SearchHistoryStore.deleteAll(context.preferences, SearchHistoryStore.PAGE_ONLINE)
+            },
+            onQueryEdit = { query ->
+                onTextFieldValueChanged(TextFieldValue(query, selection = TextRange(query.length)))
+                barFocusRequester.requestFocus()
+                coroutineScope.launch { lazyListState.animateScrollToItem(0) }
+            },
+            shimmer = forceShimmer,
+        )
+    }
 
     //val navigationBarPosition by rememberPreference(navigationBarPositionKey, NavigationBarPosition.BottomFloating)
     //val contentWidth = context.preferences.getFloat(contentWidthKey,0.8f)
@@ -248,6 +280,75 @@ fun OnlineSearch(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
+                val pending = suggestionsResult == null && textFieldValue.text.isNotBlank()
+                if (forceShimmer || (pending && historyMatches.isEmpty())) {
+                    if (searchDisplayOrder == SearchDisplayOrder.SavedSearchesFirst) {
+                        item(key = "search_history", contentType = "history") { searchHistoryContent() }
+                    }
+                    val suggestions = suggestionsResult?.getOrNull()
+                    if (pending || suggestions?.hasContent() == true) {
+                        item(key = "search_suggestions_title", contentType = "section_title") {
+                            TitleMiniSection(
+                                title = stringResource(R.string.search_suggestions_title),
+                                modifier = Modifier.padding(start = 24.dp),
+                            )
+                        }
+                        suggestions?.recommendedSong?.let { song ->
+                            item(key = "search_recommended_song", contentType = "song") {
+                                val model = song.asMediaItem.asSong
+                                SongItemPlaceholder(title = model.cleanTitle(), artist = model.cleanArtistsText())
+                            }
+                        }
+                        suggestions?.recommendedAlbum?.let { album ->
+                            item(key = "search_recommended_album", contentType = "album") {
+                                val metadata = buildList {
+                                    album.authors?.let { add(cleanPrefix(it.artistEntryNames().joinToString(", "))) }
+                                    album.year?.let(::add)
+                                }
+                                AlbumItemPlaceholder(
+                                    thumbnailSizeDp = songThumbnailSizeDp,
+                                    title = cleanPrefix(album.title.orEmpty()),
+                                    metadata = metadata,
+                                    metadataLines = metadata.size,
+                                )
+                            }
+                        }
+                        suggestions?.recommendedArtist?.let { artist ->
+                            item(key = "search_recommended_artist", contentType = "artist") {
+                                ArtistItemPlaceholder(
+                                    thumbnailSizeDp = songThumbnailSizeDp,
+                                    title = artist.title,
+                                    subscribers = artist.subscribersCountText,
+                                    showSubscribers = artist.subscribersCountText != null,
+                                )
+                            }
+                        }
+                        suggestions?.recommendedPlaylist?.let { playlist ->
+                            item(key = "search_recommended_playlist", contentType = "playlist") {
+                                PlaylistItemPlaceholder(songThumbnailSizeDp,
+                                    showTitle = playlist.info?.name != null, showChannel = playlist.channel?.name != null,
+                                    title = playlist.title, channel = playlist.channel?.name)
+                            }
+                        }
+                        suggestions?.recommendedVideo?.let { video ->
+                            item(key = "search_recommended_video", contentType = "video") {
+                                VideoItemPlaceholder(songThumbnailSizeDp, songThumbnailSizeDp, video = video)
+                            }
+                        }
+                        val queries = suggestions?.queries.orEmpty().distinct()
+                        items(
+                            if (pending) 4 else queries.size,
+                            key = { index -> queries.getOrNull(index)?.let { "search_query:$it" } ?: "suggestion-loading-$index" },
+                            contentType = { "search_query" },
+                        ) { index ->
+                            SearchQuerySuggestionPlaceholder(queries.getOrNull(index))
+                        }
+                    }
+                    if (searchDisplayOrder == SearchDisplayOrder.SuggestionsFirst) {
+                        item(key = "search_history", contentType = "history") { searchHistoryContent() }
+                    }
+                    return@LazyColumn
+                }
                 if (textFieldValue.text.isNotBlank() && suggestionsResult?.getOrNull()?.hasContent() == false && historyMatches.isEmpty()) {
                     item(key = "search_no_results", contentType = "empty") {
                         SearchEmptySpace(fillRemainingViewport = true)
@@ -470,50 +571,14 @@ fun OnlineSearch(
 
                         // Puis afficher l'historique (toujours visible)
                         item(key = "search_history", contentType = "history") {
-                            SearchHistorySection(
-                                visible = historyMatches.isNotEmpty(),
-                                queries = historyMatches,
-                                onQueryClick = { query ->
-                                    recordOnlineQuery(query)
-                                    onSearch(query.replace("/", "", true))
-                                },
-                                onQueryDelete = {
-                                    history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_ONLINE, it)
-                                },
-                                onQueryDeleteAll = {
-                                    history.value = SearchHistoryStore.deleteAll(context.preferences, SearchHistoryStore.PAGE_ONLINE)
-                                },
-                                onQueryEdit = { query ->
-                                    onTextFieldValueChanged(TextFieldValue(query, selection = TextRange(query.length)))
-                                    barFocusRequester.requestFocus()
-                                    coroutineScope.launch { lazyListState.animateScrollToItem(0) }
-                                },
-                            )
+                            searchHistoryContent()
                         }
                     }
 
                     SearchDisplayOrder.SavedSearchesFirst -> {
                         // Afficher d'abord l'historique (toujours visible)
                         item(key = "search_history", contentType = "history") {
-                            SearchHistorySection(
-                                visible = historyMatches.isNotEmpty(),
-                                queries = historyMatches,
-                                onQueryClick = { query ->
-                                    recordOnlineQuery(query)
-                                    onSearch(query.replace("/", "", true))
-                                },
-                                onQueryDelete = {
-                                    history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_ONLINE, it)
-                                },
-                                onQueryDeleteAll = {
-                                    history.value = SearchHistoryStore.deleteAll(context.preferences, SearchHistoryStore.PAGE_ONLINE)
-                                },
-                                onQueryEdit = { query ->
-                                    onTextFieldValueChanged(TextFieldValue(query, selection = TextRange(query.length)))
-                                    barFocusRequester.requestFocus()
-                                    coroutineScope.launch { lazyListState.animateScrollToItem(0) }
-                                },
-                            )
+                            searchHistoryContent()
                         }
 
                         // Puis afficher les suggestions
@@ -735,4 +800,25 @@ fun OnlineSearch(
         FloatingActionsContainerWithScrollToTop(lazyListState = lazyListState)
     }
 
+}
+
+@Composable
+private fun SearchQuerySuggestionPlaceholder(query: String?) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(16.dp),
+    ) {
+        Spacer(Modifier.padding(horizontal = 8.dp).size(20.dp))
+        Box(Modifier.padding(horizontal = 8.dp).weight(1f)) {
+            ItemTextPlaceholder(query, typography().s.secondary, maxLines = Int.MAX_VALUE)
+        }
+        SearchSuggestionEditAction(onClick = {}, enabled = false) {
+            Image(
+                painter = painterResource(R.drawable.pencil),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(colorPalette().textDisabled),
+                modifier = Modifier.size(22.dp),
+            )
+        }
+    }
 }

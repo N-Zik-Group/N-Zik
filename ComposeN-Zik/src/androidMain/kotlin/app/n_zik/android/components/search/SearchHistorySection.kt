@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.ui.components.themed.TitleMiniSection
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
 import app.n_zik.android.utils.secondary
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -56,6 +57,7 @@ fun SearchHistorySection(
     onQueryDelete: (String) -> Unit,
     onQueryDeleteAll: () -> Unit,
     onQueryEdit: ((String) -> Unit)? = null,
+    shimmer: Boolean = false,
 ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -88,20 +90,21 @@ fun SearchHistorySection(
                         verticalPadding = 16.dp,
                         contentPadding = PaddingValues(horizontal = 40.dp, vertical = 16.dp),
                         hasTrailingActions = true,
-                        onClick = {
+                        onClick = if (shimmer) null else ({
                             onQueryClick(query)
                             keyboardController?.hide()
                             focusManager.clearFocus(force = true)
-                        },
+                        }),
                     ) {
                         if (glassSettings.usesGlassMaterial(GlassArea.ActionButtons)) {
                             GlassSectionActions(listOf(GlassSectionAction(
                                 icon = R.drawable.search_circle,
-                                contentDescription = query,
+                                contentDescription = query.takeUnless { shimmer },
+                                enabled = !shimmer,
                                 onClick = {
-                                onQueryClick(query)
-                                keyboardController?.hide()
-                                focusManager.clearFocus(force = true)
+                                    onQueryClick(query)
+                                    keyboardController?.hide()
+                                    focusManager.clearFocus(force = true)
                                 },
                             )), settings = glassSettings)
                         } else Spacer(
@@ -115,13 +118,10 @@ fun SearchHistorySection(
                                 )
                         )
 
-                        BasicText(
-                            text = query,
-                            style = typography().s.secondary.copy(textAlign = queryAlignment),
-                            modifier = Modifier
-                                .padding(horizontal = 8.dp)
-                                .weight(1f)
-                        )
+                        val queryStyle = typography().s.secondary.copy(textAlign = queryAlignment)
+                        val queryModifier = Modifier.padding(horizontal = 8.dp).weight(1f)
+                        if (shimmer) MeasuredMetadataPlaceholder(query, queryStyle, queryModifier)
+                        else BasicText(query, style = queryStyle, modifier = queryModifier)
 
                         if (glassSettings.usesGlassMaterial(GlassArea.ActionButtons)) {
                             GlassSectionActions(
@@ -130,12 +130,14 @@ fun SearchHistorySection(
                                         icon = R.drawable.trash,
                                         contentDescription = stringResource(R.string.common_action_delete),
                                         onLongClick = onQueryDeleteAll,
+                                        enabled = !shimmer,
                                         onClick = { onQueryDelete(query) },
                                     ))
                                     if (onQueryEdit != null) {
                                         add(GlassSectionAction(
                                             icon = R.drawable.pencil,
                                             contentDescription = stringResource(R.string.search_title),
+                                            enabled = !shimmer,
                                             onClick = { onQueryEdit(query) },
                                         ))
                                     }
@@ -151,6 +153,7 @@ fun SearchHistorySection(
                                 settings = glassSettings,
                                 onClick = { onQueryDelete(query) },
                                 onLongClick = onQueryDeleteAll,
+                                enabled = !shimmer,
                             )
                             if (onQueryEdit != null) {
                                 NativeSectionIconAction(
@@ -159,6 +162,7 @@ fun SearchHistorySection(
                                     iconSize = 22.dp,
                                     color = colorPalette().textDisabled,
                                     settings = glassSettings,
+                                    enabled = !shimmer,
                                     onClick = { onQueryEdit(query) },
                                 )
                             }

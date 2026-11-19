@@ -42,6 +42,7 @@ import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.ui.items.VideoItem
 import app.n_zik.android.ui.items.VideoItemPlaceholder
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.disableScrollingTextKey
@@ -126,6 +127,7 @@ private fun ManualVideoSearch(
     }
 
     val glass = rememberGlassSettings()
+    val forceShimmer = forceLoadingShimmerPreview()
     val navigationPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     GlassRippleProvider(glass) {
@@ -154,7 +156,13 @@ private fun ManualVideoSearch(
                 ),
             ) {
                 items(results, key = { it.key }) { result ->
-                    VideoItem(
+                    if (forceShimmer) {
+                        VideoItemPlaceholder(
+                            thumbnailWidthDp = 128.dp,
+                            thumbnailHeightDp = 72.dp,
+                            video = result,
+                        )
+                    } else VideoItem(
                         video = result,
                         thumbnailWidthDp = 128.dp,
                         thumbnailHeightDp = 72.dp,
@@ -182,7 +190,7 @@ private fun ManualVideoSearch(
                     }
                 } else {
                     val nextPage = continuation
-                    if (nextPage != null) {
+                    if (nextPage != null && !forceShimmer) {
                         item(key = "manual-video-next-page") {
                             LaunchedEffect(nextPage) { requestedPage = nextPage }
                         }
