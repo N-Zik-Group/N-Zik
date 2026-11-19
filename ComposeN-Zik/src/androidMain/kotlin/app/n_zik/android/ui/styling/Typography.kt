@@ -16,18 +16,68 @@ import app.n_zik.android.ui.saveable.reportTruncatedSaveable
 import app.n_zik.android.enums.FontType
 
 @Immutable
-data class Typography(
-    val xxxs: TextStyle,
-    val xxs: TextStyle,
-    val xs: TextStyle,
-    val s: TextStyle,
-    val m: TextStyle,
-    val l: TextStyle,
-    val xl: TextStyle,
-    val xxl: TextStyle,
-    val xxxl: TextStyle,
-    val xlxl: TextStyle,
+class Typography private constructor(
+    private val baseStyles: Array<TextStyle>,
+    private val colorOverride: Color?,
 ) {
+    constructor(
+        xxxs: TextStyle,
+        xxs: TextStyle,
+        xs: TextStyle,
+        s: TextStyle,
+        m: TextStyle,
+        l: TextStyle,
+        xl: TextStyle,
+        xxl: TextStyle,
+        xxxl: TextStyle,
+        xlxl: TextStyle,
+    ) : this(arrayOf(xxxs, xxs, xs, s, m, l, xl, xxl, xxxl, xlxl), null)
+
+    private val recolored = colorOverride?.let { arrayOfNulls<TextStyle>(baseStyles.size) }
+
+    val xxxs: TextStyle get() = styleAt(0)
+    val xxs: TextStyle get() = styleAt(1)
+    val xs: TextStyle get() = styleAt(2)
+    val s: TextStyle get() = styleAt(3)
+    val m: TextStyle get() = styleAt(4)
+    val l: TextStyle get() = styleAt(5)
+    val xl: TextStyle get() = styleAt(6)
+    val xxl: TextStyle get() = styleAt(7)
+    val xxxl: TextStyle get() = styleAt(8)
+    val xlxl: TextStyle get() = styleAt(9)
+
+    internal val hasDeferredColor: Boolean get() = colorOverride != null
+
+    /** The player changes ink every frame, while most style roles remain unused. */
+    internal fun withDeferredColor(color: Color): Typography {
+        if (colorOverride == color) return this
+        if (color != Color.Unspecified && baseStyles.all { it.color == color }) {
+            return if (colorOverride == null) this else Typography(baseStyles, null)
+        }
+        return Typography(baseStyles, color)
+    }
+
+    private fun styleAt(index: Int): TextStyle {
+        val base = baseStyles[index]
+        val color = colorOverride ?: return base
+        val cache = checkNotNull(recolored)
+        return cache[index] ?: base.copy(color = color).also { cache[index] = it }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Typography) return false
+        if (baseStyles === other.baseStyles && colorOverride == other.colorOverride) return true
+        if (colorOverride != null && other.colorOverride != null && colorOverride != other.colorOverride) return false
+        return baseStyles.indices.all { styleAt(it) == other.styleAt(it) }
+    }
+
+    override fun hashCode(): Int {
+        var result = styleAt(0).hashCode()
+        for (index in 1 until baseStyles.size) result = 31 * result + styleAt(index).hashCode()
+        return result
+    }
+
     fun copy(color: Color) = Typography(
         xxxs = xxs.copy(color = color),
         xxs = xxs.copy(color = color),

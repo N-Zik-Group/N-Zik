@@ -70,19 +70,21 @@ private data class AppearanceFrame(
 )
 
 /** Returns a copy of this typography with every text style recolored while preserving each style's font size and other attributes. */
-fun Typography.withColor(color: Color): Typography = copy(
-    xxxs = xxxs.copy(color = color),
-    xxs = xxs.copy(color = color),
-    xs = xs.copy(color = color),
-    s = s.copy(color = color),
-    m = m.copy(color = color),
-    l = l.copy(color = color),
-    xl = xl.copy(color = color),
-    xxl = xxl.copy(color = color),
-    xxxl = xxxl.copy(color = color),
-    xlxl = xlxl.copy(color = color),
-)
-
+fun Typography.withColor(color: Color): Typography {
+    if (hasDeferredColor) return withDeferredColor(color)
+    return Typography(
+        xxxs = xxxs.copy(color = color),
+        xxs = xxs.copy(color = color),
+        xs = xs.copy(color = color),
+        s = s.copy(color = color),
+        m = m.copy(color = color),
+        l = l.copy(color = color),
+        xl = xl.copy(color = color),
+        xxl = xxl.copy(color = color),
+        xxxl = xxxl.copy(color = color),
+        xlxl = xlxl.copy(color = color),
+    )
+}
 /** Interpolates palette and typography colors while taking shapes from [target]. */
 fun fadeAppearance(from: Appearance, target: Appearance, fraction: Float): Appearance {
     val palette = from.colorPalette.lerpTo(target.colorPalette, fraction)

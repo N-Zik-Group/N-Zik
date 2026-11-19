@@ -72,6 +72,7 @@ import app.n_zik.android.components.player.PlayerInformationGlassRegion
 import app.n_zik.android.components.player.PlayerQueueDurationGlass
 import app.n_zik.android.components.player.PlayerControlsWidthFraction
 import app.n_zik.android.components.player.PlayerTopAction
+import app.n_zik.android.components.player.canSkipStandalonePlayerCover
 import app.n_zik.android.components.player.rememberGlassPlayerBackground
 
 import app.n_zik.android.components.dialog.common.DialogPresence
@@ -202,6 +203,7 @@ import app.n_zik.android.components.player.LocalPlayerBackdropSampling
 import app.n_zik.android.components.player.rememberPlayerBackdropRegionColor
 import app.n_zik.android.components.player.rememberPlayerBackdropSampling
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.boundsInWindow
 import app.n_zik.android.components.player.playerFluidBackground
 import app.n_zik.android.components.player.PlayerFluidColors
@@ -240,6 +242,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
@@ -1082,6 +1085,20 @@ fun Player(
     val displayedSwatches = remember(artworkPaint) {
         derivedStateOf { (artworkPaint.value.swatches ?: latestTargetSwatches.value).orEmpty() }
     }
+    val opaqueCoverFill by remember(artworkPaint) {
+        derivedStateOf { artworkPaint.value.surface.alpha == 1f }
+    }
+    val hasOpaqueFlatFill = when (playerBackgroundColors) {
+        PlayerBackgroundColors.CoverColor -> opaqueCoverFill
+        PlayerBackgroundColors.ThemeColor -> color.background1.alpha == 1f
+        else -> false
+    }
+    var backdropViewportSize by remember(isLandscape) { mutableStateOf(IntSize.Zero) }
+    var backdropFillSize by remember(isLandscape) { mutableStateOf(IntSize.Zero) }
+    val skipStandaloneCover = canSkipStandalonePlayerCover(
+        hasForegroundArtwork, hasOpaqueFlatFill, backdropViewportSize, backdropFillSize,
+    )
+
     val artworkAccent = remember(artworkPaint) { derivedStateOf { artworkPaint.value.accent } }
     val artworkGlass = remember(artworkPaint) { derivedStateOf { artworkPaint.value.glass } }
     SideEffect { videoSession?.controlArtworkAccent = artworkAccent }
@@ -1597,7 +1614,10 @@ fun Player(
         }
 
 
-        Box(Modifier.fillMaxSize().then(if (captureQueueUnderlay) Modifier.layerBackdrop(queuePlayerBackdrop) else Modifier)) {
+        Box(Modifier.fillMaxSize()
+            .onSizeChanged { backdropViewportSize = it }
+            .then(if (captureQueueUnderlay) Modifier.layerBackdrop(queuePlayerBackdrop) else Modifier)
+        ) {
         if (isLandscape) {
          Box{
              if (showFullScreenArtworkPager) {
@@ -1687,7 +1707,7 @@ fun Player(
                      .background(blurredVeilBase)){}
              }
 
-             PlayerBlurredCover(
+             if (!skipStandaloneCover) PlayerBlurredCover(
                  thumbnailUrl = backgroundArtwork.coverUrl.orEmpty(),
                  committedRevision = backgroundArtwork.coverRevision,
                  publishArtworkColors = visiblePlayerArtwork && !fullscreenPagerOwnsArtwork &&
@@ -1702,7 +1722,9 @@ fun Player(
             AnimatedPlayerBackground()
             PlayerLandscapeColumns(
                 showArtworkColumn = showLandscapeArtworkColumn,
-                modifier = (if (capturePlayerBackground) playerBackground.background else Modifier).then(containerModifier)
+                modifier = Modifier.onSizeChanged { backdropFillSize = it }
+                    .then(if (capturePlayerBackground) playerBackground.background else Modifier)
+                    .then(containerModifier)
                     .drawBehind {
                         if (backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.Player) {
                             drawRect(
@@ -2295,7 +2317,7 @@ fun Player(
                         .background(blurredVeilBase)){}
                 }
 
-               PlayerBlurredCover(
+               if (!skipStandaloneCover) PlayerBlurredCover(
                    thumbnailUrl = backgroundArtwork.coverUrl.orEmpty(),
                    committedRevision = backgroundArtwork.coverRevision,
                    publishArtworkColors = visiblePlayerArtwork && !fullscreenPagerOwnsArtwork &&
@@ -2323,7 +2345,9 @@ fun Player(
                 // Thumbnail's Modern style already has 8dp above and below its square.
                 artworkVerticalPadding = if (playerType == PlayerType.Essential && thumbnailType == ThumbnailType.Modern)
                     16.dp else 0.dp,
-                modifier = (if (capturePlayerBackground) playerBackground.background else Modifier).then(containerModifier)
+                modifier = Modifier.onSizeChanged { backdropFillSize = it }
+                    .then(if (capturePlayerBackground) playerBackground.background else Modifier)
+                    .then(containerModifier)
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                     //.padding(top = 10.dp)
                     .drawBehind {

@@ -24,7 +24,6 @@ import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.lerpTo
 import app.n_zik.android.components.theme.LocalPaletteDarkness
 import app.n_zik.android.components.theme.LocalPaletteFadeTarget
-import app.n_zik.android.components.theme.withColor
 import app.n_zik.android.components.glass.LocalPlayerForegroundProgress
 import kotlinx.coroutines.flow.first
 
@@ -164,7 +163,9 @@ fun PaletteFade(
     CompositionLocalProvider(
         LocalAppearance provides targetAppearance.copy(
             colorPalette = palette,
-            typography = targetAppearance.typography.withColor(palette.text),
+            typography = remember(targetAppearance.typography, palette.text) {
+                targetAppearance.typography.withDeferredColor(palette.text)
+            },
         ),
         LocalPaletteDarkness provides (displayed?.darkness ?: if (palette.isDark) 1f else 0f),
         LocalRippleConfiguration provides remember(palette.text) { RippleConfiguration(color = palette.text) },

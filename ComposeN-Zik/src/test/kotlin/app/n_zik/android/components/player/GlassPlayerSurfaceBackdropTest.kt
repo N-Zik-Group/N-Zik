@@ -23,6 +23,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.ColorPalette
@@ -37,6 +38,7 @@ import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackd
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import app.n_zik.android.components.glass.glassMiniPlayerBackground
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -50,6 +52,15 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassPlayerSurfaceBackdropTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `only a full opaque fill and active foreground artwork replace the standalone cover`() {
+        val viewport = IntSize(1080, 2400)
+        assertTrue(canSkipStandalonePlayerCover(true, true, viewport, viewport))
+        assertFalse(canSkipStandalonePlayerCover(false, true, viewport, viewport))
+        assertFalse(canSkipStandalonePlayerCover(true, false, viewport, viewport))
+        assertFalse(canSkipStandalonePlayerCover(true, true, viewport, IntSize(1000, 2400)))
+        assertFalse(canSkipStandalonePlayerCover(true, true, IntSize.Zero, IntSize.Zero))
+    }
     private val clear = GlassSettings(enabled = true, blur = 0f, film = 0f, rim = 0f,
         tintStrength = 0f, vibrancy = 0f)
 

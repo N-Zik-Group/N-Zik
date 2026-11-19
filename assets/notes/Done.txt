@@ -6,6 +6,9 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- perf(player): reduce rendering work during artwork transitions
+  - Skip the standalone blurred cover when a full-size opaque player fill hides it and a foreground cover still supplies artwork colors.
+  - Recolor text styles on demand during a palette fade and reuse the resolved style for each role. Keep the existing easing and carousel artwork count.
 - improve(shimmer): synchronize and size loading placeholders across the app
   - Use a shared frame clock and palette through ShimmerHost. Match thumbnail, artist and text corners to the real components in Normal and Glass.
   - Match row and grid geometry, visible text lines and controls in Home, Quick Picks, Discovery, the on-device library and search. Keep duration and download slots in song rows.

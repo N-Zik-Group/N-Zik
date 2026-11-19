@@ -188,6 +188,26 @@ class AppearanceFadeTest {
     }
 
     @Test
+    fun `player recolor exposes the matching style on demand for every role`() {
+        val base = typography(Color.White)
+        val firstFrame = base.withDeferredColor(Color.Gray)
+        val nextFrame = base.withDeferredColor(Color.Black)
+
+        val firstRead = firstFrame.xxs
+        assertSame(firstRead, firstFrame.xxs)
+        assertEquals(base.xxs.copy(color = Color.Gray), firstRead)
+        assertEquals(Color.Black, nextFrame.xxs.color)
+        assertSame(firstRead, firstFrame.xxs)
+        assertEquals(Color.White, base.xxs.color)
+
+        val expected = base.withColor(Color.Gray)
+        assertEquals(expected, firstFrame)
+        assertEquals(firstFrame, expected)
+        assertEquals(expected.hashCode(), firstFrame.hashCode())
+        assertSame(base, base.withDeferredColor(Color.White))
+    }
+
+    @Test
     fun `appearanceRetarget applies target instantly on first target`() {
         val retarget = appearanceRetarget(current = null, fadeFrom = fromAppearance, target = targetAppearance)
 

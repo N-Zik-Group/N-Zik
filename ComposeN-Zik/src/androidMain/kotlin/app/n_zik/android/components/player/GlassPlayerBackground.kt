@@ -10,10 +10,19 @@ import androidx.compose.ui.node.GlobalPositionAwareModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.node.invalidateDraw
 import androidx.compose.ui.platform.InspectorInfo
+import androidx.compose.ui.unit.IntSize
 import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import app.n_zik.android.components.glass.backdrop.internal.recordLayer
 import app.n_zik.android.components.glass.drawContentOn
+
+/** The standalone image also supplies palette pixels when there is no foreground cover. */
+internal fun canSkipStandalonePlayerCover(
+    hasForegroundArtwork: Boolean,
+    hasOpaqueFlatFill: Boolean,
+    viewportSize: IntSize,
+    fillSize: IntSize,
+): Boolean = hasForegroundArtwork && hasOpaqueFlatFill && viewportSize != IntSize.Zero && viewportSize == fillSize
 
 /** Captures only modifiers between [background] and [content], never player descendants. */
 class GlassPlayerBackground internal constructor(internal val backdrop: LayerBackdrop) {
