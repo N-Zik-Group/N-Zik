@@ -424,7 +424,7 @@ fun PlaylistsItemGridMenu(
             val selectText = "${stringResource(R.string.common_action_select)}/${stringResource(R.string.playlist_selection_action_deselect)}"
             val colorPalette = colorPalette()
 
-            GridMenu.Menu(title = null) {
+            GridMenu.Menu(title = if (playlist == null) stringResource(R.string.library_playlists_title) else null) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     if (playlist != null) {
                         PlaylistItem(

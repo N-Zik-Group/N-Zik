@@ -449,7 +449,7 @@ fun PlaylistsItemMenu(
                     }
                 }
             } else {
-                ListMenu.Menu(title = null) {
+                ListMenu.Menu(title = if (playlist == null) stringResource(R.string.library_playlists_title) else null) {
                     val thumbnailSizeDp = Dimensions.thumbnails.song + 20.dp
                     val thumbnailSizePx = thumbnailSizeDp.px
                     //val thumbnailArtistSizeDp = Dimensions.thumbnails.song + 10.dp

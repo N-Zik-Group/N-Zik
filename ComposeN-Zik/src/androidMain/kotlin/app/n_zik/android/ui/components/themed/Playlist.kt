@@ -139,6 +139,7 @@ fun Playlist(
         modifier = modifier,
         alternative = alternative,
         showName = showName,
+        showInfo = showName,
         disableScrollingText = disableScrollingText,
         browseId = playlist.browseId,
         isYoutubePlaylist = isPlaylistBookmarked(playlist),
