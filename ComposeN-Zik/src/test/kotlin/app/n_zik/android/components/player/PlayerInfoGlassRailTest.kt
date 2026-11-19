@@ -92,6 +92,31 @@ class PlayerInfoGlassRailTest {
 
     @Before fun setup() { preferences.edit().clear().putBoolean(glassEnabledKey, true).commit() }
 
+    @Test fun `changing an information glyph keeps its slot and fades between symbols`() {
+        val icon = mutableStateOf(R.drawable.people)
+        compose.setContent {
+            AppearanceProvider {
+                PlayerInfoIconButton({}, icon.value, Color.White, Modifier.size(26.dp),
+                    settings = GlassSettings(enabled = true))
+            }
+        }
+        val old = compose.onNodeWithTag("player.infoIcon.glyph.${R.drawable.people}", useUnmergedTree = true)
+        val next = compose.onNodeWithTag("player.infoIcon.glyph.${R.drawable.person}", useUnmergedTree = true)
+        val original = old.fetchSemanticsNode().boundsInRoot
+        compose.mainClock.autoAdvance = false
+        compose.runOnIdle {
+            icon.value = R.drawable.person
+            androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications()
+        }
+        compose.mainClock.advanceTimeByFrame()
+        compose.mainClock.advanceTimeBy(96)
+        old.assertExists()
+        assertEquals(original, next.fetchSemanticsNode().boundsInRoot)
+        compose.mainClock.advanceTimeBy(300)
+        old.assertDoesNotExist()
+        next.assertExists()
+    }
+
     @Test fun `standalone information feedback can expand beyond its resting canvas when material is disabled`() {
         compose.mainClock.autoAdvance = false
         compose.setContent {

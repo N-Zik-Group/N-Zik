@@ -106,6 +106,7 @@ import app.n_zik.android.components.player.PlayerInfoIconButton
 import app.n_zik.android.components.player.PlayerInformationFavoriteAction
 import app.n_zik.android.components.player.PlayerInformationFavoriteBackdrop
 import app.n_zik.android.components.player.PlayerInfoGlassRail
+import app.n_zik.android.utils.splitArtistNames
 import app.n_zik.android.components.player.PlayerTransportRibbedSurface
 import app.n_zik.android.components.player.playerTransportPlayShape
 import app.n_zik.android.components.player.playerTransportNativeFill
@@ -149,14 +150,16 @@ fun InfoAlbumAndArtistModern(
     isExplicit: Boolean,
     artist: String?,
     onCollapse: () -> Unit,
-    disableScrollingText: Boolean = false
+    disableScrollingText: Boolean = false,
+    displayedMediaId: String = mediaId,
 ) {
     val glassTextFeedback = rememberGlassSettings().enabled
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     var showthumbnail by rememberPreference(showthumbnailKey, true)
-    var showSelectDialog by remember { mutableStateOf(false) }
+    var selectedArtists by remember { mutableStateOf<List<Info>?>(null) }
     val playerInfoShowIcon by rememberPreference(playerInfoShowIconsKey, true)
     val currentMediaItem = player.currentMediaItem
+    val displayedArtistCount = remember(artist) { artist.splitArtistNames().size }
 
     PlayerInfoGlassRail(iconsVisible = playerInfoShowIcon) {
     PlayerInformationFavoriteBackdrop(playerControlsType == PlayerControlsType.Modern) { titleBackdrop, favoriteBackdrop ->
@@ -176,9 +179,11 @@ fun InfoAlbumAndArtistModern(
 
             if (playerInfoShowIcon) {
                 PlayerInfoIconButton(
-                    icon = if (title == stringResource(R.string.metadata_unknown_title) || title == "Unknown Title") R.drawable.unknown else if (albumId == null && !media.isLocal) R.drawable.logo_youtube else R.drawable.album,
-                    color = if (albumId == null) colorPalette().textDisabled else colorPalette().text,
+                    icon = if (title == stringResource(R.string.metadata_unknown_title) || title == "Unknown Title")
+                        R.drawable.unknown else R.drawable.album,
+                    color = colorPalette().text,
                     enabled = albumId != null,
+                    displayedMediaId = displayedMediaId,
                     onClick = {
                         if (albumId != null) {
                             //onGoToAlbum(albumId)
@@ -297,15 +302,15 @@ fun InfoAlbumAndArtistModern(
             .fillMaxWidth()
     ) {
 
-        DialogPresence(visible = showSelectDialog) {
+        DialogPresence(target = selectedArtists) { artists ->
             SelectorArtistsDialog(
                 title = stringResource(R.string.library_artists_title),
-                onDismiss = { showSelectDialog = false },
-                values = artistIds,
+                onDismiss = { selectedArtists = null },
+                values = artists,
                 onValueSelected = {
                     //onGoToArtist(it)
                     navController.navigate(route = "${NavRoutes.artist.name}/${it}")
-                    showSelectDialog = false
+                    selectedArtists = null
                     //layoutState.collapseSoft()
                     onCollapse()
                 }
@@ -315,11 +320,17 @@ fun InfoAlbumAndArtistModern(
 
         if (playerInfoShowIcon) {
             PlayerInfoIconButton(
-                icon = if (artist == stringResource(R.string.metadata_unknown_artist) || artist == "Unknown Artist") R.drawable.unknown else if (artistIds?.isEmpty() == true && !media.isLocal) R.drawable.logo_youtube else if (artistIds?.size == 1) R.drawable.person else R.drawable.people,
-                color = if (artistIds?.isEmpty() == true) colorPalette().textDisabled else colorPalette().text,
+                icon = when {
+                    artist == stringResource(R.string.metadata_unknown_artist) || artist == "Unknown Artist" -> R.drawable.unknown
+                    displayedArtistCount > 1 -> R.drawable.people
+                    else -> R.drawable.person
+                },
+                displayedMediaId = displayedMediaId,
+                color = colorPalette().text,
+                enabled = !artistIds.isNullOrEmpty(),
                 onClick = {
                     if (artistIds?.isNotEmpty() == true && artistIds.size > 1)
-                        showSelectDialog = true
+                        selectedArtists = artistIds
                     if (artistIds?.isNotEmpty() == true && artistIds.size == 1) {
                         //onGoToArtist( artistIds[0].id )
                         navController.navigate(route = "${NavRoutes.artist.name}/${artistIds[0].id}")
@@ -345,7 +356,7 @@ fun InfoAlbumAndArtistModern(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = {
                     if (artistIds?.isNotEmpty() == true && artistIds.size > 1)
-                        showSelectDialog = true
+                        selectedArtists = artistIds
                     if (artistIds?.isNotEmpty() == true && artistIds.size == 1) {
                         navController.navigate(route = "${NavRoutes.artist.name}/${artistIds[0].id}")
                         onCollapse()

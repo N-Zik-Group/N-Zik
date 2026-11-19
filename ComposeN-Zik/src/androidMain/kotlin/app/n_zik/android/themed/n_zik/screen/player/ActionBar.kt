@@ -768,22 +768,19 @@ fun BoxScope.ActionBar(
                                     icon = R.drawable.ellipsis_vertical,
                                     color = colorPalette().accent,
                                     onClick = {
-                                        val currentMediaItem = player.currentMediaItem
-                                        if (currentMediaItem != null) {
-                                            menuState.display {
-                                                PlayerMenu(
-                                                    navController = navController,
-                                                    onDismiss = menuState::hide,
-                                                    mediaItem = currentMediaItem,
-                                                    binder = binder ?: return@display,
-                                                    onClosePlayer = onDismiss,
-                                                    onShowSleepTimer = {
-                                                        showSleepTimerState.value = true
-                                                        menuState.hide()
-                                                    },
-                                                    disableScrollingText = disableScrollingText
-                                                )
-                                            }
+                                        menuState.display {
+                                            PlayerMenu(
+                                                navController = navController,
+                                                onDismiss = menuState::hide,
+                                                mediaItem = mediaItem,
+                                                binder = binder ?: return@display,
+                                                onClosePlayer = onDismiss,
+                                                onShowSleepTimer = {
+                                                    showSleepTimerState.value = true
+                                                    menuState.hide()
+                                                },
+                                                disableScrollingText = disableScrollingText
+                                            )
                                         }
                                     },
                                     modifier = Modifier

@@ -1,16 +1,20 @@
 package app.n_zik.android.components.player
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,7 +46,9 @@ import app.n_zik.android.components.glass.InteractiveHighlight
 import app.n_zik.android.components.glass.LocalGlassGroupPressMotion
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.forArea
+import app.n_zik.android.components.glass.glassActionFilmColor
 import app.n_zik.android.components.glass.glassAreaContour
+import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.glass.glassMaterial
 import app.n_zik.android.components.glass.glassButtonFeedback
 import app.n_zik.android.components.glass.glassButtonMotion
@@ -52,6 +58,7 @@ import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.inScope
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.retainGlassButtonGesture
+import app.n_zik.android.components.glass.surfaceGlyphColor
 import app.n_zik.android.components.glass.usesGlassContour
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.uiRoundnessShape
@@ -64,6 +71,7 @@ private class PlayerInfoRailMotion(
 )
 
 private val LocalPlayerInfoRailMotion = staticCompositionLocalOf<PlayerInfoRailMotion?> { null }
+private val LocalPlayerInfoIconFilm = compositionLocalOf<Color?> { null }
 
 /** Apply one host-space transform only to the connected pane and its glyphs, never the row text. */
 @Composable
@@ -96,12 +104,16 @@ fun PlayerInfoIconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     settings: GlassSettings = rememberGlassSettings(GlassScope.PlayerInformation),
+    displayedMediaId: String? = null,
 ) {
     val settings = settings.inScope(GlassScope.PlayerInformation)
     val interaction = remember { MutableInteractionSource() }
     val shape = uiRoundnessShape()
     val groupMotion = LocalGlassGroupPressMotion.current
     val railMotion = LocalPlayerInfoRailMotion.current
+    val film = LocalPlayerInfoIconFilm.current
+    val glyphColor = if (film == null) color else surfaceGlyphColor(color, plate = film)
+    val glyphTint = remember(glyphColor) { ColorFilter.tint(glyphColor) }
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
         val glyphWidth = maxWidth
         val glyphHeight = maxHeight
@@ -122,12 +134,18 @@ fun PlayerInfoIconButton(
             .combinedClickable(interactionSource = interaction,
                 indication = if (settings.enabled) null else ripple(bounded = true),
                 enabled = enabled, onClick = onClick), contentAlignment = Alignment.Center) {
-            Image(painterResource(icon), null, colorFilter = ColorFilter.tint(color),
-                modifier = Modifier.requiredSize(glyphWidth, glyphHeight)
-                    .testTag("player.infoIcon.glyph.$icon").graphicsLayer {
-                        scaleX = if (settings.enabled) .85f else 1f
-                        scaleY = if (settings.enabled) .85f else 1f
-                    })
+            Crossfade(
+                targetState = displayedMediaId to icon,
+                animationSpec = tween(220),
+                modifier = Modifier.requiredSize(glyphWidth, glyphHeight).graphicsLayer {
+                    scaleX = if (settings.enabled) .85f else 1f
+                    scaleY = if (settings.enabled) .85f else 1f
+                },
+                label = "playerInfoGlyph",
+            ) { (_, glyph) ->
+                Image(painterResource(glyph), null, colorFilter = glyphTint,
+                    modifier = Modifier.fillMaxSize().testTag("player.infoIcon.glyph.$glyph"))
+            }
         }
     }
 }
@@ -180,6 +198,8 @@ fun PlayerInfoGlassRail(
     val artist = scope.artist
     val padding = with(LocalDensity.current) { 6.dp.toPx() }
     val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
+    val actionSettings = settings.forArea(GlassArea.ActionButtons)
+    val filmRole = glassActionFilmColor()
     val contour = settings.usesGlassContour(GlassArea.ActionButtons)
     val shape = uiRoundnessShape()
     val backdrop = LocalGlassContainerBackdrop.current
@@ -191,8 +211,10 @@ fun PlayerInfoGlassRail(
         maxOf(album.right, artist.right) + padding,
         maxOf(album.bottom, artist.bottom) + padding,
     ) else null
-    val motion = if (material && isGlassMotionAllowed() && bounds != null)
-        PlayerInfoRailMotion(controller, scope, bounds) else null
+    val motion = if (material && isGlassMotionAllowed() && bounds != null) {
+        remember(controller, scope, bounds) { PlayerInfoRailMotion(controller, scope, bounds) }
+    } else null
+    val iconFilm = if (material && bounds != null) glassFilmColor(actionSettings, filmRole, menu = false) else null
     Box(Modifier.onGloballyPositioned(scope::updateHost)) {
         if (bounds != null) {
             // matchParentSize leaves the rows in charge of layout and avoids a zero-sized optical host.
@@ -203,12 +225,13 @@ fun PlayerInfoGlassRail(
                 }
             }.playerInformationGlassVisualBounds().testTag("player.infoRail.surface")
                 .playerInfoRailMotion(motion)
-                .then(if (material) Modifier.glassMaterial(settings.forArea(GlassArea.ActionButtons), shape,
-                    ownBackdrop = backdrop, separateWindow = backdrop == null)
+                .then(if (material) Modifier.glassMaterial(actionSettings, shape,
+                    ownBackdrop = backdrop, separateWindow = backdrop == null, filmColor = filmRole)
                 else Modifier.glassAreaContour(settings, GlassArea.ActionButtons, shape)))
         }
         CompositionLocalProvider(LocalGlassGroupPressMotion provides motion?.controller,
-            LocalPlayerInfoRailMotion provides motion) {
+            LocalPlayerInfoRailMotion provides motion,
+            LocalPlayerInfoIconFilm provides iconFilm) {
             Column { scope.content() }
         }
     }

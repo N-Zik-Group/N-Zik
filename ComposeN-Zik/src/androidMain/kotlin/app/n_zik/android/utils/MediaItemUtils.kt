@@ -1,6 +1,9 @@
 package app.n_zik.android.utils
 
+import android.util.LruCache
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.key
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -45,7 +48,7 @@ internal fun displayTrackTitle(title: String?): String? =
     title?.let { cleanPrefix(cleanPrefix(it)) }?.takeIf { it.isNotBlank() && it != "null" }
 
 @Composable
-fun MediaItem.artistIdsWithFallback(): List<Info> {
+fun MediaItem.artistIdsWithFallback(initialArtists: List<Info> = emptyList()): List<Info> {
     val ids = mediaMetadata.extras?.getStringArrayList("artistIds")
     val infos = if (!isLocal && !ids.isNullOrEmpty()) {
         val names = mediaMetadata.extras?.getStringArrayList("artistNames")
@@ -53,8 +56,9 @@ fun MediaItem.artistIdsWithFallback(): List<Info> {
     } else {
         val dbArtists by remember(mediaId) {
             Database.artistTable.findBySongId(mediaId.substringAfterLast('/'))
-        }.collectAsStateWithLifecycle(initialValue = emptyList(), context = NzikDispatchers.DATA)
-        dbArtists.map { Info(it.id, it.name) }
+                .map { artists -> artists.map { Info(it.id, it.name) } }
+        }.collectAsStateWithLifecycle(initialValue = initialArtists, context = NzikDispatchers.DATA)
+        dbArtists
     }
     // The links (and the extras built from them) carry no display order: SQLite
     // returns them in an arbitrary order, so the profile-photo pager used to
@@ -102,15 +106,32 @@ internal fun alignInfosToDisplayOrder(infos: List<Info>, displayText: String?): 
 }
 
 @Composable
-fun MediaItem.albumIdWithFallback(): String? {
+fun MediaItem.albumIdWithFallback(initialAlbumId: String? = null): String? {
     val albumId = mediaMetadata.extras?.getString("albumId")?.takeUnless(::isDeviceAlbumId)
     if (!isLocal && !albumId.isNullOrBlank()) return albumId
     val dbAlbum by remember(mediaId) {
         Database.songAlbumMapTable.findAlbumsOf(mediaId.substringAfterLast('/')).map { albums ->
-            albums.firstOrNull { isDeviceAlbumId(it.id) == isLocal }
+            albums.firstOrNull { isDeviceAlbumId(it.id) == isLocal }?.id
         }
-    }.collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
-    return dbAlbum?.id
+    }.collectAsStateWithLifecycle(initialValue = initialAlbumId, context = NzikDispatchers.DATA)
+    return dbAlbum
+}
+
+internal data class PlayerTrackLinks(val albumId: String?, val artists: List<Info>)
+
+/** Re-use known links for this track until the current metadata or database read replaces them. */
+@Composable
+internal fun MediaItem.playerTrackLinks(cache: LruCache<String, PlayerTrackLinks>): PlayerTrackLinks = key(mediaId, cache) {
+    val lastKnown = remember { cache.get(mediaId) }
+    val links = PlayerTrackLinks(
+        albumIdWithFallback(lastKnown?.albumId),
+        artistIdsWithFallback(lastKnown?.artists.orEmpty()),
+    )
+    SideEffect {
+        if (links.albumId == null && links.artists.isEmpty()) cache.remove(mediaId)
+        else cache.put(mediaId, links)
+    }
+    links
 }
 
 /** Pure album-title resolution shared by the Composable preview fallback below: metadata first, then the DB record; fork prefixes ("e:", "modified:", "pinned:", the "🅴 " marker, ...) are stripped from both sources (same contract as [artistTextOrDb] / [titleOrDb]); a blank or literal "null" is treated as missing, and the result `null` means "unknown" (the caller applies its own localized fallback). */

@@ -160,7 +160,7 @@ fun InfoAlbumAndArtistEssential(
     val glassTextFeedback = rememberGlassSettings().enabled
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     var showthumbnail by rememberPreference(showthumbnailKey, true)
-    var showSelectDialog by remember { mutableStateOf(false) }
+    var selectedArtists by remember { mutableStateOf<List<Info>?>(null) }
     var textoutline by rememberPreference(textoutlineKey, false)
     val buttonState by rememberPreference(buttonStateKey, ButtonState.Idle)
     val currentMediaItem = player.currentMediaItem
@@ -314,14 +314,14 @@ fun InfoAlbumAndArtistEssential(
             .fillMaxWidth()
     ) {
 
-        DialogPresence(visible = showSelectDialog) {
+        DialogPresence(target = selectedArtists) { artists ->
             SelectorArtistsDialog(
                 title = stringResource(R.string.library_artists_title),
-                onDismiss = { showSelectDialog = false },
-                values = artistIds,
+                onDismiss = { selectedArtists = null },
+                values = artists,
                 onValueSelected = {
                     navController.navigate(route = "${NavRoutes.artist.name}/${it}")
-                    showSelectDialog = false
+                    selectedArtists = null
                     onCollapse()
                 }
             )
@@ -334,7 +334,7 @@ fun InfoAlbumAndArtistEssential(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = {
                     if (artistIds?.isNotEmpty() == true && artistIds.size > 1)
-                        showSelectDialog = true
+                        selectedArtists = artistIds
                     if (artistIds?.isNotEmpty() == true && artistIds.size == 1) {
                         navController.navigate(route = "${NavRoutes.artist.name}/${artistIds[0].id}")
                         onCollapse()

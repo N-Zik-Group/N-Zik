@@ -18,6 +18,7 @@ import app.n_zik.android.utils.actionExpandedKey
 import app.n_zik.android.components.player.extractCoverPalette
 
 import android.graphics.Bitmap
+import android.util.LruCache
 
 import app.n_zik.android.components.player.playerQueueUnderlayCovered
 import app.n_zik.android.components.player.queuePanelAtExpandedEndpoint
@@ -78,8 +79,9 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.appRunningInBackground
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 
-import app.n_zik.android.utils.artistIdsWithFallback
-import app.n_zik.android.utils.albumIdWithFallback
+import app.n_zik.android.utils.PlayerTrackLinks
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.playerTrackLinks
 import app.n_zik.android.utils.artistTextWithFallback
 import app.n_zik.android.utils.titleWithFallback
 
@@ -841,8 +843,8 @@ fun Player(
 
     val windowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
 
-    val artistInfos = mediaItem.artistIdsWithFallback()
-    val albumId = mediaItem.albumIdWithFallback()
+    val linkCache = remember(getActiveProfile(context)) { LruCache<String, PlayerTrackLinks>(48) }
+    val currentLinks = mediaItem.playerTrackLinks(linkCache)
 
     var showCircularSlider by remember {
         mutableStateOf(false)
@@ -1507,7 +1509,7 @@ fun Player(
 
     @Composable
     fun Controller( 
-        mediaItem: MediaItem, 
+        displayItem: MediaItem,
         modifier: Modifier, 
         isBuffering: Boolean,
         position: () -> Long,
@@ -1515,6 +1517,8 @@ fun Player(
     ) {
         var region by remember { mutableStateOf<Rect?>(null) }
         val surface = rememberPlayerBackdropRegionColor(region, useLocalSample = true)
+        val displayLinks = if (displayItem.mediaId == mediaItem.mediaId) currentLinks
+            else displayItem.playerTrackLinks(linkCache)
         val controls: @Composable () -> Unit = {
             Controls(
                 navController = navController,
@@ -1525,9 +1529,9 @@ fun Player(
                 timelineExpanded = timelineExpanded,
                 controlsExpanded = controlsExpanded,
                 isShowingLyrics = isShowingStandaloneLyrics,
-                mediaItem = mediaItem,
-                artistIds = artistInfos,
-                albumId = albumId,
+                mediaItem = displayItem,
+                artistIds = displayLinks.artists,
+                albumId = displayLinks.albumId,
                 shouldBePlaying = shouldBePlaying,
                 isBuffering = isBuffering,
                 position = position,
@@ -1612,6 +1616,7 @@ fun Player(
                        player.currentMediaItemIndex,
                        appRunningInBackground,
                        playerContentVisible = playerContentVisible,
+                       paceArtworkMotion = true,
                    )
 
                    pagerStateFS.slideSettledPageEffect(
@@ -2106,6 +2111,7 @@ fun Player(
                        player.currentMediaItemIndex,
                        appRunningInBackground,
                        playerContentVisible = playerContentVisible,
+                       paceArtworkMotion = true,
                    )
 
                      pagerStateFS.slideSettledPageEffect(
@@ -2245,6 +2251,9 @@ fun Player(
                                     Box(modifier = Modifier
                                         .conditional(!expandedplayer && !isShowingStandaloneLyrics) {weight(1f)}
                                     ) {
+                                        val displayItem = mediaItems.getOrNull(it) ?: mediaItem
+                                        val displayLinks = if (displayItem.mediaId == mediaItem.mediaId) currentLinks
+                                            else displayItem.playerTrackLinks(linkCache)
                                         Controls(
                                             navController = navController,
                                             onCollapse = onDismiss,
@@ -2257,10 +2266,11 @@ fun Player(
                                                 mediaItem.toUiMedia(durationState.value)
                                             },
                                             mediaId = mediaItem.mediaId,
-                                            title = mediaItems.getOrNull(it)?.titleWithFallback() ?: "",
-                                            artist = cleanPrefix( mediaItems.getOrNull(it)?.artistTextWithFallback() ?: "" ),
-                                            artistIds = artistInfos,
-                                            albumId = albumId,
+                                            displayedMediaId = displayItem.mediaId,
+                                            title = displayItem.titleWithFallback(),
+                                            artist = cleanPrefix(displayItem.artistTextWithFallback()),
+                                            artistIds = displayLinks.artists,
+                                            albumId = displayLinks.albumId,
                                             shouldBePlaying = shouldBePlaying,
                                             isBuffering = isBuffering,
                                             position = { positionAndDurationState.value.first },
@@ -2269,7 +2279,7 @@ fun Player(
                                                 .padding(vertical = 4.dp)
                                                 .fillMaxWidth(),
                                             onBlurScaleChange = { blurAdjuster.strength = it },
-                                            isExplicit = mediaItem.isExplicit,
+                                            isExplicit = displayItem.isExplicit,
                                             dynamicColorPalette = backgroundPalette.copy(accent = artworkAccent.value)
                                         )
                                     }
@@ -2378,24 +2388,21 @@ fun Player(
                                 rotation = rotationAngle,
                                 settings = glassSettings,
                                 onClick = {
-                                    val currentMediaItem = player.currentMediaItem
-                                    if (currentMediaItem != null) {
-                                        menuState.display {
-                                            PlayerMenu(
-                                                navController = navController,
-                                                onDismiss = menuState::hide,
-                                                mediaItem = currentMediaItem,
-                                                binder = binder ?: return@display,
-                                                onClosePlayer = {
-                                                    onDismiss()
-                                                },
-                                                onShowSleepTimer = {
-                                                    isShowingSleepTimerDialog = true
-                                                    menuState.hide()
-                                                },
-                                                disableScrollingText = disableScrollingText
-                                            )
-                                        }
+                                    menuState.display {
+                                        PlayerMenu(
+                                            navController = navController,
+                                            onDismiss = menuState::hide,
+                                            mediaItem = mediaItem,
+                                            binder = binder ?: return@display,
+                                            onClosePlayer = {
+                                                onDismiss()
+                                            },
+                                            onShowSleepTimer = {
+                                                isShowingSleepTimerDialog = true
+                                                menuState.hide()
+                                            },
+                                            disableScrollingText = disableScrollingText
+                                        )
                                     }
                                 },
                             )
