@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.n_zik.android.R
@@ -42,10 +43,19 @@ import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.models.Mood
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.themed.HeaderWithIcon
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 import app.n_zik.android.ui.items.AlbumItem
 import app.n_zik.android.ui.items.ArtistItem
 import app.n_zik.android.ui.items.PlaylistItem
-import app.n_zik.android.ui.components.themed.Loader
+import androidx.compose.foundation.layout.width
+import app.n_zik.android.core.database.isPodcastBrowseId
+import app.n_zik.android.core.database.artistEntryNames
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
+import app.n_zik.android.ui.items.AlbumItemPlaceholder
+import app.n_zik.android.ui.items.ArtistItemPlaceholder
+import app.n_zik.android.ui.items.PlaylistItemPlaceholder
+import app.n_zik.android.ui.items.SongItemPlaceholder
+import app.n_zik.android.ui.items.VideoItemPlaceholder
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.px
 import app.n_zik.android.utils.center
@@ -105,16 +115,18 @@ fun MoodList(
 ) {
 
     val browseId = mood.browseId ?: defaultBrowseId
-    var moodPage by persist<Result<BrowseResult>>("moods/$browseId${mood.params?.let { "/$it" } ?: ""}")
+    val params = mood.params
+    var moodPage by persist<Result<BrowseResult>>("moods/$browseId${params?.let { "/$it" } ?: ""}")
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(browseId, params) {
         moodPage = withContext(NzikDispatchers.DATA) {
-            Innertube.browseCategory(browseId = browseId, params = mood.params)
+            Innertube.browseCategory(browseId = browseId, params = params)
         }
     }
 
     val thumbnailSizeDp = Dimensions.thumbnails.album
     val thumbnailSizePx = thumbnailSizeDp.px
+    val forceShimmer = forceLoadingShimmerPreview()
 
     val lazyListState = rememberLazyListState()
 
@@ -188,19 +200,10 @@ fun MoodList(
                     key = "header",
                     contentType = 0
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        HeaderWithIcon(
-                            title = mood.name,
-                            iconId = R.drawable.globe,
-                            enabled = true,
-                            showIcon = true,
-                            modifier = Modifier,
-                            onClick = {}
-                        )
-                    }
+                    MoodCategoryHeader(mood.name)
                 }
 
-                moodResult.items.forEach { item ->
+                moodResult.items.filter { section -> section.items.any { it.key != defaultBrowseId } }.forEach { item ->
                     item {
                         BasicText(
                             text = item.title,
@@ -225,6 +228,34 @@ fun MoodList(
                         LazyRow {
                             items(items = item.items, key = { it.key }) { childItem ->
                                 if (childItem.key == defaultBrowseId) return@items
+                                if (forceShimmer) {
+                                    when (childItem) {
+                                        is Innertube.AlbumItem -> AlbumItemPlaceholder(
+                                            thumbnailSizeDp, alternative = true,
+                                            metadataLines = if (childItem.year.isNullOrBlank()) 0 else 1,
+                                            title = childItem.title, metadata = childItem.year?.let(::listOf),
+                                        )
+                                        is Innertube.ArtistItem -> ArtistItemPlaceholder(
+                                            thumbnailSizeDp, alternative = true,
+                                            showSubscribers = childItem.subscribersCountText != null,
+                                            title = childItem.title, subscribers = childItem.subscribersCountText,
+                                        )
+                                        is Innertube.PlaylistItem -> PlaylistItemPlaceholder(
+                                            thumbnailSizeDp, alternative = true, showChannel = childItem.channel?.name != null,
+                                            title = childItem.title, channel = childItem.channel?.name,
+                                        )
+                                        is Innertube.SongItem -> SongItemPlaceholder(
+                                            Modifier.width(300.dp), title = childItem.title,
+                                            artist = childItem.authors.artistEntryNames().joinToString(", "),
+                                        )
+                                        is Innertube.VideoItem -> VideoItemPlaceholder(
+                                            72.dp, 128.dp, alternative = true,
+                                            video = childItem,
+                                        )
+                                        else -> Unit
+                                    }
+                                    return@items
+                                }
                                 when (childItem) {
                                     is Innertube.AlbumItem -> AlbumItem(
                                         album = childItem,
@@ -282,7 +313,8 @@ fun MoodList(
                                         modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                             onClick = {
                                                 childItem.info?.endpoint?.let { endpoint ->
-                                                    navController.navigate(route = "${NavRoutes.playlist.name}/${endpoint.browseId}")
+                                                    val route = if (isPodcastBrowseId(endpoint.browseId)) NavRoutes.podcast else NavRoutes.playlist
+                                                    navController.navigate(route = "${route.name}/${endpoint.browseId}")
                                                 }
                                             },
                                             onLongClick = {
@@ -321,7 +353,7 @@ fun MoodList(
                                                 isLiked = likeStatesMap[childItem.key],
                                                 inPlaylist = playlistStatesMap[childItem.key],
                                                 navController = navController,
-                                                modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
+                                                modifier = Modifier.width(300.dp).clip(uiRoundnessShape()).combinedClickable(
                                                     onClick = {
                                                         binder?.stopRadio()
                                                         binder?.player?.forcePlay(childItem.asMediaItem)
@@ -357,8 +389,9 @@ fun MoodList(
                                         ) {
                                             VideoItem(
                                                 video = childItem,
-                                                thumbnailWidthDp = thumbnailSizeDp,
-                                                thumbnailHeightDp = thumbnailSizeDp,
+                                                thumbnailWidthDp = 128.dp,
+                                                thumbnailHeightDp = 72.dp,
+                                                alternative = true,
                                                 modifier = Modifier
                                                     .background(colorPalette().background0)
                                                     .clip(uiRoundnessShape()).combinedClickable(
@@ -390,24 +423,58 @@ fun MoodList(
 
             }
             }
-        } ?: CollectionPageStatus {
-            if (moodPage?.exceptionOrNull() != null) {
+        } ?: if (moodPage?.exceptionOrNull() != null) {
+            CollectionPageStatus {
                 BasicText(
                     text = stringResource(R.string.recommendations_load_failed_message),
                     style = typography().s.secondary.center,
-                    modifier = Modifier.padding(all = 16.dp)
+                    modifier = Modifier.padding(16.dp),
                 )
-            } else {
-                Loader(modifier = Modifier.fillMaxSize())
+            }
+        } else {
+            val loadingSections = remember(browseId, params) { MoodLoadingSection.entries.shuffled().take(3) }
+            LazyColumn(
+                state = lazyListState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
+            ) {
+                item(key = "header") { MoodCategoryHeader(mood.name) }
+                items(loadingSections, key = { "category-loading-${it.name}" }) { section ->
+                    ItemTextPlaceholder(null, typography().m.semiBold, sectionTextModifier, width = 0.28f)
+                    MoodSectionPlaceholder(section, thumbnailSizeDp)
+                }
             }
         }
     }
 }
 
+private enum class MoodLoadingSection { Songs, Artists, Albums, Playlists, Videos }
 
+@Composable
+private fun MoodSectionPlaceholder(section: MoodLoadingSection, thumbnailSize: Dp) {
+    LazyRow {
+        items(4) {
+            when (section) {
+                MoodLoadingSection.Songs -> SongItemPlaceholder(Modifier.width(300.dp))
+                MoodLoadingSection.Artists -> ArtistItemPlaceholder(thumbnailSize, alternative = true, showSubscribers = true)
+                MoodLoadingSection.Albums -> AlbumItemPlaceholder(thumbnailSize, alternative = true, metadataLines = 1)
+                MoodLoadingSection.Playlists -> PlaylistItemPlaceholder(thumbnailSize, alternative = true, showChannel = true)
+                MoodLoadingSection.Videos -> VideoItemPlaceholder(72.dp, 128.dp, alternative = true, metadataLines = 2)
+            }
+        }
+    }
+}
 
-
-
-
-
-
+@Composable
+private fun MoodCategoryHeader(title: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        HeaderWithIcon(
+            title = title,
+            iconId = R.drawable.globe,
+            enabled = true,
+            showIcon = true,
+            modifier = Modifier,
+            onClick = {},
+        )
+    }
+}

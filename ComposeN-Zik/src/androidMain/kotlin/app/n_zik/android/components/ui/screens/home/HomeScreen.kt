@@ -17,10 +17,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -42,12 +42,12 @@ import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.transitionEffectKey
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import app.n_zik.android.core.utils.Toaster
 import kotlin.system.exitProcess
 import app.n_zik.android.LocalPlayerServiceBinder
-import app.n_zik.android.components.ui.FullPageLoader
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import app.n_zik.android.components.ui.screens.home.quickpicks.HomeQuickPicks
@@ -55,7 +55,6 @@ import app.n_zik.android.utils.homeTabsOrderKey
 import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import androidx.compose.ui.unit.dp
 
 // Shared scope for fire-and-forget background work started from this screen (issue #606):
 // SupervisorJob (via NzikDispatchers.fireAndForget) so one failure doesn't cancel
@@ -64,6 +63,7 @@ import androidx.compose.ui.unit.dp
 internal val homeScreenScope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
 
 /** Sentinel passed as [HomeScreen.openTabFromShortcut] when a launcher shortcut requests the search screen instead of a home tab (see MainActivity). */
+internal const val HomePlaceholderCount = 12
 internal const val OPEN_SEARCH_SHORTCUT = -2
 
 /**
@@ -315,17 +315,20 @@ fun HomeScreen(
     )
 
     val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Fade)
-    val contentAlpha = rememberHomeEntranceAlpha(isReady, transitionEffect != TransitionEffect.None)
+    var firstTabPlaced by rememberSaveable { mutableStateOf(preview != null) }
+    var startupHandoffComplete by rememberSaveable { mutableStateOf(preview != null) }
+    val contentAlpha = rememberHomeEntranceAlpha(isReady && firstTabPlaced, transitionEffect != TransitionEffect.None)
 
-    // Show loader while services are not ready
     if (!isReady) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            FullPageLoader()
-        }
+        HomeStartupLoader()
         return
+    }
+
+    LaunchedEffect(startupHandoffComplete, contentAlpha) {
+        if (!startupHandoffComplete) {
+            snapshotFlow { contentAlpha.value }.first { it >= 1f }
+            startupHandoffComplete = true
+        }
     }
 
     val sharedHomeGlass = LocalSharedHomeHeaderGlass.current
@@ -335,11 +338,7 @@ fun HomeScreen(
         if (preview == null) app.n_zik.android.extensions.discord.DiscordUiState.currentHomeTab.value = selectedHomeTab
         else preview.homeTab.value = selectedHomeTab
     }
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .graphicsLayer { alpha = contentAlpha.value }
-    ) {
+    HomeEntranceLayer(contentAlpha, showStartupLoader = !startupHandoffComplete) {
         Skeleton(
             navController,
             tabIndex,
@@ -378,6 +377,11 @@ fun HomeScreen(
                         if (currentTabId == "quickpicks") app.n_zik.android.components.glass.GlassScope.Home
                         else app.n_zik.android.components.glass.GlassScope.Library,
                 ) {
+                val startupPlacement = if (firstTabPlaced || currentTabIndex != tabIndex) Modifier
+                else Modifier.onGloballyPositioned { coordinates ->
+                    if (coordinates.size.width > 0 && coordinates.size.height > 0) firstTabPlaced = true
+                }
+                Box(Modifier.fillMaxSize().then(startupPlacement)) {
                 when (currentTabId) {
                     "quickpicks" -> HomeQuickPicks(
                         topContentInsetProvider = topContentInset,
@@ -470,11 +474,11 @@ fun HomeScreen(
 
                     )
                 }
+                }
                 } // end home destination Glass scope
             }
         }
     }
-
     // Exit app when user uses back
     val context = LocalContext.current
     var confirmCount by remember { mutableIntStateOf( 0 ) }

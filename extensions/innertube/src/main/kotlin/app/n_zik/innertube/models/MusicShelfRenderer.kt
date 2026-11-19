@@ -38,6 +38,8 @@ data class MusicShelfRenderer(
             val title: Title?,
             val thumbnail: Thumbnail?,
             val onTap: OnTap?,
+            val secondTitle: Title? = null,
+            val playbackProgress: PlaybackProgress? = null,
         ) {
             @Serializable
             data class Description(
@@ -58,6 +60,12 @@ data class MusicShelfRenderer(
             data class Thumbnail(
                 val musicThumbnailRenderer: ThumbnailRenderer.MusicThumbnailRenderer?,
             )
+
+            @Serializable
+            data class PlaybackProgress(val musicPlaybackProgressRenderer: Renderer? = null) {
+                @Serializable
+                data class Renderer(val durationText: Runs? = null)
+            }
 
             @Serializable
             data class OnTap(

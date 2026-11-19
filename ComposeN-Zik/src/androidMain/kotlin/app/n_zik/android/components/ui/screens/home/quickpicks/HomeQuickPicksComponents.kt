@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -80,6 +81,11 @@ import app.n_zik.innertube.requests.HomePage
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlin.random.Random
 import app.n_zik.android.ui.items.AlbumItemPlaceholder
+import app.n_zik.android.ui.items.SongItemPlaceholder
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
+import app.n_zik.android.utils.shimmerEffect
+import app.n_zik.android.ui.items.PlaylistItemPlaceholder
+import app.n_zik.android.ui.items.VideoItemPlaceholder
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.enums.DownloadedStateMedia
@@ -152,7 +158,8 @@ fun YtmSectionItems(
     onArtistClick: (String) -> Unit,
     onPlaylistClick: (String) -> Unit,
     isLoading: Boolean = false,
-    showTitle: Boolean = true
+    showTitle: Boolean = true,
+    forcePlaceholder: Boolean = false,
 ) {
     if (section.items.isNotEmpty() && section.items.firstOrNull()?.key != null) {
         val isSongOnly = section.items.all { item -> item is Innertube.SongItem }
@@ -208,9 +215,18 @@ fun YtmSectionItems(
                         .height(Dimensions.itemsVerticalPadding * 3 * 9)
                 ) {
                     items(songItems, key = { it.key ?: it.hashCode() }, contentType = { "song" }) { item ->
+                        val song = item.asSong
+                        if (forcePlaceholder) {
+                            SongItemPlaceholder(
+                                modifier = Modifier.width(itemInHorizontalGridWidth).animateItem(),
+                                title = song?.cleanTitle(),
+                                artist = song?.cleanArtistsText(),
+                            )
+                            return@items
+                        }
                         val binder = LocalPlayerServiceBinder.current
                         SongItem(
-                            song = item.asSong ?: Song.makePlaceholder(""),
+                            song = song ?: Song.makePlaceholder(""),
                             isLiked = sectionLikeStatesMap[item.key],
                             inPlaylist = sectionPlaylistStatesMap[item.key],
                             navController = navController,
@@ -224,25 +240,20 @@ fun YtmSectionItems(
                         )
                     }
                     
-                    if (isLoading) {
-                        items(3, key = { "shimmer_$it" }, contentType = { "placeholder" }) {
+                    if ((!forcePlaceholder && isLoading) || (forcePlaceholder && songItems.isEmpty())) {
+                        items(if (forcePlaceholder) 9 else 3, key = { "shimmer_$it" }, contentType = { "placeholder" }) { index ->
                             AnimatedVisibility(
-                                visible = isLoading,
+                                visible = isLoading || forcePlaceholder,
                                 enter = slideInVertically(
                                     initialOffsetY = { it / 2 },
-                                    animationSpec = tween(300, delayMillis = it * 50, easing = FastOutSlowInEasing)
-                                ) + fadeIn(animationSpec = tween(250, delayMillis = it * 50)),
+                                    animationSpec = tween(300, delayMillis = index * 50, easing = FastOutSlowInEasing)
+                                ) + fadeIn(animationSpec = tween(250, delayMillis = index * 50)),
                                 exit = slideOutVertically(
                                     targetOffsetY = { -it / 3 },
                                     animationSpec = tween(250, easing = FastOutSlowInEasing)
                                 ) + fadeOut(animationSpec = tween(200))
                             ) {
-                                ShimmerHost {
-                                    AlbumItemPlaceholder(
-                                        thumbnailSizeDp = albumThumbnailSizeDp,
-                                        modifier = Modifier.padding(horizontal = 4.dp).animateItem()
-                                    )
-                                }
+                                SongItemPlaceholder(Modifier.width(itemInHorizontalGridWidth).animateItem())
                             }
                         }
                     }
@@ -266,8 +277,17 @@ fun YtmSectionItems(
                     LikeStateManager.getLikeStates(sectionVideoKeys)
                 }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
+                val entries = section.items.filterNotNull()
+                val cards = remember(entries) { ytmShelfCards(entries) }
                 LazyRow(contentPadding = endPaddingValues) {
-                    items(section.items, key = { it?.key ?: it.hashCode() }, contentType = { "item" }) { item ->
+                    items(entries, key = { it.key ?: it.hashCode() }, contentType = { "item" }) { item ->
+                        if (forcePlaceholder) {
+                            YtmShelfCardPlaceholder(
+                                ytmShelfCards(listOf(item)).single(), albumThumbnailSizeDp, playlistThumbnailSizeDp,
+                                Modifier.animateItem(), item = item,
+                            )
+                            return@items
+                        }
                         when (item) {
                             is Innertube.SongItem -> {
                                 val binder = LocalPlayerServiceBinder.current
@@ -381,22 +401,89 @@ fun YtmSectionItems(
                                         ).animateItem()
                                 )
                             }
-                            null -> {}
                         }
                     }
                     
-                    if (isLoading) {
-                        items(3, key = { "shimmer_$it" }, contentType = { "placeholder" }) {
+                    if ((!forcePlaceholder && isLoading) || (forcePlaceholder && entries.isEmpty())) {
+                        items(if (forcePlaceholder) 5 else 3, key = { "shimmer_$it" }, contentType = { "placeholder" }) { index ->
                             ShimmerHost {
-                                AlbumItemPlaceholder(
-                                    thumbnailSizeDp = albumThumbnailSizeDp,
-                                    modifier = Modifier.padding(horizontal = 4.dp).animateItem()
+                                YtmShelfCardPlaceholder(
+                                    cards[index % cards.size], albumThumbnailSizeDp, playlistThumbnailSizeDp,
+                                    Modifier.animateItem(),
                                 )
                             }
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+enum class YtmShelfPlaceholderKind { Album, Artist, Playlist, Video, Song }
+
+internal data class YtmShelfCard(
+    val kind: YtmShelfPlaceholderKind,
+    val metadataLines: Int = 0,
+    val showTitle: Boolean = true,
+)
+
+internal fun ytmShelfCards(
+    items: List<Innertube.Item?>,
+    videosAsAlbums: Boolean = false,
+): List<YtmShelfCard> = items.mapNotNull { item ->
+    when (item) {
+        is Innertube.ArtistItem -> YtmShelfCard(YtmShelfPlaceholderKind.Artist, visibleLineCount(item.subscribersCountText))
+        is Innertube.PlaylistItem -> YtmShelfCard(
+            YtmShelfPlaceholderKind.Playlist, visibleLineCount(item.channel?.name), showTitle = !item.title.isNullOrBlank(),
+        )
+        is Innertube.VideoItem -> if (videosAsAlbums) {
+            YtmShelfCard(YtmShelfPlaceholderKind.Album, visibleLineCount(item.authors.artistEntryNames().joinToString(", ")))
+        } else {
+            YtmShelfCard(YtmShelfPlaceholderKind.Video, visibleLineCount(item.authors.artistEntryNames().joinToString(", "), item.viewsText))
+        }
+        is Innertube.AlbumItem -> YtmShelfCard(YtmShelfPlaceholderKind.Album, visibleLineCount(item.year))
+        is Innertube.SongItem -> YtmShelfCard(YtmShelfPlaceholderKind.Album, visibleLineCount(item.authors.artistEntryNames().joinToString(", ")))
+        else -> null
+    }
+}.ifEmpty { listOf(YtmShelfCard(YtmShelfPlaceholderKind.Album)) }
+
+private fun visibleLineCount(vararg metadata: String?): Int = metadata.count { !it.isNullOrBlank() }
+
+@Composable
+internal fun YtmShelfCardPlaceholder(
+    card: YtmShelfCard,
+    albumSize: Dp,
+    playlistSize: Dp,
+    modifier: Modifier = Modifier,
+    item: Innertube.Item? = null,
+) {
+    when (card.kind) {
+        YtmShelfPlaceholderKind.Artist -> ArtistItemPlaceholder(
+            albumSize, modifier, alternative = true, showSubscribers = card.metadataLines > 0,
+            title = item?.title, subscribers = (item as? Innertube.ArtistItem)?.subscribersCountText,
+        )
+        YtmShelfPlaceholderKind.Playlist -> PlaylistItemPlaceholder(
+            playlistSize, modifier, alternative = true, showChannel = card.metadataLines > 0,
+            showTitle = card.showTitle, title = item?.title, channel = (item as? Innertube.PlaylistItem)?.channel?.name,
+        )
+        YtmShelfPlaceholderKind.Video -> {
+            val video = item as? Innertube.VideoItem
+            VideoItemPlaceholder(albumSize, albumSize * 16 / 9, modifier, alternative = true,
+                metadataLines = card.metadataLines, title = video?.title,
+                uploader = video?.authors.artistEntryNames().joinToString(", ").takeIf { video != null },
+                views = video?.viewsText)
+        }
+        YtmShelfPlaceholderKind.Album, YtmShelfPlaceholderKind.Song -> {
+            val secondary = when (item) {
+                is Innertube.AlbumItem -> item.year
+                is Innertube.SongItem -> item.authors.artistEntryNames().joinToString(", ")
+                is Innertube.VideoItem -> item.authors.artistEntryNames().joinToString(", ")
+                else -> null
+            }
+            AlbumItemPlaceholder(albumSize, modifier, alternative = true, metadataLines = card.metadataLines,
+                title = item?.title, metadata = secondary?.let(::listOf),
+                finalMetadataIsYear = item !is Innertube.SongItem && item !is Innertube.VideoItem)
         }
     }
 }
@@ -433,37 +520,36 @@ fun ChipItemColored(
 
 @Composable
 private fun BaseChipItemColored(
-    title: String,
+    title: String?,
     stripeColor: Color,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    shimmer: Boolean = false,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
-            .padding(5.dp)
-            .width(160.dp)
-            .height(56.dp)
-            .clip(thumbnailShape())
+            .moodCardBounds()
             .glassMoodCardBackground(
                 backgroundColor = colorPalette().background0,
                 cardColor = colorPalette().background4,
                 shape = thumbnailShape(),
             )
-            .clickable(onClick = onClick)
+            .clickable(enabled = !shimmer, onClick = onClick)
     ) {
-        Box(
-            modifier = Modifier
-                .width(5.dp)
-                .fillMaxHeight()
-                .background(stripeColor)
-        )
-        BasicText(
-            text = title,
-            style = typography().xs.semiBold.copy(color = colorPalette().text),
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(horizontal = 10.dp)
-        )
+        val stripe = Modifier.width(5.dp).fillMaxHeight()
+        Box(if (shimmer) stripe.shimmerEffect() else stripe.background(stripeColor))
+        val style = typography().xs.semiBold.copy(color = colorPalette().text)
+        val textModifier = Modifier.padding(horizontal = 10.dp)
+        if (shimmer) ItemTextPlaceholder(title, style, textModifier, maxLines = 2)
+        else BasicText(title.orEmpty(), style = style, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = textModifier)
     }
 }
+
+@Composable
+internal fun MoodCardPlaceholder(modifier: Modifier = Modifier, title: String? = null) {
+    BaseChipItemColored(title, Color.Transparent, onClick = {}, modifier = modifier, shimmer = true)
+}
+
+@Composable
+private fun Modifier.moodCardBounds(): Modifier = padding(5.dp).width(160.dp).height(56.dp).clip(thumbnailShape())

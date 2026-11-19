@@ -128,6 +128,8 @@ import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScroll
 import app.n_zik.android.ui.components.themed.HeaderInfo
 import app.n_zik.android.ui.components.themed.MultiFloatingActionsContainer
 import app.n_zik.android.ui.items.ArtistItem
+import app.n_zik.android.ui.items.ArtistItemPlaceholder
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.LocalAppearance
@@ -363,6 +365,8 @@ fun HomeArtists(
     val groupsReady = artistType != ArtistsType.OnDevice || eligibleDeviceGroups != null
     var completedSearchQuery by remember(artistType, sort.sortBy, sort.sortOrder, groupsReady) { mutableStateOf<String?>(null) }
     val gridReady = searchDataReady && groupsReady && completedSearchQuery == search.inputValue
+    val forceShimmer = forceLoadingShimmerPreview()
+    val showGridShimmer = forceShimmer || !gridReady
     LaunchedEffect( Unit, sort.sortBy, sort.sortOrder, artistType ) {
         if (preview != null) {
             val demoItems = ThemePreviewDemo.artists
@@ -481,7 +485,7 @@ fun HomeArtists(
                         }
                     } catch (_: Exception) { defaultToolbarOrder }
 
-                    order.filter { it in defaultToolbarOrder }.forEach { id ->
+                    order.filter { it in defaultToolbarOrder }.ifEmpty { defaultToolbarOrder }.forEach { id ->
                         when(id) {
                             "sort" -> add(sort)
                             "position_lock" -> { if (sort.sortBy == ArtistSortBy.Custom) add(positionLock) }
@@ -617,7 +621,7 @@ fun HomeArtists(
                         },
                     ) {
                         val headerDensity = androidx.compose.ui.platform.LocalDensity.current
-                        if (gridReady) LazyVerticalGrid(
+                        LazyVerticalGrid(
                             state = lazyGridState,
                             columns = GridCells.Adaptive( itemSize.size.dp ),
                             modifier = Modifier.background( colorPalette().background0 ).fillMaxSize(),
@@ -627,7 +631,15 @@ fun HomeArtists(
                                 extraTopProvider = { with(headerDensity) { headerHeight.toDp() } },
                             )
                         ) {
-                    items(items = itemsOnDisplay.distinctBy { it.id }, key = { it.id }) { artist ->
+                    val artists = itemsOnDisplay.distinctBy { it.id }
+                    if (!gridReady && artists.isEmpty()) items(HomePlaceholderCount, key = { "loading_artist_$it" }) {
+                        ArtistItemPlaceholder(itemSize.size.dp, alternative = true)
+                    }
+                    items(items = artists, key = { it.id }) { artist ->
+                        if (showGridShimmer) {
+                            ArtistItemPlaceholder(itemSize.size.dp, alternative = true, title = artist.name)
+                            return@items
+                        }
                         ReorderableItem(
                             reorderableLazyGridState,
                             key = artist.id

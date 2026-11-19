@@ -14,9 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,16 +27,20 @@ import app.n_zik.android.components.glass.glassMoodCardBackground
 import app.n_zik.android.typography
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.thumbnailShape
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
+import app.n_zik.android.ui.components.themed.TextPlaceholder
+import app.n_zik.android.utils.shimmerEffect
 
 @Composable
 fun MoodGridItemColored(
-    mood: Innertube.Mood.Item,
+    mood: Innertube.Mood.Item?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    thumbnailSizeDp: Dp
+    thumbnailSizeDp: Dp,
+    shimmer: Boolean = false,
 ) {
     
-    val moodColor by remember { derivedStateOf { Color(mood.stripeColor) } }
+    val moodColor = mood?.let { Color(it.stripeColor) } ?: colorPalette().background2
 
     Column (
         verticalArrangement = Arrangement.SpaceAround,
@@ -47,7 +48,7 @@ fun MoodGridItemColored(
         modifier = modifier
             .size(thumbnailSizeDp,thumbnailSizeDp)
             .padding(5.dp)
-            .clip(uiRoundnessShape()).clickable { onClick() }
+            .clip(uiRoundnessShape()).clickable(enabled = !shimmer && mood != null, onClick = onClick)
 
     ) {
         Row(
@@ -69,23 +70,25 @@ fun MoodGridItemColored(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                Box(Modifier.width(10.dp).fillMaxHeight().background(moodColor))
+                Box(Modifier.width(10.dp).fillMaxHeight().then(if (shimmer) Modifier.shimmerEffect() else Modifier.background(moodColor)))
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                 ) {
 
-                    BasicText(
-                        text = mood.title,
-                        style = TextStyle(
-                            color = colorPalette().text,
-                            fontStyle = typography().xs.semiBold.fontStyle,
-                            fontWeight = typography().xs.semiBold.fontWeight
-                        ),
-                        modifier = Modifier.padding(horizontal = 10.dp)
-                            .align(Alignment.CenterStart),
-                        maxLines = 2,
+                    val style = TextStyle(
+                        color = colorPalette().text,
+                        fontStyle = typography().xs.semiBold.fontStyle,
+                        fontWeight = typography().xs.semiBold.fontWeight,
                     )
+                    val textModifier = Modifier.padding(horizontal = 10.dp).align(Alignment.CenterStart)
+                    if (shimmer && mood != null) {
+                        MeasuredMetadataPlaceholder(mood.title, style, textModifier, maxLines = 2)
+                    } else if (shimmer) {
+                        TextPlaceholder(textModifier)
+                    } else if (mood != null) {
+                        BasicText(mood.title, style = style, modifier = textModifier, maxLines = 2)
+                    }
                 }
             }
         }

@@ -2,12 +2,18 @@ package app.n_zik.android.components.ui.screens.home
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import app.n_zik.android.components.ui.FullPageLoader
 import kotlinx.coroutines.delay
 
 /** Keeps the initial service grace period from replaying when returning to Home. */
@@ -33,4 +39,27 @@ internal fun rememberHomeEntranceAlpha(ready: Boolean, animationsEnabled: Boolea
         else alpha.snapTo(1f)
     }
     return alpha.asState()
+}
+
+@Composable
+internal fun HomeStartupLoader(modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        FullPageLoader()
+    }
+}
+
+@Composable
+internal fun HomeEntranceLayer(
+    contentAlpha: State<Float>,
+    showStartupLoader: Boolean,
+    content: @Composable () -> Unit,
+) {
+    Box(Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize().graphicsLayer { alpha = contentAlpha.value }) {
+            content()
+        }
+        if (showStartupLoader) {
+            HomeStartupLoader(Modifier.graphicsLayer { alpha = 1f - contentAlpha.value })
+        }
+    }
 }

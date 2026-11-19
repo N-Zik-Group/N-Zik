@@ -119,8 +119,12 @@ import timber.log.Timber
 import app.n_zik.android.components.ui.InlineCircularLoader
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.material3.Text
-import app.n_zik.android.ui.items.AlbumItemPlaceholder
+import app.n_zik.android.ui.items.SongItemPlaceholders
+import app.n_zik.android.ui.items.SongItemPlaceholder
+import app.n_zik.android.ui.items.ArtistItemPlaceholder
 import app.n_zik.android.ui.components.ShimmerHost
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.LocalDownloadStatesMap
@@ -264,13 +268,18 @@ fun QuickPicksGrid(
     itemInHorizontalGridWidth: Dp,
     navController: NavController,
     endPaddingValues: PaddingValues,
+    isLoading: Boolean,
     onSongClick: (Song) -> Unit,
-    scrollToStartTrigger: Int = 0
+    scrollToStartTrigger: Int = 0,
+    forcePlaceholder: Boolean = false,
 ) {
     val preview = LocalThemePreview.current
     val quickPicksLazyGridState = rememberLazyGridState()
 
-    val songIds = remember(recommendations) { recommendations.map { it.id } }
+    val songs = remember(recommendations) { recommendations.distinctBy { it.id } }
+    val loadingSlots = quickPicksLoadingSlots(songs.size, isLoading || forcePlaceholder && songs.isEmpty())
+    val rows = if (songs.isNotEmpty() || !loadingSlots.isEmpty()) 3 else 1
+    val songIds = remember(songs) { songs.map { it.id } }
     val likeStatesMap by remember(songIds) {
         if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else LikeStateManager.getLikeStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
@@ -287,9 +296,9 @@ fun QuickPicksGrid(
                 .mapTo(HashSet()) { it.request.id }
         }
     }
-    val downloadStatesMap by remember {
+    val downloadStatesMap by remember(songs) {
         derivedStateOf {
-            recommendations.associate { song ->
+            songs.associate { song ->
                 song.id to when {
                     song.id in downloadedIds -> DownloadedStateMedia.DOWNLOADED
                     else -> DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
@@ -307,44 +316,53 @@ fun QuickPicksGrid(
     CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
     LazyHorizontalGrid(
         state = quickPicksLazyGridState,
-        rows = GridCells.Fixed(if (recommendations.isNotEmpty()) 3 else 1),
+        rows = GridCells.Fixed(rows),
         flingBehavior = ScrollableDefaults.flingBehavior(),
         contentPadding = endPaddingValues,
-        modifier = Modifier.fillMaxWidth()
-            .height(
-                if (recommendations.isNotEmpty())
-                    Dimensions.itemsVerticalPadding * 3 * 9
-                else
-                    Dimensions.itemsVerticalPadding * 9
-            )
+        modifier = Modifier.fillMaxWidth().height(Dimensions.itemsVerticalPadding * rows * 9)
     ) {
-        items(recommendations.distinctBy { it.id }, key = { it.id }) { song ->
-            SongItem(
-                song = song,
-                isLiked = likeStatesMap[song.id],
-                inPlaylist = playlistStatesMap[song.id],
-                navController = navController,
-                onClick = { onSongClick(song) },
-                modifier = Modifier.width(itemInHorizontalGridWidth).animateItem(),
-                thumbnailOverlay = {
-                    if (playEventType != PlayEventsType.CasualPlayed &&
-                        trendingList.any { it.id == song.id }) {
-                        Image(
-                            painter = painterResource(R.drawable.star_brilliant),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette().accent),
-                            modifier = Modifier
-                                .size(23.dp)
-                                .align(Alignment.TopEnd)
-                                .padding(4.dp)
-                        )
+        items(songs, key = { it.id }, contentType = { "song" }) { song ->
+            if (forcePlaceholder) {
+                SongItemPlaceholder(
+                    modifier = Modifier.width(itemInHorizontalGridWidth).animateItem(),
+                    title = song.title,
+                    artist = song.artistsText,
+                )
+            } else {
+                SongItem(
+                    song = song,
+                    isLiked = likeStatesMap[song.id],
+                    inPlaylist = playlistStatesMap[song.id],
+                    navController = navController,
+                    onClick = { onSongClick(song) },
+                    modifier = Modifier.width(itemInHorizontalGridWidth).animateItem(),
+                    thumbnailOverlay = {
+                        if (playEventType != PlayEventsType.CasualPlayed &&
+                            trendingList.any { it.id == song.id }) {
+                            Image(
+                                painter = painterResource(R.drawable.star_brilliant),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(colorPalette().accent),
+                                modifier = Modifier
+                                    .size(23.dp)
+                                    .align(Alignment.TopEnd)
+                                    .padding(4.dp)
+                            )
+                        }
                     }
-                }
-            )
+                )
+            }
+        }
+        items(loadingSlots.count(), key = { "quick-picks-loading-${loadingSlots.first + it}" },
+            contentType = { "song-placeholder" }) {
+            SongItemPlaceholders(count = 1, modifier = Modifier.width(itemInHorizontalGridWidth).animateItem())
         }
     }
     } // CompositionLocalProvider
 }
+
+internal fun quickPicksLoadingSlots(songCount: Int, loading: Boolean): IntRange =
+    if (loading) songCount until 6 else IntRange.EMPTY
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -369,19 +387,22 @@ fun YtmSectionByTitle(
     onPlaylistClick: (String) -> Unit,
     displayedSectionTitles: MutableSet<String>,
     isLoading: Boolean = false,
-    showTitle: Boolean = true
+    showTitle: Boolean = true,
+    emptyPlaceholderKind: YtmShelfPlaceholderKind = YtmShelfPlaceholderKind.Album,
+    emptyMetadataLines: Int = if (emptyPlaceholderKind == YtmShelfPlaceholderKind.Video) 1 else 0,
+    forcePlaceholder: Boolean = false,
 ) {
     val matching = ytmSections.filter { titlePredicate(it.title) }
     val items = matching.flatMap { it.items }.filterNotNull().distinctBy { it.key }
 
     // Shimmer: shown while loading and no items yet
     AnimatedVisibility(
-        visible = isLoading && items.isEmpty() && titleOverride != null,
+        visible = (isLoading || forcePlaceholder) && items.isEmpty(),
         enter = EnterTransition.None,
         exit = fadeOut(animationSpec = tween(200))
     ) {
         Column {
-            if (titleOverride != null) {
+            if (showTitle) {
                 Title(
                     title = titleOverride,
                     enableClick = false,
@@ -389,10 +410,20 @@ fun YtmSectionByTitle(
                     verticalPadding = 16.dp
                 )
             }
-            LazyRow(contentPadding = endPaddingValues) {
+            if (emptyPlaceholderKind == YtmShelfPlaceholderKind.Song) {
+                LazyHorizontalGrid(
+                    rows = GridCells.Fixed(3),
+                    contentPadding = endPaddingValues,
+                    modifier = Modifier.fillMaxWidth().height(Dimensions.itemsVerticalPadding * 3 * 9),
+                ) {
+                    items(9, contentType = { "placeholder" }) {
+                        SongItemPlaceholders(count = 1, modifier = Modifier.width(itemInHorizontalGridWidth))
+                    }
+                }
+            } else LazyRow(contentPadding = endPaddingValues) {
                 items(5, key = { it }, contentType = { "placeholder" }) {
                     AnimatedVisibility(
-                        visible = isLoading,
+                        visible = isLoading || forcePlaceholder,
                         enter = slideInVertically(
                             initialOffsetY = { it / 2 },
                             animationSpec = tween(300, delayMillis = it * 50, easing = FastOutSlowInEasing)
@@ -403,10 +434,8 @@ fun YtmSectionByTitle(
                         ) + fadeOut(animationSpec = tween(200))
                     ) {
                         ShimmerHost {
-                            AlbumItemPlaceholder(
-                                thumbnailSizeDp = albumThumbnailSizeDp,
-                                modifier = Modifier.padding(horizontal = 4.dp)
-                            )
+                            YtmShelfCardPlaceholder(YtmShelfCard(emptyPlaceholderKind, emptyMetadataLines),
+                                albumThumbnailSizeDp, playlistThumbnailSizeDp)
                         }
                     }
                 }
@@ -444,7 +473,8 @@ fun YtmSectionByTitle(
             onArtistClick = onArtistClick,
             onPlaylistClick = onPlaylistClick,
             isLoading = isLoading,
-            showTitle = showTitle
+            showTitle = showTitle,
+            forcePlaceholder = forcePlaceholder,
         )
     }
 }
@@ -464,11 +494,12 @@ fun NewAlbumsOfYourArtistsSection(
     disableScrollingText: Boolean,
     endPaddingValues: PaddingValues,
     sectionTextModifier: Modifier,
-    showTitle: Boolean = true
+    showTitle: Boolean = true,
+    forcePlaceholder: Boolean = false,
 ) {
     val menuState = LocalMenuState.current
-    if (showNewAlbumsArtists && discoverPageInit != null) {
-        if (newReleaseAlbumsFiltered.isNotEmpty() && artists.isNotEmpty()) {
+    if (showNewAlbumsArtists && (forcePlaceholder || discoverPageInit != null)) {
+        if (forcePlaceholder || (newReleaseAlbumsFiltered.isNotEmpty() && artists.isNotEmpty())) {
             Timber.tag("HomeQuickPicksSections").d("Local New Albums of your Artists found (${newReleaseAlbumsFiltered.size} items)")
             Column {
                 if (showTitle) {
@@ -484,7 +515,9 @@ fun NewAlbumsOfYourArtistsSection(
                     BookmarkStateManager.getAlbumBookmarkStates(filteredAlbumKeys)
                 }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
-                LazyRow(contentPadding = endPaddingValues) {
+                if (forcePlaceholder) {
+                    ShelfCardPlaceholders(newReleaseAlbumsFiltered, YtmShelfPlaceholderKind.Album, albumThumbnailSizeDp, endPaddingValues)
+                } else LazyRow(contentPadding = endPaddingValues) {
                     items(
                         items = newReleaseAlbumsFiltered.distinctBy { it.key },
                         key = { it.key },
@@ -521,13 +554,14 @@ fun NewAlbumsSection(
     disableScrollingText: Boolean,
     endPaddingValues: PaddingValues,
     displayedSectionTitles: MutableSet<String>,
-    showTitle: Boolean = true
+    showTitle: Boolean = true,
+    forcePlaceholder: Boolean = false,
 ) {
     val menuState = LocalMenuState.current
     if (showNewAlbums) {
-        if (discoverPageInit != null) {
-            val albums = discoverPageInit.newReleaseAlbums
-            if (albums.isNotEmpty()) {
+        if (forcePlaceholder || discoverPageInit != null) {
+            val albums = discoverPageInit?.newReleaseAlbums.orEmpty()
+            if (forcePlaceholder || albums.isNotEmpty()) {
                 displayedSectionTitles.add("New albums")
                 Column {
                     if (showTitle) {
@@ -543,7 +577,9 @@ fun NewAlbumsSection(
                         BookmarkStateManager.getAlbumBookmarkStates(newAlbumsKeys)
                     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
-                    LazyRow(contentPadding = endPaddingValues) {
+                    if (forcePlaceholder) {
+                        ShelfCardPlaceholders(albums, YtmShelfPlaceholderKind.Album, albumThumbnailSizeDp, endPaddingValues)
+                    } else LazyRow(contentPadding = endPaddingValues) {
                         items(
                             items = albums.distinctBy { it.key },
                             key = { it.key },
@@ -581,12 +617,13 @@ fun RelatedAlbumsSection(
     disableScrollingText: Boolean,
     endPaddingValues: PaddingValues,
     sectionTextModifier: Modifier,
-    displayedSectionTitles: MutableSet<String>
+    displayedSectionTitles: MutableSet<String>,
+    forcePlaceholder: Boolean = false,
 ) {
     val menuState = LocalMenuState.current
     if (showRelatedAlbums) {
-        val albums = relatedInit?.albums
-        if (albums != null) {
+        val albums = relatedInit?.albums.orEmpty()
+        if (forcePlaceholder || relatedInit?.albums != null) {
             Column {
                 Timber.tag("HomeQuickPicksSections").d("Related Section found: Albums (${albums.size} items)")
                 displayedSectionTitles.add("Related albums")
@@ -601,7 +638,9 @@ fun RelatedAlbumsSection(
                     BookmarkStateManager.getAlbumBookmarkStates(relatedAlbumKeys)
                 }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
-                LazyRow(contentPadding = endPaddingValues) {
+                if (forcePlaceholder) {
+                    ShelfCardPlaceholders(albums, YtmShelfPlaceholderKind.Album, albumThumbnailSizeDp, endPaddingValues)
+                } else LazyRow(contentPadding = endPaddingValues) {
                     items(
                         items = albums.distinctBy { it.key },
                         key = Innertube.AlbumItem::key,
@@ -640,12 +679,13 @@ fun SimilarArtistsSection(
     disableScrollingText: Boolean,
     endPaddingValues: PaddingValues,
     sectionTextModifier: Modifier,
-    displayedSectionTitles: MutableSet<String>
+    displayedSectionTitles: MutableSet<String>,
+    forcePlaceholder: Boolean = false,
 ) {
     val menuState = LocalMenuState.current
     if (showSimilarArtists) {
-        val artists = relatedInit?.artists
-        if (artists != null) {
+        val artists = relatedInit?.artists.orEmpty()
+        if (forcePlaceholder || relatedInit?.artists != null) {
             Column {
                 Timber.tag("HomeQuickPicksSections").d("Related Section found: Similar Artists (${artists.size} items)")
                 displayedSectionTitles.add("Similar artists")
@@ -660,7 +700,9 @@ fun SimilarArtistsSection(
                     BookmarkStateManager.getArtistBookmarkStates(similarArtistKeys)
                 }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
-                LazyRow(contentPadding = endPaddingValues) {
+                if (forcePlaceholder) {
+                    ShelfCardPlaceholders(artists, YtmShelfPlaceholderKind.Artist, artistThumbnailSizeDp, endPaddingValues)
+                } else LazyRow(contentPadding = endPaddingValues) {
                     items(
                         items = artists.distinctBy { it.key },
                         key = Innertube.ArtistItem::key,
@@ -695,7 +737,8 @@ fun MyTopSection(
     navController: NavController,
     endPaddingValues: PaddingValues,
     sectionTextModifier: Modifier,
-    itemInHorizontalGridWidth: Dp
+    itemInHorizontalGridWidth: Dp,
+    forcePlaceholder: Boolean = false,
 ) {
     val binder = LocalPlayerServiceBinder.current
 
@@ -708,7 +751,7 @@ fun MyTopSection(
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     if (showMyTopPlaylist) {
-        if (myTopSongs.isNotEmpty()) {
+        if (forcePlaceholder || myTopSongs.isNotEmpty()) {
             Timber.tag("HomeQuickPicksSections").d("Local Section found: My Top (${myTopSongs.size} items)")
             Column {
                 BasicText(
@@ -718,7 +761,9 @@ fun MyTopSection(
                 )
 
                 LazyRow(contentPadding = endPaddingValues) {
-                    items(
+                    if (forcePlaceholder) items(myTopSongs.size.coerceAtLeast(5)) {
+                        SongItemPlaceholders(count = 1, modifier = Modifier.width(itemInHorizontalGridWidth))
+                    } else items(
                         items = myTopSongs.distinctBy { it.id },
                         key = { it.id },
                         contentType = { "song" }
@@ -749,13 +794,14 @@ fun RewindSection(
     sectionTextModifier: Modifier,
     playlistThumbnailSizePx: Int,
     playlistThumbnailSizeDp: Dp,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
+    forcePlaceholder: Boolean = false,
 ) {
     val menuState = LocalMenuState.current
     // Spec 2: the generated rewind-* playlists as a local section — auto-hidden when none
     // exist (same pattern as the other local sections).
     if (showRewind) {
-        if (rewindPlaylists.isNotEmpty()) {
+        if (forcePlaceholder || rewindPlaylists.isNotEmpty()) {
             Timber.tag("HomeQuickPicksSections").d("Local Section found: Rewind (${rewindPlaylists.size} items)")
             Column {
                 BasicText(
@@ -764,7 +810,10 @@ fun RewindSection(
                     modifier = sectionTextModifier
                 )
 
-                LazyRow(contentPadding = endPaddingValues) {
+                if (forcePlaceholder) {
+                    ShelfCardPlaceholders(emptyList(), YtmShelfPlaceholderKind.Playlist, playlistThumbnailSizeDp, endPaddingValues,
+                        cardCount = rewindPlaylists.size)
+                } else LazyRow(contentPadding = endPaddingValues) {
                     items(
                         items = rewindPlaylists.distinctBy { it.playlist.id },
                         key = { it.playlist.id },
@@ -813,11 +862,12 @@ fun MoodsSection(
     homePageInit: HomePage?,
     onChipClick: (Innertube.Chip) -> Unit,
     gridsContentPadding: PaddingValues,
-    displayedSectionTitles: MutableSet<String>
+    displayedSectionTitles: MutableSet<String>,
+    forcePlaceholder: Boolean = false,
 ) {
-    if (homePageInit?.chips != null) {
-        val chips = homePageInit.chips ?: return
-        if (chips.isNotEmpty()) {
+    if (forcePlaceholder || homePageInit?.chips != null) {
+        val chips = homePageInit?.chips.orEmpty()
+        if (forcePlaceholder || chips.isNotEmpty()) {
             displayedSectionTitles.add("Moods")
             Column {
                 Title(
@@ -833,7 +883,9 @@ fun MoodsSection(
                         .fillMaxWidth()
                         .height(Dimensions.itemsVerticalPadding * 4 * 8)
                 ) {
-                    items(chips, key = { it.hashCode() }, contentType = { "chip" }) { chip ->
+                    if (forcePlaceholder) items(chips.size.takeIf { it > 0 } ?: 8) { index ->
+                        MoodCardPlaceholder(title = chips.getOrNull(index)?.title)
+                    } else items(chips, key = { it.hashCode() }, contentType = { "chip" }) { chip ->
                         ChipItemColored(chip = chip, onClick = { onChipClick(chip) }, modifier = Modifier.animateItem())
                     }
                 }
@@ -850,11 +902,12 @@ fun MoodsAndGenresSection(
     onMoodClick: (Innertube.Mood.Item) -> Unit,
     navController: NavController,
     gridsContentPadding: PaddingValues,
-    displayedSectionTitles: MutableSet<String>
+    displayedSectionTitles: MutableSet<String>,
+    forcePlaceholder: Boolean = false,
 ) {
     if (showMoodsAndGenres) {
-        val moods = discoverPageInit?.moods
-        if (moods != null && moods.isNotEmpty()) {
+        val moods = discoverPageInit?.moods.orEmpty()
+        if (forcePlaceholder || moods.isNotEmpty()) {
             displayedSectionTitles.add("Moods and genres")
             displayedSectionTitles.add("Moods & genres")
             Column {
@@ -874,7 +927,9 @@ fun MoodsAndGenresSection(
                         .fillMaxWidth()
                         .height(Dimensions.itemsVerticalPadding * 4 * 8)
                 ) {
-                    items(
+                    if (forcePlaceholder) items(moods.size.takeIf { it > 0 } ?: 8) { index ->
+                        MoodCardPlaceholder(title = moods.getOrNull(index)?.title)
+                    } else items(
                         items = moods.sortedBy { it.title },
                         key = { it.endpoint.params ?: it.title },
                         contentType = { "mood" }
@@ -888,6 +943,42 @@ fun MoodsAndGenresSection(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ShelfCardPlaceholders(
+    entries: List<Innertube.Item>,
+    fallback: YtmShelfPlaceholderKind,
+    thumbnailSize: Dp,
+    contentPadding: PaddingValues,
+    cardCount: Int = entries.size,
+) {
+    val cards = if (entries.isNotEmpty()) ytmShelfCards(entries) else listOf(YtmShelfCard(fallback))
+    LazyRow(contentPadding = contentPadding) {
+        items(cardCount.takeIf { it > 0 } ?: 5, contentType = { "placeholder" }) { index ->
+            ShimmerHost {
+                YtmShelfCardPlaceholder(cards[index % cards.size], thumbnailSize, thumbnailSize, item = entries.getOrNull(index))
+            }
+        }
+    }
+}
+
+@Composable
+private fun RankedChartRow(index: Int, rankWidth: Dp, contentWidth: Dp, content: @Composable () -> Unit) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(start = 16.dp),
+    ) {
+        BasicText(
+            text = "${index + 1}",
+            style = typography().l.bold.center.color(colorPalette().text),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.width(rankWidth),
+        )
+        Box(Modifier.width(contentWidth)) { content() }
     }
 }
 
@@ -910,17 +1001,27 @@ fun ChartsSection(
     disableScrollingText: Boolean,
     parentalControlEnabled: Boolean,
     displayedSectionTitles: MutableSet<String>,
-    itemInHorizontalGridWidth: Dp
+    itemInHorizontalGridWidth: Dp,
+    forcePlaceholder: Boolean = false,
 ) {
     val binder = LocalPlayerServiceBinder.current
+    val rankDigits = maxOf(chartsPageInit?.songs?.size ?: 0, chartsPageInit?.artists?.size ?: 0, 9)
+        .toString().length
+    val textMeasurer = rememberTextMeasurer()
+    val rankStyle = typography().l.bold
+    val rankWidth = with(LocalDensity.current) {
+        ('0'..'9').maxOf { digit ->
+            textMeasurer.measure(digit.toString().repeat(rankDigits), style = rankStyle).size.width
+        }.toDp()
+    }
     val menuState = LocalMenuState.current
     if (showCharts) {
-        if (chartsPageInit != null) {
-            val hasPlaylists = chartsPageInit.playlists?.isNotEmpty() == true
-            val hasSongs = chartsPageInit.songs?.isNotEmpty() == true
-            val hasArtists = chartsPageInit.artists?.isNotEmpty() == true
+        if (forcePlaceholder || chartsPageInit != null) {
+            val hasPlaylists = chartsPageInit?.playlists?.isNotEmpty() == true
+            val hasSongs = chartsPageInit?.songs?.isNotEmpty() == true
+            val hasArtists = chartsPageInit?.artists?.isNotEmpty() == true
             
-            if (hasPlaylists || hasSongs || hasArtists) {
+            if (forcePlaceholder || hasPlaylists || hasSongs || hasArtists) {
                 displayedSectionTitles.add("Charts")
                 Column {
                     HomeSectionTitle(
@@ -961,14 +1062,16 @@ fun ChartsSection(
                         verticalPadding = 16.dp,
                     )
 
-                    chartsPageInit.playlists?.let { playlists ->
-                        if (playlists.isNotEmpty()) {
+                    chartsPageInit?.playlists.orEmpty().let { playlists ->
+                        if (forcePlaceholder || playlists.isNotEmpty()) {
                             val chartPlaylistKeys = remember(playlists) { playlists.map { it.key } }
                             val chartPlaylistBookmarkStatesMap by remember(chartPlaylistKeys) {
                                 BookmarkStateManager.getPlaylistBookmarkStates(chartPlaylistKeys)
                             }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
-                            LazyRow(contentPadding = endPaddingValues) {
+                            if (forcePlaceholder) {
+                                ShelfCardPlaceholders(playlists, YtmShelfPlaceholderKind.Playlist, playlistThumbnailSizeDp, endPaddingValues)
+                            } else LazyRow(contentPadding = endPaddingValues) {
                                 items(
                                     items = playlists.distinctBy { it.key },
                                     key = Innertube.PlaylistItem::key,
@@ -993,8 +1096,8 @@ fun ChartsSection(
                         }
                     } // end playlists let
 
-                chartsPageInit.songs?.let { songs ->
-                    if (songs.isNotEmpty()) {
+                chartsPageInit?.songs.orEmpty().let { songs ->
+                    if (forcePlaceholder || songs.isNotEmpty()) {
                         val chartSongIds = remember(songs) { songs.mapNotNull { it.key } }
                         val chartLikeStatesMap by remember(chartSongIds) {
                             LikeStateManager.getLikeStates(chartSongIds)
@@ -1018,26 +1121,19 @@ fun ChartsSection(
                                 .fillMaxWidth(),
                             flingBehavior = ScrollableDefaults.flingBehavior(),
                         ) {
-                            itemsIndexed(
-                                items = if (parentalControlEnabled)
-                                    songs.filter {
-                                        !it.asSong.title.startsWith(EXPLICIT_PREFIX)
-                                    }.distinctBy { it.key }
-                                else songs.distinctBy { it.key },
+                            val rankedSongs = songs.filter { !parentalControlEnabled || !it.asSong.title.startsWith(EXPLICIT_PREFIX) }
+                                .distinctBy { it.key }
+                            if (forcePlaceholder) items(rankedSongs.size.takeIf { it > 0 } ?: 9) { index ->
+                                RankedChartRow(index, rankWidth, itemInHorizontalGridWidth) {
+                                    val song = rankedSongs.getOrNull(index)?.asSong
+                                    SongItemPlaceholder(title = song?.title, artist = song?.artistsText)
+                                }
+                            } else itemsIndexed(
+                                items = rankedSongs,
                                 key = { _, song -> song.key },
                                 contentType = { _, _ -> "song" }
                             ) { index, song ->
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(start = 16.dp)
-                                ) {
-                                    BasicText(
-                                        text = "${index + 1}",
-                                        style = typography().l.bold.center.color(colorPalette().text),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
+                                RankedChartRow(index, rankWidth, itemInHorizontalGridWidth) {
                                     SongItem(
                                         song = song.asSong ?: Song.makePlaceholder(""),
                                         isLiked = chartLikeStatesMap[song.key],
@@ -1056,8 +1152,8 @@ fun ChartsSection(
                     }
                 }
 
-                chartsPageInit.artists?.let { artists ->
-                    if (artists.isNotEmpty()) {
+                chartsPageInit?.artists.orEmpty().let { artists ->
+                    if (forcePlaceholder || artists.isNotEmpty()) {
                         val chartArtistKeys = remember(artists) { artists.map { it.key } }
                         val chartArtistBookmarkStatesMap by remember(chartArtistKeys) {
                             BookmarkStateManager.getArtistBookmarkStates(chartArtistKeys)
@@ -1078,22 +1174,23 @@ fun ChartsSection(
                                 .fillMaxWidth(),
                             flingBehavior = ScrollableDefaults.flingBehavior(),
                         ) {
-                            itemsIndexed(
-                                items = artists.distinctBy { it.key },
+                            val rankedArtists = artists.distinctBy { it.key }
+                            if (forcePlaceholder) items(rankedArtists.size.takeIf { it > 0 } ?: 9) { index ->
+                                RankedChartRow(index, rankWidth, 200.dp) {
+                                    val artist = rankedArtists.getOrNull(index)
+                                    ArtistItemPlaceholder(
+                                        songThumbnailSizeDp,
+                                        title = artist?.title,
+                                        subscribers = artist?.subscribersCountText,
+                                        showSubscribers = artist == null || artist.subscribersCountText != null,
+                                    )
+                                }
+                            } else itemsIndexed(
+                                items = rankedArtists,
                                 key = { _, artist -> artist.key },
                                 contentType = { _, _ -> "artist" }
                             ) { index, artist ->
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(start = 16.dp)
-                                ) {
-                                    BasicText(
-                                        text = "${index + 1}",
-                                        style = typography().l.bold.center.color(colorPalette().text),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
+                                RankedChartRow(index, rankWidth, 200.dp) {
                                     ArtistItem(
                                         artist = artist,
                                         thumbnailSizePx = songThumbnailSizePx,
@@ -1101,7 +1198,6 @@ fun ChartsSection(
                                         alternative = false,
                                         bookmarkState = chartArtistBookmarkStatesMap[artist.key],
                                         modifier = Modifier
-                                            .width(200.dp)
                                             .clip(uiRoundnessShape()).combinedClickable(
                                                 onClick = { onArtistClick(artist.key) },
                                                 onLongClick = {
@@ -1141,7 +1237,8 @@ fun GenericYtmSections(
     onArtistClick: (String) -> Unit,
     onPlaylistClick: (String) -> Unit,
     isLoading: Boolean = false,
-    showTitle: Boolean = true
+    showTitle: Boolean = true,
+    forcePlaceholder: Boolean = false,
 ) {
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
@@ -1149,6 +1246,8 @@ fun GenericYtmSections(
         if (section.items.isEmpty() || section.items.firstOrNull()?.key == null) return@forEach
         
         val title = section.title
+        val videosAsAlbums = title.contains("retrospective", ignoreCase = true) ||
+            title.contains("rétrospective", ignoreCase = true)
         val browseId = section.endpoint?.browseId
 
         if (displayedSectionTitles.contains(title)) return@forEach
@@ -1217,8 +1316,17 @@ fun GenericYtmSections(
                 modifier = Modifier.fillMaxWidth().height(Dimensions.itemsVerticalPadding * 3 * 9)
             ) {
                 items(songItems, key = { it.key ?: it.hashCode() }, contentType = { "song" }) { item ->
+                    val song = item.asSong
+                    if (forcePlaceholder) {
+                        SongItemPlaceholder(
+                            modifier = Modifier.width(itemInHorizontalGridWidth).animateItem(),
+                            title = song?.cleanTitle(),
+                            artist = song?.cleanArtistsText(),
+                        )
+                        return@items
+                    }
                     SongItem(
-                        song = item.asSong ?: Song.makePlaceholder(""),
+                        song = song ?: Song.makePlaceholder(""),
                         isLiked = sectionLikeStatesMap[item.key],
                         inPlaylist = sectionPlaylistStatesMap[item.key],
                         navController = navController,
@@ -1232,25 +1340,25 @@ fun GenericYtmSections(
                     )
                 }
                 
-                if (isLoading) {
-                    items(3, key = { "shimmer_$it" }, contentType = { "placeholder" }) {
+                if ((!forcePlaceholder && isLoading) || (forcePlaceholder && songItems.isEmpty())) {
+                    items(
+                        if (forcePlaceholder) 9 else 3,
+                        key = { "shimmer_$it" }, contentType = { "placeholder" },
+                    ) { index ->
                         AnimatedVisibility(
-                            visible = isLoading,
+                            visible = isLoading || forcePlaceholder,
                             enter = slideInVertically(
                                 initialOffsetY = { it / 2 },
-                                animationSpec = tween(300, delayMillis = it * 50, easing = FastOutSlowInEasing)
-                            ) + fadeIn(animationSpec = tween(250, delayMillis = it * 50)),
+                                animationSpec = tween(300, delayMillis = index * 50, easing = FastOutSlowInEasing)
+                            ) + fadeIn(animationSpec = tween(250, delayMillis = index * 50)),
                             exit = slideOutVertically(
                                 targetOffsetY = { -it / 3 },
                                 animationSpec = tween(250, easing = FastOutSlowInEasing)
                             ) + fadeOut(animationSpec = tween(200))
                         ) {
-                            ShimmerHost {
-                                AlbumItemPlaceholder(
-                                    thumbnailSizeDp = albumThumbnailSizeDp,
-                                    modifier = Modifier.padding(horizontal = 4.dp)
-                                )
-                            }
+                            SongItemPlaceholder(
+                                modifier = Modifier.width(itemInHorizontalGridWidth).animateItem(),
+                            )
                         }
                     }
                 }
@@ -1273,8 +1381,17 @@ fun GenericYtmSections(
                 LikeStateManager.getLikeStates(sectionVideoKeys)
             }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
+            val entries = section.items.filterNotNull()
+            val cards = remember(entries, videosAsAlbums) { ytmShelfCards(entries, videosAsAlbums) }
             LazyRow(contentPadding = endPaddingValues) {
-                items(section.items, key = { it?.hashCode() ?: 0 }, contentType = { "item" }) { item ->
+                items(entries, key = { it.hashCode() }, contentType = { "item" }) { item ->
+                    if (forcePlaceholder) {
+                        YtmShelfCardPlaceholder(
+                            ytmShelfCards(listOf(item), videosAsAlbums).single(), albumThumbnailSizeDp, playlistThumbnailSizeDp,
+                            Modifier.animateItem(), item = item,
+                        )
+                        return@items
+                    }
                     when (item) {
                         is Innertube.SongItem -> {
                             val song = item.asSong ?: Song.makePlaceholder("")
@@ -1352,9 +1469,7 @@ fun GenericYtmSections(
 //
                             // below) instead of the wide video card; playback and the
                             // long-press menu stay video-based (same as the SongItem branch).
-                            if (title.contains("retrospective", ignoreCase = true) ||
-                                title.contains("rétrospective", ignoreCase = true)
-                            ) {
+                            if (videosAsAlbums) {
                                 AlbumItem(
                                     thumbnailUrl = item.thumbnail?.url,
                                     title = item.info?.name,
@@ -1393,28 +1508,24 @@ fun GenericYtmSections(
                                 )
                             }
                         }
-                        null -> {}
                     }
                 }
                 
-                if (isLoading) {
-                    items(3, key = { "shimmer_$it" }, contentType = { "placeholder" }) {
+                if ((!forcePlaceholder && isLoading) || (forcePlaceholder && entries.isEmpty())) {
+                    items(if (forcePlaceholder) 5 else 3, key = { "shimmer_$it" }, contentType = { "placeholder" }) { index ->
                         AnimatedVisibility(
-                            visible = isLoading,
+                            visible = isLoading || forcePlaceholder,
                             enter = slideInVertically(
                                 initialOffsetY = { it / 2 },
-                                animationSpec = tween(300, delayMillis = it * 50, easing = FastOutSlowInEasing)
-                            ) + fadeIn(animationSpec = tween(250, delayMillis = it * 50)),
+                                animationSpec = tween(300, delayMillis = index * 50, easing = FastOutSlowInEasing)
+                            ) + fadeIn(animationSpec = tween(250, delayMillis = index * 50)),
                             exit = slideOutVertically(
                                 targetOffsetY = { -it / 3 },
                                 animationSpec = tween(250, easing = FastOutSlowInEasing)
                             ) + fadeOut(animationSpec = tween(200))
                         ) {
                             ShimmerHost {
-                                AlbumItemPlaceholder(
-                                    thumbnailSizeDp = albumThumbnailSizeDp,
-                                    modifier = Modifier.padding(horizontal = 4.dp)
-                                )
+                                YtmShelfCardPlaceholder(cards[index % cards.size], albumThumbnailSizeDp, playlistThumbnailSizeDp)
                             }
                         }
                     }
@@ -1423,7 +1534,7 @@ fun GenericYtmSections(
         } // Column
     } // forEach
 
-    if (isLoading && homePageInit?.sections.isNullOrEmpty()) {
+    if ((isLoading || forcePlaceholder) && homePageInit?.sections.isNullOrEmpty()) {
         repeat(4) {
             Column {
                 TextPlaceholder(
@@ -1433,10 +1544,9 @@ fun GenericYtmSections(
                 )
                 LazyRow(contentPadding = endPaddingValues) {
                     items(4, key = { "generic_shimmer_${it}" }, contentType = { "placeholder" }) {
-                        AlbumItemPlaceholder(
-                            thumbnailSizeDp = albumThumbnailSizeDp,
-                            modifier = Modifier.padding(horizontal = 4.dp)
-                        )
+                        ShimmerHost {
+                            YtmShelfCardPlaceholder(YtmShelfCard(YtmShelfPlaceholderKind.Album), albumThumbnailSizeDp, playlistThumbnailSizeDp)
+                        }
                     }
                 }
             }

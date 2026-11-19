@@ -37,9 +37,13 @@ import app.n_zik.android.appTextResources
 import app.n_zik.android.colorPalette
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.components.SongItem
-import app.n_zik.android.components.ui.InlineCircularLoader
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
+import app.n_zik.android.ui.items.SongItemPlaceholder
 import app.n_zik.android.components.glass.GlassActionCellWidth
+import app.n_zik.android.components.glass.GlassActionCellHeight
 import app.n_zik.android.components.glass.GlassStandaloneActionSize
+import app.n_zik.android.components.glass.PageButton
 import app.n_zik.android.components.ui.CollectionButtonToolbar
 import app.n_zik.android.components.musicbrainz.InfoAndCommunity
 import app.n_zik.android.components.ui.screens.album.AlbumBookmark
@@ -50,6 +54,7 @@ import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.ui.components.themed.Enqueue
 import app.n_zik.android.utils.player.addNextOffMain
 import app.n_zik.android.ui.components.tab.toolbar.Button
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.components.ui.screens.DynamicOrientationLayout
 import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.utils.formatAsTime
@@ -290,42 +295,70 @@ private fun OnDeviceGroupScreen(
 
     val artworkPainter = ImageCacheFactory.Painter(artwork)
     val isArtist = placeholder == R.drawable.artist
+    val forceShimmer = forceLoadingShimmerPreview()
+    val isLoading = tracks == null || deviceLibrary == null
+    val showShimmer = isLoading || forceShimmer
     Box(Modifier.fillMaxSize().background(palette.background0)) {
-        if (tracks == null || deviceLibrary == null) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { InlineCircularLoader() }
-        } else DynamicOrientationLayout(
+        DynamicOrientationLayout(
             artworkPainter,
             shape = if (isArtist) artistThumbnailShape() else null,
             thumbnailContentPadding = rememberPageChromeContentPadding(),
+            isLoading = showShimmer,
         ) {
         LazyColumn(
             contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
             modifier = Modifier.fillMaxSize(),
         ) {
             item(key = "header") {
-                CollectionArtworkHeader(title, artworkPainter, disableScrollingText, frameAction = false) {
+                CollectionArtworkHeader(
+                    title, artworkPainter, disableScrollingText,
+                    frameAction = false,
+                    isLoading = showShimmer,
+                    fullWidthTitleShimmer = !isArtist,
+                ) {
                     OnDeviceFolderBadge()
                 }
             }
             if (!isArtist) item(key = "album_details") {
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    BasicText(
-                        text = pluralStringResource(
+                    if (isLoading) {
+                        BasicText(
+                            stringResource(R.string.common_loading_message),
+                            style = type.xs.medium.copy(color = palette.textSecondary),
+                            maxLines = 1,
+                        )
+                    } else {
+                        val stats = pluralStringResource(
                             R.plurals.library_song_count_with_duration,
                             visibleTracks.size,
                             visibleTracks.size,
                             formatAsTime(duration),
-                        ),
-                        style = type.xs.medium,
-                        maxLines = 1,
-                    )
+                        )
+                        if (forceShimmer) ItemTextPlaceholder(stats, type.xs.medium)
+                        else BasicText(stats, style = type.xs.medium, maxLines = 1)
+                    }
                 }
             }
-            if (visibleTracks.isNotEmpty()) item(key = "action_buttons") {
+            if (isLoading || visibleTracks.isNotEmpty()) item(key = "action_buttons") {
+                val actions = if (isArtist) listOf(shuffle, playNext, enqueue, itemSelector)
+                    else listOf(shuffle, itemSelector, playNext, enqueue)
                 CollectionButtonToolbar(
-                    bookmark = { bookmark?.ToolBarButton() },
-                    buttons = if (isArtist) listOf(shuffle, playNext, enqueue, itemSelector)
-                        else listOf(shuffle, itemSelector, playNext, enqueue),
+                    bookmark = {
+                        when {
+                            isLoading && !isArtist -> (bookmark as? MenuIcon)?.disabledWhileLoading()?.ToolBarButton()
+                            isLoading && bookmark == null -> PageButton(
+                                onClick = {},
+                                modifier = Modifier.size(100.dp, GlassActionCellHeight),
+                                enabled = false,
+                                contentPadding = PaddingValues(0.dp),
+                            ) {
+                                BasicText(stringResource(R.string.artist_action_follow),
+                                    style = type.s.copy(color = palette.textDisabled))
+                            }
+                            else -> bookmark?.ToolBarButton()
+                        }
+                    },
+                    buttons = if (isLoading) actions.map { it.disabledWhileLoading() } else actions,
                     bookmarkWidth = if (isArtist) 100.dp else GlassStandaloneActionSize,
                     originalNativeBookmarkWidth = if (isArtist) 100.dp else 48.dp,
                     originalBookmarkGap = if (isArtist) 10.dp else 15.dp,
@@ -334,26 +367,49 @@ private fun OnDeviceGroupScreen(
                         else Modifier.padding(top = 8.dp),
                 )
             }
-            item(key = "info_and_community") { info() }
-            if (deviceLibrary != null && visibleTracks.isEmpty()) {
+            if (!isLoading) item(key = "info_and_community") { info() }
+            if (!isLoading && visibleTracks.isEmpty()) {
                 item(key = "empty") { SearchNoResults(text = stringResource(R.string.common_empty_items)) }
             }
-            if (visibleTracks.isNotEmpty()) item(key = "songsTitle") {
+            if (isLoading || visibleTracks.isNotEmpty()) item(key = "songsTitle") {
                 BasicText(
                     text = stringResource(R.string.library_songs_title),
                     style = type.m.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold),
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                 )
             }
-            items(visibleTracks, key = { it.id }) { song ->
-                SongItem(song, navController = navController, itemSelector = itemSelector,
-                    onClick = { if (!itemSelector.isActive) play(visibleTracks, song.id) })
+            if (showShimmer) {
+                items(
+                    count = if (isLoading) 4 else visibleTracks.size,
+                    key = { index -> visibleTracks.getOrNull(index)?.id ?: "device-song-loading-$index" },
+                ) { index ->
+                    val song = visibleTracks.getOrNull(index)
+                    SongItemPlaceholder(title = song?.cleanTitle(), artist = song?.cleanArtistsText(), onDevice = true)
+                }
+            } else {
+                items(visibleTracks, key = { it.id }) { song ->
+                    SongItem(song, navController = navController, itemSelector = itemSelector,
+                        onClick = { if (!itemSelector.isActive) play(visibleTracks, song.id) })
+                }
             }
         }
         }
         Box(Modifier.align(if (playerPosition == PlayerPosition.Top) Alignment.TopCenter else Alignment.BottomCenter).padding(vertical = 5.dp)) {
             miniPlayer()
         }
+    }
+}
+
+private fun MenuIcon.disabledWhileLoading(): MenuIcon {
+    val action = this
+    return object : MenuIcon {
+        override val iconId get() = action.iconId
+        override val menuIconTitle: String
+            @Composable get() = action.menuIconTitle
+        override val color
+            @Composable get() = colorPalette().textDisabled
+        override val isEnabled = false
+        override fun onShortClick() = Unit
     }
 }
 

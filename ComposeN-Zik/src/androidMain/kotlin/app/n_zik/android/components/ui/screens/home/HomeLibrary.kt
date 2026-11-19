@@ -110,6 +110,10 @@ import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScroll
 import app.n_zik.android.ui.components.themed.HeaderInfo
 import app.n_zik.android.ui.components.themed.MultiFloatingActionsContainer
 import app.n_zik.android.ui.items.PlaylistItem
+import app.n_zik.android.ui.items.PlaylistItemPlaceholder
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.core.rewind.RewindPlaylists.rewindDisplayName
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.utils.Preference.HOME_LIBRARY_ITEM_SIZE
@@ -424,6 +428,8 @@ fun HomeLibrary(
     var searchDataReady by remember(playlistType, sort.sortBy, sort.sortOrder) { mutableStateOf(false) }
     var completedSearchQuery by remember(playlistType, sort.sortBy, sort.sortOrder) { mutableStateOf<String?>(null) }
     val gridReady = searchDataReady && devicePlaylistIds != null && completedSearchQuery == search.inputValue
+    val forceShimmer = forceLoadingShimmerPreview()
+    val showGridShimmer = forceShimmer || !gridReady
     LaunchedEffect( playlistType, sort.sortBy, sort.sortOrder ) {
         if (previewSession != null) {
             val demoPlaylists = ThemePreviewDemo.playlists
@@ -596,7 +602,7 @@ fun HomeLibrary(
                         }
                     } catch (_: Exception) { defaultToolbarOrder }
 
-                    order.filter { it in defaultToolbarOrder }.forEach { id ->
+                    order.filter { it in defaultToolbarOrder }.ifEmpty { defaultToolbarOrder }.forEach { id ->
                         when(id) {
                             "sort" -> add(sort)
                             "position_lock" -> { if (sort.sortBy == PlaylistSortBy.Custom) add(positionLock) }
@@ -736,7 +742,7 @@ fun HomeLibrary(
                         },
                     ) {
                         val headerDensity = androidx.compose.ui.platform.LocalDensity.current
-                        if (gridReady) LazyVerticalGrid(
+                        LazyVerticalGrid(
                             state = lazyGridState,
                             columns = GridCells.Adaptive( itemSize.size.dp ),
                             modifier = Modifier
@@ -748,10 +754,20 @@ fun HomeLibrary(
                                 extraTopProvider = { with(headerDensity) { headerHeight.toDp() } },
                             )
                         ) {
+                    if (!gridReady && filteredItems.isEmpty()) items(HomePlaceholderCount, key = { "loading_playlist_$it" }) {
+                        PlaylistItemPlaceholder(itemSize.size.dp, alternative = true, showChannel = false)
+                    }
                     items(
                         items = filteredItems,
                         key = { it.playlist.id }
                     ) { preview ->
+                        if (showGridShimmer) {
+                            PlaylistItemPlaceholder(
+                                itemSize.size.dp, alternative = true, showChannel = false,
+                                title = context.rewindDisplayName(cleanPrefix(preview.playlist.name)),
+                            )
+                            return@items
+                        }
                         ReorderableItem(
                             reorderableLazyGridState,
                             key = preview.playlist.id
@@ -824,7 +840,9 @@ fun HomeLibrary(
                                     isYoutubePlaylist = preview.playlist.isYoutubePlaylist,
                                     isEditable = preview.playlist.isEditable,
                                     thumbnailOverlay = {
-                                        if (!preview.playlist.isYoutubePlaylist) {
+                                        if (preview.playlist.id in devicePlaylistIds.orEmpty() &&
+                                            !isYouTubePlaylistSource(preview.playlist.browseId, preview.playlist.isYoutubePlaylist)
+                                        ) {
                                             OnDeviceCoverBadge(Modifier.align(Alignment.TopEnd).zIndex(3f))
                                         }
                                         if( itemSelector.isActive ) {

@@ -22,6 +22,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
+import app.n_zik.android.ui.items.SongItemPlaceholder
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -127,6 +129,7 @@ fun OnDeviceSong(
 ) {
     // Essentials
     val context = LocalContext.current
+    val forceShimmer = forceLoadingShimmerPreview()
     val binder = LocalPlayerServiceBinder.current
     val profile = getActiveProfile(context)
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -379,9 +382,13 @@ fun OnDeviceSong(
                 key = { "folder:${PathUtils.childPath(currentPath, it)}" }
             ) {
                 Box(Modifier.animateItem()) {
-                    FolderItem(it) { selectedFolder = PathUtils.childPath(currentPath, it) }
+                    FolderItem(it, shimmer = forceShimmer) { selectedFolder = PathUtils.childPath(currentPath, it) }
                 }
             }
+        }
+
+        if (isPermissionGranted && !searchDataReady && visibleSongs.isEmpty() && folders.isEmpty()) {
+            items(4, key = { "loading-device-song:$it" }) { SongItemPlaceholder(onDevice = true) }
         }
 
         if (isPermissionGranted && searchDataReady && visibleSongs.isEmpty() && folders.isEmpty()) {
@@ -399,6 +406,10 @@ fun OnDeviceSong(
             items = visibleSongs,
             key = { song -> song.id }
         ) { song ->
+            if (forceShimmer) {
+                SongItemPlaceholder(title = song.cleanTitle(), artist = song.cleanArtistsText(), onDevice = true)
+                return@items
+            }
             val mediaItem = song.asMediaItem
 
             SwipeablePlaylistItem(

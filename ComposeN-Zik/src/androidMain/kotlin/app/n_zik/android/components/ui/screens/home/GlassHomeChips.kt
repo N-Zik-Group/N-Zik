@@ -32,9 +32,10 @@ internal fun <E> GlassHomeChips(
     onValueUpdate: (E) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    shimmer: Boolean = false,
 ) {
     val settings = rememberGlassSettings()
-    if (!settings.usesGlassMaterial(GlassArea.ActionButtons)) {
+    if (!shimmer && !settings.usesGlassMaterial(GlassArea.ActionButtons)) {
         ButtonsRow(chips, currentValue, onValueUpdate, modifier, contentPadding)
         return
     }
@@ -45,6 +46,7 @@ internal fun <E> GlassHomeChips(
                 label = { Text(label) },
                 onClick = { onValueUpdate(value) },
                 settings = settings,
+                shimmer = shimmer,
             )
             Spacer(Modifier.width(8.dp))
         }
@@ -83,6 +85,7 @@ internal fun GlassHomeFilterChip(
         selectedLabelColor = colorPalette().onAccent,
     ),
     settings: GlassSettings = rememberGlassSettings(),
+    shimmer: Boolean = false,
 ) {
-    GlassFilterChip(selected, onClick, label, modifier, shape = shape, colors = colors, settings = settings)
+    GlassFilterChip(selected, onClick, label, modifier, shape = shape, colors = colors, settings = settings, shimmer = shimmer)
 }

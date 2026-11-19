@@ -119,6 +119,8 @@ import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScroll
 import app.n_zik.android.ui.components.themed.HeaderInfo
 import app.n_zik.android.ui.components.themed.MultiFloatingActionsContainer
 import app.n_zik.android.ui.items.AlbumItem
+import app.n_zik.android.ui.items.AlbumItemPlaceholder
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.LocalAppearance
@@ -362,6 +364,8 @@ fun HomeAlbums(
     val groupsReady = albumType != AlbumsType.OnDevice || eligibleDeviceGroups != null
     var completedSearchQuery by remember(albumType, sort.sortBy, sort.sortOrder, groupsReady) { mutableStateOf<String?>(null) }
     val gridReady = searchDataReady && groupsReady && completedSearchQuery == search.inputValue
+    val forceShimmer = forceLoadingShimmerPreview()
+    val showGridShimmer = forceShimmer || !gridReady
     LaunchedEffect( sort.sortBy, sort.sortOrder, albumType ) {
         if (preview != null) {
             val demoItems = ThemePreviewDemo.albums
@@ -493,7 +497,7 @@ fun HomeAlbums(
                         }
                     } catch (_: Exception) { defaultToolbarOrder }
 
-                    order.filter { it in defaultToolbarOrder }.forEach { id ->
+                    order.filter { it in defaultToolbarOrder }.ifEmpty { defaultToolbarOrder }.forEach { id ->
                         when(id) {
                             "sort" -> add(sort)
                             "position_lock" -> { if (sort.sortBy == AlbumSortBy.Custom) add(positionLock) }
@@ -629,7 +633,7 @@ fun HomeAlbums(
                         },
                     ) {
                         val headerDensity = androidx.compose.ui.platform.LocalDensity.current
-                        if (gridReady) LazyVerticalGrid(
+                        LazyVerticalGrid(
                             state = lazyGridState,
                             columns = GridCells.Adaptive( itemSize.size.dp ),
                             contentPadding = rememberPageChromeContentPadding(
@@ -639,10 +643,24 @@ fun HomeAlbums(
                             ),
                             modifier = Modifier.background( colorPalette().background0 ).fillMaxSize()
                         ) {
+                            val albums = itemsOnDisplay.distinctBy { it.id }
+                            if (!gridReady && albums.isEmpty()) items(HomePlaceholderCount, key = { "loading_album_$it" }) {
+                                AlbumItemPlaceholder(itemSize.size.dp, alternative = true, metadataLines = 2)
+                            }
                             items(
-                                items = itemsOnDisplay.distinctBy { it.id },
+                                items = albums,
                                 key = { it.id }
                             ) { album ->
+                                if (showGridShimmer) {
+                                    val year = album.year?.takeIf { it.isNotBlank() }
+                                    val metadata = listOfNotNull(album.authorsText?.takeIf { it.isNotBlank() }, year)
+                                    AlbumItemPlaceholder(
+                                        itemSize.size.dp, alternative = true,
+                                        title = album.title, metadataLines = metadata.size,
+                                        metadata = metadata, finalMetadataIsYear = year != null,
+                                    )
+                                    return@items
+                                }
                                 ReorderableItem(
                                     reorderableLazyGridState,
                                     key = album.id

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -35,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
-import app.n_zik.android.components.OfflineAwareLoader
+import app.n_zik.android.components.OfflineContent
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.compose.persist.persist
 import app.n_zik.innertube.Innertube
@@ -43,11 +44,15 @@ import app.n_zik.innertube.requests.discoverPage
 import app.n_zik.android.colorPalette
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.typography
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.ui.items.AlbumItem
+import app.n_zik.android.ui.items.albumGridPlaceholders
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.px
 import app.n_zik.android.utils.disableScrollingTextKey
+import app.n_zik.android.utils.secondary
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.showSearchTabKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -63,11 +68,14 @@ fun NewAlbums(
     navController: NavController
 ) {
     var discoverPage by persist<Result<Innertube.DiscoverPage>>("newreleases/albums/pageResult")
-    LaunchedEffect(Unit) {
-        discoverPage = withContext(NzikDispatchers.DATA) { Innertube.discoverPage() }
-    }
-
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(LocalContext.current)
+    LaunchedEffect(isOnline) {
+        if (isOnline) {
+            if (discoverPage?.isFailure == true) discoverPage = null
+            discoverPage = withContext(NzikDispatchers.DATA) { Innertube.discoverPage() }
+        }
+    }
+    val forceShimmer = forceLoadingShimmerPreview()
 
     val thumbnailSizeDp = Dimensions.thumbnails.album + 24.dp
     val thumbnailSizePx = thumbnailSizeDp.px
@@ -87,15 +95,17 @@ fun NewAlbums(
     ) {
 
         val page = discoverPage?.getOrNull()
-        if (page == null) {
+        if (page == null && (!isOnline || discoverPage?.isFailure == true)) {
             CollectionPageStatus {
-                OfflineAwareLoader(
-                    isOnline = isOnline,
-                    modifier = Modifier.fillMaxSize()
-                )
+                if (isOnline) {
+                    BasicText(stringResource(R.string.common_load_failed), style = typography().s.secondary)
+                } else {
+                    OfflineContent(Modifier.fillMaxSize())
+                }
             }
         } else {
-            val albumKeys = remember(page.newReleaseAlbums) { page.newReleaseAlbums.map { it.key } }
+            val albums = page?.newReleaseAlbums.orEmpty().distinctBy { it.key }
+            val albumKeys = remember(albums) { albums.map { it.key } }
             val bookmarkStatesMap by remember(albumKeys) {
                 BookmarkStateManager.getAlbumBookmarkStates(albumKeys)
             }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
@@ -123,8 +133,14 @@ fun NewAlbums(
 
                 }
 
-                items(
-                    items = page.newReleaseAlbums.distinct(),
+                if (forceShimmer || page == null) {
+                    albumGridPlaceholders(albums.takeIf { page != null }, thumbnailSizeDp)
+                } else if (albums.isEmpty()) {
+                    item(key = "empty", span = { GridItemSpan(maxLineSpan) }) {
+                        BasicText(stringResource(R.string.common_empty_items), style = typography().s.secondary)
+                    }
+                } else items(
+                    items = albums,
                     key = { it.key }) {
                     AlbumItem(
                         album = it,

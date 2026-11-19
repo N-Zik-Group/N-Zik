@@ -39,18 +39,19 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.n_zik.android.compose.persist.persist
-import app.n_zik.android.compose.persist.persistList
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.requests.discoverPageNewAlbums
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
-import app.n_zik.android.components.OfflineAwareLoader
+import app.n_zik.android.components.OfflineContent
 import app.n_zik.android.colorPalette
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.typography
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.ui.items.AlbumItem
+import app.n_zik.android.ui.items.albumGridPlaceholders
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.px
 import app.n_zik.android.utils.center
@@ -60,6 +61,7 @@ import app.n_zik.android.utils.secondary
 import app.n_zik.android.utils.showSearchTabKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.withContext
 
 @ExperimentalTextApi
 @UnstableApi
@@ -71,11 +73,14 @@ fun NewAlbumsFromArtists(
     navController: NavController
 ) {
     var discoverPage by persist<Result<Innertube.DiscoverPageAlbums>>("newreleases/albumsFromArtists/pageResult")
-    LaunchedEffect(Unit) {
-        discoverPage = Innertube.discoverPageNewAlbums()
-    }
-
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(LocalContext.current)
+    LaunchedEffect(isOnline) {
+        if (isOnline) {
+            if (discoverPage?.isFailure == true) discoverPage = null
+            discoverPage = withContext(NzikDispatchers.DATA) { Innertube.discoverPageNewAlbums() }
+        }
+    }
+    val forceShimmer = forceLoadingShimmerPreview()
 
     val thumbnailSizeDp = Dimensions.thumbnails.album + 24.dp
     val thumbnailSizePx = thumbnailSizeDp.px
@@ -95,27 +100,27 @@ fun NewAlbumsFromArtists(
     ) {
 
         val page = discoverPage?.getOrNull()
-        if (page == null) {
+        if (page == null && (!isOnline || discoverPage?.isFailure == true)) {
             CollectionPageStatus {
-                OfflineAwareLoader(
-                    isOnline = isOnline,
-                    modifier = Modifier.fillMaxSize()
-                )
+                if (isOnline) {
+                    BasicText(stringResource(R.string.common_load_failed), style = typography().s.secondary)
+                } else {
+                    OfflineContent(Modifier.fillMaxSize())
+                }
             }
         } else {
             val artists by remember {
                 Database.artistTable
                         .sortFollowingByName()
                         .distinctUntilChanged()
-            }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
+            }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
 
-            var newReleaseAlbumsFiltered by persistList<Innertube.AlbumItem>("home/shared/newalbumsartist")
-            page.newReleaseAlbums.forEach { album ->
-                artists.forEach { artist ->
-                    if (artist.name == album.authors?.first()?.name) {
-                        newReleaseAlbumsFiltered += album
-                    }
-                }
+            val resolvedArtists = artists
+            val newReleaseAlbumsFiltered = remember(page, resolvedArtists) {
+                val followedNames = resolvedArtists.orEmpty().mapTo(HashSet()) { it.name }
+                page?.newReleaseAlbums.orEmpty().filter { album ->
+                    album.authors?.firstOrNull()?.name?.let(followedNames::contains) == true
+                }.distinctBy { it.key }
             }
 
             val newAlbumsFilteredKeys = remember(newReleaseAlbumsFiltered) { newReleaseAlbumsFiltered.map { it.key } }
@@ -146,9 +151,14 @@ fun NewAlbumsFromArtists(
 
                 }
 
-                if (newReleaseAlbumsFiltered.isNotEmpty()) {
+                if (forceShimmer || page == null || resolvedArtists == null) {
+                    albumGridPlaceholders(
+                        newReleaseAlbumsFiltered.takeIf { page != null && resolvedArtists != null },
+                        thumbnailSizeDp,
+                    )
+                } else if (newReleaseAlbumsFiltered.isNotEmpty()) {
                     items(
-                        items = newReleaseAlbumsFiltered.distinct(),
+                        items = newReleaseAlbumsFiltered,
                         key = { it.key }) {
                         AlbumItem(
                             album = it,
@@ -166,6 +176,7 @@ fun NewAlbumsFromArtists(
                     item(
                         key = "noAlbums",
                         contentType = 0,
+                        span = { GridItemSpan(maxLineSpan) },
                     ) {
                         BasicText(
                             text = stringResource(R.string.recommendations_followed_artists_no_new_releases),

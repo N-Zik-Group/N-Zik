@@ -110,6 +110,9 @@ import app.n_zik.android.R
 import app.n_zik.android.bridge.library.SongRecommendations
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.SongItem
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
+import app.n_zik.android.ui.items.SongItemPlaceholder
+import app.n_zik.android.ui.items.SongItemPlaceholders
 import app.n_zik.android.components.Sort
 import app.n_zik.android.components.song.PeriodSelector
 import app.n_zik.android.components.tab.HiddenSongs
@@ -578,10 +581,13 @@ fun HomeSongs(
         }
     }
 
+    val forceShimmer = forceLoadingShimmerPreview()
+    val resultsPending = isLoading || completedSearchQuery != search.inputValue
+    val showInitialSongPlaceholders = resultsPending && itemsOnDisplay.isEmpty()
     SearchEmptyFeedback(
         query = search.inputValue,
         empty = showNoItems,
-        loading = isLoading || completedSearchQuery != search.inputValue
+        loading = resultsPending,
     )
 
     val songIds = remember(itemsOnDisplay) { itemsOnDisplay.map { it.id } }
@@ -611,10 +617,17 @@ fun HomeSongs(
                     .fillMaxSize()
             ) {
 
+                if (showInitialSongPlaceholders) {
+                    item(key = "song_loading") { SongItemPlaceholders(count = HomePlaceholderCount) }
+                }
                 itemsIndexed(
                     items = itemsOnDisplay.distinctBy { it.id },
                     key = { _, song -> song.id }
                 ) { index, song ->
+                    if (forceShimmer) {
+                        SongItemPlaceholder(title = song.cleanTitle(), artist = song.cleanArtistsText())
+                        return@itemsIndexed
+                    }
                     ReorderableItem(
                         reorderableLazyListState,
                         key = song.id
@@ -748,7 +761,7 @@ fun HomeSongs(
 
         }
 
-        if (showNoItems) {
+        if (showNoItems && !showInitialSongPlaceholders) {
             Box(
                 modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding(topInsetProvider = topContentInsetProvider, base = PaddingValues(top = visibleHeaderPadding(), bottom = Dimensions.bottomSpacer))),
                 contentAlignment = Alignment.Center

@@ -35,7 +35,7 @@ import app.n_zik.android.models.toUiMood
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.components.ui.screens.home.MoodGridItemColored
-import app.n_zik.android.ui.components.themed.Loader
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.utils.center
 import app.n_zik.android.utils.secondary
@@ -66,65 +66,53 @@ fun MoodsPage(
             .fillMaxHeight()
             .fillMaxWidth()
     ) {
-        discoverPage?.getOrNull()?.let { moodResult ->
+        val showShimmer = forceLoadingShimmerPreview() || discoverPage == null
+        if (!showShimmer && discoverPage?.isFailure == true) {
+            CollectionPageStatus {
+                BasicText(
+                    text = stringResource(R.string.recommendations_load_failed_message),
+                    style = typography().s.secondary.center,
+                    modifier = Modifier.padding(16.dp),
+                )
+            }
+        } else {
             LazyVerticalGrid(
                 contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
                 state = moodAngGenresLazyGridState,
-                columns = GridCells.Adaptive(Dimensions.thumbnails.album + 24.dp),
-                modifier = Modifier
-                    .background(colorPalette().background0)
-                    .fillMaxSize()
+                columns = GridCells.Adaptive(thumbnailSizeDp),
+                modifier = Modifier.fillMaxSize(),
             ) {
-                item(
-                    key = "header",
-                    contentType = 0,
-                    span = { GridItemSpan(maxLineSpan) }
-                ) {
+                item(key = "header", span = { GridItemSpan(maxLineSpan) }) {
                     HeaderWithIcon(
                         title = stringResource(R.string.recommendations_moods_and_genres_title),
                         iconId = R.drawable.search,
                         enabled = true,
                         showIcon = false,
                         modifier = Modifier,
-                        onClick = {}
+                        onClick = {},
                     )
                 }
-
-                discoverPage?.getOrNull()?.let { page ->
-                    if (page.moods.isNotEmpty()) {
-
-                            items(
-                                items = page.moods.sortedBy { it.title },
-                                key = { it.endpoint.params ?: it.title }
-                            ) {
-                                MoodGridItemColored(
-                                    mood = it,
-                                    onClick = { it.endpoint.browseId?.let { _ ->
-                                        navController.currentBackStackEntry?.savedStateHandle?.set("mood", it.toUiMood())
-                                        navController.navigate(NavRoutes.mood.name)
-                                    } },
-                                    thumbnailSizeDp = thumbnailSizeDp,
-                                    modifier = Modifier
-                                        .animateItem()
-
-                                )
-                            }
-                        }
-
+                val moods = discoverPage?.getOrNull()?.moods.orEmpty().sortedBy { it.title }
+                if (showShimmer && moods.isEmpty()) {
+                    items(8, key = { "mood_loading_$it" }) {
+                        MoodGridItemColored(null, onClick = {}, thumbnailSizeDp = thumbnailSizeDp, shimmer = true)
                     }
-
+                } else {
+                    items(moods, key = { it.endpoint.params ?: it.title }) { mood ->
+                        MoodGridItemColored(
+                            mood = mood,
+                            onClick = {
+                                if (mood.endpoint.browseId != null) {
+                                    navController.currentBackStackEntry?.savedStateHandle?.set("mood", mood.toUiMood())
+                                    navController.navigate(NavRoutes.mood.name)
+                                }
+                            },
+                            thumbnailSizeDp = thumbnailSizeDp,
+                            modifier = Modifier.animateItem(),
+                            shimmer = showShimmer,
+                        )
+                    }
                 }
-
-
-        } ?: CollectionPageStatus {
-            if (discoverPage?.exceptionOrNull() != null) {
-                BasicText(
-                    text = stringResource(R.string.recommendations_load_failed_message),
-                    style = typography().s.secondary.center,
-                    modifier = Modifier.padding(all = 16.dp)
-                )
-            } else {
-                Loader(modifier = Modifier.fillMaxSize())
             }
         }
     }
