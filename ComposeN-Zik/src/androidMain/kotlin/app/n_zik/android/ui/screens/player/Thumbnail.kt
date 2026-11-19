@@ -224,6 +224,7 @@ fun Thumbnail(
 
     AnimatedContent(
         targetState = window,
+        contentKey = { it.uid },
         transitionSpec = {
             val duration = 500
             val slideDirection = if (targetState.firstPeriodIndex > initialState.firstPeriodIndex)
@@ -255,7 +256,7 @@ fun Thumbnail(
         contentAlignment = Alignment.Center, label = ""
     ) { currentWindow ->
 
-        val isCurrentWindow = currentWindow == window
+        val isCurrentWindow = currentWindow.uid == window.uid
         val artworkUrl = currentArtworkUrl.takeIf { isCurrentWindow }
             ?: currentWindow.mediaItem.mediaMetadata.artworkUri?.toString()
         val coverIdentity = rememberPlayerCoverIdentity(currentWindow.mediaItem.mediaId, artworkUrl.orEmpty())

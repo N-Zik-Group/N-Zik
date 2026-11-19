@@ -111,8 +111,9 @@ fun rememberPlayerArtworkControlsBackdrop(
         override val isCoordinatesDependent = true
         override val contentVersion: Int?
             get() {
-                val parentVersion = parent.contentVersion
-                var version = parentVersion ?: 0
+                val parentVersion = parent.contentVersion ?: return null
+                if (overflow.shadows.isEmpty()) return parentVersion
+                var version = parentVersion
                 val host = overflow.hostCoordinates?.takeIf { it.isAttached }
                 val pager = overflow.coordinates?.takeIf { it.isAttached }
                 version = 31 * version + overflow.fade.hashCode()
@@ -132,7 +133,7 @@ fun rememberPlayerArtworkControlsBackdrop(
                         version = 31 * version + System.identityHashCode(frame.layer)
                     }
                 }
-                return if (parentVersion == null) null else version
+                return version
             }
 
         override fun DrawScope.drawBackdrop(
@@ -240,38 +241,43 @@ private fun DrawScope.drawPlayerArtworkOverflow(
 ) {
     val hostSize = Size(host.size.width.toFloat(), host.size.height.toFloat())
     val viewport = host.localBoundingBoxOf(pager, clipBounds = false)
-    val frames = overflow.shadows.values.mapNotNull { it() }.sortedBy { it.zIndex }
+    val upperEnd = viewport.top.coerceIn(0f, hostSize.height)
+    val lowerStart = viewport.bottom.coerceIn(0f, hostSize.height)
+    if (upperEnd == 0f && lowerStart == hostSize.height) return
+
+    val frames = overflow.shadows.values.mapNotNull { readFrame ->
+        val frame = readFrame()?.takeIf { it.coordinates.isAttached && it.alpha > 0f }
+            ?: return@mapNotNull null
+        val bounds = host.localBoundingBoxOf(frame.coordinates, clipBounds = false)
+        if (artworkShadowIntersectsViewport(bounds, viewport)) frame to bounds else null
+    }.sortedBy { (frame, _) -> frame.zIndex }
+    if (frames.isEmpty()) return
+
+    val bleed = 32.dp.toPx()
+    val fade = overflow.fade
     fun drawOverflowBand(top: Float, bottom: Float) {
         if (bottom <= top) return
         val band = Rect(0f, top, hostSize.width, bottom)
         clipRect(band.left, band.top, band.right, band.bottom) {
-            val masked = overflow.fade > 0f
+            val masked = fade > 0f
             if (masked) drawContext.canvas.saveLayer(band, maskPaint)
-            frames.forEach { frame ->
-                if (frame.coordinates.isAttached) {
-                    val bounds = host.localBoundingBoxOf(frame.coordinates, clipBounds = false)
-                    if (frame.alpha > 0f && artworkShadowIntersectsViewport(bounds, viewport)) {
-                        if (frame.shadow && bounds.inflate(32.dp.toPx()).overlaps(band)) {
-                            if (frame.imageOverflow) drawArtworkOverflowShadow(bounds, frame)
-                            else {
-                                val bleed = 32.dp.toPx()
-                                clipRect(top = viewport.top - bleed, bottom = viewport.bottom + bleed) {
-                                    drawArtworkOverflowShadow(bounds, frame)
-                                }
-                            }
-                        }
-                        if (frame.imageOverflow && bounds.overlaps(band)) drawArtworkOverflowImage(bounds, frame)
+            frames.forEach { (frame, bounds) ->
+                if (frame.shadow && bounds.inflate(bleed).overlaps(band)) {
+                    if (frame.imageOverflow) drawArtworkOverflowShadow(bounds, frame)
+                    else clipRect(top = viewport.top - bleed, bottom = viewport.bottom + bleed) {
+                        drawArtworkOverflowShadow(bounds, frame)
                     }
                 }
+                if (frame.imageOverflow && bounds.overlaps(band)) drawArtworkOverflowImage(bounds, frame)
             }
             if (masked) {
-                drawArtworkOverflowFade(viewport, overflow.fade, hostSize)
+                drawArtworkOverflowFade(viewport, fade, hostSize)
                 drawContext.canvas.restore()
             }
         }
     }
-    drawOverflowBand(0f, viewport.top.coerceIn(0f, hostSize.height))
-    drawOverflowBand(viewport.bottom.coerceIn(0f, hostSize.height), hostSize.height)
+    drawOverflowBand(0f, upperEnd)
+    drawOverflowBand(lowerStart, hostSize.height)
 }
 
 internal fun artworkShadowIntersectsViewport(bounds: Rect, viewport: Rect): Boolean =
