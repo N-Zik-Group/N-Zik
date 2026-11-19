@@ -22,13 +22,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -36,14 +40,13 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -65,16 +68,27 @@ import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.StatisticsCategory
 import app.n_zik.android.enums.StatisticsType
 import app.n_zik.android.models.Song
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.ButtonsRow
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.SwipeablePlaylistItem
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.components.themed.HeaderWithIcon
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
 import app.n_zik.android.ui.items.AlbumItem
+import app.n_zik.android.ui.items.AlbumItemPlaceholder
 import app.n_zik.android.components.menu.album.AlbumItemMenu
 import app.n_zik.android.ui.items.ArtistItem
+import app.n_zik.android.ui.items.ArtistItemPlaceholder
 import app.n_zik.android.components.menu.artist.LocalArtistItemMenu
 import app.n_zik.android.ui.items.PlaylistItem
+import app.n_zik.android.ui.items.PlaylistItemPlaceholder
+import app.n_zik.android.ui.items.SongItemPlaceholder
+import app.n_zik.android.components.musicbrainz.insights.RankedInsightsSongPlaceholder
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.settings.common.SettingsEntry
 import app.n_zik.android.ui.styling.Dimensions
@@ -157,51 +171,51 @@ fun StatisticsPage(
 
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
-    val artists by remember {
+    val limit = maxStatisticsItems.toInt(maxStatisticsItemsCustomValue)
+    val artistResults by remember(from, limit) {
         Database.eventTable
                 .findArtistsMostPlayedBetween(
                     from = from,
-                    limit = maxStatisticsItems.toInt(maxStatisticsItemsCustomValue)
+                    limit = limit
                 )
                 .distinctUntilChanged()
-    }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
-    val albums by remember {
+    }.collectAsStateWithLifecycle<List<Artist>?>(null, context = NzikDispatchers.DATA)
+    val albumResults by remember(from, limit) {
         Database.eventTable
                 .findAlbumsMostPlayedBetween(
                     from = from,
-                    limit = maxStatisticsItems.toInt(maxStatisticsItemsCustomValue)
+                    limit = limit
                 )
                 .distinctUntilChanged()
-    }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
-    val playlists by remember {
+    }.collectAsStateWithLifecycle<List<Album>?>(null, context = NzikDispatchers.DATA)
+    val playlistResults by remember(from, limit) {
         Database.eventTable
                 .findPlaylistMostPlayedBetweenAsPreview(
                     from = from,
-                    limit = maxStatisticsItems.toInt(maxStatisticsItemsCustomValue)
+                    limit = limit
                 )
                 .distinctUntilChanged()
-    }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
-    var totalPlayTimes by remember { mutableLongStateOf(0L) }
+    }.collectAsStateWithLifecycle<List<PlaylistPreview>?>(null, context = NzikDispatchers.DATA)
+    val artists = artistResults.orEmpty()
+    val albums = albumResults.orEmpty()
+    val playlists = playlistResults.orEmpty()
     val totalPlayTimesFlow = remember(from) {
         Database.eventTable
             .getTotalPlayTimeBetween(from = from)
             .distinctUntilChanged()
     }
-    val totalPlayTimesState = totalPlayTimesFlow.collectAsStateWithLifecycle(0L, context = NzikDispatchers.DATA)
-    totalPlayTimes = totalPlayTimesState.value
+    val totalPlayTimes by totalPlayTimesFlow.collectAsStateWithLifecycle<Long?>(null, context = NzikDispatchers.DATA)
 
-    var distinctSongsPlayedCount by remember { mutableIntStateOf(0) }
     val distinctSongsPlayedCountFlow = remember(from) {
         Database.eventTable
             .countDistinctSongsPlayedBetween(from = from)
             .distinctUntilChanged()
     }
-    val distinctSongsPlayedCountState = distinctSongsPlayedCountFlow.collectAsStateWithLifecycle(0, context = NzikDispatchers.DATA)
-    distinctSongsPlayedCount = distinctSongsPlayedCountState.value
+    val distinctSongsPlayedCount by distinctSongsPlayedCountFlow.collectAsStateWithLifecycle<Int?>(null, context = NzikDispatchers.DATA)
 
-    val songsWithLikeStates by remember(parentalControlEnabled, maxStatisticsItems, maxStatisticsItemsCustomValue) {
+    val songsWithLikeStates by remember(from, parentalControlEnabled, limit) {
         // Multiply in Long and cap to avoid Int overflow (Unlimited or large Custom values)
-        val fetchLimit = (maxStatisticsItems.toInt(maxStatisticsItemsCustomValue).toLong() *
+        val fetchLimit = (limit.toLong() *
             (if (parentalControlEnabled) 5L else 1L))
             .coerceAtMost(Int.MAX_VALUE.toLong())
             .toInt()
@@ -213,7 +227,7 @@ fun StatisticsPage(
             .distinctUntilChanged()
             .map { list ->
                 list.filter { !parentalControlEnabled || !it.title.startsWith(EXPLICIT_PREFIX, true) }
-                    .take(maxStatisticsItems.toInt(maxStatisticsItemsCustomValue))
+                    .take(limit)
             }
             .flatMapLatest { songsList ->
                 val songIds = songsList.map { it.id }
@@ -224,10 +238,10 @@ fun StatisticsPage(
                         .map { likeMap -> Pair(songsList, likeMap) }
                 }
             }
-    }.collectAsStateWithLifecycle(Pair(emptyList(), emptyMap()), context = NzikDispatchers.DATA)
+    }.collectAsStateWithLifecycle<Pair<List<Song>, Map<String, Boolean?>>?>(null, context = NzikDispatchers.DATA)
 
-    val songs = songsWithLikeStates.first
-    val likeStatesMap = songsWithLikeStates.second
+    val songs = songsWithLikeStates?.first.orEmpty()
+    val likeStatesMap = songsWithLikeStates?.second.orEmpty()
     val songIds = remember(songs) { songs.map { it.id } }
     val playlistStatesMap by remember(songIds) {
         PlaylistStateManager.getPlaylistStates(songIds)
@@ -263,6 +277,13 @@ fun StatisticsPage(
         StatisticsCategory.Albums to StatisticsCategory.Albums.text,
         StatisticsCategory.Playlists to StatisticsCategory.Playlists.text
     )
+    val forceShimmer = forceLoadingShimmerPreview()
+    val categoryLoading = when (statisticsCategory) {
+        StatisticsCategory.Songs -> songsWithLikeStates == null
+        StatisticsCategory.Artists -> artistResults == null
+        StatisticsCategory.Albums -> albumResults == null
+        StatisticsCategory.Playlists -> playlistResults == null
+    }
 
     val artistBookmarkIds = remember(artists) { artists.map { it.id } }
     val artistBookmarkStatesMap by remember(artistBookmarkIds) {
@@ -344,28 +365,13 @@ fun StatisticsPage(
                                 key = "headerListeningTime",
                                 span = { GridItemSpan(maxLineSpan) }
                             ) {
-                                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 8.dp)) {
-                                    SettingsEntry(
-                                        title = pluralStringResource(R.plurals.statistics_songs_heard_count, distinctSongsPlayedCount, distinctSongsPlayedCount),
-                                        text = stringResource(R.string.statistics_time_spent_format, formatAsTime(totalPlayTimes)),
-                                        onClick = {},
-                                        trailingContent = {
-                                            Image(
-                                                painter = painterResource(R.drawable.musical_notes),
-                                                contentDescription = null,
-                                                colorFilter = ColorFilter.tint(colorPalette().onAccent),
-                                                modifier = Modifier
-                                                    .size(34.dp)
-                                            )
-                                        },
-                                        modifier = Modifier
-                                            .glassChipBackground(
-                                                color = colorPalette().accent,
-                                                shape = thumbnailShape()
-                                            )
-
-                                    )
+                                val title = distinctSongsPlayedCount?.let { count ->
+                                    pluralStringResource(R.plurals.statistics_songs_heard_count, count, count)
                                 }
+                                val summary = totalPlayTimes?.let { duration ->
+                                    stringResource(R.string.statistics_time_spent_format, formatAsTime(duration))
+                                }
+                                StatisticsListeningSummary(title, summary, forceShimmer)
                             }
 
 
@@ -373,6 +379,10 @@ fun StatisticsPage(
                         count = songs.count(),
                         key = { index -> songs[index].id }
                     ) {
+                        if (forceShimmer) {
+                            RankedInsightsSongPlaceholder(songs[it], it + 1)
+                            return@items
+                        }
                         SwipeablePlaylistItem(
                             mediaItem = songs[it].asMediaItem,
                             onPlayNext = { binder?.player?.addNext(songs[it].asMediaItem) },
@@ -414,8 +424,16 @@ fun StatisticsPage(
 
                 if (statisticsCategory == StatisticsCategory.Artists)
                     items(
-                        count = artists.count()
+                        count = artists.count(),
+                        key = { index -> artists[index].id },
                     ) {
+                        if (forceShimmer) {
+                            val artist = artists[it]
+                            RankedStatisticsCard(artistThumbnailSizeDp, artistThumbnailShape(), it + 1) {
+                                ArtistItemPlaceholder(artistThumbnailSizeDp, alternative = true, title = artist.name)
+                            }
+                            return@items
+                        }
 
                         if (artists[it].thumbnailUrl.toString() == "null")
                             UpdateYoutubeArtist(artists[it].id)
@@ -462,8 +480,21 @@ fun StatisticsPage(
 
                 if (statisticsCategory == StatisticsCategory.Albums)
                     items(
-                        count = albums.count()
+                        count = albums.count(),
+                        key = { index -> albums[index].id },
                     ) {
+                        if (forceShimmer) {
+                            val album = albums[it]
+                            val authors = album.authorsText
+                            RankedStatisticsCard(albumThumbnailSizeDp, thumbnailShape(), it + 1) {
+                                AlbumItemPlaceholder(
+                                    albumThumbnailSizeDp, alternative = true, title = album.title,
+                                    metadataLines = if (authors == null) 1 else 2,
+                                    metadata = if (authors == null) listOf(album.year.orEmpty()) else listOf(authors, album.year.orEmpty()),
+                                )
+                            }
+                            return@items
+                        }
 
                         if (albums[it].thumbnailUrl.toString() == "null")
                             UpdateYoutubeAlbum(albums[it].id)
@@ -514,8 +545,18 @@ fun StatisticsPage(
 
                 if (statisticsCategory == StatisticsCategory.Playlists) {
                     items(
-                        count = playlists.count()
+                        count = playlists.count(),
+                        key = { index -> playlists[index].playlist.id },
                     ) {
+                        if (forceShimmer) {
+                            RankedStatisticsCard(playlistThumbnailSizeDp, thumbnailShape(), it + 1) {
+                                PlaylistItemPlaceholder(
+                                    playlistThumbnailSizeDp, alternative = true, showChannel = false,
+                                    title = playlists[it].playlist.name,
+                                )
+                            }
+                            return@items
+                        }
                         val thumbnails by remember {
                             Database.songPlaylistMapTable
                                     .sortSongsByPlayTime( playlists[it].playlist.id )
@@ -633,7 +674,16 @@ fun StatisticsPage(
                         )
                     }
                 }
-                if (isCurrentListEmpty) {
+                if (categoryLoading) {
+                    items(limit.coerceIn(1, 8), key = { "stats-loading-${statisticsCategory.name}-$it" }) {
+                        when (statisticsCategory) {
+                            StatisticsCategory.Songs -> SongItemPlaceholder()
+                            StatisticsCategory.Artists -> ArtistItemPlaceholder(artistThumbnailSizeDp, alternative = true)
+                            StatisticsCategory.Albums -> AlbumItemPlaceholder(albumThumbnailSizeDp, alternative = true, metadataLines = 2)
+                            StatisticsCategory.Playlists -> PlaylistItemPlaceholder(playlistThumbnailSizeDp, alternative = true, showChannel = false)
+                        }
+                    }
+                } else if (isCurrentListEmpty) {
                     item(
                         key = "empty_state",
                         span = { GridItemSpan(maxLineSpan) }
@@ -653,6 +703,70 @@ fun StatisticsPage(
                 }
             }
         } // CompositionLocalProvider
+    }
+}
+
+@Composable
+private fun RankedStatisticsCard(
+    artworkSize: Dp,
+    artworkShape: Shape,
+    rank: Int,
+    content: @Composable () -> Unit,
+) {
+    Box {
+        content()
+        Box(
+            modifier = Modifier.align(Alignment.TopCenter)
+                .padding(horizontal = 16.dp).padding(top = Dimensions.itemsVerticalPadding)
+                .width(artworkSize).aspectRatio(1f).clip(artworkShape)
+                .background(colorPalette().overlay),
+            contentAlignment = Alignment.Center,
+        ) {
+            BasicText(
+                rank.toString(),
+                style = typography().s.semiBold.center.color(colorPalette().onOverlay),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+@Composable
+private fun StatisticsListeningSummary(title: String?, summary: String?, forceShimmer: Boolean) {
+    val palette = colorPalette()
+    val panel = Modifier.glassChipBackground(color = palette.accent, shape = thumbnailShape())
+    val icon: @Composable () -> Unit = {
+        Image(
+            painter = painterResource(R.drawable.musical_notes),
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(palette.onAccent),
+            modifier = Modifier.size(34.dp),
+        )
+    }
+    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 8.dp)) {
+        if (!forceShimmer && title != null && summary != null) {
+            SettingsEntry(title = title, text = summary, onClick = {}, trailingContent = icon, modifier = panel)
+        } else {
+            val style = typography().xs.semiBold
+            Row(
+                modifier = panel.clip(uiRoundnessShape()).padding(12.dp).fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    val titleModifier = Modifier.padding(bottom = 4.dp)
+                    if (title == null) ItemTextPlaceholder(null, style, titleModifier, width = 0.55f)
+                    else if (forceShimmer) MeasuredMetadataPlaceholder(title, style, titleModifier)
+                    else BasicText(title, titleModifier, style = style.copy(color = palette.text))
+
+                    if (summary == null) ItemTextPlaceholder(null, style, width = 0.7f)
+                    else if (forceShimmer) MeasuredMetadataPlaceholder(summary, style)
+                    else BasicText(summary, style = style.copy(color = palette.textSecondary))
+                }
+                icon()
+            }
+        }
     }
 }
 

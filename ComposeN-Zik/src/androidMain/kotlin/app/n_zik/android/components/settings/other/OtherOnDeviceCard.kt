@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -29,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 import androidx.compose.ui.res.pluralStringResource
 import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.components.dialog.common.ButtonRow
@@ -222,36 +224,34 @@ private fun OnDeviceOptions(search: Search, target: ProfileStorageIdentity, page
                 )))
             },
         ) {
-            val result = summary
-            if (scanning || result == null) {
-                InlineCircularLoader(Modifier.size(24.dp))
-            } else {
-                val entries = listOf(
-                    Triple(R.drawable.musical_notes, R.string.library_songs_title, result.songIds.size),
-                    Triple(R.drawable.album, R.string.library_albums_title, result.albumIds.size),
-                    Triple(R.drawable.artist, R.string.library_artists_title, result.artistIds.size),
-                    Triple(R.drawable.folder, R.string.settings_local_music_folders_label, result.folders.size),
-                )
-                Column(
-                    Modifier.fillMaxWidth().heightIn(max = 280.dp).verticalScroll(rememberScrollState()),
-                ) {
-                    entries.forEachIndexed { index, (icon, label, count) ->
-                        if (index > 0) HorizontalDivider(color = colorPalette().textSecondary.copy(alpha = 0.16f))
-                        Row(
-                            Modifier.fillMaxWidth().padding(vertical = 10.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Icon(painterResource(icon), null, Modifier.size(18.dp), tint = colorPalette().accent)
-                            Text(stringResource(label), Modifier.weight(1f), color = colorPalette().text, style = typography().s)
-                            Text("%d".format(count), color = colorPalette().text, style = typography().s,
-                                fontWeight = FontWeight.SemiBold)
-                        }
+            val result = summary ?: latestScan
+            val entries = listOf(
+                Triple(R.drawable.musical_notes, R.string.library_songs_title, result?.songIds?.size),
+                Triple(R.drawable.album, R.string.library_albums_title, result?.albumIds?.size),
+                Triple(R.drawable.artist, R.string.library_artists_title, result?.artistIds?.size),
+                Triple(R.drawable.folder, R.string.settings_local_music_folders_label, result?.folders?.size),
+            )
+            Column(
+                Modifier.fillMaxWidth().heightIn(max = 280.dp).verticalScroll(rememberScrollState()),
+            ) {
+                entries.forEachIndexed { index, (icon, label, count) ->
+                    if (index > 0) HorizontalDivider(color = colorPalette().textSecondary.copy(alpha = 0.16f))
+                    Row(
+                        Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(painterResource(icon), null, Modifier.size(18.dp), tint = colorPalette().accent)
+                        Text(stringResource(label), Modifier.weight(1f), color = colorPalette().text, style = typography().s)
+                        if (count == null) {
+                            ItemTextPlaceholder(null, typography().s.copy(fontWeight = FontWeight.SemiBold), Modifier.width(28.dp), width = 1f)
+                        } else Text("%d".format(count), color = colorPalette().text, style = typography().s,
+                            fontWeight = FontWeight.SemiBold)
                     }
-                    result.folders.sorted().forEach { folder ->
-                        Text(folder.ifEmpty { "/" }, Modifier.padding(start = 30.dp, bottom = 6.dp),
-                            color = colorPalette().textSecondary, style = typography().xs)
-                    }
+                }
+                result?.folders.orEmpty().sorted().forEach { folder ->
+                    Text(folder.ifEmpty { "/" }, Modifier.padding(start = 30.dp, bottom = 6.dp),
+                        color = colorPalette().textSecondary, style = typography().xs)
                 }
             }
         }

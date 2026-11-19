@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -36,10 +37,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.components.glass.glassImageRim
@@ -55,6 +60,7 @@ import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.shimmerEffect
 import app.n_zik.android.components.dialog.common.FfmpegPreparation
 import app.n_zik.android.modules.ModuleState
 import app.n_zik.android.MODIFIED_PREFIX
@@ -351,15 +357,20 @@ class EditMetadataDialog internal constructor(
         writePermissionLauncher = writePermLauncher
 
         val scrollState = rememberScrollState()
+        val loadingDescription = stringResource(R.string.metadata_loading)
 
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .heightIn(max = 500.dp)
                 .verticalScroll(scrollState).padding(24.dp)
+                .then(if (isLoading) Modifier.semantics { stateDescription = loadingDescription } else Modifier)
         ) {
             if (isLoading) {
-                Text(stringResource(R.string.metadata_loading), modifier = Modifier.fillMaxWidth().padding(8.dp))
+                CoverArtField(coverBytes = null, enabled = false, onChangeCover = {})
+                STANDARD_TAGS.forEach { tag ->
+                    EditField(displayLabel(tag), TextFieldValue(), loading = true, onValueChange = {})
+                }
             } else {
                 val sortedFields = remember {
                     derivedStateOf {
@@ -399,7 +410,7 @@ class EditMetadataDialog internal constructor(
     }
 
     @Composable
-    internal fun CoverArtField(coverBytes: ByteArray?, onChangeCover: () -> Unit) {
+    internal fun CoverArtField(coverBytes: ByteArray?, enabled: Boolean = true, onChangeCover: () -> Unit) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -420,6 +431,8 @@ class EditMetadataDialog internal constructor(
                         .clip(RoundedCornerShape(8.dp))
                         .glassImageRim(RoundedCornerShape(8.dp)),
                 )
+            } else if (!enabled) {
+                Spacer(Modifier.size(56.dp).clip(RoundedCornerShape(8.dp)).shimmerEffect())
             } else {
                 Canvas(
                     modifier = Modifier
@@ -432,6 +445,7 @@ class EditMetadataDialog internal constructor(
             OutlinedButton(
                 foregroundFilm = surfaceColor(colorPalette().background2),
                 onClick = onChangeCover,
+                enabled = enabled,
                 modifier = Modifier
                     .weight(1f)
                     .glassDialogButtonBackground(
@@ -452,14 +466,22 @@ class EditMetadataDialog internal constructor(
     }
 
     @Composable
-    private fun EditField(label: String, fieldValue: TextFieldValue, onValueChange: (TextFieldValue) -> Unit) {
+    private fun EditField(
+        label: String,
+        fieldValue: TextFieldValue,
+        loading: Boolean = false,
+        onValueChange: (TextFieldValue) -> Unit,
+    ) {
+        val fieldModifier = Modifier.fillMaxWidth()
         TextField(
             value = fieldValue,
             onValueChange = onValueChange,
             label = { Text(label) },
             singleLine = true,
             keyboardOptions = keyboardOption,
-            modifier = Modifier.fillMaxWidth(),
+            enabled = !loading,
+            modifier = if (loading) fieldModifier.clip(uiRoundnessShape()).shimmerEffect()
+                .drawWithContent {}.clearAndSetSemantics {} else fieldModifier,
             colors = InputDialog.defaultTextFieldColors()
         )
     }
@@ -475,6 +497,7 @@ class EditMetadataDialog internal constructor(
             DialogButton(
                 text = stringResource(R.string.common_action_save),
                 onClick = { saveToFile() },
+                enabled = !isLoading,
                 primary = true
             )
         )
@@ -488,6 +511,7 @@ class EditMetadataDialog internal constructor(
     }
 
     private fun saveToFile() {
+        if (isLoading) return
         val path = filePath ?: run { Toaster.e(R.string.metadata_file_path_unavailable); return }
         val request = captureSaveRequest(path) ?: return
         val song = request.song

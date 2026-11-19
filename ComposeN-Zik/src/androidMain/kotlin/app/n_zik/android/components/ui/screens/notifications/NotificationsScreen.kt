@@ -57,7 +57,8 @@ import app.n_zik.android.ui.styling.Dimensions
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.n_zik.android.components.ui.FullPageLoader
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
 
 internal fun List<StatusBarNotification>.inboxEntries() = filter {
     val channel = it.notification.channelId
@@ -126,6 +127,7 @@ internal fun NotificationsScreen(navController: NavController, miniPlayer: @Comp
     val revealScaffold = LocalRevealScaffold.current
     val bottom = Dimensions.navBarBottomPadding(floating) + if (floating) 10.dp else 15.dp
     val title = stringResource(R.string.notification_inbox_title)
+    val showShimmer = loading || forceLoadingShimmerPreview()
     Skeleton(navController = navController, topInsetHandledByContent = true, miniPlayer = miniPlayer,
         capturePageGlassBackdrop = false,
         navBarContent = { item -> item(0, title, R.drawable.notification2) }) { _ ->
@@ -134,7 +136,19 @@ internal fun NotificationsScreen(navController: NavController, miniPlayer: @Comp
             item {
                 HeaderWithIcon(title = title, iconId = R.drawable.notification2, enabled = false, modifier = Modifier, onClick = {})
             }
-            if (entries.isNotEmpty()) {
+            if (showShimmer && entries.isEmpty()) {
+                items(4, key = { "notification_loading_$it" }) {
+                    SettingsSectionCard(
+                        title = title,
+                        icon = R.drawable.notification2,
+                        expanded = false,
+                        description = stringResource(R.string.notification_inbox_empty),
+                        shimmerHeader = true,
+                        headerAction = { MeasuredMetadataPlaceholder("00", typography().xxs, maxLines = 1) },
+                        content = {},
+                    )
+                }
+            } else if (entries.isNotEmpty()) {
                 items(entries, key = { it.key }) { entry ->
                     val extras = entry.notification.extras
                     val message = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString().orEmpty()
@@ -163,8 +177,8 @@ internal fun NotificationsScreen(navController: NavController, miniPlayer: @Comp
                     SwipeToDismissBox(
                         state = swipeState,
                         modifier = Modifier.animateItem(fadeInSpec = tween(240), fadeOutSpec = tween(200)),
-                        enableDismissFromStartToEnd = entry.isClearable,
-                        enableDismissFromEndToStart = entry.isClearable,
+                        enableDismissFromStartToEnd = entry.isClearable && !showShimmer,
+                        enableDismissFromEndToStart = entry.isClearable && !showShimmer,
                         backgroundContent = {
                             val direction = swipeState.dismissDirection
                             if (direction != SwipeToDismissBoxValue.Settled) {
@@ -190,23 +204,22 @@ internal fun NotificationsScreen(navController: NavController, miniPlayer: @Comp
                         icon = R.drawable.notification2,
                         modifier = Modifier.alpha(if (identity(entry) in read) 0.7f else 1f),
                         expanded = expanded,
-                        onHeaderClick = { expanded = !expanded },
+                        onHeaderClick = if (showShimmer) null else ({ expanded = !expanded }),
                         description = previewText.takeUnless { expanded },
+                        shimmerHeader = showShimmer,
                         headerAction = {
-                            BasicText(age, style = typography().xxs.copy(color = colorPalette().textSecondary))
+                            if (showShimmer) MeasuredMetadataPlaceholder(age, typography().xxs, maxLines = 1)
+                            else BasicText(age, style = typography().xxs.copy(color = colorPalette().textSecondary))
                         },
                         content = {
                             if (message.isNotBlank()) {
-                                BasicText(message, style = typography().s.copy(color = colorPalette().textSecondary),
-                                    modifier = Modifier.padding(start = 44.dp))
+                                NotificationDetailLine(message, showShimmer, Modifier.padding(start = 44.dp))
                             }
                             if (detail.isNotBlank() && detail != message) {
-                                BasicText(detail, style = typography().s.copy(color = colorPalette().textSecondary),
-                                    modifier = Modifier.padding(start = 44.dp, top = 4.dp))
+                                NotificationDetailLine(detail, showShimmer, Modifier.padding(start = 44.dp, top = 4.dp))
                             }
                             extraLines.forEach { line ->
-                                BasicText(line, style = typography().s.copy(color = colorPalette().textSecondary),
-                                    modifier = Modifier.padding(start = 44.dp, top = 4.dp))
+                                NotificationDetailLine(line, showShimmer, Modifier.padding(start = 44.dp, top = 4.dp))
                             }
                             if (indeterminate || progressMax > 0) {
                                 val progressModifier = Modifier.fillMaxWidth().padding(start = 44.dp, top = 8.dp).height(8.dp)
@@ -222,13 +235,13 @@ internal fun NotificationsScreen(navController: NavController, miniPlayer: @Comp
                                 if (destination != null && destination !in actions.map { it.actionIntent }) {
                                     add(DialogButton(stringResource(R.string.notification_inbox_open), {
                                         sendAction(entry, destination, opensNotification = true)
-                                    }))
+                                    }, enabled = !showShimmer))
                                 }
                                 actions.forEach { action ->
                                     val actionIntent = action.actionIntent ?: return@forEach
                                     add(DialogButton(action.title.toString(), {
                                         sendAction(entry, actionIntent)
-                                    }))
+                                    }, enabled = !showShimmer))
                                 }
                             }
                             if (buttons.isNotEmpty()) {
@@ -247,16 +260,15 @@ internal fun NotificationsScreen(navController: NavController, miniPlayer: @Comp
                             read = read - clearable.map(::identity).toSet()
                             preferences.edit().putStringSet("read", read).apply()
                             revealScaffold()
-                        })),
+                        }, enabled = !showShimmer)),
                         modifier = Modifier.animateItem(fadeInSpec = tween(240), fadeOutSpec = tween(200))
                             .padding(vertical = 8.dp),
                     )
                 }
             }
         }
-            if (loading) FullPageLoader(modifier = Modifier.align(Alignment.Center).fillMaxWidth())
             AnimatedVisibility(
-                visible = !loading && entries.isEmpty(),
+                visible = !showShimmer && entries.isEmpty(),
                 modifier = Modifier.align(Alignment.Center),
                 enter = fadeIn(tween(200, delayMillis = 200)),
                 exit = fadeOut(tween(120)),
@@ -264,5 +276,15 @@ internal fun NotificationsScreen(navController: NavController, miniPlayer: @Comp
                 SettingsDescription(text = stringResource(R.string.notification_inbox_empty))
             }
         }
+    }
+}
+
+@Composable
+private fun NotificationDetailLine(text: String, shimmer: Boolean, modifier: Modifier) {
+    val style = typography().s.copy(color = colorPalette().textSecondary)
+    if (shimmer) {
+        MeasuredMetadataPlaceholder(text, style, modifier)
+    } else {
+        BasicText(text, style = style, modifier = modifier)
     }
 }

@@ -48,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -91,7 +92,7 @@ import app.n_zik.android.components.settings.other.OtherOnDeviceCard
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.LocalSettingsTargets
 import app.n_zik.android.components.tab.Search
-import app.n_zik.android.components.ui.InlineLoader
+import app.n_zik.android.utils.shimmerEffect
 import app.n_zik.android.components.glass.GlassCustomChip
 import app.n_zik.android.components.glass.glassChipBackground
 import app.n_zik.android.components.glass.GlassProfilePreferences
@@ -761,8 +762,8 @@ internal fun DataStorageCard(
                     Box(Modifier.fillMaxWidth().disableOutgoingStorageContent(scope == summaryScope)) {
                         if (snapshot == null && !unavailable) {
                             val loadingDescription = stringResource(R.string.storage_breakdown_waiting)
-                            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                InlineLoader(Modifier.semantics { contentDescription = loadingDescription })
+                            Box(Modifier.fillMaxWidth().semantics { contentDescription = loadingDescription }) {
+                                StorageScopeSummary(volume = null, profile = null)
                             }
                         } else if (snapshot != null && (scope.profile == null || scoped != null)) {
                             StorageScopeSummary(snapshot, scoped)
@@ -877,44 +878,51 @@ private fun storageSectionTitle(profile: ProfileStorageUsage?): String {
 }
 
 @Composable
-private fun StorageScopeSummary(volume: StorageBreakdown, profile: ProfileStorageUsage?) {
+private fun StorageScopeSummary(volume: StorageBreakdown?, profile: ProfileStorageUsage?) {
     val context = LocalContext.current
-    val ownBytes = profile?.chart?.nzikBytes ?: volume.nzikBytes
-    val free = volume.bytes.getValue(StorageCategory.FREE)
-    val chart = (profile?.chart ?: volume).displayChart(includeDevice = profile == null)
+    val ownBytes = profile?.chart?.nzikBytes ?: volume?.nzikBytes
+    val free = volume?.bytes?.getValue(StorageCategory.FREE)
+    val chart = (profile?.chart ?: volume)?.displayChart(includeDevice = profile == null)
     val section = storageSectionTitle(profile)
     val totalLabel = stringResource(
         if (profile == null) R.string.storage_breakdown_nzik_total else R.string.storage_breakdown_profile_total,
     )
-    val barTotal = Formatter.formatShortFileSize(context, chart.totalBytes)
-    val barDescription = if (profile == null) {
-        stringResource(R.string.storage_breakdown_device_bar_accessibility, barTotal)
-    } else {
-        stringResource(R.string.storage_breakdown_bar_accessibility, section, barTotal)
-    }
-
-    StorageChart(chart) {
-        val chartScope = this
-        StorageSectionBand(section, Modifier.testTag("data.storage.nzik-section"))
-        if (chart.totalBytes > 0) {
+    val content: @Composable (StorageChartScope?) -> Unit = { chartScope ->
+        StorageSectionBand(section, if (chart == null) Modifier else Modifier.testTag("data.storage.nzik-section"))
+        if (chart == null || chart.totalBytes > 0) {
             Spacer(Modifier.height(16.dp))
-            Bar(barDescription)
+            if (chart == null) {
+                Spacer(Modifier.fillMaxWidth().height(20.dp).clip(CircleShape).shimmerEffect())
+            } else if (chartScope != null) {
+                val barTotal = Formatter.formatShortFileSize(context, chart.totalBytes)
+                val description = if (profile == null) {
+                    stringResource(R.string.storage_breakdown_device_bar_accessibility, barTotal)
+                } else {
+                    stringResource(R.string.storage_breakdown_bar_accessibility, section, barTotal)
+                }
+                chartScope.Bar(description)
+            }
             Spacer(Modifier.height(7.dp))
         } else Spacer(Modifier.height(4.dp))
         storageAppCategories(profile != null).forEach { category ->
-            val bytes = chart.bytes[category] ?: 0L
+            val bytes = chart?.let { it.bytes[category] ?: 0L }
             val label = stringResource(storageCategoryLabel(category, profile != null))
             StorageAmountRow(label, bytes, category.color, chart = chartScope, category = category)
         }
         Spacer(Modifier.height(12.dp))
-        StorageAmountRow(totalLabel, ownBytes, emphasizeLabel = true, modifier = Modifier.testTag("data.storage.used"))
+        StorageAmountRow(
+            totalLabel,
+            ownBytes,
+            emphasizeLabel = true,
+            modifier = if (chart == null) Modifier else Modifier.testTag("data.storage.used"),
+        )
 
         if (profile == null) {
-            Column(Modifier.testTag("data.storage.device")) {
+            Column(if (chart == null) Modifier else Modifier.testTag("data.storage.device")) {
                 Spacer(Modifier.height(16.dp))
                 StorageSectionBand(stringResource(R.string.storage_breakdown_device_section))
                 Spacer(Modifier.height(7.dp))
-                val other = volume.bytes.getValue(StorageCategory.OTHER_USED)
+                val other = volume?.bytes?.getValue(StorageCategory.OTHER_USED)
                 StorageAmountRow(
                     stringResource(R.string.storage_breakdown_other_device_data),
                     other,
@@ -932,14 +940,16 @@ private fun StorageScopeSummary(volume: StorageBreakdown, profile: ProfileStorag
                 Spacer(Modifier.height(12.dp))
                 StorageAmountRow(
                     stringResource(R.string.storage_breakdown_device_capacity),
-                    volume.totalBytes,
+                    volume?.totalBytes,
                     emphasizeLabel = true,
                     compact = true,
                 )
             }
-            StorageUsagePercentage(volume.totalBytes - free, volume.totalBytes)
+            StorageUsagePercentage(if (volume != null && free != null) volume.totalBytes - free else null, volume?.totalBytes)
         }
     }
+    if (chart == null) Column { content(null) }
+    else StorageChart(chart) { content(this) }
 }
 
 @Composable
@@ -953,8 +963,7 @@ private fun storageUsagePercentageText(used: Long, capacity: Long): String {
 }
 
 @Composable
-private fun StorageUsagePercentage(used: Long, capacity: Long) {
-    val percentage = storageUsagePercentageText(used, capacity)
+private fun StorageUsagePercentage(used: Long?, capacity: Long?) {
     val style = typography().xxs.semiBold.copy(color = colorPalette().text)
     Row(
         modifier = Modifier.fillMaxWidth().heightIn(min = 18.dp),
@@ -962,12 +971,16 @@ private fun StorageUsagePercentage(used: Long, capacity: Long) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         BasicText(stringResource(R.string.storage_breakdown_usage), Modifier.weight(1f), style = style)
-        BasicText(
-            text = percentage,
-            modifier = Modifier.testTag("data.storage.chart.percentage"),
-            style = style.copy(textAlign = TextAlign.End),
-            maxLines = 1,
-        )
+        if (used != null && capacity != null) {
+            BasicText(
+                text = storageUsagePercentageText(used, capacity),
+                modifier = Modifier.testTag("data.storage.chart.percentage"),
+                style = style.copy(textAlign = TextAlign.End),
+                maxLines = 1,
+            )
+        } else {
+            StorageAmountPlaceholder()
+        }
     }
 }
 
@@ -986,7 +999,7 @@ private fun StorageSectionBand(label: String, modifier: Modifier = Modifier) {
 @Composable
 internal fun StorageAmountRow(
     label: String,
-    bytes: Long,
+    bytes: Long?,
     marker: Color? = null,
     emphasizeLabel: Boolean = false,
     compact: Boolean = false,
@@ -1012,9 +1025,18 @@ internal fun StorageAmountRow(
             Box(Modifier.size(10.dp).then(dot).background(dotColor, CircleShape))
         }
         BasicText(text = label, modifier = Modifier.weight(1f), style = if (emphasizeLabel) style.semiBold else style)
-        BasicText(
-            text = Formatter.formatShortFileSize(context, bytes),
-            style = style.semiBold.copy(textAlign = TextAlign.End),
-        )
+        if (bytes != null) {
+            BasicText(
+                text = Formatter.formatShortFileSize(context, bytes),
+                style = style.semiBold.copy(textAlign = TextAlign.End),
+            )
+        } else {
+            StorageAmountPlaceholder()
+        }
     }
+}
+
+@Composable
+private fun StorageAmountPlaceholder() {
+    Spacer(Modifier.size(width = 42.dp, height = 10.dp).clip(thumbnailShape()).shimmerEffect())
 }

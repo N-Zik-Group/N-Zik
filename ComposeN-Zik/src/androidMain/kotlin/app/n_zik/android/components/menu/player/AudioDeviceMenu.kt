@@ -50,6 +50,7 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.progressSemantics
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -82,6 +83,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -105,7 +107,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.AnimatedVisibility
 import app.n_zik.android.components.glass.glassAwareContentSize
-import app.n_zik.android.components.ui.InlineCircularLoader
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
+import app.n_zik.android.utils.shimmerEffect
 import android.media.AudioDeviceCallback
 import androidx.car.app.connection.CarConnection
 import app.n_zik.android.utils.isCar
@@ -348,8 +351,8 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
 
     Column(modifier = Modifier.glassAwareContentSize()) {
         val error = errorMessage
-        if (isLoading || error != null) {
-            AudioDeviceStatusMenu(error = if (isLoading) null else error) {
+        if (!isLoading && error != null) {
+            AudioDeviceStatusMenu(error = error) {
                 errorMessage = null
                 isLoading = true
                 refreshDevices()
@@ -364,7 +367,9 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
             if (menuStyle == MenuStyle.List) {
                 ListMenu.Menu(title = stringResource(R.string.audio_devices), showDragHandle = true) {
                     SectionTitle(stringResource(R.string.audio_output_title))
-                    shownDevices.forEach { dev ->
+                    if (isLoading) {
+                        AudioDeviceListLoadingRows()
+                    } else shownDevices.forEach { dev ->
                             ListMenu.Entry(
                                 text = dev.name,
                                 enabled = !isCarProjectionActive || dev.isActive,
@@ -451,7 +456,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                     VolumeRow(
                         currentVolume = currentVolume,
                         maxVolume = maxVolume.toFloat(),
-                        enabled = !isCarProjectionActive,
+                        enabled = !isLoading && !isCarProjectionActive,
                         onVolumeChange = { newVolume ->
                             isUserDragging = true
                             currentVolume = newVolume
@@ -512,7 +517,13 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         SectionTitle(stringResource(R.string.audio_output_title))
                     }
-                    items(
+                    if (isLoading) {
+                        items(count = AudioDeviceLoadingCount, key = { "audio-device-loading-$it" }) { index ->
+                            AudioDeviceGridLoadingTile(
+                                modifier = if (index == 0) Modifier.progressSemantics() else Modifier,
+                            )
+                        }
+                    } else items(
                         count = shownDevices.size,
                         key = { index -> "${shownDevices[index].deviceId}_${shownDevices[index].isCar}_${index}" }
                     ) { index ->
@@ -605,7 +616,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                         VolumeGridEntry(
                             currentVolume = currentVolume,
                             maxVolume = maxVolume.toFloat(),
-                            enabled = !isCarProjectionActive,
+                            enabled = !isLoading && !isCarProjectionActive,
                             onVolumeChange = { newVolume ->
                                 isUserDragging = true
                                 currentVolume = newVolume
@@ -681,19 +692,8 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
 internal fun AudioDeviceStatusMenu(error: String?, onRetry: () -> Unit) {
     ListMenu.Menu(title = stringResource(R.string.audio_devices)) {
         if (error == null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(32.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                // The app's theming does not remap the M3 colorScheme tokens (spec-achromatic-ramp-luminance-cap):
-                // key on the effective palette instead, so the spinner stays readable in both tones
-                InlineCircularLoader(
-                    modifier = Modifier.size(48.dp),
-                    color = colorPalette().text
-                )
-            }
+            SectionTitle(stringResource(R.string.audio_output_title))
+            AudioDeviceListLoadingRows()
         } else {
             Column(
                 modifier = Modifier
@@ -722,6 +722,41 @@ internal fun AudioDeviceStatusMenu(error: String?, onRetry: () -> Unit) {
             }
         }
     }
+}
+
+private const val AudioDeviceLoadingCount = 3
+
+@Composable
+private fun AudioDeviceListLoadingRows() {
+    repeat(AudioDeviceLoadingCount) { index ->
+        ListMenu.Entry(
+            text = "",
+            icon = { AudioDeviceIconPlaceholder() },
+            modifier = if (index == 0) Modifier.progressSemantics() else Modifier,
+            loading = true,
+        )
+    }
+}
+
+@Composable
+private fun AudioDeviceGridLoadingTile(modifier: Modifier = Modifier) {
+    Box(modifier, contentAlignment = Alignment.BottomCenter) {
+        GridMenu.Entry(
+            text = "",
+            icon = { AudioDeviceIconPlaceholder() },
+            enabled = false,
+        )
+        ItemTextPlaceholder(
+            text = null,
+            style = typography().xs.semiBold,
+            modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+        )
+    }
+}
+
+@Composable
+private fun AudioDeviceIconPlaceholder() {
+    Spacer(Modifier.size(32.dp).clip(uiRoundnessShape()).shimmerEffect())
 }
 
 @Composable

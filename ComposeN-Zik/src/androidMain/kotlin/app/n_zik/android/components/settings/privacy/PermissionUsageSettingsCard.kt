@@ -35,8 +35,10 @@ import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.privacy.JournalPermission
 import app.n_zik.android.privacy.PermissionEventKind
 import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.PermissionUsageEvent
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.typography
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 import java.text.DateFormat
 import java.util.Date
 
@@ -75,7 +77,9 @@ fun PermissionUsageSettingsCard(modifier: Modifier = Modifier) {
 private fun PermissionUsageDialog(onDismiss: () -> Unit) {
     val context = LocalContext.current
     val prefs = context.preferences
-    val events by remember(prefs) { PermissionUsageJournal.observe(prefs) }.collectAsStateWithLifecycle(emptyList())
+    val events: List<PermissionUsageEvent>? by remember(prefs) {
+        PermissionUsageJournal.observe(prefs)
+    }.collectAsStateWithLifecycle(initialValue = null)
     val dateFormat = remember { DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM) }
     var confirmClear by remember { mutableStateOf(false) }
     DialogFrame(
@@ -100,13 +104,16 @@ private fun PermissionUsageDialog(onDismiss: () -> Unit) {
             contentPadding = PaddingValues(vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            if (events.isEmpty()) item {
+            if (events == null) items(3) {
+                ItemTextPlaceholder(null, typography().xxs.secondary, width = 0.85f)
+            }
+            if (events?.isEmpty() == true) item {
                 BasicText(
                     text = stringResource(R.string.permissions_journal_empty),
                     style = typography().xxs.secondary,
                 )
             }
-            itemsIndexed(events, key = { index, _ -> index }, contentType = { _, _ -> "permission_event" }) { _, event ->
+            itemsIndexed(events.orEmpty(), key = { index, _ -> index }, contentType = { _, _ -> "permission_event" }) { _, event ->
                 val timestamp = dateFormat.format(Date(event.timestamp))
                 BasicText(
                     text = stringResource(R.string.permissions_journal_event, timestamp,

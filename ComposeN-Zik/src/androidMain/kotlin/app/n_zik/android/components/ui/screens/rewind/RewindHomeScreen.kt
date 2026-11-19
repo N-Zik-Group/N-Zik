@@ -63,7 +63,15 @@ import androidx.compose.ui.unit.times
 import androidx.navigation.NavController
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.SortOrder
-import app.n_zik.android.components.ui.FullPageLoader
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
+import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
+import app.n_zik.android.utils.shimmerEffect
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.unit.TextUnit
+import java.time.Month
+import java.time.Year
+import java.time.format.TextStyle
 import app.n_zik.android.ui.components.navigation.header.TabToolBar
 import app.n_zik.android.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.components.settings.common.SettingsDescription
@@ -160,15 +168,17 @@ fun RewindHomeScreen(
             .fillMaxSize()
             .background(palette.background0)
     ) {
-        if (uiState.isLoading) {
-            // Theme-aware loader while the year summaries are built
-            Box(
-                modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding()),
-                contentAlignment = Alignment.Center,
-            ) {
-                FullPageLoader()
+        val showShimmer = uiState.isLoading || forceLoadingShimmerPreview()
+        val fallback = remember(showShimmer, uiState.years.isEmpty()) {
+            if (!showShimmer || uiState.years.isNotEmpty()) null else {
+                val artworks = TopArtworks(null, null, null, null)
+                val months = Month.entries.map { month ->
+                    MonthlyStat(month.getDisplayName(TextStyle.SHORT, Locale.getDefault()), 0, 0)
+                }
+                RewindHomeYear(Year.now().value, 0, 0, months, emptyList(), artworks)
             }
-        } else if (uiState.years.isEmpty()) {
+        }
+        if (!showShimmer && uiState.years.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding()),
                 contentAlignment = Alignment.Center,
@@ -193,9 +203,11 @@ fun RewindHomeScreen(
             }
         } else {
             RewindHomeContent(
-                years = uiState.years,
-                global = uiState.global,
-                selectedYear = selectedYear,
+                years = fallback?.let(::listOf) ?: uiState.years,
+                global = uiState.global ?: fallback?.let { RewindHomeGlobal(0, 0, it.topArtworks) },
+                selectedYear = fallback?.year ?: selectedYear.takeIf { it != -1 } ?: uiState.years.first().year,
+                shimmer = showShimmer,
+                hasKnownYears = fallback == null,
                 yearlyEnabled = yearlyEnabled,
                 monthlyEnabled = monthlyEnabled,
                 globalEnabled = globalEnabled,
@@ -239,6 +251,8 @@ private fun RewindHomeContent(
     years: List<RewindHomeYear>,
     global: RewindHomeGlobal?,
     selectedYear: Int,
+    shimmer: Boolean,
+    hasKnownYears: Boolean,
     // Recap type toggles (spec GH-275): a disabled type is not offered — its items are skipped
     yearlyEnabled: Boolean,
     monthlyEnabled: Boolean,
@@ -304,6 +318,7 @@ private fun RewindHomeContent(
                             tops = allTime.topArtworks,
                             // All time has no ending: never locked.
                             locked = false,
+                            shimmer = shimmer,
                             onClick = onOpenGlobal
                         )
                         Spacer(Modifier.height(22.dp))
@@ -343,6 +358,7 @@ private fun RewindHomeContent(
                         },
                         tops = year.topArtworks,
                         locked = yearLocked,
+                        shimmer = shimmer,
                         // Opens the year deck only — the month grid and its chips below keep
                         // their current selection (the chips are the way to switch years there).
                         onClick = { if (!yearLocked) onOpenDeck(year.year, null) },
@@ -377,8 +393,9 @@ private fun RewindHomeContent(
                     // reorders the year rows, never the chips.
                     years.forEach { year ->
                         GlassFilterChip(
-                            label = { Text(year.year.toString()) },
+                            label = { RewindValueText(!hasKnownYears, year.year.toString()) },
                             selected = year.year == selectedYear,
+                            enabled = hasKnownYears,
                             shape = uiRoundnessShape(),
                             colors = FilterChipDefaults.filterChipColors(
                                 containerColor = colorPalette().background1,
@@ -402,7 +419,7 @@ private fun RewindHomeContent(
                         targetState = year.year,
                         modifier = Modifier.fillMaxWidth()
                     ) { yearKey ->
-                        val yearOfKey = years.first { it.year == yearKey }
+                        val yearOfKey = years.firstOrNull { it.year == yearKey } ?: return@Crossfade
                         // Calendar months in display order; the number drives navigation
                         // no matter the display order. All twelve months are always shown:
 //
@@ -434,6 +451,7 @@ private fun RewindHomeContent(
                                     val (index, month) = entry
                                     RewindHomeMonthCell(
                                         modifier = Modifier.animateItem(),
+                                        shimmer = shimmer,
                                         month = month,
                                         empty = month.plays == 0,
                                         // Locked until the month is fully over (the in-progress
@@ -535,7 +553,8 @@ internal fun RewindHomeYearRow(
     locked: Boolean,
     onClick: () -> Unit,
     // Only called while [locked] (the spam rotation — funny replies, then the kick).
-    onLockedTap: () -> Unit = {}
+    onLockedTap: () -> Unit = {},
+    shimmer: Boolean = false,
 ) {
     val palette = colorPalette()
     // Row height; all four quadrants share it, as in the month collage.
@@ -556,12 +575,14 @@ internal fun RewindHomeYearRow(
     //
                 // as the month cells, 2026-09-24).
                 .background(palette.background1)
-                .clickable(interactionSource = source,
+                .clickable(enabled = !shimmer, interactionSource = source,
                     indication = if (source == null) androidx.compose.foundation.LocalIndication.current else null,
                     onClick = if (locked) onLockedTap else onClick),
             contentAlignment = Alignment.CenterStart
         ) {
-            if (locked) {
+            if (shimmer) {
+                Spacer(Modifier.fillMaxSize().alpha(0.25f).shimmerEffect())
+            } else if (locked) {
                 // In-progress year: no album/artist previews — they would spoil the annual
                 // deck (user decision, 2026-09-24). The N-Zik launcher box under the dark
     //
@@ -666,7 +687,7 @@ internal fun RewindHomeYearRow(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
+                    RewindValueText(shimmer,
                         text = label,
                         color = Color.White,
                         fontSize = 16.sp,
@@ -674,7 +695,7 @@ internal fun RewindHomeYearRow(
                         letterSpacing = 0.5.sp
                     )
                     Spacer(Modifier.weight(1f))
-                    Text(
+                    RewindValueText(shimmer,
                         text = stats,
                         color = Color.White.copy(alpha = 0.7f),
                         fontSize = 11.sp,
@@ -729,7 +750,8 @@ internal fun RewindHomeMonthCell(
     // Only called while [locked] (the spam rotation — funny replies, then the kick).
     onLockedTap: () -> Unit = {},
     // Only called while the month is finished and empty (the random sad replies).
-    onEmptyTap: () -> Unit = {}
+    onEmptyTap: () -> Unit = {},
+    shimmer: Boolean = false,
 ) {
     val palette = colorPalette()
     val playable = !empty && !locked
@@ -749,7 +771,7 @@ internal fun RewindHomeMonthCell(
     //
                 // 2026-09-24).
                 .background(palette.background1)
-                .clickable(interactionSource = source,
+                .clickable(enabled = !shimmer, interactionSource = source,
                     indication = if (source == null) androidx.compose.foundation.LocalIndication.current else null,
                     onClick = when {
                         playable -> onClick
@@ -758,7 +780,9 @@ internal fun RewindHomeMonthCell(
                     }),
             contentAlignment = Alignment.CenterStart
         ) {
-            if (showArtwork) {
+            if (shimmer) {
+                Spacer(Modifier.fillMaxSize().alpha(0.25f).shimmerEffect())
+            } else if (showArtwork) {
                 // The month's top song, album, artist and playlist as a 2x2 collage behind the
                 // text; the dark scrim keeps the white text readable over any covers.
                 RewindHomeMonthCollage(tops, Modifier.fillMaxSize())
@@ -797,7 +821,7 @@ internal fun RewindHomeMonthCell(
                 }
             }
             Column(modifier = Modifier.padding(9.dp)) {
-                Text(
+                RewindValueText(shimmer,
                     text = month.month.uppercase(Locale.getDefault()),
                     color = if (showArtwork || empty || locked) Color.White else palette.text,
                     fontSize = 9.sp,
@@ -810,7 +834,7 @@ internal fun RewindHomeMonthCell(
     //
                     // appear as toasts while the cell is spammed.
                     Spacer(Modifier.height(4.dp))
-                    Text(
+                    RewindValueText(shimmer,
                         text = stringResource(R.string.rewind_home_locked),
                         color = Color.White.copy(alpha = 0.7f),
                         fontSize = 8.sp,
@@ -818,14 +842,14 @@ internal fun RewindHomeMonthCell(
                     )
                 } else if (playable) {
                     Spacer(Modifier.height(4.dp))
-                    Text(
+                    RewindValueText(shimmer,
                         text = rewindHomeDuration(month.minutes),
                         color = if (showArtwork) Color.White else palette.text,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(Modifier.height(2.dp))
-                    Text(
+                    RewindValueText(shimmer,
                         text = rewindCount(R.plurals.rewind_play_count_label, month.plays.toLong()),
                         color = if (showArtwork) Color.White.copy(alpha = 0.7f) else palette.textSecondary,
                         fontSize = 8.sp,
@@ -835,7 +859,7 @@ internal fun RewindHomeMonthCell(
                     // Empty finished month: a sad one-liner instead of the dash + "0 plays"
                     // (user decision, 2026-09-24)
                     Spacer(Modifier.height(4.dp))
-                    Text(
+                    RewindValueText(shimmer,
                         text = stringResource(R.string.rewind_home_month_empty_sad),
                         color = Color.White.copy(alpha = 0.7f),
                         fontSize = 8.sp,
@@ -845,6 +869,25 @@ internal fun RewindHomeMonthCell(
             }
         }
     }
+}
+
+@Composable
+private fun RewindValueText(
+    shimmer: Boolean,
+    text: String,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontWeight: FontWeight? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+) {
+    if (shimmer) {
+        val style = LocalTextStyle.current
+        MeasuredMetadataPlaceholder(text, style.copy(
+            fontSize = if (fontSize == TextUnit.Unspecified) style.fontSize else fontSize,
+            fontWeight = fontWeight ?: style.fontWeight,
+            letterSpacing = if (letterSpacing == TextUnit.Unspecified) style.letterSpacing else letterSpacing,
+        ))
+    } else Text(text, color = color, fontSize = fontSize, fontWeight = fontWeight, letterSpacing = letterSpacing)
 }
 
 /**

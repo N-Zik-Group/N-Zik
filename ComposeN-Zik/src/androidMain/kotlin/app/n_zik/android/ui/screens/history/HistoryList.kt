@@ -44,6 +44,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -67,9 +69,12 @@ import app.n_zik.android.enums.HistorySortOrder
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.ui.components.ButtonsRow
 import app.n_zik.android.ui.components.LocalMenuState
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.components.SwipeablePlaylistItem
 import app.n_zik.android.ui.components.themed.HeaderWithIcon
-import app.n_zik.android.ui.components.themed.Loader
+import app.n_zik.android.ui.items.SongItemPlaceholders
+import app.n_zik.android.ui.items.SongItemPlaceholder
+import app.n_zik.android.utils.shimmerEffect
 import app.n_zik.android.ui.components.themed.Title
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.utils.enableYouTubeSyncKey
@@ -342,9 +347,14 @@ fun HistoryList(
             search.SearchBar(this@Column, onSearch = { recordHistoryQuery() })
         }
 
-        val isLoading = when (historyType) {
+        val forceShimmer = forceLoadingShimmerPreview()
+        val isLoading = forceShimmer || when (historyType) {
             HistoryType.History -> isLocalLoading && events.isEmpty()
             HistoryType.YTMHistory -> isYTMLoading || (historyPage == null && isYouTubeSyncEnabled())
+        }
+        val showKnownHistoryShimmer = forceShimmer && when (historyType) {
+            HistoryType.History -> filteredEvents.isNotEmpty()
+            HistoryType.YTMHistory -> filteredHistorySections.isNotEmpty()
         }
 
         SearchEmptyFeedback(
@@ -364,8 +374,8 @@ fun HistoryList(
             modifier = Modifier
                 .weight(1f)
         ) {
-            if (isLoading) {
-                if (historyType == HistoryType.YTMHistory && !isOnline) {
+            if (isLoading && !showKnownHistoryShimmer) {
+                if (historyType == HistoryType.YTMHistory && !isOnline && !forceShimmer) {
                     OfflineContent(
                         modifier = Modifier
                             .weight(1f)
@@ -374,15 +384,15 @@ fun HistoryList(
                             .graphicsLayer { alpha = searchFocus.contentAlpha }
                     )
                 } else {
-                    Box(
+                    LazyColumn(
+                        state = lazyListState,
+                        contentPadding = rememberPageChromeContentPadding(topInsetProvider = { 0.dp }),
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxWidth()
-                        .padding(rememberPageChromeContentPadding(topInsetProvider = { 0.dp }))
-                            .graphicsLayer { alpha = searchFocus.contentAlpha },
-                        contentAlignment = Alignment.Center
+                            .graphicsLayer { if (!forceShimmer) alpha = searchFocus.contentAlpha },
                     ) {
-                        Loader()
+                        item { SongItemPlaceholders(count = 4) }
                     }
                 }
             } else if (
@@ -476,18 +486,10 @@ fun HistoryList(
                     if (historyType == HistoryType.History) {
                         filteredEvents.forEach { (headerStr, details) ->
                             stickyHeader {
-                                Title(
+                                HistorySectionTitle(
                                     title = headerStr ?: stringResource(R.string.common_unknown),
-                                    modifier = Modifier
-                                        .graphicsLayer { alpha = searchFocus.contentAlpha }
-                                        // 16dp horizontal keeps the banner's edges on the
-                                        // search bar's; Title's own 12dp inner padding
-                                        // keeps the text inset
-                                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                                        .glassChipBackground(
-                                            color = colorPalette().accent,
-                                            shape = thumbnailShape()
-                                        )
+                                    modifier = Modifier.graphicsLayer { if (!forceShimmer) alpha = searchFocus.contentAlpha },
+                                    shimmer = forceShimmer,
                                 )
                             }
 
@@ -495,6 +497,10 @@ fun HistoryList(
                                 items = details,
                                 key = { it.event.id }
                             ) { event ->
+                                if (forceShimmer) {
+                                    SongItemPlaceholder(title = event.song.title, artist = event.song.cleanArtistsText())
+                                    return@items
+                                }
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -534,18 +540,10 @@ fun HistoryList(
                     if (historyType == HistoryType.YTMHistory) {
                         filteredHistorySections.forEach { (sectionTitle, sectionSongs) ->
                             stickyHeader {
-                                Title(
+                                HistorySectionTitle(
                                     title = sectionTitle,
-                                    modifier = Modifier
-                                        .graphicsLayer { alpha = searchFocus.contentAlpha }
-                                        // 16dp horizontal keeps the banner's edges on the
-                                        // search bar's; Title's own 12dp inner padding
-                                        // keeps the text inset
-                                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                                        .glassChipBackground(
-                                            color = colorPalette().accent,
-                                            shape = thumbnailShape()
-                                        )
+                                    modifier = Modifier.graphicsLayer { if (!forceShimmer) alpha = searchFocus.contentAlpha },
+                                    shimmer = forceShimmer,
                                 )
                             }
 
@@ -553,6 +551,11 @@ fun HistoryList(
                                 items = sectionSongs,
                                 key = { it.mediaId }
                             ) { mediaItem ->
+                                if (forceShimmer) {
+                                    val song = mediaItem.asSong
+                                    SongItemPlaceholder(title = song.title, artist = song.cleanArtistsText())
+                                    return@items
+                                }
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -602,4 +605,18 @@ fun HistoryList(
         }
     }
 }
+}
+
+@Composable
+private fun HistorySectionTitle(title: String, modifier: Modifier = Modifier, shimmer: Boolean = false) {
+    val shape = thumbnailShape()
+    Title(
+        title = title,
+        modifier = modifier
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .then(
+                if (shimmer) Modifier.clip(shape).shimmerEffect().drawWithContent {}.clearAndSetSemantics {}
+                else Modifier.glassChipBackground(color = colorPalette().accent, shape = shape)
+            ),
+    )
 }
