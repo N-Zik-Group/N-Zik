@@ -1,5 +1,6 @@
 package app.n_zik.android.components.player.lyrics
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -9,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.AbsoluteAlignment
@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.TextUnit
@@ -49,28 +48,21 @@ internal fun LyricsLoadingShimmer(
     modifier: Modifier = Modifier,
 ) {
     val textSize = lyricsReadingFontSize(fontSize, customSize)
-    val style = if (type == LyricsType.Karaoke) {
-        TextStyle(fontSize = textSize, fontWeight = FontWeight.Bold, lineHeight = textSize * KARAOKE_LINE_HEIGHT_MULTIPLIER)
-    } else {
-        TextStyle(fontSize = textSize, fontWeight = FontWeight.Medium)
-    }
     val horizontalAlignment = when (alignment) {
         LyricsAlignment.Left -> Alignment.Start
         LyricsAlignment.Center -> Alignment.CenterHorizontally
         LyricsAlignment.Right -> Alignment.End
     }
     val horizontalPadding = if (type == LyricsType.Unsynced) 64.dp else 32.dp
-    val linePadding = if (type == LyricsType.Synced) 8.dp else 4.dp
-    Column(modifier.fillMaxWidth().padding(horizontal = horizontalPadding), horizontalAlignment = horizontalAlignment) {
+    val barHeight = with(LocalDensity.current) { (textSize.toDp() * 0.55f).coerceIn(6.dp, 14.dp) }
+    val shape = uiRoundnessShape()
+    Column(
+        modifier.fillMaxWidth().padding(horizontal = horizontalPadding),
+        horizontalAlignment = horizontalAlignment,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
         listOf(0.62f, 0.84f, 0.69f, 0.43f).forEach { width ->
-            Box(
-                Modifier.fillMaxWidth(width).padding(vertical = linePadding),
-                contentAlignment = Alignment.Center,
-            ) {
-                BasicText("", style = style)
-                val barHeight = with(LocalDensity.current) { (textSize.toDp() * 0.55f).coerceIn(6.dp, 14.dp) }
-                Spacer(Modifier.fillMaxWidth().height(barHeight).clip(uiRoundnessShape()).shimmerEffect())
-            }
+            Spacer(Modifier.fillMaxWidth(width).height(barHeight).clip(shape).shimmerEffect())
         }
     }
 }
