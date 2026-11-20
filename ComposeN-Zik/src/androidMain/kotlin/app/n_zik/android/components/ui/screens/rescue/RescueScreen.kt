@@ -1,6 +1,5 @@
 package app.n_zik.android.components.ui.screens.rescue
 
-import androidx.compose.foundation.layout.PaddingValues
 import android.app.Activity
 import android.net.Uri
 import android.os.Build
@@ -49,7 +48,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.disabled
@@ -81,7 +79,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.material3.Scaffold
 import app.n_zik.android.colorPalette
-import app.n_zik.android.typography
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.components.dialog.common.DialogButton
@@ -222,7 +219,7 @@ fun RescueScreen() {
         fileStateVersion++
     }
 
-    /** The base row of the reset/restore selection dialogs: the base is in [profileOptions] only while active (the names file never lists it), so when it is not active it is built from its stored display name (falling back to the app default name). */
+    // The profile names file omits the base profile, so its row needs a fallback.
     fun baseProfileOption(): ProfileOption =
         profileOptions.firstOrNull { it.id == DEFAULT_PROFILE_ID } ?: ProfileOption(
             id = DEFAULT_PROFILE_ID,
@@ -633,213 +630,87 @@ fun RescueScreen() {
         }
     }
 
-    // Delete profiles selection: every user profile as a checkbox row (the base is
-    // never listed — it is reset by its own action, never deleted). The confirm button
-//
-    // is disabled until a profile is checked; the actual deletion is confirmed by the
-    // standard confirmation dialog (same pattern as the other destructive actions).
     DialogPresence(visible = deleteProfilesDialog) {
         val userProfiles = profileOptions.filter { it.id != DEFAULT_PROFILE_ID }
-        DialogFrame(
-            onDismiss = { deleteProfilesDialog = false },
+        RescueProfileSelectionDialog(
             title = stringResource(R.string.recovery_profiles_to_delete),
-            bodyPadding = PaddingValues(0.dp),
-            footer = {
-                ButtonRow(
-                    buttons = listOf(
-                        DialogButton(
-                            text = stringResource(android.R.string.cancel),
-                            onClick = { deleteProfilesDialog = false },
-                            danger = true
-                        ),
-                        DialogButton(
-                            text = stringResource(R.string.common_action_next),
-                            primary = true,
-                            enabled = deleteSelection.isNotEmpty(),
-                            onClick = {
-                                val selected = deleteSelection
-                                deleteProfilesDialog = false
-                                deleteSelection = emptySet()
-                                guardWrite {
-                                    // The selection is the informed choice; the standard
-                                    // confirmation states the permanent consequences.
-                                    confirmAction = ConfirmAction(R.string.recovery_confirm_delete_profiles) {
-                                        scope.launch {
-                                            val activeId = getActiveProfile(context)
-                                            val result = withContext(NzikDispatchers.DATA) {
-                                                RescueFiles.deleteProfiles(context, selected.toList())
-                                            }
-                                            showResult(
-                                                result,
-                                                result.getOrNull()?.let {
-                                                    context.resources.getQuantityString(R.plurals.recovery_profile_deleted_count, it, it)
-                                                }
-                                            )
-                                            // Deleting the CURRENT profile switches the active slot
-                                            // to the base: the app must be relaunched to pick the
-                //
-                                            // change up (the base itself can never be deleted).
-                                            if (result.isSuccess && activeId in selected &&
-                                                activeId != DEFAULT_PROFILE_ID
-                                            ) {
-                                                Toasty.warning(
-                                                    context,
-                                                    context.getString(R.string.recovery_profiles_deleted_active_restart),
-                                                    Toast.LENGTH_LONG,
-                                                    true
-                                                ).show()
-                                            }
-                                        }
-                                    }
-                                }
+            profiles = userProfiles,
+            selectedProfileIds = deleteSelection,
+            onDismiss = { deleteProfilesDialog = false },
+            onProfileCheckedChange = { id, checked ->
+                deleteSelection = if (checked) deleteSelection + id else deleteSelection - id
+            },
+            onNext = {
+                val selected = deleteSelection
+                deleteProfilesDialog = false
+                deleteSelection = emptySet()
+                guardWrite {
+                    confirmAction = ConfirmAction(R.string.recovery_confirm_delete_profiles) {
+                        scope.launch {
+                            val activeId = getActiveProfile(context)
+                            val result = withContext(NzikDispatchers.DATA) {
+                                RescueFiles.deleteProfiles(context, selected.toList())
                             }
-                        )
-                    )
-                )
-            }
-        ) {
-            val palette = colorPalette()
-            // The frame body is non-scrollable and capped at 80 % of the screen
-            // height (canon): the profile rows scroll inside this column so the
-//
-            // cancel / OK pills stay reachable with many profiles.
-            Column(
-                modifier = Modifier
-                    .weight(1f, fill = false)
-                    .verticalScroll(rememberScrollState()).padding(24.dp)
-            ) {
-                userProfiles.forEach { option ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        NzikCheckbox(
-                            checked = deleteSelection.contains(option.id),
-                            onCheckedChange = { checked ->
-                                deleteSelection = if (checked)
-                                    deleteSelection + option.id
-                                else
-                                    deleteSelection - option.id
-                            },
-                        )
-                        Text(
-                            text = option.label,
-                            color = palette.text,
-                            modifier = Modifier.weight(1f)
-                        )
-                        if (option.isActive) {
-                            Text(
-                                text = stringResource(R.string.recovery_profile_active),
-                                style = typography().xxs.copy(color = palette.accent)
+                            showResult(
+                                result,
+                                result.getOrNull()?.let {
+                                    context.resources.getQuantityString(R.plurals.recovery_profile_deleted_count, it, it)
+                                }
                             )
+                            // Relaunch to load the base profile when deleting the active profile.
+                            if (result.isSuccess && activeId in selected &&
+                                activeId != DEFAULT_PROFILE_ID
+                            ) {
+                                Toasty.warning(
+                                    context,
+                                    context.getString(R.string.recovery_profiles_deleted_active_restart),
+                                    Toast.LENGTH_LONG,
+                                    true
+                                ).show()
+                            }
                         }
                     }
                 }
             }
-        }
+        )
     }
 
     DialogPresence(visible = resetProfilesDialog) {
-        // The base is offered like any other profile (first row, badged): the unified
-        // reset covers it too, and the result message already asks for the relaunch
-//
-        // it requires.
         val resettableProfiles = listOf(baseProfileOption()) +
             profileOptions.filter { it.id != DEFAULT_PROFILE_ID }
-        DialogFrame(
-            onDismiss = { resetProfilesDialog = false },
+        RescueProfileSelectionDialog(
             title = stringResource(R.string.recovery_profiles_to_reset),
-            bodyPadding = PaddingValues(0.dp),
-            footer = {
-                ButtonRow(
-                    buttons = listOf(
-                        DialogButton(
-                            text = stringResource(android.R.string.cancel),
-                            onClick = { resetProfilesDialog = false },
-                            danger = true
-                        ),
-                        DialogButton(
-                            text = stringResource(R.string.common_action_next),
-                            primary = true,
-                            enabled = resetSelection.isNotEmpty(),
-                            onClick = {
-                                val selected = resetSelection
-                                resetProfilesDialog = false
-                                resetSelection = emptySet()
-                                guardWrite {
-                                    // The selection is the informed choice; the standard
-                                    // confirmation states the permanent consequences.
-                                    confirmAction = ConfirmAction(R.string.recovery_confirm_reset_profiles) {
-                                        scope.launch {
-                                            val result = withContext(NzikDispatchers.DATA) {
-                                                RescueFiles.resetProfiles(context, selected.toList())
-                                            }
-                                            showResult(
-                                                result,
-                                                result.getOrNull()?.let {
-                                                    context.resources.getQuantityString(R.plurals.recovery_profile_reset_count, it, it)
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
+            profiles = resettableProfiles,
+            selectedProfileIds = resetSelection,
+            onDismiss = { resetProfilesDialog = false },
+            onProfileCheckedChange = { id, checked ->
+                resetSelection = if (checked) resetSelection + id else resetSelection - id
+            },
+            checkboxTagPrefix = "resetProfilesCheckbox_",
+            onNext = {
+                val selected = resetSelection
+                resetProfilesDialog = false
+                resetSelection = emptySet()
+                guardWrite {
+                    confirmAction = ConfirmAction(R.string.recovery_confirm_reset_profiles) {
+                        scope.launch {
+                            val result = withContext(NzikDispatchers.DATA) {
+                                RescueFiles.resetProfiles(context, selected.toList())
                             }
-                        )
-                    )
-                )
-            }
-        ) {
-            val palette = colorPalette()
-            // The frame body is non-scrollable and capped at 80 % of the screen
-            // height (canon): the profile rows scroll inside this column so the
-//
-            // cancel / OK pills stay reachable with many profiles.
-            Column(
-                modifier = Modifier
-                    .weight(1f, fill = false)
-                    .verticalScroll(rememberScrollState()).padding(24.dp)
-            ) {
-                resettableProfiles.forEach { option ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        NzikCheckbox(
-                            checked = resetSelection.contains(option.id),
-                            onCheckedChange = { checked ->
-                                resetSelection = if (checked)
-                                    resetSelection + option.id
-                                else
-                                    resetSelection - option.id
-                            },
-                            modifier = Modifier.testTag("resetProfilesCheckbox_${option.id}")
-                        )
-                        Text(
-                            text = option.label,
-                            color = palette.text,
-                            modifier = Modifier.weight(1f)
-                        )
-                        if (option.isActive) {
-                            Text(
-                                text = stringResource(R.string.recovery_profile_active),
-                                style = typography().xxs.copy(color = palette.accent)
-                            )
-                        }
-                        if (option.id == DEFAULT_PROFILE_ID) {
-                            Text(
-                                text = stringResource(R.string.recovery_profile_base),
-                                style = typography().xxs.copy(color = palette.accent)
+                            showResult(
+                                result,
+                                result.getOrNull()?.let {
+                                    context.resources.getQuantityString(R.plurals.recovery_profile_reset_count, it, it)
+                                }
                             )
                         }
                     }
                 }
             }
-        }
+        )
     }
 
     DialogPresence(visible = restoreProfilesDialog) {
-        // Only the profiles that carry a reset backup can be restored — the base
-        // included (first row, badged) when it was reset at least once.
         val restorableProfiles = (
             if (fileState.profileBackups.contains(DEFAULT_PROFILE_ID))
                 listOf(baseProfileOption())
@@ -847,89 +718,30 @@ fun RescueScreen() {
         ) + profileOptions.filter {
             it.id != DEFAULT_PROFILE_ID && fileState.profileBackups.contains(it.id)
         }
-        DialogFrame(
-            onDismiss = { restoreProfilesDialog = false },
+        RescueProfileSelectionDialog(
             title = stringResource(R.string.recovery_profiles_to_restore),
-            bodyPadding = PaddingValues(0.dp),
-            footer = {
-                ButtonRow(
-                    buttons = listOf(
-                        DialogButton(
-                            text = stringResource(android.R.string.cancel),
-                            onClick = { restoreProfilesDialog = false },
-                            danger = true
-                        ),
-                        DialogButton(
-                            text = stringResource(R.string.common_action_next),
-                            primary = true,
-                            enabled = restoreSelection.isNotEmpty(),
-                            onClick = {
-                                val selected = restoreSelection
-                                restoreProfilesDialog = false
-                                restoreSelection = emptySet()
-                                guardWrite {
-                                    // The selection is the informed choice; the standard
-                                    // confirmation states what the restore replaces.
-                                    confirmAction = ConfirmAction(R.string.recovery_confirm_restore_profiles) {
-                                        restoreAndExit(
-                                            restore = { RescueFiles.restoreProfiles(context, selected.toList(), it) },
-                                            successMessage = {
-                                                context.resources.getQuantityString(R.plurals.recovery_profile_restored_count, it, it)
-                                            },
-                                        )
-                                    }
-                                }
-                            }
-                        )
-                    )
-                )
-            }
-        ) {
-            val palette = colorPalette()
-            // The frame body is non-scrollable and capped at 80 % of the screen
-            // height (canon): the profile rows scroll inside this column so the
-//
-            // cancel / OK pills stay reachable with many profiles.
-            Column(
-                modifier = Modifier
-                    .weight(1f, fill = false)
-                    .verticalScroll(rememberScrollState()).padding(24.dp)
-            ) {
-                restorableProfiles.forEach { option ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        NzikCheckbox(
-                            checked = restoreSelection.contains(option.id),
-                            onCheckedChange = { checked ->
-                                restoreSelection = if (checked)
-                                    restoreSelection + option.id
-                                else
-                                    restoreSelection - option.id
+            profiles = restorableProfiles,
+            selectedProfileIds = restoreSelection,
+            onDismiss = { restoreProfilesDialog = false },
+            onProfileCheckedChange = { id, checked ->
+                restoreSelection = if (checked) restoreSelection + id else restoreSelection - id
+            },
+            onNext = {
+                val selected = restoreSelection
+                restoreProfilesDialog = false
+                restoreSelection = emptySet()
+                guardWrite {
+                    confirmAction = ConfirmAction(R.string.recovery_confirm_restore_profiles) {
+                        restoreAndExit(
+                            restore = { RescueFiles.restoreProfiles(context, selected.toList(), it) },
+                            successMessage = {
+                                context.resources.getQuantityString(R.plurals.recovery_profile_restored_count, it, it)
                             },
                         )
-                        Text(
-                            text = option.label,
-                            color = palette.text,
-                            modifier = Modifier.weight(1f)
-                        )
-                        if (option.isActive) {
-                            Text(
-                                text = stringResource(R.string.recovery_profile_active),
-                                style = typography().xxs.copy(color = palette.accent)
-                            )
-                        }
-                        if (option.id == DEFAULT_PROFILE_ID) {
-                            Text(
-                                text = stringResource(R.string.recovery_profile_base),
-                                style = typography().xxs.copy(color = palette.accent)
-                            )
-                        }
                     }
                 }
             }
-        }
+        )
     }
 
     Scaffold(
@@ -1549,13 +1361,6 @@ private data class ConfirmAction(
 private data class CrossProfilePending(
     val tag: String,
     val onConfirm: () -> Unit
-)
-
-/** A selectable rescue target profile (display label + active marker). */
-private data class ProfileOption(
-    val id: String,
-    val label: String,
-    val isActive: Boolean
 )
 
 /** Availability of the actions that depend on files present on disk. */
