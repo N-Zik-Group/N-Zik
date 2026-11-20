@@ -111,7 +111,7 @@ class HomeQuickPicksStateOfflineTest {
         mockkStatic("app.n_zik.innertube.requests.ChartsPageCompleteKt")
         coEvery { Innertube.chartsPageComplete(any()) } returns offlineFailureStub(Result.failure(offlineError))
         mockkStatic("app.n_zik.innertube.requests.DiscoverPageKt")
-        coEvery { Innertube.discoverPage() } returns offlineFailureStub(Result.failure(offlineError))
+        coEvery { Innertube.discoverPage(forceRefresh = any()) } returns offlineFailureStub(Result.failure(offlineError))
         mockkStatic("app.n_zik.innertube.requests.RelatedPageKt")
         coEvery { Innertube.relatedPage(any(), any()) } returns offlineFailureStub(Result.failure(offlineError))
 
@@ -185,7 +185,7 @@ class HomeQuickPicksStateOfflineTest {
         verify(exactly = 0) {
             runBlocking {
                 Innertube.chartsPageComplete(any())
-                Innertube.discoverPage()
+                Innertube.discoverPage(forceRefresh = any())
             }
         }
         verify(exactly = 0) {

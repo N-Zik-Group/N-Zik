@@ -113,7 +113,7 @@ internal class HomeQuickPicksState(
                     Innertube.chartsPageComplete(countryCode = selectedCountryCode.name)
                 }
                 val discoverDeferred = async(NzikDispatchers.DATA) {
-                    Innertube.discoverPage()
+                    Innertube.discoverPage(forceRefresh = force)
                 }
                 val quickPicksDeferred = async(NzikDispatchers.DATA) {
                     if (isYouTubeLoggedIn() && Innertube.useLoginForBrowse) {
