@@ -123,4 +123,37 @@ class OnDeviceScanAndFoldersTest {
         assertEquals(listOf(first, second), scan.sortedSongs(OnDeviceSongSortBy.Duration, SortOrder.Descending).keys.toList())
     }
 
+    @Test
+    fun completedFoldersAndSongsCanBeRestoredOnTheFirstFrameAfterReentry() {
+        val scope = OnDeviceSongsProjectionScope(
+            "default", OnDeviceSongSortBy.Title, SortOrder.Ascending, true, "/", false,
+        )
+        val song = Song.makePlaceholder("local:1")
+        val cached = OnDeviceSongsProjection(scope, 2L, "", "Music", true, listOf("Live"), listOf(song))
+
+        val restored = cached.takeIf { it.canRestore(scope, 2L, "", permissionGranted = true) }
+
+        assertEquals("Music", restored?.path)
+        assertEquals(listOf("Live"), restored?.folders)
+        assertEquals(listOf(song), restored?.songs)
+        assertTrue(
+            cached.copy(hasDeviceSongs = false, folders = emptyList(), songs = emptyList())
+                .canRestore(scope, 2L, "", permissionGranted = true),
+        )
+    }
+
+    @Test
+    fun reentryIgnoresProjectionsFromAnotherProfileOrOutdatedInputs() {
+        val scope = OnDeviceSongsProjectionScope(
+            "default", OnDeviceSongSortBy.Title, SortOrder.Ascending, true, "/", false,
+        )
+        val cached = OnDeviceSongsProjection(scope, 2L, "", "", true, listOf("Music"), emptyList())
+
+        assertFalse(cached.canRestore(scope, 2L, "", permissionGranted = false))
+        assertFalse(cached.canRestore(scope, 3L, "", permissionGranted = true))
+        assertFalse(cached.canRestore(scope, 2L, "live", permissionGranted = true))
+        assertFalse(cached.canRestore(scope.copy(profile = "other"), 2L, "", permissionGranted = true))
+        assertFalse(cached.canRestore(scope.copy(showFolders = false), 2L, "", permissionGranted = true))
+        assertFalse(cached.canRestore(scope.copy(parentalControlEnabled = true), 2L, "", permissionGranted = true))
+    }
 }

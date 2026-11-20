@@ -252,3 +252,6 @@ Home library:
 - perf(songs): share row data and separate list projection from search
   - Share metadata and download state across visible rows. Wait for the first On Device projection before showing the empty state.
   - Verify the Debug build and 57 targeted tests on the Home, Room and On Device paths.
+- fix(songs): restore on-device rows on reentry
+  - Render the last completed folder and song projection immediately when returning to On Device, then update it from the next scan. Check profile, permission, settings, query and refresh revision before reusing it.
+  - Keep the initial shimmer for an uncached screen. Verify 25 targeted tests and eight tab returns on the Xperia.

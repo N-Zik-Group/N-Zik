@@ -45,6 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.referentialEqualityPolicy
@@ -150,10 +151,6 @@ fun OnDeviceSong(
     var songsOnDevice by remember(profile) {
         mutableStateOf(emptyMap<Song, String>(), referentialEqualityPolicy())
     }
-    var selectedFolder by remember(profile) {
-        mutableStateOf<String?>(null)
-    }
-    val currentPath = selectedFolder.orEmpty()
     var pendingRefreshRevision by remember(profile) { mutableStateOf<Long?>(null) }
 
     //<editor-fold defaultstate="collapsed" desc="Permission handler">
@@ -186,9 +183,35 @@ fun OnDeviceSong(
 
     val odSort = Sort( HOME_ON_DEVICE_SONGS_SORT_BY, HOME_ON_DEVICE_SONGS_SORT_ORDER, homeSongsOnDeviceSortMenuOrderKey, "dev")
 
+    val query = search.inputValue
+    val projectionScope = OnDeviceSongsProjectionScope(
+        profile, odSort.sortBy, odSort.sortOrder, showFolder4LocalSongs, startFolder, parentalControlEnabled,
+    )
+    val lastProjection = persist<OnDeviceSongsProjection>("home/device-songs/last-projection")
+    val restoredProjection = remember(projectionScope, isPermissionGranted) {
+        lastProjection.value?.takeIf {
+            it.canRestore(projectionScope, localSongRefreshRequests.current(profile), query, isPermissionGranted)
+        }
+    }
+    var selectedFolder by remember(profile, isPermissionGranted) {
+        mutableStateOf(restoredProjection?.path)
+    }
+    val currentPath = selectedFolder.orEmpty()
+    var displayed by remember(projectionScope, isPermissionGranted) { mutableStateOf(restoredProjection) }
+    LaunchedEffect(restoredProjection, isPermissionGranted) {
+        if (!isPermissionGranted) lastProjection.value = null
+        restoredProjection?.songs?.let { songs ->
+            if (itemsOnDisplay != songs) Snapshot.withMutableSnapshot {
+                itemsOnDisplay.clear()
+                itemsOnDisplay.addAll(songs)
+            }
+        }
+    }
+
     var searchDataReady by remember(profile, isPermissionGranted, odSort.sortBy, odSort.sortOrder) { mutableStateOf(false) }
-    var completedSearchQuery by remember { mutableStateOf<String?>(null) }
-    var completedSearchPath by remember { mutableStateOf<String?>(null) }
+    var scanRevision by remember(profile, isPermissionGranted, odSort.sortBy, odSort.sortOrder) {
+        mutableStateOf<Long?>(null)
+    }
     LaunchedEffect(lifecycleOwner, profile, isPermissionGranted, odSort.sortBy, odSort.sortOrder) {
         if (!isPermissionGranted) return@LaunchedEffect
 
@@ -198,15 +221,18 @@ fun OnDeviceSong(
                     context.getProfileLocalSongs(odSort.sortBy, odSort.sortOrder, profile)
                         .collect { songs ->
                             PermissionUsageJournal.record(context, PermissionFeature.LOCAL_LIBRARY, JournalPermission.MEDIA_AUDIO, PermissionEventKind.USED)
-                            if (songs.isNotEmpty() || selectedFolder != null) {
-                                selectedFolder = PathUtils.resolveFolder(songs.values, selectedFolder, latestStartFolder)
-                            }
                             if (itemSelector.isNotEmpty()) {
                                 val eligibleIds = songs.keys.mapTo(HashSet()) { it.id }
                                 itemSelector.removeAll { it.id !in eligibleIds }
                             }
-                            songsOnDevice = songs
-                            searchDataReady = true
+                            Snapshot.withMutableSnapshot {
+                                if (songs.isNotEmpty() || selectedFolder != null) {
+                                    selectedFolder = PathUtils.resolveFolder(songs.values, selectedFolder, latestStartFolder)
+                                }
+                                songsOnDevice = songs
+                                scanRevision = revision
+                                searchDataReady = true
+                            }
                         }
                 } catch (error: SecurityException) {
                     Timber.tag("OnDeviceSongs").w(error, "Media access changed during scan")
@@ -230,12 +256,11 @@ fun OnDeviceSong(
     val storedSongs by remember(profile) {
         Database.songTable.allOnDevice().map { songs -> songs.associateBy(Song::id) }
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
-    val query = search.inputValue
     var baseSongs by remember(profile) { mutableStateOf(emptyList<Song>()) }
-    var baseReady by remember(songEntries, storedSongs, currentPath, showFolder4LocalSongs, parentalControlEnabled, isPermissionGranted, searchDataReady) {
+    var baseReady by remember(songEntries, storedSongs, currentPath, projectionScope, isPermissionGranted, searchDataReady, scanRevision) {
         mutableStateOf(false)
     }
-    LaunchedEffect(songEntries, storedSongs, currentPath, showFolder4LocalSongs, parentalControlEnabled, isPermissionGranted, searchDataReady) {
+    LaunchedEffect(songEntries, storedSongs, currentPath, projectionScope, isPermissionGranted, searchDataReady, scanRevision) {
         if (isPermissionGranted && !searchDataReady) return@LaunchedEffect
         val entries = songEntries
         val stored = storedSongs
@@ -252,13 +277,28 @@ fun OnDeviceSong(
         }
         baseReady = true
     }
-    var displayedSongs by remember(profile, isPermissionGranted) { mutableStateOf<List<Song>>(emptyList()) }
-    var hasCompletedDeviceProjection by remember(profile, isPermissionGranted) { mutableStateOf(false) }
+    val displayedSongs = displayed?.songs.orEmpty()
     val filterScrollAnchor = persist("home/device-songs/filter-scroll", HomeFilterScrollAnchor()).value
-    LaunchedEffect(baseReady, baseSongs, query, currentPath) {
-        if (!baseReady) return@LaunchedEffect
+    LaunchedEffect(baseReady, baseSongs, query, currentPath, projectionScope, isPermissionGranted, scanRevision) {
+        if (!baseReady || !isPermissionGranted || (scanRevision == null && displayed?.revision != null)) return@LaunchedEffect
+        val scan = songsOnDevice
+        val revision = scanRevision
         val candidates = baseSongs
         val visibleSongs = searchHomeSongs(candidates, query)
+        currentCoroutineContext().ensureActive()
+        if (!isPermissionGranted || scan !== songsOnDevice || revision != scanRevision ||
+            currentPath != selectedFolder.orEmpty() || query != search.inputValue
+        ) return@LaunchedEffect
+        val projection = OnDeviceSongsProjection(
+            scope = projectionScope,
+            revision = revision,
+            query = query,
+            path = currentPath,
+            hasDeviceSongs = scan.isNotEmpty(),
+            folders = if (showFolder4LocalSongs) PathUtils.getAvailablePaths(scan.values, currentPath)
+            else emptyList(),
+            songs = visibleSongs,
+        )
         if (displayedSongs != visibleSongs) {
             val index = lazyListState.firstVisibleItemIndex
             filterScrollAnchor.update(
@@ -268,30 +308,22 @@ fun OnDeviceSong(
                 lazyListState::requestScrollToItem,
             )
         }
-        androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
-            displayedSongs = visibleSongs
-            hasCompletedDeviceProjection = isPermissionGranted
+        Snapshot.withMutableSnapshot {
+            displayed = projection
+            if (projection.revision != null) lastProjection.value = projection
             if (itemsOnDisplay != visibleSongs) {
                 itemsOnDisplay.clear()
                 itemsOnDisplay.addAll(visibleSongs)
             }
-            completedSearchQuery = query
-            completedSearchPath = currentPath
         }
     }
-    val folders by remember(profile) {
-        derivedStateOf {
-            if (showFolder4LocalSongs) {
-                PathUtils.getAvailablePaths(songsOnDevice.values, selectedFolder.orEmpty())
-            } else emptyList()
-        }
-    }
-    val initialScanPending = isPermissionGranted && !hasCompletedDeviceProjection && folders.isEmpty()
+    val folders = displayed?.folders.orEmpty()
+    val displayedPath = displayed?.path ?: currentPath
+    val initialScanPending = isPermissionGranted && displayed == null
     SearchEmptyFeedback(
-        query = search.inputValue,
-        empty = itemsOnDisplay.isEmpty() && folders.isEmpty(),
-        loading = !isPermissionGranted || !searchDataReady || !baseReady ||
-            completedSearchQuery != search.inputValue || completedSearchPath != currentPath
+        query = query,
+        empty = displayedSongs.isEmpty() && folders.isEmpty(),
+        loading = !isPermissionGranted || displayed?.query != query || displayed?.path != currentPath
     )
     LaunchedEffect( Unit ) {
         if( !isPermissionGranted )
@@ -306,7 +338,9 @@ fun OnDeviceSong(
 
 
 
-    val songIds = remember(baseSongs) { baseSongs.map(Song::id) }
+    val songIds = remember(baseSongs, restoredProjection) {
+        baseSongs.ifEmpty { restoredProjection?.songs.orEmpty() }.map(Song::id)
+    }
     val showPlaylistIndicator by rememberPreference(playlistindicatorKey, false)
     val playlistStatesMap by remember(songIds, showPlaylistIndicator) {
         if (showPlaylistIndicator) PlaylistStateManager.getPlaylistStates(songIds) else flowOf(emptyMap())
@@ -329,7 +363,7 @@ fun OnDeviceSong(
 
     LazyColumn(
         state = lazyListState,
-        userScrollEnabled = songsOnDevice.isNotEmpty(),
+        userScrollEnabled = displayed?.hasDeviceSongs == true,
         contentPadding = rememberPageChromeContentPadding(
             topInsetProvider = topContentInsetProvider,
             base = PaddingValues(bottom = Dimensions.bottomSpacer),
@@ -385,10 +419,10 @@ fun OnDeviceSong(
                 }
             }
         } else {
-            if (showFolder4LocalSongs && (songsOnDevice.isNotEmpty() || initialScanPending)) {
+            if (showFolder4LocalSongs && (displayed?.hasDeviceSongs == true || initialScanPending)) {
                 item( "folder_paths" ) {
                     PathUtils.AddressBar(
-                        currentPath = currentPath,
+                        currentPath = displayedPath,
                         enabled = !initialScanPending,
                         onSpecificAddressClick = { selectedFolder = it }
                     )
@@ -396,10 +430,10 @@ fun OnDeviceSong(
 
             items(
                 items = folders,
-                key = { "folder:${PathUtils.childPath(currentPath, it)}" }
+                key = { "folder:${PathUtils.childPath(displayedPath, it)}" }
             ) {
                 Box(Modifier.animateItem()) {
-                    FolderItem(it, shimmer = forceShimmer) { selectedFolder = PathUtils.childPath(currentPath, it) }
+                    FolderItem(it, shimmer = forceShimmer) { selectedFolder = PathUtils.childPath(displayedPath, it) }
                 }
             }
         }
@@ -412,7 +446,7 @@ fun OnDeviceSong(
             }
         }
 
-        if (hasCompletedDeviceProjection && displayedSongs.isEmpty() && folders.isEmpty()) {
+        if (displayed != null && displayedSongs.isEmpty() && folders.isEmpty()) {
             item {
                 Box(
                     modifier = Modifier.fillParentMaxSize(),
@@ -457,7 +491,7 @@ fun OnDeviceSong(
                             search.hideIfEmpty()
                             val playerBinder = binder
                             if (playerBinder != null) {
-                                val targets = itemSelector.toList().ifEmpty { itemsOnDisplay.toList() }
+                                val targets = itemSelector.toList().ifEmpty { displayedSongs }
                                 playbackJob?.cancel()
                                 playbackJob = playbackScope.launch {
                                     val mediaItems = withContext(NzikDispatchers.MEDIA) {
