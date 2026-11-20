@@ -394,6 +394,15 @@
     <string name="song_matching_all_confirmation">Θέλετε να ταιριάξετε με το %d απαράμιλλα τραγούδια?</string>
     <string name="song_matching_dialog_title">Ταίριασμα τραγουδιών</string>
     <string name="song_matching_progress_title">Ταίριασμα τραγουδιών</string>
+    <string name="song_matching_background_message">Το ταίριασμα συνεχίζεται στο παρασκήνιο.</string>
+    <string name="song_matching_notification_progress">%1$d of %2$d songs</string>
+    <string name="song_matching_cancelled_title">Το τραγούδι ακυρώθηκε</string>
+    <string name="song_matching_unprocessed_count">%1$d δεν έχει επεξεργαστεί</string>
+    <string name="song_matching_notification_completed">%1$d τραγούδια ταιριάζουν. %2$d συγχωνεύτηκαν με υπάρχοντα τραγούδια.</string>
+    <string name="song_matching_notification_partial">Το %1$d ταίριασε, %2$d απέτυχε, %3$d δεν υπέστη επεξεργασία. %4$d συγχωνεύθηκε.</string>
+    <string name="song_matching_notification_cancelled">Cancelled. %1$d matched, %2$d failed, %3$d not processed. %4$d merged.</string>
+    <string name="song_matching_notification_failed">Αποτυχία αντιστοίχισης τραγουδιού. Το %1$d ταιριάζει, %2$d απέτυχε, %3$d δεν επεξεργάστηκε. %4$d συγχωνεύθηκε.</string>
+    <string name="song_matching_failed_message">Δεν ήταν δυνατή η ολοκλήρωση του ταίριασματος του τραγουδιού. Δοκιμάστε ξανά.</string>
     <string name="song_matching_running_message">Τραγούδια που ταιριάζουν. Παρακαλώ περιμένετε. Μην Ελαχιστοποιήσετε ή Εξέλθετε από την Εφαρμογή</string>
     <string name="song_matching_unmatched_label">Αντιστοιχισμένο τραγούδι</string>
     <string name="metadata_musicbrainz_rating">Βαθμολογία</string>
