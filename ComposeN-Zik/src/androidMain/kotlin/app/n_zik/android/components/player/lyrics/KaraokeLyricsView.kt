@@ -27,6 +27,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toLong
 import androidx.compose.ui.Alignment
@@ -52,6 +53,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.components.player.lyricsThemeColor
+import app.n_zik.android.components.theme.LaunchedAppearanceAnimationEffect
 import app.n_zik.android.enums.lyrics.LyricsBackground
 import app.n_zik.android.enums.lyrics.LyricsColor
 import app.n_zik.android.enums.lyrics.LyricsFontSize
@@ -340,19 +342,21 @@ fun KaraokeLyricsView(
 
     // Track current position for word-by-word animation with exact Metrolist interpolation
     var currentPositionMs by remember { mutableLongStateOf(0L) }
-    LaunchedEffect(Unit) {
-        var lastPlayerPos = currentPositionProvider()
+    val readPosition by rememberUpdatedState(currentPositionProvider)
+    val readPlaying by rememberUpdatedState(isPlayingProvider)
+    LaunchedAppearanceAnimationEffect(Unit) {
+        var lastPlayerPos = readPosition()
         var lastUpdateTime = System.currentTimeMillis()
         while (isActive) {
             withFrameMillis {
                 val now = System.currentTimeMillis()
-                val playerPos = currentPositionProvider()
+                val playerPos = readPosition()
                 if (playerPos != lastPlayerPos) {
                     lastPlayerPos = playerPos
                     lastUpdateTime = now
                 }
                 val elapsed = now - lastUpdateTime
-                currentPositionMs = lastPlayerPos + (if (isPlayingProvider()) elapsed else 0L)
+                currentPositionMs = lastPlayerPos + (if (readPlaying()) elapsed else 0L)
             }
         }
     }

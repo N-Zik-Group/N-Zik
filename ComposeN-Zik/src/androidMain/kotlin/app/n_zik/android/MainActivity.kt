@@ -240,13 +240,17 @@ import app.n_zik.android.components.player.miniPlayerTopPaddingPx
 import app.n_zik.android.components.player.TOP_NAV_BAR_HEIGHT
 import app.n_zik.android.components.player.showMiniplayerIfDismissed
 import app.n_zik.android.components.player.PaletteFade
+import app.n_zik.android.utils.LocalPlaybackPositionClock
+import app.n_zik.android.utils.rememberPlaybackPositionClock
 import app.n_zik.android.components.player.presentMiniplayerThenExpand
 import app.n_zik.android.components.player.presentMiniplayerCollapsed
 import app.n_zik.android.components.theme.AppearanceMenuSheet
 import app.n_zik.android.components.theme.ProvideAnimatedAppearance
 import app.n_zik.android.components.theme.ambientArtworkPaint
 import app.n_zik.android.components.glass.rememberGlassArtwork
+import app.n_zik.android.components.player.ArtworkColorObservation
 import app.n_zik.android.components.player.ArtworkDisplayColors
+import app.n_zik.android.components.player.SharedArtworkColors
 import app.n_zik.android.components.player.rememberArtworkDisplayResult
 import app.n_zik.android.enums.PlayerControlsColors
 import app.n_zik.android.enums.lyrics.LyricsColor
@@ -1291,18 +1295,37 @@ class MainActivity :
                 onDispose { dynamicAppearanceOwner.close() }
             }
 
+            var dynamicArtworkObservation by remember {
+                mutableStateOf<Pair<ArtworkColorObservation, Long>?>(null)
+            }
             fun setDynamicPalette(
                 player: Player?,
                 animateTheme: Boolean = false,
                 shouldAnimate: () -> Boolean = { animateTheme },
             ) {
                 val item = player?.currentMediaItem
-                val artworkUri = item?.let { player.mediaMetadata.artworkUri ?: it.mediaMetadata.artworkUri }
-                dynamicAppearanceOwner.refresh(artworkUri?.toString(), animateTheme,
+                val artworkUri = item?.let { player.mediaMetadata.artworkUri ?: it.mediaMetadata.artworkUri }?.toString()
+                dynamicArtworkObservation = SharedArtworkColors
+                    .observe(artworkUri, getActiveProfile(this@MainActivity))
+                    ?.let { it to it.revision.value }
+                dynamicAppearanceOwner.refresh(artworkUri, animateTheme,
                     awaitArtworkMetadata = item != null, shouldAnimate = shouldAnimate)
             }
 
-            val artworkColorGeneration by app.n_zik.android.components.player.SharedArtworkColors.generation.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
+            val artworkColorGeneration by SharedArtworkColors.generation.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
+            val artworkObservation = dynamicArtworkObservation?.first
+            val artworkPlayer = binder?.player
+            LaunchedEffect(artworkObservation, artworkPlayer) {
+                if (artworkObservation == null || artworkPlayer == null) return@LaunchedEffect
+                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    artworkObservation.revision.collect { revision ->
+                        val current = dynamicArtworkObservation
+                        if (current != null && current.first === artworkObservation && current.second != revision) {
+                            setDynamicPalette(artworkPlayer, animateTheme = true)
+                        }
+                    }
+                }
+            }
             val localArtworkRevision by app.n_zik.android.playback.services.automotive.models.ArtworkRevisions.changes
                 .collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
             LaunchedEffect(artworkColorGeneration, localArtworkRevision) {
@@ -2164,6 +2187,10 @@ class MainActivity :
                 }
 
                         val offlineMode by OfflineMode.rememberEnabled()
+                        val positionClock = binder?.takeUnless { pipState.value }?.let { service ->
+                            val generation by service.playerUpdateTrigger.collectAsStateWithLifecycle()
+                            service.player.rememberPlaybackPositionClock(generation)
+                        }
                         val videoSession = rememberPlayerMusicVideo(
                             audio = binder?.player,
                             collapsed = playerSheetState.isCollapsed || playerSheetState.isDismissed,
@@ -2210,6 +2237,7 @@ class MainActivity :
                             LocalShimmerClock provides shimmerClock,
                             LocalShimmerPalette provides LocalAppearance.current.colorPalette,
                             LocalPlayerServiceBinder provides binder,
+                            LocalPlaybackPositionClock provides positionClock,
                             LocalPlayerMusicVideo provides videoSession.takeUnless { pipState.value },
                             LocalFloatingDock provides pageDock,
                             app.n_zik.android.components.navigation.LocalSideRailScrollOrigin provides sideRailScrollOrigin,
@@ -2527,7 +2555,7 @@ class MainActivity :
                                                 }
                                             }
                                         ) {
-                                            PaletteFade(artworkInMotion = artworkInMotion) {
+                                            PaletteFade(durationMillis = 360, artworkInMotion = artworkInMotion) {
                                                 Player(navController, artworkInMotion = artworkInMotion) {
                                                     coroutineScope.launch {
                                                         playerSheetState.hide()
@@ -2605,7 +2633,10 @@ class MainActivity :
 
                         if (videoSession.selected && videoSession.fullscreen && !pipState.value) {
                             Box(Modifier.fillMaxSize().zIndex(1f)) {
-                                CompositionLocalProvider(LocalPlayerServiceBinder provides binder) {
+                                CompositionLocalProvider(
+                                    LocalPlayerServiceBinder provides binder,
+                                    LocalPlaybackPositionClock provides positionClock,
+                                ) {
                                     MusicVideoPresentation(videoSession, binder?.player, inPip = false)
                                 }
                             }

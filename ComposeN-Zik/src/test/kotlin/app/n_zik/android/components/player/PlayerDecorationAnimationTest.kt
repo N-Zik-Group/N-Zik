@@ -20,14 +20,18 @@ import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.MonotonicFrameClock
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import app.n_zik.android.appRunningInBackground
+import app.n_zik.android.components.theme.LaunchedAppearanceAnimationEffect
+import app.n_zik.android.components.theme.ProvideAppearanceAnimationClock
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -40,6 +44,45 @@ import org.robolectric.annotation.Config
 @Config(sdk = [32], application = Application::class)
 class PlayerDecorationAnimationTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test
+    fun `appearance and player effects share frame timestamps until their own cancellation`() {
+        val playerActive = mutableStateOf(true)
+        val appearanceFrames = mutableListOf<Long>()
+        val playerFrames = mutableListOf<Long>()
+        var appearanceClock: MonotonicFrameClock? = null
+        var playerClock: MonotonicFrameClock? = null
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            ProvideAppearanceAnimationClock {
+                LaunchedAppearanceAnimationEffect(Unit) {
+                    appearanceClock = coroutineContext[MonotonicFrameClock]
+                    while (true) withFrameNanos { appearanceFrames.add(it) }
+                }
+                // A standalone palette scope can install the same provider without forking the clock.
+                ProvideAppearanceAnimationClock {
+                    if (playerActive.value) LaunchedAppearanceAnimationEffect(Unit) {
+                        playerClock = coroutineContext[MonotonicFrameClock]
+                        while (true) withFrameNanos { playerFrames.add(it) }
+                    }
+                }
+            }
+        }
+
+        compose.mainClock.advanceTimeBy(96)
+        compose.runOnIdle {
+            assertTrue(appearanceFrames.isNotEmpty())
+            assertSame(appearanceClock, playerClock)
+            assertEquals(appearanceFrames, playerFrames)
+            playerActive.value = false
+        }
+
+        compose.mainClock.advanceTimeBy(96)
+        compose.runOnIdle {
+            assertTrue(appearanceFrames.size > playerFrames.size)
+            assertEquals(playerFrames, appearanceFrames.take(playerFrames.size))
+        }
+    }
 
     @Test
     fun `app background flag refreshes player decoration visibility`() {

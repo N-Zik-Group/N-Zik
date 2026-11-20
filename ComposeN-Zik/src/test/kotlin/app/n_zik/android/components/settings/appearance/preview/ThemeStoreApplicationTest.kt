@@ -7,6 +7,17 @@ import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassProfilePreferences
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.utils.animatedGradientKey
+import app.n_zik.android.enums.AnimatedGradient
+import app.n_zik.android.enums.CarouselSize
+import app.n_zik.android.enums.PlayerBackgroundColors
+import app.n_zik.android.enums.PlayerType
+import app.n_zik.android.utils.carouselKey
+import app.n_zik.android.utils.carouselSizeKey
+import app.n_zik.android.utils.expandedplayerKey
+import app.n_zik.android.utils.playerBackgroundColorsKey
+import app.n_zik.android.utils.playerTypeKey
+import app.n_zik.android.utils.thumbnailSpacingKey
+import app.n_zik.android.utils.thumbnailSpacingLKey
 import app.n_zik.android.utils.colorPaletteModeKey
 import app.n_zik.android.utils.fontTypeKey
 import app.n_zik.android.utils.DataStoreUtils
@@ -30,6 +41,31 @@ import org.robolectric.annotation.Config
 class ThemeStoreApplicationTest {
     private val exported = encodeThemeAppearance(emptyMap<String, String>(), emptyMap<String, String>())
     private val appearance = StoreAppearance(exported, exported.length, parseThemeAppearance(exported).toStoreGroups())
+
+    @Test
+    fun m3eShapesAndModernCarouselSettingsSurviveThemeApplication() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val target = context.getSharedPreferences("m3e-carousel", Context.MODE_PRIVATE)
+        val glass = GlassProfilePreferences.preferences(context, "m3e-carousel")
+        for (animation in listOf(AnimatedGradient.M3EMorphingTheme, AnimatedGradient.M3EMorphingCover)) {
+            val settings = mapOf(
+                animatedGradientKey to animation.name,
+                playerBackgroundColorsKey to PlayerBackgroundColors.AnimatedGradient.name,
+                playerTypeKey to PlayerType.Modern.name,
+                expandedplayerKey to true,
+                carouselKey to true,
+                carouselSizeKey to CarouselSize.Biggest.name,
+                thumbnailSpacingKey to -15f,
+                thumbnailSpacingLKey to 10f,
+            )
+            val document = encodeThemeAppearance(settings, emptyMap<String, Any>(), schemaVersion = 2)
+            val groups = parseThemeAppearance(document).toStoreGroups()
+            val saved = StoreAppearance(document, document.length, groups)
+            val selected = setOf(StoreGroup.PlayerAndQueue, StoreGroup.Animations)
+            requireNotNull(saved.selectedSettings(StoreCompatibility(99), 100, selected)).applyTo(target, glass)
+            for ((key, value) in settings) assertEquals(key, value, target.all[key])
+        }
+    }
 
     @Test
     fun groupProjectionMovesIndividualSettingsOutOfTheirWireCategories() {

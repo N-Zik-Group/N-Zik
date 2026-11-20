@@ -8,7 +8,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -22,6 +21,7 @@ import androidx.compose.ui.graphics.ShaderBrush
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import app.n_zik.android.components.theme.LaunchedAppearanceAnimationEffect
 
 /** Decorative work follows visibility, independently of playback and its progress polling. */
 @Composable
@@ -49,8 +49,8 @@ internal fun rememberCoverSpin(
     coastDegrees: Float,
 ): State<Float> {
     val angle = remember { Animatable(0f) }
-    LaunchedEffect(active, playing, rotationMillis, coastDegrees) {
-        if (!active) return@LaunchedEffect
+    LaunchedAppearanceAnimationEffect(active, playing, rotationMillis, coastDegrees) {
+        if (!active) return@LaunchedAppearanceAnimationEffect
         if (playing) {
             // One complete turn returns to the same transform, including on repeat.
             val start = angle.value % 360f
@@ -67,16 +67,17 @@ internal fun rememberCoverSpin(
 internal suspend fun playerDecorationFrames(onFrame: (Long) -> Unit) {
     var previous = withFrameNanos { it }
     while (true) {
-        val current = withFrameNanos { it }
-        onFrame((current - previous).coerceAtLeast(0L))
-        previous = current
+        withFrameNanos { current ->
+            onFrame((current - previous).coerceAtLeast(0L))
+            previous = current
+        }
     }
 }
 
 @Composable
 internal fun rememberPlayerDecorationElapsedNanos(active: Boolean): State<Long> {
     val elapsed = remember { mutableLongStateOf(0L) }
-    LaunchedEffect(active) {
+    LaunchedAppearanceAnimationEffect(active) {
         if (active) playerDecorationFrames { elapsed.longValue += it }
     }
     return elapsed

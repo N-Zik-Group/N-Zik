@@ -23,6 +23,8 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toLong
 import androidx.compose.ui.Alignment
@@ -186,12 +188,13 @@ fun SyncedLyricsView(
         if (sentences.isEmpty()) onInvalidLrc(true) else onInvalidLrc(false)
     }
 
-    // Live playback position for the interval indicator
+    val readPosition by rememberUpdatedState(currentPositionProvider)
+    // One position sample serves both gap indicators and auto-scroll. Auto-scroll can suspend.
     var currentPositionMs by remember { mutableLongStateOf(0L) }
     LaunchedEffect(Unit) {
         while (isActive) {
-            currentPositionMs = currentPositionProvider()
-            delay(100)
+            currentPositionMs = readPosition()
+            delay(50)
         }
     }
 
@@ -362,7 +365,7 @@ fun SyncedLyricsView(
 
     LaunchedEffect(synchronizedLyrics, density, isAutoScrollEnabled, vpH) {
         // Position is read on UI and passed by value; the scan runs on MEDIA (issue #606).
-        synchronizedLyrics.update(currentPositionProvider() + 50L)
+        synchronizedLyrics.update(currentPositionMs + 50L)
 
         if (isAutoScrollEnabled) {
             var reMeasuredVpH = lazyListState.layoutInfo.viewportEndOffset - lazyListState.layoutInfo.viewportStartOffset
@@ -381,9 +384,8 @@ fun SyncedLyricsView(
             }
         }
 
-        while (isActive) {
-            delay(50)
-            if (!synchronizedLyrics.update(currentPositionProvider() + 50L)) continue
+        snapshotFlow { currentPositionMs }.collect { position ->
+            if (!synchronizedLyrics.update(position + 50L)) return@collect
             if (isAutoScrollEnabled) {
                 var reMeasuredVpH = lazyListState.layoutInfo.viewportEndOffset - lazyListState.layoutInfo.viewportStartOffset
                 val finalEffectiveVpH = if (reMeasuredVpH > 0) reMeasuredVpH else screenHeightPx

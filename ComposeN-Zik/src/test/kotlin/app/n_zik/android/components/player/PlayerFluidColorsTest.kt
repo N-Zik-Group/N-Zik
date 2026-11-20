@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.lerp
 import app.n_zik.android.components.glass.GlassArtworkTint
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -35,6 +36,27 @@ class PlayerFluidColorsTest {
         assertEquals(expected, middle.fluid?.baseStart)
         assertEquals(List(7) { expected }, middle.swatches)
         assertEquals(expected, middle.glass.color)
+    }
+
+    @Test
+    fun unchangedPaintRolesReuseTheirValuesWhileTheAccentFades() {
+        val from = PlayerArtworkPaint(
+            Color.Red, Color.Black, PlayerFluidColors.ExtremeBlackCover,
+            listOf(Color.Black, Color.DarkGray), GlassArtworkTint(Color.Gray),
+        )
+        val target = from.copy(
+            accent = Color.Blue,
+            fluid = from.fluid?.copy(),
+            swatches = from.swatches?.toList(),
+            glass = from.glass.copy(),
+        )
+        val middle = from.at(target, .5f)
+
+        assertEquals(lerp(Color.Red, Color.Blue, .5f), middle.accent)
+        assertEquals(from.surface, middle.surface)
+        assertSame(from.fluid, middle.fluid)
+        assertSame(from.swatches, middle.swatches)
+        assertSame(from.glass, middle.glass)
     }
 
     @Test

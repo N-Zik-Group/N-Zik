@@ -1,11 +1,7 @@
 package app.n_zik.android.components.player
 
 import android.graphics.Matrix
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,6 +16,8 @@ import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.lerp
 import app.n_zik.android.components.glass.GlassArtworkTint
+import app.n_zik.android.components.theme.LaunchedAppearanceAnimationEffect
+import app.n_zik.android.components.theme.animateAppearanceFraction
 import app.n_zik.android.ui.styling.ColorPalette
 
 private fun playerFluidShader(size: Size, start: Color, end: Color): Shader =
@@ -62,12 +60,15 @@ internal data class PlayerFluidColors(
         val ExtremeBlackCover = PlayerFluidColors(Color(0xFF242424), Color.Black, Color(0xFF171717), Color(0xFF070707))
     }
 
-    fun at(target: PlayerFluidColors, fraction: Float) = PlayerFluidColors(
-        lerp(baseStart, target.baseStart, fraction),
-        lerp(baseEnd, target.baseEnd, fraction),
-        lerp(fillStart, target.fillStart, fraction),
-        lerp(fillEnd, target.fillEnd, fraction),
-    )
+    fun at(target: PlayerFluidColors, fraction: Float): PlayerFluidColors {
+        if (this == target) return this
+        return PlayerFluidColors(
+            lerpChangedColor(baseStart, target.baseStart, fraction),
+            lerpChangedColor(baseEnd, target.baseEnd, fraction),
+            lerpChangedColor(fillStart, target.fillStart, fraction),
+            lerpChangedColor(fillEnd, target.fillEnd, fraction),
+        )
+    }
 
     // At the rotation center the mask leaves half of the base over the fill.
     fun centerSurface(): Color = lerp(lerp(baseStart, baseEnd, .5f), lerp(fillStart, fillEnd, .5f), .5f)
@@ -80,10 +81,10 @@ internal fun <T> rememberPlayerColorFade(
     interpolate: (T, T, Float) -> T,
 ): State<T> {
     val displayed = remember { mutableStateOf(target) }
-    LaunchedEffect(target, active) {
+    LaunchedAppearanceAnimationEffect(target, active) {
         val from = displayed.value
         if (active && from != target) {
-            Animatable(0f).animateTo(1f, tween(350, easing = FastOutSlowInEasing)) {
+            animateAppearanceFraction(350) { value ->
                 displayed.value = interpolate(from, target, value)
             }
         }
@@ -92,8 +93,11 @@ internal fun <T> rememberPlayerColorFade(
     return displayed
 }
 
+private fun lerpChangedColor(from: Color, to: Color, fraction: Float): Color =
+    if (from == to) from else lerp(from, to, fraction)
+
 internal fun interpolatePlayerSwatches(from: List<Color>, target: List<Color>, fraction: Float): List<Color> =
-    from.indices.map { lerp(from[it], target[it], fraction) }
+    if (from == target) from else from.indices.map { lerpChangedColor(from[it], target[it], fraction) }
 
 /** Paint roles driven by the same presented artwork and the same animation frame. */
 internal data class PlayerArtworkPaint(
@@ -108,14 +112,14 @@ internal data class PlayerArtworkPaint(
     val themePalette: ColorPalette? = null,
 ) {
     fun at(target: PlayerArtworkPaint, fraction: Float) = PlayerArtworkPaint(
-        accent = lerp(accent, target.accent, fraction),
-        surface = lerp(surface, target.surface, fraction),
+        accent = lerpChangedColor(accent, target.accent, fraction),
+        surface = lerpChangedColor(surface, target.surface, fraction),
         fluid = target.fluid?.let { (fluid ?: it).at(it, fraction) },
         swatches = target.swatches?.let { interpolatePlayerSwatches(swatches ?: it, it, fraction) },
-        glass = glass.lerpTo(target.glass, fraction),
-        lyricsForeground = lerp(lyricsForeground, target.lyricsForeground, fraction),
-        visualizerForeground = lerp(visualizerForeground, target.visualizerForeground, fraction),
-        lyricsSurface = if (lyricsSurface == target.lyricsSurface) lyricsSurface else lerp(lyricsSurface, target.lyricsSurface, fraction),
+        glass = if (glass == target.glass) glass else glass.lerpTo(target.glass, fraction),
+        lyricsForeground = lerpChangedColor(lyricsForeground, target.lyricsForeground, fraction),
+        visualizerForeground = lerpChangedColor(visualizerForeground, target.visualizerForeground, fraction),
+        lyricsSurface = lerpChangedColor(lyricsSurface, target.lyricsSurface, fraction),
         themePalette = target.themePalette,
     )
 }

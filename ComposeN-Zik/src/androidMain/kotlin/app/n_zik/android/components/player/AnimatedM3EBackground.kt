@@ -43,6 +43,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
+import app.n_zik.android.components.theme.LaunchedAppearanceAnimationEffect
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.shakeSensitivityThemeKey
@@ -84,7 +85,7 @@ fun Modifier.animatedM3EBackground(
     val visibilityTarget = m3eVisibilityTarget(animating, skipMaskActive, immediateSkipHide)
     val visibilityAnimation = remember { Animatable(visibilityTarget) }
     val visibilityProgress by visibilityAnimation.asState()
-    LaunchedEffect(active, visibilityTarget) {
+    LaunchedAppearanceAnimationEffect(active, visibilityTarget) {
         if (active) visibilityAnimation.animateTo(
             targetValue = visibilityTarget,
             animationSpec = tween(
@@ -228,7 +229,7 @@ fun Modifier.animatedM3EBackground(
     }
 
     // Animation loop - physics simulation with grid-based collision
-    LaunchedEffect(animating, active) {
+    LaunchedAppearanceAnimationEffect(animating, active) {
         if (animating && active) {
             val gridSize = 8
             val grid = Array(gridSize * gridSize) { mutableListOf<Int>() }

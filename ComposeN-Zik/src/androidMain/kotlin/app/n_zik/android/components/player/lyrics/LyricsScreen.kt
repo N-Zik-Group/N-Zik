@@ -137,6 +137,7 @@ import app.n_zik.android.typography
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.ui.saveable.TolerantStringStateSaver
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.LocalPlaybackPositionClock
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.menu.lyrics.LyricsSettingsMenu
 import app.n_zik.android.components.dialog.player.ShowOffsetDialog
@@ -186,6 +187,7 @@ fun LyricsScreen(
         val currentView = LocalView.current
         val binder = LocalPlayerServiceBinder.current
         val playback = LocalThemePreview.current?.player ?: binder?.player
+        val positionClock = LocalPlaybackPositionClock.current?.takeIf { it.player === playback }
 
         val savedLyricsOnCover by rememberPreference(showlyricsthumbnailKey, true)
         val showlyricsthumbnail = onCover ?: (LocalPlayerCoverOverlay.current || savedLyricsOnCover)
@@ -473,7 +475,7 @@ fun LyricsScreen(
                         actualLyricsType == LyricsType.Karaoke && hasWordTimings -> {
                             KaraokeLyricsView(
                                 text = text,
-                                currentPositionProvider = { (playback?.currentPosition ?: 0L) + lyricsOffsetState.value },
+                                currentPositionProvider = { (positionClock?.estimatedPositionMs() ?: playback?.currentPosition ?: 0L) + lyricsOffsetState.value },
                                 isPlayingProvider = { playback?.isPlaying == true },
                                 onSeekTo = { playback?.seekTo(it) },
                                 showlyricsthumbnail = showlyricsthumbnail,
@@ -515,7 +517,7 @@ fun LyricsScreen(
                         actualLyricsType == LyricsType.Synced || (actualLyricsType == LyricsType.Karaoke && !hasWordTimings) -> {
                             SyncedLyricsView(
                                 text = text,
-                                currentPositionProvider = { (playback?.currentPosition ?: 0L) + lyricsOffsetState.value },
+                                currentPositionProvider = { (positionClock?.estimatedPositionMs() ?: playback?.currentPosition ?: 0L) + lyricsOffsetState.value },
                                 onSeekTo = { playback?.seekTo(it) },
                                 showlyricsthumbnail = showlyricsthumbnail,
                                 isLandscape = isLandscape,

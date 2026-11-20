@@ -49,7 +49,6 @@ import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.utils.DURATION_INDICATOR_HEIGHT
 import app.n_zik.android.utils.formatAsDuration
 import app.n_zik.android.utils.pauseBetweenSongsKey
-import app.n_zik.android.utils.positionAndDurationState
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.showRemainingSongTimeKey
@@ -182,7 +181,8 @@ fun DurationIndicator(
     onSeekIssued: (Long) -> Unit = {},
     // Issue #881 (gh-881), Phase 3.1: live skip base evaluated at tap time (GetSeekBar reads
     // the pending target / player position); defaults to the composed [position].
-    seekBasePosition: () -> Long = { position }
+    seekBasePosition: () -> Long = { position },
+    livePosition: Long = position,
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -233,20 +233,7 @@ fun DurationIndicator(
                                    .height( DURATION_INDICATOR_HEIGHT.dp ),
                 contentAlignment = Alignment.Center
             ) {
-                // Issue #881 (gh-881), Phase 3.3: unconditional position poll — the previous
-                // visibility gate froze this cache whenever gate and visible UI disagreed
-
-                // (see positionAndDurationState KDoc in PlayerState.kt).
-                val positionAndDurationState = player.positionAndDurationState()
-                val timeRemainingState = remember {
-                    derivedStateOf {
-                        timeRemainingOf(
-                            positionAndDurationState.value.second,
-                            positionAndDurationState.value.first,
-                        )
-                    }
-                }
-                val timeRemaining by timeRemainingState
+                val timeRemaining = timeRemainingOf(duration, livePosition)
                 var isPaused by remember { mutableStateOf(false) }
 
                 val pauseBetweenSongs by rememberPreference(pauseBetweenSongsKey, PauseBetweenSongs.`0`)

@@ -415,11 +415,13 @@ fun GetSeekBar(
     Spacer(modifier = Modifier.height(8.dp))
 
     PlayerDurationBounds {
+        val livePosition = position()
         DurationIndicator(
             player,
             scrubbingPosition ?: pendingSeekTarget,
-            scrubbingPosition ?: pendingSeekTarget ?: position(),
+            scrubbingPosition ?: pendingSeekTarget ?: livePosition,
             duration(),
+            livePosition = livePosition,
             onSeekIssued = { holdSeekTarget(it) },
             seekBasePosition = {
                 skipBasePosition(

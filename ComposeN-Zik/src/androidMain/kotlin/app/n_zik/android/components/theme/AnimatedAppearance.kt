@@ -1,11 +1,7 @@
 package app.n_zik.android.components.theme
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
@@ -170,11 +166,27 @@ internal fun ProvideAnimatedAppearance(
     targetAmbientArtwork: AmbientArtworkPaint? = null,
     content: @Composable () -> Unit,
 ) {
+    ProvideAppearanceAnimationClock {
+        AnimatedAppearanceProvider(target, fadeFrom, durationMillis, onFadeComplete,
+            targetNativeSurfaceMix, targetArtworkTint, targetAmbientArtwork, content)
+    }
+}
+
+@Composable
+private fun AnimatedAppearanceProvider(
+    target: Appearance,
+    fadeFrom: Appearance?,
+    durationMillis: Int,
+    onFadeComplete: () -> Unit,
+    targetNativeSurfaceMix: NativeSurfaceMix?,
+    targetArtworkTint: GlassArtworkTint?,
+    targetAmbientArtwork: AmbientArtworkPaint?,
+    content: @Composable () -> Unit,
+) {
     var displayed by remember { mutableStateOf<AppearanceFrame?>(null) }
-    val fraction = remember { Animatable(1f) }
 
     val endpoint = AppearanceFrame(target, target.darkness, targetNativeSurfaceMix, targetArtworkTint, targetAmbientArtwork)
-    LaunchedEffect(fadeFrom, endpoint) {
+    LaunchedAppearanceAnimationEffect(fadeFrom, endpoint) {
         val previous = displayed
         val transition = appearanceRetarget(previous?.appearance, fadeFrom, target)
         val fromMix = previous?.nativeSurfaceMix
@@ -187,21 +199,17 @@ internal fun ProvideAnimatedAppearance(
         if (transition.animateFrom == null && !changingSurface && !changingTint && !changingArtwork) {
             displayed = endpoint
             if (fadeFrom != null) onFadeComplete()
-            return@LaunchedEffect
+            return@LaunchedAppearanceAnimationEffect
         }
         val from = transition.animateFrom
         val fromDarkness = previous?.darkness ?: from?.darkness ?: endpoint.darkness
-        fraction.snapTo(0f)
-        fraction.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(durationMillis, easing = FastOutSlowInEasing),
-        ) {
+        animateAppearanceFraction(durationMillis) { fraction ->
             displayed = AppearanceFrame(
-                from?.let { fadeAppearance(it, target, value) } ?: target,
-                fromDarkness + (endpoint.darkness - fromDarkness) * value,
-                targetNativeSurfaceMix?.let { fromMix?.at(it, value) ?: it },
-                targetArtworkTint?.let { fromTint.lerpTo(it, value) },
-                targetAmbientArtwork?.let { fromArtwork?.at(it, value) ?: it },
+                from?.let { fadeAppearance(it, target, fraction) } ?: target,
+                fromDarkness + (endpoint.darkness - fromDarkness) * fraction,
+                targetNativeSurfaceMix?.let { fromMix?.at(it, fraction) ?: it },
+                targetArtworkTint?.let { fromTint.lerpTo(it, fraction) },
+                targetAmbientArtwork?.let { fromArtwork?.at(it, fraction) ?: it },
             )
         }
         displayed = endpoint

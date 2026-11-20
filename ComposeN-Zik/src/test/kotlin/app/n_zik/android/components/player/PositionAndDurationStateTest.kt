@@ -1,6 +1,10 @@
 package app.n_zik.android.components.player
 
 import android.app.Application
+import androidx.compose.runtime.CompositionLocalProvider
+import app.n_zik.android.utils.LocalPlaybackPositionClock
+import app.n_zik.android.utils.playbackPositionClock
+import app.n_zik.android.utils.rememberPlaybackPositionClock
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -259,4 +263,25 @@ class PositionAndDurationStateTest {
 
         verify(exactly = 1) { player.removeListener(captured) }
     }
+
+    @Test
+    fun `main player and mini player consume one playback listener and sample`() {
+        lateinit var main: State<Pair<Long, Long>>
+        lateinit var dock: State<MiniPlayerProgressSample>
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            val clock = player.rememberPlaybackPositionClock()
+            CompositionLocalProvider(LocalPlaybackPositionClock provides clock) {
+                main = player.positionAndDurationState()
+                dock = player.playbackPositionClock().sample
+            }
+        }
+        verify(exactly = 1) { player.addListener(any()) }
+        livePosition = 8_500L
+        liveDuration = C.TIME_UNSET
+        tick()
+        assertEquals(8_500L to 241_661L, main.value)
+        assertEquals(8_500L, dock.value.positionMs)
+        assertEquals(C.TIME_UNSET, dock.value.durationMs)
+    }
 }

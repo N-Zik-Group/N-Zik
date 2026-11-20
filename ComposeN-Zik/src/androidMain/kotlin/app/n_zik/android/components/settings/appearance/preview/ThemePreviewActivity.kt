@@ -130,6 +130,9 @@ import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.ui.screens.home.HomeTopMiniPlayerAnchorState
 import app.n_zik.android.components.ui.screens.home.LocalHomeTopMiniPlayerAnchor
 import app.n_zik.android.components.theme.appearanceBackground
+import app.n_zik.android.components.theme.ProvideAppearanceAnimationClock
+import app.n_zik.android.utils.LocalPlaybackPositionClock
+import app.n_zik.android.utils.rememberPlaybackPositionClock
 import app.n_zik.android.compose.persist.LocalPersistMap
 import app.n_zik.android.enums.HomeScreenTabs
 import app.n_zik.android.enums.NavigationBarPosition
@@ -698,27 +701,32 @@ private fun PreviewPage(session: ThemePreviewSession, theme: ThemePreviewAppeara
                     val leftRail = navPosition == NavigationBarPosition.Left
                     val rightRail = navPosition == NavigationBarPosition.Right
                     val rtl = layoutDirection == androidx.compose.ui.unit.LayoutDirection.Rtl
-                    CustomBottomSheet(
-                        state = sheet,
-                        modifier = Modifier.fillMaxWidth(),
-                        bottomPadding = { bottomPadding },
-                        topPadding = topPadding,
-                        placementKey = listOf(currentEntry?.id, topPlayer, navPosition, hasTabs, topInset,
-                            homePlacement.takeIf { isHome && topPlayer && !retainTopMiniBelowNavigation }),
-                        collapsedStartInset = miniPlayerSideInset(
-                            railWidth = if (if (rtl) rightRail else leftRail) Dimensions.navigationRailWidth else 0.dp,
-                            safeInset = safePadding.calculateStartPadding(layoutDirection),
-                        ),
-                        collapsedEndInset = miniPlayerSideInset(
-                            railWidth = if (if (rtl) leftRail else rightRail) Dimensions.navigationRailWidth else 0.dp,
-                            safeInset = safePadding.calculateEndPadding(layoutDirection),
-                        ),
-                        collapsedContentHeight = miniHeight,
-                        collapsedHeightProvider = { dockGeometry.miniHeight.dp },
-                        disableDismiss = true,
-                        collapsedContent = { MiniPlayer(showPlayer = {}, hidePlayer = {}, navController = nav) },
-                    ) {
-                        if (fullPlayer) Player(nav, onDismiss = {})
+                    val positionClock = session.player.rememberPlaybackPositionClock()
+                    CompositionLocalProvider(LocalPlaybackPositionClock provides positionClock) {
+                        ProvideAppearanceAnimationClock {
+                            CustomBottomSheet(
+                                state = sheet,
+                                modifier = Modifier.fillMaxWidth(),
+                                bottomPadding = { bottomPadding },
+                                topPadding = topPadding,
+                                placementKey = listOf(currentEntry?.id, topPlayer, navPosition, hasTabs, topInset,
+                                    homePlacement.takeIf { isHome && topPlayer && !retainTopMiniBelowNavigation }),
+                                collapsedStartInset = miniPlayerSideInset(
+                                    railWidth = if (if (rtl) rightRail else leftRail) Dimensions.navigationRailWidth else 0.dp,
+                                    safeInset = safePadding.calculateStartPadding(layoutDirection),
+                                ),
+                                collapsedEndInset = miniPlayerSideInset(
+                                    railWidth = if (if (rtl) leftRail else rightRail) Dimensions.navigationRailWidth else 0.dp,
+                                    safeInset = safePadding.calculateEndPadding(layoutDirection),
+                                ),
+                                collapsedContentHeight = miniHeight,
+                                collapsedHeightProvider = { dockGeometry.miniHeight.dp },
+                                disableDismiss = true,
+                                collapsedContent = { MiniPlayer(showPlayer = {}, hidePlayer = {}, navController = nav) },
+                            ) {
+                                if (fullPlayer) Player(nav, onDismiss = {})
+                            }
+                        }
                     }
                     when (session.scene) {
                         ThemePreviewScene.MENU -> ThemePreviewSongMenu(nav)

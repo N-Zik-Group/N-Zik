@@ -6,6 +6,9 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- perf(player): share playback and appearance animation clocks
+  - Use one Media3 position sampler for the timeline, remaining time, mini-player and lyrics.
+  - Drive appearance, palette and decorative animations from the same demand-driven frame clock.
 - perf(session): reuse bounded artwork for media clients
   - Pass the canonical cover source through song items and expose validated local files through the session provider.
   - Reuse suitable cached pixels and decode fallbacks once at the consumer size, preserving file orientation.
