@@ -259,3 +259,13 @@ Home library:
   - Reset the feed and requery local shelves on a manual online refresh. Keep visible content during reconnect and preserve a queued manual refresh through reentry.
   - Size the top grid's placeholders to its viewport and fade each title into its slot. Alternate history with online suggestions in the display while preserving the playback actions.
   - Verify the pull-to-refresh on the Xperia and run 76 targeted tests.
+
+Navigation and notifications:
+- refactor(navigation): extract library intent delivery from MainActivity
+  - Keep shortcut and URI routing in the intents package. Wait for the navigation graph, recover a missing Home entry and guard URI acknowledgments by delivery generation.
+  - Exercise interrupted delivery and Home fallback in Compose. Verify cold and warm search links and the Songs shortcut on the Xperia.
+- feat(notifications): register and group every app channel
+  - Register 13 base channels at startup with explicit titles and descriptions. Separate Audio and Theme Store channels per profile in Android settings and keep one group for shared tools.
+  - Share channel definitions with the senders, retain existing channel IDs and preferences, and attach previously ungrouped channels in place. Retain the category and profile labels and stop Media3 from overwriting the audio download channel description.
+- fix(profiles): register notification channels as soon as a profile is added
+  - Give each saved profile its nine independent channels, including inactive profiles and profiles added through creation, import or archive restoration.
