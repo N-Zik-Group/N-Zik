@@ -1,6 +1,7 @@
 package app.n_zik.android.components.player
 
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.runtime.MonotonicFrameClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -70,14 +71,20 @@ internal class CarouselButtonNavigation(
         job = scope.launch {
             try {
                 pager.animateScrollToPage(target, animationSpec = playerPagerSettleAnimation(CAROUSEL_SETTLE_DURATION_MS))
+                // Separate the final pager mutation and the track callbacks by a frame boundary.
+                coroutineContext[MonotonicFrameClock]?.withFrameNanos { }
+                if (pending !== move) return@launch
                 val currentTimeline = player.currentTimeline
-                if (pending === move && stillAvailable() && target != origin && pager.settledPage == target &&
-                    player.currentMediaItemIndex == origin && uidAt(currentTimeline, origin) == originUid &&
-                    uidAt(currentTimeline, target) == targetUid &&
+                val validMove = stillAvailable() && player.currentMediaItemIndex == origin &&
+                    uidAt(currentTimeline, origin) == originUid && uidAt(currentTimeline, target) == targetUid &&
                     player.isCommandAvailable(Player.COMMAND_SEEK_TO_MEDIA_ITEM)
-                ) {
+                if (pager.isScrollInProgress) {
+                    if (!validMove) rejectedPage = target
+                    return@launch
+                }
+                if (validMove && target != origin && pager.settledPage == target) {
                     commitPlayback(target)
-                } else if (pending === move && pager.settledPage == target && player.currentMediaItemIndex != target) {
+                } else if (pager.settledPage == target && player.currentMediaItemIndex != target) {
                     val playingPage = player.currentMediaItemIndex
                     if (playingPage in 0 until pager.pageCount) {
                         pager.scrollToPage(playingPage)

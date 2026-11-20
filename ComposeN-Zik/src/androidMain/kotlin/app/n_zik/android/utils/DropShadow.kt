@@ -50,4 +50,35 @@ fun Modifier.doubleShadowDrop(
     .dropShadow(shape, Color.Black.copy(0.75f), blur, offset, offset)
     .dropShadow(shape, Color.Black.copy(0.50f), blur, -offset, -offset)
 
+/** Changes shadow motion without rebuilding the button composition or its outline. */
+internal fun Modifier.animatedDoubleShadowDrop(
+    shape: Shape,
+    offset: () -> Dp,
+    blur: () -> Dp,
+) = drawWithCache {
+    val outline = shape.createOutline(size, layoutDirection, this)
+    val paint = Paint()
+    var previousRadius = Float.NaN
+    onDrawBehind {
+        val radius = blur().toPx()
+        if (radius != previousRadius) {
+            paint.asFrameworkPaint().maskFilter =
+                if (radius > 0f) BlurMaskFilter(radius, BlurMaskFilter.Blur.NORMAL) else null
+            previousRadius = radius
+        }
+        val distance = offset().toPx()
+        drawIntoCanvas { canvas ->
+            canvas.save()
+            canvas.translate(distance, distance)
+            paint.color = Color.Black.copy(alpha = .75f)
+            canvas.drawOutline(outline, paint)
+            canvas.restore()
 
+            canvas.save()
+            canvas.translate(-distance, -distance)
+            paint.color = Color.Black.copy(alpha = .50f)
+            canvas.drawOutline(outline, paint)
+            canvas.restore()
+        }
+    }
+}

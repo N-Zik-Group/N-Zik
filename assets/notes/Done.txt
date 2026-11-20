@@ -6,6 +6,8 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- perf(player): reduce transport button redraws
+  - Avoid hidden native shadows in Glass, cache the native outline and separate pager settling from button-driven playback callbacks.
 - perf(player): prepare the full player before opening
   - Keep the display list warm at the collapsed anchor, pause decorations during sheet travel and defer contrast sampling until expansion settles.
 - perf(playback): batch bridge queue and radio lookups

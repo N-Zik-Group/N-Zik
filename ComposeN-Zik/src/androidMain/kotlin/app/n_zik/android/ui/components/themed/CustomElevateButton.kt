@@ -21,7 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.utils.doubleShadowDrop
+import app.n_zik.android.utils.animatedDoubleShadowDrop
 import app.n_zik.android.components.player.playerTransportFeedback
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassScope
@@ -47,16 +47,8 @@ fun CustomElevatedButton(
     val transportMaterial = glassTransport && rememberGlassSettings(GlassScope.PlayerTransport)
         .inScope(GlassScope.PlayerTransport).usesGlassMaterial(GlassArea.ActionButtons)
     val interSource = remember { MutableInteractionSource() }
-    val isPressed by interSource.collectIsPressedAsState()
-
-    // Animate shadow offset and blur radius
-    // To create a hide shadow animation on press
-    val shadowOffset by animateDpAsState(
-        targetValue = if (isPressed) 0.dp else 4.dp, label = ""
-    )
-    val shadowBlur by animateDpAsState(
-        targetValue = if (isPressed) 0.dp else 8.dp, label = ""
-    )
+    // Glass has its own press feedback and never draws these native shadows.
+    val shadow = if (transportMaterial) Modifier else Modifier.elevatedButtonShadow(shape, interSource)
 
     Box(
         modifier = Modifier
@@ -65,7 +57,7 @@ fun CustomElevatedButton(
                 clipContent = !transportMaterial) else Modifier)
             .then(modifier)
             // Native shadows fill the interior and would cover the translucent Glass plate.
-            .then(if (transportMaterial) Modifier else Modifier.doubleShadowDrop(shape, shadowOffset, shadowBlur))
+            .then(shadow)
             .background(backgroundColor, shape)
             .clip(shape)
             .let {
@@ -91,9 +83,12 @@ fun CustomElevatedButton(
     )
 }
 
-
-
-
-
-
-
+@Composable
+private fun Modifier.elevatedButtonShadow(shape: Shape, source: MutableInteractionSource): Modifier {
+    val pressed by source.collectIsPressedAsState()
+    val offset = animateDpAsState(if (pressed) 0.dp else 4.dp, label = "buttonShadowOffset")
+    val blur = animateDpAsState(if (pressed) 0.dp else 8.dp, label = "buttonShadowBlur")
+    return remember(this, shape, offset, blur) {
+        animatedDoubleShadowDrop(shape, offset = { offset.value }, blur = { blur.value })
+    }
+}
