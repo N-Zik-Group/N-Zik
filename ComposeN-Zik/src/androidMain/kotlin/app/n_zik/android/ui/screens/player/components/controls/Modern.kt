@@ -123,6 +123,7 @@ import app.n_zik.android.components.player.playerPlaceholderCompositeBase
 import app.n_zik.android.components.glass.TextContrast
 import app.n_zik.android.components.glass.surfaceGlyphColor
 import app.n_zik.android.components.glass.playerControlGlyphColor
+import app.n_zik.android.components.player.rememberPlayerPlayGlyphBackdrop
 import app.n_zik.android.components.glass.surfaceProgressTrackColor
 import app.n_zik.android.components.player.playerTextOutlineColor
 import app.n_zik.android.components.player.playerTransportGlyph
@@ -435,6 +436,8 @@ fun ControlsModern(
     val playFilm = playButtonNativeColor(colorPaletteName, transportFilm, colorPaletteMode,
         blackCoverage = LocalNativeSurfaceMix.current?.transportBlack)
     val transportPlate = playerTransportPlate(transportSettings, playFilm)
+    val playDecisionFilm = if (playerPlayButtonType == PlayerPlayButtonType.Disabled) Color.Transparent else transportPlate
+    val (measurePlayGlyph, playBackdrop) = rememberPlayerPlayGlyphBackdrop(transportSettings.enabled, playDecisionFilm)
     val playerControlsColors by rememberPreference(playerControlsColorsKey, PlayerControlsColors.Monochrome)
     val controlsColorText = when (playerControlsColors) {
         PlayerControlsColors.Cover -> dynamicColorPalette.accent
@@ -572,14 +575,17 @@ fun ControlsModern(
               )
 
               if (isBuffering && shouldBePlaying) {
-                  val arc = surfaceGlyphColor(colorPalette().accent, transportPlate)
-                  val track = surfaceGlyphColor(colorPalette().text, transportPlate)
+                  val arc = if (playBackdrop == null) surfaceGlyphColor(colorPalette().accent, transportPlate)
+                      else playerControlGlyphColor(colorPalette().accent, transportPlate, measuredBackdrop = playBackdrop)
+                  val track = if (playBackdrop == null) surfaceGlyphColor(colorPalette().text, transportPlate)
+                      else playerControlGlyphColor(colorPalette().text, transportPlate, measuredBackdrop = playBackdrop)
                   CircularWavyProgressIndicator(
                       color = arc,
                       trackColor = surfaceProgressTrackColor(arc, track, transportPlate),
                       modifier = Modifier
                           .align(Alignment.Center)
-                          .size(30.dp),
+                          .size(30.dp)
+                          .then(measurePlayGlyph),
                       stroke = Stroke(width = with(LocalDensity.current) { 4.dp.toPx() }),
                       trackStroke = Stroke(width = with(LocalDensity.current) { 4.dp.toPx() })
                   )
@@ -587,11 +593,12 @@ fun ControlsModern(
                   Image(
                       painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
                       contentDescription = null,
-                      colorFilter = ColorFilter.tint(playerTransportGlyph(controlsColorText, transportSettings, playFilm)),
+                      colorFilter = ColorFilter.tint(playerControlGlyphColor(controlsColorText, transportPlate, measuredBackdrop = playBackdrop)),
                       modifier = Modifier
                           .rotate(rotationAngle)
                           .align(Alignment.Center)
                           .size(30.dp)
+                          .then(measurePlayGlyph)
                   )
               }
           }
@@ -625,14 +632,17 @@ fun ControlsModern(
 
           ) {
 if (isBuffering && shouldBePlaying) {
-                  val arc = surfaceGlyphColor(colorPalette().accent, transportPlate)
-                  val track = surfaceGlyphColor(colorPalette().text, transportPlate)
+                  val arc = if (playBackdrop == null) surfaceGlyphColor(colorPalette().accent, transportPlate)
+                      else playerControlGlyphColor(colorPalette().accent, transportPlate, measuredBackdrop = playBackdrop)
+                  val track = if (playBackdrop == null) surfaceGlyphColor(colorPalette().text, transportPlate)
+                      else playerControlGlyphColor(colorPalette().text, transportPlate, measuredBackdrop = playBackdrop)
                   CircularWavyProgressIndicator(
                       color = arc,
                       trackColor = surfaceProgressTrackColor(arc, track, transportPlate),
                       modifier = Modifier
                           .align(Alignment.Center)
-                          .size(30.dp),
+                          .size(30.dp)
+                          .then(measurePlayGlyph),
                       stroke = Stroke(width = with(LocalDensity.current) { 4.dp.toPx() }),
                       trackStroke = Stroke(width = with(LocalDensity.current) { 4.dp.toPx() })
                   )
@@ -640,11 +650,12 @@ if (isBuffering && shouldBePlaying) {
                   Image(
                       painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
                       contentDescription = null,
-                      colorFilter = ColorFilter.tint(playerTransportGlyph(controlsColorText, transportSettings, playFilm)),
+                      colorFilter = ColorFilter.tint(playerControlGlyphColor(controlsColorText, transportPlate, measuredBackdrop = playBackdrop)),
                       modifier = Modifier
                           .rotate(rotationAngle)
                           .align(Alignment.Center)
                           .size(30.dp)
+                          .then(measurePlayGlyph)
 
                   )
               }
@@ -765,11 +776,12 @@ if (isBuffering && shouldBePlaying) {
               Image(
                   painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
                   contentDescription = null,
-                  colorFilter = ColorFilter.tint(playerControlGlyphColor(controlsColorAccent)),
+                  colorFilter = ColorFilter.tint(playerControlGlyphColor(controlsColorAccent, measuredBackdrop = playBackdrop)),
                   modifier = Modifier
                       .rotate(rotationAngle)
                       .size(44.dp)
                       .align(Alignment.Center)
+                      .then(measurePlayGlyph)
                       .playerTransportAction(playPauseLabel)
                       .playerTransportFeedback(playInteraction, enabled = true)
                       .clip(uiRoundnessShape()).combinedClickable(

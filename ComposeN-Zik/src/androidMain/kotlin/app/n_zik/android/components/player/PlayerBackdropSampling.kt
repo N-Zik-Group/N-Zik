@@ -12,7 +12,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -22,9 +25,12 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import app.n_zik.android.components.glass.neutralForeground
 import androidx.compose.ui.unit.IntSize
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.contrastAgainst
@@ -50,6 +56,7 @@ internal class PlayerBackdropSampling(
     internal val initialSourceVersion: Int? = null,
     private val previousSurface: Color? = null,
     private val provisionalSurface: State<Color?>? = null,
+    internal val retainSettledContrast: Boolean = false,
 ) {
     var coordinates: LayoutCoordinates? = null
     var isActive by mutableStateOf(false)
@@ -65,12 +72,12 @@ internal class PlayerBackdropSampling(
     val hasProvisionalSurface: Boolean get() = (!finished && measuredPreview != null) || provisionalSurface?.value != null
     val foregroundSurface: Color?
         get() = commonSurface ?: measuredPreview.takeUnless { finished } ?: provisionalSurface?.value ?:
-            previousSurface.takeUnless { finished }
+            previousSurface.takeIf { !finished || retainSettledContrast }
     internal val hasDecision: Boolean get() = commonSurface != null
-    private val regions = mutableMapOf<Any, Rect>()
+    private val regions = mutableMapOf<Any, Pair<Rect, Color?>>()
 
-    internal fun registerRegion(token: Any, bounds: Rect?) {
-        if (bounds != null && bounds.width > 0f && bounds.height > 0f) regions[token] = bounds
+    internal fun registerRegion(token: Any, bounds: Rect?, textFilm: Color? = null) {
+        if (bounds != null && bounds.width > 0f && bounds.height > 0f) regions[token] = bounds to textFilm
         else regions.remove(token)
     }
 
@@ -84,7 +91,7 @@ internal class PlayerBackdropSampling(
             sample = BackdropSample(pixels, origin, size)
             measurementVersion++
         }
-        val valid = regions.values.filter {
+        val valid = regions.values.map { it.first }.filter {
             it.left.isFinite() && it.top.isFinite() && it.right.isFinite() && it.bottom.isFinite() &&
                 it.right > origin.x && it.bottom > origin.y &&
                 it.left < origin.x + size.width && it.top < origin.y + size.height
@@ -98,6 +105,15 @@ internal class PlayerBackdropSampling(
                 finished = true
             } else measuredPreview = surface
         }
+    }
+
+    internal fun contrastDecision(): PlayerBackdropContrastDecision? = commonSurface?.let { surface ->
+        val localInk = buildMap {
+            for ((token, region) in regions) {
+                colorAt(region.first, region.second)?.let { put(token, neutralForeground(it)) }
+            }
+        }
+        PlayerBackdropContrastDecision(neutralForeground(surface), localInk)
     }
 
     /** [boundsInWindow] must describe the actual text/control region, not the whole player. */
@@ -120,7 +136,16 @@ internal class PlayerBackdropSampling(
 
 private data class BackdropSample(val pixels: IntArray, val origin: Offset, val size: IntSize)
 
-private class PlayerBackdropSurfaceCache(var color: Color? = null)
+internal data class PlayerBackdropContrastDecision(val commonInk: Color, val regionalInk: Map<Any, Color>) {
+    fun changesPolarity(previous: PlayerBackdropContrastDecision?): Boolean = previous == null ||
+        commonInk != previous.commonInk || regionalInk.any { (token, ink) ->
+            ink != (previous.regionalInk[token] ?: previous.commonInk)
+        }
+}
+
+private class PlayerBackdropSurfaceCache(var color: Color? = null) {
+    var lastContrast: PlayerBackdropContrastDecision? = null
+}
 
 /** Register real control bounds, but share one settled background decision across the player. */
 @Composable
@@ -128,10 +153,12 @@ internal fun rememberPlayerBackdropRegionColor(
     bounds: Rect?,
     useLocalSample: Boolean = false,
     textFilm: Color? = null,
+    fallbackToSharedSurface: Boolean = true,
+    decisionFilm: Color? = textFilm,
 ): Color? {
     val sampling = LocalPlayerBackdropSampling.current
     val lastLocal = remember { PlayerBackdropSurfaceCache() }
-    val token = remember(sampling) { Any() }
+    val token = remember { Any() }
     DisposableEffect(sampling, token) {
         onDispose { sampling?.removeRegion(token) }
     }
@@ -140,13 +167,25 @@ internal fun rememberPlayerBackdropRegionColor(
         if (version != null && version > 0 && bounds != null) sampling?.colorAt(bounds, textFilm) else null
     }
     SideEffect {
-        sampling?.registerRegion(token, bounds)
+        sampling?.registerRegion(token, bounds, decisionFilm)
         if (local != null) lastLocal.color = local
     }
-    val waitingLocal = useLocalSample && sampling?.finished == false && !sampling.hasProvisionalSurface
-    return local ?: lastLocal.color.takeIf { waitingLocal } ?: sampling?.foregroundSurface?.let {
+    val waitingLocal = useLocalSample && sampling != null && !sampling.hasProvisionalSurface &&
+        (!sampling.finished || sampling.retainSettledContrast && !sampling.hasDecision)
+    return local ?: lastLocal.color.takeIf { waitingLocal } ?: sampling?.foregroundSurface?.takeIf { fallbackToSharedSurface }?.let {
         if (textFilm != null) effectiveSurfaceColor(it, textFilm) else it
     }
+}
+
+/** The transport glyph may sit on a very different part of a sharp cover than its neighbors. */
+@Composable
+internal fun rememberPlayerPlayGlyphBackdrop(enabled: Boolean, film: Color): Pair<Modifier, Color?> {
+    if (!enabled) return Modifier to null
+    val bounds = remember { mutableStateOf<Rect?>(null) }
+    val modifier = remember { Modifier.onGloballyPositioned { bounds.value = it.boundsInWindow() } }
+    return modifier to rememberPlayerBackdropRegionColor(
+        bounds.value, useLocalSample = true, fallbackToSharedSurface = false, decisionFilm = film,
+    )
 }
 
 /** Normalized region sampling is independent of Android rendering and easy to exercise. */
@@ -199,15 +238,18 @@ internal fun rememberPlayerBackdropSampling(
     previewActive: Boolean = false,
     renderedBackgroundReady: Boolean? = null,
     provisionalSurface: State<Color?>? = null,
+    retainSettledContrast: Boolean = false,
+    onSettledMeasurement: (() -> Unit)? = null,
 ): PlayerBackdropSampling {
     val lastSurface = remember(backdrop) { PlayerBackdropSurfaceCache() }
-    val state = remember(backdrop, decisionKey) {
-        PlayerBackdropSampling(backdrop.contentVersion, lastSurface.color, provisionalSurface)
+    val state = remember(backdrop, decisionKey, retainSettledContrast) {
+        PlayerBackdropSampling(backdrop.contentVersion, lastSurface.color, provisionalSurface, retainSettledContrast)
     }
     val layer = rememberGraphicsLayer()
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
     val sampledSurface = state.commonSurface
+    val onSettled by rememberUpdatedState(onSettledMeasurement)
     SideEffect {
         state.isActive = active
         sampledSurface?.let { lastSurface.color = it }
@@ -255,7 +297,13 @@ internal fun rememberPlayerBackdropSampling(
                             try {
                                 val pixels = IntArray(SampleSize.width * SampleSize.height)
                                 software.getPixels(pixels, 0, SampleSize.width, 0, 0, SampleSize.width, SampleSize.height)
-                                state.publish(pixels, origin, size, settled = active)
+                                Snapshot.withMutableSnapshot {
+                                    state.publish(pixels, origin, size, settled = active)
+                                    state.contrastDecision()?.let { decision ->
+                                        if (decision.changesPolarity(lastSurface.lastContrast)) onSettled?.invoke()
+                                        lastSurface.lastContrast = decision
+                                    }
+                                }
                                 if (!active) {
                                     previewVersion = version
                                     previewSize = size

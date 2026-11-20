@@ -9,6 +9,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.player.LocalPlayerContrastRevision
+import app.n_zik.android.components.player.PaletteFade
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
@@ -83,6 +85,51 @@ class PlayerMeasuredForegroundTransitionTest {
         val restarted = frame.resolve(Color.White, Color.Black, TextContrast, 0f)
         assertEquals(middle, restarted)
         assertEquals(Color.White, frame.resolve(Color.White, Color.Black, TextContrast, 1f))
+    }
+
+    @Test
+    fun `a settled measurement fades text and both glyph paths in both directions`() {
+        compose.mainClock.autoAdvance = false
+        val surface = mutableStateOf(Color.Black)
+        val shape = RoundedCornerShape(16.dp)
+        val palette = DefaultDarkColorPalette.copy(text = Color.White, iconButtonPlayer = Color.White)
+        val appearance = Appearance(palette, Typography.fallback, shape, shape, shape)
+        var reportMeasurement: ((Color) -> Unit)? = null
+        var inks = emptyList<Color>()
+        compose.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                PaletteFade {
+                    val revision = checkNotNull(LocalPlayerContrastRevision.current)
+                    SurfaceForegroundContent(surface.value, preferMeasuredText = true) {
+                        val currentInks = listOf(colorPalette().text,
+                            playerControlGlyphColor(Color.White), surfaceGlyphColor(Color.White))
+                        SideEffect {
+                            inks = currentInks
+                            reportMeasurement = { color ->
+                                surface.value = color
+                                revision.intValue++
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        for ((before, after) in listOf(Color.White to Color.Black, Color.Black to Color.White)) {
+            compose.runOnIdle {
+                assertEquals(List(3) { before }, inks)
+                checkNotNull(reportMeasurement)(before)
+            }
+            compose.mainClock.advanceTimeByFrame()
+            compose.runOnIdle { assertEquals(List(3) { before }, inks) }
+            compose.mainClock.advanceTimeBy(120)
+            compose.runOnIdle {
+                assertEquals(1, inks.distinct().size)
+                assertTrue(inks.first() != before && inks.first() != after)
+            }
+            compose.mainClock.advanceTimeBy(300)
+            compose.runOnIdle { assertEquals(List(3) { after }, inks) }
+        }
     }
 
     @Test

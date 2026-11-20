@@ -4,6 +4,8 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
+import app.n_zik.android.components.glass.effectiveSurfaceColor
+import app.n_zik.android.components.glass.measuredPlayGlyphForeground
 import app.n_zik.android.components.glass.measuredPlayerTextForeground
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -12,6 +14,48 @@ import org.junit.Assert.assertFalse
 import org.junit.Test
 
 class PlayerBackdropSamplingTest {
+    @Test fun `contrast refresh requires a different shared or regional polarity`() {
+        val previous = PlayerBackdropContrastDecision(Color.White, mapOf("controls" to Color.Black))
+        assertFalse(previous.copy().changesPolarity(previous))
+        assertTrue(previous.copy(regionalInk = mapOf("controls" to Color.White)).changesPolarity(previous))
+        assertTrue(previous.copy(commonInk = Color.Black).changesPolarity(previous))
+    }
+
+    @Test fun `sharp artwork behind play can need different ink from surrounding controls`() {
+        val state = PlayerBackdropSampling()
+        val controls = Rect(0f, 0f, 320f, 640f)
+        val playGlyph = Rect(140f, 300f, 180f, 340f)
+        state.registerRegion("controls", controls)
+        state.registerRegion("play", playGlyph)
+        val pixels = IntArray(32 * 64) {
+            if (it % 32 in 14..17 && it / 32 in 30..33) 0xFF000000.toInt() else -1
+        }
+        state.publish(pixels, Offset.Zero, IntSize(320, 640))
+        val film = Color.White.copy(alpha = .12f)
+        val wholePlate = effectiveSurfaceColor(requireNotNull(state.foregroundSurface), film)
+        val playPlate = effectiveSurfaceColor(requireNotNull(state.colorAt(playGlyph)), film)
+        assertEquals(Color.Black, measuredPlayGlyphForeground(Color.Black, wholePlate, 3f))
+        assertEquals(Color.White, measuredPlayGlyphForeground(Color.Black, playPlate, 3f))
+        assertEquals(Color.White, measuredPlayGlyphForeground(Color(0xFF190C34), playPlate, 3f))
+        assertEquals(Color.Yellow, measuredPlayGlyphForeground(Color.Yellow, playPlate, 3f))
+        assertEquals(Color.White, state.contrastDecision()?.regionalInk?.get("play"))
+    }
+
+    @Test fun `glass film can change regional polarity while the artwork stays dark`() {
+        val bounds = Rect(0f, 0f, 100f, 200f)
+        val film = Color.White.copy(alpha = .28f)
+        fun decision(artwork: Int): PlayerBackdropContrastDecision {
+            val state = PlayerBackdropSampling()
+            state.registerRegion("play", bounds, film)
+            state.publish(IntArray(32 * 64) { artwork }, Offset.Zero, IntSize(100, 200))
+            return requireNotNull(state.contrastDecision())
+        }
+        val dark = decision(0xFF000000.toInt())
+        val light = decision(0xFF464646.toInt())
+        assertEquals(dark.commonInk, light.commonInk)
+        assertTrue(light.changesPolarity(dark))
+    }
+
     @Test fun `preview updates each region without freezing the intermediate frame`() {
         val state = PlayerBackdropSampling(previousSurface = Color.Gray)
         val top = Rect(0f, 0f, 100f, 100f)

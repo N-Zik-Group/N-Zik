@@ -159,6 +159,7 @@ internal fun SurfaceForegroundContent(
     val displayedProgress = LocalPlayerForegroundProgress.current
     val textFrame = remember { PlayerMeasuredInkFrame() }
     val secondaryFrame = remember { PlayerMeasuredInkFrame() }
+    val glyphFrame = remember { PlayerMeasuredInkFrame() }
     val adapt = surface != null || commonNeutral != null || transition != null
     val inheritedContent = LocalContentColor.current
     fun ink(original: Color, minimum: Float, glyph: Boolean = false, frame: PlayerMeasuredInkFrame? = null): Color =
@@ -178,7 +179,8 @@ internal fun SurfaceForegroundContent(
         text = ink(source.text, TextContrast, frame = textFrame),
         textSecondary = ink(source.textSecondary, TextContrast, frame = secondaryFrame),
         textDisabled = source.textDisabled,
-        iconButtonPlayer = ink(source.iconButtonPlayer, IconContrast, glyph = true),
+        iconButtonPlayer = glyphFrame.resolveEndpoint(source.iconButtonPlayer,
+            ink(source.iconButtonPlayer, IconContrast, glyph = true), displayedProgress),
     ) else appearance.colorPalette
     // Keep the same composition tree before the first sample and throughout sheet transitions.
     CompositionLocalProvider(
@@ -235,16 +237,21 @@ internal class PlayerMeasuredInkFrame {
     private var origin: Color? = null
     private var displayed: Color? = null
 
-    fun resolve(original: Color, surface: Color, minimum: Float, progress: Float?): Color {
-        val endpoint = measuredPlayerForeground(original, surface, minimum)
+    fun resolve(original: Color, surface: Color, minimum: Float, progress: Float?): Color =
+        resolveEndpoint(original, measuredPlayerForeground(original, surface, minimum), progress)
+
+    fun resolveEndpoint(original: Color, endpoint: Color, progress: Float?): Color {
         val current = progress?.coerceIn(0f, 1f)
-        if (current == null || current >= 1f || !isNeutralForeground(original) || original.alpha == 0f) {
+        if (current == null || current >= 1f || !isNeutralForeground(original) ||
+            !endpoint.isSpecified || original.alpha == 0f) {
             origin = null
             previousProgress = current
             displayed = endpoint
             return endpoint
         }
-        if (origin == null || previousProgress?.let { current < it } == true) origin = displayed ?: original
+        if (origin == null || previousProgress?.let { current < it } == true) {
+            origin = displayed?.takeIf { it.isSpecified } ?: original
+        }
         previousProgress = current
         return lerp(requireNotNull(origin), endpoint, current).also { displayed = it }
     }
@@ -267,28 +274,24 @@ internal fun playerControlGlyphColor(
     plate: Color = Color.Transparent,
     minimum: Float = IconContrast,
     enabled: Boolean = true,
+    measuredBackdrop: Color? = null,
 ): Color {
     val measuredFrame = remember { PlayerMeasuredInkFrame() }
-    val backdrop = LocalForegroundSurface.current
+    val backdrop = measuredBackdrop ?: LocalForegroundSurface.current
     val progress = LocalPlayerForegroundProgress.current
-    if (enabled && backdrop != null && progress != null && progress < 1f) {
-        val palette = LocalAppearance.current.colorPalette
-        val source = LocalForegroundSourcePalette.current
-        // Labels may already carry the measured correction. Resolve their source role once,
-        // on the shared frame, before applying this glyph's own plate contrast.
-        val ink = if (plate.alpha > 0f) original else when (original) {
-            palette.text -> source?.text ?: original
-            palette.textSecondary -> source?.textSecondary ?: original
-            palette.iconButtonPlayer -> source?.iconButtonPlayer ?: original
-            else -> original
-        }
-        return measuredFrame.resolve(ink, effectiveSurfaceColor(backdrop, plate), minimum, progress)
-    }
-    val color = surfaceGlyphColor(original, plate, minimum, enabled)
-    return if (enabled && backdrop != null)
-        measuredFrame.resolve(color, effectiveSurfaceColor(backdrop, plate), minimum,
-            progress) else color
+    val color = resolveSurfaceGlyphColor(original, plate, minimum, enabled)
+    val endpoint = if (enabled && backdrop != null) {
+        val visiblePlate = effectiveSurfaceColor(backdrop, plate)
+        if (measuredBackdrop != null) measuredPlayGlyphForeground(color, visiblePlate, minimum)
+        else measuredPlayerForeground(color, visiblePlate, minimum)
+    } else color
+    return measuredFrame.resolveEndpoint(original, endpoint, progress)
 }
+
+internal fun measuredPlayGlyphForeground(color: Color, plate: Color, minimum: Float): Color =
+    if (color.isSpecified && color.alpha > 0f && contrastAgainst(color, plate) < minimum) {
+        neutralForeground(plate).copy(alpha = color.alpha)
+    } else color
 
 /** Every role resolves both endpoints from its source ink and uses this single shared clock. */
 internal data class NeutralForegroundTransition(
@@ -360,7 +363,18 @@ internal fun surfaceSourcePalette(): ColorPalette =
 /** Resolve an explicit glyph against the current surface or against its own translucent plate. */
 @Composable
 internal fun surfaceGlyphColor(original: Color, plate: Color? = null, minimum: Float = IconContrast,
-    enabled: Boolean = true): Color {
+    enabled: Boolean = true): Color =
+    playerForegroundOnSharedFrame(original, resolveSurfaceGlyphColor(original, plate, minimum, enabled))
+
+@Composable
+internal fun playerForegroundOnSharedFrame(original: Color, endpoint: Color): Color {
+    val progress = LocalPlayerForegroundProgress.current ?: return endpoint
+    val frame = remember { PlayerMeasuredInkFrame() }
+    return frame.resolveEndpoint(original, endpoint, progress)
+}
+
+@Composable
+private fun resolveSurfaceGlyphColor(original: Color, plate: Color?, minimum: Float, enabled: Boolean): Color {
     val transition = LocalNeutralForegroundTransition.current?.value
     val commonNeutral = LocalNeutralForegroundOverride.current
     val surface = LocalForegroundSurface.current ?: LocalSurfaceBackdropColor.current ?:

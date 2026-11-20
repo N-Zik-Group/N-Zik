@@ -200,6 +200,7 @@ import app.n_zik.android.components.glass.LocalForegroundSourcePalette
 import app.n_zik.android.components.glass.LocalNeutralForegroundTransition
 import app.n_zik.android.components.glass.SurfaceForegroundContent
 import app.n_zik.android.components.player.LocalPlayerBackdropSampling
+import app.n_zik.android.components.player.LocalPlayerContrastRevision
 import app.n_zik.android.components.player.rememberPlayerBackdropRegionColor
 import app.n_zik.android.components.player.rememberPlayerBackdropSampling
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -1130,7 +1131,7 @@ fun Player(
     val samplePlayerBackground = !appRunningInBackground && !playerUnderlayCovered &&
         (playerContentVisible || !contrastDecisionReady) && !backdropTransitioning
     val sampleTransition = playerSheetState.isExpanded && playerContentVisible && !appRunningInBackground &&
-        !playerUnderlayCovered && backdropTransitioning
+        !playerUnderlayCovered && backdropTransitioning && !waitForBlurredCover
     val captureGlassSource = playerGlassSourceCaptureActive(
         glassSettings, playerTransition, inheritedOpticsEnabled)
     val capturePlayerBackground = (samplePlayerBackground && !contrastDecisionReady) || sampleTransition || captureGlassSource
@@ -1141,6 +1142,12 @@ fun Player(
         rememberCombinedBackdrop(playerCoverBackground, animatedGradientBackdrop, playerBackground.backdrop)
     else rememberCombinedBackdrop(playerCoverBackground, playerBackground.backdrop)
     val controlsSource = rememberPlayerControlsGlassSource(playerControlsBackdrop)
+    val artworkShadowOverflow = rememberPlayerArtworkShadowOverflow()
+    val expandedArtworkStack = carouselOwnsArtwork && carousel && expandedplayer
+    // Glass and contrast must see the same passive layer when covers extend behind the controls.
+    val artworkControlsSource = rememberPlayerArtworkControlsBackdrop(
+        controlsSource, artworkShadowOverflow, captureGlassSource || expandedArtworkStack,
+    )
     val provisionalCoverSurface = remember(artworkPaint, usesCoverFluidGradient, usesFlatCoverBackground, gradientSettled) {
         derivedStateOf {
             when {
@@ -1150,11 +1157,18 @@ fun Player(
             }
         }
     }
-    val backgroundSampling = rememberPlayerBackdropSampling(playerControlsBackdrop, samplePlayerBackground,
+    val contrastRevision = LocalPlayerContrastRevision.current
+    val backgroundSampling = rememberPlayerBackdropSampling(artworkControlsSource, samplePlayerBackground,
         contrastDecisionKey,
         previewActive = sampleTransition,
         provisionalSurface = provisionalCoverSurface,
         renderedBackgroundReady = renderedBackdropReady,
+        retainSettledContrast = waitForBlurredCover,
+        onSettledMeasurement = {
+            if (playerContentVisible && playerSheetState.isExpanded && contrastRevision != null) {
+                contrastRevision.intValue++
+            }
+        },
     )
     SideEffect { contrastDecisionReady = backgroundSampling.finished }
     val queueNavigationSurface = if (isQueuePanelVisible && !usesQueueToolbarGlass()) color.background1 else null
@@ -1426,7 +1440,6 @@ fun Player(
 
     val controllerPreviewPage = if (showthumbnail && playerType == PlayerType.Modern && coverArtworkVisible)
         pagerState.currentPage else artworkPreviewPage
-    val artworkShadowOverflow = rememberPlayerArtworkShadowOverflow()
     val isShowingStandaloneLyrics = playerStandaloneLyricsVisible(
         showthumbnail, isShowingLyrics, coverOverlayPolicy.lyricsOnCover)
     val showActionsInFullscreenLyrics by rememberPreference(actionExpandedKey, true)
@@ -1555,8 +1568,6 @@ fun Player(
 
     blurAdjuster.Render()
 
-    val artworkControlsSource = rememberPlayerArtworkControlsBackdrop(
-        controlsSource, artworkShadowOverflow, captureGlassSource)
     CompositionLocalProvider(
         LocalGlassArtworkTint provides artworkGlass,
         LocalPlayerTransportGeometry provides remember { PlayerTransportGeometry() },

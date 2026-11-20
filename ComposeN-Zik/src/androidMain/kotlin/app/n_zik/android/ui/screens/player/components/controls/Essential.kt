@@ -131,6 +131,7 @@ import app.n_zik.android.components.player.playerPlaceholderCompositeBase
 import app.n_zik.android.components.glass.TextContrast
 import app.n_zik.android.components.glass.surfaceGlyphColor
 import app.n_zik.android.components.glass.playerControlGlyphColor
+import app.n_zik.android.components.player.rememberPlayerPlayGlyphBackdrop
 import app.n_zik.android.components.glass.surfaceProgressTrackColor
 import app.n_zik.android.components.player.playerTextOutlineColor
 import app.n_zik.android.components.player.playerTransportGlyph
@@ -479,7 +480,8 @@ fun ControlsEssential(
     val nextGlyph = playerTransportGlyph(controlsColor, transportSettings, enabled = nextEnabled)
     val playPlate = playerTransportPlate(transportSettings, nativePlayPlate,
         hasGlassPlate = playerPlayButtonType != PlayerPlayButtonType.Disabled)
-    val playGlyph = playerControlGlyphColor(playColor, playPlate)
+    val (measurePlayGlyph, playBackdrop) = rememberPlayerPlayGlyphBackdrop(transportSettings.enabled, playPlate)
+    val playGlyph = playerControlGlyphColor(playColor, playPlate, measuredBackdrop = playBackdrop)
     val playerBackgroundColors by rememberPreference(playerBackgroundColorsKey,PlayerBackgroundColors.AnimatedGradient)
     var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
     val currentMediaItem = player.currentMediaItem
@@ -602,14 +604,17 @@ fun ControlsEssential(
             )
 
         if (isBuffering && shouldBePlaying) {
-            val arc = surfaceGlyphColor(colorPalette().accent, playPlate)
-            val track = surfaceGlyphColor(colorPalette().text, playPlate)
+            val arc = if (playBackdrop == null) surfaceGlyphColor(colorPalette().accent, playPlate)
+                else playerControlGlyphColor(colorPalette().accent, playPlate, measuredBackdrop = playBackdrop)
+            val track = if (playBackdrop == null) surfaceGlyphColor(colorPalette().text, playPlate)
+                else playerControlGlyphColor(colorPalette().text, playPlate, measuredBackdrop = playBackdrop)
             CircularWavyProgressIndicator(
                 color = arc,
                 trackColor = surfaceProgressTrackColor(arc, track, playPlate),
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .size(if (playerPlayButtonType == PlayerPlayButtonType.Disabled) 40.dp else 30.dp),
+                    .size(if (playerPlayButtonType == PlayerPlayButtonType.Disabled) 40.dp else 30.dp)
+                    .then(measurePlayGlyph),
                 stroke = Stroke(width = with(LocalDensity.current) { 4.dp.toPx() }),
                 trackStroke = Stroke(width = with(LocalDensity.current) { 4.dp.toPx() })
             )
@@ -622,6 +627,7 @@ fun ControlsEssential(
                     .rotate(rotationAngle)
                     .align(Alignment.Center)
                     .size(if (playerPlayButtonType == PlayerPlayButtonType.Disabled) 40.dp else 30.dp)
+                    .then(measurePlayGlyph)
 
             )
         }

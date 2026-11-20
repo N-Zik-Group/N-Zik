@@ -1,7 +1,11 @@
 package app.n_zik.android.components.player
 
-import androidx.compose.animation.Crossfade
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -41,6 +45,7 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.isVideoArtwork
 import app.n_zik.android.core.coil.rememberDisplayArtworkSource
+import coil3.BitmapImage
 import coil3.compose.asPainter
 import kotlin.math.sqrt
 import kotlinx.coroutines.delay
@@ -67,7 +72,11 @@ internal fun rememberPlayerCoverIdentity(mediaId: String, artworkUri: String): P
     return remember(mediaId, artworkUri, revision) { PlayerCoverIdentity(mediaId, artworkUri, revision) }
 }
 
-internal data class PlayerCoverFrame<T>(val identity: PlayerCoverIdentity, val image: T)
+internal data class PlayerCoverFrame<T>(
+    val identity: PlayerCoverIdentity,
+    val image: T,
+    val hasOpaquePixels: Boolean = false,
+)
 
 /** Keeps the displayed frame until the requested replacement succeeds; stale requests cannot win. */
 internal class PlayerCoverFrameState<T> {
@@ -79,8 +88,8 @@ internal class PlayerCoverFrameState<T> {
         requested = identity
     }
 
-    fun complete(identity: PlayerCoverIdentity, image: T) {
-        if (identity == requested) displayed = PlayerCoverFrame(identity, image)
+    fun complete(identity: PlayerCoverIdentity, image: T, hasOpaquePixels: Boolean = false) {
+        if (identity == requested) displayed = PlayerCoverFrame(identity, image, hasOpaquePixels)
     }
 }
 
@@ -102,7 +111,7 @@ internal fun ReportPresentedPlayerCover(
     }
 }
 
-internal const val PLAYER_COVER_FADE_MS = 500
+internal const val PLAYER_COVER_FADE_MS = 600
 
 @Composable
 @OptIn(ExperimentalAnimationApi::class)
@@ -113,14 +122,23 @@ internal fun PlayerCoverCrossfade(
     onSettled: ((Boolean) -> Unit)? = null,
 ) {
     val cropVideo by rememberPreference(cropVideoThumbnailsKey, true)
+    val source = rememberDisplayArtworkSource(frame.identity.artworkUri)
+    val size = frame.image.intrinsicSize
+    val fillsSquare = cropVideo && isVideoArtwork(source) || size.width > 0f && size.width == size.height
+    val keepOutgoingOpaque = frame.hasOpaquePixels && fillsSquare
     val transition = updateTransition(frame, label = "playerCoverFade")
     if (onSettled != null) {
         val settled = transition.currentState == frame && !transition.isRunning
         SideEffect { onSettled(settled) }
     }
-    transition.Crossfade(
+    transition.AnimatedContent(
         modifier = modifier,
-        animationSpec = tween(PLAYER_COVER_FADE_MS, easing = FastOutSlowInEasing),
+        transitionSpec = {
+            val duration = PLAYER_COVER_FADE_MS
+            val exit = if (keepOutgoingOpaque) ExitTransition.KeepUntilTransitionsFinished
+                else fadeOut(tween(duration, easing = FastOutSlowInEasing))
+            (fadeIn(tween(duration, easing = FastOutSlowInEasing)) togetherWith exit).using(null)
+        },
     ) { visible ->
         val source = rememberDisplayArtworkSource(visible.identity.artworkUri)
         val reportDraw = if (visible.identity == frame.identity && onIncomingArtworkDrawn != null) {
@@ -174,7 +192,11 @@ internal fun PlayerCurrentCover(
     } else if (canRequest) key(identity) {
         ImageCacheFactory.Painter(
             thumbnailUrl = artworkUri,
-            onSuccess = { frames.complete(identity, it.result.image.asPainter(context)) },
+            onSuccess = {
+                val image = it.result.image
+                val opaque = (image as? BitmapImage)?.bitmap?.hasAlpha() == false
+                frames.complete(identity, image.asPainter(context), hasOpaquePixels = opaque)
+            },
             onError = { frames.complete(identity, fallback) },
             publishArtworkColors = publishArtworkColors,
         )

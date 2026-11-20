@@ -125,4 +125,25 @@ class PlayerCoverCrossfadeTest {
         assertTrue("The replacement finishes fully visible", pixel().blue > 0.9f)
         assertTrue(backdropSettled)
     }
+
+    @Test fun `opaque square replacement keeps the background covered halfway through the fade`() {
+        fun whiteCover(id: String) = PlayerCoverFrame<Painter>(
+            PlayerCoverIdentity(id, id),
+            BitmapPainter(Bitmap.createBitmap(32, 32, Bitmap.Config.ARGB_8888).apply {
+                eraseColor(android.graphics.Color.WHITE)
+                setHasAlpha(false)
+            }.asImageBitmap()),
+            hasOpaquePixels = true,
+        )
+        val visible = mutableStateOf(whiteCover("first"))
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            PlayerCoverCrossfade(visible.value, Modifier.size(80.dp).background(Color.Black).testTag("cover"))
+        }
+        compose.runOnIdle { visible.value = whiteCover("second") }
+        compose.mainClock.advanceTimeBy(PLAYER_COVER_FADE_MS / 3L)
+
+        val pixels = compose.onNodeWithTag("cover").captureToImage().toPixelMap()
+        assertTrue(pixels[pixels.width / 2, pixels.height / 2].red > .98f)
+    }
 }
