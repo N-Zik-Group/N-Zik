@@ -257,6 +257,8 @@ import enums.VisualizerWhiteColorOption
 import app.n_zik.android.components.theme.DynamicAppearanceOwner
 import app.n_zik.android.components.theme.DynamicPaletteArtworkListener
 import app.n_zik.android.components.theme.appearanceBackground
+import app.n_zik.android.components.theme.configuredApplicationAppearance
+import app.n_zik.android.components.theme.configuredApplicationPalette
 import app.n_zik.android.components.theme.startupAppearance
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.components.InterfaceLayoutDirection
@@ -265,9 +267,6 @@ import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import app.n_zik.android.components.theme.withColor
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.Dimensions
-import app.n_zik.android.ui.styling.colorPaletteOf
-import app.n_zik.android.ui.styling.customColorPalette
-import app.n_zik.android.ui.styling.dynamicColorPaletteOf
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.utils.InitDownloader
 import app.n_zik.android.utils.LocalMonetCompat
@@ -1287,45 +1286,21 @@ class MainActivity :
                                         ColorPaletteMode.System
                                     )
 
-                                val newIsDark = colorPaletteMode == ColorPaletteMode.Dark ||
-                                        colorPaletteMode == ColorPaletteMode.PitchBlack ||
-                                        colorPaletteMode == ColorPaletteMode.PureBlack ||
-                                        (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
-
-                                var colorPalette = colorPaletteOf(
-                                    colorPaletteName,
-                                    colorPaletteMode,
-                                    isSystemInDarkTheme
-                                )
-
                                 if (colorPaletteName == ColorPaletteName.Dynamic) {
                                     // Always call setDynamicPalette when switching to the dynamic theme
                                     setDynamicPalette(binder?.player, animateTheme = true)
                                 } else {
                                     dynamicAppearanceOwner.cancel()
 
-                                    if (colorPaletteName == ColorPaletteName.MaterialYou) {
-                                        colorPalette = dynamicColorPaletteOf(
-                                            Color(monet.getAccentColor(this@MainActivity)),
-                                            newIsDark
-                                        )
+                                    val colorPalette = configuredApplicationPalette(
+                                        this@MainActivity,
+                                        sharedPreferences,
+                                        colorPaletteName,
+                                        colorPaletteMode,
+                                        isSystemInDarkTheme,
+                                    ) {
+                                        Color(monet.getAccentColor(this@MainActivity))
                                     }
-
-                                    if (colorPaletteName == ColorPaletteName.Customized) {
-                                        colorPalette = customColorPalette(
-                                            colorPalette,
-                                            this@MainActivity,
-                                            isSystemInDarkTheme
-                                        )
-                                    }
-                                    if (colorPaletteName == ColorPaletteName.CustomColor) {
-                                        val newCustomColor = sharedPreferences.getInt(customColorKey, Color.Green.hashCode())
-                                        colorPalette = dynamicColorPaletteOf(
-                                            Color(newCustomColor),
-                                            newIsDark
-                                        )
-                                    }
-
                                     val normalized = appearance.copy(
                                         colorPalette = colorPalette,
                                         typography = appearance.typography.withColor(colorPalette.text),
@@ -2856,59 +2831,10 @@ class MainActivity :
         setContent { InterfaceLayoutDirection(content) }
     }
 
-    private fun configuredAppearance(isSystemInDarkTheme: Boolean): Appearance = with(preferences) {
-        val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
-        val thumbnailRoundnessDp = getFloat(thumbnailRoundnessDpKey, 12f)
-        val artistThumbnailRoundnessDp = getFloat(artistThumbnailRoundnessDpKey, 48f)
-        val uiRoundnessDp = getFloat("uiRoundnessDpKey", 25f)
-        val useSystemFont = getBoolean(useSystemFontKey, false)
-        val applyFontPadding = getBoolean(applyFontPaddingKey, false)
-
-        val colorPalette = configuredPalette(isSystemInDarkTheme)
-        val fontType = getEnum(fontTypeKey, FontType.Rubik)
-        Appearance(
-            colorPalette = colorPalette,
-            typography = typographyOf(
-                colorPalette.text,
-                useSystemFont,
-                applyFontPadding,
-                fontType
-            ),
-            thumbnailShape = if (thumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(thumbnailRoundnessDp.dp, 0.25f)),
-            uiRoundnessShape = RoundedCornerShape(BoundedCornerSize(uiRoundnessDp.dp, 0.4f)),
-            artistThumbnailShape = if (artistThumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(artistThumbnailRoundnessDp.dp, 0.25f))
-        ).forPaletteMode(colorPaletteMode)
-    }
-
-    private fun configuredPalette(isSystemInDarkTheme: Boolean) = with(preferences) {
-        val colorPaletteName =
-            getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
-        val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
-        val paletteIsDark = colorPaletteMode == ColorPaletteMode.Dark ||
-            colorPaletteMode == ColorPaletteMode.PitchBlack ||
-            colorPaletteMode == ColorPaletteMode.PureBlack ||
-            (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
-        var colorPalette =
-            colorPaletteOf(colorPaletteName, colorPaletteMode, isSystemInDarkTheme)
-
-        if (colorPaletteName == ColorPaletteName.MaterialYou) {
-            colorPalette = dynamicColorPaletteOf(
-                Color(monet.getAccentColor(this@MainActivity)),
-                paletteIsDark
-            )
+    private fun configuredAppearance(isSystemInDarkTheme: Boolean): Appearance =
+        configuredApplicationAppearance(this, isSystemInDarkTheme) {
+            Color(monet.getAccentColor(this))
         }
-        if (colorPaletteName == ColorPaletteName.CustomColor) {
-            colorPalette = dynamicColorPaletteOf(
-                Color(getInt(customColorKey, Color.Green.hashCode())),
-                paletteIsDark
-            )
-        }
-
-        if (colorPaletteName == ColorPaletteName.Customized) {
-            colorPalette = customColorPalette(colorPalette, this@MainActivity, isSystemInDarkTheme)
-        }
-        colorPalette
-    }
 
     @Composable
     private fun PageSystemBarAppearance(glassMenuHost: GlassMenuHostState) {
