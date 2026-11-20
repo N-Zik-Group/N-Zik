@@ -21,26 +21,27 @@ class HomeSongsProjectionTest {
     @Test
     fun `preserves sequential clamped insertion and first occurrence before filtering`() = runTest {
         val explicit = song("duplicate", EXPLICIT_PREFIX + "Hidden")
-        val input = HomeSongsProjectionInput(
-            listOf(song("a"), song("duplicate", "Visible"), song("b")), "", true,
+        val input = HomeSongsBaseInput(
+            listOf(song("a"), song("duplicate", "Visible"), song("b")), true,
             linkedMapOf(explicit to -8, song("tail") to 100, song("middle") to 2), true,
         )
-        assertEquals(listOf("a", "middle", "b", "tail"), projectHomeSongsOnData(input).map { it.id })
+        assertEquals(listOf("a", "middle", "b", "tail"), projectHomeSongsBase(input).map { it.id })
         assertEquals(listOf("duplicate", "a", "middle", "b", "tail"),
-            projectHomeSongsOnData(input.copy(parentalControlEnabled = false)).map { it.id })
+            projectHomeSongsBase(input.copy(parentalControlEnabled = false)).map { it.id })
         assertEquals(listOf("a", "duplicate", "b"),
-            projectHomeSongsOnData(input.copy(recommendationsEnabled = false)).map { it.id })
+            projectHomeSongsBase(input.copy(recommendationsEnabled = false)).map { it.id })
     }
 
     @Test
     fun `matches title or artist ignoring case and handles null artists`() = runTest {
-        val input = HomeSongsProjectionInput(
+        val input = HomeSongsBaseInput(
             listOf(song("a", "HELLO"), song("b", "Other", "Hello artist"), song("c", "Other")),
-            "hello", false, emptyMap(), false,
+            false, emptyMap(), false,
         )
-        assertEquals(listOf("a", "b"), projectHomeSongsOnData(input).map { it.id })
-        assertTrue(projectHomeSongsOnData(input.copy(query = "absent")).isEmpty())
-        assertEquals(3, projectHomeSongsOnData(input.copy(query = "")).size)
+        val base = projectHomeSongsBase(input)
+        assertEquals(listOf("a", "b"), searchHomeSongs(base, "hello").map { it.id })
+        assertTrue(searchHomeSongs(base, "absent").isEmpty())
+        assertEquals(3, searchHomeSongs(base, "").size)
     }
 
     @Test
@@ -54,7 +55,7 @@ class HomeSongsProjectionTest {
                 return song("a")
             }
         }
-        assertEquals(listOf("a"), projectHomeSongsOnData(HomeSongsProjectionInput(items, "", false, emptyMap(), false)).map { it.id })
+        assertEquals(listOf("a"), projectHomeSongsBase(HomeSongsBaseInput(items, false, emptyMap(), false)).map { it.id })
         assertNotEquals(caller, reader.get())
     }
 
@@ -72,13 +73,13 @@ class HomeSongsProjectionTest {
         }
         val published = mutableListOf<String>()
         val old = launch {
-            projectHomeSongsOnData(HomeSongsProjectionInput(slowItems, "old", false, emptyMap(), false))
+            searchHomeSongs(slowItems, "old")
             published += "old"
         }
         try {
             started.await()
             old.cancel()
-            val latest = projectHomeSongsOnData(HomeSongsProjectionInput(listOf(song("new")), "new", false, emptyMap(), false))
+            val latest = searchHomeSongs(listOf(song("new")), "new")
             published += latest.single().id
         } finally {
             release.countDown()

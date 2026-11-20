@@ -1,6 +1,8 @@
 package app.n_zik.android.components.ui.screens.home.onDevice
 
 import kotlinx.coroutines.flow.map
+import app.n_zik.android.components.ui.screens.home.HomeFilterScrollAnchor
+import app.n_zik.android.compose.persist.persist
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
@@ -42,6 +44,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.referentialEqualityPolicy
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -53,7 +57,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastMap
 import androidx.core.content.ContextCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -73,8 +76,8 @@ import app.n_zik.android.utils.homeSongsOnDeviceSortMenuOrderKey
 import app.n_zik.android.utils.addNext
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.bold
-import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.enqueue
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.utils.forcePlayAtIndex
 import app.n_zik.android.utils.isAtLeastAndroid13
 import app.n_zik.android.utils.parentalControlEnabledKey
@@ -84,26 +87,30 @@ import app.n_zik.android.utils.defaultFolderKey
 import app.n_zik.android.utils.getActiveProfile
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
+import app.n_zik.android.components.rowLikeState
+import app.n_zik.android.components.ui.screens.home.searchHomeSongs
+import app.n_zik.android.utils.playlistindicatorKey
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.AppPullToRefreshBox
 import app.n_zik.android.components.FolderItem
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.Sort
-import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.core.utils.PathUtils
 import app.n_zik.android.core.utils.Toaster
-import app.n_zik.android.download.utils.MyDownloadHelper
-import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.enums.DownloadedStateMedia
 import app.n_zik.android.enums.PlaylistSwipeAction
 import app.n_zik.android.utils.playlistSwipeLeftActionKey
 import app.n_zik.android.utils.playlistSwipeRightActionKey
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -121,8 +128,7 @@ fun OnDeviceSong(
     itemSelector: ItemSelector<Song>,
     search: Search,
     buttons: MutableList<Button>,
-    itemsOnDisplay: MutableList<Song>,
-    getSongs: () -> List<Song>,
+    itemsOnDisplay: SnapshotStateList<Song>,
     headerPadding: androidx.compose.ui.unit.Dp = 0.dp,
     topContentInsetProvider: () -> androidx.compose.ui.unit.Dp = { 0.dp },
     visibleHeaderPadding: () -> androidx.compose.ui.unit.Dp = { headerPadding },
@@ -225,20 +231,50 @@ fun OnDeviceSong(
         Database.songTable.allOnDevice().map { songs -> songs.associateBy(Song::id) }
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
     val query = search.inputValue
-    val visibleSongs = remember(songEntries, storedSongs, query, currentPath, showFolder4LocalSongs, parentalControlEnabled, isPermissionGranted) {
-        if (isPermissionGranted) {
-            songEntries.asSequence()
-                .filter { !showFolder4LocalSongs || it.value == currentPath }
-                .map { storedSongs[it.key.id] ?: it.key }
-                .filter { !parentalControlEnabled || !it.title.startsWith(EXPLICIT_PREFIX, true) }
-                .filter { it.cleanTitle().contains(query, true) || it.cleanArtistsText().contains(query, true) }
-                .toList()
-        } else emptyList()
+    var baseSongs by remember(profile) { mutableStateOf(emptyList<Song>()) }
+    var baseReady by remember(songEntries, storedSongs, currentPath, showFolder4LocalSongs, parentalControlEnabled, isPermissionGranted, searchDataReady) {
+        mutableStateOf(false)
     }
-    LaunchedEffect(visibleSongs, query, currentPath) {
+    LaunchedEffect(songEntries, storedSongs, currentPath, showFolder4LocalSongs, parentalControlEnabled, isPermissionGranted, searchDataReady) {
+        if (isPermissionGranted && !searchDataReady) return@LaunchedEffect
+        val entries = songEntries
+        val stored = storedSongs
+        baseSongs = if (!isPermissionGranted) emptyList() else withContext(NzikDispatchers.DATA) {
+            val coroutine = currentCoroutineContext()
+            entries.asSequence()
+                .filter {
+                    coroutine.ensureActive()
+                    !showFolder4LocalSongs || it.value == currentPath
+                }
+                .map { stored[it.key.id] ?: it.key }
+                .filter { !parentalControlEnabled || !it.title.startsWith(EXPLICIT_PREFIX, true) }
+                .toList()
+        }
+        baseReady = true
+    }
+    var displayedSongs by remember(profile, isPermissionGranted) { mutableStateOf<List<Song>>(emptyList()) }
+    var hasCompletedDeviceProjection by remember(profile, isPermissionGranted) { mutableStateOf(false) }
+    val filterScrollAnchor = persist("home/device-songs/filter-scroll", HomeFilterScrollAnchor()).value
+    LaunchedEffect(baseReady, baseSongs, query, currentPath) {
+        if (!baseReady) return@LaunchedEffect
+        val candidates = baseSongs
+        val visibleSongs = searchHomeSongs(candidates, query)
+        if (displayedSongs != visibleSongs) {
+            val index = lazyListState.firstVisibleItemIndex
+            filterScrollAnchor.update(
+                displayedSongs.isNotEmpty(), visibleSongs, Song::id,
+                index, lazyListState.firstVisibleItemScrollOffset,
+                lazyListState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }?.key,
+                lazyListState::requestScrollToItem,
+            )
+        }
         androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
-            itemsOnDisplay.clear()
-            itemsOnDisplay.addAll(visibleSongs)
+            displayedSongs = visibleSongs
+            hasCompletedDeviceProjection = isPermissionGranted
+            if (itemsOnDisplay != visibleSongs) {
+                itemsOnDisplay.clear()
+                itemsOnDisplay.addAll(visibleSongs)
+            }
             completedSearchQuery = query
             completedSearchPath = currentPath
         }
@@ -250,11 +286,11 @@ fun OnDeviceSong(
             } else emptyList()
         }
     }
-    val initialScanPending = isPermissionGranted && !searchDataReady && visibleSongs.isEmpty() && folders.isEmpty()
+    val initialScanPending = isPermissionGranted && !hasCompletedDeviceProjection && folders.isEmpty()
     SearchEmptyFeedback(
         query = search.inputValue,
         empty = itemsOnDisplay.isEmpty() && folders.isEmpty(),
-        loading = !isPermissionGranted || !searchDataReady ||
+        loading = !isPermissionGranted || !searchDataReady || !baseReady ||
             completedSearchQuery != search.inputValue || completedSearchPath != currentPath
     )
     LaunchedEffect( Unit ) {
@@ -270,33 +306,13 @@ fun OnDeviceSong(
 
 
 
-    val songIds = remember(itemsOnDisplay) { itemsOnDisplay.map { it.id } }
-    val likeStatesMap by remember(songIds) {
-        LikeStateManager.getLikeStates(songIds)
+    val songIds = remember(baseSongs) { baseSongs.map(Song::id) }
+    val showPlaylistIndicator by rememberPreference(playlistindicatorKey, false)
+    val playlistStatesMap by remember(songIds, showPlaylistIndicator) {
+        if (showPlaylistIndicator) PlaylistStateManager.getPlaylistStates(songIds) else flowOf(emptyMap())
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
-    val playlistStatesMap by remember(songIds) {
-        PlaylistStateManager.getPlaylistStates(songIds)
-    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
-
-    // Download state cache
-    val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
-    val downloadedIds by remember {
-        derivedStateOf {
-            downloadsMapState.values
-                .filter { it.state == Download.STATE_COMPLETED }
-                .mapTo(HashSet()) { it.request.id }
-        }
-    }
-    val downloadStatesMap by remember {
-        derivedStateOf {
-            itemsOnDisplay.associate { song ->
-                song.id to when {
-                    song.id in downloadedIds -> DownloadedStateMedia.DOWNLOADED
-                    else -> DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
-                }
-            }
-        }
-    }
+    val playbackScope = rememberCoroutineScope()
+    var playbackJob by remember { mutableStateOf<Job?>(null) }
 
     AppPullToRefreshBox(
         isRefreshing = pendingRefreshRevision != null,
@@ -311,7 +327,6 @@ fun OnDeviceSong(
     val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
     val playlistSwipeRightAction by rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
 
-    CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
     LazyColumn(
         state = lazyListState,
         userScrollEnabled = songsOnDevice.isNotEmpty(),
@@ -397,7 +412,7 @@ fun OnDeviceSong(
             }
         }
 
-        if (isPermissionGranted && searchDataReady && visibleSongs.isEmpty() && folders.isEmpty()) {
+        if (hasCompletedDeviceProjection && displayedSongs.isEmpty() && folders.isEmpty()) {
             item {
                 Box(
                     modifier = Modifier.fillParentMaxSize(),
@@ -409,50 +424,59 @@ fun OnDeviceSong(
         }
 
         items(
-            items = visibleSongs,
+            items = displayedSongs,
             key = { song -> song.id }
         ) { song ->
             if (forceShimmer) {
                 SongItemPlaceholder(title = song.cleanTitle(), artist = song.cleanArtistsText(), onDevice = true)
                 return@items
             }
-            val mediaItem = song.asMediaItem
+            val mediaItem = remember(song) { song.asMediaItem }
 
-            SwipeablePlaylistItem(
-                mediaItem = mediaItem,
-                onPlayNext = { binder?.player?.addNext( mediaItem ) },
-                onEnqueue = {
-                    binder?.player?.enqueue(mediaItem)
-                },
-                downloadStateParam = downloadsMapState[mediaItem.mediaId]?.state ?: Download.STATE_STOPPED,
-                downloadedStateMediaParam = downloadStatesMap[mediaItem.mediaId] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
-                swipeLeftActionParam = playlistSwipeLeftAction,
-                swipeRightActionParam = playlistSwipeRightAction
-            ) {
-                SongItem(
-                    song = song,
-                    isLiked = likeStatesMap[song.id],
-                    inPlaylist = playlistStatesMap[song.id],
-                    itemSelector = itemSelector,
-                    navController = navController,
-                    modifier = Modifier.animateItem(),
-
-                    onClick = {
-                        search.hideIfEmpty()
-
-                            val mediaItems = getSongs().fastMap( Song::asMediaItem )
-                            val index = mediaItems.indexOfFirst { it.mediaId == song.id }
-                            if (index >= 0) {
-                                binder?.stopRadio()
-                                binder?.player?.forcePlayAtIndex(mediaItems, index)
+            Box(Modifier.animateItem()) {
+                SwipeablePlaylistItem(
+                    mediaItem = mediaItem,
+                    onPlayNext = { binder?.player?.addNext( mediaItem ) },
+                    onEnqueue = {
+                        binder?.player?.enqueue(mediaItem)
+                    },
+                    downloadStateParam = Download.STATE_STOPPED,
+                    downloadedStateMediaParam = DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
+                    swipeLeftActionParam = playlistSwipeLeftAction,
+                    swipeRightActionParam = playlistSwipeRightAction
+                ) {
+                    SongItem(
+                        song = song,
+                        isLiked = song.rowLikeState(),
+                        observeLikeState = false,
+                        observeStoredMetadata = false,
+                        inPlaylist = playlistStatesMap[song.id] == true,
+                        itemSelector = itemSelector,
+                        navController = navController,
+                        onClick = {
+                            search.hideIfEmpty()
+                            val playerBinder = binder
+                            if (playerBinder != null) {
+                                val targets = itemSelector.toList().ifEmpty { itemsOnDisplay.toList() }
+                                playbackJob?.cancel()
+                                playbackJob = playbackScope.launch {
+                                    val mediaItems = withContext(NzikDispatchers.MEDIA) {
+                                        targets.filter(Song::isLocal).map(Song::asMediaItem)
+                                    }
+                                    val index = mediaItems.indexOfFirst { it.mediaId == song.id }
+                                    if (index >= 0) {
+                                        playerBinder.stopRadio()
+                                        playerBinder.player.forcePlayAtIndex(mediaItems, index)
+                                    }
+                                }
                             }
                         }
                     )
                 }
             }
         }
+        }
     }
-    } // CompositionLocalProvider
     }
 }
 

@@ -8,12 +8,10 @@ import app.n_zik.android.uiRoundnessShape
 import androidx.compose.ui.res.stringResource
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -31,13 +29,10 @@ import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import app.n_zik.android.components.glass.explicitBadgeIconId
 import app.n_zik.android.components.glass.glassExplicitBadgeBackground
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,7 +55,6 @@ import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.EXPLICIT_PREFIX
 import app.n_zik.android.hasExplicitPrefix
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.LocalDownloadStatesMap
@@ -73,7 +67,6 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.tab.toolbar.Clickable
-import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.Icon
 import app.n_zik.android.ui.components.themed.HeaderIconButton
 import app.n_zik.android.ui.components.themed.IconButton
@@ -108,7 +101,6 @@ import androidx.compose.material3.ripple
 import androidx.compose.material3.Icon
 import app.n_zik.android.MODIFIED_PREFIX
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 
 
 private interface SongIndicator: Icon {
@@ -203,6 +195,8 @@ fun SongItem(
     onLongClick: (() -> Unit)? = null,
     trailingContent: @Composable (RowScope.() -> Unit)? = null,
     thumbnailOverlay: @Composable BoxScope.() -> Unit = {},
+    observeLikeState: Boolean = isLiked == null,
+    observeStoredMetadata: Boolean = true,
     onClick: () -> Unit = {}
 ) {
     // Essentials
@@ -221,10 +215,10 @@ fun SongItem(
     val isPlaying = currentMediaId == song.id
     val rowShape = uiRoundnessShape()
 
-    val storedSongs = remember(song.id, preview) {
-        if (preview != null) kotlinx.coroutines.flow.flowOf(null) else Database.songTable.findById(song.id).distinctUntilChanged()
-    }
-    val displaySong = rememberSongDisplayMetadata(song, storedSongs)
+    val displaySong = if (preview == null && observeStoredMetadata) {
+        val storedSongs = remember(song.id) { Database.songTable.findById(song.id).distinctUntilChanged() }
+        rememberSongDisplayMetadata(song, storedSongs)
+    } else song
 
     val menu = if( preview == null && navController != null && onLongClick == null ) SongItemMenu( navController, displaySong ) else null
     GlassSongRowSurface(backgroundColor, if (isPlaying) colorPalette.favoritesOverlay else null, rowShape) { rowBackground ->
@@ -257,11 +251,6 @@ fun SongItem(
         ) {
             // Actual thumbnail (from cache or fetch from url)
             if( showThumbnail ) {
-                // Check if the image is in local cache
-                val isCached = remember(displaySong.thumbnailUrl) {
-                    ImageCacheFactory.isImageCached(displaySong.thumbnailUrl)
-                }
-                
                 val isCustomImage = displaySong.thumbnailUrl?.let {
                     it.startsWith("file://") || it.contains("app_covers") || it.startsWith(MODIFIED_PREFIX)
                 } == true
@@ -280,16 +269,11 @@ fun SongItem(
 
             thumbnailOverlay()
 
-            // Use pre-computed like state if provided, otherwise query database
-            val likeState by if (preview != null || isLiked != null) {
-                remember(isLiked) { mutableStateOf(isLiked) }
-            } else {
-                remember( displaySong.id ) {
-                    Database.songTable
-                        .likeState( displaySong.id )
-                        .distinctUntilChanged()
-                }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
-            }
+            val likeState = if (preview == null && observeLikeState) {
+                remember(displaySong.id) {
+                    Database.songTable.likeState(displaySong.id).distinctUntilChanged()
+                }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA).value
+            } else isLiked
 
             // Only show icon for liked (true) or disliked (false), NEVER for neutral (null)
             if ( likeState != null )
@@ -390,8 +374,13 @@ fun SongItem(
                     )
                 } else {
                     val downloadStatesMap = LocalDownloadStatesMap.current
-                    val cacheState = downloadStatesMap[song.id] ?: downloadedStateMedia( song.id )
-                    val downloadState = getDownloadState( song.id )
+                    val sharedDownloads = LocalSongRowDownloads.current
+                    val sharedCache = LocalSongRowCachedIds.current
+                    val cacheState = downloadStatesMap[song.id]
+                        ?: if (sharedDownloads != null && sharedCache != null) {
+                            sharedDownloads.mediaState(song.id, song.id in sharedCache)
+                        } else downloadedStateMedia(song.id)
+                    val downloadState = sharedDownloads?.state(song.id) ?: getDownloadState(song.id)
 
                     val color = when( cacheState ) {
                         DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED -> colorPalette().textDisabled
@@ -411,7 +400,7 @@ fun SongItem(
                                 },
                             contentAlignment = Alignment.Center
                         ) {
-                            val progress = getDownloadProgress(song.id)
+                            val progress = sharedDownloads?.progress(song.id) ?: getDownloadProgress(song.id)
                             if (progress > 0.01f && downloadState == Download.STATE_DOWNLOADING) {
                                 CircularWavyProgressIndicator(
                                     progress = { progress },

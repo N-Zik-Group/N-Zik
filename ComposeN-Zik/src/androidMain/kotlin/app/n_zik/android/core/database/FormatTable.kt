@@ -29,6 +29,10 @@ interface FormatTable {
     """)
     suspend fun streamingCacheEntries(ids: List<String>): List<StreamingCacheEntry>
 
+    /** Reads format lengths for the rows displayed by a shared song shelf. */
+    @Query("SELECT songId, contentLength FROM Format WHERE songId IN (:ids) AND contentLength IS NOT NULL")
+    fun observeSongRowCacheEntries(ids: List<String>): Flow<List<StreamingCacheEntry>>
+
 
     /**
      * @return formats & songs of this table

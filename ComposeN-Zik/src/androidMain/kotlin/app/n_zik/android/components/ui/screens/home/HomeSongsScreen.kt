@@ -255,7 +255,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
 
     fun getMediaItems() = getSongs().map( Song::asMediaItem )
 
-    val search = Search(lazyListState)
+    val search = Search.forHome()
     val locator = Locator( lazyListState, ::getSongs )
     val import = ImportSongsFromCSV(sourceSuffix = "HOMESONGS", likeImported = builtInPlaylist == BuiltInPlaylist.Favorites, onImportComplete = {
         val prefs = appContext().preferences
@@ -836,7 +836,9 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     val headerOffsetState = remember { mutableFloatStateOf(0f) }
     val headerOffset by headerOffsetState
 
-    val nestedScrollConnection = rememberHomeHeaderConnection(headerHeight, headerOffsetState, itemsOnDisplayState.isNotEmpty())
+    val nestedScrollConnection = rememberHomeHeaderConnection(
+        headerHeight, headerOffsetState, itemsOnDisplayState.isNotEmpty(), scrollState = lazyListState,
+    )
 
     val floatingBackdrop = rememberGlassFloatingActionBackdrop()
 
@@ -856,8 +858,8 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
             Column( Modifier.fillMaxSize().glassFloatingActionContent(floatingBackdrop) ) {
                 val headerPadding = with(androidx.compose.ui.platform.LocalDensity.current) { headerHeight.toDp() }
                 when( builtInPlaylist ) {
-                    BuiltInPlaylist.OnDevice -> OnDeviceSong( navController, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, headerPadding, scrollContentInsetProvider )
-                    else                     -> HomeSongs( navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, matchButton = null, onRecommendationCountChange = { count -> recommendationCount = count }, onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading }, isRecommendationEnabled = isRecommendationEnabled, refreshKey = matchRefreshKey, onMatchClick = openMatch, headerPadding = headerPadding, topContentInsetProvider = scrollContentInsetProvider )
+                    BuiltInPlaylist.OnDevice -> OnDeviceSong( navController, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, headerPadding, scrollContentInsetProvider )
+                    else                     -> HomeSongs( navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, matchButton = null, onRecommendationCountChange = { count -> recommendationCount = count }, onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading }, isRecommendationEnabled = isRecommendationEnabled, refreshKey = matchRefreshKey, onMatchClick = openMatch, headerPadding = headerPadding, topContentInsetProvider = scrollContentInsetProvider )
                 }
             }
         }

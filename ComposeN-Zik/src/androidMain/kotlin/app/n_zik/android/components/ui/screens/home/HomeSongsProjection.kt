@@ -7,16 +7,14 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 
-/** Lists/maps are replaced, never mutated by HomeSongs; searched Song fields are immutable. */
-internal data class HomeSongsProjectionInput(
+internal data class HomeSongsBaseInput(
     val items: List<Song>,
-    val query: String,
     val recommendationsEnabled: Boolean,
     val recommendations: Map<Song, Int>,
     val parentalControlEnabled: Boolean,
 )
 
-internal suspend fun projectHomeSongsOnData(input: HomeSongsProjectionInput): List<Song> =
+internal suspend fun projectHomeSongsBase(input: HomeSongsBaseInput): List<Song> =
     withContext(NzikDispatchers.DATA) {
         val context = currentCoroutineContext()
         val ordered = input.items.toMutableList()
@@ -29,10 +27,17 @@ internal suspend fun projectHomeSongsOnData(input: HomeSongsProjectionInput): Li
         val seenIds = HashSet<String>()
         ordered.filter { song ->
             context.ensureActive()
-            // Deduplicate before filtering, exactly as the original projection did.
-            seenIds.add(song.id) &&
-                (!input.parentalControlEnabled || !song.title.startsWith(EXPLICIT_PREFIX, true)) &&
-                (song.cleanTitle().contains(input.query, true) ||
-                    song.cleanArtistsText().contains(input.query, true))
+            seenIds.add(song.id) && (!input.parentalControlEnabled || !song.title.startsWith(EXPLICIT_PREFIX, true))
         }
     }
+
+internal suspend fun searchHomeSongs(items: List<Song>, query: String): List<Song> {
+    if (query.isEmpty()) return items
+    return withContext(NzikDispatchers.DATA) {
+        val context = currentCoroutineContext()
+        items.filter { song ->
+            context.ensureActive()
+            song.cleanTitle().contains(query, true) || song.cleanArtistsText().contains(query, true)
+        }
+    }
+}

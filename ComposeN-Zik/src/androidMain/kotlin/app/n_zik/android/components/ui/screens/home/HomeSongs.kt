@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.screens.home
 
+import app.n_zik.android.compose.persist.persist
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.compactPlayTimeLabel
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
@@ -8,7 +9,6 @@ import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchNoResults
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -31,11 +32,11 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
@@ -46,9 +47,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.util.fastFilter
-import androidx.compose.ui.util.fastMap
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import app.n_zik.android.EXPLICIT_PREFIX
 import app.n_zik.android.enums.BuiltInPlaylist
@@ -96,16 +95,15 @@ import app.n_zik.android.utils.homeSongsDislikedSortMenuOrderKey
 import app.n_zik.android.utils.homeSongsDownloadedSortMenuOrderKey
 import app.n_zik.android.utils.homeSongsFavoritesSortMenuOrderKey
 import app.n_zik.android.utils.homeSongsTopSortMenuOrderKey
-import app.n_zik.android.utils.isDownloadedSong
 import app.n_zik.android.utils.manageDownload
 import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.utils.recommendationsNumberKey
+import app.n_zik.android.utils.playlistindicatorKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.themed.n_zik.component.playlist.PositionLock
 import app.n_zik.android.LocalPlayerServiceBinder
-import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.R
 import app.n_zik.android.bridge.library.SongRecommendations
 import app.n_zik.android.colorPalette
@@ -120,7 +118,6 @@ import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.components.tab.Search
 
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.core.database.ext.FormatWithSong
@@ -129,11 +126,11 @@ import app.n_zik.android.utils.autosyncLikesKey
 import app.n_zik.android.utils.importYTMLikedSongs
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import androidx.compose.runtime.saveable.rememberSaveable
-import app.n_zik.android.download.utils.MyDownloadHelper
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshotFlow
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.isUnmatched
-import app.n_zik.android.enums.DownloadedStateMedia
 import app.n_zik.android.enums.PlaylistSwipeAction
 import app.n_zik.android.utils.playlistSwipeLeftActionKey
 import app.n_zik.android.utils.playlistSwipeRightActionKey
@@ -148,12 +145,20 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import app.n_zik.android.components.LocalSongRowCachedIds
+import app.n_zik.android.components.LocalSongRowDownloads
+import app.n_zik.android.components.rememberSongRowCache
+import app.n_zik.android.components.rememberSongRowDownloads
+import app.n_zik.android.components.rememberSongRowMetadata
+import app.n_zik.android.components.rowLikeState
+import app.n_zik.android.components.song.resolveSongDisplayMetadata
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import timber.log.Timber
 import app.n_zik.android.enums.SortOrder
-import app.n_zik.android.utils.showDislikedPlaylistKey
 import app.n_zik.android.utils.excludeDislikedSongsKey
 import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
@@ -171,8 +176,7 @@ fun HomeSongs(
     itemSelector: ItemSelector<Song>,
     search: Search,
     buttons: MutableList<Button>,
-    itemsOnDisplay: MutableList<Song>,
-    getSongs: () -> List<Song>,
+    itemsOnDisplay: SnapshotStateList<Song>,
     matchButton: Button? = null,
     onRecommendationCountChange: (Int) -> Unit = {},
     onRecommendationsLoadingChange: (Boolean) -> Unit = {},
@@ -196,29 +200,9 @@ fun HomeSongs(
     val preview = LocalThemePreview.current
     var items by remember(preview) { mutableStateOf(if (preview != null) ThemePreviewDemo.songs else emptyList()) }
 
-    val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
-    val downloadedIds by remember {
-        derivedStateOf {
-            downloadsMapState.values
-                .filter { it.state == Download.STATE_COMPLETED }
-                .mapTo(HashSet()) { it.request.id }
-        }
-    }
-
-    var cachedSongIds by remember { mutableStateOf(emptySet<String>()) }
-
-    val downloadStatesMap by remember {
-        derivedStateOf {
-            items.associate { song ->
-                song.id to when {
-                    song.id in downloadedIds && song.id in cachedSongIds -> DownloadedStateMedia.CACHED_AND_DOWNLOADED
-                    song.id in downloadedIds -> DownloadedStateMedia.DOWNLOADED
-                    song.id in cachedSongIds -> DownloadedStateMedia.CACHED
-                    else -> DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
-                }
-            }
-        }
-    }
+    val downloads = rememberSongRowDownloads()
+    val playbackScope = rememberCoroutineScope()
+    var playbackJob by remember { mutableStateOf<Job?>(null) }
 
     val songSort = when( builtInPlaylist ) {
         BuiltInPlaylist.Favorites -> Sort( HOME_SONGS_FAVORITES_SORT_BY, HOME_SONGS_FAVORITES_SORT_ORDER, homeSongsFavoritesSortMenuOrderKey, "favs" )
@@ -228,6 +212,12 @@ fun HomeSongs(
         BuiltInPlaylist.Disliked -> Sort( HOME_SONGS_DISLIKED_SORT_BY, HOME_SONGS_DISLIKED_SORT_ORDER, homeSongsDislikedSortMenuOrderKey, "disliked" )
         else -> Sort( HOME_SONGS_SORT_BY, HOME_SONGS_SORT_ORDER, homeSongsAllSortMenuOrderKey, "all" )
     }
+    val needsDownloadedIds = builtInPlaylist == BuiltInPlaylist.Downloaded || songSort.sortBy == SongSortBy.Downloaded
+    val downloadedIds by remember(needsDownloadedIds, preview, downloads) {
+        if (!needsDownloadedIds || preview != null) flowOf(emptySet<String>())
+        else snapshotFlow { downloads.completedIds() }
+    }.collectAsStateWithLifecycle(emptySet(), context = NzikDispatchers.DATA)
+
     val positionLock = remember( songSort.sortOrder ) { PositionLock(songSort.sortOrder) }
     val topPlaylists = PeriodSelector( HOME_SONGS_TOP_PLAYLIST_PERIOD, homeSongsTopSortMenuOrderKey, "top" )
     val hiddenSongs = HiddenSongs()
@@ -274,7 +264,7 @@ fun HomeSongs(
     var isRecommendationsLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect( builtInPlaylist, topPlaylists.period, songSort.sortBy, songSort.sortOrder, hiddenSongs.isFirstIcon, refreshKey, filterBy,
-        binder.takeIf { builtInPlaylist == BuiltInPlaylist.Offline } ) {
+        binder.takeIf { builtInPlaylist == BuiltInPlaylist.Offline }, downloadedIds ) {
         if (preview != null) {
             isLoading = false
             return@LaunchedEffect
@@ -379,7 +369,6 @@ fun HomeSongs(
         val selectedFilter = filterBy
         val selectedPlaylist = builtInPlaylist
         retrievedSongs.map { retrieved ->
-                if (selectedPlaylist == BuiltInPlaylist.Offline) cachedSongIds = retrieved.mapTo(HashSet()) { it.id }
                 val songs = retrieved.filterNot(Song::isLocal)
                 when(selectedFilter) {
                     FilterBy.All -> songs
@@ -508,19 +497,42 @@ fun HomeSongs(
     }
 
     var completedSearchQuery by remember { mutableStateOf<String?>(null) }
-    val projectionInput = HomeSongsProjectionInput(
+    var hasCompletedSongProjection by persist("home/streamed-songs/loaded", false)
+    val filterScrollAnchor = persist("home/streamed-songs/filter-scroll", HomeFilterScrollAnchor()).value
+    val baseInput = HomeSongsBaseInput(
         items = items,
-        query = search.inputValue,
         recommendationsEnabled = isRecommendationEnabled,
         recommendations = relatedSongsPositions,
         parentalControlEnabled = parentalControlEnabled,
     )
-    LaunchedEffect(projectionInput) {
-        val newItems = projectHomeSongsOnData(projectionInput)
+    var baseSongs by remember { mutableStateOf(emptyList<Song>()) }
+    var baseReady by remember(baseInput, isLoading) { mutableStateOf(false) }
+    LaunchedEffect(baseInput, isLoading) {
+        if (isLoading) return@LaunchedEffect
+        baseSongs = projectHomeSongsBase(baseInput)
+        baseReady = true
+    }
+    val query = search.inputValue
+    LaunchedEffect(baseReady, baseSongs, query) {
+        if (!baseReady) return@LaunchedEffect
+        val candidates = baseSongs
+        val newItems = searchHomeSongs(candidates, query)
+        if (itemsOnDisplay != newItems) {
+            val index = lazyListState.firstVisibleItemIndex
+            filterScrollAnchor.update(
+                itemsOnDisplay.isNotEmpty(), newItems, Song::id,
+                index, lazyListState.firstVisibleItemScrollOffset,
+                lazyListState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }?.key,
+                lazyListState::requestScrollToItem,
+            )
+        }
         androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
-            itemsOnDisplay.clear()
-            itemsOnDisplay.addAll(newItems)
-            completedSearchQuery = projectionInput.query
+            if (itemsOnDisplay != newItems) {
+                itemsOnDisplay.clear()
+                itemsOnDisplay.addAll(newItems)
+            }
+            completedSearchQuery = query
+            hasCompletedSongProjection = true
         }
     }
 
@@ -571,20 +583,23 @@ fun HomeSongs(
     }
 
     val forceShimmer = forceLoadingShimmerPreview()
-    val resultsPending = isLoading || completedSearchQuery != search.inputValue
-    val showInitialSongPlaceholders = resultsPending && itemsOnDisplay.isEmpty()
+    val resultsPending = !baseReady || completedSearchQuery != search.inputValue
+    val showInitialSongPlaceholders = !hasCompletedSongProjection && itemsOnDisplay.isEmpty()
     SearchEmptyFeedback(
         query = search.inputValue,
         empty = showNoItems,
         loading = resultsPending,
     )
 
-    val songIds = remember(itemsOnDisplay) { itemsOnDisplay.map { it.id } }
-    val likeStatesMap by remember(songIds) {
-        if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else LikeStateManager.getLikeStates(songIds)
-    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
-    val playlistStatesMap by remember(songIds) {
-        if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else PlaylistStateManager.getPlaylistStates(songIds)
+    val songIds = remember(baseSongs) { baseSongs.map(Song::id) }
+    val cachedSongIds by rememberSongRowCache(songIds)
+    val recommendationIds = remember(relatedSongs) { relatedSongs.map(Song::id) }
+    val recommendationIdSet = remember(recommendationIds) { recommendationIds.toHashSet() }
+    val storedRecommendations by rememberSongRowMetadata(recommendationIds)
+    val showPlaylistIndicator by rememberPreference(playlistindicatorKey, false)
+    val playlistStatesMap by remember(songIds, preview, showPlaylistIndicator) {
+        if (preview != null || !showPlaylistIndicator) flowOf(emptyMap())
+        else PlaylistStateManager.getPlaylistStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     // Hoisted swipe action preferences
@@ -592,10 +607,13 @@ fun HomeSongs(
     val playlistSwipeRightAction by rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
 
     Box(modifier = Modifier.fillMaxSize()) {
-        androidx.compose.runtime.CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
+        androidx.compose.runtime.CompositionLocalProvider(
+            LocalSongRowDownloads provides downloads,
+            LocalSongRowCachedIds provides cachedSongIds,
+        ) {
             LazyColumn(
-                state = lazyListState,
-                userScrollEnabled = !isLoading,
+                state = if (showInitialSongPlaceholders) rememberLazyListState() else lazyListState,
+                userScrollEnabled = !isLoading || itemsOnDisplay.isNotEmpty(),
                 contentPadding = rememberPageChromeContentPadding(
                     topInsetProvider = topContentInsetProvider,
                     base = PaddingValues(bottom = Dimensions.bottomSpacer),
@@ -610,7 +628,7 @@ fun HomeSongs(
                     item(key = "song_loading") { SongItemPlaceholders(count = HomePlaceholderCount) }
                 }
                 itemsIndexed(
-                    items = itemsOnDisplay.distinctBy { it.id },
+                    items = itemsOnDisplay.toList(),
                     key = { _, song -> song.id }
                 ) { index, song ->
                     if (forceShimmer) {
@@ -621,9 +639,9 @@ fun HomeSongs(
                         reorderableLazyListState,
                         key = song.id
                     ) { isDraggingItem ->
-                        val mediaItem = song.asMediaItem
-                        val isLocal by remember { derivedStateOf { mediaItem.isLocal } }
-                        val isDownloaded = isLocal || isDownloadedSong( mediaItem.mediaId )
+                        val mediaItem = remember(song) { song.asMediaItem }
+                        val isLocal = mediaItem.isLocal
+                        val isDownloaded = isLocal || downloads.isDownloaded(mediaItem.mediaId)
 
                         Box(
                             modifier = Modifier
@@ -648,16 +666,21 @@ fun HomeSongs(
                                     }
                                 },
                                 onEnqueue = { binder?.player?.enqueue(mediaItem) },
-                                downloadStateParam = downloadsMapState[mediaItem.mediaId]?.state ?: Download.STATE_STOPPED,
-                                downloadedStateMediaParam = downloadStatesMap[mediaItem.mediaId] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
+                                downloadStateParam = downloads.rawState(mediaItem.mediaId),
+                                downloadedStateMediaParam = downloads.mediaState(mediaItem.mediaId, song.id in cachedSongIds),
                                 swipeLeftActionParam = playlistSwipeLeftAction,
                                 swipeRightActionParam = playlistSwipeRightAction
                             ) {
-                                val isRecommended = song in relatedSongs
+                                val isRecommended = song.id in recommendationIdSet
+                                val displaySong = if (isRecommended) {
+                                    resolveSongDisplayMetadata(song, storedRecommendations[song.id])
+                                } else song
                                 SongItem(
-                                    song = song,
-                                    isLiked = likeStatesMap[song.id],
-                                    inPlaylist = playlistStatesMap[song.id],
+                                    song = displaySong,
+                                    isLiked = displaySong.rowLikeState(),
+                                    observeLikeState = false,
+                                    observeStoredMetadata = false,
+                                    inPlaylist = playlistStatesMap[song.id] == true,
                                     itemSelector = itemSelector,
                                     navController = navController,
                                     isRecommended = isRecommended,
@@ -712,9 +735,21 @@ fun HomeSongs(
                                         if (preview == null && song.isUnmatched) {
                                             Toaster.w(R.string.player_matching_required_message)
                                         } else {
-                                            binder?.stopRadio()
-                                            val mediaItems = getSongs().fastMap( Song::asMediaItem )
-                                            binder?.player?.forcePlayAtIndex( mediaItems, index )
+                                            val playerBinder = binder
+                                            if (playerBinder != null) {
+                                                val targets = itemSelector.toList().ifEmpty { itemsOnDisplay.toList() }
+                                                playbackJob?.cancel()
+                                                playbackJob = playbackScope.launch {
+                                                    val mediaItems = withContext(NzikDispatchers.MEDIA) {
+                                                        targets.filterNot(Song::isLocal).map(Song::asMediaItem)
+                                                    }
+                                                    val startIndex = mediaItems.indexOfFirst { it.mediaId == song.id }
+                                                    if (startIndex >= 0) {
+                                                        playerBinder.stopRadio()
+                                                        playerBinder.player.forcePlayAtIndex(mediaItems, startIndex)
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 )
