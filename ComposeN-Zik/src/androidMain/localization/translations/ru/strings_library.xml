@@ -394,6 +394,15 @@
     <string name="song_matching_all_confirmation">Вы хотите совпадать с %d песнями?</string>
     <string name="song_matching_dialog_title">Совпадение песен</string>
     <string name="song_matching_progress_title">Соответствующие песни</string>
+    <string name="song_matching_background_message">Соответствие продолжается в фоновом режиме.</string>
+    <string name="song_matching_notification_progress">%1$d of %2$d songs</string>
+    <string name="song_matching_cancelled_title">Подбор песни отменен</string>
+    <string name="song_matching_unprocessed_count">%1$d не обработан</string>
+    <string name="song_matching_notification_completed">%1$d songs matched. %2$d merged with existing songs.</string>
+    <string name="song_matching_notification_partial">%1$d совпадает, %2$d не удалось, %3$d не обработан. %4$d слит.</string>
+    <string name="song_matching_notification_cancelled">Отменено. %1$d совпадает, %2$d не удалось обработать, %3$d не обработан. %4$d слит.</string>
+    <string name="song_matching_notification_failed">Сбой сопоставления песен. %1$d совпадает, %2$d не удалось, %3$d не обработан. %4$d объединен.</string>
+    <string name="song_matching_failed_message">Не удалось завершить сопоставление песен. Попробуйте еще раз.</string>
     <string name="song_matching_running_message">Соответствующие песни. Пожалуйста, подождите. Не сворачивайте и не выходите из приложения</string>
     <string name="song_matching_unmatched_label">Несовпадающая песня</string>
     <string name="metadata_musicbrainz_rating">Рейтинг</string>
