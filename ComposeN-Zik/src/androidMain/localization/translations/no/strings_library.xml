@@ -394,6 +394,15 @@
     <string name="song_matching_all_confirmation">Vil du matche %d umatchede sanger?</string>
     <string name="song_matching_dialog_title">Match sanger</string>
     <string name="song_matching_progress_title">Matchende sanger</string>
+    <string name="song_matching_background_message">Matchingen fortsetter i bakgrunnen.</string>
+    <string name="song_matching_notification_progress">%1$d av %2$d sanger</string>
+    <string name="song_matching_cancelled_title">Sang matching avbrutt</string>
+    <string name="song_matching_unprocessed_count">%1$d ikke behandlet</string>
+    <string name="song_matching_notification_completed">%1$d sanger samsvart. %2$d slått sammen med eksisterende sanger.</string>
+    <string name="song_matching_notification_partial">%1$d samsvart, %2$d mislyktes, %3$d ikke behandlet. %4$d sammenslått.</string>
+    <string name="song_matching_notification_cancelled">Avbrutt. %1$d samsvart, %2$d mislyktes, %3$d ikke behandlet. %4$d sammenslått.</string>
+    <string name="song_matching_notification_failed">Sangen samsvarende mislyktes. %1$d samsvart, %2$d mislyktes, %3$d ikke behandlet. %4$d sammenslått.</string>
+    <string name="song_matching_failed_message">Kunne ikke fullføre sangen som matcher. Prøv igjen.</string>
     <string name="song_matching_running_message">Matchende sanger. Vent. Ikke Minimer eller avslutt appen</string>
     <string name="song_matching_unmatched_label">Umatchet sang</string>
     <string name="metadata_musicbrainz_rating">Vurdering</string>
