@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,6 +37,14 @@ fun rememberArtworkDisplayColors(
 internal data class ArtworkDisplayResult(val colors: ArtworkDisplayColors?, val resolved: Boolean)
 
 @Composable
+internal fun rememberScopedArtworkColorRevision(uri: String?, profile: String): Long {
+    val observation = remember(uri, profile) { SharedArtworkColors.observe(uri, profile) } ?: return 0L
+    return key(observation) {
+        observation.revision.collectAsStateWithLifecycle(context = NzikDispatchers.DATA).value
+    }
+}
+
+@Composable
 internal fun rememberArtworkDisplayResult(
     uri: String?,
     isDark: Boolean,
@@ -58,10 +67,11 @@ internal fun rememberArtworkDisplayResult(
         onDispose { preferences.unregisterOnSharedPreferenceChangeListener(listener) }
     }
     val generation by SharedArtworkColors.generation.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
+    val sourceRevision = rememberScopedArtworkColorRevision(uri, profile)
     val localRevision = ImageCacheFactory.rememberLocalArtworkRevision(rememberDisplayArtworkSource(uri))
     var raw by remember(profile) { mutableStateOf<ArtworkColorSnapshot?>(null) }
     val missingUri = uri.isNullOrBlank() || uri == "null"
-    val request = remember(uri, profile, revision, generation, localRevision, awaitArtworkMetadata) { Any() }
+    val request = remember(uri, profile, revision, generation, sourceRevision, localRevision, awaitArtworkMetadata) { Any() }
     var completedRequest by remember { mutableStateOf<Any?>(null) }
     LaunchedEffect(request) {
         if (missingUri && awaitArtworkMetadata) delay(ARTWORK_METADATA_GRACE_MS)

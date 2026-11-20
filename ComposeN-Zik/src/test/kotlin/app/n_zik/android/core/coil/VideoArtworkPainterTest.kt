@@ -33,6 +33,9 @@ import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.appContext
 import app.n_zik.android.components.player.ArtworkColorSnapshot
 import app.n_zik.android.components.player.SharedArtworkColors
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewAssets
+import app.n_zik.android.components.settings.appearance.preview.rememberThemePreviewAppearance
+import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.playback.services.ArtworkContentProvider
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import coil3.ImageLoader
@@ -115,6 +118,43 @@ class VideoArtworkPainterTest {
     @Test fun `mounted wide video responds to crop changes through the real painter factory`() =
         checkMountedPainter(160, 80, VIDEO_URL, appliesCrop = true)
 
+    @Test fun `player keeps the loaded cover while the same request refreshes`() {
+        val loaded = AtomicInteger()
+        lateinit var mountedPainter: AsyncImagePainter
+        source = Bitmap.createBitmap(40, 40, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.GREEN) }
+        compose.setContent {
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                ColorPalette.fallback, Typography.fallback, CircleShape, CircleShape, CircleShape,
+            )) {
+                val painter = ImageCacheFactory.Painter(
+                    VIDEO_URL, playerArtworkMediaId = "video", onSuccess = { loaded.incrementAndGet() },
+                )
+                SideEffect { mountedPainter = painter }
+                Image(
+                    painter = painter,
+                    contentDescription = null,
+                    modifier = Modifier.size(80.dp).background(ComposeColor.Black).testTag("retainedCover"),
+                )
+            }
+        }
+        fun centerPixel(): Int {
+            val image = compose.onNodeWithTag("retainedCover").captureToImage().asAndroidBitmap()
+            return image.getPixel(image.width / 2, image.height / 2)
+        }
+        compose.waitUntil(10_000) { loaded.get() >= 1 }
+        assertEquals(Color.GREEN, centerPixel())
+
+        val gate = CompletableDeferred<Unit>()
+        requestGate = gate
+        try {
+            compose.runOnIdle { mountedPainter.restart() }
+            compose.waitUntil(10_000) { requests.get() >= 2 }
+            assertEquals(Color.GREEN, centerPixel())
+        } finally {
+            gate.complete(Unit)
+        }
+    }
+
     @Test fun `delayed real painter supplies shared colors without canonical decode`() {
         val url = "https://example.com/elected-painter.jpg"
         val gate = CompletableDeferred<Unit>()
@@ -176,6 +216,28 @@ class VideoArtworkPainterTest {
         assertEquals(listOf("https://i.ytimg.com/vi/video/maxresdefault.jpg"), requestedModels.toList())
     }
 
+    @Test fun `cold palette extraction decodes the same effective video source as the painter`() {
+        val video = "https://i.ytimg.com/vi/palette-cold/hqdefault.jpg"
+        val remote = requireNotNull(ArtworkContentProvider.uriForRemote(video, previousProfile, true, 0))
+        source = Bitmap.createBitmap(80, 40, Bitmap.Config.ARGB_8888).apply {
+            eraseColor(Color.BLUE)
+        }
+
+        val colors = AtomicReference<Result<Pair<ArtworkColorSnapshot, ArtworkColorSnapshot?>>?>()
+        compose.setContent {
+            LaunchedEffect(remote) {
+                colors.set(runCatching {
+                    val cold = checkNotNull(SharedArtworkColors.load(context, "pinned:$remote"))
+                    cold to SharedArtworkColors.load(context, video)
+                })
+            }
+        }
+        compose.waitUntil(10_000) { colors.get() != null }
+        val (cold, direct) = checkNotNull(colors.get()).getOrThrow()
+        assertSame(cold, direct)
+        assertEquals(listOf("https://i.ytimg.com/vi/palette-cold/maxresdefault.jpg"), requestedModels.toList())
+    }
+
     @Test fun `provider normalization rejects wrong profiles expired signatures and tampering`() {
         val uri = requireNotNull(ArtworkContentProvider.uriForRemote(VIDEO_URL, previousProfile, true, 0))
         assertEquals(VIDEO_URL, displayArtworkSource(uri.toString(), previousProfile))
@@ -185,6 +247,29 @@ class VideoArtworkPainterTest {
         assertEquals(expired, displayArtworkSource(expired, previousProfile))
         val tampered = uri.toString().replace("c=true", "c=false")
         assertEquals(tampered, displayArtworkSource(tampered, previousProfile))
+    }
+
+    @Test fun `forced light and dark previews share the demo atlas artwork decode`() {
+        val document = """{"schemaVersion":2,"categories":{"colors":{"palette":"dynamic","mode":"system"}}}"""
+        val atlasUri = ThemePreviewAssets.file(context, "atlas.jpg").toURI().toString()
+        source = Bitmap.createBitmap(40, 40, Bitmap.Config.ARGB_8888).apply {
+            eraseColor(Color.rgb(10, 155, 215))
+        }
+        SharedArtworkColors.invalidate()
+        val snapshot = AtomicReference<ArtworkColorSnapshot?>()
+        val displayed = AtomicReference<Pair<ColorPalette, ColorPalette>>()
+        compose.setContent {
+            val light = rememberThemePreviewAppearance(document, false, ColorPaletteMode.Light)
+            val dark = rememberThemePreviewAppearance(document, true, ColorPaletteMode.Dark)
+            SideEffect { displayed.set(light.appearance.colorPalette to dark.appearance.colorPalette) }
+            LaunchedEffect(atlasUri) { snapshot.set(SharedArtworkColors.load(context, atlasUri)) }
+        }
+        compose.waitUntil(10_000) {
+            snapshot.get()?.let { artwork ->
+                displayed.get() == (artwork.lightPalette to artwork.darkPalette)
+            } == true
+        }
+        assertEquals(listOf(atlasUri), requestedModels.toList())
     }
 
     @Test fun `local private artist and custom provider sources retain their identity`() {

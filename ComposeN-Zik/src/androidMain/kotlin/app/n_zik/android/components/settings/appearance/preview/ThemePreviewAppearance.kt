@@ -1,6 +1,5 @@
 package app.n_zik.android.components.settings.appearance.preview
 
-import android.graphics.BitmapFactory
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,14 +10,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.withContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.components.glass.GlassQuality
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.glass.glassSettingsFromPreferences
 import app.n_zik.android.components.theme.forPaletteMode
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
-import app.n_zik.android.components.player.analyzeArtworkColors
+import app.n_zik.android.components.player.ArtworkColorSnapshot
+import app.n_zik.android.components.player.SharedArtworkColors
+import app.n_zik.android.components.player.rememberScopedArtworkColorRevision
+import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.settings.DefaultColorPaletteMode
 import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.enums.ColorPaletteName
@@ -41,6 +43,7 @@ import app.n_zik.android.utils.uiRoundnessDpKey
 import app.n_zik.android.utils.useSystemFontKey
 import app.n_zik.android.utils.preferences
 import com.kieronquinn.monetcompat.core.MonetCompat
+import kotlinx.coroutines.CancellationException
 import timber.log.Timber
 
 internal data class ThemePreviewAppearance(
@@ -121,17 +124,27 @@ private fun rememberPreviewAppearance(
             else -> fallback
         }
     }
-    val artworkPalette by produceState(base, context, paletteName, dark, base, preferences[dynamicThemeRespectBrightnessKey]) {
-        if (!useApplicationPreferences && paletteName == ColorPaletteName.Dynamic) value = withContext(NzikDispatchers.DATA) {
-            val bitmap = BitmapFactory.decodeFile(ThemePreviewAssets.file(context, "atlas.jpg").path)
-            try {
-                bitmap?.let { analyzeArtworkColors(it).display(
-                    dark, preferences[dynamicThemeRespectBrightnessKey] == true,
-                ).palette } ?: base
-            } finally {
-                bitmap?.recycle()
+    val artworkColors = if (!useApplicationPreferences && paletteName == ColorPaletteName.Dynamic) {
+        val atlasUri = remember(context) { ThemePreviewAssets.file(context, "atlas.jpg").toURI().toString() }
+        val profile = ImageCacheFactory.rememberArtworkProfile()
+        val revision = ImageCacheFactory.rememberLocalArtworkRevision(atlasUri)
+        val generation by SharedArtworkColors.generation.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
+        val sourceRevision = rememberScopedArtworkColorRevision(atlasUri, profile)
+        val colors by produceState<ArtworkColorSnapshot?>(null, context, atlasUri, profile, revision, generation, sourceRevision) {
+            value = try {
+                SharedArtworkColors.load(context, atlasUri)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                Timber.tag("ThemePreview").w(error, "Demo artwork colors are unavailable")
+                null
             }
-        } else value = base
+        }
+        colors
+    } else null
+    val keepDark = preferences[dynamicThemeRespectBrightnessKey] == true
+    val artworkPalette = remember(artworkColors, dark, keepDark, base) {
+        artworkColors?.display(dark, keepDark)?.palette ?: base
     }
     val appearance = remember(artworkPalette, preferences, paletteMode) {
         val radius = preferences[thumbnailRoundnessDpKey] as? Float ?: 12f

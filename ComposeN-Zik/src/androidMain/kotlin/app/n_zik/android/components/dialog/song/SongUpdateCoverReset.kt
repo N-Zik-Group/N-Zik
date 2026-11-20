@@ -29,14 +29,15 @@ internal object SongUpdateCoverReset {
             Timber.tag("Database").w("update cover reset refused invalid song id")
             return
         }
-        if (file.exists() && !file.delete()) {
+        val ownedFileExisted = file.exists()
+        if (ownedFileExisted && !file.delete()) {
             throw IOException("Could not remove song-owned cover")
         }
         val keys = setOfNotNull(
             previousUrl?.let(::cleanPrefix), refreshedUrl?.let(::cleanPrefix),
-            file.absolutePath, Uri.fromFile(file).toString(),
+            file.absolutePath.takeIf { ownedFileExisted }, Uri.fromFile(file).toString().takeIf { ownedFileExisted },
         )
-        ImageCacheFactory.refreshArtworkSourcesOrThrow(keys)
+        ImageCacheFactory.refreshArtworkSourcesOrThrow(keys, requestProfile)
     }
 
     // Never treat a URL or an arbitrary stored local path as a deletion target.

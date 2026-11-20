@@ -49,6 +49,12 @@ internal class DisplayedArtworkRegistry(private val waitMillis: Long = 180L) {
         return { state.update { it.copy(entries = it.entries - entry) } }
     }
 
+    fun invalidateSources(profile: String, matches: (String) -> Boolean) {
+        state.update { current ->
+            current.copy(entries = current.entries.filterNot { it.source.profile == profile && matches(it.source.uri) })
+        }
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun await(source: ArtworkSource, fileRevision: String): Bitmap? {
         fun State.selection() = Selection(

@@ -3,8 +3,11 @@ package app.n_zik.android.core.coil
 import app.n_zik.android.appTextResources
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.SystemClock
 import androidx.annotation.DrawableRes
+import androidx.collection.LruCache
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -15,6 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -40,6 +46,7 @@ import kotlinx.coroutines.launch
 import coil3.compose.AsyncImagePainter
 import coil3.compose.AsyncImagePainter.State
 import coil3.compose.SubcomposeAsyncImage
+import coil3.compose.asPainter
 import coil3.compose.rememberAsyncImagePainter
 import coil3.decode.DataSource
 import coil3.disk.DiskCache
@@ -47,6 +54,7 @@ import coil3.memory.MemoryCache
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.ErrorResult
 import coil3.request.CachePolicy
+import coil3.size.Precision
 import coil3.size.Scale
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
@@ -84,7 +92,6 @@ import okio.Path.Companion.toOkioPath
 import java.io.File
 import java.io.InputStream
 import java.security.MessageDigest
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import app.n_zik.android.core.network.client.GlobalNetworkLogger
 import app.n_zik.android.core.network.client.NetworkClientFactory
@@ -95,8 +102,21 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okio.buffer
 import timber.log.Timber
 
+private class PlayerArtworkContinuity(var painter: Painter? = null)
+
 @OptIn(ExperimentalCoilApi::class)
 object ImageCacheFactory {
+
+    private val launcherArtwork = lazy {
+        val options = BitmapFactory.Options().apply { inScaled = false }
+        BitmapFactory.decodeResource(appContext().resources, R.drawable.ic_launcher_box, options).asImageBitmap()
+    }
+
+    /** The bundled artwork is profile-independent. Each caller owns its painter and shares pixels. */
+    @Composable
+    internal fun rememberArtworkResourcePainter(@DrawableRes id: Int = R.drawable.ic_launcher_box): Painter =
+        if (id == R.drawable.ic_launcher_box) remember { BitmapPainter(launcherArtwork.value) }
+        else painterResource(id)
 
     /** Builds the Coil loader used before application dependencies are initialized. */
     internal fun bootstrapLoader(context: Context): ImageLoader = ImageLoader.Builder(context).build()
@@ -171,9 +191,11 @@ object ImageCacheFactory {
     }
 
     private const val COOLDOWN_MS = 10 * 1000L
+    private const val NETWORK_SAMPLE_MAX_AGE_MS = 1_000L
     private val cooldownMap = ArtworkQualityCooldown(COOLDOWN_MS)
-    private val cacheKeyMap = ConcurrentHashMap<String, String>()
+    private val cacheKeyMap = LruCache<String, String>(4096)
     private val storeVersion = MutableStateFlow(0)
+    private val playerArtworkCacheEpoch = MutableStateFlow(0)
     private val diskRevisions = ArtworkDiskRevisions()
 
     internal object PlaylistThumbnailStore {
@@ -254,7 +276,9 @@ object ImageCacheFactory {
         fun save(url: String, quality: NetworkQuality) {
             try {
                 val key = url.hashCode().toString()
-                updateCleanupMetadata { getPrefs().edit().putString(key, "${quality.name}:${System.currentTimeMillis()}").apply() }
+                val preferences = getPrefs()
+                if (preferences.getString(key, null)?.substringBefore(":") == quality.name) return
+                updateCleanupMetadata { preferences.edit().putString(key, "${quality.name}:${System.currentTimeMillis()}").apply() }
             } catch (error: Exception) {
                 Timber.tag("ImageCacheFactory").w("Unable to store image cache quality (%s)", error.javaClass.simpleName)
             }
@@ -296,6 +320,7 @@ object ImageCacheFactory {
             .memoryCache { MemoryCache.Builder().maxSizePercent(appContext(), 0.15).strongReferencesEnabled(true).build() }
             .diskCache(DISK_CACHE)
             .components {
+                add(PlayerArtworkDecodeInterceptor())
                 add(OkHttpNetworkFetcherFactory(
                     callFactory = { request: Request ->
                         NetworkClientFactory.getClient().newCall(request)
@@ -323,13 +348,14 @@ object ImageCacheFactory {
         }
 
         val cacheKey = "${url}_${quality.size}"
-        return cacheKeyMap.getOrPut(cacheKey) {
+        cacheKeyMap.get(cacheKey)?.let { return it }
+        return run {
             try {
                 val md = MessageDigest.getInstance("MD5")
                 val digest = md.digest(url.toByteArray())
                 digest.fold("") { str, it -> str + "%02x".format(it) }
             } catch (e: Exception) { "${url.hashCode()}_${quality.size}" }
-        }
+        }.also { cacheKeyMap.put(cacheKey, it) }
     }
 
     private fun isRemoteArtworkSource(url: String): Boolean =
@@ -352,6 +378,22 @@ object ImageCacheFactory {
     internal fun artworkColorSource(url: String?, profile: String): ArtworkSource? =
         displayArtworkSource(url, profile)?.let(::cleanPrefix)?.takeUnless { it.isBlank() || it == "null" }
             ?.let { currentArtworkSource(it, profile) }
+
+    /** Aliases share invalidation, while extraction still distinguishes crops and exact source URIs. */
+    internal fun artworkColorIdentity(url: String?, profile: String): String? {
+        val cleaned = url?.let(::cleanPrefix)?.takeUnless { it.isBlank() || it == "null" } ?: return null
+        val source = signedRemoteArtworkSource(cleaned, profile) ?: cleaned
+        if (source.startsWith("file:", ignoreCase = true)) return Uri.parse(source).path ?: source
+        val remote = source.toHttpUrlOrNull() ?: return source
+        val path = remote.pathSegments
+        if (remote.host == "i.ytimg.com" && path.size >= 3 &&
+            path.first() in setOf("vi", "pl_c", "podcasts_artwork")
+        ) return "https://i.ytimg.com/${path[0]}/${path[1]}"
+        if (remote.host == "yt3.ggpht.com" || remote.host == "googleusercontent.com" ||
+            remote.host.endsWith(".googleusercontent.com")
+        ) return source.thumbnail(ORIGINAL_SOURCE_SIZE)
+        return source
+    }
 
     private fun currentArtworkSource(uri: String, profile: String) = ArtworkSource(
         profile, uri, if (isLocalArtworkSource(uri)) ArtworkRevisions.current() else 0L,
@@ -400,22 +442,25 @@ object ImageCacheFactory {
 
     fun clearCacheForKey(url: String?, quality: NetworkQuality, invalidateColors: Boolean = true) {
         if (url == null) return
+        val profile = if (invalidateColors) getActiveProfile(appContext()) else null
         val key = generateCacheKeySync(url, quality)
         try {
             evictCacheKey(key)
         } catch (error: Exception) {
             Timber.tag("ImageCacheFactory").w("Unable to evict image cache key (%s)", error.javaClass.simpleName)
         }
-        // Publish only after pixel eviction, so new-generation readers cannot see old cache entries.
-        if (invalidateColors) SharedArtworkColors.invalidate(url)
+        // Publish only after pixel eviction so palette readers cannot reuse the evicted pixels.
+        if (profile != null) SharedArtworkColors.invalidateSources(setOf(url), profile)
     }
 
     /** Explicit update actions must report failed eviction instead of claiming a complete cover reset. */
-    internal fun refreshArtworkSourcesOrThrow(urls: Set<String>) = synchronized(diskMutationLock) {
+    internal fun refreshArtworkSourcesOrThrow(urls: Set<String>, profile: String) = synchronized(diskMutationLock) {
         val sources = urls.flatMapTo(mutableSetOf()) { url ->
-            val effective = displayArtworkSource(url)?.let(::cleanPrefix) ?: url
+            val cleaned = cleanPrefix(url)
+            val effective = signedRemoteArtworkSource(cleaned, profile) ?: cleaned
             buildSet {
                 add(url)
+                add(cleaned)
                 add(effective)
                 if (effective.toHttpUrlOrNull() != null) addAll(coverSourceCandidates(effective))
                 effective.thumbnail(ORIGINAL_SOURCE_SIZE)?.let(::add)
@@ -428,15 +473,19 @@ object ImageCacheFactory {
         diskRevisions.refresh(sources.filter(::isRemoteArtworkSource).flatMapTo(mutableSetOf()) { url ->
             NetworkQuality.entries.map { artworkBaseKey(url, it) }
         })
-        ArtworkRevisions.invalidate()
+        if (sources.any(::isLocalArtworkSource)) ArtworkRevisions.invalidate()
+        SharedArtworkColors.invalidateSources(sources, profile)
         storeVersion.update { it + 1 }
-        SharedArtworkColors.invalidate()
     }
 
     private fun evictCacheKey(key: String) {
         LOADER.memoryCache?.remove(MemoryCache.Key(key))
         DISK_CACHE.remove(key)
     }
+
+    private data class NetworkSample(val quality: NetworkQuality, val measuredAt: Long)
+
+    @Volatile private var lastNetworkSample: NetworkSample? = null
 
     fun getNetworkQuality(): NetworkQuality {
         val context = appContext()
@@ -452,12 +501,17 @@ object ImageCacheFactory {
             }
         }
 
-        // Otherwise, delegate to centralized helper for AUTO mode
+        // Several visible artwork requests in the same frame can use the same bandwidth sample.
+        val now = SystemClock.elapsedRealtime()
+        lastNetworkSample?.takeIf { now - it.measuredAt < NETWORK_SAMPLE_MAX_AGE_MS }?.let {
+            return it.quality
+        }
         val detectedQuality = when (NetworkQualityHelper.getCurrentNetworkQuality(context)) {
             NZikNetworkQuality.HIGH -> NetworkQuality.HIGH
             NZikNetworkQuality.MEDIUM -> NetworkQuality.MEDIUM
             else -> NetworkQuality.LOW
         }
+        lastNetworkSample = NetworkSample(detectedQuality, now)
         // GlobalNetworkLogger.logNetworkState("Image_Factory", -1, false, "AUTO", detectedQuality.name)
         return detectedQuality
     }
@@ -476,6 +530,7 @@ object ImageCacheFactory {
     fun getCurrentNetworkQuality(): NetworkQuality = getActualNetworkQuality()
 
     internal fun refreshArtworkQuality() {
+        cooldownMap.clear()
         storeVersion.update { it + 1 }
     }
 
@@ -486,29 +541,37 @@ object ImageCacheFactory {
 
         if (keepsOriginalArtwork(appContext())) return DownloadDecision(true, NetworkQuality.HIGH, original = true)
 
-        return cooldownMap.decide(thumbnailUrl, System.currentTimeMillis(), CacheMetadataStore.get(thumbnailUrl),
+        return cooldownMap.decide(thumbnailUrl, SystemClock.elapsedRealtime(), CacheMetadataStore.get(thumbnailUrl),
             ::getNetworkQuality)
     }
 
     /** The displayed cover and prefetch share the pending request size until it resolves. */
     internal class ArtworkQualityCooldown(private val durationMillis: Long) {
         private data class Attempt(val startedAt: Long, val quality: NetworkQuality)
-        private val attempts = ConcurrentHashMap<String, Attempt>()
+        private val attempts = LruCache<String, Attempt>(512)
+        private var generation = 0L
 
         fun decide(source: String, now: Long, cached: NetworkQuality?, available: () -> NetworkQuality): DownloadDecision {
-            val attempt = attempts.compute(source) { _, previous ->
-                if (previous != null && (now - previous.startedAt) in 0 until durationMillis) {
-                    previous.takeIf { cached == null || it.quality > cached }
-                } else {
-                    val desired = available()
-                    if (cached == null || desired > cached) Attempt(now, desired) else null
+            if (cached == NetworkQuality.HIGH) return DownloadDecision(false, cached)
+            fun recentAttempt() = attempts.get(source)?.takeIf { now - it.startedAt < durationMillis }
+            val probeGeneration = synchronized(attempts) { generation }
+            val desired = recentAttempt()?.quality ?: available()
+            // The network detector can make Binder calls. Only serialize the cache lookup and write.
+            val quality = synchronized(attempts) {
+                val recent = recentAttempt()
+                val chosen = recent?.quality ?: desired
+                if (probeGeneration == generation && recent == null && (cached == null || chosen > cached)) {
+                    attempts.put(source, Attempt(now, chosen))
                 }
+                maxOf(cached ?: NetworkQuality.LOW, chosen)
             }
-            val quality = maxOf(cached ?: NetworkQuality.LOW, attempt?.quality ?: NetworkQuality.LOW)
             return DownloadDecision(cached == null || quality > cached, quality)
         }
 
-        fun clear() = attempts.clear()
+        fun clear() = synchronized(attempts) {
+            generation++
+            attempts.evictAll()
+        }
     }
 
     @Composable
@@ -544,7 +607,7 @@ object ImageCacheFactory {
                 showFallback = true
             }
             Image(
-                painter = if (showFallback) painterResource(R.drawable.ic_launcher_box) else loadingPainter,
+                painter = if (showFallback) rememberArtworkResourcePainter() else loadingPainter,
                 contentDescription = null,
                 modifier = imageModifier.fillMaxSize().imageLoadingBackground(loadingPainter) { !showFallback },
                 contentScale = resolvedScale
@@ -605,8 +668,8 @@ object ImageCacheFactory {
             contentScale = resolvedScale,
             modifier = imageModifier.imageLoadingBackground(loadingPainter) { loading.value },
             placeholder = loadingPainter,
-            error = painterResource(R.drawable.ic_launcher_box),
-            fallback = painterResource(R.drawable.ic_launcher_box),
+            error = rememberArtworkResourcePainter(),
+            fallback = rememberArtworkResourcePainter(),
             onLoading = { loading.value = true },
             onSuccess = { loading.value = false },
             onError = { loading.value = false },
@@ -625,6 +688,8 @@ object ImageCacheFactory {
         onError: ((State.Error) -> Unit)? = null,
         publishArtworkColors: Boolean = false,
         onArtworkDrawn: (() -> Unit)? = null,
+        playerArtworkMediaId: String? = null,
+        sharePlayerArtwork: Boolean = false,
     ): AsyncImagePainter {
         val sourceUrl = rememberDisplayArtworkSource(thumbnailUrl)
         val transformArtwork = rememberVideoArtworkPainterTransform(sourceUrl, contentScale)
@@ -655,8 +720,8 @@ object ImageCacheFactory {
                 imageLoader = LOADER,
                 contentScale = contentScale,
                 placeholder = loadingPainter,
-                error = painterResource(error),
-                fallback = painterResource(fallback)
+                error = rememberArtworkResourcePainter(error),
+                fallback = rememberArtworkResourcePainter(fallback)
             )
         }
 
@@ -669,9 +734,14 @@ object ImageCacheFactory {
         val stamp = fileRevision.orEmpty()
         val cacheKey = generateCacheKeySync(attemptedUrl, decision.quality).withFileRevision(stamp)
         val requestedData = attemptedUrl.takeIf { fileUrl == null || fileRevision != null }
-        val requestProfile = if (publishArtworkColors) rememberArtworkProfile()
+        val usesPlayerArtwork = sharePlayerArtwork || playerArtworkMediaId != null
+        val requestProfile = if (publishArtworkColors || usesPlayerArtwork) rememberArtworkProfile()
             else remember(validUrl, version, localRevision) { getActiveProfile(appContext()) }
         val colorSource = validUrl?.let { ArtworkSource(requestProfile, it, localRevision, remoteRevision) }
+        val cacheEpoch = if (usesPlayerArtwork) playerArtworkCacheEpoch.collectAsStateWithLifecycle().value else 0
+        val retainedArtwork = if (playerArtworkMediaId != null) {
+            remember(requestProfile, playerArtworkMediaId, cacheEpoch) { PlayerArtworkContinuity() }
+        } else null
         fun isCurrentRequest(): Boolean = requestedData != null && attemptedUrl == currentUrl &&
             getActiveProfile(appContext()) == requestProfile &&
             (colorSource == null || isCurrentArtworkSource(colorSource)) &&
@@ -681,6 +751,11 @@ object ImageCacheFactory {
             .data(requestedData)
             .diskCacheKey(cacheKey)
             .memoryCacheKey(cacheKey)
+            .apply {
+                if (usesPlayerArtwork) {
+                    extras[PlayerArtworkDecodeScope.extra] = PlayerArtworkDecodeScope(requestProfile, cacheEpoch)
+                }
+            }
             .listener(
                 onSuccess = { _, result ->
                     if (!isCurrentRequest()) return@listener
@@ -717,13 +792,16 @@ object ImageCacheFactory {
         val sizedRequest = if (isFileArtwork(currentUrl) || decision.original) {
             request.newBuilder().size(displayEdge, displayEdge).build()
         } else request
+        val displayRequest = if (playerArtworkMediaId != null) {
+            sizedRequest.newBuilder().precision(Precision.INEXACT).crossfade(false).build()
+        } else sizedRequest
 
         // Coil's CrossfadePainter freezes intrinsicSize and keeps applying its original Crop
         // after the fade ends, preventing this painter's live Crop/Fit geometry from taking over.
         val painterRequest = if (isVideoArtwork(sourceUrl) && contentScale == ContentScale.Crop) {
-            sizedRequest.newBuilder().crossfade(false).build()
-        } else sizedRequest
-        val errorPainter = painterResource(error)
+            displayRequest.newBuilder().crossfade(false).build()
+        } else displayRequest
+        val errorPainter = rememberArtworkResourcePainter(error)
         val reportScope = if (onArtworkDrawn != null) rememberCoroutineScope() else null
         fun matches(result: ImageRequest): Boolean =
             result.data == requestedData && result.memoryCacheKey == cacheKey && isCurrentRequest()
@@ -735,22 +813,35 @@ object ImageCacheFactory {
                 }
             } else source
 
+        fun readyArtwork(): Painter? = retainedArtwork?.painter ?: if (playerArtworkMediaId != null && requestedData != null) {
+            LOADER.memoryCache?.get(MemoryCache.Key(cacheKey))?.image?.let {
+                transformArtwork(it.asPainter(appContext()))
+            }
+        } else null
+
         val painter = rememberAsyncImagePainter(
             model = painterRequest,
             imageLoader = LOADER,
             contentScale = contentScale,
             transform = { state ->
                 when (state) {
-                    is State.Loading -> state.copy(painter = loadingPainter)
-                    is State.Success -> state.copy(painter = drawnPainter(transformArtwork(state.painter), state.result.request))
-                    is State.Error -> state.copy(painter = if (onArtworkDrawn != null && nextPainterArtwork(attemptedUrl, validUrl, state.result) == null)
-                        drawnPainter(errorPainter, state.result.request) else errorPainter)
-                    State.Empty -> state
+                    is State.Loading -> state.copy(painter = readyArtwork() ?: loadingPainter)
+                    is State.Success -> {
+                        val artwork = transformArtwork(state.painter)
+                        if (matches(state.result.request)) retainedArtwork?.painter = artwork
+                        state.copy(painter = drawnPainter(artwork, state.result.request))
+                    }
+                    is State.Error -> {
+                        val artwork = readyArtwork() ?: errorPainter
+                        state.copy(painter = if (onArtworkDrawn != null && nextPainterArtwork(attemptedUrl, validUrl, state.result) == null)
+                            drawnPainter(artwork, state.result.request) else artwork)
+                    }
+                    State.Empty -> readyArtwork()?.let { State.Loading(it) } ?: state
                 }
             },
             onState = { state ->
                 when (state) {
-                    is State.Loading -> onLoading?.invoke(state)
+                    is State.Loading -> if (state.painter === loadingPainter) onLoading?.invoke(state)
                     is State.Success -> if (matches(state.result.request)) onSuccess?.invoke(state)
                     is State.Error -> if (matches(state.result.request) &&
                         nextPainterArtwork(attemptedUrl, validUrl, state.result) == null
@@ -820,7 +911,7 @@ object ImageCacheFactory {
                 showFallback = true
             }
             Image(
-                painter = if (showFallback) painterResource(R.drawable.ic_launcher_box) else loadingPainter,
+                painter = if (showFallback) rememberArtworkResourcePainter() else loadingPainter,
                 contentDescription = null,
                 modifier = imageModifier.fillMaxSize().imageLoadingBackground(loadingPainter) { !showFallback },
                 contentScale = resolvedScale
@@ -874,7 +965,7 @@ object ImageCacheFactory {
             },
             error = {
                 Image(
-                    painter = painterResource(error),
+                    painter = rememberArtworkResourcePainter(error),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = resolvedScale
@@ -919,7 +1010,7 @@ object ImageCacheFactory {
                 showFallback = true
             }
             Image(
-                painter = if (showFallback) painterResource(R.drawable.ic_launcher_box) else loadingPainter,
+                painter = if (showFallback) rememberArtworkResourcePainter() else loadingPainter,
                 contentDescription = null,
                 modifier = imageModifier.fillMaxSize().imageLoadingBackground(loadingPainter) { !showFallback },
                 contentScale = resolvedScale
@@ -978,8 +1069,8 @@ object ImageCacheFactory {
             contentScale = resolvedScale,
             modifier = imageModifier.imageLoadingBackground(loadingPainter) { loading.value },
             placeholder = loadingPainter,
-            error = painterResource(R.drawable.ic_launcher_box),
-            fallback = painterResource(R.drawable.ic_launcher_box),
+            error = rememberArtworkResourcePainter(),
+            fallback = rememberArtworkResourcePainter(),
             onLoading = { state -> loading.value = true; onLoading?.invoke(state) },
             onSuccess = { state -> loading.value = false; onSuccess?.invoke(state) },
             onError = { state ->
@@ -1039,7 +1130,7 @@ object ImageCacheFactory {
                     showFallback = true
                 }
             }
-            val painter = if (showFallback) fallback?.let { painterResource(it) } else loadingPainter
+            val painter = if (showFallback) fallback?.let { rememberArtworkResourcePainter(it) } else loadingPainter
             if (painter != null) Image(
                 painter = painter,
                 contentDescription = contentDescription,
@@ -1064,7 +1155,7 @@ object ImageCacheFactory {
             contentScale = contentScale,
             modifier = imageModifier.imageLoadingBackground(loadingPainter) { loading.value },
             placeholder = loadingPainter,
-            error = fallback?.let { painterResource(it) },
+            error = fallback?.let { rememberArtworkResourcePainter(it) },
             onLoading = { loading.value = true },
             onSuccess = { state -> loading.value = false; onSuccess?.invoke(state) },
             onError = { loading.value = false },
@@ -1074,6 +1165,8 @@ object ImageCacheFactory {
     /** Loads a borrowed Coil bitmap with the shared cache and URL fallback policy.
      * [requestSize] bounds decoding for consumers that serialize small artwork.
      * [qualityOverride] selects source quality for this request without changing phone preferences.
+     * A consumer that caches a derived result can set [cacheDecodedBitmap] to false to avoid
+     * replacing the displayed cover in memory with a smaller decode of the same source.
      */
     suspend fun loadBitmap(
         url: String?,
@@ -1082,6 +1175,7 @@ object ImageCacheFactory {
         qualityOverride: NetworkQuality? = null,
         cacheOnly: Boolean = false,
         cropToSquare: Boolean = false,
+        cacheDecodedBitmap: Boolean = true,
     ): Bitmap? {
         require(requestSize == null || requestSize > 0)
         if (url.isNullOrBlank() || url == "null") {
@@ -1114,6 +1208,10 @@ object ImageCacheFactory {
                 .allowHardware(allowHardware)
                 .networkCachePolicy(if (cacheOnly) CachePolicy.DISABLED else CachePolicy.ENABLED)
                 .scale(if (cropToSquare) Scale.FILL else Scale.FIT)
+
+            if (!cacheDecodedBitmap) {
+                requestBuilder.memoryCachePolicy(CachePolicy.READ_ONLY).precision(Precision.INEXACT)
+            }
 
             val boundedSize = requestSize ?: 1000.takeIf { isLocalFile || decision.original }
             if (boundedSize != null) {
@@ -1170,13 +1268,14 @@ object ImageCacheFactory {
         return null
     }
 
-    suspend fun preloadImage(thumbnailUrl: String?) {
+    suspend fun preloadImage(thumbnailUrl: String?, playerDisplayEdge: Int? = null) {
         val source = artworkColorSource(thumbnailUrl, getActiveProfile(appContext())) ?: return
         val fileRevision = if (isFileArtwork(source.uri)) withContext(NzikDispatchers.DATA) {
             artworkFileRevision(source.uri)
         } else ""
         val decision = getDownloadDecision(source.uri)
         val finalUrl = source.uri.thumbnail(decision.sourceSize)
+        val decodeScope = playerDisplayEdge?.let { PlayerArtworkDecodeScope(source.profile, playerArtworkCacheEpoch.value) }
         // Timber.tag("ImageCache").d("URL (preload): original=%s, modified=%s", thumbnailUrl, finalUrl)
 
         suspend fun executeWithFallback(url: String) {
@@ -1184,7 +1283,17 @@ object ImageCacheFactory {
             val cacheKey = generateCacheKeySync(url, decision.quality).withFileRevision(fileRevision)
             val request = ImageRequest.Builder(appContext())
                 .data(url)
-                .apply { if (isFileArtwork(url) || decision.original) size(1000, 1000) }
+                .apply {
+                    if (isFileArtwork(url) || decision.original) {
+                        val edge = playerDisplayEdge ?: 1000
+                        size(edge, edge)
+                    }
+                    if (playerDisplayEdge != null) {
+                        scale(Scale.FILL)
+                        precision(Precision.INEXACT)
+                    }
+                    if (decodeScope != null) extras[PlayerArtworkDecodeScope.extra] = decodeScope
+                }
                 .diskCacheKey(cacheKey)
                 .memoryCacheKey(cacheKey)
                 .build()
@@ -1270,10 +1379,11 @@ object ImageCacheFactory {
             diskCleared = true
             PlaylistThumbnailStore.clearAll()
             CacheMetadataStore.clearAll()
-            cacheKeyMap.clear()
+            cacheKeyMap.evictAll()
             cooldownMap.clear()
         } finally {
             // Refresh observers even when only part of the cache could be cleared.
+            playerArtworkCacheEpoch.update { it + 1 }
             if (diskCleared) invalidateClearedArtwork() else SharedArtworkColors.invalidate()
         }
     }
@@ -1304,10 +1414,11 @@ object ImageCacheFactory {
                         context.getSharedPreferences(name, Context.MODE_PRIVATE).edit().clear().commit()
                     }
                 }.all { it }
-                cacheKeyMap.clear()
+                cacheKeyMap.evictAll()
                 cooldownMap.clear()
                 metadataCleared && (!clearDisk || cache.size == 0L)
             } finally {
+                playerArtworkCacheEpoch.update { it + 1 }
                 if (clearDisk) invalidateClearedArtwork() else SharedArtworkColors.invalidate()
             }
         }

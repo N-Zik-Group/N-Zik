@@ -3,6 +3,7 @@ package app.n_zik.android.components.player
 import android.graphics.Bitmap
 import androidx.compose.ui.graphics.Color
 import app.n_zik.android.ui.styling.dynamicColorPaletteOf
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -96,6 +97,28 @@ class ArtworkColorRepositoryTest {
         expected()
     }
 
+    @Test fun `targeted invalidation removes only matching displayed artwork in the requested profile`() = runTest {
+        val displayed = DisplayedArtworkRegistry()
+        val target = ArtworkSource("default", "cover-alias", 0, 0)
+        val unrelated = target.copy(uri = "unrelated")
+        val otherProfile = target.copy(profile = "other")
+        val bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+        val closeDefault = displayed.showPlayer(target.profile)
+        val closeOther = displayed.showPlayer(otherProfile.profile)
+        val removals = listOf(target, unrelated, otherProfile).map {
+            displayed.register(it, MutableStateFlow(ready(bitmap)))
+        }
+
+        displayed.invalidateSources(target.profile) { it == target.uri }
+
+        assertNull(displayed.await(target, ""))
+        assertSame(bitmap, displayed.await(unrelated, ""))
+        assertSame(bitmap, displayed.await(otherProfile, ""))
+        removals.forEach { it() }
+        closeDefault()
+        closeOther()
+    }
+
     @Test fun `concurrent consumers share work and cancelling a waiter does not cancel extraction`() = runTest {
         val repository = ArtworkColorRepository(backgroundScope)
         val gate = CompletableDeferred<Unit>()
@@ -136,6 +159,55 @@ class ArtworkColorRepositoryTest {
         gate.complete(Unit)
         old.await()
         assertSame(updated, repository.load(newer) { error("new result must remain cached") })
+    }
+
+    @Test fun `targeted invalidation evicts palette aliases and cancels only their work in the requested profile`() = runTest {
+        val repository = ArtworkColorRepository(backgroundScope)
+        val original = key(uri = "original").copy(sourceIdentity = "cover-family")
+        val alias = original.copy(uri = "alias")
+        val otherProfile = alias.copy(profile = "other")
+        val unrelated = key(uri = "unrelated")
+        val targetRevision = repository.observe(ArtworkColorIdentity(original.profile, original.sourceIdentity))
+        val unrelatedRevision = repository.observe(ArtworkColorIdentity(unrelated.profile, unrelated.sourceIdentity))
+        val otherProfileRevision = repository.observe(ArtworkColorIdentity(otherProfile.profile, otherProfile.sourceIdentity))
+        repository.load(original) { raw }
+        repository.load(otherProfile) { raw }
+        val gate = CompletableDeferred<Unit>()
+        val oldAlias = async { runCatching { repository.load(alias) { awaitCancellation() } } }
+        val unaffected = async { repository.load(unrelated) { gate.await(); raw } }
+        testScheduler.runCurrent()
+
+        repository.invalidateSources(original.profile, setOf(original.sourceIdentity))
+
+        assertTrue(oldAlias.await().exceptionOrNull() is CancellationException)
+        assertEquals(1L, targetRevision.revision.value)
+        assertEquals(0L, unrelatedRevision.revision.value)
+        assertEquals(0L, otherProfileRevision.revision.value)
+        assertEquals(0L, repository.generation.value)
+        val refreshed = raw.copy(fallbackDominant = Color.Black)
+        assertSame(refreshed, repository.load(original) { refreshed })
+        assertSame(refreshed, repository.load(alias) { refreshed })
+        assertSame(raw, repository.load(otherProfile) { error("other profile must remain cached") })
+        val joining = async { repository.load(unrelated) { error("unrelated work must remain shareable") } }
+        testScheduler.runCurrent()
+        gate.complete(Unit)
+        assertSame(raw, unaffected.await())
+        assertSame(raw, joining.await())
+    }
+
+    @Test fun `targeted invalidation rejects a stale admission wait and preserves unrelated work`() = runTest {
+        val repository = ArtworkColorRepository(backgroundScope, maxInFlight = 1)
+        val gate = CompletableDeferred<Unit>()
+        val running = async { repository.load(key(uri = "running")) { gate.await(); raw } }
+        val waiting = async {
+            runCatching { repository.load(key(uri = "waiting")) { error("stale work must not start") } }
+        }
+        testScheduler.runCurrent()
+        repository.invalidateSources("default", setOf("waiting"))
+        gate.complete(Unit)
+        assertSame(raw, running.await())
+        assertTrue(waiting.await().exceptionOrNull() is CancellationException)
+        assertSame(raw, repository.load(key(uri = "waiting")) { raw })
     }
 
     @Test fun `old request waiting for admission cannot refill a cleared cache`() = runTest {

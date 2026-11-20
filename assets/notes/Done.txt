@@ -6,6 +6,9 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- perf(artwork): share cover decoding and scope palette refreshes
+  - Share matching requests across player artwork surfaces and prefetch. Keep quality and source revisions while bounding cache keys.
+  - Reuse the displayed bitmap for color extraction. Preserve unrelated profiles, covers and in-flight palette work when refreshing one source.
 - improve(theme): share the animated artwork tint across surfaces
   - Drive the mini-player, Glass, lyrics and visualizer from the same animated artwork tint.
 - perf(player): reduce rendering work during artwork transitions
