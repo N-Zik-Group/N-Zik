@@ -41,6 +41,22 @@ import org.robolectric.annotation.GraphicsMode
 class PlayerCoverCrossfadeTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun `palette waits for the drawn cover to finish moving`() {
+        val ready = mutableStateOf(false)
+        val settled = mutableStateOf(false)
+        var reported = false
+        compose.setContent {
+            ReportPresentedPlayerCover(PlayerCoverIdentity("b", "b"),
+                ready = ready.value, active = true, motionSettled = settled.value) {
+                reported = true
+            }
+        }
+        compose.runOnIdle { ready.value = true }
+        compose.runOnIdle { assertFalse(reported) }
+        compose.runOnIdle { settled.value = true }
+        compose.runOnIdle { assertTrue(reported) }
+    }
+
     @Test fun `video theme fills tall viewport including rotated corners and reacts to crop preference`() {
         val context = ApplicationProvider.getApplicationContext<Application>()
         val previousCrop = context.preferences.all[cropVideoThumbnailsKey] as? Boolean

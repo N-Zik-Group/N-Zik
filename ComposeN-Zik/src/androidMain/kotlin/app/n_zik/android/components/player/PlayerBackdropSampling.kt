@@ -1,6 +1,7 @@
 package app.n_zik.android.components.player
 
 import android.graphics.Bitmap
+import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -75,6 +76,7 @@ internal class PlayerBackdropSampling(
         get() = commonSurface ?: measuredPreview.takeUnless { finished } ?: provisionalSurface?.value ?:
             previousSurface.takeIf { !finished || retainSettledContrast }
     internal val hasDecision: Boolean get() = commonSurface != null
+    internal val hasPreviewMeasurement: Boolean get() = measuredPreview != null
     private val regions = mutableMapOf<Any, Pair<Rect, Color?>>()
 
     internal fun registerRegion(token: Any, bounds: Rect?, textFilm: Color? = null) {
@@ -261,7 +263,7 @@ internal fun rememberPlayerBackdropSampling(
         sampledSurface?.let { lastSurface.color = it }
     }
     LaunchedEffect(state, active, previewActive, density, layoutDirection, renderedBackgroundReady) {
-        if ((!active && !previewActive) || state.hasDecision) return@LaunchedEffect
+        if (state.hasDecision || (!active && (!previewActive || state.hasPreviewMeasurement))) return@LaunchedEffect
         // A failed hidden prewarm may retry when the player becomes visible again.
         state.finished = false
         // Allow the scene to draw the new frame before reading its small backdrop.
@@ -269,9 +271,6 @@ internal fun rememberPlayerBackdropSampling(
         withContext(NzikDispatchers.UI) {
             var warned = false
             var attempts = 0
-            var previewVersion: Int? = null
-            var previewSize = IntSize.Zero
-            var previewOrigin = Offset.Zero
             val maxAttempts = if (active) 8 else MaxPreviewSamples
             while (isActive && !state.hasDecision && attempts < maxAttempts) {
                 // Bound idle polls too: a hidden retained player may never redraw its source.
@@ -283,8 +282,7 @@ internal fun rememberPlayerBackdropSampling(
                     val version = backdrop.contentVersion
                     // Never decide from the previous track's retained background recording.
                     val recordingReady = renderedBackgroundReady == true || version == null || version != state.initialSourceVersion
-                    val newPreview = version == null || version != previewVersion || size != previewSize || origin != previewOrigin
-                    if (recordingReady && (active || newPreview)) {
+                    if (recordingReady) {
                         try {
                             layer.record(density, layoutDirection, SampleSize) {
                                 // Preserve full-scene draw dimensions while rasterizing only a tiny GPU target.
@@ -298,29 +296,36 @@ internal fun rememberPlayerBackdropSampling(
                                 } finally { drawContext.size = previousDrawSize }
                             }
                             val image = layer.toImageBitmap().asAndroidBitmap()
-                            // Hardware-backed results require a software copy before reading pixels.
-                            val software = image.copy(Bitmap.Config.ARGB_8888, false)
-                            try {
+                            val pixels = withContext(NzikDispatchers.MEDIA) {
+                                // Reading a hardware bitmap requires a software copy and can wait for the GPU.
+                                val hardware = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                                    image.config == Bitmap.Config.HARDWARE
+                                val readable = if (hardware)
+                                    checkNotNull(image.copy(Bitmap.Config.ARGB_8888, false)) else image
                                 val pixels = IntArray(SampleSize.width * SampleSize.height)
-                                software.getPixels(pixels, 0, SampleSize.width, 0, 0, SampleSize.width, SampleSize.height)
-                                Snapshot.withMutableSnapshot {
-                                    state.publish(pixels, origin, size, settled = active)
-                                    state.contrastDecision()?.let { decision ->
-                                        if (decision.changesPolarity(lastSurface.lastContrast)) onSettled?.invoke()
-                                        lastSurface.lastContrast = decision
-                                    }
+                                try {
+                                    readable.getPixels(pixels, 0, SampleSize.width, 0, 0, SampleSize.width, SampleSize.height)
+                                } finally {
+                                    if (readable !== image) readable.recycle()
                                 }
-                                if (!active) {
-                                    previewVersion = version
-                                    previewSize = size
-                                    previewOrigin = origin
-                                    state.foregroundSurface?.let { lastSurface.color = it }
+                                pixels
+                            }
+                            Snapshot.withMutableSnapshot {
+                                state.publish(pixels, origin, size, settled = active)
+                                state.contrastDecision()?.let { decision ->
+                                    if (decision.changesPolarity(lastSurface.lastContrast)) onSettled?.invoke()
+                                    lastSurface.lastContrast = decision
                                 }
-                                if (state.hasDecision) Timber.tag("PlayerBackdropSampling").d(
-                                    "Background sample ready: %dx%d, opaque=%d/%d", size.width, size.height,
-                                    pixels.count { (it ushr 24) >= 250 }, pixels.size,
-                                )
-                            } finally { software.recycle() }
+                            }
+                            if (!active && state.hasPreviewMeasurement) {
+                                state.foregroundSurface?.let { lastSurface.color = it }
+                                // Keep one interim sample and measure the final scene once the fade settles.
+                                return@withContext
+                            }
+                            if (state.hasDecision) Timber.tag("PlayerBackdropSampling").d(
+                                "Background sample ready: %dx%d, opaque=%d/%d", size.width, size.height,
+                                pixels.count { (it ushr 24) >= 250 }, pixels.size,
+                            )
                             warned = false
                         } catch (cancelled: CancellationException) {
                             throw cancelled

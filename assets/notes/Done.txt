@@ -6,6 +6,9 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- perf(player): keep decoded covers visible during transitions
+  - Prefetch adjacent classic player covers, retain the outgoing source and reuse decoded artwork during a refresh.
+  - Wait for the visible cover before publishing its palette and keep backdrop sample processing off the UI thread.
 - perf(player): share playback and appearance animation clocks
   - Use one Media3 position sampler for the timeline, remaining time, mini-player and lyrics.
   - Drive appearance, palette and decorative animations from the same demand-driven frame clock.

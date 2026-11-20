@@ -35,7 +35,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
@@ -93,17 +92,18 @@ internal class PlayerCoverFrameState<T> {
     }
 }
 
-/** Publishes only after the decoded painter and the visible layout have both reached a frame. */
+/** Publishes after the decoded painter and settled visible layout have both reached a frame. */
 @Composable
 internal fun ReportPresentedPlayerCover(
     identity: PlayerCoverIdentity,
     ready: Boolean,
     active: Boolean,
+    motionSettled: Boolean = true,
     onPresented: () -> Unit,
 ) {
     val report by rememberUpdatedState(onPresented)
-    LaunchedEffect(identity, ready, active) {
-        if (ready && active) {
+    LaunchedEffect(identity, ready, active, motionSettled) {
+        if (ready && active && motionSettled) {
             withFrameNanos { }
             withFrameNanos { }
             report()
@@ -181,7 +181,7 @@ internal fun PlayerCurrentCover(
     val canRequest = committedRevision == null || committedRevision == identity.localRevision
     val frames = remember { PlayerCoverFrameState<Painter>() }
     frames.request(identity)
-    val fallback = painterResource(R.drawable.ic_launcher_box)
+    val fallback = ImageCacheFactory.rememberArtworkResourcePainter()
     val artworkSource = rememberDisplayArtworkSource(artworkUri)?.let(::cleanPrefix)
     if (canRequest && (artworkSource.isNullOrBlank() || artworkSource == "null")) {
         LaunchedEffect(identity) {
@@ -199,6 +199,7 @@ internal fun PlayerCurrentCover(
             },
             onError = { frames.complete(identity, fallback) },
             publishArtworkColors = publishArtworkColors,
+            sharePlayerArtwork = true,
         )
     }
     val frame = frames.displayed

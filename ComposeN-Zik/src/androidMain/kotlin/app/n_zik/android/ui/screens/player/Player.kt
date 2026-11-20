@@ -1485,6 +1485,8 @@ fun Player(
             Thumbnail(
                 currentArtworkUrl = coverUrl(mediaItem),
                 publishArtworkColors = visiblePlayerArtwork && thumbnailOwnsArtwork && !fullscreenPagerOwnsArtwork,
+                prefetchAdjacentArtwork = preview == null && visiblePlayerArtwork && thumbnailOwnsArtwork,
+                prefetchAfterTransition = !holdBackgroundArtwork && !backdropTransitioning,
                 rotationActive = decorationsActive,
                 onArtworkPresented = if (expectsForegroundCover && thumbnailOwnsArtwork) {
                     { identity -> presentedCover = identity }

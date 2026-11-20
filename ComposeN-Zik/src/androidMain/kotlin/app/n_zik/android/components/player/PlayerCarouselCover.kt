@@ -158,7 +158,7 @@ internal fun PlayerCoverOverlayHost(
 }
 
 @Composable
-private fun coverOverlayNeedsArtwork(scope: GlassScope): Boolean {
+internal fun coverOverlayNeedsArtwork(scope: GlassScope): Boolean {
     val settings = rememberGlassSettings(scope)
     return settings.usesGlassMaterial(GlassArea.ActionButtons) && glassContentCaptureEnabled(settings)
 }

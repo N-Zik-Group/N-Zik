@@ -3,6 +3,11 @@ package app.n_zik.android.ui.screens.player
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import androidx.compose.runtime.CompositionLocalProvider
 import app.n_zik.android.components.glass.LocalGlassOverlayArtworkBackdrop
+import app.n_zik.android.components.glass.GlassScope
+import app.n_zik.android.components.glass.OverlayFade
+import app.n_zik.android.components.glass.hasOverlayContent
+import app.n_zik.android.components.glass.rememberOverlayTransition
+import app.n_zik.android.components.player.coverOverlayNeedsArtwork
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import app.n_zik.android.components.glass.rememberGlassRawPressFeedback
@@ -17,7 +22,6 @@ import app.n_zik.android.components.player.ReportPresentedPlayerCover
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.AnimatedVisibility
@@ -47,6 +51,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
@@ -131,6 +136,22 @@ import kotlinx.coroutines.launch
 import app.n_zik.android.components.player.lyrics.LyricsScreen
 import app.n_zik.android.playback.exceptions.ExplicitContentException
 import androidx.media3.datasource.HttpDataSource
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+
+internal const val THUMBNAIL_TRANSITION_MS = 500
+private const val ARTWORK_PREFETCH_SETTLE_TIMEOUT_MS = 1200L
+
+@UnstableApi
+internal fun Player.neighboringThumbnailUrls(): List<String> =
+    listOf(nextMediaItemIndex, previousMediaItemIndex)
+        .filter { it in 0 until mediaItemCount && it != currentMediaItemIndex }
+        .mapNotNull { getMediaItemAt(it).mediaMetadata.artworkUri?.toString() }
+        .distinct()
 
 @ExperimentalAnimationApi
 @UnstableApi
@@ -150,6 +171,8 @@ internal fun Thumbnail(
     verticalPadding: Dp = 8.dp,
     currentArtworkUrl: String? = null,
     publishArtworkColors: Boolean = false,
+    prefetchAdjacentArtwork: Boolean = false,
+    prefetchAfterTransition: Boolean = true,
     onArtworkPresented: ((PlayerCoverIdentity) -> Unit)? = null,
     rotationActive: Boolean = true,
 ) {
@@ -196,8 +219,19 @@ internal fun Thumbnail(
     var showvisthumbnail by rememberPreference(showvisthumbnailKey, true)
     //var expandedlyrics by rememberPreference(expandedlyricsKey,false)
 
-    player.DisposableListener {
+    var neighboringArtwork by remember(player, prefetchAdjacentArtwork) {
+        mutableStateOf(if (prefetchAdjacentArtwork) player.neighboringThumbnailUrls() else emptyList())
+    }
+    player.DisposableListener(prefetchAdjacentArtwork) {
         object : Player.Listener {
+            override fun onEvents(player: Player, events: Player.Events) {
+                if (prefetchAdjacentArtwork && events.containsAny(
+                        Player.EVENT_MEDIA_ITEM_TRANSITION, Player.EVENT_TIMELINE_CHANGED,
+                        Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED, Player.EVENT_REPEAT_MODE_CHANGED,
+                    )
+                ) neighboringArtwork = player.neighboringThumbnailUrls()
+            }
+
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 nullableWindow = player.currentWindow
             }
@@ -217,17 +251,34 @@ internal fun Thumbnail(
 
     val window = nullableWindow ?: return
 
+    val viewport = LocalWindowInfo.current.containerSize
+    val displayEdge = maxOf(viewport.width, viewport.height).takeIf { it > 0 } ?: 1000
+    val artworkToPrefetch = neighboringArtwork
+    val canPrefetch by rememberUpdatedState(prefetchAfterTransition)
+    LaunchedEffect(window.uid, artworkToPrefetch, displayEdge) {
+        if (artworkToPrefetch.isEmpty()) return@LaunchedEffect
+        delay(THUMBNAIL_TRANSITION_MS.toLong())
+        // A missing cover may never reach the normal palette presentation signal.
+        withTimeoutOrNull(ARTWORK_PREFETCH_SETTLE_TIMEOUT_MS) {
+            snapshotFlow { canPrefetch }.first { it }
+        }
+        withContext(NzikDispatchers.DATA) {
+            artworkToPrefetch.forEach { ImageCacheFactory.preloadImage(it, displayEdge) }
+        }
+    }
 
 
     val showCoverThumbnailAnimation by rememberPreference(showCoverThumbnailAnimationKey, false)
     var coverThumbnailAnimation by rememberPreference(coverThumbnailAnimationKey, ThumbnailCoverType.Vinyl)
+    val captureLyricsArtwork = showlyricsthumbnail && coverOverlayNeedsArtwork(GlassScope.Lyrics)
+    val captureVisualizerArtwork = showvisthumbnail && coverOverlayNeedsArtwork(GlassScope.Visualizer)
 
 
     AnimatedContent(
         targetState = window,
         contentKey = { it.uid },
         transitionSpec = {
-            val duration = 500
+            val duration = THUMBNAIL_TRANSITION_MS
             val slideDirection = if (targetState.firstPeriodIndex > initialState.firstPeriodIndex)
                 AnimatedContentTransitionScope.SlideDirection.Left
             else AnimatedContentTransitionScope.SlideDirection.Right
@@ -251,42 +302,32 @@ internal fun Thumbnail(
                     targetScale = 0.85f,
                     animationSpec = tween(duration)
                 ),
-                sizeTransform = SizeTransform(clip = false)
+                // Both covers fill the same viewport. Only their position, scale and alpha animate.
+                sizeTransform = null
             )
         },
         contentAlignment = Alignment.Center, label = ""
     ) { currentWindow ->
 
         val isCurrentWindow = currentWindow.uid == window.uid
-        val artworkUrl = currentArtworkUrl.takeIf { isCurrentWindow }
-            ?: currentWindow.mediaItem.mediaMetadata.artworkUri?.toString()
+        val metadataArtworkUrl = currentWindow.mediaItem.mediaMetadata.artworkUri?.toString()
+        var lastVisibleArtworkUrl by remember(currentWindow.uid) { mutableStateOf(metadataArtworkUrl) }
+        val artworkUrl = if (isCurrentWindow) currentArtworkUrl ?: metadataArtworkUrl else lastVisibleArtworkUrl
+        if (isCurrentWindow) SideEffect { lastVisibleArtworkUrl = artworkUrl }
         val coverIdentity = rememberPlayerCoverIdentity(currentWindow.mediaItem.mediaId, artworkUrl.orEmpty())
-        var artImageAvailable by remember(coverIdentity) { mutableStateOf(true) }
         val artworkDrawn = remember(coverIdentity) { mutableStateOf(false) }
         val coverPainter = ImageCacheFactory.Painter(
             thumbnailUrl = artworkUrl,
             onArtworkDrawn = { artworkDrawn.value = true },
             publishArtworkColors = publishArtworkColors && isCurrentWindow,
-            onError = { 
-                artImageAvailable = false 
-                // Retry loading after a short delay
-                NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                    delay(1000) // Wait 1 second
-                    if (!artImageAvailable) {
-                        // Try to preload the image
-                        ImageCacheFactory.preloadImage(artworkUrl)
-                    }
-                }
-            },
-            onSuccess = { 
-                artImageAvailable = true 
-            }
+            playerArtworkMediaId = currentWindow.mediaItem.mediaId,
         )
 
         if (onArtworkPresented != null) ReportPresentedPlayerCover(
             identity = coverIdentity,
             ready = artworkDrawn.value,
             active = isCurrentWindow && transition.targetState == EnterExitState.Visible,
+            motionSettled = transition.currentState == EnterExitState.Visible && !transition.isRunning,
             onPresented = { onArtworkPresented(coverIdentity) },
         )
 
@@ -373,7 +414,13 @@ internal fun Thumbnail(
             }
         }
 
-        val overlayArtworkBackdrop = rememberLayerBackdrop()
+        val lyricsVisible = isCurrentWindow && showlyricsthumbnail && isShowingLyrics && error == null
+        val visualizerVisible = isCurrentWindow && showvisthumbnail && isShowingVisualizer
+        val lyricsFade = rememberOverlayTransition(lyricsVisible)
+        val visualizerFade = rememberOverlayTransition(visualizerVisible)
+        val overlayArtworkBackdrop = if ((captureLyricsArtwork && lyricsFade.hasOverlayContent) ||
+            (captureVisualizerArtwork && visualizerFade.hasOverlayContent))
+            rememberLayerBackdrop() else null
         var modifierUiType = modifier
 
         if (showthumbnail)
@@ -405,9 +452,10 @@ internal fun Thumbnail(
         ) {
             if (showthumbnail) {
                 // Export the artwork sibling only; lyrics/visualizer utilities never enter this source.
-                Box(Modifier.matchParentSize().layerBackdrop(overlayArtworkBackdrop)) {
-                if ((!isShowingLyrics && !isShowingVisualizer) || (isShowingVisualizer && showvisthumbnail) || (isShowingLyrics && showlyricsthumbnail))
-                    if (artImageAvailable) {
+                Box(Modifier.matchParentSize().then(
+                    if (overlayArtworkBackdrop != null) Modifier.layerBackdrop(overlayArtworkBackdrop) else Modifier
+                )) {
+                if ((!isShowingLyrics && !isShowingVisualizer) || (isShowingVisualizer && showvisthumbnail) || (isShowingLyrics && showlyricsthumbnail)) {
                         val viewportPainter = rememberImageLoadingViewportPainter(coverPainter)
                         if (showCoverThumbnailAnimation)
                             RotateThumbnailCoverAnimation(
@@ -450,36 +498,16 @@ internal fun Thumbnail(
                                     .imageLoadingViewport(viewportPainter)
                             )
 
-                    } else {
-                        Image(
-                            painter = painterResource(R.drawable.ic_launcher_box),
-                            modifier = Modifier
-                                .then(coverPressFeedback.modifier())
-                                .pointerInput(thumbnailTapEnabledKey, holdToSpeedUp, holdToSpeedUpRate, listenTogetherGuestLock, player.isPlaying) {
-                                    detectTapGestures(
-                                        onPress = handleArtworkPress,
-                                        onLongPress = { handleArtworkLongPress() },
-                                        onTap = handleArtworkTap?.let { tap -> { tap() } },
-                                        onDoubleTap = { handleArtworkDoubleTap() }
-                                    )
-
-                                }
-                                .fillMaxSize()
-                                .clip(thumbnailShape())
-                                .glassImageRim(if (showCoverThumbnailAnimation) CircleShape else thumbnailShape()),
-                            contentDescription = stringResource(R.string.accessibility_background_image),
-                            contentScale = if (cropVideoThumbnails) ContentScale.Crop else ContentScale.Fit
-                        )
-                    }
+                }
 
                 }
 
                 CompositionLocalProvider(LocalGlassOverlayArtworkBackdrop provides overlayArtworkBackdrop) {
                 //if (!currentWindow.mediaItem.isLocal)
-                if (showlyricsthumbnail)
+                OverlayFade(lyricsVisible, state = lyricsFade) {
                     LyricsScreen(
                         mediaId = currentWindow.mediaItem.mediaId,
-                        isDisplayed = isShowingLyrics && error == null,
+                        isDisplayed = lyricsVisible,
                         onDismiss = {
                             //if (thumbnailTapEnabledKey)
                             onShowLyrics(false)
@@ -490,7 +518,9 @@ internal fun Thumbnail(
                         durationProvider = player::getDuration,
                         isLandscape = isLandscape,
                         clickLyricsText = clickLyricsText,
+                        fadeHosted = true,
                     )
+                }
 
                 }
 
@@ -537,9 +567,11 @@ internal fun Thumbnail(
                         }
                     }
                 }
-                if (showvisthumbnail) {
+                if (visualizerFade.hasOverlayContent) {
                     CompositionLocalProvider(LocalGlassOverlayArtworkBackdrop provides overlayArtworkBackdrop) {
-                        NextVisualizer(isDisplayed = isShowingVisualizer)
+                        OverlayFade(visualizerVisible, durationMillis = 500, state = visualizerFade) {
+                            NextVisualizer(isDisplayed = visualizerVisible, fadeHosted = true)
+                        }
                     }
                 }
 

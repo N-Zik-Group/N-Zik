@@ -93,6 +93,7 @@ class PlayerBackdropSamplingTest {
 
     @Test fun `preview updates each region without freezing the intermediate frame`() {
         val state = PlayerBackdropSampling(previousSurface = Color.Gray)
+        assertFalse(state.hasPreviewMeasurement)
         val top = Rect(0f, 0f, 100f, 100f)
         val bottom = Rect(0f, 100f, 100f, 200f)
         val size = IntSize(100, 200)
@@ -101,6 +102,7 @@ class PlayerBackdropSamplingTest {
         state.publish(pixels, Offset.Zero, size, settled = false)
         assertEquals(Color.White, state.colorAt(top))
         assertEquals(Color.Black, state.foregroundSurface)
+        assertTrue(state.hasPreviewMeasurement)
         assertFalse(state.finished)
 
         state.publish(IntArray(32 * 64) { -1 }, Offset.Zero, size)
