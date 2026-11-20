@@ -394,6 +394,15 @@
     <string name="song_matching_all_confirmation">Vuoi abbinare le canzoni di %d senza eguali?</string>
     <string name="song_matching_dialog_title">Corrispondenza brani</string>
     <string name="song_matching_progress_title">Brani corrispondenti</string>
+    <string name="song_matching_background_message">La corrispondenza continua in background.</string>
+    <string name="song_matching_notification_progress">%1$d di %2$d canzoni</string>
+    <string name="song_matching_cancelled_title">Corrispondenza brano annullata</string>
+    <string name="song_matching_unprocessed_count">%1$d non elaborato</string>
+    <string name="song_matching_notification_completed">%1$d canzoni abbinate. %2$d si è unito con canzoni esistenti.</string>
+    <string name="song_matching_notification_partial">%1$d corrisponde, %2$d fallito, %3$d non elaborato. %4$d fuso.</string>
+    <string name="song_matching_notification_cancelled">%1$d matched, %2$d fallito, %3$d non elaborato. %4$d unito.</string>
+    <string name="song_matching_notification_failed">Corrispondenza brano fallita. %1$d corrisponde, %2$d fallito, %3$d non elaborato. %4$d unito.</string>
+    <string name="song_matching_failed_message">Impossibile completare la corrispondenza del brano. Riprova.</string>
     <string name="song_matching_running_message">Abbinamento canzoni. Per favore aspetta. Non minimizzare o chiudere l\'app</string>
     <string name="song_matching_unmatched_label">Brano ineguagliato</string>
     <string name="metadata_musicbrainz_rating">Valutazione</string>
