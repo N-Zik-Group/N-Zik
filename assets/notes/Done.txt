@@ -6,6 +6,8 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- perf(cache): limit streaming cache checks to requested tracks
+  - Reuse streaming coverage across Bridge, library and Android Auto checks without retaining stale span data.
 - perf(quick-picks): reuse the first YouTube Music home page
   - Share the English first page within the current authenticated load and remove unused background requests.
 - perf(glass): reduce mini-player transition work

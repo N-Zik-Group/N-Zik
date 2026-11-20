@@ -124,6 +124,7 @@ import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.core.database.ext.FormatWithSong
+import app.n_zik.android.playback.services.hasCachedStream
 import app.n_zik.android.utils.autosyncLikesKey
 import app.n_zik.android.utils.importYTMLikedSongs
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
@@ -144,7 +145,6 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -220,19 +220,6 @@ fun HomeSongs(
         }
     }
 
-    LaunchedEffect(builtInPlaylist) {
-        if (builtInPlaylist == BuiltInPlaylist.Offline) {
-            withContext(NzikDispatchers.DATA) {
-                Database.formatTable.allWithSongs().first().mapNotNull { format ->
-                    val contentLength = format.format.contentLength ?: return@mapNotNull null
-                    if (binder?.cache?.isCached(format.song.id, 0, contentLength) == true) {
-                        format.song.id
-                    } else null
-                }.toSet().also { cachedSongIds = it }
-            }
-        }
-    }
-
     val songSort = when( builtInPlaylist ) {
         BuiltInPlaylist.Favorites -> Sort( HOME_SONGS_FAVORITES_SORT_BY, HOME_SONGS_FAVORITES_SORT_ORDER, homeSongsFavoritesSortMenuOrderKey, "favs" )
         BuiltInPlaylist.Offline -> Sort( HOME_SONGS_OFFLINE_SORT_BY, HOME_SONGS_OFFLINE_SORT_ORDER, homeSongsCachedSortMenuOrderKey, "off" )
@@ -286,7 +273,8 @@ fun HomeSongs(
     var relatedSongsPositions by remember { mutableStateOf(emptyMap<Song, Int>()) }
     var isRecommendationsLoading by remember { mutableStateOf(false) }
 
-    LaunchedEffect( builtInPlaylist, topPlaylists.period, songSort.sortBy, songSort.sortOrder, hiddenSongs.isFirstIcon, refreshKey, filterBy ) {
+    LaunchedEffect( builtInPlaylist, topPlaylists.period, songSort.sortBy, songSort.sortOrder, hiddenSongs.isFirstIcon, refreshKey, filterBy,
+        binder.takeIf { builtInPlaylist == BuiltInPlaylist.Offline } ) {
         if (preview != null) {
             isLoading = false
             return@LaunchedEffect
@@ -326,7 +314,7 @@ fun HomeSongs(
                 .sortAllWithSongs( songSort.sortBy, songSort.sortOrder, excludeHidden = hiddenSongs.isHiddenExcluded() )
                 .map { list ->
                     list.fastFilter {
-                        it.song.id in cachedSongIds
+                        binder?.cache?.hasCachedStream(it.song.id, it.format.contentLength) == true
                     }.map( FormatWithSong::song )
                 }
 
@@ -391,6 +379,7 @@ fun HomeSongs(
         val selectedFilter = filterBy
         val selectedPlaylist = builtInPlaylist
         retrievedSongs.map { retrieved ->
+                if (selectedPlaylist == BuiltInPlaylist.Offline) cachedSongIds = retrieved.mapTo(HashSet()) { it.id }
                 val songs = retrieved.filterNot(Song::isLocal)
                 when(selectedFilter) {
                     FilterBy.All -> songs

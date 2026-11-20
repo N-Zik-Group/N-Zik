@@ -12,6 +12,7 @@ import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.enums.SongSortBy
 import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.models.Format
+import app.n_zik.android.models.StreamingCacheEntry
 import app.n_zik.android.models.Song
 import app.n_zik.android.utils.durationToMillis
 import kotlinx.coroutines.flow.Flow
@@ -21,6 +22,13 @@ import app.n_zik.android.core.database.ext.FormatWithSong
 @Dao
 @RewriteQueriesToDropUnusedColumns
 interface FormatTable {
+    @Query("""
+        SELECT F.songId, F.contentLength FROM Format F
+        JOIN Song S ON S.id = F.songId
+        WHERE S.totalPlayTimeMs >= 0 AND F.contentLength IS NOT NULL AND F.songId IN (:ids)
+    """)
+    suspend fun streamingCacheEntries(ids: List<String>): List<StreamingCacheEntry>
+
 
     /**
      * @return formats & songs of this table

@@ -1,5 +1,6 @@
 package app.n_zik.android.playback.services.automotive.session
 
+import app.n_zik.android.playback.services.hasCachedStream
 import android.content.Context
 import app.n_zik.android.playback.services.PersistentQueueArtwork
 import app.n_zik.android.playback.services.ArtworkContentProvider
@@ -750,7 +751,7 @@ class AutoSessionCallback(
         if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_CACHED_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_CACHED_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
             val sortBy = try { context.preferences.getEnum(Preference.HOME_SONGS_OFFLINE_SORT_BY.key, SongSortBy.Title) } catch (e: Exception) { SongSortBy.Title }
             val sortOrder = try { context.preferences.getEnum(Preference.HOME_SONGS_OFFLINE_SORT_ORDER.key, SortOrder.Ascending) } catch (e: Exception) { SortOrder.Ascending }
-            val allSongs = database.formatTable.sortAllWithSongs(sortBy, sortOrder).first().fastFilter { itf -> val contentLength = itf.format.contentLength; itf.song.id !in excludedIds && contentLength != null && binder.cache.isCached(itf.song.id, 0L, contentLength) }.fastMap { itf -> itf.song }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
+            val allSongs = database.formatTable.sortAllWithSongs(sortBy, sortOrder).first().fastFilter { itf -> val contentLength = itf.format.contentLength; itf.song.id !in excludedIds && binder.cache.hasCachedStream(itf.song.id, contentLength) }.fastMap { itf -> itf.song }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
             if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
         }
         if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_TOP_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_TOP_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
@@ -840,7 +841,7 @@ class AutoSessionCallback(
                 }
                 AutoSessionConstants.ID_SONGS_ONDEVICE -> { songId = paths[1]; queryList = database.songTable.allOnDevice().first().filter { it.id !in excludedIds } }
                 AutoSessionConstants.ID_SONGS_CACHED -> {
-                    queryList = database.formatTable.allWithSongs().first().fastFilter { itf -> itf.song.id !in excludedIds && itf.format.contentLength != null && (if (::binder.isInitialized) binder.cache.isCached(itf.song.id, 0L, itf.format.contentLength ?: 0L) else false) }.reversed().fastMap { itf -> itf.song }
+                    queryList = database.formatTable.allWithSongs().first().fastFilter { itf -> itf.song.id !in excludedIds && ::binder.isInitialized && binder.cache.hasCachedStream(itf.song.id, itf.format.contentLength) }.reversed().fastMap { itf -> itf.song }
                     songId = paths[1]
                 }
                 AutoSessionConstants.ID_SONGS_TOP -> {
@@ -909,7 +910,7 @@ class AutoSessionCallback(
     /** Resolves local, generated or online playlist songs for legacy selection IDs. */
     private suspend fun playlistSongs(playlistId: String): List<Song> = when (playlistId) {
         AutoSessionConstants.ID_FAVORITES -> database.songTable.allFavorites().map { it.reversed() }.first()
-        AutoSessionConstants.ID_CACHED -> database.formatTable.allWithSongs().map { fl -> fl.fastFilter { itf -> itf.format.contentLength != null && (if (::binder.isInitialized) binder.cache.isCached(itf.song.id, 0L, itf.format.contentLength ?: 0L) else false) }.reversed().fastMap { itf -> itf.song } }.first()
+        AutoSessionConstants.ID_CACHED -> database.formatTable.allWithSongs().map { fl -> fl.fastFilter { itf -> ::binder.isInitialized && binder.cache.hasCachedStream(itf.song.id, itf.format.contentLength) }.reversed().fastMap { itf -> itf.song } }.first()
         AutoSessionConstants.ID_TOP -> database.eventTable.findSongsMostPlayedBetween(from = 0, limit = context.preferences.getEnum(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`).toInt(context.preferences.getInt(MaxTopPlaylistItemsCustomValueKey, 10))).first()
         AutoSessionConstants.ID_ONDEVICE -> database.songTable.allOnDevice().first()
         AutoSessionConstants.ID_DOWNLOADED -> {
@@ -1061,7 +1062,7 @@ class AutoSessionCallback(
         if (!::binder.isInitialized) return@map 0
         flist.filter { itf ->
             val contentLength = itf.format.contentLength
-            contentLength != null && binder.cache.isCached(itf.song.id, 0L, contentLength)
+            binder.cache.hasCachedStream(itf.song.id, contentLength)
         }.size
     }
     private fun getCountDownloadedSongs(): Flow<Int> {

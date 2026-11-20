@@ -68,6 +68,8 @@ import app.n_zik.android.utils.putEnum
 import app.n_zik.android.utils.showMonthlyPlaylistsKey
 import app.n_zik.android.utils.showPinnedPlaylistsKey
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
+import app.n_zik.android.playback.services.cachedStreamingIds
+import app.n_zik.android.playback.services.hasCachedStream
 import app.n_zik.android.playback.services.mediaCacheLocation
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import java.io.File
@@ -203,6 +205,7 @@ internal class DatabaseLibraryProvider(
         val durationLimit = prefs.getString(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled.name)
             ?.let { runCatching { DurationInMinutes.valueOf(it) }.getOrNull() } ?: DurationInMinutes.Disabled
         val parentalControl = prefs.getBoolean(parentalControlEnabledKey, false)
+        var filteredCache: Set<String>? = null
         val shown = when (filter) {
             SongFilter.ALL -> when (sortBy) {
                 // The phone's tabs use the title order as the base of the "Downloaded" sort
@@ -230,9 +233,14 @@ internal class DatabaseLibraryProvider(
                 .filter { it.id in downloaded }
 
             SongFilter.OFFLINE -> {
-                val cached = cachedSongIds()
-                Database.formatTable.sortAllWithSongs(sortBy, reverse.sortOrder(), excludeHidden = true).first()
-                    .map { it.song }.filter { it.id in cached }
+                val candidates = Database.formatTable.sortAllWithSongs(sortBy, reverse.sortOrder(), excludeHidden = true).first()
+                val cached = readCachedSongIds { cache ->
+                    candidates.mapNotNullTo(HashSet()) { (format, song) ->
+                        song.id.takeIf { cache.hasCachedStream(it, format.contentLength) }
+                    }
+                }
+                filteredCache = cached
+                candidates.mapNotNull { (_, song) -> song.takeIf { it.id in cached } }
             }
 
             SongFilter.TOP -> {
@@ -243,7 +251,7 @@ internal class DatabaseLibraryProvider(
         }
         // The phone's home-tab display filters on top of its raw lists (`HomeSongs.kt` 240, 456)
         val tabSongs = LibraryMapping.homeTabSongs(shown, filter, includeLocal, durationLimit, parentalControl)
-        LibraryMapping.librarySongs(filter, tabSongs, support.withMembership(tabSongs))
+        LibraryMapping.librarySongs(filter, tabSongs, support.withMembership(tabSongs, filteredCache))
     }
 
     /**
@@ -516,15 +524,9 @@ internal class DatabaseLibraryProvider(
         TopPeriod.ALL_TIME -> StatisticsType.All
     }
 
-    /** The ids of the songs in the player's streaming cache, as the phone's "Cached" tab computes them: a read-only [SimpleCache] on the active profile's cache directory and index (the player's own cache — a temp cache, or none at all, leaves nothing to read). */
-    private suspend fun cachedSongIds(): Set<String> = runCatching {
-        openMediaCache { cache ->
-            Database.formatTable.allWithSongs().first().mapNotNull { format ->
-                val contentLength = format.format.contentLength ?: return@mapNotNull null
-                if (cache.isCached(format.song.id, 0, contentLength)) format.song.id else null
-            }.toSet()
-        }.orEmpty()
-    }.onFailure { Timber.tag(TAG).w(it, "Cache read unavailable") }.getOrDefault(emptySet())
+    private suspend fun readCachedSongIds(read: suspend (Cache) -> Set<String>): Set<String> =
+        runCatching { openMediaCache(read).orEmpty() }
+            .onFailure { Timber.tag(TAG).w(it, "Cache read unavailable") }.getOrDefault(emptySet())
 
     /**
      * The active profile's streaming cache, opened read-only for one read; `null` when the profile
@@ -553,7 +555,6 @@ internal class DatabaseLibraryProvider(
         val downloads = MyDownloadHelper.downloads.value
         TrackSupport(
             downloaded = downloads.filterValues { it.state == Download.STATE_COMPLETED }.keys,
-            cached = cachedSongIds(),
             states = downloads.entries
                 .mapNotNull { (id, download) ->
                     when (download.state) {
@@ -567,9 +568,14 @@ internal class DatabaseLibraryProvider(
         )
     }.onFailure { Timber.tag(TAG).w(it, "Download states unavailable") }.getOrDefault(TrackSupport())
 
-    /** [TrackSupport.inPlaylist] of [songs] (contract §1.1, since 1.12.0): the phone's playlist membership, read in batched queries ([PlaylistMembership]); a failed read leaves every song out. */
-    private suspend fun TrackSupport.withMembership(songs: List<Song>): TrackSupport =
-        copy(inPlaylist = PlaylistMembership.readFromDatabase(songs.map { it.id }))
+    /** Load cache and playlist membership for the response rows, in bounded batches. */
+    private suspend fun TrackSupport.withMembership(songs: List<Song>, knownCached: Set<String>? = null): TrackSupport {
+        val ids = songs.map { it.id }
+        val cached = knownCached ?: if (ids.isEmpty()) emptySet() else readCachedSongIds { cache ->
+            Database.formatTable.cachedStreamingIds(cache, ids)
+        }
+        return copy(cached = cached, inPlaylist = PlaylistMembership.readFromDatabase(ids))
+    }
 
     /** The used space of the player's streaming cache, exactly as the phone's own `CacheSpaceIndicator` reads it: the bound service's live cache, `0` while the service is not bound (the phone shows `0` then too). */
     private fun mediaCacheUsedBytes(): Long = runCatching {

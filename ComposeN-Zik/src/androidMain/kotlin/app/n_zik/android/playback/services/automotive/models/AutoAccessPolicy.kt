@@ -10,7 +10,7 @@ import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.DislikedExclusion
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import app.n_zik.android.playback.services.isLocal
-import kotlinx.coroutines.flow.first
+import app.n_zik.android.playback.services.cachedStreamingIds
 
 /** Effective connectivity and click-time eligibility shared by automotive entry points. */
 class AutoAccessPolicy(
@@ -25,13 +25,12 @@ class AutoAccessPolicy(
     fun allowsCommand(action: String): Boolean = online || action !in NETWORK_COMMANDS
 
     /** Local files, completed downloads and known-length complete cache spans need no network. */
-    suspend fun offlineIds(): Set<String> {
+    private suspend fun offlineIds(candidates: List<String>): Set<String> {
         val completed = downloadHelper.downloads.value.filterValues { it.state == Download.STATE_COMPLETED }.keys
         if (binder == null) return completed
-        val cached = database.formatTable.allWithSongs().first().filter {
-            val length = it.format.contentLength
-            length != null && length > 0 && binder.cache.isCached(it.song.id, 0L, length)
-        }.map { it.song.id }
+        val cached = database.formatTable.cachedStreamingIds(
+            binder.cache, candidates.filterNot(completed::contains), requirePositiveLength = true,
+        )
         return completed + cached
     }
 
@@ -40,7 +39,8 @@ class AutoAccessPolicy(
         val excluded = if (parentId != null && reappliesExclusions(parentId)) {
             DislikedExclusion.excludedSongIds(context, database)
         } else emptySet()
-        val available = if (online) null else offlineIds()
+        val available = if (online) null else offlineIds(items.asSequence()
+            .filterNot { it.isLocal }.map(::canonicalId).filterNot(excluded::contains).toList())
         return items.withIndex().filter { (_, item) ->
             canonicalId(item) !in excluded && (available == null || item.isLocal || canonicalId(item) in available)
         }

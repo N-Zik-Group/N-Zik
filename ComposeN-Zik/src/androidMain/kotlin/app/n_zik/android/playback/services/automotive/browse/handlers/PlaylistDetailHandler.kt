@@ -1,5 +1,6 @@
 package app.n_zik.android.playback.services.automotive.browse.handlers
 
+import app.n_zik.android.playback.services.hasCachedStream
 import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastMap
 
@@ -63,7 +64,7 @@ class PlaylistDetailHandler : BrowseHandler {
                 val sortBy = context.preferences.getEnum(Preference.HOME_SONGS_OFFLINE_SORT_BY.key, SongSortBy.Title)
                 val sortOrder = context.preferences.getEnum(Preference.HOME_SONGS_OFFLINE_SORT_ORDER.key, SortOrder.Ascending)
                 database.formatTable.sortAllWithSongs(sortBy, sortOrder).map { flist ->
-                    flist.fastFilter { itf -> val contentLength = itf.format.contentLength; contentLength != null && (if (binder != null) binder.cache.isCached(itf.song.id, 0L, contentLength) else false) }.fastMap { itf -> itf.song }
+                    flist.fastFilter { itf -> binder?.cache?.hasCachedStream(itf.song.id, itf.format.contentLength) == true }.fastMap { itf -> itf.song }
                 }
             }
             AutoSessionConstants.ID_TOP -> {

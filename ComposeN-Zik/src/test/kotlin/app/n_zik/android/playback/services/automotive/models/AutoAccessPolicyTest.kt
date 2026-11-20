@@ -5,10 +5,8 @@ import androidx.media3.common.MediaItem
 import android.net.Uri
 import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.exoplayer.offline.Download
-import app.n_zik.android.models.Format
-import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.FormatTable
-import app.n_zik.android.core.database.ext.FormatWithSong
+import app.n_zik.android.models.StreamingCacheEntry
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
@@ -21,7 +19,6 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -68,10 +65,9 @@ class AutoAccessPolicyTest {
         every { NetworkQualityHelper.isNetworkConnected(any()) } returns false
         val formats = mockk<FormatTable>()
         every { Database.formatTable } returns formats
-        val rows = listOf("full" to 100L, "partial" to 100L, "unknown" to null, "zero" to 0L).map { (id, length) ->
-            FormatWithSong(Format(songId = id, contentLength = length), Song.makePlaceholder(id))
-        }
-        every { formats.allWithSongs(any(), any()) } returns flowOf(rows)
+        coEvery { formats.streamingCacheEntries(listOf("full", "partial", "unknown", "zero")) } returns listOf(
+            StreamingCacheEntry("full", 100L), StreamingCacheEntry("partial", 100L), StreamingCacheEntry("zero", 0L),
+        )
         val binder = mockk<PlayerServiceModern.Binder>(relaxed = true)
         every { binder.cache.isCached("full", 0L, 100L) } returns true
         every { binder.cache.isCached("partial", 0L, 100L) } returns false

@@ -1,5 +1,6 @@
 package app.n_zik.android.playback.services.automotive.browse.handlers
 
+import app.n_zik.android.playback.services.hasCachedStream
 import android.content.Context
 import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
 import androidx.media3.common.MediaItem
@@ -156,7 +157,7 @@ class SongsBrowseHandler : BrowseHandler {
                 val sortBy = context.preferences.getEnum(Preference.HOME_SONGS_OFFLINE_SORT_BY.key, SongSortBy.Title)
                 val sortOrder = context.preferences.getEnum(Preference.HOME_SONGS_OFFLINE_SORT_ORDER.key, SortOrder.Ascending)
                 val songs = database.formatTable.sortAllWithSongs(sortBy, sortOrder).first()
-                    .filter { itf -> itf.song.id !in excludedIds && itf.format.contentLength != null && (if (binder != null) binder.cache.isCached(itf.song.id, 0L, itf.format.contentLength ?: 0L) else false) }
+                    .filter { itf -> itf.song.id !in excludedIds && binder?.cache?.hasCachedStream(itf.song.id, itf.format.contentLength) == true }
                     .map { itf -> itf.song }
                 listOf(shuffleItem) + songs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
             }
@@ -173,7 +174,7 @@ class SongsBrowseHandler : BrowseHandler {
         if (binder == null) return@map 0
         flist.filter { itf ->
             val contentLength = itf.format.contentLength
-            itf.song.id !in dislikedIds && contentLength != null && binder.cache.isCached(itf.song.id, 0L, contentLength)
+            itf.song.id !in dislikedIds && binder.cache.hasCachedStream(itf.song.id, contentLength)
         }.size
     }
 
