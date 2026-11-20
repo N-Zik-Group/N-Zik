@@ -204,6 +204,9 @@ interface SongTable {
     @Query("SELECT COALESCE(likedAt IS NOT NULL AND likedAt > 0, 0) FROM Song WHERE id = :songId")
     suspend fun isLikedDirect( songId: String ): Boolean
 
+    @Query("SELECT id FROM Song WHERE id IN (:songIds) AND likedAt > 0")
+    suspend fun findLikedIdsDirect( songIds: List<String> ): List<String>
+
     /** Like tri-state of [songId]: `true` = liked, `false` = disliked, `null` = unset (neutral). */
     @Query("""
         SELECT 

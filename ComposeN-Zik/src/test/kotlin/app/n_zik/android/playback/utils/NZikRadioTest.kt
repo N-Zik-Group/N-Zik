@@ -31,6 +31,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -843,17 +844,17 @@ class NZikRadioTest {
         // r1 is in a playlist only, and r2 is a favorite only.
         val mapTable = mockk<SongPlaylistMapTable>(relaxed = true)
         every { Database.songPlaylistMapTable } returns mapTable
-        coEvery { mapTable.isMappedSync("r1") } returns true
-        coEvery { mapTable.isMappedSync("r2") } returns false
+        every { mapTable.songsInPlaylists(listOf("r1", "r2")) } returns flowOf(listOf("r1"))
         val songTable = mockk<SongTable>(relaxed = true)
         every { Database.songTable } returns songTable
-        coEvery { songTable.isLikedDirect("r1") } returns false
-        coEvery { songTable.isLikedDirect("r2") } returns true
+        coEvery { songTable.findLikedIdsDirect(listOf("r2")) } returns listOf("r2")
 
         nZikRadio.startRadio(mediaItem("Z"), isExplicit = true)
 
         assertEquals(listOf("Z"), queue.map { it.mediaId }, "the queue must stay exactly [tapped song]")
         assertTrue(nZikRadio.isRadioActive, "the radio stays ON when the discover filter removes every song")
+        verify(exactly = 1) { mapTable.songsInPlaylists(listOf("r1", "r2")) }
+        coVerify(exactly = 1) { songTable.findLikedIdsDirect(listOf("r2")) }
         assertFalse(nZikRadio.isLoading)
         verify { Toaster.e(R.string.radio_fetch_empty_queue_preserved_message) }
         verify(exactly = 0) { mockPlayer.addMediaItems(any<List<MediaItem>>()) }

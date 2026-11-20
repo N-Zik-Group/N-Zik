@@ -14,6 +14,7 @@ import app.n_zik.android.bridge.library.ListRef
 import app.n_zik.android.bridge.library.ListResolution
 import app.n_zik.android.bridge.state.BridgeStateHub
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.utils.Shuffler
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -28,6 +29,7 @@ import kotlinx.serialization.json.JsonObject
 import timber.log.Timber
 
 private const val TAG = "BridgeListCommands"
+private const val SONG_LOOKUP_CHUNK_SIZE = 900
 
 /** What `/queue/list` does with the whole list (contract §9, since 1.10.0, `queue.fullList`). */
 @Serializable
@@ -134,15 +136,20 @@ internal fun interface ListItemResolver {
     suspend fun resolve(trackIds: List<String>): List<Pair<String, MediaItem>>
 }
 
-/** Resolves the list against the phone's `Song` table, off the main thread, in batched `IN` queries ([CHUNK] ids each, under SQLite's bound-parameter limit), then back in the list's order. */
+/** Reads each distinct ID once, in batches under SQLite's bound-parameter limit. */
+internal suspend fun loadQueueSongsById(trackIds: List<String>): Map<String, Song> = buildMap {
+    for (ids in trackIds.distinct().chunked(SONG_LOOKUP_CHUNK_SIZE)) {
+        for (song in Database.songTable.findByIdsDirect(ids)) {
+            put(song.id, song)
+        }
+    }
+}
+
+/** Resolves the list against the phone's `Song` table off the main thread, in list order. */
 @OptIn(UnstableApi::class)
 internal object DatabaseListItemResolver : ListItemResolver {
-    private const val CHUNK = 900
-
     override suspend fun resolve(trackIds: List<String>): List<Pair<String, MediaItem>> = withContext(NzikDispatchers.DATA) {
-        val songs = trackIds.distinct().chunked(CHUNK)
-            .flatMap { Database.songTable.findByIdsDirect(it) }
-            .associateBy { it.id }
+        val songs = loadQueueSongsById(trackIds)
         orderResolved(trackIds) { id -> songs[id]?.asMediaItem }
     }
 }

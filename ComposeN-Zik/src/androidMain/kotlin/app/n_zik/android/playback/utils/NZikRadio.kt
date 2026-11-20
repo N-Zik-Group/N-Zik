@@ -43,6 +43,8 @@ import app.n_zik.android.utils.forcePlay
 import app.n_zik.android.utils.mediaItems
 import timber.log.Timber
 
+private const val DISCOVER_QUERY_CHUNK_SIZE = 900
+
 @OptIn(UnstableApi::class)
 class NZikRadio(
     private val context: Context,
@@ -429,10 +431,16 @@ class NZikRadio(
 
         // Apply Discover Filter (remove known songs)
         if (isDiscoverEnabled) {
-            filtered = filtered.filter { item ->
-                !Database.songPlaylistMapTable.isMappedSync(item.mediaId) &&
-                    !Database.songTable.isLikedDirect(item.mediaId)
+            val knownIds = HashSet<String>()
+            val candidateIds = filtered.map { it.mediaId }.distinct()
+            for (ids in candidateIds.chunked(DISCOVER_QUERY_CHUNK_SIZE)) {
+                knownIds += Database.songPlaylistMapTable.songsInPlaylists(ids).first()
+                val remainingIds = ids.filterNot { it in knownIds }
+                if (remainingIds.isNotEmpty()) {
+                    knownIds += Database.songTable.findLikedIdsDirect(remainingIds)
+                }
             }
+            filtered = filtered.filterNot { it.mediaId in knownIds }
         }
 
         // Apply Dislike Filter

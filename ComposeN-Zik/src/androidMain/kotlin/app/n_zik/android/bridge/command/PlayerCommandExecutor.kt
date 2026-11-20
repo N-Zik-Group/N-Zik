@@ -26,7 +26,6 @@ import app.n_zik.android.bridge.state.DeltaMessage
 import app.n_zik.android.bridge.state.ErrorMessage
 import app.n_zik.android.bridge.state.PlayerStateReader
 import app.n_zik.android.bridge.state.RepeatModeDto
-import app.n_zik.android.core.database.Database
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -81,7 +80,7 @@ internal class PreferencePlayerSettings(context: Context) : PlayerSettings {
 internal object DatabaseTrackResolver : TrackResolver {
     @OptIn(UnstableApi::class)
     override suspend fun resolve(trackIds: List<String>): List<MediaItem>? = withContext(NzikDispatchers.DATA) {
-        val songs = trackIds.distinct().associateWith { id -> Database.songTable.findByIdDirect(id) }
+        val songs = loadQueueSongsById(trackIds)
         val items = ArrayList<MediaItem>(trackIds.size)
         for (id in trackIds) {
             val song = songs[id] ?: return@withContext null

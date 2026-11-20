@@ -13,17 +13,60 @@ import app.n_zik.android.bridge.state.ErrorMessage
 import app.n_zik.android.bridge.state.PlayerSample
 import app.n_zik.android.bridge.state.RepeatModeDto
 import app.n_zik.android.bridge.state.playingSample
+import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.SongTable
+import app.n_zik.android.models.Song
+import app.n_zik.android.utils.asMediaItem
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.mockkStatic
+import io.mockk.unmockkObject
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class PlayerCommandExecutorTest {
 
     private val ids = listOf("aaaaaaaaaaa", "bbbbbbbbbbb", "ccccccccccc")
+
+    @Test
+    fun `database queue resolvers batch distinct ids and preserve their different missing track behavior`() = runTest {
+        val firstBatch = List(900) { "track-$it" }
+        val lastTrack = "last"
+        val missing = "missing"
+        val table = mockk<SongTable>()
+        mockkObject(Database)
+        val utils = "app.n_zik.android.utils.UtilsKt"
+        mockkStatic(utils)
+        try {
+            every { Database.songTable } returns table
+            coEvery { table.findByIdsDirect(any()) } answers {
+                firstArg<List<String>>().asReversed().filterNot { it == missing }.map { Song.makePlaceholder(it) }
+            }
+            every { any<Song>().asMediaItem } answers {
+                MediaItem.Builder().setMediaId(firstArg<Song>().id).build()
+            }
+
+            val tracks = firstBatch + listOf(firstBatch.first(), lastTrack)
+            assertEquals(tracks, DatabaseTrackResolver.resolve(tracks)?.map { it.mediaId })
+            assertNull(DatabaseTrackResolver.resolve(tracks + missing))
+            assertEquals(tracks, DatabaseListItemResolver.resolve(tracks + missing).map { it.second.mediaId })
+
+            coVerify(exactly = 3) { table.findByIdsDirect(firstBatch) }
+            coVerify(exactly = 1) { table.findByIdsDirect(listOf(lastTrack)) }
+            coVerify(exactly = 2) { table.findByIdsDirect(listOf(lastTrack, missing)) }
+        } finally {
+            unmockkStatic(utils)
+            unmockkObject(Database)
+        }
+    }
 
     /** Relaxed player over [ids] whose shuffle order is [shuffleOrder] (window indexes). */
     private fun player(shuffle: Boolean = false, shuffleOrder: List<Int> = ids.indices.toList()): Player {
