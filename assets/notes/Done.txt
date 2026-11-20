@@ -6,6 +6,9 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- perf(imports): share Room match reconciliation across library screens
+  - Resolve pending import rows and song metadata in a single Room projection, with playlist filtering in SQLite.
+  - Keep selection and cleanup atomic and retain the existing match classification and deletion semantics.
 - perf(network): reuse the initial connectivity read during composition
   - Remember the first synchronous connectivity result per context while the shared observer delivers live updates.
   - Verify that an unrelated recomposition does not repeat the main-thread connectivity lookup.

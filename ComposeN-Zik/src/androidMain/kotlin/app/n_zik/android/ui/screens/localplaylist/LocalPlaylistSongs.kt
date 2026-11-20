@@ -569,7 +569,7 @@ fun LocalPlaylistSongs(
                 withContext(NonCancellable) {
                     delay(500)
 
-                    val failedEntries = reconcileLocalPlaylistImportMatches(playlistId)
+                    val failedEntries = Database.importSongTable.reconcileMatches(playlistId)
                     val failedCount = failedEntries.size
                     val matchedCount = maxOf(0, totalSongsToMatch - failedCount)
 
@@ -640,7 +640,7 @@ fun LocalPlaylistSongs(
                 withContext(NonCancellable) {
                     delay(500)
 
-                    val failedEntries = reconcileLocalPlaylistImportMatches(playlistId)
+                    val failedEntries = Database.importSongTable.reconcileMatches(playlistId)
                     val failedCount = failedEntries.size
                     val matchedCount = maxOf(0, totalSongsToMatch - failedCount)
 

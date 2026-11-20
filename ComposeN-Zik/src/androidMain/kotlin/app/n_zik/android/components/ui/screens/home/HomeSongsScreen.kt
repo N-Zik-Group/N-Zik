@@ -164,7 +164,6 @@ import app.n_zik.android.components.dialog.search.MatchResultsDialog
 import app.n_zik.android.components.dialog.media.YouTubeLinkImportDialog
 import app.n_zik.android.components.tab.ImportPlaylistsMenu
 import app.n_zik.android.components.tab.ImportSongsFromServices
-import app.n_zik.android.core.database.ImportSong
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.components.Sort
 import app.n_zik.android.themed.n_zik.component.playlist.PositionLock
@@ -462,29 +461,8 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
             } finally {
                 withContext(NonCancellable) {
                     delay(1500)
-                    var failedCount = 0
-                    val allEntries = Database.importSongTable.getAllEntries()
-                    val failedEntries = mutableListOf<ImportSong>()
-                    for (entry in allEntries) {
-                        val count = Database.songTable.countById(entry.originalId)
-                        val isYouTubeId = entry.originalId.length == 11 && !entry.originalId.startsWith(LOCAL_KEY_PREFIX)
-                        if (count > 0) {
-                            if (isYouTubeId) {
-                                val song = Database.songTable.findById(entry.originalId).first()
-                                if (song != null && song.durationText == "00:00") {
-                                    failedCount++
-                                    failedEntries.add(entry)
-                                } else {
-                                    Database.importSongTable.deleteByOriginalId(entry.originalId)
-                                }
-                            } else {
-                                failedCount++
-                                failedEntries.add(entry)
-                            }
-                        } else {
-                            Database.importSongTable.deleteByOriginalId(entry.originalId)
-                        }
-                    }
+                    val failedEntries = Database.importSongTable.reconcileMatches()
+                    val failedCount = failedEntries.size
 
                     matchRefreshKey++
                     val matchedCount = maxOf(0, totalSongsToMatch - failedCount)

@@ -1,13 +1,16 @@
 package app.n_zik.android.core.database
 
 import androidx.room.Dao
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
-import kotlinx.coroutines.flow.Flow
+import androidx.room.Transaction
+import timber.log.Timber
+import app.n_zik.android.LOCAL_KEY_PREFIX
 
 /**
  * Stores the original import position of songs from Spotify/RiPlay CSV imports.
@@ -20,6 +23,12 @@ data class ImportSong(
     val position: Int,
     val playlistId: Long? = null,
     val importDate: Long = System.currentTimeMillis()
+)
+
+data class ImportMatchRow(
+    @Embedded val entry: ImportSong,
+    val songExists: Boolean,
+    val songDuration: String?,
 )
 
 @Dao
@@ -40,8 +49,33 @@ interface ImportSongTable {
     @Query("DELETE FROM ImportSong WHERE originalId = :originalId")
     suspend fun deleteByOriginalId(originalId: String)
 
-    @Query("SELECT * FROM ImportSong")
-    suspend fun getAllEntries(): List<ImportSong>
+    @Query("""
+        SELECT pending.*, song.id IS NOT NULL AS songExists, song.durationText AS songDuration
+        FROM ImportSong AS pending
+        LEFT JOIN Song AS song ON song.id = pending.originalId
+        WHERE :playlistId IS NULL OR pending.playlistId = :playlistId
+        ORDER BY pending.id
+    """)
+    suspend fun getMatchRows(playlistId: Long?): List<ImportMatchRow>
+
+    @Transaction
+    suspend fun reconcileMatches(playlistId: Long? = null): List<ImportSong> {
+        val failedEntries = mutableListOf<ImportSong>()
+        for (row in getMatchRows(playlistId)) {
+            val originalId = row.entry.originalId
+            val isYouTubeId = originalId.length == 11 && !originalId.startsWith(LOCAL_KEY_PREFIX)
+            // Riplay placeholders can retain a YouTube ID until their duration is resolved.
+            if (row.songExists && (!isYouTubeId || row.songDuration == "00:00")) {
+                failedEntries.add(row.entry)
+            } else {
+                deleteByOriginalId(originalId)
+            }
+        }
+        if (playlistId != null) {
+            Timber.tag("MatchPlaylist").d("Import reconciliation left %d unresolved rows", failedEntries.size)
+        }
+        return failedEntries
+    }
 
     /** Keeps pending matches aligned when existing playlist members move. */
     @Query("""
