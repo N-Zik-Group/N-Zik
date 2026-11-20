@@ -273,17 +273,23 @@ private fun DrawScope.drawPlayerArtworkOverflow(
         if (bottom <= top) return
         val band = Rect(0f, top, hostSize.width, bottom)
         clipRect(band.left, band.top, band.right, band.bottom) {
-            val masked = fade > 0f
-            if (masked) drawContext.canvas.saveLayer(band, maskPaint)
+            var masked = false
             frames.forEach { (frame, bounds) ->
                 val replaysImage = frame.imageOverflow && stackBounds?.overlaps(bounds) == true
-                if (frame.shadow && bounds.inflate(bleed).overlaps(band)) {
+                val drawsImage = replaysImage && bounds.overlaps(band)
+                val drawsShadow = frame.shadow && bounds.inflate(bleed).overlaps(band)
+                if (!drawsImage && !drawsShadow) return@forEach
+                if (!masked && fade > 0f) {
+                    drawContext.canvas.saveLayer(band, maskPaint)
+                    masked = true
+                }
+                if (drawsShadow) {
                     if (replaysImage) drawArtworkOverflowShadow(bounds, frame)
                     else clipRect(top = viewport.top - bleed, bottom = viewport.bottom + bleed) {
                         drawArtworkOverflowShadow(bounds, frame)
                     }
                 }
-                if (replaysImage && bounds.overlaps(band)) drawArtworkOverflowImage(bounds, frame)
+                if (drawsImage) drawArtworkOverflowImage(bounds, frame)
             }
             if (masked) {
                 drawArtworkOverflowFade(viewport, fade, hostSize)

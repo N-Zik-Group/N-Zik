@@ -383,7 +383,6 @@ import app.n_zik.android.utils.timelineExpandedKey
 import app.n_zik.android.utils.titleExpandedKey
 import app.n_zik.android.utils.topPaddingKey
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -1508,12 +1507,6 @@ fun Player(
 
     val thumbnailContent: @Composable () -> Unit = {
         var deltaX by remember { mutableStateOf(0f) }
-
-        val isSongLiked by remember( mediaItem.mediaId, preview ) {
-            if (preview != null) kotlinx.coroutines.flow.flowOf(false) else Database.songTable
-                .isLiked( mediaItem.mediaId )
-                .distinctUntilChanged()
-        }.collectAsStateWithLifecycle(false, context = NzikDispatchers.DATA)
 
         PlayerPortraitThumbnailFrame(
             enabled = !isLandscape && playerCoverArtworkVisible(showthumbnail, isShowingLyrics,

@@ -6,6 +6,8 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- perf(player): skip unnecessary work while changing tracks
+  - Remove the unused per-track like observer and open carousel fade layers only when an overflow band draws artwork or shadow.
 - perf(player): reduce redraws while opening and closing the player
   - Keep the sheet motion in draw and layer phases and limit page and Glass invalidation to visibility changes.
   - Share the live optical handoff state and preserve its fade in both directions.
