@@ -394,6 +394,15 @@
     <string name="song_matching_all_confirmation">¿Quieres emparejar con %d canciones sin coincidencia?</string>
     <string name="song_matching_dialog_title">Coincidir canciones</string>
     <string name="song_matching_progress_title">Canciones coincidentes</string>
+    <string name="song_matching_background_message">La coincidencia continúa en segundo plano.</string>
+    <string name="song_matching_notification_progress">%1$d de %2$d canciones</string>
+    <string name="song_matching_cancelled_title">Coincidencia cancelada</string>
+    <string name="song_matching_unprocessed_count">%1$d no procesada</string>
+    <string name="song_matching_notification_completed">%1$d canciones coincidentes. %2$d se fusionó con canciones existentes.</string>
+    <string name="song_matching_notification_partial">%1$d coincidido, %2$d falló, %3$d no procesado. %4$d combinado.</string>
+    <string name="song_matching_notification_cancelled">Cancelado. %1$d coincidido, %2$d falló, %3$d no procesado. %4$d combinado.</string>
+    <string name="song_matching_notification_failed">Coincidencia fallida. %1$d coincidido, %2$d falló, %3$d no procesado. %4$d combinado.</string>
+    <string name="song_matching_failed_message">No se pudo completar la coincidencia de canciones. Inténtalo de nuevo.</string>
     <string name="song_matching_running_message">Coincidiendo canciones. Por favor, espera. No minimices o salgas de la aplicación</string>
     <string name="song_matching_unmatched_label">Canción inigualable</string>
     <string name="metadata_musicbrainz_rating">Valoración</string>
