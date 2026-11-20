@@ -168,6 +168,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
+import androidx.compose.runtime.referentialEqualityPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import app.n_zik.android.components.player.isPlayerHorizontalSwipeEnabled
@@ -323,6 +324,7 @@ import app.n_zik.android.utils.coverThumbnailAnimationKey
 import app.n_zik.android.utils.disablePlayerHorizontalSwipeKey
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.discoverKey
+import app.n_zik.android.components.player.PlayerQueueDuration
 import app.n_zik.android.components.player.rememberPlayerQueueDuration
 import app.n_zik.android.components.player.playerStandaloneLyricsVisible
 import app.n_zik.android.utils.effectRotationKey
@@ -733,6 +735,9 @@ fun Player(
         true
     }
     var mediaItems by mediaItemsState
+    var queueTimeline by remember(playerUpdateTrigger) {
+        mutableStateOf(player.currentTimeline, referentialEqualityPolicy())
+    }
     var playerError by remember(playerUpdateTrigger) {
         mutableStateOf<PlaybackException?>(player.playerError)
     }
@@ -791,6 +796,7 @@ fun Player(
             }
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                 mediaItems = timeline.mediaItems
+                queueTimeline = timeline
             }
             override fun onPlayerError(playbackException: PlaybackException) {
                 playerError = playbackException
@@ -1002,7 +1008,7 @@ fun Player(
         return null
     }
 
-    val totalPlayTimes = rememberPlayerQueueDuration(mediaItems, showTotalTimeQueue)
+    val totalPlayTimes = rememberPlayerQueueDuration(queueTimeline, mediaItems, showTotalTimeQueue, getActiveProfile(context))
 
     // Issue #881 (gh-881): tolerant saver (spec M5).
     var isShowingStatsForNerds by rememberSaveable(saver = TolerantBoolStateSaver("player.isShowingStatsForNerds")) {
@@ -2744,7 +2750,7 @@ fun Player(
                                 )
 
                                 Box {
-                                    if (totalPlayTimes == null) {
+                                    if (totalPlayTimes == PlayerQueueDuration.Loading) {
                                         ItemTextPlaceholder(
                                             text = null,
                                             style = typography().xxs.semiBold,
@@ -2752,7 +2758,8 @@ fun Player(
                                             width = 1f,
                                         )
                                     } else {
-                                        val durationText = " ${formatAsTime(totalPlayTimes)}"
+                                        val durationText = (totalPlayTimes as? PlayerQueueDuration.Known)
+                                            ?.let { " ${formatAsTime(it.milliseconds)}" } ?: " —"
                                         BasicText(
                                             text = durationText,
                                             style = typography().xxs.semiBold.merge(

@@ -7,12 +7,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.referentialEqualityPolicy
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
+import app.n_zik.android.models.Song
 import app.n_zik.android.utils.asSong
-import app.n_zik.android.utils.durationTextToMillis
 import io.mockk.every
 import io.mockk.mockk
 import java.util.concurrent.CountDownLatch
@@ -39,15 +40,35 @@ import org.robolectric.annotation.Config
 class PlayerQueueProcessingTest {
     @get:Rule val compose = createComposeRule()
 
-    private fun media(id: String, title: String, artist: String = "", duration: String? = null) =
+    private fun media(
+        id: String,
+        title: String,
+        artist: String = "",
+        duration: String? = null,
+        durationMs: Long? = null,
+    ) =
         MediaItem.Builder().setMediaId(id).setMediaMetadata(
             MediaMetadata.Builder().setTitle(title).setArtist(artist)
+                .setDurationMs(durationMs)
                 .setExtras(Bundle().apply { duration?.let { putString("durationText", it) } }).build()
         ).build()
 
-    private fun window(uid: String, item: MediaItem) = Timeline.Window().apply {
+    private fun window(
+        uid: String,
+        item: MediaItem,
+        durationMs: Long? = null,
+        placeholder: Boolean = false,
+    ) = Timeline.Window().apply {
         this.uid = uid
         mediaItem = item
+        durationUs = durationMs?.times(1000) ?: C.TIME_UNSET
+        isPlaceholder = placeholder
+    }
+
+    private fun timeline(vararg windows: Timeline.Window): Timeline = mockk<Timeline>().also { timeline ->
+        every { timeline.windowCount } returns windows.size
+        every { timeline.isEmpty } returns windows.isEmpty()
+        every { timeline.getWindow(any(), any()) } answers { windows[firstArg()] }
     }
 
     @Test
@@ -71,22 +92,32 @@ class PlayerQueueProcessingTest {
     }
 
     @Test
-    fun `queue duration gives pending for a new timeline and zero for a true empty timeline`() {
-        val source = mutableStateOf(listOf(media("first", "First", duration = "1:00")))
-        val readings = CopyOnWriteArrayList<Pair<String?, Long?>>()
+    fun `queue duration stays visible on source updates and resets for different items`() {
+        val item = media("same", "Same track", duration = "1:00")
+        val replacement = media("other", "Different track", duration = "2:00")
+        val first = timeline(window("same", item))
+        val second = timeline(window("same", item, durationMs = 61_789L))
+        val third = timeline(window("other", replacement))
+        val source = mutableStateOf(first, referentialEqualityPolicy())
+        val readings = CopyOnWriteArrayList<Pair<Timeline, PlayerQueueDuration>>()
         compose.setContent {
-            val items = source.value
-            val total = rememberPlayerQueueDuration(items, enabled = true)
-            SideEffect { readings.add(items.firstOrNull()?.mediaId to total) }
+            val captured = source.value
+            val items = if (captured === third) listOf(replacement) else listOf(item)
+            val total = rememberPlayerQueueDuration(captured, items, enabled = true, profile = "default")
+            SideEffect { readings.add(captured to total) }
         }
-        compose.waitUntil(5_000) { ("first" to 60_000L) in readings }
-        applySnapshotChanges { source.value = listOf(media("second", "Second", duration = "2:00")) }
-        compose.waitUntil(5_000) { ("second" to 120_000L) in readings }
-        applySnapshotChanges { source.value = emptyList() }
-        compose.waitUntil(5_000) { (null to 0L) in readings }
-        assertTrue(("first" to null) in readings)
-        assertTrue(("second" to null) in readings)
-        assertFalse(("second" to 60_000L) in readings)
+        compose.waitUntil(5_000) { (first to PlayerQueueDuration.Known(60_000L)) in readings }
+        applySnapshotChanges { source.value = second }
+        compose.waitUntil(5_000) { (second to PlayerQueueDuration.Known(61_789L)) in readings }
+        applySnapshotChanges { source.value = third }
+        compose.waitUntil(5_000) { (third to PlayerQueueDuration.Known(120_000L)) in readings }
+        applySnapshotChanges { source.value = Timeline.EMPTY }
+        compose.waitUntil(5_000) { (Timeline.EMPTY to PlayerQueueDuration.Known(0L)) in readings }
+        assertTrue((first to PlayerQueueDuration.Loading) in readings)
+        assertFalse((second to PlayerQueueDuration.Loading) in readings)
+        assertTrue((second to PlayerQueueDuration.Known(60_000L)) in readings)
+        assertTrue((third to PlayerQueueDuration.Loading) in readings)
+        assertFalse((third to PlayerQueueDuration.Known(61_789L)) in readings)
     }
 
     @Test
@@ -326,27 +357,51 @@ class PlayerQueueProcessingTest {
     }
 
     @Test
-    fun `duration parsing runs on MEDIA and live uid lookup keeps duplicate tracks distinct`() = runBlocking {
-        // Synchronous test bridge; production parsing dispatches independently of the caller.
-        val items = listOf(media("same", "One", duration = "1:23"),
-            media("same", "Two", duration = "1:02:03"), media("bad", "Bad", duration = "invalid"),
-            media("missing", "Missing"))
-        val caller = Thread.currentThread()
-        var parsed = 0
-        val duration = playerQueueDuration(items) {
-            assertTrue(Thread.currentThread() !== caller)
+    fun `total uses resolved and declared lengths plus a batched stored fallback for each occurrence`() = runBlocking {
+        // JUnit's synchronous API bridges to production MEDIA calculation and DATA lookup.
+        val stored = media("stored", "Stored duration", duration = "00:00")
+        val windows = arrayOf(
+            window("first", media("same", "One", duration = "1:23", durationMs = 84_123L), durationMs = 84_987L),
+            window("second", media("same", "Two", duration = "1:02:03", durationMs = 3_724_567L),
+                durationMs = 5_000L, placeholder = true),
+            window("legacy", media("legacy", "Legacy duration", duration = "2:01")),
+            window("stored-one", stored),
+            window("stored-two", stored),
+        )
+        val source = timeline(*windows)
+        every { source.getWindow(any(), any()) } answers {
             assertTrue(Thread.currentThread().name.startsWith("nzik-media-"))
-            parsed++
-            durationTextToMillis(it)
+            windows[firstArg()]
         }
-        assertEquals(3, parsed)
-        assertEquals(3_806_000L, duration)
-        val liveWindows = listOf(window("two", items[1]), window("one", items[0]))
-        val timeline = mockk<Timeline>()
-        every { timeline.windowCount } returns liveWindows.size
-        every { timeline.getWindow(any(), any()) } answers { liveWindows[firstArg()] }
-        assertEquals(1, findPlayerQueueWindowIndex(timeline, "one"))
-        assertEquals(0, findPlayerQueueWindowIndex(timeline, "two"))
-        assertEquals(-1, findPlayerQueueWindowIndex(timeline, "removed"))
+        val batches = mutableListOf<List<String>>()
+        val duration = playerQueueDuration(source) { ids ->
+            batches.add(ids)
+            listOf(Song.makePlaceholder("stored").copy(durationText = "1:05"))
+        }
+        assertEquals(listOf(listOf("stored")), batches)
+        assertEquals(PlayerQueueDuration.Known(4_060_554L), duration)
+    }
+
+    @Test
+    fun `unknown tracks do not leave a partial total or turn an unresolved queue into zero`() = runBlocking {
+        // JUnit's synchronous API bridges to the production suspend calculation.
+        val known = window("known", media("known", "Known length", durationMs = 170_000L))
+        val invalid = window("invalid", media("invalid", "Invalid duration", duration = "5:91"))
+        val missing = window("missing", media("missing", "Missing duration", durationMs = 0L))
+        assertEquals(PlayerQueueDuration.Unavailable, playerQueueDuration(timeline(known, invalid, missing)) { ids ->
+            assertEquals(listOf("invalid", "missing"), ids)
+            listOf(Song.makePlaceholder("invalid").copy(durationText = "1:00"))
+        })
+        assertEquals(PlayerQueueDuration.Unavailable, playerQueueDuration(timeline(missing)) { emptyList() })
+        assertEquals(PlayerQueueDuration.Known(0L), playerQueueDuration(Timeline.EMPTY) { error("No lookup for empty queue") })
+    }
+
+    @Test
+    fun `live uid lookup keeps duplicate tracks distinct`() {
+        val item = media("same", "Track")
+        val source = timeline(window("two", item), window("one", item))
+        assertEquals(1, findPlayerQueueWindowIndex(source, "one"))
+        assertEquals(0, findPlayerQueueWindowIndex(source, "two"))
+        assertEquals(-1, findPlayerQueueWindowIndex(source, "removed"))
     }
 }

@@ -3,6 +3,7 @@ package app.n_zik.android.components.player
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.referentialEqualityPolicy
@@ -11,9 +12,11 @@ import androidx.compose.runtime.setValue
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
+import app.n_zik.android.core.database.Database
 import app.n_zik.android.models.Song
+import app.n_zik.android.playback.services.SessionDurationMetadata
+import app.n_zik.android.playback.services.automotive.session.enrichAutoQueueDurations
 import app.n_zik.android.utils.asSong
-import app.n_zik.android.utils.durationTextToMillis
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -153,25 +156,73 @@ internal fun rememberPlayerQueueSnapshot(
     return result
 }
 
-internal suspend fun playerQueueDuration(
-    mediaItems: List<MediaItem>,
-    parseDuration: (String) -> Long = ::durationTextToMillis,
-): Long = withContext(NzikDispatchers.MEDIA) {
-    var total = 0L
-    for (item in mediaItems) {
-        currentCoroutineContext().ensureActive()
-        total += item.mediaMetadata.extras?.getString("durationText")?.let(parseDuration) ?: 0L
-    }
-    total
+internal sealed interface PlayerQueueDuration {
+    data object Loading : PlayerQueueDuration
+    data object Unavailable : PlayerQueueDuration
+    data class Known(val milliseconds: Long) : PlayerQueueDuration
 }
 
-/** Parent recompositions reuse the result; disabled duration performs no metadata parsing. */
-@Composable
-fun rememberPlayerQueueDuration(mediaItems: List<MediaItem>, enabled: Boolean): Long? {
-    if (!enabled) return null
-    if (mediaItems.isEmpty()) return 0L
-    val duration by produceState<Pair<List<MediaItem>, Long>?>(null, mediaItems) {
-        value = mediaItems to playerQueueDuration(mediaItems)
+@OptIn(UnstableApi::class)
+internal suspend fun playerQueueDuration(
+    timeline: Timeline,
+    findSongs: suspend (List<String>) -> List<Song>,
+): PlayerQueueDuration = withContext(NzikDispatchers.MEDIA) {
+    // A Timeline is immutable. Each Window is populated into scratch storage owned by this calculation.
+    val scratch = Timeline.Window()
+    val missing = ArrayList<MediaItem>()
+    var total = 0L
+    for (index in 0 until timeline.windowCount) {
+        currentCoroutineContext().ensureActive()
+        val window = timeline.getWindow(index, scratch)
+        val metadata = window.mediaItem.mediaMetadata
+        val length = window.durationMs.takeIf { !window.isPlaceholder && !window.isDynamic && it > 0 }
+            ?: metadata.durationMs?.takeIf { it > 0 }
+            ?: SessionDurationMetadata.fromDurationText(metadata.extras?.getString("durationText"))
+        if (length == null) {
+            missing.add(window.mediaItem)
+        } else {
+            if (length > Long.MAX_VALUE - total) return@withContext PlayerQueueDuration.Unavailable
+            total += length
+        }
     }
-    return duration?.takeIf { it.first == mediaItems }?.second
+    if (missing.isNotEmpty()) {
+        for (item in enrichAutoQueueDurations(missing, findSongs)) {
+            currentCoroutineContext().ensureActive()
+            val length = item.mediaMetadata.durationMs?.takeIf { it > 0 }
+                ?: return@withContext PlayerQueueDuration.Unavailable
+            if (length > Long.MAX_VALUE - total) return@withContext PlayerQueueDuration.Unavailable
+            total += length
+        }
+    }
+    PlayerQueueDuration.Known(total)
+}
+
+@Composable
+internal fun rememberPlayerQueueDuration(
+    timeline: Timeline,
+    mediaItems: List<MediaItem>,
+    enabled: Boolean,
+    profile: String,
+): PlayerQueueDuration {
+    if (!enabled) return PlayerQueueDuration.Unavailable
+    if (timeline.isEmpty) return PlayerQueueDuration.Known(0L)
+    val membership = remember(mediaItems) { mediaItems.groupingBy { it.mediaId }.eachCount() }
+    return key(membership, profile) {
+        val duration by produceState<PlayerQueueDuration>(
+            PlayerQueueDuration.Loading,
+            QueueSnapshotIdentityKey(timeline),
+        ) {
+            val updated = playerQueueDuration(timeline) { ids ->
+                if (Database.FILE_NAME == Database.fileNameForProfile(profile)) {
+                    Database.songTable.findByIdsDirect(ids)
+                } else {
+                    emptyList()
+                }
+            }
+            if (updated is PlayerQueueDuration.Known || value !is PlayerQueueDuration.Known) {
+                value = updated
+            }
+        }
+        duration
+    }
 }

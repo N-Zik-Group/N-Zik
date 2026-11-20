@@ -28,6 +28,9 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(player): keep the queue duration stable across track changes
+  - Use timeline, metadata and stored durations to compute the queue total, including repeated tracks.
+  - Keep the previous total visible when Media3 updates the same queue and show loading only for new membership.
 - fix(widget): refresh cover pixels without redundant decoding
   - Resolve artwork off the main dispatcher when a widget is installed and reload the same URI after a cover refresh.
   - Keep the solid fallback to one pixel and refresh paused playback when a widget is added or resized.
