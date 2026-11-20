@@ -16,6 +16,8 @@ Improved:
   - Move playback failure handling and Listen Together event models into files dedicated to those responsibilities.
 - refactor(ui): separate charts and creator previews
   - Extract Quick Picks charts, the Discord presence preview and the Theme Store creator components.
+- refactor(storage): separate maintenance snapshots and rescue components
+  - Move snapshot collection and shared Rescue UI out of their screen files.
 - perf(player): prepare the full player before opening
   - Keep the display list warm at the collapsed anchor, pause decorations during sheet travel and defer contrast sampling until expansion settles.
 - perf(playback): batch bridge queue and radio lookups
