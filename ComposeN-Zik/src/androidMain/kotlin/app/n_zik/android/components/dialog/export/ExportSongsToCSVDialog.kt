@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -20,7 +21,6 @@ import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
-import app.n_zik.android.components.dialog.export.ExportToFileDialog
 import app.n_zik.android.core.utils.TimeDateUtils
 import app.n_zik.android.core.utils.csv.SongCSV
 import java.io.OutputStream
@@ -34,7 +34,8 @@ import java.io.OutputStream
 class ExportSongsToCSVDialog private constructor(
     valueState: MutableState<TextFieldValue>,
     activeState: MutableState<Boolean>,
-    launcher: ManagedActivityResultLauncher<String, Uri?>
+    launcher: ManagedActivityResultLauncher<String, Uri?>,
+    private val prepare: () -> Boolean
 ): ExportToFileDialog(valueState, activeState, launcher), MenuIcon, Descriptive {
 
     companion object {
@@ -60,40 +61,47 @@ class ExportSongsToCSVDialog private constructor(
             playlistName: String,
             songs: () -> List<Song>,
             playlistBrowseId: String = ""
-        ) = ExportSongsToCSVDialog(
-            // [playlistName] is an mutable object. Therefore,
-            // if it was changed externally, this "remembered"
+        ) = rememberExport(playlistName, playlistBrowseId, { { songs() } })
 
-            // state must be updated as well.
-            remember( playlistName ) {
-                mutableStateOf( TextFieldValue(playlistName) )
-            },
-            rememberSaveable { mutableStateOf(false) },
-            rememberLauncherForActivityResult(
-                ActivityResultContracts.CreateDocument( "text/csv" )
-            ) { uri ->
-                // [uri] must be non-null (meaning path exists) in order to work
-                uri ?: return@rememberLauncherForActivityResult
+        @Composable
+        internal fun deferred(
+            playlistName: String,
+            capture: () -> (suspend () -> List<Song>?)?,
+        ) = rememberExport(playlistName, "", capture, captureOnOpen = true)
 
-                // Run in background to prevent UI thread
-                // from freezing due to large file.
+        @Composable
+        private fun rememberExport(
+            playlistName: String,
+            playlistBrowseId: String,
+            capture: () -> (suspend () -> List<Song>?)?,
+            captureOnOpen: Boolean = false,
+        ): ExportSongsToCSVDialog {
+            val latestCapture = rememberUpdatedState(capture)
+            val pending = remember { mutableStateOf<(suspend () -> List<Song>?)?>(null) }
+            val launcher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+                val captured = pending.value
+                pending.value = null
+                if (uri == null) return@rememberLauncherForActivityResult
+                // Android may deliver the document result to a recreated screen.
+                val load = captured ?: latestCapture.value() ?: return@rememberLauncherForActivityResult
                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                    val songsToWrite = songs().map {
-                        SongCSV(
-                            playlistBrowseId = playlistBrowseId,
-                            playlistName = playlistName,
-                            song = it
-                        )
+                    val songsToWrite = load()?.map { SongCSV(it, playlistBrowseId, playlistName) } ?: return@launch
+                    appContext().contentResolver.openOutputStream(uri)?.use { output ->
+                        writeToCsvFile(output, songsToWrite)
                     }
-
-                    appContext().contentResolver
-                                .openOutputStream( uri )
-                                ?.use { outStream ->         // Use [use] because it closes stream on exit
-                                    writeToCsvFile( outStream, songsToWrite )
-                                }
                 }
             }
-        )
+            return ExportSongsToCSVDialog(
+                remember(playlistName) { mutableStateOf(TextFieldValue(playlistName)) },
+                rememberSaveable { mutableStateOf(false) },
+                launcher,
+            ) {
+                if (!captureOnOpen) true else {
+                    pending.value = latestCapture.value()
+                    pending.value != null
+                }
+            }
+        }
     }
 
     override val extension: String = "csv"
@@ -106,7 +114,9 @@ class ExportSongsToCSVDialog private constructor(
         @Composable
         get() = stringResource( messageId )
 
-    override fun onShortClick() = showDialog()
+    override fun onShortClick() {
+        if (prepare()) showDialog()
+    }
 
     override fun defaultFileName(): String =
         "${BuildConfig.APP_NAME}_playlist_${TimeDateUtils.localizedDateNoDelimiter()}_${TimeDateUtils.timeNoDelimiter()}"

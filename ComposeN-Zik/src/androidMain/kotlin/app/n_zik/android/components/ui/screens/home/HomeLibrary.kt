@@ -34,7 +34,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -63,13 +62,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.size
 import androidx.annotation.DrawableRes
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
@@ -87,8 +84,6 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.R
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
@@ -158,9 +153,11 @@ import app.n_zik.android.utils.homeLibraryMonthlyPlaylistSortMenuOrderKey
 import app.n_zik.android.utils.semiBold
 import org.json.JSONArray
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CancellationException
-import app.n_zik.android.core.utils.PropUtils
 import app.n_zik.android.components.Sort
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
@@ -199,7 +196,6 @@ import app.n_zik.android.thumbnailShape
 import app.n_zik.android.utils.formatAsTime
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
-import java.util.ArrayList
 
 
 @Composable
@@ -243,12 +239,8 @@ fun HomeLibrary(
 
     // Non-vital
     var playlistType by rememberPreference(playlistTypeKey, PlaylistsType.Playlist)
-    val lazyGridState = PlaylistsType.entries.map { tab ->
-        key(tab) { rememberLazyGridState() }
-    }[playlistType.ordinal]
-    val headerOffsetState = PlaylistsType.entries.map { tab ->
-        key(tab) { rememberSaveable { androidx.compose.runtime.mutableFloatStateOf(0f) } }
-    }[playlistType.ordinal]
+    val lazyGridState = rememberLazyGridState()
+    val headerOffsetState = rememberSaveable { androidx.compose.runtime.mutableFloatStateOf(0f) }
     var youtubeLibraryFilter by rememberPreference(YOUTUBE_LIBRARY_FILTER_KEY, YouTubeLibraryFilter.All)
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
@@ -261,7 +253,7 @@ fun HomeLibrary(
     var itemsOnDisplay by key(playlistType) { persistList<PlaylistPreview>("home/playlists/$playlistType/on_display") }
 
     val previewSession = LocalThemePreview.current
-    val search = Search(lazyGridState)
+    val search = Search.forHome()
     val itemSelector = ItemSelector<PlaylistPreview>()
     val showPinnedPlaylists by rememberPreference(showPinnedPlaylistsKey, true)
     val showRewind by rememberPreference(showMonthlyPlaylistsKey, true)
@@ -280,17 +272,9 @@ fun HomeLibrary(
         else Database.songPlaylistMapTable.onDeviceOnlyPlaylistIds()
     }
         .collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
-    val filteredItems = devicePlaylistIds?.let { ids ->
-        val deviceIds = ids.toHashSet()
-        val deviceTab = playlistType == PlaylistsType.OnDevice
-        libraryScope.visible(itemsOnDisplay).filter { preview ->
-            val playlist = preview.playlist
-            val onDevice = playlist.id in deviceIds &&
-                !isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)
-            if (deviceTab) onDevice else !showOnDevice || !onDevice
-        }
-    }.orEmpty()
-    val actionTargets = homeLibraryActionTargets(filteredItems, itemSelector.toList())
+    val scopeWithoutQuery = remember(libraryScope) { libraryScope.copy(query = "") }
+    val deviceIds = remember(devicePlaylistIds) { devicePlaylistIds?.toHashSet() }
+    var filteredItems by key(playlistType) { persistList<PlaylistPreview>("home/playlists/$playlistType/filtered") }
     LaunchedEffect(libraryScope) { itemSelector.isActive = false }
 
     val sort = when( playlistType ) {
@@ -304,28 +288,6 @@ fun HomeLibrary(
     val positionLock = remember( sort.sortOrder ) { PositionLock(sort.sortOrder) }
     val itemSize = ItemSize.init( HOME_LIBRARY_ITEM_SIZE )
 
-    var selectedSongs by remember(actionTargets) { mutableStateOf<List<Song>>(emptyList()) }
-    val actionSource = rememberHomeLibraryActionSource(actionTargets, selectedSongs) { targets ->
-        val songs = loadHomeLibraryActionSongs(targets)
-        if (playlistType == PlaylistsType.OnDevice) {
-            val eligible = appContext().scanDeviceLibrary().songIds
-            songs.filter { it.isLocal && it.id in eligible }
-        } else songs
-    }
-    suspend fun getSelectedSongs(): List<Song> = withContext(NzikDispatchers.DATA) {
-        actionSource.loadSongs()
-    }
-    LaunchedEffect(actionTargets) {
-        runCatching {
-            selectedSongs = getSelectedSongs()
-        }.onFailure { e ->
-            Timber.tag("HomeLibrary").e(e, "Failed to load selected songs")
-        }
-    }
-    fun getSelectedMediaItems(): List<androidx.media3.common.MediaItem> =
-        actionSource.cachedSongs.map { it.asMediaItem }
-
-    val shuffle = SongShuffler { actionSource.cachedSongs }
     //</editor-fold>
 
     val importPlaylistDialog = ImportSongsFromCSV(onImportComplete = {
@@ -387,33 +349,6 @@ fun HomeLibrary(
         }
     }
 
-    val playNext = PlayNext {
-        coroutineScope.launch {
-            val mediaItems = withContext(NzikDispatchers.DATA) { getSelectedSongs().map { it.asMediaItem } }
-            binder?.player?.addNextOffMain( mediaItems, appContext() )
-            itemSelector.isActive = false
-        }
-    }
-    val enqueue = Enqueue {
-        coroutineScope.launch {
-            val mediaItems = withContext(NzikDispatchers.DATA) { getSelectedSongs().map { it.asMediaItem } }
-            binder?.player?.enqueueOffMain( mediaItems, appContext() )
-            itemSelector.isActive = false
-        }
-    }
-    val addToPlaylist = PlaylistsMenu.init(
-        navController = navController,
-        mediaItems = { _ -> getSelectedMediaItems() },
-        onFailure = { throwable, preview ->
-            Timber.tag("HomeLibrary").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
-        },
-        finalAction = { itemSelector.isActive = false }
-    )
-    val exportDialog = ExportSongsToCSVDialog(
-        playlistName = "Library",
-        songs = { actionSource.cachedSongs }
-    )
-
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     val deletePlaylistsButton = remember {
         object : MenuIcon, Descriptive {
@@ -426,10 +361,8 @@ fun HomeLibrary(
     }
 
     var searchDataReady by remember(playlistType, sort.sortBy, sort.sortOrder) { mutableStateOf(false) }
-    var completedSearchQuery by remember(playlistType, sort.sortBy, sort.sortOrder) { mutableStateOf<String?>(null) }
-    val gridReady = searchDataReady && devicePlaylistIds != null && completedSearchQuery == search.inputValue
+    var completedSearchQuery by remember(playlistType, sort.sortBy, sort.sortOrder, items) { mutableStateOf<String?>(null) }
     val forceShimmer = forceLoadingShimmerPreview()
-    val showGridShimmer = forceShimmer || !gridReady
     LaunchedEffect( playlistType, sort.sortBy, sort.sortOrder ) {
         if (previewSession != null) {
             val demoPlaylists = ThemePreviewDemo.playlists
@@ -444,18 +377,93 @@ fun HomeLibrary(
         Database.playlistTable
                 .sortPreviews( sort.sortBy, sort.sortOrder )
                 .distinctUntilChanged()
+                .flowOn(NzikDispatchers.DATA)
                 .collect {
                     items = it
                     searchDataReady = true
                 }
     }
-    LaunchedEffect( playlistType, searchDataReady, items, search.inputValue ) {
+    LaunchedEffect(searchDataReady, items, search.inputValue) {
         if (!searchDataReady) return@LaunchedEffect
-        itemsOnDisplay = items.filter {
-            it.playlist.name.contains( search.inputValue, true )
+        val query = search.inputValue
+        val candidates = items
+        itemsOnDisplay = withContext(NzikDispatchers.DATA) {
+            if (query.isEmpty()) candidates else candidates.filter { it.playlist.name.contains(query, true) }
         }
-        completedSearchQuery = search.inputValue
+        completedSearchQuery = query
     }
+
+    val searchReady = searchDataReady && completedSearchQuery == search.inputValue
+    var projectionReady by remember(searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIds, showOnDevice) {
+        mutableStateOf(false)
+    }
+    LaunchedEffect(searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIds, showOnDevice) {
+        if (!searchReady || deviceIds == null) return@LaunchedEffect
+        val candidates = itemsOnDisplay
+        val deviceTab = playlistType == PlaylistsType.OnDevice
+        filteredItems = withContext(NzikDispatchers.DATA) {
+            scopeWithoutQuery.visible(candidates).filter { preview ->
+                val playlist = preview.playlist
+                val onDevice = playlist.id in deviceIds &&
+                    !isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)
+                if (deviceTab) onDevice else !showOnDevice || !onDevice
+            }
+        }
+        projectionReady = true
+    }
+    val gridReady = searchReady && projectionReady
+    val displayedGrid = rememberHomeFilteredGrid("playlists", lazyGridState, gridReady, filteredItems) { it.playlist.id }
+    val actionTargets = if (gridReady) remember(filteredItems, itemSelector.toList()) {
+        homeLibraryActionTargets(filteredItems, itemSelector.toList())
+    } else emptyList()
+    val context = LocalContext.current
+    val action = rememberHomeSongAction("HomeLibrary") {
+        if (!gridReady || previewSession != null) return@rememberHomeSongAction null
+        val ids = homeLibraryActionTargets(filteredItems, itemSelector.toList()).map { it.playlist.id }
+        val deviceOnly = playlistType == PlaylistsType.OnDevice
+        val load: suspend () -> List<Song> = {
+            val eligible = if (deviceOnly) context.scanDeviceLibrary().songIds else emptySet()
+            loadHomeParentSongs(ids, Database.songPlaylistMapTable::songsForHomePlaylists) { _, song ->
+                !deviceOnly || (song.isLocal && song.id in eligible)
+            }
+        }
+        load
+    }
+    val shuffle = SongShuffler.deferred(action::snapshot)
+    val playNext = PlayNext {
+        val load = action.snapshot() ?: return@PlayNext
+        coroutineScope.launch {
+            val mediaItems = withContext(NzikDispatchers.MEDIA) { load()?.map { it.asMediaItem } } ?: return@launch
+            binder?.player?.addNextOffMain(mediaItems, context)
+            itemSelector.isActive = false
+        }
+    }
+    val enqueue = Enqueue {
+        val load = action.snapshot() ?: return@Enqueue
+        coroutineScope.launch {
+            val mediaItems = withContext(NzikDispatchers.MEDIA) { load()?.map { it.asMediaItem } } ?: return@launch
+            binder?.player?.enqueueOffMain(mediaItems, context)
+            itemSelector.isActive = false
+        }
+    }
+    val addToPlaylist = PlaylistsMenu.deferred(
+        navController = navController,
+        captureMediaItems = {
+            action.snapshot()?.let { load -> { load()?.map { it.asMediaItem } } }
+        },
+        onFailure = { error, preview ->
+            Timber.tag("HomeLibrary").e(error, "Failed to add songs to playlist ${preview.playlist.name}")
+        },
+        finalAction = { itemSelector.isActive = false },
+    )
+    val exportDialog = ExportSongsToCSVDialog.deferred("Library", action::snapshot)
+    val observeListening = previewSession == null &&
+        (sort.sortBy == PlaylistSortBy.PlayCount || sort.sortBy == PlaylistSortBy.ListeningTime)
+    val listeningTotals by remember(observeListening) {
+        if (observeListening) Database.eventTable.getPlaylistListeningTotals()
+            .map { rows -> rows.associateBy { it.playlistId } }
+        else flowOf(emptyMap())
+    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     // START: Additional playlists
     val homePlaylistsOrderPref by rememberPreference(homePlaylistsOrderKey, "")
@@ -540,7 +548,7 @@ fun HomeLibrary(
             Toaster.e(appTextResources().getString(R.string.library_sync_already_running_message))
             return
         }
-        val targetPlaylists = actionSource.targets
+        val targetPlaylists = actionTargets
         if (targetPlaylists.isEmpty()) return
         refreshing = true
         coroutineScope.launch {
@@ -559,7 +567,6 @@ fun HomeLibrary(
         }
     }
 
-    val context = LocalContext.current
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
     val floatingBackdrop = rememberGlassFloatingActionBackdrop()
 
@@ -729,7 +736,7 @@ fun HomeLibrary(
                     val headerHeight by headerHeightState
                     val headerOffset by headerOffsetState
 
-                        val nestedScrollConnection = rememberHomeHeaderConnection(headerHeight, headerOffsetState, filteredItems.isNotEmpty())
+                        val nestedScrollConnection = rememberHomeHeaderConnection(headerHeight, headerOffsetState, filteredItems.isNotEmpty(), scrollState = lazyGridState)
 
                     HomeChromeLayout(
                         modifier = Modifier.fillMaxSize().nestedScroll(nestedScrollConnection),
@@ -743,7 +750,7 @@ fun HomeLibrary(
                     ) {
                         val headerDensity = androidx.compose.ui.platform.LocalDensity.current
                         LazyVerticalGrid(
-                            state = lazyGridState,
+                            state = if (displayedGrid == null) rememberLazyGridState() else lazyGridState,
                             columns = GridCells.Adaptive( itemSize.size.dp ),
                             modifier = Modifier
                                 .background(colorPalette().background0)
@@ -754,14 +761,14 @@ fun HomeLibrary(
                                 extraTopProvider = { with(headerDensity) { headerHeight.toDp() } },
                             )
                         ) {
-                    if (!gridReady && filteredItems.isEmpty()) items(HomePlaceholderCount, key = { "loading_playlist_$it" }) {
+                    if (displayedGrid == null) items(HomePlaceholderCount, key = { "loading_playlist_$it" }) {
                         PlaylistItemPlaceholder(itemSize.size.dp, alternative = true, showChannel = false)
                     }
                     items(
-                        items = filteredItems,
+                        items = displayedGrid.orEmpty(),
                         key = { it.playlist.id }
                     ) { preview ->
-                        if (showGridShimmer) {
+                        if (forceShimmer) {
                             PlaylistItemPlaceholder(
                                 itemSize.size.dp, alternative = true, showChannel = false,
                                 title = context.rewindDisplayName(cleanPrefix(preview.playlist.name)),
@@ -773,7 +780,9 @@ fun HomeLibrary(
                             key = preview.playlist.id
                         ) { isDraggingItem ->
                             Box(modifier = Modifier) {
-                                if (!positionLock.isLocked() && sort.sortBy == PlaylistSortBy.Custom && sort.sortOrder == SortOrder.Ascending) {
+                                if ((gridReady || isDraggingItem) && !positionLock.isLocked() &&
+                                    sort.sortBy == PlaylistSortBy.Custom && sort.sortOrder == SortOrder.Ascending
+                                ) {
                                     Box(
                                         modifier = Modifier
                                             .padding(4.dp)
@@ -813,6 +822,7 @@ fun HomeLibrary(
                                         .fillMaxSize()
                                         .clip(uiRoundnessShape())
                                         .combinedClickable(
+                                            enabled = gridReady,
                                             onClick = {
                                                 if( itemSelector.isActive ) {
                                                     if( preview in itemSelector ) itemSelector.remove( preview )
@@ -874,7 +884,7 @@ fun HomeLibrary(
                                                 )
                                             }
                                         } else if (sort.sortBy == PlaylistSortBy.PlayCount) {
-                                            val playCount by (if (previewSession == null) Database.eventTable.getPlaylistPlayCount(preview.playlist.id) else kotlinx.coroutines.flow.flowOf(0)).collectAsStateWithLifecycle(initialValue = 0, context = NzikDispatchers.DATA)
+                                            val playCount = listeningTotals[preview.playlist.id]?.playCount ?: 0
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize()
@@ -890,7 +900,7 @@ fun HomeLibrary(
                                                 )
                                             }
                                         } else if (sort.sortBy == PlaylistSortBy.ListeningTime) {
-                                            val playTime by (if (previewSession == null) Database.eventTable.getPlaylistTotalPlayTime(preview.playlist.id) else kotlinx.coroutines.flow.flowOf(0L)).collectAsStateWithLifecycle(initialValue = 0L, context = NzikDispatchers.DATA)
+                                            val playTime = listeningTotals[preview.playlist.id]?.totalPlayTimeMs ?: 0L
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize()
@@ -913,7 +923,7 @@ fun HomeLibrary(
                     }
                 }
 
-                if (gridReady && filteredItems.isEmpty()) {
+                if (gridReady && displayedGrid?.isEmpty() == true) {
                     Box(
                         modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding(topInsetProvider = scrollContentInsetProvider, base = PaddingValues(top = with(androidx.compose.ui.platform.LocalDensity.current) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() }, bottom = Dimensions.bottomSpacer))),
                         contentAlignment = Alignment.Center

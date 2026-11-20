@@ -1,6 +1,7 @@
 package app.n_zik.android.core.database
 
 import androidx.room.Dao
+import androidx.room.Embedded
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Upsert
@@ -44,6 +45,26 @@ interface SongAlbumMapTable {
 
     @Query("SELECT DISTINCT Song.* FROM SongAlbumMap JOIN Song ON id = songId WHERE albumId = :albumId ORDER BY SongAlbumMap.position LIMIT :limit")
     suspend fun allSongsOfDirect( albumId: String, limit: Int = Int.MAX_VALUE ): List<Song>
+
+    /** Reads album tracks in their existing position order. */
+    @Query("""
+        SELECT M.albumId AS parentId, S.*
+        FROM SongAlbumMap M JOIN Song S ON S.id = M.songId
+        WHERE M.albumId IN (:albumIds)
+        ORDER BY M.albumId, M.position
+    """)
+    suspend fun songsForHomeAlbums(albumIds: List<String>): List<HomeParentSong>
+
+    /** Finds a missing cover without hydrating each album's tracks. */
+    @Query("""
+        SELECT S.thumbnailUrl
+        FROM SongAlbumMap M JOIN Song S ON S.id = M.songId
+        WHERE M.albumId = :albumId
+        GROUP BY S.thumbnailUrl
+        ORDER BY COUNT(*) DESC, MIN(M.position)
+        LIMIT 1
+    """)
+    suspend fun mostCommonCover(albumId: String): String?
 
     /**
      * @param artistId of artist to look for
@@ -195,3 +216,6 @@ data class SongCount(
     val id: String,
     val count: Int
 )
+
+/** A parent ID alongside one song in the original order of its parent. */
+data class HomeParentSong(val parentId: String, @Embedded val song: Song)

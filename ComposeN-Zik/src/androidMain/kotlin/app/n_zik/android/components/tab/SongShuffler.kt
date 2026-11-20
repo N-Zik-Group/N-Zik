@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
@@ -17,6 +18,7 @@ import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
 
@@ -24,13 +26,16 @@ import app.n_zik.android.ui.components.MenuState
 class SongShuffler private constructor(
     private val binder: PlayerServiceModern.Binder?,
     private val menuState: MenuState?,
-    private val songs: () -> List<Song>
+    private val onShuffle: (PlayerServiceModern.Binder) -> Unit
 ): MenuIcon, Descriptive {
 
     companion object {
         @Composable
         operator fun invoke( songs: () -> List<Song> ) =
-            SongShuffler( LocalPlayerServiceBinder.current, LocalMenuState.current, songs )
+            SongShuffler(LocalPlayerServiceBinder.current, LocalMenuState.current) { binder ->
+                playShuffled(binder, songs())
+                binder.triggerShuffleOkFlash()
+            }
 
         @Composable
         operator fun invoke(
@@ -41,7 +46,20 @@ class SongShuffler private constructor(
                 databaseCall( Int.MAX_VALUE )
             }.collectAsStateWithLifecycle( initialValue = emptyList(), context = NzikDispatchers.DATA )
 
-            return SongShuffler( LocalPlayerServiceBinder.current, LocalMenuState.current ) { songsToShuffle }
+            return invoke { songsToShuffle }
+        }
+
+        @Composable
+        internal fun deferred(capture: () -> (suspend () -> List<Song>?)?): SongShuffler {
+            val scope = rememberCoroutineScope()
+            return SongShuffler(LocalPlayerServiceBinder.current, LocalMenuState.current) { binder ->
+                val load = capture()
+                if (load != null) scope.launch {
+                    val songs = load() ?: return@launch
+                    playShuffled(binder, songs)
+                    binder.triggerShuffleOkFlash()
+                }
+            }
         }
 
         fun playShuffled(
@@ -65,11 +83,7 @@ class SongShuffler private constructor(
         get() = stringResource( R.string.player_action_shuffle )
 
     override fun onShortClick() {
-        playShuffled(
-            this.binder ?: return,
-            this.songs()
-        )
-        this.binder?.triggerShuffleOkFlash()
+        onShuffle(binder ?: return)
         menuState?.hide()
     }
 }

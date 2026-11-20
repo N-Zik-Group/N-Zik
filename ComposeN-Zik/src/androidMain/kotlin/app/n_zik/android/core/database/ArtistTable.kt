@@ -320,6 +320,10 @@ interface ArtistTable {
     @Query("UPDATE Artist SET thumbnailUrl = :url WHERE id = :id")
     suspend fun updateCover(id: String, url: String)
 
+    /** Fills an absent cover while preserving concurrent edits. */
+    @Query("UPDATE Artist SET thumbnailUrl = :url WHERE id = :id AND thumbnailUrl IS NULL")
+    suspend fun fillMissingCover(id: String, url: String)
+
     /**
      * Toggles [Artist.bookmarkedAt]: not followed → current time (millis),
      * followed → NULL. Returns the number of rows updated.

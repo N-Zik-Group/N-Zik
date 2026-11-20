@@ -3,11 +3,8 @@ package app.n_zik.android.components.ui.screens.home
 import app.n_zik.android.PINNED_PREFIX
 import app.n_zik.android.enums.PlaylistsType
 import app.n_zik.android.models.PlaylistPreview
-import app.n_zik.android.models.Song
-import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.isYouTubePlaylistSource
 import app.n_zik.android.core.rewind.RewindPlaylists
-import kotlinx.coroutines.flow.first
 
 internal data class HomeLibraryPlaylistScope(
     val type: PlaylistsType,
@@ -43,17 +40,4 @@ internal fun homeLibraryActionTargets(
     if (selected.isEmpty()) return visible
     val selectedIds = selected.mapTo(HashSet()) { it.playlist.id }
     return visible.filter { it.playlist.id in selectedIds }
-}
-
-/** Playback and export resolve the same scoped playlist IDs and deduplicate shared songs. */
-internal suspend fun loadHomeLibraryActionSongs(
-    targets: List<PlaylistPreview>,
-    loadSongs: suspend (Long) -> List<Song> = { Database.songPlaylistMapTable.allSongsOf(it).first() },
-): List<Song> {
-    val seen = HashSet<String>()
-    return buildList {
-        targets.forEach { preview ->
-            loadSongs(preview.playlist.id).forEach { song -> if (seen.add(song.id)) add(song) }
-        }
-    }
 }

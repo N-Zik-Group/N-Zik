@@ -52,7 +52,6 @@ import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.Menu
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
-import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
@@ -89,7 +88,8 @@ internal fun SongInPlaylistIcon() {
 class PlaylistsMenu private constructor(
     private val navController: NavController,
     private val songId: String?,
-    private val mediaItems: (PlaylistPreview) -> List<MediaItem>,
+    private val loadBeforeTransaction: Boolean,
+    private val captureMediaItems: (PlaylistPreview) -> (suspend () -> List<MediaItem>?)?,
     private val onFailure: (Throwable, PlaylistPreview) -> Unit,
     private val finalAction: (PlaylistPreview) -> Unit,
     override val menuState: MenuState,
@@ -108,11 +108,29 @@ class PlaylistsMenu private constructor(
         ) = PlaylistsMenu(
             navController,
             songId,
-            mediaItems,
+            false,
+            { preview -> { mediaItems(preview) } },
             onFailure,
             finalAction,
             LocalMenuState.current,
             rememberPreference( menuStyleKey, MenuStyle.List )
+        )
+
+        @Composable
+        internal fun deferred(
+            navController: NavController,
+            captureMediaItems: () -> (suspend () -> List<MediaItem>?)?,
+            onFailure: (Throwable, PlaylistPreview) -> Unit,
+            finalAction: (PlaylistPreview) -> Unit,
+        ) = PlaylistsMenu(
+            navController,
+            null,
+            true,
+            { captureMediaItems() },
+            onFailure,
+            finalAction,
+            LocalMenuState.current,
+            rememberPreference(menuStyleKey, MenuStyle.List),
         )
     }
 
@@ -124,19 +142,31 @@ class PlaylistsMenu private constructor(
 
     override var menuStyle: MenuStyle by styleState
 
-    private fun onAdd( preview: PlaylistPreview ) = Database.asyncTransaction {
+    private fun onAdd(preview: PlaylistPreview) {
+        val load = captureMediaItems(preview) ?: return
+        Database.asyncTransaction { addToPlaylist(preview, load) }
+    }
+
+    private suspend fun Database.addToPlaylist(
+        preview: PlaylistPreview,
+        load: suspend () -> List<MediaItem>?,
+    ) {
         try {
+            val preparedItems = if (loadBeforeTransaction) load() ?: return else null
             var alreadyPresent = false
+            var added = false
             val editable = editStoredPlaylistMembership(preview.playlist.id) {
                 alreadyPresent = songId != null &&
                     songPlaylistMapTable.findById(songId, preview.playlist.id).first() != null
                 if (!alreadyPresent) {
-                    mapIgnore(preview.playlist, *mediaItems(preview).toTypedArray())
+                    val items = preparedItems ?: load() ?: return@editStoredPlaylistMembership
+                    mapIgnore(preview.playlist, *items.toTypedArray())
+                    added = true
                 }
             }
             when {
                 alreadyPresent -> Toaster.i(R.string.playlist_contains_song)
-                editable -> Toaster.done()
+                editable && added -> Toaster.done()
                 else -> Unit
             }
         } catch (e: Throwable) {

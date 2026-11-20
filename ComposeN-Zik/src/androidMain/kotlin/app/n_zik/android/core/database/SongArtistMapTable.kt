@@ -45,6 +45,15 @@ interface SongArtistMapTable {
     """)
     suspend fun allSongsByDirect( artistId: String, limit: Int = Int.MAX_VALUE ): List<Song>
 
+    /** Reads artist tracks in their existing insertion order. */
+    @Query("""
+        SELECT M.artistId AS parentId, S.*
+        FROM SongArtistMap M JOIN Song S ON S.id = M.songId
+        WHERE M.artistId IN (:artistIds)
+        ORDER BY M.artistId, S.ROWID
+    """)
+    suspend fun songsForHomeArtists(artistIds: List<String>): List<HomeParentSong>
+
     /**
      * @return all [Artist]s featured in this song
      */

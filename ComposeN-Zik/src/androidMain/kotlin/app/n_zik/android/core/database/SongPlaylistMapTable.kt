@@ -62,6 +62,15 @@ interface SongPlaylistMapTable {
     """)
     fun allSongsOf( playlistId: Long, limit: Int = Int.MAX_VALUE ): Flow<List<Song>>
 
+    /** Reads playlist tracks in their existing insertion order. */
+    @Query("""
+        SELECT CAST(M.playlistId AS TEXT) AS parentId, S.*
+        FROM SongPlaylistMap M JOIN Song S ON S.id = M.songId
+        WHERE M.playlistId IN (:playlistIds)
+        ORDER BY M.playlistId, M.ROWID
+    """)
+    suspend fun songsForHomePlaylists(playlistIds: List<Long>): List<HomeParentSong>
+
     @Query("""
         SELECT DISTINCT song.*
         FROM Song AS song

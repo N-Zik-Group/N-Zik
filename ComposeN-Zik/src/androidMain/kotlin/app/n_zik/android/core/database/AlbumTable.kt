@@ -473,6 +473,10 @@ interface AlbumTable {
     @Query("UPDATE Album SET thumbnailUrl = :thumbnailUrl WHERE id = :albumId")
     suspend fun updateCover( albumId: String, thumbnailUrl: String ): Int
 
+    /** Fills an absent cover while preserving concurrent edits. */
+    @Query("UPDATE Album SET thumbnailUrl = :url WHERE id = :id AND thumbnailUrl IS NULL")
+    suspend fun fillMissingCover(id: String, url: String)
+
     /**
      * @param albumId identifier of [Album]
      * @param authors name(s) of people who made this song

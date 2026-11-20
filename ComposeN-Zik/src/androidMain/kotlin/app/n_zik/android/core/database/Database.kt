@@ -177,11 +177,11 @@ object Database {
         AlbumTable::class.java to setOf(
             "insertIgnore", "updateReplace", "upsert", "updateMetadata", "insertMetadata",
             "toggleBookmark", "bookmarkState", "likeState", "rotateLikeState", "resetFetchTtl",
-            "toggleDislike", "clearAllDisliked", "updateCover", "updateAuthors", "updateTitle",
+            "toggleDislike", "clearAllDisliked", "updateCover", "fillMissingCover", "updateAuthors", "updateTitle",
             "updatePosition", "deleteOrphaned", "deleteById",
         ),
         ArtistTable::class.java to setOf(
-            "insertIgnore", "upsert", "updateMetadata", "insertMetadata", "update",
+            "insertIgnore", "upsert", "updateMetadata", "insertMetadata", "update", "fillMissingCover",
             "toggleFollow", "followState", "rotateLikeState", "resetFetchTtl", "toggleBookmark",
             "toggleDislike", "clearAllDisliked", "updatePosition", "deleteOrphaned", "deleteById",
         ),

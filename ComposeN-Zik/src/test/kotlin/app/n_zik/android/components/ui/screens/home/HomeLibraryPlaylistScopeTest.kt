@@ -1,6 +1,7 @@
 package app.n_zik.android.components.ui.screens.home
 
 import app.n_zik.android.PINNED_PREFIX
+import app.n_zik.android.core.database.HomeParentSong
 import app.n_zik.android.enums.PlaylistsType
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.PlaylistPreview
@@ -36,10 +37,10 @@ class HomeLibraryPlaylistScopeTest {
         val visible = podcastScope.copy(query = "SCIENCE").visible(catalog)
         val targets = homeLibraryActionTargets(visible, emptyList())
         val requestedIds = mutableListOf<Long>()
-        val songs = loadHomeLibraryActionSongs(targets) { id ->
-            requestedIds.add(id)
-            listOf(Song.makePlaceholder("episode-$id"))
-        }
+        val songs = loadHomeParentSongs(targets.map { it.playlist.id }, load = { ids ->
+            requestedIds.addAll(ids)
+            ids.map { HomeParentSong(it.toString(), Song.makePlaceholder("episode-$it")) }
+        })
         assertEquals(listOf(1L), requestedIds)
         assertEquals(listOf("episode-1"), songs.map { it.id })
     }
@@ -52,10 +53,15 @@ class HomeLibraryPlaylistScopeTest {
     }
 
     @Test fun `song loading deduplicates shared episodes while retaining visible order`() = runBlocking {
-        val songs = loadHomeLibraryActionSongs(podcastScope.visible(catalog)) { id ->
-            listOf(Song.makePlaceholder("shared"), Song.makePlaceholder("episode-$id"))
-        }
-        assertEquals(listOf("shared", "episode-1", "episode-2"), songs.map { it.id })
+        val songs = loadHomeParentSongs(listOf(2L, 1L), load = { ids ->
+            ids.sorted().flatMap { id ->
+                listOf(
+                    HomeParentSong(id.toString(), Song.makePlaceholder("shared")),
+                    HomeParentSong(id.toString(), Song.makePlaceholder("episode-$id")),
+                )
+            }
+        })
+        assertEquals(listOf("shared", "episode-2", "episode-1"), songs.map { it.id })
     }
 
     @Test fun `all pinned and rewind predicates retain their original visibility rules`() {

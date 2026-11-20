@@ -25,9 +25,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,7 +37,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -50,14 +47,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
-import app.n_zik.android.core.ondevice.DEVICE_ARTIST_PREFIX
 import app.n_zik.android.core.ondevice.observeDeviceLibrary
 import app.n_zik.android.core.ondevice.DeviceLibraryResults
 import app.n_zik.android.core.ondevice.scanDeviceLibrary
 import app.n_zik.android.utils.getActiveProfile
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.layout.size
-import androidx.compose.ui.draw.scale
 import sh.calvin.reorderable.rememberReorderableLazyGridState
 import sh.calvin.reorderable.ReorderableItem
 import app.n_zik.android.themed.n_zik.component.playlist.PositionLock
@@ -83,7 +78,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -91,20 +85,15 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.compose.persist.persistList
-import app.n_zik.innertube.Innertube
-import app.n_zik.innertube.requests.searchPage
 import app.n_zik.innertube.utils.from
 import app.n_zik.innertube.YtMusic
-import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassFloatingActions
 import app.n_zik.android.components.glass.glassFloatingActionContent
 import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
-import app.n_zik.android.appContext
 import app.n_zik.android.LocalPlayerServiceBinder
-import kotlinx.coroutines.flow.first
 import app.n_zik.android.ui.components.themed.Enqueue
 import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.utils.asMediaItem
@@ -160,7 +149,6 @@ import app.n_zik.android.utils.showOnDeviceArtistsKey
 import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.core.ondevice.deviceLibraryEnabled
-import app.n_zik.android.utils.showDislikedArtistKey
 import app.n_zik.android.utils.excludeDislikedArtistsKey
 import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.utils.homeArtistsOrderKey
@@ -175,20 +163,23 @@ import app.n_zik.android.utils.homeArtistsOnDeviceSortMenuOrderKey
 import app.n_zik.android.utils.homeArtistsDislikedSortMenuOrderKey
 import org.json.JSONArray
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.Sort
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.tab.SongShuffler
-import app.n_zik.android.core.utils.PropUtils
 import app.n_zik.android.components.menu.artist.LocalArtistItemMenu
-import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import app.n_zik.android.components.dialog.settings.HomeArtistsToolbarSettingsDialog
 import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import androidx.navigation.NavController
-import java.util.ArrayList
 
 import timber.log.Timber
 
@@ -215,12 +206,8 @@ fun HomeArtists(
 
     // Settings
     var artistType by rememberPreference(artistTypeKey, ArtistsType.Library )
-    val lazyGridState = ArtistsType.entries.map { tab ->
-        key(tab) { rememberLazyGridState() }
-    }[artistType.ordinal]
-    val headerOffsetState = ArtistsType.entries.map { tab ->
-        key(tab) { rememberSaveable { androidx.compose.runtime.mutableFloatStateOf(0f) } }
-    }[artistType.ordinal]
+    val lazyGridState = rememberLazyGridState()
+    val headerOffsetState = rememberSaveable { androidx.compose.runtime.mutableFloatStateOf(0f) }
     var filterBy by rememberPreference(filterByKey, FilterBy.All)
 
 
@@ -231,7 +218,7 @@ fun HomeArtists(
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
-    val search = Search(lazyGridState)
+    val search = Search.forHome()
     val itemSelector = ItemSelector<Artist>()
 
     val sort = when( artistType ) {
@@ -251,59 +238,6 @@ fun HomeArtists(
             onArtistClick( items[index] )
         }
     }
-
-    suspend fun getSelectedSongs(): List<Song> = withContext(NzikDispatchers.DATA) {
-        val deviceOnly = artistType == ArtistsType.OnDevice
-        val deviceGroups = if (deviceOnly) appContext().scanDeviceLibrary().artistSongIds else emptyMap()
-        val selected = itemSelector.ifEmpty { itemsOnDisplay }.filter { isDeviceArtistId(it.id) == deviceOnly }
-        val seen = HashSet<String>()
-        val result = ArrayList<Song>()
-        for( artist in selected ) {
-            val songs = Database.songArtistMapTable.allSongsBy( artist.id ).first()
-            for( song in songs ) {
-                if (song.isLocal == deviceOnly && (!deviceOnly || song.id in deviceGroups[artist.id].orEmpty()) && seen.add(song.id)) result.add(song)
-            }
-        }
-        result
-    }
-    var selectedSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
-    LaunchedEffect(itemSelector.size, itemsOnDisplay) {
-        runCatching {
-            selectedSongs = getSelectedSongs()
-        }.onFailure { e ->
-            Timber.tag("HomeArtist").e(e, "Failed to load selected songs")
-        }
-    }
-    fun getSelectedMediaItems(): List<androidx.media3.common.MediaItem> =
-        selectedSongs.map { it.asMediaItem }
-
-    val shuffle = SongShuffler { selectedSongs }
-    val playNext = PlayNext {
-        coroutineScope.launch {
-            val mediaItems = withContext(NzikDispatchers.DATA) { getSelectedSongs().map { it.asMediaItem } }
-            binder?.player?.addNextOffMain( mediaItems, appContext() )
-            itemSelector.isActive = false
-        }
-    }
-    val enqueue = Enqueue {
-        coroutineScope.launch {
-            val mediaItems = withContext(NzikDispatchers.DATA) { getSelectedSongs().map { it.asMediaItem } }
-            binder?.player?.enqueueOffMain( mediaItems, appContext() )
-            itemSelector.isActive = false
-        }
-    }
-    val addToPlaylist = PlaylistsMenu.init(
-        navController = navController,
-        mediaItems = { _ -> getSelectedMediaItems() },
-        onFailure = { throwable, preview ->
-            Timber.tag("HomeArtist").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
-        },
-        finalAction = { itemSelector.isActive = false }
-    )
-    val exportDialog = ExportSongsToCSVDialog(
-        playlistName = "Artists",
-        songs = { selectedSongs }
-    )
 
     val showOnDeviceTab by rememberPreference(showOnDeviceArtistsKey, true)
     val showOnDevice = deviceLibraryEnabled() && showOnDeviceTab
@@ -361,10 +295,7 @@ fun HomeArtists(
 
     var searchDataReady by remember(sort.sortBy, sort.sortOrder, artistType) { mutableStateOf(false) }
     val groupsReady = artistType != ArtistsType.OnDevice || eligibleDeviceGroups != null
-    var completedSearchQuery by remember(artistType, sort.sortBy, sort.sortOrder, groupsReady) { mutableStateOf<String?>(null) }
-    val gridReady = searchDataReady && groupsReady && completedSearchQuery == search.inputValue
     val forceShimmer = forceLoadingShimmerPreview()
-    val showGridShimmer = forceShimmer || !gridReady
     LaunchedEffect( Unit, sort.sortBy, sort.sortOrder, artistType ) {
         if (preview != null) {
             val demoItems = ThemePreviewDemo.artists
@@ -386,58 +317,113 @@ fun HomeArtists(
                 ) { selected, alphabetical -> (selected + alphabetical).distinctBy { it.id } }
             }
             ArtistsType.Disliked -> Database.artistTable.allDisliked()
-        }.collect {
+        }.flowOn(NzikDispatchers.DATA).collect {
             itemsToFilter = it
             searchDataReady = true
         }
     }
-    LaunchedEffect( searchDataReady, groupsReady, itemsToFilter, artistType, filterBy, showDislikedArtist, eligibleDeviceGroups, search.inputValue ) {
-        if (!searchDataReady || !groupsReady) return@LaunchedEffect
-        items = when {
-            artistType == ArtistsType.OnDevice -> itemsToFilter.filter { it.id in eligibleDeviceGroups.orEmpty() }
-            filterBy == FilterBy.All -> itemsToFilter.filterNot { isDeviceArtistId(it.id) }
-            filterBy == FilterBy.YoutubeLibrary -> itemsToFilter.filter { !isDeviceArtistId(it.id) && it.isYoutubeArtist }
-            else -> itemsToFilter.filterNot { isDeviceArtistId(it.id) || it.isYoutubeArtist }
-        }.let { list ->
-            if (artistType != ArtistsType.Disliked) {
-                list.filter {
-                    it.dislikedAt == null &&
-                        (!it.id.startsWith(DEVICE_ARTIST_PREFIX) || eligibleDeviceGroups?.contains(it.id) != false)
-                }
-            } else list
-        }
-
-        itemsOnDisplay = items.filter {
-            it.name?.contains( search.inputValue, true ) ?: false
-        }
-        completedSearchQuery = search.inputValue
+    val groups = eligibleDeviceGroups
+    var baseReady by remember(searchDataReady, groupsReady, itemsToFilter, artistType, filterBy, groups) {
+        mutableStateOf(false)
     }
+    LaunchedEffect(searchDataReady, groupsReady, itemsToFilter, artistType, filterBy, groups) {
+        if (!searchDataReady || !groupsReady) return@LaunchedEffect
+        val type = artistType
+        val source = filterBy
+        val candidates = itemsToFilter
+        items = withContext(NzikDispatchers.DATA) {
+            candidates.filter { item ->
+                if (type == ArtistsType.OnDevice) item.id in groups.orEmpty()
+                else !isDeviceArtistId(item.id) &&
+                    (type == ArtistsType.Disliked || item.dislikedAt == null) &&
+                    when (source) {
+                        FilterBy.All -> true
+                        FilterBy.YoutubeLibrary -> item.isYoutubeArtist
+                        else -> !item.isYoutubeArtist
+                    }
+            }
+        }
+        baseReady = true
+    }
+    var completedSearchQuery by remember(baseReady, items) { mutableStateOf<String?>(null) }
+    LaunchedEffect(baseReady, items, search.inputValue) {
+        if (!baseReady) return@LaunchedEffect
+        val query = search.inputValue
+        val candidates = items
+        itemsOnDisplay = withContext(NzikDispatchers.DATA) {
+            candidates.filter { it.name?.contains(query, true) == true }.distinctBy(Artist::id)
+        }
+        completedSearchQuery = query
+    }
+    val gridReady = baseReady && completedSearchQuery == search.inputValue
+    val displayedGrid = rememberHomeFilteredGrid("artists", lazyGridState, gridReady, itemsOnDisplay) { it.id }
+    val action = rememberHomeSongAction("HomeArtist") {
+        if (!gridReady || preview != null) return@rememberHomeSongAction null
+        val deviceOnly = artistType == ArtistsType.OnDevice
+        val visibleIds = itemsOnDisplay.map { it.id }
+        val selected = itemSelector.toList()
+        val ids = if (selected.isEmpty()) visibleIds else {
+            val visible = visibleIds.toHashSet()
+            selected.map { it.id }.filter { it in visible }
+        }
+        val eligibleIds = ids.filter { isDeviceArtistId(it) == deviceOnly }
+        val load: suspend () -> List<Song> = {
+            val groups = if (deviceOnly) context.scanDeviceLibrary().artistSongIds else emptyMap()
+            loadHomeParentSongs(eligibleIds, Database.songArtistMapTable::songsForHomeArtists) { id, song ->
+                song.isLocal == deviceOnly && (!deviceOnly || song.id in groups[id].orEmpty())
+            }
+        }
+        load
+    }
+    val shuffle = SongShuffler.deferred(action::snapshot)
+    val playNext = PlayNext {
+        val load = action.snapshot() ?: return@PlayNext
+        coroutineScope.launch {
+            val mediaItems = withContext(NzikDispatchers.MEDIA) { load()?.map { it.asMediaItem } } ?: return@launch
+            binder?.player?.addNextOffMain(mediaItems, context)
+            itemSelector.isActive = false
+        }
+    }
+    val enqueue = Enqueue {
+        val load = action.snapshot() ?: return@Enqueue
+        coroutineScope.launch {
+            val mediaItems = withContext(NzikDispatchers.MEDIA) { load()?.map { it.asMediaItem } } ?: return@launch
+            binder?.player?.enqueueOffMain(mediaItems, context)
+            itemSelector.isActive = false
+        }
+    }
+    val addToPlaylist = PlaylistsMenu.deferred(
+        navController = navController,
+        captureMediaItems = {
+            action.snapshot()?.let { load -> { load()?.map { it.asMediaItem } } }
+        },
+        onFailure = { error, preview ->
+            Timber.tag("HomeArtist").e(error, "Failed to add songs to playlist ${preview.playlist.name}")
+        },
+        finalAction = { itemSelector.isActive = false },
+    )
+    val exportDialog = ExportSongsToCSVDialog.deferred("Artists", action::snapshot)
+
     SearchEmptyFeedback(
         query = search.inputValue,
         empty = itemsOnDisplay.isEmpty(),
         loading = !gridReady
     )
 
-    if (items.any{it.thumbnailUrl == null}) {
-        LaunchedEffect(Unit) {
-            if (preview != null) return@LaunchedEffect
-            withContext(NzikDispatchers.DATA) {
-                items.filter { it.thumbnailUrl == null && !isDeviceArtistId(it.id) }.forEach { artist ->
-                    coroutineScope.launch(NzikDispatchers.DATA) {
-                        val artistThumbnail = YtMusic.getArtistPage(artist.id.removePrefix(MODIFIED_PREFIX)).getOrNull()?.artist?.thumbnail?.url
-                        Database.asyncTransaction {
-                            artistTable.update( artist.copy(thumbnailUrl = artistThumbnail) )
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     val sync = autoSyncToolbutton(R.string.sync_channels, autosyncArtistsKey) { coroutineScope.launch { importYTMSubscribedChannels(force = true) } }
 
     // Full offline mode (spec-full-offline-mode): the network sync action is removed.
     val offlineMode by OfflineMode.rememberEnabled()
+
+    val attemptedCovers = remember(profile) { HashSet<String>() }
+    val coverConcurrency = remember { Semaphore(3) }
+    val observeListening = preview == null &&
+        (sort.sortBy == ArtistSortBy.PlayCount || sort.sortBy == ArtistSortBy.ListeningTime)
+    val listeningTotals by remember(observeListening, profile) {
+        if (observeListening) Database.eventTable.getArtistListeningTotals()
+            .map { rows -> rows.associateBy { it.artistId } }
+        else flowOf(emptyMap())
+    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     val doAutoSync by rememberPreference(autosyncArtistsKey, false)
     var justSynced by rememberSaveable { mutableStateOf(!doAutoSync) }
@@ -600,16 +586,13 @@ fun HomeArtists(
         }
 
         Box(modifier = Modifier.fillMaxSize().glassFloatingActionContent(floatingBackdrop)) {
-                    val artistIds = remember(itemsOnDisplay) { itemsOnDisplay.map { it.id } }
-                    val bookmarkStatesMap by remember(artistIds) {
-                        BookmarkStateManager.getArtistBookmarkStates(artistIds)
-                    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+
 
                     val headerHeightState = remember { androidx.compose.runtime.mutableIntStateOf(0) }
                     val headerHeight by headerHeightState
                     val headerOffset by headerOffsetState
 
-                    val nestedScrollConnection = rememberHomeHeaderConnection(headerHeight, headerOffsetState, itemsOnDisplay.isNotEmpty())
+                    val nestedScrollConnection = rememberHomeHeaderConnection(headerHeight, headerOffsetState, itemsOnDisplay.isNotEmpty(), scrollState = lazyGridState)
 
                     HomeChromeLayout(
                         modifier = Modifier.fillMaxSize().nestedScroll(nestedScrollConnection),
@@ -623,7 +606,7 @@ fun HomeArtists(
                     ) {
                         val headerDensity = androidx.compose.ui.platform.LocalDensity.current
                         LazyVerticalGrid(
-                            state = lazyGridState,
+                            state = if (displayedGrid == null) rememberLazyGridState() else lazyGridState,
                             columns = GridCells.Adaptive( itemSize.size.dp ),
                             modifier = Modifier.background( colorPalette().background0 ).fillMaxSize(),
                             contentPadding = rememberPageChromeContentPadding(
@@ -632,21 +615,38 @@ fun HomeArtists(
                                 extraTopProvider = { with(headerDensity) { headerHeight.toDp() } },
                             )
                         ) {
-                    val artists = itemsOnDisplay.distinctBy { it.id }
-                    if (!gridReady && artists.isEmpty()) items(HomePlaceholderCount, key = { "loading_artist_$it" }) {
+                    val artists = displayedGrid.orEmpty()
+                    if (displayedGrid == null) items(HomePlaceholderCount, key = { "loading_artist_$it" }) {
                         ArtistItemPlaceholder(itemSize.size.dp, alternative = true)
                     }
                     items(items = artists, key = { it.id }) { artist ->
-                        if (showGridShimmer) {
+                        if (forceShimmer) {
                             ArtistItemPlaceholder(itemSize.size.dp, alternative = true, title = artist.name)
                             return@items
+                        }
+                        if (preview == null && artist.thumbnailUrl == null && !isDeviceArtistId(artist.id) && !offlineMode) LaunchedEffect(artist.id) {
+                            val id = artist.id
+                            if (attemptedCovers.add(id)) coroutineScope.launch(NzikDispatchers.DATA) {
+                                coverConcurrency.withPermit {
+                                    YtMusic.getArtistPage(id.removePrefix(MODIFIED_PREFIX))
+                                        .onSuccess { page ->
+                                            page?.artist?.thumbnail?.url?.let { url ->
+                                                Database.asyncTransaction { artistTable.fillMissingCover(id, url) }
+                                            }
+                                        }
+                                        .onFailure { error ->
+                                            if (error is CancellationException) throw error
+                                            Timber.tag("HomeArtist").w(error, "Could not repair artist cover")
+                                        }
+                                }
+                            }
                         }
                         ReorderableItem(
                             reorderableLazyGridState,
                             key = artist.id
                         ) { isDraggingItem ->
-                            Box(modifier = Modifier) {
-                                if (!positionLock.isLocked() && sort.sortBy == ArtistSortBy.Custom && sort.sortOrder == SortOrder.Ascending) {
+                            Box {
+                                if (gridReady && !positionLock.isLocked() && sort.sortBy == ArtistSortBy.Custom && sort.sortOrder == SortOrder.Ascending) {
                                     Box(
                                         modifier = Modifier
                                             .padding(4.dp)
@@ -682,9 +682,14 @@ fun HomeArtists(
                                     thumbnailSizeDp = itemSize.size.dp,
                                     thumbnailSizePx = itemSize.size.px,
                                     alternative = true,
-                                    bookmarkState = bookmarkStatesMap[artist.id],
+                                    bookmarkState = when {
+                                        artist.dislikedAt != null -> false
+                                        artist.bookmarkedAt != null -> true
+                                        else -> null
+                                    },
                                     observeBookmarkState = false,
                                     modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
+                                        enabled = gridReady,
                                         onClick = {
                                             if( itemSelector.isActive ) {
                                                 if( artist in itemSelector ) itemSelector.remove( artist )
@@ -715,7 +720,7 @@ fun HomeArtists(
                                                 )
                                             }
                                         } else if (sort.sortBy == ArtistSortBy.PlayCount) {
-                                            val playCount by (if (preview == null) Database.eventTable.getArtistPlayCount(artist.id) else kotlinx.coroutines.flow.flowOf(0)).collectAsStateWithLifecycle(initialValue = 0, context = NzikDispatchers.DATA)
+                                            val playCount = listeningTotals[artist.id]?.playCount ?: 0
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize()
@@ -731,7 +736,7 @@ fun HomeArtists(
                                                 )
                                             }
                                         } else if (sort.sortBy == ArtistSortBy.ListeningTime) {
-                                            val playTime by (if (preview == null) Database.eventTable.getArtistTotalPlayTime(artist.id) else kotlinx.coroutines.flow.flowOf(0L)).collectAsStateWithLifecycle(initialValue = 0L, context = NzikDispatchers.DATA)
+                                            val playTime = listeningTotals[artist.id]?.totalPlayTimeMs ?: 0L
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize()
@@ -754,7 +759,7 @@ fun HomeArtists(
                     }
                 }
 
-                if (gridReady && itemsOnDisplay.isEmpty()) {
+                if (gridReady && displayedGrid?.isEmpty() == true) {
                     Box(
                         modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding(topInsetProvider = scrollContentInsetProvider, base = PaddingValues(top = with(androidx.compose.ui.platform.LocalDensity.current) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() }, bottom = Dimensions.bottomSpacer))),
                         contentAlignment = Alignment.Center
