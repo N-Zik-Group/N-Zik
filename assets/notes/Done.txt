@@ -12,6 +12,8 @@ Improved:
   - Move artwork policy, gradient rendering and pager synchronization out of the main player screen.
 - refactor(startup): separate intent and notification setup
   - Keep launch-intent handling and notification channel creation outside activity and application orchestration.
+- refactor(playback): separate failure recovery and room events
+  - Move playback failure handling and Listen Together event models into files dedicated to those responsibilities.
 - perf(player): prepare the full player before opening
   - Keep the display list warm at the collapsed anchor, pause decorations during sheet travel and defer contrast sampling until expansion settles.
 - perf(playback): batch bridge queue and radio lookups
