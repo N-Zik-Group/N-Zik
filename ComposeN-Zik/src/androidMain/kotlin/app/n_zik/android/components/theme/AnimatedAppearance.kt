@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -18,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import app.n_zik.android.components.glass.GlassArtworkTint
 import app.n_zik.android.components.glass.LocalGlassArtworkTint
+import app.n_zik.android.components.player.ArtworkDisplayColors
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.Typography
@@ -35,6 +37,36 @@ fun paletteDarkness(): Float = LocalPaletteDarkness.current ?: LocalAppearance.c
 private val Appearance.darkness: Float get() = if (colorPalette.isDark) 1f else 0f
 
 internal val LocalNativeSurfaceMix = compositionLocalOf<NativeSurfaceMix?> { null }
+internal val LocalAmbientArtworkPaint = staticCompositionLocalOf<State<AmbientArtworkPaint?>?> { null }
+
+/** The artwork roles outside the expanded player's own cover transition. */
+internal data class AmbientArtworkPaint(
+    val coverControl: Color,
+    val lyricsForeground: Color,
+    val lyricsSurface: Color,
+    val visualizerForeground: Color,
+    val glass: GlassArtworkTint,
+) {
+    fun at(target: AmbientArtworkPaint, fraction: Float) = AmbientArtworkPaint(
+        coverControl = lerp(coverControl, target.coverControl, fraction),
+        lyricsForeground = lerp(lyricsForeground, target.lyricsForeground, fraction),
+        lyricsSurface = lerp(lyricsSurface, target.lyricsSurface, fraction),
+        visualizerForeground = lerp(visualizerForeground, target.visualizerForeground, fraction),
+        glass = glass.lerpTo(target.glass, fraction),
+    )
+}
+
+internal fun ambientArtworkPaint(colors: ArtworkDisplayColors?, themeAccent: Color): AmbientArtworkPaint {
+    val forceDark = colors?.forceDark == true
+    val foreground = colors?.takeIf { it.colors != null || it.forceDark }?.foreground
+    return AmbientArtworkPaint(
+        coverControl = (if (forceDark) foreground else colors?.palette?.accent) ?: themeAccent,
+        lyricsForeground = foreground ?: Color.DarkGray,
+        lyricsSurface = colors?.takeIf { forceDark }?.background ?: themeAccent,
+        visualizerForeground = foreground ?: Color.White,
+        glass = GlassArtworkTint(colors?.dominant, if (forceDark) 1f else 0f),
+    )
+}
 
 /** Tracks the coverage of the native black surface styles during a theme change. */
 internal data class NativeSurfaceMix(
@@ -67,6 +99,7 @@ private data class AppearanceFrame(
     val darkness: Float,
     val nativeSurfaceMix: NativeSurfaceMix?,
     val artworkTint: GlassArtworkTint?,
+    val ambientArtwork: AmbientArtworkPaint?,
 )
 
 /** Returns a copy of this typography with every text style recolored while preserving each style's font size and other attributes. */
@@ -134,35 +167,41 @@ internal fun ProvideAnimatedAppearance(
     onFadeComplete: () -> Unit,
     targetNativeSurfaceMix: NativeSurfaceMix? = null,
     targetArtworkTint: GlassArtworkTint? = null,
+    targetAmbientArtwork: AmbientArtworkPaint? = null,
     content: @Composable () -> Unit,
 ) {
     var displayed by remember { mutableStateOf<AppearanceFrame?>(null) }
     val fraction = remember { Animatable(1f) }
 
-    LaunchedEffect(fadeFrom, target, targetNativeSurfaceMix, targetArtworkTint) {
+    val endpoint = AppearanceFrame(target, target.darkness, targetNativeSurfaceMix, targetArtworkTint, targetAmbientArtwork)
+    LaunchedEffect(fadeFrom, endpoint) {
         val previous = displayed
         val transition = appearanceRetarget(previous?.appearance, fadeFrom, target)
-        val endpoint = AppearanceFrame(target, target.darkness, targetNativeSurfaceMix, targetArtworkTint)
         val fromMix = previous?.nativeSurfaceMix
         val changingSurface = fadeFrom != null && fromMix != null && targetNativeSurfaceMix != null && fromMix != targetNativeSurfaceMix
         val fromTint = previous?.artworkTint ?: targetArtworkTint ?: GlassArtworkTint()
         val changingTint = fadeFrom != null && targetArtworkTint != null && targetArtworkTint != fromTint
-        if (transition.animateFrom == null && !changingSurface && !changingTint) {
+        val fromArtwork = previous?.ambientArtwork
+        val changingArtwork = fadeFrom != null && targetAmbientArtwork != null && fromArtwork != null &&
+            targetAmbientArtwork != fromArtwork
+        if (transition.animateFrom == null && !changingSurface && !changingTint && !changingArtwork) {
             displayed = endpoint
+            if (fadeFrom != null) onFadeComplete()
             return@LaunchedEffect
         }
-        val from = transition.animateFrom ?: transition.displayed
-        val fromDarkness = previous?.darkness ?: from.darkness
+        val from = transition.animateFrom
+        val fromDarkness = previous?.darkness ?: from?.darkness ?: endpoint.darkness
         fraction.snapTo(0f)
         fraction.animateTo(
             targetValue = 1f,
             animationSpec = tween(durationMillis, easing = FastOutSlowInEasing),
         ) {
             displayed = AppearanceFrame(
-                fadeAppearance(from, target, value),
+                from?.let { fadeAppearance(it, target, value) } ?: target,
                 fromDarkness + (endpoint.darkness - fromDarkness) * value,
                 targetNativeSurfaceMix?.let { fromMix?.at(it, value) ?: it },
                 targetArtworkTint?.let { fromTint.lerpTo(it, value) },
+                targetAmbientArtwork?.let { fromArtwork?.at(it, value) ?: it },
             )
         }
         displayed = endpoint
@@ -170,18 +209,23 @@ internal fun ProvideAnimatedAppearance(
     }
 
     val currentFrame = rememberUpdatedState(
-        displayed.takeIf { fadeFrom != null } ?: AppearanceFrame(target, target.darkness, targetNativeSurfaceMix, targetArtworkTint),
+        displayed.takeIf { fadeFrom != null } ?: endpoint,
     )
     val frame = currentFrame.value
     val carriedArtworkTint = rememberUpdatedState(targetArtworkTint)
     val artworkTint = remember {
-        derivedStateOf { currentFrame.value.artworkTint ?: carriedArtworkTint.value ?: GlassArtworkTint() }
+        derivedStateOf {
+            currentFrame.value.ambientArtwork?.glass ?: currentFrame.value.artworkTint ?:
+                carriedArtworkTint.value ?: GlassArtworkTint()
+        }
     }
+    val ambientArtwork = remember { derivedStateOf { currentFrame.value.ambientArtwork } }
     CompositionLocalProvider(
         LocalAppearance provides frame.appearance,
         LocalPaletteDarkness provides frame.darkness,
         LocalNativeSurfaceMix provides frame.nativeSurfaceMix,
-        LocalGlassArtworkTint provides artworkTint.takeIf { targetArtworkTint != null },
+        LocalGlassArtworkTint provides artworkTint.takeIf { targetAmbientArtwork != null || targetArtworkTint != null },
+        LocalAmbientArtworkPaint provides ambientArtwork.takeIf { targetAmbientArtwork != null },
         LocalPaletteFadeTarget provides target,
     ) {
         content()

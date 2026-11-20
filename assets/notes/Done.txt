@@ -6,6 +6,8 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- improve(theme): share the animated artwork tint across surfaces
+  - Drive the mini-player, Glass, lyrics and visualizer from the same animated artwork tint.
 - perf(player): reduce rendering work during artwork transitions
   - Skip the standalone blurred cover when a full-size opaque player fill hides it and a foreground cover still supplies artwork colors.
   - Recolor text styles on demand during a palette fade and reuse the resolved style for each role. Keep the existing easing and carousel artwork count.

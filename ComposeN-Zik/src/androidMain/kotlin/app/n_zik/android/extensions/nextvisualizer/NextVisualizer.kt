@@ -49,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import app.n_zik.android.components.player.LocalPlayerCoverOverlay
 import app.n_zik.android.components.player.LocalPlayerArtworkPaint
+import app.n_zik.android.components.theme.LocalAmbientArtworkPaint
 import app.n_zik.android.components.glass.glassOverlayCanvasViewport
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.GlassOverlayControls
@@ -205,7 +206,9 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
             val requestedDark = paletteMode == ColorPaletteMode.Dark || (paletteMode == ColorPaletteMode.PitchBlack || paletteMode == ColorPaletteMode.PureBlack) ||
                 (paletteMode == ColorPaletteMode.System && isSystemInDarkTheme())
             val scopedArtworkPaint = LocalPlayerArtworkPaint.current
-            val coverTint = if (visualizerWhiteColorOption == enums.VisualizerWhiteColorOption.Cover && scopedArtworkPaint == null) {
+            val ambientArtwork = LocalAmbientArtworkPaint.current
+            val coverTint = if (visualizerWhiteColorOption == enums.VisualizerWhiteColorOption.Cover &&
+                scopedArtworkPaint == null && ambientArtwork == null) {
                 val coverDisplay = rememberArtworkDisplayColors(
                     currentArtworkUri?.toString(), requestedDark, awaitArtworkMetadata = true,
                 )
@@ -290,7 +293,9 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
                                 enums.VisualizerWhiteColorOption.White -> android.graphics.Color.WHITE
                                 enums.VisualizerWhiteColorOption.Theme -> themeTint.toArgb()
                                 enums.VisualizerWhiteColorOption.Cover ->
-                                    (scopedArtworkPaint?.value?.visualizerForeground ?: coverTint?.value ?: Color.White).toArgb()
+                                    (scopedArtworkPaint?.value?.visualizerForeground ?:
+                                        ambientArtwork?.value?.visualizerForeground?.takeIf { scopedArtworkPaint == null } ?:
+                                        coverTint?.value ?: Color.White).toArgb()
                                 enums.VisualizerWhiteColorOption.Custom -> visualizerCustomColor
                             }
                             tintPaints.forEach { it.setColor(tint) }

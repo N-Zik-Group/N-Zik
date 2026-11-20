@@ -144,6 +144,7 @@ import app.n_zik.android.components.player.rememberArtworkDisplayColors
 import app.n_zik.android.components.player.LocalPlayerArtworkPaint
 import app.n_zik.android.components.player.rememberPlayerColorFade
 import app.n_zik.android.components.theme.LocalPaletteFadeTarget
+import app.n_zik.android.components.theme.LocalAmbientArtworkPaint
 import app.n_zik.android.components.glass.TextContrast
 import app.n_zik.android.components.glass.glassPaneForeground
 import dev.rebelonion.translator.Translator
@@ -340,8 +341,9 @@ fun LyricsScreen(
         var lyricsCustomColor by rememberPreference(lyricsCustomColorKey, android.graphics.Color.WHITE)
         val defaultCoverForeground = Color(android.graphics.Color.DKGRAY)
         val scopedArtworkPaint = LocalPlayerArtworkPaint.current
+        val ambientArtwork = LocalAmbientArtworkPaint.current
         val useCoverBackground = lyricsColor == LyricsColor.Cover && showBackgroundLyrics && showlyricsthumbnail
-        val useStandaloneCoverColors = lyricsColor == LyricsColor.Cover && scopedArtworkPaint == null
+        val useStandaloneCoverColors = lyricsColor == LyricsColor.Cover && scopedArtworkPaint == null && ambientArtwork == null
         val coverDisplay = if (useStandaloneCoverColors) rememberArtworkDisplayColors(
             mediaMetadata.artworkUri?.toString(), !lightTheme, awaitArtworkMetadata = true,
         ) else null
@@ -454,13 +456,16 @@ fun LyricsScreen(
                         text.lineSequence().any { it.trim().startsWith("<") && it.contains(":") && it.contains(">") }
                     }
                     val paint = if (lyricsColor == LyricsColor.Cover) scopedArtworkPaint?.value else null
+                    val ambientPaint = if (lyricsColor == LyricsColor.Cover && scopedArtworkPaint == null)
+                        ambientArtwork?.value else null
                     val coverBackground = when {
                         !useCoverBackground -> null
                         scopedArtworkPaint != null ->
                             paint?.lyricsSurface?.takeIf { it.isSpecified } ?: colorPalette().accent
-                        else -> coverBackgroundState?.value
+                        else -> ambientPaint?.lyricsSurface ?: coverBackgroundState?.value
                     }
-                    val coverForeground = paint?.lyricsForeground ?: coverForegroundState?.value ?: defaultCoverForeground
+                    val coverForeground = paint?.lyricsForeground ?: ambientPaint?.lyricsForeground ?:
+                        coverForegroundState?.value ?: defaultCoverForeground
                     val dominantColor = if (coverBackground != null && actualLyricsType != LyricsType.Unsynced)
                         glassPaneForeground(coverForeground, coverBackground, TextContrast, paletteDarkness()).toArgb()
                     else coverForeground.toArgb()

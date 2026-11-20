@@ -244,6 +244,17 @@ import app.n_zik.android.components.player.presentMiniplayerThenExpand
 import app.n_zik.android.components.player.presentMiniplayerCollapsed
 import app.n_zik.android.components.theme.AppearanceMenuSheet
 import app.n_zik.android.components.theme.ProvideAnimatedAppearance
+import app.n_zik.android.components.theme.ambientArtworkPaint
+import app.n_zik.android.components.glass.rememberGlassArtwork
+import app.n_zik.android.components.player.ArtworkDisplayColors
+import app.n_zik.android.components.player.rememberArtworkDisplayResult
+import app.n_zik.android.enums.PlayerControlsColors
+import app.n_zik.android.enums.lyrics.LyricsColor
+import app.n_zik.android.utils.lyricsColorKey
+import app.n_zik.android.utils.playerControlsColorsKey
+import app.n_zik.android.utils.visualizerEnabledKey
+import app.n_zik.android.utils.visualizerWhiteColorOptionKey
+import enums.VisualizerWhiteColorOption
 import app.n_zik.android.components.theme.DynamicAppearanceOwner
 import app.n_zik.android.components.theme.DynamicPaletteArtworkListener
 import app.n_zik.android.components.theme.appearanceBackground
@@ -1226,15 +1237,8 @@ class MainActivity :
             }
 
             var fadeFromAppearance by remember { mutableStateOf<Appearance?>(null) }
-            var artworkTint by remember(preferences) {
-                mutableStateOf(app.n_zik.android.components.glass.GlassArtworkTint())
-            }
+            var dynamicArtworkColors by remember(preferences) { mutableStateOf<ArtworkDisplayColors?>(null) }
             val glassMenuHost = remember { GlassMenuHostState() }
-            LaunchedEffect(glassMenuHost, selectedPaletteName) {
-                if (selectedPaletteName != ColorPaletteName.Dynamic) {
-                    snapshotFlow { glassMenuHost.artworkTint }.collect { artworkTint = it }
-                }
-            }
 
             fun appearanceSurfaceMix(palette: ColorPalette) = nativeSurfaceMix(
                 preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark),
@@ -1263,12 +1267,9 @@ class MainActivity :
                         app.n_zik.android.components.player.SharedArtworkColors.load(this@MainActivity, url)
                     },
                     publishArtwork = { colors, animate ->
-                        val nextTint = app.n_zik.android.components.glass.GlassArtworkTint(
-                            colors?.dominant, if (colors?.forceDark == true) 1f else 0f,
-                        )
-                        if (artworkTint != nextTint) {
+                        if (dynamicArtworkColors != colors) {
                             if (animate && fadeFromAppearance == null) fadeFromAppearance = appearance
-                            artworkTint = nextTint
+                            dynamicArtworkColors = colors
                         }
                     },
                     appearance = { appearance },
@@ -1724,12 +1725,35 @@ class MainActivity :
             val topBarOffsetState = scaffoldBars.topOffset
             val bottomBarOffsetState = scaffoldBars.bottomOffset
 
+            val ambientCoverControls by rememberPreference(playerControlsColorsKey, PlayerControlsColors.Monochrome)
+            val ambientLyricsColor by rememberPreference(lyricsColorKey, LyricsColor.White)
+            val ambientVisualizerEnabled by rememberPreference(visualizerEnabledKey, false)
+            val ambientVisualizerColor by rememberPreference(visualizerWhiteColorOptionKey, VisualizerWhiteColorOption.White)
+            val usesDynamicArtwork = selectedPaletteName == ColorPaletteName.Dynamic
+            val needsFixedArtwork = !usesDynamicArtwork && (rememberGlassSettings().enabled ||
+                glassMenuHost.standaloneSettings || ambientCoverControls == PlayerControlsColors.Cover ||
+                ambientLyricsColor == LyricsColor.Cover ||
+                ambientVisualizerEnabled && ambientVisualizerColor == VisualizerWhiteColorOption.Cover)
+            var fixedArtworkColors by remember(preferences) { mutableStateOf<ArtworkDisplayColors?>(null) }
+            if (needsFixedArtwork) {
+                val artwork = rememberGlassArtwork(binder?.player)
+                val result = rememberArtworkDisplayResult(artwork?.uri, appearance.colorPalette.isDark,
+                    awaitArtworkMetadata = artwork?.mediaId != null)
+                if (result.resolved) SideEffect {
+                    if (fixedArtworkColors != result.colors) {
+                        if (!isPlayerSheetExpanded.value && fadeFromAppearance == null) fadeFromAppearance = appearance
+                        fixedArtworkColors = result.colors
+                    }
+                }
+            }
+            val artworkColors = if (usesDynamicArtwork) dynamicArtworkColors else fixedArtworkColors.takeIf { needsFixedArtwork }
+
             ProvideAnimatedAppearance(
                 target = appearance,
                 fadeFrom = fadeFromAppearance,
                 onFadeComplete = { fadeFromAppearance = null },
                 targetNativeSurfaceMix = surfaceMix,
-                targetArtworkTint = if (selectedPaletteName == ColorPaletteName.Dynamic) artworkTint else null,
+                targetAmbientArtwork = ambientArtworkPaint(artworkColors, appearance.colorPalette.accent),
             ) {
                 PageSystemBarAppearance(glassMenuHost)
                 BoxWithConstraints(

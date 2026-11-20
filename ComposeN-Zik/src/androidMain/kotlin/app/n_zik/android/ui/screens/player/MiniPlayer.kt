@@ -235,8 +235,8 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.player.rememberArtworkDisplayColors
 import app.n_zik.android.components.player.rememberPlayerColorFade
 import app.n_zik.android.components.theme.LocalPaletteFadeTarget
+import app.n_zik.android.components.theme.LocalAmbientArtworkPaint
 import androidx.compose.ui.graphics.lerp
-import app.n_zik.android.components.glass.LocalGlassArtworkTint
 import app.n_zik.android.components.theme.LocalNativeSurfaceMix
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -426,9 +426,10 @@ fun MiniPlayer(
     val playerControlsColors by rememberPreference(playerControlsColorsKey, PlayerControlsColors.Monochrome)
     val controlsColorTextState = when (playerControlsColors) {
         PlayerControlsColors.Cover -> {
-            val appArtwork = LocalGlassArtworkTint.current
-            if (colorPaletteName == ColorPaletteName.Dynamic && appArtwork != null) {
-                rememberUpdatedState(lerp(color.accent, color.text, appArtwork.value.darkness))
+            val appArtwork = LocalAmbientArtworkPaint.current?.value
+            if (appArtwork != null) {
+                rememberUpdatedState(if (colorPaletteName == ColorPaletteName.Dynamic)
+                    lerp(color.accent, color.text, appArtwork.glass.darkness) else appArtwork.coverControl)
             } else {
                 val coverDisplay = rememberArtworkDisplayColors(
                     mediaItem.mediaMetadata.artworkUri?.toString(), !lightTheme, awaitArtworkMetadata = true,
