@@ -45,6 +45,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.Text
 import app.n_zik.android.components.glass.GlassDescriptionExpansion
 import app.n_zik.android.components.glass.GlassDescriptionTranslate
 import androidx.compose.runtime.Composable
@@ -54,10 +55,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.zIndex
@@ -96,6 +95,8 @@ import app.n_zik.android.compose.persist.persistList
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.YtMusic
 import app.n_zik.innertube.requests.PlaylistPage
+import app.n_zik.innertube.requests.PlaylistContinuationPage
+import app.n_zik.android.components.ui.UiButton
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.appContext
@@ -234,91 +235,57 @@ fun PlaylistSongList(
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
     var playlistPage by persist<PlaylistPage?>("playlist/$browseId/playlistPage")
-    var continuation: String? by remember { mutableStateOf( null ) }
-    var playlistSongs by persistList<Innertube.SongItem>("playlist/$browseId/songs")
+    val playlistSongs = remember(playlistPage, parentalControlEnabled) {
+        playlistPage?.songs.orEmpty()
+            .fastFilter { !parentalControlEnabled || !it.explicit }
+            .fastDistinctBy(Innertube.SongItem::key)
+    }
     var initialPlaylistDetails by remember(browseId) { mutableStateOf<PlaylistPage?>(null) }
     var loadedSongsCount by remember(browseId) { mutableIntStateOf(0) }
     var initialLoadFailed by remember(browseId) { mutableStateOf(false) }
+    var continuationLoading by remember(browseId) { mutableStateOf(false) }
+    var retryLoad by remember(browseId) { mutableIntStateOf(0) }
 
-    val updatedItemsPageProvider: suspend (String?) -> Result<PlaylistPage> by rememberUpdatedState {
-        if( it == null )
-            YtMusic.getPlaylist( browseId.removePrefix(MODIFIED_PREFIX) )
-        else
-            YtMusic.getPlaylistContinuation( it )
-                   .mapCatching { fetchedPlaylist ->
-                       checkNotNull(playlistPage) { "Playlist continuation requires an initial page" }.copy(
-                           songs = fetchedPlaylist?.songs.orEmpty(),
-                           songsContinuation = fetchedPlaylist?.continuation
-                       )
-                   }
-    }
-
-    LaunchedEffect( browseId ) {
+    LaunchedEffect(browseId, retryLoad) {
         if (preview != null) {
             val demo = app.n_zik.android.components.settings.appearance.preview.themePreviewOnlinePlaylist()
             playlistPage = demo
-            playlistSongs = demo.songs
             loadedSongsCount = demo.songs.size
             return@LaunchedEffect
         }
-        loadedSongsCount = 0
-        if (playlistPage == null) {
-            withContext(NzikDispatchers.DATA) {
-                val firstPage = YtMusic.getPlaylist(browseId.removePrefix(MODIFIED_PREFIX)).getOrElse { error ->
-                    if (error is CancellationException) throw error
-                    Timber.tag("PlaylistSongList").w(error, "Unable to load playlist tracks")
-                    initialLoadFailed = true
-                    return@withContext
-                }
-                initialPlaylistDetails = firstPage
-                val allSongs = firstPage.songs.toMutableList()
-                val loadedKeys = firstPage.songs.asSequence()
-                    .filter { !parentalControlEnabled || !it.explicit }
-                    .map(Innertube.SongItem::key)
-                    .toMutableSet()
-                loadedSongsCount = loadedKeys.size
-                var cont = firstPage.songsContinuation
-                var maxPages = 50
-                while (cont != null && maxPages-- > 0) {
-                    val next = YtMusic.getPlaylistContinuation( cont ).getOrNull()
-                    if (next != null) {
-                        allSongs += next.songs
-                        next.songs.forEach { song ->
-                            if (!parentalControlEnabled || !song.explicit) loadedKeys.add(song.key)
-                        }
-                        loadedSongsCount = loadedKeys.size
-                        cont = next.continuation
-                    } else {
-                        cont = null
-                    }
-                }
-                playlistPage = firstPage.copy(songs = allSongs, songsContinuation = null)
-                playlistSongs = allSongs
-                    .fastFilter { !parentalControlEnabled || !it.explicit }
-                    .fastDistinctBy( Innertube.SongItem::key )
-                continuation = null
-            }
+        val cachedPage = playlistPage
+        if (cachedPage != null && cachedPage.songsContinuation == null) return@LaunchedEffect
+
+        initialLoadFailed = false
+        val firstPage = cachedPage ?: withContext(NzikDispatchers.DATA) {
+            YtMusic.getPlaylist(browseId.removePrefix(MODIFIED_PREFIX))
+        }.getOrElse { error ->
+            if (error is CancellationException) throw error
+            Timber.tag("PlaylistSongList").w(error, "Unable to load playlist tracks")
+            initialLoadFailed = true
+            return@LaunchedEffect
         }
-    }
-
-    LaunchedEffect( lazyListState ) {
-
-        snapshotFlow { lazyListState.layoutInfo.visibleItemsInfo.any { it.key == "loading" } }
-            .collect { shouldLoadMore ->
-                if ( !shouldLoadMore ) return@collect
-
-                withContext(NzikDispatchers.DATA) {
-                    updatedItemsPageProvider(continuation)
-                }.onSuccess { onlinePlaylist ->
-                    if( continuation == null )
-                        playlistPage = onlinePlaylist
-
-                    playlistSongs += onlinePlaylist.songs
-                                                   .fastFilter { !parentalControlEnabled || !it.explicit }
-                                                   .fastDistinctBy( Innertube.SongItem::key )
-                    continuation = onlinePlaylist.songsContinuation
-                }.onFailure { e -> Timber.tag("PlaylistSongList").e(e, "Failed to load more playlist songs") }
+        initialPlaylistDetails = firstPage
+        val loadedKeys = mutableSetOf<String>()
+        val showProgress: (List<Innertube.SongItem>) -> Unit = { songs ->
+            songs.forEach { song ->
+                if (!parentalControlEnabled || !song.explicit) loadedKeys.add(song.key)
             }
+            loadedSongsCount = loadedKeys.size
+        }
+        showProgress(firstPage.songs)
+        continuationLoading = firstPage.songsContinuation != null
+        try {
+            playlistPage = loadPlaylistContinuations(
+                firstPage,
+                requestNextPage = { token ->
+                    withContext(NzikDispatchers.DATA) { YtMusic.getPlaylistContinuation(token) }
+                },
+                onSongsLoaded = showProgress,
+            )
+        } finally {
+            continuationLoading = false
+        }
     }
 
     var filter: String? by rememberSaveable { mutableStateOf(null) }
@@ -1255,8 +1222,20 @@ fun PlaylistSongList(
                     }
                 }
 
-                if (!forceSongPlaceholders && playlistPage != null && continuation != null) {
-                    item("loading") { SongItemPlaceholders(count = 1) }
+                if (!forceSongPlaceholders && playlistPage?.songsContinuation != null) {
+                    item("playlist-continuation") {
+                        if (continuationLoading) {
+                            SongItemPlaceholders(count = 1)
+                        } else {
+                            Column(
+                                Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                BasicText(stringResource(R.string.common_load_failed), style = typography().s.secondary)
+                                UiButton(onClick = { retryLoad++ }) { Text(stringResource(R.string.common_action_retry)) }
+                            }
+                        }
+                    }
                 }
             }
                 }
@@ -1284,6 +1263,25 @@ fun PlaylistSongList(
             }
         }
     }
+}
+
+internal suspend fun loadPlaylistContinuations(
+    firstPage: PlaylistPage,
+    requestNextPage: suspend (String) -> Result<PlaylistContinuationPage>,
+    onSongsLoaded: (List<Innertube.SongItem>) -> Unit = {},
+): PlaylistPage {
+    val tracks = firstPage.songs.toMutableList()
+    val attemptedTokens = mutableSetOf<String>()
+    var continuation = firstPage.songsContinuation
+    while (continuation != null && attemptedTokens.size < 50 && attemptedTokens.add(continuation)) {
+        val result = requestNextPage(continuation)
+        result.exceptionOrNull()?.let { if (it is CancellationException) throw it }
+        val next = result.getOrNull() ?: break
+        tracks += next.songs
+        onSongsLoaded(next.songs)
+        continuation = next.continuation
+    }
+    return firstPage.copy(songs = tracks.fastDistinctBy { it.key to it.explicit }, songsContinuation = continuation)
 }
 
 @Composable

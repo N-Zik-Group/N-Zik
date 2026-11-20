@@ -20,6 +20,8 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(playlist): resume online pagination after a failed page
+  - Keep loaded tracks and retry from the failed continuation token. Guard repeated tokens and duplicate rows.
 - fix(theme-store): show a terminal state when previews cannot load
   - Keep known Stock tags visible and offer a retry for reachable remote theme details.
 - fix(shimmer): match Bridge and extension loading states
