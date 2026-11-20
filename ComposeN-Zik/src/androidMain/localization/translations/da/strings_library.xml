@@ -394,6 +394,15 @@
     <string name="song_matching_all_confirmation">Vil du matche %d sange, der ikke er matchet?</string>
     <string name="song_matching_dialog_title">Match sange</string>
     <string name="song_matching_progress_title">Matchende sange</string>
+    <string name="song_matching_background_message">Matchning fortsætter i baggrunden.</string>
+    <string name="song_matching_notification_progress">%1$d af %2$d sange</string>
+    <string name="song_matching_cancelled_title">Sangen matcher annulleret</string>
+    <string name="song_matching_unprocessed_count">%1$d ikke behandlet</string>
+    <string name="song_matching_notification_completed">%1$d sange matchet. %2$d flettet sammen med eksisterende sange.</string>
+    <string name="song_matching_notification_partial">%1$d matchede, %2$d mislykkedes, %3$d blev ikke behandlet. %4$d fusioneret.</string>
+    <string name="song_matching_notification_cancelled">Annulleret. %1$d matchede, %2$d mislykkedes, %3$d blev ikke behandlet. %4$d flettet.</string>
+    <string name="song_matching_notification_failed">Sangmatchning mislykkedes. %1$d matchede, %2$d mislykkedes, %3$d blev ikke behandlet. %4$d fusioneret.</string>
+    <string name="song_matching_failed_message">Kunne ikke fuldføre sangmatchning. Prøv igen.</string>
     <string name="song_matching_running_message">Matcher sange... Vent venligst. Minimer eller luk ikke appen</string>
     <string name="song_matching_unmatched_label">Uovertruffen sang</string>
     <string name="metadata_musicbrainz_rating">Bedømmelse</string>
