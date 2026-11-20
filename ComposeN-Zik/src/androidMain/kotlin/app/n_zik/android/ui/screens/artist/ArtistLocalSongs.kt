@@ -6,7 +6,7 @@ import androidx.compose.ui.res.pluralStringResource
 import app.n_zik.android.utils.durationTextToMillis
 import app.n_zik.android.utils.formatAsDuration
 import app.n_zik.android.components.ui.screens.CollectionArtworkHeader
-import app.n_zik.android.components.ui.HeaderIconAction
+import app.n_zik.android.components.ui.screens.CollectionArtworkShareButton
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.draw.clip
 
@@ -79,7 +79,6 @@ import kotlinx.coroutines.withContext
 import app.n_zik.android.utils.ExternalUris
 import app.n_zik.android.colorPalette
 import app.n_zik.android.core.utils.Toaster
-import android.content.Intent
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.ui.graphics.painter.Painter
@@ -676,7 +675,6 @@ fun ArtistHeader(
     artistPage: ArtistPage?,
     thumbnailPainter: Painter
 ) {
-    val context = LocalContext.current
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
     CollectionArtworkHeader(
         title = localArtist.name ?: "...",
@@ -691,20 +689,7 @@ fun ArtistHeader(
             }
         },
     ) {
-        HeaderIconAction(
-            icon = R.drawable.share_social,
-            color = colorPalette().text,
-            iconSize = 24.dp,
-            onClick = {
-                val url = ExternalUris.youtubeMusicChannel(localArtist.id.removePrefix(MODIFIED_PREFIX))
-                val sendIntent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, url)
-                }
-                context.startActivity(Intent.createChooser(sendIntent, null))
-            },
-        )
+        CollectionArtworkShareButton(ExternalUris.youtubeMusicChannel(localArtist.id.removePrefix(MODIFIED_PREFIX)))
     }
 }
 

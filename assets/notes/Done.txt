@@ -20,6 +20,9 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(collections): align share and section actions
+  - Use one top-end Share layout for artist, album, online playlist and podcast headers in Normal and Glass.
+  - Align artist section buttons to the Quick Picks margin.
 - fix(playlist): resume online pagination after a failed page
   - Keep loaded tracks and retry from the failed continuation token. Guard repeated tokens and duplicate rows.
 - fix(theme-store): show a terminal state when previews cannot load

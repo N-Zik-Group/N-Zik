@@ -3,10 +3,10 @@ package app.n_zik.android.components.ui.screens.artist
 
 import app.n_zik.android.appTextResources
 import app.n_zik.android.components.ui.screens.CollectionArtworkHeader
+import app.n_zik.android.components.ui.screens.CollectionArtworkShareButton
 import app.n_zik.android.components.ui.screens.CollectionPageStatus
 import app.n_zik.android.components.navigation.rememberTopContentInsetProvider
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
-import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -76,6 +76,7 @@ import androidx.navigation.NavController
 import app.n_zik.android.compose.persist.PersistMapCleanup
 import app.n_zik.android.EXPLICIT_PREFIX
 import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.utils.ExternalUris
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.enums.Languages
 import app.n_zik.android.enums.NavRoutes
@@ -93,7 +94,6 @@ import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.ui.components.themed.Enqueue
-import app.n_zik.android.components.ui.HeaderIconAction
 import app.n_zik.android.components.ui.CollectionButtonToolbar
 import app.n_zik.android.components.ui.CollectionToolbar
 import app.n_zik.android.ui.components.themed.PlayNext
@@ -471,8 +471,7 @@ private fun ArtistLoadingContent(
                     subtitle = { ItemTextPlaceholder(null, typography().s, width = 0.45f) },
                     isLoading = true,
                     action = {
-                        HeaderIconButton(icon = R.drawable.share_social, color = colorPalette().textDisabled,
-                            iconSize = 24.dp, enabled = false, onClick = {})
+                        CollectionArtworkShareButton(shareUrl = null)
                     },
                 )
             }
@@ -537,7 +536,6 @@ fun ArtistOverview(
     artistPage ?: return
     val forceShimmer = forceLoadingShimmerPreview()
 
-    val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
     val hapticFeedback = LocalHapticFeedback.current
@@ -546,7 +544,7 @@ fun ArtistOverview(
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
     val sectionTextModifier = Modifier
-        .padding(horizontal = 16.dp)
+        .padding(horizontal = 12.dp)
         .padding(top = 24.dp, bottom = 8.dp)
     val albumThumbnailSizeDp = 108.dp
     val albumThumbnailSizePx = albumThumbnailSizeDp.px
@@ -726,23 +724,10 @@ fun ArtistOverview(
                             }
                         },
                     ) {
-                        HeaderIconAction(
-                            icon = R.drawable.share_social,
-                            color = colorPalette().text,
-                            iconSize = 24.dp,
-                            onClick = {
-                                val url = "https://music.youtube.com/channel/${localArtist?.id ?: artistPage.artist.key}"
-                                val sendIntent = Intent().apply {
-                                    action = Intent.ACTION_SEND
-                                    type = "text/plain"
-                                    putExtra(Intent.EXTRA_TEXT, url)
-                                }
-
-                                context.startActivity(
-                                    Intent.createChooser(sendIntent, null)
-                                )
-                            }
-                        )
+                        val channelId = localArtist?.id ?: artistPage.artist.info?.endpoint?.browseId ?: artistPage.artist.channelId
+                        val shareUrl = channelId?.removePrefix(MODIFIED_PREFIX)?.takeIf(String::isNotBlank)
+                            ?.let(ExternalUris::youtubeMusicChannel)
+                        CollectionArtworkShareButton(shareUrl)
                     }
                 }
 

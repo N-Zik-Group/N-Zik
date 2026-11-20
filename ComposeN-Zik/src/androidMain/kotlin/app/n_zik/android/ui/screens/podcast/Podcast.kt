@@ -18,7 +18,6 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -94,7 +93,8 @@ import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScroll
 import app.n_zik.android.ui.components.themed.FontSizeRange
 import app.n_zik.android.ui.components.themed.HeaderIconButton
 import app.n_zik.android.components.ui.CollectionToolbar
-import app.n_zik.android.components.glass.GlassToolbarRow
+import app.n_zik.android.components.ui.screens.CollectionArtworkShareButton
+import app.n_zik.android.components.ui.screens.CollectionArtworkTopAction
 import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
 import app.n_zik.android.components.ui.screens.LayoutWithAdaptiveThumbnail
 import app.n_zik.android.ui.components.themed.PlaylistsItemMenu
@@ -346,19 +346,9 @@ fun Podcast(
                             } else {
                                 BasicText(summary, style = summaryStyle, maxLines = 1, modifier = summaryModifier)
                             }
-                            GlassToolbarRow(
-                                actionCount = 1,
-                                modifier = Modifier.align(Alignment.TopEnd).padding(top = 5.dp, end = 5.dp),
-                            ) {
-                                HeaderIconButton(
-                                    icon = R.drawable.share_social,
-                                    color = colorPalette().text,
-                                    iconSize = 24.dp,
-                                    onClick = {
-                                        val url = ExternalUris.youtubeMusicPlaylist(browseId.removePrefix(MODIFIED_PREFIX).removePrefix("VL"))
-                                        val intent = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, url)
-                                        context.startActivity(Intent.createChooser(intent, null))
-                                    },
+                            CollectionArtworkTopAction {
+                                CollectionArtworkShareButton(
+                                    ExternalUris.youtubeMusicPlaylist(browseId.removePrefix(MODIFIED_PREFIX).removePrefix("VL")),
                                 )
                             }
                         }

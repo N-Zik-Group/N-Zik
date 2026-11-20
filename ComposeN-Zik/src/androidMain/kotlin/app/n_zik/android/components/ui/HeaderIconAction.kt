@@ -20,10 +20,11 @@ internal fun HeaderIconAction(
     iconSize: Dp = 20.dp,
     contentDescription: String? = null,
     onLongClick: (() -> Unit)? = null,
+    enabled: Boolean = true,
 ) {
-    if (GlassToolbarIcon(painterResource(icon), color, iconSize, enabled = true,
+    if (GlassToolbarIcon(painterResource(icon), color, iconSize, enabled = enabled,
             modifier = modifier, modifierOnContainer = true, onClick = onClick,
             onLongClick = onLongClick, contentDescription = contentDescription)) return
     NativeSectionIconAction(icon, contentDescription, modifier = modifier, iconSize = iconSize,
-        color = color, onClick = onClick, onLongClick = onLongClick)
+        color = color, enabled = enabled, onClick = onClick, onLongClick = onLongClick)
 }

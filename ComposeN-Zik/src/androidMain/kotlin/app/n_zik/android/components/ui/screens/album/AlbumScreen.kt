@@ -7,7 +7,6 @@ import app.n_zik.android.appTextResources
 import app.n_zik.android.components.ui.screens.CollectionArtworkHeader
 import app.n_zik.android.components.ui.screens.CollectionPageStatus
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
-import android.content.Intent
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -104,13 +103,12 @@ import app.n_zik.android.models.SongAlbumMap
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.navigation.header.TabToolBar
 import app.n_zik.android.ui.components.themed.Enqueue
-import app.n_zik.android.components.ui.HeaderIconAction
+import app.n_zik.android.components.ui.screens.CollectionArtworkShareButton
 import app.n_zik.android.components.ui.CollectionButtonToolbar
 import app.n_zik.android.ui.components.themed.ItemsList
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
-import app.n_zik.android.ui.components.themed.HeaderIconButton
 import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.items.SongItemPlaceholder
 import app.n_zik.android.ui.items.SongItemPlaceholders
@@ -507,7 +505,6 @@ fun AlbumDetails(
 ) {
     PersistMapCleanup("album/$browseId/songs")
 
-    val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val lazyListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
@@ -686,32 +683,7 @@ fun AlbumDetails(
                                 isLoading = initialSongsLoading,
                                 fullWidthTitleShimmer = true,
                             ) {
-                                if (initialSongsLoading && album?.shareUrl == null) {
-                                    HeaderIconButton(
-                                        icon = R.drawable.share_social,
-                                        color = colorPalette().textDisabled,
-                                        iconSize = 24.dp,
-                                        enabled = false,
-                                        onClick = {},
-                                    )
-                                } else HeaderIconAction(
-                                    icon = R.drawable.share_social,
-                                    color = colorPalette().text,
-                                    iconSize = 24.dp,
-                                    onClick = {
-                                        album?.shareUrl?.let { url ->
-                                            val sendIntent = Intent().apply {
-                                                action = Intent.ACTION_SEND
-                                                type = "text/plain"
-                                                putExtra(Intent.EXTRA_TEXT, url)
-                                            }
-
-                                            context.startActivity(
-                                                Intent.createChooser(sendIntent, null)
-                                            )
-                                        }
-                                    }
-                                )
+                                CollectionArtworkShareButton(album?.shareUrl)
                             }
                         }
 

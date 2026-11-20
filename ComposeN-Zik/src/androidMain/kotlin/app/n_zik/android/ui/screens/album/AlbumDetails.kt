@@ -5,10 +5,10 @@ import androidx.compose.ui.draw.clip
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.ui.CollectionButtonToolbar
 import app.n_zik.android.components.ui.screens.CollectionArtworkHeader
+import app.n_zik.android.components.ui.screens.CollectionArtworkShareButton
 import app.n_zik.android.uiRoundnessShape
 
 
-import android.content.Intent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -40,7 +40,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.res.pluralStringResource
@@ -167,7 +166,6 @@ fun AlbumDetails(
     PersistMapCleanup( "album/${browseId}/songs" )
 
     // Essentials
-    val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val lazyListState = rememberLazyListState()
     val menuState = LocalMenuState.current
@@ -345,28 +343,8 @@ fun AlbumDetails(
                         disableScrollingText = disableScrollingText,
                         isLoading = initialSongsLoading,
                         fullWidthTitleShimmer = true,
-                        frameAction = false,
                     ) {
-                        val shareUrl = album?.shareUrl
-                        HeaderIconButton(
-                            icon = R.drawable.share_social,
-                            color = if (shareUrl == null && initialSongsLoading) colorPalette().textDisabled else colorPalette().text,
-                            iconSize = 24.dp,
-                            enabled = shareUrl != null || !initialSongsLoading,
-                            onClick = {
-                                shareUrl?.let { url ->
-                                    val sendIntent = Intent().apply {
-                                        action = Intent.ACTION_SEND
-                                        type = "text/plain"
-                                        putExtra(Intent.EXTRA_TEXT, url)
-                                    }
-
-                                    context.startActivity(
-                                        Intent.createChooser( sendIntent, null )
-                                    )
-                                }
-                            }
-                        )
+                        CollectionArtworkShareButton(album?.shareUrl)
                     }
                 }
 
