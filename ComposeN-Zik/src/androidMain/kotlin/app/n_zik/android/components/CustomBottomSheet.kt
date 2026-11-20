@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -20,7 +19,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.RoundRect
@@ -450,33 +448,11 @@ fun CustomBottomSheet(
             )
         }
 
-        // Main player content — always in composition, GPU-skipped when dragging down.
-        // NOT clipped here: the parent Box's graphicsLayer already clips to the
-
-        // animated card shape, so clipping again here would just rebuild the same
-        // Outline path a second time per frame for nothing.
-        val drawFullPlayer by remember(state) {
-            derivedStateOf { state.progress >= 0.3f && playerContentFade(state.progress) > 0.01f }
-        }
+        // The transparent layer records dirty content while collapsed, so opening does
+        // not have to build the first display list at the visible fade threshold.
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
-                // Player content fade-in (see playerContentFade); the mini-player
-                // fades out on its own, earlier curve (see miniPlayerFade).
-
-                // progress is read only inside these draw-phase lambdas, never in
-                // composition: a composition read would recompose this whole sheet
-
-                // on every frame of a drag or an animated pop/dismiss.
-                .drawWithContent {
-                    // Skip the (potentially heavy) draw entirely below the alpha
-                    // threshold instead of just setting alpha = 0, which still
-
-                    // records the full display list every frame.
-                    if (drawFullPlayer) {
-                        drawContent()
-                    }
-                }
                 .graphicsLayer {
                     val progress = state.progress
                     val fraction = playerContentFade(progress)

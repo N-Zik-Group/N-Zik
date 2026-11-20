@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
@@ -24,6 +25,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.ui.screens.player.PlayerSheetState
+import app.n_zik.android.ui.screens.player.collapsedAnchor
 import app.n_zik.android.ui.screens.player.rememberPlayerSheetState
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
@@ -60,6 +62,28 @@ import kotlin.math.abs
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class PlayerSheetGlassIntegrationTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `collapsed player records its content before the fade becomes visible`() {
+        var contentDraws = 0
+        compose.setContent {
+            val shape = RoundedCornerShape(16.dp)
+            CompositionLocalProvider(LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                Typography.fallback, shape, shape, shape)) {
+                val sheet = rememberPlayerSheetState(0.dp, 200.dp, 60.dp, collapsedAnchor)
+                Box(Modifier.size(200.dp).background(Color.Red).testTag("collapsed_scene")) {
+                    CustomBottomSheet(sheet, collapsedContent = {}) {
+                        Box(Modifier.size(200.dp).drawBehind {
+                            contentDraws++
+                            drawRect(Color.Blue)
+                        })
+                    }
+                }
+            }
+        }
+        val pixels = compose.onNodeWithTag("collapsed_scene").captureToImage().toPixelMap()
+        assertTrue("The player display list must be prepared at the collapsed anchor", contentDraws > 0)
+        assertTrue("Collapsed player content must remain transparent", pixels[pixels.width / 2, pixels.height * 85 / 100].red > .9f)
+    }
 
     @Test fun `real sheet keeps source and pixels continuous across endpoint and interrupted handoffs`() {
         compose.mainClock.autoAdvance = false

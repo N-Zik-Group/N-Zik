@@ -267,7 +267,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.n_zik.android.themed.n_zik.screen.player.ActionBar
-import com.mikepenz.hypnoticcanvas.shaderBackground
 import com.mikepenz.hypnoticcanvas.shaders.BlackCherryCosmos
 import com.mikepenz.hypnoticcanvas.shaders.GlossyGradients
 import com.mikepenz.hypnoticcanvas.shaders.GoldenMagma
@@ -309,6 +308,7 @@ import app.n_zik.android.components.menu.player.PlayerMenu
 import app.n_zik.android.components.menu.MenuDragHandleBar
 import app.n_zik.android.ui.components.themed.RotateThumbnailCoverAnimationModern
 import app.n_zik.android.components.dialog.common.ThumbnailOffsetDialog
+import app.n_zik.android.components.player.playerShaderBackground
 import app.n_zik.android.components.player.rememberPlayerDecorationElapsedNanos
 import app.n_zik.android.components.player.rememberCoverSpin
 import app.n_zik.android.components.player.rememberPlayerDecorationsActive
@@ -1060,8 +1060,9 @@ fun Player(
     var isQueuePanelVisible by remember { mutableStateOf(false) }
     var isQueueFullyCovering by remember { mutableStateOf(false) }
     val playerUnderlayCovered = playerQueueUnderlayCovered(inheritedUnderlayCovered, isQueuePanelVisible, isQueueFullyCovering)
-    val decorationsActive = rememberPlayerDecorationsActive(
-        playerContentVisible && !appRunningInBackground && !playerUnderlayCovered)
+    val playerExpanded = playerSheetState.isExpanded
+    val decorationsVisible = playerContentVisible && !appRunningInBackground && !playerUnderlayCovered
+    val decorationsActive = rememberPlayerDecorationsActive(playerExpanded && decorationsVisible)
     val playerTransition = LocalPlayerSheetGlassTransition.current
         ?: rememberPlayerSheetGlassTransition(playerSheetState)
     val blurAdjuster = BlurAdjuster()
@@ -1183,10 +1184,9 @@ fun Player(
     }
     val backdropTransitioning = !gradientSettled || !backdropSettled || (sampledTheme != null && color != sampledTheme) ||
         renderedBackdropReady == false
-    val samplePlayerBackground = !appRunningInBackground && !playerUnderlayCovered &&
-        (playerContentVisible || !contrastDecisionReady) && !backdropTransitioning
-    val sampleTransition = playerSheetState.isExpanded && playerContentVisible && !appRunningInBackground &&
-        !playerUnderlayCovered && backdropTransitioning && !waitForBlurredCover
+    val canSamplePlayer = playerExpanded && playerContentVisible && !appRunningInBackground && !playerUnderlayCovered
+    val samplePlayerBackground = canSamplePlayer && !backdropTransitioning
+    val sampleTransition = canSamplePlayer && backdropTransitioning && !waitForBlurredCover
     val captureGlassSource = playerGlassSourceCaptureActive(
         glassSettings, playerTransition, inheritedOpticsEnabled)
     val capturePlayerBackground = (samplePlayerBackground && !contrastDecisionReady) || sampleTransition || captureGlassSource
@@ -1484,9 +1484,7 @@ fun Player(
                         else -> error("Unexpected shader gradient: $type")
                     }
                     val shade = playerShaderWash(type, paletteDarkness())
-                    val background = if (decorationsActive && !appRunningInBackground)
-                        Modifier.shaderBackground(shader) else Modifier
-                    background.background(shade)
+                    Modifier.playerShaderBackground(shader, animationActive).background(shade)
                 }
             }
         }
