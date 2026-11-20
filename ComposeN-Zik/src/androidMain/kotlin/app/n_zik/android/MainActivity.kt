@@ -1,5 +1,26 @@
 package app.n_zik.android
 
+import app.n_zik.android.intents.consumeOpenPlayerExtras
+import app.n_zik.android.intents.consumeProfileShortcutExtra
+import app.n_zik.android.intents.consumeRewindDeckExtras
+import app.n_zik.android.intents.consumeRewindPlaylistExtras
+import app.n_zik.android.intents.DeferredLibraryIntents
+import app.n_zik.android.intents.DeliverHomeTabShortcut
+import app.n_zik.android.intents.DeliverLibraryUri
+import app.n_zik.android.intents.DeliverRewindTargets
+import app.n_zik.android.intents.DeliverSettingsShortcut
+import app.n_zik.android.intents.DrainDeferredLibraryIntents
+import app.n_zik.android.intents.initialLibraryUri
+import app.n_zik.android.intents.isSelfConsumedShortcutAction
+import app.n_zik.android.intents.LibraryLinkDestination
+import app.n_zik.android.intents.libraryLinkDestination
+import app.n_zik.android.intents.openPlayerTokenFromIntent
+import app.n_zik.android.intents.PendingLibraryNavigation
+import app.n_zik.android.intents.profileShortcutTarget
+import app.n_zik.android.intents.profileSwitchTarget
+import app.n_zik.android.intents.rewindDeckTargetFromIntent
+import app.n_zik.android.intents.rewindDeckTargetMarker
+import app.n_zik.android.intents.rewindPlaylistTargetFromIntent
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.ui.screens.player.components.LocalPlayerMusicVideo
 import app.n_zik.android.ui.screens.player.components.MusicVideoPresentation
@@ -351,7 +372,6 @@ import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
 import app.n_zik.android.utils.transitionEffectKey
 import app.n_zik.android.utils.useSystemFontKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -1851,74 +1871,20 @@ class MainActivity :
                     action_search -> OPEN_SEARCH_SHORTCUT
                     else -> -1
                 }
-                // Consuming (resetting) shortcutIntentAction synchronously during composition
-                // raced with HomeScreen's own LaunchedEffect(openTabFromShortcut): both the -1->X
-//
-                // and the immediate X->-1 recompositions could settle before that effect ever got
-                // to run, silently dropping the navigation (verified on-device). Resetting from an
-//
-                // effect instead -- same pattern as `intentUriData` below -- lets every consumer
-                // downstream observe the value for this composition pass before it's cleared.
-//
-                //
-                // A shortcut tapped while some other screen (search, an album, ...) is on top of
-                // the back stack never reached HomeScreen at all -- it isn't part of the
-//
-                // composition while a different destination is active, so its shortcut-handling
-//
-                // effects never ran (verified on-device: a tab shortcut tapped from the search
-                // screen did nothing). Popping back to home first, and only clearing the sentinel
-//
-                // once we've actually arrived there, gives HomeScreen a real chance to observe it.
-//
                 val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-                LaunchedEffect(shortcutIntentAction, libraryIntentDelivery, currentRoute) {
-                    if (shortcutIntentAction != null) {
-                        if (openTabFromShortcut == -1) {
-                            shortcutIntentAction = null
-                        } else if (currentRoute?.startsWith(NavRoutes.home.name) != true) {
-                            navController.popBackStack(NavRoutes.home.name, inclusive = false)
-                        }
-                    }
+                DeliverHomeTabShortcut(navController, shortcutIntentAction, openTabFromShortcut, libraryIntentDelivery, currentRoute) {
+                    shortcutIntentAction = null
                 }
-
-                // Rewind reminder notification: open the deck on the finished month (monthly)
-                // or the yearly deck on the finished year (yearly, month = 0 sentinel — extras
-//
-                // set in onCreate / onNewIntent by consumeRewindDeepLinks). Consumed from an
-//
-                // effect, like the shortcut above, so the navigation happens once the graph
-                // is composed. The gate is part of the key: while onboarding is up the
-//
-                // NavHost is not composed (empty graph — navigating would crash), so the
-//
-                // target is held until the flow completes and the effect re-runs.
-                LaunchedEffect(rewindDeckTarget, libraryIntentDelivery, onboardingStep == null) {
-                    if (onboardingStep != null) return@LaunchedEffect
-                    rewindDeckTarget?.let { (year, month) ->
-                        // rewindDeckRoute omits the month argument for the yearly target:
-                        // the route's default month=-1 maps to rewindMonth = null in
-//
-                        // RewindScreen, i.e. the year-only deck
-                        navController.navigate(rewindDeckRoute(year, month))
-                        rewindDeckTarget = null
-                    }
-                }
-
-                // Rewind playlist-ready notification: open the generated 'Rewind — <period>'
-                // playlist directly (spec GH-275 follow-up — renegotiated: the playlist
-//
-                // notifications deep-link, they are no longer a bare app open). Consumed from
-                // an effect, like the deck above: the navigation happens once the graph is
-//
-                // composed, and the onboarding gate holds the target until the flow completes.
-                LaunchedEffect(rewindPlaylistTarget, libraryIntentDelivery, onboardingStep == null) {
-                    if (onboardingStep != null) return@LaunchedEffect
-                    rewindPlaylistTarget?.let { playlistId ->
-                        navController.navigate("${NavRoutes.localPlaylist.name}/$playlistId")
-                        rewindPlaylistTarget = null
-                    }
-                }
+                DeliverRewindTargets(
+                    lifecycle = lifecycle,
+                    navController = navController,
+                    deck = rewindDeckTarget,
+                    playlist = rewindPlaylistTarget,
+                    delivery = libraryIntentDelivery,
+                    navigationReady = onboardingStep == null,
+                    onDeckDelivered = { rewindDeckTarget = null },
+                    onPlaylistDelivered = { rewindPlaylistTarget = null },
+                )
 
                 // "Now playing" notification tap — WARM start (spec-notification-click-opens-player):
                 // present the mini-player (if the sheet is dismissed) then deploy the full
@@ -1953,35 +1919,12 @@ class MainActivity :
                     }
                 }
 
-                // Generic « Profiles » launcher shortcut (spec-profile-shortcuts): open the
-                // profiles page once the graph is composed (cold: after the normal start).
-//
-                // Consumed from an effect, like the rewind targets above, and gated on
-                // onboarding the same way: while onboarding is up the NavHost is not
-//
-                // composed, so the target is held until the flow completes and the effect
-//
-                // re-runs. The direct per-profile shortcut does NOT navigate — it only
-//
-                // launches in (cold) or switches to (warm) its profile.
-                LaunchedEffect(openProfilesShortcut, libraryIntentDelivery, onboardingStep == null) {
-                    if (onboardingStep != null) return@LaunchedEffect
-                    if (openProfilesShortcut) {
-                        navController.navigate(NavRoutes.profiles.name)
-                        openProfilesShortcut = false
-                    }
-                }
-
-                // Debug-only backdoor: open the OTA updater screen (unreachable in debug
-                // builds, where IS_AUTOUPDATE is false). Gated on onboarding like the
-                // profiles effect above: the NavHost is not composed while onboarding is up.
-                LaunchedEffect(openUpdaterDebugShortcut, libraryIntentDelivery, onboardingStep == null) {
-                    if (onboardingStep != null) return@LaunchedEffect
-                    if (openUpdaterDebugShortcut) {
-                        navController.navigate(NavRoutes.updater.name)
-                        openUpdaterDebugShortcut = false
-                    }
-                }
+                DeliverSettingsShortcut(
+                    lifecycle, navController, NavRoutes.profiles, openProfilesShortcut, libraryIntentDelivery, onboardingStep == null,
+                ) { openProfilesShortcut = false }
+                DeliverSettingsShortcut(
+                    lifecycle, navController, NavRoutes.updater, openUpdaterDebugShortcut, libraryIntentDelivery, onboardingStep == null,
+                ) { openUpdaterDebugShortcut = false }
 
                 // One-time Samsung storage advice (spec-samsung-storage-advice-dialog):
                 // the effect re-runs only when its key (onboardingStep == null) changes;
@@ -2548,45 +2491,30 @@ class MainActivity :
                 }
             }
 
-            LaunchedEffect(onboardingStep == null, navController) {
-                if (onboardingStep != null) return@LaunchedEffect
-                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    navController.currentBackStackEntryFlow.first()
+            DrainDeferredLibraryIntents(
+                lifecycle = lifecycle,
+                navController = navController,
+                navigationReady = onboardingStep == null,
+                queue = deferredLaunchIntents,
+                awaitRestoredNavigation = {
                     if (awaitingDeferredNavigation) {
                         snapshotFlow(::libraryIntentConsumersIdle).first { it }
                         awaitingDeferredNavigation = false
                     }
-                    while (true) {
-                        deferredLaunchIntents.drain(::libraryIntentConsumersIdle, ::consumeNewLibraryIntent)
-                        snapshotFlow { deferredLaunchIntents.hasQueued }.first { it }
-                    }
-                }
-            }
-
-            // Same gate guard as the rewind reminder effect above: the NavHost is only
-            // composed once onboarding is done — a shared / deep-linked URL must not
-//
-            // navigate into an empty graph while the gate is up
-            LaunchedEffect(intentUriData, libraryIntentDelivery, onboardingStep == null) {
-                if (onboardingStep != null) return@LaunchedEffect
-                val uri = intentUriData ?: return@LaunchedEffect
-                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    if (intentUriData != uri) return@repeatOnLifecycle
-                    navController.currentBackStackEntryFlow.first()
-                    try {
-                        openLibraryUri(navController, uri)
-                    } catch (cancelled: CancellationException) {
-                        // The activity can resume or recreate with the same pending URI.
-                        throw cancelled
-                    } catch (error: Exception) {
-                        Timber.tag("MainActivity").e(error, "Could not handle a library link")
-                    }
-                    intentUriData = null
-                }
-            }
-
-
-            //throw RuntimeException("This is a simulated exception to crash");
+                },
+                consumersIdle = ::libraryIntentConsumersIdle,
+                dispatch = ::consumeNewLibraryIntent,
+            )
+            DeliverLibraryUri(
+                lifecycle = lifecycle,
+                navController = navController,
+                uri = intentUriData,
+                delivery = libraryIntentDelivery,
+                navigationReady = onboardingStep == null,
+                isStillPending = { uri, delivery -> intentUriData == uri && libraryIntentDelivery == delivery },
+                open = { openLibraryUri(navController, it) },
+                onDelivered = { intentUriData = null },
+            )
         }
     }
 

@@ -7,6 +7,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import app.n_zik.android.intents.libraryLinkDestination
+import app.n_zik.android.intents.LibraryLinkDestination
 import app.n_zik.android.enums.NavRoutes
 
 @RunWith(RobolectricTestRunner::class)

@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.screens.rewind
 
+import app.n_zik.android.intents.rewindDeckTargetFromIntent
 import app.n_zik.android.utils.writeProfileEntries
 import app.n_zik.android.core.profiles.ProfileWorkOwner
 import io.mockk.every
@@ -14,7 +15,6 @@ import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.MainActivity
 import app.n_zik.android.R
 import app.n_zik.android.core.notifications.channelId
-import app.n_zik.android.rewindDeckTargetFromIntent
 import app.n_zik.android.utils.DataStoreUtils
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking

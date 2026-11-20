@@ -1,4 +1,4 @@
-package app.n_zik.android
+package app.n_zik.android.intents
 
 import java.util.UUID
 

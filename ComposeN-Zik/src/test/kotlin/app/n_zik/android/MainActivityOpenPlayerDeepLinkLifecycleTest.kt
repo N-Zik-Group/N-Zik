@@ -1,5 +1,6 @@
 package app.n_zik.android
 
+import app.n_zik.android.intents.openPlayerTokenFromIntent
 import android.content.Intent
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

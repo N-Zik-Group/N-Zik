@@ -3,6 +3,9 @@ package app.n_zik.android
 import android.content.Context
 import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.intents.isSelfConsumedShortcutAction
+import app.n_zik.android.intents.profileShortcutTarget
+import app.n_zik.android.intents.profileSwitchTarget
 import app.n_zik.android.utils.DEFAULT_PROFILE_ID
 import app.n_zik.android.utils.PROFILE_NAMES_FILE_NAME
 import app.n_zik.android.utils.getActiveProfile

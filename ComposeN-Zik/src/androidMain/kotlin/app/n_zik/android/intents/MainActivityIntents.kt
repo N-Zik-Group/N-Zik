@@ -1,4 +1,4 @@
-package app.n_zik.android
+package app.n_zik.android.intents
 
 import android.content.Intent
 import android.net.Uri
@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.core.net.toUri
+import app.n_zik.android.MainActivity
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
 import app.n_zik.android.core.rewind.RewindPlaylists
