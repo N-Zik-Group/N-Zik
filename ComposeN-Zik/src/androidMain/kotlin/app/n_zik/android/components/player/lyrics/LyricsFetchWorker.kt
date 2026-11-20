@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 private const val TAG = "LyricsFetcher"
@@ -43,10 +42,8 @@ class LyricsFetchWorker(
     private val mediaDispatcher: CoroutineDispatcher = NzikDispatchers.MEDIA,
     private val uiDispatcher: CoroutineDispatcher = NzikDispatchers.UI,
     // Injection avoids mocking suspend functions returning Kotlin Result.
-    private val lrcLibLyrics: suspend (String, String, Duration, String?) -> Result<LrcLib.Lyrics?>? =
-        { artist, title, duration, album -> LrcLib.lyrics(artist, title, duration, album) },
-    private val lrcLibLyricsUnsynced: suspend (String, String, Duration, String?) -> Result<LrcLib.Lyrics?>? =
-        { artist, title, duration, album -> LrcLib.lyricsUnsynced(artist, title, duration, album) },
+    private val searchLrcLib: suspend (String, String, String?) -> Result<LrcLib.LyricsVariants>? =
+        LrcLib::searchLyrics,
     private val kuGouLyrics: suspend (String, String, Long) -> Result<KuGou.Lyrics?>? =
         { artist, title, duration -> KuGou.lyrics(artist, title, duration) },
     private val innertubeLyrics: suspend (String) -> Result<String?>? =
@@ -134,10 +131,18 @@ class LyricsFetchWorker(
                 } else {
                     null
                 }
+                val artist = artistName.orEmpty()
+                val trackTitle = title.orEmpty()
+                var lrcLibResponse: LrcLib.LyricsVariants? = null
+                val lrcLibLyrics: suspend () -> LrcLib.LyricsVariants? = {
+                    // Retry at the plain-text fallback if the previous search failed.
+                    lrcLibResponse ?: searchLrcLib(artist, trackTitle, album)?.getOrThrow()
+                        ?.also { lrcLibResponse = it }
+                }
                 var found = false
                 for ((index, lookup) in lookups.withIndex()) {
                     val lyrics = lookupLyrics(
-                        lookup, lyricsType, mediaId, artistName.orEmpty(), title.orEmpty(), album, duration
+                        lookup, lyricsType, mediaId, artist, trackTitle, album, duration, lrcLibLyrics
                     )?.takeUnless { refreshWordTimedCache && it.type != LyricsType.Karaoke.name }
                     currentCoroutineContext().ensureActive()
                     attempted.add(lookup)
@@ -229,21 +234,21 @@ class LyricsFetchWorker(
         artist: String,
         title: String,
         album: String?,
-        duration: Long
+        duration: Long,
+        lrcLibLyrics: suspend () -> LrcLib.LyricsVariants?,
     ): Lyrics? {
         val text = try {
             when (lookup) {
                 Lookup.BetterKaraoke, Lookup.BetterSynced -> fetchBetterLyrics(
                     artist, title, album, duration, synced = lookup == Lookup.BetterSynced
                 )
-                Lookup.LrcSynced -> lrcLibLyrics(artist, title, duration.milliseconds, album)?.getOrThrow()?.text
+                Lookup.LrcSynced -> lrcLibLyrics()?.synced?.text
                 Lookup.KuGouSynced -> if (duration > 0) {
                     kuGouLyrics(artist, cleanPrefix(title), duration / 1000)?.getOrThrow()?.value
                 } else {
                     null
                 }
-                Lookup.LrcUnsynced -> lrcLibLyricsUnsynced(artist, title, duration.milliseconds, album)
-                    ?.getOrThrow()?.let { lrc -> lrc.plainText.ifBlank { lrc.text } }
+                Lookup.LrcUnsynced -> lrcLibLyrics()?.plain?.let { lrc -> lrc.plainText.ifBlank { lrc.text } }
                 Lookup.YouTubeUnsynced -> innertubeLyrics(mediaId)?.getOrThrow()
             }
         } catch (timeout: TimeoutCancellationException) {

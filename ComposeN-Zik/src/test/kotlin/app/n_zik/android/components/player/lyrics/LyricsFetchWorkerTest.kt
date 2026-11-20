@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -63,13 +64,13 @@ class LyricsFetchWorkerTest {
 
     // constructor-injected lambdas (like its dispatcher params), so tests control them
     // as plain values and call counts below, without MockK touching those functions.
-    private var lrcLibLyricsResult: Result<LrcLib.Lyrics?>? = Result.success(null)
-    private var lrcLibLyricsUnsyncedResult: Result<LrcLib.Lyrics?>? = Result.success(null)
+    private var lrcLibResponse: suspend () -> Result<LrcLib.LyricsVariants>? =
+        { Result.success(LrcLib.LyricsVariants(null, null)) }
+    private val providerCalls = mutableListOf<LyricsProvider>()
     private var kuGouLyricsResult: Result<KuGou.Lyrics?>? = Result.success(null)
     private var innertubeLyricsResult: Result<String?>? = Result.success(null)
 
-    private var lrcLibLyricsCalls = 0
-    private var lrcLibLyricsUnsyncedCalls = 0
+    private var lrcLibSearchCalls = 0
     private var kuGouLyricsCalls = 0
     private var innertubeLyricsCalls = 0
 
@@ -97,12 +98,11 @@ class LyricsFetchWorkerTest {
         mockkObject(BetterLyrics)
         coEvery { BetterLyrics.fetchTTML(any(), any(), any(), any()) } returns null
 
-        lrcLibLyricsResult = Result.success(null)
-        lrcLibLyricsUnsyncedResult = Result.success(null)
+        lrcLibResponse = { Result.success(LrcLib.LyricsVariants(null, null)) }
+        providerCalls.clear()
         kuGouLyricsResult = Result.success(null)
         innertubeLyricsResult = Result.success(null)
-        lrcLibLyricsCalls = 0
-        lrcLibLyricsUnsyncedCalls = 0
+        lrcLibSearchCalls = 0
         kuGouLyricsCalls = 0
         innertubeLyricsCalls = 0
     }
@@ -120,9 +120,16 @@ class LyricsFetchWorkerTest {
         dataDispatcher = StandardTestDispatcher(scheduler),
         mediaDispatcher = mediaDispatcher,
         uiDispatcher = StandardTestDispatcher(scheduler),
-        lrcLibLyrics = { _, _, _, _ -> lrcLibLyricsCalls++; lrcLibLyricsResult },
-        lrcLibLyricsUnsynced = { _, _, _, _ -> lrcLibLyricsUnsyncedCalls++; lrcLibLyricsUnsyncedResult },
-        kuGouLyrics = { _, _, _ -> kuGouLyricsCalls++; kuGouLyricsResult },
+        searchLrcLib = { _, _, _ ->
+            providerCalls += LyricsProvider.LrcLib
+            lrcLibSearchCalls++
+            lrcLibResponse()
+        },
+        kuGouLyrics = { _, _, _ ->
+            providerCalls += LyricsProvider.KuGou
+            kuGouLyricsCalls++
+            kuGouLyricsResult
+        },
         innertubeLyrics = { _ -> innertubeLyricsCalls++; innertubeLyricsResult }
     )
 
@@ -157,14 +164,14 @@ class LyricsFetchWorkerTest {
     fun `unsynced path saves LrcLib unsynced lyrics and skips other sources`() = runTest {
         setupMocks()
         resetGlobals()
-        lrcLibLyricsUnsyncedResult = Result.success(LrcLib.Lyrics("plain lyrics text"))
+        lrcLibResponse = { Result.success(LrcLib.LyricsVariants(null, LrcLib.Lyrics("plain lyrics text"))) }
 
         fetch(worker(testScheduler), LyricsType.Unsynced)
 
         assertEquals(1, upserts.size)
         assertEquals(LyricsType.Unsynced.name, upserts.first().type)
         assertEquals("plain lyrics text", upserts.first().data)
-        assertEquals(1, lrcLibLyricsUnsyncedCalls)
+        assertEquals(1, lrcLibSearchCalls)
         assertEquals(0, kuGouLyricsCalls)
         assertEquals(0, innertubeLyricsCalls)
         coVerify(exactly = 0) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
@@ -213,7 +220,7 @@ class LyricsFetchWorkerTest {
 
         assertTrue(fetchJob.isCancelled)
         coVerify(exactly = 0) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
-        assertEquals(0, lrcLibLyricsCalls)
+        assertEquals(0, lrcLibSearchCalls)
         assertEquals(0, kuGouLyricsCalls)
         assertEquals(0, upserts.size)
         assertEquals(null, globalLastKaraokeAttemptMediaId)
@@ -293,14 +300,14 @@ class LyricsFetchWorkerTest {
         assertEquals(1, upserts.size)
         assertEquals(LyricsType.Synced.name, upserts.first().type)
         assertTrue(upserts.first().data.orEmpty().contains("[00:01.00]Hello world"))
-        assertEquals(0, lrcLibLyricsCalls)
+        assertEquals(0, lrcLibSearchCalls)
     }
 
     @Test
     fun `unsynced fallback uses YouTube when LrcLib fails`() = runTest {
         setupMocks()
         resetGlobals()
-        lrcLibLyricsUnsyncedResult = Result.failure(Exception("lrc down"))
+        lrcLibResponse = { Result.failure(Exception("lrc down")) }
         innertubeLyricsResult = Result.success("youtube lyrics")
 
         fetch(worker(testScheduler), LyricsType.Unsynced)
@@ -316,7 +323,7 @@ class LyricsFetchWorkerTest {
         setupMocks()
         resetGlobals()
         val kugouText = "[00:01.00]Hello\n[00:02.00]World"
-        lrcLibLyricsResult = Result.failure(Exception("lrc down"))
+        lrcLibResponse = { Result.failure(Exception("lrc down")) }
         kuGouLyricsResult = Result.success(KuGou.Lyrics(kugouText))
 
         fetch(worker(testScheduler), LyricsType.Synced)
@@ -337,8 +344,7 @@ class LyricsFetchWorkerTest {
         // Only the Unsynced check is active in this mode, and the edited row's own check is off.
         fetch(worker(testScheduler), LyricsType.Unsynced)
 
-        assertEquals(0, lrcLibLyricsCalls)
-        assertEquals(0, lrcLibLyricsUnsyncedCalls)
+        assertEquals(0, lrcLibSearchCalls)
         assertEquals(0, kuGouLyricsCalls)
         assertEquals(0, innertubeLyricsCalls)
         coVerify(exactly = 0) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
@@ -362,7 +368,7 @@ class LyricsFetchWorkerTest {
         fetch(worker(testScheduler), LyricsType.Karaoke)
 
         coVerify(exactly = 0) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
-        assertEquals(0, lrcLibLyricsCalls)
+        assertEquals(0, lrcLibSearchCalls)
         assertEquals(0, upserts.size)
         assertEquals(edited, lyricsUpdates.last())
     }
@@ -371,7 +377,7 @@ class LyricsFetchWorkerTest {
     fun `fetch stamps lastFetchedAt on the written row`() = runTest {
         setupMocks()
         resetGlobals()
-        lrcLibLyricsUnsyncedResult = Result.success(LrcLib.Lyrics("plain lyrics text"))
+        lrcLibResponse = { Result.success(LrcLib.LyricsVariants(null, LrcLib.Lyrics("plain lyrics text"))) }
 
         val before = System.currentTimeMillis()
         fetch(worker(testScheduler), LyricsType.Unsynced)
@@ -438,9 +444,8 @@ class LyricsFetchWorkerTest {
         assertEquals(listOf(expired, expired), lyricsUpdates)
         assertTrue(upserts.isEmpty())
         coVerify(exactly = 1) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
-        assertEquals(0, lrcLibLyricsCalls)
+        assertEquals(0, lrcLibSearchCalls)
         assertEquals(0, kuGouLyricsCalls)
-        assertEquals(0, lrcLibLyricsUnsyncedCalls)
         assertEquals(0, innertubeLyricsCalls)
     }
 
@@ -460,9 +465,8 @@ class LyricsFetchWorkerTest {
 
         assertEquals(fresh, lyricsUpdates.single())
         coVerify(exactly = 0) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
-        assertEquals(0, lrcLibLyricsCalls)
+        assertEquals(0, lrcLibSearchCalls)
         assertEquals(0, kuGouLyricsCalls)
-        assertEquals(0, lrcLibLyricsUnsyncedCalls)
         assertEquals(0, innertubeLyricsCalls)
         assertTrue(upserts.isEmpty())
     }
@@ -480,9 +484,8 @@ class LyricsFetchWorkerTest {
         assertEquals(listOf(fresh, fresh), lyricsUpdates)
         assertEquals(listOf(false, false), fetchingStates)
         coVerify(exactly = 0) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
-        assertEquals(0, lrcLibLyricsCalls)
+        assertEquals(0, lrcLibSearchCalls)
         assertEquals(0, kuGouLyricsCalls)
-        assertEquals(0, lrcLibLyricsUnsyncedCalls)
         assertEquals(0, innertubeLyricsCalls)
         assertTrue(upserts.isEmpty())
     }
@@ -494,12 +497,11 @@ class LyricsFetchWorkerTest {
         val stored = Lyrics("song1", LyricsType.Unsynced.name, "my stored lyrics") // unstamped, not edited
         every { lyricsDao.findAllBySongId(any()) } returns flowOf(listOf(stored))
         every { lyricsDao.findBySongIdAndType("song1", LyricsType.Unsynced.name) } returns flowOf(stored)
-        lrcLibLyricsUnsyncedResult = Result.success(null) // no lyrics at the source
 
         fetch(worker(testScheduler), LyricsType.Unsynced)
 
         assertTrue(upserts.isEmpty()) // the empty result must not clear the stored row
-        assertEquals(1, lrcLibLyricsUnsyncedCalls)
+        assertEquals(1, lrcLibSearchCalls)
     }
 
     @Test
@@ -520,14 +522,14 @@ class LyricsFetchWorkerTest {
     fun `fetched lyrics do not overwrite an edit saved while the fetch was in flight`() = runTest {
         setupMocks()
         resetGlobals()
-        lrcLibLyricsUnsyncedResult = Result.success(LrcLib.Lyrics("fetched text"))
+        lrcLibResponse = { Result.success(LrcLib.LyricsVariants(null, LrcLib.Lyrics("fetched text"))) }
         // The emission the fetch decided on held no lyrics; the edit lands before the write.
         every { lyricsDao.findBySongIdAndType("song1", LyricsType.Unsynced.name) } returns
             flowOf(Lyrics("song1", LyricsType.Unsynced.name, "my own text", isEdited = true))
 
         fetch(worker(testScheduler), LyricsType.Unsynced)
 
-        assertEquals(1, lrcLibLyricsUnsyncedCalls)
+        assertEquals(1, lrcLibSearchCalls)
         assertEquals(0, upserts.size)
     }
 
@@ -535,7 +537,7 @@ class LyricsFetchWorkerTest {
     fun `fetched lyrics replace a stored row that is edited but emptied`() = runTest {
         setupMocks()
         resetGlobals()
-        lrcLibLyricsUnsyncedResult = Result.success(LrcLib.Lyrics("fetched text"))
+        lrcLibResponse = { Result.success(LrcLib.LyricsVariants(null, LrcLib.Lyrics("fetched text"))) }
         every { lyricsDao.findBySongIdAndType("song1", LyricsType.Unsynced.name) } returns
             flowOf(Lyrics("song1", LyricsType.Unsynced.name, "", isEdited = true))
 
@@ -547,20 +549,73 @@ class LyricsFetchWorkerTest {
     }
 
     @Test
-    fun `Auto skips disabled providers and continues from a blank synced result`() = runTest {
+    fun `Auto prioritizes KuGou synced over LRCLIB plain text`() = runTest {
         setupMocks()
         resetGlobals()
-        lrcLibLyricsResult = Result.success(LrcLib.Lyrics(" "))
+        lrcLibResponse = {
+            Result.success(LrcLib.LyricsVariants(LrcLib.Lyrics(" "), LrcLib.Lyrics("Untimed lyrics")))
+        }
         val timedLyrics = "[00:01.00]Hello"
         kuGouLyricsResult = Result.success(KuGou.Lyrics(timedLyrics))
 
         fetch(worker(testScheduler), LyricsType.Auto, setOf(LyricsProvider.LrcLib, LyricsProvider.KuGou))
 
         coVerify(exactly = 0) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
-        assertEquals(1, lrcLibLyricsCalls)
+        assertEquals(listOf(LyricsProvider.LrcLib, LyricsProvider.KuGou), providerCalls)
+        assertEquals(1, lrcLibSearchCalls)
         assertEquals(1, kuGouLyricsCalls)
-        assertEquals(0, lrcLibLyricsUnsyncedCalls)
         assertEquals(timedLyrics, upserts.single().data)
+    }
+
+    @Test
+    fun `Auto reuses the successful LRCLIB response for plain text after KuGou misses`() = runTest {
+        setupMocks()
+        resetGlobals()
+        lrcLibResponse = {
+            Result.success(LrcLib.LyricsVariants(null, LrcLib.Lyrics("Untimed lyrics")))
+        }
+
+        fetch(worker(testScheduler), LyricsType.Auto, setOf(LyricsProvider.LrcLib, LyricsProvider.KuGou))
+
+        assertEquals(listOf(LyricsProvider.LrcLib, LyricsProvider.KuGou), providerCalls)
+        assertEquals(1, lrcLibSearchCalls)
+        assertEquals(LyricsType.Unsynced.name, upserts.single().type)
+        assertEquals("Untimed lyrics", upserts.single().data)
+    }
+
+    @Test
+    fun `Auto retries a failed LRCLIB search after KuGou misses`() = runTest {
+        setupMocks()
+        resetGlobals()
+        lrcLibResponse = {
+            if (lrcLibSearchCalls == 1) Result.failure(Exception("LRCLIB unavailable"))
+            else Result.success(LrcLib.LyricsVariants(null, LrcLib.Lyrics("Untimed lyrics")))
+        }
+
+        fetch(worker(testScheduler), LyricsType.Auto, setOf(LyricsProvider.LrcLib, LyricsProvider.KuGou))
+
+        assertEquals(listOf(LyricsProvider.LrcLib, LyricsProvider.KuGou, LyricsProvider.LrcLib), providerCalls)
+        assertEquals(LyricsType.Unsynced.name, upserts.single().type)
+        assertEquals("Untimed lyrics", upserts.single().data)
+    }
+
+    @Test
+    fun `Auto reaches YouTube after both LRCLIB searches time out`() = runTest {
+        setupMocks()
+        resetGlobals()
+        lrcLibResponse = {
+            withTimeout(1) {
+                delay(2)
+                Result.success(LrcLib.LyricsVariants(null, null))
+            }
+        }
+        innertubeLyricsResult = Result.success("YouTube lyrics")
+
+        fetch(worker(testScheduler), LyricsType.Auto, setOf(LyricsProvider.LrcLib, LyricsProvider.KuGou, LyricsProvider.YouTube))
+
+        assertEquals(listOf(LyricsProvider.LrcLib, LyricsProvider.KuGou, LyricsProvider.LrcLib), providerCalls)
+        assertEquals(1, innertubeLyricsCalls)
+        assertEquals("YouTube lyrics", upserts.single().data)
     }
 
     @Test
@@ -572,8 +627,7 @@ class LyricsFetchWorkerTest {
 
         fetch(worker(testScheduler), LyricsType.Auto, setOf(LyricsProvider.KuGou, LyricsProvider.YouTube))
 
-        assertEquals(0, lrcLibLyricsCalls)
-        assertEquals(0, lrcLibLyricsUnsyncedCalls)
+        assertEquals(0, lrcLibSearchCalls)
         assertEquals(1, kuGouLyricsCalls)
         assertEquals(1, innertubeLyricsCalls)
         assertEquals(LyricsType.Unsynced.name, upserts.single().type)
@@ -595,17 +649,15 @@ class LyricsFetchWorkerTest {
     }
 
     @Test
-    fun `Sync with only LrcLib enabled neither invokes other sources nor requests plain text`() = runTest {
+    fun `Sync with only LrcLib enabled ignores plain text`() = runTest {
         setupMocks()
         resetGlobals()
-        lrcLibLyricsResult = Result.success(null)
-        lrcLibLyricsUnsyncedResult = Result.success(LrcLib.Lyrics("Untimed lyrics"))
+        lrcLibResponse = { Result.success(LrcLib.LyricsVariants(null, LrcLib.Lyrics("Untimed lyrics"))) }
 
         fetch(worker(testScheduler), LyricsType.Synced, setOf(LyricsProvider.LrcLib))
 
         coVerify(exactly = 0) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
-        assertEquals(1, lrcLibLyricsCalls)
-        assertEquals(0, lrcLibLyricsUnsyncedCalls)
+        assertEquals(1, lrcLibSearchCalls)
         assertEquals(0, kuGouLyricsCalls)
         assertEquals(0, innertubeLyricsCalls)
         assertTrue(upserts.isEmpty())
@@ -615,7 +667,7 @@ class LyricsFetchWorkerTest {
     fun `provider cancellation stops Auto before the next source`() = runTest {
         setupMocks()
         resetGlobals()
-        lrcLibLyricsResult = Result.failure(CancellationException("cancelled"))
+        lrcLibResponse = { Result.failure(CancellationException("cancelled")) }
 
         val fetchJob = launch {
             fetch(worker(testScheduler), LyricsType.Auto, setOf(LyricsProvider.LrcLib, LyricsProvider.KuGou))
@@ -623,7 +675,7 @@ class LyricsFetchWorkerTest {
         fetchJob.join()
 
         assertTrue(fetchJob.isCancelled)
-        assertEquals(1, lrcLibLyricsCalls)
+        assertEquals(1, lrcLibSearchCalls)
         assertEquals(0, kuGouLyricsCalls)
         assertTrue(upserts.isEmpty())
     }
@@ -714,15 +766,14 @@ class LyricsFetchWorkerTest {
         val fresh = Lyrics("song1", LyricsType.Unsynced.name, "Fresh", lastFetchedAt = System.currentTimeMillis())
         every { lyricsDao.findAllBySongId(any()) } returns flowOf(listOf(fresh))
         val syncedLyrics = "[00:01.00]New lyrics"
-        lrcLibLyricsResult = Result.success(LrcLib.Lyrics(syncedLyrics))
+        lrcLibResponse = { Result.success(LrcLib.LyricsVariants(LrcLib.Lyrics(syncedLyrics), null)) }
 
         fetch(worker(testScheduler), LyricsType.Auto, setOf(LyricsProvider.LrcLib, LyricsProvider.KuGou), forceAutoRetry = true)
 
         assertEquals(fresh, lyricsUpdates.single())
         assertEquals(syncedLyrics, upserts.single().data)
-        assertEquals(1, lrcLibLyricsCalls)
+        assertEquals(1, lrcLibSearchCalls)
         assertEquals(0, kuGouLyricsCalls)
-        assertEquals(0, lrcLibLyricsUnsyncedCalls)
     }
 
     @Test

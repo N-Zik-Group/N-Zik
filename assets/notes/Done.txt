@@ -22,6 +22,8 @@ Improved:
   - Use one source file for image URL sizing and quality resolution.
 - perf(library): remove redundant row and sort observers
   - Collect one alphabetical sort on device and keep download observation in the visible search row.
+- perf(lyrics): reuse LRCLIB search results during fallback
+  - Keep provider priority and failure retries while reusing synced and plain fields from a successful response.
 - perf(player): prepare the full player before opening
   - Keep the display list warm at the collapsed anchor, pause decorations during sheet travel and defer contrast sampling until expansion settles.
 - perf(playback): batch bridge queue and radio lookups

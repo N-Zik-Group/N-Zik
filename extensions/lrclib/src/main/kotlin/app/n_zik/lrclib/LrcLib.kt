@@ -96,25 +96,31 @@ object LrcLib {
             if (album != null) parameter("album_name", album)
         }.body<List<Track>>() //.filter { it.syncedLyrics != null }
 
+    data class LyricsVariants(val synced: Lyrics?, val plain: Lyrics?)
+
+    /** Reads both lyric formats from the same first matching track. */
+    suspend fun searchLyrics(artist: String, title: String, album: String?): Result<LyricsVariants>? =
+        runCatchingCancellable {
+            val track = queryLyrics(artist, title, album).first()
+            LyricsVariants(
+                synced = track.syncedLyrics?.let(LrcLib::Lyrics),
+                plain = track.plainLyrics?.let(LrcLib::Lyrics),
+            )
+        }
+
     suspend fun lyrics(
         artist: String,
         title: String,
         duration: Duration,
         album: String? = null
-    ) = runCatchingCancellable {
-        val tracks = queryLyrics(artist, title, album)
-        tracks.first().syncedLyrics?.let(LrcLib::Lyrics)
-    }
+    ) = searchLyrics(artist, title, album)?.map { it.synced }
 
     suspend fun lyricsUnsynced(
         artist: String,
         title: String,
         duration: Duration,
         album: String? = null
-    ) = runCatchingCancellable {
-        val tracks = queryLyrics(artist, title, album)
-        tracks.first().plainLyrics?.let(LrcLib::Lyrics)
-    }
+    ) = searchLyrics(artist, title, album)?.map { it.plain }
 
     suspend fun lyrics(artist: String, title: String) = runCatchingCancellable {
         queryLyrics(artist = artist, title = title, album = null)
