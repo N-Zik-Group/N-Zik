@@ -2575,46 +2575,26 @@ class MainActivity :
 
     @OptIn(UnstableApi::class)
     private suspend fun openLibraryUri(navController: NavController, uri: Uri) {
-        if (uri.scheme == "nzik" && uri.host == "theme") {
-            val segments = uri.pathSegments
-            val id = segments.firstOrNull()
-            val revision = segments.getOrNull(1)?.toIntOrNull()
-            if (segments.size == 2 && id != null && revision != null && revision > 0 &&
-                runCatching { java.util.UUID.fromString(id).toString() == id }.getOrDefault(false)
-            ) {
-                navController.navigate("${NavRoutes.themeStoreDetail.name}/$id/$revision") {
-                    launchSingleTop = true
-                }
-            }
-            return
-        }
-        parseListenTogetherInvite(uri)?.let { roomCode ->
-            openListenTogetherInvite(navController, roomCode)
-            return
+        val destination = libraryLinkDestination(uri)
+        if (destination !is LibraryLinkDestination.Theme && destination !is LibraryLinkDestination.Invite) {
+            Toaster.n(
+                getString(R.string.common_external_link_loading_format, BuildConfig.APP_NAME),
+                duration = Toast.LENGTH_LONG,
+            )
         }
 
-        Toaster.n(
-            getString(R.string.common_external_link_loading_format, BuildConfig.APP_NAME),
-            duration = Toast.LENGTH_LONG,
-        )
-
-        when (val path = uri.pathSegments.firstOrNull()) {
-            "playlist" -> uri.getQueryParameter("list")?.let { playlistId ->
-                val browseId = "VL$playlistId"
-                if (playlistId.startsWith("OLAK5uy_")) {
-                    val albumId = Innertube.playlistPage(browseId = browseId)
-                        ?.getOrNull()?.songsPage?.items?.firstOrNull()?.album?.endpoint?.browseId
-                    if (albumId != null) navController.navigate("${NavRoutes.album.name}/$albumId")
-                } else {
-                    navController.navigate("${NavRoutes.playlist.name}/$browseId")
-                }
+        when (destination) {
+            is LibraryLinkDestination.Theme -> destination.route?.let { route ->
+                navController.navigate(route) { launchSingleTop = true }
             }
-
-            "channel", "c" -> uri.lastPathSegment?.let { navController.navigate("${NavRoutes.artist.name}/$it") }
-            "search" -> uri.getQueryParameter("q")?.let { navController.navigate("${NavRoutes.searchResults.name}/$it") }
-            "localPlaylist" -> uri.lastPathSegment?.let { navController.navigate("${NavRoutes.localPlaylist.name}/$it") }
-            "album" -> uri.lastPathSegment?.let { navController.navigate("${NavRoutes.album.name}/$it") }
-            "playFavorites" -> {
+            is LibraryLinkDestination.Invite -> openListenTogetherInvite(navController, destination.roomCode)
+            is LibraryLinkDestination.Route -> navController.navigate(destination.route)
+            is LibraryLinkDestination.RemoteAlbum -> {
+                val albumId = Innertube.playlistPage(browseId = destination.playlistBrowseId)
+                    ?.getOrNull()?.songsPage?.items?.firstOrNull()?.album?.endpoint?.browseId
+                if (albumId != null) navController.navigate("${NavRoutes.album.name}/$albumId")
+            }
+            LibraryLinkDestination.Favorites -> {
                 val mediaItems = withContext(NzikDispatchers.DATA) {
                     Database.songTable.allFavorites().first().map { it.asMediaItem }
                 }
@@ -2623,13 +2603,8 @@ class MainActivity :
                     validBinder.player.forcePlayFromBeginning(mediaItems)
                 }
             }
-
-            else -> when {
-                path == "watch" -> uri.getQueryParameter("v")
-                uri.host == "youtu.be" -> path
-                else -> null
-            }?.let { videoId ->
-                val song = Innertube.song(videoId)?.getOrNull() ?: return
+            is LibraryLinkDestination.Video -> {
+                val song = Innertube.song(destination.id)?.getOrNull() ?: return
                 val validBinder = snapshotFlow { binder }.filterNotNull().first()
                 if (song.explicit && preferences.getBoolean(parentalControlEnabledKey, false)) {
                     Toaster.w(R.string.parental_control_is_enabled)
@@ -2637,9 +2612,9 @@ class MainActivity :
                     validBinder.player.forcePlay(song.asMediaItem)
                 }
             }
+            LibraryLinkDestination.Unsupported -> Unit
         }
     }
-
 
     override fun onResume() {
         super.onResume()
