@@ -79,7 +79,7 @@ import app.n_zik.android.core.notifications.cancelProfileNotifications
 import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.core.profiles.profileSharedItems
 import app.n_zik.android.core.notifications.ensureProfileChannels
-import app.n_zik.android.core.notifications.recreateProfileChannels
+import app.n_zik.android.core.notifications.renameProfileChannels
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.download.services.MyDownloadService
 import app.n_zik.android.playback.services.PlayerServiceModern
@@ -367,19 +367,20 @@ fun ProfileScreen(
             onDismiss = { showAddPopup = false },
             onSetValue = { name ->
                 val trimmedName = name.trim()
-                val created = DatabaseRestoreJournal.withProfileStorageMutation(context) {
+                val createdProfileId = DatabaseRestoreJournal.withProfileStorageMutation(context) {
                     val ids = context.readProfileIds()
                     if (!isProfileNameValid(trimmedName, context.takenProfileNames(ids, defaultName))) {
-                        return@withProfileStorageMutation false
+                        return@withProfileStorageMutation null
                     }
                     val id = generateSequence { "profile-${UUID.randomUUID()}" }.first { it !in ids }
                     if (!context.writeProfileEntries(context.currentProfileEntries() + (id to trimmedName))) {
-                        return@withProfileStorageMutation false
+                        return@withProfileStorageMutation null
                     }
                     context.saveProfileDisplayName(id, trimmedName)
-                    true
+                    id
                 }
-                if (created) {
+                if (createdProfileId != null) {
+                    ensureProfileChannels(context, createdProfileId)
                     // The new profile's direct shortcut must appear in the launcher right away
                     // (spec-profile-shortcuts: the shortcut set is re-registered after
                     //
@@ -429,12 +430,7 @@ fun ProfileScreen(
                         //
                         // re-register so the launcher shows the new name right away (spec-profile-shortcuts).
                         registerAppShortcuts(context)
-                        // The channel labels carry the display name ("Player — Work"); Android
-                        // channel names are immutable, so the rename is applied by deleting +
-                        //
-                        // re-creating the profile's 6 channels (a no-op for the base, whose
-                        // channels keep their base name) (spec per-profile-notifications).
-                        recreateProfileChannels(context, profileToRename)
+                        renameProfileChannels(context, profileToRename)
                         // The initials can change: let the always-composed header re-resolve it.
                         profileFaceUpdateTrigger++
                         refresh++

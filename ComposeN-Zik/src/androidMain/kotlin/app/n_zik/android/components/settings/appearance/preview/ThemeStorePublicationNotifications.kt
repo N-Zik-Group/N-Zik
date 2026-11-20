@@ -1,6 +1,5 @@
 package app.n_zik.android.components.settings.appearance.preview
 
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
@@ -10,28 +9,27 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import app.n_zik.android.R
+import app.n_zik.android.core.notifications.THEME_STORE_PUBLICATIONS_CHANNEL_ID
+import app.n_zik.android.core.notifications.ensureStartupNotificationChannel
 import app.n_zik.android.MainActivity
 import timber.log.Timber
 import app.n_zik.android.components.settings.accounts.GitHubAccount
 
 private val publicationNotificationLock = Any()
 
-internal fun notifyThemeStoreAlerts(context: Context, library: ThemeStoreLibrary, themes: List<StoreTheme>) {
+internal fun notifyThemeStoreAlerts(context: Context, library: ThemeStoreLibrary, themes: List<StoreTheme>, profileId: String) {
     synchronized(publicationNotificationLock) {
-        notifyThemePublications(context, library, themes)
-        notifyDownloadedThemeUpdates(context, library, themes)
-        GitHubAccount.userId(context)?.let { notifyOwnThemePublications(context, it, themes) }
+        notifyThemePublications(context, library, themes, profileId)
+        notifyDownloadedThemeUpdates(context, library, themes, profileId)
+        GitHubAccount.userId(context)?.let { notifyOwnThemePublications(context, it, themes, profileId) }
     }
 }
 
-private fun notifyDownloadedThemeUpdates(context: Context, library: ThemeStoreLibrary, themes: List<StoreTheme>) {
+private fun notifyDownloadedThemeUpdates(context: Context, library: ThemeStoreLibrary, themes: List<StoreTheme>, profileId: String) {
     if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
     val manager = context.getSystemService(NotificationManager::class.java) ?: return
-    val channel = "theme_store_publications"
+    val channel = ensureStartupNotificationChannel(context, THEME_STORE_PUBLICATIONS_CHANNEL_ID, profileId)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        manager.createNotificationChannel(NotificationChannel(
-            channel, context.getString(R.string.theme_store_publications), NotificationManager.IMPORTANCE_DEFAULT,
-        ))
         if (manager.getNotificationChannel(channel)?.importance == NotificationManager.IMPORTANCE_NONE) return
     }
     for (theme in library.downloadedThemeUpdates(themes, ThemeUpdateMode.Notify)) {
@@ -56,14 +54,11 @@ private fun notifyDownloadedThemeUpdates(context: Context, library: ThemeStoreLi
     }
 }
 
-private fun notifyOwnThemePublications(context: Context, id: Long, themes: List<StoreTheme>) {
+private fun notifyOwnThemePublications(context: Context, id: Long, themes: List<StoreTheme>, profileId: String) {
     if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
     val manager = context.getSystemService(NotificationManager::class.java) ?: return
-    val channel = "theme_store_publications"
+    val channel = ensureStartupNotificationChannel(context, THEME_STORE_PUBLICATIONS_CHANNEL_ID, profileId)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        manager.createNotificationChannel(NotificationChannel(
-            channel, context.getString(R.string.theme_store_publications), NotificationManager.IMPORTANCE_DEFAULT,
-        ))
         if (manager.getNotificationChannel(channel)?.importance == NotificationManager.IMPORTANCE_NONE) return
     }
     val prefs = context.getSharedPreferences("theme_creator_publications", Context.MODE_PRIVATE)
@@ -92,14 +87,11 @@ private fun notifyOwnThemePublications(context: Context, id: Long, themes: List<
     saved.putBoolean("initialized:$id", true).apply()
 }
 
-private fun notifyThemePublications(context: Context, library: ThemeStoreLibrary, themes: List<StoreTheme>) {
+private fun notifyThemePublications(context: Context, library: ThemeStoreLibrary, themes: List<StoreTheme>, profileId: String) {
     if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
     val manager = context.getSystemService(NotificationManager::class.java) ?: return
-    val channel = "theme_store_publications"
+    val channel = ensureStartupNotificationChannel(context, THEME_STORE_PUBLICATIONS_CHANNEL_ID, profileId)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        manager.createNotificationChannel(NotificationChannel(
-            channel, context.getString(R.string.theme_store_publications), NotificationManager.IMPORTANCE_DEFAULT,
-        ))
         if (manager.getNotificationChannel(channel)?.importance == NotificationManager.IMPORTANCE_NONE) return
     }
     for (theme in library.newPublications(themes)) {

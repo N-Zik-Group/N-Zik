@@ -1,20 +1,22 @@
 package app.n_zik.android.components.settings.appearance.preview
 
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import app.n_zik.android.R
+import app.n_zik.android.core.notifications.THEME_STORE_PREVIEW_GENERATION_CHANNEL_ID
+import app.n_zik.android.core.notifications.ensureStartupNotificationChannel
+import app.n_zik.android.utils.getActiveProfile
 import timber.log.Timber
 
 internal class ThemePreviewProgressNotification(private val context: Context) {
+    private val profileId = getActiveProfile(context)
     private val manager = context.getSystemService(NotificationManager::class.java)
     private val tag = "theme-preview:${java.util.UUID.randomUUID()}"
     private var receiver: BroadcastReceiver? = null
@@ -44,11 +46,9 @@ internal class ThemePreviewProgressNotification(private val context: Context) {
         val action = cancelIntent ?: return
         val notifications = manager ?: return
         if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
-        val channel = "theme_store_preview_generation"
+        val channel = ensureStartupNotificationChannel(context, THEME_STORE_PREVIEW_GENERATION_CHANNEL_ID, profileId)
         val title = context.getString(R.string.theme_store_generating_previews)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notifications.createNotificationChannel(NotificationChannel(channel, title, NotificationManager.IMPORTANCE_LOW))
-        }
+
         val text = if (total == 0) context.getString(R.string.theme_store_preparing_previews)
         else context.getString(R.string.theme_store_preview_capture_progress, completed, total)
         val notification = NotificationCompat.Builder(context, channel)

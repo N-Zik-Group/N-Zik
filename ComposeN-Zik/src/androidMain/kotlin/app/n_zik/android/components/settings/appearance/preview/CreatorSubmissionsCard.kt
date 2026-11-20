@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import app.n_zik.android.typography
 import app.n_zik.android.utils.semiBold
 
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
@@ -35,6 +34,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.R
+import app.n_zik.android.core.notifications.THEME_STORE_CREATOR_SUBMISSIONS_CHANNEL_ID
+import app.n_zik.android.core.notifications.ensureStartupNotificationChannel
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DefaultDialog
 import app.n_zik.android.components.dialog.common.DialogButton
@@ -44,6 +45,7 @@ import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.core.network.OfflineMode
 import kotlinx.coroutines.CancellationException
+import app.n_zik.android.utils.getActiveProfile
 import timber.log.Timber
 
 @Composable
@@ -142,12 +144,7 @@ private fun openSubmission(number: Int) = Intent(Intent.ACTION_VIEW, Uri.parse(c
 internal fun notifyCreatorSubmissionSent(context: Context, id: Long, number: Int, titleRes: Int = R.string.theme_store_creator_pr_submitted) {
     if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
     val manager = context.getSystemService(NotificationManager::class.java) ?: return
-    val channel = "theme_store_creator_submissions"
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        manager.createNotificationChannel(NotificationChannel(
-            channel, context.getString(R.string.theme_store_creator_submissions), NotificationManager.IMPORTANCE_DEFAULT,
-        ))
-    }
+    val channel = ensureStartupNotificationChannel(context, THEME_STORE_CREATOR_SUBMISSIONS_CHANNEL_ID, getActiveProfile(context))
     val open = PendingIntent.getActivity(context, number, openSubmission(number), PendingIntent.FLAG_IMMUTABLE)
     val notification = NotificationCompat.Builder(context, channel)
         .setSmallIcon(R.drawable.notification2)
@@ -170,20 +167,23 @@ internal fun hasPendingCreatorDecisions(context: Context, id: Long): Boolean =
         key.startsWith("$id:") && state == "open"
     }
 
-internal fun notifyCreatorDecisions(context: Context, id: Long, submissions: List<CreatorSubmission>) {
+internal fun notifyCreatorDecisions(
+    context: Context,
+    id: Long,
+    submissions: List<CreatorSubmission>,
+    profileId: String = getActiveProfile(context),
+) {
     synchronized(creatorDecisionNotificationLock) {
-        if (GitHubAccount.userId(context) == id) postCreatorDecisions(context, id, submissions)
+        if (GitHubAccount.userId(context) == id) postCreatorDecisions(context, id, submissions, profileId)
     }
 }
 
-private fun postCreatorDecisions(context: Context, id: Long, submissions: List<CreatorSubmission>) {
+private fun postCreatorDecisions(context: Context, id: Long, submissions: List<CreatorSubmission>, profileId: String) {
     val preferences = context.getSharedPreferences("theme_creator_submissions", Context.MODE_PRIVATE)
     val notifications = context.getSystemService(NotificationManager::class.java) ?: return
     var available = NotificationManagerCompat.from(context).areNotificationsEnabled()
-    val channel = "theme_store_creator_submissions"
+    val channel = ensureStartupNotificationChannel(context, THEME_STORE_CREATOR_SUBMISSIONS_CHANNEL_ID, profileId)
     if (available && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        notifications.createNotificationChannel(NotificationChannel(channel,
-            context.getString(R.string.theme_store_creator_submissions), NotificationManager.IMPORTANCE_DEFAULT))
         available = notifications.getNotificationChannel(channel)?.importance != NotificationManager.IMPORTANCE_NONE
     }
     for (submission in submissions) {

@@ -23,8 +23,6 @@ import app.n_zik.android.privacy.JournalPermission
 import app.n_zik.android.privacy.PermissionEventKind
 
 import android.Manifest
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -41,6 +39,7 @@ import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.core.notifications.channelId
+import app.n_zik.android.core.notifications.ensureStartupNotificationChannel
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -700,21 +699,7 @@ class ListenTogetherClient(
 
         private fun ensureNotificationChannel() {
             try {
-                val activeProfile = getActiveProfile(context)
-                val profileChannelId = channelId(NOTIFICATION_CHANNEL_ID, activeProfile)
-                val nm = context.getSystemService(NotificationManager::class.java)
-                val existing = nm?.getNotificationChannel(profileChannelId)
-                if (existing == null) {
-                    val resources = appTextResources()
-                    val channel =
-                        NotificationChannel(
-                            profileChannelId,
-                            resources.getString(R.string.listen_together_notification_channel_name),
-                            NotificationManager.IMPORTANCE_HIGH,
-                        )
-                    channel.description = resources.getString(R.string.listen_together_notification_channel_description)
-                    nm?.createNotificationChannel(channel)
-                }
+                ensureStartupNotificationChannel(context, NOTIFICATION_CHANNEL_ID, getActiveProfile(context))
             } catch (e: Exception) {
                 log(LogLevel.WARNING, R.string.listen_together_log_event_failed_to_create_notification_channel, e.message)
             }

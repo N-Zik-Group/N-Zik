@@ -14,7 +14,6 @@ import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.exoplayer.scheduler.PlatformScheduler
 import app.n_zik.android.R
-import app.n_zik.android.appContext
 import app.n_zik.android.awaitLibraryReady
 import app.n_zik.android.core.backup.LibraryStartupException
 import app.n_zik.android.core.backup.isLibraryReady
@@ -60,13 +59,6 @@ const val FOREGROUND_NOTIFICATION_ID = 8989
 class MyDownloadService : DownloadService(
     FOREGROUND_NOTIFICATION_ID,
     DEFAULT_FOREGROUND_NOTIFICATION_UPDATE_INTERVAL,
-    // The channel this service actually posts on (per-profile — both notification builders
-    // below use it): DownloadService.onCreate (re)creates exactly this channel at start, so
-    // the base ID here would resurrect the base `download_channel` under every profile.
-    // (`this` is not usable in a super-constructor call — appContext() is already set by
-    // the time any service can be constructed.)
-    channelId(DOWNLOAD_NOTIFICATION_CHANNEL_ID, getActiveProfile(appContext())),
-    R.string.downloads_title, 0
 ) {
 
     companion object {

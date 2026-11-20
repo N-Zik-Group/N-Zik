@@ -44,6 +44,7 @@ internal suspend fun ThemeStoreCatalog.downloadAutomaticUpdates(
     context: Context,
     library: ThemeStoreLibrary,
     themes: List<StoreTheme>,
+    profileId: String,
     mayDownload: () -> Boolean,
 ): Boolean = automaticDownloadLock.withLock {
     var successful = true
@@ -53,7 +54,7 @@ internal suspend fun ThemeStoreCatalog.downloadAutomaticUpdates(
             val appearance = downloadForOffline(theme)
             if (mayDownload() && library.downloadedThemeUpdates(listOf(theme), ThemeUpdateMode.AutoDownload).isNotEmpty()) {
                 library.save(SavedTheme(theme.title, appearance.document, theme))
-                ThemeDownloadNotification(context.applicationContext, theme).show(result = true)
+                ThemeDownloadNotification(context.applicationContext, theme, profileId).show(result = true)
             }
         } catch (cancelled: CancellationException) {
             throw cancelled

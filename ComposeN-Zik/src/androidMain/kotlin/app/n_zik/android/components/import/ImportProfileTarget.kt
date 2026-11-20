@@ -1,5 +1,7 @@
 package app.n_zik.android.components.import
 
+import app.n_zik.android.core.notifications.ensureProfileChannels
+
 import android.content.Context
 import android.net.Uri
 import app.n_zik.android.utils.DEFAULT_PROFILE_ID
@@ -147,9 +149,10 @@ object ImportChainRunner {
 
         fun registerTargetIfMissing() {
             if (target != DEFAULT_PROFILE_ID && target !in context.readProfileIds()) {
-                context.writeProfileEntries(
+                val registered = context.writeProfileEntries(
                     context.currentProfileEntries() + (target to context.profileDisplayName(target).orEmpty())
                 )
+                if (registered) ensureProfileChannels(context, target)
             }
         }
 

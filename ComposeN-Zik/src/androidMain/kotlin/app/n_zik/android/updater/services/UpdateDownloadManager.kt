@@ -5,17 +5,15 @@ import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.JournalPermission
 import app.n_zik.android.privacy.PermissionEventKind
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Environment
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
 import app.n_zik.android.R
+import app.n_zik.android.core.notifications.ensureAppNotificationChannel
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import kotlinx.coroutines.CancellationException
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -62,18 +60,6 @@ object UpdateDownloadManager {
     internal const val UPDATE_CHANNEL_ID = "update_channel"
     private const val UPDATE_NOTIFICATION_ID = 9999
 
-    private fun ensureNotificationChannel(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                UPDATE_CHANNEL_ID,
-                context.getString(R.string.updates_channel_name),
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
-
     /**
      * Starts downloading the APK from the given URL.
      * Progress is reported through [downloadState].
@@ -85,7 +71,7 @@ object UpdateDownloadManager {
         downloadingVersion = version
         _downloadState.value = DownloadState.Starting
 
-        ensureNotificationChannel(context)
+        ensureAppNotificationChannel(context, UPDATE_CHANNEL_ID)
         val notificationManager = NotificationManagerCompat.from(context)
         val notificationBuilder = NotificationCompat.Builder(context, UPDATE_CHANNEL_ID)
             .setSmallIcon(R.drawable.update)

@@ -12,6 +12,7 @@ import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.utils.DEFAULT_PROFILE_ID
 import app.n_zik.android.utils.setActiveProfile
+import app.n_zik.android.utils.writeProfileEntries
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -68,6 +69,21 @@ class ThemeStoreDownloadWorkerTest {
         assertTrue(result is ListenableWorker.Result.Retry)
         assertNull(library.download(id))
         assertNull(ThemeStoreLibrary(profileDataPrefs(context, "other")).download(id))
+    }
+
+    @Test fun themeDownloadAndNotificationBelongToTheRequestingProfile() = runTest {
+        assertTrue(context.writeProfileEntries(listOf("work" to "Work")))
+        setActiveProfile("work", context)
+        val manager = requireNotNull(context.getSystemService(NotificationManager::class.java))
+        shadowOf(manager).setNotificationsEnabled(true)
+
+        assertTrue(worker(catalog()).doWork() is ListenableWorker.Result.Success)
+
+        assertEquals(document, ThemeStoreLibrary(profileDataPrefs(context, "work")).download(id)?.document)
+        assertNull(library.download(id))
+        val channel = manager.activeNotifications.single().notification.channelId
+        assertEquals("theme_store_downloads_work", channel)
+        assertEquals("nzik_theme_store_work", manager.getNotificationChannel(channel).group)
     }
 
     @Test fun invalidThemeHashDoesNotSaveADownload() = runTest {

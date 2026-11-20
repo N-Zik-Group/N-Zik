@@ -6,17 +6,15 @@ import app.n_zik.android.privacy.JournalPermission
 import app.n_zik.android.privacy.PermissionEventKind
 
 import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import app.n_zik.android.R
+import app.n_zik.android.core.notifications.ensureAppNotificationChannel
 import app.n_zik.android.appContext
 import timber.log.Timber
 
@@ -41,7 +39,7 @@ object AndroidModuleDownloadListener : ModuleDownloadListener {
 
     override fun onDownloadStarted(def: ModuleDefinition, isUpdate: Boolean) {
         val context = appContext()
-        ensureChannel(context)
+        ensureAppNotificationChannel(context, CHANNEL_ID)
         synchronized(this) {
             shownPercent[def.id] = -1
             this.isUpdate[def.id] = isUpdate
@@ -103,7 +101,7 @@ object AndroidModuleDownloadListener : ModuleDownloadListener {
 
     override fun onUninstalled(def: ModuleDefinition) {
         val context = appContext()
-        ensureChannel(context)
+        ensureAppNotificationChannel(context, CHANNEL_ID)
         notifyOrWarn(
             context,
             def,
@@ -160,18 +158,6 @@ object AndroidModuleDownloadListener : ModuleDownloadListener {
 
     private fun notificationId(moduleId: String): Int =
         NOTIFICATION_ID_OFFSET + Math.floorMod(moduleId.hashCode(), 9_000)
-
-    private fun ensureChannel(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                ContextCompat.getString(context, R.string.modules_download_channel),
-                NotificationManager.IMPORTANCE_DEFAULT,
-            )
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
 
     private fun notifyOrWarn(context: Context, def: ModuleDefinition, notification: Notification) {
         try {

@@ -7,7 +7,6 @@ import app.n_zik.android.privacy.JournalPermission
 import app.n_zik.android.privacy.PermissionEventKind
 
 import android.app.Notification
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
@@ -23,6 +22,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import app.n_zik.android.R
+import app.n_zik.android.core.notifications.ensureAppNotificationChannel
 import app.n_zik.android.awaitLibraryReady
 import app.n_zik.android.core.backup.LibraryStartupException
 import app.n_zik.android.bridge.audio.PhoneAudioLibrary
@@ -343,7 +343,7 @@ class BridgeServerService : Service() {
     }
 
     private fun buildNotification(title: String, text: String, ongoing: Boolean): Notification {
-        ensureChannel()
+        ensureAppNotificationChannel(this, BRIDGE_SERVER_CHANNEL_ID)
         val builder = NotificationCompat.Builder(this, BRIDGE_SERVER_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_monochrome)
             .setContentTitle(title)
@@ -361,16 +361,6 @@ class BridgeServerService : Service() {
             builder.addAction(R.drawable.close, notificationResources.getString(R.string.bridge_server_stop), stopIntent)
         }
         return builder.build()
-    }
-
-    private fun ensureChannel() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
-        val manager = notificationManager() ?: return
-        val name = notificationResources.getString(R.string.bridge_server)
-        val channel = manager.getNotificationChannel(BRIDGE_SERVER_CHANNEL_ID)
-            ?: NotificationChannel(BRIDGE_SERVER_CHANNEL_ID, name, NotificationManager.IMPORTANCE_LOW)
-        channel.name = name
-        manager.createNotificationChannel(channel)
     }
 
     private fun notificationManager(): NotificationManager? = getSystemService(NotificationManager::class.java)

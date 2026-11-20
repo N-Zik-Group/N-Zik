@@ -62,6 +62,7 @@ import app.n_zik.android.utils.saveFaceAvatarSource
 import app.n_zik.android.utils.saveFaceNameSource
 import app.n_zik.android.utils.currentProfileEntries
 import app.n_zik.android.utils.saveProfileDisplayName
+import app.n_zik.android.core.notifications.renameProfileChannels
 import app.n_zik.android.utils.writeProfileEntries
 import app.n_zik.android.utils.takenProfileNames
 import app.n_zik.android.R
@@ -402,6 +403,7 @@ fun ProfileFaceCard(
 //
                                 // so an export never carries a stale name.
                                 app.writeProfileEntries(app.currentProfileEntries())
+                                renameProfileChannels(app, activeId)
                                 faceVersion++
                                 // The initials can change: let the header re-resolve the face.
                                 profileFaceUpdateTrigger++

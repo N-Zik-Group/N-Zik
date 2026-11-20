@@ -103,7 +103,7 @@ class ThemeStoreAlertWorkerTest {
             document.encodeToByteArray()
         }
         val results = List(2) {
-            async { catalog.downloadAutomaticUpdates(context, library, listOf(update)) { true } }
+            async { catalog.downloadAutomaticUpdates(context, library, listOf(update), app.n_zik.android.utils.DEFAULT_PROFILE_ID) { true } }
         }.awaitAll()
 
         assertEquals(listOf(true, true), results)

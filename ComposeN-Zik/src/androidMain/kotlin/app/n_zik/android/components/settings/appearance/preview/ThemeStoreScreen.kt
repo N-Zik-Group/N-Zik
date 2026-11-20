@@ -302,9 +302,9 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
             catalog.bindRestoredDownloads(library, current.themes) {
                 owner != null && ProfileWorkOwner.isBound(context, owner) && !OfflineMode.enabled(context)
             }
-            if (getActiveProfile(context) == profileId) notifyThemeStoreAlerts(context, library, current.themes)
+            if (getActiveProfile(context) == profileId) notifyThemeStoreAlerts(context, library, current.themes, profileId)
             launch {
-                catalog.downloadAutomaticUpdates(context, library, current.themes) {
+                catalog.downloadAutomaticUpdates(context, library, current.themes, profileId) {
                     owner != null && ProfileWorkOwner.isBound(context, owner) && !OfflineMode.enabled(context)
                 }
             }

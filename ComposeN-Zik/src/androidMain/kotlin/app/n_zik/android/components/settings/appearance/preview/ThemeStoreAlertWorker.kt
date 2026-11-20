@@ -66,15 +66,15 @@ internal class ThemeStoreAlertWorker internal constructor(
             val themes = catalog.refresh()
             if (mayCheck()) {
                 if (!catalog.bindRestoredDownloads(library, themes, ::mayCheck)) failed = true
-                if (!catalog.downloadAutomaticUpdates(context, library, themes, ::mayCheck)) failed = true
-                if (notificationsEnabled && mayCheck()) notifyThemeStoreAlerts(context, library, themes)
+                if (!catalog.downloadAutomaticUpdates(context, library, themes, owner.id, ::mayCheck)) failed = true
+                if (notificationsEnabled && mayCheck()) notifyThemeStoreAlerts(context, library, themes, owner.id)
             }
         }
         if (hasPending && mayCheck()) attempt("creator submissions") {
             val login = GitHubAccount.accountLogin(context) ?: return@attempt
             val submissions = creatorSubmissions(id, login, GitHubAccount.tokenFor(context, id))
             if (mayCheck()) {
-                notifyCreatorDecisions(context, id, submissions)
+                notifyCreatorDecisions(context, id, submissions, owner.id)
             }
         }
         if (failed) Result.retry() else {

@@ -16,6 +16,7 @@ import app.n_zik.android.utils.profileDisplayNameKey
 import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.core.profiles.profileShareKey
+import app.n_zik.android.core.notifications.ensureProfileChannels
 import app.n_zik.android.core.rescue.ProfileResetSnapshot
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.components.ui.screens.profiles.profileAvatarFile
@@ -255,6 +256,7 @@ object ProfileStateArchive {
                 }
                 DatabaseRestoreJournal.installProfileState(files, updates)
                 resumePendingNames(context)
+                newIds.forEach { ensureProfileChannels(context, it) }
                 profileFaceUpdateTrigger++
                 ApplyResult(archive.entries.size, faces.size, archive.names.keys.count { it in restorable })
             } finally {

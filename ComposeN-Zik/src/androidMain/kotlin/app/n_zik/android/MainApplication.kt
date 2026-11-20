@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
+import app.n_zik.android.core.notifications.installAppNotificationChannels
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.components.image.PickedImageEditor
 import app.n_zik.android.components.settings.applyUseLoginForSearch
@@ -48,7 +49,6 @@ import app.n_zik.android.core.migration.SameNameArtistDedup
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.network.client.NetworkGate
 import app.n_zik.android.core.network.client.Store
-import app.n_zik.android.core.notifications.ensureProfileChannels
 import app.n_zik.android.core.ondevice.SCAN_DEVICE_LIBRARY_ON_STARTUP_KEY
 import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
 import app.n_zik.android.core.ondevice.scanDeviceLibrary
@@ -461,9 +461,6 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 Toaster.i(R.string.modules_update_available)
             }
         }
-
-        // Profile emitters rely on these channels before posting their first notification.
-        ensureProfileChannels(this, getActiveProfile(this))
 
         // Enrich artist/album MusicBrainz metadata in background (first run after 1h)
         MbBackfillWorker.schedule(this)

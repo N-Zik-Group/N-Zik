@@ -47,7 +47,7 @@ internal class ThemeStoreDownloadWorker internal constructor(
         val library = ThemeStoreLibrary(profileDataPrefs(context, owner.id))
         val ownerTag = ProfileWorkOwner.name(DownloadTag, owner)
         library.download("$themeId:$revision")?.let { saved ->
-            saved.theme?.let { ThemeDownloadNotification(context, it, ownerTag).show(result = true) }
+            saved.theme?.let { ThemeDownloadNotification(context, it, owner.id, ownerTag).show(result = true) }
             return@withContext Result.success()
         }
 
@@ -58,7 +58,7 @@ internal class ThemeStoreDownloadWorker internal constructor(
                 ?: return@withContext Result.failure()
             val theme = catalog.publishedRevision(latest, revision)
             if (!ProfileWorkOwner.isBound(context, owner)) return@withContext Result.retry()
-            notification = ThemeDownloadNotification(context, theme, ownerTag)
+            notification = ThemeDownloadNotification(context, theme, owner.id, ownerTag)
             notification.show()
             val appearance = catalog.downloadForOffline(theme)
             val result = DatabaseRestoreJournal.withProfileStorageMutation(context) {
