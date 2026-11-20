@@ -394,6 +394,15 @@
     <string name="song_matching_all_confirmation">Chceš se shodovat s %d neporovnaných skladeb?</string>
     <string name="song_matching_dialog_title">Porovnat skladby</string>
     <string name="song_matching_progress_title">Odpovídající skladby</string>
+    <string name="song_matching_background_message">Shoda pokračuje na pozadí.</string>
+    <string name="song_matching_notification_progress">%1$d z %2$d skladeb</string>
+    <string name="song_matching_cancelled_title">Skladba byla zrušena</string>
+    <string name="song_matching_unprocessed_count">%1$d nezpracováno</string>
+    <string name="song_matching_notification_completed">%1$d písniček odpovídá. %2$d sloučen s existujícími skladbami.</string>
+    <string name="song_matching_notification_partial">%1$d odpovídá, %2$d selhalo, %3$d není zpracován. %4$d sloučené.</string>
+    <string name="song_matching_notification_cancelled">Zrušeno. %1$d odpovídá, %2$d selhalo, %3$d není zpracován. %4$d sloučeno.</string>
+    <string name="song_matching_notification_failed">Skladba se nezdařila. %1$d se shoduje, %2$d selhala, %3$d není zpracována. %4$d sloučena.</string>
+    <string name="song_matching_failed_message">Nelze dokončit shodu skladeb. Zkuste to znovu.</string>
     <string name="song_matching_running_message">Odpovídající skladby. Počkejte prosím. Minimalizovat nebo ukončit aplikaci</string>
     <string name="song_matching_unmatched_label">Neporovnaná skladba</string>
     <string name="metadata_musicbrainz_rating">Hodnocení</string>
