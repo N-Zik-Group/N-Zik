@@ -394,6 +394,15 @@
     <string name="song_matching_all_confirmation">هل تريد مطابقة أغنية %d غير متطابقة؟</string>
     <string name="song_matching_dialog_title">مطابقة الأغاني</string>
     <string name="song_matching_progress_title">مطابقة الأغاني</string>
+    <string name="song_matching_background_message">تتواصل المطابقة في الخلفية.</string>
+    <string name="song_matching_notification_progress">%1$d من %2$d أغاني</string>
+    <string name="song_matching_cancelled_title">تم إلغاء مطابقة الأغنية</string>
+    <string name="song_matching_unprocessed_count">لم تتم معالجة %1$d</string>
+    <string name="song_matching_notification_completed">تطابق %1$d أغنية. أدمج %2$d مع الأغاني الموجودة.</string>
+    <string name="song_matching_notification_partial">مطابقة %1$d ، فشل %2$d لم تتم معالجة %3$d . أدمج %4$d.</string>
+    <string name="song_matching_notification_cancelled">ألغي. %1$d تطابق، فشل %2$d لم يتم معالجة %3$d . أدمج %4$d.</string>
+    <string name="song_matching_notification_failed">فشلت مطابقة الأغنية. %1$d تطابق، فشل %2$d لم تتم معالجة %3$d . أدمج %4$d.</string>
+    <string name="song_matching_failed_message">تعذر إكمال مطابقة الأغنية. حاول مرة أخرى.</string>
     <string name="song_matching_running_message">تطابق الأغنية. الرجاء الانتظار. لا تقلل أو تخرج من التطبيق</string>
     <string name="song_matching_unmatched_label">أغنية غير متطابقة</string>
     <string name="metadata_musicbrainz_rating">التقييم</string>
