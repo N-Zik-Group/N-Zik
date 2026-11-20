@@ -171,7 +171,7 @@ object ImageCacheFactory {
     }
 
     private const val COOLDOWN_MS = 10 * 1000L
-    private val cooldownMap = ConcurrentHashMap<String, Long>()
+    private val cooldownMap = ArtworkQualityCooldown(COOLDOWN_MS)
     private val cacheKeyMap = ConcurrentHashMap<String, String>()
     private val storeVersion = MutableStateFlow(0)
     private val diskRevisions = ArtworkDiskRevisions()
@@ -486,27 +486,29 @@ object ImageCacheFactory {
 
         if (keepsOriginalArtwork(appContext())) return DownloadDecision(true, NetworkQuality.HIGH, original = true)
 
-        val lastAttempt = cooldownMap[thumbnailUrl]
-        val now = System.currentTimeMillis()
-        if (lastAttempt != null && (now - lastAttempt) < COOLDOWN_MS) {
-            val cachedQuality = CacheMetadataStore.get(thumbnailUrl) ?: NetworkQuality.LOW
-            return DownloadDecision(false, cachedQuality)
+        return cooldownMap.decide(thumbnailUrl, System.currentTimeMillis(), CacheMetadataStore.get(thumbnailUrl),
+            ::getNetworkQuality)
+    }
+
+    /** The displayed cover and prefetch share the pending request size until it resolves. */
+    internal class ArtworkQualityCooldown(private val durationMillis: Long) {
+        private data class Attempt(val startedAt: Long, val quality: NetworkQuality)
+        private val attempts = ConcurrentHashMap<String, Attempt>()
+
+        fun decide(source: String, now: Long, cached: NetworkQuality?, available: () -> NetworkQuality): DownloadDecision {
+            val attempt = attempts.compute(source) { _, previous ->
+                if (previous != null && (now - previous.startedAt) in 0 until durationMillis) {
+                    previous.takeIf { cached == null || it.quality > cached }
+                } else {
+                    val desired = available()
+                    if (cached == null || desired > cached) Attempt(now, desired) else null
+                }
+            }
+            val quality = maxOf(cached ?: NetworkQuality.LOW, attempt?.quality ?: NetworkQuality.LOW)
+            return DownloadDecision(cached == null || quality > cached, quality)
         }
 
-        val currentQuality = getNetworkQuality()
-        val cachedQuality = CacheMetadataStore.get(thumbnailUrl)
-
-        if (cachedQuality == null) {
-            cooldownMap[thumbnailUrl] = now
-            return DownloadDecision(true, currentQuality)
-        }
-
-        if (currentQuality.ordinal > cachedQuality.ordinal) {
-            cooldownMap[thumbnailUrl] = now
-            return DownloadDecision(true, currentQuality)
-        }
-
-        return DownloadDecision(false, cachedQuality)
+        fun clear() = attempts.clear()
     }
 
     @Composable

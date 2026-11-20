@@ -20,6 +20,8 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(artwork): keep prefetch and display on one pending quality
+  - Keep the artwork request key stable when a prefetched cover reaches the carousel before its first download finishes.
 - fix(ui): keep Android system bars readable over dialogs
   - Resolve status and navigation glyph colors from the actual shared dialog scrim.
   - Retain the last measured player contrast while a new blurred cover is loading.
