@@ -7,6 +7,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.CompositionLocalProvider
 import app.n_zik.android.components.glass.LocalGlassScope
+import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.backdrop.Backdrop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -49,6 +51,7 @@ class PlayerTransportGeometry {
         set(value) { actionPanelSnapshot = value; actionPanelHostHeight = host?.size?.height ?: 0 }
     var informationSurfaceTop by mutableStateOf<Float?>(null)
     var informationSurfaceBounds by mutableStateOf<Rect?>(null)
+    internal var informationBackdrop by mutableStateOf<Backdrop?>(null)
     var landscapeInformationTopOutset by mutableStateOf<Float?>(null)
     internal var lowerViewport: LayoutCoordinates? = null
     internal var lowerScrollOffset by mutableIntStateOf(0)
@@ -80,6 +83,10 @@ class PlayerTransportGeometry {
 }
 
 val LocalPlayerTransportGeometry = staticCompositionLocalOf<PlayerTransportGeometry?> { null }
+
+@Composable
+internal fun playerInformationControlBackdrop(): Backdrop? =
+    LocalPlayerTransportGeometry.current?.informationBackdrop ?: LocalGlassContainerBackdrop.current
 
 /** Fix the coordinate origin to the player, independent of the sheet's opening translation. */
 @Composable

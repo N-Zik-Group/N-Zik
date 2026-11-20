@@ -182,7 +182,7 @@ private fun Modifier.playerVisibleToolbarBounds(settings: GlassSettings, backgro
     }
 }
 
-/** Upper controls use the player's existing live container backdrop. */
+/** Upper controls can refract the passive information plate where their surfaces overlap. */
 @Composable
 fun PlayerTopAction(
     @DrawableRes icon: Int,
@@ -194,14 +194,17 @@ fun PlayerTopAction(
     glassFilm: Color? = null,
 ) {
     val settings = settings.inScope(GlassScope.PlayerActions)
+    val backdrop = playerInformationControlBackdrop()
+    CompositionLocalProvider(LocalGlassContainerBackdrop provides backdrop) {
     if (GlassFloatingActionIcon(painterResource(icon), onClick, size = GlassActionCellHeight,
             iconSize = 24.dp, iconModifier = Modifier.rotate(rotation), tint = color,
-            settings = settings, contentDescription = contentDescription, filmColor = glassFilm)) return
+            settings = settings, contentDescription = contentDescription, filmColor = glassFilm)) return@CompositionLocalProvider
     Box(Modifier.size(GlassActionCellHeight)
         .glassAreaContour(settings, GlassArea.ActionButtons, uiRoundnessShape())
         .clip(uiRoundnessShape()).clickable(onClick = onClick), contentAlignment = Alignment.Center) {
         Image(painterResource(icon), contentDescription, colorFilter = ColorFilter.tint(color),
             modifier = Modifier.rotate(rotation).size(24.dp))
+    }
     }
 }
 
@@ -290,7 +293,7 @@ fun PlayerActionToolbar(
                         .playerVisibleToolbarBounds(settings, nativeBackground, actions.maxOf { it.nativeHeight })
                         .testTag("player.actionToolbar.material")
                         .glassMaterial(settings.forArea(GlassArea.ActionButtons), uiRoundnessShape(),
-                            ownBackdrop = LocalGlassContainerBackdrop.current, filmColor = nativeBackground)
+                            ownBackdrop = playerInformationControlBackdrop(), filmColor = nativeBackground)
                         .glassActionGroupSeparators(settings, GlassArea.ActionButtons, boundary,
                             separatorBefore = if (boundary > 0.dp) setOf(1) else emptySet(),
                             fromPhysicalLeft = true))
@@ -393,7 +396,7 @@ private fun PlayerActionCell(
                 .testTag(if (glass) "player.actionToolbar.material" else "player.actionToolbar.native")
                 .background(style.contrastScrim, shape)
                 .then(if (glass) Modifier.glassMaterial(style.settings.forArea(GlassArea.ActionButtons), uiRoundnessShape(),
-                    ownBackdrop = LocalGlassContainerBackdrop.current, filmColor = style.nativeBackground) else Modifier.background(style.nativeBackground, uiRoundnessShape())
+                    ownBackdrop = playerInformationControlBackdrop(), filmColor = style.nativeBackground) else Modifier.background(style.nativeBackground, uiRoundnessShape())
                     .glassAreaContour(style.settings, GlassArea.ActionButtons, uiRoundnessShape())))
             cell()
         }

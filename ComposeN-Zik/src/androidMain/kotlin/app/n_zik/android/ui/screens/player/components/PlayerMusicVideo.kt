@@ -130,6 +130,8 @@ import app.n_zik.android.ui.styling.collapsedPlayerProgressBar
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.GetControls
 import app.n_zik.android.utils.GetSeekBar
+import app.n_zik.android.utils.playbackPositionClock
+import app.n_zik.android.components.player.playerInformationControlBackdrop
 import app.n_zik.android.utils.playerSwapControlsWithTimelineKey
 import app.n_zik.android.utils.playerTimelineSizeKey
 import app.n_zik.android.enums.PlayerOpeningMode
@@ -416,6 +418,9 @@ internal fun PlayerAudioVideoToggle(
             GlassRippleProvider(navbarGlass) {
                 // Start the indicator at the resolved opening mode. Only in-player changes animate.
                 key(session.openingSelection) {
+                    CompositionLocalProvider(
+                        LocalGlassBackdrop provides (playerInformationControlBackdrop() ?: LocalGlassBackdrop.current),
+                    ) {
                     GlassNavigationTabs(
                         selectedIndex = if (session.selected) 1 else 0,
                         indices = listOf(0, 1),
@@ -428,6 +433,7 @@ internal fun PlayerAudioVideoToggle(
                     ) {
                         modeButton(false, Modifier.fillMaxSize())
                         modeButton(true, Modifier.fillMaxSize())
+                    }
                     }
                 }
             }
@@ -576,7 +582,7 @@ internal fun MusicVideoPresentation(session: PlayerMusicVideo, audio: Player?, i
     var shouldBePlaying by remember(audio) { mutableStateOf(audio?.playWhenReady == true) }
     var buffering by remember(audio) { mutableStateOf(audio?.playbackState == Player.STATE_BUFFERING) }
     var media by remember(audio) { mutableStateOf(audio?.currentMediaItem) }
-    var position by remember(audio) { mutableStateOf(audio?.currentPosition ?: 0L) }
+    val positionClock = if (inPip) null else audio?.playbackPositionClock()
     var scrubbing by remember(audio) { mutableStateOf(false) }
 
     BackHandler(enabled = !inPip) { session.fullscreen = false }
@@ -611,24 +617,13 @@ internal fun MusicVideoPresentation(session: PlayerMusicVideo, audio: Player?, i
         val listener = object : Player.Listener {
             override fun onEvents(player: Player, events: Player.Events) {
                 syncPlaybackState(player)
-                if (events.contains(Player.EVENT_POSITION_DISCONTINUITY)) {
-                    position = player.currentPosition
-                }
             }
         }
         audio.addListener(listener)
         syncPlaybackState(audio)
-        position = audio.currentPosition
         onDispose { audio.removeListener(listener) }
     }
 
-    LaunchedEffect(audio, inPip) {
-        if (inPip || audio == null) return@LaunchedEffect
-        while (true) {
-            position = audio.currentPosition
-            delay(250)
-        }
-    }
     LaunchedEffect(showControls, playing, scrubbing, inPip) {
         if (!inPip && showControls && playing && !scrubbing) {
             delay(5_000)
@@ -680,7 +675,7 @@ internal fun MusicVideoPresentation(session: PlayerMusicVideo, audio: Player?, i
                         media = currentMedia,
                         shouldBePlaying = shouldBePlaying,
                         isBuffering = buffering,
-                        position = { position },
+                        position = { positionClock?.sample?.value?.positionMs ?: 0L },
                         onScrubbingChanged = { scrubbing = it },
                         modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 16.dp, vertical = 12.dp),
                     )

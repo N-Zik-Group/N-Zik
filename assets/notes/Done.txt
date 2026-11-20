@@ -34,6 +34,9 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(glass): match player information control reflections
+  - Expose the passive information plate to overlapping action surfaces. Keep the album and artist rail on the same film as time controls.
+  - Capture the information rows only when an optical control can sample them.
 - fix(player): align carousel transport with gestures
   - Center adjacent artwork before committing a button skip, preserve the playlist occurrence and keep detached artwork out of overflow painting.
   - Use stable pager identities and retain the configured carousel depth, artwork settings and gesture tracking.

@@ -44,6 +44,7 @@ import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
+import app.n_zik.android.components.glass.glassContentCaptureEnabled
 import app.n_zik.android.components.glass.glassMaterial
 import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.inScope
@@ -178,6 +179,12 @@ fun PlayerInformationGlassBlock(
     val childBackdrop = if (material) {
         if (underlay != null) rememberCombinedBackdrop(underlay, plate) else plate
     } else parent
+    DisposableEffect(geometry, childBackdrop, material) {
+        if (geometry != null && material) geometry.informationBackdrop = childBackdrop
+        onDispose {
+            if (geometry?.informationBackdrop === childBackdrop) geometry?.informationBackdrop = null
+        }
+    }
     // Build the plate against its parent before exposing the rendered surface to
     // children. The exported layer contains no child controls or seek lens.
     val surface = if (material) Modifier.glassMaterial(settings.forArea(GlassArea.ActionButtons), shape,
@@ -272,7 +279,14 @@ fun PlayerInformationGlassRegion(
     // All Controls layouts paint information before the timeline. Record that
     // sibling separately: an overflowing seek lens may sample its text/rail, but
     // information controls must never sample their own recording or the timeline.
-    val information = if (scope != null && key == "info") rememberLayerBackdrop() else null
+    val parent = LocalGlassContainerBackdrop.current
+    val information = if (scope != null && key == "info" && parent != null) {
+        val seek = rememberGlassSettings(GlassScope.PlayerSeek)
+        val time = rememberGlassSettings(GlassScope.PlayerTime)
+        if ((seek.usesGlassMaterial(GlassArea.ActionButtons) && glassContentCaptureEnabled(seek)) ||
+            (time.usesGlassMaterial(GlassArea.ActionButtons) && glassContentCaptureEnabled(time))
+        ) rememberLayerBackdrop() else null
+    } else null
     DisposableEffect(scope, information) {
         if (information != null) scope?.informationBackdrop = information
         onDispose {
@@ -283,7 +297,6 @@ fun PlayerInformationGlassRegion(
         }
     }
     if (information != null) SideEffect { information.materialChanged() }
-    val parent = LocalGlassContainerBackdrop.current
     val precedingInformation = if (key == "timeline") scope?.informationBackdrop else null
     val childBackdrop = if (precedingInformation != null && parent != null)
         rememberCombinedBackdrop(parent, precedingInformation) else parent

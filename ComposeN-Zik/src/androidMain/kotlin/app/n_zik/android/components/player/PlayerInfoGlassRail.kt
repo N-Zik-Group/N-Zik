@@ -46,7 +46,6 @@ import app.n_zik.android.components.glass.InteractiveHighlight
 import app.n_zik.android.components.glass.LocalGlassGroupPressMotion
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.forArea
-import app.n_zik.android.components.glass.glassActionFilmColor
 import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.glass.glassMaterial
@@ -198,12 +197,9 @@ fun PlayerInfoGlassRail(
     val padding = with(LocalDensity.current) { 6.dp.toPx() }
     val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
     val actionSettings = settings.forArea(GlassArea.ActionButtons)
-    val filmRole = glassActionFilmColor()
     val contour = settings.usesGlassContour(GlassArea.ActionButtons)
     val shape = uiRoundnessShape()
     val backdrop = LocalGlassContainerBackdrop.current
-    val coroutineScope = rememberCoroutineScope()
-    val controller = remember(coroutineScope) { GlassGroupPressMotion(InteractiveHighlight(coroutineScope)) }
     val bounds = if (iconsVisible && (material || contour) && album != null && artist != null) Rect(
         minOf(album.left, artist.left) - padding,
         minOf(album.top, artist.top) - padding,
@@ -211,9 +207,11 @@ fun PlayerInfoGlassRail(
         maxOf(album.bottom, artist.bottom) + padding,
     ) else null
     val motion = if (material && isGlassMotionAllowed() && bounds != null) {
+        val coroutineScope = rememberCoroutineScope()
+        val controller = remember(coroutineScope) { GlassGroupPressMotion(InteractiveHighlight(coroutineScope)) }
         remember(controller, scope, bounds) { PlayerInfoRailMotion(controller, scope, bounds) }
     } else null
-    val iconFilm = if (material && bounds != null) glassFilmColor(actionSettings, filmRole, menu = false) else null
+    val iconFilm = if (material && bounds != null) glassFilmColor(actionSettings, null, menu = false) else null
     Box(Modifier.onGloballyPositioned(scope::updateHost)) {
         if (bounds != null) {
             // matchParentSize leaves the rows in charge of layout and avoids a zero-sized optical host.
@@ -225,7 +223,7 @@ fun PlayerInfoGlassRail(
             }.playerInformationGlassVisualBounds().testTag("player.infoRail.surface")
                 .playerInfoRailMotion(motion)
                 .then(if (material) Modifier.glassMaterial(actionSettings, shape,
-                    ownBackdrop = backdrop, separateWindow = backdrop == null, filmColor = filmRole)
+                    ownBackdrop = backdrop, separateWindow = backdrop == null)
                 else Modifier.glassAreaContour(settings, GlassArea.ActionButtons, shape)))
         }
         CompositionLocalProvider(LocalGlassGroupPressMotion provides motion?.controller,

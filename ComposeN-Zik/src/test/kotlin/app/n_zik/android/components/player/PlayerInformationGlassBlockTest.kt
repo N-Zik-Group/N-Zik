@@ -443,6 +443,13 @@ class PlayerInformationGlassBlockTest {
             compose.runOnIdle { headerEnabled.value = true; headerFilm.value = film }
             compose.onNodeWithTag("player.informationBlock.surface").assertIsDisplayed()
             val current = centers()
+            for (index in 1..2) {
+                val other = current[index]
+                val time = current[0]
+                val difference = kotlin.math.abs(time.red - other.red) +
+                    kotlin.math.abs(time.green - other.green) + kotlin.math.abs(time.blue - other.blue)
+                assertTrue("${tags[index]} must use the same glass film as the queue duration: time=$time other=$other", difference < .04f)
+            }
             current.zip(previous).forEachIndexed { index, (actual, expected) ->
                 val difference = kotlin.math.abs(expected.red - actual.red) +
                     kotlin.math.abs(expected.green - actual.green) + kotlin.math.abs(expected.blue - actual.blue)
