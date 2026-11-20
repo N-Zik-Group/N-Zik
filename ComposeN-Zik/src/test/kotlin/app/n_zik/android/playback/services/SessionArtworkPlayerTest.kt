@@ -10,7 +10,10 @@ import androidx.media3.common.Player
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.R
 import app.n_zik.android.appContext
+import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
+import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.getActiveProfile
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -22,6 +25,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.io.File
 
 /** The session facade publishes the metadata every session surface reads (Android Auto home card, media notification — both go through `session.getPlayer().getMediaMetadata()`): blank title/artist fields must become the localized unknown placeholders, while present metadata and the existing artwork-URI swap are left untouched. */
 @RunWith(RobolectricTestRunner::class)
@@ -75,6 +79,31 @@ class SessionArtworkPlayerTest {
         every { upstream.isCurrentMediaItemLive } returns false
         every { upstream.duration } returns C.TIME_UNSET
         return upstream
+    }
+
+    @Test
+    fun `phone retains the original file and the session publishes its seekable source without artwork bytes`() {
+        stubAppContext()
+        val file = File.createTempFile("session-artwork-source", ".jpg", app.cacheDir)
+        try {
+            val source = file.toURI().toString()
+            val song = Song("stream-abc", "Title", "Artist", "1:00", source)
+            val item = song.asMediaItem
+            assertEquals(source.toUri(), item.mediaMetadata.artworkUri)
+            assertNull(item.mediaMetadata.artworkData)
+            val upstream = upstreamWith("Title", "Artist", song.id)
+            every { upstream.currentMediaItem } returns item
+            every { upstream.mediaMetadata } returns item.mediaMetadata
+
+            val session = SessionArtworkPlayer(upstream)
+            val provider = requireNotNull(session.mediaMetadata.artworkUri)
+            assertEquals("source", provider.pathSegments.first())
+            assertEquals(file.canonicalFile, ArtworkContentProvider.registeredSourceFile(app, getActiveProfile(app), provider))
+            assertEquals(provider, session.mediaMetadata.artworkUri)
+            assertNull(session.mediaMetadata.artworkData)
+        } finally {
+            file.delete()
+        }
     }
 
     @Test

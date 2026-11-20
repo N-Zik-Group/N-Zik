@@ -253,7 +253,7 @@ class SessionRemoteArtworkIdentityTest {
         val red = Bitmap.createBitmap(1024, 576, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.RED) }
         val blue = Bitmap.createBitmap(1024, 576, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.BLUE) }
         val calls = mutableListOf<Pair<Boolean, ImageCacheFactory.NetworkQuality>>()
-        coEvery { ImageCacheFactory.loadBitmap(any(), any(), any(), any(), any(), any()) } answers {
+        coEvery { ImageCacheFactory.loadBitmap(any(), any(), any(), any(), any(), any(), cacheDecodedBitmap = false) } answers {
             val offline = arg<Boolean>(4)
             val quality = arg<ImageCacheFactory.NetworkQuality>(3)
             calls += offline to quality

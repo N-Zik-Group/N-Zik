@@ -8,12 +8,12 @@ import android.net.Uri
 import androidx.media3.common.util.BitmapLoader
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.utils.CoilBitmapLoader
-import app.n_zik.android.appContext
-import app.n_zik.android.core.coil.ImageCacheFactory
-import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
+import app.n_zik.android.playback.services.ArtworkContentProvider
+import app.n_zik.android.playback.services.automotive.models.ArtworkBitmapDecoder
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import com.google.common.util.concurrent.ListenableFuture
 import java.io.File
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.guava.future
 
@@ -27,9 +27,9 @@ import kotlinx.coroutines.guava.future
  */
 @UnstableApi
 class SessionBitmapLoader(
-    context: Context,
+    private val context: Context,
     private val scope: CoroutineScope,
-    private val bitmapSize: Int,
+    bitmapSize: Int,
 ) : BitmapLoader {
 
     private val inner = CoilBitmapLoader(context, scope, bitmapSize)
@@ -42,41 +42,33 @@ class SessionBitmapLoader(
         when (uri.scheme) {
             ContentResolver.SCHEME_CONTENT, ContentResolver.SCHEME_FILE ->
                 scope.future(NzikDispatchers.DATA) {
-                    decodeLocal(uri) ?: inner.loadBitmap(uri).get()
+                    tryLocal { inner.loadSource(uri) } ?: decodeLocal(uri) ?: inner.fallbackBitmap()
                 }
 
             else -> inner.loadBitmap(uri)
         }
 
-    /**
-     * Reads a local artwork source the service process can open: shared image
-     * cache first (the same source of truth as the legacy loader), then a
-     * direct downsampled decode. Returns null when the source is missing or
-     * undecodable so the legacy behavior stays in charge.
-     */
-    private suspend fun decodeLocal(uri: Uri): Bitmap? = runCatching {
-        val cached = ImageCacheFactory.loadBitmap(uri.toString(), allowHardware = false)
-        if (cached != null) return@runCatching cached
-        val data: ByteArray? = when (uri.scheme) {
-            ContentResolver.SCHEME_FILE ->
-                uri.path?.let { path -> File(path).takeIf(File::exists)?.readBytes() }
-            else -> appContext().contentResolver.openInputStream(uri)?.use { it.readBytes() }
-        }
-        if (data == null) return@runCatching null
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeByteArray(data, 0, data.size, bounds)
-        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return@runCatching null
-        BitmapFactory.decodeByteArray(
-            data,
-            0,
-            data.size,
-            BitmapFactory.Options().apply {
-                inSampleSize = SessionMediaItemMapper.computeInSampleSize(
-                    bounds.outWidth,
-                    bounds.outHeight,
-                    bitmapSize
-                )
+    private fun decodeLocal(uri: Uri): Bitmap? = tryLocal {
+        val decoded = if (uri.authority == ArtworkContentProvider.AUTHORITY) {
+            // This provider emits an already bounded, correctly oriented JPEG.
+            // Opening it once avoids regenerating that JPEG for each decode pass.
+            context.contentResolver.openFileDescriptor(uri, "r")?.use {
+                BitmapFactory.decodeFileDescriptor(it.fileDescriptor)
             }
-        )
-    }.getOrNull()
+        } else {
+            ArtworkBitmapDecoder.decode {
+                if (uri.scheme == ContentResolver.SCHEME_FILE) uri.path?.let { File(it).inputStream() }
+                else context.contentResolver.openInputStream(uri)
+            }
+        }
+        decoded?.let { inner.fitToSession(it, owned = true) }
+    }
+
+    private inline fun tryLocal(load: () -> Bitmap?): Bitmap? = try {
+        load()
+    } catch (cancelled: CancellationException) {
+        throw cancelled
+    } catch (_: Exception) {
+        null
+    }
 }

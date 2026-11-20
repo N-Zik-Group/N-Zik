@@ -60,7 +60,7 @@ object SessionArtworkLoader {
                         var borrowed: Bitmap? = null
                         for (quality in qualities) {
                             borrowed = ImageCacheFactory.loadBitmap(url, requestSize = 512, qualityOverride = quality,
-                                cacheOnly = cacheOnly, cropToSquare = square)
+                                cacheOnly = cacheOnly, cropToSquare = square, cacheDecodedBitmap = false)
                             if (borrowed != null) break
                         }
                         borrowed?.let { bitmap ->

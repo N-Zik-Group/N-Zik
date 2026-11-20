@@ -10,7 +10,6 @@ import app.n_zik.innertube.models.ArtistConjunctions
 import android.content.ContentUris
 import android.content.Context
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.core.network.utils.isNetworkAvailable
@@ -64,18 +63,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import app.n_zik.android.core.utils.Toaster
-import java.io.File
 import kotlin.time.Duration.Companion.milliseconds
 import timber.log.Timber
 import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper
-import app.n_zik.android.playback.services.ArtworkContentProvider
-import android.graphics.Bitmap
-import android.media.ExifInterface
-import android.content.ContentResolver
-import android.graphics.Matrix
-import android.graphics.BitmapFactory
-import java.io.ByteArrayOutputStream
 
 const val EXPLICIT_BUNDLE_TAG = "is_explicit"
 
@@ -285,66 +276,7 @@ val Song.asMediaItem: MediaItem
             .setIsBrowsable(false)
             .setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
 
-        // For local file:// URIs, set content:// via ArtworkContentProvider + artworkData for AA
-        if (artworkUri.scheme == ContentResolver.SCHEME_FILE) {
-            try {
-                val path = artworkUri.path
-                if (path != null) {
-                    val file = File(path)
-                    if (file.exists()) {
-                        // Set content:// URI via exported ArtworkContentProvider (AA requires exported)
-                        val contentUri = Uri.Builder()
-                            .scheme(ContentResolver.SCHEME_CONTENT)
-                            .authority(ArtworkContentProvider.AUTHORITY)
-                            .appendPath(id)
-                            .build()
-                        metadataBuilder.setArtworkUri(contentUri)
-                        // artworkData for AA (queue, list, player)
-                        var bitmap = BitmapFactory.decodeFile(path)
-                        if (bitmap != null) {
-                            // Apply EXIF rotation
-                            try {
-                                val exif = ExifInterface(path)
-                                val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
-                                val rotation = when (orientation) {
-                                    ExifInterface.ORIENTATION_ROTATE_90 -> 90f
-                                    ExifInterface.ORIENTATION_ROTATE_180 -> 180f
-                                    ExifInterface.ORIENTATION_ROTATE_270 -> 270f
-                                    else -> 0f
-                                }
-                                if (rotation != 0f) {
-                                    val matrix = Matrix().apply { postRotate(rotation) }
-                                    val rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-                                    if (rotated !== bitmap) { bitmap.recycle(); bitmap = rotated }
-                                }
-                            } catch (error: Exception) {
-                                Timber.tag("Utils").w("Unable to apply artwork EXIF rotation (%s)", error.javaClass.simpleName)
-                            }
-                            // Center crop to square
-                            val size = minOf(bitmap.width, bitmap.height)
-                            val x = (bitmap.width - size) / 2
-                            val y = (bitmap.height - size) / 2
-                            val cropped = Bitmap.createBitmap(bitmap, x, y, size, size)
-                            if (cropped !== bitmap) bitmap.recycle()
-                            val stream = ByteArrayOutputStream()
-                            cropped.compress(Bitmap.CompressFormat.JPEG, 85, stream)
-                            cropped.recycle()
-                            metadataBuilder.setArtworkData(stream.toByteArray(), MediaMetadata.PICTURE_TYPE_ILLUSTRATION)
-                        }
-                    } else {
-                        metadataBuilder.setArtworkUri(AutoMediaItemMapper.drawableUri(appContext(), R.drawable.ic_launcher_box))
-                    }
-                }
-            } catch (error: Exception) {
-                Timber.tag("Utils").w("Unable to attach local artwork payload (%s)", error.javaClass.simpleName)
-            }
-        } else if (artworkUri.scheme == ContentResolver.SCHEME_CONTENT) {
-            try {
-                appContext().contentResolver.openInputStream(artworkUri)?.close()
-            } catch (e: Exception) {
-                metadataBuilder.setArtworkUri(AutoMediaItemMapper.drawableUri(appContext(), R.drawable.ic_launcher_box))
-            }
-        }
+        // Keep canonical artwork for in-app rendering. The media session publishes its own bounded payload.
 
         return MediaItem.Builder()
             .setMediaMetadata(metadataBuilder.build())

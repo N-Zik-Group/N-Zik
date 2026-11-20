@@ -4,7 +4,9 @@ import app.n_zik.android.appTextResources
 import java.util.IdentityHashMap
 
 import android.media.MediaMetadata.METADATA_KEY_DURATION
+import android.net.Uri
 import android.os.Bundle
+import androidx.core.net.toUri
 import androidx.media3.common.C
 import androidx.media3.common.FlagSet
 import androidx.media3.common.ForwardingPlayer
@@ -30,9 +32,33 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
     private var square = appContext().preferences.getBoolean(cropVideoThumbnailsKey, true)
     private var revision = ArtworkRevisions.current()
     private var expires = now() + 24 * 60 * 60 * 1000L
+    private var localArtwork: LocalSessionArtwork? = null
     private var durationMediaId: String? = null
     private var knownDurationMs: Long? = null
     private var lastDurationDiagnostic: String? = null
+
+    private data class LocalSessionArtwork(
+        val source: String,
+        val songId: String,
+        val profile: String,
+        val revision: Long,
+        val uri: Uri,
+    )
+
+    private fun localArtworkUri(mediaId: String, source: String): Uri? {
+        if (!source.startsWith("file:") && !source.startsWith('/')) return null
+        val songId = LocalArtworkRules.songIdOf(mediaId)
+        val cached = localArtwork
+        if (cached?.source == source && cached.songId == songId &&
+            cached.profile == profile && cached.revision == revision
+        ) return cached.uri
+        val path = source.takeIf { it.startsWith('/') } ?: source.toUri().path ?: return null
+        val file = SessionMediaItemMapper.resolveArtworkFile(source, path)
+        val uri = runCatching { ArtworkContentProvider.uriForSource(appContext(), songId, file) }
+            .getOrElse { ArtworkContentProvider.uriFor(songId) }
+        localArtwork = LocalSessionArtwork(source, songId, profile, revision, uri)
+        return uri
+    }
 
     override fun getBufferedPosition(): Long = when (val buffered = super.getBufferedPosition()) {
         // Media3's legacy bridge copies these values into platform playback state unchanged.
@@ -98,6 +124,7 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
             ArtworkContentProvider.uriForRemote(it, profile, square, revision, expires)
         } ?: selectedArtwork?.takeIf { it.authority == ArtworkContentProvider.AUTHORITY }
         ?: metadata.artworkUri?.takeIf { it.authority == ArtworkContentProvider.AUTHORITY }
+        ?: mediaId?.let { id -> source?.let { localArtworkUri(id, it) } }
         ?: mediaId?.takeIf {
             LocalArtworkRules.needsProviderArtwork(it, source, ArtworkContentProvider.AUTHORITY)
         }?.let { ArtworkContentProvider.uriFor(LocalArtworkRules.songIdOf(it)) }

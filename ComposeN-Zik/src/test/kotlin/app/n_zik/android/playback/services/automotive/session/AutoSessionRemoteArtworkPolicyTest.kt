@@ -23,6 +23,7 @@ import coil3.asImage
 import coil3.decode.DataSource
 import coil3.request.ErrorResult
 import coil3.request.ImageRequest
+import coil3.request.CachePolicy
 import coil3.request.SuccessResult
 import coil3.size.Dimension
 import coil3.size.Size
@@ -73,6 +74,7 @@ class AutoSessionRemoteArtworkPolicyTest {
         val requestKey = "$key#nzik-artwork-revision=0"
         assertEquals(requestKey, requests.single().diskCacheKey)
         assertEquals(requestKey, requests.single().memoryCacheKey)
+        assertEquals(CachePolicy.READ_ONLY, requests.single().memoryCachePolicy)
         verify { ImageCacheFactory.getDownloadDecision(url) }
     }
 
@@ -139,6 +141,7 @@ class AutoSessionRemoteArtworkPolicyTest {
             }
             ImageCacheFactory.loadBitmap(url, requestSize = 512)
             assertEquals(listOf(url.replace("w60-h60", "w300-h300")), requests.map { it.data })
+            assertEquals(CachePolicy.ENABLED, requests.single().memoryCachePolicy)
         }
     }
 

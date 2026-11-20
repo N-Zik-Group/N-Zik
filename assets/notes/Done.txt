@@ -6,6 +6,9 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- perf(session): reuse bounded artwork for media clients
+  - Pass the canonical cover source through song items and expose validated local files through the session provider.
+  - Reuse suitable cached pixels and decode fallbacks once at the consumer size, preserving file orientation.
 - perf(artwork): share cover decoding and scope palette refreshes
   - Share matching requests across player artwork surfaces and prefetch. Keep quality and source revisions while bounding cache keys.
   - Reuse the displayed bitmap for color extraction. Preserve unrelated profiles, covers and in-flight palette work when refreshing one source.

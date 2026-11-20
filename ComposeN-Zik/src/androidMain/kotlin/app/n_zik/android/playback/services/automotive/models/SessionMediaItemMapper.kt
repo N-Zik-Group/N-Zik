@@ -112,7 +112,7 @@ object SessionMediaItemMapper {
     }
 
     // Java URI resolution also preserves Windows drive paths in host-side tests.
-    private fun resolveArtworkFile(url: String, barePath: String): File =
+    internal fun resolveArtworkFile(url: String, barePath: String): File =
         try {
             java.nio.file.Paths.get(java.net.URI(url)).toFile()
         } catch (_: Exception) {
