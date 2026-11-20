@@ -6,6 +6,8 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- perf(glass): reduce mini-player transition work
+  - Limit moving geometry updates to the deploy plate and draw a single film when its progress regions have the same color or reach an endpoint.
 - perf(player): skip unnecessary work while changing tracks
   - Remove the unused per-track like observer and open carousel fade layers only when an overflow band draws artwork or shadow.
 - perf(player): reduce redraws while opening and closing the player

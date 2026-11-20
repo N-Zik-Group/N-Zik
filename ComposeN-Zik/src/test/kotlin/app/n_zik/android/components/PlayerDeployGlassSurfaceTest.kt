@@ -104,6 +104,7 @@ class PlayerDeployGlassSurfaceTest {
 
     @Test fun `early and middle deploy retain transparent film and rim and closing retraces opening`() {
         var progress by mutableStateOf(.1f)
+        var handoff by mutableStateOf(0f)
         compose.setContent {
             val shape = RoundedCornerShape(16.dp)
             CompositionLocalProvider(LocalAppearance provides Appearance(
@@ -118,6 +119,7 @@ class PlayerDeployGlassSurfaceTest {
                             areaModes = mapOf(GlassArea.MiniPlayer to GlassAreaMode.GlassAndContour)),
                         backdrop = null, filmColor = Color.Green,
                         exportedBackdrop = rememberLayerBackdrop(),
+                        handoffProgress = { handoff },
                     )
                 }
             }
@@ -140,5 +142,22 @@ class PlayerDeployGlassSurfaceTest {
             opening[position]?.let { assertEquals(it, center) } ?: run { opening[position] = center }
             assertEquals(Color.Red, pixels[pixels.width / 2, pixels.height - 2])
         }
+
+        // Geometry can reach its endpoint before the independently animated Glass handoff.
+        fun centerGreen(): Float {
+            val pixels = compose.onNodeWithTag("deploy").captureToImage().toPixelMap()
+            return pixels[pixels.width / 2, pixels.height / 2].green
+        }
+        compose.runOnIdle { progress = 1f }
+        val fullFilmGreen = centerGreen()
+        compose.runOnIdle { handoff = .5f }
+        val halfFilmGreen = centerGreen()
+        assertTrue(fullFilmGreen > halfFilmGreen && halfFilmGreen > 0f)
+        compose.runOnIdle { handoff = 1f }
+        compose.onNodeWithTag("player_deploy_glass").assertDoesNotExist()
+        assertEquals(0f, centerGreen())
+        compose.runOnIdle { handoff = .5f }
+        compose.onNodeWithTag("player_deploy_glass").assertExists()
+        assertEquals(halfFilmGreen, centerGreen())
     }
 }

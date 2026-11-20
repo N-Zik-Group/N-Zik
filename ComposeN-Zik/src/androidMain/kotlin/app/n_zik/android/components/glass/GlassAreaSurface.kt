@@ -130,9 +130,9 @@ fun Modifier.glassMiniPlayerBackground(
             drawRect(progressColor, size = Size(fraction() * size.width, size.maxDimension))
         }.glassAreaContour(settings, GlassArea.MiniPlayer, shape)
     }
-    val baseFilm = glassRoleFilmTint(settings, originalColor)
-    val progressFilm = glassRoleFilmTint(settings, progressColor.compositeOver(originalColor))
     val opacity = settings.film.coerceIn(0f, 1f)
+    val baseFilm = glassRoleFilmTint(settings, originalColor).copy(alpha = opacity)
+    val progressFilm = glassRoleFilmTint(settings, progressColor.compositeOver(originalColor)).copy(alpha = opacity)
     // Both regions share one optical surface and one configured film opacity.
     // Progress changes its role colour, never the material's coverage.
     return glassMaterial(
@@ -143,9 +143,16 @@ fun Modifier.glassMiniPlayerBackground(
         drawShadow = !motionOptimized,
         foldInProgress = foldInProgress,
         onDrawTint = {
-            val split = size.width * fraction()
-            clipRect(right = split) { drawRect(progressFilm.copy(alpha = opacity)) }
-            clipRect(left = split) { drawRect(baseFilm.copy(alpha = opacity)) }
+            val progress = fraction()
+            when {
+                progress == 0f || progressFilm == baseFilm -> drawRect(baseFilm)
+                progress == 1f -> drawRect(progressFilm)
+                else -> {
+                    val split = size.width * progress
+                    clipRect(right = split) { drawRect(progressFilm) }
+                    clipRect(left = split) { drawRect(baseFilm) }
+                }
+            }
         },
     )
 }

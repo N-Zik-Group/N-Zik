@@ -7,6 +7,10 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -41,9 +45,18 @@ internal fun PlayerDeployGlassSurface(
     horizontalPadding: Dp = 16.dp,
     handoffProgress: () -> Float = { if (progress() >= 1f) 1f else 0f },
 ) {
-    val position = progress().let { if (it.isFinite()) it.coerceIn(0f, 1f) else 0f }
-    if (position <= 0f || handoffProgress() >= 1f) return
+    val sheetProgress by rememberUpdatedState(progress)
+    val glassHandoff by rememberUpdatedState(handoffProgress)
+    val visible by remember {
+        derivedStateOf {
+            val position = sheetProgress()
+            position.isFinite() && position > 0f && !(glassHandoff() >= 1f)
+        }
+    }
+    if (!visible) return
+    val deploySettings = remember(settings) { settings.copy(rim = 0f) }
     BoxWithConstraints(modifier.fillMaxSize()) {
+        val position = sheetProgress().let { if (it.isFinite()) it.coerceIn(0f, 1f) else 0f }
         val density = LocalDensity.current
         val viewport = Size(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat())
         val geometry = with(density) {
@@ -57,8 +70,8 @@ internal fun PlayerDeployGlassSurface(
             .testTag("player_deploy_glass")
             .offset { IntOffset(geometry.left.roundToInt(), 0) }
             .size(with(density) { geometry.width.toDp() }, with(density) { geometry.height.toDp() })
-            .graphicsLayer { alpha = 1f - handoffProgress().coerceIn(0f, 1f) }
-            .glassMiniPlayerBackground(settings.copy(rim = 0f), shape,
+            .graphicsLayer { alpha = 1f - glassHandoff().coerceIn(0f, 1f) }
+            .glassMiniPlayerBackground(deploySettings, shape,
                 backdrop = backdrop, originalColor = filmColor, exportedBackdrop = exportedBackdrop,
                 motionOptimized = true)
             .glassAreaContour(settings, GlassArea.MiniPlayer, shape))
