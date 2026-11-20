@@ -394,6 +394,15 @@
     <string name="song_matching_all_confirmation">Você quer corresponder a %d músicas não correspondentes?</string>
     <string name="song_matching_dialog_title">Corresponder músicas</string>
     <string name="song_matching_progress_title">Músicas associadas</string>
+    <string name="song_matching_background_message">A correspondência continua em segundo plano.</string>
+    <string name="song_matching_notification_progress">%1$d de %2$d músicas</string>
+    <string name="song_matching_cancelled_title">Correspondência de músicas cancelada</string>
+    <string name="song_matching_unprocessed_count">%1$d não processado</string>
+    <string name="song_matching_notification_completed">%1$d músicas correspondidas. %2$d mesclado com músicas existentes.</string>
+    <string name="song_matching_notification_partial">%1$d correspondido, %2$d falhou, %3$d não processado. %4$d mesclado.</string>
+    <string name="song_matching_notification_cancelled">Cancelled. %1$d matched, %2$d failed, %3$d not processed. %4$d merged.</string>
+    <string name="song_matching_notification_failed">Correspondência de músicas falhou. %1$d correspondido, %2$d falhou, %3$d não processado. %4$d mesclado.</string>
+    <string name="song_matching_failed_message">Não foi possível completar a correspondência da música. Tente novamente.</string>
     <string name="song_matching_running_message">Combinando músicas. Aguarde. Não minimize ou saia do aplicativo</string>
     <string name="song_matching_unmatched_label">Música sem correspondência</string>
     <string name="metadata_musicbrainz_rating">Classificação</string>

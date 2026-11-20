@@ -394,6 +394,15 @@
     <string name="song_matching_all_confirmation">Wil je ongeëvenaarde nummers met %d koppelen?</string>
     <string name="song_matching_dialog_title">Nummers koppelen</string>
     <string name="song_matching_progress_title">Overeenkomende nummers</string>
+    <string name="song_matching_background_message">Matchen gaat verder op de achtergrond.</string>
+    <string name="song_matching_notification_progress">%1$d van %2$d nummers</string>
+    <string name="song_matching_cancelled_title">Song matching geannuleerd</string>
+    <string name="song_matching_unprocessed_count">%1$d niet verwerkt</string>
+    <string name="song_matching_notification_completed">%1$d nummers komen overeen. %2$d samengevoegd met bestaande nummers.</string>
+    <string name="song_matching_notification_partial">%1$d matched, %2$d is mislukt, %3$d niet verwerkt. %4$d samengevoegd.</string>
+    <string name="song_matching_notification_cancelled">Geannuleerd. %1$d matched, %2$d is mislukt, %3$d niet verwerkt. %4$d samengevoegd.</string>
+    <string name="song_matching_notification_failed">Song matching mislukt. %1$d matched, %2$d mislukt, %3$d niet verwerkt. %4$d samengevoegd.</string>
+    <string name="song_matching_failed_message">Kon de match van het nummer niet voltooien. Probeer het opnieuw.</string>
     <string name="song_matching_running_message">Matchen met nummers. Even geduld. Minimaliseer of sluit de app niet</string>
     <string name="song_matching_unmatched_label">Ongeëvenaard nummer</string>
     <string name="metadata_musicbrainz_rating">Beoordeling</string>

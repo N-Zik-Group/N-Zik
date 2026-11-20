@@ -394,6 +394,15 @@
     <string name="song_matching_all_confirmation">Möchten Sie %d unvergleichliche Lieder treffen?</string>
     <string name="song_matching_dialog_title">Titel abgleichen</string>
     <string name="song_matching_progress_title">Passende Lieder</string>
+    <string name="song_matching_background_message">Das Matching wird im Hintergrund fortgesetzt.</string>
+    <string name="song_matching_notification_progress">%1$d von %2$d Liedern</string>
+    <string name="song_matching_cancelled_title">Songpassung abgebrochen</string>
+    <string name="song_matching_unprocessed_count">%1$d nicht verarbeitet</string>
+    <string name="song_matching_notification_completed">%1$d Lieder gefunden. %2$d wurde mit existierenden Liedern verschmolzen.</string>
+    <string name="song_matching_notification_partial">%1$d übereinstimmend, %2$d fehlgeschlagen, %3$d nicht verarbeitet. %4$d zusammengeführt.</string>
+    <string name="song_matching_notification_cancelled">Abgebrochen. %1$d Übereinstimmt, %2$d fehlgeschlagen, %3$d nicht verarbeitet. %4$d zusammengeführt.</string>
+    <string name="song_matching_notification_failed">Songpassung fehlgeschlagen. %1$d übereinstimmt, %2$d fehlgeschlagen, %3$d nicht verarbeitet. %4$d zusammengeführt.</string>
+    <string name="song_matching_failed_message">Liedübereinstimmung konnte nicht abgeschlossen werden. Versuchen Sie es erneut.</string>
     <string name="song_matching_running_message">Titel werden abgeglichen. Bitte warten. Die App nicht minimieren oder beenden</string>
     <string name="song_matching_unmatched_label">Unübertroffener Titel</string>
     <string name="metadata_musicbrainz_rating">Bewertung</string>

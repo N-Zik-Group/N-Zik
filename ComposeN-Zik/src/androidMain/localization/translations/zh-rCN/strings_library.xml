@@ -394,6 +394,15 @@
     <string name="song_matching_all_confirmation">您想要匹配 %d 无匹配的歌曲吗？</string>
     <string name="song_matching_dialog_title">匹配歌曲</string>
     <string name="song_matching_progress_title">匹配歌曲</string>
+    <string name="song_matching_background_message">匹配继续在后台进行。</string>
+    <string name="song_matching_notification_progress">%1$d %2$d 歌曲</string>
+    <string name="song_matching_cancelled_title">歌曲匹配已取消</string>
+    <string name="song_matching_unprocessed_count">%1$d 未处理</string>
+    <string name="song_matching_notification_completed">%1$d 首歌曲匹配。 %2$d 与现有歌曲合并。</string>
+    <string name="song_matching_notification_partial">%1$d 匹配， %2$d 失败， %3$d 未处理。 %4$d 已合并。</string>
+    <string name="song_matching_notification_cancelled">取消。 %1$d 匹配， %2$d 失败， %3$d 未处理。 %4$d 已合并。</string>
+    <string name="song_matching_notification_failed">Song matching failed. %1$d matched, %2$d failed, %3$d not processed. %4$d merged.</string>
+    <string name="song_matching_failed_message">无法完成歌曲匹配，请重试。</string>
     <string name="song_matching_running_message">匹配歌曲。请稍候。不要最小化或退出应用程序</string>
     <string name="song_matching_unmatched_label">未匹配的歌曲</string>
     <string name="metadata_musicbrainz_rating">评分</string>

@@ -394,6 +394,15 @@
     <string name="song_matching_all_confirmation">Doriți să potriviți melodiile nepotrivite %d?</string>
     <string name="song_matching_dialog_title">Melodii de meci</string>
     <string name="song_matching_progress_title">Potrivire melodii</string>
+    <string name="song_matching_background_message">Potrivirea continuă în fundal.</string>
+    <string name="song_matching_notification_progress">%1$d din %2$d melodii</string>
+    <string name="song_matching_cancelled_title">Potrivire melodie anulată</string>
+    <string name="song_matching_unprocessed_count">%1$d nu a fost procesat</string>
+    <string name="song_matching_notification_completed">%1$d melodii s-au potrivit. %2$d îmbinat cu melodiile existente.</string>
+    <string name="song_matching_notification_partial">%1$d potrivire, %2$d a eșuat, %3$d nu a fost procesat. %4$d a fost îmbinat.</string>
+    <string name="song_matching_notification_cancelled">Anulat. %1$d s-a potrivit, %2$d a eșuat, %3$d nu a fost procesat. %4$d fuzionat.</string>
+    <string name="song_matching_notification_failed">Potrivirea melodiei a eșuat. %1$d s-a potrivit, %2$d a eșuat, %3$d nu a fost procesat. %4$d fuzionat.</string>
+    <string name="song_matching_failed_message">Melodia nu a putut fi finalizată. Încercați din nou.</string>
     <string name="song_matching_running_message">Se potrivesc piesele. Vă rugăm să așteptați. Nu minimizați sau ieșiți din aplicație</string>
     <string name="song_matching_unmatched_label">Melodie neadecvată</string>
     <string name="metadata_musicbrainz_rating">Clasificare</string>

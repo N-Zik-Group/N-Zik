@@ -394,6 +394,15 @@
     <string name="song_matching_all_confirmation">Czy chcesz dopasować %d niedopasowanych utworów?</string>
     <string name="song_matching_dialog_title">Dopasuj utwory</string>
     <string name="song_matching_progress_title">Pasujące utwory</string>
+    <string name="song_matching_background_message">Trwa dopasowanie w tle.</string>
+    <string name="song_matching_notification_progress">%1$d z %2$d utworów</string>
+    <string name="song_matching_cancelled_title">Dopasowanie utworu anulowane</string>
+    <string name="song_matching_unprocessed_count">%1$d nie przetworzono</string>
+    <string name="song_matching_notification_completed">%1$d utworów pasuje. %2$d scalony z istniejącymi utworami.</string>
+    <string name="song_matching_notification_partial">%1$d dopasowane, %2$d nie powiodło się, %3$d nie przetworzono. %4$d scalony.</string>
+    <string name="song_matching_notification_cancelled">Anulowano. %1$d dopasowany, %2$d nie powiódł się, %3$d nie został przetworzony. %4$d scalony.</string>
+    <string name="song_matching_notification_failed">Dopasowanie utworu nie powiodło się. %1$d dopasowane, %2$d nie powiodło się, %3$d nie przetworzono. %4$d scalone.</string>
+    <string name="song_matching_failed_message">Nie można ukończyć dopasowania utworu. Spróbuj ponownie.</string>
     <string name="song_matching_running_message">Dopasowanie utworów. Proszę czekać. Nie minimalizuj ani nie wyjdź z aplikacji</string>
     <string name="song_matching_unmatched_label">Niedopasowana piosenka</string>
     <string name="metadata_musicbrainz_rating">Ocena</string>

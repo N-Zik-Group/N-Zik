@@ -394,6 +394,15 @@
     <string name="song_matching_all_confirmation">Haluatko sovittaa yhteen %d vastaamattomien kappaleiden kanssa?</string>
     <string name="song_matching_dialog_title">Sovita kappaleet</string>
     <string name="song_matching_progress_title">Vastaavat kappaleet</string>
+    <string name="song_matching_background_message">Vastaanotto jatkuu taustalla.</string>
+    <string name="song_matching_notification_progress">%1$d %2$d kappaletta</string>
+    <string name="song_matching_cancelled_title">Kappaleen täsmäytys peruttu</string>
+    <string name="song_matching_unprocessed_count">%1$d ei käsitelty</string>
+    <string name="song_matching_notification_completed">%1$d kappaletta osui. %2$d yhdistettiin olemassa oleviin kappaleisiin.</string>
+    <string name="song_matching_notification_partial">%1$d matched, %2$d failed, %3$d not processed. %4$d merged.</string>
+    <string name="song_matching_notification_cancelled">Cancelled. %1$d matched, %2$d failed, %3$d not processed. %4$d merged.</string>
+    <string name="song_matching_notification_failed">Song matching failed. %1$d matched, %2$d failed, %3$d not processed. %4$d merged.</string>
+    <string name="song_matching_failed_message">Kappaleen vastaavuutta ei voitu suorittaa. Yritä uudelleen.</string>
     <string name="song_matching_running_message">Vastaavat kappaleet. Odota. Älä pienennä tai sulje sovellusta</string>
     <string name="song_matching_unmatched_label">Vastaamaton kappale</string>
     <string name="metadata_musicbrainz_rating">Arvostelu</string>

@@ -394,6 +394,15 @@
     <string name="song_matching_all_confirmation">Voulez-vous faire correspondre %d chansons sans correspondance?</string>
     <string name="song_matching_dialog_title">Faire correspondre les chansons</string>
     <string name="song_matching_progress_title">Chansons correspondantes</string>
+    <string name="song_matching_background_message">La mise en correspondance se poursuit en arrière-plan.</string>
+    <string name="song_matching_notification_progress">%1$d sur %2$d titres</string>
+    <string name="song_matching_cancelled_title">La recherche de correspondance de titre a été annulée</string>
+    <string name="song_matching_unprocessed_count">%1$d non traités</string>
+    <string name="song_matching_notification_completed">%1$d titres correspondants. %2$d ont été fusionnés avec des titres existants.</string>
+    <string name="song_matching_notification_partial">%1$d correspondants, %2$d en échecs, %3$d non traités. %4$d fusionnés.</string>
+    <string name="song_matching_notification_cancelled">Annulé. %1$d correspondants, %2$d en échecs, %3$d non traités. %4$d fusionnés.</string>
+    <string name="song_matching_notification_failed">Échec de la correspondance des titres. %1$d correspondants, %2$d en échecs, %3$d non traités. %4$d fusionnés.</string>
+    <string name="song_matching_failed_message">Impossible de terminer la recherche de correspondance de titre. Veuillez réessayer.</string>
     <string name="song_matching_running_message">Titres correspondants. Veuillez patienter. Ne réduisez pas ou ne quittez pas l\'application</string>
     <string name="song_matching_unmatched_label">Chanson sans correspondance</string>
     <string name="metadata_musicbrainz_rating">Évaluation</string>
