@@ -3,12 +3,14 @@ package app.n_zik.android.playback.utils
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.net.Uri
-import androidx.core.graphics.applyCanvas
 import app.n_zik.android.appContext
 import timber.log.Timber
 import app.n_zik.android.core.coil.ImageCacheFactory
-import app.n_zik.android.core.coil.displayArtworkSource
+import app.n_zik.android.components.player.ArtworkSource
+import app.n_zik.android.components.player.SharedArtworkColors
+import app.n_zik.android.utils.getActiveProfile
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -17,7 +19,6 @@ import kotlinx.coroutines.withContext
 //context(Context)
 class BitmapProvider(
     private val scope: CoroutineScope,
-    private val bitmapSize: Int,
     private val colorProvider: (isSystemInDarkMode: Boolean) -> Int
 ) {
     // Removed private val imageLoader
@@ -26,6 +27,8 @@ class BitmapProvider(
         private set
 
     var lastBitmap: Bitmap? = null
+    private var lastSource: ArtworkSource? = null
+    private var lastCacheGeneration = -1L
     private var lastIsSystemInDarkMode = false
 
     private var loadJob: Job? = null
@@ -55,8 +58,8 @@ class BitmapProvider(
 
         runCatching {
             defaultBitmap =
-                Bitmap.createBitmap(bitmapSize, bitmapSize, Bitmap.Config.ARGB_8888).applyCanvas {
-                    drawColor(colorProvider(isSystemInDarkMode))
+                Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888).apply {
+                    eraseColor(colorProvider(isSystemInDarkMode))
                 }
         }.onFailure {
             Timber.tag("BitmapProvider").e("Failed set default bitmap ${it.stackTraceToString()}")
@@ -70,13 +73,19 @@ class BitmapProvider(
         
         // If URI is null, use the default bitmap
         if (uri == null) {
+            loadJob?.cancel()
             lastUri = null
+            lastSource = null
             lastBitmap = null
             onDone(bitmap)
             return
         }
         
-        if (lastUri == uri) {
+        val source = ImageCacheFactory.artworkColorSource(uri.toString(), getActiveProfile(appContext()))
+        val cacheGeneration = SharedArtworkColors.generation.value
+        if (lastUri == uri && lastSource == source && lastCacheGeneration == cacheGeneration &&
+            (lastBitmap != null || loadJob?.isActive == true)
+        ) {
             onDone(lastBitmap ?: defaultBitmap)
             listener?.invoke(lastBitmap)
             return
@@ -84,10 +93,17 @@ class BitmapProvider(
 
         loadJob?.cancel()
         lastUri = uri
+        lastSource = source
+        lastCacheGeneration = cacheGeneration
+        lastBitmap = null
 
         loadJob = scope.launch(NzikDispatchers.DATA) {
             try {
-                val loadedBitmap: Bitmap? = ImageCacheFactory.loadBitmap(displayArtworkSource(uri.toString()), allowHardware = false)
+                val loadedBitmap = ImageCacheFactory.loadBitmap(
+                    source?.uri,
+                    requestSize = 400,
+                    cacheDecodedBitmap = false,
+                )
                 
                 withContext(NzikDispatchers.UI) {
                     if (loadedBitmap != null) {
@@ -97,6 +113,8 @@ class BitmapProvider(
                     }
                     onDone(bitmap)
                 }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
             } catch (e: Exception) {
                 Timber.tag("BitmapProvider").e("Failed to load bitmap ${e.stackTraceToString()}")
                 withContext(NzikDispatchers.UI) {

@@ -60,6 +60,7 @@ object NZikWidgetManager {
         playback: WidgetPlaybackSnapshot =
             WidgetPlaybackSnapshot(duration, currentPosition, SystemClock.elapsedRealtime(), isPlaying),
     ) {
+        if (!withContext(NzikDispatchers.DATA) { WidgetAppearance.hasWidgets(context) }) return
         val (albumArt, snapshot) = withContext(NzikDispatchers.MEDIA) {
             val appWidgetManager = AppWidgetManager.getInstance(context)
 
@@ -70,9 +71,11 @@ object NZikWidgetManager {
             // Scale down the bitmap to prevent RemoteViews memory limit exception (TransactionTooLarge)
             val albumArt: Bitmap? = artworkBitmap?.let {
                 if (it.width > 300 || it.height > 300) {
-                    val size = minOf(it.width, it.height)
+                    val size = maxOf(it.width, it.height)
                     val scale = 300f / size
-                    Bitmap.createScaledBitmap(it, (it.width * scale).toInt(), (it.height * scale).toInt(), true)
+                    Bitmap.createScaledBitmap(it,
+                        (it.width * scale).roundToInt().coerceAtLeast(1),
+                        (it.height * scale).roundToInt().coerceAtLeast(1), true)
                 } else {
                     it
                 }

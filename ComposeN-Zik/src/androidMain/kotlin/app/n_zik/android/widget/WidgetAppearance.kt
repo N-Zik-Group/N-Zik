@@ -110,7 +110,7 @@ internal object WidgetAppearance {
         preferences.registerOnSharedPreferenceChangeListener(listener)
     }
 
-    private fun hasWidgets(context: Context): Boolean {
+    internal fun hasWidgets(context: Context): Boolean {
         val manager = AppWidgetManager.getInstance(context)
         return listOf(MusicWidgetReceiver::class.java, PlaylistWidgetReceiver::class.java, TurntableWidgetReceiver::class.java)
             .any { manager.getAppWidgetIds(ComponentName(context, it)).isNotEmpty() }

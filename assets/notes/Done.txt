@@ -28,6 +28,9 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(widget): refresh cover pixels without redundant decoding
+  - Resolve artwork off the main dispatcher when a widget is installed and reload the same URI after a cover refresh.
+  - Keep the solid fallback to one pixel and refresh paused playback when a widget is added or resized.
 - fix(player): contrast track labels against native artwork
   - Sample the title, artist and Play/Pause separately in Normal when sharp artwork runs behind the controls.
   - Keep track links, outline preferences and the existing shared fade.

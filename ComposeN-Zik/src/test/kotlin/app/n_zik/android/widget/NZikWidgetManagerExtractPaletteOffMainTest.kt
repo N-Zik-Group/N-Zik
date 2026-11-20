@@ -11,11 +11,15 @@ import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -72,23 +76,40 @@ class NZikWidgetManagerExtractPaletteOffMainTest {
     }
 
     @Test
+    fun `updateWidgets skips palette work if no widget is installed`() = runBlocking {
+        val probeContext = ThreadProbingContext(context)
+        NZikWidgetManager.updateWidgets(
+            context = probeContext,
+            title = "Title",
+            artist = "Artist",
+            artworkBitmap = solidBitmap(Color.BLUE),
+            isPlaying = false,
+            isLiked = false,
+        )
+        assertNull(probeContext.sharedPreferencesThreadName)
+    }
+
+    @Test
     fun `updateWidgets dispatches its internal work to a nzik-media thread, not the caller's thread`() = runBlocking {
         val probeContext = ThreadProbingContext(context)
         val callerThreadName = Thread.currentThread().name
         val bitmap = solidBitmap(Color.rgb(50, 150, 250))
 
-        // No widgets registered under Robolectric -> both internal `updateAppWidget` loops are
-        // skipped, but palette extraction (and thus the `getSharedPreferences` probe) runs
-
-        // unconditionally before that check, from inside the real `withContext(MEDIA)` block.
-        NZikWidgetManager.updateWidgets(
-            context = probeContext,
-            title = "Title",
-            artist = "Artist",
-            artworkBitmap = bitmap,
-            isPlaying = false,
-            isLiked = false,
-        )
+        // Exercise the render path without binding launcher RemoteViews in this test.
+        mockkObject(WidgetAppearance)
+        try {
+            every { WidgetAppearance.hasWidgets(probeContext) } returns true
+            NZikWidgetManager.updateWidgets(
+                context = probeContext,
+                title = "Title",
+                artist = "Artist",
+                artworkBitmap = bitmap,
+                isPlaying = false,
+                isLiked = false,
+            )
+        } finally {
+            unmockkObject(WidgetAppearance)
+        }
 
         val threadName = probeContext.sharedPreferencesThreadName
         assertTrue("expected extractPalette's getSharedPreferences call to have been observed", threadName != null)

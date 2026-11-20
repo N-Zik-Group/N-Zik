@@ -249,7 +249,6 @@ import java.io.File
 import java.io.IOException
 import java.util.IdentityHashMap
 import kotlin.io.path.createTempDirectory
-import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 import android.os.Binder as AndroidBinder
 import app.n_zik.android.utils.isDiscordPresenceEnabledKey
@@ -274,6 +273,9 @@ import androidx.compose.runtime.Stable
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import app.n_zik.android.widget.NZikWidgetManager
+import app.n_zik.android.widget.MusicWidgetReceiver
+import app.n_zik.android.widget.TurntableWidgetReceiver
+import app.n_zik.android.widget.WidgetAppearance
 import app.n_zik.android.widget.WidgetPlaybackSnapshot
 import app.n_zik.android.utils.crossfadeEnabledKey
 import java.net.UnknownHostException
@@ -749,7 +751,6 @@ class PlayerServiceModern : MediaLibraryService(),
         runCatching {
             bitmapProvider = BitmapProvider(
                 scope = coroutineScope,
-                bitmapSize = (1200 * resources.displayMetrics.density).roundToInt(),
                 colorProvider = { isSystemInDarkMode ->
                     if (isSystemInDarkMode) Color.BLACK else Color.WHITE
                 }
@@ -1090,6 +1091,11 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     private fun dispatchPlaybackStart(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == MusicWidgetReceiver.ACTION_UPDATE_WIDGET ||
+            intent?.action == TurntableWidgetReceiver.ACTION_UPDATE_TURNTABLE_WIDGET
+        ) {
+            refreshArtworkWidgets()
+        }
         return try {
             super.onStartCommand(intent, flags, startId)
         } catch (e: Exception) {
@@ -1491,12 +1497,16 @@ class PlayerServiceModern : MediaLibraryService(),
         }
         scheduleCrossfade()
 
-        val networkQuality = NetworkQualityHelper.getCurrentNetworkQuality(this)
-        val effectiveAudio = if (audioQualityFormat == AudioQualityFormat.Auto) "Auto→$networkQuality" else audioQualityFormat.name
-        val effectiveImage = if (imageQualityFormat == ImageQualityFormat.Auto) "Auto→$networkQuality" else imageQualityFormat.name
+        val audioQuality = audioQualityFormat
+        val imageQuality = imageQualityFormat
         val downloadQuality = preferences.getEnum(downloadQualityFormatKey, DownloadQualityFormat.Auto)
-        val effectiveDownload = if (downloadQuality == DownloadQualityFormat.Auto) "Auto→$networkQuality" else downloadQuality.name
-        Timber.tag("NZik_Network").i("onMediaItemTransition - Network: $networkQuality | Audio: $effectiveAudio | Image: $effectiveImage | Download: $effectiveDownload")
+        coroutineScope.launch(NzikDispatchers.DATA) {
+            val networkQuality = NetworkQualityHelper.getCurrentNetworkQuality(this@PlayerServiceModern)
+            val effectiveAudio = if (audioQuality == AudioQualityFormat.Auto) "Auto→$networkQuality" else audioQuality.name
+            val effectiveImage = if (imageQuality == ImageQualityFormat.Auto) "Auto→$networkQuality" else imageQuality.name
+            val effectiveDownload = if (downloadQuality == DownloadQualityFormat.Auto) "Auto→$networkQuality" else downloadQuality.name
+            Timber.tag("NZik_Network").i("onMediaItemTransition - Network: $networkQuality | Audio: $effectiveAudio | Image: $effectiveImage | Download: $effectiveDownload")
+        }
 
         // Clear recovery counter for the new media item (fresh start)
         mediaItem?.mediaId?.let { recoveryAttempts.remove(it) }
@@ -1609,20 +1619,7 @@ class PlayerServiceModern : MediaLibraryService(),
         maybeRecoverPlaybackError()
         maybeNormalizeVolume()
         loadFromRadio(reason)
-        // Update bitmap with proper fallback handling
-        val artworkUri = binder.player.currentMediaItem?.mediaMetadata?.artworkUri
-        if (artworkUri != null) {
-            bitmapProvider.load(artworkUri) {
-                updateDefaultNotification()
-                updateWidgets()
-            }
-        } else {
-            // If no artwork, force the use of the default bitmap
-            bitmapProvider.load(null) {
-                updateDefaultNotification()
-                updateWidgets()
-            }
-        }
+        refreshArtworkWidgets()
 
         /**
          * Discord presence
@@ -2536,6 +2533,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
     private var widgetUpdateJob: Job? = null
     private var widgetRenderJob: Job? = null
+    private var widgetArtworkJob: Job? = null
 
     private fun startWidgetUpdates() {
         if (widgetUpdateJob?.isActive == true) return
@@ -2555,8 +2553,21 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     /** Re-render paused widgets without starting playback or waking a stopped service. */
-    private fun refreshArtworkWidgets() {
-        coroutineScope.launch(NzikDispatchers.UI) { updateWidgets() }
+    private fun refreshArtworkWidgets(mediaId: String? = null) {
+        coroutineScope.launch(NzikDispatchers.UI) {
+            if (isDestroying || !::bitmapProvider.isInitialized || !::guestGuardPlayer.isInitialized) return@launch
+            if (mediaId != null && binder.player.currentMediaItem?.mediaId != mediaId) return@launch
+            widgetArtworkJob?.cancel()
+            widgetArtworkJob = coroutineScope.launch(NzikDispatchers.DATA) artworkJob@{
+                if (!WidgetAppearance.hasWidgets(applicationContext)) return@artworkJob
+                withContext(NzikDispatchers.UI) {
+                    if (isDestroying) return@withContext
+                    val widgetPlayer = binder.player
+                    val artwork = widgetPlayer.mediaMetadata.artworkUri ?: widgetPlayer.currentMediaItem?.mediaMetadata?.artworkUri
+                    bitmapProvider.load(artwork) { updateWidgets() }
+                }
+            }
+        }
     }
 
     @MainThread
@@ -2580,10 +2591,11 @@ class PlayerServiceModern : MediaLibraryService(),
             speed = widgetPlayer.playbackParameters.speed,
         )
         val metadata = widgetPlayer.mediaMetadata
-        val currentBitmap = bitmapProvider.bitmap
-        val artworkUri = (metadata.artworkUri ?: widgetPlayer.currentMediaItem?.mediaMetadata?.artworkUri)?.toString()
+        val artworkUri = metadata.artworkUri ?: widgetPlayer.currentMediaItem?.mediaMetadata?.artworkUri
+        val currentBitmap = bitmapProvider.bitmap.takeIf { bitmapProvider.lastUri == artworkUri }
 
         widgetRenderJob = coroutineScope.launch(NzikDispatchers.DATA) {
+            if (!WidgetAppearance.hasWidgets(applicationContext)) return@launch
             val songId = currentMediaId.substringAfterLast('/')
             val currentSong = Database.songTable.findByIdDirect(songId)
             val isLiked = currentSong?.likedAt != null
@@ -2595,7 +2607,7 @@ class PlayerServiceModern : MediaLibraryService(),
                 artworkBitmap = currentBitmap,
                 isPlaying = playback.isPlaying,
                 isLiked = isLiked,
-                artworkUri = artworkUri,
+                artworkUri = artworkUri?.toString(),
                 playback = playback,
             )
         }
@@ -3006,7 +3018,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
     @Stable
     open inner class Binder : AndroidBinder() {
-        fun refreshArtworkWidgets() = this@PlayerServiceModern.refreshArtworkWidgets()
+        fun refreshArtworkWidgets(mediaId: String? = null) = this@PlayerServiceModern.refreshArtworkWidgets(mediaId)
 
         val service: PlayerServiceModern
             get() = this@PlayerServiceModern

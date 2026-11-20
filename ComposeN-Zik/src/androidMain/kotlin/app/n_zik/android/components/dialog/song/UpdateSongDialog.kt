@@ -590,6 +590,7 @@ internal suspend fun runSongUpdateCore(
     if (refreshedFields.needsFetch) {
         progress.failureIssue = SongUpdateIssue.PLAYBACK_REFRESH
         SongUpdatePlaybackRefresh.publish(binder, committedSong, refreshedFields, requestProfile)
+        if (refreshedFields.thumbnail) binder?.refreshArtworkWidgets(committedSong.id)
     }
     return progress.issues.isEmpty()
 }

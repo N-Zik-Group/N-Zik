@@ -3,8 +3,10 @@ package app.n_zik.android.widget
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import app.n_zik.android.core.backup.isLibraryReady
+import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -46,6 +48,11 @@ class PlaylistWidgetReceiver : AppWidgetProvider() {
         NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
             try {
                 update()
+                if (PlayerServiceModern.isRunning) {
+                    context.startService(Intent(context, PlayerServiceModern::class.java).apply {
+                        action = MusicWidgetReceiver.ACTION_UPDATE_WIDGET
+                    })
+                }
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
