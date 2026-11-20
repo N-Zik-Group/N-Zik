@@ -293,7 +293,7 @@ object NetworkQualityHelper {
     fun isNetworkAvailableComposable(context: Context): State<Boolean> {
         val connection = remember(context) { observeConnection(context) }
         return connection.collectAsStateWithLifecycle(
-            initialValue = isNetworkConnected(context),
+            initialValue = remember(context) { isNetworkConnected(context) },
             context = NzikDispatchers.DATA
         )
     }

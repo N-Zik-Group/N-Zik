@@ -6,6 +6,9 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- perf(network): reuse the initial connectivity read during composition
+  - Remember the first synchronous connectivity result per context while the shared observer delivers live updates.
+  - Verify that an unrelated recomposition does not repeat the main-thread connectivity lookup.
 - refactor(startup): extract diagnostics setup
   - Move profile crash capture, log retention and startup logging into StartupDiagnostics.
   - Preserve initialization order, crash handler locking and the file logging flush timeout.
