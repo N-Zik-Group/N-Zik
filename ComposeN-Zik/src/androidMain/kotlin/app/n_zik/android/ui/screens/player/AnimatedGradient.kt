@@ -5,9 +5,14 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithCache
@@ -18,6 +23,32 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.media3.common.util.UnstableApi
+import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
+import app.n_zik.android.components.player.M3ECoverColors
+import app.n_zik.android.components.player.PlayerArtworkPaint
+import app.n_zik.android.components.player.PlayerFluidColors
+import app.n_zik.android.components.player.PlayerGradientFade
+import app.n_zik.android.components.player.PlayerGradientLayers
+import app.n_zik.android.components.player.PlayerMeshGradient
+import app.n_zik.android.components.player.animatedM3EBackground
+import app.n_zik.android.components.player.playerFluidBackground
+import app.n_zik.android.components.player.playerShaderBackground
+import app.n_zik.android.components.player.playerShaderWash
+import app.n_zik.android.components.player.rememberPlayerDecorationElapsedNanos
+import app.n_zik.android.components.theme.paletteDarkness
+import app.n_zik.android.enums.AnimatedGradient
+import app.n_zik.android.ui.styling.ColorPalette
+import com.mikepenz.hypnoticcanvas.shaders.BlackCherryCosmos
+import com.mikepenz.hypnoticcanvas.shaders.GlossyGradients
+import com.mikepenz.hypnoticcanvas.shaders.GoldenMagma
+import com.mikepenz.hypnoticcanvas.shaders.GradientFlow
+import com.mikepenz.hypnoticcanvas.shaders.IceReflection
+import com.mikepenz.hypnoticcanvas.shaders.InkFlow
+import com.mikepenz.hypnoticcanvas.shaders.MesmerizingLens
+import com.mikepenz.hypnoticcanvas.shaders.OilFlow
+import com.mikepenz.hypnoticcanvas.shaders.PurpleLiquid
+import com.mikepenz.hypnoticcanvas.shaders.Stage
 import kotlin.math.sqrt
 
 @OptIn(UnstableApi::class)
@@ -106,4 +137,80 @@ fun Modifier.animatedGradient(
     }
 }
 
-
+@Composable
+@OptIn(UnstableApi::class)
+internal fun BoxScope.PlayerAnimatedBackground(
+    backdrop: LayerBackdrop,
+    capturePlayerBackground: Boolean,
+    gradientFade: PlayerGradientFade,
+    decorationsActive: Boolean,
+    color: ColorPalette,
+    targetFluidColors: PlayerFluidColors?,
+    artworkPaint: State<PlayerArtworkPaint>,
+    isActuallyPlaying: () -> Boolean,
+    coverSwatches: M3ECoverColors,
+    coverGradientColor: (Int) -> Color,
+    mediaId: String,
+    displayedSwatches: State<List<Color>>,
+    targetThemeBackground: Color,
+) {
+    val source = Modifier.matchParentSize().then(
+        if (capturePlayerBackground) Modifier.layerBackdrop(backdrop) else Modifier
+    )
+    PlayerGradientLayers(gradientFade, source) { type, incoming ->
+        val animationActive = decorationsActive && incoming
+        when (type) {
+            AnimatedGradient.FluidThemeColorGradient, AnimatedGradient.FluidCoverColorGradient,
+            AnimatedGradient.M3EMorphingTheme, AnimatedGradient.M3EMorphingCover -> {
+                val isTheme = type == AnimatedGradient.FluidThemeColorGradient || type == AnimatedGradient.M3EMorphingTheme
+                val themeStops = PlayerFluidColors(color.background0, color.background2, color.background1, color.accent)
+                val fallbackStops = rememberUpdatedState(targetFluidColors ?: themeStops)
+                val currentThemeStops = rememberUpdatedState(themeStops)
+                val fluidStops = remember(artworkPaint, isTheme) { derivedStateOf {
+                    if (isTheme) currentThemeStops.value else artworkPaint.value.fluid ?: fallbackStops.value
+                } }
+                val fluid = Modifier.playerFluidBackground(
+                    fluidStops, rememberPlayerDecorationElapsedNanos(animationActive),
+                )
+                if (type == AnimatedGradient.M3EMorphingTheme || type == AnimatedGradient.M3EMorphingCover) {
+                    fluid.animatedM3EBackground(
+                        animating = isActuallyPlaying(),
+                        active = animationActive,
+                        D = if (isTheme) color.background1 else coverGradientColor(coverSwatches.dominant),
+                        V = if (isTheme) color.background2 else coverGradientColor(coverSwatches.vibrant),
+                        LV = if (isTheme) color.background2 else coverGradientColor(coverSwatches.lightVibrant),
+                        DV = if (isTheme) color.background1 else coverGradientColor(coverSwatches.darkVibrant),
+                        M = if (isTheme) color.background1 else coverGradientColor(coverSwatches.muted),
+                        LM = if (isTheme) color.accent else coverGradientColor(coverSwatches.lightMuted),
+                        DM = if (isTheme) color.background2 else coverGradientColor(coverSwatches.darkMuted),
+                        skipToken = mediaId,
+                        artworkSwatches = displayedSwatches.takeIf { !isTheme },
+                        paletteKickKey = if (isTheme) targetThemeBackground else coverGradientColor(coverSwatches.vibrant),
+                    )
+                } else fluid
+            }
+            AnimatedGradient.Linear -> Modifier.animatedGradient(
+                animating = isActuallyPlaying() && animationActive,
+                swatches = displayedSwatches,
+            )
+            else -> {
+                val shader = when (type) {
+                    AnimatedGradient.Mesh -> remember(displayedSwatches) { PlayerMeshGradient(displayedSwatches) }
+                    AnimatedGradient.MesmerizingLens -> MesmerizingLens
+                    AnimatedGradient.GlossyGradients -> GlossyGradients
+                    AnimatedGradient.GradientFlow -> GradientFlow
+                    AnimatedGradient.PurpleLiquid -> PurpleLiquid
+                    AnimatedGradient.InkFlow -> InkFlow
+                    AnimatedGradient.OilFlow -> OilFlow
+                    AnimatedGradient.IceReflection -> IceReflection
+                    AnimatedGradient.Stage -> Stage
+                    AnimatedGradient.GoldenMagma -> GoldenMagma
+                    AnimatedGradient.BlackCherryCosmos -> BlackCherryCosmos
+                    else -> error("Unexpected shader gradient: $type")
+                }
+                val shade = playerShaderWash(type, paletteDarkness())
+                Modifier.playerShaderBackground(shader, animationActive).background(shade)
+            }
+        }
+    }
+}

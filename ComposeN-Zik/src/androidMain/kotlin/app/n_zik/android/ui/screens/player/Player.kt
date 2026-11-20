@@ -15,9 +15,7 @@ import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.playback.services.canResolvePlayerVideo
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.utils.actionExpandedKey
-import app.n_zik.android.components.player.extractCoverPalette
 
-import android.graphics.Bitmap
 import android.util.LruCache
 
 import app.n_zik.android.components.player.playerQueueUnderlayCovered
@@ -93,7 +91,6 @@ import android.graphics.RenderEffect
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -161,7 +158,6 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import app.n_zik.android.components.player.rememberPlayerArtworkPagerState
-import app.n_zik.android.components.player.animatePlayerArtworkScrollToPage
 import app.n_zik.android.components.player.shouldWaitForPlayerBackdrop
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -216,10 +212,7 @@ import app.n_zik.android.components.player.rememberPlayerBackdropSampling
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.boundsInWindow
-import app.n_zik.android.components.player.playerFluidBackground
 import app.n_zik.android.components.player.PlayerFluidColors
-import app.n_zik.android.components.player.PlayerGradientLayers
-import app.n_zik.android.components.player.playerShaderWash
 import app.n_zik.android.components.player.rememberPlayerGradientFade
 import app.n_zik.android.components.player.LocalPlayerArtworkPaint
 import app.n_zik.android.components.player.LocalPlayerArtworkPaintTarget
@@ -230,7 +223,6 @@ import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.components.player.PlayerArtworkPaint
 import app.n_zik.android.components.glass.GlassArtworkTint
 import app.n_zik.android.components.glass.LocalGlassArtworkTint
-import app.n_zik.android.components.player.PlayerMeshGradient
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
@@ -267,16 +259,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.n_zik.android.themed.n_zik.screen.player.ActionBar
-import com.mikepenz.hypnoticcanvas.shaders.BlackCherryCosmos
-import com.mikepenz.hypnoticcanvas.shaders.GlossyGradients
-import com.mikepenz.hypnoticcanvas.shaders.GoldenMagma
-import com.mikepenz.hypnoticcanvas.shaders.GradientFlow
-import com.mikepenz.hypnoticcanvas.shaders.IceReflection
-import com.mikepenz.hypnoticcanvas.shaders.InkFlow
-import com.mikepenz.hypnoticcanvas.shaders.MesmerizingLens
-import com.mikepenz.hypnoticcanvas.shaders.OilFlow
-import com.mikepenz.hypnoticcanvas.shaders.PurpleLiquid
-import com.mikepenz.hypnoticcanvas.shaders.Stage
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.LocalPendingMiniPlayerAction
@@ -286,7 +268,6 @@ import app.n_zik.android.cleanPrefix
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.enums.AnimatedGradient
-import app.n_zik.android.components.player.animatedM3EBackground
 import app.n_zik.android.enums.BackgroundProgress
 import app.n_zik.android.enums.CarouselSize
 import app.n_zik.android.enums.ColorPaletteMode
@@ -308,8 +289,6 @@ import app.n_zik.android.components.menu.player.PlayerMenu
 import app.n_zik.android.components.menu.MenuDragHandleBar
 import app.n_zik.android.ui.components.themed.RotateThumbnailCoverAnimationModern
 import app.n_zik.android.components.dialog.common.ThumbnailOffsetDialog
-import app.n_zik.android.components.player.playerShaderBackground
-import app.n_zik.android.components.player.rememberPlayerDecorationElapsedNanos
 import app.n_zik.android.components.player.rememberCoverSpin
 import app.n_zik.android.components.player.rememberPlayerDecorationsActive
 import app.n_zik.android.ui.styling.Dimensions
@@ -387,7 +366,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.player.PlayerCurrentCover
 import app.n_zik.android.components.player.PlayerCoverFrame
@@ -397,7 +375,7 @@ import app.n_zik.android.components.player.ReportPresentedPlayerCover
 import androidx.compose.ui.graphics.painter.Painter
 import app.n_zik.android.components.glass.rememberGlassArtwork
 import app.n_zik.android.components.player.rememberArtworkDisplayResult
-import app.n_zik.android.components.player.ArtworkDisplayColors
+import app.n_zik.android.components.player.M3ECoverColors
 import app.n_zik.android.components.player.BlurAdjuster
 import app.n_zik.android.components.player.m3eDarkenBy
 import app.n_zik.android.components.player.playerTextOutlineColor
@@ -422,70 +400,6 @@ import android.content.ContextWrapper
 import androidx.compose.ui.layout.layout
 import app.n_zik.android.core.sync.YouTubeSync
 
-
-/** Pure compatibility seam for extraction regression tests; production uses the shared artwork facade. */
-internal data class PlayerDynamicPaletteResult(
-    val palette: ColorPalette,
-    val dominant: Int,
-    val vibrant: Int,
-    val lightVibrant: Int,
-    val darkVibrant: Int,
-    val muted: Int,
-    val lightMuted: Int,
-    val darkMuted: Int,
-)
-
-private data class PlayerBackgroundArtwork(
-    val mediaId: String,
-    val coverUrl: String?,
-    val coverRevision: Long,
-    val display: ArtworkDisplayColors?,
-    val palette: ColorPalette,
-)
-
-/** Computes the palette and background swatches from one shared cover extraction. */
-internal suspend fun computePlayerDynamicPalette(
-    bitmap: Bitmap,
-    isDark: Boolean,
-    fallbackColor: ColorPalette,
-): PlayerDynamicPaletteResult {
-    val extracted = extractCoverPalette(bitmap, isDark)
-    val colors = extracted?.colors
-    if (colors == null) {
-        // Without a dominant swatch, retain the caller's palette and accent.
-        val accent = fallbackColor.accent.toArgb()
-        return PlayerDynamicPaletteResult(
-            palette = fallbackColor,
-            dominant = accent,
-            vibrant = accent,
-            lightVibrant = accent,
-            darkVibrant = accent,
-            muted = accent,
-            lightMuted = accent,
-            darkMuted = accent,
-        )
-    }
-    return PlayerDynamicPaletteResult(
-        palette = requireNotNull(extracted).palette,
-        dominant = colors.dominant,
-        vibrant = colors.vibrant,
-        lightVibrant = colors.lightVibrant,
-        darkVibrant = colors.darkVibrant,
-        muted = colors.muted,
-        lightMuted = colors.lightMuted,
-        darkMuted = colors.darkMuted,
-    )
-}
-
-@Composable
-internal fun rememberPlayerExpansionState(
-    isLandscape: Boolean,
-    portraitPreference: MutableState<Boolean>,
-): MutableState<Boolean> {
-    // Video can force landscape or replace the player composition during PiP.
-    // Landscape layout changes must stay out of the persisted portrait preference.
-    return if (isLandscape) remember { mutableStateOf(true) } else portraitPreference
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalTextApi
@@ -1016,13 +930,9 @@ fun Player(
     } else null
     val targetPalette = artworkThemePalette ?: globalTargetPalette
     val coverColors = backgroundDisplay?.colors
-    val dominant = coverColors?.dominant ?: backgroundPalette.accent.toArgb()
-    val vibrant = coverColors?.vibrant ?: dominant
-    val lightVibrant = coverColors?.lightVibrant ?: dominant
-    val darkVibrant = coverColors?.darkVibrant ?: dominant
-    val muted = coverColors?.muted ?: dominant
-    val lightMuted = coverColors?.lightMuted ?: dominant
-    val darkMuted = coverColors?.darkMuted ?: dominant
+    val coverSwatches = coverColors ?: backgroundPalette.accent.toArgb().let { accent ->
+        M3ECoverColors(accent, accent, accent, accent, accent, accent, accent)
+    }
     val coverBackground = if (coverColors != null || backgroundDisplay?.forceDark == true)
         backgroundDisplay?.background ?: backgroundPalette.background1 else backgroundPalette.background1
 
@@ -1106,14 +1016,15 @@ fun Player(
         backgroundDisplay?.isExtremeBlack == true -> PlayerFluidColors.ExtremeBlackCover
         else -> PlayerFluidColors(backgroundPalette.background0, backgroundPalette.background2, backgroundPalette.background1, coverBackground)
     }
-    val targetSwatches = when {
-        playerBackgroundColors == PlayerBackgroundColors.ColorPalette ->
+    val targetSwatches = if (playerBackgroundColors == PlayerBackgroundColors.ColorPalette || usesAnimatedBackground) {
+        val (dominant, vibrant, lightVibrant, darkVibrant, muted, lightMuted, darkMuted) = coverSwatches
+        if (usesAnimatedBackground) {
+            listOf(dominant, vibrant, lightVibrant, darkVibrant, muted, lightMuted, darkMuted).map(::coverGradientColor)
+        } else {
             listOf(Color(dominant), Color(vibrant), Color(lightVibrant), Color(darkVibrant),
                 Color(muted), Color(lightMuted), Color(darkMuted))
-        usesAnimatedBackground -> listOf(dominant, vibrant, lightVibrant, darkVibrant, muted, lightMuted, darkMuted)
-            .map(::coverGradientColor)
-        else -> null
-    }
+        }
+    } else null
     val coverForeground = backgroundDisplay?.takeIf { it.colors != null || it.forceDark }?.foreground
     val targetArtworkPaint = PlayerArtworkPaint(
         backgroundPalette.accent, coverBackground, targetFluidColors, targetSwatches,
@@ -1428,66 +1339,22 @@ fun Player(
 
     @Composable
     fun BoxScope.AnimatedPlayerBackground() {
-        if (animatedGradientBackdrop == null) return
-        val source = Modifier.matchParentSize().then(
-            if (capturePlayerBackground) Modifier.layerBackdrop(animatedGradientBackdrop) else Modifier
+        val backdrop = animatedGradientBackdrop ?: return
+        PlayerAnimatedBackground(
+            backdrop = backdrop,
+            capturePlayerBackground = capturePlayerBackground,
+            gradientFade = gradientFade,
+            decorationsActive = decorationsActive,
+            color = color,
+            targetFluidColors = targetFluidColors,
+            artworkPaint = artworkPaint,
+            isActuallyPlaying = { isActuallyPlaying },
+            coverSwatches = coverSwatches,
+            coverGradientColor = ::coverGradientColor,
+            mediaId = backgroundArtwork.mediaId,
+            displayedSwatches = displayedSwatches,
+            targetThemeBackground = targetPalette.background2,
         )
-        PlayerGradientLayers(gradientFade, source) { type, incoming ->
-            val animationActive = decorationsActive && incoming
-            when (type) {
-                AnimatedGradient.FluidThemeColorGradient, AnimatedGradient.FluidCoverColorGradient,
-                AnimatedGradient.M3EMorphingTheme, AnimatedGradient.M3EMorphingCover -> {
-                    val isTheme = type == AnimatedGradient.FluidThemeColorGradient || type == AnimatedGradient.M3EMorphingTheme
-                    val themeStops = PlayerFluidColors(color.background0, color.background2, color.background1, color.accent)
-                    val fallbackStops = rememberUpdatedState(targetFluidColors ?: themeStops)
-                    val currentThemeStops = rememberUpdatedState(themeStops)
-                    val fluidStops = remember(artworkPaint, isTheme) { derivedStateOf {
-                        if (isTheme) currentThemeStops.value else artworkPaint.value.fluid ?: fallbackStops.value
-                    } }
-                    val fluid = Modifier.playerFluidBackground(
-                        fluidStops, rememberPlayerDecorationElapsedNanos(animationActive),
-                    )
-                    if (type == AnimatedGradient.M3EMorphingTheme || type == AnimatedGradient.M3EMorphingCover) {
-                        fluid.animatedM3EBackground(
-                            animating = isActuallyPlaying,
-                            active = animationActive,
-                            D = if (isTheme) color.background1 else coverGradientColor(dominant),
-                            V = if (isTheme) color.background2 else coverGradientColor(vibrant),
-                            LV = if (isTheme) color.background2 else coverGradientColor(lightVibrant),
-                            DV = if (isTheme) color.background1 else coverGradientColor(darkVibrant),
-                            M = if (isTheme) color.background1 else coverGradientColor(muted),
-                            LM = if (isTheme) color.accent else coverGradientColor(lightMuted),
-                            DM = if (isTheme) color.background2 else coverGradientColor(darkMuted),
-                            skipToken = backgroundArtwork.mediaId,
-                            artworkSwatches = displayedSwatches.takeIf { !isTheme },
-                            paletteKickKey = if (isTheme) targetPalette.background2 else coverGradientColor(vibrant),
-                        )
-                    } else fluid
-                }
-                AnimatedGradient.Linear -> Modifier.animatedGradient(
-                    animating = isActuallyPlaying && animationActive,
-                    swatches = displayedSwatches,
-                )
-                else -> {
-                    val shader = when (type) {
-                        AnimatedGradient.Mesh -> remember(displayedSwatches) { PlayerMeshGradient(displayedSwatches) }
-                        AnimatedGradient.MesmerizingLens -> MesmerizingLens
-                        AnimatedGradient.GlossyGradients -> GlossyGradients
-                        AnimatedGradient.GradientFlow -> GradientFlow
-                        AnimatedGradient.PurpleLiquid -> PurpleLiquid
-                        AnimatedGradient.InkFlow -> InkFlow
-                        AnimatedGradient.OilFlow -> OilFlow
-                        AnimatedGradient.IceReflection -> IceReflection
-                        AnimatedGradient.Stage -> Stage
-                        AnimatedGradient.GoldenMagma -> GoldenMagma
-                        AnimatedGradient.BlackCherryCosmos -> BlackCherryCosmos
-                        else -> error("Unexpected shader gradient: $type")
-                    }
-                    val shade = playerShaderWash(type, paletteDarkness())
-                    Modifier.playerShaderBackground(shader, animationActive).background(shade)
-                }
-            }
-        }
     }
 
     val controllerPreviewPage = if (showthumbnail && playerType == PlayerType.Modern && coverArtworkVisible)
@@ -3090,59 +2957,3 @@ fun Player(
     }
     }
 }
-
-private val playerTrackArtworkTransition = tween<Float>(
-    durationMillis = 300,
-    easing = CubicBezierEasing(.29f, 0f, .71f, 1f),
-)
-
-private val carouselTrackArtworkTransition = tween<Float>(
-    durationMillis = 700,
-    easing = CubicBezierEasing(.42f, 0f, .58f, 1f),
-)
-
-@Composable
-@androidx.annotation.OptIn(UnstableApi::class)
-fun PagerState.LaunchedEffectScrollToPage(
-    player: androidx.media3.common.Player,
-    playerUpdateTrigger: Int,
-    index: Int,
-    appRunningInBackground: Boolean,
-    playerContentVisible: Boolean = true,
-    skipAnimation: Boolean = false,
-    paceArtworkMotion: Boolean = false,
-    onSynchronized: (Int) -> Unit = {},
-) {
-    val pagerState = this
-    var synchronized by remember(pagerState) { mutableStateOf(false) }
-    LaunchedEffect(playerUpdateTrigger, index) {
-        val animate = synchronized && !appRunningInBackground && playerContentVisible && !skipAnimation
-        synchronized = true
-        val targetIndex = player.currentMediaItemIndex
-        try {
-            if (pagerState.currentPage != targetIndex || pagerState.targetPage != targetIndex ||
-                (!pagerState.isScrollInProgress && kotlin.math.abs(pagerState.currentPageOffsetFraction) > 0.001f)
-            ) {
-                when {
-                    !animate -> pagerState.scrollToPage(targetIndex)
-                    paceArtworkMotion -> pagerState.animatePlayerArtworkScrollToPage(
-                        targetIndex, carouselTrackArtworkTransition, { player.currentMediaItemIndex },
-                    )
-                    else -> pagerState.animateScrollToPage(targetIndex, animationSpec = playerTrackArtworkTransition)
-                }
-            }
-        } finally {
-            onSynchronized(index)
-        }
-    }
-}
-
-
-
-
-
-
-
-
-
-
