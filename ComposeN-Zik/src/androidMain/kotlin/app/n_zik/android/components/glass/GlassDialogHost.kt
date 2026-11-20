@@ -89,6 +89,13 @@ class GlassDialogHostState {
 
     internal fun add(entry: GlassDialogEntry) { entries.add(entry) }
     internal fun remove(id: Any) { entries.removeAll { it.id == id } }
+
+    /** Shared overlays draw their scrims in the activity window, including under both system bars. */
+    internal fun systemBarSurface(background: Color): Color = entries.fold(background) { surface, entry ->
+        val scrim = entry.scrimColor()
+        val alpha = scrim.alpha * entry.dimmingAlpha() * entry.scrimProgress().coerceIn(0f, 1f)
+        effectiveSurfaceColor(surface, Color.Transparent, scrim.copy(alpha = alpha))
+    }
 }
 
 internal fun canHostGlassDialog(settings: GlassSettings, renderer: GlassRenderer, hasBackdrop: Boolean): Boolean =

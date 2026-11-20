@@ -20,6 +20,9 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(ui): keep Android system bars readable over dialogs
+  - Resolve status and navigation glyph colors from the actual shared dialog scrim.
+  - Retain the last measured player contrast while a new blurred cover is loading.
 - fix(widget): prevent a RemoteViews crash when switching profiles
   - Measure widget layouts with the application inflater so RemoteViews uses framework ImageViews and can update the playback icon.
   - Cover the AppCompat activity and compact widget path with a regression test.

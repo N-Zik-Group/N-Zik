@@ -1731,7 +1731,7 @@ class MainActivity :
                 targetNativeSurfaceMix = surfaceMix,
                 targetArtworkTint = if (selectedPaletteName == ColorPaletteName.Dynamic) artworkTint else null,
             ) {
-                PageSystemBarAppearance()
+                PageSystemBarAppearance(glassMenuHost)
                 BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxSize()
@@ -3040,9 +3040,11 @@ class MainActivity :
     }
 
     @Composable
-    private fun PageSystemBarAppearance() {
+    private fun PageSystemBarAppearance(glassMenuHost: GlassMenuHostState) {
         val background = LocalAppearance.current.colorPalette.background0
-        val dark = app.n_zik.android.components.glass.neutralForeground(background) == Color.White
+        val dark = app.n_zik.android.components.glass.neutralForeground(
+            glassMenuHost.dialogs.systemBarSurface(background),
+        ) == Color.White
         SideEffect { setSystemBarAppearance(dark) }
     }
 

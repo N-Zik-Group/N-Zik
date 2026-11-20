@@ -1160,7 +1160,8 @@ fun Player(
     val queueNavigationSurface = if (isQueuePanelVisible && !usesQueueToolbarGlass()) color.background1 else null
     PlayerSystemBarAppearance(active = playerSheetState.isExpanded && playerContentVisible,
         sampling = backgroundSampling, fallbackSurface = color.background0,
-        navigationSurfaceOverride = queueNavigationSurface)
+        navigationSurfaceOverride = queueNavigationSurface,
+        holdUnsettledContrast = waitForBlurredCover)
     val playerVisibleBackdrop = rememberLayerBackdrop()
     val queuePlayerBackdrop = rememberLayerBackdrop()
     val capturePlayerScene = playerGlassSceneCaptureActive(glassSettings, playerSheetState.isExpanded, captureGlassSource)
