@@ -10,6 +10,8 @@ Improved:
   - Avoid hidden native shadows in Glass, cache the native outline and separate pager settling from button-driven playback callbacks.
 - refactor(player): separate artwork and gradient presentation
   - Move artwork policy, gradient rendering and pager synchronization out of the main player screen.
+- refactor(startup): separate intent and notification setup
+  - Keep launch-intent handling and notification channel creation outside activity and application orchestration.
 - perf(player): prepare the full player before opening
   - Keep the display list warm at the collapsed anchor, pause decorations during sheet travel and defer contrast sampling until expansion settles.
 - perf(playback): batch bridge queue and radio lookups
