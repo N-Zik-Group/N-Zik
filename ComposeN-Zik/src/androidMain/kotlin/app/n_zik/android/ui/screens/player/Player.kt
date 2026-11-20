@@ -30,6 +30,7 @@ import app.n_zik.android.components.player.LocalPlayerSheetGlassTransition
 import app.n_zik.android.components.player.rememberPlayerSheetGlassTransition
 import app.n_zik.android.components.player.rememberPlayerControlsGlassSource
 import app.n_zik.android.components.player.playerGlassSourceCaptureActive
+import app.n_zik.android.components.glass.FullGlassOpticsProgress
 import app.n_zik.android.components.glass.LocalGlassOpticsTransitionProgress
 import app.n_zik.android.components.glass.LocalGlassOpticsEnabled
 import app.n_zik.android.components.glass.LocalGlassBackdrop
@@ -1607,7 +1608,7 @@ fun Player(
         LocalGlassArtworkTint provides artworkGlass,
         LocalPlayerTransportGeometry provides remember { PlayerTransportGeometry() },
         LocalGlassOpticsEnabled provides playerQueueOpticsEnabled(inheritedOpticsEnabled, isQueuePanelVisible),
-        LocalGlassOpticsTransitionProgress provides playerTransition.value,
+        LocalGlassOpticsTransitionProgress provides playerTransition,
         LocalGlassUnderlayCovered provides playerUnderlayCovered,
         LocalGlassBackdrop provides artworkControlsSource,
         LocalSurfaceBackdropColor provides null,
@@ -2906,7 +2907,7 @@ fun Player(
             CompositionLocalProvider(
                 LocalGlassOpticsEnabled provides inheritedOpticsEnabled,
                 LocalGlassUnderlayCovered provides inheritedUnderlayCovered,
-                LocalGlassOpticsTransitionProgress provides 1f,
+                LocalGlassOpticsTransitionProgress provides FullGlassOpticsProgress,
                 LocalQueuePlayerBackdrop provides queueUnderlay,
             ) {
             BackHandler { showQueue = false }

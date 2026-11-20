@@ -269,7 +269,7 @@ fun GlassOverlayHost(host: GlassMenuHostState) {
     CompositionLocalProvider(entry.locals ?: currentCompositionLocalContext) {
         CompositionLocalProvider(
             LocalGlassOpticsEnabled provides true,
-            LocalGlassOpticsTransitionProgress provides 1f,
+            LocalGlassOpticsTransitionProgress provides FullGlassOpticsProgress,
             LocalGlassLiveFrame provides rememberGlassModalLiveFrameIfEnabled(covered = host.nativeOverlays.isNotEmpty()),
             LocalGlassUnderlayCovered provides host.visuallyCovered(entry.id),
             LocalGlassOpticalUnderlayCovered provides host.nativeOverlays.isNotEmpty(),

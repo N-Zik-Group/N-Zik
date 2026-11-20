@@ -132,7 +132,7 @@ internal fun GlassDialogWindow(
                 LocalGlassMaterialSource provides transparentSource,
                 LocalGlassOpticsEnabled provides true,
                 LocalGlassOpticalUnderlayCovered provides (host != null && host.overlaysAbove(id).isNotEmpty()),
-                LocalGlassOpticsTransitionProgress provides 1f,
+                LocalGlassOpticsTransitionProgress provides FullGlassOpticsProgress,
                 LocalGlassLiveFrame provides rememberGlassModalLiveFrameIfEnabled(
                     covered = host != null && host.nativeOverlays.lastOrNull() !== id),
                 LocalGlassUnderlayCovered provides (host?.visuallyCovered(id) == true),
@@ -292,7 +292,7 @@ fun GlassDialogOverlayHost(host: GlassMenuHostState) {
                     LocalSurfaceBackdropColor provides backdrop,
                     LocalGlassOpticsEnabled provides true,
                     LocalGlassOpticalUnderlayCovered provides host.overlaysAbove(entry.id).isNotEmpty(),
-                    LocalGlassOpticsTransitionProgress provides 1f,
+                    LocalGlassOpticsTransitionProgress provides FullGlassOpticsProgress,
                     LocalGlassLiveFrame provides rememberGlassModalLiveFrameIfEnabled(
                         covered = entry !== host.dialogs.entries.lastOrNull() || host.entry != null || host.nativeOverlays.isNotEmpty()),
                     LocalGlassUnderlayCovered provides host.visuallyCovered(entry.id),

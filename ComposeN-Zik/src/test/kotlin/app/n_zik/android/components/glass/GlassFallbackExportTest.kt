@@ -46,14 +46,14 @@ class GlassFallbackExportTest {
             CompositionLocalProvider(LocalAppearance provides Appearance(
                 DefaultDarkColorPalette, Typography.fallback, shape, shape, shape),
                 LocalGlassBackdrop provides page,
-                LocalGlassOpticsTransitionProgress provides progress.value) {
+                LocalGlassOpticsTransitionProgress provides progress) {
                 GlassMaterialContainerScope(Modifier.size(100.dp), material = { exported ->
                     Modifier.glassMaterial(settings.copy(film = 1f, quality = quality.value),
                         shape, filmColor = film.value, exportedBackdrop = exported,
                         drawShadow = false)
                 }) { surface ->
                     Box(surface.background(Color.Magenta)) {
-                        CompositionLocalProvider(LocalGlassOpticsTransitionProgress provides 1f) {
+                        CompositionLocalProvider(LocalGlassOpticsTransitionProgress provides FullGlassOpticsProgress) {
                             Box(Modifier.size(60.dp).testTag("child").glassMaterial(
                                 settings, shape, ownBackdrop = LocalGlassContainerBackdrop.current,
                                 drawShadow = false))

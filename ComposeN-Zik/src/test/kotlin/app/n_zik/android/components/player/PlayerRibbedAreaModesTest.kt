@@ -52,7 +52,7 @@ class PlayerRibbedAreaModesTest {
                 colorPalette = DefaultDarkColorPalette,
                 typography = typographyOf(Color.White, true, false, FontType.Rubik),
                 thumbnailShape = shape, uiRoundnessShape = shape, artistThumbnailShape = shape),
-                LocalGlassOpticsTransitionProgress provides progress.value) {
+                LocalGlassOpticsTransitionProgress provides progress) {
                 Box(Modifier.size(100.dp).background(Color.Black).testTag("ribbed")) {
                     val settings = GlassSettings(enabled = master.value, quality = GlassQuality.Performance,
                         film = 1f, rim = 1f, tintStrength = 0f,

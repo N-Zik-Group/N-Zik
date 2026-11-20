@@ -4,13 +4,15 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import app.n_zik.android.ui.screens.player.PlayerSheetState
 import app.n_zik.android.components.glass.GLASS_OPTICS_FADE_MILLIS
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassRenderer
 import app.n_zik.android.components.glass.glassRenderer
-import app.n_zik.android.components.glass.glassOpticsGateProgress
+import app.n_zik.android.components.glass.glassOpticsGateProgressState
 import app.n_zik.android.components.glass.backdrop.Backdrop
 
 /** One clock owns the deploy plate and all player optical consumers. */
@@ -25,8 +27,11 @@ fun rememberPlayerSheetGlassTransition(state: PlayerSheetState): State<Float> =
 @Composable
 fun playerGlassSourceCaptureActive(settings: GlassSettings, transition: State<Float>,
     inheritedOpticsEnabled: Boolean): Boolean {
-    val progress = transition.value * glassOpticsGateProgress(inheritedOpticsEnabled)
-    return settings.enabled && glassRenderer(settings) != GlassRenderer.Tint && progress > 0f
+    if (!settings.enabled || glassRenderer(settings) == GlassRenderer.Tint) return false
+    val gate = glassOpticsGateProgressState(inheritedOpticsEnabled)
+    return remember(transition, gate) {
+        derivedStateOf { transition.value > 0f && gate.value > 0f }
+    }.value
 }
 
 /** Modal owners retain the completed expanded player independently of its control optics budget. */

@@ -97,7 +97,7 @@ class PlayerSheetGlassIntegrationTest {
                             // Native content remains live throughout the optical handoff.
                             Box(Modifier.offset(130.dp, 30.dp).size(20.dp).background(scene.value).testTag("native"))
                             Box(Modifier.offset(20.dp, 30.dp).size(80.dp).background(Color.Black))
-                            CompositionLocalProvider(LocalGlassOpticsTransitionProgress provides transition.value,
+                            CompositionLocalProvider(LocalGlassOpticsTransitionProgress provides transition,
                                 LocalGlassUnderlayCovered provides covered.value) {
                                 glassOpticsProgress() // Same shared optical clock consumed by production material.
                                 Box(Modifier.offset(20.dp, 30.dp).size(80.dp).testTag("pane")

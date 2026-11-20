@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -401,8 +402,9 @@ fun CustomBottomSheet(
             }
             // ── Card background: expands during the deploy, then stays as the sheet's opaque base (#855) ──
             .drawBehind {
+                if (miniPlayerGlass) return@drawBehind
                 val p = state.progress.coerceIn(0f, 1f)
-                if (!miniPlayerGlass && shouldDrawCardBackground(p)) {
+                if (shouldDrawCardBackground(p)) {
                     val baseCornerPx = collapsedCardCornerPx(baseShape, size, collapsedHeight().toPx(),
                     horizontalPadding().toPx(), leftInset().toPx(), rightInset().toPx(), this)
                     val geometry = computeCardGeometry(
@@ -453,6 +455,9 @@ fun CustomBottomSheet(
 
         // animated card shape, so clipping again here would just rebuild the same
         // Outline path a second time per frame for nothing.
+        val drawFullPlayer by remember(state) {
+            derivedStateOf { state.progress >= 0.3f && playerContentFade(state.progress) > 0.01f }
+        }
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
@@ -468,8 +473,7 @@ fun CustomBottomSheet(
                     // threshold instead of just setting alpha = 0, which still
 
                     // records the full display list every frame.
-                    val progress = state.progress
-                    if (progress >= 0.3f && playerContentFade(progress) > 0.01f) {
+                    if (drawFullPlayer) {
                         drawContent()
                     }
                 }
