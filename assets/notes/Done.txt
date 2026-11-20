@@ -6,6 +6,14 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- perf(network): share live connectivity observation
+  - Reuse one validated connection and Offline Mode observation across standard app contexts. Release listeners when the last subscriber leaves.
+- perf(discovery): share the parsed Explore feed
+  - Deduplicate requests within the same session and transport. Keep manual refresh and the full releases endpoint independent.
+- refactor(maintenance): separate pass presentation
+  - Move boot and repair pass status, details and formatting out of the maintenance sheet.
+- chore(scripts): remove the unused ribbed artwork generator
+  - Keep the checked-in drawable used by the player.
 - perf(player): reduce transport button redraws
   - Avoid hidden native shadows in Glass, cache the native outline and separate pager settling from button-driven playback callbacks.
 - refactor(player): separate artwork and gradient presentation
