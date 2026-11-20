@@ -6,6 +6,15 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- refactor(theme): share startup and live palette resolution
+  - Move configured appearance to ConfiguredAppearance and use the same palette resolver on startup and after preference changes.
+  - Keep profile preferences, separate mode defaults and on-demand Material You accent lookup.
+- refactor(rescue): share profile selection dialogs
+  - Use RescueProfileSelectionDialog for deletion, reset and restore while keeping each operation and confirmation in RescueScreen.
+  - Preserve eligible profiles, selection state, badges and the reset checkbox test tag.
+- refactor(playlists): share import match reconciliation
+  - Run both LocalPlaylistSongs match cleanup paths through LocalPlaylistImportReconciliation.
+  - Preserve lookup order, Riplay placeholder handling and failure reporting.
 - perf(network): share live connectivity observation
   - Reuse one validated connection and Offline Mode observation across standard app contexts. Release listeners when the last subscriber leaves.
 - perf(discovery): share the parsed Explore feed
