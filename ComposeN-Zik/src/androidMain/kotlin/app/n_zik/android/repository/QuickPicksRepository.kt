@@ -3,30 +3,19 @@ package app.n_zik.android.repository
 import app.n_zik.android.playback.services.isLocal
 
 import androidx.core.content.edit
+import app.n_zik.android.components.ui.screens.home.quickpicks.QuickPicksAccountIdentity
+import app.n_zik.android.components.ui.screens.home.quickpicks.currentQuickPicksAccountIdentity
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.appContext
 import app.n_zik.android.enums.PlayEventsType
-import app.n_zik.android.enums.Countries
 import app.n_zik.android.enums.LocalRecommandationsNumber
 import app.n_zik.android.models.Song
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.playEventsTypeKey
 import app.n_zik.android.utils.preferences
-import app.n_zik.android.utils.quickPicsDiscoverPageKey
-import app.n_zik.android.utils.quickPicsHomePageKey
 import app.n_zik.android.utils.quickPicsRelatedPageKey
-import app.n_zik.android.utils.quickPicsTrendingSongKey
-import app.n_zik.android.utils.selectedCountryCodeKey
-import app.n_zik.android.utils.showChartsKey
-import app.n_zik.android.utils.showMoodsAndGenresKey
-import app.n_zik.android.utils.showNewAlbumsArtistsKey
-import app.n_zik.android.utils.showNewAlbumsKey
 import app.n_zik.innertube.Innertube
-import app.n_zik.innertube.YtMusic
-import app.n_zik.innertube.requests.HomePage
-import app.n_zik.innertube.requests.chartsPageComplete
-import app.n_zik.innertube.requests.discoverPage
 import app.n_zik.innertube.requests.relatedPage
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
@@ -34,8 +23,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.take
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import timber.log.Timber
@@ -47,25 +34,14 @@ object QuickPicksRepository {
     private val _trendingList = MutableStateFlow<List<Song>>(emptyList())
     val trendingList: StateFlow<List<Song>> = _trendingList.asStateFlow()
 
-    private val _trending = MutableStateFlow<Song?>(null)
-    val trending: StateFlow<Song?> = _trending.asStateFlow()
-
     private val _relatedPage = MutableStateFlow<Innertube.RelatedPage?>(null)
     val relatedPage: StateFlow<Innertube.RelatedPage?> = _relatedPage.asStateFlow()
 
-    private val _discoverPage = MutableStateFlow<Innertube.DiscoverPage?>(null)
-    val discoverPage: StateFlow<Innertube.DiscoverPage?> = _discoverPage.asStateFlow()
-
-    private val _homePage = MutableStateFlow<HomePage?>(null)
-    val homePage: StateFlow<HomePage?> = _homePage.asStateFlow()
-
-    private val _chartsPage = MutableStateFlow<Innertube.ChartsPage?>(null)
-    val chartsPage: StateFlow<Innertube.ChartsPage?> = _chartsPage.asStateFlow()
-
     private val _loading = MutableStateFlow(false)
-    val loading: StateFlow<Boolean> = _loading.asStateFlow()
 
     private var lastLoadTime = 0L
+    private var relatedSeed: String? = null
+    private var loadedAccount: QuickPicksAccountIdentity? = null
     private const val CACHE_EXPIRATION = 1000 * 60 * 30 // 30 minutes
 
     private val json = Json { 
@@ -80,46 +56,22 @@ object QuickPicksRepository {
     private fun loadFromPreferences() {
         val prefs = appContext().preferences
         
-        _trending.value = prefs.getString(quickPicsTrendingSongKey, null)?.let {
-            try { json.decodeFromString<Song>(it) } catch (e: Exception) { null }
-        }
         _relatedPage.value = prefs.getString(quickPicsRelatedPageKey, null)?.let {
             try { json.decodeFromString<Innertube.RelatedPage>(it) } catch (e: Exception) { null }
-        }
-        _discoverPage.value = prefs.getString(quickPicsDiscoverPageKey, null)?.let {
-            try { json.decodeFromString<Innertube.DiscoverPage>(it) } catch (e: Exception) { null }
-        }
-        _homePage.value = prefs.getString(quickPicsHomePageKey, null)?.let {
-            try { json.decodeFromString<HomePage>(it) } catch (e: Exception) { null }
-        }
-    }
-
-    private fun saveToPreferences() {
-        val prefs = appContext().preferences
-        prefs.edit {
-            putString(quickPicsTrendingSongKey, _trending.value?.let { json.encodeToString(it) })
-            putString(quickPicsRelatedPageKey, _relatedPage.value?.let { json.encodeToString(it) })
-            putString(quickPicsDiscoverPageKey, _discoverPage.value?.let { json.encodeToString(it) })
-            putString(quickPicsHomePageKey, _homePage.value?.let { json.encodeToString(it) })
-            apply()
         }
     }
 
     fun refreshIfNeeded(force: Boolean = false) {
-        val now = System.currentTimeMillis()
-        if (force || now - lastLoadTime > CACHE_EXPIRATION || _trendingList.value.isEmpty()) {
-            loadData()
-        }
-    }
-
-    fun loadData() {
         scope.launch {
-            if (_loading.value) return@launch
-            _loading.value = true
+            if (!_loading.compareAndSet(expect = false, update = true)) return@launch
             try {
                 val prefs = appContext().preferences
+                val account = currentQuickPicksAccountIdentity()
+                val sameAccount = loadedAccount == account
+                if (!force && sameAccount && System.currentTimeMillis() - lastLoadTime <= CACHE_EXPIRATION &&
+                    _trendingList.value.isNotEmpty()
+                ) return@launch
                 val playEventType = prefs.getEnum(playEventsTypeKey, PlayEventsType.MostPlayed)
-                val selectedCountryCode = prefs.getEnum(selectedCountryCodeKey, Countries.ZZ)
                 
                 val localRecommandationsNumber = try {
                     prefs.getEnum("LocalRecommandationsNumber", LocalRecommandationsNumber.SixQ)
@@ -129,69 +81,37 @@ object QuickPicksRepository {
                 val localCount = localRecommandationsNumber.value
                 val from = 18250.days.inWholeMilliseconds
 
-                val showCharts = prefs.getBoolean(showChartsKey, true)
-                val showNewAlbums = prefs.getBoolean(showNewAlbumsKey, true)
-                val showNewAlbumsArtists = prefs.getBoolean(showNewAlbumsArtistsKey, true)
-                val showMoodsAndGenres = prefs.getBoolean(showMoodsAndGenresKey, true)
-
-                if (showCharts) {
-                    _chartsPage.value = Innertube.chartsPageComplete(countryCode = selectedCountryCode.name)?.getOrNull()
+                val songs = when (playEventType) {
+                    PlayEventsType.MostPlayed ->
+                        Database.eventTable.findSongsMostPlayedBetween(from = from, limit = localCount).first()
+                    PlayEventsType.LastPlayed ->
+                        Database.eventTable.findSongsLastPlayed(limit = localCount).first()
+                    PlayEventsType.CasualPlayed ->
+                        Database.eventTable.findSongsMostPlayedBetween(from = 0, limit = 100).first()
+                }.distinctBy { it.id }
+                val trending = (if (playEventType == PlayEventsType.CasualPlayed) songs.shuffled() else songs)
+                    .take(localCount)
+                val seed = trending.firstOrNull { !it.isLocal }?.id
+                val related = when {
+                    seed != null && (!sameAccount || seed != relatedSeed) ->
+                        Innertube.relatedPage(seed, setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)
+                            ?.getOrNull()
+                    sameAccount || loadedAccount == null -> _relatedPage.value
+                    else -> null
                 }
-
-                when (playEventType) {
-                    PlayEventsType.MostPlayed -> {
-                        Database.eventTable.findSongsMostPlayedBetween(from = from, limit = localCount)
-                            .first().let { songs ->
-                                val list = songs.distinctBy { it.id }.take(localCount)
-                                _trendingList.value = list
-                                _trending.value = list.firstOrNull()
-                                refreshRelatedIfNeeded()
-                            }
-                    }
-                    PlayEventsType.LastPlayed -> {
-                        Database.eventTable.findSongsLastPlayed(limit = localCount)
-                            .first().let { songs ->
-                                val list = songs.distinctBy { it.id }.take(localCount)
-                                _trendingList.value = list
-                                _trending.value = list.firstOrNull()
-                                refreshRelatedIfNeeded()
-                            }
-                    }
-                    PlayEventsType.CasualPlayed -> {
-                        Database.eventTable.findSongsMostPlayedBetween(from = 0, limit = 100)
-                            .first().let { songs ->
-                                val originalList = songs.distinctBy { it.id }
-                                val shuffled = originalList.shuffled().take(localCount)
-                                _trendingList.value = shuffled
-                                _trending.value = shuffled.firstOrNull()
-                                refreshRelatedIfNeeded()
-                            }
-                    }
-                }
-
-                if (showNewAlbums || showNewAlbumsArtists || showMoodsAndGenres) {
-                    _discoverPage.value = Innertube.discoverPage()?.getOrNull()
-                }
-
-                if (isYouTubeLoggedIn()) {
-                    _homePage.value = YtMusic.getHomePage(setLogin = true)?.getOrNull()
-                }
-
+                if (prefs !== appContext().preferences || account != currentQuickPicksAccountIdentity()) return@launch
+                _trendingList.value = trending
+                _relatedPage.value = related
+                relatedSeed = seed.takeIf { related != null }
+                loadedAccount = account
                 lastLoadTime = System.currentTimeMillis()
-                saveToPreferences()
+                prefs.edit { putString(quickPicsRelatedPageKey, related?.let { json.encodeToString(it) }) }
                 Timber.tag("QuickPicksRepository").d("Success loadData")
             } catch (e: Exception) {
                 Timber.tag("QuickPicksRepository").e(e, "Failed to load QuickPicks data")
             } finally {
                 _loading.value = false
             }
-        }
-    }
-
-    private suspend fun refreshRelatedIfNeeded() {
-        val currentTrending = _trendingList.value.firstOrNull { !it.isLocal } ?: return
-        if (_relatedPage.value == null || _relatedPage.value?.songs?.firstOrNull()?.key != currentTrending.id) {
-            _relatedPage.value = Innertube.relatedPage(videoId = currentTrending.id, setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)?.getOrNull()
         }
     }
 }

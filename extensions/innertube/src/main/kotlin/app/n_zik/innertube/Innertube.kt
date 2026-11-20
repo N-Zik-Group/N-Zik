@@ -41,6 +41,7 @@ import kotlinx.serialization.json.Json
 import java.net.Proxy
 import java.util.Locale
 import app.n_zik.innertube.models.SectionListRenderer
+import com.metrolist.innertubex.InnerTube
 import okhttp3.ConnectionPool
 import okhttp3.Protocol
 import okhttp3.Response
@@ -937,6 +938,50 @@ object Innertube {
             }
         }
         return innerTubeX.browse(client, browseId, params, continuation, setLogin)
+    }
+
+    internal data class HomeBrowseScope(
+        val transport: InnerTube,
+        val session: InnerTube.SessionSnapshot,
+        val setLogin: Boolean,
+    )
+
+    internal suspend fun homeBrowseScope(setLogin: Boolean): HomeBrowseScope {
+        ensureVisitorData()
+        val transport = extractionTransport().innerTube
+        return HomeBrowseScope(transport, transport.sessionSnapshot(), setLogin)
+    }
+
+    internal suspend fun browseHome(scope: HomeBrowseScope, continuation: String? = null): BrowseResponse {
+        val (transport, session, setLogin) = scope
+        fun checkSession() {
+            check(extractionTransport().innerTube === transport && transport.sessionSnapshot() == session) {
+                "YouTube Home browse session changed"
+            }
+        }
+
+        checkSession()
+        val isolated = transport.createIsolatedSession(includeAccount = false)
+        return try {
+            // Home's section names are matched in English. Bind the locale and credentials to the token's session.
+            isolated.locale = session.locale.copy(hl = "en")
+            isolated.regionOverrideActive = session.regionOverrideActive
+            isolated.replaceSession(
+                cookie = session.cookie.takeIf { setLogin },
+                visitorData = session.visitorData,
+                dataSyncId = session.dataSyncId.takeIf { setLogin },
+                authUser = session.authUser.takeIf { setLogin } ?: "0",
+                useLoginForBrowse = session.useLoginForBrowse && setLogin,
+            )
+            isolated.browse(
+                client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+                browseId = "FEmusic_home".takeIf { continuation == null },
+                continuation = continuation,
+                setLogin = setLogin,
+            ).body<BrowseResponse>().also { checkSession() }
+        } finally {
+            isolated.close()
+        }
     }
 
     suspend fun library(browseId: String, tabIndex: Int = 0) = runCatching {

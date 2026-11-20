@@ -8,6 +8,7 @@ import app.n_zik.innertube.models.BrowseResponse
 import app.n_zik.innertube.models.CreatePlaylistResponse
 import app.n_zik.innertube.models.NavigationEndpoint
 import app.n_zik.innertube.models.MusicShelfRenderer
+import app.n_zik.innertube.models.SectionListRenderer
 import app.n_zik.innertube.models.getContinuation
 import app.n_zik.innertube.models.oddElements
 import app.n_zik.innertube.requests.AlbumPage
@@ -121,53 +122,50 @@ object YtMusic {
         InnertubeLogger.e("YtMusic", "removelikeVideoOrSong error", it)
     }
 
-    suspend fun getHomePage(setLogin: Boolean = false): Result<HomePage> = runCatching {
+    class HomeFirstPage internal constructor(
+        internal val scope: Innertube.HomeBrowseScope,
+        internal val sections: List<HomePage.Section>?,
+        internal val chips: List<Innertube.Chip>?,
+        internal val continuation: String?,
+    ) {
+        val quickPicks: List<Innertube.SongItem>
+            get() = sections?.firstOrNull { it.title.contains("Quick picks", ignoreCase = true) }
+                ?.items?.filterIsInstance<Innertube.SongItem>().orEmpty()
+    }
 
-        val hl = "en" // Force English to keep section matching simple in HomeQuickPicks
-        var response = Innertube.browse(browseId = "FEmusic_home", setLogin = setLogin, hl = hl).body<BrowseResponse>()
+    private fun List<SectionListRenderer.Content>.homeSections(): List<HomePage.Section> =
+        mapNotNull { it.musicCarouselShelfRenderer }.mapNotNull(HomePage.Section::fromMusicCarouselShelfRenderer)
 
-        val sectionListRender = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
+    private suspend fun fetchHomeFirstPage(scope: Innertube.HomeBrowseScope): HomeFirstPage {
+        val renderer = Innertube.browseHome(scope).contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
             ?.tabRenderer?.content?.sectionListRenderer
+        return HomeFirstPage(
+            scope = scope,
+            sections = renderer?.contents?.homeSections(),
+            chips = renderer?.header?.chipCloudRenderer?.chips?.mapNotNull(Innertube.Chip::fromChipCloudChipRenderer),
+            continuation = renderer?.continuations?.getContinuation(),
+        )
+    }
 
-        var continuation = sectionListRender?.continuations?.getContinuation()
+    suspend fun getHomeFirstPage(setLogin: Boolean = false): Result<HomeFirstPage> = runCatching {
+        fetchHomeFirstPage(Innertube.homeBrowseScope(setLogin))
+    }
 
-        val chips = sectionListRender?.header?.chipCloudRenderer?.chips?.mapNotNull {
-            Innertube.Chip.fromChipCloudChipRenderer(it)
-        }
-
-        val sections = sectionListRender?.contents!!
-            .mapNotNull { it.musicCarouselShelfRenderer }
-            .mapNotNull {
-                HomePage.Section.fromMusicCarouselShelfRenderer(it)
-            }.toMutableList()
+    suspend fun getHomePage(setLogin: Boolean = false, firstPage: HomeFirstPage? = null): Result<HomePage> = runCatching {
+        val scope = Innertube.homeBrowseScope(setLogin)
+        val page = firstPage?.takeIf { it.scope == scope && it.sections != null } ?: fetchHomeFirstPage(scope)
+        val sections = checkNotNull(page.sections) { "YouTube Home sections are missing" }.toMutableList()
+        var continuation = page.continuation
         while (continuation != null) {
-            response = Innertube.browse(continuation = continuation, setLogin = setLogin, hl = "en").body<BrowseResponse>()
-            continuation = response.continuationContents?.sectionListContinuation?.continuations?.getContinuation()
-
-            sections += response.continuationContents?.sectionListContinuation?.contents
-                ?.mapNotNull { it.musicCarouselShelfRenderer }
-                ?.mapNotNull {
-                    HomePage.Section.fromMusicCarouselShelfRenderer(it)
-                }.orEmpty()
-
+            val next = Innertube.browseHome(scope, continuation).continuationContents?.sectionListContinuation
+            continuation = next?.continuations?.getContinuation()
+            sections += next?.contents?.homeSections().orEmpty()
         }
-        HomePage( sections = sections, chips = chips )
+        HomePage(sections = sections, chips = page.chips)
     }
 
-    suspend fun getQuickPicks(setLogin: Boolean = false): Result<List<Innertube.SongItem>> = runCatching {
-        val response = Innertube.browse(browseId = "FEmusic_home", setLogin = setLogin, hl = "en").body<BrowseResponse>()
-
-        val sectionListRender = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
-            ?.tabRenderer?.content?.sectionListRenderer
-
-        sectionListRender?.contents
-            ?.mapNotNull { it.musicCarouselShelfRenderer }
-            ?.mapNotNull { HomePage.Section.fromMusicCarouselShelfRenderer(it) }
-            ?.firstOrNull { it.title.contains("Quick picks", ignoreCase = true) }
-            ?.items
-            ?.filterIsInstance<Innertube.SongItem>()
-            .orEmpty()
-    }
+    suspend fun getQuickPicks(setLogin: Boolean = false): Result<List<Innertube.SongItem>> =
+        getHomeFirstPage(setLogin).map { it.quickPicks }
 
     suspend fun getHistory(setLogin: Boolean = false): Result<HistoryPage> = runCatching {
 

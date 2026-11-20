@@ -116,8 +116,8 @@ class HomeQuickPicksStateOfflineTest {
         coEvery { Innertube.relatedPage(any(), any()) } returns offlineFailureStub(Result.failure(offlineError))
 
         mockkObject(YtMusic)
-        coEvery { YtMusic.getHomePage(any()) } returns offlineFailureStub(Result.failure(offlineError))
-        coEvery { YtMusic.getQuickPicks(any()) } returns offlineFailureStub(Result.failure(offlineError))
+        coEvery { YtMusic.getHomePage(any(), any()) } returns offlineFailureStub(Result.failure(offlineError))
+        coEvery { YtMusic.getHomeFirstPage(any()) } returns offlineFailureStub(Result.failure(offlineError))
 
         // isYouTubeLoggedIn() reads EncryptedSharedPreferences (AndroidKeyStore —
         // unavailable on the Robolectric JVM); the offline load never needs a
@@ -190,8 +190,8 @@ class HomeQuickPicksStateOfflineTest {
         }
         verify(exactly = 0) {
             runBlocking {
-                YtMusic.getQuickPicks(any())
-                YtMusic.getHomePage(any())
+                YtMusic.getHomeFirstPage(any())
+                YtMusic.getHomePage(any(), any())
             }
         }
     }

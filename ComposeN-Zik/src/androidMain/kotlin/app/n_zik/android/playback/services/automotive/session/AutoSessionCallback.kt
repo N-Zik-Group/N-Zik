@@ -819,7 +819,7 @@ class AutoSessionCallback(
                     val relatedSongs = if (accessPolicy().online && relatedSeed != null) {
                         Innertube.relatedPage(videoId = relatedSeed.id, setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)?.getOrNull()?.songs?.map { it.asSong } ?: emptyList()
                     } else emptyList()
-                    val ytmQuickPicks = if (accessPolicy().online && isYouTubeLoggedIn()) {
+                    val ytmQuickPicks = if (accessPolicy().online && isYouTubeLoggedIn() && Innertube.useLoginForBrowse) {
                         YtMusic.getQuickPicks(setLogin = true).getOrNull()?.map { it.asSong } ?: emptyList()
                     } else emptyList()
                     Timber.tag("AutoSessionCallback").d("Quick picks play list loaded -> trending: ${trending.size}, related: ${relatedSongs.size}, ytb: ${ytmQuickPicks.size}")

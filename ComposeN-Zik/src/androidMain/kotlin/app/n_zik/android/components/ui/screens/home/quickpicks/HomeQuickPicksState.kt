@@ -105,6 +105,7 @@ internal class HomeQuickPicksState(
         Timber.tag("HomeQuickPicksState").d("Starting loadData... (online=$online)")
 
         runCatching {
+            var firstHomePage: YtMusic.HomeFirstPage? = null
             // Phase 1: Parallel network calls for charts, discover, quick picks
             // (skipped entirely when offline - see the gate above)
             if (online) supervisorScope {
@@ -116,8 +117,8 @@ internal class HomeQuickPicksState(
                 }
                 val quickPicksDeferred = async(NzikDispatchers.DATA) {
                     if (isYouTubeLoggedIn() && Innertube.useLoginForBrowse) {
-                        YtMusic.getQuickPicks(setLogin = true).getOrThrow()
-                    } else emptyList()
+                        YtMusic.getHomeFirstPage(setLogin = true).getOrThrow()
+                    } else null
                 }
 
                 runCatching { chartsDeferred.await() }
@@ -151,8 +152,10 @@ internal class HomeQuickPicksState(
                     }
 
                 runCatching { quickPicksDeferred.await() }
-                    .onSuccess { items ->
+                    .onSuccess { page ->
                         if (isCurrentAccount()) {
+                            firstHomePage = page
+                            val items = page?.quickPicks.orEmpty()
                             ytmQuickPicks.value = items.map { it.asSong }
                             Timber.tag("HomeQuickPicksState").d("Lightweight Quick Picks loaded (${items.size} items)")
                         }
@@ -173,11 +176,22 @@ internal class HomeQuickPicksState(
                 var latestResult: Result<HomePage>? = null
                 loadQuickPicksHomeAttempts {
                     if (!isCurrentAccount()) throw CancellationException("YouTube account changed")
-                    val result = YtMusic.getHomePage(setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)
+                    val firstPage = firstHomePage
+                    firstHomePage = null
+                    val useLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse
+                    val result = YtMusic.getHomePage(
+                        setLogin = useLogin,
+                        firstPage = firstPage,
+                    )
                     if (!isCurrentAccount()) throw CancellationException("YouTube account changed")
                     result.exceptionOrNull()?.let { if (it is CancellationException) throw it }
                     latestResult = result
                     result.getOrNull()?.let { page ->
+                        if (useLogin && ytmQuickPicks.value.isEmpty()) {
+                            ytmQuickPicks.value = page.sections
+                                .firstOrNull { it.title.contains("Quick picks", ignoreCase = true) }
+                                ?.items?.filterIsInstance<Innertube.SongItem>()?.map { it.asSong }.orEmpty()
+                        }
                         val newSections = mutableListOf<HomePage.Section>()
                         val existingSections = cumulativeSections.toMutableList()
 

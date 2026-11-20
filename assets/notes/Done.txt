@@ -6,6 +6,8 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- perf(quick-picks): reuse the first YouTube Music home page
+  - Share the English first page within the current authenticated load and remove unused background requests.
 - perf(glass): reduce mini-player transition work
   - Limit moving geometry updates to the deploy plate and draw a single film when its progress regions have the same color or reach an endpoint.
 - perf(player): skip unnecessary work while changing tracks
