@@ -25,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
@@ -68,10 +69,10 @@ import app.n_zik.android.utils.secondary
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import app.n_zik.android.components.glass.glassImageRim
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.coil.thumbnail
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.ui.components.themed.HeaderIconButton
 import app.n_zik.android.ui.styling.favoritesIcon
@@ -160,6 +161,23 @@ fun PlaylistItem(
     )
 }
 
+/** Null while Room is loading. An empty emission means the playlist has no covers. */
+@Composable
+internal fun rememberPlaylistSongThumbnails(
+    playlistId: Long,
+    thumbnailSizePx: Int? = null,
+): List<String>? = key(playlistId, thumbnailSizePx) {
+    val thumbnails by remember(playlistId, thumbnailSizePx) {
+        Database.songPlaylistMapTable.sortSongsByPlayTime(playlistId)
+            .distinctUntilChanged()
+            .map { songs ->
+                val covers = songs.mapNotNull(Song::thumbnailUrl).takeLast(4)
+                if (thumbnailSizePx == null) covers else covers.mapNotNull { it.thumbnail(thumbnailSizePx) }
+            }
+    }.collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
+    thumbnails
+}
+
 @Composable
 fun PlaylistItem(
     playlist: PlaylistPreview,
@@ -177,25 +195,19 @@ fun PlaylistItem(
     val context = LocalContext.current
 
     val preview = LocalThemePreview.current
-    val thumbnails by remember(playlist.playlist.id, preview) {
-        if (preview != null) return@remember flowOf(listOfNotNull(ThemePreviewDemo.playlistCover(playlist.playlist.id)))
-        val customThumbnail = checkFileExists( context, "thumbnail/playlist_${playlist.playlist.id}" )
-
-        if( customThumbnail != null )
-            flowOf( listOf( customThumbnail ) )
-        else
-            Database.songPlaylistMapTable
-                    .sortSongsByPlayTime( playlist.playlist.id )
-                    .distinctUntilChanged()
-                    .map { list ->
-                        // Ensure it only takes not null thumbnailUrl
-                        list.mapNotNull( Song::thumbnailUrl ).takeLast( 4 )
-                    }
-    }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
+    val playlistId = playlist.playlist.id
+    val knownCovers = remember(context, playlistId, preview) {
+        if (preview != null) listOfNotNull(ThemePreviewDemo.playlistCover(playlistId))
+        else checkFileExists(context, "thumbnail/playlist_$playlistId")?.let { listOf(it) }
+    }
+    val thumbnails = knownCovers ?: rememberPlaylistSongThumbnails(playlistId)
 
     PlaylistItem(
         browseId = playlist.playlist.browseId,
-        thumbnailContent = { ThumbnailRenderer( thumbnails ) },
+        thumbnailContent = {
+            if (thumbnails == null) ItemArtworkPlaceholder(thumbnailSizeDp, alternative, thumbnailShape())
+            else ThumbnailRenderer(thumbnails)
+        },
         songCount = playlist.songCount,
         name = playlist.playlist.name,
         channelName = null,

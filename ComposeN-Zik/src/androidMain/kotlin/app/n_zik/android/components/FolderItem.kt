@@ -23,12 +23,12 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.ui.styling.Dimensions
-import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 import app.n_zik.android.uiRoundnessShape
 
 @Composable
 fun FolderItem(
-    text: String,
+    text: String?,
     modifier: Modifier = Modifier,
     backgroundColor: Color = colorPalette().background0,
     shimmer: Boolean = false,
@@ -58,9 +58,9 @@ fun FolderItem(
             )
         }
 
-        if (shimmer) MeasuredMetadataPlaceholder(text, typography().m)
+        if (shimmer) ItemTextPlaceholder(text, typography().m, width = 0.45f)
         else BasicText(
-            text = text,
+            text = text.orEmpty(),
             style = typography().m.copy( colorPalette().text )
         )
     }

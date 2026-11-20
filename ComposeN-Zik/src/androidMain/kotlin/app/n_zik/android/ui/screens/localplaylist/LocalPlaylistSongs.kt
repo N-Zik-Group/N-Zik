@@ -325,11 +325,15 @@ fun LocalPlaylistSongs(
     val thumbnailUrl = remember(playlistId, preview) {
         mutableStateOf(if (preview == null) "" else android.net.Uri.fromFile(ThemePreviewAssets.file(appContext(), "tide.jpg")).toString())
     }
-    val playlist by remember(playlistId, preview) {
-        if (preview != null) kotlinx.coroutines.flow.flowOf(Playlist(id = playlistId, name = "Sunday Headphones"))
-        else Database.playlistTable
-                .findById( playlistId )
-    }.collectAsStateWithLifecycle( null, context = NzikDispatchers.DATA )
+    val playlistResult by remember(playlistId, preview) {
+        val source = if (preview != null) {
+            kotlinx.coroutines.flow.flowOf(Playlist(id = playlistId, name = "Sunday Headphones"))
+        } else {
+            Database.playlistTable.findById(playlistId)
+        }
+        source.map { Result.success(it) }
+    }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
+    val playlist = playlistResult?.getOrNull()
 
     // Spec 2: generated `rewind-*` playlists are protected (Spotify principle) and get
     // the "Rewind Top" sort option; declared before the sort wiring that consumes it
@@ -1254,7 +1258,7 @@ fun LocalPlaylistSongs(
                         .localPlaylistHeaderSurface(glassSettings, exported)
                 ) {
 
-                    if (forceShimmer) {
+                    if (forceShimmer || playlistResult == null) {
                         ItemContainer(
                             alternative = true,
                             thumbnailSizeDp = playlistThumbnailSizeDp,
@@ -1294,8 +1298,9 @@ fun LocalPlaylistSongs(
                         } else {
                             items.size
                         }
+                        val metadataReady = loadedItems != null && (!onDeviceOnly || scan != null)
                         IconInfo(
-                            title = if (loadedItems == null || (onDeviceOnly && scan == null)) stringResource(R.string.common_loading_message)
+                            title = if (!metadataReady) null
                                 else if (preview == null) totalSongs.toString()
                                 else pluralStringResource(R.plurals.library_song_count, totalSongs, totalSongs),
                             icon = painterResource(R.drawable.musical_notes)
@@ -1307,13 +1312,12 @@ fun LocalPlaylistSongs(
                         } else {
                             0L
                         }
-                        val totalDuration = items.sumOf { durationTextToMillis(it.durationText ?: "0:0") } + recommendedSongsDuration
-                        if (loadedItems != null && (!onDeviceOnly || scan != null)) {
-                            IconInfo(
-                                title = formatAsTime(totalDuration),
-                                icon = painterResource(R.drawable.time)
-                            )
-                        }
+                        IconInfo(
+                            title = if (metadataReady) {
+                                formatAsTime(items.sumOf { durationTextToMillis(it.durationText ?: "0:0") } + recommendedSongsDuration)
+                            } else null,
+                            icon = painterResource(R.drawable.time)
+                        )
                         if (isRecommendationEnabled) {
                             Spacer(modifier = Modifier.height(5.dp))
                             if (isRecommendationsLoading) {

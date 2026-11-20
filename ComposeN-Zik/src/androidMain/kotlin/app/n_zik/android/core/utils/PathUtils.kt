@@ -115,6 +115,7 @@ object PathUtils {
     @Composable
     fun AddressBar(
         currentPath: String,
+        enabled: Boolean = true,
         onSpecificAddressClick: (String) -> Unit
     ) = Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -124,7 +125,7 @@ object PathUtils {
     ) {
 
         Box(
-            modifier = Modifier.size(32.dp).clip(uiRoundnessShape()).clickable {
+            modifier = Modifier.size(32.dp).clip(uiRoundnessShape()).clickable(enabled = enabled) {
                 onSpecificAddressClick("")
             },
             contentAlignment = Alignment.Center
@@ -157,7 +158,7 @@ object PathUtils {
                     color = colorPalette().text,
                     fontWeight = FontWeight.Bold
                 ),
-                modifier = Modifier.clip(uiRoundnessShape()).clickable { onSpecificAddressClick(path) }
+                modifier = Modifier.clip(uiRoundnessShape()).clickable(enabled = enabled) { onSpecificAddressClick(path) }
             )
         }
     }

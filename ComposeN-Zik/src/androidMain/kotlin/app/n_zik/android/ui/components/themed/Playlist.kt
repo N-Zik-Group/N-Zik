@@ -10,9 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,17 +22,16 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.colorPalette
-import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.isPlaylistBookmarked
 import app.n_zik.android.core.database.isReadOnlyPlaylistSource
 
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.models.Playlist
+import app.n_zik.android.ui.items.ItemArtworkPlaceholder
 import app.n_zik.android.ui.items.PlaylistItem
+import app.n_zik.android.ui.items.rememberPlaylistSongThumbnails
+import app.n_zik.android.thumbnailShape
 import app.n_zik.android.core.coil.thumbnail
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import androidx.compose.ui.res.stringResource
 
 @Composable
@@ -51,18 +47,9 @@ fun Playlist(
     thumbnailUrl: String? = null,
     coverOverlay: @Composable BoxScope.() -> Unit = {},
 ) {
-    val thumbnails by remember {
-        Database.songPlaylistMapTable
-                .sortSongsByPlayTime( playlist.id )
-                .distinctUntilChanged()
-                .map { list ->
-                    // Same null-filtered selection as the base PlaylistItem, so the
-                    // header collage matches the library/stats collages.
-                    list.mapNotNull { it.thumbnailUrl }.takeLast( 4 ).map { url ->
-                        url.thumbnail( thumbnailSizePx / 2 )
-                    }
-                }
-    }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
+    val thumbnails = if (thumbnailUrl == null) {
+        rememberPlaylistSongThumbnails(playlist.id, thumbnailSizePx / 2)
+    } else null
 
     PlaylistItem(
         thumbnailContent = {
@@ -75,6 +62,8 @@ fun Playlist(
                         .fillMaxSize(),
                     contentScale = ContentScale.Crop,
                 )
+            } else if (thumbnails == null) {
+                ItemArtworkPlaceholder(thumbnailSizeDp, alternative, thumbnailShape())
             } else if (thumbnails.size in 1..3) {
                 // Base ThumbnailRenderer contract: fewer than four covers render a
                 // single full-size cover instead of a partial two-by-two collage.

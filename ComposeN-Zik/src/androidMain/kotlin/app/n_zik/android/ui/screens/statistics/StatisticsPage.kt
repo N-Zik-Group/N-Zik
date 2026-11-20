@@ -87,6 +87,8 @@ import app.n_zik.android.ui.items.ArtistItemPlaceholder
 import app.n_zik.android.components.menu.artist.LocalArtistItemMenu
 import app.n_zik.android.ui.items.PlaylistItem
 import app.n_zik.android.ui.items.PlaylistItemPlaceholder
+import app.n_zik.android.ui.items.ItemArtworkPlaceholder
+import app.n_zik.android.ui.items.rememberPlaylistSongThumbnails
 import app.n_zik.android.components.musicbrainz.insights.RankedInsightsSongPlaceholder
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.settings.common.SettingsEntry
@@ -108,7 +110,6 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.showStatsListeningTimeKey
 import app.n_zik.android.utils.statisticsCategoryKey
-import app.n_zik.android.core.coil.thumbnail
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -556,73 +557,65 @@ fun StatisticsPage(
                             }
                             return@items
                         }
-                        val thumbnails by remember {
-                            Database.songPlaylistMapTable
-                                    .sortSongsByPlayTime( playlists[it].playlist.id )
-                                    .distinctUntilChanged()
-                                    .map { list ->
-                                        // Same four-track selection as the library's
-                                        // PlaylistItem (null thumbnails filtered before
-                                        // takeLast): the collages must match screen to
-                                        // screen.
-                                        list.mapNotNull( Song::thumbnailUrl ).takeLast( 4 ).map { url ->
-                                            url.thumbnail( playlistThumbnailSizePx / 2 )
-                                        }
-                                    }
-                        }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
+                        val thumbnails = rememberPlaylistSongThumbnails(
+                            playlists[it].playlist.id,
+                            playlistThumbnailSizePx / 2,
+                        )
 
                         PlaylistItem(
                             thumbnailContent = {
                                 Box(modifier = Modifier.fillMaxSize()) {
-                                // Base ThumbnailRenderer contract: four covers render
-                                // the two-by-two collage, one to three a single
-                                // full-size cover, zero nothing.
-                                if (thumbnails.size in 1..3) {
-                                    ImageCacheFactory.AsyncImage(
-                                        shape = null,
-                                        thumbnailUrl = thumbnails.first(),
-                                        contentDescription = null,
-                                        contentScale = ContentScale.Crop,
-                                        onError = {error ->
-                                            Timber.tag("StatisticsPage").e("Failed AsyncImage in PlaylistItem ${error.result.throwable.stackTraceToString()}")
-                                        }
-                                    )
-                                } else {
-                                    // The quadrants are sized from the actual container
-                                    // (like the base ThumbnailRenderer): the card can be
-                                    // wider than playlistThumbnailSizeDp, a fixed Dp
-                                    // left visible gaps around the four covers.
-                                    BoxWithConstraints(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                    ) {
-                                        val halfWidth = maxWidth / 2
-                                        val halfHeight = maxHeight / 2
-                                        listOf(
-                                            Alignment.TopStart,
-                                            Alignment.TopEnd,
-                                            Alignment.BottomStart,
-                                            Alignment.BottomEnd
-                                        ).forEachIndexed { index, alignment ->
-                                            val thumbnail = thumbnails.getOrNull(index)
-                                            if (thumbnail != null)
-                                                ImageCacheFactory.AsyncImage(
-                                                    shape = null,
-                                                    thumbnailUrl = thumbnail,
-                                                    contentDescription = null,
-                                                    contentScale = ContentScale.Crop,
-                                                    modifier = Modifier
-                                                        .align(alignment)
-                                                        .size(halfWidth, halfHeight),
-                                                    onError = {error ->
-                                                        Timber.tag("StatisticsPage").e("Failed AsyncImage 1 in PlaylistItem ${error.result.throwable.stackTraceToString()}")
-                                                    }
-                                                )
+                                    // Base ThumbnailRenderer contract: four covers render
+                                    // the two-by-two collage, one to three a single
+                                    // full-size cover, zero nothing.
+                                    if (thumbnails == null) {
+                                        ItemArtworkPlaceholder(playlistThumbnailSizeDp, card = true, shape = thumbnailShape())
+                                    } else if (thumbnails.size in 1..3) {
+                                        ImageCacheFactory.AsyncImage(
+                                            shape = null,
+                                            thumbnailUrl = thumbnails.first(),
+                                            contentDescription = null,
+                                            contentScale = ContentScale.Crop,
+                                            onError = {error ->
+                                                Timber.tag("StatisticsPage").e("Failed AsyncImage in PlaylistItem ${error.result.throwable.stackTraceToString()}")
+                                            }
+                                        )
+                                    } else if (thumbnails.size >= 4) {
+                                        // The quadrants are sized from the actual container
+                                        // (like the base ThumbnailRenderer): the card can be
+                                        // wider than playlistThumbnailSizeDp, a fixed Dp
+                                        // left visible gaps around the four covers.
+                                        BoxWithConstraints(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                        ) {
+                                            val halfWidth = maxWidth / 2
+                                            val halfHeight = maxHeight / 2
+                                            listOf(
+                                                Alignment.TopStart,
+                                                Alignment.TopEnd,
+                                                Alignment.BottomStart,
+                                                Alignment.BottomEnd
+                                            ).forEachIndexed { index, alignment ->
+                                                val thumbnail = thumbnails.getOrNull(index)
+                                                if (thumbnail != null)
+                                                    ImageCacheFactory.AsyncImage(
+                                                        shape = null,
+                                                        thumbnailUrl = thumbnail,
+                                                        contentDescription = null,
+                                                        contentScale = ContentScale.Crop,
+                                                        modifier = Modifier
+                                                            .align(alignment)
+                                                            .size(halfWidth, halfHeight),
+                                                        onError = {error ->
+                                                            Timber.tag("StatisticsPage").e("Failed AsyncImage 1 in PlaylistItem ${error.result.throwable.stackTraceToString()}")
+                                                        }
+                                                    )
+                                            }
                                         }
                                     }
-                                    } // end if-else
-                                    } // end outer Box
-                                },
+                                }
+                            },
                                 // Rank number as caller overlay: sits on top of the
                                 // base composable's dark scrim instead of carrying
                                 // its own (avoids a double scrim).

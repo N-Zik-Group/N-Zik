@@ -20,7 +20,7 @@ import app.n_zik.android.typography
 
 @Composable
 fun IconInfo (
-    title: String,
+    title: String?,
     icon: Painter,
     spacer: Dp = 4.dp,
     iconSize: Dp = 20.dp,
@@ -37,15 +37,20 @@ fun IconInfo (
                 .size(iconSize)
         )
         Spacer(modifier = Modifier.padding(horizontal = 2.dp))
-        BasicText(
-            text = title,
-            style = TextStyle(
-                color = colorPalette().text,
-                fontStyle = typography().l.fontStyle
-            ),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+        val textStyle = TextStyle(
+            color = colorPalette().text,
+            fontStyle = typography().l.fontStyle
         )
+        if (title == null) {
+            ItemTextPlaceholder(text = null, style = textStyle, width = 0.4f)
+        } else {
+            BasicText(
+                text = title,
+                style = textStyle,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
 
     }
 }

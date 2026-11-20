@@ -51,6 +51,7 @@ import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.onOverlay
 import app.n_zik.android.ui.styling.overlay
 import app.n_zik.android.ui.components.forceLoadingShimmerPreview
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 import app.n_zik.android.ui.items.AlbumItemPlaceholder
 import app.n_zik.android.ui.items.SongItemPlaceholder
 import app.n_zik.android.R
@@ -72,6 +73,7 @@ import app.n_zik.android.utils.color
 import app.n_zik.android.utils.forcePlay
 import app.n_zik.android.utils.secondary
 import app.n_zik.android.utils.semiBold
+import app.n_zik.android.utils.shimmerEffect
 import app.n_zik.android.utils.Preference.HOME_ALBUM_ITEM_SIZE
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.uiRoundnessShape
@@ -107,7 +109,7 @@ fun AlbumInsightsScreen(
             Modifier.fillMaxSize().background(colorPalette().background0)
                 .padding(rememberPageChromeContentPadding()),
         ) {
-            InsightsLoadingHeader(200.dp, thumbnailShape())
+            AlbumHeader(album = null, artist = null, onArtistClick = null)
         }
     } else {
         val album = state.album
@@ -423,7 +425,7 @@ fun AlbumInsightsScreen(
 
 @Composable
 private fun AlbumHeader(
-    album: Album,
+    album: Album?,
     artist: Artist?,
     onArtistClick: (() -> Unit)?
 ) {
@@ -433,25 +435,37 @@ private fun AlbumHeader(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        InsightsThumbnail(
-            thumbnailUrl = album.thumbnailUrl,
-            shape = thumbnailShape(),
-            modifier = Modifier
-                .size(200.dp)
-        )
+        val artworkModifier = Modifier.size(200.dp)
+        val artworkShape = thumbnailShape()
+        if (album == null) {
+            Spacer(artworkModifier.clip(artworkShape).shimmerEffect())
+        } else {
+            InsightsThumbnail(album.thumbnailUrl, artworkShape, artworkModifier)
+        }
         Spacer(Modifier.height(16.dp))
 
-        InsightsText(
-            text = cleanPrefix(album.title.orEmpty()),
-            style = typography().l.semiBold,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
-        )
+        val titleStyle = typography().l.semiBold
+        if (album == null) {
+            ItemTextPlaceholder(text = null, style = titleStyle, width = 0.65f)
+        } else {
+            InsightsText(
+                text = cleanPrefix(album.title.orEmpty()),
+                style = titleStyle,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
 
         Spacer(Modifier.height(4.dp))
 
+        if (album == null) {
+            ItemTextPlaceholder(text = null, style = typography().m, width = 0.4f)
+            Spacer(Modifier.height(8.dp))
+            return@Column
+        }
+
         val artistName = cleanPrefix(artist?.name ?: album.authorsText.orEmpty())
-        if (onArtistClick != null) {
+        if (onArtistClick != null && !forceLoadingShimmerPreview()) {
             Text(
                 text = artistName,
                 style = typography().m,

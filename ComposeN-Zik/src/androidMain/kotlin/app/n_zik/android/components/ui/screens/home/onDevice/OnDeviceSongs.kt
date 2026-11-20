@@ -250,6 +250,7 @@ fun OnDeviceSong(
             } else emptyList()
         }
     }
+    val initialScanPending = isPermissionGranted && !searchDataReady && visibleSongs.isEmpty() && folders.isEmpty()
     SearchEmptyFeedback(
         query = search.inputValue,
         empty = itemsOnDisplay.isEmpty() && folders.isEmpty(),
@@ -369,10 +370,11 @@ fun OnDeviceSong(
                 }
             }
         } else {
-            if( showFolder4LocalSongs && songsOnDevice.isNotEmpty() ) {
+            if (showFolder4LocalSongs && (songsOnDevice.isNotEmpty() || initialScanPending)) {
                 item( "folder_paths" ) {
                     PathUtils.AddressBar(
                         currentPath = currentPath,
+                        enabled = !initialScanPending,
                         onSpecificAddressClick = { selectedFolder = it }
                     )
                 }
@@ -387,8 +389,12 @@ fun OnDeviceSong(
             }
         }
 
-        if (isPermissionGranted && !searchDataReady && visibleSongs.isEmpty() && folders.isEmpty()) {
-            items(4, key = { "loading-device-song:$it" }) { SongItemPlaceholder(onDevice = true) }
+        if (initialScanPending) {
+            if (showFolder4LocalSongs) {
+                items(4, key = { "loading-device-folder:$it" }) { FolderItem(text = null, shimmer = true) }
+            } else {
+                items(4, key = { "loading-device-song:$it" }) { SongItemPlaceholder(onDevice = true) }
+            }
         }
 
         if (isPermissionGranted && searchDataReady && visibleSongs.isEmpty() && folders.isEmpty()) {

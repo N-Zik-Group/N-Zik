@@ -20,6 +20,8 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(shimmer): match collection and folder loading geometry
+  - Keep collection headers, artist and year rows, folder paths and playlist mosaics in place while their content loads.
 - fix(artwork): keep prefetch and display on one pending quality
   - Keep the artwork request key stable when a prefetched cover reaches the carousel before its first download finishes.
 - fix(ui): keep Android system bars readable over dialogs
