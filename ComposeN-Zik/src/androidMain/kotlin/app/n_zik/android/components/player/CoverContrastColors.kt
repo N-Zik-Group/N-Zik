@@ -2,6 +2,10 @@ package app.n_zik.android.components.player
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.measuredPlayerTextForeground
+import app.n_zik.android.components.glass.playerForegroundOnSharedFrame
+import app.n_zik.android.components.glass.surfaceSourcePalette
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.lerp
 import app.n_zik.android.components.glass.GlassArea
@@ -147,6 +151,17 @@ internal fun playerTransportPlate(
     val transport = settings.inScope(GlassScope.PlayerTransport)
     return if (hasGlassPlate && transport.usesGlassMaterial(GlassArea.ActionButtons))
         glassFilmColor(transport.forArea(GlassArea.ActionButtons), role = nativePlate, menu = false) else nativePlate
+}
+
+/** Missing links keep their affordance while readable track text follows its own artwork stripe. */
+@Composable
+internal fun playerTrackLabelColor(linkAvailable: Boolean, measuredSurface: Color?): Color {
+    val palette = if (measuredSurface != null) surfaceSourcePalette() else colorPalette()
+    val preferred = if (linkAvailable) palette.text else palette.textDisabled.copy(alpha = .35f)
+        .compositeOver(playerPlaceholderCompositeBase(palette.isDark))
+    return if (measuredSurface == null) preferred else playerForegroundOnSharedFrame(
+        preferred, measuredPlayerTextForeground(preferred, measuredSurface),
+    )
 }
 
 @Composable

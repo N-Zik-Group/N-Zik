@@ -22,6 +22,9 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(player): contrast track labels against native artwork
+  - Sample the title, artist and Play/Pause separately in Normal when sharp artwork runs behind the controls.
+  - Keep track links, outline preferences and the existing shared fade.
 - fix(player): preserve play tint over carousel artwork
   - Adjust the Play/Pause accent lightness to keep its hue when the local Glass surface is busy.
   - Refresh contrast after a neighboring carousel cover finishes drawing.

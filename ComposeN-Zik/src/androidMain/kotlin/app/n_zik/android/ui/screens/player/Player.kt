@@ -199,6 +199,7 @@ import app.n_zik.android.components.theme.PlayerSystemBarAppearance
 import app.n_zik.android.components.glass.LocalForegroundSourcePalette
 import app.n_zik.android.components.glass.LocalNeutralForegroundTransition
 import app.n_zik.android.components.glass.SurfaceForegroundContent
+import app.n_zik.android.components.player.LocalPlayerArtworkUnderControls
 import app.n_zik.android.components.player.LocalPlayerBackdropSampling
 import app.n_zik.android.components.player.LocalPlayerContrastRevision
 import app.n_zik.android.components.player.rememberPlayerBackdropRegionColor
@@ -1586,6 +1587,7 @@ fun Player(
         LocalGlassBackdrop provides artworkControlsSource,
         LocalSurfaceBackdropColor provides null,
         LocalPlayerBackdropSampling provides backgroundSampling,
+        LocalPlayerArtworkUnderControls provides (expandedArtworkStack || waitForBlurredCover && blurAdjuster.strength <= 0f),
         LocalForegroundSourcePalette provides color,
         LocalGlassMaterialSource provides artworkControlsSource,
         LocalGlassContainerBackdrop provides artworkControlsSource,

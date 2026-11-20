@@ -61,6 +61,21 @@ class PlayerBackdropSamplingTest {
         }
     }
 
+    @Test fun `title and artist select ink from their own artwork stripe in Normal`() {
+        val state = PlayerBackdropSampling()
+        val title = Rect(90f, 250f, 230f, 280f)
+        val artist = Rect(90f, 300f, 230f, 330f)
+        state.registerRegion("title", title, Color.Transparent)
+        state.registerRegion("artist", artist, Color.Transparent)
+        val pixels = IntArray(32 * 64) { if (it / 32 < 29) 0xFF181818.toInt() else -1 }
+        state.publish(pixels, Offset.Zero, IntSize(320, 640))
+        val inactiveTitle = Color(0xFF6C6C6C)
+        val titleInk = measuredPlayerTextForeground(inactiveTitle, requireNotNull(state.colorAt(title, Color.Transparent)))
+        val artistInk = measuredPlayerTextForeground(Color.White, requireNotNull(state.colorAt(artist, Color.Transparent)))
+        assertEquals(Color.White, titleInk)
+        assertEquals(Color.Black, artistInk)
+    }
+
     @Test fun `glass film can change regional polarity while the artwork stays dark`() {
         val bounds = Rect(0f, 0f, 100f, 200f)
         val film = Color.White.copy(alpha = .28f)

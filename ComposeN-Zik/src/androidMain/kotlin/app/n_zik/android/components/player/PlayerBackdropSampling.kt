@@ -49,6 +49,7 @@ private const val SampleIntervalMs = 120L
 private const val MaxPreviewSamples = 4
 
 internal val LocalPlayerBackdropSampling = compositionLocalOf<PlayerBackdropSampling?> { null }
+internal val LocalPlayerArtworkUnderControls = compositionLocalOf { false }
 
 /** Reads only the dedicated background layers; player foreground never enters this source. */
 @Stable
@@ -177,14 +178,19 @@ internal fun rememberPlayerBackdropRegionColor(
     }
 }
 
-/** The transport glyph may sit on a very different part of a sharp cover than its neighbors. */
+/** Measure the pixels under the individual text or transport control using the shared recording. */
 @Composable
-internal fun rememberPlayerPlayGlyphBackdrop(enabled: Boolean, film: Color): Pair<Modifier, Color?> {
+internal fun rememberPlayerControlBackdrop(
+    enabled: Boolean,
+    film: Color? = null,
+    measureText: Boolean = false,
+): Pair<Modifier, Color?> {
     if (!enabled) return Modifier to null
     val bounds = remember { mutableStateOf<Rect?>(null) }
     val modifier = remember { Modifier.onGloballyPositioned { bounds.value = it.boundsInWindow() } }
     return modifier to rememberPlayerBackdropRegionColor(
-        bounds.value, useLocalSample = true, fallbackToSharedSurface = false, decisionFilm = film,
+        bounds.value, useLocalSample = true, fallbackToSharedSurface = false,
+        textFilm = film.takeIf { measureText }, decisionFilm = film,
     )
 }
 

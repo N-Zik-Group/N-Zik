@@ -54,7 +54,6 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -127,11 +126,13 @@ import app.n_zik.android.components.player.playerTransportPlayBackground
 import app.n_zik.android.components.player.playerTransportSurface
 import app.n_zik.android.components.glass.surfaceSourcePalette
 import app.n_zik.android.components.player.monochromeControlsColor
-import app.n_zik.android.components.player.playerPlaceholderCompositeBase
+import app.n_zik.android.components.player.LocalPlayerArtworkUnderControls
+import app.n_zik.android.components.player.opposingTextOutlineColor
+import app.n_zik.android.components.player.playerTrackLabelColor
 import app.n_zik.android.components.glass.TextContrast
 import app.n_zik.android.components.glass.surfaceGlyphColor
 import app.n_zik.android.components.glass.playerControlGlyphColor
-import app.n_zik.android.components.player.rememberPlayerPlayGlyphBackdrop
+import app.n_zik.android.components.player.rememberPlayerControlBackdrop
 import app.n_zik.android.components.glass.surfaceProgressTrackColor
 import app.n_zik.android.components.player.playerTextOutlineColor
 import app.n_zik.android.components.player.playerTransportGlyph
@@ -159,6 +160,12 @@ fun InfoAlbumAndArtistEssential(
     disableScrollingText: Boolean = false
 ) {
     val glassTextFeedback = rememberGlassSettings().enabled
+    val sampleNativeText = !glassTextFeedback && LocalPlayerArtworkUnderControls.current
+    val (measureTitle, titleSurface) = rememberPlayerControlBackdrop(sampleNativeText, Color.Transparent, measureText = true)
+    val (measureArtist, artistSurface) = rememberPlayerControlBackdrop(sampleNativeText, Color.Transparent, measureText = true)
+    val titleColor = playerTrackLabelColor(albumId != null, titleSurface)
+    val artistColor = playerTrackLabelColor(artistIds?.isEmpty() != true, artistSurface)
+
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     var showthumbnail by rememberPreference(showthumbnailKey, true)
     var selectedArtists by remember { mutableStateOf<List<Info>?>(null) }
@@ -240,23 +247,17 @@ fun InfoAlbumAndArtistEssential(
                         )
                     }
                     // The badge must stay outside the text's clip, marquee and offscreen fade canvas.
-                    Box(modifier = if (badgeOverflow) Modifier
+                    Box(modifier = (if (badgeOverflow) Modifier
                         .weight(1f, fill = false)
                         .then(titleBackdrop)
                         .clip(uiRoundnessShape())
                         .conditional(!disableScrollingText) { HorizontalfadingEdge2(0.025f).basicMarquee() }
-                        else Modifier) {
+                        else Modifier).then(measureTitle)) {
                         BasicText(
                             text = cleanPrefix(title ?: ""),
                             style = TextStyle(
                                 textAlign = TextAlign.Center,
-                                color = if (albumId == null)
-                                /*if (showthumbnail) colorPalette().textDisabled else if (colorPaletteMode == ColorPaletteMode.Light) colorPalette().textDisabled.copy(0.5f).compositeOver(Color.Black) else colorPalette().textDisabled.copy(0.35f).compositeOver(Color.White)
-                                else colorPalette().text,*/
-                                    // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
-                                    colorPalette().textDisabled.copy(0.35f)
-                                        .compositeOver(playerPlaceholderCompositeBase(colorPalette().isDark))
-                                else colorPalette().text,
+                                color = titleColor,
                                 fontStyle = typography().l.bold.fontStyle,
                                 fontWeight = typography().l.bold.fontWeight,
                                 fontSize = typography().l.bold.fontSize,
@@ -270,6 +271,7 @@ fun InfoAlbumAndArtistEssential(
                                 drawStyle = Stroke(width = 1.5f, join = StrokeJoin.Round),
                                 textAlign = TextAlign.Center,
                                 color = if (!textoutline) Color.Transparent
+                                else if (titleSurface != null) opposingTextOutlineColor(titleColor, 0.5f)
                                 else playerTextOutlineColor(colorPalette().isDark, 0.5f),
                                 fontStyle = typography().l.bold.fontStyle,
                                 fontWeight = typography().l.bold.fontWeight,
@@ -354,19 +356,14 @@ fun InfoAlbumAndArtistEssential(
             contentAlignment = Alignment.Center
         ) {
             val artistHorizontalInset = maxWidth * .025f
-            Box(if (glassTextFeedback) modifierArtist
-                .conditional(!disableScrollingText) { padding(horizontal = artistHorizontalInset) } else Modifier) {
+            Box((if (glassTextFeedback) modifierArtist
+                .conditional(!disableScrollingText) { padding(horizontal = artistHorizontalInset) } else Modifier)
+                .then(measureArtist)) {
             BasicText(
                 text = artist ?: "",
                 style = TextStyle(
                     textAlign = TextAlign.Center,
-                    color = if (artistIds?.isEmpty() == true)
-                        /*if (showthumbnail) colorPalette().textDisabled else if (colorPaletteMode == ColorPaletteMode.Light) colorPalette().textDisabled.copy(0.5f).compositeOver(Color.Black) else colorPalette().textDisabled.copy(0.35f).compositeOver(Color.White)
-                            else colorPalette().text,*/
-                        // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
-                        colorPalette().textDisabled.copy(0.35f)
-                            .compositeOver(playerPlaceholderCompositeBase(colorPalette().isDark))
-                        else colorPalette().text,
+                    color = artistColor,
                     fontStyle = typography().m.bold.fontStyle,
                     fontSize = typography().m.bold.fontSize,
                     //fontWeight = typography().m.bold.fontWeight,
@@ -383,6 +380,7 @@ fun InfoAlbumAndArtistEssential(
                     drawStyle = Stroke(width = 1.5f, join = StrokeJoin.Round),
                     textAlign = TextAlign.Center,
                     color = if (!textoutline) Color.Transparent
+                    else if (artistSurface != null) opposingTextOutlineColor(artistColor, 0.5f)
                     else playerTextOutlineColor(colorPalette().isDark, 0.5f),
                     fontStyle = typography().m.bold.fontStyle,
                     fontSize = typography().m.bold.fontSize,
@@ -480,7 +478,9 @@ fun ControlsEssential(
     val nextGlyph = playerTransportGlyph(controlsColor, transportSettings, enabled = nextEnabled)
     val playPlate = playerTransportPlate(transportSettings, nativePlayPlate,
         hasGlassPlate = playerPlayButtonType != PlayerPlayButtonType.Disabled)
-    val (measurePlayGlyph, playBackdrop) = rememberPlayerPlayGlyphBackdrop(transportSettings.enabled, playPlate)
+    val (measurePlayGlyph, playBackdrop) = rememberPlayerControlBackdrop(
+        transportSettings.enabled || LocalPlayerArtworkUnderControls.current, playPlate,
+    )
     val playGlyph = playerControlGlyphColor(playColor, playPlate, measuredBackdrop = playBackdrop)
     val playerBackgroundColors by rememberPreference(playerBackgroundColorsKey,PlayerBackgroundColors.AnimatedGradient)
     var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
