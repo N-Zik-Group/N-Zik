@@ -173,7 +173,6 @@ internal fun ThemeStoreDetailScreen(
         if (offline) {
             theme = saved
             loading = false
-            if (saved == null) Toaster.e(R.string.theme_store_offline_unavailable)
             return@LaunchedEffect
         }
         if (theme == null) theme = cached ?: saved
@@ -211,18 +210,24 @@ internal fun ThemeStoreDetailScreen(
             onRefresh = { if (!loading) { expireThemeStoreReads(); retry++ } },
             modifier = Modifier.fillMaxSize(),
         ) {
-            val selected = theme
-            if (removedLocal != null || (selected == null && loading)) {
-                val ownsTheme = selected != null && signedInCreatorId() == selected.author.githubId
-                val showSettings = selected != null && downloads.any { it.id == "${selected.themeId}:${selected.revision}" }
+            val bundledTheme = builtIn?.theme
+            val selected = bundledTheme ?: theme
+            val loadingBundledPreviews = bundledTheme?.previews?.isEmpty() == true
+            if (removedLocal != null || (selected == null && loading) || loadingBundledPreviews) {
+                val previewedTheme = selected ?: initialDownload?.theme
+                val ownsTheme = previewedTheme != null && signedInCreatorId() == previewedTheme.author.githubId
+                val showSettings = previewedTheme != null && downloads.any { it.id == "${previewedTheme.themeId}:${previewedTheme.revision}" }
                 ThemeDetailPlaceholder(
-                    padding, selected, localPackage, lastSync,
+                    padding, previewedTheme, localPackage, lastSync,
                     showFollowActions = !ownsTheme,
                     showWithdraw = ownsTheme && !offline,
                     showSettings = showSettings,
                 ) {
-                    if (selected != null && removedLocal == null) ThemePreviewGallery(selected, catalog, retry)
-                    else ThemeGalleryPlaceholder()
+                    if (previewedTheme != null && removedLocal == null && !loadingBundledPreviews) {
+                        ThemePreviewGallery(previewedTheme, catalog, retry)
+                    } else {
+                        ThemeGalleryPlaceholder()
+                    }
                 }
             } else if (selected != null) {
                 key(profileId, selected.themeId, selected.revision) {
@@ -236,8 +241,17 @@ internal fun ThemeStoreDetailScreen(
             } else {
                 Column(Modifier.fillMaxSize().padding(padding), horizontalAlignment = Alignment.CenterHorizontally) {
                     DetailHeader()
-                    SettingsDescription(stringResource(R.string.theme_store_catalog_unavailable), textAlign = TextAlign.Center)
-                    UiButton(onClick = { expireThemeStoreReads(); retry++ }) { Text(stringResource(R.string.common_action_retry)) }
+                    val message = when {
+                        localPackage -> R.string.common_load_failed
+                        offline -> R.string.theme_store_offline_unavailable
+                        else -> R.string.theme_store_catalog_unavailable
+                    }
+                    SettingsDescription(stringResource(message), textAlign = TextAlign.Center)
+                    if (!offline && !localPackage) {
+                        UiButton(onClick = { expireThemeStoreReads(); retry++ }) {
+                            StoreText(stringResource(R.string.common_action_retry))
+                        }
+                    }
                 }
             }
         }
