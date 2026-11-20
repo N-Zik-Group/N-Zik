@@ -394,6 +394,15 @@
     <string name="song_matching_all_confirmation">%d 不一致の曲をマッチさせますか？</string>
     <string name="song_matching_dialog_title">曲に一致</string>
     <string name="song_matching_progress_title">一致する曲</string>
+    <string name="song_matching_background_message">バックグラウンドでマッチングを続けます。</string>
+    <string name="song_matching_notification_progress">%1$d の %2$d 曲</string>
+    <string name="song_matching_cancelled_title">一致する曲がキャンセルされました</string>
+    <string name="song_matching_unprocessed_count">%1$d 処理されていません</string>
+    <string name="song_matching_notification_completed">%1$d 曲が一致しました。 %2$d が既存の曲と統合されました。</string>
+    <string name="song_matching_notification_partial">%1$d が一致しました、 %2$d が失敗しました。 %3$d が処理されませんでした。 %4$d マージされました。</string>
+    <string name="song_matching_notification_cancelled">キャンセルしました。 %1$d マッチしました、 %2$d 失敗しました。 %3$d は処理されません。 %4$d マージされました。</string>
+    <string name="song_matching_notification_failed">曲のマッチングに失敗しました。 %1$d マッチしました、 %2$d 失敗しました。 %3$d は処理されませんでした。 %4$d マージされました。</string>
+    <string name="song_matching_failed_message">曲のマッチングを完了できませんでした。もう一度お試しください。</string>
     <string name="song_matching_running_message">一致する曲を検索しています。しばらくお待ちください。アプリを最小化または終了しないでください</string>
     <string name="song_matching_unmatched_label">比類のない曲</string>
     <string name="metadata_musicbrainz_rating">評価</string>
