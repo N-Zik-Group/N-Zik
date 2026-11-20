@@ -211,7 +211,6 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -255,7 +254,6 @@ import app.n_zik.android.components.dialog.search.MatchResultsDialog
 import app.n_zik.android.components.tab.ImportPlaylistsMenu
 import app.n_zik.android.components.tab.ImportSongsFromCSV
 import app.n_zik.android.components.tab.ImportSongsFromServices
-import app.n_zik.android.core.database.ImportSong
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.components.dialog.settings.LocalPlaylistToolbarSettingsDialog
 import app.n_zik.android.core.rewind.RewindPlaylists
@@ -562,48 +560,17 @@ fun LocalPlaylistSongs(
                             if (!wasCancelled) songsMatched++
                         }
                     })
-                    kotlinx.coroutines.delay(800) // Space out requests to avoid YouTube rate limiting (403 Error)
+                    delay(800) // Space out requests to avoid YouTube rate limiting (403 Error)
                 }
                 jobs.forEach { it.join() }
             } catch (e: CancellationException) {
                 // Expected on cancel - cleanup happens in finally
             } finally {
                 withContext(NonCancellable) {
-                    kotlinx.coroutines.delay(500)
+                    delay(500)
 
-                    // Count failed: ImportSong entries where originalId is still in DB
-                    // AND is NOT a valid YouTube ID (Riplay imports may have YouTube IDs as originalId)
-                    var failedCount = 0
-                    val allEntries = Database.importSongTable.getAllEntries()
-                    val failedEntries = mutableListOf<ImportSong>()
-                    for (entry in allEntries) {
-                        if (entry.playlistId != playlistId) continue
-                        val count = Database.songTable.countById(entry.originalId)
-                        val isYouTubeId = entry.originalId.length == 11 && !entry.originalId.startsWith(LOCAL_KEY_PREFIX)
-                        Timber.tag("MatchPlaylist").d("CLEANUP BDD: originalId='${entry.originalId}' count=$count isYouTubeId=$isYouTubeId")
-                        if (count > 0) {
-                            if (isYouTubeId) {
-                                val song = Database.songTable.findById(entry.originalId).first()
-                                val dur = song?.durationText ?: "?"
-                                if (song != null && song.durationText == "00:00") {
-                                    Timber.tag("MatchPlaylist").d("CLEANUP BDD: FAIL (Riplay) originalId='${entry.originalId}' - duration='00:00'")
-                                    failedCount++
-                                    failedEntries.add(entry)
-                                } else {
-                                    Timber.tag("MatchPlaylist").d("CLEANUP BDD: MATCHED originalId='${entry.originalId}' (duration='$dur')")
-                                    Database.importSongTable.deleteByOriginalId(entry.originalId)
-                                }
-                            } else {
-                                Timber.tag("MatchPlaylist").d("CLEANUP BDD: FAIL originalId='${entry.originalId}' (placeholder)")
-                                failedCount++
-                                failedEntries.add(entry)
-                            }
-                        } else {
-                            Timber.tag("MatchPlaylist").d("CLEANUP BDD: MATCHED originalId='${entry.originalId}' (deleted)")
-                            Database.importSongTable.deleteByOriginalId(entry.originalId)
-                        }
-                    }
-
+                    val failedEntries = reconcileLocalPlaylistImportMatches(playlistId)
+                    val failedCount = failedEntries.size
                     val matchedCount = maxOf(0, totalSongsToMatch - failedCount)
 
                     if (matchedItemsRef.isNotEmpty()) {
@@ -664,48 +631,17 @@ fun LocalPlaylistSongs(
                             if (!wasCancelled) songsMatched++
                         }
                     })
-                    kotlinx.coroutines.delay(800)
+                    delay(800)
                 }
                 jobs.forEach { it.join() }
             } catch (e: CancellationException) {
                 // Expected on cancel - cleanup happens in finally
             } finally {
                 withContext(NonCancellable) {
-                    kotlinx.coroutines.delay(500)
+                    delay(500)
 
-                    // Count failed: ImportSong entries where originalId is still in DB
-                    // AND is NOT a valid YouTube ID (Riplay imports may have YouTube IDs as originalId)
-                    var failedCount = 0
-                    val allEntries = Database.importSongTable.getAllEntries()
-                    val failedEntries = mutableListOf<ImportSong>()
-                    for (entry in allEntries) {
-                        if (entry.playlistId != playlistId) continue
-                        val count = Database.songTable.countById(entry.originalId)
-                        val isYouTubeId = entry.originalId.length == 11 && !entry.originalId.startsWith(LOCAL_KEY_PREFIX)
-                        Timber.tag("MatchPlaylist").d("CLEANUP BDD: originalId='${entry.originalId}' count=$count isYouTubeId=$isYouTubeId")
-                        if (count > 0) {
-                            if (isYouTubeId) {
-                                val song = Database.songTable.findById(entry.originalId).first()
-                                val dur = song?.durationText ?: "?"
-                                if (song != null && song.durationText == "00:00") {
-                                    Timber.tag("MatchPlaylist").d("CLEANUP BDD: FAIL (Riplay) originalId='${entry.originalId}' - duration='00:00'")
-                                    failedCount++
-                                    failedEntries.add(entry)
-                                } else {
-                                    Timber.tag("MatchPlaylist").d("CLEANUP BDD: MATCHED originalId='${entry.originalId}' (duration='$dur')")
-                                    Database.importSongTable.deleteByOriginalId(entry.originalId)
-                                }
-                            } else {
-                                Timber.tag("MatchPlaylist").d("CLEANUP BDD: FAIL originalId='${entry.originalId}' (placeholder)")
-                                failedCount++
-                                failedEntries.add(entry)
-                            }
-                        } else {
-                            Timber.tag("MatchPlaylist").d("CLEANUP BDD: MATCHED originalId='${entry.originalId}' (deleted)")
-                            Database.importSongTable.deleteByOriginalId(entry.originalId)
-                        }
-                    }
-
+                    val failedEntries = reconcileLocalPlaylistImportMatches(playlistId)
+                    val failedCount = failedEntries.size
                     val matchedCount = maxOf(0, totalSongsToMatch - failedCount)
 
                     if (unmatched.isNotEmpty()) {
