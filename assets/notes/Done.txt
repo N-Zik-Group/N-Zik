@@ -18,6 +18,8 @@ Improved:
   - Extract Quick Picks charts, the Discord presence preview and the Theme Store creator components.
 - refactor(storage): separate maintenance snapshots and rescue components
   - Move snapshot collection and shared Rescue UI out of their screen files.
+- refactor(artwork): separate thumbnail URL handling
+  - Use one source file for image URL sizing and quality resolution.
 - perf(player): prepare the full player before opening
   - Keep the display list warm at the collapsed anchor, pause decorations during sheet travel and defer contrast sampling until expansion settles.
 - perf(playback): batch bridge queue and radio lookups
