@@ -150,7 +150,7 @@ class RewindSectionCollageCardTest {
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
             val flowSize by remember {
-                Database.songPlaylistMapTable.sortSongsByPlayTime(7).map { it.size }
+                Database.songPlaylistMapTable.coverThumbnailUrls(7).map { it.size }
             }.collectAsStateWithLifecycle(0, context = NzikDispatchers.DATA)
             CompositionLocalProvider(LocalAppearance provides appearance) {
                 LaunchedEffect(flowSize) {
@@ -168,9 +168,9 @@ class RewindSectionCollageCardTest {
                 )
             }
         }
-        // The canary reaches the full track count once the Compose-side flow
+        // The canary reaches four covers once the Compose-side flow
         // pipeline (Room -> DATA dispatcher -> observed state) has delivered.
-        composeWaitUntil("canary observed the mapped track count", 10_000) { canarySize.value >= 4 }
+        composeWaitUntil("canary observed four covers", 10_000) { canarySize.value == 4 }
 
         // The base card renders its collage cells with the corner alignments as
         // content descriptions ([FOUR_CORNERS] toString — the base card's own

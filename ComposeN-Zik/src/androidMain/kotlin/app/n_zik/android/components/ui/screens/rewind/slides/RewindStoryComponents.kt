@@ -70,7 +70,6 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.ContentScale
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import android.text.format.DateFormat
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -94,7 +93,6 @@ import app.n_zik.android.MONTHLY_PREFIX
 import app.n_zik.android.PINNED_PREFIX
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.core.rewind.RewindPlaylists
-import app.n_zik.android.models.Song
 import app.n_zik.android.utils.checkFileExists
 import app.n_zik.android.utils.conditional
 import app.n_zik.android.utils.disableScrollingTextKey
@@ -103,11 +101,11 @@ import app.n_zik.android.components.ui.screens.rewind.RewindData
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
-import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.thumbnail
 import app.n_zik.android.components.glass.glassImageRim
 import app.n_zik.android.thumbnailShape
+import app.n_zik.android.ui.items.rememberPlaylistSongThumbnails
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.ui.styling.Hsl
@@ -117,9 +115,6 @@ import app.n_zik.innertube.YtMusic
 import app.n_zik.innertube.requests.ArtistPage
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
@@ -759,22 +754,10 @@ internal fun RewindPlaylistArtwork(
 ) {
     val quadrant = sizeDp / 2
     val context = LocalContext.current
-    val thumbnails by remember(playlistId) {
-        val customThumbnail = checkFileExists(
-            context,
-            "thumbnail/playlist_$playlistId"
-        )
-        if (customThumbnail != null) {
-            flowOf(listOf(customThumbnail))
-        } else {
-            Database.songPlaylistMapTable
-                .sortSongsByPlayTime(playlistId)
-                .distinctUntilChanged()
-                .map { list ->
-                    list.mapNotNull(Song::thumbnailUrl).takeLast(4)
-                }
-        }
-    }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
+    val customThumbnail = remember(context, playlistId) {
+        checkFileExists(context, "thumbnail/playlist_$playlistId")
+    }
+    val thumbnails = customThumbnail?.let(::listOf) ?: rememberPlaylistSongThumbnails(playlistId).orEmpty()
 
     val showFallback = emptyFallback && thumbnails.isEmpty()
     Box(

@@ -62,6 +62,21 @@ interface SongPlaylistMapTable {
     """)
     fun allSongsOf( playlistId: Long, limit: Int = Int.MAX_VALUE ): Flow<List<Song>>
 
+    /** The last four non-null covers in ascending play-time and mapping insertion order. */
+    @Query("""
+        SELECT thumbnailUrl
+        FROM (
+            SELECT S.thumbnailUrl, S.totalPlayTimeMs, SPM.ROWID AS mappingRowId
+            FROM SongPlaylistMap SPM
+            JOIN Song S ON S.id = SPM.songId
+            WHERE SPM.playlistId = :playlistId AND S.thumbnailUrl IS NOT NULL
+            ORDER BY S.totalPlayTimeMs DESC, mappingRowId DESC
+            LIMIT 4
+        )
+        ORDER BY totalPlayTimeMs ASC, mappingRowId ASC
+    """)
+    fun coverThumbnailUrls(playlistId: Long): Flow<List<String>>
+
     @Update(onConflict = OnConflictStrategy.REPLACE)
     suspend fun updateReplace( songPlaylistMaps: List<SongPlaylistMap> ): Int
 

@@ -55,7 +55,6 @@ import app.n_zik.android.cleanPrefix
 import app.n_zik.android.colorPalette
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.PlaylistPreview
-import app.n_zik.android.models.Song
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
@@ -168,12 +167,11 @@ internal fun rememberPlaylistSongThumbnails(
     thumbnailSizePx: Int? = null,
 ): List<String>? = key(playlistId, thumbnailSizePx) {
     val thumbnails by remember(playlistId, thumbnailSizePx) {
-        Database.songPlaylistMapTable.sortSongsByPlayTime(playlistId)
-            .distinctUntilChanged()
-            .map { songs ->
-                val covers = songs.mapNotNull(Song::thumbnailUrl).takeLast(4)
+        Database.songPlaylistMapTable.coverThumbnailUrls(playlistId)
+            .map { covers ->
                 if (thumbnailSizePx == null) covers else covers.mapNotNull { it.thumbnail(thumbnailSizePx) }
             }
+            .distinctUntilChanged()
     }.collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
     thumbnails
 }

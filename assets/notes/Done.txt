@@ -6,6 +6,8 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- perf(playlists): select cover art in Room
+  - Fetch at most four cover URLs with the existing ranking for playlist cards and Rewind.
 - perf(cache): limit streaming cache checks to requested tracks
   - Reuse streaming coverage across Bridge, library and Android Auto checks without retaining stale span data.
 - perf(quick-picks): reuse the first YouTube Music home page
