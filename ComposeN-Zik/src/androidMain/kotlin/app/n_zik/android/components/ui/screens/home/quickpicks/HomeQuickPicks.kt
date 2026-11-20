@@ -40,7 +40,9 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -142,13 +144,13 @@ import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.requests.queue
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import kotlin.random.Random
 import app.n_zik.android.components.pullrefresh.OfflineGatedPullRefresh
 import android.content.Context
 import org.json.JSONArray
@@ -237,43 +239,6 @@ fun HomeQuickPicks(
         }
     }
 
-    LaunchedEffect(state, state.trendingList.value, state.relatedPageResult.value, localCount, playEventType, state.ytmQuickPicks.value) {
-        val relatedInit = state.relatedPageResult.value?.getOrNull()
-        val mainIds = state.trendingList.value.map { it.id }.toSet()
-        val seed = (state.trendingList.value.joinToString { it.id } + (relatedInit?.songs?.joinToString { it.key } ?: "")).hashCode()
-        val random = Random(seed)
-
-        val relatedSongsSource = relatedInit?.songs
-            ?.map { it.asSong }
-            ?.filter { !parentalControlEnabled || !it.title.startsWith(EXPLICIT_PREFIX, true) }
-            ?.distinctBy { it.id }
-            .orEmpty()
-
-        val candidateList = if (playEventType == PlayEventsType.MostPlayed || playEventType == PlayEventsType.LastPlayed) {
-            val first = state.trendingList.value.firstOrNull()
-            val others = state.trendingList.value.drop(1)
-            val pool = (others + state.ytmQuickPicks.value + relatedSongsSource).distinctBy { it.id }
-            (listOfNotNull(first) + pool.shuffled(random))
-        } else {
-            val locals = state.trendingList.value.take(localCount)
-            val pool = (locals + state.ytmQuickPicks.value + relatedSongsSource).distinctBy { it.id }
-            pool.shuffled(random)
-        }
-
-        val finalLocalCount = candidateList.count { it.id in mainIds }
-        val finalYtmQuickPicksCount = candidateList.count { song -> state.ytmQuickPicks.value.any { it.id == song.id } && song.id !in mainIds }
-        val finalRelatedCount = candidateList.size - finalLocalCount - finalYtmQuickPicksCount
-
-        Timber.tag("HomeQuickPicks").d("Assembling Quick Picks -> Local: $finalLocalCount, YTM Related: $finalRelatedCount, YouTube QuickPicks: $finalYtmQuickPicksCount (Total: ${candidateList.size})")
-
-        val oldIds = state.recommendations.value.map { it.id }.toSet()
-        val newIds = candidateList.map { it.id }.toSet()
-
-        if (state.recommendations.value.isEmpty() || oldIds != newIds) {
-            state.recommendations.value = candidateList
-        }
-    }
-
     val scrollState = rememberLazyListState()
 
     LaunchedEffect(state.refreshKey.value) {
@@ -291,7 +256,7 @@ fun HomeQuickPicks(
             state = state,
             scrollState = scrollState,
             isOnline = isOnline,
-            refresh = { if (preview == null) state.refresh() },
+            refresh = { if (preview == null) state.refresh(manual = false) },
             navController = navController,
             onAlbumClick = onAlbumClick,
             onArtistClick = onArtistClick,
@@ -310,6 +275,29 @@ fun HomeQuickPicks(
             topContentInsetProvider = topContentInsetProvider,
         )
     }
+}
+
+@Composable
+private fun <T> collectQuickPicksLocalShelf(
+    slot: String,
+    revision: Int,
+    cache: MutableState<T?>,
+    flow: Flow<T>,
+): T? {
+    val completedRevision = persist("home/quickpicks/local/$slot/revision", 0)
+    val result = key(revision) {
+        flow.collectAsStateWithLifecycle<T?>(
+            initialValue = cache.value.takeIf { completedRevision.value == revision },
+            context = NzikDispatchers.DATA,
+        ).value
+    }
+    LaunchedEffect(revision, result) {
+        if (result != null) {
+            cache.value = result
+            completedRevision.value = revision
+        }
+    }
+    return result
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -356,7 +344,7 @@ fun HomeQuickPicksContent(
         state.discoverPageResult.value == null
     val relatedPending = preview == null && isOnline && state.relatedPageResult.value == null
 
-    // Offline→online transition: trigger the same refresh as the pull-to-refresh.
+    // Recover online shelves without resetting the content already on screen.
     var wasOnline by remember { mutableStateOf(true) }
     LaunchedEffect(isOnline) {
         if (isOnline && !wasOnline) {
@@ -376,6 +364,32 @@ fun HomeQuickPicksContent(
 
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             val itemInHorizontalGridWidth = maxWidth * (if (isLandscape && maxWidth * 0.475f >= 320.dp) 0.375f else 0.7f)
+            val gridDirection = LocalLayoutDirection.current
+            val viewportWidth = maxWidth - endPaddingValues.calculateStartPadding(gridDirection) -
+                endPaddingValues.calculateEndPadding(gridDirection)
+            val initialSlots = visibleQuickPicksSlots(viewportWidth.value, itemInHorizontalGridWidth.value)
+            val manualRevision = state.manualRefreshRevision.value
+            val history = state.trendingList.value
+            val related = state.relatedPageResult.value
+            val personalized = state.ytmQuickPicks.value
+            val historyPending = !state.loadedQuickPicks.value
+            val onlinePending = state.onlineRecommendationsPending(isOnline, currentYouTubeLoggedIn)
+            LaunchedEffect(state, history, related, personalized, historyPending, onlinePending, manualRevision, initialSlots) {
+                if (preview != null) return@LaunchedEffect
+                val suggestions = (personalized + related?.getOrNull()?.songs.orEmpty().map { it.asSong })
+                    .filter { !parentalControlEnabled || !it.title.startsWith(EXPLICIT_PREFIX, true) }
+                val slots = fillQuickPicksRecommendationSlots(
+                    previous = state.recommendations.value,
+                    history = history,
+                    online = suggestions,
+                    historyPending = historyPending,
+                    onlinePending = onlinePending,
+                    keepFirstHistorySong = playEventType != PlayEventsType.CasualPlayed,
+                    seed = history.map(Song::id).hashCode() xor manualRevision,
+                    initialSlots = initialSlots,
+                )
+                state.publishRecommendations(manualRevision, slots)
+            }
             val albumThumbnailSizeDp = 108.dp
             val albumThumbnailSizePx = albumThumbnailSizeDp.px
             val artistThumbnailSizeDp = 92.dp
@@ -386,19 +400,19 @@ fun HomeQuickPicksContent(
             val songThumbnailSizePx = songThumbnailSizeDp.px
 
             val showTips by rememberPreference(showTipsKey, true)
-            val displayedSectionTitles = remember { mutableSetOf<String>() }
+            val displayedSectionTitles = remember(manualRevision) { mutableSetOf<String>() }
             val ytmSections = state.homePageInit.value?.sections.orEmpty()
 
             val artistsState = persist<List<Artist>?>("home/quickpicks/local/artists")
-            val artistsResult by remember(preview) {
+            val artistsFlow = remember(preview) {
                 if (preview != null) kotlinx.coroutines.flow.flowOf(emptyList())
                 else Database.artistTable.sortFollowingByName().distinctUntilChanged().catch { error ->
                     Timber.tag("HomeQuickPicks").w(error, "Could not read followed artists")
                     emit(artistsState.value.orEmpty())
                 }
-            }.collectAsStateWithLifecycle(initialValue = artistsState.value, context = NzikDispatchers.DATA)
+            }
+            val artistsResult = collectQuickPicksLocalShelf("artists", manualRevision, artistsState, artistsFlow)
             val artists = artistsResult.orEmpty()
-            LaunchedEffect(artistsResult) { if (artistsResult != null) artistsState.value = artistsResult }
 
             val newReleaseAlbumsFiltered = remember(state.discoverPageInit.value, artists) {
                 state.discoverPageInit.value?.newReleaseAlbums?.filter { album ->
@@ -409,7 +423,7 @@ fun HomeQuickPicksContent(
             val maxTopPlaylistItems by rememberPreference(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`)
             val maxTopPlaylistItemsCustomValue by rememberPreference(MaxTopPlaylistItemsCustomValueKey, 10)
             val myTopSongsState = persist<List<Song>?>("home/quickpicks/local/myTopSongs")
-            val myTopSongsResult by remember(preview, maxTopPlaylistItems, maxTopPlaylistItemsCustomValue) {
+            val myTopSongsFlow = remember(preview, maxTopPlaylistItems, maxTopPlaylistItemsCustomValue) {
                 if (preview != null) kotlinx.coroutines.flow.flowOf(ThemePreviewDemo.songs.take(8))
                 else Database.eventTable.findSongsMostPlayedBetween(
                     from = 0L,
@@ -418,15 +432,13 @@ fun HomeQuickPicksContent(
                     Timber.tag("HomeQuickPicks").w(error, "Could not read top songs")
                     emit(myTopSongsState.value.orEmpty())
                 }
-            }.collectAsStateWithLifecycle(initialValue = myTopSongsState.value, context = NzikDispatchers.DATA)
-            val myTopSongs = myTopSongsResult.orEmpty()
-            LaunchedEffect(myTopSongsResult) {
-                if (myTopSongsResult != null) myTopSongsState.value = myTopSongsResult
             }
+            val myTopSongsResult = collectQuickPicksLocalShelf("myTopSongs", manualRevision, myTopSongsState, myTopSongsFlow)
+            val myTopSongs = myTopSongsResult.orEmpty()
 
             val showRewind by rememberPreference(showMonthlyPlaylistsKey, true)
             val rewindState = persist<List<PlaylistPreview>?>("home/quickpicks/local/rewind")
-            val rewindResult by remember(preview) {
+            val rewindFlow = remember(preview) {
                 if (preview != null) kotlinx.coroutines.flow.flowOf(emptyList())
                 else Database.playlistTable.sortPreviewsByName()
                     .map { list ->
@@ -441,9 +453,9 @@ fun HomeQuickPicksContent(
                         Timber.tag("HomeQuickPicks").w(error, "Could not read Rewind playlists")
                         emit(rewindState.value.orEmpty())
                     }
-            }.collectAsStateWithLifecycle(initialValue = rewindState.value, context = NzikDispatchers.DATA)
+            }
+            val rewindResult = collectQuickPicksLocalShelf("rewind", manualRevision, rewindState, rewindFlow)
             val rewindPlaylists = rewindResult.orEmpty()
-            LaunchedEffect(rewindResult) { if (rewindResult != null) rewindState.value = rewindResult }
 
             val sectionOrder = rememberQuickPicksSectionOrder()
             val showCharts by rememberPreference(showChartsKey, true)
@@ -551,8 +563,8 @@ fun HomeQuickPicksContent(
                             itemInHorizontalGridWidth = itemInHorizontalGridWidth,
                             navController = navController,
                             endPaddingValues = endPaddingValues,
-                            isLoading = preview == null && state.recommendations.value.isEmpty() &&
-                                (!state.loadedQuickPicks.value || relatedPending),
+                            isLoading = preview == null && (historyPending || onlinePending),
+                            initialSlots = initialSlots,
                             forcePlaceholder = forceShimmer,
                             onSongClick = { song ->
                                 if (song.isLocal) {
@@ -631,9 +643,10 @@ fun HomeQuickPicksContent(
                         }
                         "my_top" -> {
                             val hasMyTop = myTopSongs.isNotEmpty()
+                            val myTopPending = isOnline && myTopSongsResult == null
                             item(key = "my_top") {
-                                AnimatedVisibility(visible = showMyTop && (hasMyTop || forceShimmer || myTopSongsResult == null), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    MyTopSection(showMyTop, myTopSongs, navController, endPaddingValues, sectionTextModifier, itemInHorizontalGridWidth, forcePlaceholder = forceShimmer || myTopSongsResult == null)
+                                AnimatedVisibility(visible = showMyTop && (hasMyTop || forceShimmer || myTopPending), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    MyTopSection(showMyTop, myTopSongs, navController, endPaddingValues, sectionTextModifier, itemInHorizontalGridWidth, forcePlaceholder = forceShimmer || myTopPending)
                                 }
                             }
                         }
@@ -641,9 +654,10 @@ fun HomeQuickPicksContent(
                             // Spec 2: generated rewind-* playlists — hidden when the toggle
                             // is off or no playlist exists yet (auto-hide pattern)
                             val hasRewind = rewindPlaylists.isNotEmpty()
+                            val rewindPending = isOnline && rewindResult == null
                             item(key = "rewind") {
-                                AnimatedVisibility(visible = showRewind && (hasRewind || forceShimmer || rewindResult == null), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    RewindSection(showRewind, rewindPlaylists, navController, endPaddingValues, sectionTextModifier, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, forcePlaceholder = forceShimmer || rewindResult == null)
+                                AnimatedVisibility(visible = showRewind && (hasRewind || forceShimmer || rewindPending), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    RewindSection(showRewind, rewindPlaylists, navController, endPaddingValues, sectionTextModifier, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, forcePlaceholder = forceShimmer || rewindPending)
                                 }
                             }
                         }

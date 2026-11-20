@@ -12,6 +12,7 @@ import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -20,6 +21,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
@@ -46,6 +48,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -249,13 +252,14 @@ fun QuickPicksHeader(
 @UnstableApi
 @Composable
 fun QuickPicksGrid(
-    recommendations: List<Song>,
+    recommendations: List<Song?>,
     trendingList: List<Song>,
     playEventType: PlayEventsType,
     itemInHorizontalGridWidth: Dp,
     navController: NavController,
     endPaddingValues: PaddingValues,
     isLoading: Boolean,
+    initialSlots: Int,
     onSongClick: (Song) -> Unit,
     scrollToStartTrigger: Int = 0,
     forcePlaceholder: Boolean = false,
@@ -263,9 +267,10 @@ fun QuickPicksGrid(
     val preview = LocalThemePreview.current
     val quickPicksLazyGridState = rememberLazyGridState()
 
-    val songs = remember(recommendations) { recommendations.distinctBy { it.id } }
-    val loadingSlots = quickPicksLoadingSlots(songs.size, isLoading || forcePlaceholder && songs.isEmpty())
-    val rows = if (songs.isNotEmpty() || !loadingSlots.isEmpty()) 3 else 1
+    val songs = remember(recommendations) { recommendations.filterNotNull() }
+    val slotCount = recommendations.size +
+        quickPicksLoadingSlots(recommendations.size, isLoading || forcePlaceholder && songs.isEmpty(), initialSlots).count()
+    val rows = if (slotCount > 0) QUICK_PICKS_GRID_ROWS else 1
     val songIds = remember(songs) { songs.map { it.id } }
     val likeStatesMap by remember(songIds) {
         if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else LikeStateManager.getLikeStates(songIds)
@@ -308,48 +313,56 @@ fun QuickPicksGrid(
         contentPadding = endPaddingValues,
         modifier = Modifier.fillMaxWidth().height(Dimensions.itemsVerticalPadding * rows * 9)
     ) {
-        items(songs, key = { it.id }, contentType = { "song" }) { song ->
-            if (forcePlaceholder) {
-                SongItemPlaceholder(
-                    modifier = Modifier.width(itemInHorizontalGridWidth).animateItem(),
-                    title = song.title,
-                    artist = song.artistsText,
-                )
-            } else {
-                SongItem(
-                    song = song,
-                    isLiked = likeStatesMap[song.id],
-                    inPlaylist = playlistStatesMap[song.id],
-                    navController = navController,
-                    onClick = { onSongClick(song) },
-                    modifier = Modifier.width(itemInHorizontalGridWidth).animateItem(),
-                    thumbnailOverlay = {
-                        if (playEventType != PlayEventsType.CasualPlayed &&
-                            trendingList.any { it.id == song.id }) {
-                            Image(
-                                painter = painterResource(R.drawable.star_brilliant),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette().accent),
-                                modifier = Modifier
-                                    .size(23.dp)
-                                    .align(Alignment.TopEnd)
-                                    .padding(4.dp)
-                            )
+        items(
+            count = slotCount,
+            key = { index ->
+                if (index < initialSlots) "quick-picks-slot-$index"
+                else "quick-picks-song-${recommendations[index]?.id}"
+            },
+            contentType = { "quick-picks-slot" },
+        ) { index ->
+            AnimatedContent(
+                targetState = recommendations.getOrNull(index),
+                contentKey = { it != null },
+                modifier = Modifier.width(itemInHorizontalGridWidth).animateItem(),
+                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                label = "Quick Picks loading slot",
+            ) { song ->
+                if (song == null) {
+                    SongItemPlaceholders(count = 1)
+                } else if (forcePlaceholder) {
+                    SongItemPlaceholder(title = song.title, artist = song.artistsText)
+                } else key(song.id) {
+                    SongItem(
+                        song = song,
+                        isLiked = likeStatesMap[song.id],
+                        inPlaylist = playlistStatesMap[song.id],
+                        navController = navController,
+                        onClick = { onSongClick(song) },
+                        thumbnailOverlay = {
+                            if (playEventType != PlayEventsType.CasualPlayed &&
+                                trendingList.any { it.id == song.id }) {
+                                Image(
+                                    painter = painterResource(R.drawable.star_brilliant),
+                                    contentDescription = null,
+                                    colorFilter = ColorFilter.tint(colorPalette().accent),
+                                    modifier = Modifier
+                                        .size(23.dp)
+                                        .align(Alignment.TopEnd)
+                                        .padding(4.dp)
+                                )
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
-        }
-        items(loadingSlots.count(), key = { "quick-picks-loading-${loadingSlots.first + it}" },
-            contentType = { "song-placeholder" }) {
-            SongItemPlaceholders(count = 1, modifier = Modifier.width(itemInHorizontalGridWidth).animateItem())
         }
     }
     } // CompositionLocalProvider
 }
 
-internal fun quickPicksLoadingSlots(songCount: Int, loading: Boolean): IntRange =
-    if (loading) songCount until 6 else IntRange.EMPTY
+internal fun quickPicksLoadingSlots(songCount: Int, loading: Boolean, initialSlots: Int): IntRange =
+    if (loading) songCount until initialSlots else IntRange.EMPTY
 
 
 @OptIn(ExperimentalFoundationApi::class)

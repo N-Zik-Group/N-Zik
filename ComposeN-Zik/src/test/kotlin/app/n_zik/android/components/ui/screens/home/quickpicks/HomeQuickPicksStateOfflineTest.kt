@@ -137,7 +137,7 @@ class HomeQuickPicksStateOfflineTest {
     }
 
     /** A fresh state instance: plain mutable states stand in for the persisted ones. */
-    private fun newState() = HomeQuickPicksState(
+    private fun newState(account: QuickPicksAccountIdentity = currentQuickPicksAccountIdentity()) = HomeQuickPicksState(
         trendingList = mutableStateOf(emptyList()),
         trending = mutableStateOf(null),
         trendingInit = null,
@@ -158,6 +158,7 @@ class HomeQuickPicksStateOfflineTest {
         ytmQuickPicks = mutableStateOf(emptyList()),
         refreshing = mutableStateOf(false),
         refreshKey = mutableIntStateOf(0),
+        account = account,
     )
 
     /**
@@ -341,6 +342,55 @@ class HomeQuickPicksStateOfflineTest {
         assertTrue("the offline reload must mark the load done", state.loadedData.value)
         verifyNetworkPhasesSkipped()
         settleSharedLoad()
+    }
+
+    @Test
+    fun `a pull clears the loaded feed but reconnect keeps it`() {
+        settleSharedLoad()
+        val manager = app.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val capabilities = ShadowNetworkCapabilities.newInstance()
+        shadowOf(capabilities).addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+        shadowOf(capabilities).addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        shadowOf(capabilities).addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+        shadowOf(manager).setNetworkCapabilities(checkNotNull(manager.activeNetwork), capabilities)
+
+        val cachedHome = HomePage(sections = emptyList(), chips = null)
+        val state = newState()
+        state.homePageInit.value = cachedHome
+        state.homePageResult.value = Result.success(cachedHome)
+        state.loadedData.value = true
+        state.recommendations.value = listOf(Song.makePlaceholder("previous"))
+
+        state.refresh(manual = false)
+        assertEquals(cachedHome, state.homePageInit.value)
+        assertEquals(0, state.refreshKey.value)
+        assertEquals(0, state.manualRefreshRevision.value)
+        settleSharedLoad()
+
+        state.refresh()
+        assertNull(state.homePageInit.value)
+        assertTrue(state.recommendations.value.isEmpty())
+        assertEquals(1, state.refreshKey.value)
+        assertEquals(1, state.manualRefreshRevision.value)
+        state.publishRecommendations(0, listOf(Song.makePlaceholder("stale")))
+        assertTrue(state.recommendations.value.isEmpty())
+
+        settleSharedLoad()
+        assertTrue(state.homePageResult.value?.isFailure == true)
+        assertFalse(state.onlineRecommendationsPending(online = true, loggedIn = false))
+    }
+
+    @Test
+    fun `logging in alone does not keep YouTube recommendation placeholders pending`() {
+        val publicState = newState(quickPicksAccountIdentity("SAPISID=test-session", useLoginForBrowse = false))
+        val personalizedState = newState(quickPicksAccountIdentity("SAPISID=test-session", useLoginForBrowse = true))
+        publicState.relatedPageResult.value = Result.failure(offlineError)
+        personalizedState.relatedPageResult.value = Result.failure(offlineError)
+
+        assertFalse(publicState.onlineRecommendationsPending(online = true, loggedIn = true))
+        assertTrue(personalizedState.onlineRecommendationsPending(online = true, loggedIn = true))
+        personalizedState.homePageResult.value = Result.failure(offlineError)
+        assertFalse(personalizedState.onlineRecommendationsPending(online = true, loggedIn = true))
     }
 
     companion object {

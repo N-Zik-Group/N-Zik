@@ -9,6 +9,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.compose.persist.persist
 import app.n_zik.android.compose.persist.persistList
@@ -59,11 +60,12 @@ internal class HomeQuickPicksState(
     val selectedCountryCode: Countries,
     val parentalControlEnabled: Boolean,
     val localCount: Int,
-    var recommendations: MutableState<List<Song>>,
+    var recommendations: MutableState<List<Song?>>,
     var ytmQuickPicks: MutableState<List<Song>>,
     var refreshing: MutableState<Boolean>,
     var refreshKey: MutableState<Int>,
     private val account: QuickPicksAccountIdentity = currentQuickPicksAccountIdentity(),
+    val manualRefreshRevision: MutableState<Int> = mutableIntStateOf(0),
 ) {
     companion object {
         // Navigation must not cancel a shared network load.
@@ -86,6 +88,18 @@ internal class HomeQuickPicksState(
     private fun loadIdentity() = LoadIdentity(playEventType, selectedCountryCode, account)
 
     internal fun isCurrentAccount(): Boolean = account == currentQuickPicksAccountIdentity()
+
+    internal fun onlineRecommendationsPending(online: Boolean, loggedIn: Boolean): Boolean =
+        online && (relatedPageResult.value == null ||
+            (loggedIn && account.useLoginForBrowse && ytmQuickPicks.value.isEmpty() && homePageResult.value == null))
+
+    internal fun publishRecommendations(revision: Int, slots: List<Song?>) {
+        synchronized(manualRefreshRevision) {
+            if (revision == manualRefreshRevision.value && isCurrentAccount()) {
+                recommendations.value = slots
+            }
+        }
+    }
 
     @SuppressLint("SuspiciousIndentation")
     suspend fun loadData(force: Boolean = false): Boolean {
@@ -312,31 +326,46 @@ internal class HomeQuickPicksState(
         loads.request(
             identity = loadIdentity(),
             invalidate = invalidate,
-            onStart = { force -> prepareLoad(force, clearCache = invalidate) },
+            onStart = { force, manual ->
+                prepareLoad(force, clearCache = invalidate, refresh = if (manual) Refresh.Manual else Refresh.Initial)
+            },
         ) { force -> runLoad(force) }
     }
 
-    private fun prepareLoad(force: Boolean, clearCache: Boolean = false) {
-        if (force) refreshKey.value++
-        if (force && clearCache) {
-            trendingList.value = emptyList()
-            ytmQuickPicks.value = emptyList()
-            recommendations.value = emptyList()
-            loadedQuickPicks.value = false
-            loadedData.value = false
-            relatedPageResult.value = null
-            trending.value = null
-            homePageResult.value = null
-            homePageInit.value = null
-            discoverPageResult.value = null
-            discoverPageInit.value = null
-            chartsPageResult.value = null
-            chartsPageInit.value = null
-        } else if (force) {
-            if (homePageInit.value == null) homePageResult.value = null
-            if (discoverPageInit.value == null) discoverPageResult.value = null
-            if (chartsPageInit.value == null) chartsPageResult.value = null
-            if (relatedPageResult.value?.getOrNull() == null) relatedPageResult.value = null
+    private fun prepareLoad(
+        force: Boolean,
+        clearCache: Boolean = false,
+        refresh: Refresh = Refresh.Initial,
+    ) {
+        if (!isCurrentAccount()) return
+        val manualReset = refresh == Refresh.Manual && NetworkQualityHelper.isNetworkConnected(appContext())
+        val reset = force && (clearCache || manualReset)
+        if (reset) observations.fence(observationToken)
+        synchronized(manualRefreshRevision) {
+            Snapshot.withMutableSnapshot {
+                if (force && refresh != Refresh.Reconnect) refreshKey.value++
+                if (manualReset) manualRefreshRevision.value++
+                if (reset) {
+                    trendingList.value = emptyList()
+                    ytmQuickPicks.value = emptyList()
+                    recommendations.value = emptyList()
+                    loadedQuickPicks.value = false
+                    loadedData.value = false
+                    relatedPageResult.value = null
+                    trending.value = null
+                    homePageResult.value = null
+                    homePageInit.value = null
+                    discoverPageResult.value = null
+                    discoverPageInit.value = null
+                    chartsPageResult.value = null
+                    chartsPageInit.value = null
+                } else if (force) {
+                    if (homePageInit.value == null) homePageResult.value = null
+                    if (discoverPageInit.value == null) discoverPageResult.value = null
+                    if (chartsPageInit.value == null) chartsPageResult.value = null
+                    if (relatedPageResult.value?.getOrNull() == null) relatedPageResult.value = null
+                }
+            }
         }
         observeLocalData(restart = force)
     }
@@ -354,12 +383,21 @@ internal class HomeQuickPicksState(
         }
     }
 
-    fun refresh() {
+    private enum class Refresh {
+        Initial,
+        Manual,
+        Reconnect,
+    }
+
+    fun refresh(manual: Boolean = true) {
         observeLocalData()
         loads.request(
             identity = loadIdentity(),
             refresh = true,
-            onStart = { force -> prepareLoad(force) },
+            manualRefresh = manual,
+            onStart = { force, manualRefresh ->
+                prepareLoad(force, refresh = if (manualRefresh) Refresh.Manual else Refresh.Reconnect)
+            },
         ) { force -> runLoad(force) }
     }
 }
@@ -402,8 +440,9 @@ internal class QuickPicksAccountData {
     val homePageResult = mutableStateOf<Result<HomePage?>?>(null)
     val homePage = mutableStateOf<HomePage?>(null)
     val quickPicks = mutableStateOf<List<Song>>(emptyList())
-    val recommendations = mutableStateOf<List<Song>>(emptyList())
+    val recommendations = mutableStateOf<List<Song?>>(emptyList())
     val loaded = mutableStateOf(false)
+    val manualRefreshRevision = mutableIntStateOf(0)
 }
 
 @UnstableApi
@@ -440,7 +479,7 @@ internal fun rememberHomeQuickPicksState(
     val loadedData = if (preview == null) accountData.loaded else remember { mutableStateOf(true) }
 
     val recommendations = if (preview == null) accountData.recommendations
-        else remember { mutableStateOf(ThemePreviewDemo.songs.take(8)) }
+        else remember { mutableStateOf<List<Song?>>(ThemePreviewDemo.songs.take(8)) }
     val refreshing = remember { mutableStateOf(false) }
     val refreshKey = remember { mutableIntStateOf(0) }
 
@@ -467,6 +506,7 @@ internal fun rememberHomeQuickPicksState(
             refreshing = refreshing,
             refreshKey = refreshKey,
             account = account,
+            manualRefreshRevision = accountData.manualRefreshRevision,
         )
     }
     return state

@@ -32,7 +32,7 @@ class QuickPicksWorkCoordinatorTest {
                 cached = true
             }
         }
-        coordinator.request(firstAccount, onStart = { starts += it }) { fetch(it) }
+        coordinator.request(firstAccount, onStart = { force, _ -> starts += force }) { fetch(it) }
         runCurrent()
         repeat(3) {
             // Visitor metadata and repeated authenticated emissions do not change the account.
@@ -117,7 +117,7 @@ class QuickPicksWorkCoordinatorTest {
         coordinator.request { calls += "initial"; finish.await() }
         runCurrent()
         repeat(3) { index ->
-            coordinator.request(refresh = true, onStart = { resets++ }) { deferred ->
+            coordinator.request(refresh = true, onStart = { _, _ -> resets++ }) { deferred ->
                 assertTrue(deferred)
                 calls += "refresh $index"
             }
@@ -139,7 +139,7 @@ class QuickPicksWorkCoordinatorTest {
         val firstOwner = observations.claim()
         coordinator.request(identity = "FR") { finish.await() }
         runCurrent()
-        coordinator.request(identity = "FR", refresh = true, onStart = {
+        coordinator.request(identity = "FR", refresh = true, manualRefresh = true, onStart = { _, _ ->
             callbacks += "old reset"
             localResults = emptyList()
             observations.start(firstOwner, restart = true) { publication ->
@@ -154,8 +154,9 @@ class QuickPicksWorkCoordinatorTest {
             awaitCancellation()
         }
         runCurrent()
-        coordinator.request(identity = "FR", onStart = { force ->
+        coordinator.request(identity = "FR", onStart = { force, manualRefresh ->
             assertTrue(force)
+            assertTrue(manualRefresh)
             callbacks += "current reset"
             localResults = emptyList()
             observations.start(currentOwner, restart = true) { publication ->
@@ -177,7 +178,10 @@ class QuickPicksWorkCoordinatorTest {
     fun `idle explicit refresh resets once and forces the load`() = runTest {
         val coordinator = QuickPicksLoadCoordinator(backgroundScope)
         var resets = 0
-        coordinator.request(refresh = true, onStart = { resets++ }) { deferred ->
+        coordinator.request(refresh = true, manualRefresh = true, onStart = { _, manualRefresh ->
+            assertTrue(manualRefresh)
+            resets++
+        }) { deferred ->
             assertEquals(1, resets)
             assertTrue(deferred)
         }
@@ -233,13 +237,13 @@ class QuickPicksWorkCoordinatorTest {
         val finish = CompletableDeferred<Unit>()
         val calls = mutableListOf<String>()
         val starts = mutableListOf<Boolean>()
-        coordinator.request(identity = "FR", onStart = { starts += it }) {
+        coordinator.request(identity = "FR", onStart = { force, _ -> starts += force }) {
             calls += "FR"
             finish.await()
         }
         runCurrent()
-        coordinator.request(identity = "US", onStart = { starts += it }) { calls += "US" }
-        coordinator.request(identity = "NZ", onStart = { starts += it }) { force ->
+        coordinator.request(identity = "US", onStart = { force, _ -> starts += force }) { calls += "US" }
+        coordinator.request(identity = "NZ", onStart = { force, _ -> starts += force }) { force ->
             assertTrue(force)
             calls += "NZ"
         }
@@ -260,7 +264,7 @@ class QuickPicksWorkCoordinatorTest {
             cachePresent = true
         }
         runCurrent()
-        coordinator.request(invalidate = true, onStart = { cachePresent = false }) { force ->
+        coordinator.request(invalidate = true, onStart = { _, _ -> cachePresent = false }) { force ->
             assertTrue(force)
             assertFalse(cachePresent)
         }

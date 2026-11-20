@@ -51,10 +51,11 @@ class QuickPicksLoadGuardTest {
 
     @Test
     fun `arriving songs replace loading slots in order`() {
-        assertEquals((0..5).toList(), quickPicksLoadingSlots(0, loading = true).toList())
-        assertEquals((2..5).toList(), quickPicksLoadingSlots(2, loading = true).toList())
-        assertTrue(quickPicksLoadingSlots(9, loading = true).isEmpty())
-        assertTrue(quickPicksLoadingSlots(2, loading = false).isEmpty())
+        val initialSlots = visibleQuickPicksSlots(viewportWidth = 300f, itemWidth = 210f)
+        assertEquals((0..5).toList(), quickPicksLoadingSlots(0, loading = true, initialSlots).toList())
+        assertEquals((2..5).toList(), quickPicksLoadingSlots(2, loading = true, initialSlots).toList())
+        assertTrue(quickPicksLoadingSlots(9, loading = true, initialSlots).isEmpty())
+        assertTrue(quickPicksLoadingSlots(2, loading = false, initialSlots).isEmpty())
     }
 
     @Test

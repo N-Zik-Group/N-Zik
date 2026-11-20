@@ -255,3 +255,7 @@ Home library:
 - fix(songs): restore on-device rows on reentry
   - Render the last completed folder and song projection immediately when returning to On Device, then update it from the next scan. Check profile, permission, settings, query and refresh revision before reusing it.
   - Keep the initial shimmer for an uncached screen. Verify 25 targeted tests and eight tab returns on the Xperia.
+- fix(home): restore full Quick Picks refresh
+  - Reset the feed and requery local shelves on a manual online refresh. Keep visible content during reconnect and preserve a queued manual refresh through reentry.
+  - Size the top grid's placeholders to its viewport and fade each title into its slot. Alternate history with online suggestions in the display while preserving the playback actions.
+  - Verify the pull-to-refresh on the Xperia and run 76 targeted tests.

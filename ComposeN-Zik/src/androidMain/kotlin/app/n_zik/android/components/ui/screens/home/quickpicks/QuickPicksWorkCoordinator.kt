@@ -36,7 +36,8 @@ internal fun quickPicksAccountIdentity(
 internal class QuickPicksLoadCoordinator(private val scope: CoroutineScope) {
     private data class Request(
         val identity: Any,
-        val onStart: (Boolean) -> Unit,
+        val manualRefresh: Boolean,
+        val onStart: (force: Boolean, manualRefresh: Boolean) -> Unit,
         val load: suspend (force: Boolean) -> Unit,
     )
 
@@ -49,17 +50,24 @@ internal class QuickPicksLoadCoordinator(private val scope: CoroutineScope) {
         identity: Any = Unit,
         refresh: Boolean = false,
         invalidate: Boolean = false,
-        onStart: (force: Boolean) -> Unit = {},
+        manualRefresh: Boolean = false,
+        onStart: (force: Boolean, manualRefresh: Boolean) -> Unit = { _, _ -> },
         load: suspend (force: Boolean) -> Unit,
     ) {
-        val request = Request(identity, onStart, load)
+        val request = Request(identity, manualRefresh, onStart, load)
         if (job?.isActive == true) {
-            if (refresh || invalidate || identity != activeIdentity || pending != null) pending = request
+            val queued = pending
+            if (refresh || invalidate || identity != activeIdentity || queued != null) {
+                // Reentry must use the new observer owner and keep an explicit pull for the same identity.
+                pending = request.copy(
+                    manualRefresh = manualRefresh || (queued?.takeIf { it.identity == identity }?.manualRefresh == true),
+                )
+            }
             return
         }
         val force = refresh || invalidate || (activeIdentity != null && activeIdentity != identity)
         activeIdentity = identity
-        onStart(force)
+        onStart(force, manualRefresh)
         val nextJob = scope.launch(start = CoroutineStart.LAZY) {
             load(force)
             while (true) {
@@ -69,7 +77,7 @@ internal class QuickPicksLoadCoordinator(private val scope: CoroutineScope) {
                         if (it == null) job = null else activeIdentity = it.identity
                     }
                 } ?: break
-                next.onStart(true)
+                next.onStart(true, next.manualRefresh)
                 next.load(true)
             }
         }
@@ -97,6 +105,11 @@ internal class QuickPicksObservationOwner(private val scope: CoroutineScope) {
         owner = it
         publication = null
         job?.cancel()
+    }
+
+    @Synchronized
+    fun fence(token: Any) {
+        if (owner === token) publication = null
     }
 
     @Synchronized
