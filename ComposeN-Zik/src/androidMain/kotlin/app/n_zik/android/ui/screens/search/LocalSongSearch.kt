@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -48,7 +47,6 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
 import app.n_zik.android.models.Song
-import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScrollToTop
@@ -69,10 +67,6 @@ import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.items.SongItemPlaceholders
 import app.n_zik.android.ui.items.SongItemPlaceholder
 import app.n_zik.android.ui.styling.px
-import app.n_zik.android.utils.asMediaItem
-import app.n_zik.android.utils.disableScrollingTextKey
-import app.n_zik.android.utils.getDownloadState
-import app.n_zik.android.utils.isDownloadedSong
 import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.rememberPreference
@@ -169,11 +163,6 @@ fun LocalSongSearch(
             lazyListState.scrollToItem(0, 0)
         }
         }
-
-    var downloadState by remember {
-        mutableStateOf(Download.STATE_STOPPED)
-    }
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
     val songIds = remember(items) { items.map { it.id } }
     val likeStatesMap by remember(songIds) {
@@ -293,9 +282,6 @@ fun LocalSongSearch(
                             SongItemPlaceholder(title = song.cleanTitle(), artist = song.cleanArtistsText())
                             return@items
                         }
-                        val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
-                        downloadState = getDownloadState(song.asMediaItem.mediaId)
-                        val isDownloaded = if (!isLocal) isDownloadedSong(song.asMediaItem.mediaId) else true
                         Column(Modifier.settingsSearchContentVisibility(searchFocus.contentAlpha, retainSpace = true).animateItem()) {
                             SongItem(
                                 song = song,

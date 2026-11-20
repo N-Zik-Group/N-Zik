@@ -175,8 +175,6 @@ import app.n_zik.android.utils.homeArtistsOnDeviceSortMenuOrderKey
 import app.n_zik.android.utils.homeArtistsDislikedSortMenuOrderKey
 import org.json.JSONArray
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.Sort
 import app.n_zik.android.components.tab.Search
@@ -380,10 +378,13 @@ fun HomeArtists(
         when( artistType ) {
             ArtistsType.Favorites -> Database.artistTable.sortFollowing( sort.sortBy, sort.sortOrder )
             ArtistsType.Library -> Database.artistTable.sortInLibrary( sort.sortBy, sort.sortOrder )
-            ArtistsType.OnDevice -> kotlinx.coroutines.flow.combine(
-                Database.artistTable.sortInLibrary(sort.sortBy, sort.sortOrder),
-                Database.artistTable.sortInLibrary(ArtistSortBy.Name, sort.sortOrder),
-            ) { sorted, all -> (sorted + all).distinctBy { it.id } }
+            ArtistsType.OnDevice -> {
+                val sorted = Database.artistTable.sortInLibrary(sort.sortBy, sort.sortOrder)
+                if (sort.sortBy == ArtistSortBy.Name) sorted else kotlinx.coroutines.flow.combine(
+                    sorted,
+                    Database.artistTable.sortInLibrary(ArtistSortBy.Name, sort.sortOrder),
+                ) { selected, alphabetical -> (selected + alphabetical).distinctBy { it.id } }
+            }
             ArtistsType.Disliked -> Database.artistTable.allDisliked()
         }.collect {
             itemsToFilter = it

@@ -62,7 +62,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -163,7 +162,6 @@ import app.n_zik.android.utils.homeAlbumsLibrarySortMenuOrderKey
 import app.n_zik.android.utils.homeAlbumsOnDeviceSortMenuOrderKey
 import app.n_zik.android.utils.homeAlbumsDislikedSortMenuOrderKey
 import org.json.JSONArray
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -382,10 +380,13 @@ fun HomeAlbums(
         when ( albumType ) {
             AlbumsType.Favorites -> Database.albumTable.sortBookmarked( sort.sortBy, sort.sortOrder )
             AlbumsType.Library -> Database.albumTable.sortInLibrary( sort.sortBy, sort.sortOrder )
-            AlbumsType.OnDevice -> kotlinx.coroutines.flow.combine(
-                Database.albumTable.sortInLibrary(sort.sortBy, sort.sortOrder),
-                Database.albumTable.sortInLibrary(AlbumSortBy.Title, sort.sortOrder),
-            ) { sorted, all -> (sorted + all).distinctBy { it.id } }
+            AlbumsType.OnDevice -> {
+                val sorted = Database.albumTable.sortInLibrary(sort.sortBy, sort.sortOrder)
+                if (sort.sortBy == AlbumSortBy.Title) sorted else kotlinx.coroutines.flow.combine(
+                    sorted,
+                    Database.albumTable.sortInLibrary(AlbumSortBy.Title, sort.sortOrder),
+                ) { selected, alphabetical -> (selected + alphabetical).distinctBy { it.id } }
+            }
             AlbumsType.Disliked -> Database.albumTable.allDisliked()
         }.collect {
             itemsToFilter = it
@@ -696,11 +697,6 @@ fun HomeAlbums(
                                                 )
                                             }
                                         }
-
-                                        var position by remember {
-                                            mutableIntStateOf(0)
-                                        }
-                                        val context = LocalContext.current
 
                                         AlbumItem(
                                             alternative = true,
