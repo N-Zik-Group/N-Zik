@@ -683,6 +683,7 @@ fun HomeArtists(
                                     thumbnailSizePx = itemSize.size.px,
                                     alternative = true,
                                     bookmarkState = bookmarkStatesMap[artist.id],
+                                    observeBookmarkState = false,
                                     modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                         onClick = {
                                             if( itemSelector.isActive ) {

@@ -16,10 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,8 +48,6 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceCoverBadge
 import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun ArtistItem(
@@ -66,16 +60,11 @@ fun ArtistItem(
     disableScrollingText: Boolean,
     isYoutubeArtist : Boolean = false,
     bookmarkState: Boolean? = null,
+    observeBookmarkState: Boolean = bookmarkState == null,
     thumbnailOverlay: @Composable () -> Unit = {}
 ) {
-    val likeState by if (bookmarkState != null) {
-        remember(bookmarkState) { mutableStateOf(bookmarkState) }
-    } else {
-        remember( artist.id ) {
-            Database.artistTable
-                .likeState( artist.id )
-                .distinctUntilChanged()
-        }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
+    val likeState = tileBookmarkState(artist.id, bookmarkState, observeBookmarkState) { id ->
+        Database.artistTable.likeState(id)
     }
 
     ArtistItem(
@@ -107,16 +96,11 @@ fun ArtistItem(
     isYoutubeArtist : Boolean = false,
     smallThumbnail: Boolean = false,
     bookmarkState: Boolean? = null,
+    observeBookmarkState: Boolean = bookmarkState == null,
     thumbnailOverlay: @Composable () -> Unit = {}
 ) {
-    val likeState by if (bookmarkState != null) {
-        remember(bookmarkState) { mutableStateOf(bookmarkState) }
-    } else {
-        remember( artist.key ) {
-            Database.artistTable
-                .likeState( artist.key )
-                .distinctUntilChanged()
-        }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
+    val likeState = tileBookmarkState(artist.key, bookmarkState, observeBookmarkState) { id ->
+        Database.artistTable.likeState(id)
     }
 
     ArtistItem(

@@ -705,6 +705,7 @@ fun HomeAlbums(
                                             thumbnailSizeDp = itemSize.size.dp,
                                             thumbnailSizePx = itemSize.size.px,
                                             bookmarkState = bookmarkStatesMap[album.id],
+                                            observeBookmarkState = false,
                                             modifier = Modifier
                                                 .clip(uiRoundnessShape()).combinedClickable(
 

@@ -166,6 +166,7 @@ fun NewAlbumsFromArtists(
                             thumbnailSizeDp = thumbnailSizeDp,
                             alternative = true,
                             bookmarkState = bookmarkStatesMap[it.key],
+                            observeBookmarkState = false,
                             modifier = Modifier.clip(uiRoundnessShape()).clickable(onClick = {
                                 navController.navigate(route = "${NavRoutes.album.name}/${it.key}")
                             }),

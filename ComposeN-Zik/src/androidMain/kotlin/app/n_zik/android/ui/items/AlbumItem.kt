@@ -22,10 +22,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,8 +57,6 @@ import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceCoverBadge
 import app.n_zik.android.core.ondevice.isDeviceAlbumId
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun AlbumItem(
@@ -77,16 +71,11 @@ fun AlbumItem(
     showInfo: Boolean = true,
     isYoutubeAlbum: Boolean = false,
     bookmarkState: Boolean? = null,
+    observeBookmarkState: Boolean = bookmarkState == null,
     thumbnailOverlay: @Composable () -> Unit = {}
 ) {
-    val likeState by if (bookmarkState != null) {
-        remember(bookmarkState) { mutableStateOf(bookmarkState) }
-    } else {
-        remember( album.id ) {
-            Database.albumTable
-                .likeState( album.id )
-                .distinctUntilChanged()
-        }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
+    val likeState = tileBookmarkState(album.id, bookmarkState, observeBookmarkState) { id ->
+        Database.albumTable.likeState(id)
     }
 
     AlbumItem(
@@ -122,16 +111,11 @@ fun AlbumItem(
     showInfo: Boolean = true,
     disableScrollingText: Boolean,
     bookmarkState: Boolean? = null,
+    observeBookmarkState: Boolean = bookmarkState == null,
     thumbnailOverlay: @Composable () -> Unit = {}
 ) {
-    val likeState by if (bookmarkState != null) {
-        remember(bookmarkState) { mutableStateOf(bookmarkState) }
-    } else {
-        remember( album.key ) {
-            Database.albumTable
-                .likeState( album.key )
-                .distinctUntilChanged()
-        }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
+    val likeState = tileBookmarkState(album.key, bookmarkState, observeBookmarkState) { id ->
+        Database.albumTable.likeState(id)
     }
 
     AlbumItem(

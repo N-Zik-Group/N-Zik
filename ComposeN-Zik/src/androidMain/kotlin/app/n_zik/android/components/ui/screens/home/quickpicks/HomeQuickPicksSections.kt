@@ -515,6 +515,7 @@ fun NewAlbumsOfYourArtistsSection(
                             thumbnailSizeDp = albumThumbnailSizeDp,
                             alternative = true,
                             bookmarkState = filteredBookmarkStatesMap[it.key],
+                            observeBookmarkState = false,
                             modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                 onClick = { onAlbumClick(it.key) },
                                 onLongClick = { menuState.display { OnlineAlbumItemMenu(navController = navController, album = it).MenuComponent() } }
@@ -577,6 +578,7 @@ fun NewAlbumsSection(
                                 thumbnailSizeDp = albumThumbnailSizeDp,
                                 alternative = true,
                                 bookmarkState = newAlbumsBookmarkStatesMap[it.key],
+                                observeBookmarkState = false,
                                 modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                     onClick = { onAlbumClick(it.key) },
                                     onLongClick = { menuState.display { OnlineAlbumItemMenu(navController = navController, album = it).MenuComponent() } }
@@ -639,6 +641,7 @@ fun RelatedAlbumsSection(
                             thumbnailSizeDp = albumThumbnailSizeDp,
                             alternative = true,
                             bookmarkState = relatedAlbumBookmarkStatesMap[album.key],
+                            observeBookmarkState = false,
                             modifier = Modifier
                                 .clip(uiRoundnessShape()).combinedClickable(
                                     onClick = { onAlbumClick(album.key) },
@@ -701,6 +704,7 @@ fun SimilarArtistsSection(
                             thumbnailSizeDp = artistThumbnailSizeDp,
                             alternative = true,
                             bookmarkState = similarArtistBookmarkStatesMap[artist.key],
+                            observeBookmarkState = false,
                             modifier = Modifier
                                 .clip(uiRoundnessShape()).combinedClickable(
                                     onClick = { onArtistClick(artist.key) },
@@ -1160,6 +1164,7 @@ fun GenericYtmSections(
                                 thumbnailSizePx = albumThumbnailSizePx,
                                 thumbnailSizeDp = albumThumbnailSizeDp,
                                 bookmarkState = sectionAlbumBookmarkStatesMap[item.key],
+                                observeBookmarkState = false,
                                 disableScrollingText = disableScrollingText,
                                 modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                     onClick = { navController.navigate("${NavRoutes.album.name}/${item.key}") },
@@ -1176,6 +1181,7 @@ fun GenericYtmSections(
                                 thumbnailSizeDp = albumThumbnailSizeDp,
                                 alternative = true,
                                 bookmarkState = sectionArtistBookmarkStatesMap[item.key],
+                                observeBookmarkState = false,
                                 disableScrollingText = disableScrollingText,
                                 modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                     onClick = { navController.navigate("${NavRoutes.artist.name}/${item.key}") },

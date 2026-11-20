@@ -444,6 +444,7 @@ fun StatisticsPage(
                             thumbnailSizeDp = artistThumbnailSizeDp,
                             alternative = true,
                             bookmarkState = artistBookmarkStatesMap[artists[it].id],
+                            observeBookmarkState = false,
                             modifier = Modifier
                                 .clip(uiRoundnessShape()).combinedClickable(
                                     onClick = {
@@ -506,6 +507,7 @@ fun StatisticsPage(
                             alternative = true,
                             showAuthors = true,
                             bookmarkState = albumBookmarkStatesMap[albums[it].id],
+                            observeBookmarkState = false,
                             modifier = Modifier
                                 .clip(uiRoundnessShape()).combinedClickable(
                                     onClick = {

@@ -307,6 +307,7 @@ fun ChartsSection(
                                         thumbnailSizeDp = songThumbnailSizeDp,
                                         alternative = false,
                                         bookmarkState = chartArtistBookmarkStatesMap[artist.key],
+                                        observeBookmarkState = false,
                                         modifier = Modifier
                                             .clip(uiRoundnessShape()).combinedClickable(
                                                 onClick = { onArtistClick(artist.key) },

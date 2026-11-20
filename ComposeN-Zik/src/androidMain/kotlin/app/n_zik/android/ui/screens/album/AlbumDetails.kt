@@ -638,6 +638,7 @@ fun AlbumDetails(
                                     thumbnailSizePx = thumbnailAlbumSizePx,
                                     thumbnailSizeDp = thumbnailAlbumSizeDp,
                                     bookmarkState = altBookmarkStatesMap[album.key],
+                                    observeBookmarkState = false,
                                     modifier = Modifier
                                         .clip(uiRoundnessShape()).combinedClickable(
                                             onClick = {

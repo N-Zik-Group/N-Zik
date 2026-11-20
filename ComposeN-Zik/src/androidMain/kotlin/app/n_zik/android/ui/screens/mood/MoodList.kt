@@ -264,6 +264,7 @@ fun MoodList(
                                         thumbnailSizeDp = thumbnailSizeDp,
                                         alternative = true,
                                         bookmarkState = sectionAlbumBookmarkStatesMap[childItem.key],
+                                        observeBookmarkState = false,
                                         modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                             onClick = {
                                                 childItem.info?.endpoint?.browseId?.let {
@@ -289,6 +290,7 @@ fun MoodList(
                                         thumbnailSizeDp = thumbnailSizeDp,
                                         alternative = true,
                                         bookmarkState = sectionArtistBookmarkStatesMap[childItem.key],
+                                        observeBookmarkState = false,
                                         modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                             onClick = {
                                                 childItem.info?.endpoint?.browseId?.let {

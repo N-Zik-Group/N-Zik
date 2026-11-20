@@ -325,6 +325,7 @@ fun YtmSectionItems(
                                     thumbnailSizeDp = albumThumbnailSizeDp,
                                     alternative = true,
                                     bookmarkState = sectionAlbumBookmarkStatesMap[item.key],
+                                    observeBookmarkState = false,
                                     modifier = Modifier
                                         .clip(uiRoundnessShape())
                                         .combinedClickable(
@@ -348,6 +349,7 @@ fun YtmSectionItems(
                                     thumbnailSizeDp = albumThumbnailSizeDp,
                                     alternative = true,
                                     bookmarkState = sectionArtistBookmarkStatesMap[item.key],
+                                    observeBookmarkState = false,
                                     modifier = Modifier
                                         .clip(uiRoundnessShape())
                                         .combinedClickable(
