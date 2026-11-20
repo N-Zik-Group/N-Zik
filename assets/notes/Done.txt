@@ -14,6 +14,8 @@ Improved:
   - Keep launch-intent handling and notification channel creation outside activity and application orchestration.
 - refactor(playback): separate failure recovery and room events
   - Move playback failure handling and Listen Together event models into files dedicated to those responsibilities.
+- refactor(ui): separate charts and creator previews
+  - Extract Quick Picks charts, the Discord presence preview and the Theme Store creator components.
 - perf(player): prepare the full player before opening
   - Keep the display list warm at the collapsed anchor, pause decorations during sheet travel and defer contrast sampling until expansion settles.
 - perf(playback): batch bridge queue and radio lookups
