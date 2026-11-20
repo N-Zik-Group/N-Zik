@@ -2,14 +2,23 @@ package app.n_zik.android.core.network.utils
 
 import android.app.Application
 import android.content.Context
+import android.content.ContextWrapper
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewContext
+import app.n_zik.android.core.network.fullOfflineModeKey
+import app.n_zik.android.utils.activeProfileKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.profilePreferences
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -133,6 +142,78 @@ class NetworkQualityHelperObserveConnectionTest {
             }
             assertTrue("validated emission not received within 5000ms", emissions.size >= 2)
             assertEquals(listOf(false, true), emissions)
+        }
+    }
+
+    @Test
+    fun `app collectors share a callback and restart with the current state`() = runBlocking {
+        // runBlocking bridges the synchronous Robolectric harness to Flow collection.
+        val profiles = app.profilePreferences
+        val originalProfile = profiles.getString(activeProfileKey, null)
+        profiles.edit().putString(activeProfileKey, "network-observer-offline").commit()
+        val offlinePrefs = app.preferences
+        offlinePrefs.edit().putBoolean(fullOfflineModeKey, true).commit()
+        profiles.edit().putString(activeProfileKey, "network-observer-online").commit()
+        setCapabilities(validated = true)
+
+        val firstValues = Channel<Boolean>(Channel.UNLIMITED)
+        val secondValues = Channel<Boolean>(Channel.UNLIMITED)
+        val first = launch { NetworkQualityHelper.observeConnection(app).collect { firstValues.send(it) } }
+        val second = launch {
+            NetworkQualityHelper.observeConnection(ContextWrapper(app)).collect { secondValues.send(it) }
+        }
+        try {
+            withTimeout(5_000) {
+                assertEquals(true, firstValues.receive())
+                assertEquals(true, secondValues.receive())
+                assertEquals(1, shadowOf(cm).getNetworkCallbacks().size)
+
+                profiles.edit().putString(activeProfileKey, "network-observer-offline").commit()
+                assertEquals(false, firstValues.receive())
+                assertEquals(false, secondValues.receive())
+
+                first.cancelAndJoin()
+                assertEquals(1, shadowOf(cm).getNetworkCallbacks().size)
+                offlinePrefs.edit().putBoolean(fullOfflineModeKey, false).commit()
+                assertEquals(true, secondValues.receive())
+
+                second.cancelAndJoin()
+                assertTrue(shadowOf(cm).getNetworkCallbacks().isEmpty())
+                setCapabilities(validated = false)
+                assertEquals(false, NetworkQualityHelper.observeConnection(app).first())
+                assertTrue(shadowOf(cm).getNetworkCallbacks().isEmpty())
+            }
+        } finally {
+            first.cancelAndJoin()
+            second.cancelAndJoin()
+            offlinePrefs.edit().remove(fullOfflineModeKey).commit()
+            profiles.edit().putString(activeProfileKey, originalProfile).commit()
+        }
+    }
+
+    @Test
+    fun `preview preferences and overridden services stay local to their contexts`() = runBlocking {
+        // runBlocking bridges the synchronous Robolectric harness to Flow collection.
+        setCapabilities(validated = true)
+        val prefs = app.getSharedPreferences("network-observer-preview", Context.MODE_PRIVATE)
+        prefs.edit().putBoolean(fullOfflineModeKey, true).commit()
+        val preview = ThemePreviewContext(app, prefs)
+        val withoutConnectivity = object : ContextWrapper(app) {
+            override fun getSystemService(name: String): Any? =
+                if (name == Context.CONNECTIVITY_SERVICE) null else super.getSystemService(name)
+        }
+        val values = Channel<Boolean>(Channel.UNLIMITED)
+        val collector = launch { NetworkQualityHelper.observeConnection(app).collect { values.send(it) } }
+        try {
+            withTimeout(5_000) {
+                assertEquals(true, values.receive())
+                assertEquals(false, NetworkQualityHelper.observeConnection(preview).first())
+                assertEquals(false, NetworkQualityHelper.observeConnection(withoutConnectivity).first())
+                assertEquals(1, shadowOf(cm).getNetworkCallbacks().size)
+            }
+        } finally {
+            collector.cancelAndJoin()
+            prefs.edit().clear().commit()
         }
     }
 }

@@ -25,24 +25,40 @@ object OfflineMode {
     /** Live flow of the mode flag: emits on initial read and on every change. */
     fun enabledFlow(context: Context): Flow<Boolean> = callbackFlow {
         val profilePrefs = context.profilePreferences
-        var prefs = context.preferences
+        val lock = Any()
+        var prefs: SharedPreferences? = null
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == fullOfflineModeKey) trySend(enabled(context))
-        }
-        val profileListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == activeProfileKey) {
-                prefs.unregisterOnSharedPreferenceChangeListener(listener)
-                prefs = context.preferences
-                prefs.registerOnSharedPreferenceChangeListener(listener)
-                trySend(enabled(context))
+            if (key == fullOfflineModeKey) {
+                synchronized(lock) {
+                    if (prefs != null) trySend(enabled(context))
+                }
             }
         }
-        profilePrefs.registerOnSharedPreferenceChangeListener(profileListener)
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        trySend(enabled(context))
+
+        fun bindActivePreferences() {
+            prefs?.unregisterOnSharedPreferenceChangeListener(listener)
+            prefs = context.preferences.also { it.registerOnSharedPreferenceChangeListener(listener) }
+            trySend(enabled(context))
+        }
+
+        val profileListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == activeProfileKey) {
+                synchronized(lock) {
+                    if (prefs != null) bindActivePreferences()
+                }
+            }
+        }
+
+        synchronized(lock) {
+            profilePrefs.registerOnSharedPreferenceChangeListener(profileListener)
+            bindActivePreferences()
+        }
         awaitClose {
-            profilePrefs.unregisterOnSharedPreferenceChangeListener(profileListener)
-            prefs.unregisterOnSharedPreferenceChangeListener(listener)
+            synchronized(lock) {
+                profilePrefs.unregisterOnSharedPreferenceChangeListener(profileListener)
+                prefs?.unregisterOnSharedPreferenceChangeListener(listener)
+                prefs = null
+            }
         }
     }.distinctUntilChanged()
 
