@@ -5,6 +5,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -118,6 +123,59 @@ class HomeReturnCompositionTest {
         }
         applyChangesAndAdvanceFrame()
         composeRule.runOnIdle { assertEquals(1f, entranceAlpha.value, 0.001f) }
+    }
+
+    @Test
+    fun `filter changes hold current grid until ready and keep the first index at zero`() {
+        val ready = mutableStateOf(true)
+        val rows = mutableStateOf(listOf("first", "shared", "last"))
+        var displayed: List<String>? = null
+        lateinit var gridState: LazyGridState
+        composeRule.setContent {
+            gridState = rememberLazyGridState()
+            val result = rememberHomeFilteredGrid("test", gridState, ready.value, rows.value) { it }
+            SideEffect { displayed = result }
+            LazyVerticalGrid(GridCells.Fixed(1), Modifier.size(120.dp), state = gridState) {
+                items(result.orEmpty(), key = { it }) {
+                    Box(Modifier.height(80.dp).animateItem())
+                }
+            }
+        }
+        composeRule.waitUntil(timeoutMillis = 2_000) { displayed == rows.value }
+        composeRule.runOnIdle {
+            assertEquals(0, gridState.firstVisibleItemIndex)
+            ready.value = false
+            rows.value = emptyList()
+        }
+        applyChangesAndAdvanceFrame()
+        composeRule.waitForIdle()
+        composeRule.runOnIdle {
+            assertEquals(listOf("first", "shared", "last"), displayed)
+            rows.value = listOf("shared", "first", "last")
+            ready.value = true
+        }
+        applyChangesAndAdvanceFrame()
+        composeRule.waitUntil(timeoutMillis = 2_000) { displayed == rows.value }
+        composeRule.runOnIdle {
+            assertEquals(0, gridState.firstVisibleItemIndex)
+            assertEquals(0, gridState.firstVisibleItemScrollOffset)
+            assertEquals("shared", gridState.layoutInfo.visibleItemsInfo.first().key)
+        }
+    }
+
+    @Test
+    fun `results returning after an empty query recover the prior item and offset`() {
+        val anchor = HomeFilterScrollAnchor()
+        val scrollRequests = mutableListOf<Pair<Int, Int>>()
+        anchor.update(true, emptyList<String>(), { it }, 2, 18, "shared") { index, offset ->
+            scrollRequests += index to offset
+        }
+        assertTrue(scrollRequests.isEmpty())
+
+        anchor.update(false, listOf("other", "shared", "last"), { it }, 0, 0, null) { index, offset ->
+            scrollRequests += index to offset
+        }
+        assertEquals(listOf(1 to 18), scrollRequests)
     }
 
     @Test

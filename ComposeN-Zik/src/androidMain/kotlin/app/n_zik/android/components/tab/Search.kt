@@ -21,6 +21,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
@@ -75,6 +76,15 @@ class Search private constructor(
             remember { mutableStateOf( false ) },
             null,
             null
+        )
+
+        @Composable
+        fun forHome() = Search(
+            rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) },
+            rememberSaveable { mutableStateOf(false) },
+            remember { mutableStateOf(false) },
+            null,
+            null,
         )
 
         /** Hosts may retain input across nested destinations without restoring keyboard focus. */

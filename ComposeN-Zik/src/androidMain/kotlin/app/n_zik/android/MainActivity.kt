@@ -194,6 +194,7 @@ import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.PlayerAwareInsetsTracker
 import app.n_zik.android.components.navigation.pageSupportsChromeScroll
 import app.n_zik.android.components.navigation.chromeScrollDelta
+import app.n_zik.android.components.navigation.HeaderScrollTravel
 import app.n_zik.android.components.navigation.sideNavigationOwnsHeader
 import app.n_zik.android.utils.appNavBarPresentForRoute
 import app.n_zik.android.utils.localeListForAppLanguage
@@ -1405,13 +1406,23 @@ class MainActivity :
             LaunchedEffect(isLandscapeBarless) {
                 if (isLandscapeBarless) topBarOffset = 0f
             }
-            val homeHeaderMotionRegistry = remember(scaffoldBars) {
-                app.n_zik.android.components.ui.screens.home.HomeHeaderMotionRegistry(scaffoldBars.topOffset)
+            val headerTravel = remember(scaffoldBars) { HeaderScrollTravel() }
+            val homeHeaderMotionRegistry = remember(scaffoldBars, navController) {
+                app.n_zik.android.components.ui.screens.home.HomeHeaderMotionRegistry(
+                    scaffoldBars.topOffset,
+                    homeIsCurrent = { navController.currentDestination?.route?.substringBefore('?') == NavRoutes.home.name },
+                ) {
+                    scaffoldBars.animationJob.value?.cancel()
+                    scaffoldBars.animationJob.value = null
+                }
             }
             var bottomBarOffset by scaffoldBars.bottomOffset
             val offsetAnimationJob = scaffoldBars.animationJob
-            val revealScaffoldOnNavigation = remember(scaffoldBars, coroutineScope) {
-                { scaffoldBars.revealOnNavigation(coroutineScope) }
+            val revealScaffoldOnNavigation = remember(scaffoldBars, coroutineScope, headerTravel) {
+                {
+                    headerTravel.reset()
+                    scaffoldBars.revealOnNavigation(coroutineScope)
+                }
             }
             app.n_zik.android.core.navigation.RevealScaffoldOnNavigation(navController, revealScaffoldOnNavigation)
 
@@ -1505,16 +1516,20 @@ class MainActivity :
                             consumed.y, available.y,
                             topBarOffset < 0f || floatingDockState.foldTarget > 0f,
                         )
-                        if (deltaY == 0f) return Offset.Zero
-                        floatingDockState.onScroll(deltaY, with(density) { 50.dp.toPx() })
-                        // Only the overlay moves: the page keeps its full viewport and every
-                        // pixel of the finger's drag, avoiding moving-owner gesture jumps.
+                        if (deltaY != 0f) floatingDockState.onScroll(deltaY, with(density) { 50.dp.toPx() })
                         if (!sideNavigationHeaderActive.value && (isScrollableRoute || isLandscape)) {
-                            offsetAnimationJob.value?.cancel()
-                            offsetAnimationJob.value = null
-                            homeHeaderMotionRegistry.scrollBy(deltaY, with(density) { APP_HEADER_HEIGHT.toPx() })
+                            val headerHeight = with(density) { APP_HEADER_HEIGHT.toPx() }
+                            val headerDelta = headerTravel.delta(
+                                consumed.y, available.y, topBarOffset, headerHeight,
+                                homeHeaderMotionRegistry.hasScrollRoom(),
+                            )
+                            if (headerDelta != 0f) {
+                                offsetAnimationJob.value?.cancel()
+                                offsetAnimationJob.value = null
+                                homeHeaderMotionRegistry.scrollBy(headerDelta, headerHeight)
+                            }
                         }
-                        if (isLandscapeBarless && source == NestedScrollSource.UserInput) {
+                        if (deltaY != 0f && isLandscapeBarless && source == NestedScrollSource.UserInput) {
                             app.n_zik.android.utils.LandscapeBars.hide()
                         }
                         return Offset.Zero
@@ -1522,8 +1537,10 @@ class MainActivity :
 
                     override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
                         if (sideNavigationHeaderActive.value || isPlayerSheetExpanded.value || showQueueOverlay || glassMenuHost.hasOverlays) return Velocity.Zero
+                        if (homeHeaderMotionRegistry.hasScrollRoom() == false) return Velocity.Zero
                         val height = with(density) { APP_HEADER_HEIGHT.toPx() }
                         val target = if (topBarOffset < -height / 2f) -height else 0f
+                        if (target == topBarOffset) return Velocity.Zero
                         offsetAnimationJob.value?.cancel()
                         offsetAnimationJob.value = coroutineScope.launch {
                             Animatable(topBarOffset).animateTo(target, tween(200, easing = androidx.compose.animation.core.FastOutSlowInEasing)) {

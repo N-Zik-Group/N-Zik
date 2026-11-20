@@ -80,4 +80,23 @@ class LandscapeHomeChromeTest {
         compose.runOnIdle { motion.scrollBy(64f, 64f) }
         assertEquals(Color.Red, statusPixel())
     }
+
+    @Test fun onlyTheActiveShortPageRestoresTheHeader() {
+        val appOffset = mutableFloatStateOf(-64f)
+        var stopped = false
+        val motion = HomeHeaderMotionRegistry(appOffset) { stopped = true }
+        val outgoing = Any()
+        val active = Any()
+        motion.setScrollOwner(outgoing) { false }
+        motion.setScrollOwner(active) { false }
+
+        motion.restoreIfShort(outgoing)
+        motion.detach(outgoing)
+        assertEquals(-64f, appOffset.floatValue)
+        assertEquals(false, stopped)
+
+        motion.restoreIfShort(active)
+        assertEquals(0f, appOffset.floatValue)
+        assertTrue(stopped)
+    }
 }

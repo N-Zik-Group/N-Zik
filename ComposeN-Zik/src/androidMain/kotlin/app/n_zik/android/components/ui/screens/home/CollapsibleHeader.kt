@@ -3,6 +3,7 @@ package app.n_zik.android.components.ui.screens.home
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBars
@@ -12,6 +13,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,6 +21,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
 import app.n_zik.android.LocalTopBarOffset
+import app.n_zik.android.components.navigation.hasHeaderScrollRoom
 import app.n_zik.android.components.player.APP_HEADER_HEIGHT
 import app.n_zik.android.enums.NavigationBarPosition
 import androidx.compose.ui.Modifier
@@ -40,8 +43,14 @@ import kotlinx.coroutines.launch
 private const val SNAP_DURATION_MS = 200
 
 /** Publishes the root scroll position to every mounted Home toolbar in the same snapshot. */
-internal class HomeHeaderMotionRegistry(private val appOffset: MutableFloatState) {
+internal class HomeHeaderMotionRegistry(
+    private val appOffset: MutableFloatState,
+    private val homeIsCurrent: () -> Boolean = { true },
+    private val stopHeaderSnap: () -> Unit = {},
+) {
     private val listeners = mutableMapOf<Any, () -> Unit>()
+    private var activeOwner: Any? = null
+    private var scrollRoom: (() -> Boolean?)? = null
 
     fun attach(owner: Any, update: () -> Unit) {
         listeners[owner] = update
@@ -50,6 +59,24 @@ internal class HomeHeaderMotionRegistry(private val appOffset: MutableFloatState
 
     fun detach(owner: Any) {
         listeners.remove(owner)
+        if (activeOwner === owner) {
+            activeOwner = null
+            scrollRoom = null
+        }
+    }
+
+    fun setScrollOwner(owner: Any, hasRoom: () -> Boolean?) {
+        activeOwner = owner
+        scrollRoom = hasRoom
+    }
+
+    fun hasScrollRoom(): Boolean? = if (homeIsCurrent()) scrollRoom?.invoke() else null
+
+    fun restoreIfShort(owner: Any) {
+        if (activeOwner !== owner || hasScrollRoom() != false || appOffset.floatValue == 0f) return
+        stopHeaderSnap()
+        appOffset.floatValue = 0f
+        sync()
     }
 
     fun sync() {
@@ -66,6 +93,7 @@ internal class HomeHeaderMotionRegistry(private val appOffset: MutableFloatState
 }
 
 internal val LocalHomeHeaderMotionRegistry = staticCompositionLocalOf<HomeHeaderMotionRegistry?> { null }
+internal val LocalActiveHomeHeader = staticCompositionLocalOf { true }
 
 /** Snaps to the nearest header bound, choosing expanded at the midpoint. */
 internal fun collapsibleHeaderSnapTarget(offset: Float, headerHeight: Int): Float {
@@ -184,20 +212,38 @@ fun rememberHomeHeaderConnection(
     headerHeight: Int,
     headerOffset: MutableFloatState,
     enabled: Boolean,
+    scrollState: ScrollableState? = null,
 ): NestedScrollConnection {
     val navigationPosition = NavigationBarPosition.current()
+    val active = LocalActiveHomeHeader.current
     val appHeaderOffset = LocalTopBarOffset.current
     val motionRegistry = LocalHomeHeaderMotionRegistry.current
     val appHeaderHeight = with(LocalDensity.current) { APP_HEADER_HEIGHT.toPx() }
     val shared = homeHeaderSharesAppScroll(navigationPosition.isHorizontal, enabled)
     val owner = remember { Any() }
-    DisposableEffect(shared, motionRegistry, owner, headerOffset, appHeaderHeight, headerHeight) {
+    val collapseDistance = if (shared) appHeaderHeight + headerHeight else headerHeight.toFloat()
+    val hasRoom = remember(scrollState, collapseDistance) {
+        derivedStateOf {
+            scrollState?.scrollIndicatorState?.let {
+                hasHeaderScrollRoom(it.contentSize, it.viewportSize, collapseDistance)
+            }
+        }
+    }
+    DisposableEffect(active, shared, motionRegistry, owner, headerOffset, appHeaderHeight, headerHeight, scrollState) {
         if (shared) motionRegistry?.attach(owner) {
             headerOffset.floatValue = homeHeaderOffsetForAppHeader(
                 motionRegistry.offset(), appHeaderHeight, headerHeight,
             )
         }
+        if (active && navigationPosition.isHorizontal && scrollState != null) {
+            motionRegistry?.setScrollOwner(owner) { hasRoom.value }
+        }
         onDispose { motionRegistry?.detach(owner) }
+    }
+    LaunchedEffect(active, motionRegistry, owner, scrollState, collapseDistance) {
+        if (active && scrollState != null) snapshotFlow { hasRoom.value }.collect { canCollapse ->
+            if (canCollapse == false) motionRegistry?.restoreIfShort(owner)
+        }
     }
     LaunchedEffect(shared, appHeaderOffset, appHeaderHeight, headerHeight) {
         if (shared) snapshotFlow { appHeaderOffset.value }.collect { offset ->
@@ -205,7 +251,7 @@ fun rememberHomeHeaderConnection(
         }
     }
     return if (shared) remember { object : NestedScrollConnection {} }
-        else rememberCollapsibleHeaderConnection(headerHeight, headerOffset, enabled)
+    else rememberCollapsibleHeaderConnection(headerHeight, headerOffset, enabled && hasRoom.value != false)
 }
 
 internal fun homeHeaderSharesAppScroll(horizontalNavigation: Boolean, enabled: Boolean): Boolean =

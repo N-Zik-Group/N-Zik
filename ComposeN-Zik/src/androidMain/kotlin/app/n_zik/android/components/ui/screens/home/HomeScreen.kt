@@ -373,6 +373,7 @@ fun HomeScreen(
                     LocalHomeToolbarTabProgress provides toolbarProgress,
                     LocalSharedHomeHeaderGlass provides sharedHomeGlass.takeUnless { currentTabId == "quickpicks" },
                     LocalDrawHomeGlassPane provides (drawHomeGlassPane && currentTabIndex == tabIndex),
+                    LocalActiveHomeHeader provides (currentTabIndex == tabIndex),
                     app.n_zik.android.components.glass.LocalGlassScope provides
                         if (currentTabId == "quickpicks") app.n_zik.android.components.glass.GlassScope.Home
                         else app.n_zik.android.components.glass.GlassScope.Library,

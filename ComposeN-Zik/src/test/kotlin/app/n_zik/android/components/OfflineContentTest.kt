@@ -534,7 +534,10 @@ class OfflineContentTest {
     fun artistInsightsScreenShowsTheMessageWhenTheDbRowIsMissing() {
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(
+                LocalAppearance provides appearance,
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+            ) {
                 ArtistInsightsScreen(
                     navController = mockk<NavController>(relaxed = true),
                     artistId = "missing-artist-id",
@@ -552,7 +555,10 @@ class OfflineContentTest {
     fun albumInsightsScreenShowsTheMessageWhenTheDbRowIsMissing() {
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(
+                LocalAppearance provides appearance,
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+            ) {
                 AlbumInsightsScreen(
                     navController = mockk<NavController>(relaxed = true),
                     albumId = "missing-album-id",
