@@ -6,6 +6,12 @@ Added:
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
 
 Improved:
+- refactor(startup): extract diagnostics setup
+  - Move profile crash capture, log retention and startup logging into StartupDiagnostics.
+  - Preserve initialization order, crash handler locking and the file logging flush timeout.
+- perf(library): reuse batched tile bookmark state
+  - Album and artist tiles reuse the state supplied by the parent, including neutral results.
+  - Keep the live Room fallback for standalone tiles and preserve existing bookmark and dislike states.
 - refactor(theme): share startup and live palette resolution
   - Move configured appearance to ConfiguredAppearance and use the same palette resolver on startup and after preference changes.
   - Keep profile preferences, separate mode defaults and on-demand Material You accent lookup.
