@@ -24,11 +24,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import app.n_zik.android.components.glass.PageButton as Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -38,6 +38,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -57,6 +58,8 @@ import app.n_zik.android.bridge.pairing.PairingQrPayload
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
+import app.n_zik.android.utils.shimmerEffect
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import kotlinx.coroutines.delay
@@ -289,12 +292,9 @@ private fun messageText(message: PairingMessage, running: BridgeState.Running, c
         PairingMessage.CameraDenied -> stringResource(R.string.bridge_pair_camera_denied)
     }
 
-@Immutable
-internal data class PairedDevicesUi(val devices: List<PairedDevice>)
-
 /** "Paired devices" card: name, pairing date and Revoke (with confirmation) per device. */
 @Composable
-internal fun PairedDevicesCard(ui: PairedDevicesUi) {
+internal fun PairedDevicesCard(devices: List<PairedDevice>?) {
     val context = LocalContext.current
     val palette = colorPalette()
     val scope = rememberCoroutineScope()
@@ -307,7 +307,18 @@ internal fun PairedDevicesCard(ui: PairedDevicesUi) {
         icon = R.drawable.devices,
         content = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                if (ui.devices.isEmpty()) {
+                if (devices == null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            ItemTextPlaceholder(null, typography().s.semiBold, width = 0.45f)
+                            ItemTextPlaceholder(null, typography().xs, width = 0.65f)
+                        }
+                        Spacer(Modifier.width(100.dp).height(40.dp).clip(uiRoundnessShape()).shimmerEffect())
+                    }
+                } else if (devices.isEmpty()) {
                     Text(
                         text = stringResource(R.string.bridge_paired_devices_empty),
                         style = typography().xs,
@@ -316,7 +327,7 @@ internal fun PairedDevicesCard(ui: PairedDevicesUi) {
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
-                ui.devices.forEach { device ->
+                devices.orEmpty().forEach { device ->
                     val date = Date(device.pairedAtMs)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

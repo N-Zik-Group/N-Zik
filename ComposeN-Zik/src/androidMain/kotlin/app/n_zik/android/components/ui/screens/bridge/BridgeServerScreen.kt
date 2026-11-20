@@ -70,9 +70,13 @@ fun BridgeServerScreen(
     val state by BridgeServerController.state.collectAsStateWithLifecycle()
     val pairingCode by BridgeServerController.pairingCode.collectAsStateWithLifecycle()
     val activeDevice by BridgeServerController.activeDevice.collectAsStateWithLifecycle()
-    val autoStopSettings by BridgeServerController.autoStopSettings.collectAsStateWithLifecycle()
-    val pairedDevices by BridgeServerController.pairedDevices
-        .collectAsStateWithLifecycle(initialValue = emptyList(), context = NzikDispatchers.DATA)
+    val autoStopSettings by BridgeServerController.loadedAutoStopSettings
+        .collectAsStateWithLifecycle(initialValue = BridgeServerController.currentLoadedAutoStopSettings)
+    val pairedDevices by BridgeServerController.loadedPairedDevices
+        .collectAsStateWithLifecycle(
+            initialValue = BridgeServerController.currentPairedDevices,
+            context = NzikDispatchers.DATA,
+        )
     LaunchedEffect(Unit) { BridgeServerController.loadDeviceStore(context) }
     LaunchedEffect(Unit) { BridgeServerController.loadAutoStopSettings(context) }
     LaunchedEffect(Unit) {
@@ -168,7 +172,7 @@ fun BridgeServerScreen(
                     AutoStopCard(autoStopSettings)
                 }
                 item(key = "devices", contentType = "card") {
-                    PairedDevicesCard(PairedDevicesUi(pairedDevices))
+                    PairedDevicesCard(pairedDevices)
                 }
             }
         }

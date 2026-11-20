@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -66,10 +67,15 @@ object BridgeServerController {
     private val storeMutex = Mutex()
     private val _deviceStore = MutableStateFlow<PairedDeviceStore?>(null)
 
-    /** Paired devices; empty until [loadDeviceStore] has run once. */
     @OptIn(ExperimentalCoroutinesApi::class)
-    val pairedDevices: Flow<List<PairedDevice>> =
-        _deviceStore.flatMapLatest { store -> store?.devices ?: flowOf(emptyList()) }
+    internal val loadedPairedDevices: Flow<List<PairedDevice>?> =
+        _deviceStore.flatMapLatest { store -> store?.devices ?: flowOf(null) }
+
+    /** Paired devices; empty until [loadDeviceStore] has run once. */
+    val pairedDevices: Flow<List<PairedDevice>> = loadedPairedDevices.map { it.orEmpty() }
+
+    internal val currentPairedDevices: List<PairedDevice>?
+        get() = _deviceStore.value?.devices?.value
 
     @Volatile
     private var activeCore: BridgeServerCore? = null
@@ -148,13 +154,19 @@ object BridgeServerController {
 
     private val autoStopLock = Any()
 
-    @Volatile
-    private var autoStopLoaded = false
-
+    private val autoStopLoaded = MutableStateFlow(false)
     private val _autoStopSettings = MutableStateFlow(AutoStopSettings())
 
     /** Auto-stop settings of contract §11.2; defaults until [loadAutoStopSettings] has run once. */
     val autoStopSettings: StateFlow<AutoStopSettings> = _autoStopSettings.asStateFlow()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    internal val loadedAutoStopSettings: Flow<AutoStopSettings?> = autoStopLoaded.flatMapLatest { loaded ->
+        if (loaded) autoStopSettings else flowOf(null)
+    }
+
+    internal val currentLoadedAutoStopSettings: AutoStopSettings?
+        get() = if (autoStopLoaded.value) autoStopSettings.value else null
 
     /**
      * Core of one server run, sharing the controller's pairing code with the pairing card.
@@ -220,15 +232,15 @@ object BridgeServerController {
 
     /** Reads the persisted auto-stop settings once per process, off the main thread. */
     suspend fun loadAutoStopSettings(context: Context): AutoStopSettings {
-        if (autoStopLoaded) return _autoStopSettings.value
+        if (autoStopLoaded.value) return _autoStopSettings.value
         val stored = withContext(NzikDispatchers.DATA) {
             AutoStopPreferences.read(context.applicationContext.preferences)
         }
         synchronized(autoStopLock) {
             // A choice made by the user while reading wins over the stored value
-            if (!autoStopLoaded) {
+            if (!autoStopLoaded.value) {
                 _autoStopSettings.value = stored
-                autoStopLoaded = true
+                autoStopLoaded.value = true
             }
         }
         return _autoStopSettings.value
@@ -239,7 +251,7 @@ object BridgeServerController {
         val value = AutoStopSettings.sanitize(minutes, AutoStopSettings.DEFAULT_NO_CLIENT_MINUTES)
         synchronized(autoStopLock) {
             _autoStopSettings.update { it.copy(noClientMinutes = value) }
-            autoStopLoaded = true
+            autoStopLoaded.value = true
         }
         AutoStopPreferences.writeNoClient(context.applicationContext.preferences, value)
     }
@@ -249,7 +261,7 @@ object BridgeServerController {
         val value = AutoStopSettings.sanitize(minutes, AutoStopSettings.DEFAULT_INACTIVITY_MINUTES)
         synchronized(autoStopLock) {
             _autoStopSettings.update { it.copy(inactivityMinutes = value) }
-            autoStopLoaded = true
+            autoStopLoaded.value = true
         }
         AutoStopPreferences.writeInactivity(context.applicationContext.preferences, value)
     }

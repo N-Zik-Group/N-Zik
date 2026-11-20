@@ -30,6 +30,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -67,8 +68,10 @@ import app.n_zik.android.modules.ModuleRemoteProbe
 import app.n_zik.android.modules.ModuleState
 import app.n_zik.android.modules.ModuleUpdateStatus
 import app.n_zik.android.typography
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -89,6 +92,8 @@ import timber.log.Timber
  * @param onDismissRequest called when the sheet is dismissed (swipe / outside tap)
  */
 private const val TAG = "ExtensionsSheet"
+
+private data class ModuleInfoRequest(val definition: ModuleDefinition, val marketplace: Boolean)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -119,33 +124,32 @@ fun ExtensionsSheet(
 
     var selectedTab by remember { mutableIntStateOf(0) }
     var uninstallTarget by remember { mutableStateOf<ModuleDefinition?>(null) }
-    var infoTarget by remember { mutableStateOf<ModuleDefinition?>(null) }
-    // The Info source follows the tab the entry was tapped in, not the module
-    // state: Marketplace is always the online catalog view (HEAD probe), the
-    // Installed tab always the local module banner
-    var infoFromMarketplace by remember { mutableStateOf(false) }
-    var infoText by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(infoTarget) {
-        val def = infoTarget ?: return@LaunchedEffect
-        infoText = if (infoFromMarketplace) {
-            remoteModuleInfo(context, def)
-        } else {
-            runCatching { FfmpegModule.fetchVersionInfo() }
-                .onFailure { Timber.tag(TAG).e(it, "Could not fetch the module version banner") }
-                .getOrElse { context.getString(R.string.modules_load_failed) }
-        }
-    }
-
-    DialogPresence(target = infoTarget?.let { def -> infoText?.let { def to it } }) { (infoDef, text) ->
+    // The Info source follows the tab where the entry was tapped.
+    var infoTarget by remember { mutableStateOf<ModuleInfoRequest?>(null) }
+    DialogPresence(target = infoTarget) { request ->
+        key(request) {
+            val text by produceState<String?>(null) {
+                value = try {
+                    withContext(NzikDispatchers.DATA) {
+                        if (request.marketplace) remoteModuleInfo(context, request.definition)
+                        else FfmpegModule.fetchVersionInfo()
+                    }
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    Timber.tag(TAG).e(error, "Could not fetch the module information")
+                    context.getString(R.string.modules_load_failed)
+                }
+            }
             ModuleInfoDialog(
-                title = context.getString(infoDef.displayNameRes),
+                title = stringResource(request.definition.displayNameRes),
                 content = text,
-                onDismiss = {
-                    infoTarget = null
-                    infoText = null
-                },
+                loadingText = if (request.marketplace && text == null) {
+                    formatModuleInfo(context, request.definition, request.definition.downloadSizeBytes)
+                } else null,
+                onDismiss = { infoTarget = null },
             )
+        }
     }
 
     DialogPresence(target = uninstallTarget) { uninstallPayload ->
@@ -217,20 +221,14 @@ fun ExtensionsSheet(
                 0 -> InstalledTab(
                     states = effectiveStates,
                     onUninstall = { def -> uninstallTarget = def },
-                    onInfo = { def ->
-                        infoFromMarketplace = false
-                        infoTarget = def
-                    },
+                    onInfo = { def -> infoTarget = ModuleInfoRequest(def, marketplace = false) },
                 )
 
                 else -> MarketplaceTab(
                     states = effectiveStates,
                     scope = scope,
                     manager = manager,
-                    onInfo = { def ->
-                        infoFromMarketplace = true
-                        infoTarget = def
-                    },
+                    onInfo = { def -> infoTarget = ModuleInfoRequest(def, marketplace = true) },
                 )
             }
         }
@@ -258,10 +256,14 @@ private fun InstalledTab(
                 .height(320.dp),
             contentAlignment = Alignment.Center,
         ) {
-            BasicText(
-                text = stringResource(R.string.modules_nothing_installed),
-                style = typography().xs.copy(color = palette.textSecondary),
-            )
+            if (ModuleCatalog.all.any { it.id !in states }) {
+                ItemTextPlaceholder(null, typography().xs, width = 0.44f)
+            } else {
+                BasicText(
+                    text = stringResource(R.string.modules_nothing_installed),
+                    style = typography().xs.copy(color = palette.textSecondary),
+                )
+            }
         }
         return
     }
@@ -366,7 +368,15 @@ private fun MarketplaceModuleCard(
             )
 
             when (state) {
-                ModuleState.NOT_DOWNLOADED, null -> OtherSettingsEntry(
+                null -> OtherSettingsEntry(
+                    title = stringResource(R.string.modules_download),
+                    text = if (available) "" else stringResource(R.string.modules_not_available_arch),
+                    icon = R.drawable.download,
+                    shimmer = true,
+                    onClick = {},
+                )
+
+                ModuleState.NOT_DOWNLOADED -> OtherSettingsEntry(
                     title = stringResource(R.string.modules_download),
                     text = if (available) "" else stringResource(R.string.modules_not_available_arch),
                     icon = R.drawable.download,
@@ -589,13 +599,15 @@ private fun formatBytes(context: Context, bytes: Long): String =
  * pinned size is replaced by the exact remote size from a lightweight HTTP HEAD
  * probe ([ModuleRemoteProbe]) when the URL is reachable, kept otherwise.
  */
-private suspend fun remoteModuleInfo(context: Context, def: ModuleDefinition): String {
+private suspend fun remoteModuleInfo(context: Context, def: ModuleDefinition): String =
+    formatModuleInfo(context, def, ModuleRemoteProbe.remoteSizeBytes(def.downloadUrl) ?: def.downloadSizeBytes)
+
+private fun formatModuleInfo(context: Context, def: ModuleDefinition, size: Long): String {
     val availableAbis = Build.SUPPORTED_ABIS.filter { it in def.abis }
     val abi = availableAbis.firstOrNull() ?: def.abis.first()
-    val remoteSize = ModuleRemoteProbe.remoteSizeBytes(def.downloadUrl)
     return buildList {
         add("${context.getString(R.string.modules_version)}: ${def.version}")
-        add("${context.getString(R.string.modules_size)}: ${formatBytes(context, remoteSize ?: def.downloadSizeBytes)}")
+        add("${context.getString(R.string.modules_size)}: ${formatBytes(context, size)}")
         add("${context.getString(R.string.modules_abi)}: ${def.abis.joinToString(", ")}")
         if (availableAbis.isEmpty()) {
             add(context.getString(R.string.modules_not_available_arch))

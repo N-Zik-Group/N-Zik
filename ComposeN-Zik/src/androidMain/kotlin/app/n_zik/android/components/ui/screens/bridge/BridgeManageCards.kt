@@ -107,7 +107,7 @@ internal fun ConnectedPcCard(device: ActiveDevice) {
  * Same entries as the N-Zik settings pages (icon entry showing the value, choice dialog).
  */
 @Composable
-internal fun AutoStopCard(settings: AutoStopSettings) {
+internal fun AutoStopCard(settings: AutoStopSettings?) {
     val context = LocalContext.current
 
     SettingsSectionCard(
@@ -120,13 +120,13 @@ internal fun AutoStopCard(settings: AutoStopSettings) {
                 AutoStopEntry(
                     title = stringResource(R.string.bridge_auto_stop_no_client),
                     icon = R.drawable.devices,
-                    minutes = settings.noClientMinutes,
+                    minutes = settings?.noClientMinutes,
                     onSelected = { BridgeServerController.setAutoStopNoClient(context, it) },
                 )
                 AutoStopEntry(
                     title = stringResource(R.string.bridge_auto_stop_inactivity),
                     icon = R.drawable.sleep,
-                    minutes = settings.inactivityMinutes,
+                    minutes = settings?.inactivityMinutes,
                     onSelected = { BridgeServerController.setAutoStopInactivity(context, it) },
                 )
             }
@@ -139,7 +139,7 @@ internal fun AutoStopCard(settings: AutoStopSettings) {
 private fun AutoStopEntry(
     title: String,
     icon: Int,
-    minutes: Int,
+    minutes: Int?,
     onSelected: (Int) -> Unit,
 ) {
     var showDialog by remember { mutableStateOf(false) }
@@ -150,10 +150,13 @@ private fun AutoStopEntry(
 
     OtherSettingsEntry(
         title = title,
-        text = valueText(minutes),
+        text = if (minutes != null) valueText(minutes) else "",
         icon = icon,
         onClick = { showDialog = true },
+        isEnabled = minutes != null,
+        descriptionLoading = minutes == null,
     )
+    if (minutes == null) return
     DialogPresence(visible = showDialog) {
         ValueSelectorDialog(
             title = title,

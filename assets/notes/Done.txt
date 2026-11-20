@@ -20,6 +20,8 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(shimmer): match Bridge and extension loading states
+  - Show matching placeholders during initial Bridge and extension loads while keeping the action layout and the dialog in place.
 - fix(discovery): retain available results through failed refreshes
   - Keep search history usable and show a single suggestions error. Preserve cached browse rows and the results scroll position on return.
 - fix(shimmer): match collection and folder loading geometry

@@ -17,6 +17,7 @@ import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.typography
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 
 /**
  * Module info dialog (spec-ffmpeg-extension-module): title + version/catalog
@@ -25,8 +26,9 @@ import app.n_zik.android.typography
 @Composable
 fun ModuleInfoDialog(
     title: String,
-    content: String,
+    content: String?,
     onDismiss: () -> Unit,
+    loadingText: String? = null,
 ) {
     DialogFrame(onDismiss = onDismiss, title = title,
         bodyPadding = PaddingValues(0.dp),
@@ -50,12 +52,20 @@ fun ModuleInfoDialog(
                     .weight(1f, fill = false)
                     .verticalScroll(rememberScrollState()).padding(24.dp),
             ) {
-                BasicText(
-                    text = content,
-                    style = typography().xs.copy(color = colorPalette().textSecondary),
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                )
+                if (content == null) {
+                    ItemTextPlaceholder(
+                        text = loadingText,
+                        style = typography().xs,
+                        modifier = Modifier.fillMaxWidth(),
+                        maxLines = Int.MAX_VALUE,
+                    )
+                } else {
+                    BasicText(
+                        text = content,
+                        style = typography().xs.copy(color = colorPalette().textSecondary),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
         }
     }
