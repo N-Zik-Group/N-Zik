@@ -4,6 +4,10 @@ Added:
   - Use black native backgrounds and control plates; retain the requested 90 percent navbar/dropdown coverage and the existing independent Glass settings.
   - Support local V2 export/import and collection details during development. Require Android code 101 for public themes using the new mode; keep schema V2 minimum 99 and V1 unchanged.
   - Make untouched submission compatibility defaults follow selected categories while preserving manual inputs, existing drafts and previously published minimum versions.
+- feat(library): keep song matching active in the background
+  - Use one profile-bound service for matching from Songs and local playlists, with shared progress and scoped results.
+  - Replace progress with a final summary in the same Android notification. Open N-Zik on tap and cancel or retry the exact request from its action.
+  - Preserve completed matches and import order when interrupted. Report unmatched and unprocessed tracks separately and exclude removed playlist members from retry.
 
 Improved:
 - refactor(navigation): separate library deep-link parsing

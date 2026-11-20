@@ -1,37 +1,89 @@
 package app.n_zik.android.utils
 
-import android.os.Build
-import androidx.annotation.RequiresApi
-import app.n_zik.android.cleanPrefix
-import app.n_zik.android.LOCAL_KEY_PREFIX
-import app.n_zik.android.models.Album
-import app.n_zik.android.models.Playlist
-import app.n_zik.android.models.Song
-import app.n_zik.android.models.SongArtistMap
-import app.n_zik.android.models.SongPlaylistMap
-import app.n_zik.android.utils.asMediaItem
-import app.n_zik.android.utils.asSong
-import app.n_zik.android.utils.durationTextToMillis
+import kotlin.math.absoluteValue
+import kotlin.random.Random
+
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withContext
+import timber.log.Timber
+
+import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.canEditStoredPlaylistMembership
 import app.n_zik.android.core.utils.PropUtils
+import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Song
+import app.n_zik.android.models.SongArtistMap
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.requests.searchPage
 import app.n_zik.innertube.utils.from
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
-import kotlin.math.absoluteValue
-import kotlin.random.Random
-import timber.log.Timber
-import app.n_zik.android.models.Artist
-import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
-import app.n_zik.android.appContext
-import java.util.concurrent.atomic.AtomicInteger
 
-@RequiresApi(Build.VERSION_CODES.O)
-suspend fun getAlbumVersionFromVideoGlobal(song: Song, mergedCounter: AtomicInteger? = null) {
+private suspend fun requireMatchLibrary(canUseLibrary: () -> Boolean) {
+    currentCoroutineContext().ensureActive()
+    if (!canUseLibrary()) throw CancellationException("Song matching no longer owns the library")
+}
+
+internal sealed interface SongMatchOutcome {
+    data object Matched : SongMatchOutcome
+    data object Merged : SongMatchOutcome
+    data object Skipped : SongMatchOutcome
+    data class Unmatched(val songId: String) : SongMatchOutcome
+}
+
+private suspend fun commitSongMatch(
+    source: Song,
+    profileId: String,
+    canUseLibrary: () -> Boolean,
+    block: suspend Database.(Song) -> SongMatchOutcome,
+): SongMatchOutcome {
+    val caller = currentCoroutineContext()
+    // Keep the committed result observable if Cancel arrives while Room returns to the caller.
+    return withContext(NonCancellable) {
+        var outcome: SongMatchOutcome = SongMatchOutcome.Skipped
+        Database.transaction {
+            caller.ensureActive()
+            requireMatchLibrary(canUseLibrary)
+            val latest = songTable.findByIdDirect(source.id) ?: return@transaction
+            if (latest.cleanTitle() != source.cleanTitle() || latest.artistsText != source.artistsText ||
+                latest.durationText != source.durationText || latest.thumbnailUrl.isNullOrEmpty() != source.thumbnailUrl.isNullOrEmpty() ||
+                (source.id.length == 11 && source.durationText == "00:00" &&
+                    (latest.totalPlayTimeMs == 1L) != (source.totalPlayTimeMs == 1L))
+            ) {
+                return@transaction
+            }
+            caller.ensureActive()
+            outcome = block(latest)
+            requireMatchLibrary(canUseLibrary)
+        }
+        val replaced = when (val committed = outcome) {
+            SongMatchOutcome.Matched, SongMatchOutcome.Merged -> true
+            is SongMatchOutcome.Unmatched -> committed.songId != source.id
+            SongMatchOutcome.Skipped -> false
+        }
+        if (replaced && canUseLibrary()) {
+            try {
+                WaveformExtractor.deleteWaveformForProfile(appContext(), source.id, profileId)
+            } catch (error: RuntimeException) {
+                Timber.tag("MatchAlbumUtils").w(error, "Could not clear obsolete waveform")
+            }
+        }
+        outcome
+    }
+}
+
+internal suspend fun getAlbumVersionFromVideoGlobal(
+    song: Song,
+    profileId: String,
+    canUseLibrary: () -> Boolean,
+): SongMatchOutcome {
+    requireMatchLibrary(canUseLibrary)
     Timber.tag("MatchGlobal").d("START match for '${song.title}' (id='${song.id}', duration='${song.durationText}')")
-    val random4Digit = Random.nextInt(1000, 10000)
 
     fun filteredText(text: String): String = text
         .lowercase()
@@ -41,16 +93,8 @@ suspend fun getAlbumVersionFromVideoGlobal(song: Song, mergedCounter: AtomicInte
         .filter { it.isLetterOrDigit() || it.isWhitespace() || it == '\'' || it == ',' }
         .replace(Regex("\\s+"), " ")
 
-    fun shuffle(word: String): String {
-        val chars = word.toCharArray()
-        for (i in chars.indices) {
-            val randomIndex = Random.nextInt(chars.size)
-            chars[i] = chars[randomIndex]
-        }
-        return String(chars)
-    }
-
     delay(Random.nextLong(2000, 8000))
+    requireMatchLibrary(canUseLibrary)
 
     val searchQuery = runCatching {
         Innertube.searchPage<Innertube.SongItem>(
@@ -61,12 +105,12 @@ suspend fun getAlbumVersionFromVideoGlobal(song: Song, mergedCounter: AtomicInte
     }.onFailure { Timber.tag("MatchAlbumUtils").e(it, "MatchGlobal: search failed") }.getOrNull()
 
     var searchResults = searchQuery?.getOrNull()?.items
-    val sourceSongWords = filteredText(song.cleanTitle()).split(" ").filter { it.isNotEmpty() }
 
     if (searchResults.isNullOrEmpty()) {
         val simpleQuery = filteredText(song.cleanTitle())
         Timber.tag("MatchAlbumUtils").d("MatchGlobal: fallback query='$simpleQuery'")
         delay(Random.nextLong(2000, 8000))
+        requireMatchLibrary(canUseLibrary)
         val fallbackQuery = runCatching {
             Innertube.searchPage<Innertube.SongItem>(
                 query = simpleQuery,
@@ -100,56 +144,51 @@ suspend fun getAlbumVersionFromVideoGlobal(song: Song, mergedCounter: AtomicInte
         Timber.tag("MatchGlobal").w("NOT FOUND '${song.title}' (${searchResults?.size ?: 0} results)")
     }
 
-    // Get position from import table (fallback to song.position)
-    val dbPosition = Database.importSongTable.getPositionGlobal(song.id) ?: song.position
-    Timber.tag("MatchGlobal").d("DB position for '${song.title}' = $dbPosition")
-
-    Database.transaction {
+    return commitSongMatch(song, profileId, canUseLibrary) { currentSong ->
+        val dbPosition = importSongTable.getPositionGlobal(currentSong.id) ?: currentSong.position
+        Timber.tag("MatchGlobal").d("DB position for '${currentSong.title}' = $dbPosition")
         if (bestMatch != null) {
             val newSong = bestMatch.asSong
             Timber.tag("MatchGlobal").d("BDD: newSong from YouTube - id='${newSong.id}', duration='${newSong.durationText}', title='${newSong.title}'")
 
             // Check if a song with this YouTube ID already exists (duplicate match)
             val existingSong = songTable.findByIdDirect(newSong.id)
-            if (existingSong != null && existingSong.id != song.id) {
-                Timber.tag("MatchGlobal").d("MERGE: '${song.title}' (id='${song.id}') -> existing id='${existingSong.id}'")
+            if (existingSong != null && existingSong.id != currentSong.id) {
+                Timber.tag("MatchGlobal").d("MERGE: '${currentSong.title}' (id='${currentSong.id}') -> existing id='${existingSong.id}'")
                 // Merge: transfer references from old song to existing
-                val playlistMappings = songPlaylistMapTable.getAllForSong(song.id)
+                val playlistMappings = songPlaylistMapTable.getAllForSong(currentSong.id)
                 Timber.tag("MatchGlobal").d("MERGE: transferring ${playlistMappings.size} playlist mappings")
                 playlistMappings.forEach { mapping ->
                     songPlaylistMapTable.mapAtPosition(existingSong.id, mapping.playlistId, mapping.position)
                 }
-                val purgedArtistPairs = songArtistMapTable.clearConflictingPairs(song.id, existingSong.id)
-                val purgedAlbumPairs = songAlbumMapTable.clearConflictingPairs(song.id, existingSong.id)
+                val purgedArtistPairs = songArtistMapTable.clearConflictingPairs(currentSong.id, existingSong.id)
+                val purgedAlbumPairs = songAlbumMapTable.clearConflictingPairs(currentSong.id, existingSong.id)
                 Timber.tag("MatchGlobal").d("MERGE: purged $purgedArtistPairs artist + $purgedAlbumPairs album conflicting pairs before redirect")
-                songArtistMapTable.updateSongId(song.id, existingSong.id)
-                songAlbumMapTable.updateSongId(song.id, existingSong.id)
-                eventTable.updateSongId(song.id, existingSong.id)
-                if (existingSong.likedAt == null && song.likedAt != null) {
-                    songTable.upsert(existingSong.copy(likedAt = song.likedAt))
+                songArtistMapTable.updateSongId(currentSong.id, existingSong.id)
+                songAlbumMapTable.updateSongId(currentSong.id, existingSong.id)
+                eventTable.updateSongId(currentSong.id, existingSong.id)
+                if (existingSong.likedAt == null && currentSong.likedAt != null) {
+                    songTable.upsert(existingSong.copy(likedAt = currentSong.likedAt))
                     Timber.tag("MatchGlobal").d("MERGE: transferred likedAt")
                 }
-                songTable.delete(song)
-                WaveformExtractor.deleteWaveform(appContext(), song.id)
-                mergedCounter?.incrementAndGet()
-                Timber.tag("MatchGlobal").d("MERGED '${song.title}' into '${existingSong.id}'")
-                return@transaction
+                songTable.delete(currentSong)
+                Timber.tag("MatchGlobal").d("MERGED '${currentSong.title}' into '${existingSong.id}'")
+                return@commitSongMatch SongMatchOutcome.Merged
             }
 
             // Save playlist mappings before delete
-            val playlistMappings = songPlaylistMapTable.getAllForSong(song.id)
+            val playlistMappings = songPlaylistMapTable.getAllForSong(currentSong.id)
             Timber.tag("MatchGlobal").d("BDD: saving ${playlistMappings.size} playlist mappings before delete")
             // Delete old song
-            songTable.delete(song)
-            WaveformExtractor.deleteWaveform(appContext(), song.id)
-            Timber.tag("MatchGlobal").d("BDD: deleted old song id='${song.id}'")
+            songTable.delete(currentSong)
+            Timber.tag("MatchGlobal").d("BDD: deleted old song id='${currentSong.id}'")
             // Insert with new YouTube ID and pre-calculated position
             songTable.upsert(newSong.copy(
-                title = PropUtils.retainIfModified(song.title, newSong.title).orEmpty(),
-                artistsText = PropUtils.retainIfModified(song.artistsText, newSong.artistsText),
-                thumbnailUrl = PropUtils.retainIfModified(song.thumbnailUrl, newSong.thumbnailUrl),
-                likedAt = song.likedAt,
-                totalPlayTimeMs = song.totalPlayTimeMs,
+                title = PropUtils.retainIfModified(currentSong.title, newSong.title).orEmpty(),
+                artistsText = PropUtils.retainIfModified(currentSong.artistsText, newSong.artistsText),
+                thumbnailUrl = PropUtils.retainIfModified(currentSong.thumbnailUrl, newSong.thumbnailUrl),
+                likedAt = currentSong.likedAt,
+                totalPlayTimeMs = currentSong.totalPlayTimeMs,
                 position = dbPosition
             ))
             Timber.tag("MatchGlobal").d("BDD: ADDED new song id='${newSong.id}', duration='${newSong.durationText}', title='${newSong.title}'")
@@ -158,9 +197,9 @@ suspend fun getAlbumVersionFromVideoGlobal(song: Song, mergedCounter: AtomicInte
                 songPlaylistMapTable.mapAtPosition(newSong.id, mapping.playlistId, mapping.position)
             }
             // Update other references
-            songAlbumMapTable.updateSongId(song.id, newSong.id)
-            songArtistMapTable.updateSongId(song.id, newSong.id)
-            eventTable.updateSongId(song.id, newSong.id)
+            songAlbumMapTable.updateSongId(currentSong.id, newSong.id)
+            songArtistMapTable.updateSongId(currentSong.id, newSong.id)
+            eventTable.updateSongId(currentSong.id, newSong.id)
             // Create album mapping
             bestMatch.album?.let { albumInfo ->
                 val albumId = albumInfo.endpoint?.browseId ?: return@let
@@ -173,32 +212,22 @@ suspend fun getAlbumVersionFromVideoGlobal(song: Song, mergedCounter: AtomicInte
                 artistTable.insertIgnore(Artist(id = browseId, name = author.name, thumbnailUrl = null))
                 songArtistMapTable.insertIgnore(SongArtistMap(newSong.id, browseId))
             }
-            Timber.tag("MatchGlobal").d("DONE '${song.title}' -> '${newSong.id}' (pos=$dbPosition)")
-        } else {
-            if (song.id == (song.cleanTitle() + song.artistsText).filter { it.isLetterOrDigit() }) {
-                val notFound = song.copy(
-                    id = shuffle(song.artistsText + random4Digit + song.cleanTitle() + "56Music").filter { it.isLetterOrDigit() },
-                    position = song.position
-                )
-                val oldId = song.id
-                songTable.insertIgnore(notFound)
-                songPlaylistMapTable.updateSongId(oldId, notFound.id)
-                songAlbumMapTable.updateSongId(oldId, notFound.id)
-                songArtistMapTable.updateSongId(oldId, notFound.id)
-                eventTable.updateSongId(oldId, notFound.id)
-                songTable.delete(song)
-                WaveformExtractor.deleteWaveform(appContext(), song.id)
-                Timber.tag("MatchGlobal").d("NOT FOUND - shuffled to id='${notFound.id}'")
-            }
+            Timber.tag("MatchGlobal").d("DONE '${currentSong.title}' -> '${newSong.id}' (pos=$dbPosition)")
+            return@commitSongMatch SongMatchOutcome.Matched
         }
+        SongMatchOutcome.Unmatched(currentSong.id)
     }
 }
 
-suspend fun getAlbumVersionFromVideo(song: Song, playlistId: Long, position: Int, playlist: Playlist?, mergedCounter: AtomicInteger? = null) {
+internal suspend fun getAlbumVersionFromVideo(
+    song: Song,
+    playlistId: Long,
+    profileId: String,
+    canUseLibrary: () -> Boolean,
+): SongMatchOutcome {
+    requireMatchLibrary(canUseLibrary)
     Timber.tag("MatchPlaylist").d("START match for '${song.title}' (id='${song.id}', duration='${song.durationText}', playlistId=$playlistId)")
     val isExtPlaylist = (song.thumbnailUrl.isNullOrEmpty()) && (song.durationText != "0:00")
-    var songNotFound: Song
-    val random4Digit = Random.nextInt(1000, 10000)
 
     fun filteredText(text: String): String = text
         .lowercase()
@@ -209,6 +238,7 @@ suspend fun getAlbumVersionFromVideo(song: Song, playlistId: Long, position: Int
         .replace(Regex("\\s+"), " ")
 
     delay(Random.nextLong(2000, 8000))
+    requireMatchLibrary(canUseLibrary)
 
     val searchQuery = runCatching {
         Innertube.searchPage<Innertube.SongItem>(
@@ -224,6 +254,7 @@ suspend fun getAlbumVersionFromVideo(song: Song, playlistId: Long, position: Int
         val simpleQuery = filteredText(song.cleanTitle())
         Timber.tag("MatchAlbumUtils").d("MatchPlaylist: fallback query='$simpleQuery'")
         delay(Random.nextLong(2000, 8000))
+        requireMatchLibrary(canUseLibrary)
         val fallbackQuery = runCatching {
             Innertube.searchPage<Innertube.SongItem>(
                 query = simpleQuery,
@@ -248,18 +279,9 @@ suspend fun getAlbumVersionFromVideo(song: Song, playlistId: Long, position: Int
     val tour = sourceSongWords.contains("tour")
     val redux = sourceSongWords.contains("redux")
 
-    fun shuffle(word: String): String {
-        val chars = word.toCharArray()
-        for (i in chars.indices) {
-            val randomIndex = Random.nextInt(chars.size)
-            chars[i] = chars[randomIndex]
-        }
-        return String(chars)
-    }
-
     fun findSongIndex(): Int {
         for (i in 0..4) {
-            val requiredSong = searchResults?.getOrNull(i) as? Innertube.SongItem ?: continue
+            val requiredSong = searchResults?.getOrNull(i) ?: continue
             val reqWords = filteredText(requiredSong.title ?: "").split(" ").filter { it.isNotEmpty() }
             val songMatched = (reqWords.any { it in sourceSongWords })
                     && (if (lofi) (reqWords.any { it == "lofi" }) else reqWords.all { it != "lofi" })
@@ -283,7 +305,7 @@ suspend fun getAlbumVersionFromVideo(song: Song, playlistId: Long, position: Int
     }
 
     val matchedSongIndex = findSongIndex()
-    val matchedSong = if (matchedSongIndex != -1) searchResults?.getOrNull(matchedSongIndex) as? Innertube.SongItem else null
+    val matchedSong = if (matchedSongIndex != -1) searchResults?.getOrNull(matchedSongIndex) else null
 
     if (matchedSong != null) {
         Timber.tag("MatchPlaylist").d("MATCHED '${matchedSong.info?.name}' -> '${matchedSong.key}' (ytDuration='${matchedSong.durationText}')")
@@ -291,63 +313,58 @@ suspend fun getAlbumVersionFromVideo(song: Song, playlistId: Long, position: Int
         Timber.tag("MatchPlaylist").w("NOT FOUND '${song.title}' (${searchResults?.size ?: 0} results)")
     }
 
-    // Get position from import table (fallback to song.position)
-    val dbPosition = Database.importSongTable.getPosition(song.id, playlistId) ?: song.position
-    Timber.tag("MatchPlaylist").d("DB position for '${song.title}' = $dbPosition")
-
-    Database.transaction {
-        if (!canEditStoredPlaylistMembership(playlistId)) return@transaction
-        val oldPosition = songPlaylistMapTable.findPositionOf(song.id, playlistId)
+    return commitSongMatch(song, profileId, canUseLibrary) { currentSong ->
+        if (!canEditStoredPlaylistMembership(playlistId)) return@commitSongMatch SongMatchOutcome.Skipped
+        val oldPosition = songPlaylistMapTable.findPositionOf(currentSong.id, playlistId)
+        if (oldPosition == -1) return@commitSongMatch SongMatchOutcome.Skipped
+        val dbPosition = importSongTable.getPosition(currentSong.id, playlistId) ?: currentSong.position
 
         if (matchedSongIndex != -1 && matchedSong != null) {
             val newSong = matchedSong.asSong
             Timber.tag("MatchPlaylist").d("BDD: newSong from YouTube - id='${newSong.id}', duration='${newSong.durationText}'")
 
             val existingSong = songTable.findByIdDirect(newSong.id)
-            if (existingSong != null && existingSong.id != song.id) {
-                Timber.tag("MatchPlaylist").d("MERGE: '${song.title}' (id='${song.id}') -> existing id='${existingSong.id}'")
-                val playlistMappings = songPlaylistMapTable.getAllForSong(song.id)
+            if (existingSong != null && existingSong.id != currentSong.id) {
+                Timber.tag("MatchPlaylist").d("MERGE: '${currentSong.title}' (id='${currentSong.id}') -> existing id='${existingSong.id}'")
+                val playlistMappings = songPlaylistMapTable.getAllForSong(currentSong.id)
                 Timber.tag("MatchPlaylist").d("MERGE: transferring ${playlistMappings.size} playlist mappings")
                 playlistMappings.forEach { mapping ->
                     songPlaylistMapTable.mapAtPosition(existingSong.id, mapping.playlistId, mapping.position)
                 }
-                val purgedArtistPairs = songArtistMapTable.clearConflictingPairs(song.id, existingSong.id)
-                val purgedAlbumPairs = songAlbumMapTable.clearConflictingPairs(song.id, existingSong.id)
+                val purgedArtistPairs = songArtistMapTable.clearConflictingPairs(currentSong.id, existingSong.id)
+                val purgedAlbumPairs = songAlbumMapTable.clearConflictingPairs(currentSong.id, existingSong.id)
                 Timber.tag("MatchPlaylist").d("MERGE: purged $purgedArtistPairs artist + $purgedAlbumPairs album conflicting pairs before redirect")
-                songArtistMapTable.updateSongId(song.id, existingSong.id)
-                songAlbumMapTable.updateSongId(song.id, existingSong.id)
-                eventTable.updateSongId(song.id, existingSong.id)
-                if (existingSong.likedAt == null && song.likedAt != null) {
-                    songTable.upsert(existingSong.copy(likedAt = song.likedAt))
+                songArtistMapTable.updateSongId(currentSong.id, existingSong.id)
+                songAlbumMapTable.updateSongId(currentSong.id, existingSong.id)
+                eventTable.updateSongId(currentSong.id, existingSong.id)
+                if (existingSong.likedAt == null && currentSong.likedAt != null) {
+                    songTable.upsert(existingSong.copy(likedAt = currentSong.likedAt))
                     Timber.tag("MatchPlaylist").d("MERGE: transferred likedAt")
                 }
-                songTable.delete(song)
-                WaveformExtractor.deleteWaveform(appContext(), song.id)
-                mergedCounter?.incrementAndGet()
-                Timber.tag("MatchPlaylist").d("MERGED '${song.title}' into '${existingSong.id}'")
-                return@transaction
+                songTable.delete(currentSong)
+                Timber.tag("MatchPlaylist").d("MERGED '${currentSong.title}' into '${existingSong.id}'")
+                return@commitSongMatch SongMatchOutcome.Merged
             }
 
-            val playlistMappings = songPlaylistMapTable.getAllForSong(song.id)
+            val playlistMappings = songPlaylistMapTable.getAllForSong(currentSong.id)
             Timber.tag("MatchPlaylist").d("BDD: saving ${playlistMappings.size} playlist mappings before delete")
-            songTable.delete(song)
-            WaveformExtractor.deleteWaveform(appContext(), song.id)
-            Timber.tag("MatchPlaylist").d("BDD: deleted old song id='${song.id}'")
+            songTable.delete(currentSong)
+            Timber.tag("MatchPlaylist").d("BDD: deleted old song id='${currentSong.id}'")
             songTable.upsert(newSong.copy(
-                title = PropUtils.retainIfModified(song.title, newSong.title).orEmpty(),
-                artistsText = PropUtils.retainIfModified(song.artistsText, newSong.artistsText),
-                thumbnailUrl = PropUtils.retainIfModified(song.thumbnailUrl, newSong.thumbnailUrl),
-                likedAt = song.likedAt,
-                totalPlayTimeMs = song.totalPlayTimeMs,
+                title = PropUtils.retainIfModified(currentSong.title, newSong.title).orEmpty(),
+                artistsText = PropUtils.retainIfModified(currentSong.artistsText, newSong.artistsText),
+                thumbnailUrl = PropUtils.retainIfModified(currentSong.thumbnailUrl, newSong.thumbnailUrl),
+                likedAt = currentSong.likedAt,
+                totalPlayTimeMs = currentSong.totalPlayTimeMs,
                 position = dbPosition
             ))
             Timber.tag("MatchPlaylist").d("BDD: ADDED new song id='${newSong.id}', duration='${newSong.durationText}'")
             playlistMappings.forEach { mapping ->
                 songPlaylistMapTable.mapAtPosition(newSong.id, mapping.playlistId, mapping.position)
             }
-            songAlbumMapTable.updateSongId(song.id, newSong.id)
-            songArtistMapTable.updateSongId(song.id, newSong.id)
-            eventTable.updateSongId(song.id, newSong.id)
+            songAlbumMapTable.updateSongId(currentSong.id, newSong.id)
+            songArtistMapTable.updateSongId(currentSong.id, newSong.id)
+            eventTable.updateSongId(currentSong.id, newSong.id)
             matchedSong.album?.let { albumInfo ->
                 val albumId = albumInfo.endpoint?.browseId ?: return@let
                 albumTable.insertIgnore(Album(id = albumId, title = albumInfo.name))
@@ -359,18 +376,10 @@ suspend fun getAlbumVersionFromVideo(song: Song, playlistId: Long, position: Int
                 artistTable.insertIgnore(Artist(id = browseId, name = author.name, thumbnailUrl = null))
                 songArtistMapTable.insertIgnore(SongArtistMap(newSong.id, browseId))
             }
-            if (oldPosition != -1) {
-                songPlaylistMapTable.updatePosition(playlistId, newSong.id, oldPosition)
-            }
-            Timber.tag("MatchPlaylist").d("DONE '${song.title}' -> '${newSong.id}' (pos=$dbPosition)")
-        } else if (song.id == (song.cleanTitle() + song.artistsText).filter { it.isLetterOrDigit() }) {
-            songNotFound = song.copy(id = shuffle(song.artistsText + random4Digit + song.cleanTitle() + "56Music").filter { it.isLetterOrDigit() })
-            songTable.insertIgnore(songNotFound)
-            songPlaylistMapTable.map(songNotFound.id, playlistId)
-            if (oldPosition != -1) {
-                songPlaylistMapTable.updatePosition(playlistId, songNotFound.id, oldPosition)
-            }
-            Timber.tag("MatchPlaylist").d("NOT FOUND - shuffled to id='${songNotFound.id}'")
+            songPlaylistMapTable.updatePosition(playlistId, newSong.id, oldPosition)
+            Timber.tag("MatchPlaylist").d("DONE '${currentSong.title}' -> '${newSong.id}' (pos=$dbPosition)")
+            return@commitSongMatch SongMatchOutcome.Matched
         }
+        SongMatchOutcome.Unmatched(currentSong.id)
     }
 }

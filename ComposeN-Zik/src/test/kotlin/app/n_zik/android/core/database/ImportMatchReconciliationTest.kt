@@ -11,6 +11,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import app.n_zik.android.core.matching.SongMatchState
+import app.n_zik.android.core.matching.SongMatchStatus
+import app.n_zik.android.core.matching.reconcileSongMatch
+import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.Song
 
 @RunWith(RobolectricTestRunner::class)
@@ -54,6 +58,29 @@ class ImportMatchReconciliationTest {
         assertEquals(listOf(1L, 2L, 5L, 6L), imports.getMatchRows(null).map { it.entry.id })
         assertEquals(listOf(placeholder, riplay, other), imports.reconcileMatches())
         assertEquals(listOf(1L, 2L, 5L), imports.getMatchRows(null).map { it.entry.id })
+    }
+
+    @Test
+    fun `cancelled playlist reconciliation preserves the neighboring playlist and its songs`() = runTest {
+        val source = Playlist(id = 101, name = "Source")
+        val neighbor = Playlist(id = 202, name = "Neighbor")
+        database.playlistTable.insertIgnore(source)
+        database.playlistTable.insertIgnore(neighbor)
+        val retained = Song.makePlaceholder("still-in-source")
+        val removed = Song.makePlaceholder("removed-while-matching")
+        database.songTable.upsert(listOf(retained, removed))
+        database.songPlaylistMapTable.map(retained.id, source.id)
+        database.songPlaylistMapTable.map(removed.id, neighbor.id)
+        val sourceImport = ImportSong(originalId = "gone-source", position = 0, playlistId = source.id)
+        val neighborImport = ImportSong(originalId = "gone-neighbor", position = 0, playlistId = neighbor.id)
+        imports.insertAll(listOf(sourceImport, neighborImport))
+        val result = SongMatchState("run", "playlist:${source.id}", SongMatchStatus.Cancelled, 2, playlistId = source.id)
+
+        val completed = reconcileSongMatch(result) { imports.reconcileMatches(result.playlistId) }
+
+        assertEquals(result, completed)
+        assertEquals(listOf(neighborImport.originalId), imports.getMatchRows(null).map { it.entry.originalId })
+        assertEquals(listOf(retained.id), database.songPlaylistMapTable.findSongsByIds(source.id, listOf(retained.id, removed.id)).map(Song::id))
     }
 
     @Test

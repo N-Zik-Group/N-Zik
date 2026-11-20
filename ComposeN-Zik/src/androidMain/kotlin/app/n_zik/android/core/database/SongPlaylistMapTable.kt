@@ -62,6 +62,14 @@ interface SongPlaylistMapTable {
     """)
     fun allSongsOf( playlistId: Long, limit: Int = Int.MAX_VALUE ): Flow<List<Song>>
 
+    @Query("""
+        SELECT DISTINCT song.*
+        FROM Song AS song
+        JOIN SongPlaylistMap AS membership ON membership.songId = song.id
+        WHERE membership.playlistId = :playlistId AND song.id IN (:songIds)
+    """)
+    suspend fun findSongsByIds(playlistId: Long, songIds: List<String>): List<Song>
+
     /** The last four non-null covers in ascending play-time and mapping insertion order. */
     @Query("""
         SELECT thumbnailUrl

@@ -5,6 +5,7 @@ import app.n_zik.android.components.settings.appearance.preview.LocalThemePrevie
 
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.playback.services.isLocal
+import app.n_zik.android.playback.services.isUnmatched
 import app.n_zik.android.appTextResources
 import app.n_zik.android.components.navigation.FloatingActionSiblingSpace
 import android.os.Build
@@ -43,12 +44,15 @@ import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,6 +62,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.enums.BuiltInPlaylist
@@ -107,20 +112,14 @@ import app.n_zik.android.enums.FilterBy
 import app.n_zik.android.components.menu.FilterMenu
 import app.n_zik.android.utils.filterByKey
 import app.n_zik.android.uiRoundnessShape
-import app.n_zik.android.components.ui.screens.home.HomeSongs
 import app.n_zik.android.ui.components.LocalMenuState
-import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.clickable
 import app.n_zik.android.utils.importYTMLikedSongs
-import app.n_zik.android.utils.autoSyncToolbutton
-import app.n_zik.android.utils.autosyncLikesKey
 import app.n_zik.android.utils.removeYTMLikedSongs
 import app.n_zik.android.core.utils.Toaster
 import org.json.JSONArray
 import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceSong
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
-import app.n_zik.android.LocalTopBarOffset
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassFloatingActions
@@ -139,19 +138,17 @@ import app.n_zik.android.components.dialog.export.ExportCacheDialog
 import app.n_zik.android.components.dialog.export.CachedLyricsExport
 import app.n_zik.android.components.dialog.export.CachedLyricsExportDialog
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.matching.SongMatch
+import app.n_zik.android.core.matching.SongMatchRequest
+import app.n_zik.android.core.matching.SongMatchStatus
+import app.n_zik.android.core.matching.loadSongMatchFailures
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.typography
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.n_zik.android.utils.getAlbumVersionFromVideoGlobal
 import app.n_zik.android.utils.player.addNextOffMain
 import app.n_zik.android.utils.player.enqueueOffMain
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.requests.playlistPage
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.first
@@ -164,7 +161,6 @@ import app.n_zik.android.components.dialog.search.MatchResultsDialog
 import app.n_zik.android.components.dialog.media.YouTubeLinkImportDialog
 import app.n_zik.android.components.tab.ImportPlaylistsMenu
 import app.n_zik.android.components.tab.ImportSongsFromServices
-import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.components.Sort
 import app.n_zik.android.themed.n_zik.component.playlist.PositionLock
 import app.n_zik.android.components.dialog.settings.HomeSongsToolbarSettingsDialog
@@ -185,12 +181,10 @@ import app.n_zik.android.utils.homeSongsTopToolbarOrderKey
 import app.n_zik.android.utils.homeSongsOfflineToolbarOrderKey
 import app.n_zik.android.utils.excludeDislikedSongsKey
 import app.n_zik.android.enums.DislikeMode
-import java.util.concurrent.atomic.AtomicInteger
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -221,21 +215,14 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     var recommendationCount by remember { mutableStateOf(0) }
     var isRecommendationsLoading by remember { mutableStateOf(false) }
 
-    var showConfirmMatchAllDialog by remember { mutableStateOf(false) }
-    var showMatchingProgressDialog by remember { mutableStateOf(false) }
-    var cancelMatch by remember { mutableStateOf(false) }
-    var matchRunning by remember { mutableStateOf(false) }
-    var matchJob by remember { mutableStateOf<Job?>(null) }
-    var totalSongsToMatch by remember { mutableStateOf(0) }
-    var songsMatched by remember { mutableStateOf(0) }
-    var retryMatchMode by remember { mutableStateOf(false) }
-    var retryMatchSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
-
-    var showMatchResultsDialog by remember { mutableStateOf(false) }
-    var matchResultsMatched by remember { mutableStateOf(0) }
-    var matchResultsFailed by remember { mutableStateOf(0) }
-    var matchResultsMerged by remember { mutableStateOf(0) }
-    var matchResultsFailedSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
+    var hiddenMatchRequestId by remember { mutableStateOf<String?>(null) }
+    val matchScopeKey = "home-songs:${builtInPlaylist.name}"
+    var matchCandidates by remember(matchScopeKey) { mutableStateOf<List<Song>?>(null) }
+    val currentSongMatch by SongMatch.state.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
+    val matchResults by SongMatch.results.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
+    val songMatch = if (isThemePreview) null else {
+        currentSongMatch?.takeIf { it.scopeKey == matchScopeKey } ?: matchResults[matchScopeKey]
+    }
     var matchRefreshKey by remember { mutableIntStateOf(0) }
 
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
@@ -247,6 +234,25 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     val itemSelector = ItemSelector<Song>()
     fun getSongs() = itemSelector.ifEmpty { itemsOnDisplayState }
         .filter { it.isLocal == (builtInPlaylist == BuiltInPlaylist.OnDevice) }
+
+    val openMatch by rememberUpdatedState<() -> Unit> {
+        val running = SongMatch.state.value?.takeIf {
+            it.scopeKey == matchScopeKey && it.status == SongMatchStatus.Running
+        }
+        if (running != null) {
+            hiddenMatchRequestId = null
+        } else {
+            matchCandidates = getSongs().filter { it.isUnmatched }.distinctBy(Song::id)
+                .takeIf { it.isNotEmpty() }
+        }
+    }
+
+    fun startMatch(songs: List<Song>) {
+        if (!SongMatch.start(context, SongMatchRequest(scopeKey = matchScopeKey, songs = songs))) {
+            Toaster.e(R.string.song_matching_failed_message)
+        }
+    }
+
     fun getMediaItems() = getSongs().map( Song::asMediaItem )
 
     val search = Search(lazyListState)
@@ -363,20 +369,13 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         )
     }
 
-    DialogPresence(visible = showConfirmMatchAllDialog) {
+    DialogPresence(target = matchCandidates) { candidates ->
         ConfirmationDialog(
             title = stringResource(R.string.song_matching_dialog_title),
             confirmText = stringResource(R.string.song_matching_dialog_title),
-            text = stringResource(R.string.song_matching_all_confirmation, getSongs().count { it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L) }),
-            onDismiss = { showConfirmMatchAllDialog = false },
-            onConfirm = {
-                showConfirmMatchAllDialog = false
-                retryMatchMode = false
-                retryMatchSongs = emptyList()
-                showMatchingProgressDialog = true
-                cancelMatch = false
-                matchRunning = true
-            }
+            text = stringResource(R.string.song_matching_all_confirmation, candidates.size),
+            onDismiss = { matchCandidates = null },
+            onConfirm = { startMatch(candidates) },
         )
     }
 
@@ -393,97 +392,56 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         )
     }
 
-    DialogPresence(visible = showMatchingProgressDialog) {
+    val runningMatch = songMatch?.takeIf { it.status == SongMatchStatus.Running }
+    val showMatchProgress = runningMatch != null && runningMatch.requestId != hiddenMatchRequestId
+    DialogPresence(visible = showMatchProgress) {
         InProgressDialog(
-            total = totalSongsToMatch,
-            done = songsMatched,
+            total = songMatch?.total ?: 0,
+            done = songMatch?.processed ?: 0,
             text = stringResource(R.string.song_matching_progress_title),
-            message = stringResource(R.string.song_matching_running_message),
-            onDismiss = {
-                cancelMatch = true
-                showMatchingProgressDialog = false
-                matchJob?.cancel()
+            message = stringResource(R.string.song_matching_background_message),
+            onDismiss = { hiddenMatchRequestId = songMatch?.requestId },
+            onCancel = { songMatch?.let { SongMatch.cancel(it.requestId) } },
+        )
+    }
+
+    val matchResult = songMatch?.takeIf {
+        it.status == SongMatchStatus.Finished || it.status == SongMatchStatus.Cancelled ||
+            (it.status == SongMatchStatus.Failed && it.failedIds.isNotEmpty())
+    }
+    LaunchedEffect(matchResult?.requestId) {
+        if (matchResult != null) matchRefreshKey++
+    }
+    DialogPresence(target = matchResult) { result ->
+        key(result.requestId) {
+            val failedSongs by produceState(emptyList<Song>(), result.requestId) {
+                value = loadSongMatchFailures(result)
             }
-        )
-    }
-
-    DialogPresence(visible = showMatchResultsDialog) {
-        MatchResultsDialog(
-            matched = matchResultsMatched,
-            failed = matchResultsFailed,
-            merged = matchResultsMerged,
-            failedSongs = matchResultsFailedSongs,
-            onRetry = if (matchResultsFailed > 0) {{
-                showMatchResultsDialog = false
-                retryMatchMode = true
-                retryMatchSongs = matchResultsFailedSongs
-                showMatchingProgressDialog = true
-                cancelMatch = false
-                matchRunning = true
-            }} else null,
-            onDismiss = { showMatchResultsDialog = false }
-        )
-    }
-
-    LaunchedEffect(matchRunning) {
-        if (!matchRunning) return@LaunchedEffect
-        val mergedCounter = AtomicInteger(0)
-        val job = launch(NzikDispatchers.DATA) {
-            try {
-                val unmatched = if (retryMatchMode && retryMatchSongs.isNotEmpty()) {
-                    retryMatchSongs
-                } else {
-                    getSongs().filter { (it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L)) && !it.id.startsWith(LOCAL_KEY_PREFIX) }
-                }
-                totalSongsToMatch = unmatched.size
-                songsMatched = 0
-
-                val jobs = mutableListOf<Job>()
-                unmatched.forEachIndexed { index, song ->
-                    ensureActive()
-                    jobs.add(launch(NzikDispatchers.DATA) {
-                        var wasCancelled = false
-                        try {
-                            if (cancelMatch) return@launch
-                            getAlbumVersionFromVideoGlobal(song, mergedCounter)
-                        } catch (e: CancellationException) {
-                            wasCancelled = true
-                            throw e
-                        } catch (e: Exception) {
-                            Timber.tag("HomeSongsScreen").e(e, "Failed to match song to album version")
-                        } finally {
-                            if (!wasCancelled) songsMatched++
+            MatchResultsDialog(
+                matched = result.matched,
+                failed = result.failed,
+                merged = result.merged,
+                failedSongs = failedSongs,
+                cancelled = result.status == SongMatchStatus.Cancelled,
+                unprocessed = result.unprocessed,
+                onRetry = if (!offlineMode && failedSongs.isNotEmpty()) {
+                    {
+                        if (!offlineMode && SongMatch.results.value[matchScopeKey]?.requestId == result.requestId) {
+                            startMatch(failedSongs)
                         }
-                    })
-                    delay(800)
-                }
-                jobs.forEach { it.join() }
-            } finally {
-                withContext(NonCancellable) {
-                    delay(1500)
-                    val failedEntries = Database.importSongTable.reconcileMatches()
-                    val failedCount = failedEntries.size
-
-                    matchRefreshKey++
-                    val matchedCount = maxOf(0, totalSongsToMatch - failedCount)
-                    matchResultsMatched = matchedCount
-                    matchResultsFailed = failedCount
-                    matchResultsMerged = mergedCounter.get()
-                    val failedOriginalIds = failedEntries.map { it.originalId }.toSet()
-                    val failedSongsList = getSongs().filter { it.id in failedOriginalIds }
-                    matchResultsFailedSongs = failedSongsList
-                    showMatchResultsDialog = true
-                }
-                showMatchingProgressDialog = false
-                retryMatchMode = false
-                retryMatchSongs = emptyList()
-                matchRunning = false
-                cancelMatch = false
-                matchJob = null
-            }
+                    }
+                } else null,
+                onDismiss = { SongMatch.dismiss(result.requestId) },
+            )
         }
-        matchJob = job
-        job.join()
+    }
+
+    val failedMatch = songMatch?.takeIf { it.status == SongMatchStatus.Failed && it.failedIds.isEmpty() }
+    LaunchedEffect(failedMatch?.requestId) {
+        if (failedMatch != null) {
+            Toaster.e(R.string.song_matching_failed_message)
+            SongMatch.dismiss(failedMatch.requestId)
+        }
     }
 
     val importMenu = remember(builtInPlaylist) {
@@ -552,7 +510,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
 
     val hasUnmatchedSongs by remember {
         derivedStateOf {
-            itemsOnDisplayState.any { (it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L)) && !it.id.startsWith(LOCAL_KEY_PREFIX) }
+            itemsOnDisplayState.any { it.isUnmatched }
         }
     }
 
@@ -573,7 +531,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
             override val iconId: Int = R.drawable.alert
             override val messageId: Int = R.string.song_matching_action_open
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
-            override fun onShortClick() { showConfirmMatchAllDialog = true }
+            override fun onShortClick() { openMatch() }
             override fun onLongClick() {}
         }
     }
@@ -657,7 +615,9 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                     }
                 )
                 "smart_trash" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( smartTrash )
-                "match" -> if ( !isThemePreview && !offlineMode && hasUnmatchedSongs && builtInPlaylist != BuiltInPlaylist.OnDevice ) add( localMatchButton )
+                "match" -> if (!isThemePreview && builtInPlaylist != BuiltInPlaylist.OnDevice &&
+                    (runningMatch != null || (!offlineMode && hasUnmatchedSongs))
+                ) add(localMatchButton)
             }
         }
     }
@@ -897,7 +857,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                 val headerPadding = with(androidx.compose.ui.platform.LocalDensity.current) { headerHeight.toDp() }
                 when( builtInPlaylist ) {
                     BuiltInPlaylist.OnDevice -> OnDeviceSong( navController, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, headerPadding, scrollContentInsetProvider )
-                    else                     -> HomeSongs( navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, matchButton = null, onRecommendationCountChange = { count -> recommendationCount = count }, onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading }, isRecommendationEnabled = isRecommendationEnabled, refreshKey = matchRefreshKey, onMatchClick = { showConfirmMatchAllDialog = true }, headerPadding = headerPadding, topContentInsetProvider = scrollContentInsetProvider )
+                    else                     -> HomeSongs( navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, matchButton = null, onRecommendationCountChange = { count -> recommendationCount = count }, onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading }, isRecommendationEnabled = isRecommendationEnabled, refreshKey = matchRefreshKey, onMatchClick = openMatch, headerPadding = headerPadding, topContentInsetProvider = scrollContentInsetProvider )
                 }
             }
         }

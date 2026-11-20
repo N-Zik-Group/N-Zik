@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.res.Resources
 import android.os.Build
+import app.n_zik.android.core.matching.SONG_MATCH_NOTIFICATION_CHANNEL_ID
 import app.n_zik.android.core.notifications.refreshNotificationChannelLabels
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
@@ -54,8 +55,14 @@ internal fun installAppNotificationChannels(context: Context, strings: Resources
             setShowBadge(false)
         }
 
+        val songMatchChannel = NotificationChannel(
+            SONG_MATCH_NOTIFICATION_CHANNEL_ID,
+            strings.getString(R.string.song_matching_progress_title),
+            NotificationManager.IMPORTANCE_LOW,
+        ).apply { setShowBadge(false) }
+
         notificationManager.createNotificationChannels(
-            listOf(playerChannel, sleepTimerChannel, downloadChannel, rewindChannel)
+            listOf(playerChannel, sleepTimerChannel, downloadChannel, rewindChannel, songMatchChannel)
         )
         refreshNotificationChannelLabels(context, strings, notificationManager)
     }

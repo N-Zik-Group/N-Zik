@@ -38,7 +38,6 @@ import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,7 +47,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -69,8 +67,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -79,7 +80,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -90,7 +90,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.Lifecycle
-import kotlinx.coroutines.launch
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
@@ -100,7 +100,6 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 import sh.calvin.reorderable.ReorderableItem
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.YtMusic
@@ -120,13 +119,11 @@ import app.n_zik.android.enums.RecommendationsNumber
 import app.n_zik.android.models.Song
 import app.n_zik.android.models.Playlist
 import androidx.compose.ui.res.pluralStringResource
-import app.n_zik.android.models.SongPlaylistMap
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.isUnmatched
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.SwipeableQueueItem
-import app.n_zik.android.ui.components.tab.toolbar.Button
 import app.n_zik.android.ui.components.tab.toolbar.Dialog
 import app.n_zik.android.ui.components.themed.Enqueue
 import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScrollToTop
@@ -164,7 +161,6 @@ import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.utils.center
 import app.n_zik.android.utils.checkFileExists
 import app.n_zik.android.utils.color
-import app.n_zik.android.utils.completed
 import app.n_zik.android.utils.deleteFileIfExists
 
 import app.n_zik.android.utils.disableScrollingTextKey
@@ -172,12 +168,9 @@ import app.n_zik.android.utils.durationTextToMillis
 import app.n_zik.android.utils.enqueue
 import app.n_zik.android.utils.excludeMediaItems
 import app.n_zik.android.utils.forcePlayAtIndex
-import app.n_zik.android.utils.forcePlayFromBeginning
 import app.n_zik.android.utils.formatAsTime
 import app.n_zik.android.utils.compactPlayTimeLabel
 
-import app.n_zik.android.utils.isAtLeastAndroid14
-import app.n_zik.android.utils.isLandscape
 
 import app.n_zik.android.utils.manageDownload
 import app.n_zik.android.utils.parentalControlEnabledKey
@@ -188,7 +181,6 @@ import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.localPlaylistToolbarOrderKey
 import app.n_zik.android.utils.preferences
-import app.n_zik.android.utils.Preference
 import app.n_zik.android.download.utils.MyDownloadHelper
 import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.LocalDownloadStatesMap
@@ -198,7 +190,6 @@ import app.n_zik.android.utils.queueSwipeLeftActionKey
 import app.n_zik.android.utils.queueSwipeRightActionKey
 import androidx.compose.runtime.CompositionLocalProvider
 
-import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.components.dialog.playlist.ChangePlaylistCoverDialog
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.showFloatingIconKey
@@ -207,15 +198,11 @@ import app.n_zik.android.utils.getSyncDirection
 import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.enums.SyncDirection
 
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
 import app.n_zik.android.utils.ExternalUris
 import app.n_zik.android.components.dialog.song.UpdateSongDialog
 import app.n_zik.android.components.SongItem
@@ -242,8 +229,6 @@ import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.playback.utils.Shuffler
 import app.n_zik.android.core.utils.Toaster
 import timber.log.Timber
-import java.util.UUID
-import app.n_zik.android.LOCAL_KEY_PREFIX
 import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
@@ -254,14 +239,16 @@ import app.n_zik.android.components.dialog.search.MatchResultsDialog
 import app.n_zik.android.components.tab.ImportPlaylistsMenu
 import app.n_zik.android.components.tab.ImportSongsFromCSV
 import app.n_zik.android.components.tab.ImportSongsFromServices
+import app.n_zik.android.core.matching.SongMatch
+import app.n_zik.android.core.matching.SongMatchRequest
+import app.n_zik.android.core.matching.SongMatchStatus
+import app.n_zik.android.core.matching.loadSongMatchFailures
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.components.dialog.settings.LocalPlaylistToolbarSettingsDialog
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.core.rewind.RewindPlaylists.rewindDisplayName
-import app.n_zik.android.utils.getAlbumVersionFromVideo
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.MODIFIED_PREFIX
-import java.util.concurrent.atomic.AtomicInteger
 
 
 @KotlinCsvExperimental
@@ -298,28 +285,18 @@ fun LocalPlaylistSongs(
     var onDeviceSelected by rememberSaveable(playlistId) { mutableStateOf(false) }
     val onDeviceOnly = forceOnDevice || onDeviceSelected
     var isRecommendationEnabled by remember { mutableStateOf(false) }
-    var getAlbumVersion by remember { mutableStateOf(false) }
-    var showGetAlbumVersionDialogue by remember { mutableStateOf(false) }
-    var showGetAlbumVersionDialogueExt by remember { mutableStateOf(false) }
-    var cancelMatchExt by remember { mutableStateOf(false) }
-    var matchRunning by remember { mutableStateOf(false) }
-    var matchRunningExt by remember { mutableStateOf(false) }
-    var matchJob by remember { mutableStateOf<Job?>(null) }
-    var matchJobExt by remember { mutableStateOf<Job?>(null) }
-    var showConfirmMatchAllDialog by remember { mutableStateOf(false) }
-    var totalSongsToMatch by remember { mutableStateOf(0) }
-    var songsMatched by remember { mutableStateOf(0) }
-    var retryMatchMode by remember { mutableStateOf(false) }
-    var retryMatchSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
-    var showMatchResultsDialog by remember { mutableStateOf(false) }
-    var matchResultsMatched by remember { mutableStateOf(0) }
-    var matchResultsFailed by remember { mutableStateOf(0) }
-    var matchResultsMerged by remember { mutableStateOf(0) }
-    var matchResultsFailedSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
+    var hiddenMatchRequestId by remember(playlistId) { mutableStateOf<String?>(null) }
 
     // Non-vital
 
     val preview = app.n_zik.android.components.settings.appearance.preview.LocalThemePreview.current
+    val matchScopeKey = "local-playlist:$playlistId"
+    var matchCandidates by remember(matchScopeKey) { mutableStateOf<List<Song>?>(null) }
+    val currentSongMatch by SongMatch.state.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
+    val matchResults by SongMatch.results.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
+    val songMatch = if (preview != null || onDeviceOnly) null else {
+        currentSongMatch?.takeIf { it.scopeKey == matchScopeKey } ?: matchResults[matchScopeKey]
+    }
     val thumbnailUrl = remember(playlistId, preview) {
         mutableStateOf(if (preview == null) "" else android.net.Uri.fromFile(ThemePreviewAssets.file(appContext(), "tide.jpg")).toString())
     }
@@ -408,6 +385,24 @@ fun LocalPlaylistSongs(
     val itemSelector = ItemSelector<Song>()
 
     fun getSongs() = localPlaylistActionSongs(itemsOnDisplay, itemSelector, onDeviceOnly)
+
+    val openMatch by rememberUpdatedState<() -> Unit> {
+        val running = SongMatch.state.value?.takeIf {
+            it.scopeKey == matchScopeKey && it.status == SongMatchStatus.Running
+        }
+        if (running != null) {
+            hiddenMatchRequestId = null
+        } else {
+            matchCandidates = getSongs().filter { it.isUnmatched }.distinctBy(Song::id)
+                .takeIf { it.isNotEmpty() }
+        }
+    }
+
+    fun startMatch(songs: List<Song>) {
+        val request = SongMatchRequest(matchScopeKey, songs, playlistId)
+        if (!SongMatch.start(context, request)) Toaster.e(R.string.song_matching_failed_message)
+    }
+
     fun getMediaItems() = getSongs().map( Song::asMediaItem )
 
     val search = Search(lazyListState)
@@ -454,218 +449,97 @@ fun LocalPlaylistSongs(
         }
     }
 
-    DialogPresence(visible = showGetAlbumVersionDialogue) {
-        InProgressDialog(
-            total = totalSongsToMatch,
-            done = songsMatched,
-            text = stringResource(R.string.song_matching_progress_title),
-            message = stringResource(R.string.song_matching_running_message),
-            onDismiss = {
-                showGetAlbumVersionDialogue = false
-                cancelMatchExt = true
-                matchJob?.cancel()
-            }
-        )
-    }
-
-    DialogPresence(visible = showGetAlbumVersionDialogueExt) {
-        InProgressDialog(
-            total = totalSongsToMatch,
-            done = songsMatched,
-            text = stringResource(R.string.song_matching_progress_title),
-            message = stringResource(R.string.song_matching_running_message),
-            onDismiss = {
-                showGetAlbumVersionDialogueExt = false
-                cancelMatchExt = true
-                matchJobExt?.cancel()
-            }
-        )
-    }
-    // Note: cancel only closes the dialog, matchRunningExt stays true so the LaunchedEffect
-    // continues to completion and shows the results dialog.
-
-    DialogPresence(visible = showConfirmMatchAllDialog) {
+    DialogPresence(target = matchCandidates) { candidates ->
         ConfirmationDialog(
             title = stringResource(R.string.song_matching_dialog_title),
             confirmText = stringResource(R.string.song_matching_dialog_title),
-            text = stringResource(R.string.song_matching_all_confirmation, items.count { it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L) }),
-            onDismiss = {
-                showConfirmMatchAllDialog = false
-            },onConfirm = {
-                retryMatchMode = false
-                retryMatchSongs = emptyList()
-                getAlbumVersion = true
-                showGetAlbumVersionDialogue = true
-                showConfirmMatchAllDialog = false
-                matchRunning = true
-                cancelMatchExt = false
-            }
+            text = stringResource(R.string.song_matching_all_confirmation, candidates.size),
+            onDismiss = { matchCandidates = null },
+            onConfirm = { startMatch(candidates) },
         )
     }
 
-    DialogPresence(visible = showMatchResultsDialog) {
-        MatchResultsDialog(
-            matched = matchResultsMatched,
-            failed = matchResultsFailed,
-            merged = matchResultsMerged,
-            failedSongs = matchResultsFailedSongs,
-            onRetry = if (matchResultsFailed > 0) {{
-                showMatchResultsDialog = false
-                retryMatchMode = true
-                retryMatchSongs = matchResultsFailedSongs
-                getAlbumVersion = true
-                showGetAlbumVersionDialogue = true
-                matchRunning = true
-                cancelMatchExt = false
-            }} else null,
-            onDismiss = { showMatchResultsDialog = false }
+    val runningMatch = songMatch?.takeIf { it.status == SongMatchStatus.Running }
+    val showMatchProgress = runningMatch != null && runningMatch.requestId != hiddenMatchRequestId
+    DialogPresence(visible = showMatchProgress) {
+        InProgressDialog(
+            total = songMatch?.total ?: 0,
+            done = songMatch?.processed ?: 0,
+            text = stringResource(R.string.song_matching_progress_title),
+            message = stringResource(R.string.song_matching_background_message),
+            onDismiss = { hiddenMatchRequestId = songMatch?.requestId },
+            onCancel = { songMatch?.let { SongMatch.cancel(it.requestId) } },
         )
     }
 
-    val unmatchedExt = remember(items) { items.any { song -> song.id == (cleanPrefix(song.title ?: "")+(song.artistsText ?: "")).filter{it.isLetterOrDigit()} } }
-    if (unmatchedExt && !matchRunningExt){
-        matchRunningExt = true
-        showGetAlbumVersionDialogueExt = true
-        cancelMatchExt = false
+    val matchResult = songMatch?.takeIf {
+        it.total > 0 && (
+            it.status == SongMatchStatus.Finished ||
+                it.status == SongMatchStatus.Cancelled ||
+                (it.status == SongMatchStatus.Failed && it.failedIds.isNotEmpty())
+            )
     }
-    LaunchedEffect(matchRunningExt) {
-        if (!matchRunningExt) return@LaunchedEffect
-        val mergedCounter = AtomicInteger(0)
-        val matchedItemsRef = items.filter{song -> song.id == (cleanPrefix(song.title ?: "")+(song.artistsText ?: "")).filter{it.isLetterOrDigit()}}
-        val job = launch(NzikDispatchers.DATA) {
-            try {
-                totalSongsToMatch = matchedItemsRef.size
-                songsMatched = 0
-
-                val jobs = mutableListOf<Job>()
-                matchedItemsRef.forEachIndexed { index, song ->
-                    ensureActive()
-                    jobs.add(launch(NzikDispatchers.DATA) {
-                        var wasCancelled = false
-                        try {
-                            if (cancelMatchExt) return@launch
-                            getAlbumVersionFromVideo(
-                                song = song,
-                                playlistId = playlistId,
-                                position = index,
-                                playlist = playlist,
-                                mergedCounter = mergedCounter
-                            )
-                        } catch (e: CancellationException) {
-                            wasCancelled = true
-                            throw e
-                        } catch (e: Exception) {
-                            Timber.tag("LocalPlaylistSongs").e(e, "Failed to match song to album version")
-                        } finally {
-                            if (!wasCancelled) songsMatched++
-                        }
-                    })
-                    delay(800) // Space out requests to avoid YouTube rate limiting (403 Error)
-                }
-                jobs.forEach { it.join() }
-            } catch (e: CancellationException) {
-                // Expected on cancel - cleanup happens in finally
-            } finally {
-                withContext(NonCancellable) {
-                    delay(500)
-
-                    val failedEntries = Database.importSongTable.reconcileMatches(playlistId)
-                    val failedCount = failedEntries.size
-                    val matchedCount = maxOf(0, totalSongsToMatch - failedCount)
-
-                    if (matchedItemsRef.isNotEmpty()) {
-                        matchResultsMatched = matchedCount
-                        matchResultsFailed = failedCount
-                        matchResultsMerged = mergedCounter.get()
-                        // For failedSongs list, look up current Song objects in items
-                        val failedOriginalIds = failedEntries.map { it.originalId }.toSet()
-                        val failedSongsList = items.filter { it.id in failedOriginalIds }
-                        matchResultsFailedSongs = failedSongsList
-                        showMatchResultsDialog = true
-                    }
-                }
-                showGetAlbumVersionDialogueExt = false
-                getAlbumVersion = false
-                matchRunningExt = false
-                cancelMatchExt = false
-                matchJobExt = null
+    DialogPresence(target = matchResult) { result ->
+        key(result.requestId) {
+            val failedSongs by produceState(emptyList<Song>(), result.requestId) {
+                value = loadSongMatchFailures(result)
             }
-        }
-        matchJobExt = job
-        job.join()
-    }
-
-    LaunchedEffect(matchRunning) {
-        if (!matchRunning) return@LaunchedEffect
-        val mergedCounter = AtomicInteger(0)
-        val unmatched = if (retryMatchMode && retryMatchSongs.isNotEmpty()) {
-            retryMatchSongs
-        } else {
-            getSongs().filter { (it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L)) && !it.id.startsWith(LOCAL_KEY_PREFIX) }
-        }
-        val job = launch(NzikDispatchers.DATA) {
-            try {
-                totalSongsToMatch = unmatched.size
-                songsMatched = 0
-
-                val jobs = mutableListOf<Job>()
-                unmatched.forEachIndexed { index, song ->
-                    ensureActive()
-                    jobs.add(launch(NzikDispatchers.DATA) {
-                        var wasCancelled = false
-                        try {
-                            if (cancelMatchExt) return@launch
-                            getAlbumVersionFromVideo(
-                                song = song,
-                                playlistId = playlistId,
-                                position = index,
-                                playlist = playlist,
-                                mergedCounter = mergedCounter
-                            )
-                        } catch (e: CancellationException) {
-                            wasCancelled = true
-                            throw e
-                        } catch (e: Exception) {
-                            Timber.tag("LocalPlaylistSongs").e(e, "Failed to match song to album version")
-                        } finally {
-                            if (!wasCancelled) songsMatched++
+            MatchResultsDialog(
+                matched = result.matched,
+                failed = result.failed,
+                merged = result.merged,
+                failedSongs = failedSongs,
+                cancelled = result.status == SongMatchStatus.Cancelled,
+                unprocessed = result.unprocessed,
+                onRetry = if (!offlineMode && membershipEditable && failedSongs.isNotEmpty()) {
+                    {
+                        if (!offlineMode && membershipEditable &&
+                            SongMatch.results.value[matchScopeKey]?.requestId == result.requestId
+                        ) {
+                            startMatch(failedSongs)
                         }
-                    })
-                    delay(800)
-                }
-                jobs.forEach { it.join() }
-            } catch (e: CancellationException) {
-                // Expected on cancel - cleanup happens in finally
-            } finally {
-                withContext(NonCancellable) {
-                    delay(500)
-
-                    val failedEntries = Database.importSongTable.reconcileMatches(playlistId)
-                    val failedCount = failedEntries.size
-                    val matchedCount = maxOf(0, totalSongsToMatch - failedCount)
-
-                    if (unmatched.isNotEmpty()) {
-                        matchResultsMatched = matchedCount
-                        matchResultsFailed = failedCount
-                        matchResultsMerged = mergedCounter.get()
-                        val failedOriginalIds = failedEntries.map { it.originalId }.toSet()
-                        val failedSongsList = items.filter { it.id in failedOriginalIds }
-                        matchResultsFailedSongs = failedSongsList
-                        showMatchResultsDialog = true
                     }
-                }
-                showGetAlbumVersionDialogue = false
-                getAlbumVersion = false
-                retryMatchMode = false
-                retryMatchSongs = emptyList()
-                matchRunning = false
-                cancelMatchExt = false
-                matchJob = null
-            }
+                } else null,
+                onDismiss = { SongMatch.dismiss(result.requestId) },
+            )
         }
-        matchJob = job
-        job.join()
     }
+
+    val unshownMatch = songMatch?.takeIf {
+        (it.status == SongMatchStatus.Failed && it.failedIds.isEmpty()) ||
+            (it.total == 0 && (it.status == SongMatchStatus.Finished || it.status == SongMatchStatus.Cancelled))
+    }
+    LaunchedEffect(unshownMatch?.requestId) {
+        if (unshownMatch != null) {
+            if (unshownMatch.status == SongMatchStatus.Failed) {
+                Toaster.e(R.string.song_matching_failed_message)
+            }
+            SongMatch.dismiss(unshownMatch.requestId)
+        }
+    }
+
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val matchRunning = currentSongMatch?.status == SongMatchStatus.Running ||
+        currentSongMatch?.status == SongMatchStatus.Cancelling
+    val canStartAutomaticMatch = preview == null && !onDeviceOnly && !offlineMode && membershipEditable &&
+        matchCandidates == null && !matchRunning && songMatch == null
+    val automaticMatchSongs = remember(canStartAutomaticMatch, items) {
+        if (!canStartAutomaticMatch) emptyList()
+        else items.filter { song ->
+            val importedId = (cleanPrefix(song.title) + song.artistsText.orEmpty()).filter { it.isLetterOrDigit() }
+            song.id == importedId
+        }
+    }
+    LaunchedEffect(lifecycle, automaticMatchSongs, matchScopeKey) {
+        if (automaticMatchSongs.isEmpty()) return@LaunchedEffect
+        lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            SongMatch.start(
+                context,
+                SongMatchRequest(matchScopeKey, automaticMatchSongs, playlistId, automatic = true),
+            )
+        }
+    }
+
     val shuffle = SongShuffler ( ::getSongs )
     val insertionDialog = PlaylistInsertionDialog { playlist }
     insertionDialog.Render()
@@ -747,7 +621,7 @@ fun LocalPlaylistSongs(
             override val iconId: Int = R.drawable.alert
             override val messageId: Int = R.string.song_matching_action_open
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
-            override fun onShortClick() { showConfirmMatchAllDialog = true }
+            override fun onShortClick() { openMatch() }
             override fun onLongClick() {}
         }
     }
@@ -1362,7 +1236,9 @@ fun LocalPlaylistSongs(
                             "search" -> add( search )
                             // Spec 2: renumbering/position-lock rewrites position, destroying the top order
                             "position_lock" -> if ( !onDeviceOnly && sort.sortBy == PlaylistSongSortBy.Custom && !isRewindPlaylist ) add( positionLock )
-                            "match" -> if (!onDeviceOnly && membershipEditable && !offlineMode && hasUnmatchedSongs) add( matchAlbumButton )
+                            "match" -> if (!onDeviceOnly &&
+                                (runningMatch != null || (membershipEditable && !offlineMode && hasUnmatchedSongs))
+                            ) add(matchAlbumButton)
                             "renumber" -> if ( !onDeviceOnly && sort.sortBy == PlaylistSongSortBy.Custom && !isRewindPlaylist ) add( renumberDialog )
                             "download_all" -> if (!onDeviceOnly && !offlineMode) add(downloadAllDialog)
                             "delete_downloads" -> if (!onDeviceOnly) add(deleteDownloadsDialog)

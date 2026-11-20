@@ -416,6 +416,15 @@
     <string name="song_matching_all_confirmation">Do you want to match %d unmatched songs?</string>
     <string name="song_matching_dialog_title">Match songs</string>
     <string name="song_matching_progress_title">Matching songs</string>
+    <string name="song_matching_background_message">Matching continues in the background.</string>
+    <string name="song_matching_notification_progress">%1$d of %2$d songs</string>
+    <string name="song_matching_cancelled_title">Song matching cancelled</string>
+    <string name="song_matching_unprocessed_count">%1$d not processed</string>
+    <string name="song_matching_notification_completed">%1$d songs matched. %2$d merged with existing songs.</string>
+    <string name="song_matching_notification_partial">%1$d matched, %2$d failed, %3$d not processed. %4$d merged.</string>
+    <string name="song_matching_notification_cancelled">Cancelled. %1$d matched, %2$d failed, %3$d not processed. %4$d merged.</string>
+    <string name="song_matching_notification_failed">Song matching failed. %1$d matched, %2$d failed, %3$d not processed. %4$d merged.</string>
+    <string name="song_matching_failed_message">Could not complete song matching. Try again.</string>
     <string name="song_matching_running_message">Matching Songs. Please Wait. Do not Minimize or Exit the App</string>
     <string name="song_matching_unmatched_label">Unmatched song</string>
     <string name="metadata_musicbrainz_rating">Rating</string>

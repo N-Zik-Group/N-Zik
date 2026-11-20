@@ -18,7 +18,7 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.utils.semiBold
 
-/** Indeterminate / determinate progress dialog on the shared [DefaultDialog]; when [onDismiss] is provided a cancel [ButtonRow] pill is shown. */
+/** Shows matching or loading progress with optional dismissal and cancellation actions. */
 @Composable
 fun InProgressDialog(
     total: Int,
@@ -27,17 +27,18 @@ fun InProgressDialog(
     onDismiss: (() -> Unit)? = null,
     message: String? = null,
     progressLabel: String? = null,
+    onCancel: (() -> Unit)? = onDismiss,
 ) {
     val palette = colorPalette()
     DefaultDialog(
         onDismiss = { if (onDismiss != null) { onDismiss() } },
         title = text,
-        footer = if (onDismiss != null) ({
+        footer = if (onCancel != null) ({
             ButtonRow(
                 buttons = listOf(
                     DialogButton(
                         text = stringResource(R.string.common_action_cancel),
-                        onClick = onDismiss,
+                        onClick = onCancel,
                         danger = true
                     )
                 )

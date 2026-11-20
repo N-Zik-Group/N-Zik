@@ -22,26 +22,24 @@ import app.n_zik.android.typography
 import app.n_zik.android.models.Song
 import app.n_zik.android.cleanPrefix
 
-/**
- * Centralized match results dialog: matched/failed counts and the list of failed songs
- * (replaces the inline implementations in HomeSongsScreen and LocalPlaylistSongs).
- *
- * @param onRetry Called when user taps Retry (only shown if failed > 0)
- * @param onDismiss Called when user taps OK or dismisses the dialog
- */
+/** Displays a completed or cancelled match attempt with its lookup failures. */
 @Composable
 fun MatchResultsDialog(
     matched: Int,
     failed: Int,
     merged: Int = 0,
     failedSongs: List<Song>,
+    cancelled: Boolean = false,
+    unprocessed: Int = 0,
     onRetry: (() -> Unit)? = null,
     onDismiss: () -> Unit
 ) {
     DialogFrame(
         onDismiss = onDismiss,
         bodyPadding = PaddingValues(0.dp),
-        title = stringResource(R.string.library_matching_results_title),
+        title = stringResource(
+            if (cancelled) R.string.song_matching_cancelled_title else R.string.library_matching_results_title
+        ),
         footer = {
             ButtonRow(
                 buttons = buildList {
@@ -66,7 +64,7 @@ fun MatchResultsDialog(
         }
     ) {
         Column(Modifier.weight(1f, false).fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp)) {
-            if (failed == 0) {
+            if (failed == 0 && unprocessed == 0 && !cancelled) {
                 BasicText(
                     text = stringResource(R.string.library_matching_all_success_message),
                     style = typography().s.copy(color = colorPalette().text),
@@ -80,6 +78,14 @@ fun MatchResultsDialog(
                 )
             }
 
+            if (unprocessed > 0) {
+                BasicText(
+                    text = stringResource(R.string.song_matching_unprocessed_count, unprocessed),
+                    style = typography().xs.copy(color = colorPalette().textSecondary),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             if (merged > 0) {
                 BasicText(
                     text = stringResource(R.string.library_matching_merged_count_format, merged),
@@ -88,7 +94,7 @@ fun MatchResultsDialog(
                 )
             }
 
-            if (failed > 0) {
+            if (failedSongs.isNotEmpty()) {
                 BasicText(
                     text = stringResource(R.string.library_matching_failed_songs_description),
                     style = typography().xs.copy(color = colorPalette().textSecondary),

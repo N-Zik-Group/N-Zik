@@ -58,15 +58,17 @@ object WaveformExtractor {
     private val scope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
 
     fun deleteWaveform(context: Context, mediaId: String) =
-        deleteWaveform(context, mediaId, requireDeletion = false)
+        deleteWaveformForProfile(context, mediaId, getActiveProfile(context))
+
+    internal fun deleteWaveformForProfile(context: Context, mediaId: String, profileId: String) =
+        deleteWaveform(context, mediaId, profileId, requireDeletion = false)
 
     /** Explicit cache resets must report a waveform file that could not be removed. */
     internal fun deleteWaveformOrThrow(context: Context, mediaId: String) =
-        deleteWaveform(context, mediaId, requireDeletion = true)
+        deleteWaveform(context, mediaId, getActiveProfile(context), requireDeletion = true)
 
-    private fun deleteWaveform(context: Context, mediaId: String, requireDeletion: Boolean) {
+    private fun deleteWaveform(context: Context, mediaId: String, profileId: String, requireDeletion: Boolean) {
         Timber.tag(TAG).d("DELETE [$mediaId] Start deleteWaveform")
-        val profileId = getActiveProfile(context)
         if (isLegacyStorageShared(context, profileId, ProfileDataItem.WAVEFORMS)) {
             if (requireDeletion) throw IOException("Legacy shared waveforms are protected")
             return
