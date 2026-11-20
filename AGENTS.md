@@ -1,6 +1,6 @@
 # AGENTS.md — NZik
 
-**Version:** 1.17.0 | **Last updated:** 2026-11-16
+**Version:** 1.17.1 | **Last updated:** 2026-11-20
 
 **MANDATORY: Read this file + rules/*.md before any task.**
 
@@ -124,7 +124,8 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 | Contract server (wire) | `app/n_zik/android/bridge/` — the phone-side local server of the wire contract with the N-Zik-Desktop-Compagnon app (39 .kt: `BridgeServer` + Core/Controller/Service, `DeviceAuthenticator`, sub-pkgs `audio/`, `command/`, `library/`, `pairing/`, `state/`) — the spec is shared: `{project-root}/_bmad-output/specs/spec-n-zik-pc-bridge/contract/CONTRACT-v1.md` (contract 1.x, current 1.12.0) |
 | Listen Together      | `app/n_zik/android/listentogether/` (12 .kt) + `src/main/proto/listentogether.proto` |
 | Widgets / shortcuts  | `app/n_zik/android/widget/` (6 .kt), `app/n_zik/android/shortcuts/` |
-| UI           | `app/n_zik/android/components/ui/screens/` |
+| UI | Screen packages under `components/ui/screens/` and existing domain packages under `ui/screens/` |
+| App startup and appearance | Activity lifecycle in `MainActivity.kt`, intent helpers in `MainActivityIntents.kt`, and shared startup and live palette resolution in `components/theme/` |
 | Tests        | `ComposeN-Zik/src/test/`                   |
 
 ---

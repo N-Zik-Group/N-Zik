@@ -1,6 +1,6 @@
 # Code Quality Rules
 
-**Version:** 1.12.1 | **Last updated:** 2026-11-16
+**Version:** 1.13.0 | **Last updated:** 2026-11-20
 
 ## Portable theme settings
 
@@ -103,12 +103,13 @@ New app Kotlin files belong under `app.n_zik.android.*`. Follow the owning exten
 | Component type                 | Location                                           |
 | ------------------------------ | -------------------------------------------------- |
 | Generic reusable dialogs       | `components/dialog/common/`                        |
-| Domain-specific dialogs        | `components/dialog/{domain}/` (e.g. `dialog/song/`, `dialog/album/`) |
+| Domain-specific dialogs | `components/dialog/{domain}/` for dialogs shared across screens. Keep screen-only UI in its screen package, such as Rescue profile selection. |
 | Domain menus                   | `components/menu.{domain}/` (+ 4 shared files in `components/menu/` root — FilterMenu, GridMenu, ListMenu, MenuConstants) |
 | Page-level screens             | `components/ui/screens/{screen}/` (exceptions: `components/onboarding/`, `updater/ui/UpdateScreen`, domain screen packages e.g. `components/musicbrainz/insights/`) |
 | ViewModels                     | co-located with their screen (`components/ui/screens/{screen}/`, or the domain screen package, e.g. `components/musicbrainz/insights/`) |
 | Repositories                   | collocated with their domain package (one repository per domain, e.g. `ShazamRepository` in `recognition/`) |
 | Player UI + lyrics             | `components/player/` + `components/player/lyrics/` |
+| App appearance and palette | `components/theme/` owns appearance resolution shared by startup and live settings. |
 | Settings components            | `components/settings/`                             |
 | Enums                          | `enums/`                                           |
 | Extensions (optional features) | package `extensions/{feature}/` under `app.n_zik.android` (the Gradle subprojects in `N-Zik/extensions/` are separate API modules — see `settings.gradle.kts`) |

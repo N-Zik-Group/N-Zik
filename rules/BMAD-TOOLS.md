@@ -1,8 +1,8 @@
 # BMAD IDE Skill Directories
 
-**Version:** 1.5.0 | **Last updated:** 2026-09-26
+**Version:** 1.5.1 | **Last updated:** 2026-11-20
 
-Reference only — read only when configuring IDE tooling. Skim for your tool, skip the rest. Full reference: upstream BMAD-METHOD repo, `tools/installer/ide/platform-codes.yaml` (NOT present in this workspace).
+Read this reference in full at session startup as part of the required rules review. Apply its IDE setup procedures only when configuring IDE tooling. Full reference: upstream BMAD-METHOD repo, `tools/installer/ide/platform-codes.yaml` (NOT present in this workspace).
 
 ## Preferred Tools
 
