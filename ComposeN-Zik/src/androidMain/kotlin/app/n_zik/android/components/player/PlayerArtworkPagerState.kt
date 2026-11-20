@@ -1,12 +1,14 @@
 package app.n_zik.android.components.player
 
 import androidx.compose.animation.core.AnimationSpec
+import androidx.collection.LruCache
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MonotonicFrameClock
 import androidx.compose.runtime.key
 import androidx.compose.runtime.snapshotFlow
+import androidx.media3.common.Timeline
 import kotlin.math.absoluteValue
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
@@ -14,6 +16,22 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+
+/** Saveable page keys for Media3 window identities, including identical tracks at different positions. */
+internal class PlayerArtworkPageKeys {
+    private val ids = LruCache<Any, Long>(1024)
+    private val window = Timeline.Window()
+    private var nextId = 0L
+
+    fun key(timeline: Timeline, index: Int): Long {
+        if (index !in 0 until timeline.windowCount) return Long.MIN_VALUE + index
+        val uid = timeline.getWindow(index, window).uid
+        return ids[uid] ?: nextId.also {
+            ids.put(uid, it)
+            nextId++
+        }
+    }
+}
 
 /**
  * Portrait measures its pager in LookaheadScope; landscape uses normal measurement.

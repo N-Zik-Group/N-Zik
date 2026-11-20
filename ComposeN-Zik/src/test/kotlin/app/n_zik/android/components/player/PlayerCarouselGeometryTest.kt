@@ -1,11 +1,21 @@
 package app.n_zik.android.components.player
 
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.enums.ThumbnailType
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PlayerCarouselGeometryTest {
+    @Test fun `overflow requires the painted cards to overlap rather than their page slots`() {
+        val geometry = PlayerCarouselGeometry(300.dp, 30.dp, (-80).dp)
+        assertTrue(geometry.hasArtworkStackOverlap(ThumbnailType.Essential))
+        assertFalse(geometry.hasArtworkStackOverlap(ThumbnailType.Modern))
+        assertTrue(geometry.copy(pageSpacing = (-100).dp).hasArtworkStackOverlap(ThumbnailType.Modern))
+        assertFalse(geometry.copy(pageSpacing = 10.dp).hasArtworkStackOverlap(ThumbnailType.Modern))
+    }
+
     @Test fun `Small landscape at minimum spacing retains a bounded overlapping page budget`() {
         // Landscape spacing is -50% of the viewport minus three Small (90dp) insets.
         val geometry = playerCarouselGeometry(400.dp, 300.dp, 90.dp, (-420).dp, true)

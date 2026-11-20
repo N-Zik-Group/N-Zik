@@ -145,6 +145,12 @@ import app.n_zik.android.components.player.PlayerLandscapeColumns
 import app.n_zik.android.components.player.PlayerLandscapeThumbnailFrame
 import app.n_zik.android.components.player.playerLandscapeControlsMargin
 import app.n_zik.android.components.player.PlayerCarouselCover
+import app.n_zik.android.components.player.CarouselButtonNavigation
+import app.n_zik.android.components.player.LocalCarouselButtonNavigation
+import app.n_zik.android.components.player.hasArtworkStackOverlap
+import app.n_zik.android.components.player.PlayerCarouselCoverScaleStart
+import app.n_zik.android.components.player.slide.CAROUSEL_SETTLE_DURATION_MS
+import app.n_zik.android.components.player.PlayerArtworkPageKeys
 import app.n_zik.android.components.player.playerCoverOverlayPolicy
 import app.n_zik.android.components.player.playerCoverArtworkVisible
 import app.n_zik.android.components.player.playerStandaloneVisualizerVisible
@@ -815,6 +821,7 @@ fun Player(
         pageCount = { mediaItems.size },
     )
     val pagerStateFS = rememberPagerState(pageCount = { mediaItems.size })
+    val carouselPageKeys = remember(player) { PlayerArtworkPageKeys() }
     val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
     val isDraggedFS by pagerStateFS.interactionSource.collectIsDraggedAsState()
 
@@ -925,6 +932,15 @@ fun Player(
         showLandscapeArtworkColumn && coverArtworkVisible &&
         (!isLandscape || !fullCoverPresentation) && !fullscreenPagerOwnsArtwork
     val expandedArtworkStack = carouselOwnsArtwork && carousel && expandedplayer
+    val carouselButtonScope = rememberCoroutineScope()
+    val carouselButtons = remember(player, pagerState) { CarouselButtonNavigation(player, pagerState, carouselButtonScope) }
+    val carouselButtonMotion by rememberUpdatedState(
+        expandedArtworkStack && visiblePlayerArtwork && !isShowingLyrics,
+    )
+    val previewCarouselNavigation: (Boolean) -> Boolean = remember(carouselButtons) {
+        { forward -> carouselButtons.move(forward) { carouselButtonMotion } }
+    }
+    DisposableEffect(carouselButtons) { onDispose { carouselButtons.cancel() } }
     var carouselArtworkRevision by remember(expandedArtworkStack) { mutableIntStateOf(0) }
     fun reportCarouselArtworkDrawn(drawn: MutableState<Boolean>) {
         if (drawn.value) return
@@ -1587,6 +1603,7 @@ fun Player(
     blurAdjuster.Render()
 
     CompositionLocalProvider(
+        LocalCarouselButtonNavigation provides previewCarouselNavigation,
         LocalGlassArtworkTint provides artworkGlass,
         LocalPlayerTransportGeometry provides remember { PlayerTransportGeometry() },
         LocalGlassOpticsEnabled provides playerQueueOpticsEnabled(inheritedOpticsEnabled, isQueuePanelVisible),
@@ -1805,7 +1822,7 @@ fun Player(
                              //.padding(vertical = 10.dp)
                          ) {
                              if (playerCoverArtworkVisible(showthumbnail, isShowingLyrics, coverOverlayPolicy.lyricsOnCover, isShowingVisualizer, coverOverlayPolicy.visualizerOnCover)) {
-                                  val fling = flingBehaviorFor(pagerState, sensitivity = playerSwipeSensitivity)
+                                  val fling = flingBehaviorFor(pagerState, sensitivity = playerSwipeSensitivity, snapDurationMillis = CAROUSEL_SETTLE_DURATION_MS)
                                    val animatePageSpacing by animatePlayerCarouselDp(
                                        if (expandedplayer) (thumbnailSpacingL.toInt() * 0.01 * maxHeight -
                                            if (carousel) 3 * carouselSize.size.dp else 2 * carouselSize.size.dp)
@@ -1843,10 +1860,12 @@ fun Player(
 
                                   pagerState.slideSettledPageEffect(
                                       currentMediaItemIndex = { player.currentMediaItemIndex },
-                                      playAtIndex = { index -> player.playAtIndex(index) }
+                                      playAtIndex = { index -> if (carouselButtons.allowGestureCommit(index)) player.playAtIndex(index) },
+                                      transportMoveInProgress = { carouselButtons.isMoving },
                                   )
                                  VerticalPager(
                                      state = pagerState,
+                                     key = { page -> carouselPageKeys.key(queueTimeline, page) },
                                      pageSize = PageSize.Fixed(carouselGeometry.pageSize),
                                      pageSpacing = carouselGeometry.pageSpacing,
                                      contentPadding = PaddingValues(
@@ -1880,12 +1899,14 @@ fun Player(
                                          publishArtworkColors = visiblePlayerArtwork && carouselOwnsArtwork &&
                                              !fullscreenPagerOwnsArtwork && it == pagerState.currentPage,
                                          onArtworkDrawn = { reportCarouselArtworkDrawn(artworkDrawn) },
+                                         playerArtworkMediaId = pageItem?.mediaId,
                                      )
                                      ReportPresentedPlayerCover(
                                          identity = pageCover,
                                          ready = artworkDrawn.value,
                                          active = expectsForegroundCover && pageCover == targetCover &&
                                              it == player.currentMediaItemIndex && it == pagerState.currentPage,
+                                         motionSettled = it == pagerState.settledPage && !pagerState.isScrollInProgress,
                                      ) { presentedCover = pageCover }
 
                                       val coverModifier = Modifier.playerThumbnailCover(
@@ -1894,8 +1915,9 @@ fun Player(
                                           page = it,
                                           padding = carouselGeometry.coverPadding,
                                           carousel = carousel,
+                                          replayArtworkOverflow = carouselGeometry.hasArtworkStackOverlap(thumbnailType),
                                           scaleAlways = false,
-                                          scaleStart = 0.9f,
+                                          scaleStart = PlayerCarouselCoverScaleStart,
                                            thumbnailType = thumbnailType,
                                           showCoverThumbnailAnimation = showCoverThumbnailAnimation,
                                           onTap = { page ->
@@ -2507,7 +2529,7 @@ fun Player(
                       } else if (showthumbnail) {
                          if (playerCoverArtworkVisible(showthumbnail, isShowingLyrics, coverOverlayPolicy.lyricsOnCover, isShowingVisualizer, coverOverlayPolicy.visualizerOnCover)) {
                              if (playerType == PlayerType.Modern) {
-                                   val fling = flingBehaviorFor(pagerState, sensitivity = playerSwipeSensitivity)
+                                   val fling = flingBehaviorFor(pagerState, sensitivity = playerSwipeSensitivity, snapDurationMillis = CAROUSEL_SETTLE_DURATION_MS)
 
                                    pagerState.LaunchedEffectScrollToPage(
                                        player,
@@ -2520,7 +2542,8 @@ fun Player(
 
                                    pagerState.slideSettledPageEffect(
                                       currentMediaItemIndex = { player.currentMediaItemIndex },
-                                      playAtIndex = { index -> player.playAtIndex(index) }
+                                       playAtIndex = { index -> if (carouselButtons.allowGestureCommit(index)) player.playAtIndex(index) },
+                                       transportMoveInProgress = { carouselButtons.isMoving },
                                   )
 
                                  val pageSpacing = (thumbnailSpacing.toInt()*0.01*(screenHeight) - if (carousel) (3*carouselSize.size.dp) else (2*((100f - thumbnailSizeDp) * 1.5f).dp))
@@ -2550,6 +2573,7 @@ fun Player(
                                  if (carouselGeometry.pageSize > carouselGeometry.coverPadding * 2)
                                  VerticalPager(
                                      state = pagerState,
+                                     key = { page -> carouselPageKeys.key(queueTimeline, page) },
                                      pageSize = PageSize.Fixed(carouselGeometry.pageSize),
                                      contentPadding = PaddingValues(
                                          top = ((maxHeight - carouselGeometry.pageSize)/2).coerceAtLeast(0.dp),
@@ -2579,12 +2603,14 @@ fun Player(
                                          publishArtworkColors = visiblePlayerArtwork && carouselOwnsArtwork &&
                                              !fullscreenPagerOwnsArtwork && it == pagerState.currentPage,
                                          onArtworkDrawn = { reportCarouselArtworkDrawn(artworkDrawn) },
+                                         playerArtworkMediaId = pageItem?.mediaId,
                                      )
                                      ReportPresentedPlayerCover(
                                          identity = pageCover,
                                          ready = artworkDrawn.value,
                                          active = expectsForegroundCover && pageCover == targetCover &&
                                              it == player.currentMediaItemIndex && it == pagerState.currentPage,
+                                         motionSettled = it == pagerState.settledPage && !pagerState.isScrollInProgress,
                                      ) { presentedCover = pageCover }
 
                                       val coverModifier = Modifier.playerThumbnailCover(
@@ -2593,8 +2619,9 @@ fun Player(
                                           page = it,
                                           padding = carouselGeometry.coverPadding,
                                           carousel = carousel,
+                                          replayArtworkOverflow = carouselGeometry.hasArtworkStackOverlap(thumbnailType),
                                           scaleAlways = false,
-                                          scaleStart = 0.9f,
+                                          scaleStart = PlayerCarouselCoverScaleStart,
                                           thumbnailType = thumbnailType,
                                           showCoverThumbnailAnimation = showCoverThumbnailAnimation,
                                           onTap = { page ->
@@ -3042,8 +3069,13 @@ fun Player(
 }
 
 private val playerTrackArtworkTransition = tween<Float>(
-    durationMillis = 330,
-    easing = CubicBezierEasing(.37f, 0f, .63f, 1f),
+    durationMillis = 300,
+    easing = CubicBezierEasing(.29f, 0f, .71f, 1f),
+)
+
+private val carouselTrackArtworkTransition = tween<Float>(
+    durationMillis = 700,
+    easing = CubicBezierEasing(.42f, 0f, .58f, 1f),
 )
 
 @Composable
@@ -3071,7 +3103,7 @@ fun PagerState.LaunchedEffectScrollToPage(
                 when {
                     !animate -> pagerState.scrollToPage(targetIndex)
                     paceArtworkMotion -> pagerState.animatePlayerArtworkScrollToPage(
-                        targetIndex, playerTrackArtworkTransition, { player.currentMediaItemIndex },
+                        targetIndex, carouselTrackArtworkTransition, { player.currentMediaItemIndex },
                     )
                     else -> pagerState.animateScrollToPage(targetIndex, animationSpec = playerTrackArtworkTransition)
                 }

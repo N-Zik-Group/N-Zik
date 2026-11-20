@@ -117,6 +117,7 @@ import app.n_zik.android.components.player.playerTransportAction
 import app.n_zik.android.components.player.playerTransportFeedback
 import app.n_zik.android.components.player.rememberPlayerSkipAvailability
 import app.n_zik.android.playback.utils.playNextIfAvailable
+import app.n_zik.android.components.player.LocalCarouselButtonNavigation
 import app.n_zik.android.components.player.playerTransportIndication
 import app.n_zik.android.components.player.PlayerTransportIconButton
 import app.n_zik.android.components.player.PlayerTransportSmallControl
@@ -434,6 +435,7 @@ fun ControlsEssential(
     val skipAvailability by rememberPlayerSkipAvailability(player)
     val previousEnabled = !listenTogetherGuestLock && skipAvailability.previous
     val nextEnabled = !listenTogetherGuestLock && skipAvailability.next
+    val carouselNavigation = LocalCarouselButtonNavigation.current
     val previousLabel = stringResource(R.string.player_action_previous)
     val playPauseLabel = stringResource(
         if (shouldBePlaying) R.string.player_notification_pause else R.string.player_action_play,
@@ -539,7 +541,7 @@ fun ControlsEssential(
                         if(!player.hasPreviousMediaItem() || (jumpPrevious != "0" && player.currentPosition > jumpPrevious.toInt()*1000)){
                             player.seekTo(0)
                         }
-                        else player.playPrevious()
+                        else if (carouselNavigation?.invoke(false) != true) player.playPrevious()
                         if (effectRotationEnabled) isRotated = !isRotated
                     }
                 },
@@ -669,7 +671,9 @@ fun ControlsEssential(
                 enabled = nextEnabled,
                 onClick = {
                     if (nextEnabled) {
-                        if (player.playNextIfAvailable() && effectRotationEnabled) isRotated = !isRotated
+                        if ((carouselNavigation?.invoke(true) == true || player.playNextIfAvailable()) && effectRotationEnabled) {
+                            isRotated = !isRotated
+                        }
                     }
                 },
                 onLongClick = {}

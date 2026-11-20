@@ -165,4 +165,12 @@ class SlideHelpersTest {
         assertEquals(0.5f, scaleY)
         assertEquals(0.5f, scaleX)
     }
+
+    @Test
+    fun `crossing keeps both foreground covers nearly opaque`() {
+        val incoming = thumbnailCoverTransform(0.499f, 0.9f, 0.9f).first
+        val outgoing = thumbnailCoverTransform(0.501f, 0.9f, 0.9f).first
+        assertEquals(0.95f, incoming, 0.001f)
+        assertEquals(0.95f, outgoing, 0.001f)
+    }
 }

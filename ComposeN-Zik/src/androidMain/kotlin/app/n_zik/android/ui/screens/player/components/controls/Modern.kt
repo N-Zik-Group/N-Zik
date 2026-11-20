@@ -99,6 +99,7 @@ import app.n_zik.android.components.player.playerTransportAction
 import app.n_zik.android.components.player.playerTransportFeedback
 import app.n_zik.android.components.player.rememberPlayerSkipAvailability
 import app.n_zik.android.playback.utils.playNextIfAvailable
+import app.n_zik.android.components.player.LocalCarouselButtonNavigation
 import app.n_zik.android.components.player.playerTransportIndication
 import app.n_zik.android.components.player.PlayerTransportControlMotion
 import app.n_zik.android.components.player.PlayerInfoIconButton
@@ -470,6 +471,7 @@ fun ControlsModern(
     val skipAvailability by rememberPlayerSkipAvailability(player)
     val previousEnabled = !listenTogetherGuestLock && skipAvailability.previous
     val nextEnabled = !listenTogetherGuestLock && skipAvailability.next
+    val carouselNavigation = LocalCarouselButtonNavigation.current
     val previousLabel = stringResource(R.string.player_action_previous)
     val playPauseLabel = stringResource(
         if (shouldBePlaying) R.string.player_notification_pause else R.string.player_action_play,
@@ -487,7 +489,7 @@ fun ControlsModern(
                   if(!player.hasPreviousMediaItem() || (jumpPrevious != "0" && player.currentPosition > jumpPrevious.toInt()*1000)){
                       player.seekTo(0)
                   }
-                  else player.playPrevious()
+                  else if (carouselNavigation?.invoke(false) != true) player.playPrevious()
                   if (effectRotationEnabled) isRotated = !isRotated
               }
           },
@@ -686,7 +688,7 @@ if (isBuffering && shouldBePlaying) {
         backgroundColor = playerTransportNativeFill(transportFilm, transportSettings),
         onClick = {
             if (nextEnabled) {
-                player.playNextIfAvailable()
+                if (carouselNavigation?.invoke(true) != true) player.playNextIfAvailable()
                 if (effectRotationEnabled) isRotated = !isRotated
             }
         },
@@ -751,7 +753,7 @@ if (isBuffering && shouldBePlaying) {
                                   if(!player.hasPreviousMediaItem() || (jumpPrevious != "0" && player.currentPosition > jumpPrevious.toInt()*1000)){
                                       player.seekTo(0)
                                   }
-                                  else player.playPrevious()
+                                  else if (carouselNavigation?.invoke(false) != true) player.playPrevious()
                                   if (effectRotationEnabled) isRotated = !isRotated
                               }
                           },
@@ -832,7 +834,7 @@ if (isBuffering && shouldBePlaying) {
                           enabled = nextEnabled,
                           onClick = {
                               if (nextEnabled) {
-                                  player.playNextIfAvailable()
+                                  if (carouselNavigation?.invoke(true) != true) player.playNextIfAvailable()
                                   if (effectRotationEnabled) isRotated = !isRotated
                               }
                           },

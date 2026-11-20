@@ -53,6 +53,7 @@ import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.glass.backdrop.drawPlainBackdrop
 import app.n_zik.android.components.player.slide.itemZIndexFor
+import app.n_zik.android.components.player.slide.thumbnailCoverTransform
 import app.n_zik.android.components.player.slide.playerThumbnailCover
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -275,6 +276,68 @@ class PlayerArtworkShadowOverflowTest {
         }
     }
 
+    @Test fun `spaced carousel clips detached covers during motion in both directions`() {
+        lateinit var pager: PagerState
+        lateinit var scope: CoroutineScope
+        val geometry = PlayerCarouselGeometry(240.dp, 0.dp, 30.dp)
+        val colors = listOf(Color.Yellow, Color.Red, Color.Blue, Color.Green, Color.Cyan)
+        compose.setContent {
+            val shape = RoundedCornerShape(16.dp)
+            val overflow = rememberPlayerArtworkShadowOverflow()
+            pager = rememberPagerState(initialPage = 2) { colors.size }
+            scope = rememberCoroutineScope()
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(DefaultDarkColorPalette, Typography.fallback, shape, shape, shape),
+                LocalGlassPreviewSettings provides GlassSettings(enabled = false),
+            ) {
+                Box(Modifier.size(320.dp, 520.dp).background(Color.White).testTag("spaced.scene")
+                    .playerArtworkShadowOverflow(overflow)) {
+                    Box(Modifier.align(Alignment.TopCenter).offset(y = 140.dp).size(240.dp)
+                        .playerArtworkOverflowViewport(overflow)) {
+                        VerticalPager(
+                            state = pager,
+                            modifier = Modifier.fillMaxSize(),
+                            pageSize = PageSize.Fixed(geometry.pageSize),
+                            pageSpacing = geometry.pageSpacing,
+                            beyondViewportPageCount = 2,
+                        ) { page ->
+                            Box(Modifier.playerThumbnailCover(
+                                pagerState = pager,
+                                page = page,
+                                padding = geometry.coverPadding,
+                                carousel = true,
+                                scaleAlways = false,
+                                scaleStart = PlayerCarouselCoverScaleStart,
+                                thumbnailType = ThumbnailType.Modern,
+                                showCoverThumbnailAnimation = false,
+                                onTap = {},
+                                onLongClick = {},
+                                shadowOverflow = overflow,
+                                replayArtworkOverflow = geometry.hasArtworkStackOverlap(ThumbnailType.Modern),
+                            ).zIndex(itemZIndexFor(page, pager.currentPage)).background(colors[page]))
+                        }
+                    }
+                }
+            }
+        }
+        fun scrollAndCapture(offset: Float): PixelMap {
+            compose.runOnIdle { scope.launch { pager.scrollToPage(2, offset) } }
+            compose.waitForIdle()
+            compose.runOnIdle { assertEquals(offset, pager.currentPageOffsetFraction, .01f) }
+            return compose.onNodeWithTag("spaced.scene").captureToImage().toPixelMap()
+        }
+        val next = scrollAndCapture(.4f)
+        assertTrue("The next cover still enters the pager",
+            next[160, 345].green > .75f && next[160, 345].red < .2f)
+        assertEquals("The detached next image must stop at the pager", Color.White, next[160, 430])
+        assertEquals("The active image also stays within the spaced pager", Color.White, next[160, 90])
+        val previous = scrollAndCapture(-.4f)
+        assertTrue("The previous cover still enters the pager",
+            previous[160, 165].red > .75f && previous[160, 165].green < .2f)
+        assertEquals("The detached previous image must stop at the pager", Color.White, previous[160, 90])
+        assertEquals("The active image also stays within the spaced pager", Color.White, previous[160, 430])
+    }
+
     @Test fun `noncarousel resize retains visible shadows without empty card outlines behind controls`() {
         var viewportSize by mutableStateOf(300.dp)
         lateinit var overflow: PlayerArtworkShadowOverflow
@@ -420,11 +483,12 @@ class PlayerArtworkShadowOverflowTest {
         assertEquals("Visible semantics retain the image width", visibleFront.width, front.width, .5f)
         assertEquals("Visible semantics follow pager clipping", visibleFront.height, front.height, .5f)
         val pixels = scene.captureToImage().toPixelMap()
+        val frontAlpha = thumbnailCoverTransform(initialOffset, .9f, .9f).first
         if (initialOffset > 0f) {
             assertTrue("The scrolling selected image crosses the pager edge", fullFront.top < viewport.top)
             val selectedOverflow = pixels[160, viewport.top.toInt() - 1]
             assertTrue("The selected image is replayed beyond its clipped semantics",
-                selectedOverflow.blue > .9f && selectedOverflow.red < .15f)
+                selectedOverflow.blue >= frontAlpha - .03f && selectedOverflow.red <= 1f - frontAlpha + .03f)
         }
         var upperRearPixels = 0
         var lowerRearPixels = 0
@@ -439,7 +503,8 @@ class PlayerArtworkShadowOverflowTest {
         assertEquals("The header stays above the rear artwork", Color.Magenta, pixels[160, 15])
         assertEquals("The information stays above the rear artwork", Color.Magenta, pixels[160, 345])
         val frontPixel = pixels[160, front.center.y.toInt()]
-        assertTrue("The selected image remains above the rear images", frontPixel.blue > .9f && frontPixel.red < .15f)
+        assertTrue("The selected image remains above the rear images",
+            frontPixel.blue >= frontAlpha - .03f && frontPixel.red <= 1f - frontAlpha + .03f)
         // A point beyond the rounded top-left outline cannot become square image paint.
         val rearLeft = if (initialOffset == 0f) 34 else 37
         assertFalse("The rear image retains its rounded clip", pixels[rearLeft, 0].red > .6f && pixels[rearLeft, 0].green < .2f)

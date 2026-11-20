@@ -33,6 +33,7 @@ import app.n_zik.android.enums.ThumbnailType
 import app.n_zik.android.enums.PlayerSwipeSensitivity
 import app.n_zik.android.utils.doubleShadowDrop
 import app.n_zik.android.components.glass.glassImageRim
+import app.n_zik.android.components.player.ModernPlayerArtworkInset
 import app.n_zik.android.components.player.PlayerArtworkShadowOverflow
 import app.n_zik.android.components.player.registerPlayerArtworkShadow
 import app.n_zik.android.thumbnailShape
@@ -55,6 +56,7 @@ fun PlayerSwipeSensitivity.carouselSnapThreshold(): Float = when (this) {
 
 /** Duration used for player pager settle animations. */
 const val SLIDE_SETTLE_DURATION_MS = 250
+internal const val CAROUSEL_SETTLE_DURATION_MS = 340
 
 /** Keep tightly stacked pages from travelling several tracks during a small drag. */
 internal class CarouselDragConnection(
@@ -87,13 +89,14 @@ fun Modifier.landscapeCarouselDrag(
 fun flingBehaviorFor(
     state: PagerState,
     sensitivity: PlayerSwipeSensitivity = PlayerSwipeSensitivity.Medium,
+    snapDurationMillis: Int = SLIDE_SETTLE_DURATION_MS,
 ): TargetedFlingBehavior {
     // PagerDefaults remembers its provider without keying snapPositionalThreshold.
     // Recreate only that provider when the user's sensitivity changes.
-    return key(sensitivity) {
+    return key(sensitivity, snapDurationMillis) {
         PagerDefaults.flingBehavior(
             state = state,
-            snapAnimationSpec = tween(SLIDE_SETTLE_DURATION_MS, easing = FastOutSlowInEasing),
+            snapAnimationSpec = tween(snapDurationMillis, easing = FastOutSlowInEasing),
             snapPositionalThreshold = sensitivity.carouselSnapThreshold(),
         )
     }
@@ -116,9 +119,11 @@ fun PagerState.slideSettledPageEffect(
     currentMediaItemIndex: () -> Int,
     playAtIndex: (Int) -> Unit,
     delayMillis: Long = 0L,
+    transportMoveInProgress: () -> Boolean = { false },
 ) {
     val currentIndex = rememberUpdatedState(currentMediaItemIndex)
     val play = rememberUpdatedState(playAtIndex)
+    val movingFromButton = rememberUpdatedState(transportMoveInProgress)
     LaunchedEffect(this, delayMillis) {
         observeSettledPlayerPages(snapshotFlow {
             // Drag and fling can be separate scroll mutations. An idle fractional
@@ -130,7 +135,7 @@ fun PagerState.slideSettledPageEffect(
                     layoutInfo.pageSize, layoutInfo.pageSpacing, canScrollForward, canScrollBackward,
                 )
             }
-            settledPage to (isScrollInProgress || currentPageOffsetFraction.absoluteValue > 0.001f)
+            settledPage to (movingFromButton.value() || isScrollInProgress || currentPageOffsetFraction.absoluteValue > 0.001f)
         },
             initialPage = settledPage, currentMediaItemIndex = { currentIndex.value() },
             playAtIndex = { play.value(it) }, delayMillis = delayMillis)
@@ -215,6 +220,7 @@ fun Modifier.playerThumbnailCover(
     onTap: (Int) -> Unit,
     onLongClick: (Int) -> Unit,
     shadowOverflow: PlayerArtworkShadowOverflow? = null,
+    replayArtworkOverflow: Boolean = carousel,
 ): Modifier = this
     .aspectRatio(1f)
     .padding(all = padding)
@@ -229,7 +235,7 @@ fun Modifier.playerThumbnailCover(
         }
     }
     .slideConditional(thumbnailType == ThumbnailType.Modern) {
-        padding(all = 10.dp)
+        padding(all = ModernPlayerArtworkInset)
     }
     .slideConditional(thumbnailType == ThumbnailType.Modern) {
         doubleShadowDrop(
@@ -249,9 +255,9 @@ fun Modifier.playerThumbnailCover(
             ).first else 1f
         },
         zIndex = { itemZIndexFor(page, pagerState.currentPage) },
-        isVisible = { carousel || pagerState.layoutInfo.visiblePagesInfo.any { it.index == page } },
+        isVisible = { carousel && replayArtworkOverflow || pagerState.layoutInfo.visiblePagesInfo.any { it.index == page } },
         shadow = thumbnailType == ThumbnailType.Modern,
-        imageOverflow = carousel,
+        imageOverflow = carousel && replayArtworkOverflow,
     )
     .clip(thumbnailShape())
     .glassImageRim(if (showCoverThumbnailAnimation) CircleShape else thumbnailShape())

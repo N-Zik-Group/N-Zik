@@ -253,6 +253,20 @@ private fun DrawScope.drawPlayerArtworkOverflow(
     }.sortedBy { (frame, _) -> frame.zIndex }
     if (frames.isEmpty()) return
 
+    // Traverse from the front card toward the back of the stack. Retained pages
+    // separated by a gap must never contribute an artwork body outside the pager.
+    var stackBounds: Rect? = null
+    for (index in frames.indices.reversed()) {
+        val (frame, bounds) = frames[index]
+        if (!frame.imageOverflow) continue
+        val stack = stackBounds
+        if (stack == null) stackBounds = bounds
+        else if (bounds.overlaps(stack)) {
+            stackBounds = Rect(minOf(stack.left, bounds.left), minOf(stack.top, bounds.top),
+                maxOf(stack.right, bounds.right), maxOf(stack.bottom, bounds.bottom))
+        }
+    }
+
     val bleed = 32.dp.toPx()
     val fade = overflow.fade
     fun drawOverflowBand(top: Float, bottom: Float) {
@@ -262,13 +276,14 @@ private fun DrawScope.drawPlayerArtworkOverflow(
             val masked = fade > 0f
             if (masked) drawContext.canvas.saveLayer(band, maskPaint)
             frames.forEach { (frame, bounds) ->
+                val replaysImage = frame.imageOverflow && stackBounds?.overlaps(bounds) == true
                 if (frame.shadow && bounds.inflate(bleed).overlaps(band)) {
-                    if (frame.imageOverflow) drawArtworkOverflowShadow(bounds, frame)
+                    if (replaysImage) drawArtworkOverflowShadow(bounds, frame)
                     else clipRect(top = viewport.top - bleed, bottom = viewport.bottom + bleed) {
                         drawArtworkOverflowShadow(bounds, frame)
                     }
                 }
-                if (frame.imageOverflow && bounds.overlaps(band)) drawArtworkOverflowImage(bounds, frame)
+                if (replaysImage && bounds.overlaps(band)) drawArtworkOverflowImage(bounds, frame)
             }
             if (masked) {
                 drawArtworkOverflowFade(viewport, fade, hostSize)
