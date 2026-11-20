@@ -13,6 +13,8 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.toArgb
+import androidx.core.graphics.ColorUtils
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.components.theme.withColor
 import app.n_zik.android.components.theme.paletteDarkness
@@ -43,6 +45,24 @@ internal fun contrastAgainst(foreground: Color, surface: Color): Float {
 
 internal fun neutralForeground(surface: Color): Color =
     if (contrastAgainst(Color.Black, surface) >= contrastAgainst(Color.White, surface)) Color.Black else Color.White
+
+/** Retains accent hue and saturation while adding only the lightness needed for visibility. */
+internal fun contrastAdjustedAccent(accent: Color, background: Color, minimum: Float, endpoint: Float): Color {
+    val hsl = FloatArray(3)
+    ColorUtils.colorToHSL(accent.toArgb(), hsl)
+    val originalLightness = hsl[2]
+    var low = 0f
+    var high = 1f
+    fun candidate(amount: Float): Color {
+        hsl[2] = originalLightness + (endpoint - originalLightness) * amount
+        return Color(ColorUtils.HSLToColor(hsl)).copy(alpha = accent.alpha)
+    }
+    repeat(16) {
+        val middle = (low + high) / 2f
+        if (contrastAgainst(candidate(middle), background) >= minimum) high = middle else low = middle
+    }
+    return candidate(high)
+}
 
 /** Theme grays have near-zero saturation; a pale or very dark chromatic color is still colored. */
 internal fun isNeutralForeground(color: Color): Boolean {
@@ -288,10 +308,12 @@ internal fun playerControlGlyphColor(
     return measuredFrame.resolveEndpoint(original, endpoint, progress)
 }
 
-internal fun measuredPlayGlyphForeground(color: Color, plate: Color, minimum: Float): Color =
-    if (color.isSpecified && color.alpha > 0f && contrastAgainst(color, plate) < minimum) {
-        neutralForeground(plate).copy(alpha = color.alpha)
-    } else color
+internal fun measuredPlayGlyphForeground(color: Color, plate: Color, minimum: Float): Color {
+    if (!color.isSpecified || color.alpha == 0f || contrastAgainst(color, plate) >= minimum) return color
+    val anchor = neutralForeground(plate)
+    if (isNeutralForeground(color)) return anchor.copy(alpha = color.alpha)
+    return contrastAdjustedAccent(color, plate, minimum + .05f, if (anchor == Color.White) 1f else 0f)
+}
 
 /** Every role resolves both endpoints from its source ink and uses this single shared clock. */
 internal data class NeutralForegroundTransition(

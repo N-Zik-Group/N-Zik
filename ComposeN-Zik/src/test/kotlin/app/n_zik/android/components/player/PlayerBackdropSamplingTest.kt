@@ -3,7 +3,10 @@ package app.n_zik.android.components.player
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.core.graphics.ColorUtils
 import androidx.compose.ui.unit.IntSize
+import app.n_zik.android.components.glass.contrastAgainst
 import app.n_zik.android.components.glass.effectiveSurfaceColor
 import app.n_zik.android.components.glass.measuredPlayGlyphForeground
 import app.n_zik.android.components.glass.measuredPlayerTextForeground
@@ -12,7 +15,12 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertFalse
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
 class PlayerBackdropSamplingTest {
     @Test fun `contrast refresh requires a different shared or regional polarity`() {
         val previous = PlayerBackdropContrastDecision(Color.White, mapOf("controls" to Color.Black))
@@ -36,9 +44,21 @@ class PlayerBackdropSamplingTest {
         val playPlate = effectiveSurfaceColor(requireNotNull(state.colorAt(playGlyph)), film)
         assertEquals(Color.Black, measuredPlayGlyphForeground(Color.Black, wholePlate, 3f))
         assertEquals(Color.White, measuredPlayGlyphForeground(Color.Black, playPlate, 3f))
-        assertEquals(Color.White, measuredPlayGlyphForeground(Color(0xFF190C34), playPlate, 3f))
         assertEquals(Color.Yellow, measuredPlayGlyphForeground(Color.Yellow, playPlate, 3f))
         assertEquals(Color.White, state.contrastDecision()?.regionalInk?.get("play"))
+    }
+
+    @Test fun `play tint stays the same hue on dark and light artwork`() {
+        val cases = listOf(Color(0xFF190C34) to Color(0xFF1F1F1F), Color(0xFFE0BCD0) to Color(0xFFF4F4F4))
+        for ((accent, surface) in cases) {
+            val glyph = measuredPlayGlyphForeground(accent, surface, 3f)
+            val before = FloatArray(3).also { ColorUtils.colorToHSL(accent.toArgb(), it) }
+            val after = FloatArray(3).also { ColorUtils.colorToHSL(glyph.toArgb(), it) }
+            assertTrue(contrastAgainst(glyph, surface) >= 3f)
+            assertEquals(before[0], after[0], 2f)
+            assertEquals(before[1], after[1], .025f)
+            assertEquals(accent.alpha, glyph.alpha, 0f)
+        }
     }
 
     @Test fun `glass film can change regional polarity while the artwork stays dark`() {

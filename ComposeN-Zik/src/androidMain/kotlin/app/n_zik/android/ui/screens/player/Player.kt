@@ -917,6 +917,14 @@ fun Player(
     val carouselOwnsArtwork = !showInlineVideo && playerType == PlayerType.Modern &&
         showLandscapeArtworkColumn && coverArtworkVisible &&
         (!isLandscape || !fullCoverPresentation) && !fullscreenPagerOwnsArtwork
+    val expandedArtworkStack = carouselOwnsArtwork && carousel && expandedplayer
+    var carouselArtworkRevision by remember(expandedArtworkStack) { mutableIntStateOf(0) }
+    fun reportCarouselArtworkDrawn(drawn: MutableState<Boolean>) {
+        if (drawn.value) return
+        drawn.value = true
+        // A newly visible neighbor can change the pixels behind already measured controls.
+        if (expandedArtworkStack) carouselArtworkRevision++
+    }
     val thumbnailOwnsArtwork = !showInlineVideo && playerType == PlayerType.Essential &&
         showLandscapeArtworkColumn && coverArtworkVisible
     val colorArtworkItem = if (fullscreenPagerOwnsArtwork) currentSwipedMediaItem else mediaItem
@@ -1121,11 +1129,13 @@ fun Player(
         isLandscape, playerBackgroundColors, sampledTheme?.background0, sampledTheme?.background1, sampledTheme?.background2,
         sampledTheme?.background3, sampledTheme?.background4, sampledTheme?.accent,
         colorPaletteMode, gradientType, blackgradient, bottomgradient,
-        blurAdjuster.strength, blurAdjuster.backdrop, settledBackdrop)
+        blurAdjuster.strength, blurAdjuster.backdrop, settledBackdrop, carouselArtworkRevision)
     var contrastDecisionReady by remember(contrastDecisionKey, playerContentVisible) { mutableStateOf(false) }
-    val renderedBackdropReady = if (waitForBlurredCover) {
-        settledArtworkMatches && backgroundArtworkPager?.isScrollInProgress != true
-    } else null
+    val renderedBackdropReady = when {
+        waitForBlurredCover -> settledArtworkMatches && backgroundArtworkPager?.isScrollInProgress != true
+        expandedArtworkStack -> !waitingForCover && !pagerState.isScrollInProgress
+        else -> null
+    }
     val backdropTransitioning = !gradientSettled || !backdropSettled || (sampledTheme != null && color != sampledTheme) ||
         renderedBackdropReady == false
     val samplePlayerBackground = !appRunningInBackground && !playerUnderlayCovered &&
@@ -1143,7 +1153,6 @@ fun Player(
     else rememberCombinedBackdrop(playerCoverBackground, playerBackground.backdrop)
     val controlsSource = rememberPlayerControlsGlassSource(playerControlsBackdrop)
     val artworkShadowOverflow = rememberPlayerArtworkShadowOverflow()
-    val expandedArtworkStack = carouselOwnsArtwork && carousel && expandedplayer
     // Glass and contrast must see the same passive layer when covers extend behind the controls.
     val artworkControlsSource = rememberPlayerArtworkControlsBackdrop(
         controlsSource, artworkShadowOverflow, captureGlassSource || expandedArtworkStack,
@@ -1860,7 +1869,7 @@ fun Player(
                                          thumbnailUrl = pageCover.artworkUri,
                                          publishArtworkColors = visiblePlayerArtwork && carouselOwnsArtwork &&
                                              !fullscreenPagerOwnsArtwork && it == pagerState.currentPage,
-                                         onArtworkDrawn = { artworkDrawn.value = true },
+                                         onArtworkDrawn = { reportCarouselArtworkDrawn(artworkDrawn) },
                                      )
                                      ReportPresentedPlayerCover(
                                          identity = pageCover,
@@ -2559,7 +2568,7 @@ fun Player(
                                          thumbnailUrl = pageCover.artworkUri,
                                          publishArtworkColors = visiblePlayerArtwork && carouselOwnsArtwork &&
                                              !fullscreenPagerOwnsArtwork && it == pagerState.currentPage,
-                                         onArtworkDrawn = { artworkDrawn.value = true },
+                                         onArtworkDrawn = { reportCarouselArtworkDrawn(artworkDrawn) },
                                      )
                                      ReportPresentedPlayerCover(
                                          identity = pageCover,

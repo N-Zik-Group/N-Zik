@@ -34,10 +34,9 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.navigationSurfaceColor
 import app.n_zik.android.components.glass.IconContrast
+import app.n_zik.android.components.glass.contrastAdjustedAccent
 import app.n_zik.android.components.glass.contrastAgainst
 import app.n_zik.android.components.glass.effectiveSurfaceColor
-import androidx.compose.ui.graphics.toArgb
-import androidx.core.graphics.ColorUtils
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
@@ -155,24 +154,6 @@ internal fun resolveImagePlaceholderInk(accent: Color, background: Color): Image
 private fun smoothInkWeight(weight: Float): Float {
     val clamped = weight.coerceIn(0f, 1f)
     return clamped * clamped * (3f - 2f * clamped)
-}
-
-/** Retains accent hue and saturation while adding only the lightness needed for visibility. */
-private fun contrastAdjustedAccent(opaque: Color, background: Color, minimum: Float, endpoint: Float): Color {
-    val hsl = FloatArray(3)
-    ColorUtils.colorToHSL(opaque.toArgb(), hsl)
-    val originalLightness = hsl[2]
-    var low = 0f
-    var high = 1f
-    fun candidate(amount: Float): Color {
-        hsl[2] = originalLightness + (endpoint - originalLightness) * amount
-        return Color(ColorUtils.HSLToColor(hsl))
-    }
-    repeat(16) {
-        val middle = (low + high) / 2f
-        if (contrastAgainst(candidate(middle), background) >= minimum) high = middle else low = middle
-    }
-    return candidate(high)
 }
 
 /** Each rendering sink owns its measured viewport, even when its source painter is shared. */

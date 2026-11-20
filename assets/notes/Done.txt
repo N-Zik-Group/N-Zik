@@ -22,6 +22,9 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(player): preserve play tint over carousel artwork
+  - Adjust the Play/Pause accent lightness to keep its hue when the local Glass surface is busy.
+  - Refresh contrast after a neighboring carousel cover finishes drawing.
 - fix(player): synchronize artwork and foreground fades
   - Coordinate a 600 ms artwork and foreground fade and keep an opaque cover behind the incoming frame until it has covered the viewport.
   - Include overflowing carousel artwork in the sampled backdrop. Measure Play/Pause against its own region and Glass film, including when backdrop blur is zero.
