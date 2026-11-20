@@ -58,6 +58,9 @@ fun PlayerSwipeSensitivity.carouselSnapThreshold(): Float = when (this) {
 const val SLIDE_SETTLE_DURATION_MS = 250
 internal const val CAROUSEL_SETTLE_DURATION_MS = 340
 
+internal fun playerPagerSettleAnimation(durationMillis: Int) =
+    tween<Float>(durationMillis, easing = FastOutSlowInEasing)
+
 /** Keep tightly stacked pages from travelling several tracks during a small drag. */
 internal class CarouselDragConnection(
     private val pageStridePx: () -> Float,
@@ -96,7 +99,7 @@ fun flingBehaviorFor(
     return key(sensitivity, snapDurationMillis) {
         PagerDefaults.flingBehavior(
             state = state,
-            snapAnimationSpec = tween(snapDurationMillis, easing = FastOutSlowInEasing),
+            snapAnimationSpec = playerPagerSettleAnimation(snapDurationMillis),
             snapPositionalThreshold = sensitivity.carouselSnapThreshold(),
         )
     }

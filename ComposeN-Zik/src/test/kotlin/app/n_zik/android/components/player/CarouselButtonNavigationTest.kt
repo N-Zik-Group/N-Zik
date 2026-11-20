@@ -8,6 +8,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.coEvery
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -16,6 +17,15 @@ import org.junit.jupiter.api.Test
 class CarouselButtonNavigationTest {
     @Test
     fun `a transport press commits only after its cover has settled`() = runTest {
+        checkTransportSettle(visibleAtSettle = true)
+    }
+
+    @Test
+    fun `a transport press restores the playing cover when the player closes`() = runTest {
+        checkTransportSettle(visibleAtSettle = false)
+    }
+
+    private fun TestScope.checkTransportSettle(visibleAtSettle: Boolean) {
         val timeline = mockk<Timeline>()
         every { timeline.windowCount } returns 2
         every { timeline.getWindow(any(), any()) } answers {
@@ -31,18 +41,23 @@ class CarouselButtonNavigationTest {
         val pager = mockk<PagerState>()
         every { pager.isScrollInProgress } returns false
         every { pager.settledPage } answers { page }
+        every { pager.pageCount } returns 2
+        coEvery { pager.scrollToPage(0, any()) } coAnswers { page = 0 }
         coEvery { pager.animateScrollToPage(1, any(), any()) } coAnswers {
             settled.await()
             page = 1
         }
         val commits = mutableListOf<Int>()
         val controller = CarouselButtonNavigation(player, pager, this) { commits += it }
-        assertEquals(true, controller.move(forward = true) { true })
+        var visible = true
+        assertEquals(true, controller.move(forward = true) { visible })
         runCurrent()
         assertEquals(emptyList<Int>(), commits)
+        visible = visibleAtSettle
         settled.complete(Unit)
         runCurrent()
-        assertEquals(listOf(1), commits)
+        assertEquals(if (visibleAtSettle) listOf(1) else emptyList(), commits)
+        assertEquals(if (visibleAtSettle) 1 else 0, page)
     }
 
     @Test

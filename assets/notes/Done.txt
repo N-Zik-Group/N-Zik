@@ -37,6 +37,9 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(player): reduce contention on next and previous presses
+  - Use the gesture settle curve for adjacent Modern covers, including the compact pager.
+  - Start Minimal transport feedback before dispatching the track change.
 - fix(glass): match player information control reflections
   - Expose the passive information plate to overlapping action surfaces. Keep the album and artist rail on the same film as time controls.
   - Capture the information rows only when an optical control can sample them.

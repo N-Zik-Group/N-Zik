@@ -180,6 +180,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import app.n_zik.android.components.player.isPlayerHorizontalSwipeEnabled
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -344,6 +345,8 @@ import app.n_zik.android.utils.mediaItems
 import app.n_zik.android.utils.noblurKey
 import app.n_zik.android.utils.playAtIndex
 import app.n_zik.android.utils.playNext
+import app.n_zik.android.playback.utils.playNextIfAvailable
+import app.n_zik.android.playback.utils.playPreviousIfAvailable
 import app.n_zik.android.utils.playPrevious
 import app.n_zik.android.utils.playbackStateState
 import app.n_zik.android.utils.playerBackgroundColorsKey
@@ -935,11 +938,30 @@ fun Player(
     val expandedArtworkStack = carouselOwnsArtwork && carousel && expandedplayer
     val carouselButtonScope = rememberCoroutineScope()
     val carouselButtons = remember(player, pagerState) { CarouselButtonNavigation(player, pagerState, carouselButtonScope) }
+    var carouselPagerMounted by remember(pagerState) { mutableStateOf(false) }
     val carouselButtonMotion by rememberUpdatedState(
-        expandedArtworkStack && visiblePlayerArtwork && !isShowingLyrics,
+        carouselOwnsArtwork && visiblePlayerArtwork && !isShowingLyrics,
     )
-    val previewCarouselNavigation: (Boolean) -> Boolean = remember(carouselButtons) {
-        { forward -> carouselButtons.move(forward) { carouselButtonMotion } }
+    val deferMinimalButtonSkip by rememberUpdatedState(
+        playerType == PlayerType.Essential && visiblePlayerArtwork && !showInlineVideo,
+    )
+    val previewCarouselNavigation: (Boolean) -> Boolean = remember(carouselButtons, player) {
+        { forward ->
+            when {
+                carouselButtons.move(forward) {
+                    carouselButtonMotion && carouselPagerMounted && pagerState.layoutInfo.visiblePagesInfo.isNotEmpty()
+                } -> true
+                deferMinimalButtonSkip -> {
+                    // Let the click feedback start before dispatching Media3's track callbacks.
+                    carouselButtonScope.launch {
+                        withFrameNanos { }
+                        if (forward) player.playNextIfAvailable() else player.playPreviousIfAvailable()
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
     }
     DisposableEffect(carouselButtons) { onDispose { carouselButtons.cancel() } }
     var carouselArtworkRevision by remember(expandedArtworkStack) { mutableIntStateOf(0) }
@@ -1864,6 +1886,10 @@ fun Player(
                                       playAtIndex = { index -> if (carouselButtons.allowGestureCommit(index)) player.playAtIndex(index) },
                                       transportMoveInProgress = { carouselButtons.isMoving },
                                   )
+                                 DisposableEffect(pagerState) {
+                                     carouselPagerMounted = true
+                                     onDispose { carouselPagerMounted = false }
+                                 }
                                  VerticalPager(
                                      state = pagerState,
                                      key = { page -> carouselPageKeys.key(queueTimeline, page) },
@@ -2571,7 +2597,11 @@ fun Player(
                                      pageSpacing = animatePageSpacing,
                                      compactStack = expandedplayer && carousel,
                                  )
-                                 if (carouselGeometry.pageSize > carouselGeometry.coverPadding * 2)
+                                 if (carouselGeometry.pageSize > carouselGeometry.coverPadding * 2) {
+                                 DisposableEffect(pagerState) {
+                                     carouselPagerMounted = true
+                                     onDispose { carouselPagerMounted = false }
+                                 }
                                  VerticalPager(
                                      state = pagerState,
                                      key = { page -> carouselPageKeys.key(queueTimeline, page) },
@@ -2690,6 +2720,7 @@ fun Player(
                                              }
                                          }
                                      }
+                                 }
                                  }
                              } else {
                                  thumbnailContent()

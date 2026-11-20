@@ -1,6 +1,5 @@
 package app.n_zik.android.components.player
 
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,6 +9,7 @@ import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import app.n_zik.android.components.player.slide.CAROUSEL_SETTLE_DURATION_MS
+import app.n_zik.android.components.player.slide.playerPagerSettleAnimation
 import app.n_zik.android.utils.playAtIndex
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -69,7 +69,7 @@ internal class CarouselButtonNavigation(
         pending = move
         job = scope.launch {
             try {
-                pager.animateScrollToPage(target, animationSpec = tween(CAROUSEL_SETTLE_DURATION_MS))
+                pager.animateScrollToPage(target, animationSpec = playerPagerSettleAnimation(CAROUSEL_SETTLE_DURATION_MS))
                 val currentTimeline = player.currentTimeline
                 if (pending === move && stillAvailable() && target != origin && pager.settledPage == target &&
                     player.currentMediaItemIndex == origin && uidAt(currentTimeline, origin) == originUid &&
@@ -78,8 +78,13 @@ internal class CarouselButtonNavigation(
                 ) {
                     commitPlayback(target)
                 } else if (pending === move && pager.settledPage == target && player.currentMediaItemIndex != target) {
-                    // The regular settle observer must not replay a transport request we just rejected.
-                    rejectedPage = target
+                    val playingPage = player.currentMediaItemIndex
+                    if (playingPage in 0 until pager.pageCount) {
+                        pager.scrollToPage(playingPage)
+                    } else {
+                        // The settle observer must not replay a rejected transport move.
+                        rejectedPage = target
+                    }
                 }
             } finally {
                 if (pending === move) pending = null
