@@ -1,27 +1,81 @@
 package app.n_zik.android
 
-import app.n_zik.android.core.settings.readProxyPort
+import java.io.File
+import java.net.Proxy
 
 import android.app.ActivityManager
 import android.app.Application
-import app.n_zik.android.widget.WidgetAppearance
-import app.n_zik.android.components.image.PickedImageEditor
 import android.content.ComponentName
 import android.content.Context
-import android.content.res.Configuration
-import android.content.res.Resources
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.res.Configuration
+import android.content.res.Resources
 import android.os.Build
 import android.os.Process
 import android.os.StrictMode
 import androidx.core.content.ContextCompat
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
-import java.io.File
+import com.metrolist.music.betterlyrics.BetterLyrics
+import com.metrolist.music.discordrpc.DiscordRpc
+import com.metrolist.music.discordrpc.GatewayWebSocket
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
-import app.n_zik.android.utils.CaptureCrash
+import app.n_zik.android.BuildConfig
+import app.n_zik.android.components.image.PickedImageEditor
+import app.n_zik.android.components.settings.applyUseLoginForSearch
+import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
+import app.n_zik.android.components.ui.screens.rewind.RewindYearlyReminderWorker
+import app.n_zik.android.core.backup.DatabaseBackup
+import app.n_zik.android.core.backup.DatabaseRestoreJournal
+import app.n_zik.android.core.backup.LibraryStartup
+import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.coil.materializeImageCacheCustomMb
+import app.n_zik.android.core.maintenance.MaintenanceConvergenceState
+import app.n_zik.android.core.maintenance.MaintenanceDbCleanupState
+import app.n_zik.android.core.maintenance.MaintenanceDedupState
+import app.n_zik.android.core.maintenance.MaintenanceStateStore
+import app.n_zik.android.core.migration.DbCleanup
+import app.n_zik.android.core.migration.MonthlyPlaylistCleanup
+import app.n_zik.android.core.migration.NameConvergence
+import app.n_zik.android.core.migration.RemovedSettingsMigration
+import app.n_zik.android.core.migration.SameNameArtistDedup
+import app.n_zik.android.core.network.client.NetworkClientFactory
+import app.n_zik.android.core.network.client.NetworkGate
+import app.n_zik.android.core.network.client.Store
+import app.n_zik.android.core.notifications.ensureProfileChannels
+import app.n_zik.android.core.ondevice.SCAN_DEVICE_LIBRARY_ON_STARTUP_KEY
+import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
+import app.n_zik.android.core.ondevice.scanDeviceLibrary
+import app.n_zik.android.core.profiles.profileDataPrefs
+import app.n_zik.android.core.rescue.RescueProcess
+import app.n_zik.android.core.rewind.RewindMonthlyPlaylistWorker
+import app.n_zik.android.core.rewind.RewindYearlyPlaylistWorker
+import app.n_zik.android.core.settings.ensureDefaultColorPaletteMode
+import app.n_zik.android.core.settings.ensurePlayerBehaviorDefaults
+import app.n_zik.android.core.settings.readProxyPort
+import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.download.services.withProfileDownloadCommandOwner
+import app.n_zik.android.extensions.audiobar.VisualizerCaptureCoordinator
+import app.n_zik.android.extensions.musicbrainz.workers.MbBackfillWorker
+import app.n_zik.android.listentogether.ListenTogetherClient
+import app.n_zik.android.listentogether.ListenTogetherManager
+import app.n_zik.android.modules.FfmpegModule
+import app.n_zik.android.modules.ModuleDownloadCancelReceiver
+import app.n_zik.android.modules.ModuleUpdateStatus
+import app.n_zik.android.musicbrainz.MBCircuitBreakerPersistence
+import app.n_zik.android.musicbrainz.MBLogger
+import app.n_zik.android.musicbrainz.MBNetwork
+import app.n_zik.android.musicbrainz.MusicBrainz
+import app.n_zik.android.playback.services.InnerTubeXPlayer
+import app.n_zik.android.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.debug.installStartupDiagnostics
 import app.n_zik.android.utils.discordAvatarKey
 import app.n_zik.android.utils.discordPersonalAccessTokenKey
 import app.n_zik.android.utils.discordUsernameKey
@@ -34,13 +88,14 @@ import app.n_zik.android.utils.isDiscordBrowsingEnabledKey
 import app.n_zik.android.utils.isDiscordPresenceEnabledKey
 import app.n_zik.android.utils.isProxyEnabledKey
 import app.n_zik.android.utils.isValidIP
-import app.n_zik.android.utils.logDebugEnabledKey
+import app.n_zik.android.utils.mbCircuitFailuresKey
+import app.n_zik.android.utils.mbCircuitOpenUntilKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.proxyHostnameKey
 import app.n_zik.android.utils.proxyModeKey
-import app.n_zik.android.utils.proxyPortKey
-import app.n_zik.android.utils.proxyUsernameKey
 import app.n_zik.android.utils.proxyPasswordKey
+import app.n_zik.android.utils.proxyUsernameKey
+import app.n_zik.android.utils.readProfileIds
 import app.n_zik.android.utils.regionOverrideKey
 import app.n_zik.android.utils.saveProfileLastUsed
 import app.n_zik.android.utils.useLoginForBrowseKey
@@ -49,92 +104,25 @@ import app.n_zik.android.utils.ytAccountChannelHandleKey
 import app.n_zik.android.utils.ytAccountEmailKey
 import app.n_zik.android.utils.ytAccountNameKey
 import app.n_zik.android.utils.ytAccountThumbnailKey
-import app.n_zik.android.utils.ytCookieKey
-import app.n_zik.android.utils.ytCookieExpiredKey
-import app.n_zik.android.utils.ytDataSyncIdKey
 import app.n_zik.android.utils.ytAuthUserKey
-import app.n_zik.innertube.hasYouTubeAuthCookie
-import app.n_zik.innertube.YouTubeSession
+import app.n_zik.android.utils.ytCookieExpiredKey
+import app.n_zik.android.utils.ytCookieKey
+import app.n_zik.android.utils.ytDataSyncIdKey
 import app.n_zik.android.utils.ytVisitorDataKey
-import app.n_zik.android.core.coil.ImageCacheFactory
-import app.n_zik.android.core.coil.materializeImageCacheCustomMb
-import app.n_zik.android.core.profiles.profileDataPrefs
-import app.n_zik.android.utils.DEFAULT_PROFILE_ID
-import app.n_zik.android.utils.readProfileIds
-import app.n_zik.android.core.maintenance.MaintenanceConvergenceState
-import app.n_zik.android.core.maintenance.MaintenanceDbCleanupState
-import app.n_zik.android.core.maintenance.MaintenanceDedupState
-import app.n_zik.android.core.maintenance.MaintenanceStateStore
-import app.n_zik.android.core.migration.DbCleanup
-import app.n_zik.android.components.maintenance.countCrashBlocks
-import app.n_zik.android.core.migration.MonthlyPlaylistCleanup
-import app.n_zik.android.core.migration.NameConvergence
-import app.n_zik.android.core.migration.RemovedSettingsMigration
-import app.n_zik.android.core.migration.SameNameArtistDedup
-import app.n_zik.android.core.network.client.NetworkClientFactory
-import app.n_zik.android.core.network.client.NetworkGate
-import app.n_zik.android.core.network.client.Store
-import app.n_zik.android.core.notifications.ensureProfileChannels
-import app.n_zik.android.core.backup.DatabaseBackup
-import app.n_zik.android.core.backup.DatabaseRestoreJournal
-import app.n_zik.android.core.backup.LibraryStartup
-import app.n_zik.android.core.ondevice.scanDeviceLibrary
-import app.n_zik.android.core.ondevice.SCAN_DEVICE_LIBRARY_ON_STARTUP_KEY
-import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
-import app.n_zik.android.core.rescue.RescueProcess
-import app.n_zik.android.download.services.withProfileDownloadCommandOwner
-import app.n_zik.android.components.settings.applyUseLoginForSearch
-import app.n_zik.android.core.settings.ensurePlayerBehaviorDefaults
-import app.n_zik.android.core.settings.ensureDefaultColorPaletteMode
-import app.n_zik.android.extensions.audiobar.VisualizerCaptureCoordinator
-import app.n_zik.android.listentogether.ListenTogetherClient
-import app.n_zik.android.listentogether.ListenTogetherManager
-import app.n_zik.android.modules.FfmpegModule
-import app.n_zik.android.modules.ModuleDownloadCancelReceiver
-import app.n_zik.android.modules.ModuleUpdateStatus
-import app.n_zik.android.core.utils.Toaster
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.n_zik.android.utils.debug.CRASH_CLEAN_BOOT_STREAK_KEY
-import app.n_zik.android.utils.debug.CRASH_LAST_SEEN_COUNT_KEY
-import app.n_zik.android.utils.debug.crashLogFile
-import app.n_zik.android.utils.debug.profileDiagnosticsDir
-import app.n_zik.android.utils.debug.diagnosticFileMutationLock
-import app.n_zik.android.utils.debug.crashLogWipeDecision
-import app.n_zik.android.utils.logging.FileLoggingTree
-import app.n_zik.android.utils.logging.flushThenDelegate
+import app.n_zik.android.widget.WidgetAppearance
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.YouTubeSession
+import app.n_zik.innertube.hasYouTubeAuthCookie
 import app.n_zik.innertube.invidious.Invidious
-import com.metrolist.music.betterlyrics.BetterLyrics
-import com.metrolist.music.discordrpc.DiscordRpc
-import com.metrolist.music.discordrpc.GatewayWebSocket
-import utils.VisualizerHelper
-import app.n_zik.android.BuildConfig
-import app.n_zik.android.playback.services.InnerTubeXPlayer
+import app.n_zik.innertube.models.ArtistConjunctions
+import app.n_zik.innertube.utils.InnertubeLogger
 import app.n_zik.innertube.utils.ProxyPreferenceItem
 import app.n_zik.innertube.utils.ProxyPreferences
-import java.net.Proxy
-import app.n_zik.innertube.Innertube
-import app.n_zik.innertube.utils.InnertubeLogger
+import app.n_zik.invidious.utils.InvidiousLogger
 import app.n_zik.kugou.KuGou
 import app.n_zik.lastfm.LastFm
 import app.n_zik.lrclib.LrcLib
-import app.n_zik.innertube.models.ArtistConjunctions
-import app.n_zik.invidious.utils.InvidiousLogger
-import app.n_zik.android.extensions.musicbrainz.workers.MbBackfillWorker
-import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
-import app.n_zik.android.components.ui.screens.rewind.RewindYearlyReminderWorker
-import app.n_zik.android.core.rewind.RewindMonthlyPlaylistWorker
-import app.n_zik.android.core.rewind.RewindYearlyPlaylistWorker
-import app.n_zik.android.musicbrainz.MBCircuitBreakerPersistence
-import app.n_zik.android.musicbrainz.MBLogger
-import app.n_zik.android.musicbrainz.MBNetwork
-import app.n_zik.android.musicbrainz.MusicBrainz
-import app.n_zik.android.utils.mbCircuitOpenUntilKey
-import app.n_zik.android.utils.mbCircuitFailuresKey
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
+import utils.VisualizerHelper
 
 class MainApplication : Application(), SingletonImageLoader.Factory {
     override fun startService(service: Intent): ComponentName? =
@@ -176,17 +164,8 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 
         Dependencies.init(this)
 
-        // Rescue Center safety net: the Rescue writes a kill-request flag when its hot kill
-        // (broadcast) may be lost (main process dead or fully frozen). Consume it BEFORE any
-//
-        // heavy initialization and end this process. The flag was consumed before the kill,
-        // so the next launch cannot self-kill again (no kill loop). If the flag cannot even be
-//
-        // read at boot, do not kill: a stale flag is preferable to a broken launch loop.
-        // A leftover flag older than the max age (left by an older app version, which
-//
-        // recorded the kill request on every Rescue Center open even while the process was
-        // alive) is discarded WITHOUT killing — only a fresh request justifies it.
+        // Consume fresh Rescue kill requests before library startup.
+        // Clearing the request before exit prevents a restart loop.
         val staleKillRequest = runCatching { RescueProcess.discardStaleKillRequest(this) }.getOrDefault(false)
         if (!staleKillRequest && runCatching { RescueProcess.consumeKillRequest(this) }.getOrDefault(false)) {
             // killProcess is the public API for ending a process from inside (the framework's
@@ -195,10 +174,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             return
         }
 
-        // Same Rescue Center: register the receiver that ends this process on demand. Early,
-        // before library initialization, so the receiver exists even if initialization crashes below
-//
-        // (same rationale as the shortcuts registration just below).
+        // Register the kill receiver before initialization so Rescue can stop a failed startup.
         RescueProcess.registerKillMainReceiver(this)
 
         // Register app shortcuts before library initialization so that the Rescue
@@ -217,10 +193,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // receiver stays available even when startup is still waiting.
         RescueProcess.startAliveMarkerUpdater(this)
 
-        // Extension modules (spec-ffmpeg-extension-module): the download notification's
-        // Cancel action reaches the in-process ModuleManager through this receiver.
-        // Early, like the other receiver registrations, so it exists even if
-        // initialization crashes below.
+        // Register cancellation early so a download can be stopped during startup.
         val moduleCancelReceiver = ModuleDownloadCancelReceiver()
         val moduleCancelFilter = IntentFilter(ModuleDownloadCancelReceiver.CANCEL_ACTION)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -239,28 +212,18 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             PickedImageEditor.cleanupOrphans(applicationContext)
         }
 
-        // Default theme mode (spec-achromatic-ramp-luminance-cap, scope extension 2026-09-28):
-        // fresh install / data wipe / profile switch leave `colorPaletteMode` absent from the
-//
-        // profile's prefs, where every pre-existing read site falls back to Dark. Seed the
-        // default ("Theme mode" = System) before the first composition.
+        // Seed System before composition because older preference reads default to Dark.
         ensureDefaultColorPaletteMode(preferences)
         ensurePlayerBehaviorDefaults(preferences)
 
-        // Profile "last used" (spec-profiles-page-face): the active profile counts as
-        // used on every app start (switches record it themselves) — the Profiles page
-//
-        // shows it as a relative time. Failure must not block app startup.
+        // The Profiles page uses this timestamp for its relative last-used label.
         runCatching {
             saveProfileLastUsed(getActiveProfile(this), System.currentTimeMillis())
         }.onFailure { t ->
             Timber.tag("MainApplication").w(t, "Could not record the active profile last use")
         }
 
-        // Listen Together (spec-listen-together): create the WebSocket client and the sync
-        // manager, bind the player bridge and auto-reconnect to a fresh persisted session
-//
-        // when one exists. Failure must not block app startup.
+        // Restore a fresh saved session without making it a startup dependency.
         runCatching {
             val listenTogetherClient = ListenTogetherClient(this)
             val listenTogetherManager = ListenTogetherManager(listenTogetherClient, this)
@@ -310,11 +273,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             runCatching { getString(id) }.getOrNull()
         }
 
-        // Wire the visualizer capture seam (issue #606) here, not in a composable: SeekBarVisualizer
-        // (mini-player) can mount before the full NextVisualizer screen ever composes, and this must
-//
-        // be set before ANY VisualizerHelper.getFft()/getWave() call — nextvisualizer can't depend
-        // on coroutines, so it exposes this plain function-type injection point instead.
+        // The mini-player can request a snapshot before the full visualizer mounts.
         VisualizerHelper.snapshotProvider = VisualizerCaptureCoordinator::currentSnapshot
 
         // Same seam pattern (issue #606, Goal D Lot 1): extensions/innertube is a pure kotlin("jvm")
@@ -332,25 +291,8 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // on-the-fly generation mechanism (flag-guarded, idempotent, background)
         runCatching { MonthlyPlaylistCleanup.run(this) }
             .onFailure { Timber.tag("MainApplication").w(it, "Monthly playlists cleanup failed") }
-        // Artist-data boot chain: strictly sequential in one coroutine, one pass
-        // after the other (each pass sees the committed state of the previous
-//
-        // one): cleanup of polluted artist↔song links (idempotent) -> dedup of
-        // same-name artist rows (rate-limited network pass, no per-launch cap) ->
-//
-        // convergence of the denormalized artist-name copies from the links
-        // (offline, idempotent). All re-run on every launch, so they also heal
-//
-        // data that reappears through database imports or YTM/YT syncs; a failing
-        // pass does not block the next (runCatching per pass, logged as warning).
-        //
-        // Maintenance state (spec "Maintenance — état de l'app en un regard"):
-        // each successful pass persists its last result (one key per pass in
-        // app_settings) so the Maintenance sheet can show it. The five states are
-        // wiped just below, before the chain: the sheet shows only this launch's
-        // runs, so a failing pass (which never writes) answers "No data" instead
-        // of the previous launch's stale state; the pass still retries on the
-        // next launch.
+        // Run repair passes sequentially so each sees its predecessor's writes.
+        // Clear prior results so Maintenance reports this boot's outcomes.
         MaintenanceStateStore.wipeAll(this)
         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
             runCatching { DbCleanup.runPass(this@MainApplication) }
@@ -443,11 +385,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             Innertube.proxy = proxy
             MBNetwork.proxy = proxy
 
-            // Root-level offline gate: every outbound request short-circuits
-            // while the device has no validated network.
-            //
-            // Modules are plain JVM (no Context), so they read the app-provided
-            // check through their offlineGate slots.
+            // The JVM modules use this app-provided connectivity gate because they have no Android context.
             Innertube.offlineGate = NetworkGate::isOnline
             LrcLib.offlineGate = NetworkGate::isOnline
             MusicBrainz.offlineGate = NetworkGate::isOnline
@@ -458,11 +396,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             // Fully qualified: this file also imports the unrelated app.n_zik.innertube.invidious.Invidious.
             app.n_zik.invidious.Invidious.offlineGate = NetworkGate::isOnline
 
-            // useLoginForSearch is deliberately NOT force-disabled/persisted like
-            // useLoginForBrowse in the cookie branches below: without a valid cookie both
-//
-            // ON and OFF send guest requests, and a persisted OFF must survive (re)login
-            // (spec matrix "OFF then login" — the Accounts screen never resets it either).
+            // Preserve the search preference across login changes. Guests already search anonymously.
             if (encryptedPreferences.getBoolean(enableYouTubeLoginKey, true)) {
                 Store.initSession(this@MainApplication)
             } else {
@@ -520,9 +454,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 
         createNotificationChannels()
 
-        // Extension modules (spec-ffmpeg-extension-module): launch-time update check —
-        // detection only (toast). The download happens on first use or from the
-        // Extensions screen; a failed check must not block app startup.
+        // Only detect updates at launch. Downloads start on first use or from Extensions.
         NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
             val moduleUpdate = withContext(NzikDispatchers.DATA) { FfmpegModule.checkForUpdate() }
             if (moduleUpdate is ModuleUpdateStatus.UpdateAvailable) {
@@ -530,10 +462,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             }
         }
 
-        // The 6 channels of the active profile (no-op for the base profile — its 5 channels are
-        // created above, unchanged, and its 6th — listen-together — is created on first use by
-//
-        // the Listen Together client): the emitters and the profile switch rely on them existing.
+        // Profile emitters rely on these channels before posting their first notification.
         ensureProfileChannels(this, getActiveProfile(this))
 
         // Enrich artist/album MusicBrainz metadata in background (first run after 1h)
@@ -551,64 +480,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // Rewind yearly playlist (next 1st of January, WorkManager, self-rescheduling)
         RewindYearlyPlaylistWorker.schedule(this)
 
-        val diagnosticsOwner = getActiveProfile(this)
-        val diagnosticPrefs = profileDataPrefs(this, diagnosticsOwner)
-        val logEnabled = diagnosticPrefs.getBoolean(logDebugEnabledKey, false)
-        
-        // Always create logs directory and set up crash handler
-        val dir = profileDiagnosticsDir(this, diagnosticsOwner).apply { mkdirs() }
-        
-        // Always set up crash handler regardless of debug mode
-        val crashCapture = CaptureCrash(dir.absolutePath, this)
-        val guardedCrashCapture = Thread.UncaughtExceptionHandler { thread, error ->
-            synchronized(diagnosticFileMutationLock) { crashCapture.uncaughtException(thread, error) }
-        }
-        Thread.setDefaultUncaughtExceptionHandler(guardedCrashCapture)
-
-        // Crash log auto-wipe (spec-maintenance-dialog): after 2 consecutive boots
-        // without a NEW crash block, the crash log is wiped (the Maintenance "Last
-//
-        // crash" row falls back to "None"; the crash dialog's Clear button stays the
-        // manual path). The small startup read happens before any UI can read the file
-        runCatching {
-            val crashLogFile = crashLogFile(dir)
-            val currentCrashCount =
-                if (crashLogFile.exists()) countCrashBlocks(crashLogFile.readText()) else 0
-            val decision = crashLogWipeDecision(
-                currentCrashCount = currentCrashCount,
-                lastSeenCrashCount = diagnosticPrefs.getInt(CRASH_LAST_SEEN_COUNT_KEY, 0),
-                cleanBootStreak = diagnosticPrefs.getInt(CRASH_CLEAN_BOOT_STREAK_KEY, 0),
-            )
-            if (decision.wipe) crashLogFile.delete()
-            diagnosticPrefs.edit()
-                .putInt(CRASH_CLEAN_BOOT_STREAK_KEY, decision.cleanBootStreak)
-                .putInt(CRASH_LAST_SEEN_COUNT_KEY, decision.lastSeenCrashCount)
-                .apply()
-        }.onFailure {
-            Timber.tag("MainApplication").w(it, "Crash log auto-wipe evaluation failed")
-        }
-        
-        if (logEnabled) {
-            val fileLoggingTree = FileLoggingTree(File(dir, "N-Zik_log.txt"))
-            Timber.plant(fileLoggingTree)
-            // The tree writes asynchronously: give the queued lines up to 2 s to reach the disk
-            // before CaptureCrash writes the crash log and kills the process.
-            Thread.setDefaultUncaughtExceptionHandler(flushThenDelegate(fileLoggingTree, 2000, guardedCrashCapture))
-            Timber.tag("MainApplication").d("Log enabled at ${dir.absolutePath}")
-        } else {
-            Timber.uprootAll()
-            Timber.plant(Timber.DebugTree())
-        }
-
-        // Startup banner: device info + app version
-        Timber.tag("Startup").i("=".repeat(50))
-        Timber.tag("Startup").i("N-Zik v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) [${BuildConfig.APPLICATION_ID}]")
-        Timber.tag("Startup").i("Manufacturer: ${Build.MANUFACTURER}")
-        Timber.tag("Startup").i("Device: ${Build.MODEL} (${Build.DEVICE})")
-        Timber.tag("Startup").i("Android: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})")
-        Timber.tag("Startup").i("Board: ${Build.BOARD} | Hardware: ${Build.HARDWARE}")
-        Timber.tag("Startup").i("Build: ${Build.FINGERPRINT}")
-        Timber.tag("Startup").i("=".repeat(50))
+        installStartupDiagnostics()
     }
 
     private fun migrateCredentialsToEncrypted() {
