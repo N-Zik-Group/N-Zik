@@ -71,6 +71,7 @@ import app.n_zik.android.components.search.hasContent
 import app.n_zik.android.components.search.filterSearchHistory
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchEmptySpace
+import app.n_zik.android.components.search.SearchNoResults
 import app.n_zik.android.components.search.SearchResultsViewport
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.SearchHistoryStore
@@ -157,7 +158,7 @@ fun OnlineSearch(
     }
 
     LaunchedEffect(textFieldValue.text) {
-        if (textFieldValue.text.isNotEmpty()) {
+        if (textFieldValue.text.isNotBlank()) {
             delay(200)
             suggestionsResult = withContext(NzikDispatchers.DATA) {
                 Innertube.searchSuggestionsWithItems(input = textFieldValue.text)
@@ -183,10 +184,11 @@ fun OnlineSearch(
     */
 
     val forceShimmer = forceLoadingShimmerPreview()
+    val suggestionsPending = suggestionsResult == null && textFieldValue.text.isNotBlank()
     SearchEmptyFeedback(
         query = textFieldValue.text,
         empty = suggestionsResult?.getOrNull()?.hasContent() == false && historyMatches.isEmpty(),
-        loading = forceShimmer || suggestionsResult?.isSuccess != true
+        loading = forceShimmer || suggestionsPending
     )
 
     val rippleIndication = glassGlobalIndication(ripple(bounded = false))
@@ -280,13 +282,12 @@ fun OnlineSearch(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                val pending = suggestionsResult == null && textFieldValue.text.isNotBlank()
-                if (forceShimmer || (pending && historyMatches.isEmpty())) {
+                if (forceShimmer || suggestionsPending) {
                     if (searchDisplayOrder == SearchDisplayOrder.SavedSearchesFirst) {
                         item(key = "search_history", contentType = "history") { searchHistoryContent() }
                     }
                     val suggestions = suggestionsResult?.getOrNull()
-                    if (pending || suggestions?.hasContent() == true) {
+                    if (suggestionsPending || suggestions?.hasContent() == true) {
                         item(key = "search_suggestions_title", contentType = "section_title") {
                             TitleMiniSection(
                                 title = stringResource(R.string.search_suggestions_title),
@@ -337,7 +338,7 @@ fun OnlineSearch(
                         }
                         val queries = suggestions?.queries.orEmpty().distinct()
                         items(
-                            if (pending) 4 else queries.size,
+                            if (suggestionsPending) 4 else queries.size,
                             key = { index -> queries.getOrNull(index)?.let { "search_query:$it" } ?: "suggestion-loading-$index" },
                             contentType = { "search_query" },
                         ) { index ->
@@ -346,6 +347,12 @@ fun OnlineSearch(
                     }
                     if (searchDisplayOrder == SearchDisplayOrder.SuggestionsFirst) {
                         item(key = "search_history", contentType = "history") { searchHistoryContent() }
+                    }
+                    return@LazyColumn
+                }
+                if (suggestionsResult?.isFailure == true && historyMatches.isEmpty()) {
+                    item(key = "search_suggestions_error", contentType = "empty") {
+                        SearchNoResults(fillRemainingViewport = true, text = stringResource(R.string.common_load_failed))
                     }
                     return@LazyColumn
                 }

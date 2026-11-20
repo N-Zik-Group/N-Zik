@@ -206,22 +206,22 @@ fun <T : Innertube.Item> ItemsPage(
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(LocalContext.current)
     val forceShimmer = forceLoadingShimmerPreview()
 
-    val lazyListState = rememberLazyListState()
+    val lazyListState = key(tag, searchQuery, filterContentType) { rememberLazyListState() }
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
     val pageState = key(tag, searchQuery) { persist<Innertube.ItemsPage<T>?>(tag) }
     val itemsPage by pageState
-    var hasScrolledToTop by remember(tag, searchQuery) { mutableStateOf(false) }
+    var awaitingFirstPage by remember(tag, searchQuery, filterContentType) { mutableStateOf(itemsPage == null) }
     val loadState = rememberItemsPageLoad(tag, searchQuery, pageState, itemsPageProvider, isOnline, forceShimmer) {
         val layout = lazyListState.layoutInfo
         val lastVisible = layout.visibleItemsInfo.lastOrNull()?.index ?: -1
         layout.totalItemsCount > 0 && lastVisible >= 0 && lastVisible >= layout.totalItemsCount - 20
     }
 
-    LaunchedEffect(itemsPage?.items?.isNotEmpty()) {
-        if (itemsPage?.items?.isNotEmpty() == true && !hasScrolledToTop) {
+    LaunchedEffect(lazyListState, itemsPage != null) {
+        if (itemsPage != null && awaitingFirstPage) {
             lazyListState.scrollToItem(0)
-            hasScrolledToTop = true
+            awaitingFirstPage = false
         }
     }
 
@@ -360,22 +360,22 @@ fun <T : Innertube.Item> ItemsGridPage(
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(LocalContext.current)
     val forceShimmer = forceLoadingShimmerPreview()
 
-    val lazyGridState = rememberLazyGridState()
+    val lazyGridState = key(tag, searchQuery, filterContentType) { rememberLazyGridState() }
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
     val pageState = key(tag, searchQuery) { persist<Innertube.ItemsPage<T>?>(tag) }
     val itemsPage by pageState
-    var hasScrolledToTop by remember(tag, searchQuery) { mutableStateOf(false) }
+    var awaitingFirstPage by remember(tag, searchQuery, filterContentType) { mutableStateOf(itemsPage == null) }
     val loadState = rememberItemsPageLoad(tag, searchQuery, pageState, itemsPageProvider, isOnline, forceShimmer) {
         val layout = lazyGridState.layoutInfo
         val lastVisible = layout.visibleItemsInfo.lastOrNull()?.index ?: -1
         layout.totalItemsCount > 0 && lastVisible >= 0 && lastVisible >= layout.totalItemsCount - 20
     }
 
-    LaunchedEffect(itemsPage?.items?.isNotEmpty()) {
-        if (itemsPage?.items?.isNotEmpty() == true && !hasScrolledToTop) {
+    LaunchedEffect(lazyGridState, itemsPage != null) {
+        if (itemsPage != null && awaitingFirstPage) {
             lazyGridState.scrollToItem(0)
-            hasScrolledToTop = true
+            awaitingFirstPage = false
         }
     }
 

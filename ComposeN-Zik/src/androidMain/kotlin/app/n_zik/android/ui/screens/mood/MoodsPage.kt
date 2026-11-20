@@ -51,7 +51,8 @@ fun MoodsPage(
 
     var discoverPage by persist<Result<Innertube.DiscoverPage>>("moods/discovery/pageResult")
     LaunchedEffect(Unit) {
-        discoverPage = withContext(NzikDispatchers.DATA) { Innertube.discoverPage() }
+        val result = withContext(NzikDispatchers.DATA) { Innertube.discoverPage() }
+        discoverPage = retainLastDiscoveryResult(discoverPage, result)
     }
     val thumbnailSizeDp = Dimensions.thumbnails.album + 24.dp
 
@@ -117,6 +118,9 @@ fun MoodsPage(
         }
     }
 }
+
+internal fun <T> retainLastDiscoveryResult(current: Result<T>?, incoming: Result<T>): Result<T> =
+    if (incoming.isFailure && current?.isSuccess == true) current else incoming
 
 
 

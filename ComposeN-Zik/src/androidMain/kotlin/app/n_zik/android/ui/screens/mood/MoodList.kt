@@ -119,9 +119,10 @@ fun MoodList(
     var moodPage by persist<Result<BrowseResult>>("moods/$browseId${params?.let { "/$it" } ?: ""}")
 
     LaunchedEffect(browseId, params) {
-        moodPage = withContext(NzikDispatchers.DATA) {
+        val result = withContext(NzikDispatchers.DATA) {
             Innertube.browseCategory(browseId = browseId, params = params)
-        }
+        } ?: return@LaunchedEffect
+        moodPage = retainLastDiscoveryResult(moodPage, result)
     }
 
     val thumbnailSizeDp = Dimensions.thumbnails.album

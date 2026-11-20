@@ -49,6 +49,7 @@ import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.ui.items.AlbumItem
 import app.n_zik.android.ui.items.albumGridPlaceholders
+import app.n_zik.android.ui.screens.mood.retainLastDiscoveryResult
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.px
 import app.n_zik.android.utils.disableScrollingTextKey
@@ -72,7 +73,8 @@ fun NewAlbums(
     LaunchedEffect(isOnline) {
         if (isOnline) {
             if (discoverPage?.isFailure == true) discoverPage = null
-            discoverPage = withContext(NzikDispatchers.DATA) { Innertube.discoverPage() }
+            val result = withContext(NzikDispatchers.DATA) { Innertube.discoverPage() }
+            discoverPage = retainLastDiscoveryResult(discoverPage, result)
         }
     }
     val forceShimmer = forceLoadingShimmerPreview()
