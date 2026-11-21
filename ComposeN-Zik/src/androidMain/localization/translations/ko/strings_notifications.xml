@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">Notifications for Listen Together events</string>
+    <string name="listen_together_notification_channel_description">Room invitations and activity while listening with others.</string>
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">Listen Together</string>
+    <!-- Android notification channels -->
+    <string name="notification_group_audio">Audio</string>
+    <string name="notification_group_tools_updates">Tools and updates</string>
+    <string name="notification_channel_playback">Media playback</string>
+    <string name="notification_channel_playback_description">Show the current track and playback controls.</string>
+    <string name="notification_channel_sleep_timer_description">Show sleep timer status and alerts when the timer ends.</string>
+    <string name="notification_channel_audio_downloads">Audio downloads</string>
+    <string name="notification_channel_audio_downloads_description">Show progress and results for audio saved for offline listening.</string>
+    <string name="notification_channel_rewind_description">Let you know when a monthly or yearly listening recap is ready.</string>
+    <string name="notification_channel_song_matching_description">Show the progress and results of matching imported songs.</string>
+    <string name="notification_channel_pc_server_description">Show when PC remote control is running and provide a way to stop it.</string>
+    <string name="notification_channel_app_updates_description">Show the progress and result of downloading an N-Zik update.</string>
+    <string name="notification_channel_module_downloads_description">Show progress and results for optional extension downloads.</string>
+    <string name="notification_channel_theme_submissions">Theme Store submissions</string>
+    <string name="notification_channel_theme_submissions_description">Report status changes for your submitted themes and creator profile.</string>
+    <string name="notification_channel_theme_publications">Theme Store publications</string>
+    <string name="notification_channel_theme_publications_description">Announce new themes and updates to themes you downloaded.</string>
+    <string name="notification_channel_theme_downloads">Theme Store downloads</string>
+    <string name="notification_channel_theme_downloads_description">Let you know when a theme download finishes.</string>
+    <string name="notification_channel_theme_previews">Theme preview generation</string>
+    <string name="notification_channel_theme_previews_description">Show theme screenshot progress and let you cancel generation.</string>
     <!-- Player Notification -->
     <string name="player_notification_pause">Pause</string>
 </resources>
