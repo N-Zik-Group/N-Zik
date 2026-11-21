@@ -1,425 +1,148 @@
 package app.n_zik.android
 
-import app.n_zik.android.intents.consumeOpenPlayerExtras
-import app.n_zik.android.intents.consumeProfileShortcutExtra
-import app.n_zik.android.intents.consumeRewindDeckExtras
-import app.n_zik.android.intents.consumeRewindPlaylistExtras
-import app.n_zik.android.intents.DeferredLibraryIntents
-import app.n_zik.android.intents.DeliverHomeTabShortcut
-import app.n_zik.android.intents.DeliverLibraryUri
-import app.n_zik.android.intents.DeliverRewindTargets
-import app.n_zik.android.intents.DeliverSettingsShortcut
-import app.n_zik.android.intents.DrainDeferredLibraryIntents
-import app.n_zik.android.intents.initialLibraryUri
-import app.n_zik.android.intents.isSelfConsumedShortcutAction
-import app.n_zik.android.intents.LibraryLinkDestination
-import app.n_zik.android.intents.libraryLinkDestination
-import app.n_zik.android.intents.openPlayerTokenFromIntent
-import app.n_zik.android.intents.PendingLibraryNavigation
-import app.n_zik.android.intents.profileShortcutTarget
-import app.n_zik.android.intents.profileSwitchTarget
-import app.n_zik.android.intents.rewindDeckTargetFromIntent
-import app.n_zik.android.intents.rewindDeckTargetMarker
-import app.n_zik.android.intents.rewindPlaylistTargetFromIntent
-import app.n_zik.android.core.network.OfflineMode
-import app.n_zik.android.ui.screens.player.components.LocalPlayerMusicVideo
-import app.n_zik.android.ui.screens.player.components.MusicVideoPresentation
-import app.n_zik.android.ui.screens.player.components.ManualVideoSearchSheet
-import app.n_zik.android.ui.screens.player.components.rememberPlayerMusicVideo
-import app.n_zik.android.core.settings.ensurePlayerBehaviorDefaults
-import app.n_zik.android.core.settings.ensureDefaultColorPaletteMode
-import app.n_zik.android.core.settings.readProxyPort
+import kotlin.system.exitProcess
 
-import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.glass.usesGlassMaterial
-import app.n_zik.android.privacy.PermissionUsageJournal
-import app.n_zik.android.privacy.PermissionFeature
-import android.annotation.SuppressLint
-import android.app.Activity
+import android.Manifest
 import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
-import android.view.WindowManager
 import android.widget.Toast
-import android.window.OnBackInvokedDispatcher
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
-import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.displayCutout
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.union
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalRippleConfiguration
-import androidx.compose.material3.RippleConfiguration
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import app.n_zik.android.components.theme.forPaletteMode
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.rememberUpdatedState
-import app.n_zik.android.components.ui.screens.home.HomeTopMiniPlayerAnchorState
-import app.n_zik.android.components.ui.screens.home.LocalHomeTopMiniPlayerAnchor
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import app.n_zik.android.components.glass.GlassMenuHostState
-import app.n_zik.android.components.glass.excludingGlassOverlays
-import app.n_zik.android.components.glass.GlassOverlayHost
-import app.n_zik.android.components.glass.GlassRippleProvider
-import app.n_zik.android.components.glass.GlassDialogOverlayHost
-import app.n_zik.android.components.glass.GlassModalContent
-import app.n_zik.android.components.glass.GlassSceneContent
-import app.n_zik.android.utils.ToastRelay
-import app.n_zik.android.utils.toast.trackToastObstruction
-import app.n_zik.android.components.glass.GlassRenderer
-import app.n_zik.android.components.glass.glassRenderer
-import app.n_zik.android.components.glass.rememberGlassSettings
-import app.n_zik.android.components.navigation.nav.GlassNavigationBarHeight
-import app.n_zik.android.components.navigation.nav.GlassNavigationPlayerGap
-import app.n_zik.android.components.glass.LocalGlassMenuHost
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.zIndex
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.coerceIn
-import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.Lifecycle
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import app.n_zik.android.components.settings.appearance.preview.ThemeStoreAlertWorker
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.withStarted
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import app.n_zik.android.BuildConfig
-import app.n_zik.android.R
-import androidx.annotation.RequiresApi
+import androidx.navigation.NavController
 import com.kieronquinn.monetcompat.core.MonetActivityAccessException
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.kieronquinn.monetcompat.interfaces.MonetColorsChangedListener
-import app.n_zik.android.ui.components.LocalShimmerClock
-import app.n_zik.android.ui.components.LocalShimmerPalette
-import app.n_zik.android.ui.components.rememberShimmerClock
 import dev.kdrag0n.monet.theme.ColorScheme
-import app.n_zik.innertube.Innertube
-import app.n_zik.innertube.requests.playlistPage
-import app.n_zik.innertube.requests.song
-import app.n_zik.innertube.utils.LocalePreferenceItem
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import timber.log.Timber
+
+import app.n_zik.android.BuildConfig
+import app.n_zik.android.R
+import app.n_zik.android.components.onboarding.persistNextOnboardingStep
+import app.n_zik.android.components.onboarding.readOnboardingStep
+import app.n_zik.android.components.glass.GlassMenuHostState
+import app.n_zik.android.components.settings.appearance.preview.ThemeStoreAlertWorker
+import app.n_zik.android.components.theme.configuredApplicationAppearance
+import app.n_zik.android.components.ui.app.MainActivityContent
+import app.n_zik.android.components.ui.screens.home.initialShortcutAction
+import app.n_zik.android.components.ui.screens.profiles.executeProfileSwitch
+import app.n_zik.android.components.ui.screens.rescue.LibraryStartupScreen
 import app.n_zik.android.compose.persist.PersistMap
 import app.n_zik.android.compose.persist.PersistMapOwner
-import app.n_zik.android.compose.persist.LocalPersistMap
-import app.n_zik.innertube.utils.LocalePreferences
-import app.n_zik.innertube.utils.ProxyPreferenceItem
-import app.n_zik.innertube.utils.ProxyPreferences
-import app.n_zik.android.enums.AnimatedGradient
-import app.n_zik.android.enums.AudioQualityFormat
-import app.n_zik.android.enums.ColorPaletteMode
-import app.n_zik.android.enums.ColorPaletteName
-import app.n_zik.android.enums.FontType
-import app.n_zik.android.enums.HomeScreenTabs
-import app.n_zik.android.enums.Languages
-import app.n_zik.android.enums.NavRoutes
-import app.n_zik.android.enums.PipModule
-import app.n_zik.android.extensions.pip.PipModuleContainer
-import app.n_zik.android.extensions.pip.PipModuleCover
-import app.n_zik.android.components.onboarding.OnboardingAccountsScreen
-import app.n_zik.android.components.onboarding.OnboardingImportScreen
-import app.n_zik.android.components.onboarding.OnboardingProfileScreen
-import app.n_zik.android.components.onboarding.OnboardingScreen
-import app.n_zik.android.components.dialog.common.RestartAppDialog
-import app.n_zik.android.components.dialog.common.SamsungStorageAdviceDialog
-import app.n_zik.android.components.dialog.common.triggerSamsungStorageAdvice
-import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
-import app.n_zik.android.components.ui.screens.home.OPEN_SEARCH_SHORTCUT
-import app.n_zik.android.components.ui.screens.profiles.executeProfileSwitch
-import app.n_zik.android.components.ui.screens.home.activeHomeTabIds
-import app.n_zik.android.components.ui.screens.home.initialShortcutAction
+import app.n_zik.android.core.backup.BackupManager
+import app.n_zik.android.core.backup.LibraryStartupState
+import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.profiles.selectColdStorageProfile
+import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.download.services.withProfileDownloadCommandOwner
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.enums.ColorPaletteName
+import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.OnboardingStep
-import app.n_zik.android.playback.services.PlayerServiceModern
-import app.n_zik.android.ui.saveable.TolerantAppearanceStateSaver
-import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
-import app.n_zik.android.utils.DataStoreUtils
-import app.n_zik.android.utils.PlayerAwareInsetsTracker
-import app.n_zik.android.components.navigation.pageSupportsChromeScroll
-import app.n_zik.android.components.navigation.chromeScrollDelta
-import app.n_zik.android.components.navigation.HeaderScrollTravel
-import app.n_zik.android.components.navigation.sideNavigationOwnsHeader
-import app.n_zik.android.utils.appNavBarPresentForRoute
-import app.n_zik.android.utils.localeListForAppLanguage
-import app.n_zik.android.utils.shouldRecreateActivity
-import app.n_zik.android.ui.components.LocalMenuState
-import app.n_zik.android.ui.components.themed.CrossfadeContainer
-import app.n_zik.android.components.navigation.AppNavigation
-import app.n_zik.android.ui.screens.player.MiniPlayer
-import app.n_zik.android.ui.screens.player.Player
-import app.n_zik.android.ui.screens.player.PlayerSheetState
-import app.n_zik.android.ui.screens.player.rememberPlayerSheetState
-import app.n_zik.android.components.CustomBottomSheet
-import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
-import app.n_zik.android.listentogether.listenTogetherInviteUri
+import app.n_zik.android.enums.PendingMiniPlayerAction
+import app.n_zik.android.intents.DeferredLibraryIntents
+import app.n_zik.android.intents.DeliverLibraryUri
+import app.n_zik.android.intents.DrainDeferredLibraryIntents
+import app.n_zik.android.intents.LibraryLinkDestination
+import app.n_zik.android.intents.PendingLibraryNavigation
+import app.n_zik.android.intents.consumeOpenPlayerExtras
+import app.n_zik.android.intents.consumeProfileShortcutExtra
+import app.n_zik.android.intents.consumeRewindReminderIntent
+import app.n_zik.android.intents.initialLibraryUri
+import app.n_zik.android.intents.isSelfConsumedShortcutAction
+import app.n_zik.android.intents.libraryLinkDestination
+import app.n_zik.android.intents.openPlayerTokenFromIntent
+import app.n_zik.android.intents.profileShortcutTarget
+import app.n_zik.android.intents.profileSwitchTarget
 import app.n_zik.android.listentogether.inviteAwareShortcutAction
+import app.n_zik.android.listentogether.listenTogetherInviteUri
 import app.n_zik.android.listentogether.openListenTogetherInvite
 import app.n_zik.android.listentogether.parseListenTogetherInvite
 import app.n_zik.android.listentogether.saveListenTogetherInvite
-import app.n_zik.android.listentogether.shouldDisablePlayerSheetDismiss
-import app.n_zik.android.components.navigation.dock.FloatingDockDimensions
-import app.n_zik.android.components.navigation.dock.rememberBottomNavigationImeLift
-import app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgressProvider
-import app.n_zik.android.components.navigation.dock.floatingMiniStandaloneInset
-import app.n_zik.android.components.navigation.dock.dockHasAttachedMini
-import app.n_zik.android.components.player.miniPlayerTopDockPaddingPx
-import app.n_zik.android.components.player.MINI_PLAYER_TOP_GAP
-import app.n_zik.android.components.navigation.dock.miniPlayerFoldEligible
-import app.n_zik.android.components.navigation.dock.FloatingDockState
-import app.n_zik.android.components.navigation.dock.FloatingDockEnvironment
-import app.n_zik.android.components.navigation.dock.LocalFloatingDock
-import app.n_zik.android.components.navigation.dock.floatingDockGeometry
-import app.n_zik.android.components.navigation.dock.classicDockGeometry
-import app.n_zik.android.components.player.MiniPlayerQueueOverlay
-import app.n_zik.android.components.player.APP_HEADER_HEIGHT
-import app.n_zik.android.components.player.shouldComposePlayerSheet
-import app.n_zik.android.components.player.miniPlayerSideInset
-import app.n_zik.android.components.player.miniPlayerTopInset
-import app.n_zik.android.components.player.miniPlayerTopPaddingPx
-import app.n_zik.android.components.player.TOP_NAV_BAR_HEIGHT
-import app.n_zik.android.components.player.showMiniplayerIfDismissed
-import app.n_zik.android.components.player.PaletteFade
-import app.n_zik.android.utils.LocalPlaybackPositionClock
-import app.n_zik.android.utils.rememberPlaybackPositionClock
-import app.n_zik.android.components.player.presentMiniplayerThenExpand
-import app.n_zik.android.components.player.presentMiniplayerCollapsed
-import app.n_zik.android.components.theme.AppearanceMenuSheet
-import app.n_zik.android.components.theme.ProvideAnimatedAppearance
-import app.n_zik.android.components.theme.ambientArtworkPaint
-import app.n_zik.android.components.glass.rememberGlassArtwork
-import app.n_zik.android.components.player.ArtworkColorObservation
-import app.n_zik.android.components.player.ArtworkDisplayColors
-import app.n_zik.android.components.player.SharedArtworkColors
-import app.n_zik.android.components.player.rememberArtworkDisplayResult
-import app.n_zik.android.enums.PlayerControlsColors
-import app.n_zik.android.enums.lyrics.LyricsColor
-import app.n_zik.android.utils.lyricsColorKey
-import app.n_zik.android.utils.playerControlsColorsKey
-import app.n_zik.android.utils.visualizerEnabledKey
-import app.n_zik.android.utils.visualizerWhiteColorOptionKey
-import enums.VisualizerWhiteColorOption
-import app.n_zik.android.components.theme.DynamicAppearanceOwner
-import app.n_zik.android.components.theme.DynamicPaletteArtworkListener
-import app.n_zik.android.components.theme.appearanceBackground
-import app.n_zik.android.components.theme.configuredApplicationAppearance
-import app.n_zik.android.components.theme.configuredApplicationPalette
-import app.n_zik.android.components.theme.startupAppearance
-import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.startup.applyKeepScreenOnPreference
+import app.n_zik.android.startup.applyStartupProxy
+import app.n_zik.android.startup.initializeLaunchPreferences
+import app.n_zik.android.startup.registerStartupBackCallback
+import app.n_zik.android.startup.registerStartupCookieWarning
 import app.n_zik.android.ui.components.InterfaceLayoutDirection
-import app.n_zik.android.components.theme.DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT
-import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
-import app.n_zik.android.components.theme.withColor
+import app.n_zik.android.ui.screens.player.PlayerSheetState
 import app.n_zik.android.ui.styling.Appearance
-import app.n_zik.android.ui.styling.Dimensions
-import app.n_zik.android.ui.styling.typographyOf
-import app.n_zik.android.utils.InitDownloader
-import app.n_zik.android.utils.LocalMonetCompat
-import app.n_zik.android.utils.animatedGradientKey
-import app.n_zik.android.utils.applyFontPaddingKey
-import app.n_zik.android.utils.asMediaItem
-import app.n_zik.android.utils.audioQualityFormatKey
-import app.n_zik.android.utils.backgroundProgressKey
-import app.n_zik.android.utils.playerPositionKey
-import app.n_zik.android.enums.PlayerPosition
-import app.n_zik.android.utils.closeWithBackButtonKey
-import app.n_zik.android.utils.colorPaletteModeKey
-import app.n_zik.android.utils.colorPaletteNameKey
-import app.n_zik.android.utils.customColorKey
-import app.n_zik.android.utils.customThemeDark_Background0Key
-import app.n_zik.android.utils.customThemeDark_Background1Key
-import app.n_zik.android.utils.customThemeDark_Background2Key
-import app.n_zik.android.utils.customThemeDark_Background3Key
-import app.n_zik.android.utils.customThemeDark_Background4Key
-import app.n_zik.android.utils.customThemeDark_TextKey
-import app.n_zik.android.utils.customThemeDark_accentKey
-import app.n_zik.android.utils.customThemeDark_iconButtonPlayerKey
-import app.n_zik.android.utils.customThemeDark_textDisabledKey
-import app.n_zik.android.utils.customThemeDark_textSecondaryKey
-import app.n_zik.android.utils.customThemeLight_Background0Key
-import app.n_zik.android.utils.customThemeLight_Background1Key
-import app.n_zik.android.utils.customThemeLight_Background2Key
-import app.n_zik.android.utils.customThemeLight_Background3Key
-import app.n_zik.android.utils.customThemeLight_Background4Key
-import app.n_zik.android.utils.customThemeLight_TextKey
-import app.n_zik.android.utils.customThemeLight_accentKey
-import app.n_zik.android.utils.customThemeLight_iconButtonPlayerKey
-import app.n_zik.android.utils.customThemeLight_textDisabledKey
-import app.n_zik.android.utils.customThemeLight_textSecondaryKey
-import app.n_zik.android.utils.currentMediaItemIdAsState
+import app.n_zik.android.ui.styling.ColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.utils.DEFAULT_PROFILE_ID
-import app.n_zik.android.utils.disableClosingPlayerSwipingDownKey
-import app.n_zik.android.utils.disablePlayerHorizontalSwipeKey
-import app.n_zik.android.utils.effectRotationKey
-import app.n_zik.android.utils.enableQuickPicksPageKey
-import app.n_zik.android.utils.fontTypeKey
-import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.ToastRelay
+import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.colorPaletteNameKey
+import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.forcePlay
 import app.n_zik.android.utils.forcePlayFromBeginning
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.getEnum
-import app.n_zik.android.utils.homeTabsOrderKey
+import app.n_zik.android.utils.hideStatusBarKey
 import app.n_zik.android.utils.intent
 import app.n_zik.android.utils.invokeOnReady
 import app.n_zik.android.utils.isAtLeastAndroid6
 import app.n_zik.android.utils.isAtLeastAndroid8
-import app.n_zik.android.utils.isKeepScreenOnEnabledKey
-import app.n_zik.android.utils.isProxyEnabledKey
-import app.n_zik.android.utils.isValidIP
-import app.n_zik.android.utils.keepPlayerMinimizedKey
-import app.n_zik.android.utils.languageAppKey
-import app.n_zik.android.utils.miniPlayerTypeKey
-import app.n_zik.android.utils.navigationBarPositionKey
-import app.n_zik.android.utils.navigationBarTypeKey
 import app.n_zik.android.utils.parentalControlEnabledKey
-import app.n_zik.android.utils.pipModuleKey
-import app.n_zik.android.utils.playerBackgroundColorsKey
-import app.n_zik.android.utils.playerThumbnailSizeKey
-import app.n_zik.android.utils.playerVisualizerTypeKey
 import app.n_zik.android.utils.preferences
-import app.n_zik.android.utils.proxyHostnameKey
-import app.n_zik.android.utils.proxyModeKey
-import app.n_zik.android.utils.proxyPortKey
 import app.n_zik.android.utils.readProfileIds
-import app.n_zik.android.enums.TransitionEffect
-import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.utils.restartActivityKey
-import app.n_zik.android.utils.hideStatusBarKey
 import app.n_zik.android.utils.saveProfileLastUsed
 import app.n_zik.android.utils.setDefaultPalette
-import app.n_zik.android.utils.showSearchTabKey
-import app.n_zik.android.utils.showTotalTimeQueueKey
-import app.n_zik.android.core.coil.resize
-import app.n_zik.android.core.coil.thumbnail
-import app.n_zik.android.utils.thumbnailRoundnessDpKey
-import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
-import app.n_zik.android.utils.transitionEffectKey
-import app.n_zik.android.utils.useSystemFontKey
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import app.n_zik.android.utils.shouldRecreateActivity
+import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.invidious.Invidious
-import app.n_zik.android.core.utils.Toaster
-import app.n_zik.innertube.Innertube.proxy
-import timber.log.Timber
-import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
-import app.n_zik.android.playback.services.diagnostics.UiFrameClockDiagnostics
-import java.net.Proxy
-import java.util.Locale
-import androidx.compose.foundation.shape.RoundedCornerShape
-import app.n_zik.android.ui.styling.BoundedCornerSize
-import app.n_zik.android.core.navigation.MiniPlayerQueueInterceptor
-import app.n_zik.android.core.network.client.NetworkClientFactory
-import app.n_zik.android.extensions.discord.DiscordUiState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.navigation.NavController
-import app.n_zik.android.enums.PendingMiniPlayerAction
-import app.n_zik.android.components.ui.screens.rescue.LibraryStartupScreen
-import app.n_zik.android.core.backup.LibraryStartupState
-import app.n_zik.android.core.backup.BackupManager
-import app.n_zik.android.core.profiles.selectColdStorageProfile
-import app.n_zik.android.download.services.withProfileDownloadCommandOwner
-import androidx.core.view.WindowInsetsCompat
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.Velocity
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.runtime.State
-import androidx.core.view.WindowInsetsControllerCompat
-import app.n_zik.android.ui.styling.ColorPalette
-import app.n_zik.android.core.database.Database
-import android.Manifest
-import app.n_zik.android.enums.NavigationBarPosition
-import androidx.compose.foundation.layout.offset
-import kotlin.math.roundToInt
-import kotlin.system.exitProcess
+import app.n_zik.innertube.requests.playlistPage
+import app.n_zik.innertube.requests.song
 
 @UnstableApi
 class MainActivity :
-//MonetCompatActivity(),
     AppCompatActivity(),
     MonetColorsChangedListener,
     PersistMapOwner
@@ -446,43 +169,36 @@ class MainActivity :
     internal var forceLoadingShimmer by mutableStateOf(false)
         private set
 
-    private var binder by mutableStateOf<PlayerServiceModern.Binder?>(null)
+    internal var binder by mutableStateOf<PlayerServiceModern.Binder?>(null)
+        private set
     private var widgetLocaleRefreshPending = false
     private var intentUriData by mutableStateOf<Uri?>(null)
 
     // Observable so a shortcut tap while the app is already running (delivered via onNewIntent,
     // which never re-triggers onCreate) still recomposes the tab-navigation check below --
-//
     // reading `intent.action` directly only ever saw the launch-time intent.
     // Not re-seeded from the launch intent when the activity is recreated (theme change, settings
-//
     // import): the shortcut was already consumed and would otherwise pop the back stack to home.
-//
     // Internal (not private) so the Robolectric lifecycle tests can assert the self-consumed
     // exclusion: a profile tap (or the debug updater backdoor) must never feed this state
     // (it would pop the back stack to home).
-//
     internal var shortcutIntentAction by mutableStateOf<String?>(null)
 
     // Finished month (or finished year, month = 0 yearly sentinel) carried by a rewind
     // reminder's content intent. Set on cold start (onCreate) and warm start (onNewIntent),
-//
     // consumed once by the navigation effect that opens the deck on that month — or the
     // yearly deck on that year. Internal (not private) so the Robolectric lifecycle tests
-//
     // can assert the consumed target (spec GH-275 follow-up).
     internal var rewindDeckTarget by mutableStateOf<Pair<Int, Int>?>(null)
 
     // Database id of the 'Rewind — <period>' playlist carried by a playlist-ready
     // notification's content intent (spec GH-275 follow-up). Set on cold start (onCreate)
-//
     // and warm start (onNewIntent), consumed once by the navigation effect that opens the
     // playlist directly. Internal for the same reason as [rewindDeckTarget].
     internal var rewindPlaylistTarget by mutableStateOf<Long?>(null)
 
     // Generic « Profiles » launcher shortcut (spec-profile-shortcuts): set on cold start
     // (onCreate) and warm start (onNewIntent) when the intent action is [action_profiles],
-//
     // consumed once by the navigation effect that opens the profiles page. Internal for the
     // same reason as [rewindDeckTarget].
     internal var openProfilesShortcut by mutableStateOf(false)
@@ -495,69 +211,36 @@ class MainActivity :
 
     // "Now playing" notification tap — COLD start (spec-notification-click-opens-player):
     // the tap token HELD in memory (Long?) when the launch intent carries one — no persistent
-//
     // marker. Validated at deployment time by a live comparison against the current service's
     // token (via the Binder): equal → legitimate tap (always deploys the full player, the
-//
     // keepPlayerMinimized setting is NOT consulted, decision 2026-10-03); different → stale
     // (process-death re-send, the service restarted and minted a new token) → discarded, no
-//
     // deployment. A valid token with no media yet is HELD and re-checked on every
     // playerUpdateTrigger. Internal for the same reason as [rewindDeckTarget].
     internal var openPlayerColdToken by mutableStateOf<Long?>(null)
 
     // "Now playing" notification tap — WARM start (spec-notification-click-opens-player):
     // set on warm start (onNewIntent) when the new intent carries a fresh open-player
-//
     // token, consumed once by the deployment effect that presents the mini-player (if the
     // sheet is dismissed) then deploys the full player. Internal for the same reason as
-//
     // [rewindDeckTarget].
     internal var openPlayerFromNotificationWarm by mutableStateOf(false)
 
-    // Current step of the first-launch onboarding flow, held by the activity so a
-    // recreation (rotation) resumes the flow at the right step; null means the flow
-//
-    // is complete and the main navigation renders instead. The step is persisted in
-    // prefs on every transition (see advanceOnboarding), so a process restart —
-//
-    // post-import restart or process death — resumes at the right step too. The
-    // onboardingComplete flag is written only when the flow is fully done (leaving
-//
-    // the profile step, the last one) — a successful restore or a Discord-token
-//
-    // restart from the accounts step never writes it: the flow advances to the next
-//
-    // step before the restart, so the restart lands on that step, keeping the user
-    // inside onboarding — and a mid-flow crash never marks it as finished.
-    private var onboardingStep by mutableStateOf<OnboardingStep?>(null)
+    internal var onboardingStep by mutableStateOf<OnboardingStep?>(null)
+        private set
 
-    /**
-     * Advances the onboarding flow to the next step ([OnboardingStep.advance]). The step is
-     * persisted first so a process restart (post-import restart, process death) resumes at
-     * that step instead of replaying the flow. When the flow completes, the
-     * onboarding-complete flag is written and the persisted step cleared.
-     */
-    private fun advanceOnboarding() {
+    internal fun advanceOnboarding() {
         val current = onboardingStep ?: return
-        val next = current.advance()
-        if (next == null) {
-            DataStoreUtils.saveBoolean(this, DataStoreUtils.KEY_ONBOARDING_COMPLETE, true)
-            DataStoreUtils.saveString(this, DataStoreUtils.KEY_ONBOARDING_STEP, "")
-            Timber.tag("MainActivity").i("Onboarding complete, flag written, step cleared")
-        } else {
-            DataStoreUtils.saveString(this, DataStoreUtils.KEY_ONBOARDING_STEP, next.name)
-            Timber.tag("MainActivity").d("Onboarding step: ${current.name} -> ${next.name}")
-        }
-        onboardingStep = next
+        onboardingStep = persistNextOnboardingStep(current)
     }
 
     override val persistMap = PersistMap()
 
     private var _monet: MonetCompat? by mutableStateOf(null)
-    private val monet get() = _monet ?: throw MonetActivityAccessException()
+    internal val monet get() = _monet ?: throw MonetActivityAccessException()
 
-    private val pipState: MutableState<Boolean> = mutableStateOf(false)
+    private val mutablePipState = mutableStateOf(false)
+    internal val pipState: State<Boolean> get() = mutablePipState
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -578,7 +261,8 @@ class MainActivity :
     private val deferredLaunchIntents = DeferredLibraryIntents()
     private var waitingColdLaunch = false
     private var awaitingDeferredNavigation = false
-    private var libraryIntentDelivery by mutableStateOf(0L)
+    internal var libraryIntentDelivery by mutableStateOf(0L)
+        private set
     private var savedLibraryNavigation: Bundle? = null
 
     override fun onStart() {
@@ -597,57 +281,12 @@ class MainActivity :
         }
     }
 
-    /**
-     * Consumes the rewind deep links carried by [intent] into the activity state (deck target
-     * and/or playlist id, spec GH-275 + follow-up), records each ACCEPTED target in its
-     * persistent last-consumed marker ([DataStoreUtils.KEY_REWIND_DECK_LAST_CONSUMED] /
-     * [DataStoreUtils.KEY_REWIND_PLAYLIST_LAST_CONSUMED]), then strips ALL the deep-link
-     * extras off the intent the activity keeps.
-     *
-     * A target already recorded in its marker is rejected — that is the task record
-     * re-sending the original launch intent (extras intact) when the task is restored after a
-     * process death, and the singleTask relaunch of a kept intent: the in-memory strip alone
-     * cannot reach the task record, so without the marker the deck re-opened on every tap of
-     * any other notification (device-observed leak, fixed 2026-10-01). A fresh notification
-     * tap always carries an unconsumed target, so it still opens (user decision 2026-10-01 —
-     * the tap always re-opens the deck).
-     *
-     * Runs synchronously in onCreate (app off) and onNewIntent (app on) — NOT behind
-     * monet.invokeOnReady/startApp — so the intent extras are consumed the moment the intent
-     * arrives and the contract is unit-testable on the real activity. Known edge: a target
-     * accepted while the onboarding flow is up (the navigation effect holds it) is lost if
-     * the process dies before the flow completes — the re-delivered intent is then rejected
-     * as already consumed and the deck/playlist does not open. Rare (a mid-onboarding tap
-     * plus a process death) and non-fatal: the deck/playlist stays reachable manually.
-     *
-     * Internal (not private) so the Robolectric lifecycle tests can exercise the exact
-     * consumption contract both launch paths share.
-     */
     internal fun consumeRewindDeepLinks(intent: Intent?) {
-        val deck = rewindDeckTargetFromIntent(
+        consumeRewindReminderIntent(
             intent,
-            DataStoreUtils.getInt(this, DataStoreUtils.KEY_REWIND_DECK_LAST_CONSUMED, 0),
+            onDeck = { rewindDeckTarget = it },
+            onPlaylist = { rewindPlaylistTarget = it },
         )
-        rewindDeckTarget = deck ?: rewindDeckTarget
-        deck?.let {
-            DataStoreUtils.saveInt(
-                this,
-                DataStoreUtils.KEY_REWIND_DECK_LAST_CONSUMED,
-                rewindDeckTargetMarker(it.first, it.second),
-            )
-        }
-        val playlist = rewindPlaylistTargetFromIntent(
-            intent,
-            DataStoreUtils.getLong(this, DataStoreUtils.KEY_REWIND_PLAYLIST_LAST_CONSUMED, 0L),
-        )
-        rewindPlaylistTarget = playlist ?: rewindPlaylistTarget
-        playlist?.let {
-            DataStoreUtils.saveLong(this, DataStoreUtils.KEY_REWIND_PLAYLIST_LAST_CONSUMED, it)
-        }
-        // The strip is unconditional (not gated on a successful parse): rejected targets
-        // must not keep their extras alive in the kept intent for a later re-delivery.
-        consumeRewindDeckExtras(intent)
-        consumeRewindPlaylistExtras(intent)
     }
 
     /**
@@ -815,7 +454,6 @@ class MainActivity :
         consumeProfileShortcut(intent)
         // Gated on isRestoredInstance (like [shortcutIntentAction] below): a recreated/restored
         // activity is handed the kept launch intent again, whose action_profiles cannot be
-//
         // stripped (it is the action, not an extra) — re-deriving the flag would re-open the
         // profiles page on every rotation / theme change / process-death restore.
         openProfilesShortcut = restoredNavigation?.openProfiles ?: (!isRestoredInstance && intent.action == action_profiles)
@@ -838,21 +476,15 @@ class MainActivity :
 
         // Rewind notification deep links (deck / playlist): consume the launch intent's
         // targets synchronously — app OFF path. A task restored after a process death
-//
         // re-sends its original launch intent here; the persistent last-consumed markers
-//
         // reject an already-consumed target while a fresh tap still opens (spec GH-275
-//
         // follow-up). The app ON path is onNewIntent, which shares the same contract.
         if (restoredNavigation == null) consumeRewindDeepLinks(intent)
         // "Now playing" notification tap (spec-notification-click-opens-player): consume the
         // launch intent's open-player token synchronously — app OFF path. A positive token is
-//
         // held in memory ([openPlayerColdToken]) and validated at deployment time by a live
-//
         // comparison against the current service's token (staleness is the service's live
         // token — there is no persistent marker); the extra is stripped off the kept intent
-//
         // either way.
         if (restoredNavigation == null) consumeOpenPlayerDeepLink(intent, cold = true)
 
@@ -878,7 +510,7 @@ class MainActivity :
         }
     }
 
-    private fun checkIfAppIsRunningInBackground() {
+    internal fun checkIfAppIsRunningInBackground() {
         val runningAppProcessInfo = ActivityManager.RunningAppProcessInfo()
         ActivityManager.getMyMemoryState(runningAppProcessInfo)
         appRunningInBackground =
@@ -891,1631 +523,68 @@ class MainActivity :
         newConfig: Configuration
     ) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
-        pipState.value = isInPictureInPictureMode
+        mutablePipState.value = isInPictureInPictureMode
         Timber.tag("MainActivity").d("onPictureInPictureModeChanged: $isInPictureInPictureMode")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    @SuppressLint("UnusedBoxWithConstraintsScope")
-    @OptIn(
-        ExperimentalTextApi::class,
-        ExperimentalFoundationApi::class, ExperimentalAnimationApi::class,
-        ExperimentalMaterial3Api::class
-    )
     fun startApp(isRestoredInstance: Boolean) {
-        // A cold profile shortcut can change the active store after Application startup.
-        ensureDefaultColorPaletteMode(preferences)
-        ensurePlayerBehaviorDefaults(preferences)
+        initializeLaunchPreferences()
+        registerStartupCookieWarning()
 
-        // Check YouTube cookie status on startup — warn user if expired/invalid
-        when (MainApplication.cookieStatus) {
-            MainApplication.CookieStatus.INVALID -> {
-                lifecycleScope.launch {
-                    delay(3_000)
-                    Toaster.e(R.string.account_youtube_cookie_invalid)
-                }
-            }
-            MainApplication.CookieStatus.EXPIRED -> {
-                lifecycleScope.launch {
-                    delay(3_000)
-                    Toaster.e(R.string.account_youtube_session_expired)
-                }
-            }
-            MainApplication.CookieStatus.NOT_LOGGED_IN -> {
-                // Silent — user may choose not to log in
-            }
-            MainApplication.CookieStatus.VALID -> { /* all good */ }
-        }
-
-        // S1 (Phase 1 download fix, 2026-10-22): the stale-download count can be parked
-        // after the first window focus (the download manager is lazy) — observe it so
-//
-        // the toast still fires while the app is in the foreground.
+        // The download manager may report stale downloads after the first window focus.
         lifecycleScope.launch {
             MyDownloadHelper.pendingStaleStartupCount.collect { count ->
                 if (count > 0) consumePendingStaleStartupWarning()
             }
         }
 
-        if (!preferences.getBoolean(closeWithBackButtonKey, true))
-            if (Build.VERSION.SDK_INT >= 33) {
-                onBackInvokedDispatcher.registerOnBackInvokedCallback(
-                    OnBackInvokedDispatcher.PRIORITY_DEFAULT
-                ) {
-                
-                }
-            }
+        registerStartupBackCallback()
 
-        /*
-            Instead of checking getBoolean() individually, we can use .let() to express condition.
-            Or, the whole thing is 'false' if null appears in the process.
-         */
-        val launchedFromNotification: Boolean =
-            intent?.extras?.let {
-                // The AA "expandPlayerBottomSheet" producer (setSessionActivity) was removed —
-                // only the widget launch still sets this extra.
-                it.getBoolean("fromWidget")
-            } ?: false
+        val launchedFromNotification = intent?.extras?.getBoolean("fromWidget") ?: false
 
         Timber.tag("MainActivity").d("onCreate launchedFromNotification: $launchedFromNotification intent ${intent.action}")
 
-        // The self-consumed shortcut actions (profile shortcuts, spec-profile-shortcuts,
-        // and the debug updater backdoor) have their own consumption (done in
-        // onCreate / onNewIntent) and must not ride the home-tab shortcut state,
-//
-        // which would pop the back stack to home.
+        // Activity-consumed actions must stay out of the Home shortcut path, which pops the stack.
         if (!isRestoredInstance) {
             shortcutIntentAction = initialShortcutAction(inviteAwareShortcutAction(intent), isRestoredInstance)
                 ?.takeUnless { isSelfConsumedShortcutAction(it) }
         }
-        // Rewind deep links are consumed synchronously in onCreate / onNewIntent
-        // (consumeRewindDeepLinks), before startApp runs — see those call sites.
-        onboardingStep = OnboardingStep.resolveStartupStep(
-            complete = DataStoreUtils.getBoolean(this, DataStoreUtils.KEY_ONBOARDING_COMPLETE, false),
-            // Resume at the persisted step after a post-import restart or process death
-            // (a restore never completes the onboarding, so this covers it too); fresh
-//
-            // installs have nothing persisted and fall back to the first step
-            persistedStepName = DataStoreUtils.getString(this, DataStoreUtils.KEY_ONBOARDING_STEP, ""),
-        )
+        onboardingStep = readOnboardingStep()
 
-        with(preferences) {
-            if (getBoolean(isKeepScreenOnEnabledKey, false)) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        val startupPreferences = preferences
+        applyKeepScreenOnPreference(window, startupPreferences)
+        applyStartupProxy(this, startupPreferences)
+
+        setInterfaceContent { MainActivityContent(launchedFromNotification) }
+    }
+
+    @Composable
+    internal fun DeliverPendingLibraryNavigation(navController: NavController) {
+    DrainDeferredLibraryIntents(
+        lifecycle = lifecycle,
+        navController = navController,
+        navigationReady = onboardingStep == null,
+        queue = deferredLaunchIntents,
+        awaitRestoredNavigation = {
+            if (awaitingDeferredNavigation) {
+                snapshotFlow(::libraryIntentConsumersIdle).first { it }
+                awaitingDeferredNavigation = false
             }
-            val proxy = if (getBoolean(isProxyEnabledKey, false)) {
-                val hostName = getString(proxyHostnameKey, null)
-                val proxyPort = readProxyPort()
-                val proxyMode = getEnum(proxyModeKey, Proxy.Type.HTTP)
-                if (isValidIP(hostName) && hostName != null) {
-                    app.n_zik.innertube.utils.getProxy(ProxyPreferenceItem(hostName, proxyPort, proxyMode))
-                } else {
-                    Timber.tag("MainActivity").w("Proxy preference is null or invalid, running without proxy")
-                    null
-                }
-            } else {
-                Timber.tag("MainActivity").w("Proxy preference is null, running without proxy")
-                null
-            }
-
-            NetworkClientFactory.configure(
-                proxy = proxy,
-                cacheDir = NetworkClientFactory.profileCacheDirectory(this@MainActivity)
-            )
-            Innertube.proxy = proxy
-        }
-
-        setInterfaceContent {
-            // Issue #881 (gh-881), Phase 3.1: lifecycle + first-frame probe (frozen UI after wake).
-            UiFrameClockDiagnostics()
-            val selectedPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
-
-            //TODO: Check internet connection
-
-            val coroutineScope = rememberCoroutineScope()
-            val isSystemInDarkTheme by rememberUpdatedState(isSystemInDarkTheme())
-            val navController = rememberNavController()
-            DisposableEffect(navController) {
-                val listener = NavController.OnDestinationChangedListener { _, destination, _ ->
-                    DiscordUiState.currentRoute.value = destination.route
-                }
-                navController.addOnDestinationChangedListener(listener)
-                onDispose {
-                    navController.removeOnDestinationChangedListener(listener)
-                }
-            }
-            // Issue #881 (gh-881): tolerant saver — a positional saveable shift (foreign payload)
-            // must restore to the default instead of throwing (spec M5).
-            var showQueueOverlay by rememberSaveable(saver = TolerantBoolStateSaver("main.showQueueOverlay")) { mutableStateOf(false) }
-            val queueInterceptor = remember(navController) {
-                MiniPlayerQueueInterceptor(navController) { showQueueOverlay = true }
-            }
-            DisposableEffect(navController) {
-                queueInterceptor.attach()
-                onDispose { queueInterceptor.detach() }
-            }
-            // Issue #881 (gh-881): tolerant saver (spec M5).
-            val pendingMiniPlayerAction = remember { mutableStateOf<PendingMiniPlayerAction?>(null) }
-            // Issue #881 (gh-881): tolerant savers (spec M5).
-            val isShowingLyrics = rememberSaveable(saver = TolerantBoolStateSaver("main.isShowingLyrics")) { mutableStateOf(false) }
-            val isShowingVisualizer = rememberSaveable(saver = TolerantBoolStateSaver("main.isShowingVisualizer")) { mutableStateOf(false) }
-            var animatedGradient by rememberPreference(animatedGradientKey, AnimatedGradient.M3EMorphingCover)
-
-
-            LocalePreferences.preference =
-                LocalePreferenceItem(
-                    hl = Locale.getDefault().language,
-                    gl = Locale.getDefault().country
-                )
-
-            preferences.getEnum(audioQualityFormatKey, AudioQualityFormat.Auto)
-
-            fun computeAppearance(): Appearance = configuredAppearance(isSystemInDarkTheme)
-
-            // The saved palette contains only accent + darkness. Reconcile it with the
-            // current theme before the first frame, including after activity recreation.
-            var appearance by rememberSaveable(
-                saver = TolerantAppearanceStateSaver(
-                    fallback = ::computeAppearance,
-                    slot = "main.appearance",
-                    normalizeRestored = { restored ->
-                        startupAppearance(
-                            restored = restored,
-                            configured = computeAppearance(),
-                            paletteName = preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic),
-                            paletteMode = preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark),
-                            systemIsDark = isSystemInDarkTheme,
-                            respectThemeBrightness = preferences.getBoolean(
-                                dynamicThemeRespectBrightnessKey,
-                                DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT,
-                            ),
-                        )
-                    },
-                ),
-            ) {
-                mutableStateOf(computeAppearance())
-            }
-
-            var fadeFromAppearance by remember { mutableStateOf<Appearance?>(null) }
-            var dynamicArtworkColors by remember(preferences) { mutableStateOf<ArtworkDisplayColors?>(null) }
-            val glassMenuHost = remember { GlassMenuHostState() }
-
-            fun appearanceSurfaceMix(palette: ColorPalette) = nativeSurfaceMix(
-                preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark),
-                preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic),
-                palette,
-            )
-
-            var surfaceMix by remember { mutableStateOf(appearanceSurfaceMix(appearance.colorPalette)) }
-
-            fun updateAppearance(newAppearance: Appearance, animateGlobal: Boolean = false) {
-                val target = newAppearance.forPaletteMode(preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark))
-                val targetSurfaceMix = appearanceSurfaceMix(target.colorPalette)
-                if (target == appearance && targetSurfaceMix == surfaceMix) return
-                fadeFromAppearance = if (animateGlobal) appearance else null
-                appearance = target
-                surfaceMix = targetSurfaceMix
-            }
-
-            val dynamicAppearanceOwner = remember(preferences, coroutineScope) {
-                DynamicAppearanceOwner(
-                    preferences = preferences,
-                    scope = coroutineScope,
-                    systemIsDark = { isSystemInDarkTheme },
-                    loadPalette = { _, _ -> null },
-                    loadArtwork = { url ->
-                        app.n_zik.android.components.player.SharedArtworkColors.load(this@MainActivity, url)
-                    },
-                    publishArtwork = { colors, animate ->
-                        if (dynamicArtworkColors != colors) {
-                            if (animate && fadeFromAppearance == null) fadeFromAppearance = appearance
-                            dynamicArtworkColors = colors
-                        }
-                    },
-                    appearance = { appearance },
-                    publish = { next, animate -> updateAppearance(next, animate) },
-                    // Compose updates the bars from the displayed page color below.
-                    systemBars = {},
-                    saveWidget = { palette ->
-                        savePaletteForWidget(palette)
-                        val service = binder
-                        if (service != null) service.refreshArtworkWidgets()
-                        else coroutineScope.launch(NzikDispatchers.DATA) {
-                            app.n_zik.android.widget.NZikWidgetManager.updateIdleWidgets(this@MainActivity)
-                        }
-                    },
-                )
-            }
-            DisposableEffect(dynamicAppearanceOwner) {
-                dynamicAppearanceOwner.start()
-                onDispose { dynamicAppearanceOwner.close() }
-            }
-
-            var dynamicArtworkObservation by remember {
-                mutableStateOf<Pair<ArtworkColorObservation, Long>?>(null)
-            }
-            fun setDynamicPalette(
-                player: Player?,
-                animateTheme: Boolean = false,
-                shouldAnimate: () -> Boolean = { animateTheme },
-            ) {
-                val item = player?.currentMediaItem
-                val artworkUri = item?.let { player.mediaMetadata.artworkUri ?: it.mediaMetadata.artworkUri }?.toString()
-                dynamicArtworkObservation = SharedArtworkColors
-                    .observe(artworkUri, getActiveProfile(this@MainActivity))
-                    ?.let { it to it.revision.value }
-                dynamicAppearanceOwner.refresh(artworkUri, animateTheme,
-                    awaitArtworkMetadata = item != null, shouldAnimate = shouldAnimate)
-            }
-
-            val artworkColorGeneration by SharedArtworkColors.generation.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
-            val artworkObservation = dynamicArtworkObservation?.first
-            val artworkPlayer = binder?.player
-            LaunchedEffect(artworkObservation, artworkPlayer) {
-                if (artworkObservation == null || artworkPlayer == null) return@LaunchedEffect
-                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    artworkObservation.revision.collect { revision ->
-                        val current = dynamicArtworkObservation
-                        if (current != null && current.first === artworkObservation && current.second != revision) {
-                            setDynamicPalette(artworkPlayer, animateTheme = true)
-                        }
-                    }
-                }
-            }
-            val localArtworkRevision by app.n_zik.android.playback.services.automotive.models.ArtworkRevisions.changes
-                .collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
-            LaunchedEffect(artworkColorGeneration, localArtworkRevision) {
-                val player = binder?.player ?: return@LaunchedEffect
-                val uri = (player.mediaMetadata.artworkUri ?: player.currentMediaItem?.mediaMetadata?.artworkUri)?.toString()
-                if (artworkColorGeneration > 0 || localArtworkRevision > 0 &&
-                    app.n_zik.android.core.coil.ImageCacheFactory.isLocalArtworkSource(uri)
-                ) setDynamicPalette(player, animateTheme = true)
-            }
-
-            // Issue #881 (gh-881): tolerant saver (spec M5).
-            var hasInitializedAppearance by rememberSaveable(saver = TolerantBoolStateSaver("main.hasInitializedAppearance")) { mutableStateOf(false) }
-
-            LaunchedEffect(isSystemInDarkTheme) {
-                if (!hasInitializedAppearance) {
-                    hasInitializedAppearance = true
-                    // The binder may already have extracted/restored the dynamic accent.
-                    // Do not replace it with the startup fallback just because this effect runs later.
-                    val paletteName = preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
-                    updateAppearance(if (paletteName == ColorPaletteName.Dynamic) appearance else computeAppearance())
-                    return@LaunchedEffect
-                }
-                val colorPaletteName = preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
-                if (colorPaletteName == ColorPaletteName.Dynamic) {
-                    binder?.player?.let { player ->
-                        setDynamicPalette(player, animateTheme = true)
-                    }
-                } else {
-                    val computed = computeAppearance()
-                    if (appearance.colorPalette != computed.colorPalette) {
-                        updateAppearance(computed, animateGlobal = true)
-                    }
-                }
-            }
-
-            DisposableEffect(binder) {
-
-                val listener =
-                    SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
-                        when (key) {
-
-                            languageAppKey -> {
-                                // AppCompat recreates the activity to apply the new locale (locale is not in the
-                                // activity-level configChanges), so the language switches live without a restart.
-                                val lang = sharedPreferences.getEnum( languageAppKey, Languages.System )
-                                if (shouldRecreateActivity(Database.isClosed)) {
-                                    AppCompatDelegate.setApplicationLocales( localeListForAppLanguage( lang ) )
-                                    Timber.tag("MainActivity").d("Language changed: $lang")
-                                } else {
-                                    Timber.tag("MainActivity").w("Language changed: $lang — locale apply skipped, database closed")
-                                }
-                            }
-
-                            effectRotationKey, playerThumbnailSizeKey,
-                            playerVisualizerTypeKey,
-                            disablePlayerHorizontalSwipeKey,
-                            disableClosingPlayerSwipingDownKey,
-                            showSearchTabKey,
-                            navigationBarPositionKey,
-                            navigationBarTypeKey,
-                            showTotalTimeQueueKey,
-                            backgroundProgressKey,
-                            transitionEffectKey,
-                            playerBackgroundColorsKey,
-                            miniPlayerTypeKey,
-                            hideStatusBarKey,
-                            restartActivityKey
-                                -> {
-                                if (shouldRecreateActivity(Database.isClosed)) {
-                                    this@MainActivity.recreate()
-                                    Timber.tag("MainActivity").d("recreate()")
-                                } else {
-                                    Timber.tag("MainActivity").w("recreate() skipped for $key: database closed")
-                                }
-                            }
-
-                            isProxyEnabledKey, proxyHostnameKey, proxyPortKey, proxyModeKey -> {
-                                val isProxyEnabled = sharedPreferences.getBoolean(isProxyEnabledKey, false)
-                                var proxy: Proxy? = null
-                                
-                                if (isProxyEnabled) {
-                                    val hostName = sharedPreferences.getString(proxyHostnameKey, null)
-                                    val proxyPort = sharedPreferences.readProxyPort()
-                                    val proxyMode = sharedPreferences.getEnum(proxyModeKey, Proxy.Type.HTTP)
-                                    if (isValidIP(hostName)) {
-                                        hostName?.let { hName ->
-                                            ProxyPreferences.preference = ProxyPreferenceItem(hName, proxyPort, proxyMode)
-                                            proxy = ProxyPreferences.preference?.let { pref -> app.n_zik.innertube.utils.getProxy(pref) }
-                                        }
-                                    } else {
-                                        Toaster.e(R.string.network_proxy_invalid_hostname)
-                                    }
-                                } else {
-                                    ProxyPreferences.preference = null
-                                }
-                                
-                                NetworkClientFactory.configure(
-                                    proxy = proxy,
-                                    cacheDir = NetworkClientFactory.profileCacheDirectory(this@MainActivity)
-                                )
-                                Innertube.proxy = proxy
-                            }
-
-                            dynamicThemeRespectBrightnessKey -> {
-                                if (binder == null && preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic) != ColorPaletteName.Dynamic) {
-                                    coroutineScope.launch(NzikDispatchers.DATA) {
-                                        app.n_zik.android.widget.NZikWidgetManager.updateIdleWidgets(this@MainActivity)
-                                    }
-                                }
-                            }
-
-                            colorPaletteNameKey, colorPaletteModeKey, customColorKey,
-                            customThemeLight_Background0Key,
-                            customThemeLight_Background1Key,
-                            customThemeLight_Background2Key,
-                            customThemeLight_Background3Key,
-                            customThemeLight_Background4Key,
-                            customThemeLight_TextKey,
-                            customThemeLight_textSecondaryKey,
-                            customThemeLight_textDisabledKey,
-                            customThemeLight_iconButtonPlayerKey,
-                            customThemeLight_accentKey,
-                            customThemeDark_Background0Key,
-                            customThemeDark_Background1Key,
-                            customThemeDark_Background2Key,
-                            customThemeDark_Background3Key,
-                            customThemeDark_Background4Key,
-                            customThemeDark_TextKey,
-                            customThemeDark_textSecondaryKey,
-                            customThemeDark_textDisabledKey,
-                            customThemeDark_iconButtonPlayerKey,
-                            customThemeDark_accentKey,
-                                -> {
-                                val colorPaletteName =
-                                    sharedPreferences.getEnum(
-                                        colorPaletteNameKey,
-                                        ColorPaletteName.Dynamic
-                                    )
-
-                                val colorPaletteMode =
-                                    sharedPreferences.getEnum(
-                                        colorPaletteModeKey,
-                                        ColorPaletteMode.System
-                                    )
-
-                                if (colorPaletteName == ColorPaletteName.Dynamic) {
-                                    // Always call setDynamicPalette when switching to the dynamic theme
-                                    setDynamicPalette(binder?.player, animateTheme = true)
-                                } else {
-                                    dynamicAppearanceOwner.cancel()
-
-                                    val colorPalette = configuredApplicationPalette(
-                                        this@MainActivity,
-                                        sharedPreferences,
-                                        colorPaletteName,
-                                        colorPaletteMode,
-                                        isSystemInDarkTheme,
-                                    ) {
-                                        Color(monet.getAccentColor(this@MainActivity))
-                                    }
-                                    val normalized = appearance.copy(
-                                        colorPalette = colorPalette,
-                                        typography = appearance.typography.withColor(colorPalette.text),
-                                    ).forPaletteMode(colorPaletteMode)
-
-                                    updateAppearance(
-                                        normalized,
-                                        animateGlobal = true
-                                    )
-                                }
-                            }
-
-                            thumbnailRoundnessDpKey -> {
-                                val thumbnailRoundnessDp =
-                                    sharedPreferences.getFloat(thumbnailRoundnessDpKey, 12f)
-
-                                appearance = appearance.copy(
-                                    thumbnailShape = if (thumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(thumbnailRoundnessDp.dp, 0.25f))
-                                )
-                            }
-                            
-                            artistThumbnailRoundnessDpKey -> {
-                                val artistThumbnailRoundnessDp =
-                                    sharedPreferences.getFloat(artistThumbnailRoundnessDpKey, 48f)
-
-                                appearance = appearance.copy(
-                                    artistThumbnailShape = if (artistThumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(artistThumbnailRoundnessDp.dp, 0.25f))
-                                )
-                            }
-
-                            "uiRoundnessDpKey" -> {
-                                val uiRoundnessDp = sharedPreferences.getFloat(key, 25f)
-                                appearance = appearance.copy(
-                                    uiRoundnessShape = RoundedCornerShape(BoundedCornerSize(uiRoundnessDp.dp, 0.4f))
-                                )
-                            }
-
-                            useSystemFontKey, applyFontPaddingKey, fontTypeKey -> {
-                                val useSystemFont =
-                                    sharedPreferences.getBoolean(useSystemFontKey, false)
-                                val applyFontPadding =
-                                    sharedPreferences.getBoolean(applyFontPaddingKey, false)
-                                val fontType =
-                                    sharedPreferences.getEnum(fontTypeKey, FontType.Rubik)
-
-                                appearance = appearance.copy(
-                                    typography = typographyOf(
-                                        appearance.colorPalette.text,
-                                        useSystemFont,
-                                        applyFontPadding,
-                                        fontType
-                                    ),
-                                )
-                            }
-                        }
-                    }
-
-                with(preferences) {
-                    registerOnSharedPreferenceChangeListener(listener)
-
-                    val colorPaletteName =
-                        getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
-                    if (colorPaletteName == ColorPaletteName.Dynamic) {
-                        // A disconnected service has unknown artwork, not an empty queue.
-                        binder?.player?.let { player ->
-                            setDynamicPalette(player)
-                        }
-                    }
-
-                    onDispose {
-                        //bitmapListenerJob?.cancel()
-                        //binder?.setBitmapListener(null)
-                        unregisterOnSharedPreferenceChangeListener(listener)
-                    }
-                }
-            }
-
-            val shimmerClock = rememberShimmerClock()
-
-            val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-            // Phone in landscape on the Songs/Album/Artist/Library tabs: app header and nav bar
-            // are hidden until the toggle button reveals them, so scroll-hide does not apply there
-            val dockNavigationPosition = NavigationBarPosition.current()
-            val hasSideNavigation = sideNavigationOwnsHeader(dockNavigationPosition)
-            val isLandscapeBarless = app.n_zik.android.utils.isLandscapeBarlessScreen() && !hasSideNavigation
-            val areBarsHidden = app.n_zik.android.utils.hideBarsInLandscapeMobile() && !hasSideNavigation
-
-            // Every time such a screen is entered (or left) the bars start put away again
-            LaunchedEffect(isLandscapeBarless) {
-                app.n_zik.android.utils.LandscapeBars.hide()
-            }
-            // Top navigation remains pinned while the header scrolls out.
-            val topNavHeight = if (rememberGlassSettings().usesGlassMaterial(GlassArea.Nav))
-                GlassNavigationBarHeight else TOP_NAV_BAR_HEIGHT
-            val topNavBarPx = if (NavigationBarPosition.Top.isCurrent()) {
-                with(LocalDensity.current) { topNavHeight.roundToPx() }
-            } else 0
-
-            val scaffoldBars = remember { app.n_zik.android.core.navigation.ScaffoldBarVisibilityState() }
-            var isBarsVisible by scaffoldBars.visible
-            var topBarOffset by scaffoldBars.topOffset
-            LaunchedEffect(isLandscapeBarless) {
-                if (isLandscapeBarless) topBarOffset = 0f
-            }
-            val headerTravel = remember(scaffoldBars) { HeaderScrollTravel() }
-            val homeHeaderMotionRegistry = remember(scaffoldBars, navController) {
-                app.n_zik.android.components.ui.screens.home.HomeHeaderMotionRegistry(
-                    scaffoldBars.topOffset,
-                    homeIsCurrent = { navController.currentDestination?.route?.substringBefore('?') == NavRoutes.home.name },
-                ) {
-                    scaffoldBars.animationJob.value?.cancel()
-                    scaffoldBars.animationJob.value = null
-                }
-            }
-            var bottomBarOffset by scaffoldBars.bottomOffset
-            val offsetAnimationJob = scaffoldBars.animationJob
-            val revealScaffoldOnNavigation = remember(scaffoldBars, coroutineScope, headerTravel) {
-                {
-                    headerTravel.reset()
-                    scaffoldBars.revealOnNavigation(coroutineScope)
-                }
-            }
-            app.n_zik.android.core.navigation.RevealScaffoldOnNavigation(navController, revealScaffoldOnNavigation)
-
-            // Scroll-hide guard input: whether the full player sheet is currently on screen.
-            // Declared before nestedScrollConnection (which reads it live at event time);
-//
-            // synced reactively once playerSheetState exists further down in composition.
-            val isPlayerSheetExpanded = remember { mutableStateOf(false) }
-
-            // Opening the player must restore the hidden bars: while the player is open
-            // the scroll-hide re-show is disabled, so hidden bars would
-//
-            // otherwise stay hidden forever and the player container would keep its offset,
-            // leaving an unrecoverable UI state (player mis-positioned, no nav bars).
-            fun restoreHiddenBars() {
-                if (topBarOffset == 0f && bottomBarOffset == 0f) return
-                isBarsVisible = true
-                offsetAnimationJob.value?.cancel()
-                offsetAnimationJob.value = coroutineScope.launch {
-                    // 800ms (user-tuned): the bars finish settling exactly when the auto-expansion
-                    // starts (MINIPLAYER_AUTOEXPAND_DELAY_MS), so restore + deploy read as one
-//
-                    // continuous motion instead of two separate jumps.
-                    launch { androidx.compose.animation.core.Animatable(topBarOffset).animateTo(0f, androidx.compose.animation.core.tween(800, easing = androidx.compose.animation.core.FastOutSlowInEasing)) { topBarOffset = value } }
-                    launch { androidx.compose.animation.core.Animatable(bottomBarOffset).animateTo(0f, androidx.compose.animation.core.tween(800, easing = androidx.compose.animation.core.FastOutSlowInEasing)) { bottomBarOffset = value } }
-                }
-                Timber.tag("MainActivity").d("restoreHiddenBars: restoring hidden bars before player auto-launch")
-            }
-
-            val density = LocalDensity.current
-            val safeDrawingInsets = WindowInsets.safeDrawing
-
-            val chromeEntry by navController.currentBackStackEntryAsState()
-            val isScrollableRoute = pageSupportsChromeScroll(chromeEntry?.destination?.route)
-
-            // Route changes use the animated navigation callback; geometry changes reset immediately.
-            LaunchedEffect(isLandscape, density, safeDrawingInsets) {
-                scaffoldBars.reveal()
-            }
-
-            val floatingDockState = remember { FloatingDockState() }
-            val classicDock = dockNavigationPosition == NavigationBarPosition.Bottom
-            val topDock = dockNavigationPosition == NavigationBarPosition.Top
-            val floatingDockEnabled = (NavigationBarPosition.BottomFloating.isCurrent() || classicDock || topDock) && !areBarsHidden
-            val floatingDockEntry = navController.currentBackStackEntryAsState().value
-            val floatingDockPageKey = floatingDockEntry?.id
-            val dockMediaId by (binder?.player?.currentMediaItemIdAsState()
-                ?: remember { mutableStateOf<String?>(null) })
-            val dockPlayerPosition by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
-            LaunchedEffect(scaffoldBars) {
-                offsetAnimationJob.value?.cancel()
-                offsetAnimationJob.value = null
-                topBarOffset = 0f
-                bottomBarOffset = 0f
-                isBarsVisible = true
-            }
-            // Every visible mini shares this clock, including barless and side-navigation pages.
-            val floatingDockClock = remember { Animatable(0f) }
-            val floatingDockProgress = floatingDockClock.asState()
-            val dockMotionBlocked = !miniPlayerFoldEligible(isPlayerSheetExpanded.value, showQueueOverlay, glassMenuHost.hasOverlays)
-            // Observing the target in composition invalidates the entire activity
-            // right as the dock starts moving and the foreground list is scrolling.
-            LaunchedEffect(floatingDockState, dockMotionBlocked) {
-                if (!dockMotionBlocked) {
-                    snapshotFlow { floatingDockState.foldTarget }.collectLatest { target ->
-                        floatingDockClock.animateTo(target, tween(320, easing = CubicBezierEasing(0.2f, 0f, 0f, 1f)))
-                    }
-                }
-            }
-            val floatingDock = remember(floatingDockState, floatingDockPageKey, floatingDockEnabled, classicDock, topDock, dockNavigationPosition,
-                floatingDockProgress, dockMediaId, dockPlayerPosition) {
-                FloatingDockEnvironment(floatingDockState, floatingDockPageKey, floatingDockEnabled,
-                    floatingDockProgress, dockMediaId != null && dockPlayerPosition == PlayerPosition.Bottom,
-                    classic = classicDock || topDock,
-                    floating = dockNavigationPosition == NavigationBarPosition.BottomFloating,
-                    attachedMini = dockHasAttachedMini(dockMediaId != null,
-                        dockNavigationPosition, dockPlayerPosition))
-            }
-            LaunchedEffect(floatingDockPageKey, floatingDockEnabled, classicDock, topDock) {
-                floatingDockState.expand()
-                bottomBarOffset = 0f
-            }
-            val sideNavigationHeaderActive = remember { mutableStateOf(false) }
-            val sideRailScrollOrigin = remember { app.n_zik.android.components.navigation.SideRailScrollOrigin() }
-            val nestedScrollConnection = remember(isLandscapeBarless, isLandscape, isScrollableRoute, density, showQueueOverlay, glassMenuHost) {
-                object : NestedScrollConnection {
-                    override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                        if (sideRailScrollOrigin.take()) return Offset.Zero
-                        if (isPlayerSheetExpanded.value || showQueueOverlay || glassMenuHost.hasOverlays) return Offset.Zero
-                        val deltaY = chromeScrollDelta(
-                            consumed.y, available.y,
-                            topBarOffset < 0f || floatingDockState.foldTarget > 0f,
-                        )
-                        if (deltaY != 0f) floatingDockState.onScroll(deltaY, with(density) { 50.dp.toPx() })
-                        if (!sideNavigationHeaderActive.value && (isScrollableRoute || isLandscape)) {
-                            val headerHeight = with(density) { APP_HEADER_HEIGHT.toPx() }
-                            val headerDelta = headerTravel.delta(
-                                consumed.y, available.y, topBarOffset, headerHeight,
-                                homeHeaderMotionRegistry.hasScrollRoom(),
-                            )
-                            if (headerDelta != 0f) {
-                                offsetAnimationJob.value?.cancel()
-                                offsetAnimationJob.value = null
-                                homeHeaderMotionRegistry.scrollBy(headerDelta, headerHeight)
-                            }
-                        }
-                        if (deltaY != 0f && isLandscapeBarless && source == NestedScrollSource.UserInput) {
-                            app.n_zik.android.utils.LandscapeBars.hide()
-                        }
-                        return Offset.Zero
-                    }
-
-                    override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                        if (sideNavigationHeaderActive.value || isPlayerSheetExpanded.value || showQueueOverlay || glassMenuHost.hasOverlays) return Velocity.Zero
-                        if (homeHeaderMotionRegistry.hasScrollRoom() == false) return Velocity.Zero
-                        val height = with(density) { APP_HEADER_HEIGHT.toPx() }
-                        val target = if (topBarOffset < -height / 2f) -height else 0f
-                        if (target == topBarOffset) return Velocity.Zero
-                        offsetAnimationJob.value?.cancel()
-                        offsetAnimationJob.value = coroutineScope.launch {
-                            Animatable(topBarOffset).animateTo(target, tween(200, easing = androidx.compose.animation.core.FastOutSlowInEasing)) {
-                                topBarOffset = value
-                                homeHeaderMotionRegistry.sync()
-                            }
-                        }
-                        return Velocity.Zero
-                    }
-                }.excludingGlassOverlays(glassMenuHost)
-            }
-
-            val topBarOffsetState = scaffoldBars.topOffset
-            val bottomBarOffsetState = scaffoldBars.bottomOffset
-
-            val ambientCoverControls by rememberPreference(playerControlsColorsKey, PlayerControlsColors.Monochrome)
-            val ambientLyricsColor by rememberPreference(lyricsColorKey, LyricsColor.White)
-            val ambientVisualizerEnabled by rememberPreference(visualizerEnabledKey, false)
-            val ambientVisualizerColor by rememberPreference(visualizerWhiteColorOptionKey, VisualizerWhiteColorOption.White)
-            val usesDynamicArtwork = selectedPaletteName == ColorPaletteName.Dynamic
-            val needsFixedArtwork = !usesDynamicArtwork && (rememberGlassSettings().enabled ||
-                glassMenuHost.standaloneSettings || ambientCoverControls == PlayerControlsColors.Cover ||
-                ambientLyricsColor == LyricsColor.Cover ||
-                ambientVisualizerEnabled && ambientVisualizerColor == VisualizerWhiteColorOption.Cover)
-            var fixedArtworkColors by remember(preferences) { mutableStateOf<ArtworkDisplayColors?>(null) }
-            if (needsFixedArtwork) {
-                val artwork = rememberGlassArtwork(binder?.player)
-                val result = rememberArtworkDisplayResult(artwork?.uri, appearance.colorPalette.isDark,
-                    awaitArtworkMetadata = artwork?.mediaId != null)
-                if (result.resolved) SideEffect {
-                    if (fixedArtworkColors != result.colors) {
-                        if (!isPlayerSheetExpanded.value && fadeFromAppearance == null) fadeFromAppearance = appearance
-                        fixedArtworkColors = result.colors
-                    }
-                }
-            }
-            val artworkColors = if (usesDynamicArtwork) dynamicArtworkColors else fixedArtworkColors.takeIf { needsFixedArtwork }
-
-            ProvideAnimatedAppearance(
-                target = appearance,
-                fadeFrom = fadeFromAppearance,
-                onFadeComplete = { fadeFromAppearance = null },
-                targetNativeSurfaceMix = surfaceMix,
-                targetAmbientArtwork = ambientArtworkPaint(artworkColors, appearance.colorPalette.accent),
-            ) {
-                PageSystemBarAppearance(glassMenuHost)
-                BoxWithConstraints(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .appearanceBackground()
-                        .nestedScroll(nestedScrollConnection)
-                ) {
-
-
-                val density = LocalDensity.current
-                val windowsInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
-                val bottomDp = with(density) { windowsInsets.getBottom(density).toDp() }
-
-                // Calculate player padding before initializing playerSheetState
-                val isFloatingNavBar = NavigationBarPosition.BottomFloating.isCurrent()
-                val isIconOnlyNav = app.n_zik.android.enums.NavigationBarType.IconOnly.isCurrent()
-                val navBarBottomPad = Dimensions.navBarBottomPadding(isFloatingNavBar)
-                val bottomNavigationImeLift = rememberBottomNavigationImeLift(dockNavigationPosition)
-                // Route-aware: only screens that actually render the app nav bar reserve its
-                // height under the mini-player, so it drops to the screen edge on bar-less pages.
-//
-                // Sourced from the nav controller rather than DiscordUiState so layout never
-                // depends on the RPC feature's destination listener
-                val playerEntry = navController.currentBackStackEntryAsState().value
-                val playerRoute = playerEntry?.destination?.route
-                // Home draws one nav bar button per active tab and only shows the bar with two
-                // or more, so pass the real tab count: the same preferences HomeScreen reads,
-//
-                // kept reactive so a tab toggled in settings moves the mini-player live.
-                val quickPicksTabEnabled by rememberPreference(enableQuickPicksPageKey, true)
-                val songsTabEnabled by rememberPreference("hometab_songs_enabled", true)
-                val artistsTabEnabled by rememberPreference("hometab_artists_enabled", true)
-                val albumsTabEnabled by rememberPreference("hometab_albums_enabled", true)
-                val playlistsTabEnabled by rememberPreference("hometab_playlists_enabled", true)
-                val homeTabsOrderSerialized by rememberPreference(homeTabsOrderKey, "")
-                val activeHomeTabCount = remember(homeTabsOrderSerialized, quickPicksTabEnabled, songsTabEnabled, artistsTabEnabled, albumsTabEnabled, playlistsTabEnabled) {
-                    activeHomeTabIds(
-                        HomeTabsSettingsDialog.parseOrder(homeTabsOrderSerialized),
-                        quickPicksTabEnabled,
-                        songsTabEnabled,
-                        artistsTabEnabled,
-                        albumsTabEnabled,
-                        playlistsTabEnabled,
-                    ).size
-                }
-                val hasNavBar = !areBarsHidden &&
-                    (floatingDockState.registeredPresence(floatingDockPageKey)
-                        ?: appNavBarPresentForRoute(
-                            playerRoute,
-                            activeHomeTabCount,
-                            destinationId = if (playerRoute == "${NavRoutes.artist.name}/{id}") {
-                                playerEntry?.arguments?.getString("id")
-                            } else null,
-                        ))
-                val pageDock = floatingDock.copy(pagePresence = hasNavBar)
-                val dockPresence = androidx.compose.animation.core.animateFloatAsState(
-                    targetValue = if (hasNavBar) 1f else 0f,
-                    animationSpec = tween(320, easing = CubicBezierEasing(.2f, 0f, 0f, 1f)),
-                    label = "miniDockPresence",
-                )
-
-                val playerGlassSettings = rememberGlassSettings()
-                val glassNavigation = playerGlassSettings.usesGlassMaterial(GlassArea.Nav)
-                val hasSideNavBarVisible = sideNavigationOwnsHeader(dockNavigationPosition)
-                SideEffect { sideNavigationHeaderActive.value = hasSideNavBarVisible }
-                LaunchedEffect(hasSideNavBarVisible) {
-                    if (hasSideNavBarVisible) {
-                        offsetAnimationJob.value?.cancel()
-                        offsetAnimationJob.value = null
-                        topBarOffset = 0f
-                    }
-                }
-                val appHeaderHeight = if (hasSideNavBarVisible) 0.dp else APP_HEADER_HEIGHT
-                val playerPos by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
-                val targetPlayerPadBottom = if (playerPos == PlayerPosition.Bottom) {
-                    if (isFloatingNavBar) {
-                        if (hasNavBar) {
-                            val barHeight = if (glassNavigation) GlassNavigationBarHeight
-                                else if (isIconOnlyNav) Dimensions.floatingNavBarIconOnlyHeight else Dimensions.floatingNavBarHeight
-                            barHeight + navBarBottomPad + if (glassNavigation) GlassNavigationPlayerGap else 4.dp
-                        } else {
-                            navBarBottomPad
-                        }
-                    } else {
-                        if (hasNavBar && NavigationBarPosition.Bottom.isCurrent()) {
-                            if (glassNavigation) GlassNavigationBarHeight + navBarBottomPad + GlassNavigationPlayerGap
-                            else Dimensions.standardNavBarHeight + navBarBottomPad + 4.dp
-                        } else {
-                            navBarBottomPad + if (isLandscape) 16.dp else 5.dp
-                        }
-                    }
-                } else 5.dp
-                // CustomBottomSheet animates the complete anchor, including top/bottom switches.
-                val playerPadBottom = rememberUpdatedState(targetPlayerPadBottom)
-
-                // Top anchor: the mini-player sits under the app header (and the top nav bar).
-                // The provider is read at draw time so the scroll-hide offset moves it without
-//
-                // recomposing this screen on every frame.
-                val isTopPlayer = playerPos == PlayerPosition.Top
-                val dockExpandedNavHeight = FloatingDockDimensions.expandedHeight.dp
-                val dockSafeWidth = maxWidth - with(density) {
-                    (safeDrawingInsets.getLeft(density, LayoutDirection.Ltr) +
-                        safeDrawingInsets.getRight(density, LayoutDirection.Ltr)).toDp()
-                }
-                val dockExpandedMiniHeight = FloatingDockDimensions.expandedMiniHeight.dp
-                val classicNavHeight = if (glassNavigation) GlassNavigationBarHeight else Dimensions.navigationBarHeight - 10.dp
-                val dockGeometry = {
-                    if (classicDock || topDock) classicDockGeometry(dockSafeWidth.value,
-                        if (topDock) with(density) { topNavBarPx.toDp().value } else classicNavHeight.value,
-                        dockExpandedMiniHeight.value, floatingDock.hasAttachedMini, floatingDockProgress.value,
-                        expandedGap = if (glassNavigation) GlassNavigationPlayerGap.value else FloatingDockDimensions.componentGap)
-                    else floatingDockGeometry(dockSafeWidth.value, dockExpandedNavHeight.value,
-                        dockExpandedMiniHeight.value, floatingDock.hasBottomMini, floatingDockProgress.value,
-                        hasSearch = false)
-                }
-                val statusBarTopPx = safeDrawingInsets.getTop(density)
-                val targetPlayerTopInsetPx = with(density) {
-                    miniPlayerTopInset(
-                        statusBarTop = statusBarTopPx.toDp(),
-                        barsHidden = areBarsHidden,
-                        hasTopNavBar = NavigationBarPosition.Top.isCurrent() && hasNavBar,
-                        headerHeight = appHeaderHeight,
-                        topNavBarHeight = topNavBarPx.toDp(),
-                        gap = if (hasSideNavBarVisible) 0.dp else app.n_zik.android.components.player.MINI_PLAYER_TOP_GAP,
-                    ).toPx()
-                }
-                val playerTopInsetPx = rememberUpdatedState(targetPlayerTopInsetPx)
-                val collapsedPlayerHeight = Dimensions.collapsedPlayer
-                // Side system bars (status bar at the left, nav bar at the right in landscape,
-                // cutout) and a navigation rail on a side: the collapsed mini-player narrows to
-//
-                // stay clear of them. Both are put away with the other bars on the bar-less
-//
-                // landscape screens.
-                val railWidth = if (areBarsHidden) 0.dp else Dimensions.navigationRailWidth
-                val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
-                val leftSafeInset = with(density) { safeDrawingInsets.getLeft(density, LayoutDirection.Ltr).toDp() }
-                val rightSafeInset = with(density) { safeDrawingInsets.getRight(density, LayoutDirection.Ltr).toDp() }
-                val playerSafeStartInset = if (isRtl) rightSafeInset else leftSafeInset
-                val playerSafeEndInset = if (isRtl) leftSafeInset else rightSafeInset
-                val playerStartInset = miniPlayerSideInset(
-                    railWidth = if ((if (isRtl) NavigationBarPosition.Right else NavigationBarPosition.Left).isCurrent()) railWidth else 0.dp,
-                    safeInset = playerSafeStartInset,
-                )
-                val playerEndInset = miniPlayerSideInset(
-                    railWidth = if ((if (isRtl) NavigationBarPosition.Left else NavigationBarPosition.Right).isCurrent()) railWidth else 0.dp,
-                    safeInset = playerSafeEndInset,
-                )
-                // Only the header leaves; the top navigation row remains below the status bar.
-                val headerHideRangePx = with(density) { appHeaderHeight.toPx() }
-                val retainTopMiniBelowNavigation = !areBarsHidden && NavigationBarPosition.Top.isCurrent() && hasNavBar
-                val basePlayerTopPadding: (() -> Dp)? = if (isTopPlayer) {
-                    {
-                        with(density) {
-                            if (retainTopMiniBelowNavigation && floatingDock.hasAttachedMini) {
-                                miniPlayerTopDockPaddingPx(
-                                    insetPx = playerTopInsetPx.value,
-                                    scrollOffsetPx = topBarOffsetState.value,
-                                    headerHeightPx = headerHideRangePx,
-                                    navHeightPx = topNavBarPx.toFloat(),
-                                    miniHeightPx = dockGeometry().miniHeight.dp.toPx(),
-                                    gapPx = MINI_PLAYER_TOP_GAP.toPx(),
-                                    fold = floatingDockProgress.value * dockPresence.value,
-                                ).toDp()
-                            } else miniPlayerTopPaddingPx(
-                                insetPx = playerTopInsetPx.value,
-                                scrollOffsetPx = topBarOffsetState.value,
-                                hideRangePx = headerHideRangePx,
-                                collapsedHeightPx = collapsedPlayerHeight.toPx(),
-                                retainedTopInsetPx = (playerTopInsetPx.value - headerHideRangePx)
-                                    .coerceAtLeast(statusBarTopPx.toFloat()),
-                                barsHidden = areBarsHidden,
-                            ).toDp()
-                        }
-                    }
-                } else null
-
-                val homeTopMiniBase = rememberUpdatedState(
-                    if (dockMediaId != null) basePlayerTopPadding else null
-                )
-                val homeTopMiniGap = rememberUpdatedState(
-                    if (areBarsHidden || hasSideNavBarVisible) 0.dp else MINI_PLAYER_TOP_GAP
-                )
-                val miniBeforeHomeHeaderHeight = rememberUpdatedState<(() -> Dp)?>(
-                    if (dockMediaId != null && app.n_zik.android.components.ui.screens.home.miniPrecedesHomeHeader(
-                            retainTopMiniBelowNavigation, areBarsHidden,
-                        )
-                    ) {
-                        { dockGeometry().miniHeight.dp }
-                    } else null
-                )
-                // Read the fold clock where the header uses the height, outside the root composition.
-                val miniBeforeHomeHeader = remember {
-                    derivedStateOf { miniBeforeHomeHeaderHeight.value?.invoke() }
-                }
-                val homeTopMiniAnchor = remember {
-                    HomeTopMiniPlayerAnchorState(homeTopMiniBase, homeTopMiniGap, miniBeforeHomeHeader)
-                }
-                val isHomeDestination = chromeEntry?.destination?.route?.startsWith(NavRoutes.home.name) == true
-                val homeMiniPlacementKey by remember(homeTopMiniAnchor) {
-                    derivedStateOf { homeTopMiniAnchor.placementKey() }
-                }
-                val sideHomeMiniGap = if (hasSideNavBarVisible) MINI_PLAYER_TOP_GAP else 0.dp
-                val homeMiniTopInset = remember(homeTopMiniAnchor, homeMiniPlacementKey, sideHomeMiniGap) {
-                    homeTopMiniAnchor.miniTopInsetProvider(panelGap = sideHomeMiniGap)
-                }
-                val playerTopPadding: (() -> Dp)? = basePlayerTopPadding?.let { base ->
-                    {
-                        if (isHomeDestination && !retainTopMiniBelowNavigation && !areBarsHidden)
-                            homeMiniTopInset() ?: base()
-                        else base()
-                    }
-                }
-                val playerPlacementKey = listOf(
-                    chromeEntry?.id, playerPos, dockNavigationPosition, isLandscape,
-                    areBarsHidden, hasNavBar, glassNavigation,
-                    playerGlassSettings.usesGlassMaterial(GlassArea.MiniPlayer), maxWidth, maxHeight,
-                    targetPlayerPadBottom, targetPlayerTopInsetPx,
-                    homeMiniPlacementKey.takeIf {
-                        isHomeDestination && isTopPlayer && !retainTopMiniBelowNavigation && !areBarsHidden
-                    },
-                )
-
-                val playerSheetState = rememberPlayerSheetState(
-                    dismissedBound = 0.dp,
-                    collapsedBound = Dimensions.collapsedPlayer + bottomDp,
-                    expandedBound = maxHeight,
-                )
-
-                // Keep the scroll-hide guard in sync with the sheet's real on-screen state.
-                LaunchedEffect(playerSheetState) {
-                    snapshotFlow { playerSheetState.progress > 0.01f }
-                        .distinctUntilChanged()
-                        .collect { isPlayerSheetExpanded.value = it }
-                }
-
-                // NOT keyed on playerSheetState.value: that changes every drag frame,
-                // which used to recreate the derived state and re-provide
-//
-                // LocalPlayerAwareWindowInsets per frame, recomposing every screen
-//
-                // that consumes the insets while the mini-player is dragged.
-                // The tracker returns the same WindowInsets instance while the
-//
-                // clamped bottom is stable, so no consumer is invalidated per frame.
-                val playerAwareWindowInsets by remember(bottomDp, playerSheetState.collapsedBound) {
-                    val insetsTracker = PlayerAwareInsetsTracker(
-                        baseInsets = windowsInsets.only(
-                            WindowInsetsSides.Horizontal + WindowInsetsSides.Top
-                        ),
-                        lowerBound = bottomDp,
-                        upperBound = playerSheetState.collapsedBound,
-                    )
-                    derivedStateOf { insetsTracker.resolve(playerSheetState.value) }
-                }
-
-                val openTabFromShortcut = when (shortcutIntentAction) {
-                    action_songs -> HomeScreenTabs.Songs.index
-                    action_albums -> HomeScreenTabs.Albums.index
-                    actions_artists -> HomeScreenTabs.Artists.index
-                    action_library -> HomeScreenTabs.Playlists.index
-                    action_search -> OPEN_SEARCH_SHORTCUT
-                    else -> -1
-                }
-                val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-                DeliverHomeTabShortcut(navController, shortcutIntentAction, openTabFromShortcut, libraryIntentDelivery, currentRoute) {
-                    shortcutIntentAction = null
-                }
-                DeliverRewindTargets(
-                    lifecycle = lifecycle,
-                    navController = navController,
-                    deck = rewindDeckTarget,
-                    playlist = rewindPlaylistTarget,
-                    delivery = libraryIntentDelivery,
-                    navigationReady = onboardingStep == null,
-                    onDeckDelivered = { rewindDeckTarget = null },
-                    onPlaylistDelivered = { rewindPlaylistTarget = null },
-                )
-
-                // "Now playing" notification tap — WARM start (spec-notification-click-opens-player):
-                // present the mini-player (if the sheet is dismissed) then deploy the full
-//
-                // player, restoring the hidden bars first — the same pacing as the existing
-//
-                // launchedFromNotification path (presentMiniplayerThenExpand). Consumed from an
-                // effect, like the rewind targets above, and gated on onboarding the same way:
-//
-                // while onboarding is up the NavHost is not composed, so the target is held
-                // until the flow completes and the effect re-runs. The token was already
-//
-                // consumed off the intent in onNewIntent (one-shot contract).
-                LaunchedEffect(openPlayerFromNotificationWarm, libraryIntentDelivery, onboardingStep == null) {
-                    if (onboardingStep != null) return@LaunchedEffect
-                    if (openPlayerFromNotificationWarm) {
-                        openPlayerFromNotificationWarm = false
-                        // Anti-flicker: a sheet already above the expanded bound is left alone
-                        // (a tap while the full player is open must not cause a visible
-//
-                        // collapse→expand).
-                        if (playerSheetState.value < playerSheetState.expandedBound) {
-                            // On the composable's rememberCoroutineScope(), NOT this effect's
-                            // scope: the flag reset above changes the effect key → recomposition
-//
-                            // cancels the effect scope, which would kill the delayed
-                            // launch { delay(800); expandSoft() } child before it runs
-//
-                            // (device bug: the mini bar appeared, the expansion never did).
-                            coroutineScope.presentMiniplayerThenExpand(playerSheetState, onPresent = { restoreHiddenBars() })
-                        }
-                    }
-                }
-
-                DeliverSettingsShortcut(
-                    lifecycle, navController, NavRoutes.profiles, openProfilesShortcut, libraryIntentDelivery, onboardingStep == null,
-                ) { openProfilesShortcut = false }
-                DeliverSettingsShortcut(
-                    lifecycle, navController, NavRoutes.updater, openUpdaterDebugShortcut, libraryIntentDelivery, onboardingStep == null,
-                ) { openUpdaterDebugShortcut = false }
-
-                // One-time Samsung storage advice (spec-samsung-storage-advice-dialog):
-                // the effect re-runs only when its key (onboardingStep == null) changes;
-                // the Samsung/shown/location gate is evaluated inside
-                // triggerSamsungStorageAdvice (pure Samsung check before any I/O), and the
-                // shown flag is persisted when the dialog is shown, so a re-run is a no-op
-                // and keeping system storage never re-triggers it.
-                LaunchedEffect(onboardingStep == null) {
-                    if (onboardingStep != null) return@LaunchedEffect
-                    triggerSamsungStorageAdvice(applicationContext)
-                }
-
-                        val offlineMode by OfflineMode.rememberEnabled()
-                        val positionClock = binder?.takeUnless { pipState.value }?.let { service ->
-                            val generation by service.playerUpdateTrigger.collectAsStateWithLifecycle()
-                            service.player.rememberPlaybackPositionClock(generation)
-                        }
-                        val videoSession = rememberPlayerMusicVideo(
-                            audio = binder?.player,
-                            collapsed = playerSheetState.isCollapsed || playerSheetState.isDismissed,
-                            inPip = pipState.value,
-                            enabled = !offlineMode,
-                        )
-                        Box(Modifier.fillMaxSize()) {
-                        CrossfadeContainer(state = pipState.value) { isCurrentInPip ->
-                            Timber.tag("MainActivity").d("pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
-                            val pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
-                    if (isCurrentInPip && videoSession.selected) {
-                        MusicVideoPresentation(videoSession, binder?.player, inPip = true)
-                    } else if (isCurrentInPip) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Transparent)
-                        ) {
-                            when (pipModule) {
-                                PipModule.Cover -> {
-                                    PipModuleContainer {
-                                        PipModuleCover(
-                                            url = binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri
-                                                ?.toString()
-                                                ?.resize(1000, 1000)
-                                                .orEmpty()
-                                        )
-                                    }
-                                }
-
-                            }
-
-                        }
-
-                    } else
-                             CompositionLocalProvider(
-                             LocalIndication provides ripple(bounded = true),
-                            LocalGlassMenuHost provides glassMenuHost,
-                            app.n_zik.android.components.glass.LocalGlassPlayerOverlayActive provides
-                                (!playerSheetState.isDismissed && !playerSheetState.isCollapsed),
-                            LocalRippleConfiguration provides LocalAppearance.current.colorPalette.text.let { color ->
-                                remember(color) { RippleConfiguration(color = color) }
-                            },
-                            LocalShimmerClock provides shimmerClock,
-                            LocalShimmerPalette provides LocalAppearance.current.colorPalette,
-                            LocalPlayerServiceBinder provides binder,
-                            LocalPlaybackPositionClock provides positionClock,
-                            LocalPlayerMusicVideo provides videoSession.takeUnless { pipState.value },
-                            LocalFloatingDock provides pageDock,
-                            app.n_zik.android.components.navigation.LocalSideRailScrollOrigin provides sideRailScrollOrigin,
-                            LocalHomeTopMiniPlayerAnchor provides homeTopMiniAnchor,
-                            app.n_zik.android.components.ui.screens.home.LocalHomeHeaderMotionRegistry provides homeHeaderMotionRegistry,
-                            LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
-                            LocalDownloadHelper provides downloadHelper,
-                            LocalPlayerSheetState provides playerSheetState,
-                            LocalMonetCompat provides monet,
-                            LocalPersistMap provides persistMap,
-                            LocalPendingMiniPlayerAction provides pendingMiniPlayerAction,
-                            app.n_zik.android.core.navigation.LocalMiniPlayerQueueRequest provides
-                                { showQueueOverlay = true },
-                            LocalIsShowingLyrics provides isShowingLyrics,
-                            LocalIsShowingVisualizer provides isShowingVisualizer,
-                            LocalTopBarOffset provides topBarOffsetState,
-                            LocalBottomBarOffset provides bottomBarOffsetState,
-                            app.n_zik.android.core.navigation.LocalRevealScaffold provides revealScaffoldOnNavigation
-                            //LocalInternetConnected provides internetConnected
-                        ) {
-                            GlassRippleProvider {
-                            val sceneGlassSettings = rememberGlassSettings()
-                            var toastNeedsLiveBackdrop by remember { mutableStateOf(false) }
-                            var miniQueueMounted by remember { mutableStateOf(false) }
-                            val miniQueueVisible = showQueueOverlay || miniQueueMounted
-                            // Shared by overlay freshness and the debounced media-presence gate below.
-                            val currentMediaId by (binder?.player?.currentMediaItemIdAsState() ?: remember { mutableStateOf<String?>(null) })
-                            GlassSceneContent(glassMenuHost,
-                                enabled = sceneGlassSettings.enabled && glassRenderer(sceneGlassSettings) != GlassRenderer.Tint,
-                                needsLiveBackdrop = toastNeedsLiveBackdrop || miniQueueVisible,
-                                refreshKey = listOf(
-                                    currentMediaId, appearance.colorPalette,
-                                    navController.currentBackStackEntryAsState().value?.id,
-                                    playerSheetState.isDismissed, playerSheetState.isCollapsed,
-                                    playerSheetState.isExpanded,
-                                    isShowingLyrics.value, isShowingVisualizer.value,
-                                ),
-                                modifier = Modifier.appearanceBackground()) {
-                            GlassModalContent(glassMenuHost,
-                                focusSessionKey = navController.currentBackStackEntryAsState().value?.id) {
-                            app.n_zik.android.components.player.MiniPlayerQueueScene(queueVisible = miniQueueVisible, scene = {
-                            // First-launch onboarding: rendered instead of the main
-                            // navigation while the flag is false. Page changes (permissions ->
-//
-                            // restore -> accounts -> profile -> main app) animate with the user's chosen
-                            // transition effect, same spec as AppNavigation
-                            val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Fade)
-                            AnimatedContent(
-                                targetState = onboardingStep,
-                                transitionSpec = {
-                                    when (transitionEffect) {
-                                        TransitionEffect.None ->
-                                            EnterTransition.None togetherWith ExitTransition.None
-
-                                        TransitionEffect.Expand ->
-                                            scaleIn(animationSpec = tween(350), initialScale = 2.0f) togetherWith
-                                            scaleOut(animationSpec = tween(350), targetScale = 2.0f)
-
-                                        TransitionEffect.Fade ->
-                                            fadeIn(animationSpec = tween(350)) togetherWith
-                                            fadeOut(animationSpec = tween(350))
-
-                                        TransitionEffect.Scale ->
-                                            scaleIn(animationSpec = tween(350)) togetherWith
-                                            scaleOut(animationSpec = tween(350))
-
-                                        TransitionEffect.SlideVertical ->
-                                            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up) togetherWith
-                                            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Up)
-
-                                        TransitionEffect.SlideHorizontal ->
-                                            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) togetherWith
-                                            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
-                                    }
-                                },
-                                label = "onboardingPhase"
-                            ) { phase ->
-                                CompositionLocalProvider(
-                                    app.n_zik.android.components.glass.LocalGlassScope provides
-                                        if (phase == null) app.n_zik.android.components.glass.GlassScope.Shared
-                                        else app.n_zik.android.components.glass.GlassScope.Onboarding,
-                                ) {
-                                when (phase) {
-                                    null -> app.n_zik.android.components.player.PlayerCoveredPage(
-                                        covered = playerSheetState.isExpanded,
-                                        reduceGlassEffects = playerSheetState.isAboveCollapsed,
-                                    ) {
-                                        AppNavigation(
-                                            navController = navController,
-                                            miniPlayer = {},
-                                            hasTopNavBarVisible = NavigationBarPosition.Top.isCurrent() && hasNavBar,
-                                            hasSideNavBarVisible = hasSideNavBarVisible,
-                                            hasPageNavBar = hasNavBar,
-                                            openTabFromShortcut = openTabFromShortcut.takeIf {
-                                                currentRoute?.startsWith(NavRoutes.home.name) == true
-                                            } ?: -1,
-                                            shortcutDelivery = libraryIntentDelivery,
-                                            onShortcutConsumed = { delivery ->
-                                                if (libraryIntentDelivery == delivery) shortcutIntentAction = null
-                                            },
-                                        )
-                                    }
-
-                                    // Step transitions, the step persistence and the flag timing
-                                    // are all handled by advanceOnboarding() + OnboardingStep.advance()
-                                    OnboardingStep.GLASS -> app.n_zik.android.components.onboarding.OnboardingGlassScreen(
-                                        onComplete = { advanceOnboarding() }
-                                    )
-
-                                    OnboardingStep.PERMISSIONS -> OnboardingScreen(
-                                        onComplete = { advanceOnboarding() }
-                                    )
-
-                                    OnboardingStep.IMPORT -> OnboardingImportScreen(
-                                        // "Skip" and a successful restore both advance to
-                                        // the accounts step; a restore additionally restarts
-//
-                                        // the app (flag unwritten), so the restart lands
-                                        // on the next step — the user stays inside onboarding
-                                        onComplete = { advanceOnboarding() }
-                                    )
-
-                                    // The accounts step is no longer the last one — the
-                                    // profile step follows: leaving (even with a Discord
-//
-                                    // token set) advances to NAME, which is persisted
-                                    // before any restart, so the restart lands on the
-//
-                                    // profile step with the complete flag unwritten
-                                    OnboardingStep.ACCOUNTS -> OnboardingAccountsScreen(
-                                        onComplete = { advanceOnboarding() }
-                                    )
-
-                                    // The profile step: the base clone's identity (name,
-                                    // face name source, photo, face avatar source) — the
-//
-                                    // last step. The enum value stays NAME (the
-                                    // persisted step is the enum name — renaming it would
-//
-                                    // restart an in-flight onboarding at PERMISSIONS)
-                                    OnboardingStep.NAME -> OnboardingProfileScreen(
-                                        onComplete = { advanceOnboarding() }
-                                    )
-                                }
-                                } // end onboarding Glass scope
-                            }
-
-                            // The restart prompt (a Discord-token restart from the
-                            // accounts step, a post-import restart) must survive the
-//
-                            // step transition: it is composed in the onboarding
-                            // container, not in the leaving step screen — a
-//
-                            // screen-local Render would uncompose with the
-//
-                            // AnimatedContent exit (0 ms for TransitionEffect.None)
-                            // and the prompt would vanish before the user sees it.
-//
-                            // Gated on the flow being alive: once complete, the
-                            // settings screen composes its own Render
-                            if (onboardingStep != null) RestartAppDialog.Render()
-
-                            // The one-time Samsung storage advice: the mirror of the
-                            // restart prompt above (that one shows DURING onboarding,
-                            // this one once it is done), and the non-PiP branch only,
-                            // the same placement as RestartAppDialog.
-                            if (onboardingStep == null) SamsungStorageAdviceDialog.Render()
-
-                            val disableClosingPlayerSwipingDown by rememberPreference(disableClosingPlayerSwipingDownKey, false)
-                            // Listen Together guest lock (spec-listen-together-guest-lock-hardening,
-                            // matrix row MINIPLAYER_DISMISS_GUEST): the dismiss-swipe's onDismiss is
-//
-                            // destructive for the room — it clears the queue synced from the host,
-//
-                            // stops the radio and stops the player service. While a guest is locked,
-//
-                            // the gesture itself is disabled, so the room cannot be "cleaned" from
-                            // a guest device.
-                            val ltGuestLocked by app.n_zik.android.listentogether.listenTogetherGuestLock
-        checkIfAppIsRunningInBackground()
-
-                            // Debounced media presence: Listen Together replaces the whole queue on
-                            // every track change (setMediaItems), which briefly clears the current
-//
-                            // media item. Reacting to that transient null would close the player
-                            // sheet on each track change (user-reported), so "no media" is only
-//
-                            // accepted once the absence persists.
-                            var mediaPresent by remember(binder) {
-                                mutableStateOf(binder?.player?.currentMediaItem != null)
-                            }
-
-                            // Keyed on the sheet too: a rebuilt sheet (rotation, insets) starts from
-                            // its last anchor and must be re-checked against the current media
-                            LaunchedEffect(currentMediaId, playerSheetState) {
-                                if (currentMediaId == null) {
-                                    delay(400)
-                                    if (binder?.player?.currentMediaItem != null) return@LaunchedEffect
-                                    mediaPresent = false
-                                    if (!playerSheetState.isDismissed) {
-                                        playerSheetState.dismiss()
-                                    }
-                                    showQueueOverlay = false
-                                } else {
-                                    mediaPresent = true
-                                    // After recreate() the player service is not bound yet, so media
-                                    // reads as absent and the sheet is dismissed above; bring the
-//
-                                    // mini-player back once media returns
-                                    playerSheetState.showMiniplayerIfDismissed()
-                                }
-                            }
-
-                            // Full-screen routes have their own mini-player transition.
-                            val isMiniplayerHiddenRoute = isMiniplayerHiddenRoute(currentRoute)
-                            val miniplayerHideProgress = animateFloatAsState(
-                                targetValue = if (isMiniplayerHiddenRoute) 1f else 0f,
-                                animationSpec = spring(
-                                    dampingRatio = Spring.DampingRatioLowBouncy,
-                                    stiffness = Spring.StiffnessMediumLow
-                                ),
-                                label = "miniplayerHideDismiss"
-                            )
-
-                            // Keep the card mounted through the slide to the dismissed anchor.
-                            if (shouldComposePlayerSheet(mediaPresent, playerSheetState.isDismissed)) {
-                                val artworkInMotion = remember { mutableStateOf(false) }
-                                Box(
-                                    modifier = Modifier.fillMaxSize()
-                                        .graphicsLayer {
-                                            translationY = miniplayerHideProgress.value * 160.dp.toPx()
-                                            alpha = (1f - miniplayerHideProgress.value).coerceIn(0f, 1f)
-                                            compositingStrategy = CompositingStrategy.ModulateAlpha
-                                        }
-                                ) {
-                                        CustomBottomSheet(
-                                            state = playerSheetState,
-                                            modifier = Modifier.fillMaxWidth(),
-                                            onDismiss = {
-                                                binder?.stopRadio()
-                                                binder?.player?.clearMediaItems()
-                                                runCatching {
-                                                    this@MainActivity.stopService(this@MainActivity.intent<app.n_zik.android.playback.services.PlayerServiceModern>())
-                                                }
-                                            },
-                                            bottomPadding = {
-                                                val dockPadding = if (floatingDockEnabled && !topDock && !isTopPlayer)
-                                                    navBarBottomPad + dockGeometry().miniBottomOffset.dp * dockPresence.value
-                                                else playerPadBottom.value
-                                                dockPadding + with(density) {
-                                                    if (isTopPlayer) 0.dp else bottomNavigationImeLift().toDp()
-                                                }
-                                            },
-                                            topPadding = playerTopPadding,
-                                            placementKey = playerPlacementKey,
-                                            verticalOffset = {
-                                                with(density) {
-                                                    if (isTopPlayer) 0.dp else bottomBarOffsetState.value.roundToInt().toDp()
-                                                }
-                                            },
-                                            collapsedStartInset = playerStartInset,
-                                            collapsedEndInset = playerEndInset,
-                                            collapsedContentHeight = Dimensions.collapsedPlayer,
-                                            collapsedHeightProvider = { dockGeometry().miniHeight.dp },
-                                            collapsedStartInsetProvider = {
-                                                maxOf(playerStartInset, playerSafeStartInset -
-                                                    16.dp * (1f - floatingDockProgress.value)) +
-                                                    floatingMiniStandaloneInset(dockSafeWidth.value, floatingDockProgress.value, isLandscape).dp.let { standalone ->
-                                                        if (!floatingDockEnabled || !floatingDock.hasAttachedMini) standalone else standalone +
-                                                            (dockGeometry().miniSideInset.dp - standalone) * dockPresence.value
-                                                    }
-                                            },
-                                            collapsedEndInsetProvider = {
-                                                maxOf(playerEndInset, playerSafeEndInset -
-                                                    16.dp * (1f - floatingDockProgress.value)) +
-                                                    floatingMiniStandaloneInset(dockSafeWidth.value, floatingDockProgress.value, isLandscape).dp.let { standalone ->
-                                                        if (!floatingDockEnabled || !floatingDock.hasAttachedMini) standalone else standalone +
-                                                            (dockGeometry().miniEndInset.dp - standalone) * dockPresence.value
-                                                    }
-                                            },
-                                            collapsedHorizontalPaddingProvider = { 16.dp * (1f - floatingDockProgress.value) },
-                                            disableDismiss = shouldDisablePlayerSheetDismiss(disableClosingPlayerSwipingDown, ltGuestLocked),
-                                            // Guest lock: a blocked "clean the player" attempt is explained by the
-                                            // shared throttled toast (the destructive onDismiss is unreachable
-//
-                                            // while disabled). The "disable closing swiping down" setting alone
-                                            // stays silent — it is the user's own choice.
-                                            onDismissBlocked = {
-                                                if (ltGuestLocked) ListenTogetherGuestGuardPlayer.reportUiBlockedOp(this@MainActivity)
-                                            },
-                                            collapsedContent = {
-                                                val toastObstructionVisible by remember(playerSheetState, isTopPlayer) {
-                                                    derivedStateOf {
-                                                        !isTopPlayer && playerSheetState.isCollapsed && miniplayerHideProgress.value < .99f
-                                                    }
-                                                }
-                                                CompositionLocalProvider(LocalCompactMiniPlayerProgressProvider provides
-                                                    { floatingDockProgress.value }) {
-                                                Box(Modifier.fillMaxWidth()
-                                                    .trackToastObstruction(
-                                                        enabled = toastObstructionVisible,
-                                                    )) {
-                                                MiniPlayer(
-                                                    showPlayer = {
-                                                        playerSheetState.expandSoft()
-                                                    },
-                                                    hidePlayer = {
-                                                        coroutineScope.launch {
-                                                            playerSheetState.hide()
-                                                        }
-                                                    },
-                                                    navController = navController
-                                                )
-                                                }
-                                                }
-                                            }
-                                        ) {
-                                            PaletteFade(durationMillis = 360, artworkInMotion = artworkInMotion) {
-                                                Player(navController, artworkInMotion = artworkInMotion) {
-                                                    coroutineScope.launch {
-                                                        playerSheetState.hide()
-                                                    }
-                                                }
-                                            }
-                                        }
-                                }
-                            }
-
-                            }, overlay = {
-                            MiniPlayerQueueOverlay(
-                                showSheet = showQueueOverlay,
-                                navController = navController,
-                                onDismiss = { showQueueOverlay = false },
-                                onVisibilityChange = { miniQueueMounted = it },
-                            )
-                            })
-
-                            ManualVideoSearchSheet(
-                                query = videoSession.manualSearchQuery.takeUnless { pipState.value },
-                                onDismiss = { videoSession.manualSearchQuery = null },
-                            )
-
-                            val menuState = LocalMenuState.current
-                            val menuSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-                            AppearanceMenuSheet(
-                                showSheet = menuState.isDisplayed,
-                                onDismissRequest = menuState::hide,
-                                sheetState = menuSheetState,
-                            ) {
-                                AnimatedContent(
-                                    targetState = menuState.contentState,
-                                    transitionSpec = {
-                                        slideInHorizontally(animationSpec = tween(300)) { width -> width / 2 } + fadeIn(animationSpec = tween(300)) togetherWith 
-                                        slideOutHorizontally(animationSpec = tween(300)) { width -> -width / 2 } + fadeOut(animationSpec = tween(300))
-                                    },
-                                    label = "MenuContentTransition"
-                                ) { target ->
-                                    BackHandler(enabled = menuState.hasPrevious) {
-                                        menuState.pop()
-                                    }
-                                    Box(modifier = Modifier.fillMaxWidth()) {
-                                        target.second()
-                                    }
-                                }
-                            }
-
-                            }
-                            }
-                            val toastGlass = rememberGlassSettings(app.n_zik.android.components.glass.GlassScope.Toast)
-                            app.n_zik.android.components.glass.GlassToastOverlayScene(
-                                backdrop = glassMenuHost.modalBackdrop,
-                                captureOverlays = toastNeedsLiveBackdrop &&
-                                    toastGlass.usesGlassMaterial(GlassArea.Menus) &&
-                                    app.n_zik.android.components.glass.glassContentCaptureEnabled(toastGlass) &&
-                                    (glassMenuHost.dialogs.hasDialogs || glassMenuHost.entry != null),
-                                overlays = {
-                                    GlassDialogOverlayHost(glassMenuHost)
-                                    // Draw anchored glass menus above both navigation and the player.
-                                    GlassOverlayHost(glassMenuHost)
-                                },
-                            ) { toastBackdrop ->
-                                app.n_zik.android.components.glass.GlassToastHost(
-                                    backdrop = toastBackdrop,
-                                    onPresenceChanged = { toastNeedsLiveBackdrop = it },
-                                    bottomInset = with(LocalDensity.current) {
-                                        windowsInsets.getBottom(this).toDp()
-                                    },
-                                )
-                            }
-                            }
-
-                        }
-
-                        if (videoSession.selected && videoSession.fullscreen && !pipState.value) {
-                            Box(Modifier.fillMaxSize().zIndex(1f)) {
-                                CompositionLocalProvider(
-                                    LocalPlayerServiceBinder provides binder,
-                                    LocalPlaybackPositionClock provides positionClock,
-                                ) {
-                                    MusicVideoPresentation(videoSession, binder?.player, inPip = false)
-                                }
-                            }
-                        }
-                        }
-                }
-                // Issue #881 (gh-881): tolerant saver — this slot lives in the BoxWithConstraints
-                // sub-composition, the exact spot where the 15:23:55 CCE crashed (spec M5).
-                var isPlayerInitialized by rememberSaveable(saver = TolerantBoolStateSaver("main.isPlayerInitialized")) { mutableStateOf(false) }
-                val playerUpdateTrigger by binder?.playerUpdateTrigger?.collectAsStateWithLifecycle(0) ?: remember { mutableStateOf(0) }
-                DisposableEffect(binder?.player, playerUpdateTrigger) {
-                    val currentBinder = binder ?: return@DisposableEffect onDispose { }
-                    val player = currentBinder.player
-
-                    val paletteArtworkListener = DynamicPaletteArtworkListener(player) {
-                        // The expanded player owns its scoped PaletteFade. Its covered screen needs only the target.
-                        setDynamicPalette(player) { !playerSheetState.isExpanded }
-                    }
-                    player.addListener(paletteArtworkListener)
-                    paletteArtworkListener.publishCurrentArtwork()
-
-                    // "Now playing" notification tap — COLD start (spec-notification-click-opens-player):
-                    // the held tap token is validated against the CURRENT service's token (via
-//
-                    // the Binder) on EVERY run of this effect, not only at init: a valid token
-//
-                    // with no media yet is HELD and re-checked when media arrives (queue
-                    // restore / early binder attach); a stale token (task-record re-send after
-//
-                    // a process death — the restarted service minted a new token) is
-//
-                    // discarded, no deployment. There is no persistent marker: staleness is
-                    // the service's live token, not a stored value.
-                    val heldOpenPlayerToken = openPlayerColdToken
-                    var deployedNow = false
-                    if (heldOpenPlayerToken != null) {
-                        if (heldOpenPlayerToken != currentBinder.openPlayerToken) {
-                            // Stale (process-death re-send: the service restarted and minted a
-                            // new token) → discard, no deployment.
-                            openPlayerColdToken = null
-                        } else if (player.currentMediaItem != null) {
-                            openPlayerColdToken = null
-                            // Decision 2026-10-03 (spec-notification-click-opens-player): the
-                            // notification tap ALWAYS deploys the full player — the
-//
-                            // keepPlayerMinimized setting is NOT consulted on this path
-//
-                            // (a deliberate tap, distinct from the widget/historical
-//
-                            // cold start that honors the setting).
-                            // Anti-flicker: a sheet already above the expanded bound is left
-                            // alone (no visible collapse→expand on a tap while the full player
-//
-                            // is open).
-                            if (playerSheetState.value < playerSheetState.expandedBound) {
-                                coroutineScope.presentMiniplayerThenExpand(playerSheetState, onPresent = { restoreHiddenBars() })
-                            }
-                            deployedNow = true
-                        }
-                        // valid + no media: held — re-checked on the next playerUpdateTrigger.
-                    }
-
-                    if (!isPlayerInitialized) {
-                        isPlayerInitialized = true
-                        if (player.currentMediaItem != null && !deployedNow) {
-                            if (launchedFromNotification) intent.replaceExtras(Bundle())
-                            if (launchedFromNotification && !preferences.getBoolean(keepPlayerMinimizedKey, true)) {
-                                coroutineScope.presentMiniplayerThenExpand(playerSheetState, onPresent = { restoreHiddenBars() })
-                            } else {
-                                playerSheetState.presentMiniplayerCollapsed()
-                            }
-                        }
-                    }
-
-                    val listener = object : Player.Listener {
-                        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                            if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
-                                if (mediaItem.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
-                                    if (playerSheetState.isExpanded) return
-                                    if (preferences.getBoolean(keepPlayerMinimizedKey, true)) {
-                                        // Collapsed position; pops with a fade when coming from the dismissed zone
-                                        playerSheetState.presentMiniplayerCollapsed()
-                                    } else {
-                                        coroutineScope.presentMiniplayerThenExpand(playerSheetState, onPresent = { restoreHiddenBars() })
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    player.addListener(listener)
-
-                    onDispose {
-                        player.removeListener(listener)
-                        player.removeListener(paletteArtworkListener)
-                    }
-                }
-
-                InitDownloader()
-
-                }
-            }
-
-            DrainDeferredLibraryIntents(
-                lifecycle = lifecycle,
-                navController = navController,
-                navigationReady = onboardingStep == null,
-                queue = deferredLaunchIntents,
-                awaitRestoredNavigation = {
-                    if (awaitingDeferredNavigation) {
-                        snapshotFlow(::libraryIntentConsumersIdle).first { it }
-                        awaitingDeferredNavigation = false
-                    }
-                },
-                consumersIdle = ::libraryIntentConsumersIdle,
-                dispatch = ::consumeNewLibraryIntent,
-            )
-            DeliverLibraryUri(
-                lifecycle = lifecycle,
-                navController = navController,
-                uri = intentUriData,
-                delivery = libraryIntentDelivery,
-                navigationReady = onboardingStep == null,
-                isStillPending = { uri, delivery -> intentUriData == uri && libraryIntentDelivery == delivery },
-                open = { openLibraryUri(navController, it) },
-                onDelivered = { intentUriData = null },
-            )
-        }
+        },
+        consumersIdle = ::libraryIntentConsumersIdle,
+        dispatch = ::consumeNewLibraryIntent,
+    )
+    DeliverLibraryUri(
+        lifecycle = lifecycle,
+        navController = navController,
+        uri = intentUriData,
+        delivery = libraryIntentDelivery,
+        navigationReady = onboardingStep == null,
+        isStillPending = { uri, delivery -> intentUriData == uri && libraryIntentDelivery == delivery },
+        open = { openLibraryUri(navController, it) },
+        onDelivered = { intentUriData = null },
+    )
     }
 
     @OptIn(UnstableApi::class)
@@ -2647,24 +716,19 @@ class MainActivity :
             (BuildConfig.DEBUG && intent.action == action_debug_open_updater)
         // Direct profile shortcut (warm, app ON path): a different valid profile runs the full
         // CAP-3 switch + process exit; the same/unknown one is a bare consumption — the extras
-//
         // are stripped before the intent is kept, so the next singleTask re-delivery decodes to
         // nothing (same contract as onCreate and the rewind deep links).
         consumeProfileShortcutWarm(intent)
         // Rewind notification deep links (deck / playlist): consume the fresh intent's
         // targets BEFORE keeping it as the current intent — app ON path, same contract as
-//
         // onCreate (spec GH-275 follow-up): an unconsumed target opens, an already-consumed
         // one (task record re-send / singleTask relaunch) is rejected, and the extras are
-//
         // stripped so the kept intent decodes to nothing on the next re-delivery.
         consumeRewindDeepLinks(intent)
         // "Now playing" notification tap (spec-notification-click-opens-player): consume
         // the fresh intent's open-player token BEFORE keeping it as the current intent —
-//
         // app ON path, same contract as onCreate: a positive token arms the warm
         // deployment flag (always fresh — a warm tap is a fresh fire of the PendingIntent,
-//
         // no live comparison needed), and the extra is stripped either way.
         consumeOpenPlayerDeepLink(intent, cold = false)
         setIntent(intent)
@@ -2730,7 +794,7 @@ class MainActivity :
 
     }
 
-    private fun savePaletteForWidget(palette: ColorPalette) {
+    internal fun savePaletteForWidget(palette: ColorPalette) {
         preferences.edit()
             .putInt("widget_palette_accent", palette.accent.toArgb())
             .putInt("widget_palette_background1", palette.background1.toArgb())
@@ -2751,13 +815,13 @@ class MainActivity :
         setContent { InterfaceLayoutDirection(content) }
     }
 
-    private fun configuredAppearance(isSystemInDarkTheme: Boolean): Appearance =
+    internal fun configuredAppearance(isSystemInDarkTheme: Boolean): Appearance =
         configuredApplicationAppearance(this, isSystemInDarkTheme) {
             Color(monet.getAccentColor(this))
         }
 
     @Composable
-    private fun PageSystemBarAppearance(glassMenuHost: GlassMenuHostState) {
+    internal fun PageSystemBarAppearance(glassMenuHost: GlassMenuHostState) {
         val background = LocalAppearance.current.colorPalette.background0
         val dark = app.n_zik.android.components.glass.neutralForeground(
             glassMenuHost.dialogs.systemBarSurface(background),
@@ -2829,7 +893,6 @@ class MainActivity :
         const val action_library = "app.n_zik.android.action.library"
         // Profile shortcuts (spec-profile-shortcuts): the generic one opens the profiles page;
         // the direct per-profile one carries the stable profile ID in [EXTRA_PROFILE_ID] and
-//
         // launches in it (cold) or switches to it (warm).
         const val action_profiles = "app.n_zik.android.action.profiles"
         const val action_profile = "app.n_zik.android.action.profile"
@@ -2841,10 +904,8 @@ class MainActivity :
         const val EXTRA_PROFILE_ID = "profileId"
         // "Now playing" notification tap (spec-notification-click-opens-player): the
         // notification's content intent — PlayerServiceModern's global session activity
-//
         // (the PendingIntent media3 uses as the notification content intent, option B) —
         // carries this one-shot token. The tap always deploys the full player, regardless
-//
         // of the keepPlayerMinimized setting.
         const val EXTRA_OPEN_PLAYER_TOKEN = "openPlayerToken"
     }
@@ -2860,12 +921,6 @@ class MainActivity :
         if (!isInitialChange && colorPaletteName == ColorPaletteName.MaterialYou &&
             shouldRecreateActivity(Database.isClosed)
         ) {
-            /*
-            monet.updateMonetColors()
-            monet.invokeOnReady {
-                startApp()
-            }
-             */
             this@MainActivity.recreate()
         }
     }
@@ -2890,8 +945,6 @@ val LocalDownloadHelper = staticCompositionLocalOf<MyDownloadHelper> { error("No
 
 val LocalPlayerSheetState =
     staticCompositionLocalOf<PlayerSheetState> { error("No player sheet state provided") }
-
-//val LocalInternetConnected = staticCompositionLocalOf<Boolean> { error("No Network Status provided") }
 
 val LocalPendingMiniPlayerAction = staticCompositionLocalOf<MutableState<PendingMiniPlayerAction?>> { error("No PendingMiniPlayerAction state provided") }
 val LocalIsShowingLyrics = staticCompositionLocalOf<MutableState<Boolean>> { error("No LocalIsShowingLyrics provided") }

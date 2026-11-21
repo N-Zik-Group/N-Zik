@@ -3,6 +3,7 @@ package app.n_zik.android.components.onboarding
 import android.app.Application
 import android.content.Context
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +27,8 @@ import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.R
 import app.n_zik.android.utils.preferences
+import app.n_zik.android.components.glass.GlassScope
+import app.n_zik.android.components.glass.LocalGlassScope
 import app.n_zik.android.components.glass.glassEnabledKey
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -142,6 +145,28 @@ class OnboardingScreenComposeTest {
         composeRule.onNodeWithTag("onboarding.glass").assertDoesNotExist()
         assertEquals("ACCOUNTS", DataStoreUtils.getString(app, DataStoreUtils.KEY_ONBOARDING_STEP, ""))
         assertFalse(DataStoreUtils.getBoolean(app, DataStoreUtils.KEY_ONBOARDING_COMPLETE, false))
+    }
+
+    @Test
+    fun `continuing from the profile step shows the library with the shared Glass scope`() {
+        val step = mutableStateOf<OnboardingStep?>(OnboardingStep.NAME)
+        content {
+            CompositionLocalProvider(LocalGlassScope provides GlassScope.Home) {
+                OnboardingFlow(step.value, onAdvance = { step.value = step.value?.advance() }) {
+                    Text("Library: ${LocalGlassScope.current.name}")
+                }
+            }
+        }
+
+        val library = composeRule.onNodeWithText("Library: ${GlassScope.Shared.name}")
+        library.assertDoesNotExist()
+        composeRule.onNodeWithText(app.getString(R.string.onboarding_profile_continue))
+            .performScrollTo()
+            .assertIsDisplayed()
+            .performClick()
+
+        library.assertIsDisplayed()
+        composeRule.onNodeWithText(app.getString(R.string.onboarding_profile_title)).assertDoesNotExist()
     }
 
     @Test
