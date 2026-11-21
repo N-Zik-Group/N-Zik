@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">监听事件通知</string>
+    <string name="listen_together_notification_channel_description">在聆听其他人的意见的同时进行房间邀请和活动。</string>
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">一同监听</string>
+    <!-- Android notification channels -->
+    <string name="notification_group_audio">音频</string>
+    <string name="notification_group_tools_updates">工具和更新</string>
+    <string name="notification_channel_playback">媒体播放</string>
+    <string name="notification_channel_playback_description">显示当前曲目和播放控件。</string>
+    <string name="notification_channel_sleep_timer_description">显示睡眠计时器状态和计时器结束时的警报。</string>
+    <string name="notification_channel_audio_downloads">音频下载</string>
+    <string name="notification_channel_audio_downloads_description">显示音频进度和结果以保存为离线监听。</string>
+    <string name="notification_channel_rewind_description">每个月或每年的监听记录准备就绪时让您知道。</string>
+    <string name="notification_channel_song_matching_description">显示导入歌曲匹配的进度和结果。</string>
+    <string name="notification_channel_pc_server_description">显示 PC 遥控器运行时并提供停止的方式。</string>
+    <string name="notification_channel_app_updates_description">显示下载一个 N-Zik 更新的进度和结果。</string>
+    <string name="notification_channel_module_downloads_description">显示可选扩展下载的进度和结果。</string>
+    <string name="notification_channel_theme_submissions">主题存储提交</string>
+    <string name="notification_channel_theme_submissions_description">报告您提交的主题和创建者配置文件的状态变化。</string>
+    <string name="notification_channel_theme_publications">主题存储出版物</string>
+    <string name="notification_channel_theme_publications_description">向您下载的主题发布新主题和更新。</string>
+    <string name="notification_channel_theme_downloads">主题存储下载</string>
+    <string name="notification_channel_theme_downloads_description">当一个主题下载完成时让您知道.</string>
+    <string name="notification_channel_theme_previews">主题预览生成</string>
+    <string name="notification_channel_theme_previews_description">显示主题截图进度并取消生成。</string>
     <!-- Player Notification -->
     <string name="player_notification_pause">暂停</string>
 </resources>
