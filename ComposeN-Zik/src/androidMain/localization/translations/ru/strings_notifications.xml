@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">Уведомления о сообщениях</string>
+    <string name="listen_together_notification_channel_description">Приглашения и активность в комнате во время прослушивания с другими.</string>
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">Слушайте вместе</string>
+    <!-- Android notification channels -->
+    <string name="notification_group_audio">Аудио</string>
+    <string name="notification_group_tools_updates">Инструменты и обновления</string>
+    <string name="notification_channel_playback">Воспроизведение</string>
+    <string name="notification_channel_playback_description">Показать управление текущей дорожкой и воспроизведением.</string>
+    <string name="notification_channel_sleep_timer_description">Показывать состояние таймера сна и оповещения по окончании таймера.</string>
+    <string name="notification_channel_audio_downloads">Аудио загрузки</string>
+    <string name="notification_channel_audio_downloads_description">Показать прогресс и результаты звука, сохраненного для оффлайн прослушивания.</string>
+    <string name="notification_channel_rewind_description">Сообщите Вам, когда ежемесячная или ежегодная прослушивание резюме готово.</string>
+    <string name="notification_channel_song_matching_description">Показать прогресс и результаты совпадения импортированных песен.</string>
+    <string name="notification_channel_pc_server_description">Показывать, когда запущен пульт дистанционного управления ПК и дать возможность остановить его.</string>
+    <string name="notification_channel_app_updates_description">Показать прогресс и результат загрузки обновления N-Zik.</string>
+    <string name="notification_channel_module_downloads_description">Показать прогресс и результаты для дополнительных загрузок расширения.</string>
+    <string name="notification_channel_theme_submissions">Сдача в хранилище тем</string>
+    <string name="notification_channel_theme_submissions_description">Сообщить об изменениях статуса для ваших созданных тем и профиля создателя.</string>
+    <string name="notification_channel_theme_publications">Публикации в магазине тем</string>
+    <string name="notification_channel_theme_publications_description">Объявить новые темы и обновления для загруженных вами тем.</string>
+    <string name="notification_channel_theme_downloads">Загрузка в хранилище тем</string>
+    <string name="notification_channel_theme_downloads_description">Сообщите вам, когда закончится загрузка темы.</string>
+    <string name="notification_channel_theme_previews">Генерация предварительного просмотра темы</string>
+    <string name="notification_channel_theme_previews_description">Показать тему скриншота и позволить вам отменить генерацию.</string>
     <!-- Player Notification -->
     <string name="player_notification_pause">Пауза</string>
 </resources>

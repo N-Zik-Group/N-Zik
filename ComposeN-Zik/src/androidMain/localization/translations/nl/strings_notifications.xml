@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">Meldingen voor Luisteren samen gebeurtenissen</string>
+    <string name="listen_together_notification_channel_description">Kamer uitnodigingen en activiteit terwijl je met anderen luistert.</string>
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">Luister Samen</string>
+    <!-- Android notification channels -->
+    <string name="notification_group_audio">Geluid</string>
+    <string name="notification_group_tools_updates">Hulpmiddelen en updates</string>
+    <string name="notification_channel_playback">Media afspelen</string>
+    <string name="notification_channel_playback_description">Toon de huidige track en afspeelregelingen.</string>
+    <string name="notification_channel_sleep_timer_description">Toon status van slaaptimer en waarschuwingen wanneer de timer eindigt.</string>
+    <string name="notification_channel_audio_downloads">Audio downloads</string>
+    <string name="notification_channel_audio_downloads_description">Toon vooruitgang en resultaten voor audio opgeslagen voor offline luisteren.</string>
+    <string name="notification_channel_rewind_description">Laat het u weten wanneer een maandelijkse of jaarlijkse luisterrecap gereed is.</string>
+    <string name="notification_channel_song_matching_description">Toon de voortgang en resultaten van geïmporteerde nummers.</string>
+    <string name="notification_channel_pc_server_description">Toon wanneer PC afstandsbediening wordt uitgevoerd en een manier om dit te stoppen.</string>
+    <string name="notification_channel_app_updates_description">Toon de voortgang en resultaat van het downloaden van een N-Zik update.</string>
+    <string name="notification_channel_module_downloads_description">Toon vooruitgang en resultaten voor optionele downloads van extensies.</string>
+    <string name="notification_channel_theme_submissions">Thema winkel inwerkingen</string>
+    <string name="notification_channel_theme_submissions_description">Rapporteer status wijzigingen voor de ingediende thema\'s en maak profiel aan.</string>
+    <string name="notification_channel_theme_publications">Thema winkel publicaties</string>
+    <string name="notification_channel_theme_publications_description">Kondig nieuwe thema\'s en updates aan voor thema\'s die u heeft gedownload.</string>
+    <string name="notification_channel_theme_downloads">Thema winkel downloads</string>
+    <string name="notification_channel_theme_downloads_description">Laat het je weten wanneer een thema is gedownload.</string>
+    <string name="notification_channel_theme_previews">Thema voorvertoning</string>
+    <string name="notification_channel_theme_previews_description">Toon screenshot voortgang van het thema en laat u de generatie annuleren.</string>
     <!-- Player Notification -->
     <string name="player_notification_pause">Onderbreken</string>
 </resources>

@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">Ilmoitukset Kuuntele yhdessä tapahtumia</string>
+    <string name="listen_together_notification_channel_description">Huoneen kutsut ja aktiviteetti kuunnellen samalla muita.</string>
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">Kuuntele Yhdessä</string>
+    <!-- Android notification channels -->
+    <string name="notification_group_audio">Ääni</string>
+    <string name="notification_group_tools_updates">Työkalut ja päivitykset</string>
+    <string name="notification_channel_playback">Median toisto</string>
+    <string name="notification_channel_playback_description">Näytä nykyisen kappaleen ja soiton ohjaimet.</string>
+    <string name="notification_channel_sleep_timer_description">Näytä nukkumisajastimen tila ja hälytykset, kun ajastin päättyy.</string>
+    <string name="notification_channel_audio_downloads">Äänen lataukset</string>
+    <string name="notification_channel_audio_downloads_description">Näytä edistyminen ja tulokset äänelle, joka on tallennettu offline-kuunteluun.</string>
+    <string name="notification_channel_rewind_description">Kerro sinulle, kun kuukausittainen tai vuosittainen kuuntelukerta on valmis.</string>
+    <string name="notification_channel_song_matching_description">Näytä tuotujen kappaleiden täsmäytyksen edistyminen ja tulokset.</string>
+    <string name="notification_channel_pc_server_description">Näytä kun PC-kaukosäädin on käynnissä ja antaa tapa pysäyttää se.</string>
+    <string name="notification_channel_app_updates_description">Näytä edistyminen ja tulokset ladattaessa N-Zik päivitystä.</string>
+    <string name="notification_channel_module_downloads_description">Näytä edistyminen ja tulokset valinnaisille lisäosien latauksille.</string>
+    <string name="notification_channel_theme_submissions">Teemakaupan esitykset</string>
+    <string name="notification_channel_theme_submissions_description">Ilmoita tilamuutoksista lähetetyille teemoille ja luojan profiilille.</string>
+    <string name="notification_channel_theme_publications">Teemakaupan julkaisut</string>
+    <string name="notification_channel_theme_publications_description">Ilmoittaudu uusista teemoista ja päivityksistä ladattuihin teemoihin.</string>
+    <string name="notification_channel_theme_downloads">Teemakaupan lataukset</string>
+    <string name="notification_channel_theme_downloads_description">Kerro sinulle, kun teema lataa päättyy.</string>
+    <string name="notification_channel_theme_previews">Teeman esikatselun luominen</string>
+    <string name="notification_channel_theme_previews_description">Näytä teeman kuvakaappauksen edistyminen ja voit peruuttaa generoinnin.</string>
     <!-- Player Notification -->
     <string name="player_notification_pause">Tauko</string>
 </resources>

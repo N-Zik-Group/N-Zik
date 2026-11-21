@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">Notificări pentru evenimente ascultare Împreună</string>
+    <string name="listen_together_notification_channel_description">Invitații și activitate în cameră în timp ce ascultați alte persoane.</string>
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">Ascultă împreună</string>
+    <!-- Android notification channels -->
+    <string name="notification_group_audio">Audio</string>
+    <string name="notification_group_tools_updates">Instrumente și actualizări</string>
+    <string name="notification_channel_playback">Redare media</string>
+    <string name="notification_channel_playback_description">Arată comenzile de redare și piesa curentă.</string>
+    <string name="notification_channel_sleep_timer_description">Arată statusul cronometrului de somn și alertele când se termină cronometrul.</string>
+    <string name="notification_channel_audio_downloads">Descărcări audio</string>
+    <string name="notification_channel_audio_downloads_description">Arată progresul și rezultatele pentru audio salvate pentru ascultarea offline.</string>
+    <string name="notification_channel_rewind_description">Anunţaţi-vă când un recap de ascultare lunar sau anual este gata.</string>
+    <string name="notification_channel_song_matching_description">Arată progresul şi rezultatele melodiilor importate care se potrivesc.</string>
+    <string name="notification_channel_pc_server_description">Arată când se execută comanda PC la distanță și oferă o modalitate de a o opri.</string>
+    <string name="notification_channel_app_updates_description">Arată progresul și rezultatul descărcării unei actualizări N-Zik.</string>
+    <string name="notification_channel_module_downloads_description">Arată progresul şi rezultatele pentru descărcările opţionale de extensii.</string>
+    <string name="notification_channel_theme_submissions">Soluții Magazin Teme</string>
+    <string name="notification_channel_theme_submissions_description">Raportează modificările de stare pentru temele prezentate și profilul creatorului.</string>
+    <string name="notification_channel_theme_publications">Publicații Magazin Teme</string>
+    <string name="notification_channel_theme_publications_description">Anunțați teme noi și actualizări pe temele pe care le-ați descărcat.</string>
+    <string name="notification_channel_theme_downloads">Descărcările magazinului de teme</string>
+    <string name="notification_channel_theme_downloads_description">Anunţă-ţi când se termină o descărcare a temei.</string>
+    <string name="notification_channel_theme_previews">Generarea previzualizării temei</string>
+    <string name="notification_channel_theme_previews_description">Arată progresul capturii temei și îți permite să anulezi generația.</string>
     <!-- Player Notification -->
     <string name="player_notification_pause">Întrerupeți</string>
 </resources>

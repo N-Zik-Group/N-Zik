@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">Notifikationer til Lyt sammen begivenheder</string>
+    <string name="listen_together_notification_channel_description">Room invitationer og aktivitet, mens du lytter med andre.</string>
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">Lyt Sammen</string>
+    <!-- Android notification channels -->
+    <string name="notification_group_audio">Lyd</string>
+    <string name="notification_group_tools_updates">Værktøjer og opdateringer</string>
+    <string name="notification_channel_playback">Medieafspilning</string>
+    <string name="notification_channel_playback_description">Vis det aktuelle spor og afspilningskontrol.</string>
+    <string name="notification_channel_sleep_timer_description">Vis søvntimerstatus og advarsler, når timeren slutter.</string>
+    <string name="notification_channel_audio_downloads">Overførsler af lyd</string>
+    <string name="notification_channel_audio_downloads_description">Vis fremskridt og resultater for lyd gemt til offline lytning.</string>
+    <string name="notification_channel_rewind_description">Lad dig vide, hvornår en månedlig eller årlig lyttegenvinding er klar.</string>
+    <string name="notification_channel_song_matching_description">Vis fremskridt og resultater for matchende importerede sange.</string>
+    <string name="notification_channel_pc_server_description">Vis når PC fjernbetjening kører og give en måde at stoppe det.</string>
+    <string name="notification_channel_app_updates_description">Vis fremskridt og resultat af download af en N-Zik-opdatering.</string>
+    <string name="notification_channel_module_downloads_description">Vis fremskridt og resultater for valgfri udvidelsesdownloads.</string>
+    <string name="notification_channel_theme_submissions">Indlæg til temabutik</string>
+    <string name="notification_channel_theme_submissions_description">Rapporter statusændringer for dine indsendte temaer og opretnings profil.</string>
+    <string name="notification_channel_theme_publications">Tema Store publikationer</string>
+    <string name="notification_channel_theme_publications_description">Annoncer nye temaer og opdateringer til temaer, du har downloadet.</string>
+    <string name="notification_channel_theme_downloads">Download af temabutik</string>
+    <string name="notification_channel_theme_downloads_description">Lad dig vide, når et tema download er færdig.</string>
+    <string name="notification_channel_theme_previews">Forhåndsvisning af tema</string>
+    <string name="notification_channel_theme_previews_description">Vis tema screenshot fremskridt og lad dig annullere generation.</string>
     <!-- Player Notification -->
     <string name="player_notification_pause">Pause</string>
 </resources>
