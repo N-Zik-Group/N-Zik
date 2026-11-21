@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">Ειδοποιήσεις για να ακούσετε μαζί εκδηλώσεις</string>
+    <string name="listen_together_notification_channel_description">Προσκλήσεις και δραστηριότητα στο δωμάτιο ενώ ακούτε με τους άλλους.</string>
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">Ακούστε Μαζί</string>
+    <!-- Android notification channels -->
+    <string name="notification_group_audio">Ήχος</string>
+    <string name="notification_group_tools_updates">Εργαλεία και ενημερώσεις</string>
+    <string name="notification_channel_playback">Αναπαραγωγή πολυμέσων</string>
+    <string name="notification_channel_playback_description">Εμφάνιση του τρέχοντος κομματιού και των χειριστηρίων αναπαραγωγής.</string>
+    <string name="notification_channel_sleep_timer_description">Εμφάνιση κατάστασης χρονομέτρου ύπνου και ειδοποιήσεων όταν τελειώσει το χρονόμετρο.</string>
+    <string name="notification_channel_audio_downloads">Λήψεις ήχου</string>
+    <string name="notification_channel_audio_downloads_description">Εμφάνιση προόδου και αποτελεσμάτων για ήχο που αποθηκεύονται για ακρόαση εκτός σύνδεσης.</string>
+    <string name="notification_channel_rewind_description">Ενημερώστε σας όταν μια μηνιαία ή ετήσια ακρόαση recap είναι έτοιμη.</string>
+    <string name="notification_channel_song_matching_description">Εμφάνιση της προόδου και των αποτελεσμάτων της αντιστοίχισης εισαγόμενων τραγουδιών.</string>
+    <string name="notification_channel_pc_server_description">Εμφάνιση όταν εκτελείται το τηλεχειριστήριο PC και παρέχει έναν τρόπο να το σταματήσει.</string>
+    <string name="notification_channel_app_updates_description">Εμφάνιση της προόδου και του αποτελέσματος της λήψης μιας ενημέρωσης N-Zik.</string>
+    <string name="notification_channel_module_downloads_description">Εμφάνιση προόδου και αποτελεσμάτων για προαιρετικές λήψεις επεκτάσεων.</string>
+    <string name="notification_channel_theme_submissions">Υποβολές καταστήματος θεμάτων</string>
+    <string name="notification_channel_theme_submissions_description">Αναφέρετε τις αλλαγές κατάστασης για τα υποβληθέντα θέματα και το προφίλ δημιουργού.</string>
+    <string name="notification_channel_theme_publications">Δημοσιεύσεις καταστήματος θέματος</string>
+    <string name="notification_channel_theme_publications_description">Ανακοίνωση νέων θεμάτων και ενημερώσεις στα θέματα που κατεβάσατε.</string>
+    <string name="notification_channel_theme_downloads">Λήψεις καταστήματος θέματος</string>
+    <string name="notification_channel_theme_downloads_description">Ενημερώστε σας όταν ένα θέμα λήψης τελειώσει.</string>
+    <string name="notification_channel_theme_previews">Δημιουργία προεπισκόπησης θέματος</string>
+    <string name="notification_channel_theme_previews_description">Εμφάνιση προόδου στιγμιότυπου θέματος και σας επιτρέπει να ακυρώσετε την παραγωγή.</string>
     <!-- Player Notification -->
     <string name="player_notification_pause">Παύση</string>
 </resources>
