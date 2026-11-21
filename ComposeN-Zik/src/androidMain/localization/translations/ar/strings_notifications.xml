@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">إشعارات لأحداث الاستماع معا</string>
+    <string name="listen_together_notification_channel_description">دعوات الغرف والنشاط أثناء الاستماع إلى الآخرين.</string>
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">الاستماع معا</string>
+    <!-- Android notification channels -->
+    <string name="notification_group_audio">الصوت</string>
+    <string name="notification_group_tools_updates">الأدوات والتحديثات</string>
+    <string name="notification_channel_playback">تشغيل الوسائط</string>
+    <string name="notification_channel_playback_description">إظهار عناصر تحكم المسار والتشغيل الحالية.</string>
+    <string name="notification_channel_sleep_timer_description">إظهار حالة مؤقت السكون والتنبيهات عند انتهاء المؤقت</string>
+    <string name="notification_channel_audio_downloads">تنزيلات الصوت</string>
+    <string name="notification_channel_audio_downloads_description">إظهار التقدم المحرز ونتائج الصوت المحفوظ للاستماع دون اتصال.</string>
+    <string name="notification_channel_rewind_description">أخبرك عندما يكون موجز الاستماع الشهري أو السنوي جاهزا.</string>
+    <string name="notification_channel_song_matching_description">إظهار تقدم ونتائج مطابقة الأغاني المستوردة.</string>
+    <string name="notification_channel_pc_server_description">إظهار عند تشغيل جهاز التحكم عن بعد في الكمبيوتر وتوفير طريقة لإيقافه.</string>
+    <string name="notification_channel_app_updates_description">إظهار التقدم المحرز ونتيجة تحميل تحديث N-Zik.</string>
+    <string name="notification_channel_module_downloads_description">إظهار التقدم والنتائج لتنزيلات الإضافات الاختيارية.</string>
+    <string name="notification_channel_theme_submissions">عروض متجر السمة</string>
+    <string name="notification_channel_theme_submissions_description">أبلغ عن التغييرات في حالة السمات المقدمة و ملف تعريف المنشئ.</string>
+    <string name="notification_channel_theme_publications">منشورات متجر السمات</string>
+    <string name="notification_channel_theme_publications_description">أعلن عن مواضيع جديدة وتحديثات للمواضيع التي قمت بتحميلها.</string>
+    <string name="notification_channel_theme_downloads">تنزيلات متجر السمة</string>
+    <string name="notification_channel_theme_downloads_description">أخبرك عند انتهاء تحميل السمة.</string>
+    <string name="notification_channel_theme_previews">إنشاء معاينة القالب</string>
+    <string name="notification_channel_theme_previews_description">إظهار تقدم لقطة الشاشة والسماح لك بإلغاء التوليد.</string>
     <!-- Player Notification -->
     <string name="player_notification_pause">إيقاف</string>
 </resources>

@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">一緒に聴くイベントの通知</string>
+    <string name="listen_together_notification_channel_description">他の人と一緒に聞いている間の部屋の招待やアクティビティ。</string>
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">一緒に聴く</string>
+    <!-- Android notification channels -->
+    <string name="notification_group_audio">オーディオ</string>
+    <string name="notification_group_tools_updates">ツールと更新</string>
+    <string name="notification_channel_playback">メディアの再生</string>
+    <string name="notification_channel_playback_description">現在のトラックと再生コントロールを表示します。</string>
+    <string name="notification_channel_sleep_timer_description">タイマーが終了したときにスリープタイマーの状態とアラートを表示します。</string>
+    <string name="notification_channel_audio_downloads">音声ダウンロード</string>
+    <string name="notification_channel_audio_downloads_description">オフラインリスニング用に保存されたオーディオの進行状況と結果を表示します。</string>
+    <string name="notification_channel_rewind_description">毎月または毎年のリッスンのリッスンの準備ができたらお知らせします。</string>
+    <string name="notification_channel_song_matching_description">インポートした曲と一致する曲の進捗と結果を表示します。</string>
+    <string name="notification_channel_pc_server_description">PCリモートコントロールが実行されているときに表示し、それを停止する方法を提供します。</string>
+    <string name="notification_channel_app_updates_description">N-Zik アップデートのダウンロードの進捗と結果を表示します。</string>
+    <string name="notification_channel_module_downloads_description">オプションの拡張機能のダウンロードの進捗と結果を表示します。</string>
+    <string name="notification_channel_theme_submissions">テーマストアからの投稿</string>
+    <string name="notification_channel_theme_submissions_description">提出されたテーマとクリエイタープロフィールの状態の変更を報告します。</string>
+    <string name="notification_channel_theme_publications">テーマストアの出版</string>
+    <string name="notification_channel_theme_publications_description">新しいテーマとダウンロードしたテーマの更新をお知らせします。</string>
+    <string name="notification_channel_theme_downloads">テーマストアのダウンロード</string>
+    <string name="notification_channel_theme_downloads_description">テーマのダウンロードが終了するとお知らせします。</string>
+    <string name="notification_channel_theme_previews">テーマプレビューの生成</string>
+    <string name="notification_channel_theme_previews_description">テーマのスクリーンショットの進行状況を表示し、生成をキャンセルします。</string>
     <!-- Player Notification -->
     <string name="player_notification_pause">一時停止</string>
 </resources>

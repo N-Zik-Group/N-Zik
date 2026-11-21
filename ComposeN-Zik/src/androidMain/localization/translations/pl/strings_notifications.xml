@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">Powiadomienia o wydarzeniach Słuchaj razem</string>
+    <string name="listen_together_notification_channel_description">Zaproszenia do pokoju i aktywność podczas słuchania z innymi.</string>
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">Słuchaj razem</string>
+    <!-- Android notification channels -->
+    <string name="notification_group_audio">Dźwięk</string>
+    <string name="notification_group_tools_updates">Narzędzia i aktualizacje</string>
+    <string name="notification_channel_playback">Odtwarzanie multimediów</string>
+    <string name="notification_channel_playback_description">Pokaż sterowanie bieżącą ścieżką i odtwarzaniem.</string>
+    <string name="notification_channel_sleep_timer_description">Pokaż stan zegara uśpienia i alerty po zakończeniu timera.</string>
+    <string name="notification_channel_audio_downloads">Pobieranie dźwięku</string>
+    <string name="notification_channel_audio_downloads_description">Pokaż postęp i wyniki dla dźwięku zapisanego do słuchania offline.</string>
+    <string name="notification_channel_rewind_description">Daj znać kiedy miesięczna lub roczna podsumowanie nasłuchu jest gotowe.</string>
+    <string name="notification_channel_song_matching_description">Pokaż postęp i wyniki dopasowania zaimportowanych utworów.</string>
+    <string name="notification_channel_pc_server_description">Pokaż, gdy jest uruchomiony zdalny sterownik PC i udostępnij sposób na jego zatrzymanie.</string>
+    <string name="notification_channel_app_updates_description">Pokaż postęp i wynik pobierania aktualizacji N-Zik.</string>
+    <string name="notification_channel_module_downloads_description">Pokaż postęp i wyniki dla opcjonalnego pobierania rozszerzeń.</string>
+    <string name="notification_channel_theme_submissions">Zgłoszenia w sklepie motywu</string>
+    <string name="notification_channel_theme_submissions_description">Zgłoś zmiany statusu dla przesłanych motywów i profilu twórcy.</string>
+    <string name="notification_channel_theme_publications">Publikacje sklepów motywów</string>
+    <string name="notification_channel_theme_publications_description">Ogłoszenie nowych motywów i aktualizacji do pobranych motywów.</string>
+    <string name="notification_channel_theme_downloads">Pobieranie motywu ze sklepu</string>
+    <string name="notification_channel_theme_downloads_description">Daj Ci znać, kiedy zakończy się pobieranie motywu.</string>
+    <string name="notification_channel_theme_previews">Generowanie podglądu motywu</string>
+    <string name="notification_channel_theme_previews_description">Pokaż postęp zrzutu ekranu motywu i pozwól anulować generowanie.</string>
     <!-- Player Notification -->
     <string name="player_notification_pause">Wstrzymaj</string>
 </resources>

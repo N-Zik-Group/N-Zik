@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">Oznámení pro události v rámci společného poslechnutí</string>
+    <string name="listen_together_notification_channel_description">Pozvánky do pokojů a aktivita při poslechu s ostatními.</string>
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">Poslouchat společně</string>
+    <!-- Android notification channels -->
+    <string name="notification_group_audio">Zvuk</string>
+    <string name="notification_group_tools_updates">Nástroje a aktualizace</string>
+    <string name="notification_channel_playback">Přehrávání médií</string>
+    <string name="notification_channel_playback_description">Zobrazit aktuální nastavení skladby a přehrávání.</string>
+    <string name="notification_channel_sleep_timer_description">Zobrazit stav časovače a upozornění při ukončení časovače.</string>
+    <string name="notification_channel_audio_downloads">Stažení zvuku</string>
+    <string name="notification_channel_audio_downloads_description">Zobrazit průběh a výsledky pro zvuk uložený pro offline poslech.</string>
+    <string name="notification_channel_rewind_description">Dejte vědět, kdy je každý měsíc nebo rok připraven poslechnout si nový záznam.</string>
+    <string name="notification_channel_song_matching_description">Zobrazit průběh a výsledky odpovídajících importovaných skladeb.</string>
+    <string name="notification_channel_pc_server_description">Zobrazit při dálkovém ovládání počítače a poskytnout způsob, jak ho zastavit.</string>
+    <string name="notification_channel_app_updates_description">Zobrazit průběh a výsledek stahování aktualizace N-Zik.</string>
+    <string name="notification_channel_module_downloads_description">Zobrazit průběh a výsledky pro volitelné stahování rozšíření.</string>
+    <string name="notification_channel_theme_submissions">Odeslání šablony z obchodu</string>
+    <string name="notification_channel_theme_submissions_description">Nahlásit změny stavu vašich odeslaných šablon a profilu tvůrce.</string>
+    <string name="notification_channel_theme_publications">Publikace obchodu motivů</string>
+    <string name="notification_channel_theme_publications_description">Oznamovat nové motivy a aktualizace motivů, které jste si stáhli.</string>
+    <string name="notification_channel_theme_downloads">Stáhnout obchod s motivy</string>
+    <string name="notification_channel_theme_downloads_description">Dejte vědět když stahování šablony skončí.</string>
+    <string name="notification_channel_theme_previews">Vytváření náhledu motivů</string>
+    <string name="notification_channel_theme_previews_description">Zobrazit postup snímku obrazovky motivu a nechat zrušit generaci.</string>
     <!-- Player Notification -->
     <string name="player_notification_pause">Pozastavit</string>
 </resources>
