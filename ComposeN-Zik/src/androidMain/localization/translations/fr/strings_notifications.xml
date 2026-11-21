@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">Invitations de salle et activité en écoutant avec les autres.</string>
+    <string name="listen_together_notification_channel_description">Invitations à rejoindre une salle et activités à réaliser en écoutant avec d\'autres participants.</string>
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">Écouter Ensemble</string>
     <!-- Android notification channels -->
@@ -20,7 +20,7 @@
     <string name="notification_channel_theme_submissions">Soumissions de la boutique de thème</string>
     <string name="notification_channel_theme_submissions_description">Signaler les changements d\'état pour vos thèmes soumis et votre profil de créateur.</string>
     <string name="notification_channel_theme_publications">Publications de la boutique de thèmes</string>
-    <string name="notification_channel_theme_publications_description">Annonce de nouveaux thèmes et mises à jour des thèmes que vous avez téléchargés.</string>
+    <string name="notification_channel_theme_publications_description">Annonce les nouveaux thèmes et les mises à jour des thèmes que vous avez téléchargés.</string>
     <string name="notification_channel_theme_downloads">Téléchargements de la boutique de thèmes</string>
     <string name="notification_channel_theme_downloads_description">Vous informer de la fin du téléchargement d\'un thème.</string>
     <string name="notification_channel_theme_previews">Génération de l\'aperçu du thème</string>
