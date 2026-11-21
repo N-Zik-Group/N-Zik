@@ -1,6 +1,6 @@
 # AGENTS.md — NZik
 
-**Version:** 1.18.0 | **Last updated:** 2026-11-21
+**Version:** 1.18.1 | **Last updated:** 2026-11-21
 
 **MANDATORY: Read this file + rules/*.md before any task.**
 
@@ -125,7 +125,7 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 | Listen Together      | `app/n_zik/android/listentogether/` (12 .kt) + `src/main/proto/listentogether.proto` |
 | Widgets / shortcuts  | `app/n_zik/android/widget/` (6 .kt), `app/n_zik/android/shortcuts/` |
 | UI | Screen packages under `components/ui/screens/` and existing domain packages under `ui/screens/` |
-| App startup and appearance | Activity lifecycle in `MainActivity.kt`, intent parsing and delivery in `intents/`, notification channels in `core/notifications/`, and shared appearance in `components/theme/` |
+| App startup and appearance | Android lifecycle in `MainActivity.kt`, launch setup in `startup/`, app composition in `components/ui/app/`, onboarding in `components/onboarding/`, intent parsing and delivery in `intents/`, notification channels in `core/notifications/`, and shared appearance in `components/theme/` |
 | Tests        | `ComposeN-Zik/src/test/`                   |
 
 ---

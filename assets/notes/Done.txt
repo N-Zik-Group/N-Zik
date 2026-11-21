@@ -269,3 +269,9 @@ Navigation and notifications:
   - Share channel definitions with the senders, retain existing channel IDs and preferences, and attach previously ungrouped channels in place. Retain the category and profile labels and stop Media3 from overwriting the audio download channel description.
 - fix(profiles): register notification channels as soon as a profile is added
   - Give each saved profile its nine independent channels, including inactive profiles and profiles added through creation, import or archive restoration.
+
+Refactor:
+- refactor(activity): separate startup and app composition from MainActivity
+  - Put application composition in components/ui/app, window startup setup in startup, and header and dock scroll behavior in core/navigation.
+  - Keep onboarding rendering and persistence together in components/onboarding and Rewind reminder intake in intents. Preserve the activity lifecycle, stored keys, route delivery and playback integration.
+  - Verify the Debug build and 220 targeted tests. Check cold launch, background return, cold and warm library links, shortcuts, Back, and portrait and landscape scrolling on the Xperia.
