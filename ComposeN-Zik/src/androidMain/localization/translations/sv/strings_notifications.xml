@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">Aviseringar för Lyssna tillsammans händelser</string>
+    <string name="listen_together_notification_channel_description">Rumsinbjudningar och aktivitet medan du lyssnar med andra.</string>
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">Lyssna tillsammans</string>
+    <!-- Android notification channels -->
+    <string name="notification_group_audio">Ljud</string>
+    <string name="notification_group_tools_updates">Verktyg och uppdateringar</string>
+    <string name="notification_channel_playback">Media uppspelning</string>
+    <string name="notification_channel_playback_description">Visa nuvarande spår och uppspelningskontroller.</string>
+    <string name="notification_channel_sleep_timer_description">Visa status för sömntimer och varningar när timern slutar.</string>
+    <string name="notification_channel_audio_downloads">Ljud nedladdningar</string>
+    <string name="notification_channel_audio_downloads_description">Visa framsteg och resultat för ljud som sparas för offline-lyssnande.</string>
+    <string name="notification_channel_rewind_description">Låt dig veta när en månatlig eller årlig lyssnande sammanfattning är klar.</string>
+    <string name="notification_channel_song_matching_description">Visa framsteg och resultat av matchande importerade låtar.</string>
+    <string name="notification_channel_pc_server_description">Visa när PC-fjärrkontrollen körs och ge ett sätt att stoppa den.</string>
+    <string name="notification_channel_app_updates_description">Visa framsteg och resultat av nedladdning av en N-Zik-uppdatering.</string>
+    <string name="notification_channel_module_downloads_description">Visa framsteg och resultat för valfria tilläggsnedladdningar.</string>
+    <string name="notification_channel_theme_submissions">Tema Butiks inlämningar</string>
+    <string name="notification_channel_theme_submissions_description">Rapportera statusändringar för dina inskickade teman och skaparprofil.</string>
+    <string name="notification_channel_theme_publications">Tema Butik publikationer</string>
+    <string name="notification_channel_theme_publications_description">Meddela nya teman och uppdateringar till teman du laddat ner.</string>
+    <string name="notification_channel_theme_downloads">Butikens nedladdningar</string>
+    <string name="notification_channel_theme_downloads_description">Låt dig veta när ett tema nedladdning är klar.</string>
+    <string name="notification_channel_theme_previews">Generering av temaförhandsgranskning</string>
+    <string name="notification_channel_theme_previews_description">Visa tema skärmdump framsteg och låt dig avbryta generation.</string>
     <!-- Player Notification -->
     <string name="player_notification_pause">Pausa</string>
 </resources>
