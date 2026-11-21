@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">Notifiche per ascoltare insieme eventi</string>
+    <string name="listen_together_notification_channel_description">Inviti in camera e attività durante l\'ascolto con gli altri.</string>
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">Ascolta Insieme</string>
+    <!-- Android notification channels -->
+    <string name="notification_group_audio">Audio</string>
+    <string name="notification_group_tools_updates">Strumenti e aggiornamenti</string>
+    <string name="notification_channel_playback">Riproduzione multimediale</string>
+    <string name="notification_channel_playback_description">Mostra i controlli correnti della traccia e della riproduzione.</string>
+    <string name="notification_channel_sleep_timer_description">Mostra lo stato del timer di sospensione e avvisi alla fine del timer.</string>
+    <string name="notification_channel_audio_downloads">Download audio</string>
+    <string name="notification_channel_audio_downloads_description">Mostra progressi e risultati per l\'audio salvato per l\'ascolto fuori rete.</string>
+    <string name="notification_channel_rewind_description">Fatti sapere quando è pronto un riepilogo di ascolto mensile o annuale.</string>
+    <string name="notification_channel_song_matching_description">Mostra i progressi e i risultati delle canzoni importate corrispondenti.</string>
+    <string name="notification_channel_pc_server_description">Mostra quando il telecomando del PC è in esecuzione e fornisce un modo per fermarlo.</string>
+    <string name="notification_channel_app_updates_description">Mostra il progresso e il risultato del download di un aggiornamento N-Zik.</string>
+    <string name="notification_channel_module_downloads_description">Mostra progressi e risultati per i download opzionali dell\'estensione.</string>
+    <string name="notification_channel_theme_submissions">Tema Store invii</string>
+    <string name="notification_channel_theme_submissions_description">Segnala modifiche di stato per i temi inviati e il profilo di creatore.</string>
+    <string name="notification_channel_theme_publications">Pubblicazioni del Tema Store</string>
+    <string name="notification_channel_theme_publications_description">Annunciare nuovi temi e aggiornamenti ai temi scaricati.</string>
+    <string name="notification_channel_theme_downloads">Download del Theme Store</string>
+    <string name="notification_channel_theme_downloads_description">Fai sapere quando finisce il download di un tema.</string>
+    <string name="notification_channel_theme_previews">Generazione anteprima tema</string>
+    <string name="notification_channel_theme_previews_description">Mostra i progressi screenshot del tema e ti permette di annullare la generazione.</string>
     <!-- Player Notification -->
     <string name="player_notification_pause">Pausa</string>
 </resources>
