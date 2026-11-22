@@ -35,19 +35,19 @@
     </plurals>
     <plurals name="about_developer_designer_count">
         <item quantity="one">%1$d sviluppatore / designer</item>
-        <item quantity="other">%1$d sviluppatori / designers</item>
+        <item quantity="other">%1$d sviluppatori / designer</item>
     </plurals>
     <plurals name="statistics_songs_heard_count">
         <item quantity="one">%1$d brano ascoltato</item>
         <item quantity="other">%1$d canzoni ascoltate</item>
     </plurals>
     <plurals name="history_delete_search_query_count">
-        <item quantity="one">Elimina ricerca %1$d</item>
-        <item quantity="other">Elimina query di ricerca %1$d</item>
+        <item quantity="one">Elimina %1$d query di ricerca</item>
+        <item quantity="other">Elimina %1$d query di ricerca</item>
     </plurals>
     <plurals name="history_delete_playback_event_count">
-        <item quantity="one">Elimina evento di riproduzione %1$d</item>
-        <item quantity="other">Elimina eventi di riproduzione %1$d</item>
+        <item quantity="one">Elimina %1$d evento di riproduzione</item>
+        <item quantity="other">Elimina %1$d eventi di riproduzione</item>
     </plurals>
     <plurals name="podcast_episode_count_with_duration">
         <item quantity="one">%1$d episodio · %2$s</item>
@@ -66,12 +66,12 @@
         <item quantity="other">Stato profilo importato: profili %1$d</item>
     </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
-        <item quantity="one">Esportare %1$d cached/downloaded song?</item>
-        <item quantity="other">Export %1$d cached/downloaded songs?</item>
+        <item quantity="one">Esportare %1$d brano in cache/scaricato?</item>
+        <item quantity="other">Esportare %1$d brani in cache/scaricati?</item>
     </plurals>
     <plurals name="downloads_stale_startup_removed_count">
-        <item quantity="one">%1$d il brano scaricato manca del suo file ed è stato rimosso. Si prega di scaricarlo di nuovo.</item>
-        <item quantity="other">%1$d i brani scaricati mancano dei loro file e sono stati rimossi. Si prega di scaricarli di nuovo.</item>
+        <item quantity="one">A %1$d brano scaricato manca il file ed è stato rimosso. Si prega di scaricarlo di nuovo.</item>
+        <item quantity="other">A %1$d brani scaricati mancano i file e sono stati rimossi. Si prega di scaricarli di nuovo.</item>
     </plurals>
     <plurals name="recommendations_quick_picks_song_count">
         <item quantity="one">%1$d brano consigliato</item>
@@ -83,7 +83,7 @@
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
         <item quantity="one">%1$d elemento pulito</item>
-        <item quantity="other">%1$d oggetti puliti</item>
+        <item quantity="other">%1$d elementi puliti</item>
     </plurals>
     <plurals name="maintenance_pass_deferred_count">
         <item quantity="one">%1$d elemento differito</item>
@@ -94,40 +94,40 @@
         <item quantity="other">%1$d elementi saltati</item>
     </plurals>
     <plurals name="maintenance_dedup_flagged_count">
-        <item quantity="one">Riga di %1$d segnalata</item>
-        <item quantity="other">Righe di %1$d contrassegnati</item>
+        <item quantity="one">%1$d riga contrassegnate</item>
+        <item quantity="other">%1$d righe contrassegnati</item>
     </plurals>
     <plurals name="maintenance_dedup_merged_count">
-        <item quantity="one">Merged %1$d row</item>
-        <item quantity="other">Merged %1$d rows</item>
+        <item quantity="one">%1$d stringa unificata</item>
+        <item quantity="other">%1$d stringhe unificate</item>
     </plurals>
     <plurals name="recovery_profile_deleted_count">
         <item quantity="one">%1$d profilo eliminato</item>
         <item quantity="other">%1$d profili eliminati</item>
     </plurals>
     <plurals name="recovery_profile_reset_count">
-        <item quantity="one">Ripristina il profilo %1$d . Riavvia l\'app</item>
-        <item quantity="other">Reimposta i profili %1$d . Riavvia l\'app</item>
+        <item quantity="one">%1$d profilo reimpostato. Riavvia l\'app</item>
+        <item quantity="other">%1$d profili reimpostati. Riavvia l\'app</item>
     </plurals>
     <plurals name="recovery_profile_restored_count">
-        <item quantity="one">Profilo di %1$d ripristinato: rilancia l\'applicazione</item>
-        <item quantity="other">Profili di %1$d ripristinati: rilanciare l\'app</item>
+        <item quantity="one">%1$d profilo ripristinato. Riavvia l\'app</item>
+        <item quantity="other">%1$d profili ripristinati. Riavvia l\'app</item>
     </plurals>
     <plurals name="album_loading_song_count">
         <item quantity="one">Caricamento di %1$d brano…</item>
         <item quantity="other">Caricamento di %1$d brani…</item>
     </plurals>
     <plurals name="artist_deduplication_result_count">
-        <item quantity="one">Merged %1$d duplicato artista con l\'artista giusto</item>
-        <item quantity="other">Merged %1$d duplicare artisti con l\'artista giusto</item>
+        <item quantity="one">%1$d artista duplicato unito con l\'artista corretto</item>
+        <item quantity="other">%1$d artisti duplicati uniti con gli artisti corretti</item>
     </plurals>
     <plurals name="artist_link_cleanup_result_count">
-        <item quantity="one">Rimosso collegamento artista errato %1$d</item>
-        <item quantity="other">Rimosso i link dell\'artista errati di %1$d</item>
+        <item quantity="one">Rimosso %1$d collegamento artista errato</item>
+        <item quantity="other">Rimossi %1$d collegamenti artista errati</item>
     </plurals>
     <plurals name="library_song_count_with_duration">
         <item quantity="one">Brano %1$d • %2$s</item>
-        <item quantity="other">%1$d canzoni • %2$s</item>
+        <item quantity="other">%1$d brani • %2$s</item>
     </plurals>
     <plurals name="metadata_musicbrainz_rating_vote_count">
         <item quantity="one">(%1$d voto)</item>
@@ -139,19 +139,19 @@
     </plurals>
     <plurals name="playlist_delete_all_confirmation_count">
         <item quantity="one">Sei sicuro di voler eliminare l\'unica playlist (%1$d)?</item>
-        <item quantity="other">Sei sicuro di voler eliminare TUTTE le playlist %1$d?</item>
+        <item quantity="other">Sei sicuro di voler eliminare TUTTE le %1$d playlist?</item>
     </plurals>
     <plurals name="playlist_delete_selected_confirmation_count">
         <item quantity="one">Sei sicuro di voler eliminare questa playlist (%1$d)?</item>
-        <item quantity="other">Sei sicuro di voler eliminare queste playlist %1$d?</item>
+        <item quantity="other">Sei sicuro di voler eliminare queste %1$d playlist?</item>
     </plurals>
     <plurals name="playlist_positions_shuffled_count">
-        <item quantity="one">%1$d position shuffled</item>
-        <item quantity="other">%1$d positions shuffled</item>
+        <item quantity="one">%1$d posizione rimescolata</item>
+        <item quantity="other">%1$d posizioni rimescolate</item>
     </plurals>
     <plurals name="song_metadata_updated_song_count">
-        <item quantity="one">Brano %1$d aggiornato</item>
-        <item quantity="other">Canzoni %1$d aggiornate</item>
+        <item quantity="one">%1$d brano aggiornato</item>
+        <item quantity="other">%1$d brani aggiornati</item>
     </plurals>
     <plurals name="rewind_home_year_play_count">
         <item quantity="one">%1$s · %2$s riproduzione</item>
@@ -159,11 +159,11 @@
     </plurals>
     <plurals name="rewind_listening_day_count_without">
         <item quantity="one">%1$s giorno senza ascolto.</item>
-        <item quantity="other">%1$s giorni senza ascolto.</item>
+        <item quantity="other">%1$s giorni senza ascolti.</item>
     </plurals>
     <plurals name="rewind_loader_status_day_count">
-        <item quantity="one">%1$s GIORNO DI LISTENZA</item>
-        <item quantity="other">%1$s GIORNI DI LISTENZA</item>
+        <item quantity="one">%1$s GIORNO DI ASCOLTO</item>
+        <item quantity="other">%1$s GIORNI DI ASCOLTO</item>
     </plurals>
     <plurals name="rewind_loader_status_minute_count">
         <item quantity="one">%1$s MINUTO</item>
@@ -191,10 +191,10 @@
     </plurals>
     <plurals name="maintenance_abnormal_job_count">
         <item quantity="one">%1$d processo non finito</item>
-        <item quantity="other">%1$d processi non finito</item>
+        <item quantity="other">%1$d processi non finiti</item>
     </plurals>
     <plurals name="theme_store_settings_count">
-        <item quantity="one">%d setting</item>
-        <item quantity="other">Impostazioni di %d</item>
+        <item quantity="one">%d impostazione</item>
+        <item quantity="other">%d impostazioni</item>
     </plurals>
 </resources>
