@@ -2,20 +2,20 @@
 <resources>
     <string name="github_account_login">Connetti GitHub</string>
     <string name="github_account_logout">Disconnetti GitHub</string>
-    <string name="github_account_description">Usa il tuo account GitHub nel Theme Store.</string>
+    <string name="github_account_description">Usa il tuo account GitHub nel Negozio dei Temi.</string>
     <string name="github_account_offline">Vai online per connettere GitHub.</string>
     <string name="github_account_code">Inserisci %1$s su GitHub per completare l\'accesso.</string>
     <string name="github_account_code_copied">Codice GitHub copiato negli appunti.</string>
     <string name="github_account_login_failed">Impossibile connettersi a GitHub. Riprova.</string>
     <string name="github_account_connected">GitHub connesso.</string>
-    <string name="github_account_finishing_connection">Finitura connessione GitHub…</string>
+    <string name="github_account_finishing_connection">Termine connessione a GitHub…</string>
     <string name="github_app_installation_instructions">Scegli @%1$s e concedi l\'accesso solo al fork N-Zik-Theme-Store per completare la configurazione.</string>
     <string name="github_app_installation">Installazione app</string>
     <string name="github_app_installation_confirmed">GitHub ha confermato l\'installazione dell\'app.</string>
     <string name="github_app_installation_other_account">App installata su @%1$s. Seleziona il tuo account per abilitare la pulizia del fork.</string>
     <string name="github_app_installation_description">Gestisci o revoca l\'accesso N-Zik Accedi nelle impostazioni personali di GitHub.</string>
-    <string name="github_app_installation_needs_fork">Invia prima un tema o un profilo creatore per creare il fork del tuo Theme Store.</string>
-    <string name="github_app_installation_fork_lookup_failed">Impossibile controllare il fork del tuo negozio temi. Riprova.</string>
+    <string name="github_app_installation_needs_fork">Invia prima un tema o un profilo creatore per creare il fork del tuo Negozio dei Temi.</string>
+    <string name="github_app_installation_fork_lookup_failed">Impossibile controllare il fork del tuo Negozio dei Temi. Riprova.</string>
     <!-- Account -->
     <string name="account_action_login">Log in</string>
     <string name="account_action_logout">Log off</string>
@@ -145,7 +145,7 @@
     <string name="profile_add_description">Crea un nuovo profilo con il proprio database e le proprie impostazioni</string>
     <string name="profile_avatar_source">Sorgente avatar</string>
     <string name="profile_avatar_source_description">Scegli quale profilo o account connesso fornisce il tuo avatar.</string>
-    <string name="profile_base_name">Ventilatore N-Zik</string>
+    <string name="profile_base_name">Fan di N-Zik</string>
     <string name="profile_channel_name">%1$s - %2$s</string>
     <string name="profile_data_downloads">download</string>
     <string name="profile_data_images">immagini</string>
@@ -229,7 +229,7 @@
     <string name="sync_import_uploaded_songs">Importa Brani Caricati</string>
     <string name="sync_import_uploaded_songs_description">Importa brani caricati su YouTube Music</string>
     <string name="sync_imported_playlists_automatic_title">Sincronizzazione Automatica Playlist Importate</string>
-    <string name="sync_likes">Sincronizzazione Automatica Piace Canzoni</string>
+    <string name="sync_likes">Sincronizzazione Automatica Brani Piaciuti</string>
     <string name="sync_likes_description">Importazione automatica dei brani preferiti da YouTube Music</string>
     <string name="sync_now">Sincronizza Ora</string>
     <string name="sync_now_description">Forza una sincronizzazione completa con YouTube Music</string>
@@ -267,7 +267,7 @@
     <string name="sync_youtube_history_title">Cronologia YTM</string>
     <string name="sync_youtube_like_failed">Impossibile mettere mi piace alla canzone su YouTube</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">Aggiunto a YouTube mi piace</string>
+    <string name="sync_youtube_like_success">Aggiunto ai Mi Piace di YouTube</string>
     <string name="sync_youtube_playlist_add_failed">Impossibile aggiungere il brano alla playlist di YouTube</string>
     <string name="sync_youtube_playlist_add_success">Aggiunta il brano alla playlist di YouTube</string>
     <string name="sync_youtube_playlist_batch_failed">Si è verificato un errore per i prossimi 50 brani. Aggiunta di brani alla playlist uno alla volta</string>
