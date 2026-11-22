@@ -5,7 +5,7 @@
     <string name="notification_inbox_open">Apri</string>
     <string name="notification_inbox_unread">Notifiche non lette: %1$d</string>
     <string name="notification_inbox_clear_all">Cancella tutto</string>
-    <string name="notification_debug_theme_examples_channel">Esempi di negozio tema</string>
+    <string name="notification_debug_theme_examples_channel">Esempi dal Negozio dei Temi</string>
     <string name="notification_debug_theme_update_title">Aggiornamento tema disponibile • demo</string>
     <string name="notification_debug_theme_update_detail">%1$s · Revisione %2$d</string>
     <string name="notification_debug_theme_downloaded_title">Tema scaricato • demo</string>
