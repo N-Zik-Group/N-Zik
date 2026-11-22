@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">Room invitations and activity while listening with others.</string>
+    <string name="listen_together_notification_channel_description">Oda davetiyeleri ve diğerleriyle birlikte dinlerken yapılan etkinlik.</string>
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">Birlikte Dinle</string>
     <!-- Android notification channels -->
     <string name="notification_group_audio">Ses</string>
-    <string name="notification_group_tools_updates">Tools and updates</string>
-    <string name="notification_channel_playback">Media playback</string>
-    <string name="notification_channel_playback_description">Show the current track and playback controls.</string>
-    <string name="notification_channel_sleep_timer_description">Show sleep timer status and alerts when the timer ends.</string>
-    <string name="notification_channel_audio_downloads">Audio downloads</string>
-    <string name="notification_channel_audio_downloads_description">Show progress and results for audio saved for offline listening.</string>
-    <string name="notification_channel_rewind_description">Let you know when a monthly or yearly listening recap is ready.</string>
-    <string name="notification_channel_song_matching_description">Show the progress and results of matching imported songs.</string>
-    <string name="notification_channel_pc_server_description">Show when PC remote control is running and provide a way to stop it.</string>
-    <string name="notification_channel_app_updates_description">Show the progress and result of downloading an N-Zik update.</string>
-    <string name="notification_channel_module_downloads_description">Show progress and results for optional extension downloads.</string>
-    <string name="notification_channel_theme_submissions">Theme Store submissions</string>
-    <string name="notification_channel_theme_submissions_description">Report status changes for your submitted themes and creator profile.</string>
-    <string name="notification_channel_theme_publications">Theme Store publications</string>
-    <string name="notification_channel_theme_publications_description">Announce new themes and updates to themes you downloaded.</string>
-    <string name="notification_channel_theme_downloads">Theme Store downloads</string>
-    <string name="notification_channel_theme_downloads_description">Let you know when a theme download finishes.</string>
-    <string name="notification_channel_theme_previews">Theme preview generation</string>
-    <string name="notification_channel_theme_previews_description">Show theme screenshot progress and let you cancel generation.</string>
+    <string name="notification_group_tools_updates">Araçlar ve güncellemeler</string>
+    <string name="notification_channel_playback">Medya oynatma</string>
+    <string name="notification_channel_playback_description">Mevcut parçayı ve oynatma kontrollerini göster.</string>
+    <string name="notification_channel_sleep_timer_description">Uyku zamanlayıcısının durumunu göster ve zamanlayıcı sona erdiğinde uyarılar ver.</string>
+    <string name="notification_channel_audio_downloads">Ses indirmeleri</string>
+    <string name="notification_channel_audio_downloads_description">Çevrimdışı dinlemek üzere kaydedilen ses dosyalarının ilerleme durumunu ve sonuçlarını göster.</string>
+    <string name="notification_channel_rewind_description">Aylık veya yıllık dinleme özetleri hazır olduğunda size haber vereceğim.</string>
+    <string name="notification_channel_song_matching_description">İçe aktarılan şarkıların eşleştirilme sürecini ve sonuçlarını göster.</string>
+    <string name="notification_channel_pc_server_description">Bilgisayar uzaktan kumandasının çalıştığını gösterin ve bunu durdurmak için bir yol sağlayın.</string>
+    <string name="notification_channel_app_updates_description">N-Zik güncellemesinin indirilme sürecini ve sonucunu gösterin.</string>
+    <string name="notification_channel_module_downloads_description">İsteğe bağlı eklenti indirmelerinin ilerleme durumunu ve sonuçlarını göster.</string>
+    <string name="notification_channel_theme_submissions">Tema Mağazası\'na gönderilenler</string>
+    <string name="notification_channel_theme_submissions_description">Gönderdiğiniz temalar ve yaratıcı profilinizle ilgili durum değişikliklerini bildirin.</string>
+    <string name="notification_channel_theme_publications">Tema Mağazası yayınları</string>
+    <string name="notification_channel_theme_publications_description">İndirdiğiniz temalara ilişkin yeni temaları ve güncellemeleri duyurun.</string>
+    <string name="notification_channel_theme_downloads">Tema Mağazası indirmeleri</string>
+    <string name="notification_channel_theme_downloads_description">Tema indirilmesi tamamlandığında size haber verelim.</string>
+    <string name="notification_channel_theme_previews">Tema önizlemesinin oluşturulması</string>
+    <string name="notification_channel_theme_previews_description">Tema ekran görüntüsünün oluşturulma sürecini gösterir ve oluşturma işlemini iptal etmenize olanak tanır.</string>
     <!-- Player Notification -->
     <string name="player_notification_pause">Duraklat</string>
 </resources>
