@@ -3,12 +3,15 @@ package app.n_zik.android.listentogether
 import android.content.Context
 import android.os.Looper
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.playback.services.PlayerServiceModern
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
+import io.mockk.verifyOrder
 import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -272,17 +275,38 @@ class GuestLocalPauseSyncTest {
     }
 
     @Test
-    fun `host player clean sends an empty SYNC_QUEUE to the guests`() {
+    fun `room creation publishes track before play and its listener immediately publishes an empty queue`() {
         every { client.isInRoom } returns true
         every { client.isHost } returns true
+        every { mockPlayer.currentMediaItem } returns MediaItem.Builder().setMediaId(TRACK_ID).build()
+        every { mockPlayer.playWhenReady } returns true
+        every { mockPlayer.duration } returns 10_000L
+        every { mockPlayer.currentPosition } returns 100L
+        val listener = slot<Player.Listener>()
+        every { mockPlayer.addListener(capture(listener)) } returns Unit
 
         val manager = newManager()
-        val listener = readPrivate(manager, "playerListener") ?: return
-        listener.javaClass
-            .getMethod("onMediaItemTransition", MediaItem::class.java, Int::class.java)
-            .invoke(listener, null, 0)
-
-        verify { client.sendPlaybackAction(PlaybackActions.SYNC_QUEUE, queue = emptyList()) }
+        val handleEvent = ListenTogetherManager::class.java
+            .getDeclaredMethod("handleEvent", ListenTogetherEvent::class.java)
+            .apply { isAccessible = true }
+        try {
+            handleEvent.invoke(manager, ListenTogetherEvent.RoomCreated("ROOM", "host"))
+            val track = requireNotNull(ListenTogetherPlayerBridge.currentTrackInfo())
+            verifyOrder {
+                client.sendPlaybackAction(
+                    PlaybackActions.CHANGE_TRACK,
+                    trackInfo = track,
+                    queue = ListenTogetherPlayerBridge.upcomingQueue.value,
+                )
+                client.sendPlaybackAction(PlaybackActions.PLAY, trackId = TRACK_ID, position = 100L)
+            }
+
+            listener.captured.onMediaItemTransition(null, Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
+
+            verify(exactly = 1) { client.sendPlaybackAction(PlaybackActions.SYNC_QUEUE, queue = emptyList()) }
+        } finally {
+            invokePrivate(manager, "cleanup")
+        }
     }
 
     @Test
