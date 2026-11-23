@@ -1,7 +1,8 @@
 package app.n_zik.android.components.maintenance
 
-import android.content.Context
+import java.util.Locale
 
+import android.content.Context
 import android.text.format.Formatter
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
@@ -12,8 +13,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,9 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import app.n_zik.android.components.ui.UiIconButton as IconButton
 import androidx.compose.material3.Text
-import app.n_zik.android.components.ui.UiTextButton as TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,7 +44,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import app.n_zik.android.utils.percentLabel
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -54,47 +52,46 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.work.WorkInfo
-import androidx.work.WorkManager
-import app.n_zik.android.enums.ExoPlayerDiskCacheMaxSize
-import app.n_zik.android.cleanPrefix
-import app.n_zik.android.components.glass.SampledMenuSheet
-import app.n_zik.android.ui.styling.ColorPalette
-import app.n_zik.android.utils.conditional
-import app.n_zik.android.utils.disableScrollingTextKey
-import app.n_zik.android.utils.exoPlayerCustomCacheKey
-import app.n_zik.android.utils.exoPlayerDiskCacheMaxSizeKey
-import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.utils.semiBold
-import app.n_zik.android.utils.syncStatus
+import kotlinx.coroutines.CancellationException
+import timber.log.Timber
+
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.MainApplication
-import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.logs.CopyLogsDialog
 import app.n_zik.android.components.dialog.logs.CrashLogDialog
 import app.n_zik.android.components.dialog.logs.DebugLogDialog
+import app.n_zik.android.components.glass.SampledMenuSheet
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.settings.common.settingsEntryEnter
 import app.n_zik.android.components.settings.common.settingsEntryExit
+import app.n_zik.android.components.ui.UiIconButton as IconButton
+import app.n_zik.android.components.ui.UiTextButton as TextButton
 import app.n_zik.android.components.ui.header.clampedLabelMaxWidth
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.core.backup.BackupManager
-import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.download.utils.downloadDisplayName
+import app.n_zik.android.enums.ExoPlayerDiskCacheMaxSize
 import app.n_zik.android.extensions.discord.DiscordRpcError
 import app.n_zik.android.extensions.discord.DiscordRpcErrorState
 import app.n_zik.android.typography
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
+import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.updater.services.UpdateDownloadManager
 import app.n_zik.android.updater.services.Updater
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import timber.log.Timber
-import kotlinx.coroutines.CancellationException
-import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
+import app.n_zik.android.utils.conditional
+import app.n_zik.android.utils.disableScrollingTextKey
+import app.n_zik.android.utils.exoPlayerCustomCacheKey
+import app.n_zik.android.utils.exoPlayerDiskCacheMaxSizeKey
+import app.n_zik.android.utils.percentLabel
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.shimmerEffect
-import java.util.Locale
+import app.n_zik.android.utils.syncStatus
 
 private const val TAG = "MaintenanceSheet"
 
@@ -109,23 +106,14 @@ internal val MAINTENANCE_JOB_NAMES = listOf(
     "RewindYearlyReminderWorker",
 )
 
-/**
- * One scheduled WorkManager job as displayed by the sheet.
- *
- * @param state the [WorkInfo.State], or null when no work info exists (never enqueued — OK)
- * @param runAtStartTime the next run time (0 when the job has none)
- */
+/** A job absent from WorkManager has a null state and no next run time. */
 internal data class JobSnapshot(
     val name: String,
     val state: WorkInfo.State?,
     val runAtStartTime: Long,
 )
 
-/**
- * The jobs that need attention: FAILED or CANCELLED ONLY (user decision — ENQUEUED /
- * BLOCKED / RUNNING are in-flight states, not alarm states). Absent jobs (state == null)
- * count as OK (JOBS_QUIET edge case of the spec).
- */
+/** Pending, running and absent jobs do not need attention. */
 internal fun abnormalJobs(jobs: List<JobSnapshot>): List<JobSnapshot> =
     jobs.filter { it.state == WorkInfo.State.FAILED || it.state == WorkInfo.State.CANCELLED }
 
@@ -146,12 +134,7 @@ internal sealed interface MaintenanceHealth {
     data class NeedsAttention(val count: Int) : MaintenanceHealth
 }
 
-/**
- * The card's health line from the full sheet snapshot + the live states the sheet
- * observes (the Discord error, the update download state, the failed-download count).
- * Only the sheet's RED rows are counted as broken systems, with the sheet's exact
- * rules; neutral states (not connected services, battery warnings, ...) are NOT counted.
- */
+/** Counts the sheet's error rows for the settings card. */
 internal fun maintenanceHealth(
     snapshot: MaintenanceSnapshot?,
     discordError: DiscordRpcError?,
@@ -188,19 +171,14 @@ internal fun brokenSystemsCount(
     return count
 }
 
-/** One expanded jobs detail line: the job name, the string resource of its WorkManager state (the "Never run" fallback when the job was never enqueued) and whether the job needs attention (FAILED / CANCELLED — the sheet's abnormal predicate). */
+/** One expanded jobs detail line: the job name, the string resource of its WorkManager state (the "Never run" fallback when the job was never enqueued) and whether the job needs attention (FAILED / CANCELLED - the sheet's abnormal predicate). */
 internal data class JobDetailLine(
     val name: String,
     val stateResId: Int?,
     val abnormal: Boolean,
 )
 
-/**
- * The expanded jobs detail lines: ALL the scheduled jobs, alphabetically by name (the
- * dedup group order); the abnormal ones (FAILED/CANCELLED) are rendered RED by the
- * caller, the rest neutral. An absent or empty job list answers an empty list — the
- * row then shows its muted "No jobs" line.
- */
+/** Jobs in alphabetical order, including jobs that have never run. */
 internal fun jobDetailLines(jobs: List<JobSnapshot>?): List<JobDetailLine> {
     if (jobs.isNullOrEmpty()) return emptyList()
     return jobs
@@ -238,18 +216,14 @@ internal fun ColorPalette.rowColor(key: RowColorKey): Color = when (key) {
     RowColorKey.Blue -> blue
 }
 
-/** One expanded downloads detail line (state mapping): the title (or the "Unknown Title" fallback when the download carries no readable title) plus its state label and row color — waiting and in-progress in accent, failed in red, paused in blue, completed in the neutral gray. */
+/** One expanded downloads detail line (state mapping): the title (or the "Unknown Title" fallback when the download carries no readable title) plus its state label and row color - waiting and in-progress in accent, failed in red, paused in blue, completed in the neutral gray. */
 internal data class DownloadDetailLine(
     val titleResId: Int?,
     val stateResId: Int,
     val color: RowColorKey,
 )
 
-/**
- * The state mapping of one expanded downloads detail line. [title] is the decoded
- * download title (the "artist - title" stored in the download request); blank or
- * absent answers the "Unknown Title" fallback.
- */
+/** The decoded download title can be blank or absent. */
 internal fun downloadDetailLine(title: String?, state: Int): DownloadDetailLine {
     val stateResId = when (state) {
         Download.STATE_QUEUED -> R.string.maintenance_download_queued
@@ -276,7 +250,7 @@ internal fun downloadDetailLine(title: String?, state: Int): DownloadDetailLine 
     )
 }
 
-/** The sync row, aligned with the accounts card: running keeps the sheet's own wording ("Sync in progress", accent — the sheet snapshot has no operation name); the idle states reuse the card's resources ("Last sync: Nmin ago" with the relative whole minutes, "Never synced") in the muted color. */
+/** The sync row, aligned with the accounts card: running keeps the sheet's own wording ("Sync in progress", accent - the sheet snapshot has no operation name); the idle states reuse the card's resources ("Last sync: Nmin ago" with the relative whole minutes, "Never synced") in the muted color. */
 internal data class SyncRow(
     val resId: Int,
     val arg: Long? = null,
@@ -340,13 +314,7 @@ internal fun updateRow(
 /** The MusicBrainz cooldown in whole minutes, rounded UP from seconds (0 = no cooldown). */
 internal fun mbCooldownMinutes(seconds: Long): Long = if (seconds <= 0L) 0L else (seconds + 59L) / 60L
 
-/**
- * The Debug logs row display, aligned with the app's actual state: off, on, or
- * on-but-restart-needed (the log file is created at startup when debug is enabled, so an
- * enabled-but-not-restarted app shows "On · restart needed"). The View + Export buttons
- * show whenever the switch is ON (the dialogs handle the missing-file state —
- * "Log unavailable" until the restart creates the log file).
- */
+/** An enabled log can be unavailable until startup creates the file. */
 internal data class DebugLogsRow(
     val baseResId: Int,
     val restartNeeded: Boolean = false,
@@ -359,16 +327,16 @@ internal fun debugLogsRow(debugEnabled: Boolean, logFileAvailable: Boolean): Deb
 }
 
 /** List detail-line indent: the ListMenu.Entry 32dp icon chip + its 12dp spacing. */
-private val detailListIndent = 44.dp
+internal val detailListIndent = 44.dp
 
-/** The widest realistic cache result line ("9.3 GB used (100%)" — the largest custom cache max with a full usage): the second reference of the shared status column width. */
+/** The widest realistic cache result line ("9.3 GB used (100%)" - the largest custom cache max with a full usage): the second reference of the shared status column width. */
 private const val CACHE_STATUS_WIDTH_REF = "9.3 GB used (100%)"
 
 @Composable
 internal fun formatBytes(bytes: Long): String =
     Formatter.formatShortFileSize(LocalContext.current, bytes)
 
-/** The cache result line, aligned with the Data settings cache rows: the short file size followed by " used (<pct>%)" — a zero max (Unlimited) answers " used (Unlimited)" instead of a percentage. */
+/** The cache result line, aligned with the Data settings cache rows: the short file size followed by " used (<pct>%)" - a zero max (Unlimited) answers " used (Unlimited)" instead of a percentage. */
 @Composable
 private fun cacheUsedStatusText(context: Context, usedBytes: Long, maxBytes: Long): String {
     val used = Formatter.formatShortFileSize(context, usedBytes)
@@ -386,28 +354,8 @@ private fun cacheUsedStatusText(context: Context, usedBytes: Long, maxBytes: Lon
 }
 
 /**
- * The Maintenance sheet (spec "Maintenance — état de l'app en un regard"): a bottom sheet
- * listing the last boot passes (persisted last successful run) and the live state of each
- * subsystem — the whole app state at a glance.
- *
- * Design (per user request): the app's own menu design system, exactly like the Listen
- * Together menu — LIST mode ([ListMenu.Menu] + [ListMenu.Entry] rows + right-aligned colored
- * status dot); list-only (this many rows are unreadable in grid cells). The
- * [CustomModalBottomSheet] container stays transparent with an empty drag handle, and the
- * title + refresh header row sits above the menu content.
- *
- * The sheet reads its data at open (and on "refresh") only: no polling, no background
- * refresh; the refresh re-runs the READS, never the boot passes. Opened from the burger
- * menu "Maintenance" item ([app.n_zik.android.components.menu.header.MaintenanceMenuItem])
- * and the Misc settings "Maintenance" card
- * ([app.n_zik.android.components.settings.MaintenanceSettingsCard]).
- *
- * @param showSheet whether the sheet is open
- * @param onDismissRequest called when the sheet is dismissed (swipe / outside tap)
- * @param renderLogsDialog whether this composition renders the standard [CopyLogsDialog] for
- *        the Export action. Both entry points pass `false`: the single Render() host for
- *        the whole app lives in the persistent header (ActionBar.kt), which both sheets
- *        share — Render() is a singleton and a second Render() would stack a second dialog.
+ * Shows boot passes and subsystem statuses from the header and Settings.
+ * @param renderLogsDialog Render the export dialog here when there is no persistent header.
  */
 @OptIn(ExperimentalMaterial3Api::class, UnstableApi::class)
 @Composable
@@ -432,19 +380,9 @@ fun MaintenanceSheet(
     var jobsExpanded by remember { mutableStateOf(false) }
     var downloadsExpanded by remember { mutableStateOf(false) }
 
-    // Live StateFlows observed with lifecycle awareness (spec: collectAsStateWithLifecycle,
-    // never collectAsState).
-    //
-    // The sheet composable lives in the persistent header, so the (passive, no polling)
-    // observers are registered for the whole session,
-    //
-    // not only while the sheet is visible — the values simply update in place between
-    // opens. The rest of the state is a snapshot loaded at open/refresh.
+    // The persistent header keeps these live observations active between sheet opens.
     val syncStatus by syncStatus.collectAsStateWithLifecycle()
-    // Session-scoped: the Downloads row resets to empty on every process start (the
-    // persistent library stays in MyDownloadHelper.downloads, used by the badges and
-//
-    // the download manager UI)
+    // Only downloads from this process session belong in the maintenance row.
     val downloads by MyDownloadHelper.sessionDownloads.collectAsStateWithLifecycle()
     val discordError by DiscordRpcErrorState.error.collectAsStateWithLifecycle()
     val updateState by UpdateDownloadManager.downloadState.collectAsStateWithLifecycle()
@@ -464,109 +402,7 @@ fun MaintenanceSheet(
         }
     }
 
-    // Cap the content at ~80% of the screen; the menu rows scroll inside.
-
-    // One line per value: every row's single-line status (text + color) is resolved here,
-    // in the composable body (stringResource is only callable from a composable context),
-//
-    // so the rows render the same resolved model.
     val snap = snapshot
-    // Boot passes share one trailing format: the last run's date in front, the status after
-    val dedup = snap?.dedup
-    // "No data" (never ran / unreadable state) vs "no groups detected" (ran, found none):
-    // the expanded detail must not claim a detection when there is no state to detect from
-    val dedupNoData = dedup == null
-    val dedupPassStatus = dedupStatusRes(dedup)
-    val dedupStatusText = passStatusText(dedupPassStatus)
-    val dedupSummary = lastRunLine(dedup?.timestamp, dedupStatusText, stringResource(R.string.maintenance_no_data), locale)
-    // The expansion's top summary line: the status repeated on one line above the per-section
-    // detail
-    //
-    // (user decision 2026-10-23) — null for the fixed sentences, which the expansion already shows
-    val dedupSummaryLine = dedupStatusText.takeIf { passHasState(dedupPassStatus) }
-    val dedupGroups = ArrayList<GroupLine>()
-    if (dedupExpanded) {
-        val groups = dedup?.records?.sortedBy { it.name.lowercase(Locale.ROOT) }.orEmpty()
-        for (record in groups) {
-            val display = dedupGroupDisplay(record)
-            val detailArgs = display.detailArgs
-            val detailArgs2 = display.detailArgs2
-            val detailResId = display.detailResId
-            val detail = when {
-                detailResId == null -> ""
-                detailArgs2 != null && detailArgs != null ->
-                    ": ${stringResource(
-                        R.string.maintenance_dedup_counts_format,
-                        maintenanceCount(R.string.maintenance_dedup_merged, detailArgs),
-                        maintenanceCount(R.string.maintenance_dedup_flagged, detailArgs2),
-                    )}"
-                detailArgs != null -> ": ${maintenanceCount(detailResId, detailArgs)}"
-                else -> ": ${stringResource(detailResId)}"
-            }
-            dedupGroups.add(GroupLine(cleanPrefix(record.name), stringResource(display.statusResId) + detail))
-        }
-    }
-    val convergence = snap?.convergence
-    val convergencePassStatus = convergenceStatusRes(convergence)
-    val convergenceStatusText = passStatusText(convergencePassStatus)
-    val convergenceStatus = lastRunLine(convergence?.timestamp, convergenceStatusText, stringResource(R.string.maintenance_no_data), locale)
-    val convergenceSummaryLine = convergenceStatusText.takeIf { passHasState(convergencePassStatus) }
-    // Expanded convergence detail: the status on one line on top, the per-reason counters underneath
-    val convergenceDetails = convergenceDetailLines(convergence?.summary).map { line ->
-        val count = line.count
-        if (count != null) {
-            ConvergenceDetail(stringResource(line.resId, count))
-        } else {
-            ConvergenceDetail(stringResource(line.resId))
-        }
-    }
-    // The row carries the "date · status" line; the expansion lists the links removed by
-    // the last run (one line per link, like the dedup groups)
-    val dbCleanup = snap?.dbCleanup
-    val dbCleanupPassStatus = dbCleanupStatusRes(dbCleanup)
-    val dbCleanupStatusText = passStatusText(dbCleanupPassStatus)
-    val dbCleanupStatus = lastRunLine(dbCleanup?.timestamp, dbCleanupStatusText, stringResource(R.string.maintenance_no_data), locale)
-    val dbCleanupSummaryLine = dbCleanupStatusText.takeIf { passHasState(dbCleanupPassStatus) }
-    val dbCleanupLines = dbCleanupLines(dbCleanup)
-    val dbCleanupEmpty = dbCleanupEmptyRes(dbCleanup)
-    val dbCleanupEmptyArg = dbCleanupEmpty.second
-    val dbCleanupEmptyText = if (dbCleanupEmptyArg != null) {
-        maintenanceCount(dbCleanupEmpty.first, dbCleanupEmptyArg)
-    } else {
-        stringResource(dbCleanupEmpty.first)
-    }
-    // Download re-validation (S1): the row carries the "date · status" line; the
-    // expansion lists the stale tracks removed by the last startup (one line per
-//
-    // track, like the dedup groups)
-    val downloadRevalidation = snap?.downloadRevalidation
-    val downloadRevalidationPassStatus = downloadRevalidationStatusRes(downloadRevalidation)
-    val downloadRevalidationStatusText = passStatusText(downloadRevalidationPassStatus)
-    val downloadRevalidationStatus = lastRunLine(downloadRevalidation?.timestamp, downloadRevalidationStatusText, stringResource(R.string.maintenance_no_data), locale)
-    val downloadRevalidationSummaryLine = downloadRevalidationStatusText.takeIf { passHasState(downloadRevalidationPassStatus) }
-    val downloadRevalidationLines = downloadRevalidationLines(downloadRevalidation)
-    val downloadRevalidationEmpty = downloadRevalidationEmptyRes(downloadRevalidation)
-    val downloadRevalidationEmptyArg = downloadRevalidationEmpty.second
-    val downloadRevalidationEmptyText = if (downloadRevalidationEmptyArg != null) {
-        maintenanceCount(downloadRevalidationEmpty.first, downloadRevalidationEmptyArg)
-    } else {
-        stringResource(downloadRevalidationEmpty.first)
-    }
-    // Download self-heal (S2): every startup run persists a dated state (clean = nothing
-    // to heal), a real self-heal overwrites it with the healed track
-    val downloadSelfHeal = snap?.downloadSelfHeal
-    val downloadSelfHealPassStatus = downloadSelfHealStatusRes(downloadSelfHeal)
-    val downloadSelfHealStatusText = passStatusText(downloadSelfHealPassStatus)
-    val downloadSelfHealStatus = lastRunLine(downloadSelfHeal?.timestamp, downloadSelfHealStatusText, stringResource(R.string.maintenance_no_data), locale)
-    val downloadSelfHealSummaryLine = downloadSelfHealStatusText.takeIf { passHasState(downloadSelfHealPassStatus) }
-    val downloadSelfHealLines = downloadSelfHealLines(downloadSelfHeal)
-    // A missing state is genuinely "no data" (before the first startup run); a startup
-    // clean run shows the shared clean sentence instead
-    val downloadSelfHealEmptyText = if (downloadSelfHeal == null) {
-        stringResource(R.string.maintenance_no_data)
-    } else {
-        stringResource(R.string.maintenance_pass_clean)
-    }
     // Aligned with the accounts card: running keeps the sheet's own wording (the snapshot
     // has no operation name); idle reuses the card's resources in the muted color
     val syncRow = syncRow(syncStatus.isRunning, System.currentTimeMillis(), snap?.lastSyncTime ?: 0L)
@@ -593,10 +429,7 @@ fun MaintenanceSheet(
     // The active profile's settings size, the profile sheet's Settings row value
     val settingsStatus = snap?.settingsSizeBytes?.let { formatBytes(it) }
         ?: stringResource(R.string.maintenance_no_data)
-    // Cache rows, aligned with the Data settings cache lines: the settings label is
-    // the row title, the "<size> used (<pct>%)" result is the right status (the shared
-//
-    // status column); a disabled cache answers "Off", a missing size "No data"
+    // Cache results use the same format as Data settings.
     val imagesCache = snap?.imagesCache
     val imagesStatus = if (imagesCache != null) {
         cacheUsedStatusText(context, imagesCache.first, imagesCache.second)
@@ -625,7 +458,7 @@ fun MaintenanceSheet(
         songCacheSize == null -> stringResource(R.string.maintenance_no_data)
         else -> cacheUsedStatusText(context, songCacheSize, songCacheMax)
     }
-    // Downloads (session map — empty at process start; the pause flag comes from the persisted state)
+    // Downloads (session map - empty at process start; the pause flag comes from the persisted state)
     val downloadStates = downloads.values.map { it.state }
     val downloadsInProgress = downloadStates.count {
         it == Download.STATE_QUEUED || it == Download.STATE_DOWNLOADING || it == Download.STATE_RESTARTING
@@ -651,7 +484,7 @@ fun MaintenanceSheet(
         downloadsInProgress > 0 -> palette.accent
         else -> palette.textSecondary
     }
-    // Expanded downloads detail: one line per download (title + state), alphabetical —
+    // Expanded downloads detail: one line per download (title + state), alphabetical -
     // failed in RED, waiting/in-progress in accent, paused in blue, completed neutral
     val downloadDetails = downloads.values.map { download ->
         val title = downloadDisplayName(download.request.data.decodeToString())
@@ -763,10 +596,7 @@ fun MaintenanceSheet(
         DiscordRpcError.RECONNECT_FAILED -> stringResource(R.string.maintenance_discord_reconnect_failed)
     }
     val discordColor = if (discordError == null) palette.textSecondary else palette.red
-    // The available version comes from the same live Updater source as the About update
-    // card (no snapshot field needed); idle then maps to "Update available" (accent)
-//
-    // or "Up to date" (neutral), aligned with that card
+    // Use the same live release information as the About update card.
     val newVersionAvailable = Updater.githubRelease?.let { release ->
         Updater.isVersionNewer(release.tagName, BuildConfig.VERSION_NAME)
     } ?: false
@@ -777,10 +607,7 @@ fun MaintenanceSheet(
     val batteryStatus = stringResource(if (batteryOk) R.string.maintenance_battery_ok else R.string.maintenance_battery_warn)
     val batteryColor = if (batteryOk) palette.textSecondary else palette.blue
     val crash = snap?.lastCrash
-    // The row is always present: "None" without a crash, "A crash occurred (N)" with one
-    // (N = the number of complete crash blocks in the log — the details live in the
-//
-    // View dialog, not in the one-line status)
+    // Only complete crash blocks contribute to the count.
     val crashStatus = if (crash == null) {
         stringResource(R.string.maintenance_crash_none)
     } else {
@@ -814,27 +641,6 @@ fun MaintenanceSheet(
             snapshotReadFailed -> MaintenanceReadPhase.Unavailable
             else -> MaintenanceReadPhase.Pending
         },
-        dedupSummary = dedupSummary,
-        dedupNoData = dedupNoData,
-        dedupGroups = dedupGroups,
-        dedupSummaryLine = dedupSummaryLine,
-        convergenceStatus = convergenceStatus,
-        convergenceColor = palette.textSecondary,
-        convergenceDetails = convergenceDetails,
-        convergenceSummaryLine = convergenceSummaryLine,
-        dbCleanupStatus = dbCleanupStatus,
-        dbCleanupColor = palette.textSecondary,
-        dbCleanupLines = dbCleanupLines,
-        dbCleanupEmptyText = dbCleanupEmptyText,
-        dbCleanupSummaryLine = dbCleanupSummaryLine,
-        downloadRevalidationStatus = downloadRevalidationStatus,
-        downloadRevalidationLines = downloadRevalidationLines,
-        downloadRevalidationEmptyText = downloadRevalidationEmptyText,
-        downloadRevalidationSummaryLine = downloadRevalidationSummaryLine,
-        downloadSelfHealStatus = downloadSelfHealStatus,
-        downloadSelfHealLines = downloadSelfHealLines,
-        downloadSelfHealEmptyText = downloadSelfHealEmptyText,
-        downloadSelfHealSummaryLine = downloadSelfHealSummaryLine,
         syncStatus = syncStatusText,
         syncColor = syncRowColor,
         libraryStatus = libraryStatus,
@@ -877,13 +683,7 @@ fun MaintenanceSheet(
         onExportCrash = { CopyLogsDialog.showDialogFor(1) },
     )
 
-    // Opens and grows exactly like the main menu sheet (SongItemMenu — MainActivity):
-    // transparent container, top-only shape, statusBarsPadding,
-//
-    // skipPartiallyExpanded = false (opens at its content height, draggable to full
-    // screen) — the menu draws its own background (background0), its own top clip and
-//
-    // its own drag handle
+    // The menu handles its own background and opens partially expanded.
     SampledMenuSheet(
         showSheet = showSheet,
         onDismissRequest = onDismissRequest,
@@ -901,10 +701,7 @@ fun MaintenanceSheet(
         } ?: uiRoundnessShape(),
         dragHandle = {}
     ) {
-        // Standard menu header (title + refresh in the header trailing slot), exactly
-        // like the Listen Together menu; refresh re-runs the reads (never the boot
-//
-        // passes)
+        // Refresh rereads the snapshot without rerunning the boot passes.
         val refreshTrailing: (@Composable RowScope.() -> Unit)? = {
             IconButton(onClick = { refreshTick++ }) {
                 Icon(
@@ -914,10 +711,6 @@ fun MaintenanceSheet(
                 )
             }
         }
-        // No height cap on the content — exactly like the main menu sheet (SongItemMenu):
-        // with skipPartiallyExpanded = false the sheet opens at its content height and
-//
-        // is draggable to full screen. No background here — the menu draws its own.
         ListMenu.Menu(
             title = stringResource(R.string.maintenance_title),
             headerTrailing = refreshTrailing,
@@ -932,61 +725,43 @@ fun MaintenanceSheet(
             }
             MaintenanceListContent(
                 content = content,
-                dedupExpanded = dedupExpanded,
-                onToggleDedup = { dedupExpanded = !dedupExpanded },
-                convergenceExpanded = convergenceExpanded,
-                onToggleConvergence = { convergenceExpanded = !convergenceExpanded },
-                dbCleanupExpanded = dbCleanupExpanded,
-                onToggleDbCleanup = { dbCleanupExpanded = !dbCleanupExpanded },
-                downloadRevalidationExpanded = downloadRevalidationExpanded,
-                onToggleDownloadRevalidation = { downloadRevalidationExpanded = !downloadRevalidationExpanded },
-                downloadSelfHealExpanded = downloadSelfHealExpanded,
-                onToggleDownloadSelfHeal = { downloadSelfHealExpanded = !downloadSelfHealExpanded },
+                databaseSection = { statusColumnWidth ->
+                    MaintenanceDatabaseSection(
+                        snapshot = snap,
+                        readPhase = content.readPhase,
+                        statusColumnWidth = statusColumnWidth,
+                        locale = locale,
+                        sheetStatusColor = palette.textSecondary,
+                        dedupExpanded = dedupExpanded,
+                        onToggleDedup = { dedupExpanded = !dedupExpanded },
+                        convergenceExpanded = convergenceExpanded,
+                        onToggleConvergence = { convergenceExpanded = !convergenceExpanded },
+                        dbCleanupExpanded = dbCleanupExpanded,
+                        onToggleDbCleanup = { dbCleanupExpanded = !dbCleanupExpanded },
+                        downloadRevalidationExpanded = downloadRevalidationExpanded,
+                        onToggleDownloadRevalidation = { downloadRevalidationExpanded = !downloadRevalidationExpanded },
+                        downloadSelfHealExpanded = downloadSelfHealExpanded,
+                        onToggleDownloadSelfHeal = { downloadSelfHealExpanded = !downloadSelfHealExpanded },
+                    )
+                },
                 jobsExpanded = jobsExpanded,
                 onToggleJobs = { jobsExpanded = !jobsExpanded },
                 downloadsExpanded = downloadsExpanded,
                 onToggleDownloads = { downloadsExpanded = !downloadsExpanded },
             )
         }
-        // Both entry points pass renderLogsDialog = false: the single Render() host for
-        // the whole app lives in the persistent header (ActionBar.kt) — Render() is a
-//
-        // singleton, so a second one anywhere would stack two dialogs on the same
-        // showDialog() activation. This branch stays only as a safety valve.
+        // The persistent header normally renders the singleton export dialog.
         if (renderLogsDialog) {
             CopyLogsDialog.Render()
         }
     }
 }
 
-private enum class MaintenanceReadPhase { Ready, Pending, Unavailable }
+internal enum class MaintenanceReadPhase { Ready, Pending, Unavailable }
 
 /** One-line-per-value display model of the Maintenance menu rows, resolved in the sheet body (composable context): each row carries its single-line status and its status color (the LT menu's shared content pattern). */
 private class MaintenanceMenuContent(
     val readPhase: MaintenanceReadPhase,
-    // Boot passes
-    val dedupSummary: String,
-    val dedupNoData: Boolean,
-    val dedupGroups: List<GroupLine>,
-    val dedupSummaryLine: String?,
-    val convergenceStatus: String,
-    val convergenceColor: Color,
-    val convergenceDetails: List<ConvergenceDetail>,
-    val convergenceSummaryLine: String?,
-    val dbCleanupStatus: String,
-    val dbCleanupColor: Color,
-    val dbCleanupLines: List<GroupLine>,
-    val dbCleanupEmptyText: String,
-    val dbCleanupSummaryLine: String?,
-    val downloadRevalidationStatus: String,
-    val downloadRevalidationLines: List<GroupLine>,
-    val downloadRevalidationEmptyText: String,
-    val downloadRevalidationSummaryLine: String?,
-    val downloadSelfHealStatus: String,
-    val downloadSelfHealLines: List<GroupLine>,
-    val downloadSelfHealEmptyText: String,
-    val downloadSelfHealSummaryLine: String?,
-    // Subsystems
     val syncStatus: String,
     val syncColor: Color,
     val libraryStatus: String,
@@ -1030,11 +805,6 @@ private class MaintenanceMenuContent(
     val onExportLogs: () -> Unit,
 )
 
-/** One expanded convergence detail line (the resolved text). */
-private data class ConvergenceDetail(
-    val text: String,
-)
-
 /** One expanded jobs detail line (name + state label, the abnormal ones colored RED). */
 private data class JobDetail(
     val name: String,
@@ -1053,16 +823,7 @@ private data class DownloadDetail(
 @Composable
 private fun ColumnScope.MaintenanceListContent(
     content: MaintenanceMenuContent,
-    dedupExpanded: Boolean,
-    onToggleDedup: () -> Unit,
-    convergenceExpanded: Boolean,
-    onToggleConvergence: () -> Unit,
-    dbCleanupExpanded: Boolean,
-    onToggleDbCleanup: () -> Unit,
-    downloadRevalidationExpanded: Boolean,
-    onToggleDownloadRevalidation: () -> Unit,
-    downloadSelfHealExpanded: Boolean,
-    onToggleDownloadSelfHeal: () -> Unit,
+    databaseSection: @Composable ColumnScope.(statusColumnWidth: Dp) -> Unit,
     jobsExpanded: Boolean,
     onToggleJobs: () -> Unit,
     downloadsExpanded: Boolean,
@@ -1070,324 +831,14 @@ private fun ColumnScope.MaintenanceListContent(
 ) {
     val palette = colorPalette()
     val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
-    // One shared status column: the rendered width of the longest status that must
-    // stay fully visible — "Not connected" (the longest short status) or a full-width
-//
-    // cache result ("9.3 GB used (100%)" — the widest realistic "used (pct%)" line).
-    // Every status starts at the same x; anything longer scrolls in a marquee
+    // Size the shared column for the longest short status or a full cache result.
     val statusColumnWidth = maxOf(
         clampedLabelMaxWidth(stringResource(R.string.maintenance_not_connected), typography().xs),
         clampedLabelMaxWidth(CACHE_STATUS_WIDTH_REF, typography().xs),
     )
 
-    MenuSectionTitle(stringResource(R.string.maintenance_section_database))
+    databaseSection(statusColumnWidth)
 
-    // Dedup: expandable row (chevron trailing, groups sorted alphabetically underneath)
-    ListMenu.Entry(
-        text = stringResource(R.string.maintenance_dedup),
-        icon = { SettingIcon(R.drawable.trash, palette.accent) },
-        trailingContent = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                StatusTrailing(content.dedupSummary, palette.textSecondary, statusColumnWidth, content.readPhase)
-                Icon(
-                    painter = painterResource(if (dedupExpanded) R.drawable.chevron_up else R.drawable.chevron_down),
-                    contentDescription = null,
-                    tint = palette.textSecondary,
-                    modifier = Modifier.size(18.dp),
-                )
-            }
-        },
-        enabled = content.readPhase == MaintenanceReadPhase.Ready,
-        onClick = onToggleDedup,
-    )
-    // Animated expansion (the settings-card specs): enter + exit motion, the detail
-    // lines indented to the parent row's label
-    AnimatedVisibility(
-        visible = dedupExpanded,
-        enter = settingsEntryEnter,
-        exit = settingsEntryExit,
-    ) {
-        if (content.dedupGroups.isEmpty()) {
-            Text(
-                // No state at all (never ran / unreadable) answers "No data"; a readable
-                // state without groups answers the shared clean sentence
-                text = stringResource(
-                    if (content.dedupNoData) R.string.maintenance_no_data
-                    else R.string.maintenance_pass_clean
-                ),
-                style = typography().xs,
-                color = palette.textSecondary,
-                modifier = Modifier.fillMaxWidth()
-                    .padding(start = detailListIndent)
-                    .padding(vertical = 6.dp),
-            )
-        } else {
-            Column {
-                PassSummaryLine(content.dedupSummaryLine, palette.textSecondary)
-                for (line in content.dedupGroups) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(start = detailListIndent)
-                            .padding(vertical = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = line.name,
-                            style = typography().xs,
-                            color = palette.text,
-                            maxLines = 1,
-                            modifier = Modifier.weight(1f),
-                        )
-                        Text(
-                            text = line.status,
-                            style = typography().xs,
-                            color = palette.textSecondary,
-                            maxLines = 1,
-                        )
-                    }
-                }
-            }
-        }
-    }
-    // Convergence: expandable row (chevron trailing, the non-zero sweep counters underneath)
-    ListMenu.Entry(
-        text = stringResource(R.string.maintenance_convergence),
-        icon = { SettingIcon(R.drawable.sync, palette.accent) },
-        trailingContent = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                StatusTrailing(content.convergenceStatus, content.convergenceColor, statusColumnWidth, content.readPhase)
-                Icon(
-                    painter = painterResource(if (convergenceExpanded) R.drawable.chevron_up else R.drawable.chevron_down),
-                    contentDescription = null,
-                    tint = palette.textSecondary,
-                    modifier = Modifier.size(18.dp),
-                )
-            }
-        },
-        enabled = content.readPhase == MaintenanceReadPhase.Ready,
-        onClick = onToggleConvergence,
-    )
-    AnimatedVisibility(
-        visible = convergenceExpanded,
-        enter = settingsEntryEnter,
-        exit = settingsEntryExit,
-    ) {
-        Column {
-            PassSummaryLine(content.convergenceSummaryLine, palette.textSecondary)
-            for (line in content.convergenceDetails) {
-                Text(
-                    text = line.text,
-                    style = typography().xs,
-                    color = palette.textSecondary,
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(start = detailListIndent)
-                        .padding(vertical = 2.dp),
-                )
-            }
-        }
-    }
-    // Artist link cleanup: expandable row (chevron trailing, the removed links listed
-    // underneath — same "summary on top, detail list underneath" shape as dedup and
-//
-    // convergence, so the five Database rows open/close consistently)
-    ListMenu.Entry(
-        text = stringResource(R.string.maintenance_db_cleanup),
-        icon = { SettingIcon(R.drawable.data_migration, palette.accent) },
-        trailingContent = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                StatusTrailing(content.dbCleanupStatus, content.dbCleanupColor, statusColumnWidth, content.readPhase)
-                Icon(
-                    painter = painterResource(if (dbCleanupExpanded) R.drawable.chevron_up else R.drawable.chevron_down),
-                    contentDescription = null,
-                    tint = palette.textSecondary,
-                    modifier = Modifier.size(18.dp),
-                )
-            }
-        },
-        enabled = content.readPhase == MaintenanceReadPhase.Ready,
-        onClick = onToggleDbCleanup,
-    )
-    AnimatedVisibility(
-        visible = dbCleanupExpanded,
-        enter = settingsEntryEnter,
-        exit = settingsEntryExit,
-    ) {
-        if (content.dbCleanupLines.isEmpty()) {
-            Text(
-                text = content.dbCleanupEmptyText,
-                style = typography().xs,
-                color = palette.textSecondary,
-                modifier = Modifier.fillMaxWidth()
-                    .padding(start = detailListIndent)
-                    .padding(vertical = 6.dp),
-            )
-        } else {
-            Column {
-                PassSummaryLine(content.dbCleanupSummaryLine, palette.textSecondary)
-                for (line in content.dbCleanupLines) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(start = detailListIndent)
-                            .padding(vertical = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = line.name,
-                            style = typography().xs,
-                            color = palette.text,
-                            maxLines = 1,
-                            modifier = Modifier.weight(1f),
-                        )
-                        Text(
-                            text = line.status,
-                            style = typography().xs,
-                            color = palette.textSecondary,
-                            maxLines = 1,
-                        )
-                    }
-                }
-            }
-        }
-    }
-    // Download re-validation (S1): expandable row (chevron trailing, the stale tracks
-    // removed by the last startup listed underneath — same "summary on top, detail
-//
-    // list underneath" shape as the other chevron rows above)
-    ListMenu.Entry(
-        text = stringResource(R.string.maintenance_download_revalidation),
-        icon = { SettingIcon(R.drawable.download, palette.accent) },
-        trailingContent = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                StatusTrailing(content.downloadRevalidationStatus, palette.textSecondary, statusColumnWidth, content.readPhase)
-                Icon(
-                    painter = painterResource(if (downloadRevalidationExpanded) R.drawable.chevron_up else R.drawable.chevron_down),
-                    contentDescription = null,
-                    tint = palette.textSecondary,
-                    modifier = Modifier.size(18.dp),
-                )
-            }
-        },
-        enabled = content.readPhase == MaintenanceReadPhase.Ready,
-        onClick = onToggleDownloadRevalidation,
-    )
-    AnimatedVisibility(
-        visible = downloadRevalidationExpanded,
-        enter = settingsEntryEnter,
-        exit = settingsEntryExit,
-    ) {
-        if (content.downloadRevalidationLines.isEmpty()) {
-            Text(
-                text = content.downloadRevalidationEmptyText,
-                style = typography().xs,
-                color = palette.textSecondary,
-                modifier = Modifier.fillMaxWidth()
-                    .padding(start = detailListIndent)
-                    .padding(vertical = 6.dp),
-            )
-        } else {
-            Column {
-                PassSummaryLine(content.downloadRevalidationSummaryLine, palette.textSecondary)
-                for (line in content.downloadRevalidationLines) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(start = detailListIndent)
-                            .padding(vertical = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = line.name,
-                            style = typography().xs,
-                            color = palette.text,
-                            maxLines = 1,
-                            modifier = Modifier.weight(1f),
-                        )
-                        Text(
-                            text = line.status,
-                            style = typography().xs,
-                            color = palette.textSecondary,
-                            maxLines = 1,
-                        )
-                    }
-                }
-            }
-        }
-    }
-    // Download self-heal (S2): expandable row (chevron trailing, the healed track
-    // underneath — the clean sentence until the first self-heal)
-    ListMenu.Entry(
-        text = stringResource(R.string.maintenance_download_self_heal),
-        icon = { SettingIcon(R.drawable.refresh, palette.accent) },
-        trailingContent = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                StatusTrailing(content.downloadSelfHealStatus, palette.textSecondary, statusColumnWidth, content.readPhase)
-                Icon(
-                    painter = painterResource(if (downloadSelfHealExpanded) R.drawable.chevron_up else R.drawable.chevron_down),
-                    contentDescription = null,
-                    tint = palette.textSecondary,
-                    modifier = Modifier.size(18.dp),
-                )
-            }
-        },
-        enabled = content.readPhase == MaintenanceReadPhase.Ready,
-        onClick = onToggleDownloadSelfHeal,
-    )
-    AnimatedVisibility(
-        visible = downloadSelfHealExpanded,
-        enter = settingsEntryEnter,
-        exit = settingsEntryExit,
-    ) {
-        if (content.downloadSelfHealLines.isEmpty()) {
-            Text(
-                text = content.downloadSelfHealEmptyText,
-                style = typography().xs,
-                color = palette.textSecondary,
-                modifier = Modifier.fillMaxWidth()
-                    .padding(start = detailListIndent)
-                    .padding(vertical = 6.dp),
-            )
-        } else {
-            Column {
-                PassSummaryLine(content.downloadSelfHealSummaryLine, palette.textSecondary)
-                for (line in content.downloadSelfHealLines) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(start = detailListIndent)
-                            .padding(vertical = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = line.name,
-                            style = typography().xs,
-                            color = palette.text,
-                            maxLines = 1,
-                            modifier = Modifier.weight(1f),
-                        )
-                        Text(
-                            text = line.status,
-                            style = typography().xs,
-                            color = palette.textSecondary,
-                            maxLines = 1,
-                        )
-                    }
-                }
-            }
-        }
-    }
     MenuSectionTitle(stringResource(R.string.maintenance_section_library_sync))
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_sync_ytm),
@@ -1419,7 +870,7 @@ private fun ColumnScope.MaintenanceListContent(
     )
 
     MenuSectionTitle(stringResource(R.string.maintenance_section_caches_downloads))
-    // Cache rows (the Data settings order): image, song, song download — each shows
+    // Cache rows (the Data settings order): image, song, song download - each shows
     // "<size> used (<pct>%)" in the shared status column
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_image_cache),
@@ -1499,7 +950,7 @@ private fun ColumnScope.MaintenanceListContent(
     }
 
     MenuSectionTitle(stringResource(R.string.maintenance_section_jobs))
-    // Jobs: expandable row (chevron trailing, ALL the jobs underneath — abnormal in RED)
+    // Jobs: expandable row (chevron trailing, ALL the jobs underneath - abnormal in RED)
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_jobs),
         icon = { SettingIcon(R.drawable.calendar, palette.accent) },
@@ -1602,11 +1053,6 @@ private fun ColumnScope.MaintenanceListContent(
         icon = { SettingIcon(R.drawable.battery_opti, palette.accent) },
         trailingContent = { StatusTrailing(content.batteryStatus, content.batteryColor, statusColumnWidth, content.readPhase) },
     )
-    // Last crash: View + Export live in the entry's trailing slot (the debug-logs
-    // pattern) — View opens the crash log dialog (full content + copy + export +
-//
-    // clear), Export the shared export dialog pre-selected on the crash option; both
-    // show only when a crash block exists (no empty slot otherwise)
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_last_crash),
         icon = { SettingIcon(R.drawable.bugs, palette.accent) },
@@ -1633,7 +1079,7 @@ private fun ColumnScope.MaintenanceListContent(
             }
         },
     )
-    // Debug logs: View + Export live in the entry's trailing slot (the LT pattern) —
+    // Debug logs: View + Export live in the entry's trailing slot (the LT pattern) -
     // shown only while the debug switch is ON
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_debug_logs),
@@ -1667,10 +1113,7 @@ private fun ColumnScope.MaintenanceListContent(
                             basicMarquee(iterations = Int.MAX_VALUE)
                         },
                 )
-                // View + Export show only while the debug switch is ON (off → no
-                // buttons at all; on but not restarted → the dialogs answer "Log
-//
-                // unavailable" until the restart creates the log file)
+                // A missing log file is handled by the dialogs.
                 if (content.debugButtonsVisible) {
                     TextButton(onClick = content.onViewDebug) {
                         Text(
@@ -1692,7 +1135,7 @@ private fun ColumnScope.MaintenanceListContent(
 
 /** Accent section title, same styling as the app's own item menus: xxs semiBold accent text with 12dp vertical / 4dp horizontal padding. */
 @Composable
-private fun MenuSectionTitle(title: String) {
+internal fun MenuSectionTitle(title: String) {
     BasicText(
         text = title,
         style = typography().xxs.semiBold.copy(
@@ -1706,32 +1149,9 @@ private fun MenuSectionTitle(title: String) {
     )
 }
 
-/** The top line of an expanded boot-pass detail: the row's status repeated on one line above the per-section breakdown — the state words and their totals stay visible in the detail (user decision 2026-10-23). Null (the fixed "No data" / "Nothing to clean" sentences) renders nothing: the expansion already shows that sentence. */
+/** Shared status width and marquee for rows with a trailing status dot. */
 @Composable
-private fun PassSummaryLine(text: String?, color: Color) {
-    if (text != null) {
-        Text(
-            text = text,
-            style = typography().xs,
-            color = color,
-            modifier = Modifier.fillMaxWidth()
-                .padding(start = detailListIndent)
-                .padding(vertical = 2.dp),
-        )
-    }
-}
-
-/**
- * Right-aligned status of a list row: the status dot + the colored status text (the LT
- * ConnectionStatusRow pattern — the dot and the text share the status color).
- *
- * The text box is the shared status column width (sized for the longest status that must
- * stay fully visible — "Not connected" or a full-width cache result): every row's status
- * (dot included) starts at the same x, and a longer status (last crash, library counts)
- * scrolls within the column, honoring the scrolling-text setting.
- */
-@Composable
-private fun StatusTrailing(
+internal fun StatusTrailing(
     status: String,
     color: Color,
     columnWidth: Dp,
@@ -1767,7 +1187,7 @@ private fun StatusTrailing(
 
 /** Standard menu icon chip (same pattern as the app's own menus): tinted rounded 32dp square with an 18dp icon. */
 @Composable
-private fun SettingIcon(@DrawableRes icon: Int, color: Color) {
+internal fun SettingIcon(@DrawableRes icon: Int, color: Color) {
     Box(
         modifier =
             Modifier

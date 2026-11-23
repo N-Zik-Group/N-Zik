@@ -282,3 +282,7 @@ Refactor:
 - refactor(listen-together): centralize room notifications
   - Extract join request and track suggestion notifications into ListenTogetherNotifications. Share notification and action creation while preserving the profile channel, permission journal and seven dismissal paths.
   - Cover both notification types, their action intents and cancellation in Robolectric. Verify 77 targeted tests and open Listen Together on the Pixel VM.
+- refactor(maintenance): extract the database diagnostics section
+  - Share the status headers and expandable detail rows across the five database passes while preserving the original Glass colors.
+  - Keep snapshot loading and expansion state in MaintenanceSheet. Verify report details, localized counts and dates, refresh failure retention and Retry in Compose.
+  - Run 87 targeted tests and check all five rows and refresh on the Pixel VM.
