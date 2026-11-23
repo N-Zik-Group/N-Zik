@@ -159,7 +159,7 @@ class PersistentQueueTest {
 
     @Test
     @GraphicsMode(GraphicsMode.Mode.NATIVE)
-    fun `modified per-song cover persists as its file reference`() = runBlocking<Unit> {
+    fun `versioned modified per-song cover survives queue restoration and library insertion without an original source`() = runBlocking<Unit> {
         val file = File(coversDir(context, "default"), "cover_portable.jpg")
         file.parentFile?.mkdirs()
         val bitmap = Bitmap.createBitmap(8, 8, Bitmap.Config.ARGB_8888)
@@ -169,10 +169,14 @@ class PersistentQueueTest {
             mockkStatic("app.n_zik.android.GlobalVarsKt")
             every { DatabaseInitializer.Instance } returns db
             every { appContext() } returns context
-            val item = mediaItem(
-                "portable", ArtworkContentProvider.uriFor("portable"),
-                "https://example.com/original.jpg", modified = true
-            )
+            val titleCover = ArtworkContentProvider.uriFor("portable", revision = 17L)
+            val item = mediaItem("portable", titleCover, modified = true)
+            db.queueTable.replaceAll(listOf(QueuedMediaItem(mediaItem = item, position = 100L)))
+            val saved = db.queueTable.allDirect().single().mediaItem
+            val restored = PersistentQueueArtwork.restore(context, "default", saved) { null }
+            assertEquals(titleCover, restored.mediaMetadata.artworkUri)
+            assertTrue(requireNotNull(restored.mediaMetadata.extras).getBoolean("isCoverModified"))
+            assertNull(PersistentQueueArtwork.originalSource(restored))
             val preparedArtwork = Database.prepareArtworkForInsert(item)
             Database.transaction { insertIgnore(item, autoFix = false, preparedArtwork = preparedArtwork) }
             assertEquals(MODIFIED_PREFIX + Uri.fromFile(file), db.songTable.findByIdDirect("portable")?.thumbnailUrl)

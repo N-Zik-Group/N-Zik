@@ -45,6 +45,7 @@ class CrossfadePositionSchedulerTest {
                 }
             },
             beginFade = { fadeAt = testScheduler.currentTime },
+            onOwnershipLost = { error("The schedule still owns the target") },
         )
         assertTrue(prepared)
         assertTrue(artworkStarted)
@@ -57,6 +58,7 @@ class CrossfadePositionSchedulerTest {
         var prepared = false
         var artworkCancelled = false
         var began = false
+        var lostOwnership = false
         runCrossfadeSchedule(
             triggerPosition = 9_000L,
             position = { testScheduler.currentTime },
@@ -71,10 +73,12 @@ class CrossfadePositionSchedulerTest {
                 }
             },
             beginFade = { began = true },
+            onOwnershipLost = { lostOwnership = true },
         )
         assertTrue(prepared)
         assertTrue(artworkCancelled)
         assertFalse(began)
+        assertTrue(lostOwnership)
     }
     @Test
     fun `speed change re-arms from the current media position`() = runTest {
@@ -94,6 +98,7 @@ class CrossfadePositionSchedulerTest {
                 prepareAudio = {},
                 prefetchArtwork = { awaitCancellation() },
                 beginFade = { fadeTime = testScheduler.currentTime },
+                onOwnershipLost = { error("A cancelled schedule cannot abandon its replacement") },
             )
             arm()
             runCurrent()

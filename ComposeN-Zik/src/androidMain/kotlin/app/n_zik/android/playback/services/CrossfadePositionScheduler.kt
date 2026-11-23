@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
@@ -35,6 +36,7 @@ internal class CrossfadePositionScheduler {
         prepareAudio: () -> Unit,
         prefetchArtwork: suspend () -> Unit,
         beginFade: () -> Unit,
+        onOwnershipLost: () -> Unit,
     ) {
         cancel()
         ownsSchedule = isStillOwner
@@ -47,6 +49,7 @@ internal class CrossfadePositionScheduler {
                 prepareAudio,
                 prefetchArtwork,
                 beginFade,
+                onOwnershipLost,
             )
         }
     }
@@ -60,21 +63,26 @@ internal suspend fun runCrossfadeSchedule(
     prepareAudio: () -> Unit,
     prefetchArtwork: suspend () -> Unit,
     beginFade: () -> Unit,
+    onOwnershipLost: () -> Unit,
 ) = coroutineScope {
     suspend fun waitForPosition(target: Long): Boolean {
-        while (isStillOwner()) {
+        while (true) {
+            ensureActive()
+            if (!isStillOwner()) return false
             val remaining = target - position()
             if (remaining <= 0L) return true
             delay(crossfadeDelayMillis(remaining, speed()))
         }
-        return false
     }
 
-    if (!waitForPosition(triggerPosition - 15_000L)) return@coroutineScope
+    if (!waitForPosition(triggerPosition - 15_000L)) {
+        onOwnershipLost()
+        return@coroutineScope
+    }
     prepareAudio()
     val artwork = launch { prefetchArtwork() }
     try {
-        if (waitForPosition(triggerPosition)) beginFade()
+        if (waitForPosition(triggerPosition)) beginFade() else onOwnershipLost()
     } finally {
         artwork.cancel()
     }

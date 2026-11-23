@@ -736,12 +736,7 @@ class PlayerServiceModern : MediaLibraryService(),
             NetworkQualityHelper.observeConnection(this@PlayerServiceModern).collect { refreshSessionAccess() }
         }
 
-        sessionArtworkJob = coroutineScope.launch(NzikDispatchers.UI) {
-            ArtworkRevisions.changes.collect {
-                (mediaSession.player as? SessionArtworkPlayer)?.refreshChangedArtwork()
-                mediaLibrarySessionCallback.refreshChangedArtwork(mediaSession)
-            }
-        }
+        observeSessionArtwork()
 
         player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
         player.addListener(this@PlayerServiceModern)
@@ -878,6 +873,16 @@ class PlayerServiceModern : MediaLibraryService(),
 
         encryptedPreferences.registerOnSharedPreferenceChangeListener(encryptedPrefsListener)
         playbackReady.complete(Unit)
+    }
+
+    internal fun observeSessionArtwork() {
+        sessionArtworkJob?.cancel()
+        sessionArtworkJob = coroutineScope.launch(NzikDispatchers.UI) {
+            ArtworkRevisions.changes.collect {
+                (mediaSession.player as? SessionArtworkPlayer)?.refreshChangedArtwork()
+                mediaLibrarySessionCallback.refreshChangedArtwork(mediaSession)
+            }
+        }
     }
 
     private fun buildLibrarySession(sessionPlayer: Player): MediaLibrarySession {
@@ -1564,12 +1569,12 @@ class PlayerServiceModern : MediaLibraryService(),
         lastFmScrobbleManager?.onPlayingStateChanged(isPlaying, item, duration)
     }
 
-    /** Item 5 (upstream parity MS L2884-2897): a playback speed change re-sends the Discord presence ~1 s later, only while actively playing (playWhenReady && STATE_READY) — the timestamps and the "[1.50x]" suffix must reflect the new speed. */
+    /** Refreshes crossfade timing and Discord presence after a speed change. */
     override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
         super.onPlaybackParametersChanged(playbackParameters)
         if (playbackParameters.speed != lastPlaybackSpeed) {
             lastPlaybackSpeed = playbackParameters.speed
-            armCrossfade(allowReachedThreshold = crossfadePositionScheduler.stillOwnsSchedule())
+            armCrossfade(rearmForSpeedChange = true)
             if (encryptedPreferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
                 coroutineScope.launch {
                     delay(1000L)
@@ -2957,40 +2962,44 @@ class PlayerServiceModern : MediaLibraryService(),
 
     private val secondaryPlayerListener = object : Player.Listener {
         override fun onPlayerError(error: PlaybackException) {
-            cleanupCrossfade()
+            discardCrossfadePreparation()
         }
     }
 
     private fun discardCrossfadePreparation() {
         crossfadePositionScheduler.cancel()
-        secondaryPlayer?.let { preload ->
-            preload.removeListener(secondaryPlayerListener)
-            detachCrossfadeAudioDiagnostics(preload)
-            preload.release()
-        }
+        val preload = secondaryPlayer ?: return
         secondaryPlayer = null
+        preload.removeListener(secondaryPlayerListener)
+        detachCrossfadeAudioDiagnostics(preload)
+        preload.release()
     }
 
-    private fun scheduleCrossfade() = armCrossfade(allowReachedThreshold = false)
+    private fun scheduleCrossfade() = armCrossfade(rearmForSpeedChange = false)
 
-    private fun armCrossfade(allowReachedThreshold: Boolean) {
+    private fun armCrossfade(rearmForSpeedChange: Boolean) {
         if (isCrossfading) return
-        discardCrossfadePreparation()
+        val ownsPreviousSchedule = rearmForSpeedChange && crossfadePositionScheduler.stillOwnsSchedule()
         val duration = crossfadeDuration
         val owner = player
-        if (isDestroying || !crossfadeEnabled || duration <= 0 || !owner.isPlaying || listenTogetherGuestLock.value) return
-        if (owner.duration == C.TIME_UNSET || owner.duration <= duration) return
-        if (crossfadeGapless && isNextItemGapless()) return
+        if (isDestroying || !crossfadeEnabled || duration <= 0 || !owner.isPlaying || listenTogetherGuestLock.value) {
+            return discardCrossfadePreparation()
+        }
+        val mediaDuration = owner.duration
+        if (mediaDuration == C.TIME_UNSET || mediaDuration <= duration || (crossfadeGapless && isNextItemGapless())) {
+            return discardCrossfadePreparation()
+        }
 
-        val trigger = owner.duration - duration
-        if (!allowReachedThreshold && owner.currentPosition >= trigger) return
+        val trigger = mediaDuration - duration
+        if (!ownsPreviousSchedule && owner.currentPosition >= trigger) return discardCrossfadePreparation()
         val currentIndex = owner.currentMediaItemIndex
         val repeatMode = owner.repeatMode
         val shuffle = owner.shuffleModeEnabled
         fun nextIndex() = if (repeatMode == Player.REPEAT_MODE_ONE) currentIndex else owner.nextMediaItemIndex
         val next = nextIndex()
-        if (next == C.INDEX_UNSET || currentIndex == C.INDEX_UNSET) return
+        if (next == C.INDEX_UNSET || currentIndex == C.INDEX_UNSET) return discardCrossfadePreparation()
 
+        if (!ownsPreviousSchedule) discardCrossfadePreparation()
         val timeline = owner.currentTimeline
         val artwork = owner.getMediaItemAt(next).mediaMetadata.artworkUri?.toString()
         crossfadePositionScheduler.arm(
@@ -3016,6 +3025,7 @@ class PlayerServiceModern : MediaLibraryService(),
                 }
             },
             beginFade = ::startCrossfade,
+            onOwnershipLost = ::discardCrossfadePreparation,
         )
     }
 
@@ -3097,6 +3107,13 @@ class PlayerServiceModern : MediaLibraryService(),
         val currentIndex = player.currentMediaItemIndex
         if (currentIndex == C.INDEX_UNSET) return
 
+        val nextIndex = if (player.repeatMode == Player.REPEAT_MODE_ONE) {
+            currentIndex
+        } else {
+            player.nextMediaItemIndex
+        }
+        if (nextIndex == C.INDEX_UNSET) return
+
         secondaryPlayer = createCrossfadeExoPlayer()
         val secPlayer = secondaryPlayer ?: return
         secPlayer.addListener(secondaryPlayerListener)
@@ -3108,13 +3125,6 @@ class PlayerServiceModern : MediaLibraryService(),
             items.add(player.getMediaItemAt(i))
         }
 
-        val nextIndex = if (player.repeatMode == Player.REPEAT_MODE_ONE) {
-            currentIndex
-        } else {
-            player.nextMediaItemIndex
-        }
-        if (nextIndex == C.INDEX_UNSET) return
-
         secPlayer.setMediaItems(items, nextIndex, 0L)
         secPlayer.volume = 0f
         secPlayer.repeatMode = player.repeatMode
@@ -3123,8 +3133,8 @@ class PlayerServiceModern : MediaLibraryService(),
         secPlayer.playbackParameters = player.playbackParameters
         secPlayer.skipSilenceEnabled = player.skipSilenceEnabled
 
-        secPlayer.prepare()
         secPlayer.playWhenReady = false
+        secPlayer.prepare()
         crossfadeAudioDiagnostics[secPlayer]?.mark("PRELOAD_PREPARED")
     }
 
@@ -3132,6 +3142,9 @@ class PlayerServiceModern : MediaLibraryService(),
         if (isCrossfading) return
 
         val nextPlayer = secondaryPlayer ?: return
+        if (nextPlayer.playbackState != Player.STATE_READY || nextPlayer.playerError != null) {
+            return discardCrossfadePreparation()
+        }
         markCrossfadeAudio("START_ATTEMPT", player, nextPlayer)
         isCrossfading = true
         

@@ -249,7 +249,10 @@ class AutoBrowseTree(
             ArtworkContentProvider.uriForRemote(remote, profile, crop, revision)
         } else if (includeLocal) ArtworkContentProvider.refreshLocalUri(context, profile, uri) else uri
         if (nextUri == null || nextUri == uri) return item
-        return item.buildUpon().setMediaMetadata(item.mediaMetadata.buildUpon().setArtworkUri(nextUri).build()).build()
+        val metadata = item.mediaMetadata.buildUpon().setArtworkUri(nextUri)
+        // Media3 consumers can prefer embedded bytes over the newly versioned local URI.
+        if (remote == null) metadata.setArtworkData(null, null)
+        return item.buildUpon().setMediaMetadata(metadata.build()).build()
     }
 
     /** Pending loads lose publication ownership even if connectivity later returns. */

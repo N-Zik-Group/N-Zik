@@ -43,8 +43,13 @@ internal object PersistentQueueArtwork {
     fun originalSource(item: MediaItem): String? =
         item.mediaMetadata.extras?.getString(ORIGINAL_ARTWORK_SOURCE_EXTRA)
 
-    private fun isSongArtworkUri(uri: Uri, songId: String): Boolean =
-        songId != "source" && songId != "remote" && uri == ArtworkContentProvider.uriFor(songId)
+    private fun isSongArtworkUri(uri: Uri, songId: String): Boolean {
+        if (uri.scheme != "content" || uri.authority != ArtworkContentProvider.AUTHORITY ||
+            songId == "source" || songId == "remote"
+        ) return false
+        val revision = uri.getQueryParameter("r")?.toLongOrNull() ?: 0L
+        return uri == ArtworkContentProvider.uriFor(songId, revision)
+    }
 
     fun readableUri(source: String?, context: () -> Context): Uri? =
         durableUri(source)?.takeIf { uri ->

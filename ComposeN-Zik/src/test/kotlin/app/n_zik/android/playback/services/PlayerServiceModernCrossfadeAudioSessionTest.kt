@@ -630,6 +630,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         val incoming = spyk(ExoPlayer.Builder(application).build())
         // Real queue and shuffle traversal without opening a media source or audio device.
         every { incoming.prepare() } answers { Unit }
+        every { incoming.playbackState } returns Player.STATE_READY
         every { incoming.setMediaItems(any<List<MediaItem>>(), any<Int>(), any<Long>()) } answers {
             callOriginal()
             // A known different order makes removing the production copy fail deterministically.
@@ -758,21 +759,12 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
     }
 
     @Test
-    fun `service speed callback re-arms from position while a fresh late arm is ignored`() {
-        mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
-        every { any<Context>().encryptedPreferences } returns mockk<SharedPreferences>(relaxed = true)
+    fun `service speed callback preserves the prepared player and hands off at the updated threshold`() {
         val outgoing = Target("A", 41)
         val incoming = Target("B", 42)
-        prepareHandoff(outgoing, incoming)
-        service.preferences.edit().putBoolean(crossfadeEnabledKey, true).commit()
-        every { service["createCrossfadeExoPlayer"]() } returns incoming.player
-        every { outgoing.player.currentTimeline } returns Timeline.EMPTY
-        every { outgoing.player.duration } returns 100_000L
-        every { outgoing.player.currentMediaItemIndex } returns 0
-        every { outgoing.player.nextMediaItemIndex } returns 1
-        every { outgoing.player.mediaItemCount } returns 2
-        every { outgoing.player.getMediaItemAt(0) } returns requireNotNull(outgoing.player.currentMediaItem)
-        every { outgoing.player.getMediaItemAt(1) } returns requireNotNull(incoming.player.currentMediaItem)
+        val replacement = Target("B", 43).apply { state = Player.STATE_BUFFERING }
+        configureScheduledCrossfade(outgoing, incoming)
+        every { service["createCrossfadeExoPlayer"]() } returnsMany listOf(incoming.player, replacement.player)
 
         every { outgoing.player.currentPosition } returns 98_000L
         invoke("scheduleCrossfade")
@@ -800,10 +792,86 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         scheduler.advanceTimeBy(749L)
         scheduler.runCurrent()
         assertSame(outgoing.player, service.player)
+        assertSame(incoming.player, field("secondaryPlayer").get(service))
+        verify(exactly = 0) { service.onMediaItemTransition(any(), any()) }
 
         scheduler.advanceTimeBy(1L)
         scheduler.runCurrent()
         assertSame(incoming.player, service.player)
+        assertNull(field("secondaryPlayer").get(service))
+        assertEquals(outgoing.speed, incoming.speed)
+        scheduler.advanceTimeBy(4_000L)
+        scheduler.runCurrent()
+        assertSame(incoming.player, service.player)
+        verify(exactly = 1) { incoming.player.prepare() }
+        verify(exactly = 0) { incoming.player.release() }
+        verify(exactly = 0) { replacement.player.prepare() }
+        val incomingItem = incoming.player.currentMediaItem
+        verify(exactly = 1) { service.onMediaItemTransition(incomingItem, Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) }
+    }
+
+    @Test
+    fun `service speed callback releases a preload whose queue target changed`() {
+        val outgoing = Target("A", 41)
+        val preloaded = Target("B", 42)
+        val replacement = Target("C", 43)
+        configureScheduledCrossfade(outgoing, preloaded, replacement)
+        every { service["createCrossfadeExoPlayer"]() } returnsMany listOf(preloaded.player, replacement.player)
+        every { outgoing.player.currentPosition } returns 95_000L
+
+        invoke("scheduleCrossfade")
+        scheduler.runCurrent()
+        verify(exactly = 1) { preloaded.player.prepare() }
+
+        every { outgoing.player.nextMediaItemIndex } returns 2
+        every { outgoing.player.currentPosition } returns 98_000L
+        outgoing.speed = PlaybackParameters(2f)
+        service.onPlaybackParametersChanged(outgoing.speed)
+        scheduler.advanceTimeBy(3_000L)
+        scheduler.runCurrent()
+
+        assertSame(outgoing.player, service.player)
+        assertNull(field("secondaryPlayer").get(service))
+        verify(exactly = 1) { preloaded.player.release() }
+        verify(exactly = 0) { replacement.player.prepare() }
+    }
+
+    @Test
+    fun `scheduled handoff leaves the primary playing when the preload is still buffering`() {
+        val outgoing = Target("A", 41)
+        val incoming = Target("B", 42).apply { state = Player.STATE_BUFFERING }
+        configureScheduledCrossfade(outgoing, incoming)
+        every { service["createCrossfadeExoPlayer"]() } returns incoming.player
+        every { outgoing.player.currentPosition } answers { 96_000L + scheduler.currentTime }
+
+        invoke("scheduleCrossfade")
+        scheduler.runCurrent()
+        verify(exactly = 1) { incoming.player.prepare() }
+        scheduler.advanceTimeBy(1_000L)
+        scheduler.runCurrent()
+
+        assertSame(outgoing.player, service.player)
+        assertNull(field("secondaryPlayer").get(service))
+        assertFalse(field("isCrossfading").getBoolean(service))
+        assertTrue(outgoing.player.isPlaying)
+        verify(exactly = 0) { outgoing.player.pauseAtEndOfMediaItems = true }
+        verify(exactly = 1) { incoming.player.release() }
+        verify(exactly = 0) { service.onMediaItemTransition(any(), any()) }
+    }
+
+    private fun configureScheduledCrossfade(outgoing: Target, vararg upcoming: Target) {
+        mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
+        every { any<Context>().encryptedPreferences } returns mockk<SharedPreferences>(relaxed = true)
+        service.player = outgoing.player
+        invokeTarget("bindAudioEffectPlayer", outgoing.player)
+        service.preferences.edit().putBoolean(crossfadeEnabledKey, true).commit()
+        val queue = (listOf(outgoing) + upcoming).map { requireNotNull(it.player.currentMediaItem) }
+        every { outgoing.player.currentTimeline } returns Timeline.EMPTY
+        every { outgoing.player.duration } returns 100_000L
+        every { outgoing.player.currentMediaItemIndex } returns 0
+        every { outgoing.player.nextMediaItemIndex } returns 1
+        every { outgoing.player.mediaItemCount } returns queue.size
+        every { outgoing.player.getMediaItemAt(any()) } answers { queue[firstArg()] }
     }
 
     private fun prepareHandoff(outgoing: Target, incoming: Target) {

@@ -2,7 +2,6 @@ package app.n_zik.android.playback.services.automotive.session
 
 import android.app.Application
 import org.junit.Assert.assertNotEquals
-import kotlinx.coroutines.runBlocking
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.playback.services.ArtworkContentProvider
@@ -10,6 +9,7 @@ import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.profiles.coversDir
 import android.content.Context
 import android.os.Looper
+import android.os.Bundle
 import android.net.Uri
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -44,6 +44,7 @@ import app.n_zik.android.playback.services.automotive.browse.AutoSuggestedQueueL
 import app.n_zik.android.playback.services.automotive.models.AutoSelectionStore
 import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.playback.services.SessionArtworkPlayer
 import app.n_zik.android.playback.services.pauseWithFade
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
@@ -56,11 +57,14 @@ import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertThrows
 import kotlinx.coroutines.NonCancellable
@@ -70,6 +74,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Robolectric
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
@@ -241,19 +246,25 @@ class AutoRealSessionQueueOwnershipTest {
         assertTrue(await(first.getItem(folder.mediaId)).resultCode != 0)
     }
 
-    @Test fun `artwork refresh notifies only the subscribed parent with changed sources`() {
+    @Test fun `service observes artwork revisions for the active controller and affected browser subscription`() {
         val profile = getActiveProfile(context)
         val remote = "https://images.example.test/changed.jpg"
         val coverDir = coversDir(context, profile).apply { mkdirs() }
         val songCover = File(coverDir, "cover_artwork-test.jpg").apply { writeBytes(byteArrayOf(1)) }
         val registeredCover = File(coverDir, "registered-artwork-test.jpg").apply { writeBytes(byteArrayOf(2)) }
-        fun row(id: String, art: Uri): MediaItem = item(id).buildUpon().setMediaMetadata(
-            MediaMetadata.Builder().setTitle(id).setArtworkUri(art).setIsBrowsable(false).setIsPlayable(true).build(),
+        val oldArtworkBytes = byteArrayOf(1, 2, 3)
+        fun row(id: String, art: Uri, local: Boolean = false): MediaItem = item(id).buildUpon().setMediaMetadata(
+            MediaMetadata.Builder().setTitle(id).setArtworkUri(art).setIsBrowsable(false).setIsPlayable(true).apply {
+                if (local) {
+                    setArtworkData(oldArtworkBytes, MediaMetadata.PICTURE_TYPE_ILLUSTRATION)
+                    setExtras(Bundle().apply { putBoolean("isCoverModified", true) })
+                }
+            }.build(),
         ).build()
         val known = listOf(
             row("remote", Uri.parse(remote)),
-            row("song-path", ArtworkContentProvider.uriForSource(context, "artwork-test", songCover)),
-            row("registered-path", ArtworkContentProvider.uriForSource(context, "artwork-test", registeredCover)),
+            row("song-path", ArtworkContentProvider.uriForSource(context, "artwork-test", songCover), local = true),
+            row("registered-path", ArtworkContentProvider.uriForSource(context, "artwork-test", registeredCover), local = true),
         )
         assertEquals(1, known[1].mediaMetadata.artworkUri?.pathSegments?.size)
         assertEquals("source", known[2].mediaMetadata.artworkUri?.pathSegments?.first())
@@ -269,23 +280,55 @@ class AutoRealSessionQueueOwnershipTest {
         val before = await(first.getChildren(PlayerServiceModern.ARTIST, 0, 20, null)).value.orEmpty()
         val untouchedUri = await(first.getChildren(PlayerServiceModern.ALBUM, 0, 20, null)).value?.single()?.mediaMetadata?.artworkUri
         val browser = session.connectedControllers.single { tree.retainedChildren(PlayerServiceModern.ALBUM, it) != null }
-        shadowOf(Looper.getMainLooper()).idle()
-        childCounts.clear()
+        assertTrue(requireNotNull(before[1].mediaMetadata.artworkData).contentEquals(oldArtworkBytes))
+        assertTrue(requireNotNull(before[2].mediaMetadata.artworkData).contentEquals(oldArtworkBytes))
 
-        ImageCacheFactory.refreshArtworkSourcesOrThrow(setOf(remote), profile)
-        ArtworkRevisions.invalidateFiles(listOf(songCover, registeredCover))
-        // The synchronous JUnit entry point waits for the real callback's DATA scan.
-        runBlocking { callback.refreshChangedArtwork(session) }
-
-        pumpUntil { childCounts.isNotEmpty() }
-        assertEquals(listOf(PlayerServiceModern.ARTIST to 3), childCounts)
-        val after = requireNotNull(tree.retainedChildren(PlayerServiceModern.ARTIST, browser))
-        assertEquals(before.map { it.mediaId }, after.map { it.mediaId })
-        before.zip(after).forEach { (old, new) ->
-            assertNotEquals(old.mediaMetadata.artworkUri, new.mediaMetadata.artworkUri)
+        session.player = SessionArtworkPlayer(session.player)
+        player.setMediaItem(known[1])
+        player.prepare()
+        player.play()
+        val oldSessionUri = known[1].mediaMetadata.artworkUri
+        pumpUntil { second.isPlaying && second.mediaMetadata.artworkUri == oldSessionUri }
+        val queueCalls = player.setCalls.toList()
+        val service = Robolectric.buildService(PlayerServiceModern::class.java).get()
+        fun serviceField(name: String) = PlayerServiceModern::class.java.getDeclaredField(name).apply {
+            isAccessible = true
         }
-        val unchanged = tree.retainedChildren(PlayerServiceModern.ALBUM, browser)?.single()?.mediaMetadata?.artworkUri
-        assertEquals(untouchedUri, unchanged)
+        val originalCallback = serviceField("mediaLibrarySessionCallback").get(service) as AutoSessionCallback
+        originalCallback.release()
+        serviceField("mediaSession").set(service, session)
+        serviceField("mediaLibrarySessionCallback").set(service, callback)
+        val scope = serviceField("coroutineScope").get(service) as CoroutineScope
+
+        try {
+            service.observeSessionArtwork()
+            shadowOf(Looper.getMainLooper()).idle()
+            childCounts.clear()
+
+            songCover.writeBytes(byteArrayOf(4))
+            registeredCover.writeBytes(byteArrayOf(5))
+            ImageCacheFactory.refreshArtworkSourcesOrThrow(setOf(remote), profile)
+            ArtworkRevisions.invalidateFiles(listOf(songCover, registeredCover))
+
+            pumpUntil { childCounts.isNotEmpty() && second.mediaMetadata.artworkUri != oldSessionUri }
+            assertEquals(listOf(PlayerServiceModern.ARTIST to 3), childCounts)
+            val after = requireNotNull(tree.retainedChildren(PlayerServiceModern.ARTIST, browser))
+            assertEquals(before.map { it.mediaId }, after.map { it.mediaId })
+            before.zip(after).forEach { (old, new) ->
+                assertNotEquals(old.mediaMetadata.artworkUri, new.mediaMetadata.artworkUri)
+            }
+            val retainedPage = requireNotNull(await(first.getChildren(PlayerServiceModern.ARTIST, 1, 1, null)).value)
+            assertEquals(after[1].mediaMetadata.artworkUri, retainedPage.single().mediaMetadata.artworkUri)
+            assertNull(retainedPage.single().mediaMetadata.artworkData)
+            assertNull(after[2].mediaMetadata.artworkData)
+            assertEquals(after[1].mediaMetadata.artworkUri, second.mediaMetadata.artworkUri)
+            assertTrue(second.isPlaying)
+            assertEquals(queueCalls, player.setCalls)
+            val unchanged = tree.retainedChildren(PlayerServiceModern.ALBUM, browser)?.single()?.mediaMetadata?.artworkUri
+            assertEquals(untouchedUri, unchanged)
+        } finally {
+            scope.cancel()
+        }
     }
 
     @Test fun `suggested root publishes named queues with independent playback and preserves normal browsing`() {

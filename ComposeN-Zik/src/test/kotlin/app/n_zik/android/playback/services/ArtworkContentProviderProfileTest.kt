@@ -5,9 +5,11 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.ParcelFileDescriptor
 import android.os.Process
+import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.utils.activeProfileKey
 import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.utils.writeProfileEntries
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertFalse
@@ -66,6 +68,24 @@ class ArtworkContentProviderProfileTest {
     }
 
     private fun provider(): ArtworkContentProvider = ArtworkContentProvider().also { it.attachInfo(app, null) }
+
+    @Test
+    fun `deleting an initially unversioned cover revises its canonical song URI`() {
+        val songId = "deleted-cover"
+        seedCover("app_covers", songId)
+        val cover = requireNotNull(ArtworkContentProvider.customCoverFile(app, "default", songId))
+        val initialUri = ArtworkContentProvider.uriFor(songId)
+        val untouchedUri = ArtworkContentProvider.uriFor("never-edited-cover")
+
+        ArtworkRevisions.invalidate()
+        assertTrue(cover.delete())
+        ArtworkRevisions.invalidateFile(cover)
+
+        val expected = ArtworkContentProvider.uriFor(songId, ArtworkRevisions.current(cover.path, "default"))
+        assertNotEquals(initialUri, expected)
+        assertEquals(expected, ArtworkContentProvider.refreshLocalUri(app, "default", initialUri))
+        assertEquals(untouchedUri, ArtworkContentProvider.refreshLocalUri(app, "default", untouchedUri))
+    }
 
     @Test
     fun `openFile serves the active profile's own cover`() {

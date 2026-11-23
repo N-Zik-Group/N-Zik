@@ -22,6 +22,7 @@ import app.n_zik.android.BuildConfig
 import timber.log.Timber
 import app.n_zik.android.appContext
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
 
 /** Publishes lightweight session metadata with profile-owned artwork identity. */
@@ -32,8 +33,8 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
     private var square = appContext().preferences.getBoolean(cropVideoThumbnailsKey, true)
     private var expires = now() + 24 * 60 * 60 * 1000L
     private var localArtwork: LocalSessionArtwork? = null
-    private var observedArtworkSource: String? = null
-    private var observedArtworkRevision = 0L
+    private var providerArtwork: ProviderArtwork? = null
+    private var observedArtwork: ArtworkObservation? = null
     private var durationMediaId: String? = null
     private var knownDurationMs: Long? = null
     private var lastDurationDiagnostic: String? = null
@@ -45,6 +46,33 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
         val revision: Long,
         val uri: Uri,
     )
+
+    private data class ArtworkObservation(
+        val source: String?,
+        val sourceRevision: Long,
+        val providerUri: Uri?,
+        val refreshedProviderUri: Uri?,
+    )
+
+    private data class ProviderArtwork(val uri: Uri, val sequence: Long, val refreshedUri: Uri)
+
+    private fun artworkObservation(source: String?, providerUri: Uri?): ArtworkObservation =
+        ArtworkObservation(
+            source,
+            ImageCacheFactory.artworkSourceRevision(source, profile),
+            providerUri,
+            providerUri?.let(::currentProviderArtworkUri),
+        )
+
+    private fun currentProviderArtworkUri(uri: Uri): Uri {
+        if (uri.pathSegments == listOf("remote")) return uri
+        val sequence = ArtworkRevisions.current()
+        val cached = providerArtwork
+        if (cached?.uri == uri && cached.sequence == sequence) return cached.refreshedUri
+        val refreshedUri = ArtworkContentProvider.refreshLocalUri(appContext(), profile, uri)
+        providerArtwork = ProviderArtwork(uri, sequence, refreshedUri)
+        return refreshedUri
+    }
 
     private fun localArtworkUri(mediaId: String, source: String): Uri? {
         if (!source.startsWith("file:") && !source.startsWith('/')) return null
@@ -92,16 +120,17 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
         profile = getActiveProfile(appContext())
         square = appContext().preferences.getBoolean(cropVideoThumbnailsKey, true)
         expires = now() + 24 * 60 * 60 * 1000L
-        observedArtworkRevision = ImageCacheFactory.artworkSourceRevision(observedArtworkSource, profile)
+        providerArtwork = null
+        observedArtwork = null
         publishMetadata()
     }
 
     /** Republishes metadata when pixels change behind the same URI. */
     internal fun refreshChangedArtwork(): Boolean {
-        val source = observedArtworkSource ?: return false
-        val revision = ImageCacheFactory.artworkSourceRevision(source, profile)
-        if (revision == observedArtworkRevision) return false
-        observedArtworkRevision = revision
+        val previous = observedArtwork ?: return false
+        val current = artworkObservation(previous.source, previous.providerUri)
+        if (current == previous) return false
+        observedArtwork = current
         publishMetadata()
         return true
     }
@@ -132,15 +161,15 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
             ?: metadata.extras?.getString(SessionMediaItemMapper.ORIGINAL_ARTWORK_SOURCE_EXTRA)
                 ?.let(::cleanPrefix) ?: metadata.artworkUri?.toString()
         if (now() >= expires) expires = now() + 24 * 60 * 60 * 1000L
-        val revision = ImageCacheFactory.artworkSourceRevision(source, profile)
-        if (source != observedArtworkSource) {
-            observedArtworkSource = source
-            observedArtworkRevision = revision
+        val existingProviderUri = selectedArtwork?.takeIf { it.authority == ArtworkContentProvider.AUTHORITY }
+            ?: metadata.artworkUri?.takeIf { it.authority == ArtworkContentProvider.AUTHORITY }
+        val observation = artworkObservation(source, existingProviderUri)
+        if (source != observedArtwork?.source || existingProviderUri != observedArtwork?.providerUri) {
+            observedArtwork = observation
         }
         val providerArtworkUri = source?.takeIf { currentItem != null }?.let {
-            ArtworkContentProvider.uriForRemote(it, profile, square, revision, expires)
-        } ?: selectedArtwork?.takeIf { it.authority == ArtworkContentProvider.AUTHORITY }
-        ?: metadata.artworkUri?.takeIf { it.authority == ArtworkContentProvider.AUTHORITY }
+            ArtworkContentProvider.uriForRemote(it, profile, square, observation.sourceRevision, expires)
+        } ?: observation.refreshedProviderUri
         ?: mediaId?.let { id -> source?.let { localArtworkUri(id, it) } }
         ?: mediaId?.takeIf {
             LocalArtworkRules.needsProviderArtwork(it, source, ArtworkContentProvider.AUTHORITY)

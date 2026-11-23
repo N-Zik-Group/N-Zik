@@ -40,8 +40,8 @@ object ArtworkRevisions {
 
     internal fun global(): Long = synchronized(lock) { globalRevision }
 
-    internal fun current(source: String, profile: String? = null): Long = synchronized(lock) {
-        sources[sourceKey(source, profile)] ?: globalRevision
+    internal fun current(source: String, profile: String? = null, includeGlobal: Boolean = true): Long = synchronized(lock) {
+        sources[sourceKey(source, profile)] ?: if (includeGlobal) globalRevision else 0L
     }
 
     private fun sourceKey(source: String, profile: String?): String = when {

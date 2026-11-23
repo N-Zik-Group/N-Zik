@@ -123,7 +123,7 @@ class ArtworkContentProvider : ContentProvider() {
 
         fun uriFor(songId: String): Uri = uriFor(songId, 0L)
 
-        private fun uriFor(songId: String, revision: Long): Uri = Uri.Builder()
+        internal fun uriFor(songId: String, revision: Long): Uri = Uri.Builder()
             .scheme("content")
             .authority(AUTHORITY)
             .appendPath(songId)
@@ -160,15 +160,16 @@ class ArtworkContentProvider : ContentProvider() {
             val segments = uri.pathSegments
             val file = when {
                 segments.size == 2 -> registeredSource(ctx, profile, uri)
+                // The path still owns its revision after a custom cover is deleted.
                 segments.size == 1 && segments.first() !in setOf("source", "remote") &&
-                    profileStorageIdentity(ctx, profile) != null -> {
-                    ownedCoverPath(ctx, profile, segments.first())
-                        ?.takeIf { it.isFile || uri.getQueryParameter("r") != null }
-                }
+                    profileStorageIdentity(ctx, profile) != null -> ownedCoverPath(ctx, profile, segments.first())
                 else -> null
             } ?: return uri
-            val revision = ArtworkRevisions.current(file.path, profile)
-            if (revision == (uri.getQueryParameter("r")?.toLongOrNull() ?: 0L)) return uri
+            val publishedRevision = uri.getQueryParameter("r")
+            // An absent unversioned cover needs an explicit file edit to change its URI.
+            val includeGlobal = segments.size != 1 || publishedRevision != null || file.isFile
+            val revision = ArtworkRevisions.current(file.path, profile, includeGlobal)
+            if (revision == (publishedRevision?.toLongOrNull() ?: 0L)) return uri
             return uri.buildUpon().clearQuery().appendArtworkRevision(revision).build()
         }
     }
