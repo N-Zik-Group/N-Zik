@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Abre la cola de juego con un deslizado ascendente en el jugador.</string>
     <string name="player_action_bar_transparent_background_description">Remueve el fondo sólido detrás de los botones de acción del jugador.</string>
     <string name="player_action_enqueue">Añadir a la cola</string>
+    <string name="player_action_hide_stats_for_nerds">Ocultar estadísticas de Nerds</string>
     <string name="player_action_like">Me gusta</string>
     <string name="player_action_listen_on_invidious">Escuchar en %1$s</string>
     <string name="player_action_listen_on_youtube">Escuchar en YouTube</string>
@@ -168,6 +169,7 @@
     <string name="player_action_seek_forward">Reenviar</string>
     <string name="player_action_seek_forward_30_seconds">Reenviar 30 segundos</string>
     <string name="player_action_seek_forward_5_seconds">Reenviar 5 segundos</string>
+    <string name="player_action_show_stats_for_nerds">Mostrar estadísticas de Nerds</string>
     <string name="player_action_shuffle">Aleatorio</string>
     <string name="player_action_shuffle_hint">Aleatorio</string>
     <string name="player_appearance">Apariencia</string>
