@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">Název alba a interpreta</string>
     <string name="settings_player_header_icons_visible_label">Zobrazit informace s ikonami</string>
     <string name="settings_player_header_style_label">Typ informací</string>
+    <string name="settings_player_m3e_always_show_shapes_description">Udržovat M3E tvary animované, když je přehrávač otevřen, i když je pozastaven.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">Vždy zobrazovat tvary</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Citlivost tématu zatřesení</string>
     <string name="settings_player_mini_style_label">Typ mini přehrávače</string>
     <string name="settings_player_next_queue_visible_label">Zobrazení dalších skladeb v přehrávači</string>
