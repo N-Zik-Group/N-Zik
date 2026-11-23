@@ -399,7 +399,7 @@
     <string name="settings_player_timeline_size_label">Dimensione Della Timeline Del Player</string>
     <string name="settings_player_timeline_transparent_label">Barra Della Timeline Trasparente</string>
     <string name="settings_player_opening_mode_label">Modalità apertura lettore</string>
-    <string name="settings_player_opening_mode_description">Scegli la modalità da usare quando apri il giocatore.</string>
+    <string name="settings_player_opening_mode_description">Scegli la modalità da usare quando apri il lettore multimediale.</string>
     <string name="settings_player_opening_mode_remember_last">Ricorda l\'ultima modalità</string>
     <string name="settings_player_top_action_bar_visible_label">Mostra barra delle azioni in alto</string>
     <string name="settings_player_vertical_swipe_expansion_description">Influisce solo quando il lettore ampliato è disabilitato</string>

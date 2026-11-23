@@ -261,7 +261,7 @@
     <string name="rewind_years_default_sub">OGNI ANNI. OGNI CAPPELLO.</string>
     <string name="rewind_years_heading">ANNO DA\nANNI.</string>
     <string name="rewind_years_kicker">I TUOI ANNI • %1$s</string>
-    <string name="rewind_years_peak_sub">%1$s HIT THE HARDEST.</string>
+    <string name="rewind_years_peak_sub">%1$s È STATO IL MIGLIORE.</string>
     <string name="rewind_years_peak_year">ANNO DI PEAK</string>
     <!-- Statistics -->
     <string name="statistics_action_delete_playback_events_count">Elimina %1$s eventi di riproduzione</string>

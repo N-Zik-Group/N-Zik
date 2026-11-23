@@ -149,7 +149,7 @@
     <!-- Player -->
     <string name="common_action_stop">Interrompi</string>
     <string name="player_action_bar_buttons">Visibilità pulsante</string>
-    <string name="player_action_bar_buttons_description">Configura quali pulsanti appaiono nella barra delle azioni del giocatore</string>
+    <string name="player_action_bar_buttons_description">Configura quali pulsanti appaiono nella barra delle azioni del lettore multimediale</string>
     <string name="player_action_bar_even_button_spacing_description">Distribuire i pulsanti di azione del giocatore uniformemente sulla larghezza disponibile.</string>
     <string name="player_action_bar_queue_preview_tap_description">Apre la coda di riproduzione quando tocca l\'anteprima del giocatore.</string>
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Apri la coda di gioco con uno scorrimento verso l\'alto nel giocatore.</string>
@@ -237,7 +237,7 @@
     <string name="player_current_song_not_in_list">Impossibile trovare il brano in riproduzione nell\'elenco corrente</string>
     <string name="player_debug_play_pause_roundness">playPausaRoundness</string>
     <string name="player_debug_should_be_playing">shouldBePlaying</string>
-    <string name="player_effects">Effetti Del Giocatore</string>
+    <string name="player_effects">Effetti del lettore multimediale</string>
     <string name="player_enable_lyrics_popup_message">Abilita il messaggio popup delle lyrics</string>
     <string name="player_enable_rotation_buttons">Abilita rotazione pulsante al clic</string>
     <string name="player_error_age_restricted_format">Contenuto limitato all\'età: %1$s</string>

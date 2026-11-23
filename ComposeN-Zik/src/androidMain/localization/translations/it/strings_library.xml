@@ -380,13 +380,13 @@
     <string name="song_update_error_incomplete_artists">Le informazioni sull\'artista da YouTube sono incomplete.</string>
     <string name="song_update_error_missing_cover">YouTube non ha restituito una copertina.</string>
     <string name="song_update_error_wrong_song">YouTube ha restituito una canzone diversa. Le sue informazioni sono state ignorate.</string>
-    <string name="song_update_error_cache_unavailable">Cache di riproduzione non disponibile. Riapri il giocatore e riprova.</string>
+    <string name="song_update_error_cache_unavailable">Cache di riproduzione non disponibile. Riapri il lettore multimediale e riprova.</string>
     <string name="song_update_error_profile_changed">Aggiornamento interrotto perché il profilo attivo è cambiato.</string>
     <string name="song_update_error_storage">Impossibile salvare le modifiche su questo dispositivo.</string>
     <string name="song_update_error_cache_clear">Impossibile terminare la cancellazione della cache di riproduzione.</string>
     <string name="song_update_error_download_remove">Impossibile rimuovere lo scaricamento fuori rete.</string>
     <string name="song_update_error_cover_reset">Impossibile terminare il ripristino della copertina.</string>
-    <string name="song_update_error_playback_refresh">Modifiche salvate, ma il giocatore non può aggiornare.</string>
+    <string name="song_update_error_playback_refresh">Modifiche salvate, ma il lettore multimediale non si è aggiornato.</string>
     <string name="song_update_batch_result">Aggiornato: %1$d · Parzialmente aggiornato: %2$d · Non aggiornato: %3$d</string>
     <string name="song_update_batch_reason_count">%1$s (%2$d)</string>
     <!-- Song Matching -->

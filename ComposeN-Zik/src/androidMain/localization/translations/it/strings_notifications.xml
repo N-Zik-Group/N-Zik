@@ -8,7 +8,7 @@
     <string name="notification_group_audio">Audio</string>
     <string name="notification_group_tools_updates">Strumenti e aggiornamenti</string>
     <string name="notification_channel_playback">Riproduzione multimediale</string>
-    <string name="notification_channel_playback_description">Mostra i controlli correnti della traccia e della riproduzione.</string>
+    <string name="notification_channel_playback_description">Mostra il brano corrente e i comandi di riproduzione.</string>
     <string name="notification_channel_sleep_timer_description">Mostra lo stato del timer di sospensione e avvisi alla fine del timer.</string>
     <string name="notification_channel_audio_downloads">Download audio</string>
     <string name="notification_channel_audio_downloads_description">Mostra progressi e risultati per l\'audio salvato per l\'ascolto fuori rete.</string>
