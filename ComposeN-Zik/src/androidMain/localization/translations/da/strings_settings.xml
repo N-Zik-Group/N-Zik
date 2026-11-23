@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">Album- og kunstnernavn</string>
     <string name="settings_player_header_icons_visible_label">Vis info med ikoner</string>
     <string name="settings_player_header_style_label">Infotype</string>
+    <string name="settings_player_m3e_always_show_shapes_description">Hold M3E figurer animeret, mens spilleren er åben, selv når pause.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">Vis altid figurer</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Tema Ryst Følsomhed</string>
     <string name="settings_player_mini_style_label">Mini-afspiller type</string>
     <string name="settings_player_next_queue_visible_label">Vis mini-kø i afspiller</string>
