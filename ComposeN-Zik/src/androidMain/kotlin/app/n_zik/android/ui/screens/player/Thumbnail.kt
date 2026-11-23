@@ -18,6 +18,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.EnterExitState
 import app.n_zik.android.components.player.PlayerCoverIdentity
 import app.n_zik.android.components.player.rememberPlayerCoverIdentity
+import app.n_zik.android.components.player.ReportFirstPresentedPlayerCover
 import app.n_zik.android.components.player.ReportPresentedPlayerCover
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
@@ -174,6 +175,8 @@ internal fun Thumbnail(
     prefetchAdjacentArtwork: Boolean = false,
     prefetchAfterTransition: Boolean = true,
     onArtworkPresented: ((PlayerCoverIdentity) -> Unit)? = null,
+    presentationOccurrence: Long = 0L,
+    onArtworkFirstPresented: ((Long, PlayerCoverIdentity) -> Unit)? = null,
     rotationActive: Boolean = true,
 ) {
     val context = LocalContext.current
@@ -328,7 +331,15 @@ internal fun Thumbnail(
             ready = artworkDrawn.value,
             active = isCurrentWindow && transition.targetState == EnterExitState.Visible,
             motionSettled = transition.currentState == EnterExitState.Visible && !transition.isRunning,
+            occurrence = presentationOccurrence,
             onPresented = { onArtworkPresented(coverIdentity) },
+        )
+        if (onArtworkFirstPresented != null) ReportFirstPresentedPlayerCover(
+            occurrence = presentationOccurrence,
+            identity = coverIdentity,
+            ready = artworkDrawn.value,
+            active = isCurrentWindow && transition.targetState == EnterExitState.Visible,
+            onPresented = onArtworkFirstPresented,
         )
 
         val thumbnailType by rememberPreference(thumbnailTypeKey, ThumbnailType.Modern)
@@ -524,9 +535,14 @@ internal fun Thumbnail(
 
                 }
 
+                val showWindowStats = isShowingStatsForNerds && error == null && (
+                    coverIdentity.artworkUri.isBlank() || coverIdentity.artworkUri == "null" ||
+                        showCoverThumbnailAnimation && coverThumbnailAnimation == ThumbnailCoverType.CD ||
+                        artworkDrawn.value
+                    )
                 StatsForNerds(
                     mediaId = currentWindow.mediaItem.mediaId,
-                    isDisplayed = isShowingStatsForNerds && error == null,
+                    isDisplayed = showWindowStats,
                     onDismiss = { onShowStatsForNerds(false) }
                 )
 

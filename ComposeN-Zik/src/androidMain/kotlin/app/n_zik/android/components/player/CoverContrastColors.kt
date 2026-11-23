@@ -160,7 +160,7 @@ internal fun playerTrackLabelColor(linkAvailable: Boolean, measuredSurface: Colo
     val preferred = if (linkAvailable) palette.text else palette.textDisabled.copy(alpha = .35f)
         .compositeOver(playerPlaceholderCompositeBase(palette.isDark))
     return if (measuredSurface == null) preferred else playerForegroundOnSharedFrame(
-        preferred, measuredPlayerTextForeground(preferred, measuredSurface),
+        preferred, measuredPlayerTextForeground(preferred, measuredSurface), measuredSurface, TextContrast,
     )
 }
 

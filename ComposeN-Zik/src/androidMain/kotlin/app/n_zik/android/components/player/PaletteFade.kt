@@ -3,12 +3,11 @@ package app.n_zik.android.components.player
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -17,7 +16,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.RippleConfiguration
 import androidx.compose.runtime.withFrameNanos
-import androidx.compose.ui.MotionDurationScale
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.lerpTo
@@ -26,7 +24,8 @@ import app.n_zik.android.components.theme.LocalPaletteFadeTarget
 import app.n_zik.android.components.theme.LaunchedAppearanceAnimationEffect
 import app.n_zik.android.components.theme.ProvideAppearanceAnimationClock
 import app.n_zik.android.components.theme.animateAppearanceFraction
-import app.n_zik.android.components.glass.LocalPlayerForegroundProgress
+import app.n_zik.android.components.glass.LocalPlayerForegroundFrame
+import app.n_zik.android.components.glass.PlayerForegroundFrame
 import kotlinx.coroutines.flow.first
 
 /**
@@ -89,17 +88,17 @@ class PaletteFadeModel {
 }
 
 internal val LocalPlayerArtworkPaintTarget = staticCompositionLocalOf<MutableState<PlayerArtworkPaint?>?> { null }
+internal val LocalPlayerPaletteTransitioning = compositionLocalOf { false }
 internal val LocalPlayerArtworkPaint = staticCompositionLocalOf<State<PlayerArtworkPaint?>?> { null }
-internal val LocalPlayerContrastRevision = staticCompositionLocalOf<MutableIntState?> { null }
+internal val LocalPlayerContrastTarget = staticCompositionLocalOf<MutableState<Pair<String?, Long>?>?> { null }
 
 private data class PlayerPaletteFrame(
     val palette: ColorPalette,
     val darkness: Float,
     val paint: PlayerArtworkPaint?,
-    val progress: Float,
+    val foreground: PlayerForegroundFrame,
+    val contrastTarget: Pair<String?, Long>?,
 )
-
-private data class PlayerContrastFrame(val revision: Int, val progress: Float)
 
 /**
  * Fades the [LocalAppearance] color palette and typography within [content]
@@ -133,42 +132,29 @@ private fun PlayerPaletteFade(
 ) {
     val targetAppearance = LocalPaletteFadeTarget.current ?: LocalAppearance.current
     val model = remember { PaletteFadeModel() }
-    val contrastRevision = remember { mutableIntStateOf(0) }
     // Palette currently shown by this scope. Null before the first target is
     // known; afterwards it always holds the last displayed palette, so a new
     // target never flashes before the fade starts from the previous one.
     var displayed by remember { mutableStateOf<PlayerPaletteFrame?>(null) }
     val artworkTarget = remember { mutableStateOf<PlayerArtworkPaint?>(null) }
+    val contrastTarget = remember { mutableStateOf<Pair<String?, Long>?>(null) }
     val displayedPaint = remember { derivedStateOf { displayed?.paint } }
     val targetPaint = artworkTarget.value
     val targetPalette = targetPaint?.themePalette ?: targetAppearance.colorPalette
-    val revision = contrastRevision.intValue
-    var contrastFrame by remember { mutableStateOf(PlayerContrastFrame(0, 1f)) }
-
-    LaunchedAppearanceAnimationEffect(revision) {
-        if (contrastFrame.revision == revision) return@LaunchedAppearanceAnimationEffect
-        val durationScale = coroutineContext[MotionDurationScale]?.scaleFactor ?: 1f
-        if (durationScale <= 0f) {
-            contrastFrame = PlayerContrastFrame(revision, 1f)
-            return@LaunchedAppearanceAnimationEffect
-        }
-        // A measured endpoint can arrive after the palette started moving. Start from the
-        // visible ink, advancing on the same presentation frames as the palette and paint.
-        contrastFrame = PlayerContrastFrame(revision, 0f)
-        animateAppearanceFraction(minOf(durationMillis, 240).coerceAtLeast(1)) { progress ->
-            contrastFrame = PlayerContrastFrame(revision, progress)
-        }
-    }
+    val targetContrast = contrastTarget.value
 
     val waitForAmbientPalette = targetPaint?.themePalette == null && artworkInMotion?.value == true
-    LaunchedAppearanceAnimationEffect(targetPalette, targetPaint, waitForAmbientPalette) {
+    LaunchedAppearanceAnimationEffect(targetPalette, targetPaint, targetContrast, waitForAmbientPalette) {
         val previous = displayed
         val fromPaint = previous?.paint ?: targetPaint
         val paintChanged = fromPaint != targetPaint
+        val generation = (previous?.foreground?.generation ?: 0) + 1
         fun publish(progress: Float) {
             val paint = if (progress == 1f || targetPaint == null || !paintChanged) targetPaint
                 else fromPaint?.at(targetPaint, progress)
-            displayed = PlayerPaletteFrame(model.paletteAt(progress), model.darknessAt(progress), paint, progress)
+            displayed = PlayerPaletteFrame(model.paletteAt(progress), model.darknessAt(progress), paint,
+                PlayerForegroundFrame(generation, progress, changesPolarity = model.darknessAt(0f) != model.darknessAt(1f)),
+                targetContrast)
         }
         if (previous == null) {
             model.retarget(targetPalette, 1f)
@@ -182,8 +168,9 @@ private fun PlayerPaletteFade(
             withFrameNanos { }
             snapshotFlow { artworkInMotion.value }.first { moving -> !moving }
         }
-        val paletteChanged = model.retarget(targetPalette, previous.progress, resume = artworkInMotion != null)
-        if (!paletteChanged && !paintChanged) {
+        val paletteChanged = model.retarget(targetPalette, previous.foreground.progress, resume = artworkInMotion != null)
+        val contrastChanged = previous.contrastTarget != null && previous.contrastTarget != targetContrast
+        if (!paletteChanged && !paintChanged && !contrastChanged) {
             model.endFade()
             publish(1f)
             return@LaunchedAppearanceAnimationEffect
@@ -208,10 +195,9 @@ private fun PlayerPaletteFade(
         LocalPaletteFadeTarget provides targetAppearance,
         LocalPlayerArtworkPaintTarget provides artworkTarget,
         LocalPlayerArtworkPaint provides displayedPaint,
-        LocalPlayerContrastRevision provides contrastRevision,
-        // An incoming sample and its zero progress are visible in the same snapshot.
-        LocalPlayerForegroundProgress provides (if (contrastFrame.revision != revision) 0f
-            else minOf(frame?.progress ?: 1f, contrastFrame.progress)),
+        LocalPlayerContrastTarget provides contrastTarget,
+        LocalPlayerForegroundFrame provides frame?.foreground,
+        LocalPlayerPaletteTransitioning provides (frame?.foreground?.progress?.let { it < 1f } == true),
     ) {
         content()
     }

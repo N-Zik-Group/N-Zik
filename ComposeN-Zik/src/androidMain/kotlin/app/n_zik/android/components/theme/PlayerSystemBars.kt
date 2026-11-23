@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import app.n_zik.android.MainActivity
 import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.neutralForeground
+import app.n_zik.android.components.player.PlayerBackdropRegionSample
 import app.n_zik.android.components.player.PlayerBackdropSampling
 import app.n_zik.android.compose.persist.findActivityNullable
 
@@ -23,27 +24,16 @@ import app.n_zik.android.compose.persist.findActivityNullable
 internal data class SystemBarAppearance(val statusIsDark: Boolean, val navigationIsDark: Boolean)
 
 private class PlayerBarSample {
-    var settled: SystemBarAppearance? = null
-    var settledStatusSurface: Color? = null
-    var settledNavigationSurface: Color? = null
+    var status: PlayerBackdropRegionSample? = null
+    var navigation: PlayerBackdropRegionSample? = null
 }
 
 internal fun resolvePlayerSystemBarAppearance(
-    statusSurface: Color?,
-    navigationSurface: Color?,
-    fallbackSurface: Color,
-    samplingFinished: Boolean,
-    retained: SystemBarAppearance?,
-    holdUnsettledContrast: Boolean = false,
+    statusSurface: Color,
+    navigationSurface: Color,
 ): SystemBarAppearance {
-    fun dark(surface: Color?, previous: Boolean?): Boolean = when {
-        holdUnsettledContrast && !samplingFinished && previous != null -> previous
-        surface != null -> neutralForeground(surface) == Color.White
-        !samplingFinished && previous != null -> previous
-        else -> neutralForeground(fallbackSurface) == Color.White
-    }
-    return SystemBarAppearance(dark(statusSurface, retained?.statusIsDark),
-        dark(navigationSurface, retained?.navigationIsDark))
+    return SystemBarAppearance(neutralForeground(statusSurface) == Color.White,
+        neutralForeground(navigationSurface) == Color.White)
 }
 
 /** The foreground player owns both bars while page updates remain available for restoration. */
@@ -77,7 +67,6 @@ internal fun PlayerSystemBarAppearance(
     sampling: PlayerBackdropSampling,
     fallbackSurface: Color,
     navigationSurfaceOverride: Color? = null,
-    holdUnsettledContrast: Boolean = false,
 ) {
     val activity = LocalContext.current.findActivityNullable() as? MainActivity
     val dialogs = LocalGlassMenuHost.current?.dialogs
@@ -90,12 +79,11 @@ internal fun PlayerSystemBarAppearance(
     val last = remember(activity) { PlayerBarSample() }
     // Observe completion even though coordinates and the recording generation are plain fields.
     val version = sampling.measurementVersion
-    val sampledSurface = sampling.foregroundSurface
     val coordinates = sampling.coordinates?.takeIf { it.isAttached }
     val origin = coordinates?.positionInWindow()
     val size = coordinates?.size
-    val colors = remember(active, sampling, version, sampledSurface, origin, size, top, bottom, left, right) {
-        if (!active || version == 0 || sampledSurface == null || origin == null || size == null) return@remember null
+    val colors = remember(active, sampling, version, sampling.finished, origin, size, top, bottom, left, right) {
+        if (!active || version == 0 || origin == null || size == null) return@remember null
         val width = size.width.toFloat()
         val height = size.height.toFloat()
         // Avoid rounded screen corners, whose transparent pixels are outside the displayed pane.
@@ -107,37 +95,25 @@ internal fun PlayerSystemBarAppearance(
             left > 0 -> Rect(origin.x, origin.y + height * .25f, origin.x + left.coerceAtMost(width.toInt()), origin.y + height * .75f)
             else -> Rect(origin.x + width * .25f, origin.y + (height - top).coerceAtLeast(0f), origin.x + width * .75f, origin.y + height)
         }
-        (status ?: sampledSurface) to (sampling.colorAt(navigationRegion, textFilm = Color.Transparent) ?: sampledSurface)
+        sampling.regionalSample(status) to
+            sampling.regionalSample(sampling.colorAt(navigationRegion, textFilm = Color.Transparent))
     }
-    val hasProvisional = sampling.hasProvisionalSurface
-    val visibleFallback = if (hasProvisional) sampling.foregroundSurface ?: fallbackSurface else fallbackSurface
-    val backgroundAppearance = if (active) resolvePlayerSystemBarAppearance(
-        colors?.first, colors?.second, visibleFallback, sampling.finished,
-        last.settled.takeUnless { hasProvisional && !holdUnsettledContrast }, holdUnsettledContrast,
+    val estimatedSurface = sampling.foregroundSurface.takeIf { sampling.hasProvisionalSurface || sampling.hasDecision }
+    val statusSurface = sampling.displayedRegionSurface(colors?.first, last.status) ?: estimatedSurface ?: fallbackSurface
+    val navigationSurface = sampling.displayedRegionSurface(colors?.second, last.navigation) ?: estimatedSurface ?: fallbackSurface
+    val visibleNavigation = navigationSurfaceOverride ?: navigationSurface
+    val appearance = if (active) resolvePlayerSystemBarAppearance(
+        dialogs?.systemBarSurface(statusSurface) ?: statusSurface,
+        dialogs?.systemBarSurface(visibleNavigation) ?: visibleNavigation,
     ) else null
-    val holdSample = holdUnsettledContrast && !sampling.finished
-    val statusSurface = last.settledStatusSurface.takeIf { holdSample } ?: colors?.first ?: visibleFallback
-    val navigationSurface = navigationSurfaceOverride ?: last.settledNavigationSurface.takeIf { holdSample }
-        ?: colors?.second ?: visibleFallback
-    val dimmedStatus = dialogs?.systemBarSurface(statusSurface)?.takeIf { it != statusSurface }
-    val dimmedNavigation = dialogs?.systemBarSurface(navigationSurface)?.takeIf { it != navigationSurface }
-    val appearance = backgroundAppearance?.let { bars ->
-        val navigationOverride = dimmedNavigation ?: navigationSurfaceOverride
-        if (navigationOverride == null && dimmedStatus == null) bars else bars.copy(
-            statusIsDark = dimmedStatus?.let { neutralForeground(it) == Color.White } ?: bars.statusIsDark,
-            navigationIsDark = navigationOverride?.let { neutralForeground(it) == Color.White } ?: bars.navigationIsDark,
-        )
-    }
     SideEffect {
         // The queue can come and go while a cover is loading. Retain the sampled bar colors.
         if (!active) {
-            last.settled = null
-            last.settledStatusSurface = null
-            last.settledNavigationSurface = null
-        } else if (sampling.finished) {
-            last.settled = backgroundAppearance
-            last.settledStatusSurface = colors?.first ?: visibleFallback
-            last.settledNavigationSurface = colors?.second ?: visibleFallback
+            last.status = null
+            last.navigation = null
+        } else {
+            colors?.first?.let { last.status = it }
+            colors?.second?.let { last.navigation = it }
         }
         activity?.setPlayerSystemBarAppearance(appearance)
     }

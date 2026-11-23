@@ -229,6 +229,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.settings_player_background_section_title, R.string.settings_player_background_colors_label, R.string.settings_player_gradient_style_label,
             R.string.settings_player_bottom_black_gradient_label, R.string.player_artwork_rotation, R.string.settings_player_action_bar_gradient_label,
             R.string.settings_player_text_outline_label, R.string.settings_player_m3e_motion_sensitivity_label,
+            R.string.settings_player_m3e_always_show_shapes_label,
         )),
     SettingsCardRegistryEntry(2, R.string.player_behavior_and_visuals, R.drawable.equalizer,
         keywordRes = listOf(

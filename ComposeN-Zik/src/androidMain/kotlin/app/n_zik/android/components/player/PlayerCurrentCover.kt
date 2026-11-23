@@ -99,14 +99,37 @@ internal fun ReportPresentedPlayerCover(
     ready: Boolean,
     active: Boolean,
     motionSettled: Boolean = true,
+    occurrence: Long? = null,
     onPresented: () -> Unit,
 ) {
     val report by rememberUpdatedState(onPresented)
-    LaunchedEffect(identity, ready, active, motionSettled) {
+    val latestOccurrence by rememberUpdatedState(occurrence)
+    LaunchedEffect(identity, ready, active, motionSettled, occurrence) {
         if (ready && active && motionSettled) {
             withFrameNanos { }
             withFrameNanos { }
-            report()
+            if (occurrence == latestOccurrence) report()
+        }
+    }
+}
+
+/** Associates the first visible artwork frame with the current playback occurrence. */
+@Composable
+internal fun ReportFirstPresentedPlayerCover(
+    occurrence: Long,
+    identity: PlayerCoverIdentity,
+    ready: Boolean,
+    active: Boolean,
+    onPresented: (Long, PlayerCoverIdentity) -> Unit,
+) {
+    val report by rememberUpdatedState(onPresented)
+    LaunchedEffect(occurrence, identity, ready, active) {
+        if (ready && active) {
+            // A cached pager image may have drawn earlier as a neighbor. Give the
+            // new current layout one draw before reporting it as presented.
+            withFrameNanos { }
+            withFrameNanos { }
+            report(occurrence, identity)
         }
     }
 }

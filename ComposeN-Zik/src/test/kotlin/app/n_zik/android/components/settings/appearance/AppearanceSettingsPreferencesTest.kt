@@ -3,6 +3,7 @@ package app.n_zik.android.components.settings.appearance
 import android.app.Application
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.utils.m3eAlwaysShowShapesKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
 import org.junit.After
@@ -152,6 +153,7 @@ class AppearanceSettingsPreferencesTest {
                 is String -> editor.putString(key, "different")
             }
         }
+        editor.putBoolean(m3eAlwaysShowShapesKey, true)
         editor.putFloat("thumbnailSizeLDpKey", 0f).putString("unrelated", "keep").commit()
         store("preferences_untouched").edit().putString("colorPaletteMode", "Light").commit()
         val globalBefore = store("app_settings").all.toMap()
@@ -159,6 +161,7 @@ class AppearanceSettingsPreferencesTest {
         baselineDefaults.forEach { (key, expected) -> assertEquals(key, expected, context.preferences.all[key]) }
         assertEquals(109, baselineDefaults.size)
         assertFalse(context.preferences.contains("thumbnailSizeLDpKey"))
+        assertFalse(context.preferences.contains(m3eAlwaysShowShapesKey))
         assertEquals("keep", context.preferences.getString("unrelated", null))
         assertEquals("Light", store("preferences_untouched").getString("colorPaletteMode", null))
         assertEquals(globalBefore, store("app_settings").all)

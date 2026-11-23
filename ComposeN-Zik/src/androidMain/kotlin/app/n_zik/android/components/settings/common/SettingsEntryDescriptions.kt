@@ -43,6 +43,7 @@ internal val SettingsEntryDescriptions = mapOf(
     "appearance.colors_and_background.gradienttype" to R.string.player_background_animation_description,
     "appearance.colors_and_background.rotating_cover_title" to R.string.player_background_rotating_cover_description,
     "appearance.colors_and_background.shake_sensitivity_theme" to R.string.player_background_shake_sensitivity_description,
+    "appearance.colors_and_background.m3e_always_show_shapes" to R.string.settings_player_m3e_always_show_shapes_description,
     "appearance.colors_and_background.show_remaining_song_time" to R.string.player_remaining_time_visible_description,
     "appearance.colors_and_background.show_total_time_of_queue" to R.string.player_queue_duration_visible_description,
     "appearance.colors_and_background.skip_time_buttons" to R.string.player_seek_buttons_visible_description,

@@ -1,5 +1,6 @@
 package app.n_zik.android.components.player
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -22,11 +23,31 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class PlayerBackdropSamplingTest {
-    @Test fun `contrast refresh requires a different shared or regional polarity`() {
-        val previous = PlayerBackdropContrastDecision(Color.White, mapOf("controls" to Color.Black))
-        assertFalse(previous.copy().changesPolarity(previous))
-        assertTrue(previous.copy(regionalInk = mapOf("controls" to Color.White)).changesPolarity(previous))
-        assertTrue(previous.copy(commonInk = Color.Black).changesPolarity(previous))
+    @Test fun `both fade directions project the retained regions until a settled recording arrives`() {
+        val bounds = Rect(0f, 0f, 100f, 200f)
+        val size = IntSize(100, 200)
+        fun gray(tone: Int) = Color(tone, tone, tone)
+        for ((from, to) in listOf(64 to 208, 208 to 64)) {
+            val estimate = mutableStateOf<Color?>(gray(from))
+            val previous = PlayerBackdropSampling()
+            previous.registerRegion("controls", bounds)
+            previous.publish(IntArray(32 * 64) { gray(from - 16).toArgb() }, Offset.Zero, size,
+                capturedEstimate = estimate.value)
+            val retained = previous.regionalSample(previous.colorAt(bounds))
+            val incoming = PlayerBackdropSampling(provisionalSurface = estimate)
+            incoming.registerRegion("controls", bounds)
+            for (tone in listOf(from, (from + to) / 2, to)) {
+                estimate.value = gray(tone)
+                assertEquals(gray(tone - 16).toArgb(), incoming.displayedRegionSurface(null, retained)?.toArgb())
+                assertEquals(0, incoming.measurementVersion)
+                assertNull(incoming.colorAt(bounds))
+            }
+            val settled = gray(to - 8)
+            incoming.publish(IntArray(32 * 64) { settled.toArgb() }, Offset.Zero, size, capturedEstimate = estimate.value)
+            val measured = incoming.regionalSample(incoming.colorAt(bounds))
+            assertEquals(settled, incoming.displayedRegionSurface(measured, retained))
+            assertTrue(incoming.finished)
+        }
     }
 
     @Test fun `sharp artwork behind play can need different ink from surrounding controls`() {
@@ -45,7 +66,6 @@ class PlayerBackdropSamplingTest {
         assertEquals(Color.Black, measuredPlayGlyphForeground(Color.Black, wholePlate, 3f))
         assertEquals(Color.White, measuredPlayGlyphForeground(Color.Black, playPlate, 3f))
         assertEquals(Color.Yellow, measuredPlayGlyphForeground(Color.Yellow, playPlate, 3f))
-        assertEquals(Color.White, state.contrastDecision()?.regionalInk?.get("play"))
     }
 
     @Test fun `play tint stays the same hue on dark and light artwork`() {
@@ -65,8 +85,8 @@ class PlayerBackdropSamplingTest {
         val state = PlayerBackdropSampling()
         val title = Rect(90f, 250f, 230f, 280f)
         val artist = Rect(90f, 300f, 230f, 330f)
-        state.registerRegion("title", title, Color.Transparent)
-        state.registerRegion("artist", artist, Color.Transparent)
+        state.registerRegion("title", title)
+        state.registerRegion("artist", artist)
         val pixels = IntArray(32 * 64) { if (it / 32 < 29) 0xFF181818.toInt() else -1 }
         state.publish(pixels, Offset.Zero, IntSize(320, 640))
         val inactiveTitle = Color(0xFF6C6C6C)
@@ -79,37 +99,18 @@ class PlayerBackdropSamplingTest {
     @Test fun `glass film can change regional polarity while the artwork stays dark`() {
         val bounds = Rect(0f, 0f, 100f, 200f)
         val film = Color.White.copy(alpha = .28f)
-        fun decision(artwork: Int): PlayerBackdropContrastDecision {
+        fun measuredInk(artwork: Int): Pair<Color, Color> {
             val state = PlayerBackdropSampling()
-            state.registerRegion("play", bounds, film)
+            state.registerRegion("play", bounds)
             state.publish(IntArray(32 * 64) { artwork }, Offset.Zero, IntSize(100, 200))
-            return requireNotNull(state.contrastDecision())
+            val base = requireNotNull(state.colorAt(bounds, Color.Transparent))
+            val tinted = requireNotNull(state.colorAt(bounds, film))
+            return measuredPlayerTextForeground(Color.White, base) to measuredPlayerTextForeground(Color.White, tinted)
         }
-        val dark = decision(0xFF000000.toInt())
-        val light = decision(0xFF464646.toInt())
-        assertEquals(dark.commonInk, light.commonInk)
-        assertTrue(light.changesPolarity(dark))
+        assertEquals(Color.White to Color.White, measuredInk(0xFF000000.toInt()))
+        assertEquals(Color.White to Color.Black, measuredInk(0xFF464646.toInt()))
     }
 
-    @Test fun `preview updates each region without freezing the intermediate frame`() {
-        val state = PlayerBackdropSampling(previousSurface = Color.Gray)
-        assertFalse(state.hasPreviewMeasurement)
-        val top = Rect(0f, 0f, 100f, 100f)
-        val bottom = Rect(0f, 100f, 100f, 200f)
-        val size = IntSize(100, 200)
-        state.registerRegion("controls", bottom)
-        val pixels = IntArray(32 * 64) { if (it / 32 < 32) -1 else 0xFF000000.toInt() }
-        state.publish(pixels, Offset.Zero, size, settled = false)
-        assertEquals(Color.White, state.colorAt(top))
-        assertEquals(Color.Black, state.foregroundSurface)
-        assertTrue(state.hasPreviewMeasurement)
-        assertFalse(state.finished)
-
-        state.publish(IntArray(32 * 64) { -1 }, Offset.Zero, size)
-        assertEquals(Color.White, state.colorAt(bottom))
-        assertEquals(Color.White, state.commonSurface)
-        assertTrue(state.finished)
-    }
     @Test fun `text takes the darker part of a mixed band into account before choosing ink`() {
         val size = IntSize(8, 1)
         val region = Rect(0f, 0f, 1f, 1f)

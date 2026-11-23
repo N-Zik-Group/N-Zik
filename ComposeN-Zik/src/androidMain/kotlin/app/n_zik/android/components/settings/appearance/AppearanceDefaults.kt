@@ -84,6 +84,7 @@ import app.n_zik.android.utils.putEnum
 import app.n_zik.android.utils.queueDurationExpandedKey
 import app.n_zik.android.utils.queueTypeKey
 import app.n_zik.android.utils.rotatingAlbumCoverKey
+import app.n_zik.android.utils.m3eAlwaysShowShapesKey
 import app.n_zik.android.utils.shakeSensitivityThemeKey
 import app.n_zik.android.utils.showBackgroundLyricsKey
 import app.n_zik.android.utils.showButtonPlayerAddToPlaylistKey
@@ -256,6 +257,7 @@ internal fun applyAppearanceDefaults(context: Context) {
         putBoolean(topPaddingKey, true)
         putEnum(animatedGradientKey, AnimatedGradient.M3EMorphingCover)
         putEnum(shakeSensitivityThemeKey, ShakeSensitivityTheme.Disabled)
+        remove(m3eAlwaysShowShapesKey)
         putBoolean(albumCoverRotationKey, false)
         putFloat(blurStrengthKey, 25f)
         putFloat(thumbnailFadeExKey, 5f)

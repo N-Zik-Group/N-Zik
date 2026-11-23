@@ -1,5 +1,6 @@
 package app.n_zik.android.components.tab
 
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -20,10 +21,13 @@ open class StatefulMenuIcon(
 ) : MenuIcon, Descriptive {
     val active: Boolean get() = readActive()
     override val iconId: Int get() = readIcon()
+    @get:StringRes
+    internal val titleRes: Int get() = readTitle()
+
     override val color: Color
         @Composable get() = if (active) colorPalette().accent else colorPalette().text
     override val menuIconTitle: String
-        @Composable get() = stringResource(readTitle())
+        @Composable get() = stringResource(titleRes)
 
     override fun onShortClick() {
         performAction()

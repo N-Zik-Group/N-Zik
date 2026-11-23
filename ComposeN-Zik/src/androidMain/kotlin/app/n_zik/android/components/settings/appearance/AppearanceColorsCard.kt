@@ -3,6 +3,7 @@ package app.n_zik.android.components.settings.appearance
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,6 +21,7 @@ import app.n_zik.android.utils.albumCoverRotationKey
 import app.n_zik.android.utils.animatedGradientKey
 import app.n_zik.android.utils.blackgradientKey
 import app.n_zik.android.utils.bottomgradientKey
+import app.n_zik.android.utils.m3eAlwaysShowShapesKey
 import app.n_zik.android.utils.shakeSensitivityThemeKey
 import app.n_zik.android.utils.playerBackgroundColorsKey
 import app.n_zik.android.utils.playerTypeKey
@@ -55,8 +57,9 @@ internal fun AppearanceColorsCard(search: Search) {
         AnimatedGradient.M3EMorphingCover
     )
     var shakeSensitivityTheme by rememberPreference(shakeSensitivityThemeKey, ShakeSensitivityTheme.Disabled)
+    var m3eAlwaysShowShapes by rememberPreference(m3eAlwaysShowShapesKey, false)
     var albumCoverRotation by rememberPreference(albumCoverRotationKey, false)
-    val searchCtx_0_4 = search.inputValue.isBlank() || stringResource(R.string.settings_player_background_section_title).contains(search.inputValue, true) || stringResource(R.string.settings_player_background_colors_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_gradient_style_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_bottom_black_gradient_label).contains(search.inputValue, true) || stringResource(R.string.player_artwork_rotation).contains(search.inputValue, true) || stringResource(R.string.settings_player_action_bar_gradient_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_text_outline_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_m3e_motion_sensitivity_label).contains(search.inputValue, true)
+    val searchCtx_0_4 = search.inputValue.isBlank() || stringResource(R.string.settings_player_background_section_title).contains(search.inputValue, true) || stringResource(R.string.settings_player_background_colors_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_gradient_style_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_bottom_black_gradient_label).contains(search.inputValue, true) || stringResource(R.string.player_artwork_rotation).contains(search.inputValue, true) || stringResource(R.string.settings_player_action_bar_gradient_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_text_outline_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_m3e_motion_sensitivity_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_m3e_always_show_shapes_label).contains(search.inputValue, true)
     AnimatedVisibility(
                 visible = searchCtx_0_4,
                 enter = settingsCardEnter,
@@ -109,16 +112,28 @@ internal fun AppearanceColorsCard(search: Search) {
 
             val isM3E = animatedGradient == AnimatedGradient.M3EMorphingTheme || animatedGradient == AnimatedGradient.M3EMorphingCover
             AnimatedVisibility(visible = playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient && isM3E) {
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_m3e_motion_sensitivity_label).contains(search.inputValue, true)) {
-                    OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_background_shake_sensitivity_description), shakeSensitivityTheme.text),
-                        icon = R.drawable.shake_gesture,
-                        title = stringResource(R.string.settings_player_m3e_motion_sensitivity_label),
-                        selectedValue = shakeSensitivityTheme,
-                        onValueSelected = { shakeSensitivityTheme = it },
-                        valueText = { it.text },
-                        modifier = (Modifier.padding(start = 25.dp)).settingsSearchTarget("appearance.colors_and_background.shake_sensitivity_theme")
-                    )
+                Column {
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_player_m3e_motion_sensitivity_label).contains(search.inputValue, true)) {
+                        OtherEnumValueSelectorSettingsEntry(
+                            text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_background_shake_sensitivity_description), shakeSensitivityTheme.text),
+                            icon = R.drawable.shake_gesture,
+                            title = stringResource(R.string.settings_player_m3e_motion_sensitivity_label),
+                            selectedValue = shakeSensitivityTheme,
+                            onValueSelected = { shakeSensitivityTheme = it },
+                            valueText = { it.text },
+                            modifier = (Modifier.padding(start = 25.dp)).settingsSearchTarget("appearance.colors_and_background.shake_sensitivity_theme")
+                        )
+                    }
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_player_m3e_always_show_shapes_label).contains(search.inputValue, true)) {
+                        OtherSwitchSettingEntry(
+                            icon = R.drawable.color_palette,
+                            title = stringResource(R.string.settings_player_m3e_always_show_shapes_label),
+                            text = stringResource(R.string.settings_player_m3e_always_show_shapes_description),
+                            isChecked = m3eAlwaysShowShapes,
+                            onCheckedChange = { m3eAlwaysShowShapes = it },
+                            modifier = Modifier.padding(start = 25.dp).settingsSearchTarget("appearance.colors_and_background.m3e_always_show_shapes"),
+                        )
+                    }
                 }
             }
             var isRotatingCoverEnabled by rememberPreference( rotatingAlbumCoverKey, false )

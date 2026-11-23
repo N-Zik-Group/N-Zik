@@ -173,10 +173,12 @@ import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.theme.PlayerSystemBarAppearance
 import app.n_zik.android.components.glass.LocalForegroundSourcePalette
 import app.n_zik.android.components.glass.LocalNeutralForegroundTransition
+import app.n_zik.android.components.glass.LocalPlayerFollowsPaletteInk
 import app.n_zik.android.components.glass.SurfaceForegroundContent
 import app.n_zik.android.components.player.LocalPlayerArtworkUnderControls
 import app.n_zik.android.components.player.LocalPlayerBackdropSampling
-import app.n_zik.android.components.player.LocalPlayerContrastRevision
+import app.n_zik.android.components.player.LocalPlayerContrastTarget
+import app.n_zik.android.components.player.LocalPlayerPaletteTransitioning
 import app.n_zik.android.components.player.rememberPlayerBackdropRegionColor
 import app.n_zik.android.components.player.rememberPlayerBackdropSampling
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -238,6 +240,7 @@ import app.n_zik.android.models.ui.toUiMedia
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.extensions.nextvisualizer.views.NextVisualizer
 import app.n_zik.android.components.menu.player.PlayerMenu
+import app.n_zik.android.components.menu.player.PlayerStatsMenuControl
 import app.n_zik.android.components.dialog.common.ThumbnailOffsetDialog
 import app.n_zik.android.components.player.rememberCoverSpin
 import app.n_zik.android.components.player.rememberPlayerDecorationsActive
@@ -246,6 +249,7 @@ import app.n_zik.android.utils.DisposableListener
 import app.n_zik.android.utils.VerticalfadingEdge2
 import app.n_zik.android.utils.VinylSizeKey
 import app.n_zik.android.utils.albumCoverRotationKey
+import app.n_zik.android.utils.m3eAlwaysShowShapesKey
 import app.n_zik.android.utils.animatedGradientKey
 import app.n_zik.android.utils.backgroundProgressKey
 import app.n_zik.android.utils.blackgradientKey
@@ -313,6 +317,8 @@ import app.n_zik.android.components.player.PlayerCurrentCover
 import app.n_zik.android.components.player.PlayerCoverFrame
 import app.n_zik.android.components.player.PlayerCoverIdentity
 import app.n_zik.android.components.player.rememberPlayerCoverIdentity
+import app.n_zik.android.components.player.PlayerM3EOccurrences
+import app.n_zik.android.components.player.ReportFirstPresentedPlayerCover
 import app.n_zik.android.components.player.ReportPresentedPlayerCover
 import androidx.compose.ui.graphics.painter.Painter
 import app.n_zik.android.components.glass.rememberGlassArtwork
@@ -396,6 +402,7 @@ fun Player(
     val colorPaletteMode by rememberPreference( colorPaletteModeKey, ColorPaletteMode.Dark )
     val playerBackgroundColors by rememberPreference( playerBackgroundColorsKey, PlayerBackgroundColors.AnimatedGradient )
     val animatedGradient by rememberPreference( animatedGradientKey, AnimatedGradient.M3EMorphingCover )
+    val m3eAlwaysShowShapes by rememberPreference(m3eAlwaysShowShapesKey, false)
     val thumbnailTapEnabled by rememberPreference( thumbnailTapEnabledKey, true )
     val showTopActionsBar by rememberPreference( showTopActionsBarKey, true )
     val blackgradient by rememberPreference( blackgradientKey, false )
@@ -413,7 +420,7 @@ fun Player(
     val carouselSize by rememberPreference( carouselSizeKey, CarouselSize.Biggest )
     val clickLyricsText by rememberPreference( clickOnLyricsTextKey, true )
         val thumbnailType by rememberPreference( thumbnailTypeKey, ThumbnailType.Modern )
-    val statsfornerds by rememberPreference( statsfornerdsKey, false )
+    var statsfornerds by rememberPreference(statsfornerdsKey, false)
     val topPadding by rememberPreference( topPaddingKey, true )
     var swipeAnimationNoThumbnail by rememberPreference( swipeAnimationsNoThumbnailKey, SwipeAnimationNoThumbnail.Sliding )
     val playerInLandscape = isLandscape
@@ -599,6 +606,7 @@ fun Player(
     var playerError by remember(playerUpdateTrigger) {
         mutableStateOf<PlaybackException?>(player.playerError)
     }
+    val m3eOccurrences = remember(player, playerUpdateTrigger) { PlayerM3EOccurrences() }
 
     player.DisposableListener(playerUpdateTrigger) {
         object : Player.Listener {
@@ -607,6 +615,7 @@ fun Player(
             }
 
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                m3eOccurrences.advance()
                 nullableMediaItem = mediaItem
             }
 
@@ -798,9 +807,16 @@ fun Player(
     val useArtworkTheme = paletteName == ColorPaletteName.Dynamic
     val artworkFallback = remember(lightTheme) { dynamicArtworkFallback(!lightTheme) }
     val targetCover = rememberPlayerCoverIdentity(mediaItem.mediaId, coverUrl(mediaItem).orEmpty())
+    val coverOccurrence = m3eOccurrences.current
     val paletteCover = if (colorArtworkItem.mediaId == mediaItem.mediaId) targetCover
         else rememberPlayerCoverIdentity(colorArtworkItem.mediaId, coverUrl(colorArtworkItem).orEmpty())
     var presentedCover by remember(player, playerUpdateTrigger, isLandscape) { mutableStateOf<PlayerCoverIdentity?>(null) }
+    var presentedCoverOccurrence by remember(m3eOccurrences, isLandscape) { mutableStateOf<Long?>(null) }
+    fun onCoverSettled(occurrence: Long, identity: PlayerCoverIdentity) {
+        if (occurrence != m3eOccurrences.current || identity != targetCover) return
+        presentedCover = identity
+        presentedCoverOccurrence = occurrence
+    }
     val drawsArtwork = !showCoverThumbnailAnimation || (
         coverThumbnailAnimation != ThumbnailCoverType.CD &&
             (coverThumbnailAnimation != ThumbnailCoverType.Vinyl || !carouselOwnsArtwork || imageCoverSize > 0f)
@@ -809,7 +825,8 @@ fun Player(
         fullscreenPagerOwnsArtwork || (drawsArtwork && (carouselOwnsArtwork || thumbnailOwnsArtwork))
     val expectsForegroundCover = visiblePlayerArtwork && hasForegroundArtwork
     val waitingForCover = expectsForegroundCover && paletteCover.artworkUri.isNotBlank() &&
-        paletteCover.artworkUri != "null" && presentedCover != paletteCover
+        paletteCover.artworkUri != "null" && (presentedCover != paletteCover ||
+            (!fullscreenPagerOwnsArtwork && presentedCoverOccurrence != coverOccurrence))
     val dynamicColorPalette = coverDisplay?.palette?.let { palette ->
         if (coverDisplay.forceDark) palette.copy(accent = coverDisplay.foreground ?: palette.text) else palette
     } ?: if (useArtworkTheme) artworkFallback else globalTargetPalette
@@ -903,11 +920,28 @@ fun Player(
         SideEffect { artworkInMotion.value = artworkMoving }
         DisposableEffect(artworkInMotion) { onDispose { artworkInMotion.value = false } }
     }
-    val gradientType = remember(animatedGradient, backgroundArtwork.mediaId) {
+    val requestedGradient = remember(animatedGradient, mediaItem.mediaId) {
         if (animatedGradient == AnimatedGradient.Random) AnimatedGradient.entries[(2..13).random()]
         else animatedGradient
     }
     val usesAnimatedBackground = playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient
+    val randomGradientReady = animatedGradient != AnimatedGradient.Random ||
+        m3eOccurrences.isPresented(coverOccurrence, requestedGradient)
+    var displayedGradient by remember(animatedGradient) { mutableStateOf(requestedGradient) }
+    val gradientType = if (randomGradientReady) requestedGradient else displayedGradient
+    if (randomGradientReady) SideEffect { displayedGradient = gradientType }
+    val tracksM3EPresentation = usesAnimatedBackground && (
+        animatedGradient == AnimatedGradient.Random ||
+            gradientType == AnimatedGradient.M3EMorphingTheme || gradientType == AnimatedGradient.M3EMorphingCover
+        )
+    var firstPresentedCover by remember(player, playerUpdateTrigger) { mutableStateOf<PlayerCoverIdentity?>(null) }
+    val canReportFirstCover = decorationsVisible && expectsForegroundCover && !fullscreenPagerOwnsArtwork &&
+        statsfornerds
+    val hasRequestedCover = targetCover.artworkUri.isNotBlank() && targetCover.artworkUri != "null"
+    fun onFirstCoverPresented(occurrence: Long, identity: PlayerCoverIdentity) {
+        if (occurrence != m3eOccurrences.current || identity != targetCover) return
+        if (statsfornerds) firstPresentedCover = identity
+    }
     val gradientFade = rememberPlayerGradientFade(gradientType, decorationsActive && usesAnimatedBackground)
     val gradientSettled = !usesAnimatedBackground ||
         (gradientFade.target == gradientType && gradientFade.outgoing == null)
@@ -938,12 +972,20 @@ fun Player(
         themePalette = targetPalette,
     )
     val artworkPaintTarget = LocalPlayerArtworkPaintTarget.current
+    val contrastTarget = LocalPlayerContrastTarget.current
     val backdropOwnsPresentation = visiblePlayerArtwork && waitForBlurredCover && !expectsForegroundCover
     val backdropPresented = presentedBackdrop == PlayerCoverIdentity(
         backgroundArtwork.mediaId, backgroundArtwork.coverUrl.orEmpty(), backgroundArtwork.coverRevision,
     )
-    if (!holdBackgroundArtwork && (!backdropOwnsPresentation || backdropPresented)) {
-        SideEffect { artworkPaintTarget?.value = targetArtworkPaint }
+    val paletteReady = !holdBackgroundArtwork && (!backdropOwnsPresentation || backdropPresented)
+    if (paletteReady) {
+        SideEffect {
+            artworkPaintTarget?.value = targetArtworkPaint
+            contrastTarget?.value = backgroundArtwork.coverUrl to backgroundArtwork.coverRevision
+            if (tracksM3EPresentation && decorationsVisible && backgroundArtwork.mediaId == mediaItem.mediaId) {
+                m3eOccurrences.present(coverOccurrence, requestedGradient)
+            }
+        }
     }
     val scopedArtworkPaint = LocalPlayerArtworkPaint.current
     val latestArtworkTarget = rememberUpdatedState(targetArtworkPaint)
@@ -997,13 +1039,12 @@ fun Player(
         else -> null
     }
     val backdropTransitioning = !gradientSettled || !backdropSettled || (sampledTheme != null && color != sampledTheme) ||
-        renderedBackdropReady == false
+        renderedBackdropReady == false || !paletteReady || LocalPlayerPaletteTransitioning.current
     val canSamplePlayer = playerExpanded && playerContentVisible && !appRunningInBackground && !playerUnderlayCovered
     val samplePlayerBackground = canSamplePlayer && !backdropTransitioning
-    val sampleTransition = canSamplePlayer && backdropTransitioning && !waitForBlurredCover
     val captureGlassSource = playerGlassSourceCaptureActive(
         glassSettings, playerTransition, inheritedOpticsEnabled)
-    val capturePlayerBackground = (samplePlayerBackground && !contrastDecisionReady) || sampleTransition || captureGlassSource
+    val capturePlayerBackground = (samplePlayerBackground && !contrastDecisionReady) || captureGlassSource
     val playerBackground = rememberGlassPlayerBackground()
     val playerCoverBackground = rememberLayerBackdrop()
     val animatedGradientBackdrop = if (usesAnimatedBackground) rememberLayerBackdrop() else null
@@ -1016,34 +1057,39 @@ fun Player(
     val artworkControlsSource = rememberPlayerArtworkControlsBackdrop(
         controlsSource, artworkShadowOverflow, captureGlassSource || expandedArtworkStack,
     )
-    val provisionalCoverSurface = remember(artworkPaint, usesCoverFluidGradient, usesFlatCoverBackground, gradientSettled) {
+    val usesFlatThemeBackground = playerBackgroundColors == PlayerBackgroundColors.ThemeColor
+    val usesThemeFluidGradient = usesAnimatedBackground &&
+        (gradientType == AnimatedGradient.FluidThemeColorGradient || gradientType == AnimatedGradient.M3EMorphingTheme)
+    val displayedThemeSurface = rememberUpdatedState(
+        when {
+            usesThemeFluidGradient && gradientSettled ->
+                PlayerFluidColors(color.background0, color.background2, color.background1, color.accent).centerSurface()
+            usesFlatThemeBackground -> color.background1
+            else -> null
+        },
+    )
+    val provisionalCoverSurface = remember(
+        artworkPaint, usesCoverFluidGradient, usesFlatCoverBackground, usesFlatThemeBackground, gradientSettled,
+    ) {
         derivedStateOf {
             when {
                 usesCoverFluidGradient && gradientSettled -> artworkPaint.value.fluid?.centerSurface()
                 usesFlatCoverBackground -> artworkPaint.value.surface
-                else -> null
+                else -> displayedThemeSurface.value
             }
         }
     }
-    val contrastRevision = LocalPlayerContrastRevision.current
     val backgroundSampling = rememberPlayerBackdropSampling(artworkControlsSource, samplePlayerBackground,
         contrastDecisionKey,
-        previewActive = sampleTransition,
         provisionalSurface = provisionalCoverSurface,
         renderedBackgroundReady = renderedBackdropReady,
         retainSettledContrast = waitForBlurredCover,
-        onSettledMeasurement = {
-            if (playerContentVisible && playerSheetState.isExpanded && contrastRevision != null) {
-                contrastRevision.intValue++
-            }
-        },
     )
     SideEffect { contrastDecisionReady = backgroundSampling.finished }
     val queueNavigationSurface = if (isQueuePanelVisible && !usesQueueToolbarGlass()) color.background1 else null
     PlayerSystemBarAppearance(active = playerSheetState.isExpanded && playerContentVisible,
         sampling = backgroundSampling, fallbackSurface = color.background0,
-        navigationSurfaceOverride = queueNavigationSurface,
-        holdUnsettledContrast = waitForBlurredCover)
+        navigationSurfaceOverride = queueNavigationSurface)
     val playerVisibleBackdrop = rememberLayerBackdrop()
     val queuePlayerBackdrop = rememberLayerBackdrop()
     val capturePlayerScene = playerGlassSceneCaptureActive(glassSettings, playerSheetState.isExpanded, captureGlassSource)
@@ -1248,15 +1294,18 @@ fun Player(
             capturePlayerBackground = capturePlayerBackground,
             gradientFade = gradientFade,
             decorationsActive = decorationsActive,
+            m3eRendered = decorationsVisible,
+            m3eAlwaysShowShapes = m3eAlwaysShowShapes,
             color = color,
             targetFluidColors = targetFluidColors,
             artworkPaint = artworkPaint,
             isActuallyPlaying = { isActuallyPlaying },
+            shouldPlayM3E = { shouldBePlaying },
             coverSwatches = coverSwatches,
             coverGradientColor = ::coverGradientColor,
-            mediaId = backgroundArtwork.mediaId,
+            m3eOccurrences = m3eOccurrences,
+            m3eBurstGradient = gradientType,
             displayedSwatches = displayedSwatches,
-            targetThemeBackground = targetPalette.background2,
         )
     }
 
@@ -1272,6 +1321,35 @@ fun Player(
     val landscapeEssentialVisualizerState = rememberOverlayTransition(isLandscape && showLandscapeArtworkColumn &&
         landscapeStandaloneVisualizer && playerType == PlayerType.Essential)
 
+    val showsInlineStats = (!showthumbnail || playerType == PlayerType.Modern) &&
+        (isLandscape || !isShowingStandaloneLyrics || statsExpanded)
+    fun statsMediaId(): String {
+        if (!statsfornerds) return mediaItem.mediaId
+        val displayed = when {
+            fullscreenPagerOwnsArtwork -> presentedCover
+            hasForegroundArtwork && !hasRequestedCover && coverDisplayResult.resolved -> null
+            hasForegroundArtwork -> firstPresentedCover ?: presentedCover
+            waitForBlurredCover -> presentedBackdrop
+            else -> null
+        }
+        return (if (presentedCover == targetCover) targetCover else displayed)?.mediaId ?: mediaItem.mediaId
+    }
+    LaunchedEffect(statsfornerds) {
+        if (!statsfornerds) firstPresentedCover = null
+    }
+    val statsMenuControl = rememberUpdatedState(
+        when {
+            thumbnailOwnsArtwork && playerError == null -> PlayerStatsMenuControl(
+                isVisible = { isShowingStatsForNerds },
+                onToggle = { isShowingStatsForNerds = !isShowingStatsForNerds },
+            )
+            showsInlineStats -> PlayerStatsMenuControl(
+                isVisible = { statsfornerds },
+                onToggle = { statsfornerds = !statsfornerds },
+            )
+            else -> null
+        },
+    )
 
     val thumbnailContent: @Composable () -> Unit = {
         var deltaX by remember { mutableStateOf(0f) }
@@ -1289,7 +1367,11 @@ fun Player(
                 prefetchAfterTransition = !holdBackgroundArtwork && !backdropTransitioning,
                 rotationActive = decorationsActive,
                 onArtworkPresented = if (expectsForegroundCover && thumbnailOwnsArtwork) {
-                    { identity -> presentedCover = identity }
+                    { identity -> onCoverSettled(coverOccurrence, identity) }
+                } else null,
+                presentationOccurrence = coverOccurrence,
+                onArtworkFirstPresented = if (canReportFirstCover && thumbnailOwnsArtwork) {
+                    ::onFirstCoverPresented
                 } else null,
                 thumbnailTapEnabledKey = thumbnailTapEnabled,
                 isShowingLyrics = isShowingLyrics,
@@ -1396,13 +1478,24 @@ fun Player(
             onArtworkDrawn = { reportCarouselArtworkDrawn(artworkDrawn) },
             playerArtworkMediaId = pageItem?.mediaId,
         )
+        val activeCoverPage = expectsForegroundCover && pageCover == targetCover &&
+            pageIndex == player.currentMediaItemIndex && pageIndex == pagerState.currentPage
         ReportPresentedPlayerCover(
             identity = pageCover,
             ready = artworkDrawn.value,
-            active = expectsForegroundCover && pageCover == targetCover &&
-                pageIndex == player.currentMediaItemIndex && pageIndex == pagerState.currentPage,
+            active = activeCoverPage,
             motionSettled = pageIndex == pagerState.settledPage && !pagerState.isScrollInProgress,
-        ) { presentedCover = pageCover }
+            occurrence = coverOccurrence,
+        ) { onCoverSettled(coverOccurrence, pageCover) }
+        if (canReportFirstCover) {
+            ReportFirstPresentedPlayerCover(
+                occurrence = coverOccurrence,
+                identity = pageCover,
+                ready = artworkDrawn.value,
+                active = activeCoverPage,
+                onPresented = ::onFirstCoverPresented,
+            )
+        }
 
         val coverModifier = Modifier.playerThumbnailCover(
             pagerState = pagerState,
@@ -1477,6 +1570,8 @@ fun Player(
         LocalSurfaceBackdropColor provides null,
         LocalPlayerBackdropSampling provides backgroundSampling,
         LocalPlayerArtworkUnderControls provides (expandedArtworkStack || waitForBlurredCover && blurAdjuster.strength <= 0f),
+        LocalPlayerFollowsPaletteInk provides (usesAnimatedBackground && gradientSettled && !expandedArtworkStack &&
+            (gradientType == AnimatedGradient.M3EMorphingTheme || gradientType == AnimatedGradient.M3EMorphingCover)),
         LocalForegroundSourcePalette provides color,
         LocalGlassMaterialSource provides artworkControlsSource,
         LocalGlassContainerBackdrop provides artworkControlsSource,
@@ -1513,7 +1608,8 @@ fun Player(
                     discoverState,
                     queueLoopState,
                     expandPlayerState,
-                    onDismiss
+                    onDismiss,
+                    statsMenuControl = statsMenuControl,
                 )
             }
             var region by remember { mutableStateOf<Rect?>(null) }
@@ -1912,7 +2008,7 @@ fun Player(
                     )
                     if (!showthumbnail || playerType == PlayerType.Modern) {
                         StatsForNerds(
-                            mediaId = mediaItem.mediaId,
+                            mediaId = statsMediaId(),
                             isDisplayed = statsfornerds,
                             onDismiss = {}
                         )
@@ -2141,7 +2237,8 @@ fun Player(
                                         isShowingSleepTimerDialog = true
                                         menuState.hide()
                                     },
-                                    disableScrollingText = disableScrollingText
+                                    disableScrollingText = disableScrollingText,
+                                    statsMenuControl = statsMenuControl,
                                 )
                             }
                         },
@@ -2338,7 +2435,7 @@ fun Player(
                         (!isShowingStandaloneLyrics || statsExpanded)
                     ) {
                         StatsForNerds(
-                            mediaId = mediaItem.mediaId,
+                            mediaId = statsMediaId(),
                             isDisplayed = statsfornerds,
                             onDismiss = {},
                         )

@@ -46,6 +46,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -88,6 +89,7 @@ import app.n_zik.android.components.shuffleButtonIcon
 import app.n_zik.android.components.menu.player.AddToPlaylistPlayerMenu
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.components.menu.player.PlayerMenu
+import app.n_zik.android.components.menu.player.PlayerStatsMenuControl
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.player.rememberPlayerActionToolbarLayout
 import app.n_zik.android.components.player.playerActionQueueTap
@@ -185,7 +187,8 @@ fun BoxScope.ActionBar(
     discoverState: MutableState<Boolean>,
     queueLoopState: MutableState<QueueLoopType>,
     expandPlayerState: MutableState<Boolean>,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    statsMenuControl: State<PlayerStatsMenuControl?>? = null,
 ) {
     // Essentials
     val context = LocalContext.current
@@ -779,7 +782,8 @@ fun BoxScope.ActionBar(
                                                     showSleepTimerState.value = true
                                                     menuState.hide()
                                                 },
-                                                disableScrollingText = disableScrollingText
+                                                disableScrollingText = disableScrollingText,
+                                                statsMenuControl = statsMenuControl,
                                             )
                                         }
                                     },

@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -134,12 +135,14 @@ class PlayerItemMenu private constructor(
     styleState: MutableState<MenuStyle>,
     private val onDismiss: () -> Unit,
     private val onClosePlayer: () -> Unit,
-    private val onShowSleepTimer: () -> Unit
+    private val onShowSleepTimer: () -> Unit,
+    statsMenuControl: State<PlayerStatsMenuControl?>?,
 ): Menu {
 
     private val snapshot = SongMenuSnapshot(mediaItem.asSong.copy(id = playerMenuSongId(mediaItem)), getActiveProfile(appContext()))
     private val song: Song get() = snapshot.song
     private val currentMediaItem: MediaItem get() = playerMenuMediaItem(mediaItem, song)
+    private val statsButton = statsMenuControl?.let { PlayerStatsMenuIcon(menuState, it) }
 
     companion object {
         fun create(
@@ -150,7 +153,8 @@ class PlayerItemMenu private constructor(
             styleState: MutableState<MenuStyle>,
             onDismiss: () -> Unit,
             onClosePlayer: () -> Unit,
-            onShowSleepTimer: () -> Unit
+            onShowSleepTimer: () -> Unit,
+            statsMenuControl: State<PlayerStatsMenuControl?>?,
         ): PlayerItemMenu =
             PlayerItemMenu(
                 navController = navController,
@@ -160,7 +164,8 @@ class PlayerItemMenu private constructor(
                 styleState = styleState,
                 onDismiss = onDismiss,
                 onClosePlayer = onClosePlayer,
-                onShowSleepTimer = onShowSleepTimer
+                onShowSleepTimer = onShowSleepTimer,
+                statsMenuControl = statsMenuControl,
             )
     }
 
@@ -182,6 +187,7 @@ class PlayerItemMenu private constructor(
             // Section: Information
             SectionTitle(stringResource(R.string.common_information_title))
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
+        statsButton?.takeIf { it.isAvailable }?.ListMenuItem()
 
         if (song.isLocal) {
             // Local songs: 0=info, 1=waves, 2=editMetadata, 3=equalizer, 4=sleep, 5=fav, 6=playlist, 7+=delete/export
@@ -249,6 +255,7 @@ class PlayerItemMenu private constructor(
     @Composable
     override fun GridMenu() {
         val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
+        val availableStatsButton = statsButton?.takeIf { it.isAvailable }
         GridMenu.Menu(title = null, showDragHandle = false) {
             val lastFmSectionSize = if (showLastFmSection) 2 else 0
             // Section: Information
@@ -256,6 +263,9 @@ class PlayerItemMenu private constructor(
             SectionTitle(stringResource(R.string.common_information_title))
         }
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+        availableStatsButton?.let { button ->
+            item(key = "player_stats", contentType = "menu_icon") { button.GridMenuItem() }
+        }
 
         if (song.isLocal) {
             // editMetadata (index 2) is always present — the FFmpeg module is downloaded on

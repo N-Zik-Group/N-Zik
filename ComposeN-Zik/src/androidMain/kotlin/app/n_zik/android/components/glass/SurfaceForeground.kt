@@ -7,6 +7,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
@@ -19,6 +20,7 @@ import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.components.theme.withColor
 import app.n_zik.android.components.theme.paletteDarkness
 import app.n_zik.android.ui.styling.LocalAppearance
+import kotlin.math.abs
 
 /** Estimated scene or plate color at the origin of an overlay. */
 internal val LocalSurfaceBackdropColor = compositionLocalOf<Color?> { null }
@@ -30,7 +32,11 @@ internal val LocalForegroundSourcePalette = compositionLocalOf<ColorPalette?> { 
 private val LocalForegroundSurface = compositionLocalOf<Color?> { null }
 private val LocalForegroundScrim = compositionLocalOf { Color.Transparent }
 internal val LocalGlassInkDarkness = compositionLocalOf<Float?> { null }
-internal val LocalPlayerForegroundProgress = compositionLocalOf<Float?> { null }
+internal val LocalPlayerForegroundFrame = compositionLocalOf<PlayerForegroundFrame?> { null }
+internal val LocalPlayerFollowsPaletteInk = compositionLocalOf { false }
+
+@Immutable
+internal data class PlayerForegroundFrame(val generation: Int, val progress: Float, val changesPolarity: Boolean = false)
 
 internal const val TextContrast = 4.5f
 internal const val IconContrast = 3f
@@ -176,16 +182,16 @@ internal fun SurfaceForegroundContent(
     val amount = LocalNeutralForegroundAmount.current
     val commonSurface = LocalNeutralForegroundSurface.current ?: surface
     val transition = LocalNeutralForegroundTransition.current?.value
-    val displayedProgress = LocalPlayerForegroundProgress.current
+    val playerFrame = LocalPlayerForegroundFrame.current
+    val followsPalette = followsPlayerPaletteInk(playerFrame)
     val textFrame = remember { PlayerMeasuredInkFrame() }
     val secondaryFrame = remember { PlayerMeasuredInkFrame() }
     val glyphFrame = remember { PlayerMeasuredInkFrame() }
     val adapt = surface != null || commonNeutral != null || transition != null
     val inheritedContent = LocalContentColor.current
-    fun ink(original: Color, minimum: Float, glyph: Boolean = false, frame: PlayerMeasuredInkFrame? = null): Color =
-        if (preferMeasuredText && !glyph && surface != null)
-            requireNotNull(frame).resolve(original, surface, minimum, displayedProgress)
-        else if (transition != null) transition.resolve(original, minimum, glyph = glyph)
+    fun endpoint(original: Color, minimum: Float, glyph: Boolean = false): Color =
+        if (preferMeasuredText && !glyph && surface != null) measuredPlayerForeground(original, surface, minimum)
+        else if (transition != null) transition.resolve(original, minimum, localSurface = surface.takeIf { playerFrame != null }, glyph = glyph)
         else if (glassInkDarkness != null && surface != null) glassPaneForeground(original, surface, minimum, glassInkDarkness, glyph)
         else if (glyph && surface != null && isNeutralForeground(original) && isGentleGlyph(original, true))
             readableGlyphForeground(original, commonSurface ?: surface, minimum)
@@ -195,12 +201,18 @@ internal fun SurfaceForegroundContent(
                 else commonNeutral.copy(alpha = original.alpha)
             lerp(original, target, amount)
         } else if (surface != null) readableForeground(original, surface, minimum) else original
+    fun ink(original: Color, minimum: Float, frame: PlayerMeasuredInkFrame, glyph: Boolean = false): Color {
+        val native = followsPalette && isNeutralForeground(original)
+        val target = if (native) original else endpoint(original, minimum, glyph)
+        val contrast = if (glyph && original.isSpecified && isGentleGlyph(original, true))
+            NeutralRetentionContrast else minimum
+        return frame.resolveEndpoint(original, target, playerFrame, surface ?: transition?.to?.surface, contrast, native)
+    }
     val palette = if (adapt) appearance.colorPalette.copy(
         text = ink(source.text, TextContrast, frame = textFrame),
         textSecondary = ink(source.textSecondary, TextContrast, frame = secondaryFrame),
         textDisabled = source.textDisabled,
-        iconButtonPlayer = glyphFrame.resolveEndpoint(source.iconButtonPlayer,
-            ink(source.iconButtonPlayer, IconContrast, glyph = true), displayedProgress),
+        iconButtonPlayer = ink(source.iconButtonPlayer, IconContrast, glyphFrame, glyph = true),
     ) else appearance.colorPalette
     // Keep the same composition tree before the first sample and throughout sheet transitions.
     CompositionLocalProvider(
@@ -253,27 +265,107 @@ internal fun measuredPlayerTextForeground(original: Color, surface: Color, minim
 
 /** Reuses the shared clock, retaining the actual ink when that clock is retargeted. */
 internal class PlayerMeasuredInkFrame {
-    private var previousProgress: Float? = null
-    private var origin: Color? = null
-    private var displayed: Color? = null
+    private var generation: Int? = null
+    private var origin = Color.Unspecified
+    private var displayed = Color.Unspecified
+    private var displayedSurface: Color? = null
+    private var lastEndpoint = Color.Unspecified
+    private var lastCorrected = false
+    private var startProgress = 0f
+    private var blendFromCorrection = false
 
-    fun resolve(original: Color, surface: Color, minimum: Float, progress: Float?): Color =
-        resolveEndpoint(original, measuredPlayerForeground(original, surface, minimum), progress)
-
-    fun resolveEndpoint(original: Color, endpoint: Color, progress: Float?): Color {
-        val current = progress?.coerceIn(0f, 1f)
-        if (current == null || current >= 1f || !isNeutralForeground(original) ||
+    fun resolveEndpoint(
+        original: Color,
+        endpoint: Color,
+        frame: PlayerForegroundFrame?,
+        surface: Color? = null,
+        minimum: Float = IconContrast,
+        followPaletteInk: Boolean = false,
+    ): Color {
+        val native = followPaletteInk && isNeutralForeground(original)
+        val corrected = original != endpoint
+        if (native || frame == null || frame.progress >= 1f || !displayed.isSpecified || !isNeutralForeground(original) ||
             !endpoint.isSpecified || original.alpha == 0f) {
-            origin = null
-            previousProgress = current
-            displayed = endpoint
-            return endpoint
+            generation = null
+            displayed = if (native) original else endpoint
+            displayedSurface = surface
+            lastEndpoint = displayed
+            lastCorrected = !native && corrected
+            return displayed
         }
-        if (origin == null || previousProgress?.let { current < it } == true) {
-            origin = displayed?.takeIf { it.isSpecified } ?: original
+        val newFade = generation != frame.generation
+        val endpointJumped = lastEndpoint.isSpecified && (corrected || lastCorrected) &&
+            abs(endpoint.red - lastEndpoint.red) >= .25f
+        if (newFade || endpointJumped) {
+            origin = displayed.takeIf { it.isSpecified } ?: original
+            generation = frame.generation
+            startProgress = if (newFade) 0f else frame.progress
+            blendFromCorrection = lastCorrected || endpointJumped
         }
-        previousProgress = current
-        return lerp(requireNotNull(origin), endpoint, current).also { displayed = it }
+        lastEndpoint = endpoint
+        lastCorrected = corrected
+        // Rebase a changed sample on the remaining shared progress. Native roles already fade with the palette.
+        val progress = ((frame.progress - startProgress) / (1f - startProgress)).coerceIn(0f, 1f)
+        val candidate = when {
+            !corrected && !blendFromCorrection -> endpoint
+            progress == 0f -> origin.copy(alpha = endpoint.alpha)
+            else -> lerp(origin, endpoint, progress).copy(alpha = endpoint.alpha)
+        }
+        val previousSurface = displayedSurface
+        val darkInk = previousSurface?.let { displayed.luminance() < it.luminance() }
+        val readable = if (surface == null) candidate else {
+            val correctedInk = readableCandidate(candidate, endpoint, surface, minimum, darkInk)
+            if (previousSurface == null || darkInk == null) correctedInk
+            else preserveInkDirection(correctedInk, endpoint.alpha, previousSurface, surface, minimum, darkInk)
+        }
+        if (surface != null && darkInk != null && readable != candidate &&
+            (readable.luminance() < surface.luminance()) != darkInk && contrastAgainst(readable, surface) >= minimum) {
+            // Continue from the forced polarity change if the next sample relaxes the contrast constraint.
+            origin = readable
+            startProgress = frame.progress
+            blendFromCorrection = true
+        }
+        displayed = readable
+        displayedSurface = surface
+        return readable
+    }
+
+    private fun readableCandidate(candidate: Color, endpoint: Color, surface: Color, minimum: Float,
+        darkInk: Boolean?): Color {
+        if (contrastAgainst(candidate, surface) >= minimum) return candidate
+        if (contrastAgainst(endpoint, surface) < minimum) return endpoint
+        val previousAnchor = darkInk?.let {
+            val anchor = if (it) Color.Black else Color.White
+            anchor.copy(alpha = endpoint.alpha)
+        }
+        // Keep the current polarity while it can meet the contrast ratio.
+        val readable = previousAnchor?.takeIf { contrastAgainst(it, surface) >= minimum } ?: endpoint
+        return closestReadableShade(candidate, readable, surface, minimum)
+    }
+
+    private fun preserveInkDirection(candidate: Color, alpha: Float, previousSurface: Color, surface: Color,
+        minimum: Float, darkInk: Boolean): Color {
+        val surfaceChange = surface.luminance() - previousSurface.luminance()
+        val inkChange = candidate.luminance() - displayed.luminance()
+        val reversing = if (darkInk) surfaceChange < 0f && inkChange < 0f else surfaceChange > 0f && inkChange > 0f
+        if (!reversing) return candidate
+        // Hold a readable shade through an endpoint dip instead of briefly moving away from the next polarity.
+        val previous = displayed.copy(alpha = alpha)
+        if (contrastAgainst(previous, surface) >= minimum) return previous
+        val nextPolarity = (if (darkInk) Color.White else Color.Black).copy(alpha = alpha)
+        return if (contrastAgainst(nextPolarity, surface) >= minimum) {
+            closestReadableShade(previous, nextPolarity, surface, minimum)
+        } else candidate
+    }
+
+    private fun closestReadableShade(candidate: Color, anchor: Color, surface: Color, minimum: Float): Color {
+        var readable = anchor
+        var unreadable = candidate
+        repeat(7) {
+            val middle = lerp(unreadable, readable, .5f)
+            if (contrastAgainst(middle, surface) >= minimum) readable = middle else unreadable = middle
+        }
+        return readable
     }
 }
 
@@ -298,14 +390,18 @@ internal fun playerControlGlyphColor(
 ): Color {
     val measuredFrame = remember { PlayerMeasuredInkFrame() }
     val backdrop = measuredBackdrop ?: LocalForegroundSurface.current
-    val progress = LocalPlayerForegroundProgress.current
+    val frame = LocalPlayerForegroundFrame.current
+    val visiblePlate = backdrop?.let { effectiveSurfaceColor(it, plate) }.takeIf { enabled }
+    if (enabled && followsPlayerPaletteInk(frame) && isNeutralForeground(original)) {
+        val native = unadjustedPlayerInk(original)
+        return measuredFrame.resolveEndpoint(native, native, frame, visiblePlate, minimum, followPaletteInk = true)
+    }
     val color = resolveSurfaceGlyphColor(original, plate, minimum, enabled)
-    val endpoint = if (enabled && backdrop != null) {
-        val visiblePlate = effectiveSurfaceColor(backdrop, plate)
+    val endpoint = if (visiblePlate != null) {
         if (measuredBackdrop != null) measuredPlayGlyphForeground(color, visiblePlate, minimum)
         else measuredPlayerForeground(color, visiblePlate, minimum)
     } else color
-    return measuredFrame.resolveEndpoint(original, endpoint, progress)
+    return measuredFrame.resolveEndpoint(original, endpoint, frame, visiblePlate, minimum)
 }
 
 internal fun measuredPlayGlyphForeground(color: Color, plate: Color, minimum: Float): Color {
@@ -326,15 +422,15 @@ internal data class NeutralForegroundTransition(
         localSurface: Color? = null, glyph: Boolean = false, enabled: Boolean = true): Color {
         if (!original.isSpecified || !isNeutralForeground(original) || original.alpha == 0f) return original
         fun resolveEndpoint(decision: NeutralForegroundDecision): Color {
-            val background = decision.surface ?: return original
-            val actual = if (plate != null && plate.alpha > 0f)
-                effectiveSurfaceColor(localSurface ?: background, plate) else background
+            val background = localSurface ?: decision.surface ?: return original
+            val actual = if (plate != null && plate.alpha > 0f) effectiveSurfaceColor(background, plate) else background
             if (glyph && isGentleGlyph(original, enabled))
                 return readableGlyphForeground(original, actual, minimum, enabled)
             if (plate != null && plate.alpha > 0f)
                 return readableForeground(original, actual, minimum)
             if (contrastAgainst(original, background) >= minimum) return original
-            return decision.anchor?.copy(alpha = original.alpha) ?: readableForeground(original, background, minimum)
+            val anchor = if (localSurface != null) neutralForeground(background) else decision.anchor
+            return anchor?.copy(alpha = original.alpha) ?: readableForeground(original, background, minimum)
         }
         fun endpoint(decision: NeutralForegroundDecision): Color {
             if (decision.surface == null || memo == null) return resolveEndpoint(decision)
@@ -385,14 +481,40 @@ internal fun surfaceSourcePalette(): ColorPalette =
 /** Resolve an explicit glyph against the current surface or against its own translucent plate. */
 @Composable
 internal fun surfaceGlyphColor(original: Color, plate: Color? = null, minimum: Float = IconContrast,
-    enabled: Boolean = true): Color =
-    playerForegroundOnSharedFrame(original, resolveSurfaceGlyphColor(original, plate, minimum, enabled))
+    enabled: Boolean = true): Color {
+    val surface = LocalForegroundSurface.current?.let { backdrop ->
+        plate?.let { effectiveSurfaceColor(backdrop, it) } ?: backdrop
+    }.takeIf { enabled }
+    val endpoint = resolveSurfaceGlyphColor(original, plate, minimum, enabled)
+    return playerForegroundOnSharedFrame(original, endpoint, surface, minOf(minimum, NeutralRetentionContrast), enabled)
+}
 
 @Composable
-internal fun playerForegroundOnSharedFrame(original: Color, endpoint: Color): Color {
-    val progress = LocalPlayerForegroundProgress.current ?: return endpoint
+internal fun playerForegroundOnSharedFrame(original: Color, endpoint: Color, surface: Color? = null,
+    minimum: Float = IconContrast, allowPaletteInk: Boolean = true): Color {
+    val playerFrame = LocalPlayerForegroundFrame.current ?: return endpoint
     val frame = remember { PlayerMeasuredInkFrame() }
-    return frame.resolveEndpoint(original, endpoint, progress)
+    val native = allowPaletteInk && followsPlayerPaletteInk(playerFrame) && isNeutralForeground(original)
+    val ink = if (native) unadjustedPlayerInk(original) else original
+    return frame.resolveEndpoint(ink, endpoint, playerFrame, surface, minimum, native)
+}
+
+@Composable
+private fun followsPlayerPaletteInk(frame: PlayerForegroundFrame?): Boolean =
+    frame != null && frame.changesPolarity && frame.progress < 1f && LocalPlayerFollowsPaletteInk.current
+
+@Composable
+private fun unadjustedPlayerInk(original: Color): Color {
+    val palette = LocalAppearance.current.colorPalette
+    val source = LocalForegroundSourcePalette.current ?: return original
+    // Neutral role inputs may already contain the parent's shared fade. Resolve once from source.
+    fun isRole(role: Color): Boolean = original.copy(alpha = role.alpha) == role
+    return when {
+        isRole(palette.text) -> source.text.copy(alpha = original.alpha)
+        isRole(palette.textSecondary) -> source.textSecondary.copy(alpha = original.alpha)
+        isRole(palette.iconButtonPlayer) -> source.iconButtonPlayer.copy(alpha = original.alpha)
+        else -> original
+    }
 }
 
 @Composable
@@ -402,16 +524,7 @@ private fun resolveSurfaceGlyphColor(original: Color, plate: Color?, minimum: Fl
     val surface = LocalForegroundSurface.current ?: LocalSurfaceBackdropColor.current ?:
         LocalNeutralForegroundSurface.current ?: transition?.to?.surface ?: transition?.from?.firstOrNull()?.decision?.surface
     if (!isNeutralForeground(original) || original.alpha == 0f) return original
-    val palette = LocalAppearance.current.colorPalette
-    val source = LocalForegroundSourcePalette.current
-    // Neutral role inputs may already contain the parent's shared fade. Resolve once from source.
-    fun isRole(role: Color): Boolean = original.copy(alpha = role.alpha) == role
-    val ink = if (plate != null && plate.alpha > 0f) original else when {
-        isRole(palette.text) -> source?.text?.copy(alpha = original.alpha) ?: original
-        isRole(palette.textSecondary) -> source?.textSecondary?.copy(alpha = original.alpha) ?: original
-        isRole(palette.iconButtonPlayer) -> source?.iconButtonPlayer?.copy(alpha = original.alpha) ?: original
-        else -> original
-    }
+    val ink = if (plate != null && plate.alpha > 0f) original else unadjustedPlayerInk(original)
     if (transition != null) return transition.resolve(ink, minimum, plate, surface, glyph = true, enabled = enabled)
     if (surface == null) return original
     val actual = plate?.let { effectiveSurfaceColor(surface, it) } ?: surface
@@ -446,7 +559,10 @@ internal fun surfaceForegroundScrim(): Color = LocalForegroundScrim.current
 
 /** Keeps decoration polarity on the same continuous local surface as the visible text. */
 @Composable
-internal fun surfaceNeutralForeground(default: Color): Color =
-    LocalForegroundSurface.current?.let { surface ->
+internal fun surfaceNeutralForeground(default: Color): Color {
+    if (followsPlayerPaletteInk(LocalPlayerForegroundFrame.current))
+        return LocalForegroundSourcePalette.current?.text ?: default
+    return LocalForegroundSurface.current?.let { surface ->
         glassPaneForeground(Color.Unspecified, surface, TextContrast, paletteDarkness())
     } ?: default
+}

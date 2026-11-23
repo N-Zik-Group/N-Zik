@@ -17,6 +17,7 @@ import app.n_zik.android.utils.controlsExpandedKey
 import app.n_zik.android.utils.coverThumbnailAnimationKey
 import app.n_zik.android.utils.disablePlayerHorizontalSwipeKey
 import app.n_zik.android.utils.playerSwipeSensitivityKey
+import app.n_zik.android.utils.m3eAlwaysShowShapesKey
 import app.n_zik.android.utils.shakeSensitivityThemeKey
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.effectRotationKey
@@ -90,7 +91,7 @@ internal object AppearanceSettingTargets {
         AppearanceCardTargets("appearance.card.presets", listOf(playerTypeKey, queueTypeKey, thumbnailTypeKey, playerInfoTypeKey, playerInfoShowIconsKey, playerControlsTypeKey, iconLikeTypeKey), emptyList()),
         AppearanceCardTargets("appearance.card.cover", listOf(showthumbnailKey, thumbnailSizeDpKey, thumbnailSizeLDpKey, thumbnailRoundnessDpKey, artistThumbnailRoundnessDpKey, uiRoundnessDpKey, thumbnailpauseKey, cropVideoThumbnailsKey, statsfornerdsKey, holdToSpeedUpKey, holdToSpeedUpRateKey, noblurKey, fadingedgeKey, carouselKey, carouselSizeKey, showCoverThumbnailAnimationKey, coverThumbnailAnimationKey, swipeAnimationsNoThumbnailKey), listOf()),
         AppearanceCardTargets("appearance.card.timeline", listOf(transparentbarKey, playerPlayButtonTypeKey, playerTimelineTypeKey, playerTimelineSizeKey, playerControlsColorsKey, iconLikeTypeKey, playerSwapControlsWithTimelineKey, buttonzoomoutKey), listOf("MiniPlayerButtonsSettingsDialog")),
-        AppearanceCardTargets("appearance.card.colors", listOf(blackgradientKey, bottomgradientKey, textoutlineKey, showTotalTimeQueueKey, showRemainingSongTimeKey, showSkipTimeButtonsKey, playerBackgroundColorsKey, animatedGradientKey, shakeSensitivityThemeKey, albumCoverRotationKey), listOf()),
+        AppearanceCardTargets("appearance.card.colors", listOf(blackgradientKey, bottomgradientKey, textoutlineKey, showTotalTimeQueueKey, showRemainingSongTimeKey, showSkipTimeButtonsKey, playerBackgroundColorsKey, animatedGradientKey, shakeSensitivityThemeKey, m3eAlwaysShowShapesKey, albumCoverRotationKey), listOf()),
         AppearanceCardTargets("appearance.card.behavior", listOf(disablePlayerHorizontalSwipeKey, playerSwipeSensitivityKey, disableScrollingTextKey, visualizerEnabledKey, visualizerWhiteColorOptionKey, visualizerCustomColorKey, visualizerLineThicknessKey, effectRotationKey, backgroundProgressKey, showNextSongsInPlayerKey, showTopActionsBarKey, showvisthumbnailKey, blackBackgroundForVisThumbnailKey, showVisualizerButtonsKey, showsongsKey, showalbumcoverKey, showVisualizerStateKey, topPaddingKey), listOf()),
         AppearanceCardTargets("appearance.card.lyrics", listOf(showlyricsthumbnailKey, thumbnailTapEnabledKey, clickOnLyricsTextKey, lyricsColorKey, lyricsCustomColorKey, showBackgroundLyricsKey, playerEnableLyricsPopupMessageKey, showLyricsStateKey), listOf()),
         AppearanceCardTargets("appearance.card.actionBar", listOf(transparentBackgroundPlayerActionBarKey, actionspacedevenlyKey, tapqueueKey, swipeUpQueueKey), listOf("PlayerActionBarSettingsDialog")),

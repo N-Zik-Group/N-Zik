@@ -3,17 +3,21 @@ package app.n_zik.android.components.player
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithCache
@@ -47,101 +51,185 @@ import app.n_zik.android.components.theme.LaunchedAppearanceAnimationEffect
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.shakeSensitivityThemeKey
+import app.n_zik.android.enums.AnimatedGradient
 import app.n_zik.android.enums.ShakeSensitivityTheme
 
-internal fun m3eVisibilityTarget(
-    animating: Boolean,
-    skipMaskActive: Boolean,
-    immediateSkipHide: Boolean = false
-): Float = if (animating && !skipMaskActive && !immediateSkipHide) 1f else 0f
+private const val M3E_HIDDEN_VISIBILITY = 0.01f
+private const val M3E_RETRACTED_SCALE = 0.62f
+private const val M3E_SOFT_DRAW_AREA = 0.15f
+private const val M3E_SHAPE_ALPHA = 0.4f
+private const val M3E_TRACK_RETRACTION_MS = 230
+private const val M3E_POSITION_COLUMNS = 5
+private const val M3E_POSITION_ROWS = 4
+private const val M3E_SHAPE_COUNT = M3E_POSITION_COLUMNS * M3E_POSITION_ROWS
+
+internal fun m3eTrackRetractionTarget(alwaysShowShapes: Boolean): Float =
+    if (alwaysShowShapes) M3E_RETRACTED_SCALE * M3E_RETRACTED_SCALE else 0f
+
+/** Interpret the animation value as painted area to keep both extremes of the sweep visible. */
+internal fun m3eShapeScale(area: Float): Float = sqrt(area)
+
+internal fun m3eShapeAlpha(area: Float): Float =
+    M3E_SHAPE_ALPHA * (area / M3E_SOFT_DRAW_AREA).coerceAtMost(1f)
+
+/** Gives each shape a jittered cell only when the previous arrangement is invisible. */
+internal fun m3eRevealPositions(visibility: Float, random: Random = Random.Default): List<Offset>? {
+    if (visibility > M3E_HIDDEN_VISIBILITY) return null
+    return List(M3E_SHAPE_COUNT) { index ->
+        Offset(
+            x = (index % M3E_POSITION_COLUMNS + 0.25f + random.nextFloat() * 0.5f) / M3E_POSITION_COLUMNS,
+            y = (index / M3E_POSITION_COLUMNS + 0.25f + random.nextFloat() * 0.5f) / M3E_POSITION_ROWS,
+        )
+    }.shuffled(random)
+}
+
+/** Tracks one cover presentation and one impulse per Media3 transition on the UI thread. */
+@Stable
+internal class PlayerM3EOccurrences {
+    private data class Presentation(val occurrence: Long, val gradient: AnimatedGradient)
+
+    var current by mutableLongStateOf(0L)
+        private set
+    private var presented by mutableStateOf<Presentation?>(null)
+    private var consumed: Long? = null
+
+    fun advance() {
+        current++
+        presented = null
+    }
+
+    fun present(occurrence: Long, gradient: AnimatedGradient) {
+        if (occurrence == current && !isPresented(occurrence, gradient)) {
+            presented = Presentation(occurrence, gradient)
+        }
+    }
+
+    fun isPresented(occurrence: Long, gradient: AnimatedGradient): Boolean {
+        val release = presented ?: return false
+        return occurrence == current && release.occurrence == occurrence && release.gradient == gradient
+    }
+
+    fun consume(occurrence: Long, gradient: AnimatedGradient): Boolean {
+        if (!isPresented(occurrence, gradient) || occurrence == consumed) return false
+        consumed = occurrence
+        return true
+    }
+}
 
 @OptIn(UnstableApi::class)
-fun Modifier.animatedM3EBackground(
+internal fun Modifier.animatedM3EBackground(
     animating: Boolean,
-    D: Color,
     V: Color,
-    LV: Color,
     DV: Color,
     M: Color,
-    LM: Color,
-    DM: Color,
-    skipToken: Any? = null,
+    occurrences: PlayerM3EOccurrences,
+    gradient: AnimatedGradient,
+    burstActive: Boolean,
+    rendered: Boolean,
+    alwaysShowShapes: Boolean,
     active: Boolean = true,
+    incoming: Boolean = true,
     artworkSwatches: State<List<Color>>? = null,
-    paletteKickKey: Any = V,
 ): Modifier = composed {
     val accumulatedTime = remember { mutableFloatStateOf(0f) }
 
     val colors = listOf(V, DV, M)
 
-    var skipMaskActive by remember { mutableStateOf(false) }
-    val skipTokenTracker = remember { SkipTokenTracker(skipToken) }
-    val immediateSkipHide = skipTokenTracker.last != null && skipToken != null && skipTokenTracker.last != skipToken
-    skipTokenTracker.last = skipToken
-    val lastEffectToken = remember { SkipTokenTracker(skipToken) }
-    val latestSkipToken by rememberUpdatedState(skipToken)
-    val latestPaletteKickKey by rememberUpdatedState(paletteKickKey)
-
-    val visibilityTarget = m3eVisibilityTarget(animating, skipMaskActive, immediateSkipHide)
-    val visibilityAnimation = remember { Animatable(visibilityTarget) }
-    val visibilityProgress by visibilityAnimation.asState()
-    LaunchedAppearanceAnimationEffect(active, visibilityTarget) {
-        if (active) visibilityAnimation.animateTo(
-            targetValue = visibilityTarget,
-            animationSpec = tween(
-                durationMillis = if (visibilityTarget == 1f) 600 else if (skipMaskActive || immediateSkipHide) 150 else 600,
-                easing = FastOutSlowInEasing
-            )
-        )
+    val occurrence = occurrences.current
+    var lastRetractedOccurrence by remember(occurrences) { mutableLongStateOf(occurrence) }
+    val physicsActive = active && incoming
+    val revealAllowed = (animating || alwaysShowShapes) && physicsActive && burstActive
+    val trackRetractionTarget = m3eTrackRetractionTarget(alwaysShowShapes)
+    val retractionDuration = when {
+        !active -> 150
+        !incoming || !burstActive -> 350
+        else -> 600
     }
+    val visibilityAnimation = remember { Animatable(0f) }
+    val visibilityProgress by visibilityAnimation.asState()
+    val shapesMoving = animating || alwaysShowShapes
 
     val shapes = remember {
-        val states = mutableListOf<ShapeConfig>()
-        for (i in 0 until 20) {
-            var startX = 0f
-            var startY = 0f
-            var overlap = true
-            var attempts = 0
-            while(overlap && attempts < 50) {
-                startX = Random.nextFloat()
-                startY = Random.nextFloat()
-                overlap = states.any { other ->
-                    val dx = other.x - startX
-                    val dy = other.y - startY
-                    (dx * dx + dy * dy) < 0.04f
-                }
-                attempts++
-            }
-
-            states.add(
-                ShapeConfig(
-                    x = startX,
-                    y = startY,
-                    vx = (Random.nextFloat() - 0.5f) * 0.08f,
-                    vy = (Random.nextFloat() - 0.5f) * 0.08f,
-                    baseSpeed = Random.nextFloat() * 0.04f + 0.03f,
-                    radiusScale = Random.nextFloat() * 0.20f + 0.03f,
-                    colorIndex = i % colors.size,
-                    type = i % 10,
-                    rotation = Random.nextFloat() * 360f,
-                    rotSpeed = (Random.nextFloat() - 0.5f) * 0.8f,
-                    pulsePhase = Random.nextFloat() * 100f,
-                    isMorph = i < 18
-                )
+        List(M3E_SHAPE_COUNT) { index ->
+            ShapeConfig(
+                x = 0f,
+                y = 0f,
+                vx = (Random.nextFloat() - 0.5f) * 0.08f,
+                vy = (Random.nextFloat() - 0.5f) * 0.08f,
+                baseSpeed = Random.nextFloat() * 0.04f + 0.03f,
+                radiusScale = Random.nextFloat() * 0.20f + 0.03f,
+                colorIndex = index % colors.size,
+                type = index % 10,
+                rotation = Random.nextFloat() * 360f,
+                rotSpeed = (Random.nextFloat() - 0.5f) * 0.8f,
+                pulsePhase = Random.nextFloat() * 100f,
+                isMorph = index < 18,
             )
         }
-        states
+    }
+
+    fun arrangeWhileHidden() {
+        m3eRevealPositions(visibilityAnimation.value)?.forEachIndexed { index, position ->
+            val shape = shapes[index]
+            shape.x = position.x
+            shape.y = position.y
+        }
+    }
+
+    LaunchedAppearanceAnimationEffect(
+        occurrences, occurrence, gradient, rendered, revealAllowed, retractionDuration, trackRetractionTarget,
+    ) {
+        if (!rendered) {
+            visibilityAnimation.snapTo(0f)
+            return@LaunchedAppearanceAnimationEffect
+        }
+        if (!revealAllowed) {
+            if (visibilityAnimation.value > 0f) {
+                visibilityAnimation.animateTo(0f, tween(retractionDuration, easing = FastOutSlowInEasing))
+            }
+            return@LaunchedAppearanceAnimationEffect
+        }
+        val needsRetraction = lastRetractedOccurrence != occurrence || !occurrences.isPresented(occurrence, gradient)
+        if (needsRetraction && visibilityAnimation.value > maxOf(trackRetractionTarget, M3E_HIDDEN_VISIBILITY)) {
+            visibilityAnimation.animateTo(trackRetractionTarget, tween(M3E_TRACK_RETRACTION_MS, easing = LinearEasing))
+        }
+        if (occurrence != occurrences.current) return@LaunchedAppearanceAnimationEffect
+        lastRetractedOccurrence = occurrence
+
+        coroutineScope {
+            // The optional waiting state can start opening before artwork arrives.
+            val waitingAnimation = if (!occurrences.isPresented(occurrence, gradient) &&
+                visibilityAnimation.value < trackRetractionTarget
+            ) launch {
+                arrangeWhileHidden()
+                visibilityAnimation.animateTo(trackRetractionTarget, tween(600, easing = FastOutSlowInEasing))
+            } else null
+            snapshotFlow { occurrences.isPresented(occurrence, gradient) }.first { it }
+            waitingAnimation?.cancelAndJoin()
+        }
+        if (!occurrences.isPresented(occurrence, gradient)) return@LaunchedAppearanceAnimationEffect
+
+        arrangeWhileHidden()
+        if (occurrences.consume(occurrence, gradient)) {
+            shapes.forEach { shape ->
+                shape.vx += Random.nextFloat() - 0.5f
+                shape.vy += Random.nextFloat() - 0.5f
+            }
+        }
+        if (visibilityAnimation.value < 1f) {
+            visibilityAnimation.animateTo(1f, tween(600, easing = FastOutSlowInEasing))
+        }
     }
 
     val context = LocalContext.current
 
-    // Lazy shake detection - only active when animating and not disabled
-    DisposableEffect(animating, active) {
+    // Listen for shake only while the visible shapes are moving.
+    DisposableEffect(shapesMoving, physicsActive) {
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         var listener: SensorEventListener? = null
 
-        if (animating && active && accelerometer != null) {
+        if (shapesMoving && physicsActive && accelerometer != null) {
             val sensitivity = context.preferences.getEnum(shakeSensitivityThemeKey, ShakeSensitivityTheme.Disabled)
             if (sensitivity != ShakeSensitivityTheme.Disabled) {
                 var lastShakeTime = 0L
@@ -176,65 +264,14 @@ fun Modifier.animatedM3EBackground(
         }
     }
 
-    val lastPaletteKick = remember { mutableStateOf(paletteKickKey) }
-    val mountTime = remember { System.currentTimeMillis() }
-    val hasExploded = remember { mutableStateOf(false) }
-
-    fun explodeShapes() {
-        shapes.forEach { shape ->
-            shape.vx += (Random.nextFloat() - 0.5f) * 1.0f
-            shape.vy += (Random.nextFloat() - 0.5f) * 1.0f
-        }
-    }
-
-    LaunchedEffect(skipToken) {
-        val previousToken = lastEffectToken.last
-        lastEffectToken.last = skipToken
-
-        if (skipToken == null) {
-            skipMaskActive = false
-            return@LaunchedEffect
-        }
-        if (previousToken == null || previousToken == skipToken) {
-            skipMaskActive = false
-            return@LaunchedEffect
-        }
-
-        skipMaskActive = true
-
-        snapshotFlow { visibilityProgress }
-            .first { it <= 0.01f }
-
-        if (latestSkipToken != skipToken) {
-            return@LaunchedEffect
-        }
-
-        lastPaletteKick.value = latestPaletteKickKey
-        explodeShapes()
-        skipMaskActive = false
-    }
-
-    // Palette endpoints kick once. Interpolated drawing colors never restart physics.
-    LaunchedEffect(paletteKickKey) {
-        val now = System.currentTimeMillis()
-        if (!hasExploded.value) {
-            hasExploded.value = true
-            explodeShapes()
-        } else if (lastPaletteKick.value != paletteKickKey && !skipMaskActive && !immediateSkipHide) {
-            lastPaletteKick.value = paletteKickKey
-            if (now - mountTime > 800) {
-                explodeShapes()
-            }
-        }
-    }
-
     // Animation loop - physics simulation with grid-based collision
-    LaunchedAppearanceAnimationEffect(animating, active) {
-        if (animating && active) {
+    LaunchedAppearanceAnimationEffect(shapesMoving, physicsActive) {
+        if (shapesMoving && physicsActive) {
             val gridSize = 8
             val grid = Array(gridSize * gridSize) { mutableListOf<Int>() }
 
             playerDecorationFrames { deltaNanos ->
+                if (visibilityAnimation.value <= M3E_HIDDEN_VISIBILITY) return@playerDecorationFrames
                 val delta = (deltaNanos / 1_000_000_000f).coerceAtMost(0.05f)
 
                 // Clear grid
@@ -373,8 +410,11 @@ fun Modifier.animatedM3EBackground(
         val cachedComposePath = cachedPath.asComposePath()
 
         onDrawBehind {
+            val area = visibilityProgress
+            if (area <= M3E_HIDDEN_VISIBILITY) return@onDrawBehind
             val time = accumulatedTime.floatValue
-            if (visibilityProgress <= 0.01f) return@onDrawBehind
+            val drawScale = m3eShapeScale(area)
+            val drawAlpha = m3eShapeAlpha(area)
             val swatches = artworkSwatches?.value
 
             shapes.forEach { shape ->
@@ -393,12 +433,12 @@ fun Modifier.animatedM3EBackground(
                     else -> 4 // Muted
                 }
                 val fill = swatches?.getOrNull(swatchIndex) ?: colors[shape.colorIndex]
-                val shapeColor = fill.copy(alpha = 0.4f * visibilityProgress)
+                val shapeColor = fill.copy(alpha = drawAlpha)
 
                 withTransform({
                     translate(left = currentX, top = currentY)
                     rotate(degrees = shape.rotation + (shape.rotSpeed * time * 250f), pivot = Offset.Zero)
-                    val visualScale = scaleFactor * visibilityProgress
+                    val visualScale = scaleFactor * drawScale
                     scale(scaleX = visualScale, scaleY = visualScale, pivot = Offset.Zero)
                 }) {
                     val pathToDraw = if (shape.isMorph) {
@@ -433,8 +473,6 @@ fun Modifier.animatedM3EBackground(
         }
     }
 }
-
-private class SkipTokenTracker(var last: Any?)
 
 private class ShapeConfig(
     var x: Float,

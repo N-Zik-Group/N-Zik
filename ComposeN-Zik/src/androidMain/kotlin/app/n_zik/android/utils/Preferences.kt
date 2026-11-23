@@ -286,6 +286,7 @@ const val clickOnLyricsTextKey = "clickOnLyricsText"
 const val defaultFolderKey = "defaultFolder"
 const val menuStyleKey = "menuStyle"
 const val shakeSensitivityThemeKey = "shakeSensitivityTheme"
+const val m3eAlwaysShowShapesKey = "m3eAlwaysShowShapes"
 const val useVolumeKeysToChangeSongKey = "useVolumeKeysToChangeSong"
 const val showStatsInNavbarKey = "showStatsInNavbar"
 const val showActionsBarKey = "showActionsBar"
@@ -737,30 +738,32 @@ fun rememberPreference(key: String, defaultValue: HomePage?): MutableState<HomeP
 
 @Composable
 fun rememberPreference(key: String, defaultValue: Boolean): MutableState<Boolean> {
-    val context = LocalContext.current
-    val prefs = context.preferences
-    val state = remember {
-        mutableStatePreferenceOf(prefs.getBoolean(key, defaultValue)) {
-            prefs.edit { putBoolean(key, it) }
+    val prefs = LocalContext.current.preferences
+    val observed = remember(prefs, key, defaultValue) { mutableStateOf(prefs.getBoolean(key, defaultValue)) }
+    val state = remember(observed) {
+        object : MutableState<Boolean> {
+            override var value: Boolean
+                get() = observed.value
+                set(value) {
+                    if (observed.value == value) return
+                    observed.value = value
+                    prefs.edit { putBoolean(key, value) }
+                }
+
+            override fun component1(): Boolean = value
+            override fun component2(): (Boolean) -> Unit = { value = it }
         }
     }
-    
-    val listener = remember(prefs, key) {
-        SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, changedKey ->
-            if (changedKey == key) {
-                val newValue = sharedPreferences.getBoolean(key, defaultValue)
-                if (state.value != newValue) {
-                    state.value = newValue
-                }
+
+    DisposableEffect(prefs, observed) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, changedKey ->
+            if (changedKey == key || changedKey == null) {
+                observed.value = sharedPreferences.getBoolean(key, defaultValue)
             }
         }
-    }
-    
-    DisposableEffect(prefs, listener) {
         prefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose {
-            prefs.unregisterOnSharedPreferenceChangeListener(listener)
-        }
+        observed.value = prefs.getBoolean(key, defaultValue)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
     return state

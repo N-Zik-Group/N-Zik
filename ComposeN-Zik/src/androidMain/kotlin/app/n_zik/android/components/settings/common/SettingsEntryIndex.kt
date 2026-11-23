@@ -145,6 +145,7 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget("appearance.colors_and_background.background_colors", 2, R.string.settings_player_background_section_title, R.string.settings_player_background_colors_label),
     SettingsEntryTarget("appearance.colors_and_background.gradienttype", 2, R.string.settings_player_background_section_title, R.string.settings_player_gradient_style_label),
     SettingsEntryTarget("appearance.colors_and_background.shake_sensitivity_theme", 2, R.string.settings_player_background_section_title, R.string.settings_player_m3e_motion_sensitivity_label),
+    SettingsEntryTarget("appearance.colors_and_background.m3e_always_show_shapes", 2, R.string.settings_player_background_section_title, R.string.settings_player_m3e_always_show_shapes_label),
     SettingsEntryTarget("appearance.colors_and_background.rotating_cover_title", 2, R.string.settings_player_background_section_title, R.string.settings_player_rotating_artwork_title),
     SettingsEntryTarget("appearance.colors_and_background.blackgradient", 2, R.string.settings_player_background_section_title, R.string.settings_player_bottom_black_gradient_label),
     SettingsEntryTarget("appearance.colors_and_background.albumCoverRotation", 2, R.string.settings_player_background_section_title, R.string.player_artwork_rotation),

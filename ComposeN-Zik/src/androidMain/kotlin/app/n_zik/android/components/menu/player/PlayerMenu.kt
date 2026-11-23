@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -92,7 +93,6 @@ import app.n_zik.android.PINNED_PREFIX
 import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.components.tab.Search
 import androidx.compose.ui.unit.times
-import app.n_zik.android.components.menu.player.PlayerItemMenu
 
 @Composable
 fun SettingIcon(@DrawableRes icon: Int) {
@@ -127,13 +127,14 @@ fun PlayerMenu(
     onClosePlayer: () -> Unit,
     onMatchingSong: (() -> Unit)? = null,
     onShowSleepTimer: () -> Unit,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
+    statsMenuControl: State<PlayerStatsMenuControl?>? = null,
     ) {
     
     val menuState = LocalMenuState.current
     val styleState = rememberPreference(menuStyleKey, MenuStyle.List)
 
-    val menu = remember(mediaItem.mediaId, binder, menuState, styleState) {
+    val menu = remember(mediaItem.mediaId, binder, menuState, styleState, statsMenuControl) {
         PlayerItemMenu.create(
             navController = navController,
             binder = binder,
@@ -142,7 +143,8 @@ fun PlayerMenu(
             styleState = styleState,
             onDismiss = onDismiss,
             onClosePlayer = onClosePlayer,
-            onShowSleepTimer = onShowSleepTimer
+            onShowSleepTimer = onShowSleepTimer,
+            statsMenuControl = statsMenuControl,
         )
     }
     

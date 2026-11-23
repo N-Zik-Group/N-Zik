@@ -30,6 +30,7 @@ import app.n_zik.android.components.player.PlayerArtworkPaint
 import app.n_zik.android.components.player.PlayerFluidColors
 import app.n_zik.android.components.player.PlayerGradientFade
 import app.n_zik.android.components.player.PlayerGradientLayers
+import app.n_zik.android.components.player.PlayerM3EOccurrences
 import app.n_zik.android.components.player.PlayerMeshGradient
 import app.n_zik.android.components.player.animatedM3EBackground
 import app.n_zik.android.components.player.playerFluidBackground
@@ -148,11 +149,14 @@ internal fun BoxScope.PlayerAnimatedBackground(
     targetFluidColors: PlayerFluidColors?,
     artworkPaint: State<PlayerArtworkPaint>,
     isActuallyPlaying: () -> Boolean,
+    shouldPlayM3E: () -> Boolean,
     coverSwatches: M3ECoverColors,
     coverGradientColor: (Int) -> Color,
-    mediaId: String,
+    m3eOccurrences: PlayerM3EOccurrences,
+    m3eBurstGradient: AnimatedGradient,
+    m3eAlwaysShowShapes: Boolean,
+    m3eRendered: Boolean,
     displayedSwatches: State<List<Color>>,
-    targetThemeBackground: Color,
 ) {
     val source = Modifier.matchParentSize().then(
         if (capturePlayerBackground) Modifier.layerBackdrop(backdrop) else Modifier
@@ -174,18 +178,18 @@ internal fun BoxScope.PlayerAnimatedBackground(
                 )
                 if (type == AnimatedGradient.M3EMorphingTheme || type == AnimatedGradient.M3EMorphingCover) {
                     fluid.animatedM3EBackground(
-                        animating = isActuallyPlaying(),
-                        active = animationActive,
-                        D = if (isTheme) color.background1 else coverGradientColor(coverSwatches.dominant),
+                        animating = shouldPlayM3E(),
+                        active = decorationsActive,
+                        incoming = incoming,
                         V = if (isTheme) color.background2 else coverGradientColor(coverSwatches.vibrant),
-                        LV = if (isTheme) color.background2 else coverGradientColor(coverSwatches.lightVibrant),
                         DV = if (isTheme) color.background1 else coverGradientColor(coverSwatches.darkVibrant),
                         M = if (isTheme) color.background1 else coverGradientColor(coverSwatches.muted),
-                        LM = if (isTheme) color.accent else coverGradientColor(coverSwatches.lightMuted),
-                        DM = if (isTheme) color.background2 else coverGradientColor(coverSwatches.darkMuted),
-                        skipToken = mediaId,
+                        occurrences = m3eOccurrences,
+                        gradient = type,
+                        burstActive = type == m3eBurstGradient,
+                        rendered = m3eRendered,
+                        alwaysShowShapes = m3eAlwaysShowShapes,
                         artworkSwatches = displayedSwatches.takeIf { !isTheme },
-                        paletteKickKey = if (isTheme) targetThemeBackground else coverGradientColor(coverSwatches.vibrant),
                     )
                 } else fluid
             }
