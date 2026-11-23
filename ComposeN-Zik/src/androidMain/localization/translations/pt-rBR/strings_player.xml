@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Abra a fila de reprodução com um deslize para cima no jogador.</string>
     <string name="player_action_bar_transparent_background_description">Remove o fundo sólido por trás dos botões de ação do jogador.</string>
     <string name="player_action_enqueue">Em fila</string>
+    <string name="player_action_hide_stats_for_nerds">Ocultar estatísticas para nerds</string>
     <string name="player_action_like">Gostei</string>
     <string name="player_action_listen_on_invidious">Escutar no %1$s</string>
     <string name="player_action_listen_on_youtube">Escutar no YouTube</string>
@@ -168,6 +169,7 @@
     <string name="player_action_seek_forward">Encaminhar</string>
     <string name="player_action_seek_forward_30_seconds">Avançar 30 segundos</string>
     <string name="player_action_seek_forward_5_seconds">Avançar 5 segundos</string>
+    <string name="player_action_show_stats_for_nerds">Mostrar Estatísticas para Nerds</string>
     <string name="player_action_shuffle">Aleatorizar</string>
     <string name="player_action_shuffle_hint">Embaralhar</string>
     <string name="player_appearance">Aparência do Player</string>
