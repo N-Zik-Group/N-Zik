@@ -17,28 +17,18 @@ package app.n_zik.android.listentogether
 
 import androidx.annotation.StringRes
 import app.n_zik.android.appTextResources
-import app.n_zik.android.privacy.PermissionUsageJournal
-import app.n_zik.android.privacy.PermissionFeature
-import app.n_zik.android.privacy.JournalPermission
-import app.n_zik.android.privacy.PermissionEventKind
 
 import android.Manifest
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.PowerManager
 import android.os.SystemClock
-import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.getSystemService
 import com.google.protobuf.MessageLite
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
-import app.n_zik.android.core.notifications.channelId
 import app.n_zik.android.core.notifications.ensureStartupNotificationChannel
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.getActiveProfile
@@ -66,10 +56,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
-/**
- * WebSocket client for Listen Together feature
- */
-/** Instantiated once from [MainApplication] — N-Zik has no DI framework, so this class keeps the original Metrolist instance pattern ([getInstance]/[setInstance]) minus Hilt. */
+/** Shared Listen Together WebSocket client installed by the application. */
 class ListenTogetherClient(
     private val context: Context,
 ) {
@@ -387,11 +374,7 @@ class ListenTogetherClient(
         // Wake lock to keep connection alive when in a room
         private var wakeLock: PowerManager.WakeLock? = null
 
-        // Track notification IDs for join requests to dismiss them from both UI and notification actions
-        private val joinRequestNotifications = mutableMapOf<String, Int>()
-
-        // Track notification IDs for suggestions to dismiss them similarly
-        private val suggestionNotifications = mutableMapOf<String, Int>()
+        private val roomNotifications = ListenTogetherNotifications(context)
 
         // Network connectivity monitoring
         private var isNetworkAvailable =
@@ -705,117 +688,6 @@ class ListenTogetherClient(
             }
         }
 
-        @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
-        private fun showJoinRequestNotification(payload: JoinRequestPayload) {
-            val notifId = (System.currentTimeMillis() % Int.MAX_VALUE).toInt()
-
-            // Store notification ID for this user so we can dismiss it from UI actions
-            joinRequestNotifications[payload.userId] = notifId
-
-            val approveIntent =
-                Intent(context, ListenTogetherActionReceiver::class.java).apply {
-                    action = ACTION_APPROVE_JOIN
-                    putExtra(EXTRA_USER_ID, payload.userId)
-                    putExtra(EXTRA_NOTIFICATION_ID, notifId)
-                }
-            val rejectIntent =
-                Intent(context, ListenTogetherActionReceiver::class.java).apply {
-                    action = ACTION_REJECT_JOIN
-                    putExtra(EXTRA_USER_ID, payload.userId)
-                    putExtra(EXTRA_NOTIFICATION_ID, notifId)
-                }
-
-            val approvePI =
-                PendingIntent.getBroadcast(
-                    context,
-                    payload.userId.hashCode(),
-                    approveIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-                )
-            val rejectPI =
-                PendingIntent.getBroadcast(
-                    context,
-                    payload.userId.hashCode().inv(),
-                    rejectIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-                )
-
-            val resources = appTextResources()
-            val content = resources.getString(R.string.listen_together_join_request_notification, payload.username)
-
-            val builder =
-                NotificationCompat
-                    .Builder(context, channelId(NOTIFICATION_CHANNEL_ID, getActiveProfile(context)))
-                    .setSmallIcon(R.drawable.people)
-                    .setContentTitle(resources.getString(R.string.listen_together_title))
-                    .setContentText(content)
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setAutoCancel(true)
-                    .addAction(0, resources.getString(R.string.listen_together_action_approve), approvePI)
-                    .addAction(0, resources.getString(R.string.listen_together_action_reject), rejectPI)
-
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                NotificationManagerCompat.from(context).notify(notifId, builder.build())
-                PermissionUsageJournal.record(context, PermissionFeature.LISTEN_TOGETHER, JournalPermission.NOTIFICATIONS, PermissionEventKind.USED)
-            }
-        }
-
-        @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
-        private fun showSuggestionNotification(payload: SuggestionReceivedPayload) {
-            val notifId = (System.currentTimeMillis() % Int.MAX_VALUE).toInt()
-
-            // Store notification ID for this suggestion so we can dismiss it from UI actions
-            suggestionNotifications[payload.suggestionId] = notifId
-
-            val approveIntent =
-                Intent(context, ListenTogetherActionReceiver::class.java).apply {
-                    action = ACTION_APPROVE_SUGGESTION
-                    putExtra(EXTRA_SUGGESTION_ID, payload.suggestionId)
-                    putExtra(EXTRA_NOTIFICATION_ID, notifId)
-                }
-            val rejectIntent =
-                Intent(context, ListenTogetherActionReceiver::class.java).apply {
-                    action = ACTION_REJECT_SUGGESTION
-                    putExtra(EXTRA_SUGGESTION_ID, payload.suggestionId)
-                    putExtra(EXTRA_NOTIFICATION_ID, notifId)
-                }
-
-            val approvePI =
-                PendingIntent.getBroadcast(
-                    context,
-                    payload.suggestionId.hashCode(),
-                    approveIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-                )
-            val rejectPI =
-                PendingIntent.getBroadcast(
-                    context,
-                    payload.suggestionId.hashCode().inv(),
-                    rejectIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-                )
-
-            val resources = appTextResources()
-            val title = payload.trackInfo.title.ifBlank { resources.getString(R.string.metadata_unknown_title) }
-            val content = resources.getString(R.string.listen_together_suggestion_received, payload.fromUsername, title)
-
-            val builder =
-                NotificationCompat
-                    .Builder(context, channelId(NOTIFICATION_CHANNEL_ID, getActiveProfile(context)))
-                    .setSmallIcon(R.drawable.people)
-                    .setContentTitle(resources.getString(R.string.listen_together_title))
-                    .setContentText(content)
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setAutoCancel(true)
-                    .addAction(0, resources.getString(R.string.listen_together_action_approve), approvePI)
-                    .addAction(0, resources.getString(R.string.listen_together_action_reject), rejectPI)
-
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                NotificationManagerCompat.from(context).notify(notifId, builder.build())
-                PermissionUsageJournal.record(context, PermissionFeature.LISTEN_TOGETHER, JournalPermission.NOTIFICATIONS, PermissionEventKind.USED)
-            }
-        }
-
         private fun handleDisconnect() {
             pingJob?.cancel()
             pingJob = null
@@ -967,7 +839,7 @@ class ListenTogetherClient(
                                 if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
                                     PackageManager.PERMISSION_GRANTED
                                 ) {
-                                    showJoinRequestNotification(payload)
+                                    roomNotifications.showJoinRequest(payload)
                                 }
                             }
                         }
@@ -1008,10 +880,7 @@ class ListenTogetherClient(
                             )
                         _pendingJoinRequests.value = _pendingJoinRequests.value.filter { it.userId != payload.userId }
 
-                        // Dismiss notification if it exists
-                        joinRequestNotifications.remove(payload.userId)?.let { notifId ->
-                            NotificationManagerCompat.from(context).cancel(notifId)
-                        }
+                        roomNotifications.cancelJoinRequest(payload.userId)
 
                         log(LogLevel.INFO, R.string.listen_together_log_event_user_joined, payload.username)
                         emitEvent(ListenTogetherEvent.UserJoined(payload.userId, payload.username))
@@ -1225,7 +1094,7 @@ class ListenTogetherClient(
                                 if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
                                     PackageManager.PERMISSION_GRANTED
                                 ) {
-                                    showSuggestionNotification(payload)
+                                    roomNotifications.showSuggestion(payload)
                                 }
                             }
                         }
@@ -1235,10 +1104,7 @@ class ListenTogetherClient(
                         val payload = codec.decodePayload(msgType, payloadBytes) as? SuggestionApprovedPayload ?: return
                         log(LogLevel.INFO, R.string.listen_together_log_event_suggestion_approved, payload.trackInfo.title)
 
-                        // Dismiss notification if it exists (for host who approved via another device/modal)
-                        suggestionNotifications.remove(payload.suggestionId)?.let { notifId ->
-                            NotificationManagerCompat.from(context).cancel(notifId)
-                        }
+                        roomNotifications.cancelSuggestion(payload.suggestionId)
 
                         // Notify the guest whose suggestion was accepted
                         if (_role.value == RoomRole.GUEST) {
@@ -1250,10 +1116,7 @@ class ListenTogetherClient(
                         val payload = codec.decodePayload(msgType, payloadBytes) as? SuggestionRejectedPayload ?: return
                         log(LogLevel.WARNING, R.string.listen_together_log_event_suggestion_rejected, logReason(payload.reasonOrNull))
 
-                        // Dismiss notification if it exists
-                        suggestionNotifications.remove(payload.suggestionId)?.let { notifId ->
-                            NotificationManagerCompat.from(context).cancel(notifId)
-                        }
+                        roomNotifications.cancelSuggestion(payload.suggestionId)
 
                         // Notify the guest whose suggestion was declined
                         if (_role.value == RoomRole.GUEST) {
@@ -1500,10 +1363,7 @@ class ListenTogetherClient(
             }
             sendMessage(MessageTypes.APPROVE_JOIN, ApproveJoinPayload(userId))
 
-            // Dismiss notification immediately when approved from UI
-            joinRequestNotifications.remove(userId)?.let { notifId ->
-                NotificationManagerCompat.from(context).cancel(notifId)
-            }
+            roomNotifications.cancelJoinRequest(userId)
         }
 
         /**
@@ -1520,10 +1380,7 @@ class ListenTogetherClient(
             sendMessage(MessageTypes.REJECT_JOIN, RejectJoinPayload(userId, reason))
             _pendingJoinRequests.value = _pendingJoinRequests.value.filter { it.userId != userId }
 
-            // Dismiss notification immediately when rejected from UI
-            joinRequestNotifications.remove(userId)?.let { notifId ->
-                NotificationManagerCompat.from(context).cancel(notifId)
-            }
+            roomNotifications.cancelJoinRequest(userId)
         }
 
         /**
@@ -1628,10 +1485,7 @@ class ListenTogetherClient(
             // Remove locally from pending list
             _pendingSuggestions.value = _pendingSuggestions.value.filter { it.suggestionId != suggestionId }
 
-            // Dismiss notification immediately when approved from UI
-            suggestionNotifications.remove(suggestionId)?.let { notifId ->
-                NotificationManagerCompat.from(context).cancel(notifId)
-            }
+            roomNotifications.cancelSuggestion(suggestionId)
         }
 
         /**
@@ -1648,10 +1502,7 @@ class ListenTogetherClient(
             sendMessage(MessageTypes.REJECT_SUGGESTION, RejectSuggestionPayload(suggestionId, reason))
             _pendingSuggestions.value = _pendingSuggestions.value.filter { it.suggestionId != suggestionId }
 
-            // Dismiss notification immediately when rejected from UI
-            suggestionNotifications.remove(suggestionId)?.let { notifId ->
-                NotificationManagerCompat.from(context).cancel(notifId)
-            }
+            roomNotifications.cancelSuggestion(suggestionId)
         }
 
         /**

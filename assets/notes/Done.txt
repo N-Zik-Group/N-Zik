@@ -275,3 +275,6 @@ Refactor:
   - Put application composition in components/ui/app, window startup setup in startup, and header and dock scroll behavior in core/navigation.
   - Keep onboarding rendering and persistence together in components/onboarding and Rewind reminder intake in intents. Preserve the activity lifecycle, stored keys, route delivery and playback integration.
   - Verify the Debug build and 220 targeted tests. Check cold launch, background return, cold and warm library links, shortcuts, Back, and portrait and landscape scrolling on the Xperia.
+- refactor(listen-together): centralize room notifications
+  - Extract join request and track suggestion notifications into ListenTogetherNotifications. Share notification and action creation while preserving the profile channel, permission journal and seven dismissal paths.
+  - Cover both notification types, their action intents and cancellation in Robolectric. Verify 77 targeted tests and open Listen Together on the Pixel VM.
