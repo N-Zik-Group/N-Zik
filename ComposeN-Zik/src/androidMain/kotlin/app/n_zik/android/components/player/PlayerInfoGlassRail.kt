@@ -134,7 +134,7 @@ fun PlayerInfoIconButton(
                 enabled = enabled, onClick = onClick), contentAlignment = Alignment.Center) {
             Crossfade(
                 targetState = icon,
-                animationSpec = tween(220),
+                animationSpec = tween(400),
                 modifier = Modifier.requiredSize(glyphWidth, glyphHeight).graphicsLayer {
                     scaleX = if (settings.enabled) .85f else 1f
                     scaleY = if (settings.enabled) .85f else 1f

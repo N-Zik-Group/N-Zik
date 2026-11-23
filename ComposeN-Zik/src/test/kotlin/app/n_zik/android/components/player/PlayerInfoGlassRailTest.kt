@@ -112,10 +112,10 @@ class PlayerInfoGlassRailTest {
             androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications()
         }
         compose.mainClock.advanceTimeByFrame()
-        compose.mainClock.advanceTimeBy(96)
+        compose.mainClock.advanceTimeBy(320)
         old.assertExists()
         assertEquals(original, next.fetchSemanticsNode().boundsInRoot)
-        compose.mainClock.advanceTimeBy(300)
+        compose.mainClock.advanceTimeBy(160)
         old.assertDoesNotExist()
         next.assertExists()
     }
