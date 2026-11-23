@@ -1,14 +1,17 @@
 package app.n_zik.innertube.utils
 
 import app.n_zik.innertube.Innertube
-import app.n_zik.innertube.models.NavigationEndpoint
 import app.n_zik.innertube.models.MusicResponsiveListItemRenderer
+import app.n_zik.innertube.models.MusicShelfRenderer
+import app.n_zik.innertube.models.NavigationEndpoint
 import app.n_zik.innertube.models.Runs
+import app.n_zik.innertube.models.SectionListRenderer
 import app.n_zik.innertube.models.Thumbnail
 import app.n_zik.innertube.models.ThumbnailRenderer
 import app.n_zik.innertube.requests.ArtistItemsPage
-import app.n_zik.innertube.requests.parseArtistSong
+import app.n_zik.innertube.requests.ArtistPage
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
@@ -175,14 +178,32 @@ class SongItemFromResponsiveListItemAuthorsTest {
     @Test
     fun `artist song rows preserve supplied durations and allow missing durations`() {
         val byline = listOf(run("Laur", browseId = "artist-1"))
-        val renderer = songRenderer(byline, durationText = "51:03")
+        for (duration in listOf("51:03", null)) {
+            val renderer = songRenderer(byline, durationText = duration)
+            val section = requireNotNull(
+                ArtistPage.fromSectionListRendererContent(
+                    SectionListRenderer.Content(
+                        musicCarouselShelfRenderer = null,
+                        musicShelfRenderer = MusicShelfRenderer(
+                            bottomEndpoint = null,
+                            contents = listOf(MusicShelfRenderer.Content(renderer, null, null)),
+                            continuations = null,
+                            title = Runs(listOf(run("Songs"))),
+                        ),
+                        gridRenderer = null,
+                        musicDescriptionShelfRenderer = null,
+                        musicPlaylistShelfRenderer = null,
+                        musicEditablePlaylistDetailHeaderRenderer = null,
+                        musicResponsiveHeaderRenderer = null,
+                    ),
+                ),
+            )
+            val overview = assertInstanceOf(Innertube.SongItem::class.java, section.items.single())
+            val allSongs = requireNotNull(ArtistItemsPage.fromMusicResponsiveListItemRenderer(renderer))
 
-        val overview = requireNotNull(parseArtistSong(renderer))
-        val allSongs = ArtistItemsPage.fromMusicResponsiveListItemRenderer(renderer)
-
-        assertEquals(overview, allSongs)
-        assertEquals("51:03", overview.durationText)
-        assertEquals("vid-1", overview.key)
-        assertNull(parseArtistSong(songRenderer(byline, durationText = null))?.durationText)
+            assertEquals("vid-1", overview.key)
+            assertEquals(duration, overview.durationText)
+            assertEquals(overview, allSongs)
+        }
     }
 }
