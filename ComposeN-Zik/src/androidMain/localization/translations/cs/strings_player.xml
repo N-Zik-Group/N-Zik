@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Otevřete frontu přehrávání posunutím nahoru v hráči.</string>
     <string name="player_action_bar_transparent_background_description">Odstraňte pevné pozadí za tlačítky akce hráče.</string>
     <string name="player_action_enqueue">Zařadit do fronty</string>
+    <string name="player_action_hide_stats_for_nerds">Skrýt statistiky pro sítě</string>
     <string name="player_action_like">Líbí se mi</string>
     <string name="player_action_listen_on_invidious">Poslouchat na %1$s</string>
     <string name="player_action_listen_on_youtube">Poslouchat na YouTube</string>
@@ -168,6 +169,7 @@
     <string name="player_action_seek_forward">Přeposlat</string>
     <string name="player_action_seek_forward_30_seconds">Přeposlat 30 sekund</string>
     <string name="player_action_seek_forward_5_seconds">Přeposlat 5 sekund</string>
+    <string name="player_action_show_stats_for_nerds">Zobrazit statistiky pro sítě</string>
     <string name="player_action_shuffle">Náhodně</string>
     <string name="player_action_shuffle_hint">Náhodně</string>
     <string name="player_appearance">Vzhled přehrávače</string>
