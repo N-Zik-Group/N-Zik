@@ -286,3 +286,6 @@ Refactor:
   - Share the status headers and expandable detail rows across the five database passes while preserving the original Glass colors.
   - Keep snapshot loading and expansion state in MaintenanceSheet. Verify report details, localized counts and dates, refresh failure retention and Retry in Compose.
   - Run 87 targeted tests and check all five rows and refresh on the Pixel VM.
+- refactor(rescue): extract scope selectors
+  - Move the All and Per profile chips and the horizontal target selector into RescueScopeSelectors. Keep their appearance, layout and transition ownership in the existing screen.
+  - Preserve target selection and profile data reloads. Verify four focused tests, both categories and opening and canceling the import picker on the Pixel VM.
