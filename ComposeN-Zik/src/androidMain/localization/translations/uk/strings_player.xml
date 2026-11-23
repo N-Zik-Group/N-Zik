@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Відкрийте чергу відтворення за допомогою свайпу вгору в плеєрі.</string>
     <string name="player_action_bar_transparent_background_description">Видалити суцільний фон за кнопками дії гравця.</string>
     <string name="player_action_enqueue">Зачекайте</string>
+    <string name="player_action_hide_stats_for_nerds">Приховати статистику для Нерусів</string>
     <string name="player_action_like">Подобається</string>
     <string name="player_action_listen_on_invidious">Слухайте на %1$s</string>
     <string name="player_action_listen_on_youtube">Слухати на YouTube</string>
@@ -168,6 +169,7 @@
     <string name="player_action_seek_forward">Переслати</string>
     <string name="player_action_seek_forward_30_seconds">Переслати 30 секунд</string>
     <string name="player_action_seek_forward_5_seconds">Переслати 5 секунд</string>
+    <string name="player_action_show_stats_for_nerds">Показувати статистику для Нерусів</string>
     <string name="player_action_shuffle">Перемішати</string>
     <string name="player_action_shuffle_hint">Перемішати</string>
     <string name="player_appearance">Вигляд гравця</string>
