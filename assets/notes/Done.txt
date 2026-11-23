@@ -1,4 +1,10 @@
 Added:
+- feat(player): add Stats for Nerds to the item menu
+  - Place the Radio-style toggle below Information. Update its label, icon and tint with playback stats state, and share the Stop icon with debug logs.
+  - Follow the visible artwork when present and keep statistics available with artwork hidden.
+- feat(appearance): add Always show shapes for M3E
+  - Add an off-by-default switch below Theme Shake Sensitivity. Keep the shapes animated when paused while the player is open and use a partial retraction on track changes.
+  - Carry explicit settings in Theme Store V2 with Android code 101 as the feature minimum. Stock restores the default.
 - feat(theme): add a Pure Black mode while retaining Pitch Black accent behavior
   - Extend ColorPaletteMode and normalize startup, live dynamic colors, widgets, editor and portable previews without replacing the selected palette or its accent roles.
   - Use black native backgrounds and control plates; retain the requested 90 percent navbar/dropdown coverage and the existing independent Glass settings.
@@ -105,6 +111,12 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(player): synchronize the palette, readability and M3E on track changes
+  - Keep neutral player ink on the same palette fade during polarity changes on M3E backgrounds. Read regional contrast only after the artwork and the palette settle.
+  - Start Album and Artist glyph changes with their labels and keep the 400 ms fade in Glass and Normal.
+  - Animate the area of each M3E shape during retraction and reveal the new arrangement when the current artwork settles. Reject stale impulses during rapid skips and random gradient changes.
+- fix(playback): preserve crossfade preparation and refresh session artwork
+  - Retain prepared audio on unchanged-speed rescheduling and propagate artwork updates to playback and Android Auto.
 - fix(ci): require personal application work for automatic dev builds
   - Check the complete nightly commit range against actual maintainer authorship, bot identities and changed application/build inputs instead of commit messages.
   - Skip localization, generated lists, documentation and version-only catalog edits; preserve the daily release limit and maintainer-only manual override.
@@ -280,6 +292,9 @@ Navigation and notifications:
   - Give each saved profile its nine independent channels, including inactive profiles and profiles added through creation, import or archive restoration.
 
 Refactor:
+- refactor(app): isolate live appearance, room host and playlist recommendation logic
+  - Extract MainActivity preference reactions, Listen Together host playback synchronization, and local playlist recommendation loading.
+  - Cover backup and artist parsing through focused regression tests.
 - refactor(activity): separate startup and app composition from MainActivity
   - Put application composition in components/ui/app, window startup setup in startup, and header and dock scroll behavior in core/navigation.
   - Keep onboarding rendering and persistence together in components/onboarding and Rewind reminder intake in intents. Preserve the activity lifecycle, stored keys, route delivery and playback integration.
