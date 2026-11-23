@@ -6,6 +6,8 @@ import android.os.Looper
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.Color
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.components.player.ArtworkColorSnapshot
+import app.n_zik.android.components.player.ArtworkDisplayColors
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.ui.styling.Typography
@@ -75,6 +77,36 @@ class DynamicAppearanceOwnerTest {
         assertEquals(3, updates.size)
         assertTrue(updates.last().second)
         assertTrue(updates.last().first != incoming)
+    }
+
+    @Test fun `failed artwork extraction replaces the previous palette and artwork tint with the default fallback`() = runTest {
+        val previous = dynamicColorPaletteOf(Color(0xffad8300), true)
+        val snapshot = ArtworkColorSnapshot(
+            lightPalette = null, darkPalette = previous, lightColors = null, darkColors = null,
+            fallbackDominant = previous.accent, isMonochrome = false,
+        )
+        val updates = mutableListOf<Pair<ColorPalette, Boolean>>()
+        val artworkUpdates = mutableListOf<Pair<ArtworkDisplayColors?, Boolean>>()
+        val owner = DynamicAppearanceOwner(preferences, this, { true }, { _, _ -> error("Compatibility loader unused") },
+            { appearance }, { next, animate ->
+                appearance = next
+                updates += next.colorPalette to animate
+            }, { bars += it }, { widgets += it }, StandardTestDispatcher(testScheduler),
+            loadArtwork = { url ->
+                if (url != "previous") throw IllegalArgumentException("Artwork bitmap has no color space")
+                snapshot
+            }, publishArtwork = { colors, animate -> artworkUpdates += colors to animate })
+
+        owner.refresh("previous")
+        testScheduler.runCurrent()
+        owner.refresh("unreadable", animate = true)
+        testScheduler.runCurrent()
+
+        val fallback = dynamicArtworkFallback(isDark = true)
+        assertEquals(listOf(previous to false, fallback to true), updates)
+        assertEquals(listOf(snapshot.display(isDark = true, keepDark = false) to false, null to true), artworkUpdates)
+        assertEquals(fallback.text, appearance.typography.s.color)
+        assertEquals(listOf(previous, fallback), widgets)
     }
 
     @Test fun `real preference listener toggles cached raw artwork and publishes all consumers without reloading`() = runTest {

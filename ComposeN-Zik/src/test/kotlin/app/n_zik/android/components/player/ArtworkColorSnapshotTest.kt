@@ -15,16 +15,38 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class ArtworkColorSnapshotTest {
     private fun bitmap(color: Int) = Bitmap.createBitmap(32, 32, Bitmap.Config.ARGB_8888).apply { eraseColor(color) }
+
+    // JUnit's synchronous entry point waits for the production MEDIA extraction.
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    @Test fun `a colorless bitmap is normalized before Palette resizes it`() = runBlocking {
+        val source = Bitmap.createBitmap(512, 256, Bitmap.Config.ALPHA_8).apply {
+            eraseColor(android.graphics.Color.BLACK)
+        }
+        assertEquals(null, source.colorSpace)
+        var analyzed: Bitmap? = null
+        analyzeArtworkColors(source) { image, unfiltered ->
+            analyzed = image
+            assertNotNull(image.colorSpace)
+            assertEquals(Bitmap.Config.ARGB_8888, image.config)
+            assertEquals(128, image.width)
+            assertEquals(64, image.height)
+            Palette.from(image).maximumColorCount(8).apply { if (unfiltered) clearFilters() }.generate()
+        }
+        assertTrue(requireNotNull(analyzed).isRecycled)
+        assertFalse(source.isRecycled)
+    }
 
     // JUnit's synchronous entry point waits for the production MEDIA extraction.
     @Test fun `one quantization preserves both original tones and derives dark neutral display roles`() = runBlocking {

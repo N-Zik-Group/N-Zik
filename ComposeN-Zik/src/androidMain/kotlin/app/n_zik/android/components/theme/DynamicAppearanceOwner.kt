@@ -100,21 +100,24 @@ internal class DynamicAppearanceOwner(
         }
         val version = request
         job = scope.launch {
-            try {
+            val (snapshot, raw) = try {
                 val snapshot = withContext(extractionDispatcher) { loadArtwork?.invoke(url) }
                 val raw = if (loadArtwork == null) withContext(extractionDispatcher) { loadPalette(url, dark) }
                     else snapshot?.display(dark, false)?.palette
-                coroutineContext.ensureActive()
-                if (version != request || !isDynamic()) return@launch
-                extractedArtwork = artwork
-                extractedPalette = raw ?: dynamicArtworkFallback(dark)
-                extractedSnapshot = snapshot
-                publishPalette(extractedPalette ?: dynamicArtworkFallback(dark), shouldAnimate())
+                snapshot to raw
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 Timber.tag("DynamicAppearanceOwner").e(e, "Error loading appearance")
+                null to null
             }
+            coroutineContext.ensureActive()
+            if (version != request || !isDynamic()) return@launch
+            val palette = raw ?: dynamicArtworkFallback(dark)
+            extractedArtwork = artwork
+            extractedPalette = palette
+            extractedSnapshot = snapshot
+            publishPalette(palette, shouldAnimate())
         }
     }
 

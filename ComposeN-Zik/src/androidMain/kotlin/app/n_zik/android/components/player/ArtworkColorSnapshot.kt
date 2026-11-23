@@ -1,6 +1,10 @@
 package app.n_zik.android.components.player
 
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Rect
+import android.os.Build
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.palette.graphics.Palette
@@ -8,6 +12,7 @@ import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.ui.styling.dynamicColorPaletteOf
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
+import kotlin.math.roundToInt
 
 /** Immutable colors only: neither the completed cache nor display roles retain artwork pixels. */
 data class ArtworkColorSnapshot internal constructor(
@@ -67,16 +72,38 @@ internal suspend fun analyzeArtworkColors(
         Palette.from(image).maximumColorCount(8).apply { if (unfiltered) clearFilters() }.generate()
     },
 ): ArtworkColorSnapshot = withContext(NzikDispatchers.MEDIA) {
-    val swatches = quantize(bitmap, false)
-    val light = coverPaletteFromSwatches(swatches, false)
-    val dark = coverPaletteFromSwatches(swatches, true)
-    val fallback = if (light == null) quantize(bitmap, true) else null
-    val sourceSwatches = fallback?.swatches ?: swatches.swatches
-    val monochrome = sourceSwatches.isNotEmpty() && sourceSwatches.all {
-        channelDelta(it.rgb) < ACHROMATIC_CHANNEL_DELTA_THRESHOLD
+    val input = artworkPaletteBitmap(bitmap)
+    try {
+        val swatches = quantize(input, false)
+        val light = coverPaletteFromSwatches(swatches, false)
+        val dark = coverPaletteFromSwatches(swatches, true)
+        val fallback = if (light == null) quantize(input, true) else null
+        val sourceSwatches = fallback?.swatches ?: swatches.swatches
+        val monochrome = sourceSwatches.isNotEmpty() && sourceSwatches.all {
+            channelDelta(it.rgb) < ACHROMATIC_CHANNEL_DELTA_THRESHOLD
+        }
+        val dominant = (fallback ?: swatches).dominantSwatch
+        val samples = (listOfNotNull(dominant) + sourceSwatches).distinctBy { it.rgb }.map { Color(it.rgb) }
+        ArtworkColorSnapshot(light?.palette, dark?.palette, light?.colors, dark?.colors,
+            fallback?.dominantSwatch?.rgb?.let(::Color), monochrome, samples)
+    } finally {
+        if (input !== bitmap) input.recycle()
     }
-    val dominant = (fallback ?: swatches).dominantSwatch
-    val samples = (listOfNotNull(dominant) + sourceSwatches).distinctBy { it.rgb }.map { Color(it.rgb) }
-    ArtworkColorSnapshot(light?.palette, dark?.palette, light?.colors, dark?.colors,
-        fallback?.dominantSwatch?.rgb?.let(::Color), monochrome, samples)
+}
+
+/** Palette resizes via createScaledBitmap, which requires a color space on recent Android. */
+private fun artworkPaletteBitmap(bitmap: Bitmap): Bitmap {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || bitmap.colorSpace != null) return bitmap
+    val maxDimension = 128f
+    val scale = (maxDimension / maxOf(bitmap.width, bitmap.height)).coerceAtMost(1f)
+    val width = (bitmap.width * scale).roundToInt().coerceAtLeast(1)
+    val height = (bitmap.height * scale).roundToInt().coerceAtLeast(1)
+    val output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    try {
+        Canvas(output).drawBitmap(bitmap, null, Rect(0, 0, width, height), Paint(Paint.FILTER_BITMAP_FLAG))
+    } catch (failure: RuntimeException) {
+        output.recycle()
+        throw failure
+    }
+    return output
 }

@@ -217,7 +217,9 @@ object SharedArtworkColors {
         }
         requireCurrentArtwork()
         val colors = repository.load(key) {
-            val current = displayed.await(source, fileRevision)?.takeUnless { it.isRecycled }
+            val current = displayed.await(source, fileRevision)?.takeUnless {
+                it.isRecycled || it.config == Bitmap.Config.ALPHA_8
+            }
             requireCurrentArtwork()
             val image = if (current != null) {
                 Timber.tag("ArtworkColors").d("Analyze displayed artwork")
@@ -227,7 +229,7 @@ object SharedArtworkColors {
                 ImageCacheFactory.loadBitmap(source.uri, allowHardware = false,
                     qualityOverride = quality, requestSize = quality.size, cacheDecodedBitmap = false)
             }
-            image?.takeUnless { it.isRecycled }?.let { analyzeArtworkColors(it) }
+            image?.takeUnless { it.isRecycled || it.config == Bitmap.Config.ALPHA_8 }?.let { analyzeArtworkColors(it) }
                 .also { requireCurrentArtwork() }
         }
         requireCurrentArtwork()

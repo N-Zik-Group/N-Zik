@@ -111,6 +111,9 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(appearance): recover dynamic colors from artwork without color space
+  - Normalize incompatible bitmap input before color extraction and avoid sampling alpha-only thumbnail masks.
+  - Use one purple fallback in the app and player if extraction still fails.
 - fix(player): synchronize the palette, readability and M3E on track changes
   - Keep neutral player ink on the same palette fade during polarity changes on M3E backgrounds. Read regional contrast only after the artwork and the palette settle.
   - Start Album and Artist glyph changes with their labels and keep the 400 ms fade in Glass and Normal.
