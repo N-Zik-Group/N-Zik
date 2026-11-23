@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">افتح قائمة الانتظار مع التمرير صعودا في اللاعب.</string>
     <string name="player_action_bar_transparent_background_description">إزالة الخلفية الصلبة خلف أزرار إجراء اللاعب.</string>
     <string name="player_action_enqueue">قائمة الإنتظار</string>
+    <string name="player_action_hide_stats_for_nerds">إخفاء احصائيات للجراد</string>
     <string name="player_action_like">إعجاب</string>
     <string name="player_action_listen_on_invidious">الاستماع على %1$s</string>
     <string name="player_action_listen_on_youtube">الاستماع على اليوتيوب</string>
@@ -168,6 +169,7 @@
     <string name="player_action_seek_forward">إعادة</string>
     <string name="player_action_seek_forward_30_seconds">إعادة توجيه 30 ثانية</string>
     <string name="player_action_seek_forward_5_seconds">إعادة توجيه 5 ثوان</string>
+    <string name="player_action_show_stats_for_nerds">إظهار إحصائيات للجراد</string>
     <string name="player_action_shuffle">ترتيب عشوائي</string>
     <string name="player_action_shuffle_hint">ترتيب عشوائي</string>
     <string name="player_appearance">مظهر اللاعب</string>
