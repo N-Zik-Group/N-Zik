@@ -20,6 +20,7 @@ import app.n_zik.android.utils.Preference
 import app.n_zik.android.utils.showFoldersOnDeviceKey
 import app.n_zik.android.utils.showStatsListeningTimeKey
 import app.n_zik.android.utils.animatedGradientKey
+import app.n_zik.android.utils.m3eAlwaysShowShapesKey
 import app.n_zik.android.utils.applyFontPaddingKey
 import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
 import app.n_zik.android.utils.uiRoundnessDpKey
@@ -82,7 +83,7 @@ private val fullscreenLyricsKeys = setOf(
 )
 
 private val animationKeys = setOf(
-    animatedGradientKey, showCoverThumbnailAnimationKey, coverThumbnailAnimationKey, albumCoverRotationKey,
+    animatedGradientKey, m3eAlwaysShowShapesKey, showCoverThumbnailAnimationKey, coverThumbnailAnimationKey, albumCoverRotationKey,
     rotatingAlbumCoverKey, swipeAnimationsNoThumbnailKey, effectRotationKey, buttonzoomoutKey, nowPlayingIndicatorKey,
 )
 
@@ -120,7 +121,12 @@ internal fun StoreAppearance.selectedSettings(
     selection: Set<StoreGroup>,
 ): ThemeSettings? {
     if (theme.supportAt(versionCode) != StoreSupport.Supported) return null
-    return selectedGroups(selection)
+    val selected = selectedGroups(selection) ?: return null
+    if (theme.themeId == BundledThemeId && StoreGroup.Animations in selection) {
+        // Stock resets local defaults without requiring a new field in its portable document.
+        return selected.copy(plain = selected.plain + (m3eAlwaysShowShapesKey to UseThemeDefault))
+    }
+    return selected
 }
 
 private fun StoreAppearance.selectedGroups(selection: Set<StoreGroup>): ThemeSettings? {

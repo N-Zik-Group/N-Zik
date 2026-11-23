@@ -7,6 +7,7 @@ import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassProfilePreferences
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.utils.animatedGradientKey
+import app.n_zik.android.utils.m3eAlwaysShowShapesKey
 import app.n_zik.android.enums.AnimatedGradient
 import app.n_zik.android.enums.CarouselSize
 import app.n_zik.android.enums.PlayerBackgroundColors
@@ -85,7 +86,7 @@ class ThemeStoreApplicationTest {
     fun customizeCanLabelEveryPortableSettingIncludingGlass() {
         val v1 = appearance.groups.values.flatMap { it.plain.keys + it.glass.keys }
         val v2 = parseThemeAppearance(defaultThemeAppearanceDocument()).values.flatMap { it.plain.keys + it.glass.keys }
-        val keys = (v1 + v2).toSet()
+        val keys = (v1 + v2 + m3eAlwaysShowShapesKey).toSet()
         assertEquals(keys, themeSettingNames.keys)
         assertEquals("enabled", themeSettingNames[glassEnabledKey])
         assertEquals("lyrics", themeSettingNames[showButtonPlayerLyricsKey])
@@ -111,6 +112,25 @@ class ThemeStoreApplicationTest {
         assertEquals(99, stock.compatibility.minVersionCode)
         assertEquals(StoreSupport.RequiresUpdate, stock.compatibility.supportAt(98))
         assertEquals(StoreSupport.Supported, stock.compatibility.supportAt(99))
+    }
+
+    @Test
+    fun bundledStockClearsSavedM3eShapeOverrideWithItsAnimationSettings() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val target = context.getSharedPreferences("stock-m3e", Context.MODE_PRIVATE)
+        val glass = GlassProfilePreferences.preferences(context, "stock-m3e")
+        val saved = bundledDefaultTheme(context)
+        val theme = requireNotNull(saved.theme)
+        val document = saved.document
+        val stock = StoreAppearance(document, document.length, parseThemeAppearance(document).toStoreGroups())
+        target.edit().putBoolean(m3eAlwaysShowShapesKey, true).apply()
+
+        requireNotNull(stock.selectedSettings(theme, 100, setOf(StoreGroup.Colors))).applyTo(target, glass)
+        assertEquals(true, target.all[m3eAlwaysShowShapesKey])
+        val undo = requireNotNull(stock.selectedSettings(theme, 100, setOf(StoreGroup.Animations))).applyTo(target, glass)
+        assertFalse(target.contains(m3eAlwaysShowShapesKey))
+        undo()
+        assertEquals(true, target.all[m3eAlwaysShowShapesKey])
     }
 
     @Test

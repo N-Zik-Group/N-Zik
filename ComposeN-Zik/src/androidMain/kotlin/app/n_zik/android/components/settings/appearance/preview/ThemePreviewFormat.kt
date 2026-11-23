@@ -97,6 +97,7 @@ import app.n_zik.android.utils.albumCoverRotationKey
 import app.n_zik.android.utils.albumSwipeLeftActionKey
 import app.n_zik.android.utils.albumSwipeRightActionKey
 import app.n_zik.android.utils.animatedGradientKey
+import app.n_zik.android.utils.m3eAlwaysShowShapesKey
 import app.n_zik.android.utils.applyFontPaddingKey
 import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
 import app.n_zik.android.utils.backgroundProgressKey
@@ -308,11 +309,16 @@ internal data class ThemeSettings(val plain: Map<String, Any>, val glass: Map<St
 internal const val ThemeAppearanceV2 = 2
 internal const val ThemeAppearanceV2MinimumVersionCode = 99
 internal const val ThemePureBlackMinimumVersionCode = 101
+internal const val ThemeM3eAlwaysShowShapesMinimumVersionCode = 101
 
 /** Feature compatibility is independent of the portable document schema. */
-internal fun themeAppearanceFeatureMinimumVersionCode(settings: Map<ThemeCategory, ThemeSettings>): Int =
-    if (settings[ThemeCategory.COLORS]?.plain?.get(colorPaletteModeKey) == ColorPaletteMode.PureBlack.name)
+internal fun themeAppearanceFeatureMinimumVersionCode(settings: Map<ThemeCategory, ThemeSettings>): Int {
+    val pureBlack = if (settings[ThemeCategory.COLORS]?.plain?.get(colorPaletteModeKey) == ColorPaletteMode.PureBlack.name)
         ThemePureBlackMinimumVersionCode else 0
+    val alwaysShowShapes = if (settings[ThemeCategory.PLAYER_AND_QUEUE]?.plain?.containsKey(m3eAlwaysShowShapesKey) == true)
+        ThemeM3eAlwaysShowShapesMinimumVersionCode else 0
+    return maxOf(pureBlack, alwaysShowShapes)
+}
 
 internal fun themeAppearancePublicationMinimumVersionCode(source: String): Int {
     val schema = requireNotNull(themeAppearanceSchema(Json.parseToJsonElement(source) as JsonObject))
@@ -362,7 +368,9 @@ internal fun parseThemeAppearance(
     }
     if (validateFeatureCompatibility && advertisedMinVersionCode != null && featureMinimum > 0) {
         require(advertisedMinVersionCode >= featureMinimum) {
-            "Pure Black mode requires Android version code $featureMinimum"
+            val feature = if (settings[ThemeCategory.PLAYER_AND_QUEUE]?.plain?.containsKey(m3eAlwaysShowShapesKey) == true)
+                "Always Show M3E Shapes" else "Pure Black mode"
+            "$feature requires Android version code $featureMinimum"
         }
     }
     return settings
@@ -378,6 +386,9 @@ internal fun encodeThemeAppearance(
         require(schemaVersion in 1..ThemeAppearanceV2)
         require(schemaVersion == ThemeAppearanceV2 || plain[colorPaletteModeKey] != ColorPaletteMode.PureBlack.name) {
             "Pure Black mode requires theme appearance V2"
+        }
+        require(schemaVersion == ThemeAppearanceV2 || m3eAlwaysShowShapesKey !in plain) {
+            "Always Show M3E Shapes requires theme appearance V2"
         }
         put("schemaVersion", schemaVersion)
         put("categories", buildJsonObject {
@@ -431,6 +442,8 @@ private fun portableGlassPreferences(
 
 private class ExportThemeFields(private val preferences: Map<String, *>) : ThemeFields {
     val values = mutableMapOf<String, JsonElement>()
+
+    fun hasPreference(key: String): Boolean = key in preferences
 
     override fun flag(field: String, key: String, default: Boolean) {
         values[field] = JsonPrimitive(preferences[key] as? Boolean ?: default)
@@ -619,6 +632,9 @@ private fun ThemeFields.player(schemaVersion: Int) {
         optional("openingMode") { option<PlayerOpeningMode>("openingMode", playerOpeningModeKey, PlayerOpeningMode.Audio) }
         optional("holdToSpeedUp") { flag("holdToSpeedUp", holdToSpeedUpKey, false) }
         optional("holdToSpeedUpRate") { number("holdToSpeedUpRate", holdToSpeedUpRateKey, 1.1..4.0, DEFAULT_HOLD_TO_SPEED_UP_RATE) }
+        if (this !is ExportThemeFields || hasPreference(m3eAlwaysShowShapesKey)) {
+            optional("m3eAlwaysShowShapes") { flag("m3eAlwaysShowShapes", m3eAlwaysShowShapesKey, false) }
+        }
     }
     optional("coverBackdrop") { number("coverBackdrop", playerBackdropKey, 0.0..100.0, 0f) }
     optional("nowPlayingIndicator") {

@@ -50,8 +50,33 @@ import app.n_zik.android.components.navigation.dock.DockToolbarPreferences
 import app.n_zik.android.components.glass.glassBlurKey
 import app.n_zik.android.components.glass.glassJellyEnabledKey
 import app.n_zik.android.utils.navigationBarPositionKey
+import app.n_zik.android.utils.m3eAlwaysShowShapesKey
 
 class ThemePreviewFormatTest {
+    @Test
+    fun `M3E shapes export only saved values and declare the feature version for V2`() {
+        val defaults = defaultThemeAppearanceDocument()
+        assertFalse("m3eAlwaysShowShapes" in defaults)
+        assertEquals(99, themeAppearancePublicationMinimumVersionCode(defaults))
+        assertFalse(m3eAlwaysShowShapesKey in themePreviewPreferences(defaults, glass = false).plain)
+        for (enabled in listOf(true, false)) {
+            val preferences = mapOf(m3eAlwaysShowShapesKey to enabled)
+            val encoded = encodeThemeAppearance(preferences, emptyMap<String, Any>(), schemaVersion = ThemeAppearanceV2)
+            val parsed = parseThemeAppearance(encoded)
+            assertEquals(enabled, parsed.getValue(ThemeCategory.PLAYER_AND_QUEUE).plain[m3eAlwaysShowShapesKey])
+            assertEquals(enabled, themePreviewPreferences(encoded, glass = true).plain[m3eAlwaysShowShapesKey])
+            assertEquals(enabled, parsed.toStoreGroups().getValue(StoreGroup.Animations).plain[m3eAlwaysShowShapesKey])
+            assertEquals(101, themeAppearancePublicationMinimumVersionCode(encoded))
+            assertThrows(IllegalArgumentException::class.java) {
+                parseThemeAppearance(encoded, false, advertisedMinVersionCode = 100)
+            }
+            assertEquals(parsed, parseThemeAppearance(encoded, false, advertisedMinVersionCode = 101))
+            assertThrows(IllegalArgumentException::class.java) {
+                encodeThemeAppearance(preferences, emptyMap<String, Any>(), schemaVersion = 1)
+            }
+        }
+    }
+
     @Test
     fun `pure black mode round trips locally in V2 with independent palette and Glass overrides`() {
         val plain = mapOf(colorPaletteNameKey to "Dynamic", colorPaletteModeKey to "PureBlack",
