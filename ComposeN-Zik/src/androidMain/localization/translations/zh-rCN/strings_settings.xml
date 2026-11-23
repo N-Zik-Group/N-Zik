@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">专辑和艺术家名称</string>
     <string name="settings_player_header_icons_visible_label">以图标显示信息</string>
     <string name="settings_player_header_style_label">标题样式</string>
+    <string name="settings_player_m3e_always_show_shapes_description">当玩家打开时保持M3E形状动画，即使已暂停。</string>
+    <string name="settings_player_m3e_always_show_shapes_label">总是显示形状</string>
     <string name="settings_player_m3e_motion_sensitivity_label">主题晃动灵敏度</string>
     <string name="settings_player_mini_style_label">Mini 播放器类型</string>
     <string name="settings_player_next_queue_visible_label">在播放器中显示下一首歌曲</string>
