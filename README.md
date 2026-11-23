@@ -71,9 +71,9 @@
 <img src="assets/design/warning-rounded.png" width="50%">
 <br>
 
-<h1>⏳ Only <a href="https://keepandroidopen.org"><img src="https://img.shields.io/badge/J--38-red?style=flat-round&logo=android&logoColor=white" alt="Android Lockdown"/></a> days remaining until Android Lockdown</h1>
+<h1>⏳ Only <a href="https://keepandroidopen.org"><img src="https://img.shields.io/badge/J--38-red?style=flat-round&logo=android&logoColor=white" alt="Keep Android Open countdown"/></a> days until the Keep Android Open campaign milestone</h1>
 
-Starting in **~~September 2026~~ January 2027** [See why the date changed here](https://keepandroidopen.org/en/faq/), Google will require **identity verification for all Android developers**, including those distributing applications **outside of Google Play**.
+The **Keep Android Open** countdown targets **January 1, 2027**. Google says the global rollout of **Android developer verification** begins in **January 2027** with seven participating stores and extends to other stores **by March 2027**, with coverage expanding gradually to all installation sources on certified Android devices. [Android rollout timeline](https://developer.android.com/developer-verification/guides/distributor-resources#timeline)
 
 As a **Free and Open Source Software (FOSS)** project, **N‑Zik** and his **developer** opposes this requirement due to its impact on developer privacy, independent distribution, and software freedom.
 
