@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Avaa soittojono ylöspäin pyyhkäisemällä sitä soittimeen.</string>
     <string name="player_action_bar_transparent_background_description">Poista kiinteä tausta soittimen toiminta-painikkeiden takana.</string>
     <string name="player_action_enqueue">Lisää jonoon</string>
+    <string name="player_action_hide_stats_for_nerds">Piilota Nerdien tilastot</string>
     <string name="player_action_like">Tykkää</string>
     <string name="player_action_listen_on_invidious">Kuuntele %1$sissa</string>
     <string name="player_action_listen_on_youtube">Kuuntele YouTubessa</string>
@@ -168,6 +169,7 @@
     <string name="player_action_seek_forward">Eteenpäin</string>
     <string name="player_action_seek_forward_30_seconds">Eteenpäin 30 sekuntia</string>
     <string name="player_action_seek_forward_5_seconds">Eteenpäin 5 sekuntia</string>
+    <string name="player_action_show_stats_for_nerds">Näytä Nerdien tilastot</string>
     <string name="player_action_shuffle">Sekoita</string>
     <string name="player_action_shuffle_hint">Sekoitus</string>
     <string name="player_appearance">Soittimen Ulkonäkö</string>
