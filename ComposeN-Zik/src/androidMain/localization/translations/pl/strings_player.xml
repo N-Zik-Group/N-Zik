@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Otwórz kolejkę odtwarzania przesunięciem w górę w grze.</string>
     <string name="player_action_bar_transparent_background_description">Usuń solidne tło za przyciskami akcji gracza.</string>
     <string name="player_action_enqueue">Dodaj do kolejki</string>
+    <string name="player_action_hide_stats_for_nerds">Ukryj statystyki Nerds</string>
     <string name="player_action_like">Lubię</string>
     <string name="player_action_listen_on_invidious">Posłuchaj na %1$s</string>
     <string name="player_action_listen_on_youtube">Posłuchaj na YouTube</string>
@@ -168,6 +169,7 @@
     <string name="player_action_seek_forward">Przekaż</string>
     <string name="player_action_seek_forward_30_seconds">Przekaż 30 sekund</string>
     <string name="player_action_seek_forward_5_seconds">Przekaż 5 sekund</string>
+    <string name="player_action_show_stats_for_nerds">Pokaż statystyki Nerds</string>
     <string name="player_action_shuffle">Losowo</string>
     <string name="player_action_shuffle_hint">Losowo</string>
     <string name="player_appearance">Wygląd gracza</string>
