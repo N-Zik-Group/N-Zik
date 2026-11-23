@@ -168,4 +168,19 @@ class LocalArtworkRevisionTest {
         }
         assertEquals(remoteKey, ImageCacheFactory.generateCacheKeySync(remote, quality))
     }
+
+    @Test
+    fun `an avatar edit refreshes only its own file and URI keys`() {
+        val avatar = File(context.filesDir, "profiles/current/avatar.jpg")
+        val cover = File(context.filesDir, "profiles/current/cover.jpg")
+        val avatarUri = "file://${avatar.toURI().rawPath}"
+        val quality = ImageCacheFactory.NetworkQuality.HIGH
+        val oldAvatar = ImageCacheFactory.generateCacheKeySync(avatarUri, quality)
+        val oldCover = ImageCacheFactory.generateCacheKeySync(cover.absolutePath, quality)
+
+        ArtworkRevisions.invalidateFile(avatar)
+
+        assertNotEquals(oldAvatar, ImageCacheFactory.generateCacheKeySync(avatarUri, quality))
+        assertEquals(oldCover, ImageCacheFactory.generateCacheKeySync(cover.absolutePath, quality))
+    }
 }

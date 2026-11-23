@@ -1,7 +1,5 @@
 package app.n_zik.android.components.ui.screens.listentogether
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -73,7 +71,6 @@ import app.n_zik.android.listentogether.ConnectionState
 import app.n_zik.android.listentogether.INVITE_ROOM_CODE_KEY
 import app.n_zik.android.listentogether.LISTEN_TOGETHER_BLOCKED_REASON
 import app.n_zik.android.listentogether.LISTEN_TOGETHER_JOIN_BLOCKED_REASON
-import app.n_zik.android.listentogether.ListenTogetherEvent
 import app.n_zik.android.listentogether.ListenTogetherManager
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.LocalMenuState
@@ -182,12 +179,6 @@ fun ListenTogetherScreen(
     }
 
     val waitingForApprovalText = stringResource(R.string.listen_together_waiting_for_approval)
-    val invalidRoomCodeText = stringResource(R.string.listen_together_invalid_room_code)
-    val joinRequestDeniedText = stringResource(R.string.listen_together_join_request_denied)
-    val blockedByHostText = stringResource(R.string.listen_together_user_blocked_by_host)
-    val connectionLostText = stringResource(R.string.listen_together_error)
-    val serverErrorText = stringResource(R.string.listen_together_server_request_failed)
-
     // Restore the saved username into the input field on first composition
     LaunchedEffect(usernamePref.value) {
         if (usernameInput.isBlank() && usernamePref.value.isNotBlank()) {
@@ -195,69 +186,14 @@ fun ListenTogetherScreen(
         }
     }
 
-    LaunchedEffect(listenTogetherManager, connectionLostText, serverErrorText) {
-        listenTogetherManager.events.collect { event ->
-            when (event) {
-                is ListenTogetherEvent.JoinRejected -> {
-                    val message = joinRejectionMessage(
-                        event.reason,
-                        joinRequestDeniedText,
-                        invalidRoomCodeText,
-                        blockedByHostText,
-                    ) { reason ->
-                        context.getString(R.string.listen_together_join_request_denied_reason, reason)
-                    }
-                    joinErrorMessage = message
-                    isJoiningRoom = false
-                    isCreatingRoom = false
-                    Toaster.e(message)
-                }
-
-                is ListenTogetherEvent.JoinApproved -> {
-                    isJoiningRoom = false
-                    joinErrorMessage = null
-                }
-
-                is ListenTogetherEvent.RoomCreated -> {
-                    isCreatingRoom = false
-                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    clipboard.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.listen_together_room_code), event.roomCode))
-                }
-
-                // A dropped connection must end a pending create or join.
-                is ListenTogetherEvent.ServerError -> {
-                    if (isCreatingRoom || isJoiningRoom) {
-                        isCreatingRoom = false
-                        isJoiningRoom = false
-                        joinErrorMessage = serverErrorText
-                        Toaster.e(R.string.listen_together_server_request_failed)
-                    }
-                }
-
-                is ListenTogetherEvent.ConnectionError -> {
-                    if (isCreatingRoom || isJoiningRoom) {
-                        isCreatingRoom = false
-                        isJoiningRoom = false
-                        joinErrorMessage = connectionLostText
-
-                        Toaster.noInternet()
-                    }
-                }
-
-                is ListenTogetherEvent.Disconnected -> {
-                    if ((isCreatingRoom || isJoiningRoom) &&
-                        listenTogetherManager.connectionState.value == ConnectionState.DISCONNECTED
-                    ) {
-                        isCreatingRoom = false
-                        isJoiningRoom = false
-                        joinErrorMessage = connectionLostText
-                    }
-                }
-
-                else -> {}
-            }
-        }
-    }
+    ObserveListenTogetherFormEvents(
+        manager = listenTogetherManager,
+        isWaiting = { isCreatingRoom || isJoiningRoom },
+        setCreating = { isCreatingRoom = it },
+        setJoining = { isJoiningRoom = it },
+        setError = { joinErrorMessage = it },
+        canEndOnDisconnect = { listenTogetherManager.connectionState.value == ConnectionState.DISCONNECTED },
+    )
 
     val isInRoom = listenTogetherManager.isInRoom
     val isHost = roomState?.hostId == userId

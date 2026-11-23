@@ -80,12 +80,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import app.n_zik.android.core.coil.ImageCacheFactory
-import app.n_zik.android.core.coil.thumbnail
 import app.n_zik.android.components.player.slide.landscapeCarouselDrag
 import app.n_zik.android.components.player.slide.flingBehaviorFor
 import app.n_zik.android.components.player.slide.itemZIndexFor
 import app.n_zik.android.components.player.slide.playerThumbnailCover
-import app.n_zik.android.components.player.slide.slideSettledPageEffect
 import app.n_zik.android.components.PLAYER_SHEET_HANDOVER_PROGRESS
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -161,11 +159,9 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.geometry.center
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
 import app.n_zik.android.components.glass.LocalSurfaceBackdropColor
 import app.n_zik.android.components.glass.rememberNeutralForegroundForSurface
 import app.n_zik.android.components.glass.GlassScope
@@ -231,7 +227,6 @@ import app.n_zik.android.enums.AnimatedGradient
 import app.n_zik.android.enums.BackgroundProgress
 import app.n_zik.android.enums.CarouselSize
 import app.n_zik.android.enums.ColorPaletteMode
-import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.PlayerBackgroundColors
 import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.enums.QueueLoopType
@@ -280,7 +275,6 @@ import app.n_zik.android.playback.utils.playPreviousIfAvailable
 import app.n_zik.android.utils.playPrevious
 import app.n_zik.android.utils.playbackStateState
 import app.n_zik.android.utils.playerBackgroundColorsKey
-import app.n_zik.android.utils.transparentBackgroundPlayerActionBarKey
 import app.n_zik.android.components.player.rememberPlayerLandscapeArtworkSize
 import app.n_zik.android.utils.playerTypeKey
 import app.n_zik.android.utils.positionAndDurationState
@@ -311,11 +305,9 @@ import app.n_zik.android.utils.thumbnailTypeKey
 import app.n_zik.android.utils.timelineExpandedKey
 import app.n_zik.android.utils.titleExpandedKey
 import app.n_zik.android.utils.topPaddingKey
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.player.PlayerCurrentCover
 import app.n_zik.android.components.player.PlayerCoverFrame
@@ -333,13 +325,11 @@ import app.n_zik.android.core.utils.Toaster
 import kotlin.Float.Companion.POSITIVE_INFINITY
 import kotlin.math.absoluteValue
 import app.n_zik.android.components.player.lyrics.LyricsScreen
-import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.utils.thumbnailSizeDpKey
 import app.n_zik.android.LocalIsShowingVisualizer
 import androidx.compose.ui.platform.LocalView
 import app.n_zik.android.LocalIsShowingLyrics
 import androidx.media3.common.C
-import androidx.compose.ui.graphics.RectangleShape
 import android.app.Activity
 import android.view.Window
 import android.content.ContextWrapper
@@ -825,7 +815,7 @@ fun Player(
     } ?: if (useArtworkTheme) artworkFallback else globalTargetPalette
     val holdBackgroundArtwork = waitingForCover || (visiblePlayerArtwork && !coverDisplayResult.resolved)
     val nextBackgroundArtwork = PlayerBackgroundArtwork(paletteCover.mediaId, paletteCover.artworkUri,
-        paletteCover.localRevision, coverDisplay, dynamicColorPalette)
+        paletteCover.sourceRevision, coverDisplay, dynamicColorPalette)
     val retainedBackgroundArtwork = remember(playerUpdateTrigger) { mutableStateOf(nextBackgroundArtwork) }
     val backgroundArtwork = if (holdBackgroundArtwork) retainedBackgroundArtwork.value else nextBackgroundArtwork
     if (!holdBackgroundArtwork) SideEffect { retainedBackgroundArtwork.value = nextBackgroundArtwork }
@@ -898,7 +888,7 @@ fun Player(
         else -> null
     }
     val settledArtworkMatches = settledBackdrop?.identity?.let { identity ->
-        identity.artworkUri == backgroundArtwork.coverUrl.orEmpty() && identity.localRevision == backgroundArtwork.coverRevision
+        identity.artworkUri == backgroundArtwork.coverUrl.orEmpty() && identity.sourceRevision == backgroundArtwork.coverRevision
     } == true
     if (artworkInMotion != null) {
         val waitingForBackdrop = shouldWaitForPlayerBackdrop(
@@ -1544,19 +1534,12 @@ fun Player(
          Box{
              if (showFullScreenArtworkPager) {
                    val fling = flingBehaviorFor(pagerStateFS, sensitivity = playerSwipeSensitivity)
-                   pagerStateFS.LaunchedEffectScrollToPage(
+                   pagerStateFS.AttachPlayerArtworkPager(
                        player,
                        playerUpdateTrigger,
-                       player.currentMediaItemIndex,
                        appRunningInBackground,
-                       playerContentVisible = playerContentVisible,
-                       paceArtworkMotion = true,
+                       playerContentVisible,
                    )
-
-                   pagerStateFS.slideSettledPageEffect(
-                      currentMediaItemIndex = { player.currentMediaItemIndex },
-                      playAtIndex = { index -> player.playAtIndex(index) }
-                  )
 
                  HorizontalPager(
                      state = pagerStateFS,
@@ -1712,21 +1695,14 @@ fun Player(
                                        compactStack = expandedplayer && carousel,
                                    )
 
-                                   pagerState.LaunchedEffectScrollToPage(
+                                   pagerState.AttachPlayerArtworkPager(
                                        player,
                                        playerUpdateTrigger,
-                                       player.currentMediaItemIndex,
                                        appRunningInBackground,
-                                       playerContentVisible = playerContentVisible,
+                                       playerContentVisible,
+                                       carouselButtons = carouselButtons,
                                        skipAnimation = isShowingLyrics,
-                                       paceArtworkMotion = true,
                                    )
-
-                                  pagerState.slideSettledPageEffect(
-                                      currentMediaItemIndex = { player.currentMediaItemIndex },
-                                      playAtIndex = { index -> if (carouselButtons.allowGestureCommit(index)) player.playAtIndex(index) },
-                                      transportMoveInProgress = { carouselButtons.isMoving },
-                                  )
                                  DisposableEffect(pagerState) {
                                      carouselPagerMounted = true
                                      onDispose { carouselPagerMounted = false }
@@ -1952,19 +1928,12 @@ fun Player(
                     val scaleAnimationFloat by animateFloatAsState(
                         if (isDraggedFS) 0.85f else 1f, label = ""
                     )
-                     pagerStateFS.LaunchedEffectScrollToPage(
-                       player,
-                       playerUpdateTrigger,
-                       player.currentMediaItemIndex,
-                       appRunningInBackground,
-                       playerContentVisible = playerContentVisible,
-                       paceArtworkMotion = true,
-                   )
-
-                     pagerStateFS.slideSettledPageEffect(
-                         currentMediaItemIndex = { player.currentMediaItemIndex },
-                         playAtIndex = { index -> player.playAtIndex(index) },
-                         delayMillis = if (swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Fade) 0L else 400L
+                     pagerStateFS.AttachPlayerArtworkPager(
+                         player,
+                         playerUpdateTrigger,
+                         appRunningInBackground,
+                         playerContentVisible,
+                         settleDelayMillis = if (swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Fade) 0L else 400L,
                      )
                     HorizontalPager(
                         state = pagerStateFS,
@@ -2202,20 +2171,13 @@ fun Player(
                              if (playerType == PlayerType.Modern) {
                                    val fling = flingBehaviorFor(pagerState, sensitivity = playerSwipeSensitivity, snapDurationMillis = CAROUSEL_SETTLE_DURATION_MS)
 
-                                   pagerState.LaunchedEffectScrollToPage(
+                                   pagerState.AttachPlayerArtworkPager(
                                        player,
                                        playerUpdateTrigger,
-                                       player.currentMediaItemIndex,
                                        appRunningInBackground,
-                                       playerContentVisible = playerContentVisible,
-                                       paceArtworkMotion = true,
+                                       playerContentVisible,
+                                       carouselButtons = carouselButtons,
                                    )
-
-                                   pagerState.slideSettledPageEffect(
-                                      currentMediaItemIndex = { player.currentMediaItemIndex },
-                                       playAtIndex = { index -> if (carouselButtons.allowGestureCommit(index)) player.playAtIndex(index) },
-                                       transportMoveInProgress = { carouselButtons.isMoving },
-                                  )
 
                                  val pageSpacing = (thumbnailSpacing.toInt()*0.01*(screenHeight) - if (carousel) (3*carouselSize.size.dp) else (2*((100f - thumbnailSizeDp) * 1.5f).dp))
                                  val animatePageSpacing by animatePlayerCarouselDp(

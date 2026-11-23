@@ -182,13 +182,13 @@ import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.playback.utils.Shuffler
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
+import app.n_zik.android.components.playlist.rememberPlaylistDownloadStates
 import app.n_zik.android.enums.DownloadedStateMedia
 import app.n_zik.android.enums.PlaylistSwipeAction
 import app.n_zik.android.utils.playlistSwipeLeftActionKey
 import app.n_zik.android.utils.playlistSwipeRightActionKey
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.n_zik.android.download.utils.MyDownloadHelper
 import androidx.media3.exoplayer.offline.Download
 import timber.log.Timber
 import app.n_zik.android.MODIFIED_PREFIX
@@ -423,21 +423,8 @@ fun PlaylistSongList(
                     )
                 }
             } else {
-                val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
-                val downloadedIds by remember {
-                    derivedStateOf {
-                        downloadsMapState.values
-                            .filter { it.state == Download.STATE_COMPLETED }
-                            .mapTo(HashSet()) { it.request.id }
-                    }
-                }
-                val downloadStatesMap by remember {
-                    derivedStateOf {
-                        playlistSongs.associate { song ->
-                            (song.key ?: "") to if ((song.key ?: "") in downloadedIds) DownloadedStateMedia.DOWNLOADED else DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
-                        }
-                    }
-                }
+                val songIds = remember(playlistSongs) { playlistSongs.map { it.key.orEmpty() } }
+                val (downloadsMapState, downloadStatesMap) = rememberPlaylistDownloadStates(songIds)
 
                 // Hoisted swipe action preferences
                 val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)

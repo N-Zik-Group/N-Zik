@@ -137,7 +137,6 @@ import app.n_zik.android.utils.saveProfileLastUsed
 import app.n_zik.android.utils.setDefaultPalette
 import app.n_zik.android.utils.shouldRecreateActivity
 import app.n_zik.innertube.Innertube
-import app.n_zik.innertube.invidious.Invidious
 import app.n_zik.innertube.requests.playlistPage
 import app.n_zik.innertube.requests.song
 
@@ -492,15 +491,6 @@ class MainActivity :
         // Verify the backup location once startup has recovered the library.
         lifecycleScope.launch(NzikDispatchers.DATA) {
             BackupManager.verifyBackupLocation(this@MainActivity)
-        }
-
-        // Fetch Invidious instances
-        lifecycleScope.launch(NzikDispatchers.DATA) {
-            try {
-                Invidious.fetchInstances()
-            } catch (e: Exception) {
-                Timber.tag("MainActivity").e(e, "Error fetching Invidious instances")
-            }
         }
 
         // Ask for notification permission if necessary

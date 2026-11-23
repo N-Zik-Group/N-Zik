@@ -69,7 +69,7 @@ internal fun saveOwnedImage(
                 output.flush()
                 validateOwnedArtwork(File(target.path + ".new"))
             }
-            ArtworkRevisions.invalidate()
+            ArtworkRevisions.invalidateFile(target)
             return Uri.fromFile(target)
         }
         val buffer = ByteArrayOutputStream()
@@ -80,7 +80,7 @@ internal fun saveOwnedImage(
         writeOwnedImageAtomically(target) { output ->
             check(decoded.compress(Bitmap.CompressFormat.JPEG, 85, output))
         }
-        ArtworkRevisions.invalidate()
+        ArtworkRevisions.invalidateFile(target)
         Uri.fromFile(target)
     } catch (error: Exception) {
         Timber.tag("OwnedImageStorage").e(error, "Could not save edited image")
@@ -132,7 +132,7 @@ internal fun restoreOwnedCover(target: File, previousBytes: ByteArray?) {
     } else {
         writeOwnedImageAtomically(target) { it.write(previousBytes) }
     }
-    ArtworkRevisions.invalidate()
+    ArtworkRevisions.invalidateFile(target)
 }
 
 private const val MAX_IMAGE_BYTES = 32 * 1024 * 1024

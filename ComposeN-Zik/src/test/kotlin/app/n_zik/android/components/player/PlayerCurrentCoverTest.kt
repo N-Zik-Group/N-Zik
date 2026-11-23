@@ -80,8 +80,8 @@ class PlayerCurrentCoverTest {
 
     @Test fun `in-place local replacement keeps the outgoing frame until its own revision is ready`() {
         val frames = PlayerCoverFrameState<String>()
-        val previous = PlayerCoverIdentity("A", "file:///cover.jpg", localRevision = 1)
-        val replacement = previous.copy(localRevision = 2)
+        val previous = PlayerCoverIdentity("A", "file:///cover.jpg", sourceRevision = 1)
+        val replacement = previous.copy(sourceRevision = 2)
         frames.request(previous)
         frames.complete(previous, "outgoing")
         frames.request(replacement)

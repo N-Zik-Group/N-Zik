@@ -156,6 +156,7 @@ import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.core.rewind.RewindPlaylists.rewindDisplayName
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.components.playlist.rememberPlaylistDownloadStates
 import app.n_zik.android.enums.DownloadedStateMedia
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.PlaylistSongSortBy
@@ -954,24 +955,7 @@ fun LocalPlaylistSongs(
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     // Download state cache
-    val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
-    val downloadedIds by remember {
-        derivedStateOf {
-            downloadsMapState.values
-                .filter { it.state == Download.STATE_COMPLETED }
-                .mapTo(HashSet()) { it.request.id }
-        }
-    }
-    val downloadStatesMap by remember {
-        derivedStateOf {
-            itemsOnDisplay.associate { song ->
-                song.id to when {
-                    song.id in downloadedIds -> DownloadedStateMedia.DOWNLOADED
-                    else -> DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
-                }
-            }
-        }
-    }
+    val (downloadsMapState, downloadStatesMap) = rememberPlaylistDownloadStates(songIds)
 
     // Hoisted swipe action preferences
     val queueSwipeLeftAction by rememberPreference(queueSwipeLeftActionKey, QueueSwipeAction.RemoveFromQueue)

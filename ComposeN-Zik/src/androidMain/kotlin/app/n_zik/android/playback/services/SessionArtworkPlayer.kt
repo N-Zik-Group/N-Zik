@@ -21,7 +21,7 @@ import app.n_zik.android.R
 import app.n_zik.android.BuildConfig
 import timber.log.Timber
 import app.n_zik.android.appContext
-import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
+import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
 
 /** Publishes lightweight session metadata with profile-owned artwork identity. */
@@ -30,9 +30,10 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
     private val listeners = IdentityHashMap<Player.Listener, Player.Listener>()
     private var profile = getActiveProfile(appContext())
     private var square = appContext().preferences.getBoolean(cropVideoThumbnailsKey, true)
-    private var revision = ArtworkRevisions.current()
     private var expires = now() + 24 * 60 * 60 * 1000L
     private var localArtwork: LocalSessionArtwork? = null
+    private var observedArtworkSource: String? = null
+    private var observedArtworkRevision = 0L
     private var durationMediaId: String? = null
     private var knownDurationMs: Long? = null
     private var lastDurationDiagnostic: String? = null
@@ -48,6 +49,7 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
     private fun localArtworkUri(mediaId: String, source: String): Uri? {
         if (!source.startsWith("file:") && !source.startsWith('/')) return null
         val songId = LocalArtworkRules.songIdOf(mediaId)
+        val revision = ImageCacheFactory.artworkSourceRevision(source, profile)
         val cached = localArtwork
         if (cached?.source == source && cached.songId == songId &&
             cached.profile == profile && cached.revision == revision
@@ -89,9 +91,19 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
     fun refreshArtwork() {
         profile = getActiveProfile(appContext())
         square = appContext().preferences.getBoolean(cropVideoThumbnailsKey, true)
-        revision = ArtworkRevisions.current()
         expires = now() + 24 * 60 * 60 * 1000L
+        observedArtworkRevision = ImageCacheFactory.artworkSourceRevision(observedArtworkSource, profile)
         publishMetadata()
+    }
+
+    /** Republishes metadata when pixels change behind the same URI. */
+    internal fun refreshChangedArtwork(): Boolean {
+        val source = observedArtworkSource ?: return false
+        val revision = ImageCacheFactory.artworkSourceRevision(source, profile)
+        if (revision == observedArtworkRevision) return false
+        observedArtworkRevision = revision
+        publishMetadata()
+        return true
     }
 
     /** Called on the player thread when stream resolution learns a finite track length. */
@@ -120,6 +132,11 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
             ?: metadata.extras?.getString(SessionMediaItemMapper.ORIGINAL_ARTWORK_SOURCE_EXTRA)
                 ?.let(::cleanPrefix) ?: metadata.artworkUri?.toString()
         if (now() >= expires) expires = now() + 24 * 60 * 60 * 1000L
+        val revision = ImageCacheFactory.artworkSourceRevision(source, profile)
+        if (source != observedArtworkSource) {
+            observedArtworkSource = source
+            observedArtworkRevision = revision
+        }
         val providerArtworkUri = source?.takeIf { currentItem != null }?.let {
             ArtworkContentProvider.uriForRemote(it, profile, square, revision, expires)
         } ?: selectedArtwork?.takeIf { it.authority == ArtworkContentProvider.AUTHORITY }

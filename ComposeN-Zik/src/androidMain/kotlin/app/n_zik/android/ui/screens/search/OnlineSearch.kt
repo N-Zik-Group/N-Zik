@@ -20,7 +20,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -106,7 +105,6 @@ import app.n_zik.android.ui.items.VideoItemPlaceholder
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.px
-import app.n_zik.android.utils.align
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.forcePlay
 import app.n_zik.android.utils.pauseSearchHistoryKey
@@ -361,445 +359,206 @@ fun OnlineSearch(
                         SearchEmptySpace(fillRemainingViewport = true)
                     }
                 }
-                // Results display order (user preference)
-                when (searchDisplayOrder) {
-                    SearchDisplayOrder.SuggestionsFirst -> {
-                        // Afficher d'abord les suggestions
-                        suggestionsResult?.getOrNull()?.takeIf { it.hasContent() }?.let { suggestions ->
-                            item(key = "search_suggestions_title", contentType = "section_title") {
-                                TitleMiniSection(title = stringResource(R.string.search_suggestions_title),
-                                    modifier = Modifier.padding(start = 24.dp)
-                                )
-                            }
-
-                            suggestions.recommendedSong.let {
-                                item(key = "search_recommended_song", contentType = "song") {
-                                    it?.asMediaItem?.let { mediaItem ->
-                                        SongItem(
-                                            song = mediaItem.asSong,
-                                            navController = navController,
-                                            modifier = Modifier
-                                                .clip(uiRoundnessShape()),
-                                            onClick = {
-                                                recordOnlineQuery()
-                                                binder?.player?.forcePlay(mediaItem)
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                            suggestions.recommendedAlbum?.let { album ->
-                                item(key = "search_recommended_album", contentType = "album") {
-                                    AlbumItem(
-                                        yearCentered = false,
-                                        album = album,
-                                        thumbnailSizePx = songThumbnailSizePx,
-                                        thumbnailSizeDp = songThumbnailSizeDp,
-                                        modifier = Modifier
-                                            .clip(uiRoundnessShape()).combinedClickable(
-                                                onLongClick = {
-                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    menuState.display {
-                                                        OnlineAlbumItemMenu(
-                                                            navController = navController,
-                                                            album = album
-                                                        ).MenuComponent()
-                                                    }
-                                                },
-                                                onClick = {
-                                                    recordOnlineQuery()
-                                                    navController.navigate(route = "${NavRoutes.album.name}/${album.key}")
-                                                }
-                                            ),
-                                        disableScrollingText = disableScrollingText
-                                    )
-                                }
-                            }
-                            suggestions.recommendedArtist?.let { artist ->
-                                item(key = "search_recommended_artist", contentType = "artist") {
-                                    ArtistItem(
-                                        artist = artist,
-                                        thumbnailSizePx = songThumbnailSizePx,
-                                        thumbnailSizeDp = songThumbnailSizeDp,
-                                        modifier = Modifier
-                                            .clip(uiRoundnessShape()).combinedClickable(
-                                                onLongClick = {
-                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    menuState.display {
-                                                        OnlineArtistItemMenu(
-                                                            navController = navController,
-                                                            artist = artist
-                                                        ).MenuComponent()
-                                                    }
-                                                },
-                                                onClick = {
-                                                    recordOnlineQuery()
-                                                    navController.navigate(route = "${NavRoutes.artist.name}/${artist.key}")
-                                                }
-                                            ),
-                                        disableScrollingText = disableScrollingText
-                                    )
-                                }
-                            }
-                            suggestions.recommendedPlaylist?.let { playlist ->
-                                item(key = "search_recommended_playlist", contentType = "playlist") {
-                                    PlaylistItem(
-                                        playlist = playlist,
-                                        thumbnailSizePx = songThumbnailSizePx,
-                                        thumbnailSizeDp = songThumbnailSizeDp,
-                                        modifier = Modifier
-                                            .clip(uiRoundnessShape()).combinedClickable(
-                                                onLongClick = {
-                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    menuState.display {
-                                                        OnlinePlaylistItemMenu(
-                                                            navController = navController,
-                                                            playlist = playlist
-                                                        ).MenuComponent()
-                                                    }
-                                                },
-                                                onClick = {
-                                                    recordOnlineQuery()
-                                                    navController.navigate(route = "${NavRoutes.playlist.name}/${playlist.key}")
-                                                }
-                                            ),
-                                        disableScrollingText = disableScrollingText
-                                    )
-                                }
-                            }
-                            suggestions.recommendedVideo?.let { video ->
-                                item(key = "search_recommended_video", contentType = "video") {
-                                    VideoItem(
-                                        video = video,
-                                        thumbnailHeightDp = songThumbnailSizeDp,
-                                        thumbnailWidthDp = songThumbnailSizeDp,
-                                        modifier = Modifier
-                                            .clip(uiRoundnessShape()).combinedClickable(
-                                                onLongClick = {
-                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    menuState.display {
-                                                        VideoItemMenu(
-                                                            navController = navController,
-                                                            song = video.asMediaItem.asSong
-                                                        ).MenuComponent()
-                                                    }
-                                                },
-                                                onClick = {
-                                                    recordOnlineQuery()
-                                                    binder?.player?.forcePlay(video.asMediaItem)
-                                                }
-                                            ),
-                                        disableScrollingText = disableScrollingText
-                                    )
-                                }
-                            }
-
-                            items(
-                                items = suggestions.queries.distinct(),
-                                key = { "search_query:$it" },
-                                contentType = { "search_query" },
-                            ) { query ->
-                                val editQuery: () -> Unit = {
-                                    onTextFieldValueChanged(
-                                        TextFieldValue(
-                                            text = query,
-                                            selection = TextRange(query.length)
-                                        )
-                                    )
-                                    coroutineScope.launch {
-                                        lazyListState.animateScrollToItem(0)
-                                    }
-                                }
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .clip(uiRoundnessShape()).clickable (
-                                            onClick = {
-                                                recordOnlineQuery(query)
-                                                onSearch(query.replace("/", "", true))
-                                                /*
-                                                onTextFieldValueChanged(
-                                                    TextFieldValue(
-                                                        cleanString(query)
-                                                    )
-                                                )
-                                                 */
-                                            }
-                                        )
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 24.dp)
-                                        .padding(all = 16.dp)
-                                ) {
-                                    Spacer(
-                                        modifier = Modifier
-                                            .padding(horizontal = 8.dp)
-                                            .size(20.dp)
-                                    )
-
-                                    BasicText(
-                                        text = query,
-                                        style = typography().s.secondary,
-                                        modifier = Modifier
-                                            .padding(horizontal = 8.dp)
-                                            .weight(1f)
-                                    )
-
-                                    SearchSuggestionEditAction(onClick = editQuery) {
-                                        Image(
-                                            painter = painterResource(R.drawable.pencil),
-                                            contentDescription = null,
-                                            colorFilter = ColorFilter.tint(colorPalette().textDisabled),
-                                            modifier = Modifier
-                                                .size(22.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        } ?: suggestionsResult?.exceptionOrNull()?.let {
-                            item(key = "search_suggestions_error", contentType = "error") {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                ) {
-                                    TitleMiniSection(title = stringResource(R.string.search_suggestions_empty_message),
-                                        modifier = Modifier.padding(start = 24.dp)
-                                    )
-                                    /*
-                                    BasicText(
-                                        text = stringResource(R.string.common_error_title),
-                                        style = typography().s.secondary.center,
-                                        modifier = Modifier
-                                            .align(Alignment.Center)
-                                    )
-                                     */
-                                }
-                            }
-                        }
-
-                        // Puis afficher l'historique (toujours visible)
-                        item(key = "search_history", contentType = "history") {
-                            searchHistoryContent()
-                        }
+                if (searchDisplayOrder == SearchDisplayOrder.SavedSearchesFirst) {
+                    item(key = "search_history", contentType = "history") { searchHistoryContent() }
+                }
+                suggestionsResult?.getOrNull()?.takeIf { it.hasContent() }?.let { suggestions ->
+                    item(key = "search_suggestions_title", contentType = "section_title") {
+                        TitleMiniSection(title = stringResource(R.string.search_suggestions_title),
+                            modifier = Modifier.padding(start = 24.dp)
+                        )
                     }
 
-                    SearchDisplayOrder.SavedSearchesFirst -> {
-                        // Afficher d'abord l'historique (toujours visible)
-                        item(key = "search_history", contentType = "history") {
-                            searchHistoryContent()
-                        }
-
-                        // Puis afficher les suggestions
-                        suggestionsResult?.getOrNull()?.takeIf { it.hasContent() }?.let { suggestions ->
-                            item(key = "search_suggestions_title", contentType = "section_title") {
-                                TitleMiniSection(title = stringResource(R.string.search_suggestions_title),
-                                    modifier = Modifier.padding(start = 24.dp)
+                    suggestions.recommendedSong.let {
+                        item(key = "search_recommended_song", contentType = "song") {
+                            it?.asMediaItem?.let { mediaItem ->
+                                SongItem(
+                                    song = mediaItem.asSong,
+                                    navController = navController,
+                                    modifier = Modifier
+                                        .clip(uiRoundnessShape()),
+                                    onClick = {
+                                        recordOnlineQuery()
+                                        binder?.player?.forcePlay(mediaItem)
+                                    }
                                 )
-                            }
-
-                            suggestions.recommendedSong.let {
-                                item(key = "search_recommended_song", contentType = "song") {
-                                    it?.asMediaItem?.let { mediaItem ->
-                                        SongItem(
-                                            song = mediaItem.asSong,
-                                            navController = navController,
-                                            modifier = Modifier
-                                                .clip(uiRoundnessShape()),
-                                            onClick = {
-                                                recordOnlineQuery()
-                                                binder?.player?.forcePlay(mediaItem)
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                            suggestions.recommendedAlbum?.let { album ->
-                                item(key = "search_recommended_album", contentType = "album") {
-                                    AlbumItem(
-                                        yearCentered = false,
-                                        album = album,
-                                        thumbnailSizePx = songThumbnailSizePx,
-                                        thumbnailSizeDp = songThumbnailSizeDp,
-                                        modifier = Modifier
-                                            .clip(uiRoundnessShape()).combinedClickable(
-                                                onLongClick = {
-                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    menuState.display {
-                                                        OnlineAlbumItemMenu(
-                                                            navController = navController,
-                                                            album = album
-                                                        ).MenuComponent()
-                                                    }
-                                                },
-                                                onClick = {
-                                                    recordOnlineQuery()
-                                                    navController.navigate(route = "${NavRoutes.album.name}/${album.key}")
-                                                }
-                                            ),
-                                        disableScrollingText = disableScrollingText
-                                    )
-                                }
-                            }
-                            suggestions.recommendedArtist?.let { artist ->
-                                item(key = "search_recommended_artist", contentType = "artist") {
-                                    ArtistItem(
-                                        artist = artist,
-                                        thumbnailSizePx = songThumbnailSizePx,
-                                        thumbnailSizeDp = songThumbnailSizeDp,
-                                        modifier = Modifier
-                                            .clip(uiRoundnessShape()).combinedClickable(
-                                                onLongClick = {
-                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    menuState.display {
-                                                        OnlineArtistItemMenu(
-                                                            navController = navController,
-                                                            artist = artist
-                                                        ).MenuComponent()
-                                                    }
-                                                },
-                                                onClick = {
-                                                    recordOnlineQuery()
-                                                    navController.navigate(route = "${NavRoutes.artist.name}/${artist.key}")
-                                                }
-                                            ),
-                                        disableScrollingText = disableScrollingText
-                                    )
-                                }
-                            }
-                            suggestions.recommendedPlaylist?.let { playlist ->
-                                item(key = "search_recommended_playlist", contentType = "playlist") {
-                                    PlaylistItem(
-                                        playlist = playlist,
-                                        thumbnailSizePx = songThumbnailSizePx,
-                                        thumbnailSizeDp = songThumbnailSizeDp,
-                                        modifier = Modifier
-                                            .clip(uiRoundnessShape()).combinedClickable(
-                                                onLongClick = {
-                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    menuState.display {
-                                                        OnlinePlaylistItemMenu(
-                                                            navController = navController,
-                                                            playlist = playlist
-                                                        ).MenuComponent()
-                                                    }
-                                                },
-                                                onClick = {
-                                                    recordOnlineQuery()
-                                                    navController.navigate(route = "${NavRoutes.playlist.name}/${playlist.key}")
-                                                }
-                                            ),
-                                        disableScrollingText = disableScrollingText
-                                    )
-                                }
-                            }
-                            suggestions.recommendedVideo?.let { video ->
-                                item(key = "search_recommended_video", contentType = "video") {
-                                    VideoItem(
-                                        video = video,
-                                        thumbnailHeightDp = songThumbnailSizeDp,
-                                        thumbnailWidthDp = songThumbnailSizeDp,
-                                        modifier = Modifier
-                                            .clip(uiRoundnessShape()).combinedClickable(
-                                                onLongClick = {
-                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    menuState.display {
-                                                        VideoItemMenu(
-                                                            navController = navController,
-                                                            song = video.asMediaItem.asSong
-                                                        ).MenuComponent()
-                                                    }
-                                                },
-                                                onClick = {
-                                                    recordOnlineQuery()
-                                                    binder?.player?.forcePlay(video.asMediaItem)
-                                                }
-                                            ),
-                                        disableScrollingText = disableScrollingText
-                                    )
-                                }
-                            }
-
-                            items(
-                                items = suggestions.queries.distinct(),
-                                key = { "search_query:$it" },
-                                contentType = { "search_query" },
-                            ) { query ->
-                                val editQuery: () -> Unit = {
-                                    onTextFieldValueChanged(
-                                        TextFieldValue(
-                                            text = query,
-                                            selection = TextRange(query.length)
-                                        )
-                                    )
-                                    coroutineScope.launch {
-                                        lazyListState.animateScrollToItem(0)
-                                    }
-                                }
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .clip(uiRoundnessShape()).clickable (
-                                            onClick = {
-                                                recordOnlineQuery(query)
-                                                onSearch(query.replace("/", "", true))
-                                                /*
-                                                onTextFieldValueChanged(
-                                                    TextFieldValue(
-                                                        cleanString(query)
-                                                    )
-                                                )
-                                                 */
-                                            }
-                                        )
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 24.dp)
-                                        .padding(all = 16.dp)
-                                ) {
-                                    Spacer(
-                                        modifier = Modifier
-                                            .padding(horizontal = 8.dp)
-                                            .size(20.dp)
-                                    )
-
-                                    BasicText(
-                                        text = query,
-                                        style = typography().s.secondary,
-                                        modifier = Modifier
-                                            .padding(horizontal = 8.dp)
-                                            .weight(1f)
-                                    )
-
-                                    SearchSuggestionEditAction(onClick = editQuery) {
-                                        Image(
-                                            painter = painterResource(R.drawable.pencil),
-                                            contentDescription = null,
-                                            colorFilter = ColorFilter.tint(colorPalette().textDisabled),
-                                            modifier = Modifier
-                                                .size(22.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        } ?: suggestionsResult?.exceptionOrNull()?.let {
-                            item(key = "search_suggestions_error", contentType = "error") {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                ) {
-                                    TitleMiniSection(title = stringResource(R.string.search_suggestions_empty_message),
-                                        modifier = Modifier.padding(start = 24.dp)
-                                    )
-                                    /*
-                                    BasicText(
-                                        text = stringResource(R.string.common_error_title),
-                                        style = typography().s.secondary.center,
-                                        modifier = Modifier
-                                            .align(Alignment.Center)
-                                    )
-                                     */
-                                }
                             }
                         }
                     }
+                    suggestions.recommendedAlbum?.let { album ->
+                        item(key = "search_recommended_album", contentType = "album") {
+                            AlbumItem(
+                                yearCentered = false,
+                                album = album,
+                                thumbnailSizePx = songThumbnailSizePx,
+                                thumbnailSizeDp = songThumbnailSizeDp,
+                                modifier = Modifier
+                                    .clip(uiRoundnessShape()).combinedClickable(
+                                        onLongClick = {
+                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            menuState.display {
+                                                OnlineAlbumItemMenu(
+                                                    navController = navController,
+                                                    album = album
+                                                ).MenuComponent()
+                                            }
+                                        },
+                                        onClick = {
+                                            recordOnlineQuery()
+                                            navController.navigate(route = "${NavRoutes.album.name}/${album.key}")
+                                        }
+                                    ),
+                                disableScrollingText = disableScrollingText
+                            )
+                        }
+                    }
+                    suggestions.recommendedArtist?.let { artist ->
+                        item(key = "search_recommended_artist", contentType = "artist") {
+                            ArtistItem(
+                                artist = artist,
+                                thumbnailSizePx = songThumbnailSizePx,
+                                thumbnailSizeDp = songThumbnailSizeDp,
+                                modifier = Modifier
+                                    .clip(uiRoundnessShape()).combinedClickable(
+                                        onLongClick = {
+                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            menuState.display {
+                                                OnlineArtistItemMenu(
+                                                    navController = navController,
+                                                    artist = artist
+                                                ).MenuComponent()
+                                            }
+                                        },
+                                        onClick = {
+                                            recordOnlineQuery()
+                                            navController.navigate(route = "${NavRoutes.artist.name}/${artist.key}")
+                                        }
+                                    ),
+                                disableScrollingText = disableScrollingText
+                            )
+                        }
+                    }
+                    suggestions.recommendedPlaylist?.let { playlist ->
+                        item(key = "search_recommended_playlist", contentType = "playlist") {
+                            PlaylistItem(
+                                playlist = playlist,
+                                thumbnailSizePx = songThumbnailSizePx,
+                                thumbnailSizeDp = songThumbnailSizeDp,
+                                modifier = Modifier
+                                    .clip(uiRoundnessShape()).combinedClickable(
+                                        onLongClick = {
+                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            menuState.display {
+                                                OnlinePlaylistItemMenu(
+                                                    navController = navController,
+                                                    playlist = playlist
+                                                ).MenuComponent()
+                                            }
+                                        },
+                                        onClick = {
+                                            recordOnlineQuery()
+                                            navController.navigate(route = "${NavRoutes.playlist.name}/${playlist.key}")
+                                        }
+                                    ),
+                                disableScrollingText = disableScrollingText
+                            )
+                        }
+                    }
+                    suggestions.recommendedVideo?.let { video ->
+                        item(key = "search_recommended_video", contentType = "video") {
+                            VideoItem(
+                                video = video,
+                                thumbnailHeightDp = songThumbnailSizeDp,
+                                thumbnailWidthDp = songThumbnailSizeDp,
+                                modifier = Modifier
+                                    .clip(uiRoundnessShape()).combinedClickable(
+                                        onLongClick = {
+                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            menuState.display {
+                                                VideoItemMenu(
+                                                    navController = navController,
+                                                    song = video.asMediaItem.asSong
+                                                ).MenuComponent()
+                                            }
+                                        },
+                                        onClick = {
+                                            recordOnlineQuery()
+                                            binder?.player?.forcePlay(video.asMediaItem)
+                                        }
+                                    ),
+                                disableScrollingText = disableScrollingText
+                            )
+                        }
+                    }
+
+                    items(
+                        items = suggestions.queries.distinct(),
+                        key = { "search_query:$it" },
+                        contentType = { "search_query" },
+                    ) { query ->
+                        val editQuery: () -> Unit = {
+                            onTextFieldValueChanged(
+                                TextFieldValue(
+                                    text = query,
+                                    selection = TextRange(query.length)
+                                )
+                            )
+                            coroutineScope.launch {
+                                lazyListState.animateScrollToItem(0)
+                            }
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clip(uiRoundnessShape()).clickable (
+                                    onClick = {
+                                        recordOnlineQuery(query)
+                                        onSearch(query.replace("/", "", true))
+                                    }
+                                )
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp)
+                                .padding(all = 16.dp)
+                        ) {
+                            Spacer(
+                                modifier = Modifier
+                                    .padding(horizontal = 8.dp)
+                                    .size(20.dp)
+                            )
+
+                            BasicText(
+                                text = query,
+                                style = typography().s.secondary,
+                                modifier = Modifier
+                                    .padding(horizontal = 8.dp)
+                                    .weight(1f)
+                            )
+
+                            SearchSuggestionEditAction(onClick = editQuery) {
+                                Image(
+                                    painter = painterResource(R.drawable.pencil),
+                                    contentDescription = null,
+                                    colorFilter = ColorFilter.tint(colorPalette().textDisabled),
+                                    modifier = Modifier
+                                        .size(22.dp)
+                                )
+                            }
+                        }
+                    }
+                } ?: suggestionsResult?.exceptionOrNull()?.let {
+                    item(key = "search_suggestions_error", contentType = "error") {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                        ) {
+                            TitleMiniSection(title = stringResource(R.string.search_suggestions_empty_message),
+                                modifier = Modifier.padding(start = 24.dp)
+                            )
+                        }
+                    }
+                }
+                if (searchDisplayOrder == SearchDisplayOrder.SuggestionsFirst) {
+                    item(key = "search_history", contentType = "history") { searchHistoryContent() }
                 }
             }
         }

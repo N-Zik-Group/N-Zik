@@ -19,6 +19,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -312,10 +316,18 @@ private val rainbowOutlineColors =
 private val darkRainbowOutlineColors = rainbowOutlineColors.map { Color.Black.copy(alpha = 0.35f).compositeOver(it) }
 private val inactiveRainbowOutlineColors = rainbowOutlineColors.map { it.copy(alpha = 0.3f) }
 
+private val LocalRainbowOutlines = staticCompositionLocalOf<State<List<ShaderBrush>>?> { null }
+
 @Composable
-private fun rememberRainbowOutlineBrush(isCurrentIndex: Boolean, lightTheme: Boolean): ShaderBrush {
+internal fun LyricsRainbowOutlines(enabled: Boolean, content: @Composable () -> Unit) {
+    if (enabled) CompositionLocalProvider(LocalRainbowOutlines provides rememberRainbowOutlines(), content = content)
+    else content()
+}
+
+@Composable
+private fun rememberRainbowOutlines(): State<List<ShaderBrush>> {
     val transition = rememberInfiniteTransition(label = "Lyrics rainbow outline")
-    val offset by transition.animateFloat(
+    val phase = transition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
@@ -324,23 +336,33 @@ private fun rememberRainbowOutlineBrush(isCurrentIndex: Boolean, lightTheme: Boo
         ),
         label = "Lyrics rainbow offset",
     )
-    val colors = when {
-        !isCurrentIndex -> inactiveRainbowOutlineColors
-        lightTheme -> rainbowOutlineColors
-        else -> darkRainbowOutlineColors
-    }
-    return remember(offset, colors) {
-        object : ShaderBrush() {
-            override fun createShader(size: Size): Shader {
-                val widthOffset = size.width * offset
-                val heightOffset = size.height * offset
-                return LinearGradientShader(
-                    colors = colors,
-                    from = Offset(widthOffset, heightOffset),
-                    to = Offset(widthOffset + size.width, heightOffset + size.height),
-                    tileMode = TileMode.Mirror,
-                )
+    return remember(phase) {
+        derivedStateOf {
+            val offset = phase.value
+            listOf(inactiveRainbowOutlineColors, rainbowOutlineColors, darkRainbowOutlineColors).map { colors ->
+                object : ShaderBrush() {
+                    override fun createShader(size: Size): Shader {
+                        val start = Offset(size.width * offset, size.height * offset)
+                        return LinearGradientShader(
+                            colors = colors,
+                            from = start,
+                            to = start + Offset(size.width, size.height),
+                            tileMode = TileMode.Mirror,
+                        )
+                    }
+                }
             }
         }
     }
+}
+
+@Composable
+private fun rememberRainbowOutlineBrush(isCurrentIndex: Boolean, lightTheme: Boolean): ShaderBrush {
+    val outlines = LocalRainbowOutlines.current ?: rememberRainbowOutlines()
+    val index = when {
+        !isCurrentIndex -> 0
+        lightTheme -> 1
+        else -> 2
+    }
+    return outlines.value[index]
 }

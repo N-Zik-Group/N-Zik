@@ -113,7 +113,7 @@ import app.n_zik.android.widget.WidgetAppearance
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.YouTubeSession
 import app.n_zik.innertube.hasYouTubeAuthCookie
-import app.n_zik.innertube.invidious.Invidious
+import app.n_zik.invidious.Invidious
 import app.n_zik.innertube.models.ArtistConjunctions
 import app.n_zik.innertube.utils.InnertubeLogger
 import app.n_zik.innertube.utils.ProxyPreferenceItem
@@ -276,10 +276,6 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // The mini-player can request a snapshot before the full visualizer mounts.
         VisualizerHelper.snapshotProvider = VisualizerCaptureCoordinator::currentSnapshot
 
-        // Same seam pattern (issue #606, Goal D Lot 1): extensions/innertube is a pure kotlin("jvm")
-        // module and can't depend on NzikDispatchers either.
-        Invidious.backgroundDispatcher = NzikDispatchers.DATA
-
         // Same seam pattern (issue #606, Goal G5): modules/discordrpc is a forked submodule
         // and can't depend on NzikDispatchers either.
         DiscordRpc.backgroundDispatcher = NzikDispatchers.DATA
@@ -393,8 +389,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             KuGou.offlineGate = NetworkGate::isOnline
             BetterLyrics.offlineGate = NetworkGate::isOnline
             GatewayWebSocket.offlineGate = NetworkGate::isOnline
-            // Fully qualified: this file also imports the unrelated app.n_zik.innertube.invidious.Invidious.
-            app.n_zik.invidious.Invidious.offlineGate = NetworkGate::isOnline
+            Invidious.offlineGate = NetworkGate::isOnline
 
             // Preserve the search preference across login changes. Guests already search anonymously.
             if (encryptedPreferences.getBoolean(enableYouTubeLoginKey, true)) {

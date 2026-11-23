@@ -14,7 +14,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.FontType
-import app.n_zik.android.ui.components.navigation.header.ActionBar
+import app.n_zik.android.components.navigation.header.ActionBar
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance

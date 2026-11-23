@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.media3.common.Player
+import app.n_zik.android.components.theme.DynamicPaletteArtworkListener
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.player.ArtworkDisplayColors
 import app.n_zik.android.components.player.ArtworkDisplayResult
@@ -106,23 +107,18 @@ internal fun rememberGlassArtwork(player: Player?): GlassArtwork? =
 
 /** Observes metadata as well as queue transitions, including artwork replaced on the same song. */
 @Composable
-internal fun rememberPlayerArtworkObservation(player: Player?): PlayerArtworkObservation {
-    val artwork = remember(player) { mutableStateOf(player?.glassArtwork()) }
-    DisposableEffect(player) {
-        val listener = object : Player.Listener {
-            override fun onEvents(player: Player, events: Player.Events) {
-                if (events.containsAny(
-                        Player.EVENT_MEDIA_ITEM_TRANSITION,
-                        Player.EVENT_MEDIA_METADATA_CHANGED,
-                        Player.EVENT_TIMELINE_CHANGED,
-                    )) {
-                    artwork.value = player.glassArtwork()
-                }
+internal fun rememberPlayerArtworkObservation(player: Player?, playerGeneration: Int = 0): PlayerArtworkObservation {
+    val artwork = remember(player, playerGeneration) { mutableStateOf(player?.glassArtwork()) }
+    DisposableEffect(player, playerGeneration) {
+        val listener = player?.let { observed ->
+            DynamicPaletteArtworkListener(observed) { uri ->
+                artwork.value = GlassArtwork(observed.currentMediaItem?.mediaId, uri?.toString())
+            }.also {
+                observed.addListener(it)
+                it.publishCurrentArtwork()
             }
         }
-        player?.addListener(listener)
-        artwork.value = player?.glassArtwork()
-        onDispose { player?.removeListener(listener) }
+        onDispose { listener?.let { player.removeListener(it) } }
     }
     return remember(player, artwork) { PlayerArtworkObservation(player, artwork) }
 }

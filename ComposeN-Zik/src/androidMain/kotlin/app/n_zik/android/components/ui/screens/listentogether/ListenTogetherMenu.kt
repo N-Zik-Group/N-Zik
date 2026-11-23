@@ -5,7 +5,6 @@ import android.content.ClipboardManager
 import android.content.Context
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,7 +26,6 @@ import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.listentogether.LISTEN_TOGETHER_BLOCKED_REASON
 import app.n_zik.android.listentogether.ListenTogetherClient
-import app.n_zik.android.listentogether.ListenTogetherEvent
 import app.n_zik.android.listentogether.ListenTogetherManager
 import app.n_zik.android.listentogether.ListenTogetherServers
 import app.n_zik.android.listentogether.RoomRole
@@ -70,74 +68,13 @@ fun ListenTogetherMenu() {
     var showServerChooserSheet by rememberSaveable { mutableStateOf(false) }
     var showUsernameSheet by rememberSaveable { mutableStateOf(false) }
 
-    val invalidRoomCodeText = stringResource(R.string.listen_together_invalid_room_code)
-    val joinRequestDeniedText = stringResource(R.string.listen_together_join_request_denied)
-    val blockedByHostText = stringResource(R.string.listen_together_user_blocked_by_host)
-    val connectionLostText = stringResource(R.string.listen_together_error)
-    val serverErrorText = stringResource(R.string.listen_together_server_request_failed)
-
-    LaunchedEffect(listenTogetherManager, connectionLostText, serverErrorText) {
-        listenTogetherManager.events.collect { event ->
-            when (event) {
-                is ListenTogetherEvent.JoinRejected -> {
-                    val message = joinRejectionMessage(
-                        event.reason,
-                        joinRequestDeniedText,
-                        invalidRoomCodeText,
-                        blockedByHostText,
-                    ) { reason ->
-                        context.getString(R.string.listen_together_join_request_denied_reason, reason)
-                    }
-                    joinErrorMessage = message
-                    isJoiningRoom = false
-                    isCreatingRoom = false
-                    Toaster.e(message)
-                }
-
-                is ListenTogetherEvent.JoinApproved -> {
-                    isJoiningRoom = false
-                    joinErrorMessage = null
-                }
-
-                is ListenTogetherEvent.RoomCreated -> {
-                    isCreatingRoom = false
-                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    clipboard.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.listen_together_room_code), event.roomCode))
-                }
-
-                // A failure must end the waiting state instead of leaving it stuck:
-                // same branches as the room screen.
-                is ListenTogetherEvent.ServerError -> {
-                    if (isCreatingRoom || isJoiningRoom) {
-                        isCreatingRoom = false
-                        isJoiningRoom = false
-                        joinErrorMessage = serverErrorText
-                        Toaster.e(R.string.listen_together_server_request_failed)
-                    }
-                }
-
-                is ListenTogetherEvent.ConnectionError -> {
-                    if (isCreatingRoom || isJoiningRoom) {
-                        isCreatingRoom = false
-                        isJoiningRoom = false
-                        joinErrorMessage = connectionLostText
-
-                        Toaster.noInternet()
-                    }
-                }
-
-                is ListenTogetherEvent.Disconnected -> {
-                    if (isCreatingRoom || isJoiningRoom) {
-                        isCreatingRoom = false
-                        isJoiningRoom = false
-                        joinErrorMessage = connectionLostText
-                    }
-                }
-
-                else -> {}
-            }
-        }
-    }
+    ObserveListenTogetherFormEvents(
+        manager = listenTogetherManager,
+        isWaiting = { isCreatingRoom || isJoiningRoom },
+        setCreating = { isCreatingRoom = it },
+        setJoining = { isJoiningRoom = it },
+        setError = { joinErrorMessage = it },
+    )
 
     val isInRoom = listenTogetherManager.isInRoom
     val isHost = roomState?.hostId == userId

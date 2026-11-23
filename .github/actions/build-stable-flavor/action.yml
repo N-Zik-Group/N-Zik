@@ -1,0 +1,57 @@
+name: Build stable flavor
+description: Build and verify an unsigned APK for the checked-out source revision.
+inputs:
+  variant:
+    description: Android build variant and signing artifact suffix.
+    required: true
+  gradle-task:
+    description: Gradle assembly task.
+    required: true
+  version-code:
+    description: Version code used to resolve the release changelog.
+    required: true
+  source-sha:
+    description: Expected source revision embedded in the APK.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Copy changelogs into res/raw
+      shell: bash
+      env:
+        VERSION_CODE: ${{ inputs.version-code }}
+      run: cp "Updater/changelogs/$VERSION_CODE.txt" "ComposeN-Zik/src/androidMain/res/raw/release_notes.txt"
+
+    - name: Setup Java 21
+      uses: actions/setup-java@v6.3.0
+      with:
+        java-version: "21"
+        distribution: "corretto"
+
+    - name: Restore Gradle dependencies
+      uses: actions/cache@v6
+      with:
+        path: |
+          ~/.gradle/caches/modules-2
+          ~/.gradle/wrapper
+        key: gradle-dependencies-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: gradle-dependencies-${{ runner.os }}-
+
+    - name: Build with Gradle
+      shell: bash
+      env:
+        GRADLE_TASK: ${{ inputs.gradle-task }}
+      run: ./gradlew "$GRADLE_TASK" --no-build-cache
+
+    - name: Verify APK source revision and native ABIs
+      shell: bash
+      env:
+        SOURCE_SHA: ${{ inputs.source-sha }}
+        VARIANT: ${{ inputs.variant }}
+      run: python3 .github/scripts/verify_release.py apk --sha "$SOURCE_SHA" --variant "$VARIANT" --directory "ComposeN-Zik/build/outputs/apk/$VARIANT"
+
+    - name: Upload artifacts for signing
+      uses: actions/upload-artifact@v7
+      with:
+        name: unsigned-${{ inputs.variant }}
+        path: ComposeN-Zik/build/outputs/apk/${{ inputs.variant }}/*.apk

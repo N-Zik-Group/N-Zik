@@ -15,6 +15,8 @@ import androidx.media3.session.MediaSession
 import app.n_zik.android.utils.cropVideoThumbnailsKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.appContext
+import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -74,6 +76,35 @@ class SessionArtworkPlayerEventsTest {
             }.commit()
         }
         unmockkAll()
+    }
+
+    @Test
+    fun `same URL refresh republishes session artwork without changing unrelated sources`() {
+        val realSession = MediaSession.Builder(context, facade).build().also { session = it }
+        val observer = connect(realSession)
+        val mediaItem = item("refresh")
+        val source = requireNotNull(mediaItem.mediaMetadata.artworkUri).toString()
+        val profile = getActiveProfile(context)
+        val unrelated = "https://example.com/unrelated.jpg"
+        val unrelatedRevision = ImageCacheFactory.artworkSourceRevision(unrelated, profile)
+        upstream.publish(mediaItem)
+        pumpUntil("initial artwork") { observer.mediaMetadata.artworkUri?.getQueryParameter("u") == source }
+        val previous = observer.mediaMetadata.artworkUri?.getQueryParameter("r")
+
+        ImageCacheFactory.refreshArtworkSourcesOrThrow(setOf(source), profile)
+        assertTrue(facade.refreshChangedArtwork())
+
+        pumpUntil("same URL new pixels") {
+            observer.mediaMetadata.artworkUri?.getQueryParameter("u") == source &&
+                observer.mediaMetadata.artworkUri?.getQueryParameter("r") != previous
+        }
+        assertEquals(unrelatedRevision, ImageCacheFactory.artworkSourceRevision(unrelated, profile))
+        assertEquals(
+            ImageCacheFactory.artworkSourceRevision(source, profile).toString(),
+            observer.mediaMetadata.artworkUri?.getQueryParameter("r"),
+        )
+        assertTrue(observer.isPlaying)
+        assertTrue(upstream.commands.isEmpty())
     }
 
     @Test

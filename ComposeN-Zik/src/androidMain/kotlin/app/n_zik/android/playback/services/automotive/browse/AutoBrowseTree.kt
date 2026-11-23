@@ -1,12 +1,12 @@
 package app.n_zik.android.playback.services.automotive.browse
 
+import app.n_zik.android.core.coil.ImageCacheFactory
 import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import app.n_zik.android.utils.cropVideoThumbnailsKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.playback.services.ArtworkContentProvider
-import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -41,6 +41,7 @@ class AutoBrowseTree(
     private var profileGeneration = 0L
     private val emittedFolders = linkedMapOf<String, MediaItem>()
     private data class BrowseKey(val browser: Any, val parentId: String)
+    internal data class ArtworkChange(val browser: Any, val parentId: String, val itemCount: Int)
     private val visibleLists = linkedMapOf<BrowseKey, List<MediaItem>>()
 
     private val searchHandler = SearchBrowseHandler()
@@ -129,8 +130,9 @@ class AutoBrowseTree(
         }
         return synchronized(publicationLock) {
             if (!ownsPublication(requestProfile, generation)) return emptyList()
-            val visible = if (actualParentId == AutoSuggestedQueueLoader.ROOT_ID) list
-                else PaginationHelper.paginate(context, list, actualParentId, page?.index ?: pageIndex)
+            val visible = (if (actualParentId == AutoSuggestedQueueLoader.ROOT_ID) list
+                else PaginationHelper.paginate(context, list, actualParentId, page?.index ?: pageIndex))
+                .map { withCurrentArtwork(it, requestProfile, includeLocal = true) }
             visible.also {
                 visibleLists[BrowseKey(browser, parentId)] = visible
                 while (visibleLists.size > 32) visibleLists.remove(visibleLists.keys.first())
@@ -227,16 +229,27 @@ class AutoBrowseTree(
     private fun cacheKey(profile: String, generation: Long, parentId: String): String =
         "$generation:$profile:$parentId"
 
-    private fun withRemoteArtwork(item: MediaItem, profile: String): MediaItem {
-        val uri = item.mediaMetadata.artworkUri
-        val source = when {
-            uri?.scheme in setOf("http", "https") -> uri.toString()
-            uri?.authority == ArtworkContentProvider.AUTHORITY && uri.path == "/remote" -> uri.getQueryParameter("u")
-            else -> null
+    private fun withRemoteArtwork(item: MediaItem, profile: String): MediaItem =
+        withCurrentArtwork(item, profile, includeLocal = false)
+
+    private fun withCurrentArtwork(item: MediaItem, profile: String, includeLocal: Boolean): MediaItem {
+        val uri = item.mediaMetadata.artworkUri ?: return item
+        val remote = when {
+            uri.scheme in setOf("http", "https") -> uri.toString()
+            else -> ArtworkContentProvider.retainedRemoteSource(uri, profile)
         }
-        return if (source == null) item else item.buildUpon().setMediaMetadata(item.mediaMetadata.buildUpon()
-            .setArtworkUri(ArtworkContentProvider.uriForRemote(source, profile,
-                context.preferences.getBoolean(cropVideoThumbnailsKey, true), ArtworkRevisions.current())).build()).build()
+        val nextUri = if (remote != null) {
+            val crop = context.preferences.getBoolean(cropVideoThumbnailsKey, true)
+            val revision = ImageCacheFactory.artworkSourceRevision(remote, profile)
+            if (uri.authority == ArtworkContentProvider.AUTHORITY &&
+                uri.getQueryParameter("r")?.toLongOrNull() == revision &&
+                uri.getQueryParameter("c")?.toBooleanStrictOrNull() == crop &&
+                (uri.getQueryParameter("e")?.toLongOrNull() ?: 0L) > System.currentTimeMillis()
+            ) return item
+            ArtworkContentProvider.uriForRemote(remote, profile, crop, revision)
+        } else if (includeLocal) ArtworkContentProvider.refreshLocalUri(context, profile, uri) else uri
+        if (nextUri == null || nextUri == uri) return item
+        return item.buildUpon().setMediaMetadata(item.mediaMetadata.buildUpon().setArtworkUri(nextUri).build()).build()
     }
 
     /** Pending loads lose publication ownership even if connectivity later returns. */
@@ -247,24 +260,33 @@ class AutoBrowseTree(
         visibleLists.clear()
     }
 
-    fun refreshArtwork() = synchronized(publicationLock) {
-        cache.clear()
-        val profile = getActiveProfile(context)
-        if (cacheProfile != profile) return@synchronized
-        val refreshedItems = mutableMapOf<MediaItem, MediaItem>()
-        fun refresh(item: MediaItem): MediaItem {
-            refreshedItems[item]?.let { return it }
-            val uri = item.mediaMetadata.artworkUri ?: return item
-            if (uri.authority != ArtworkContentProvider.AUTHORITY || uri.path != "/remote") return item
-            val source = uri.getQueryParameter("u") ?: return item
-            return item.buildUpon().setMediaMetadata(item.mediaMetadata.buildUpon().setArtworkUri(
-                ArtworkContentProvider.uriForRemote(source, profile,
-                    context.preferences.getBoolean(cropVideoThumbnailsKey, true), ArtworkRevisions.current())
-            ).build()).build().also { refreshedItems[item] = it }
-        }
-        emittedFolders.replaceAll { _, item -> refresh(item) }
-        visibleLists.replaceAll { _, items -> items.map(::refresh) }
+    fun refreshArtwork() {
+        refreshChangedArtwork(includeLocal = false)
     }
+
+    internal fun refreshChangedArtwork(includeLocal: Boolean = true): List<ArtworkChange> =
+        synchronized(publicationLock) {
+            val profile = getActiveProfile(context)
+            if (cacheProfile != profile) return@synchronized emptyList()
+            val refreshed = mutableMapOf<MediaItem, MediaItem>()
+            fun refresh(item: MediaItem): MediaItem =
+                refreshed.getOrPut(item) { withCurrentArtwork(item, profile, includeLocal) }
+
+            fun refreshRows(rows: List<MediaItem>): List<MediaItem> {
+                val updated = rows.map(::refresh)
+                return if (updated == rows) rows else updated
+            }
+
+            cache.refreshArtwork(::refreshRows)
+            emittedFolders.replaceAll { _, item -> refresh(item) }
+            val changes = mutableListOf<ArtworkChange>()
+            visibleLists.replaceAll { key, items ->
+                val updated = refreshRows(items)
+                if (updated !== items) changes += ArtworkChange(key.browser, key.parentId, updated.size)
+                updated
+            }
+            changes
+        }
 
     /** Resets search ownership without dropping already displayed playback snapshots. */
     fun clearCache() = synchronized(publicationLock) {

@@ -34,12 +34,16 @@ object SessionArtworkLoader {
         } else null
         val context = appContext()
         val profile = getActiveProfile(context)
-        val revision = ArtworkRevisions.current()
+        val revision = ImageCacheFactory.artworkSourceRevision(url, profile)
         val square = cropOverride ?: context.preferences.getBoolean(cropVideoThumbnailsKey, true)
         val cacheOnly = !NetworkQualityHelper.isNetworkConnected(context)
         val contentKey = "$profile|$revision|$square|${file?.absolutePath ?: url}|${file?.lastModified()}|${file?.length()}"
         val highKey = "$contentKey|HIGH"
-        if (cacheOnly) artworkBytesCache.get(highKey)?.let { return@withContext it }
+        fun stillCurrent() = profile == getActiveProfile(context) &&
+            revision == ImageCacheFactory.artworkSourceRevision(url, profile)
+        if (cacheOnly) artworkBytesCache.get(highKey)?.let { cached ->
+            return@withContext cached.takeIf { stillCurrent() }
+        }
         val key = if (cacheOnly && file == null) "$contentKey|offline" else highKey
         if (file != null && !file.exists()) return@withContext null
         artworkBytesCache.getOrLoad(key) {
@@ -72,7 +76,7 @@ object SessionArtworkLoader {
                         }
                     }
                 } ?: return@getOrLoad null
-                if (profile != getActiveProfile(context) || revision != ArtworkRevisions.current()) return@getOrLoad null
+                if (!stillCurrent()) return@getOrLoad null
                 bytes
             } catch (exception: CancellationException) {
                 throw exception
@@ -80,7 +84,7 @@ object SessionArtworkLoader {
                 Timber.tag("AutoArtwork").w(exception, "Could not decode session artwork")
                 null
             }
-        }.takeIf { profile == getActiveProfile(context) && revision == ArtworkRevisions.current() }
+        }.takeIf { stillCurrent() }
     }
 
     /** Draws directly into an owned bounded target, preserving the borrowed source and crop resolution. */

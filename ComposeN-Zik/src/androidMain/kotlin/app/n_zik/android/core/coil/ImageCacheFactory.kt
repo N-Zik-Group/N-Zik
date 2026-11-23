@@ -25,6 +25,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -63,24 +64,17 @@ import coil3.toBitmap
 import app.n_zik.android.appContext
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.thumbnailShape
-// import GlobalNetworkLogger
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.core.profiles.coilImageCacheDir
-import app.n_zik.android.core.profiles.ProfileDataItem
-import app.n_zik.android.core.profiles.isLegacyStorageShared
-import app.n_zik.android.core.profiles.profileDataPrefs
-import app.n_zik.android.core.profiles.profileStorageGeneration
-import app.n_zik.android.core.profiles.settingsProfileFor
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okio.Path.Companion.toOkioPath
-// import Timber
 import java.io.File
 import java.io.InputStream
 import java.security.MessageDigest
@@ -122,51 +116,16 @@ object ImageCacheFactory {
     internal fun coilDiskCacheDir(context: Context): File =
         coilImageCacheDir(context, getActiveProfile(context))
 
-    private val diskMutationLock = Any()
-    private var metadataRevision = 0L
+    val DISK_CACHE: DiskCache get() = ProfileArtworkCache.DISK_CACHE
 
-    internal fun <T> captureCleanupState(capture: (Long) -> T): T = synchronized(diskMutationLock) {
-        capture(metadataRevision)
-    }
-
-    private fun updateCleanupMetadata(write: () -> Unit) = synchronized(diskMutationLock) {
-        metadataRevision++
-        write()
-    }
-
-    val DISK_CACHE: DiskCache by lazy {
-        val app = appContext()
-        val profile = getActiveProfile(app)
-        val owner = settingsProfileFor(app, profile, ProfileDataItem.IMAGES)
-        val preferences = profileDataPrefs(app, owner)
-        // The Coil image cache of the ACTIVE profile (spec-profile-data-separation).
-        val cacheDir = coilDiskCacheDir(app)
-        val maxSizeBytes = configuredImageCacheBytes(preferences)
-        if (isLegacyStorageShared(app, profile, ProfileDataItem.IMAGES)) {
-            ReadOnlyCoilCache(checkNotNull(cacheDir.parentFile).canonicalFile.resolve(cacheDir.name),
-                maxSizeBytes, diskRevisions::resolve)
-        } else {
-            CleanupCoilCache(
-                DiskCache.Builder().directory(cacheDir.toPath().toOkioPath()).maxSizeBytes(maxSizeBytes).build(),
-                diskMutationLock,
-                diskRevisions::resolve,
-            )
-        }
-    }
-
-    private const val PLAYLIST_THUMBNAIL_STORE = "playlist_thumbnail_store"
-    private const val IMAGE_METADATA_STORE = "image_cache_metadata"
+    internal fun <T> captureCleanupState(capture: (Long) -> T): T =
+        ProfileArtworkCache.captureCleanupState(capture)
 
     internal fun profileMetadataFiles(identity: ProfileStorageIdentity): Set<String> =
-        setOf(PLAYLIST_THUMBNAIL_STORE, IMAGE_METADATA_STORE).flatMap { base ->
-            val name = "${base}_${identity.id}_${identity.generation}.xml"
-            listOf(name, "$name.bak")
-        }.toSet()
+        ProfileArtworkCache.profileMetadataFiles(identity)
 
-    internal fun profileMetadataStoreName(context: Context, base: String): String {
-        val id = getActiveProfile(context)
-        return "${base}_${id}_${profileStorageGeneration(context, id)}"
-    }
+    internal fun profileMetadataStoreName(context: Context, base: String): String =
+        ProfileArtworkCache.profileMetadataStoreName(context, base)
 
     enum class NetworkQuality(val size: Int, val ttl: Long) {
         LOW(300, TimeUnit.HOURS.toMillis(1)),
@@ -185,116 +144,11 @@ object ImageCacheFactory {
     private const val COOLDOWN_MS = 10 * 1000L
     private val cooldownMap = ArtworkQualityCooldown(COOLDOWN_MS)
     private val cacheKeyMap = LruCache<String, String>(4096)
-    private val storeVersion = MutableStateFlow(0)
     private val playerArtworkCacheEpoch = MutableStateFlow(0)
-    private val diskRevisions = ArtworkDiskRevisions()
-
-    internal object PlaylistThumbnailStore {
-        private const val PREFS_NAME = PLAYLIST_THUMBNAIL_STORE
-        private fun getPrefs() = appContext().let { app ->
-            app.getSharedPreferences(profileMetadataStoreName(app, PREFS_NAME), Context.MODE_PRIVATE)
-        }
-
-        // Store format: "lowResUrl|highResUrl"
-        @Synchronized
-        fun save(id: String, url: String, isHigh: Boolean) {
-            try {
-                val preferences = getPrefs()
-                val current = preferences.getString(id, null)
-                val parts = current?.split("|")
-                var low = parts?.getOrNull(0).orEmpty()
-                var high = parts?.getOrNull(1).orEmpty()
-
-                val newScore = url.getYouTubeQualityScore()
-
-                // Only overwrite if the quality is better for the "high" slot
-                // or worse for the "low" slot (to keep an ultra-light fallback thumbnail)
-                if (isHigh || newScore >= 5) {
-                    if (newScore >= high.getYouTubeQualityScore()) {
-                        high = url
-                    }
-                } else {
-                    if (low.isEmpty() || newScore < low.getYouTubeQualityScore()) {
-                        low = url
-                    }
-                }
-
-                val updated = "$low|$high"
-                if ((low.isNotEmpty() || high.isNotEmpty()) && updated != current) {
-                    updateCleanupMetadata { preferences.edit().putString(id, updated).apply() }
-                    storeVersion.update { it + 1 }
-                }
-            } catch (error: Exception) {
-                Timber.tag("ImageCacheFactory").w("Unable to store playlist thumbnail metadata (%s)", error.javaClass.simpleName)
-            }
-        }
-
-        fun getHighUrl(id: String): String? {
-            return try {
-                val current = getPrefs().getString(id, null) ?: return null
-                current.split("|").getOrNull(1)?.takeIf { it.isNotEmpty() }
-            } catch (e: Exception) { null }
-        }
-
-        fun getLowUrl(id: String): String? {
-            return try {
-                val current = getPrefs().getString(id, null) ?: return null
-                current.split("|").getOrNull(0)?.takeIf { it.isNotEmpty() }
-            } catch (e: Exception) { null }
-        }
-
-        fun clear(id: String) {
-            try {
-                updateCleanupMetadata { getPrefs().edit().remove(id).apply() }
-            } catch (error: Exception) {
-                Timber.tag("ImageCacheFactory").w("Unable to remove playlist thumbnail metadata (%s)", error.javaClass.simpleName)
-            }
-        }
-
-        fun clearAll() {
-            try { updateCleanupMetadata { getPrefs().edit().clear().apply() } } catch (error: Exception) {
-                Timber.tag("ImageCacheFactory").w("Unable to clear playlist thumbnail metadata (%s)", error.javaClass.simpleName)
-            }
-        }
-    }
-
-    private object CacheMetadataStore {
-        private const val PREFS_NAME = IMAGE_METADATA_STORE
-        private fun getPrefs() = appContext().let { app ->
-            app.getSharedPreferences(profileMetadataStoreName(app, PREFS_NAME), Context.MODE_PRIVATE)
-        }
-
-        fun save(url: String, quality: NetworkQuality) {
-            try {
-                val key = url.hashCode().toString()
-                val preferences = getPrefs()
-                if (preferences.getString(key, null)?.substringBefore(":") == quality.name) return
-                updateCleanupMetadata { preferences.edit().putString(key, "${quality.name}:${System.currentTimeMillis()}").apply() }
-            } catch (error: Exception) {
-                Timber.tag("ImageCacheFactory").w("Unable to store image cache quality (%s)", error.javaClass.simpleName)
-            }
-        }
-
-        fun get(url: String): NetworkQuality? {
-            return try {
-                val key = url.hashCode().toString()
-                val value = getPrefs().getString(key, null) ?: return null
-                NetworkQuality.valueOf(value.substringBefore(":"))
-            } catch (e: Exception) { null }
-        }
-
-        fun remove(url: String) {
-            try { updateCleanupMetadata { getPrefs().edit().remove(url.hashCode().toString()).apply() } } catch (error: Exception) {
-                Timber.tag("ImageCacheFactory").w("Unable to remove image cache quality (%s)", error.javaClass.simpleName)
-            }
-        }
-
-        fun clearAll() {
-            try { updateCleanupMetadata { getPrefs().edit().clear().apply() } } catch (error: Exception) {
-                Timber.tag("ImageCacheFactory").w("Unable to clear image cache quality (%s)", error.javaClass.simpleName)
-            }
-        }
-    }
+    private val storeVersion get() = ProfileArtworkCache.storeVersion
+    private val diskRevisions get() = ProfileArtworkCache.diskRevisions
+    internal val PlaylistThumbnailStore get() = ProfileArtworkCache.PlaylistThumbnailStore
+    private val cacheMetadataStore get() = ProfileArtworkCache.CacheMetadataStore
 
     val LOADER: ImageLoader by lazy {
         ImageLoader.Builder(appContext())
@@ -325,7 +179,13 @@ object ImageCacheFactory {
         if (url.isNullOrBlank()) return "empty"
         val baseKey = artworkBaseKey(url, quality)
         return when {
-            isLocalArtworkSource(url) -> "$baseKey-local-${ArtworkRevisions.current()}"
+            isLocalArtworkSource(url) -> {
+                val clean = cleanPrefix(url)
+                val profile = if (clean.startsWith("content:", ignoreCase = true)) getActiveProfile(appContext()) else null
+                val source = profile?.let { currentArtworkSource(clean, it) }
+                if (source?.signedRemote == true) "$baseKey-provider-${source.remoteRevision}"
+                else "$baseKey-local-${ArtworkRevisions.current(clean, profile)}"
+            }
             isRemoteArtworkSource(url) -> diskRevisions.key(baseKey)
             else -> baseKey
         }
@@ -359,11 +219,31 @@ object ImageCacheFactory {
             clean.startsWith("content:", ignoreCase = true) || File(clean).isAbsolute
     }
 
-    /** Only local requests observe cover replacement; remote image identities stay unchanged. */
     @Composable
     internal fun rememberLocalArtworkRevision(source: String?): Long {
-        if (!isLocalArtworkSource(source)) return 0L
-        return ArtworkRevisions.changes.collectAsStateWithLifecycle(context = NzikDispatchers.DATA).value
+        if (source == null || !isLocalArtworkSource(source)) return 0L
+        return rememberArtworkRevision(source)
+    }
+
+    @Composable
+    internal fun rememberArtworkRevision(source: String?): Long {
+        if (source.isNullOrBlank() || source == "null") return 0L
+        val profile = rememberArtworkProfile()
+        val changes = remember(source, profile) {
+            ArtworkRevisions.changes.map { artworkSourceRevision(source, profile) }.distinctUntilChanged()
+        }
+        return key(source, profile) {
+            changes.collectAsStateWithLifecycle(
+                initialValue = artworkSourceRevision(source, profile),
+                context = NzikDispatchers.DATA,
+            ).value
+        }
+    }
+
+    internal fun artworkSourceRevision(source: String?, profile: String): Long {
+        val uri = source?.let(::cleanPrefix) ?: return 0L
+        val sourceRevision = currentArtworkSource(uri, profile)
+        return sourceRevision.localRevision + sourceRevision.remoteRevision
     }
 
     internal fun artworkColorSource(url: String?, profile: String): ArtworkSource? =
@@ -386,10 +266,17 @@ object ImageCacheFactory {
         return source
     }
 
-    private fun currentArtworkSource(uri: String, profile: String) = ArtworkSource(
-        profile, uri, if (isLocalArtworkSource(uri)) ArtworkRevisions.current() else 0L,
-        remoteArtworkRevision(uri),
-    )
+    internal fun currentArtworkSource(uri: String, profile: String): ArtworkSource {
+        val signedRemote = signedRemoteArtworkSource(uri, profile)
+        val source = signedRemote ?: uri
+        return ArtworkSource(
+            profile = profile,
+            uri = uri,
+            localRevision = if (isLocalArtworkSource(source)) ArtworkRevisions.current(source, profile) else 0L,
+            remoteRevision = if (isRemoteArtworkSource(source)) ArtworkRevisions.global() + remoteArtworkRevision(source) else 0L,
+            signedRemote = signedRemote != null,
+        )
+    }
 
     private fun remoteArtworkRevision(url: String): Long =
         if (isRemoteArtworkSource(url)) diskRevisions.current(artworkBaseKey(url, NetworkQuality.HIGH)) else 0L
@@ -445,7 +332,7 @@ object ImageCacheFactory {
     }
 
     /** Explicit update actions must report failed eviction instead of claiming a complete cover reset. */
-    internal fun refreshArtworkSourcesOrThrow(urls: Set<String>, profile: String) = synchronized(diskMutationLock) {
+    internal fun refreshArtworkSourcesOrThrow(urls: Set<String>, profile: String) = synchronized(ProfileArtworkCache.diskMutationLock) {
         val sources = urls.flatMapTo(mutableSetOf()) { url ->
             val cleaned = cleanPrefix(url)
             val effective = signedRemoteArtworkSource(cleaned, profile) ?: cleaned
@@ -455,6 +342,7 @@ object ImageCacheFactory {
                 add(effective)
                 if (effective.toHttpUrlOrNull() != null) addAll(coverSourceCandidates(effective))
                 effective.thumbnail(ORIGINAL_SOURCE_SIZE)?.let(::add)
+                effective.thumbnail(1200)?.let(::add)
             }
         }
         val keys = sources.flatMapTo(mutableSetOf()) { url ->
@@ -464,8 +352,10 @@ object ImageCacheFactory {
         diskRevisions.refresh(sources.filter(::isRemoteArtworkSource).flatMapTo(mutableSetOf()) { url ->
             NetworkQuality.entries.map { artworkBaseKey(url, it) }
         })
-        if (sources.any(::isLocalArtworkSource)) ArtworkRevisions.invalidate()
         SharedArtworkColors.invalidateSources(sources, profile)
+        val localSources = sources.filter(::isLocalArtworkSource)
+        if (localSources.isNotEmpty()) ArtworkRevisions.invalidateSources(localSources, profile)
+        else if (sources.any(::isRemoteArtworkSource)) ArtworkRevisions.notifyRemoteRefresh()
         storeVersion.update { it + 1 }
     }
 
@@ -493,7 +383,7 @@ object ImageCacheFactory {
 
         if (keepsOriginalArtwork(appContext())) return DownloadDecision(true, NetworkQuality.HIGH, original = true)
 
-        return cooldownMap.decide(thumbnailUrl, SystemClock.elapsedRealtime(), CacheMetadataStore.get(thumbnailUrl),
+        return cooldownMap.decide(thumbnailUrl, SystemClock.elapsedRealtime(), cacheMetadataStore.get(thumbnailUrl),
             ::getNetworkQuality)
     }
 
@@ -549,7 +439,7 @@ object ImageCacheFactory {
                         }
                     }
                     if (originalUrl != null && decision.useNetwork) {
-                        CacheMetadataStore.save(originalUrl, decision.quality)
+                        cacheMetadataStore.save(originalUrl, decision.quality)
                     }
                 },
                 onError = { _, result ->
@@ -648,9 +538,10 @@ object ImageCacheFactory {
         val validUrl = if (cleanedUrl.isNullOrBlank() || cleanedUrl == "null") null else cleanedUrl
         val decision = getDownloadDecision(validUrl)
         val version by storeVersion.collectAsStateWithLifecycle()
-        val localRevision = rememberLocalArtworkRevision(validUrl)
-        val remoteRevision = validUrl?.takeUnless(::isLocalArtworkSource)?.let(::remoteArtworkRevision) ?: 0L
-        var currentUrl by remember(validUrl, version, localRevision, remoteRevision, decision.sourceSize) {
+        val requestProfile = rememberArtworkProfile()
+        val sourceRevision = rememberArtworkRevision(validUrl)
+        val colorSource = validUrl?.let { currentArtworkSource(it, requestProfile) }
+        var currentUrl by remember(validUrl, requestProfile, version, sourceRevision, decision.sourceSize) {
             mutableStateOf(validUrl?.thumbnail(decision.sourceSize).also { modUrl ->
                 // if (validUrl != null) Timber.tag("ImageCache").d("URL: original=%s, modified=%s", validUrl, modUrl)
             })
@@ -677,8 +568,8 @@ object ImageCacheFactory {
         }
 
         val fileUrl = validUrl?.takeIf(::isFileArtwork)
-        var fileRevision by remember(fileUrl, localRevision) { mutableStateOf<String?>(null) }
-        if (fileUrl != null) LaunchedEffect(fileUrl, localRevision) {
+        var fileRevision by remember(fileUrl, sourceRevision) { mutableStateOf<String?>(null) }
+        if (fileUrl != null) LaunchedEffect(fileUrl, sourceRevision) {
             fileRevision = withContext(NzikDispatchers.DATA) { artworkFileRevision(fileUrl) }
         }
         val attemptedUrl = currentUrl
@@ -686,9 +577,6 @@ object ImageCacheFactory {
         val cacheKey = generateCacheKeySync(attemptedUrl, decision.quality).withFileRevision(stamp)
         val requestedData = attemptedUrl.takeIf { fileUrl == null || fileRevision != null }
         val usesPlayerArtwork = sharePlayerArtwork || playerArtworkMediaId != null
-        val requestProfile = if (publishArtworkColors || usesPlayerArtwork) rememberArtworkProfile()
-            else remember(validUrl, version, localRevision) { getActiveProfile(appContext()) }
-        val colorSource = validUrl?.let { ArtworkSource(requestProfile, it, localRevision, remoteRevision) }
         val cacheEpoch = if (usesPlayerArtwork) playerArtworkCacheEpoch.collectAsStateWithLifecycle().value else 0
         val retainedArtwork = if (playerArtworkMediaId != null) {
             remember(requestProfile, playerArtworkMediaId, cacheEpoch) { PlayerArtworkContinuity() }
@@ -718,7 +606,7 @@ object ImageCacheFactory {
                         }
                     }
                     if (validUrl != null && decision.useNetwork) {
-                        CacheMetadataStore.save(validUrl, decision.quality)
+                        cacheMetadataStore.save(validUrl, decision.quality)
                     }
                 },
                 onError = { _, result ->
@@ -783,9 +671,11 @@ object ImageCacheFactory {
                         state.copy(painter = drawnPainter(artwork, state.result.request))
                     }
                     is State.Error -> {
-                        val artwork = readyArtwork() ?: errorPainter
-                        state.copy(painter = if (onArtworkDrawn != null && nextPainterArtwork(attemptedUrl, validUrl, state.result) == null)
-                            drawnPainter(artwork, state.result.request) else artwork)
+                        val terminal = nextPainterArtwork(attemptedUrl, validUrl, state.result) == null
+                        state.copy(painter = if (terminal && onArtworkDrawn != null && matches(state.result.request)) {
+                            // Settle on the fallback frame without acknowledging the retained pixels.
+                            drawnPainter(errorPainter, state.result.request)
+                        } else readyArtwork() ?: errorPainter)
                     }
                     State.Empty -> readyArtwork()?.let { State.Loading(it) } ?: state
                 }
@@ -1106,7 +996,7 @@ object ImageCacheFactory {
                     }
                 }
                 if (!cacheOnly && decision.useNetwork) {
-                    CacheMetadataStore.save(url, decision.quality)
+                    cacheMetadataStore.save(url, decision.quality)
                 }
                 return result.image?.toBitmap() ?: run {
                     Timber.tag("ImageCacheFactory").w("Null bitmap for image result")
@@ -1177,7 +1067,7 @@ object ImageCacheFactory {
             if (!isCurrentArtworkSource(source) || getActiveProfile(appContext()) != source.profile) return
             if (result is SuccessResult) {
                 if (decision.useNetwork) {
-                    CacheMetadataStore.save(source.uri, decision.quality)
+                    cacheMetadataStore.save(source.uri, decision.quality)
                 }
             } else if (result is ErrorResult) {
                 val errorMsg = result.throwable.message ?: ""
@@ -1200,7 +1090,7 @@ object ImageCacheFactory {
     private fun String.withFileRevision(revision: String): String =
         if (revision.isEmpty()) this else "$this-$revision"
 
-    fun isImageCached(thumbnailUrl: String?): Boolean = CacheMetadataStore.get(thumbnailUrl ?: "") != null
+    fun isImageCached(thumbnailUrl: String?): Boolean = cacheMetadataStore.get(thumbnailUrl ?: "") != null
 
     fun getDiskCache(): DiskCache = DISK_CACHE
 
@@ -1246,14 +1136,14 @@ object ImageCacheFactory {
         }
     }
 
-    internal fun clearImageCacheOrThrow() = synchronized(diskMutationLock) {
+    internal fun clearImageCacheOrThrow() = synchronized(ProfileArtworkCache.diskMutationLock) {
         var diskCleared = false
         try {
             LOADER.memoryCache?.clear()
             DISK_CACHE.clear()
             diskCleared = true
             PlaylistThumbnailStore.clearAll()
-            CacheMetadataStore.clearAll()
+            cacheMetadataStore.clearAll()
             cacheKeyMap.evictAll()
             cooldownMap.clear()
         } finally {
@@ -1263,7 +1153,6 @@ object ImageCacheFactory {
         }
     }
 
-    /** Uses the frozen owner for both metadata stores even if profile selection changes concurrently. */
     internal fun clearBoundProfileCache(
         context: Context,
         owner: ProfileStorageIdentity,
@@ -1272,32 +1161,18 @@ object ImageCacheFactory {
         clearDisk: Boolean,
         metadataFiles: Set<String>,
         verify: () -> Boolean,
-    ): Boolean {
-        val cache = getDiskCache() as? CleanupCoilCache ?: return false
-        if (cache.directory.toFile().canonicalFile != expected) return false
-        val memoryCache = LOADER.memoryCache
-        return cache.whileIdle {
-            if (revision != metadataRevision || !verify()) return@whileIdle false
-            try {
-                memoryCache?.clear()
-                if (clearDisk) cache.clear()
-                val metadataCleared = listOf(PLAYLIST_THUMBNAIL_STORE, IMAGE_METADATA_STORE).map { base ->
-                    val name = "${base}_${owner.id}_${owner.generation}"
-                    if ("$name.xml" !in metadataFiles && "$name.xml.bak" !in metadataFiles) true
-                    else {
-                        metadataRevision++
-                        context.getSharedPreferences(name, Context.MODE_PRIVATE).edit().clear().commit()
-                    }
-                }.all { it }
-                cacheKeyMap.evictAll()
-                cooldownMap.clear()
-                metadataCleared && (!clearDisk || cache.size == 0L)
-            } finally {
-                playerArtworkCacheEpoch.update { it + 1 }
-                if (clearDisk) invalidateClearedArtwork() else SharedArtworkColors.invalidate()
-            }
-        }
-    }
+    ): Boolean = ProfileArtworkCache.clearBoundProfileCache(
+        context, owner, expected, revision, clearDisk, metadataFiles, verify,
+        clearMemory = { LOADER.memoryCache?.clear() },
+        resetPresentationCaches = {
+            cacheKeyMap.evictAll()
+            cooldownMap.clear()
+        },
+        notifyArtworkInvalidated = {
+            playerArtworkCacheEpoch.update { it + 1 }
+            if (it) invalidateClearedArtwork() else SharedArtworkColors.invalidate()
+        },
+    )
 
     private fun invalidateClearedArtwork() {
         diskRevisions.clear()

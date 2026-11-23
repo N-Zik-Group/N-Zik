@@ -1,0 +1,4 @@
+<resources>
+    <item name="ic_widget_play_low" type="drawable">@drawable/ic_widget_play</item>
+    <item name="ic_widget_pause_low" type="drawable">@drawable/ic_widget_pause</item>
+</resources>

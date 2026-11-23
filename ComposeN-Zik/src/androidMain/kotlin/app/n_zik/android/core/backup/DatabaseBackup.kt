@@ -220,7 +220,7 @@ internal object DatabaseBackup {
                 files = targets + sidecars.associate { File(dbFile.path + it) to null } + (dbFile to database),
                 beforeReplace = beforeReplace,
             )
-            if (targets.isNotEmpty()) ArtworkRevisions.invalidate()
+            ArtworkRevisions.invalidateFiles(targets.keys)
         } finally {
             staging.close()
         }

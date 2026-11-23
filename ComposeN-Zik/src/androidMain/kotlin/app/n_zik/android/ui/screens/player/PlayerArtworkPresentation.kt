@@ -13,10 +13,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toArgb
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.common.Player
 import app.n_zik.android.components.player.ArtworkDisplayColors
+import app.n_zik.android.components.player.CarouselButtonNavigation
+import app.n_zik.android.components.player.slide.slideSettledPageEffect
 import app.n_zik.android.components.player.animatePlayerArtworkScrollToPage
 import app.n_zik.android.components.player.extractCoverPalette
 import app.n_zik.android.ui.styling.ColorPalette
+import app.n_zik.android.utils.playAtIndex
 
 /** Pure compatibility seam for extraction regression tests; production uses the shared artwork facade. */
 internal data class PlayerDynamicPaletteResult(
@@ -126,4 +130,35 @@ fun PagerState.LaunchedEffectScrollToPage(
             onSynchronized(index)
         }
     }
+}
+
+/** Binds a mounted artwork pager to the current transport and to settled user swipes. */
+@Composable
+@androidx.annotation.OptIn(UnstableApi::class)
+internal fun PagerState.AttachPlayerArtworkPager(
+    player: Player,
+    playerUpdateTrigger: Int,
+    appRunningInBackground: Boolean,
+    playerContentVisible: Boolean,
+    skipAnimation: Boolean = false,
+    settleDelayMillis: Long = 0L,
+    carouselButtons: CarouselButtonNavigation? = null,
+) {
+    LaunchedEffectScrollToPage(
+        player,
+        playerUpdateTrigger,
+        player.currentMediaItemIndex,
+        appRunningInBackground,
+        playerContentVisible = playerContentVisible,
+        skipAnimation = skipAnimation,
+        paceArtworkMotion = true,
+    )
+    slideSettledPageEffect(
+        currentMediaItemIndex = { player.currentMediaItemIndex },
+        playAtIndex = { index ->
+            if (carouselButtons?.allowGestureCommit(index) != false) player.playAtIndex(index)
+        },
+        delayMillis = settleDelayMillis,
+        transportMoveInProgress = { carouselButtons?.isMoving == true },
+    )
 }

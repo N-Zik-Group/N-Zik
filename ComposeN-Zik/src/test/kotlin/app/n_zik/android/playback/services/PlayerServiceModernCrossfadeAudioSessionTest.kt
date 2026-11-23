@@ -1,6 +1,9 @@
 package app.n_zik.android.playback.services
 
 import android.app.Application
+import app.n_zik.android.utils.encryptedPreferences
+import android.content.SharedPreferences
+import android.content.Context
 import android.content.Intent
 import android.media.audiofx.AudioEffect
 import android.os.Handler
@@ -10,6 +13,7 @@ import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
@@ -588,7 +592,8 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         scheduler.runCurrent()
         assertFalse(field("isCrossfading").getBoolean(service))
         assertNull(field("activeCrossfade").get(service))
-        assertNull("Terminal cleanup must not arm another fade", field("crossfadeTriggerJob").get(service))
+        assertFalse("Terminal cleanup must not arm another fade",
+            (field("crossfadePositionScheduler").get(service) as CrossfadePositionScheduler).isArmed)
         assertEquals(0.8f, incoming.currentVolume, 0f)
         verify(exactly = 1) { outgoing.player.release() }
         verify(exactly = 0) { incoming.player.release() }
@@ -639,8 +644,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
             outgoing.shuffleOrder = DefaultShuffleOrder(intArrayOf(0, 3, 1, 4, 2), 7L)
             outgoing.repeatMode = Player.REPEAT_MODE_OFF
             service.player = outgoing
-            PlayerServiceModern::class.java.getDeclaredMethod("preloadCrossfade", Long::class.javaPrimitiveType)
-                .apply { isAccessible = true }.invoke(service, 0L)
+            invoke("preloadCrossfade")
             assertEquals("track-3", incoming.currentMediaItem?.mediaId)
             invoke("startCrossfade")
             assertSame(incoming, service.player)
@@ -751,6 +755,55 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
                 .apply { isAccessible = true }.get(player) as Player
         )
         else -> player
+    }
+
+    @Test
+    fun `service speed callback re-arms from position while a fresh late arm is ignored`() {
+        mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
+        every { any<Context>().encryptedPreferences } returns mockk<SharedPreferences>(relaxed = true)
+        val outgoing = Target("A", 41)
+        val incoming = Target("B", 42)
+        prepareHandoff(outgoing, incoming)
+        service.preferences.edit().putBoolean(crossfadeEnabledKey, true).commit()
+        every { service["createCrossfadeExoPlayer"]() } returns incoming.player
+        every { outgoing.player.currentTimeline } returns Timeline.EMPTY
+        every { outgoing.player.duration } returns 100_000L
+        every { outgoing.player.currentMediaItemIndex } returns 0
+        every { outgoing.player.nextMediaItemIndex } returns 1
+        every { outgoing.player.mediaItemCount } returns 2
+        every { outgoing.player.getMediaItemAt(0) } returns requireNotNull(outgoing.player.currentMediaItem)
+        every { outgoing.player.getMediaItemAt(1) } returns requireNotNull(incoming.player.currentMediaItem)
+
+        every { outgoing.player.currentPosition } returns 98_000L
+        invoke("scheduleCrossfade")
+        scheduler.runCurrent()
+        outgoing.speed = PlaybackParameters(0.5f)
+        service.onPlaybackParametersChanged(outgoing.speed)
+        scheduler.runCurrent()
+        assertSame(outgoing.player, service.player)
+        verify(exactly = 0) { incoming.player.prepare() }
+
+        var positionAtChange = 95_000L
+        var speedChangedAt = scheduler.currentTime
+        every { outgoing.player.currentPosition } answers {
+            positionAtChange + ((scheduler.currentTime - speedChangedAt) * outgoing.speed.speed).toLong()
+        }
+        invoke("scheduleCrossfade")
+        scheduler.runCurrent()
+        verify(exactly = 1) { incoming.player.prepare() }
+        scheduler.advanceTimeBy(1_000)
+        positionAtChange = 95_500L
+        speedChangedAt = scheduler.currentTime
+        outgoing.speed = PlaybackParameters(2f)
+        service.onPlaybackParametersChanged(outgoing.speed)
+        scheduler.runCurrent()
+        scheduler.advanceTimeBy(749L)
+        scheduler.runCurrent()
+        assertSame(outgoing.player, service.player)
+
+        scheduler.advanceTimeBy(1L)
+        scheduler.runCurrent()
+        assertSame(incoming.player, service.player)
     }
 
     private fun prepareHandoff(outgoing: Target, incoming: Target) {

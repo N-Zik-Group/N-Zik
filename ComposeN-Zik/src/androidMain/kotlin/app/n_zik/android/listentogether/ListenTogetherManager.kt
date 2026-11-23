@@ -445,17 +445,7 @@ class ListenTogetherManager(
 
             is ListenTogetherEvent.JoinApproved -> {
                 Timber.tag(TAG).d("Join approved for room: ${event.roomCode}")
-                lastAppliedRevision = event.state.revision
-                // Apply the full initial state including queue
-                applyPlaybackState(
-                    currentTrack = event.state.currentTrackOrNull,
-                    isPlaying = event.state.isPlaying,
-                    position = event.state.position,
-                    queue = event.state.queue,
-                    effectiveAtServerTime = event.state.lastUpdate,
-                    // bypassBuffer=false (default) for initial join buffer sync
-                )
-                applyHostVolumeIfNeeded(event.state.volume)
+                applyJoinedRoomState(event.state, bypassBuffer = false)
             }
 
             is ListenTogetherEvent.PlaybackSync -> {
@@ -575,16 +565,7 @@ class ListenTogetherManager(
                     } else {
                         // Guest: ALWAYS sync to host's state after reconnection
                         Timber.tag(TAG).d("Reconnected as guest, syncing to host's current state")
-                        lastAppliedRevision = event.state.revision
-                        applyPlaybackState(
-                            currentTrack = event.state.currentTrackOrNull,
-                            isPlaying = event.state.isPlaying,
-                            position = event.state.position,
-                            queue = event.state.queue,
-                            effectiveAtServerTime = event.state.lastUpdate,
-                            bypassBuffer = true, // Reconnect: bypass buffer protocol
-                        )
-                        applyHostVolumeIfNeeded(event.state.volume)
+                        applyJoinedRoomState(event.state, bypassBuffer = true)
                     }
                 } catch (e: Exception) {
                     Timber.tag(TAG).e(e, "Error handling Reconnected event")
@@ -1224,6 +1205,19 @@ class ListenTogetherManager(
                 isSyncing = false
             }
         }
+    }
+
+    private fun applyJoinedRoomState(state: RoomState, bypassBuffer: Boolean) {
+        lastAppliedRevision = state.revision
+        applyPlaybackState(
+            currentTrack = state.currentTrackOrNull,
+            isPlaying = state.isPlaying,
+            position = state.position,
+            queue = state.queue,
+            effectiveAtServerTime = state.lastUpdate,
+            bypassBuffer = bypassBuffer,
+        )
+        applyHostVolumeIfNeeded(state.volume)
     }
 
     private fun handleSyncState(

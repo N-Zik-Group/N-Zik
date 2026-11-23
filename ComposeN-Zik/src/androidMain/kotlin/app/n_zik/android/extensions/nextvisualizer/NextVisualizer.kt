@@ -1,9 +1,6 @@
 package app.n_zik.android.extensions.nextvisualizer
 
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.components.glass.rememberGlassArtwork
-import app.n_zik.android.components.player.SharedArtworkColors
-import app.n_zik.android.components.player.rememberScopedArtworkColorRevision
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.rememberDisplayArtworkSource
 import app.n_zik.android.components.glass.glassGlobalIndication
@@ -185,18 +182,25 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
                 VisualizerHelper(binder?.player?.audioSessionId ?: 0)
             }
 
-            var bitmapCover by remember { mutableStateOf(APP_ICON_BITMAP) }
-            var circleBitmap by remember { mutableStateOf(Icon.getCircledBitmap(APP_ICON_BITMAP)) }
+            val visualizerLineThickness by rememberPreference(visualizerLineThicknessKey, 6f)
+            val basePainters = remember(visualizerLineThickness) {
+                createBaseVisualizers(android.graphics.Color.WHITE, visualizerLineThickness)
+            }
+            val iconPreset = basePainters.size
+            var currentVisualizer by rememberPreference(currentVisualizerKey, 0)
+            if (currentVisualizer !in 0..iconPreset) currentVisualizer = 0
+            val usesArtworkIcon = currentVisualizer == iconPreset
             val visualizerWhiteColorOption by rememberPreference(visualizerWhiteColorOptionKey, enums.VisualizerWhiteColorOption.White)
             val visualizerCustomColor by rememberPreference(visualizerCustomColorKey, android.graphics.Color.WHITE)
-            val currentArtworkUri = rememberGlassArtwork(binder?.player)?.uri
             val paletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
             val requestedDark = paletteMode == ColorPaletteMode.Dark || (paletteMode == ColorPaletteMode.PitchBlack || paletteMode == ColorPaletteMode.PureBlack) ||
                 (paletteMode == ColorPaletteMode.System && isSystemInDarkTheme())
             val scopedArtworkPaint = LocalPlayerArtworkPaint.current
             val ambientArtwork = LocalAmbientArtworkPaint.current
-            val coverTint = if (visualizerWhiteColorOption == enums.VisualizerWhiteColorOption.Cover &&
-                scopedArtworkPaint == null && ambientArtwork == null) {
+            val needsCoverTint = visualizerWhiteColorOption == enums.VisualizerWhiteColorOption.Cover &&
+                scopedArtworkPaint == null && ambientArtwork == null
+            val currentArtworkUri = if (usesArtworkIcon || needsCoverTint) rememberGlassArtwork(binder?.player)?.uri else null
+            val coverTint = if (needsCoverTint) {
                 val coverDisplay = rememberArtworkDisplayColors(
                     currentArtworkUri, requestedDark, awaitArtworkMetadata = true,
                 )
@@ -205,50 +209,38 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
             } else null
             val themeTint = colorPalette().accent
 
-            val profile = ImageCacheFactory.rememberArtworkProfile()
-            val displayedSource = rememberDisplayArtworkSource(currentArtworkUri)
-            val sourceRevision = rememberScopedArtworkColorRevision(currentArtworkUri, profile)
-            val localRevision = ImageCacheFactory.rememberLocalArtworkRevision(displayedSource)
-            val cacheGeneration by SharedArtworkColors.generation.collectAsStateWithLifecycle(
-                context = NzikDispatchers.DATA,
-            )
-            // These bitmaps supply actual artwork pixels to the painters.
-            LaunchedEffect(displayedSource, profile, sourceRevision, localRevision, cacheGeneration) {
-                withContext(NzikDispatchers.DATA) {
+            val selectedPainter = if (usesArtworkIcon) {
+                val displayedSource = rememberDisplayArtworkSource(currentArtworkUri)
+                val revision = ImageCacheFactory.rememberArtworkRevision(displayedSource)
+                val profile = ImageCacheFactory.rememberArtworkProfile()
+                val sourceIdentity = remember(displayedSource, profile) {
+                    ImageCacheFactory.artworkColorIdentity(displayedSource, profile)
+                }
+                var circleBitmap by remember(profile, sourceIdentity) { mutableStateOf<Bitmap?>(null) }
+                LaunchedEffect(displayedSource, profile, revision) {
                     try {
-                        val bitmap = displayedSource?.resize(1000, 1000)
-                            ?.let { ImageCacheFactory.loadBitmap(it, allowHardware = false) }
-                            ?.takeIf { !it.isRecycled && it.width > 0 && it.height > 0 }
-                            ?: APP_ICON_BITMAP
-                        val circled = withContext(NzikDispatchers.MEDIA) { Icon.getCircledBitmap(bitmap) }
-                        withContext(NzikDispatchers.UI) {
-                            bitmapCover = bitmap
-                            circleBitmap = circled
+                        val bitmap = withContext(NzikDispatchers.DATA) {
+                            displayedSource?.resize(1000, 1000)
+                                ?.let { ImageCacheFactory.loadBitmap(it, allowHardware = false) }
+                                ?.takeIf { !it.isRecycled && it.width > 0 && it.height > 0 }
                         }
-                    } catch (e: CancellationException) {
-                        throw e
-                    } catch (e: Exception) {
-                        Timber.tag("NextVisualizer").e("Failed to get bitmap in NextVisualizer ${e.stackTraceToString()}")
-                        val circled = withContext(NzikDispatchers.MEDIA) { Icon.getCircledBitmap(APP_ICON_BITMAP) }
-                        withContext(NzikDispatchers.UI) {
-                            bitmapCover = APP_ICON_BITMAP
-                            circleBitmap = circled
+                        circleBitmap = withContext(NzikDispatchers.MEDIA) {
+                            Icon.getCircledBitmap(bitmap ?: APP_ICON_BITMAP)
                         }
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (error: Exception) {
+                        Timber.tag("NextVisualizer").w(error, "Could not load visualizer artwork")
+                        circleBitmap = null
                     }
                 }
-            }
-
-            val visualizerLineThickness by rememberPreference(visualizerLineThicknessKey, 6f)
-            
-            val visualizersList = remember(bitmapCover, circleBitmap, visualizerLineThickness) {
-                createVisualizersList(bitmapCover, circleBitmap, android.graphics.Color.WHITE, visualizerLineThickness)
-            }
-            val visualizerPaints = remember(visualizersList) { visualizersList.map(Painter::tintPaints) }
-            
-            var currentVisualizer by rememberPreference(currentVisualizerKey, 0)
-            if (currentVisualizer < 0 || currentVisualizer >= visualizersList.size) currentVisualizer = 0
-            val selectedPainter = visualizersList[currentVisualizer]
-            val tintPaints = visualizerPaints[currentVisualizer]
+                val fallback by remember { lazy { Icon.getCircledBitmap(APP_ICON_BITMAP) } }
+                remember(circleBitmap, visualizerLineThickness) {
+                    createArtworkVisualizer(circleBitmap ?: fallback, android.graphics.Color.WHITE, visualizerLineThickness)
+                }
+            } else basePainters[currentVisualizer]
+            val tintPaints = remember(selectedPainter) { selectedPainter.tintPaints() }
+            val visualizerCount = iconPreset + 1
 
             val showVisualizerButtons by rememberPreference(showVisualizerButtonsKey, true)
 
@@ -316,7 +308,7 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
                                 onClick = {
                                     controlsTimerKey++
                                     if (currentVisualizer > 0) currentVisualizer--
-                                    else currentVisualizer = visualizersList.lastIndex
+                                    else currentVisualizer = iconPreset
                                 },
                                 icon = R.drawable.arrow_left,
                                 color = colorPalette().text,
@@ -324,14 +316,14 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
                             )
                     
                             BasicText(
-                                text = stringResource(R.string.visualizer_position_format, currentVisualizer + 1, visualizersList.size),
+                                text = stringResource(R.string.visualizer_position_format, currentVisualizer + 1, visualizerCount),
                                 style = typography().xs.semiBold.copy(color = colorPalette().text),
                             )
                     
                             IconButton(
                                 onClick = {
                                     controlsTimerKey++
-                                    if (currentVisualizer < visualizersList.lastIndex) currentVisualizer++
+                                    if (currentVisualizer < iconPreset) currentVisualizer++
                                     else currentVisualizer = 0
                                 },
                                 icon = R.drawable.arrow_right,
@@ -379,13 +371,12 @@ private fun Painter.tintPaints(): List<VisualizerTintPaint> = when (this) {
     else -> listOf(VisualizerTintPaint(paint))
 }
 
-fun createVisualizersList(background: Bitmap, circleBitmap: Bitmap, color: Int, visualizerLineThickness: Float = 6f): List<Painter> {
+private fun createBaseVisualizers(color: Int, visualizerLineThickness: Float): List<Painter> {
     val ampR = 6f
     val ampRfm = 3.3f
     val smoothWfm = 0.4f
     val smooth = 0.6f
     val ampRMin = 2f
-    val yR = 0f
     return listOf(
         // Basic components
         Move(WfmAnalog(colorPaint = color, ampR = ampRfm, smooth = smoothWfm).apply { paint.strokeWidth = visualizerLineThickness }),
@@ -435,23 +426,22 @@ fun createVisualizersList(background: Bitmap, circleBitmap: Bitmap, color: Int, 
                 paint.style = Paint.Style.FILL
             }
         ),
-        // Composition
-        Compose(
-            WfmAnalog(colorPaint = color, ampR = ampRfm, smooth = smoothWfm).apply { paint.alpha = 150; paint.strokeWidth = visualizerLineThickness },
-            Shake(
-                Compose(
-                    Rotate(FftCWave(colorPaint = color, ampR = ampRMin)),
-                    painters.misc.Icon(circleBitmap)
-                )
-            ).apply {
-                animX.duration = 1000
-                animY.duration = 2000
-            }
-        )
     )
 }
 
-
-
-
-
+private fun createArtworkVisualizer(circleBitmap: Bitmap, color: Int, lineThickness: Float): Painter =
+    Compose(
+        WfmAnalog(colorPaint = color, ampR = 3.3f, smooth = 0.4f).apply {
+            paint.alpha = 150
+            paint.strokeWidth = lineThickness
+        },
+        Shake(
+            Compose(
+                Rotate(FftCWave(colorPaint = color, ampR = 2f)),
+                Icon(circleBitmap),
+            ),
+        ).apply {
+            animX.duration = 1000
+            animY.duration = 2000
+        },
+    )

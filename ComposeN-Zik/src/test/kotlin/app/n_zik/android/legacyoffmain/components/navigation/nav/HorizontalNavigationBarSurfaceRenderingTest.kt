@@ -24,7 +24,7 @@ import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.enums.NavigationBarPosition
-import app.n_zik.android.ui.components.navigation.nav.HorizontalNavigationBar
+import app.n_zik.android.components.navigation.nav.HorizontalNavigationBar
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
@@ -75,7 +75,7 @@ class HorizontalNavigationBarSurfaceRenderingTest {
     }
 
     @Test
-    fun `floating surfaces retain 95 percent opacity in pitch black normal and white`() {
+    fun `native bars render the configured surface coverage in light dark and pitch black modes`() {
         val fixtures = listOf(
             Fixture(ColorPaletteMode.PitchBlack, DefaultDarkColorPalette.copy()),
             Fixture(ColorPaletteMode.Dark, DefaultDarkColorPalette),
@@ -129,8 +129,13 @@ class HorizontalNavigationBarSurfaceRenderingTest {
                 val pixels = composeRule.onNodeWithTag("navbar").captureToImage().toPixelMap()
                 // Between the two icons, away from the rounded edge and elevation shadow.
                 val actual = pixels[pixels.width / 2, pixels.height / 3]
-                val surface = if (fixture.mode == ColorPaletteMode.PitchBlack) Color(0xFF1A1A1A) else fixture.palette.background1
-                val expected = if (position.isFloating) surface.copy(alpha = 0.95f).compositeOver(backdrop) else surface
+                val underlay = if (position == NavigationBarPosition.Top) fixture.palette.background0 else backdrop
+                val fill = when {
+                    fixture.mode == ColorPaletteMode.PitchBlack -> Color(0xFF1A1A1A).copy(alpha = 0.90f)
+                    position.isFloating -> fixture.palette.background1.copy(alpha = 0.95f)
+                    else -> fixture.palette.background1
+                }
+                val expected = fill.compositeOver(underlay)
                 val label = "${fixture.mode}, $position"
                 assertEquals("$label red", expected.red, actual.red, 2f / 255f)
                 assertEquals("$label green", expected.green, actual.green, 2f / 255f)

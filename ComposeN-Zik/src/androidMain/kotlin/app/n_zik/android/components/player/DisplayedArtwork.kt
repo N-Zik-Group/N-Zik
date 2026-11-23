@@ -19,6 +19,7 @@ internal data class ArtworkSource(
     val uri: String,
     val localRevision: Long,
     val remoteRevision: Long,
+    val signedRemote: Boolean = false,
 )
 
 internal data class DisplayedArtwork(val bitmap: Bitmap, val fileRevision: String)

@@ -1,9 +1,5 @@
 package app.n_zik.android.playback.services
 
-import app.n_zik.android.components.image.OWNED_COVER_EXTENSION_PATTERN
-import app.n_zik.android.cleanPrefix
-import app.n_zik.android.Dependencies
-import app.n_zik.android.core.database.Database
 
 import app.n_zik.android.core.backup.isLibraryReady
 
@@ -40,6 +36,7 @@ import java.security.SecureRandom
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import kotlinx.coroutines.runBlocking
+import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 
 /** Serves bounded seekable JPEGs with signed profile-owned remote sources. */
 class ArtworkContentProvider : ContentProvider() {
@@ -61,7 +58,8 @@ class ArtworkContentProvider : ContentProvider() {
             val profile = profileStorageIdentity(ctx, getActiveProfile(ctx)) ?: return uriFor(songId)
             val canonical = file.canonicalFile
             val expected = File(coversDir(ctx, profile.id), "cover_${songId}.jpg").canonicalFile
-            if (canonical == expected) return uriFor(songId)
+            val revision = ArtworkRevisions.current(canonical.path, profile.id)
+            if (canonical == expected) return uriFor(songId, revision)
             val source = Source(profile, canonical)
             val token = synchronized(sources) {
                 val existing = sources.entries.firstOrNull { it.value == source }?.key
@@ -74,7 +72,8 @@ class ArtworkContentProvider : ContentProvider() {
                 }
             }
             return Uri.Builder().scheme("content").authority(AUTHORITY)
-                .appendPath("source").appendPath(token).build()
+                .appendPath("source").appendPath(token)
+                .appendArtworkRevision(revision).build()
         }
 
         private val remoteSigningKey = ByteArray(32).also { SecureRandom().nextBytes(it) }
@@ -98,7 +97,14 @@ class ArtworkContentProvider : ContentProvider() {
                 .appendQueryParameter("u", source).appendQueryParameter("s", remoteSignature(payload)).build()
         }
 
-        internal fun remoteSource(uri: Uri, profile: String, now: Long = System.currentTimeMillis()): Pair<String, Boolean>? {
+        internal fun remoteSource(uri: Uri, profile: String, now: Long = System.currentTimeMillis()): Pair<String, Boolean>? =
+            verifiedRemoteSource(uri, profile, now)
+
+        /** A retained browser row may be renewed after expiry using its verified signature. */
+        internal fun retainedRemoteSource(uri: Uri, profile: String): String? =
+            verifiedRemoteSource(uri, profile, now = null)?.first
+
+        private fun verifiedRemoteSource(uri: Uri, profile: String, now: Long?): Pair<String, Boolean>? {
             if (uri.authority != AUTHORITY || uri.pathSegments != listOf("remote")) return null
             val owner = uri.getQueryParameter("p") ?: return null
             val crop = uri.getQueryParameter("c")?.toBooleanStrictOrNull() ?: return null
@@ -106,7 +112,8 @@ class ArtworkContentProvider : ContentProvider() {
             val expires = uri.getQueryParameter("e")?.toLongOrNull() ?: return null
             val source = uri.getQueryParameter("u") ?: return null
             val signature = uri.getQueryParameter("s") ?: return null
-            if (owner != profile || expires <= now || expires - now > REMOTE_LIFETIME_MS || source.length > 16384) return null
+            if (owner != profile || source.length > 16384) return null
+            if (now != null && (expires <= now || expires - now > REMOTE_LIFETIME_MS)) return null
             val parsed = Uri.parse(source)
             if (parsed.scheme !in setOf("http", "https") || parsed.host.isNullOrBlank()) return null
             val expected = remoteSignature("$owner\n$crop\n$revision\n$expires\n$source")
@@ -114,28 +121,55 @@ class ArtworkContentProvider : ContentProvider() {
             return source to crop
         }
 
-        fun uriFor(songId: String): Uri = Uri.Builder()
+        fun uriFor(songId: String): Uri = uriFor(songId, 0L)
+
+        private fun uriFor(songId: String, revision: Long): Uri = Uri.Builder()
             .scheme("content")
             .authority(AUTHORITY)
             .appendPath(songId)
+            .appendArtworkRevision(revision)
             .build()
 
-        internal fun registeredSourceFile(ctx: Context, profile: String, uri: Uri): File? {
+        private fun Uri.Builder.appendArtworkRevision(revision: Long): Uri.Builder =
+            apply { if (revision != 0L) appendQueryParameter("r", revision.toString()) }
+
+        internal fun registeredSourceFile(ctx: Context, profile: String, uri: Uri): File? =
+            registeredSource(ctx, profile, uri)?.takeIf { it.isFile && it.canRead() }
+
+        private fun registeredSource(ctx: Context, profile: String, uri: Uri): File? {
             if (uri.scheme != "content" || uri.authority != AUTHORITY ||
                 uri.pathSegments.size != 2 || uri.pathSegments.first() != "source"
             ) return null
             val source = synchronized(sources) { sources[uri.lastPathSegment] } ?: return null
-            return source.file.takeIf {
-                source.profile == profileStorageIdentity(ctx, profile) && it.isFile && it.canRead()
-            }
+            return source.file.takeIf { source.profile == profileStorageIdentity(ctx, profile) }
         }
 
-        internal fun customCoverFile(ctx: Context, profile: String, songId: String): File? {
+        internal fun customCoverFile(ctx: Context, profile: String, songId: String): File? =
+            ownedCoverPath(ctx, profile, songId)?.takeIf(File::isFile)
+
+        private fun ownedCoverPath(ctx: Context, profile: String, songId: String): File? {
             if (songId.isBlank() || songId.any { it == '/' || it == '\\' }) return null
             val directory = ctx.filesDir.canonicalFile.resolve(coversDir(ctx, profile).name)
             if (directory.canonicalFile != directory.absoluteFile) return null
             val file = directory.resolve("cover_$songId.jpg")
-            return file.takeIf { it.canonicalFile == it.absoluteFile && it.isFile }
+            return file.takeIf { it.canonicalFile == it.absoluteFile }
+        }
+
+        internal fun refreshLocalUri(ctx: Context, profile: String, uri: Uri): Uri {
+            if (uri.scheme != "content" || uri.authority != AUTHORITY || profile != getActiveProfile(ctx)) return uri
+            val segments = uri.pathSegments
+            val file = when {
+                segments.size == 2 -> registeredSource(ctx, profile, uri)
+                segments.size == 1 && segments.first() !in setOf("source", "remote") &&
+                    profileStorageIdentity(ctx, profile) != null -> {
+                    ownedCoverPath(ctx, profile, segments.first())
+                        ?.takeIf { it.isFile || uri.getQueryParameter("r") != null }
+                }
+                else -> null
+            } ?: return uri
+            val revision = ArtworkRevisions.current(file.path, profile)
+            if (revision == (uri.getQueryParameter("r")?.toLongOrNull() ?: 0L)) return uri
+            return uri.buildUpon().clearQuery().appendArtworkRevision(revision).build()
         }
     }
 

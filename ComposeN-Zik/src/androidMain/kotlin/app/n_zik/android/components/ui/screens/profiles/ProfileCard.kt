@@ -164,7 +164,7 @@ suspend fun saveProfileAvatarFromUri(context: Context, profileId: String, uri: U
         if (keepsOriginalArtwork(context, profileId)) {
             require(ProfileStateArchive.isValidAvatar(bytes)) { "Image exceeds profile backup limits or uses an unsupported format" }
             writeOwnedImageAtomically(file) { it.write(bytes) }
-            ArtworkRevisions.invalidate()
+            ArtworkRevisions.invalidateFile(file)
             profileFaceUpdateTrigger++
             return@runCatching
         }
@@ -174,7 +174,7 @@ suspend fun saveProfileAvatarFromUri(context: Context, profileId: String, uri: U
             writeOwnedImageAtomically(file) { output ->
                 check(source.compress(Bitmap.CompressFormat.JPEG, AVATAR_JPEG_QUALITY, output))
             }
-            ArtworkRevisions.invalidate()
+            ArtworkRevisions.invalidateFile(file)
             // A new photo changes the face: let the header re-resolve it.
             profileFaceUpdateTrigger++
         } finally {

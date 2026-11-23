@@ -1,5 +1,19 @@
 package app.n_zik.android.components.tab
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import app.n_zik.android.components.navigation.dock.FloatingDockEnvironment
+import app.n_zik.android.components.navigation.dock.FloatingDockState
+import app.n_zik.android.components.navigation.dock.LocalFloatingDock
+import app.n_zik.android.components.navigation.dock.PersistentHorizontalNavigation
 import android.app.Application
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.shape.CircleShape
@@ -19,10 +33,10 @@ import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.enums.NavigationBarType
-import app.n_zik.android.ui.components.Skeleton
-import app.n_zik.android.ui.components.navigation.nav.AbstractNavigationBar
-import app.n_zik.android.ui.components.navigation.nav.HorizontalNavigationBar
-import app.n_zik.android.ui.components.navigation.nav.VerticalNavigationBar
+import app.n_zik.android.components.navigation.Skeleton
+import app.n_zik.android.components.navigation.nav.AbstractNavigationBar
+import app.n_zik.android.components.navigation.nav.HorizontalNavigationBar
+import app.n_zik.android.components.navigation.nav.VerticalNavigationBar
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
@@ -100,37 +114,52 @@ class NavigationButtonRecompositionTest {
             artistThumbnailShape = CircleShape,
         )
         composeRule.setContent {
-            val navController = remember { NavController(context) }
-            val revision = callbackRevision.intValue
+            val navController = rememberNavController()
+            val entry by navController.currentBackStackEntryAsState()
+            val dock = remember {
+                FloatingDockEnvironment(FloatingDockState(), null, true, mutableFloatStateOf(0f), false)
+            }
             CompositionLocalProvider(
                 LocalAppearance provides appearance,
                 LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+                LocalFloatingDock provides dock,
             ) {
-                Skeleton(
-                    navController = navController,
-                    tabIndex = selected.intValue,
-                    onTabChanged = {
-                        deliveredRevision = revision
-                        selected.intValue = it
-                    },
-                    navBarContent = { emit ->
-                        // Home emits from distinct branches, not one shared loop callsite.
-                        tabOrder.value.forEachIndexed { index, id ->
-                            when (id) {
-                                "songs" -> emit(index, "Nav songs", R.drawable.musical_notes)
-                                "albums" -> emit(index, "Nav albums", R.drawable.musical_notes)
-                                "artists" -> emit(index, "Nav artists", R.drawable.musical_notes)
-                            }
+                Box(Modifier.fillMaxSize()) {
+                    NavHost(navController, startDestination = "home") {
+                        composable("home") {
+                            val revision = callbackRevision.intValue
+                            Skeleton(
+                                navController = navController,
+                                tabIndex = selected.intValue,
+                                onTabChanged = {
+                                    deliveredRevision = revision
+                                    selected.intValue = it
+                                },
+                                navBarContent = { emit ->
+                                    // Home emits from distinct branches, not one shared loop callsite.
+                                    tabOrder.value.forEachIndexed { index, id ->
+                                        when (id) {
+                                            "songs" -> emit(index, "Nav songs", R.drawable.musical_notes)
+                                            "albums" -> emit(index, "Nav albums", R.drawable.musical_notes)
+                                            "artists" -> emit(index, "Nav artists", R.drawable.musical_notes)
+                                        }
+                                    }
+                                },
+                            ) { BasicText("Selected $it") }
                         }
-                    },
-                ) { BasicText("Selected $it") }
+                    }
+                    PersistentHorizontalNavigation(
+                        NavigationBarPosition.Bottom, { entry?.id }, { true },
+                        dock.state::registration, false, { 0 }, { 0f },
+                    )
+                }
             }
         }
-        composeRule.onNodeWithText("Nav songs").assertIsDisplayed()
-        composeRule.onNodeWithText("Nav albums").assertIsDisplayed().performClick()
+        composeRule.onNodeWithContentDescription("Nav songs").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Nav albums").assertIsDisplayed().performClick()
         composeRule.onNodeWithText("Selected 1").assertExists()
         composeRule.runOnIdle { callbackRevision.intValue = 1 }
-        composeRule.onNodeWithText("Nav songs").performClick()
+        composeRule.onNodeWithContentDescription("Nav songs").performClick()
         composeRule.onNodeWithText("Selected 0").assertExists()
         composeRule.runOnIdle { assertEquals(1, deliveredRevision) }
         composeRule.runOnIdle { tabOrder.value = listOf("artists", "albums", "songs") }
@@ -141,7 +170,7 @@ class NavigationButtonRecompositionTest {
 
     private fun assertVisualTabOrder(vararg labels: String) {
         val positions = labels.map { label ->
-            composeRule.onNodeWithText(label).assertIsDisplayed().fetchSemanticsNode().boundsInRoot.left
+            composeRule.onNodeWithContentDescription(label).assertIsDisplayed().fetchSemanticsNode().boundsInRoot.left
         }
         assertTrue("Expected visual order ${labels.toList()}, got x positions $positions",
             positions.zipWithNext().all { (left, right) -> left < right })

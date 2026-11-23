@@ -1,6 +1,13 @@
 package app.n_zik.android.playback.services.automotive.session
 
 import android.app.Application
+import org.junit.Assert.assertNotEquals
+import kotlinx.coroutines.runBlocking
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
+import app.n_zik.android.playback.services.ArtworkContentProvider
+import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.profiles.coversDir
 import android.content.Context
 import android.os.Looper
 import android.net.Uri
@@ -232,6 +239,53 @@ class AutoRealSessionQueueOwnershipTest {
         pumpUntil { childCounts.any { it.first == PlayerServiceModern.ROOT } }
         callback.invalidateAccess(session)
         assertTrue(await(first.getItem(folder.mediaId)).resultCode != 0)
+    }
+
+    @Test fun `artwork refresh notifies only the subscribed parent with changed sources`() {
+        val profile = getActiveProfile(context)
+        val remote = "https://images.example.test/changed.jpg"
+        val coverDir = coversDir(context, profile).apply { mkdirs() }
+        val songCover = File(coverDir, "cover_artwork-test.jpg").apply { writeBytes(byteArrayOf(1)) }
+        val registeredCover = File(coverDir, "registered-artwork-test.jpg").apply { writeBytes(byteArrayOf(2)) }
+        fun row(id: String, art: Uri): MediaItem = item(id).buildUpon().setMediaMetadata(
+            MediaMetadata.Builder().setTitle(id).setArtworkUri(art).setIsBrowsable(false).setIsPlayable(true).build(),
+        ).build()
+        val known = listOf(
+            row("remote", Uri.parse(remote)),
+            row("song-path", ArtworkContentProvider.uriForSource(context, "artwork-test", songCover)),
+            row("registered-path", ArtworkContentProvider.uriForSource(context, "artwork-test", registeredCover)),
+        )
+        assertEquals(1, known[1].mediaMetadata.artworkUri?.pathSegments?.size)
+        assertEquals("source", known[2].mediaMetadata.artworkUri?.pathSegments?.first())
+        val untouched = row("untouched", Uri.parse("https://images.example.test/untouched.jpg"))
+        val handler = mockk<BrowseHandler>()
+        every { handler.handles(any()) } returns true
+        coEvery { handler.getChildren(PlayerServiceModern.ARTIST, any(), any(), any(), any()) } returns known
+        coEvery { handler.getChildren(PlayerServiceModern.ALBUM, any(), any(), any(), any()) } returns listOf(untouched)
+        val tree = browseTree()
+        AutoBrowseTree::class.java.getDeclaredField("handlers").apply { isAccessible = true }.set(tree, listOf(handler))
+        assertEquals(0, await(first.subscribe(PlayerServiceModern.ARTIST, null)).resultCode)
+        assertEquals(0, await(first.subscribe(PlayerServiceModern.ALBUM, null)).resultCode)
+        val before = await(first.getChildren(PlayerServiceModern.ARTIST, 0, 20, null)).value.orEmpty()
+        val untouchedUri = await(first.getChildren(PlayerServiceModern.ALBUM, 0, 20, null)).value?.single()?.mediaMetadata?.artworkUri
+        val browser = session.connectedControllers.single { tree.retainedChildren(PlayerServiceModern.ALBUM, it) != null }
+        shadowOf(Looper.getMainLooper()).idle()
+        childCounts.clear()
+
+        ImageCacheFactory.refreshArtworkSourcesOrThrow(setOf(remote), profile)
+        ArtworkRevisions.invalidateFiles(listOf(songCover, registeredCover))
+        // The synchronous JUnit entry point waits for the real callback's DATA scan.
+        runBlocking { callback.refreshChangedArtwork(session) }
+
+        pumpUntil { childCounts.isNotEmpty() }
+        assertEquals(listOf(PlayerServiceModern.ARTIST to 3), childCounts)
+        val after = requireNotNull(tree.retainedChildren(PlayerServiceModern.ARTIST, browser))
+        assertEquals(before.map { it.mediaId }, after.map { it.mediaId })
+        before.zip(after).forEach { (old, new) ->
+            assertNotEquals(old.mediaMetadata.artworkUri, new.mediaMetadata.artworkUri)
+        }
+        val unchanged = tree.retainedChildren(PlayerServiceModern.ALBUM, browser)?.single()?.mediaMetadata?.artworkUri
+        assertEquals(untouchedUri, unchanged)
     }
 
     @Test fun `suggested root publishes named queues with independent playback and preserves normal browsing`() {

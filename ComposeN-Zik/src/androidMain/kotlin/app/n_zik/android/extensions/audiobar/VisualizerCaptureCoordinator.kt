@@ -6,6 +6,8 @@ import app.n_zik.android.privacy.JournalPermission
 import app.n_zik.android.privacy.PermissionEventKind
 
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import android.media.audiofx.Visualizer
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
@@ -24,19 +26,7 @@ import java.util.concurrent.atomic.AtomicLong
 import utils.VisualizerHelper
 import utils.VisualizerSnapshot
 
-/**
- * Owns the single capture loop per active `audioSessionId` (issue #606, ARCHITECTURE-SPINE AD-2).
- *
- * `nextvisualizer` cannot depend on coroutines (module dependency direction, AD-5), so this
- * object lives in `app.n_zik.android` and is wired into that module through
- * `VisualizerHelper.snapshotProvider` (see [NextVisualizer]). Every `Visualizer.getFft()`/
- * `getWaveForm()` call for a given sessionId now happens exactly once per frame, from exactly
- * one place -- [VisualizerHelper.captureNow] -- running on [NzikDispatchers.VISUALIZER].
- *
- * Process-lifetime singleton, same rationale as `NzikDispatchers`: the backing scope is never
- * explicitly cancelled from an Activity/Service/ViewModel lifecycle. Per-session loops start
- * and stop on their own via [SharingStarted.WhileSubscribed] as consumers come and go.
- */
+/** Shares one native capture loop per audio session while it has collectors. */
 object VisualizerCaptureCoordinator {
 
     /** Capture cadence. 60fps to match `VisualizerView`'s draw cadence (AD-2 design notes). */
@@ -77,6 +67,8 @@ object VisualizerCaptureCoordinator {
                             lastJournalAt = now
                             PermissionUsageJournal.record(app.n_zik.android.appContext(), PermissionFeature.VISUALIZER, JournalPermission.MICROPHONE, PermissionEventKind.USED)
                         }
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
                     } catch (e: Exception) {
                         Timber.tag("VisualizerCaptureCoordinator").e(
                             e,
@@ -96,26 +88,19 @@ object VisualizerCaptureCoordinator {
             selfFlow
         }
 
+    private val silentSnapshot by lazy {
+        val size = Visualizer.getCaptureSizeRange().last()
+        VisualizerSnapshot(fft = ByteArray(size), waveform = ByteArray(size) { 0x80.toByte() }, samplingRate = 44_100_000)
+    }
+
     private val lastPolledAtMs = ConcurrentHashMap<Int, AtomicLong>()
     private val pollKeepAliveJobs = ConcurrentHashMap<Int, Job>()
 
-    /**
-     * Synchronous read of the latest published snapshot for [sessionId] — the reference wired
-     * to [VisualizerHelper.snapshotProvider] (its `(Int) -> VisualizerSnapshot?` shape means
-     * `nextvisualizer` never needs to know a `StateFlow` is involved on the other side of the
-     * seam).
-     *
-     * Reading [StateFlow.value] alone is not a real collector ([SharingStarted.WhileSubscribed]
-     * would never start the loop for a caller that only peeks `.value` — e.g. `VisualizerView`,
-     * since `View.onDraw()` cannot suspend to `collect{}`), so every call records a poll
-     * timestamp and lazily starts a proxy collector keeping the flow's real subscriber count
-     * above zero while polling continues, cancelling itself [subscriptionTimeoutMillis] after
-     * the last poll.
-     */
-    fun currentSnapshot(sessionId: Int): VisualizerSnapshot? {
+    /** Starts capture for a polling view and supplies silence until the first frame arrives. */
+    fun currentSnapshot(sessionId: Int): VisualizerSnapshot {
         lastPolledAtMs.computeIfAbsent(sessionId) { AtomicLong(0L) }.set(System.currentTimeMillis())
         ensurePollKeepAlive(sessionId)
-        return snapshotFlow(sessionId).value
+        return snapshotFlow(sessionId).value ?: silentSnapshot
     }
 
     private fun ensurePollKeepAlive(sessionId: Int) {

@@ -49,8 +49,8 @@ import coil3.compose.asPainter
 import kotlin.math.sqrt
 import kotlinx.coroutines.delay
 
-/** Local artwork can be replaced in place while the song and its URI remain the same. */
-internal data class PlayerCoverIdentity(val mediaId: String, val artworkUri: String, val localRevision: Long = 0L)
+/** A cover frame acknowledges the pixels for its media item, URI and source revision. */
+internal data class PlayerCoverIdentity(val mediaId: String, val artworkUri: String, val sourceRevision: Long = 0L)
 
 internal fun shouldWaitForPlayerBackdrop(
     blurredBackground: Boolean,
@@ -67,7 +67,7 @@ internal fun shouldWaitForPlayerBackdrop(
 @Composable
 internal fun rememberPlayerCoverIdentity(mediaId: String, artworkUri: String): PlayerCoverIdentity {
     val source = rememberDisplayArtworkSource(artworkUri)
-    val revision = ImageCacheFactory.rememberLocalArtworkRevision(source)
+    val revision = ImageCacheFactory.rememberArtworkRevision(source)
     return remember(mediaId, artworkUri, revision) { PlayerCoverIdentity(mediaId, artworkUri, revision) }
 }
 
@@ -178,7 +178,7 @@ internal fun PlayerCurrentCover(
 ) {
     val context = LocalContext.current
     val identity = rememberPlayerCoverIdentity(mediaId, artworkUri)
-    val canRequest = committedRevision == null || committedRevision == identity.localRevision
+    val canRequest = committedRevision == null || committedRevision == identity.sourceRevision
     val frames = remember { PlayerCoverFrameState<Painter>() }
     frames.request(identity)
     val fallback = ImageCacheFactory.rememberArtworkResourcePainter()

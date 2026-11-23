@@ -6,6 +6,8 @@ import app.n_zik.innertube.models.MusicResponsiveListItemRenderer
 import app.n_zik.innertube.models.Runs
 import app.n_zik.innertube.models.Thumbnail
 import app.n_zik.innertube.models.ThumbnailRenderer
+import app.n_zik.innertube.requests.ArtistItemsPage
+import app.n_zik.innertube.requests.parseArtistSong
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
@@ -168,5 +170,19 @@ class SongItemFromResponsiveListItemAuthorsTest {
         assertEquals("51:03", song.durationText)
         assertEquals("vid-1", song.key)
         assertEquals("Some Song", song.title)
+    }
+
+    @Test
+    fun `artist song rows preserve supplied durations and allow missing durations`() {
+        val byline = listOf(run("Laur", browseId = "artist-1"))
+        val renderer = songRenderer(byline, durationText = "51:03")
+
+        val overview = requireNotNull(parseArtistSong(renderer))
+        val allSongs = ArtistItemsPage.fromMusicResponsiveListItemRenderer(renderer)
+
+        assertEquals(overview, allSongs)
+        assertEquals("51:03", overview.durationText)
+        assertEquals("vid-1", overview.key)
+        assertNull(parseArtistSong(songRenderer(byline, durationText = null))?.durationText)
     }
 }

@@ -2,7 +2,6 @@ package app.n_zik.android.components.player.lyrics
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.animateScrollBy
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,8 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -42,15 +39,12 @@ import app.n_zik.android.enums.lyrics.LyricsColor
 import app.n_zik.android.enums.lyrics.LyricsFontSize
 import app.n_zik.android.enums.lyrics.LyricsHighlight
 import app.n_zik.android.enums.lyrics.LyricsOutline
-import app.n_zik.android.R
 
 import app.n_zik.android.components.player.lyrics.utils.SynchronizedLyrics
 import app.n_zik.android.utils.verticalFadingEdge
 import app.n_zik.android.colorPalette
 import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
@@ -323,105 +317,107 @@ if (showBackgroundLyrics && showlyricsthumbnail) modifierBG =
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            state = lazyListState,
-            userScrollEnabled = true,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = modifierBG
-                .fillMaxSize()
-                .background(
-                    if (isDisplayed && !showlyricsthumbnail)
-                        when (lyricsBackground) {
-                            LyricsBackground.Black -> Color.Black.copy(0.6f)
-                            LyricsBackground.White -> Color.White.copy(0.4f)
-                            else -> Color.Transparent
-                        }
-                    else Color.Transparent
-                )
-        ) {
-            item(key = "header", contentType = 0) {
-                Spacer(modifier = Modifier.height(thumbnailSize))
-            }
-
-            itemsIndexed(
-                items = syncedSentences,
-                key = { index, _ -> index },
-                contentType = { _, _ -> "lyric_line" }
-            ) { index, sentence ->
-                val trimmedSentence = sentence.text.trim()
-
-                // Read from cache — no network call here
-                val displayText = if (showSecondLine || translateEnabled || romanizationEnabled) {
-                    translationCache[index] ?: trimmedSentence
-                } else {
-                    trimmedSentence
-                }
-
-                val hasGapIndicator = showIntervalIndicator && gapWindows.containsKey(index)
-
-                // Agent-based alignment: v1=Left, v2=Right, bg/v1000=Center
-                val effectiveAlignment = when {
-                    karaokeRespectAgentPosition && sentence.agent == "v1" -> LyricsAlignment.Left
-                    karaokeRespectAgentPosition && sentence.agent == "v2" -> LyricsAlignment.Right
-                    karaokeRespectAgentPosition && sentence.agent == "v1000" -> LyricsAlignment.Center
-                    karaokeRespectAgentPosition && sentence.isBackground -> LyricsAlignment.Center
-                    else -> lyricsAlignment
-                }
-                val lineAlignment = when (effectiveAlignment) {
-                    LyricsAlignment.Left -> Alignment.CenterStart
-                    LyricsAlignment.Center -> Alignment.Center
-                    LyricsAlignment.Right -> Alignment.CenterEnd
-                }
-
-                if (!hasGapIndicator) {
-                    Box(
-                        contentAlignment = lineAlignment,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        LyricsTextPainter(
-                            text = displayText,
-                            isSync = true,
-                            isCurrentIndex = index == synchronizedLyrics.index,
-                            showlyricsthumbnail = showlyricsthumbnail,
-                            lyricsOutline = lyricsOutline,
-                            colorPaletteMode = colorPaletteMode,
-                            fontSize = fontSize,
-                            customSize = customSize,
-                            lyricsAlignment = effectiveAlignment,
-                            lyricsSizeAnimate = lyricsSizeAnimate,
-                            lyricsColor = lyricsColor,
-                            lyricsCustomColor = lyricsCustomColor,
-                            dominantColor = dominantColor,
-                            lyricsHighlight = lyricsHighlight,
-                            clickLyricsText = clickLyricsText,
-                            textOnAccentBackground = showBackgroundLyrics && showlyricsthumbnail,
-                            showShimmer = showShimmer,
-                            onClick = {
-                                if (clickLyricsText) onSeekTo(sentence.timeMs) else onDismiss()
+        LyricsRainbowOutlines(enabled = lyricsOutline == LyricsOutline.Rainbow) {
+            LazyColumn(
+                state = lazyListState,
+                userScrollEnabled = true,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = modifierBG
+                    .fillMaxSize()
+                    .background(
+                        if (isDisplayed && !showlyricsthumbnail)
+                            when (lyricsBackground) {
+                                LyricsBackground.Black -> Color.Black.copy(0.6f)
+                                LyricsBackground.White -> Color.White.copy(0.4f)
+                                else -> Color.Transparent
                             }
-                        )
-                    }
+                        else Color.Transparent
+                    )
+            ) {
+                item(key = "header", contentType = 0) {
+                    Spacer(modifier = Modifier.height(thumbnailSize))
                 }
 
-                // Interval indicator after this line (if there is a gap and the feature is enabled)
-                if (showIntervalIndicator) {
-                    gapWindows[index]?.let { (gapStart, gapEnd) ->
-                        val isVisible = currentPositionMs in gapStart until gapEnd
-                        LyricsIntervalIndicator(
-                            gapStartMs = gapStart,
-                            gapEndMs = gapEnd,
-                            currentPositionMs = currentPositionMs,
-                            visible = isVisible,
-                            color = accentColor,
+                itemsIndexed(
+                    items = syncedSentences,
+                    key = { index, _ -> index },
+                    contentType = { _, _ -> "lyric_line" }
+                ) { index, sentence ->
+                    val trimmedSentence = sentence.text.trim()
+
+                    // Recomposition reads the existing translation cache.
+                    val displayText = if (showSecondLine || translateEnabled || romanizationEnabled) {
+                        translationCache[index] ?: trimmedSentence
+                    } else {
+                        trimmedSentence
+                    }
+
+                    val hasGapIndicator = showIntervalIndicator && gapWindows.containsKey(index)
+
+                    // Agent-based alignment: v1=Left, v2=Right, bg/v1000=Center
+                    val effectiveAlignment = when {
+                        karaokeRespectAgentPosition && sentence.agent == "v1" -> LyricsAlignment.Left
+                        karaokeRespectAgentPosition && sentence.agent == "v2" -> LyricsAlignment.Right
+                        karaokeRespectAgentPosition && sentence.agent == "v1000" -> LyricsAlignment.Center
+                        karaokeRespectAgentPosition && sentence.isBackground -> LyricsAlignment.Center
+                        else -> lyricsAlignment
+                    }
+                    val lineAlignment = when (effectiveAlignment) {
+                        LyricsAlignment.Left -> Alignment.CenterStart
+                        LyricsAlignment.Center -> Alignment.Center
+                        LyricsAlignment.Right -> Alignment.CenterEnd
+                    }
+
+                    if (!hasGapIndicator) {
+                        Box(
+                            contentAlignment = lineAlignment,
                             modifier = Modifier.fillMaxWidth()
-                        )
+                        ) {
+                            LyricsTextPainter(
+                                text = displayText,
+                                isSync = true,
+                                isCurrentIndex = index == synchronizedLyrics.index,
+                                showlyricsthumbnail = showlyricsthumbnail,
+                                lyricsOutline = lyricsOutline,
+                                colorPaletteMode = colorPaletteMode,
+                                fontSize = fontSize,
+                                customSize = customSize,
+                                lyricsAlignment = effectiveAlignment,
+                                lyricsSizeAnimate = lyricsSizeAnimate,
+                                lyricsColor = lyricsColor,
+                                lyricsCustomColor = lyricsCustomColor,
+                                dominantColor = dominantColor,
+                                lyricsHighlight = lyricsHighlight,
+                                clickLyricsText = clickLyricsText,
+                                textOnAccentBackground = showBackgroundLyrics && showlyricsthumbnail,
+                                showShimmer = showShimmer,
+                                onClick = {
+                                    if (clickLyricsText) onSeekTo(sentence.timeMs) else onDismiss()
+                                }
+                            )
+                        }
+                    }
+
+                    // Interval indicator after this line (if there is a gap and the feature is enabled)
+                    if (showIntervalIndicator) {
+                        gapWindows[index]?.let { (gapStart, gapEnd) ->
+                            val isVisible = currentPositionMs in gapStart until gapEnd
+                            LyricsIntervalIndicator(
+                                gapStartMs = gapStart,
+                                gapEndMs = gapEnd,
+                                currentPositionMs = currentPositionMs,
+                                visible = isVisible,
+                                color = accentColor,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
                 }
-            }
 
-            item(key = "footer", contentType = 2) {
-                Spacer(modifier = Modifier.height(thumbnailSize))
+                item(key = "footer", contentType = 2) {
+                    Spacer(modifier = Modifier.height(thumbnailSize))
+                }
             }
         }
         if (!hasParsedLyrics) {

@@ -195,7 +195,6 @@ import app.n_zik.android.utils.notificationPlayerSecondIconKey
 import app.n_zik.android.utils.pauseListenHistoryKey
 import app.n_zik.android.utils.persistentQueueKey
 import app.n_zik.android.utils.playNext
-import app.n_zik.android.utils.playPrevious
 import app.n_zik.android.utils.playbackFadeAudioDurationKey
 import app.n_zik.android.utils.playbackPitchKey
 import app.n_zik.android.utils.playbackSpeedKey
@@ -249,6 +248,7 @@ import app.n_zik.android.extensions.lastfm.isLastfmScrobblingEnabledKey
 import app.n_zik.android.extensions.lastfm.lastfmSessionKey
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.playback.exceptions.ExplicitContentException
 import app.n_zik.android.playback.exceptions.LoginRequiredException
 import app.n_zik.android.playback.exceptions.UnmatchedSongException
@@ -736,6 +736,13 @@ class PlayerServiceModern : MediaLibraryService(),
             NetworkQualityHelper.observeConnection(this@PlayerServiceModern).collect { refreshSessionAccess() }
         }
 
+        sessionArtworkJob = coroutineScope.launch(NzikDispatchers.UI) {
+            ArtworkRevisions.changes.collect {
+                (mediaSession.player as? SessionArtworkPlayer)?.refreshChangedArtwork()
+                mediaLibrarySessionCallback.refreshChangedArtwork(mediaSession)
+            }
+        }
+
         player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
         player.addListener(this@PlayerServiceModern)
         // Issue #881 (gh-881): transition journal + stall-watchdog sampling (spec S1/S2)
@@ -773,6 +780,7 @@ class PlayerServiceModern : MediaLibraryService(),
             snapshotFlow { listenTogetherGuestLock.value }
                 .distinctUntilChanged()
                 .collect {
+                    scheduleCrossfade()
                     updateDefaultNotification()
                     guestGuardPlayer.announceAvailableCommandsChanged()
                 }
@@ -973,6 +981,7 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     override fun onRepeatModeChanged(repeatMode: Int) {
+        scheduleCrossfade()
         updateDefaultNotification()
         preferences.edit {
             putEnum(queueLoopTypeKey, QueueLoopType.from(repeatMode))
@@ -1143,6 +1152,7 @@ class PlayerServiceModern : MediaLibraryService(),
             lastFmScrobbleManager?.destroy()
             lastFmScrobbleManager = null
             sessionPolicyJob?.cancel()
+            sessionArtworkJob?.cancel()
             profilePreferences.unregisterOnSharedPreferenceChangeListener(sessionProfileListener)
             boundSessionPreferences?.unregisterOnSharedPreferenceChangeListener(this)
             encryptedPreferences.unregisterOnSharedPreferenceChangeListener(encryptedPrefsListener)
@@ -1224,6 +1234,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
 
     private var sessionPolicyJob: Job? = null
+    private var sessionArtworkJob: Job? = null
     private var boundSessionPreferences: SharedPreferences? = null
     private val sessionProfileListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key == activeProfileKey) {
@@ -1506,6 +1517,7 @@ class PlayerServiceModern : MediaLibraryService(),
             shuffledIndices[0] = player.currentMediaItemIndex
             player.setShuffleOrder(DefaultShuffleOrder(shuffledIndices, System.currentTimeMillis()))
         }
+        scheduleCrossfade()
     }
 
 
@@ -1519,6 +1531,7 @@ class PlayerServiceModern : MediaLibraryService(),
             scheduleCrossfade()
             widgetUpdates.startWidgetUpdates()
         } else {
+            if (!isCrossfading) discardCrossfadePreparation()
             widgetUpdates.stopWidgetUpdates()
         }
         
@@ -1556,6 +1569,7 @@ class PlayerServiceModern : MediaLibraryService(),
         super.onPlaybackParametersChanged(playbackParameters)
         if (playbackParameters.speed != lastPlaybackSpeed) {
             lastPlaybackSpeed = playbackParameters.speed
+            armCrossfade(allowReachedThreshold = crossfadePositionScheduler.stillOwnsSchedule())
             if (encryptedPreferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
                 coroutineScope.launch {
                     delay(1000L)
@@ -2909,7 +2923,7 @@ class PlayerServiceModern : MediaLibraryService(),
     private var isCrossfading = false
     private var crossfadeClockMs: () -> Long = SystemClock::elapsedRealtime
     private var crossfadeJob: Job? = null
-    private var crossfadeTriggerJob: Job? = null
+    private val crossfadePositionScheduler = CrossfadePositionScheduler()
     private var fadingPlayer: ExoPlayer? = null
     private var pendingSessionPlayerRelease: ExoPlayer? = null
     private var sessionRebindRecoveryJob: Job? = null
@@ -2947,87 +2961,62 @@ class PlayerServiceModern : MediaLibraryService(),
         }
     }
 
-    private fun scheduleCrossfade() {
+    private fun discardCrossfadePreparation() {
+        crossfadePositionScheduler.cancel()
+        secondaryPlayer?.let { preload ->
+            preload.removeListener(secondaryPlayerListener)
+            detachCrossfadeAudioDiagnostics(preload)
+            preload.release()
+        }
+        secondaryPlayer = null
+    }
+
+    private fun scheduleCrossfade() = armCrossfade(allowReachedThreshold = false)
+
+    private fun armCrossfade(allowReachedThreshold: Boolean) {
         if (isCrossfading) return
-        crossfadeTriggerJob?.cancel()
-        crossfadeTriggerJob = null
-        
-        if (!isCrossfading && secondaryPlayer != null) {
-            secondaryPlayer?.let { preload ->
-                preload.removeListener(secondaryPlayerListener)
-                detachCrossfadeAudioDiagnostics(preload)
-                preload.release()
-            }
-            secondaryPlayer = null
-        }
-
-        if (!crossfadeEnabled) return
-        if (crossfadeDuration <= 0) return
-        // Guest in a Listen Together room (spec-listen-together-guest-lock-hardening): the
-        // host drives track transitions (CHANGE_TRACK), so a local crossfade — which starts
-//
-        // `crossfadeDuration` (3 s) before the host's own transition — would be reconciled
-        // back by the host's next PLAY heartbeat (old track) whenever that 8 s beat lands in
-//
-        // the fade window: the fade is audibly cancelled (the old track briefly doubled)
-        // before the guest follows the host on the new track. Skip it for a locked guest:
-//
-        // the transition becomes the deterministic auto-advance + host CHANGE_TRACK path.
-        // Hosts and out-of-room playback keep crossfade unchanged.
-        if (listenTogetherGuestLock.value) return
-        if (player.duration == C.TIME_UNSET) return
-        if (player.duration <= crossfadeDuration) return
+        discardCrossfadePreparation()
+        val duration = crossfadeDuration
+        val owner = player
+        if (isDestroying || !crossfadeEnabled || duration <= 0 || !owner.isPlaying || listenTogetherGuestLock.value) return
+        if (owner.duration == C.TIME_UNSET || owner.duration <= duration) return
         if (crossfadeGapless && isNextItemGapless()) return
-        if (!player.hasNextMediaItem() && player.repeatMode != Player.REPEAT_MODE_ONE) return
 
-        val triggerTime = player.duration - crossfadeDuration.toLong()
-        val delayMs = triggerTime - player.currentPosition
-        if (delayMs <= 0) return
+        val trigger = owner.duration - duration
+        if (!allowReachedThreshold && owner.currentPosition >= trigger) return
+        val currentIndex = owner.currentMediaItemIndex
+        val repeatMode = owner.repeatMode
+        val shuffle = owner.shuffleModeEnabled
+        fun nextIndex() = if (repeatMode == Player.REPEAT_MODE_ONE) currentIndex else owner.nextMediaItemIndex
+        val next = nextIndex()
+        if (next == C.INDEX_UNSET || currentIndex == C.INDEX_UNSET) return
 
-        val preloadAdvanceMs = 15000L
-        val delayUntilPreload = maxOf(0L, delayMs - preloadAdvanceMs)
-
-        val targetMediaId = player.currentMediaItem?.mediaId
-
-        val nextIndex = if (player.repeatMode == Player.REPEAT_MODE_ONE) {
-            player.currentMediaItemIndex
-        } else {
-            player.nextMediaItemIndex
-        }
-        val nextArtworkUri = if (nextIndex != C.INDEX_UNSET) {
-            player.getMediaItemAt(nextIndex).mediaMetadata.artworkUri?.toString()
-        } else null
-
-        crossfadeTriggerJob =
-            coroutineScope.launch(NzikDispatchers.UI) {
-                delay(delayUntilPreload)
-                // Re-check the guest lock: a job armed before the lock turned on (a guest joining
-                // a room mid-armed) must not fire the fade — the host drives transitions for a
-//
-                // locked guest (spec-listen-together-guest-lock-hardening).
-                if (isActive && !listenTogetherGuestLock.value && player.isPlaying && player.currentMediaItem?.mediaId == targetMediaId) {
-                    preloadCrossfade(triggerTime)
-                    
-                    if (nextArtworkUri != null) {
-                        try {
-                            // Preload cover art to avoid UI lag on switch
-                            ImageCacheFactory.preloadImage(nextArtworkUri)
-                        } catch (e: Exception) {
-                            Timber.tag("PlayerServiceModern").e(e, "Crossfade: Failed to preload cover art")
-                        }
-                    }
-                    
-                    val remainingDelay = triggerTime - player.currentPosition
-                    if (remainingDelay > 0) {
-                        delay(remainingDelay)
-                    }
-                    
-                    // Second line of defense for a lock that turned on after the job armed.
-                    if (isActive && !listenTogetherGuestLock.value && player.isPlaying && player.currentMediaItem?.mediaId == targetMediaId) {
-                        startCrossfade()
+        val timeline = owner.currentTimeline
+        val artwork = owner.getMediaItemAt(next).mediaMetadata.artworkUri?.toString()
+        crossfadePositionScheduler.arm(
+            scope = coroutineScope,
+            triggerPosition = trigger,
+            position = { owner.currentPosition },
+            speed = { owner.playbackParameters.speed },
+            isStillOwner = {
+                player === owner && owner.isPlaying && !listenTogetherGuestLock.value &&
+                    owner.currentTimeline === timeline && owner.currentMediaItemIndex == currentIndex &&
+                    owner.repeatMode == repeatMode && owner.shuffleModeEnabled == shuffle && nextIndex() == next
+            },
+            prepareAudio = ::preloadCrossfade,
+            prefetchArtwork = {
+                if (artwork != null) {
+                    try {
+                        withContext(NzikDispatchers.DATA) { ImageCacheFactory.preloadImage(artwork) }
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (error: Exception) {
+                        Timber.tag("PlayerServiceModern").w(error, "Could not preload crossfade artwork")
                     }
                 }
-            }
+            },
+            beginFade = ::startCrossfade,
+        )
     }
 
     private fun isNextItemGapless(): Boolean {
@@ -3102,7 +3091,7 @@ class PlayerServiceModern : MediaLibraryService(),
         return guard
     }
 
-    private fun preloadCrossfade(triggerTime: Long) {
+    private fun preloadCrossfade() {
         if (isCrossfading || secondaryPlayer != null || pendingSessionPlayerRelease != null) return
 
         val currentIndex = player.currentMediaItemIndex
@@ -3339,8 +3328,7 @@ class PlayerServiceModern : MediaLibraryService(),
     private fun cancelCrossfadeAndReset() {
         crossfadeJob?.cancel()
         crossfadeJob = null
-        crossfadeTriggerJob?.cancel()
-        crossfadeTriggerJob = null
+        crossfadePositionScheduler.cancel()
         if (isCrossfading) player.volume = preferences.getFloat(playbackVolumeKey, 1f)
         cleanupCrossfade()
     }

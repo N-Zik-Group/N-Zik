@@ -524,14 +524,21 @@ class ListenTogetherClient(
             val action = pendingAction ?: return
             pendingAction = null
 
+            sendRoomAction(action, queued = true)
+        }
+
+        private fun sendRoomAction(action: PendingAction, queued: Boolean) {
             when (action) {
                 is PendingAction.CreateRoom -> {
-                    log(LogLevel.INFO, R.string.listen_together_log_event_executing_pending_create_room, action.username)
+                    if (queued) log(LogLevel.INFO, R.string.listen_together_log_event_executing_pending_create_room, action.username)
                     sendMessage(MessageTypes.CREATE_ROOM, CreateRoomPayload(action.username))
                 }
-
                 is PendingAction.JoinRoom -> {
-                    log(LogLevel.INFO, R.string.listen_together_log_event_executing_pending_join_room, logDetail(R.string.listen_together_log_detail_pending_join, action.roomCode, action.username))
+                    if (queued) log(
+                        LogLevel.INFO,
+                        R.string.listen_together_log_event_executing_pending_join_room,
+                        logDetail(R.string.listen_together_log_detail_pending_join, action.roomCode, action.username),
+                    )
                     sendMessage(MessageTypes.JOIN_ROOM, JoinRoomPayload(action.roomCode.uppercase(), action.username))
                 }
             }
@@ -1135,64 +1142,35 @@ class ListenTogetherClient(
 
         // Public API methods
 
-        /**
-         * Create a new listening room.
-         * If not connected, will queue the action and connect first.
-         */
-        fun createRoom(username: String) {
+        /** Creates a room when the connection can send the request. */
+        fun createRoom(username: String) = submitRoomAction(PendingAction.CreateRoom(username), username)
+
+        /** Joins a room when the connection can send the request. */
+        fun joinRoom(roomCode: String, username: String) =
+            submitRoomAction(PendingAction.JoinRoom(roomCode, username), username)
+
+        private fun submitRoomAction(action: PendingAction, username: String) {
             sessionApplyGeneration.incrementAndGet()
             lastPlaybackRevision.set(0L)
-            // Clear any existing session to ensure we create a new room instead of reconnecting
+            // The new action must win over a pending persisted-session restore.
             clearPersistedSession()
             sessionToken = null
             storedRoomCode = null
             wasHost = false
-
             storedUsername = username
 
             if (_connectionState.value == ConnectionState.CONNECTED) {
-                sendMessage(MessageTypes.CREATE_ROOM, CreateRoomPayload(username))
-            } else {
-                log(LogLevel.INFO, R.string.listen_together_log_event_not_connected_queueing_create_room_action)
-                pendingAction = PendingAction.CreateRoom(username)
-                if (_connectionState.value == ConnectionState.DISCONNECTED ||
-                    _connectionState.value == ConnectionState.ERROR
-                ) {
-                    connect()
-                }
-                // If CONNECTING or RECONNECTING, the action will be executed when connected
+                sendRoomAction(action, queued = false)
+                return
             }
-        }
-
-        /**
-         * Join an existing room.
-         * If not connected, will queue the action and connect first.
-         */
-        fun joinRoom(
-            roomCode: String,
-            username: String,
-        ) {
-            sessionApplyGeneration.incrementAndGet()
-            lastPlaybackRevision.set(0L)
-            // Clear any existing session to ensure we join the new room instead of reconnecting
-            clearPersistedSession()
-            sessionToken = null
-            storedRoomCode = null
-            wasHost = false
-
-            storedUsername = username
-
-            if (_connectionState.value == ConnectionState.CONNECTED) {
-                sendMessage(MessageTypes.JOIN_ROOM, JoinRoomPayload(roomCode.uppercase(), username))
-            } else {
-                log(LogLevel.INFO, R.string.listen_together_log_event_not_connected_queueing_join_room_action)
-                pendingAction = PendingAction.JoinRoom(roomCode, username)
-                if (_connectionState.value == ConnectionState.DISCONNECTED ||
-                    _connectionState.value == ConnectionState.ERROR
-                ) {
-                    connect()
-                }
-                // If CONNECTING or RECONNECTING, the action will be executed when connected
+            val waitingMessage = when (action) {
+                is PendingAction.CreateRoom -> R.string.listen_together_log_event_not_connected_queueing_create_room_action
+                is PendingAction.JoinRoom -> R.string.listen_together_log_event_not_connected_queueing_join_room_action
+            }
+            log(LogLevel.INFO, waitingMessage)
+            pendingAction = action
+            if (_connectionState.value == ConnectionState.DISCONNECTED || _connectionState.value == ConnectionState.ERROR) {
+                connect()
             }
         }
 

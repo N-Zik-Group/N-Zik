@@ -6,8 +6,6 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
-import kotlin.math.abs
-import kotlin.time.Duration
 
 @Serializable
 data class Track(
@@ -29,8 +27,3 @@ data class Track(
             else -> null
         }?.substringBefore(".")?.toLongOrNull() ?: 0L
 }
-
-
-internal fun List<Track>.bestMatchingFor(title: String, duration: Duration) =
-    firstOrNull { it.duration == duration.inWholeSeconds }
-        ?: minByOrNull { abs(it.trackName.length - title.length) }

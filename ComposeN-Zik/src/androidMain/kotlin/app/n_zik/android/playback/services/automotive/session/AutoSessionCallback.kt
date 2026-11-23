@@ -29,6 +29,7 @@ import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.requests.relatedPage
 import app.n_zik.innertube.utils.from
 import app.n_zik.innertube.YtMusic
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Deferred
@@ -184,6 +185,16 @@ class AutoSessionCallback(
     fun refreshArtwork(session: MediaLibrarySession) {
         autoBrowseTree.refreshArtwork()
         notifyKnownChildren(session)
+    }
+
+    internal suspend fun refreshChangedArtwork(session: MediaLibrarySession) {
+        val profile = getActiveProfile(context)
+        val changes = withContext(NzikDispatchers.DATA) { autoBrowseTree.refreshChangedArtwork() }
+        if (getActiveProfile(context) != profile) return
+        changes.forEach { change ->
+            val browser = change.browser as? MediaSession.ControllerInfo ?: return@forEach
+            session.notifyChildrenChanged(browser, change.parentId, change.itemCount, null)
+        }
     }
 
     private fun notifyKnownChildren(session: MediaLibrarySession, accessChanged: Boolean = false) {

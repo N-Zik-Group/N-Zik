@@ -1,6 +1,6 @@
 # Code Quality Rules
 
-**Version:** 1.13.0 | **Last updated:** 2026-11-20
+**Version:** 1.14.0 | **Last updated:** 2026-11-23
 
 ## Portable theme settings
 
@@ -118,8 +118,8 @@ New app Kotlin files belong under `app.n_zik.android.*`. Follow the owning exten
 | Listen Together                | `listentogether/` (+ `src/main/proto/listentogether.proto`) |
 | Widgets / shortcuts            | `widget/`, `shortcuts/`                             |
 | Home tabs / chips / toolbars   | `components/tab/` (12 .kt)                          |
-| Domain component trees         | `components/import/` (6 .kt), `components/playlist/` (3), `components/song/` (3), `components/musicbrainz/` (4 root .kt + `insights/`) — per-domain component packages (dialogs & menus have their own rows above) |
-| Core feature packages          | `core/rewind/` (5 .kt — rewind playlist workers + generation), `core/youtube/` (5), `core/backup/` (4), `core/profiles/` (2), `core/rescue/` (2), `core/coil/` (2) |
+| Domain component trees         | `components/import/`, `components/playlist/`, `components/song/`, and `components/musicbrainz/` — per-domain component packages (dialogs and menus have their own rows above) |
+| Core feature packages          | `core/rewind/` (playlist scheduling and generation), `core/youtube/`, `core/backup/`, `core/profiles/`, `core/rescue/`, and `core/coil/` |
 | Updater (in-app)               | `updater/` — `models/` (5 .kt), `services/` (2 .kt), `ui/` (`UpdateScreen`, see the Page-level screens row) |
 | Shared component files         | `components/` root (10 .kt — `CustomBottomSheet`, `VoiceSearchOverlay`, `FolderItem`, `ImportFromFile`, `SongItem`, `Sort`, …) |
 | Playback utilities             | `playback/utils/` (4 .kt — `Shuffler`, `NZikRadio`, `BitmapProvider`, `SessionBitmapLoader`) |
@@ -230,7 +230,9 @@ NEVER swallow exceptions silently. ALWAYS log with Timber.
 - Use `withContext` to switch between named dispatchers
 - Cancel coroutines in `onCleared()` or `DisposableEffect`
 - Avoid holding Activity/Context references in long-lived objects
-- Use Coil for image loading
+- Route artwork requests through `ImageCacheFactory` and disk mutations through `ProfileArtworkCache`. Reuse the same source revision for presentation and session artwork. Scope replacements to the affected source.
+- Reuse `SharedArtworkColors` for palette extraction. Keep the rendered frame until a replacement is presented.
+- Schedule crossfade against media position via `CrossfadePositionScheduler`. Artwork prefetch runs independently of the audio trigger.
 - Profile startup and rendering performance
 - Avoid ANR: never block main thread for >5 seconds
 

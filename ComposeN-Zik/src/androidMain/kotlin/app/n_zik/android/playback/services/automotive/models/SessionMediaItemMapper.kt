@@ -1,7 +1,7 @@
 package app.n_zik.android.playback.services.automotive.models
 
+import app.n_zik.android.core.coil.ImageCacheFactory
 import android.content.ContentUris
-import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.core.net.toUri
@@ -137,7 +137,7 @@ object SessionMediaItemMapper {
             candidate == null || file != null -> drawableUri(appContext(), R.drawable.ic_launcher_box)
             candidate.scheme in setOf("http", "https") -> ArtworkContentProvider.uriForRemote(
                 candidate.toString(), getActiveProfile(appContext()),
-                appContext().preferences.getBoolean(cropVideoThumbnailsKey, true), ArtworkRevisions.current(),
+                appContext().preferences.getBoolean(cropVideoThumbnailsKey, true), ImageCacheFactory.artworkSourceRevision(candidate.toString(), getActiveProfile(appContext())),
             )
             else -> candidate
         })

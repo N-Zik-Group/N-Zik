@@ -9,7 +9,6 @@ import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -117,6 +116,7 @@ import app.n_zik.android.components.glass.GlassSceneContent
 import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.glassRenderer
 import app.n_zik.android.components.glass.LocalPlayerArtworkObservation
+import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.components.glass.rememberPlayerArtworkObservation
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
@@ -133,12 +133,12 @@ import app.n_zik.android.components.navigation.nav.GlassNavigationPlayerGap
 import app.n_zik.android.components.navigation.sideNavigationOwnsHeader
 import app.n_zik.android.components.onboarding.OnboardingFlow
 import app.n_zik.android.components.player.APP_HEADER_HEIGHT
-import app.n_zik.android.components.player.ArtworkColorObservation
 import app.n_zik.android.components.player.ArtworkDisplayColors
 import app.n_zik.android.components.player.MINI_PLAYER_TOP_GAP
 import app.n_zik.android.components.player.MiniPlayerQueueOverlay
 import app.n_zik.android.components.player.PaletteFade
 import app.n_zik.android.components.player.SharedArtworkColors
+import app.n_zik.android.components.player.rememberScopedArtworkColorRevision
 import app.n_zik.android.components.player.TOP_NAV_BAR_HEIGHT
 import app.n_zik.android.components.player.miniPlayerSideInset
 import app.n_zik.android.components.player.miniPlayerTopDockPaddingPx
@@ -151,7 +151,6 @@ import app.n_zik.android.components.player.shouldComposePlayerSheet
 import app.n_zik.android.components.player.showMiniplayerIfDismissed
 import app.n_zik.android.components.theme.DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT
 import app.n_zik.android.components.theme.DynamicAppearanceOwner
-import app.n_zik.android.components.theme.DynamicPaletteArtworkListener
 import app.n_zik.android.components.theme.ProvideAnimatedAppearance
 import app.n_zik.android.components.theme.ambientArtworkPaint
 import app.n_zik.android.components.theme.appearanceBackground
@@ -440,45 +439,36 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
         onDispose { dynamicAppearanceOwner.close() }
     }
 
-    var dynamicArtworkObservation by remember {
-        mutableStateOf<Pair<ArtworkColorObservation, Long>?>(null)
-    }
+    val playerUpdateTrigger by binder?.playerUpdateTrigger?.collectAsStateWithLifecycle(0) ?: remember { mutableStateOf(0) }
+    val playerArtwork = rememberPlayerArtworkObservation(binder?.player, playerUpdateTrigger)
+    val latestPlayerArtwork by rememberUpdatedState(playerArtwork)
     fun setDynamicPalette(
         player: Player?,
         animateTheme: Boolean = false,
         shouldAnimate: () -> Boolean = { animateTheme },
     ) {
-        val item = player?.currentMediaItem
-        val artworkUri = item?.let { player.mediaMetadata.artworkUri ?: it.mediaMetadata.artworkUri }?.toString()
-        dynamicArtworkObservation = SharedArtworkColors
-            .observe(artworkUri, getActiveProfile(this@MainActivityContent))
-            ?.let { it to it.revision.value }
+        val observation = latestPlayerArtwork
+        if (observation.player !== player) return
+        val artwork = observation.state.value
+        val artworkUri = artwork?.uri
         dynamicAppearanceOwner.refresh(artworkUri, animateTheme,
-            awaitArtworkMetadata = item != null, shouldAnimate = shouldAnimate)
+            awaitArtworkMetadata = artwork?.mediaId != null, shouldAnimate = shouldAnimate)
     }
 
     val artworkColorGeneration by SharedArtworkColors.generation.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
-    val artworkObservation = dynamicArtworkObservation?.first
-    val artworkPlayer = binder?.player
-    LaunchedEffect(artworkObservation, artworkPlayer) {
-        if (artworkObservation == null || artworkPlayer == null) return@LaunchedEffect
-        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            artworkObservation.revision.collect { revision ->
-                val current = dynamicArtworkObservation
-                if (current != null && current.first === artworkObservation && current.second != revision) {
-                    setDynamicPalette(artworkPlayer, animateTheme = true)
-                }
-            }
-        }
+    val observedArtwork = playerArtwork.state.value
+    val sourceRevision = ImageCacheFactory.rememberArtworkRevision(observedArtwork?.uri)
+    val artworkProfile = ImageCacheFactory.rememberArtworkProfile()
+    val colorRevision = rememberScopedArtworkColorRevision(observedArtwork?.uri, artworkProfile)
+    val artworkRevisions = Triple(artworkColorGeneration, sourceRevision, colorRevision)
+    var requestedArtworkRevisions by remember(playerArtwork, observedArtwork, artworkProfile) {
+        mutableStateOf(artworkRevisions)
     }
-    val localArtworkRevision by app.n_zik.android.playback.services.automotive.models.ArtworkRevisions.changes
-        .collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
-    LaunchedEffect(artworkColorGeneration, localArtworkRevision) {
-        val player = binder?.player ?: return@LaunchedEffect
-        val uri = (player.mediaMetadata.artworkUri ?: player.currentMediaItem?.mediaMetadata?.artworkUri)?.toString()
-        if (artworkColorGeneration > 0 || localArtworkRevision > 0 &&
-            app.n_zik.android.core.coil.ImageCacheFactory.isLocalArtworkSource(uri)
-        ) setDynamicPalette(player, animateTheme = true)
+    LaunchedEffect(playerArtwork, observedArtwork, artworkRevisions) {
+        val player = playerArtwork.player ?: return@LaunchedEffect
+        if (requestedArtworkRevisions == artworkRevisions) return@LaunchedEffect
+        requestedArtworkRevisions = artworkRevisions
+        setDynamicPalette(player, animateTheme = true)
     }
 
     // Issue #881 (gh-881): tolerant saver (spec M5).
@@ -779,7 +769,6 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
         ambientLyricsColor == LyricsColor.Cover ||
         ambientVisualizerEnabled && ambientVisualizerColor == VisualizerWhiteColorOption.Cover)
     var fixedArtworkColors by remember(preferences) { mutableStateOf<ArtworkDisplayColors?>(null) }
-    val playerArtwork = rememberPlayerArtworkObservation(binder?.player)
     if (needsFixedArtwork) {
         val artwork = playerArtwork.state.value
         val result = rememberArtworkDisplayResult(artwork?.uri, appearance.colorPalette.isDark,
@@ -1423,17 +1412,13 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
         // Issue #881 (gh-881): tolerant saver — this slot lives in the BoxWithConstraints
         // sub-composition, the exact spot where the 15:23:55 CCE crashed (spec M5).
         var isPlayerInitialized by rememberSaveable(saver = TolerantBoolStateSaver("main.isPlayerInitialized")) { mutableStateOf(false) }
-        val playerUpdateTrigger by binder?.playerUpdateTrigger?.collectAsStateWithLifecycle(0) ?: remember { mutableStateOf(0) }
+        LaunchedEffect(playerArtwork, observedArtwork, playerUpdateTrigger) {
+            val player = playerArtwork.player ?: return@LaunchedEffect
+            setDynamicPalette(player) { !playerSheetState.isExpanded }
+        }
         DisposableEffect(binder?.player, playerUpdateTrigger) {
             val currentBinder = binder ?: return@DisposableEffect onDispose { }
             val player = currentBinder.player
-
-            val paletteArtworkListener = DynamicPaletteArtworkListener(player) {
-                // The expanded player owns its scoped PaletteFade. Its covered screen needs only the target.
-                setDynamicPalette(player) { !playerSheetState.isExpanded }
-            }
-            player.addListener(paletteArtworkListener)
-            paletteArtworkListener.publishCurrentArtwork()
 
             // "Now playing" notification tap — COLD start (spec-notification-click-opens-player):
             // the held tap token is validated against the CURRENT service's token (via
@@ -1500,7 +1485,6 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
 
             onDispose {
                 player.removeListener(listener)
-                player.removeListener(paletteArtworkListener)
             }
         }
 

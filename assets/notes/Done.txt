@@ -227,6 +227,11 @@ Fixed:
 - fix(artist): give unfollowed buttons the native raised surface in Pitch Black
   - Resolve the unfollowed background through surfaceColor before applying Glass, matching the gray Settings-card surface while retaining the black Pure Black mode fill.
   - Preserve accent/red followed and disliked roles, contrast handling, dimensions and click callbacks; verify every Glass material mode.
+- fix(playback): align crossfade and artwork refresh with the current media source
+  - Schedule crossfade against media position, re-arm an existing schedule when playback speed changes and keep artwork prefetch independent of the audio trigger.
+  - Scope artwork revisions to the affected source, guard stale loads and refresh affected Android Auto browse entries and session artwork. Keep the displayed palette coordinated with the rendered cover.
+  - Share visualizer capture and avoid cover work for presets that do not use it.
+  - Verify the Debug on the Pixel in Normal and Glass. Run 470 app tests and 33 Innertube tests. The intermittent portrait artwork assertion passed on an isolated rerun.
 
 Player and Theme Store follow-up:
 - fix(player): cancel the sleep timer on the first confirmation, including end-of-track grace. Verify the first Stop press on the Xperia with Release64.
@@ -294,3 +299,7 @@ Refactor:
   - Share artwork observation, thumbnail request handling, lyric translation and carousel rendering. Reuse the playback position clock for karaoke, including when the shared owner is absent.
   - Remove unused navigation and artwork paths while retaining active routes, Room schemas, profile boundaries and published resource aliases.
   - Assemble Debug and pass 52 targeted review tests. Verify same-track artwork updates and same-URI invalidation through mounted consumers and check player controls on the Pixel VM.
+- refactor(app): centralize audit follow-up paths
+  - Share search suggestion rendering, backup import orchestration, playlist download state, Rewind scheduling, Listen Together form handling and Innertube artist row parsing.
+  - Remove the unused Invidious startup fetch and obsolete navigation code, keep the active header and navigation components, and preserve widget drawable names through aliases.
+  - Share APK assembly, provenance checks and artifact upload across the five stable jobs while retaining signing dependencies. Document ownership in AGENTS.md, CODE.md and BUILD.md.

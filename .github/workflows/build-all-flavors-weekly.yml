@@ -114,37 +114,12 @@ jobs:
           ref: ${{ needs.versioning.outputs.sha }}
           submodules: true
 
-      - name: Copy changelogs into res/raw
-        run: cp "Updater/changelogs/${{ needs.versioning.outputs.code }}.txt" "ComposeN-Zik/src/androidMain/res/raw/release_notes.txt"
-
-      - name: Setup Java 21
-        uses: actions/setup-java@v6.3.0
+      - uses: ./.github/actions/build-stable-flavor
         with:
-          java-version: "21"
-          distribution: "corretto"
-
-      - name: Restore Gradle dependencies
-        uses: actions/cache@v6
-        with:
-          path: |
-            ~/.gradle/caches/modules-2
-            ~/.gradle/wrapper
-          key: gradle-dependencies-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: gradle-dependencies-${{ runner.os }}-
-
-      - name: Build with Gradle
-        run: ./gradlew assembleRelease64 --no-build-cache
-
-      - name: Verify APK source revision and native ABIs
-        env:
-          SOURCE_SHA: ${{ needs.versioning.outputs.sha }}
-        run: python3 .github/scripts/verify_release.py apk --sha "$SOURCE_SHA" --variant release64 --directory ComposeN-Zik/build/outputs/apk/release64
-
-      - name: Upload artifacts for signing
-        uses: actions/upload-artifact@v7
-        with:
-          name: unsigned-release64
-          path: ComposeN-Zik/build/outputs/apk/release64/*.apk
+          variant: release64
+          gradle-task: assembleRelease64
+          version-code: ${{ needs.versioning.outputs.code }}
+          source-sha: ${{ needs.versioning.outputs.sha }}
 
   build-release32:
     needs: [versioning, verify-version]
@@ -157,37 +132,12 @@ jobs:
           ref: ${{ needs.versioning.outputs.sha }}
           submodules: true
 
-      - name: Copy changelogs into res/raw
-        run: cp "Updater/changelogs/${{ needs.versioning.outputs.code }}.txt" "ComposeN-Zik/src/androidMain/res/raw/release_notes.txt"
-
-      - name: Setup Java 21
-        uses: actions/setup-java@v6.3.0
+      - uses: ./.github/actions/build-stable-flavor
         with:
-          java-version: "21"
-          distribution: "corretto"
-
-      - name: Restore Gradle dependencies
-        uses: actions/cache@v6
-        with:
-          path: |
-            ~/.gradle/caches/modules-2
-            ~/.gradle/wrapper
-          key: gradle-dependencies-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: gradle-dependencies-${{ runner.os }}-
-
-      - name: Build with Gradle
-        run: ./gradlew assembleRelease32 --no-build-cache
-
-      - name: Verify APK source revision and native ABIs
-        env:
-          SOURCE_SHA: ${{ needs.versioning.outputs.sha }}
-        run: python3 .github/scripts/verify_release.py apk --sha "$SOURCE_SHA" --variant release32 --directory ComposeN-Zik/build/outputs/apk/release32
-
-      - name: Upload artifacts for signing
-        uses: actions/upload-artifact@v7
-        with:
-          name: unsigned-release32
-          path: ComposeN-Zik/build/outputs/apk/release32/*.apk
+          variant: release32
+          gradle-task: assembleRelease32
+          version-code: ${{ needs.versioning.outputs.code }}
+          source-sha: ${{ needs.versioning.outputs.sha }}
 
   build-minified64:
     needs: [versioning, verify-version]
@@ -200,37 +150,12 @@ jobs:
           ref: ${{ needs.versioning.outputs.sha }}
           submodules: true
 
-      - name: Copy changelogs into res/raw
-        run: cp "Updater/changelogs/${{ needs.versioning.outputs.code }}.txt" "ComposeN-Zik/src/androidMain/res/raw/release_notes.txt"
-
-      - name: Setup Java 21
-        uses: actions/setup-java@v6.3.0
+      - uses: ./.github/actions/build-stable-flavor
         with:
-          java-version: "21"
-          distribution: "corretto"
-
-      - name: Restore Gradle dependencies
-        uses: actions/cache@v6
-        with:
-          path: |
-            ~/.gradle/caches/modules-2
-            ~/.gradle/wrapper
-          key: gradle-dependencies-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: gradle-dependencies-${{ runner.os }}-
-
-      - name: Build with Gradle
-        run: ./gradlew assembleMinified64 --no-build-cache
-
-      - name: Verify APK source revision and native ABIs
-        env:
-          SOURCE_SHA: ${{ needs.versioning.outputs.sha }}
-        run: python3 .github/scripts/verify_release.py apk --sha "$SOURCE_SHA" --variant minified64 --directory ComposeN-Zik/build/outputs/apk/minified64
-
-      - name: Upload artifacts for signing
-        uses: actions/upload-artifact@v7
-        with:
-          name: unsigned-minified64
-          path: ComposeN-Zik/build/outputs/apk/minified64/*.apk
+          variant: minified64
+          gradle-task: assembleMinified64
+          version-code: ${{ needs.versioning.outputs.code }}
+          source-sha: ${{ needs.versioning.outputs.sha }}
 
   build-minified32:
     needs: [versioning, verify-version]
@@ -243,37 +168,12 @@ jobs:
           ref: ${{ needs.versioning.outputs.sha }}
           submodules: true
 
-      - name: Copy changelogs into res/raw
-        run: cp "Updater/changelogs/${{ needs.versioning.outputs.code }}.txt" "ComposeN-Zik/src/androidMain/res/raw/release_notes.txt"
-
-      - name: Setup Java 21
-        uses: actions/setup-java@v6.3.0
+      - uses: ./.github/actions/build-stable-flavor
         with:
-          java-version: "21"
-          distribution: "corretto"
-
-      - name: Restore Gradle dependencies
-        uses: actions/cache@v6
-        with:
-          path: |
-            ~/.gradle/caches/modules-2
-            ~/.gradle/wrapper
-          key: gradle-dependencies-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: gradle-dependencies-${{ runner.os }}-
-
-      - name: Build with Gradle
-        run: ./gradlew assembleMinified32 --no-build-cache
-
-      - name: Verify APK source revision and native ABIs
-        env:
-          SOURCE_SHA: ${{ needs.versioning.outputs.sha }}
-        run: python3 .github/scripts/verify_release.py apk --sha "$SOURCE_SHA" --variant minified32 --directory ComposeN-Zik/build/outputs/apk/minified32
-
-      - name: Upload artifacts for signing
-        uses: actions/upload-artifact@v7
-        with:
-          name: unsigned-minified32
-          path: ComposeN-Zik/build/outputs/apk/minified32/*.apk
+          variant: minified32
+          gradle-task: assembleMinified32
+          version-code: ${{ needs.versioning.outputs.code }}
+          source-sha: ${{ needs.versioning.outputs.sha }}
 
   build-foss:
     needs: [versioning, verify-version]
@@ -286,37 +186,12 @@ jobs:
           ref: ${{ needs.versioning.outputs.sha }}
           submodules: true
 
-      - name: Copy changelogs into res/raw
-        run: cp "Updater/changelogs/${{ needs.versioning.outputs.code }}.txt" "ComposeN-Zik/src/androidMain/res/raw/release_notes.txt"
-
-      - name: Setup Java 21
-        uses: actions/setup-java@v6.3.0
+      - uses: ./.github/actions/build-stable-flavor
         with:
-          java-version: "21"
-          distribution: "corretto"
-
-      - name: Restore Gradle dependencies
-        uses: actions/cache@v6
-        with:
-          path: |
-            ~/.gradle/caches/modules-2
-            ~/.gradle/wrapper
-          key: gradle-dependencies-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: gradle-dependencies-${{ runner.os }}-
-
-      - name: Build with Gradle
-        run: ./gradlew assembleFoss --no-build-cache
-
-      - name: Verify APK source revision and native ABIs
-        env:
-          SOURCE_SHA: ${{ needs.versioning.outputs.sha }}
-        run: python3 .github/scripts/verify_release.py apk --sha "$SOURCE_SHA" --variant foss --directory ComposeN-Zik/build/outputs/apk/foss
-
-      - name: Upload artifacts for signing
-        uses: actions/upload-artifact@v7
-        with:
-          name: unsigned-foss
-          path: ComposeN-Zik/build/outputs/apk/foss/*.apk
+          variant: foss
+          gradle-task: assembleFoss
+          version-code: ${{ needs.versioning.outputs.code }}
+          source-sha: ${{ needs.versioning.outputs.sha }}
 
   sign-apks:
     name: Sign all built APKs

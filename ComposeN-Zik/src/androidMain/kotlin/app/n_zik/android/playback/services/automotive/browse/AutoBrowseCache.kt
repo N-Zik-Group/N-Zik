@@ -27,6 +27,14 @@ class AutoBrowseCache {
     }
 
     @Synchronized
+    internal fun refreshArtwork(refresh: (List<MediaItem>) -> List<MediaItem>) {
+        cache.replaceAll { _, entry ->
+            val updated = refresh(entry.items)
+            if (updated === entry.items) entry else entry.copy(items = updated)
+        }
+    }
+
+    @Synchronized
     fun clear() {
         cache.clear()
     }

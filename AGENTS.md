@@ -1,6 +1,6 @@
 # AGENTS.md — NZik
 
-**Version:** 1.18.1 | **Last updated:** 2026-11-21
+**Version:** 1.18.2 | **Last updated:** 2026-11-23
 
 **MANDATORY: Read this file + rules/*.md before any task.**
 
@@ -120,9 +120,10 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 | Repositories | collocated with their domain (e.g. `recognition/ShazamRepository.kt`) — no central `core/data/` exists |
 | DI           | no DI framework in the app module (Hilt and Koin declared in the catalog but never applied) — plain constructor injection + `object Dependencies` service locator in `MainApplication.kt` (process-lifetime `Application` access); introducing a DI framework requires user approval |
 | Navigation   | `app/n_zik/android/core/navigation/` — interceptors ONLY; routes are the legacy `NavRoutes` enum + string helpers (see rules/CODE.md Navigation) |
-| Player       | `app/n_zik/android/playback/services/`     |
+| Player       | `app/n_zik/android/playback/services/` owns Media3 and the audio handoff. `CrossfadePositionScheduler.kt` owns position-based crossfade timing. |
+| Artwork      | `core/coil/ImageCacheFactory.kt` is the image request entry point. `ProfileArtworkCache.kt` owns profile disk storage and mutations. `components/player/SharedArtworkColors.kt` owns palette extraction. |
 | Contract server (wire) | `app/n_zik/android/bridge/` — the phone-side local server of the wire contract with the N-Zik-Desktop-Compagnon app (39 .kt: `BridgeServer` + Core/Controller/Service, `DeviceAuthenticator`, sub-pkgs `audio/`, `command/`, `library/`, `pairing/`, `state/`) — the spec is shared: `{project-root}/_bmad-output/specs/spec-n-zik-pc-bridge/contract/CONTRACT-v1.md` (contract 1.x, current 1.12.0) |
-| Listen Together      | `app/n_zik/android/listentogether/` (12 .kt) + `src/main/proto/listentogether.proto` |
+| Listen Together      | `app/n_zik/android/listentogether/` owns transport and room playback. The app shares form event handling via `components/ui/screens/listentogether/ListenTogetherFormEvents.kt`. The wire format lives in `src/main/proto/listentogether.proto`. |
 | Widgets / shortcuts  | `app/n_zik/android/widget/` (6 .kt), `app/n_zik/android/shortcuts/` |
 | UI | Screen packages under `components/ui/screens/` and existing domain packages under `ui/screens/` |
 | App startup and appearance | Android lifecycle in `MainActivity.kt`, launch setup in `startup/`, app composition in `components/ui/app/`, onboarding in `components/onboarding/`, intent parsing and delivery in `intents/`, notification channels in `core/notifications/`, and shared appearance in `components/theme/` |

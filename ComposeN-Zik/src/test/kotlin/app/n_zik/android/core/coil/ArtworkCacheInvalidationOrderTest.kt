@@ -16,6 +16,8 @@ import io.mockk.unmockkAll
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -104,6 +106,11 @@ class ArtworkCacheInvalidationOrderTest {
         val original = "https://example.com/cover.jpg"
         val profile = getActiveProfile(RuntimeEnvironment.getApplication())
         val signed = requireNotNull(ArtworkContentProvider.uriForRemote(original, profile, square = true, revision = 0))
+        val model = signed.toString()
+        val requestedSource = ImageCacheFactory.currentArtworkSource(model, profile)
+        val signedKey = ImageCacheFactory.generateCacheKeySync(model, ImageCacheFactory.NetworkQuality.HIGH)
+        assertEquals(model, ImageCacheFactory.artworkColorSource(model, profile)?.uri)
+        assertTrue(ImageCacheFactory.isCurrentArtworkSource(requestedSource))
         val color = requireNotNull(SharedArtworkColors.observe(original, profile))
         assertSame(color, SharedArtworkColors.observe(signed.toString(), profile))
         val before = color.revision.value
@@ -120,5 +127,11 @@ class ArtworkCacheInvalidationOrderTest {
 
         assertTrue(originalKey in evicted)
         assertEquals(before + 1, color.revision.value)
+        assertFalse(ImageCacheFactory.isCurrentArtworkSource(requestedSource))
+        val renewed = ImageCacheFactory.currentArtworkSource(model, profile)
+        assertTrue(ImageCacheFactory.isCurrentArtworkSource(renewed))
+        assertEquals(requestedSource.uri, renewed.uri)
+        assertEquals(ImageCacheFactory.artworkSourceRevision(original, profile), renewed.remoteRevision)
+        assertNotEquals(signedKey, ImageCacheFactory.generateCacheKeySync(model, ImageCacheFactory.NetworkQuality.HIGH))
     }
 }

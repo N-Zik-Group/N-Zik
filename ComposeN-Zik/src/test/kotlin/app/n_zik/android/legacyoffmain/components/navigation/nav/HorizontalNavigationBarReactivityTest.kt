@@ -19,7 +19,7 @@ import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.enums.NavigationBarType
-import app.n_zik.android.ui.components.navigation.nav.HorizontalNavigationBar
+import app.n_zik.android.components.navigation.nav.HorizontalNavigationBar
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
