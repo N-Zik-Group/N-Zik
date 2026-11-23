@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Ouvrez la file de lecture avec un glissement vers le haut dans le lecteur.</string>
     <string name="player_action_bar_transparent_background_description">Supprime le fond solide derrière les boutons d\'action du lecteur.</string>
     <string name="player_action_enqueue">Mettre en file d\'attente</string>
+    <string name="player_action_hide_stats_for_nerds">Cacher les statistiques pour les nerds</string>
     <string name="player_action_like">J\'aime</string>
     <string name="player_action_listen_on_invidious">Écouter sur %1$s</string>
     <string name="player_action_listen_on_youtube">Écouter sur YouTube</string>
@@ -168,6 +169,7 @@
     <string name="player_action_seek_forward">Transférer</string>
     <string name="player_action_seek_forward_30_seconds">Avancer 30 secondes</string>
     <string name="player_action_seek_forward_5_seconds">Avancer 5 secondes</string>
+    <string name="player_action_show_stats_for_nerds">Afficher les statistiques pour Nerds</string>
     <string name="player_action_shuffle">Aléatoire</string>
     <string name="player_action_shuffle_hint">Aléatoire</string>
     <string name="player_appearance">Apparence du Lecteur</string>
