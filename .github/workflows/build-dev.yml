@@ -14,92 +14,37 @@ concurrency:
 
 jobs:
   check-author:
-    name: Check if push is from NEVARLeVrai
+    name: Authorize nightly or maintainer dispatch
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       should-build: ${{ steps.check.outputs.should-build }}
     steps:
-      - name: Check author and commit message
+      - uses: actions/checkout@v7
+      - name: Authorize event
         id: check
-        run: |
-          COMMIT_MSG="${{ github.event.head_commit.message }}"
-          ACTOR="${{ github.actor }}"
-          
-          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "should-build=true" >> $GITHUB_OUTPUT
-          elif [[ "$COMMIT_MSG" == *"crowdin"* ]] || [[ "$COMMIT_MSG" == *"Crowdin"* ]]; then
-            echo "should-build=false" >> $GITHUB_OUTPUT
-            echo "⚠️ Crowdin commit detected, skipping build"
-          elif [[ "$COMMIT_MSG" == *"update stats and chart"* ]]; then
-            echo "should-build=false" >> $GITHUB_OUTPUT
-            echo "⚠️ Stats/chart update commit detected, skipping build"
-          elif [[ "$COMMIT_MSG" == *"update Android lockdown countdown"* ]]; then
-            echo "should-build=false" >> $GITHUB_OUTPUT
-            echo "⚠️ Lockdown countdown commit detected, skipping build"
-          elif [[ "$COMMIT_MSG" == *"In-app contributors list updated"* ]]; then
-            echo "should-build=false" >> $GITHUB_OUTPUT
-            echo "⚠️ Contributor list update commit detected, skipping build"
-          elif [ "$ACTOR" = "github-actions[bot]" ]; then
-            echo "should-build=false" >> $GITHUB_OUTPUT
-            echo "⚠️ github-actions[bot] commit detected, skipping build"
-          elif [ "$ACTOR" = "NEVARLeVrai" ]; then
-            echo "should-build=true" >> $GITHUB_OUTPUT
-          else
-            echo "should-build=false" >> $GITHUB_OUTPUT
-            echo "⚠️ Push not from NEVARLeVrai, skipping build"
-          fi
+        run: python3 .github/scripts/dev_build_guard.py author --profile mobile
 
   check-changes:
-    name: Check if there are changes
+    name: Check substantive maintainer work
     needs: [check-author]
     if: needs.check-author.outputs.should-build == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       changed: ${{ steps.diff.outputs.changed }}
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 2
-          submodules: true
-
-      - name: Check for changes since last commit
+          fetch-depth: 0
+      - name: Evaluate dev build eligibility
         id: diff
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TODAY_TAG=$(date +'%Y%m%d')
-          TODAY_DISPLAY=$(date +'%Y-%m-%d')
-
-          export GH_PROMPT_DISABLED=1
-
-          ALREADY_BUILT=$(gh release list --limit 15 | grep -e "-dev-$TODAY_TAG" || echo "")
-
-          if [ ! -z "$ALREADY_BUILT" ]; then
-            echo "changed=false" >> $GITHUB_OUTPUT
-            echo "⏭️ A dev build has already been released today ($TODAY_DISPLAY). Skipping build."
-            exit 0
-          fi
-
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            SINCE=$(date -u -d '1 day ago' +%Y-%m-%dT%H:%M:%SZ)
-
-            COMMITS=$(gh api "repos/${{ github.repository }}/commits?since=$SINCE&author=NEVARLeVrai" \
-              --jq '.[] | [.sha, (.commit.message | split("\n")[0])] | @tsv')
-
-            RELEVANT=$(echo "$COMMITS" | grep -viE 'crowdin|update stats and chart|update Android lockdown countdown|In-app contributors list updated' || true)
-
-            if [ ! -z "$RELEVANT" ]; then
-              echo "changed=true" >> $GITHUB_OUTPUT
-              echo "✅ New relevant commits from NEVARLeVrai in the last day. Building."
-              echo "$RELEVANT"
-            else
-              echo "changed=false" >> $GITHUB_OUTPUT
-              echo "⏭️ No relevant commits from NEVARLeVrai in the last day (or only excluded ones)."
-            fi
-          else
-            echo "changed=true" >> $GITHUB_OUTPUT
-            echo "✅ Push or manual trigger detected. Launching first build of the day."
-          fi
+          GH_PROMPT_DISABLED: '1'
+        run: python3 .github/scripts/dev_build_guard.py changes --profile mobile
 
   build_time:
     name: Capture current time

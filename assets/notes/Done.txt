@@ -105,6 +105,10 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(ci): require personal application work for automatic dev builds
+  - Check the complete nightly commit range against actual maintainer authorship, bot identities and changed application/build inputs instead of commit messages.
+  - Skip localization, generated lists, documentation and version-only catalog edits; preserve the daily release limit and maintainer-only manual override.
+  - Add 21 regression tests covering content, native/toolchain inputs, history boundaries, pagination and fail-closed errors.
 - fix(player): reduce contention on next and previous presses
   - Use the gesture settle curve for adjacent Modern covers, including the compact pager.
   - Start Minimal transport feedback before dispatching the track change.

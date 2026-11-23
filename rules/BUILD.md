@@ -1,6 +1,6 @@
 # Build & Test Rules
 
-**Version:** 1.14.0 | **Last updated:** 2026-11-16
+**Version:** 1.15.0 | **Last updated:** 2026-11-23
 
 ## Gradle Version Catalog
 
@@ -201,7 +201,8 @@ New features/bug fixes should include at least one test. If no test framework is
 
 - No pre-commit hooks are configured in this repo — do not wait for hook signals; run build with the commands in this file
 - **No CI workflow runs the unit test suite** — tests are local-only; always run them yourself before reporting
-- CI signs the unsigned APKs in GitHub Actions via `secrets.RELEASE_KEYSTORE*` — the 4 build workflows: `build-beta-flavor.yaml` (beta manual), `build-all-flavors-weekly.yml` (weekly all-flavors), `build-dev.yml` (dev nightly + manual — an author gate for the maintainer `NEVARLeVrai` exists but no `push` trigger is configured, so it is currently unreachable), `build-test.yaml` (test manual full-only)
+- CI signs the unsigned APKs in GitHub Actions via `secrets.RELEASE_KEYSTORE*` - the 4 build workflows: `build-beta-flavor.yaml` (beta manual), `build-all-flavors-weekly.yml` (weekly all-flavors), `build-dev.yml` (dev nightly + maintainer-only manual, no push trigger), `build-test.yaml` (test manual full-only)
+- **Dev eligibility:** `.github/scripts/dev_build_guard.py` checks the complete paginated last-day commit history for actual GitHub author `NEVARLeVrai`, rejects bot authors/committers and merge-only commits, and compares application/build inputs with each commit's first parent. Kotlin, runtime resources/modules, packaging and meaningful build/dependency changes qualify. Localization (including sources), store metadata, documentation, changelogs/notes, generated contributor/translator lists, metrics, automation-only and tests-only changes do not. Version catalog edits confined to `nzikVersionCode`/`nzikVersionName`, comments or formatting do not qualify; dependency edits still can. Renames/deletions are evaluated, and excluded changes do not suppress qualifying work in the same range. Manual dispatch is restricted to `NEVARLeVrai` and bypasses this substantive-work requirement. The daily release limit still applies to both triggers. API/Git failures fail the guard and block builds; an ordinary ineligible result skips them successfully. Regression tests: `.github/tests/test_dev_build_guard.py`.
 - `cache-builder.yaml` is another **active** Gradle workflow: it runs builds for cache warming only (`assembleBeta64`, `assembleRelease64`, and `assembleMinified64` with `--build-cache`) on 3 triggers — `push` (path-filtered to `**/*.gradle*` + wrapper), weekly `schedule` (Friday 16:00) and manual `workflow_dispatch` — it neither signs nor releases
 - The 20 workflow files under `.github/workflows/` cover build, signing, security, and repository automation. CodeQL assembles the debug variant for analysis. Check each workflow's `on` block for active triggers. Bot-generated contributor and translator resources are expected; flag manual edits to those resources in feature commits.
 - If CI pipeline fails after push → HALT, investigate, fix
