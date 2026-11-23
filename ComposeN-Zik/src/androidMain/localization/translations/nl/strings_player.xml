@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Open de afspeelwachtrij met een veeg omhoog in de speler.</string>
     <string name="player_action_bar_transparent_background_description">Verwijder de solide achtergrond achter de actieknoppen van de speler.</string>
     <string name="player_action_enqueue">In wachtrij plaatsen</string>
+    <string name="player_action_hide_stats_for_nerds">Verberg statistieken voor Nerds</string>
     <string name="player_action_like">vind-ik-leuk</string>
     <string name="player_action_listen_on_invidious">Luister op %1$s</string>
     <string name="player_action_listen_on_youtube">Luister op YouTube</string>
@@ -168,6 +169,7 @@
     <string name="player_action_seek_forward">Doorsturen</string>
     <string name="player_action_seek_forward_30_seconds">30 seconden doorsturen</string>
     <string name="player_action_seek_forward_5_seconds">5 seconden doorsturen</string>
+    <string name="player_action_show_stats_for_nerds">Toon statistieken voor Nerds</string>
     <string name="player_action_shuffle">Shuffle</string>
     <string name="player_action_shuffle_hint">Shuffle</string>
     <string name="player_appearance">Speler uiterlijk</string>
