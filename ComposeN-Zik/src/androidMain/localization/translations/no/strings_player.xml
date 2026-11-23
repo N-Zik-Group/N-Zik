@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Åpne avspillingskøen med en sveip oppover i spilleren.</string>
     <string name="player_action_bar_transparent_background_description">Fjern den solide bakgrunnen bak handlingsknappene.</string>
     <string name="player_action_enqueue">Legg i kø</string>
+    <string name="player_action_hide_stats_for_nerds">Skjul statistikk for Nerds</string>
     <string name="player_action_like">Lik</string>
     <string name="player_action_listen_on_invidious">Lytt på %1$s</string>
     <string name="player_action_listen_on_youtube">Lytt på YouTube</string>
@@ -168,6 +169,7 @@
     <string name="player_action_seek_forward">Videresend</string>
     <string name="player_action_seek_forward_30_seconds">Videresend 30 sekunder</string>
     <string name="player_action_seek_forward_5_seconds">Videresend 5 sekunder</string>
+    <string name="player_action_show_stats_for_nerds">Vis statistikk for Nerds</string>
     <string name="player_action_shuffle">Tilfeldig rekkefølge</string>
     <string name="player_action_shuffle_hint">Blande</string>
     <string name="player_appearance">Spillerens utseende</string>
