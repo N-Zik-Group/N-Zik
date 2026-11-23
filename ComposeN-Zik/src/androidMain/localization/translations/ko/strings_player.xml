@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Open the play queue with an upward swipe in the player.</string>
     <string name="player_action_bar_transparent_background_description">Remove the solid background behind the player action buttons.</string>
     <string name="player_action_enqueue">대기열에 추가</string>
+    <string name="player_action_hide_stats_for_nerds">Hide Stats for Nerds</string>
     <string name="player_action_like">Like</string>
     <string name="player_action_listen_on_invidious">%1$s에서 듣기</string>
     <string name="player_action_listen_on_youtube">YouTube에서 듣기</string>
@@ -168,6 +169,7 @@
     <string name="player_action_seek_forward">Forward</string>
     <string name="player_action_seek_forward_30_seconds">Forward 30 seconds</string>
     <string name="player_action_seek_forward_5_seconds">Forward 5 seconds</string>
+    <string name="player_action_show_stats_for_nerds">Show Stats for Nerds</string>
     <string name="player_action_shuffle">셔플</string>
     <string name="player_action_shuffle_hint">셔플</string>
     <string name="player_appearance">Player Appearance</string>
