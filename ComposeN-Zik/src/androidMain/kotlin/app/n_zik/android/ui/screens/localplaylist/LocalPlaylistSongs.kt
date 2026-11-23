@@ -73,7 +73,6 @@ import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import timber.log.Timber
 
-import app.n_zik.android.EXPLICIT_PREFIX
 import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.MODIFIED_PREFIX
@@ -138,7 +137,6 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistLinkKind
 import app.n_zik.android.core.database.PlaylistStateManager
-import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.core.database.canBookmarkPlaylist
 import app.n_zik.android.core.database.canEditPlaylistMembership
 import app.n_zik.android.core.database.canRefreshPlaylist
@@ -805,68 +803,7 @@ fun LocalPlaylistSongs(
 
         isRecommendationsLoading = true
 
-        val targetRecommendations = recommendationsNumber.calculateAdaptiveRecommendations(items.size)
-        val allRelatedSongs = mutableListOf<Song>()
-        val existingSongIds = items.map { it.id }.toSet()
-        
-        // For large playlists, make more requests to get enough recommendations
-        val numberOfRequests = when {
-            items.size <= 100 -> 1
-            items.size <= 500 -> 3
-            items.size <= 1000 -> 5
-            items.size <= 2000 -> 8
-            else -> 10
-        }
-        
-        // Select random songs from the playlist to use as seeds
-        val seedSongs = items.shuffled().take(numberOfRequests)
-        
-        for (seedSong in seedSongs) {
-            try {
-                val relatedSongsResult = Innertube.relatedSongs(videoId = seedSong.id)?.getOrNull()
-                
-                relatedSongsResult?.songs?.forEach { songItem ->
-                    val info = songItem.info ?: return@forEach
-                    val videoId = info.endpoint?.videoId ?: return@forEach
-                    if (!existingSongIds.contains(videoId)) {
-                        val song = Song(
-                            // raw videoId + "e:" title prefix, as in Innertube.SongItem.asSong
-                            id = videoId,
-                            title = (if (songItem.explicit) EXPLICIT_PREFIX else "") + (info.name.orEmpty()),
-                            artistsText = songItem.authors.artistEntryNames().joinToString(", "),
-                            durationText = songItem.durationText,
-                            thumbnailUrl = songItem.thumbnail?.url
-                        )
-                        
-                        // Avoid duplicates
-                        if (!allRelatedSongs.any { it.id == song.id }) {
-                            allRelatedSongs.add(song)
-                        }
-                    }
-                }
-                
-                // Small delay between requests
-                if (numberOfRequests > 1) delay(200L)
-                
-            } catch (e: Exception) {
-                // Continue with other requests even if one fails
-                continue
-            }
-        }
-        
-        // Take the target number of recommendations and assign stable positions.
-        // Note: we don't force the exact target number because YouTube doesn't
-
-        // always return 20 songs per request, some songs are filtered out (already
-        // in playlist) and some requests may fail.
-
-        // Better to have fewer quality recommendations than many poor ones.
-        val finalRecommendations = allRelatedSongs.take(targetRecommendations)
-        val recommendationsWithPositions = finalRecommendations.associate { song ->
-            song to (0..items.size).random()
-        }
-        
-        relatedSongs = recommendationsWithPositions
+        relatedSongs = loadLocalPlaylistRecommendations(items, recommendationsNumber)
         isRecommendationsLoading = false
         
         // Enable position lock
