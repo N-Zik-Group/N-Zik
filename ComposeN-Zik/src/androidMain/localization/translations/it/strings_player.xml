@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Apri la coda di gioco con uno scorrimento verso l\'alto nel giocatore.</string>
     <string name="player_action_bar_transparent_background_description">Rimuovere lo sfondo solido dietro i pulsanti di azione del giocatore.</string>
     <string name="player_action_enqueue">Aggiungi alla coda</string>
+    <string name="player_action_hide_stats_for_nerds">Nascondi statistiche per Nerds</string>
     <string name="player_action_like">Like</string>
     <string name="player_action_listen_on_invidious">Ascolta su %1$s</string>
     <string name="player_action_listen_on_youtube">Ascolta su YouTube</string>
@@ -168,6 +169,7 @@
     <string name="player_action_seek_forward">Avanti</string>
     <string name="player_action_seek_forward_30_seconds">Avanti 30 secondi</string>
     <string name="player_action_seek_forward_5_seconds">Inoltra 5 secondi</string>
+    <string name="player_action_show_stats_for_nerds">Mostra statistiche per Nerds</string>
     <string name="player_action_shuffle">Casuale</string>
     <string name="player_action_shuffle_hint">Riproduzione casuale</string>
     <string name="player_appearance">Aspetto Del Giocatore</string>
