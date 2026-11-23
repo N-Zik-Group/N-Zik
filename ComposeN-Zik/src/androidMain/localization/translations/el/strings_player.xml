@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Ανοίξτε την ουρά παιχνιδιού με ένα σύρσιμο προς τα πάνω στον παίκτη.</string>
     <string name="player_action_bar_transparent_background_description">Αφαιρέστε το στερεό φόντο πίσω από τα κουμπιά δράσης του παίκτη.</string>
     <string name="player_action_enqueue">Προσθήκη στη λίστα αναπαραγωγής</string>
+    <string name="player_action_hide_stats_for_nerds">Απόκρυψη στατιστικών για Nerds</string>
     <string name="player_action_like">Αρέσει</string>
     <string name="player_action_listen_on_invidious">Ακούστε στο %1$s</string>
     <string name="player_action_listen_on_youtube">Ακούστε στο YouTube</string>
@@ -168,6 +169,7 @@
     <string name="player_action_seek_forward">Μπροστά</string>
     <string name="player_action_seek_forward_30_seconds">Εμπρός 30 δευτερόλεπτα</string>
     <string name="player_action_seek_forward_5_seconds">Μπροστά 5 δευτερόλεπτα</string>
+    <string name="player_action_show_stats_for_nerds">Εμφάνιση Στατιστικών για Nerds</string>
     <string name="player_action_shuffle">Τυχαία σειρά</string>
     <string name="player_action_shuffle_hint">Τυχαία σειρά</string>
     <string name="player_appearance">Εμφάνιση Παίκτη</string>
