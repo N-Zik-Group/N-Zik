@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">Album en artiest koptekst</string>
     <string name="settings_player_header_icons_visible_label">Toon info met pictogrammen</string>
     <string name="settings_player_header_style_label">Koptekst stijl</string>
+    <string name="settings_player_m3e_always_show_shapes_description">Houd M3E vormen geanimeerd wanneer de speler open is, zelfs wanneer deze gepauzeerd is.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">Altijd vormen tonen</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Thema Schud Gevoeligheid</string>
     <string name="settings_player_mini_style_label">Mini Speler Type</string>
     <string name="settings_player_next_queue_visible_label">Toon volgende nummerwachtrij</string>
