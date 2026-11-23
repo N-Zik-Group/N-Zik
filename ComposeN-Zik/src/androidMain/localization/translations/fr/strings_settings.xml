@@ -370,6 +370,8 @@ Volume BAS : titre précédent</string>
     <string name="settings_player_header_album_artist_description">Album et nom de l\'artiste</string>
     <string name="settings_player_header_icons_visible_label">Afficher les informations avec des icônes</string>
     <string name="settings_player_header_style_label">Type d\'informations</string>
+    <string name="settings_player_m3e_always_show_shapes_description">Gardez les formes M3E animées pendant que le lecteur est ouvert, même en pause.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">Toujours afficher les formes</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Thème de la Sensibilité aux Secousses</string>
     <string name="settings_player_mini_style_label">Type du mini-lecteur</string>
     <string name="settings_player_next_queue_visible_label">Afficher la file d\'attente des titres suivants</string>
