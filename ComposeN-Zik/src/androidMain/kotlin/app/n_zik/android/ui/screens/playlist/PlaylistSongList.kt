@@ -94,7 +94,6 @@ import app.n_zik.android.compose.persist.persistList
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.YtMusic
 import app.n_zik.innertube.requests.PlaylistPage
-import app.n_zik.innertube.requests.PlaylistContinuationPage
 import app.n_zik.android.components.ui.UiButton
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
@@ -149,7 +148,6 @@ import app.n_zik.android.utils.enqueue
 import app.n_zik.android.utils.excludeMediaItems
 import app.n_zik.android.utils.fadingEdge
 import app.n_zik.android.utils.forcePlayAtIndex
-import app.n_zik.android.utils.forcePlayFromBeginning
 import app.n_zik.android.utils.formatAsDuration
 import app.n_zik.android.utils.formatAsTime
 import app.n_zik.android.core.network.client.NetworkClientFactory
@@ -162,7 +160,6 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.manageDownload
 import app.n_zik.android.utils.medium
 import app.n_zik.android.utils.parentalControlEnabledKey
-import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.secondary
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.showFloatingIconKey
@@ -189,7 +186,6 @@ import app.n_zik.android.enums.DownloadedStateMedia
 import app.n_zik.android.enums.PlaylistSwipeAction
 import app.n_zik.android.utils.playlistSwipeLeftActionKey
 import app.n_zik.android.utils.playlistSwipeRightActionKey
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -257,9 +253,7 @@ fun PlaylistSongList(
         if (cachedPage != null && cachedPage.songsContinuation == null) return@LaunchedEffect
 
         initialLoadFailed = false
-        val firstPage = cachedPage ?: withContext(NzikDispatchers.DATA) {
-            YtMusic.getPlaylist(browseId.removePrefix(MODIFIED_PREFIX))
-        }.getOrElse { error ->
+        val firstPage = cachedPage ?: loadPlaylistFirstPage(browseId).getOrElse { error ->
             if (error is CancellationException) throw error
             Timber.tag("PlaylistSongList").w(error, "Unable to load playlist tracks")
             initialLoadFailed = true
@@ -276,13 +270,7 @@ fun PlaylistSongList(
         showProgress(firstPage.songs)
         continuationLoading = firstPage.songsContinuation != null
         try {
-            playlistPage = loadPlaylistContinuations(
-                firstPage,
-                requestNextPage = { token ->
-                    withContext(NzikDispatchers.DATA) { YtMusic.getPlaylistContinuation(token) }
-                },
-                onSongsLoaded = showProgress,
-            )
+            playlistPage = loadPlaylistContinuations(firstPage, onSongsLoaded = showProgress)
         } finally {
             continuationLoading = false
         }
@@ -1247,25 +1235,6 @@ fun PlaylistSongList(
     }
 }
 
-internal suspend fun loadPlaylistContinuations(
-    firstPage: PlaylistPage,
-    requestNextPage: suspend (String) -> Result<PlaylistContinuationPage>,
-    onSongsLoaded: (List<Innertube.SongItem>) -> Unit = {},
-): PlaylistPage {
-    val tracks = firstPage.songs.toMutableList()
-    val attemptedTokens = mutableSetOf<String>()
-    var continuation = firstPage.songsContinuation
-    while (continuation != null && attemptedTokens.size < 50 && attemptedTokens.add(continuation)) {
-        val result = requestNextPage(continuation)
-        result.exceptionOrNull()?.let { if (it is CancellationException) throw it }
-        val next = result.getOrNull() ?: break
-        tracks += next.songs
-        onSongsLoaded(next.songs)
-        continuation = next.continuation
-    }
-    return firstPage.copy(songs = tracks.fastDistinctBy { it.key to it.explicit }, songsContinuation = continuation)
-}
-
 @Composable
 private fun DisabledPlaylistAction(icon: Int) {
     HeaderIconButton(
@@ -1278,15 +1247,7 @@ private fun DisabledPlaylistAction(icon: Int) {
     )
 }
 
-/**
- * Derives the filtered song list for [PlaylistSongList] batch actions (issue #606 H1).
- * Pure and null-safe: always filters the full list, never mutates its input, so re-typing a
- * search can no longer shrink an already-filtered list (cumulative-shrink bug).
- *
- * @param filter the raw search text; `null`/blank returns the list unchanged
- * @return the input list filtered by title/artist/album (case-insensitive), or null when the
- * input is null
- */
+/** Filters the full playlist so successive search queries do not narrow prior results. */
 internal fun List<Innertube.SongItem>?.applyFilter(filter: String?): List<Innertube.SongItem>? {
     if (this == null) return null
     if (filter.isNullOrBlank()) return this
@@ -1307,10 +1268,10 @@ internal fun List<Innertube.SongItem>?.applyFilter(filter: String?): List<Innert
     }
 }
 
-/** Runs a playlist download/delete-all batch on the dispatcher it is launched from (issue #606 H2) — one fire-and-forget scope per batch, never one per song. A null [binder] is a safe no-op for the cache eviction; [manageDownload] is always called.
- * @param songs the batch to process (already disliked-filtered by the caller); null = no-op
- * @param binder the player service binder, may be null
- * @param downloadState `false` starts downloads, `true` removes them (see [manageDownload])
+/**
+ * Runs the download batch on the caller's dispatcher so all songs share one scope.
+ *
+ * @param downloadState `false` queues downloads and `true` removes them.
  */
 @UnstableApi
 internal suspend fun processPlaylistBatch(

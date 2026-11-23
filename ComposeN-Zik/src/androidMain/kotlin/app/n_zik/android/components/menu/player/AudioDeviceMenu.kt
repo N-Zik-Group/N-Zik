@@ -2,146 +2,103 @@
 
 package app.n_zik.android.components.menu.player
 
-import app.n_zik.android.utils.percentLabel
-import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.privacy.PermissionUsageJournal
-import app.n_zik.android.privacy.PermissionFeature
-import app.n_zik.android.privacy.JournalPermission
-import app.n_zik.android.privacy.PermissionEventKind
-
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.material.icons.Icons
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.painterResource
-import app.n_zik.android.components.ui.iconBadgeBackground
-import app.n_zik.android.colorPalette
-import app.n_zik.android.components.theme.paletteDarkness
-import app.n_zik.android.components.dialog.common.ButtonRow
-import app.n_zik.android.components.dialog.common.DialogButton
-import app.n_zik.android.components.dialog.common.DialogFrame
-import app.n_zik.android.components.menu.GridMenu
-import app.n_zik.android.components.menu.ListMenu
-import app.n_zik.android.components.ui.sliders.SliderControl
-import app.n_zik.android.uiRoundnessShape
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-
-import androidx.compose.foundation.lazy.grid.items
-import app.n_zik.android.utils.menuStyleKey
-import app.n_zik.android.typography
-import app.n_zik.android.utils.semiBold
-
 import android.Manifest
-import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
+import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.car.app.connection.CarConnection
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.progressSemantics
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.runtime.key
-import androidx.compose.material.icons.filled.Bluetooth
-import androidx.compose.material.icons.filled.Headphones
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Speaker
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.progressSemantics
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Error
-import app.n_zik.android.components.ui.UiButton as Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import app.n_zik.android.R
-import app.n_zik.android.LocalPlayerServiceBinder
-import app.n_zik.android.enums.AudioQualityFormat
-import app.n_zik.android.utils.audioQualityFormatKey
-import app.n_zik.android.utils.rememberPreference
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import app.n_zik.android.enums.MenuStyle
-import androidx.compose.animation.scaleOut
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.AnimatedVisibility
-import app.n_zik.android.components.glass.glassAwareContentSize
-import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
-import app.n_zik.android.utils.shimmerEffect
-import android.media.AudioDeviceCallback
-import androidx.car.app.connection.CarConnection
-import app.n_zik.android.utils.isCar
-import app.n_zik.android.utils.getBottomSheetDeviceIcon
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.n_zik.android.core.utils.Toaster
+import timber.log.Timber
+
+import app.n_zik.android.LocalPlayerServiceBinder
+import app.n_zik.android.R
 import app.n_zik.android.bridge.ActiveDevice
 import app.n_zik.android.bridge.AudioOutput
 import app.n_zik.android.bridge.BridgeServerController
-import timber.log.Timber
-
-data class AudioDevice(
-    val name: String,
-    val type: AudioDeviceType,
-    val isConnected: Boolean,
-    val isActive: Boolean = false,
-    val batteryLevel: Int? = null,
-    val deviceId: Int? = null,
-    val isCar: Boolean = false,
-    val hardwareType: Int = -1
-)
-
-enum class AudioDeviceType {
-    BLUETOOTH,
-    WIRED_HEADPHONES,
-    PHONE_SPEAKER,
-    EXTERNAL_SPEAKER,
-    USB_HEADSET,
-    HDMI,
-    /** Connected PC of the PC bridge: a virtual output (contract §8.5). */
-    PC,
-}
+import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.glassAwareContentSize
+import app.n_zik.android.components.menu.GridMenu
+import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.theme.paletteDarkness
+import app.n_zik.android.components.ui.UiButton as Button
+import app.n_zik.android.components.ui.iconBadgeBackground
+import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.enums.AudioQualityFormat
+import app.n_zik.android.enums.MenuStyle
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.typography
+import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
+import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.utils.audioQualityFormatKey
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.getBottomSheetDeviceIcon
+import app.n_zik.android.utils.isCar
+import app.n_zik.android.utils.menuStyleKey
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.semiBold
+import app.n_zik.android.utils.shimmerEffect
 
 /**
  * Adds the PC holding the bridge session ([pc], `null` when none) to [devices]. While the
@@ -757,440 +714,6 @@ private fun AudioDeviceGridLoadingTile(modifier: Modifier = Modifier) {
 @Composable
 private fun AudioDeviceIconPlaceholder() {
     Spacer(Modifier.size(32.dp).clip(uiRoundnessShape()).shimmerEffect())
-}
-
-@Composable
-private fun VolumeRow(
-    currentVolume: Float,
-    maxVolume: Float,
-    enabled: Boolean = true,
-    onVolumeChange: (Float) -> Unit,
-    onVolumeChangeComplete: () -> Unit = {}
-) {
-    val alpha = if (enabled) 1f else 0.5f
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 10.dp)
-            .graphicsLayer(alpha = alpha)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .iconBadgeBackground(
-                    color = colorPalette().accent.copy(alpha = 0.1f),
-                    shape = uiRoundnessShape()
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Filled.MusicNote,
-                contentDescription = null,
-                tint = colorPalette().accent,
-                modifier = Modifier.size(18.dp)
-            )
-        }
-
-        BasicText(
-            text = stringResource(R.string.player_statistics_volume_label),
-            style = typography().s.copy(
-                fontWeight = FontWeight.SemiBold,
-                color = colorPalette().text
-            )
-        )
-
-        BasicText(
-            text = percentLabel(if (maxVolume > 0) kotlin.math.round(((currentVolume / maxVolume) * 100)).toInt() else 0),
-            style = typography().xxs.copy(
-                fontWeight = FontWeight.SemiBold,
-                color = colorPalette().accent
-            )
-        )
-
-        SliderControl(
-            state = currentVolume,
-            range = 0f..maxVolume,
-            stepSize = 0f,
-            drawValuePoints = false,
-            showValue = false,
-            onSlide = if (enabled) onVolumeChange else ({}),
-            onSlideComplete = if (enabled) onVolumeChangeComplete else ({}),
-            modifier = Modifier.weight(1f)
-        )
-    }
-}
-
-/**
- * Enumerates audio output devices (+ Bluetooth battery reflection). Visibility widened from
- * `private` to `internal` (issue #606 M8) purely for testability -- callers still only wrap this
- * in `coroutineScope.launch(NzikDispatchers.DATA) { ... }` from [AudioDeviceMenu]; no behavior
- * change to the function itself.
- */
-internal fun loadDevices(
-    context: Context,
-    preferredDeviceId: Int?,
-    isCarProjectionActive: Boolean,
-    onSuccess: (List<AudioDevice>) -> Unit,
-    onError: (String) -> Unit
-) {
-    try {
-        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        val devices = mutableListOf<AudioDevice>()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val audioDevices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
-
-            audioDevices.forEach { deviceInfo ->
-                val device = when (deviceInfo.type) {
-                    AudioDeviceInfo.TYPE_BLUETOOTH_A2DP, AudioDeviceInfo.TYPE_BLUETOOTH_SCO -> {
-                        val btDevice = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            try {
-                                if (ActivityCompat.checkSelfPermission(
-                                        context,
-                                        Manifest.permission.BLUETOOTH_CONNECT
-                                    ) == PackageManager.PERMISSION_GRANTED
-                                ) {
-                                    val bluetoothManager = context.getSystemService(
-                                        Context.BLUETOOTH_SERVICE
-                                    ) as BluetoothManager
-                                    val bluetoothAdapter = bluetoothManager.adapter
-                                    val pairedDevices = bluetoothAdapter?.bondedDevices
-                                    if (pairedDevices != null) PermissionUsageJournal.record(context, PermissionFeature.AUDIO_DEVICES, JournalPermission.BLUETOOTH, PermissionEventKind.USED)
-                                    pairedDevices?.find {
-                                        it.name == deviceInfo.productName.toString()
-                                    }
-                                } else null
-                            } catch (e: Exception) {
-                                null
-                            }
-                        } else null
-
-                        val customName = btDevice?.let { dev ->
-                            @SuppressLint("MissingPermission")
-                            val alias = dev.alias
-                            val btName = dev.name
-                            when {
-                                !alias.isNullOrBlank() -> alias
-                                !btName.isNullOrBlank() -> btName
-                                else -> null
-                            }
-                        } ?: deviceInfo.productName?.toString()
-
-                        val batteryLevel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            try {
-                                if (ActivityCompat.checkSelfPermission(
-                                        context,
-                                        Manifest.permission.BLUETOOTH_CONNECT
-                                    ) == PackageManager.PERMISSION_GRANTED
-                                ) {
-                                    btDevice?.let { device ->
-                                        try {
-                                            val method = BluetoothDevice::class.java.getMethod(
-                                                "getBatteryLevel"
-                                            )
-                                            val level = method.invoke(device) as? Int
-                                            level
-                                        } catch (e: Exception) {
-                                            null
-                                        }
-                                    }
-                                } else null
-                            } catch (e: Exception) {
-                                null
-                            }
-                        } else null
-
-                        AudioDevice(
-                            name = customName ?: context.getString(R.string.audio_output_bluetooth_device_label),
-                            type = AudioDeviceType.BLUETOOTH,
-                            isConnected = true,
-                            isActive = false,
-                            batteryLevel = if (batteryLevel != null && batteryLevel >= 0 && batteryLevel <= 100) batteryLevel else null,
-                            deviceId = deviceInfo.id,
-                            hardwareType = deviceInfo.type
-                        )
-                    }
-
-                    AudioDeviceInfo.TYPE_WIRED_HEADPHONES, AudioDeviceInfo.TYPE_WIRED_HEADSET -> {
-                        AudioDevice(
-                            name = context.getString(R.string.audio_output_wired_headphones_label),
-                            type = AudioDeviceType.WIRED_HEADPHONES,
-                            isConnected = true,
-                            isActive = false,
-                            deviceId = deviceInfo.id,
-                            hardwareType = deviceInfo.type
-                        )
-                    }
-                    AudioDeviceInfo.TYPE_USB_HEADSET, AudioDeviceInfo.TYPE_USB_DEVICE -> {
-                        AudioDevice(
-                            name = deviceInfo.productName?.toString() ?: context.getString(R.string.audio_output_usb_audio_label),
-                            type = AudioDeviceType.USB_HEADSET,
-                            isConnected = true,
-                            isActive = false,
-                            deviceId = deviceInfo.id,
-                            hardwareType = deviceInfo.type
-                        )
-                    }
-                    AudioDeviceInfo.TYPE_HDMI -> {
-                        AudioDevice(
-                            name = "HDMI",
-                            type = AudioDeviceType.HDMI,
-                            isConnected = true,
-                            isActive = false,
-                            deviceId = deviceInfo.id,
-                            hardwareType = deviceInfo.type
-                        )
-                    }
-                    AudioDeviceInfo.TYPE_BUILTIN_SPEAKER, AudioDeviceInfo.TYPE_BUILTIN_EARPIECE -> {
-                        AudioDevice(
-                            name = context.getString(R.string.audio_output_phone_speaker_label),
-                            type = AudioDeviceType.PHONE_SPEAKER,
-                            isConnected = true,
-                            isActive = false,
-                            deviceId = deviceInfo.id,
-                            hardwareType = deviceInfo.type
-                        )
-                    }
-                    else -> null
-                }
-                device?.let { devices.add(it) }
-            }
-
-            val activeDevice = determineActiveDevice(audioManager, audioDevices, preferredDeviceId)
-            val updatedDevices = devices.map { device ->
-                val isActive = device.deviceId == activeDevice?.id
-                val isCar = isActive && isCarProjectionActive
-                val displayName = when {
-                    isCar -> context.getString(R.string.automotive_title)
-                    device.type == AudioDeviceType.PHONE_SPEAKER -> context.getString(R.string.audio_output_this_phone_label)
-                    else -> device.name
-                }
-
-                device.copy(
-                    name = displayName,
-                    isActive = isActive,
-                    isCar = isCar,
-                    batteryLevel = if (isCar) null else device.batteryLevel
-                )
-            }
-
-            val sortedDevices = updatedDevices.sortedWith(
-                compareBy<AudioDevice> {
-                    when (it.type) {
-                        AudioDeviceType.PHONE_SPEAKER -> 0
-                        AudioDeviceType.WIRED_HEADPHONES -> 1
-                        AudioDeviceType.USB_HEADSET -> 2
-                        AudioDeviceType.BLUETOOTH -> 3
-                        else -> 4
-                    }
-                }
-                .thenBy { it.isCar } // false (Ce téléphone) avant true (Android Auto)
-                .thenByDescending { it.isActive }
-                .thenBy { it.name }
-            )
-
-            onSuccess(sortedDevices.distinctBy { it.name })
-        } else {
-            loadDevicesLegacy(context, onSuccess, onError)
-        }
-    } catch (e: Exception) {
-        Timber.tag("AudioDeviceMenu").w(e, "Failed to load audio devices")
-        onError(context.getString(R.string.audio_output_devices_unavailable))
-    }
-}
-
-private fun determineActiveDevice(
-    audioManager: AudioManager,
-    audioDevices: Array<AudioDeviceInfo>,
-    preferredDeviceId: Int?
-): AudioDeviceInfo? {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return null
-
-    if (preferredDeviceId != null) {
-        val preferred = audioDevices.find { it.id == preferredDeviceId }
-        if (preferred != null) return preferred
-    }
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        val activeConfig = audioManager.activePlaybackConfigurations.firstOrNull()
-        val activeDeviceInfo = activeConfig?.audioDeviceInfo
-        if (activeDeviceInfo != null) {
-            val matched = audioDevices.find { it.id == activeDeviceInfo.id }
-            if (matched != null) return matched
-        }
-    }
-
-    return when {
-        audioDevices.any { it.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP } ->
-            audioDevices.find { it.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP }
-        audioDevices.any {
-            it.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES ||
-                    it.type == AudioDeviceInfo.TYPE_WIRED_HEADSET
-        } ->
-            audioDevices.find {
-                it.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES ||
-                        it.type == AudioDeviceInfo.TYPE_WIRED_HEADSET
-            }
-        else -> audioDevices.find { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER || it.type == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE }
-    }
-}
-
-@Suppress("DEPRECATION")
-private fun loadDevicesLegacy(context: Context, onSuccess: (List<AudioDevice>) -> Unit, onError: (String) -> Unit) {
-    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-    val devices = mutableListOf<AudioDevice>()
-
-    if (audioManager.isBluetoothA2dpOn) {
-        devices.add(AudioDevice(context.getString(R.string.audio_output_bluetooth_device_label), AudioDeviceType.BLUETOOTH, true, true))
-    }
-    if (audioManager.isWiredHeadsetOn) {
-        devices.add(AudioDevice(context.getString(R.string.audio_output_wired_headphones_label), AudioDeviceType.WIRED_HEADPHONES, true, true))
-    }
-    if (audioManager.isSpeakerphoneOn) {
-        devices.add(AudioDevice(context.getString(R.string.audio_output_external_speaker_label), AudioDeviceType.EXTERNAL_SPEAKER, true, true))
-    }
-    if (devices.isEmpty() || !devices.any { it.isActive }) {
-        devices.add(AudioDevice(context.getString(R.string.audio_output_phone_speaker_label), AudioDeviceType.PHONE_SPEAKER, true, true))
-    }
-    onSuccess(devices.filter { it.isActive }.take(1))
-}
-
-private fun checkBluetoothPermission(context: Context): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-    ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.BLUETOOTH_CONNECT
-    ) == PackageManager.PERMISSION_GRANTED
-} else true
-
-@Composable
-private fun VolumeGridEntry(
-    currentVolume: Float,
-    maxVolume: Float,
-    enabled: Boolean = true,
-    onVolumeChange: (Float) -> Unit,
-    onVolumeChangeComplete: () -> Unit = {}
-) {
-    var isShowingDialog by remember { mutableStateOf(false) }
-
-    DialogPresence(visible = isShowingDialog && enabled) {
-        VolumeDialog(
-            currentVolume = currentVolume,
-            maxVolume = maxVolume,
-            onVolumeChange = onVolumeChange,
-            onVolumeChangeComplete = onVolumeChangeComplete,
-            onDismiss = { isShowingDialog = false }
-        )
-    }
-
-    GridMenu.Entry(
-        text = stringResource(R.string.player_statistics_volume_label),
-        enabled = enabled,
-        icon = {
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .iconBadgeBackground(
-                        color = colorPalette().accent.copy(alpha = 0.1f),
-                        shape = uiRoundnessShape()
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.MusicNote,
-                    contentDescription = null,
-                    tint = colorPalette().accent,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        },
-        subtitle = percentLabel(if (maxVolume > 0) kotlin.math.round(((currentVolume / maxVolume) * 100)).toInt() else 0),
-        onClick = { isShowingDialog = true },
-        trailingContent = {
-            Icon(
-                painter = painterResource(R.drawable.chevron_forward),
-                tint = colorPalette().textSecondary,
-                contentDescription = null,
-                modifier = Modifier.size(16.dp)
-            )
-        }
-    )
-}
-
-@Composable
-private fun VolumeDialog(
-    currentVolume: Float,
-    maxVolume: Float,
-    onVolumeChange: (Float) -> Unit,
-    onVolumeChangeComplete: () -> Unit = {},
-    onDismiss: () -> Unit
-) {
-    var dialogVolume by remember { mutableFloatStateOf(currentVolume) }
-
-    DialogFrame(
-        onDismiss = onDismiss,
-        title = stringResource(R.string.player_statistics_volume_label),
-        horizontalAlignment = Alignment.Start,
-        footer = {
-            ButtonRow(
-                buttons = listOf(
-                    DialogButton(
-                        text = stringResource(R.string.common_action_close),
-                        icon = R.drawable.close,
-                        onClick = onDismiss, danger = true
-                    )
-                )
-            )
-        }
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .iconBadgeBackground(
-                        color = colorPalette().accent.copy(alpha = 0.1f),
-                        shape = uiRoundnessShape()
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.MusicNote,
-                    contentDescription = null,
-                    tint = colorPalette().accent,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        BasicText(
-            text = percentLabel(if (maxVolume > 0) kotlin.math.round(((dialogVolume / maxVolume) * 100)).toInt() else 0),
-            style = typography().l.semiBold.copy(
-                color = colorPalette().accent
-            ),
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        SliderControl(
-            state = dialogVolume,
-            onSlide = { dialogVolume = it },
-            onSlideComplete = {
-                onVolumeChange(dialogVolume)
-                onVolumeChangeComplete()
-            },
-            range = 0f..maxVolume,
-            stepSize = 0f,
-            drawValuePoints = false,
-            showValue = false
-        )
-    }
 }
 
 @Composable

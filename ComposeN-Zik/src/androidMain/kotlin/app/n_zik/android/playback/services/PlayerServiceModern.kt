@@ -101,8 +101,6 @@ import app.n_zik.android.playback.audio.MuteAudioProcessorChain
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
-import androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy
-import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.session.CommandButton
 import androidx.media3.session.DefaultMediaNotificationProvider
@@ -152,12 +150,11 @@ import app.n_zik.lastfm.LastFm
 import app.n_zik.android.isHandleAudioFocusEnabled
 import app.n_zik.android.isPauseOnHeadphoneDisconnectEnabled
 import app.n_zik.android.models.Event
-import app.n_zik.android.models.QueuedMediaItem
 import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.diagnostics.DiagExoPlayer
 import app.n_zik.android.playback.services.diagnostics.CrossfadeAudioDiagnostics
 import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
-import app.n_zik.android.playback.services.diagnostics.PlaybackStallWatchdog
+import app.n_zik.android.playback.services.diagnostics.PlaybackServiceDiagnostics
 import app.n_zik.android.playback.services.diagnostics.discontinuityReasonName
 import app.n_zik.android.playback.utils.BitmapProvider
 import app.n_zik.android.playback.utils.NZikRadio
@@ -192,7 +189,6 @@ import app.n_zik.android.utils.discoverKey
 import app.n_zik.android.utils.isPauseOnVolumeZeroEnabledKey
 import app.n_zik.android.utils.loudnessBaseGainKey
 import app.n_zik.android.utils.manageDownload
-import app.n_zik.android.utils.mediaItems
 import app.n_zik.android.utils.minimumSilenceDurationKey
 import app.n_zik.android.utils.notificationPlayerFirstIconKey
 import app.n_zik.android.utils.notificationPlayerSecondIconKey
@@ -211,7 +207,6 @@ import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.utils.ytCookieExpiredKey
 import app.n_zik.android.utils.putEnum
 import app.n_zik.android.utils.queueLoopTypeKey
-import app.n_zik.android.utils.resumePlaybackOnStartKey
 import app.n_zik.android.utils.resumePlaybackWhenDeviceConnectedKey
 import app.n_zik.android.utils.setGlobalVolume
 import app.n_zik.android.utils.showDownloadButtonBackgroundPlayerKey
@@ -243,7 +238,6 @@ import androidx.compose.runtime.snapshotFlow
 import app.n_zik.android.core.utils.Toaster
 import timber.log.Timber
 import java.io.File
-import java.io.IOException
 import java.util.IdentityHashMap
 import kotlin.io.path.createTempDirectory
 import kotlin.system.exitProcess
@@ -258,18 +252,14 @@ import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.playback.exceptions.ExplicitContentException
 import app.n_zik.android.playback.exceptions.LoginRequiredException
 import app.n_zik.android.playback.exceptions.UnmatchedSongException
-import app.n_zik.android.utils.parentalControlEnabledKey
 import androidx.media3.datasource.HttpDataSource
 import app.n_zik.android.utils.crossfadeGaplessKey
 import app.n_zik.android.utils.crossfadeDurationKey
 import androidx.compose.runtime.Stable
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
-import app.n_zik.android.widget.NZikWidgetManager
 import app.n_zik.android.widget.MusicWidgetReceiver
 import app.n_zik.android.widget.TurntableWidgetReceiver
-import app.n_zik.android.widget.WidgetAppearance
-import app.n_zik.android.widget.WidgetPlaybackSnapshot
 import app.n_zik.android.utils.crossfadeEnabledKey
 
 
@@ -346,22 +336,6 @@ class PlayerServiceModern : MediaLibraryService(),
     }
     private val crossfadeAudioDiagnostics = IdentityHashMap<ExoPlayer, CrossfadeAudioDiagnostics>()
     val playerUpdateTrigger = MutableStateFlow(0)
-
-    /**
-     * Issue #881 (gh-881): playback stall diagnostics — pure watchdog fed by periodic
-     * sampling while `playWhenReady` (spec problem-solution-2026-10-02-progress-bar-stuck-gh881,
-     * S1). Sampling reads `player.*`, so it runs on the UI dispatcher.
-     */
-    private val stallWatchdog = PlaybackStallWatchdog()
-    private var stallWatchdogJob: Job? = null
-
-    /** Issue #881: last load-retry count seen by the retry policy in [createMediaSourceFactory]. */
-    @Volatile
-    private var diagnosticRetryCount = 0
-
-    /** Issue #881: last `onIsLoadingChanged` value seen by [playbackDiagnosticsListener]. */
-    @Volatile
-    private var diagnosticIsLoading = false
 
     /**
      * Guarded delegation facade for every EXTERNAL entry point (UI via [Binder.player],
@@ -494,138 +468,11 @@ class PlayerServiceModern : MediaLibraryService(),
         }
     }
 
-    /**
-     * Issue #881 (gh-881): diagnostics listener attached to the PRIMARY player only
-     * (re-attached on every crossfade swap). One compact `PlaybackDiag` line per player
-     * transition (spec S2), plus starts/stops the stall-watchdog sampling (spec S1).
-     */
-    private inner class PlaybackDiagnosticsListener : Player.Listener {
-
-        override fun onPlaybackStateChanged(playbackState: Int) {
-            Timber.tag(PLAYBACK_DIAG_TAG).d("STATE -> %s", diagnosticStateName(playbackState))
-        }
-
-        override fun onIsLoadingChanged(isLoading: Boolean) {
-            diagnosticIsLoading = isLoading
-            Timber.tag(PLAYBACK_DIAG_TAG).d("LOADING -> %s", isLoading)
-        }
-
-        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            // Issue #881 (gh-881): a new track starts with no load errors — reset the
-            // stall-report feed so a later report never carries the previous track's count
-//
-            // (review gh-881).
-            diagnosticRetryCount = 0
-            Timber.tag(PLAYBACK_DIAG_TAG).d(
-                "MEDIA_TRANSITION reason=%s mediaId=%s",
-                diagnosticTransitionName(reason),
-                mediaItem?.mediaId,
-            )
-        }
-
-        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-            Timber.tag(PLAYBACK_DIAG_TAG).d(
-                "PLAY_WHEN_READY -> %s reason=%s",
-                playWhenReady,
-                diagnosticPlayWhenReadyReasonName(reason),
-            )
-            if (playWhenReady) startStallWatchdogSampling() else stopStallWatchdogSampling()
-        }
-    }
-
-    private val playbackDiagnosticsListener = PlaybackDiagnosticsListener()
-
-    /**
-     * Issue #881 (gh-881): samples the real player state into [stallWatchdog] every
-     * [PlaybackStallWatchdog.DEFAULT_SAMPLING_INTERVAL_MS] while `playWhenReady`. Reads
-     * `player.*`, so it runs on the UI dispatcher (the only one allowed to touch ExoPlayer state).
-     */
-    private fun startStallWatchdogSampling() {
-        stallWatchdogJob?.cancel()
-        stallWatchdogJob = coroutineScope.launch(NzikDispatchers.UI) {
-            while (isActive) {
-                sampleStallWatchdog()
-                delay(PlaybackStallWatchdog.DEFAULT_SAMPLING_INTERVAL_MS)
-            }
-        }
-    }
-
-    private fun stopStallWatchdogSampling() {
-        stallWatchdogJob?.cancel()
-        stallWatchdogJob = null
-        // Issue #881 (gh-881): a paused player cannot stall — drop the stall clock so a
-        // post-resume report only measures the continuous stalling since the resume
-//
-        // (review gh-881).
-        stallWatchdog.reset()
-    }
-
-    private fun sampleStallWatchdog() {
-        val p = player
-        if (!p.playWhenReady) return
-        when (val decision = stallWatchdog.sample(
-            nowMs = SystemClock.elapsedRealtime(),
-            playWhenReady = true,
-            playbackState = p.playbackState,
-            isLoading = diagnosticIsLoading,
-            positionMs = p.currentPosition,
-            // Issue #881 (gh-881): report "unknown" (-1) instead of the C.TIME_UNSET sentinel
-            // (Long.MIN_VALUE) for streams without a duration (review gh-881).
-            durationMs = if (p.duration == C.TIME_UNSET) -1L else p.duration,
-            mediaId = p.currentMediaItem?.mediaId,
-            retryCount = diagnosticRetryCount,
-            networkAvailable = isNetworkAvailable.value,
-            playerIdentity = System.identityHashCode(p),
-        )) {
-            is PlaybackStallWatchdog.Decision.Ok -> Unit
-            is PlaybackStallWatchdog.Decision.Stalled -> {
-                val r = decision.report
-                Timber.tag(PLAYBACK_DIAG_TAG).w(
-                    "STALL mediaId=%s state=%s loading=%s position=%dms duration=%dms stallMs=%d retries=%d network=%s playerIdentity=%s",
-                    r.mediaId,
-                    diagnosticStateName(r.playbackState),
-                    r.isLoading,
-                    r.positionMs,
-                    r.durationMs,
-                    r.stallDurationMs,
-                    r.retryCount,
-                    r.networkAvailable,
-                    r.playerIdentity,
-                )
-            }
-            PlaybackStallWatchdog.Decision.Recovered ->
-                Timber.tag(PLAYBACK_DIAG_TAG).i("STALL_RECOVERED")
-        }
-    }
-
-    /** Issue #881: human-readable player state for diagnostic lines. */
-    private fun diagnosticStateName(state: Int): String = when (state) {
-        Player.STATE_IDLE -> "IDLE"
-        Player.STATE_BUFFERING -> "BUFFERING"
-        Player.STATE_READY -> "READY"
-        else -> "UNKNOWN($state)"
-    }
-
-    /** Issue #881: human-readable media-item transition reason for diagnostic lines. */
-    private fun diagnosticTransitionName(reason: Int): String = when (reason) {
-        Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT -> "REPEAT"
-        Player.MEDIA_ITEM_TRANSITION_REASON_AUTO -> "AUTO"
-        Player.MEDIA_ITEM_TRANSITION_REASON_SEEK -> "SEEK"
-        Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED -> "PLAYLIST_CHANGED"
-        else -> "UNKNOWN($reason)"
-    }
-
-    /** Issue #881: human-readable playWhenReady change reason for diagnostic lines. */
-    private fun diagnosticPlayWhenReadyReasonName(reason: Int): String = when (reason) {
-        Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST -> "USER_REQUEST"
-        Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS -> "AUDIO_FOCUS_LOSS"
-        Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_BECOMING_NOISY -> "AUDIO_BECOMING_NOISY"
-        Player.PLAY_WHEN_READY_CHANGE_REASON_REMOTE -> "REMOTE"
-        Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM -> "END_OF_MEDIA_ITEM"
-        Player.PLAY_WHEN_READY_CHANGE_REASON_SUPPRESSED_TOO_LONG -> "SUPPRESSED_TOO_LONG"
-        else -> "UNKNOWN($reason)"
-    }
-
+    private val playbackDiagnosticsListener = PlaybackServiceDiagnostics(
+        coroutineScope = coroutineScope,
+        player = { player },
+        isNetworkAvailable = { isNetworkAvailable.value },
+    )
 
     @kotlin.OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     override fun onCreate() {
@@ -1224,7 +1071,7 @@ class PlayerServiceModern : MediaLibraryService(),
                         }
                     }
 
-                    Timber.tag("PlayerServiceModern").d("registerPlayback for $songId: streamClient=$streamClient, url=${playbackUrl?.take(120)}...")
+                    Timber.tag("PlayerServiceModern").d("registerPlayback for $songId: streamClient=$streamClient")
                     runCatching {
                         Timber.tag("PlayerServiceModern").d("onPlaybackStatsReady: calling Innertube.registerPlayback for $songId")
                         // playbackUrl is guaranteed non-null here: originalUrl was null-checked above (return@launch),
@@ -1335,7 +1182,7 @@ class PlayerServiceModern : MediaLibraryService(),
             shuffleOkFlashJob?.cancel()
             shuffleOkFlashJob = null
             // Issue #881 (gh-881): stop the stall-watchdog sampling loop
-            stopStallWatchdogSampling()
+            playbackDiagnosticsListener.stopStallWatchdogSampling()
             coroutineScope.cancel()
 
         }.onFailure {
@@ -1645,7 +1492,7 @@ class PlayerServiceModern : MediaLibraryService(),
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
         scheduleCrossfade()
         if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
-            queuePlaylistChanged = true
+            persistentQueue.onPlaylistChanged()
             maybeSavePlayerQueue(saveEmpty = true)
         }
     }
@@ -1670,9 +1517,9 @@ class PlayerServiceModern : MediaLibraryService(),
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         if (isPlaying) {
             scheduleCrossfade()
-            startWidgetUpdates()
+            widgetUpdates.startWidgetUpdates()
         } else {
-            stopWidgetUpdates()
+            widgetUpdates.stopWidgetUpdates()
         }
         
         val item = player.currentMediaItem
@@ -2289,80 +2136,13 @@ class PlayerServiceModern : MediaLibraryService(),
         createDataSourceFactory(),
         DefaultExtractorsFactory()
     ).setLoadErrorHandlingPolicy(
-        object : DefaultLoadErrorHandlingPolicy() {
-            // No MediaSource-level fallback exists - returning true here causes here causes
-            // ExoPlayer to attempt a nonexistent fallback, then skip the track.
-            override fun isEligibleForFallback(exception: IOException) = false
-
-            override fun getRetryDelayMsFor(
-                loadErrorInfo: LoadErrorHandlingPolicy.LoadErrorInfo
-            ): Long {
-                // Invalidate cached stream URL on every retry so we fetch fresh URLs
-                val mediaId = runCatching<String?> {
-                    loadErrorInfo.loadEventInfo.dataSpec.key
-                        ?: loadErrorInfo.loadEventInfo.dataSpec.uri.toString().substringAfter("watch?v=", "").takeIf { it.isNotEmpty() }
-                }.getOrNull()
-                if (mediaId != null) {
-                    streamUrlCache.invalidate(mediaId)
-                }
-
-                val skipOnError = preferences.getBoolean(skipMediaOnErrorKey, false)
-                val count = loadErrorInfo.errorCount
-
-                // Issue #881 (gh-881): the stall watchdog report includes this counter
-                diagnosticRetryCount = count
-
-                // P12 (review, 2026-10-23): capture the offline predicates once (onPlayerError
-                // pattern) — the gate log used to re-evaluate them.
-                val dnsFailure = isDnsFailure(loadErrorInfo.exception)
-                val staleMonitorOffline = isStaleMonitorOfflineFailure(loadErrorInfo.exception, !currentMediaIsLocal)
-
-                val delayMs: Long
-                if (loadErrorInfo.exception.isFatalCustomException()) {
-                    delayMs = C.TIME_UNSET
-                } else if (isOfflineLoadFailure(loadErrorInfo.exception, isNetworkAvailable.value) ||
-                    staleMonitorOffline
-                ) {
-                    // S5/A3 (offline gate, 2026-10-22): while offline the stream URL can never resolve
-                    // (incl. the stale-monitor hole) — give up now; the onPlayerError gate takes over.
-                    Timber.tag(PLAYBACK_DIAG_TAG).w(
-                        "LOAD_GATE offline=%b dnsFailure=%b staleMonitorOffline=%b mediaId=%s -> giving up, deferring to the onPlayerError gate",
-                        !isNetworkAvailable.value,
-                        dnsFailure,
-                        staleMonitorOffline,
-                        mediaId,
-                    )
-                    return C.TIME_UNSET
-                } else if (count <= 7) {
-                    // Normal exponential backoff up to 7 retries
-                    delayMs = (count * 2000L).coerceAtMost(10_000L)
-                } else if (!skipOnError) {
-                    // User wants to NEVER skip: keep retrying with a long delay.
-                    // Show a toast so the user always knows something is happening.
-                    Toaster.w(R.string.network_stream_still_retrying, formatArgs = arrayOf(count.toString()))
-                    // Returning a positive value ensures ExoPlayer never gives up
-                    // on this media item (C.TIME_UNSET would cause a skip).
-                    delayMs = 15_000L
-                } else {
-                    delayMs = C.TIME_UNSET // skipOnError is ON - let ExoPlayer give up and trigger onPlayerError
-                }
-
-                // Issue #881 (gh-881): retry instrumented (spec S3) — exception class + truncated
-                // root-cause message (never the URL) reveal which link breaks; count growth
-//
-                // reveals the infinite-retry loop of the "never skip" policy.
-                Timber.tag(PLAYBACK_DIAG_TAG).w(
-                    "LOAD_RETRY count=%d mediaId=%s exception=%s delayMs=%d",
-                    count,
-                    mediaId,
-                    diagnosticExceptionSummary(loadErrorInfo.exception),
-                    delayMs,
-                )
-                return delayMs
-            }
-        }
+        PlaybackLoadErrorPolicy(
+            shouldSkipOnError = { preferences.getBoolean(skipMediaOnErrorKey, false) },
+            onRetryCount = { playbackDiagnosticsListener.diagnosticRetryCount = it },
+            isNetworkAvailable = { isNetworkAvailable.value },
+            isStaleMonitorOfflineFailure = { isStaleMonitorOfflineFailure(it, !currentMediaIsLocal) },
+        )
     )
-
 
     /**
      * Issue #866 (gh-866): radio state as seen by the command buttons. `nzikRadio` is lateinit
@@ -2426,50 +2206,12 @@ class PlayerServiceModern : MediaLibraryService(),
         val notificationPlayerFirstIcon = preferences.getEnum(notificationPlayerFirstIconKey, NotificationButtons.Download)
         val notificationPlayerSecondIcon = preferences.getEnum(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
 
-        val commandButtonsList = mutableListOf<CommandButton>()
-        val firstCommandButton = NotificationButtons.entries.let { buttons ->
-            buttons
-                .filter { it == notificationPlayerFirstIcon }
-                .map {
-                    val displayName = appTextResources().getString( commandButtonLabelRes(it) )
-
-                    CommandButton.Builder()
-                        .setDisplayName( displayName )
-                        .setIconResId( commandButtonIconRes(it) )
-                        .setSessionCommand(it.sessionCommand)
-                        .build()
-                }
-        }
-
-        val secondCommandButton =  NotificationButtons.entries.let { buttons ->
-            buttons
-                .filter { it == notificationPlayerSecondIcon }
-                .map {
-                    val displayName = appTextResources().getString( commandButtonLabelRes(it) )
-
-                    CommandButton.Builder()
-                        .setDisplayName( displayName )
-                        .setIconResId( commandButtonIconRes(it) )
-                        .setSessionCommand(it.sessionCommand)
-                        .build()
-                }
-        }
-
-        val otherCommandButtons = NotificationButtons.entries.let { buttons ->
-            buttons
-                .filterNot { it == notificationPlayerFirstIcon || it == notificationPlayerSecondIcon }
-                .map {
-                    val displayName = appTextResources().getString( commandButtonLabelRes(it) )
-
-                    CommandButton.Builder()
-                        .setDisplayName( displayName )
-                        .setIconResId( commandButtonIconRes(it) )
-                        .setSessionCommand(it.sessionCommand)
-                        .build()
-                }
-        }
-
-        commandButtonsList += firstCommandButton + secondCommandButton + otherCommandButtons
+        val commandButtonsList = playbackNotificationButtons(
+            first = notificationPlayerFirstIcon,
+            second = notificationPlayerSecondIcon,
+            labelRes = ::commandButtonLabelRes,
+            iconRes = ::commandButtonIconRes,
+        )
 
         val access = AutoAccessPolicy(this, Database, MyDownloadHelper, binder)
         return commandButtonsList.filter { button -> button.sessionCommand?.let { access.allowsCommand(it.customAction) } != false }.toMutableList()
@@ -2522,86 +2264,29 @@ class PlayerServiceModern : MediaLibraryService(),
 
     private fun showSmartMessage( message: String ) = Toaster.i(message)
 
-    private var widgetUpdateJob: Job? = null
-    private var widgetRenderJob: Job? = null
-    private var widgetArtworkJob: Job? = null
-
-    private fun startWidgetUpdates() {
-        if (widgetUpdateJob?.isActive == true) return
-        widgetUpdateJob = coroutineScope.launch(NzikDispatchers.UI) {
-            while (isActive && player.isPlaying) {
-                delay(1000)
-                if (player.isPlaying && widgetRenderJob?.isActive != true) {
-                    updateWidgets()
-                }
-            }
-        }
-    }
-
-    private fun stopWidgetUpdates() {
-        widgetUpdateJob?.cancel()
-        widgetUpdateJob = null
-    }
+    private val widgetUpdates = PlaybackWidgetUpdates(
+        context = this,
+        coroutineScope = coroutineScope,
+        player = { player },
+        widgetPlayer = { binder.player },
+        bitmapProvider = { bitmapProvider },
+        isDestroying = { isDestroying },
+        requestRender = ::updateWidgets,
+    )
 
     /** Re-render paused widgets without starting playback or waking a stopped service. */
     private fun refreshArtworkWidgets(mediaId: String? = null) {
         coroutineScope.launch(NzikDispatchers.UI) {
             if (isDestroying || !::bitmapProvider.isInitialized || !::guestGuardPlayer.isInitialized) return@launch
             if (mediaId != null && binder.player.currentMediaItem?.mediaId != mediaId) return@launch
-            widgetArtworkJob?.cancel()
-            widgetArtworkJob = coroutineScope.launch(NzikDispatchers.DATA) artworkJob@{
-                if (!WidgetAppearance.hasWidgets(applicationContext)) return@artworkJob
-                withContext(NzikDispatchers.UI) {
-                    if (isDestroying) return@withContext
-                    val widgetPlayer = binder.player
-                    val artwork = widgetPlayer.mediaMetadata.artworkUri ?: widgetPlayer.currentMediaItem?.mediaMetadata?.artworkUri
-                    bitmapProvider.load(artwork) { updateWidgets() }
-                }
-            }
+            widgetUpdates.refreshArtworkWidgets()
         }
     }
 
     @MainThread
     fun updateWidgets() {
         if (isDestroying || !::guestGuardPlayer.isInitialized) return
-        widgetRenderJob?.cancel()
-        val widgetPlayer = binder.player
-        val currentMediaId = widgetPlayer.currentMediaItem?.mediaId
-        if (currentMediaId == null) {
-            widgetRenderJob = coroutineScope.launch(NzikDispatchers.DATA) {
-                NZikWidgetManager.updateIdleWidgets(applicationContext)
-            }
-            return
-        }
-
-        val playback = WidgetPlaybackSnapshot(
-            durationMs = widgetPlayer.duration.coerceAtLeast(0),
-            positionMs = widgetPlayer.currentPosition.coerceAtLeast(0),
-            sampledAtElapsedRealtimeMs = SystemClock.elapsedRealtime(),
-            isPlaying = widgetPlayer.isPlaying,
-            speed = widgetPlayer.playbackParameters.speed,
-        )
-        val metadata = widgetPlayer.mediaMetadata
-        val artworkUri = metadata.artworkUri ?: widgetPlayer.currentMediaItem?.mediaMetadata?.artworkUri
-        val currentBitmap = bitmapProvider.bitmap.takeIf { bitmapProvider.lastUri == artworkUri }
-
-        widgetRenderJob = coroutineScope.launch(NzikDispatchers.DATA) {
-            if (!WidgetAppearance.hasWidgets(applicationContext)) return@launch
-            val songId = currentMediaId.substringAfterLast('/')
-            val currentSong = Database.songTable.findByIdDirect(songId)
-            val isLiked = currentSong?.likedAt != null
-
-            NZikWidgetManager.updateWidgets(
-                context = applicationContext,
-                title = metadata.title?.toString().orEmpty(),
-                artist = metadata.artist?.toString().orEmpty(),
-                artworkBitmap = currentBitmap,
-                isPlaying = playback.isPlaying,
-                isLiked = isLiked,
-                artworkUri = artworkUri?.toString(),
-                playback = playback,
-            )
-        }
+        widgetUpdates.updateWidgets()
     }
 
     private fun attachCrossfadeAudioDiagnostics(target: ExoPlayer) {
@@ -2786,72 +2471,25 @@ class PlayerServiceModern : MediaLibraryService(),
         super.onPositionDiscontinuity(oldPosition, newPosition, reason)
     }
 
-    private var queuePlaylistChanged = false
+    private val persistentQueue = PlaybackPersistentQueue(
+        context = this,
+        coroutineScope = coroutineScope,
+        player = { player },
+        isDestroying = { isDestroying },
+        isPersistentQueueEnabled = { isPersistentQueueEnabled },
+        restoreStartupQueueIfUnowned = { mediaLibrarySessionCallback.restoreStartupQueueIfUnowned(it) },
+        resumePlayback = { binder.gracefulPlay() },
+    )
 
     @MainThread
     private fun maybeSavePlayerQueue(finalSnapshot: Boolean = false, saveEmpty: Boolean = false) {
         if (!isPersistentQueueEnabled || !::player.isInitialized || (isDestroying && !finalSnapshot)) return
-        val mediaItems = player.currentTimeline.mediaItems
-        if (mediaItems.isEmpty() && !saveEmpty) return
-        val mediaItemIndex = player.currentMediaItemIndex
-        val mediaItemPosition = player.currentPosition
-        val profile = getActiveProfile(this)
-        val snapshot = mediaItems.mapIndexed { index, mediaItem ->
-            QueuedMediaItem(mediaItem = mediaItem, position = mediaItemPosition.takeIf { index == mediaItemIndex })
-        }
-
-        // Keep snapshots in submission order, including the one taken during teardown.
-        Database.saveQueueSnapshot {
-            snapshot.map { row ->
-                val item = PersistentQueueArtwork.preserveSnapshotSource(this@PlayerServiceModern, profile, row.mediaItem)
-                QueuedMediaItem(mediaItem = item, position = row.position)
-            }
-        }
+        persistentQueue.save(player, saveEmpty)
     }
 
-    @ExperimentalCoroutinesApi
-    @FlowPreview
-    @UnstableApi
     private fun maybeRestorePlayerQueue() {
         if (!isPersistentQueueEnabled) return
-
-        val profile = getActiveProfile(this)
-
-        // A recreated service must read after the previous service's final snapshot.
-        coroutineScope.launch(NzikDispatchers.DATA) {
-            val queuedSong = Database.readSavedQueue()
-            val libraryArtwork = mutableMapOf<String, String?>()
-            val restored = queuedSong.map { row ->
-                PersistentQueueArtwork.restore(this@PlayerServiceModern, profile, row.mediaItem) { songId ->
-                    if (songId !in libraryArtwork) {
-                        libraryArtwork[songId] = Database.songTable.findByIdDirect(songId)?.thumbnailUrl
-                    }
-                    libraryArtwork[songId]
-                } to row.position
-            }
-
-            withContext(NzikDispatchers.UI) {
-                mediaLibrarySessionCallback.restoreStartupQueueIfUnowned restore@{
-                    if (isDestroying || !isPersistentQueueEnabled || getActiveProfile(this@PlayerServiceModern) != profile ||
-                        queuePlaylistChanged || player.mediaItemCount > 0
-                    ) return@restore
-                    val filtered = if (preferences.getBoolean(parentalControlEnabledKey, false)) {
-                        restored.filterNot { (item, _) -> item.isExplicit }
-                    } else restored
-                    if (filtered.isEmpty()) return@restore
-                    val index = filtered.indexOfFirst { (_, position) -> position != null }.coerceAtLeast(0)
-                    player.setMediaItems(
-                        filtered.map { it.first },
-                        index,
-                        filtered[index].second ?: C.TIME_UNSET
-                    )
-                    if (RestoredQueueRules.shouldPrepareRestoredQueue(preferences.getBoolean(resumePlaybackOnStartKey, false))) {
-                        binder.gracefulPlay()
-                    }
-                }
-            }
-        }
-
+        persistentQueue.restore()
     }
 
     private fun observeNotificationState() {
@@ -3876,29 +3514,3 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
 }
-
-/** Issue #866 (gh-866): label of the state-dependent radio command button — pure so the state → string mapping is unit-testable without a running [PlayerServiceModern]. */
-internal fun radioCommandButtonLabelRes(isRadioActive: Boolean): Int =
-    if (isRadioActive) R.string.radio_action_stop else R.string.radio_action_start
-
-/**
- * Issue #866 (gh-866): icon of the state-dependent radio command button — pure so the
- * state → drawable mapping is unit-testable. [inactiveIconRes] is the legacy state icon
- * resolved by `NotificationButtons.getStateIcon` (always `R.drawable.radio` for the radio).
- */
-internal fun radioCommandButtonIconRes(inactiveIconRes: Int, isRadioActive: Boolean): Int =
-    if (isRadioActive) R.drawable.radio_stop else inactiveIconRes
-
-/** Issue #866 (gh-866): icon of the shuffle command button while the transient "shuffle registered" confirmation flash is active — pure so the flash → drawable mapping is unit-testable without a running [PlayerServiceModern]. */
-internal fun shuffleOkFlashIconRes(flashActive: Boolean, stateIconRes: Int): Int =
-    if (flashActive) R.drawable.shuffle_ok else stateIconRes
-
-/**
- * Issue #866 (gh-866): icon of the state-dependent discover command button — pure so the
- * state → drawable mapping is unit-testable. [stateIconRes] is the legacy state icon resolved
- * by `NotificationButtons.getStateIcon` (always `R.drawable.discover` for discover); while the
- * discover filter is active the button shows the filled `discover_stop` icon in the Android Auto
- * overflow and the media notification, same treatment as the radio button.
- */
-internal fun discoverCommandButtonIconRes(stateIconRes: Int, isDiscoverEnabled: Boolean): Int =
-    if (isDiscoverEnabled) R.drawable.discover_stop else stateIconRes

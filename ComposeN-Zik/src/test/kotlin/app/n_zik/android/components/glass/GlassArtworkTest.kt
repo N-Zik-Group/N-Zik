@@ -3,6 +3,7 @@ package app.n_zik.android.components.glass
 import android.app.Application
 import android.graphics.Bitmap
 import android.net.Uri
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -110,15 +111,25 @@ class GlassArtworkTest {
         every { player.addListener(capture(listener)) } returns Unit
         val activePlayer = mutableStateOf<Player?>(player)
         var observed: GlassArtwork? = null
-        compose.setContent { observed = rememberGlassArtwork(activePlayer.value) }
+        var alsoObserved: GlassArtwork? = null
+        compose.setContent {
+            val owner = rememberPlayerArtworkObservation(activePlayer.value)
+            CompositionLocalProvider(LocalPlayerArtworkObservation provides owner) {
+                observed = rememberGlassArtwork(activePlayer.value)
+                alsoObserved = rememberGlassArtwork(activePlayer.value)
+            }
+        }
         compose.runOnIdle {
             assertEquals("file:///old.png", observed?.uri)
+            assertEquals(observed, alsoObserved)
+            verify(exactly = 1) { player.addListener(any()) }
             metadata = MediaMetadata.Builder().setArtworkUri(Uri.parse("file:///new.png")).build()
             listener.captured.onEvents(player, Player.Events(FlagSet.Builder()
                 .add(Player.EVENT_MEDIA_METADATA_CHANGED).build()))
         }
         compose.runOnIdle {
             assertEquals(GlassArtwork("same-song", "file:///new.png"), observed)
+            assertEquals(observed, alsoObserved)
             mediaItem = MediaItem.Builder().setMediaId("next-song").build()
             metadata = MediaMetadata.Builder().setArtworkUri(Uri.parse("file:///next.png")).build()
             listener.captured.onEvents(player, Player.Events(FlagSet.Builder()

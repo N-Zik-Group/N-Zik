@@ -138,6 +138,7 @@ import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.ui.saveable.TolerantStringStateSaver
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.LocalPlaybackPositionClock
+import app.n_zik.android.utils.playbackPositionClock
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.menu.lyrics.LyricsSettingsMenu
 import app.n_zik.android.components.dialog.player.ShowOffsetDialog
@@ -473,10 +474,10 @@ fun LyricsScreen(
                     else coverForeground.toArgb()
                     when {
                         actualLyricsType == LyricsType.Karaoke && hasWordTimings -> {
+                            val karaokeClock = playback?.playbackPositionClock()
                             KaraokeLyricsView(
                                 text = text,
-                                currentPositionProvider = { (positionClock?.estimatedPositionMs() ?: playback?.currentPosition ?: 0L) + lyricsOffsetState.value },
-                                isPlayingProvider = { playback?.isPlaying == true },
+                                currentPositionProvider = { (karaokeClock?.estimatedPositionMs() ?: 0L) + lyricsOffsetState.value },
                                 onSeekTo = { playback?.seekTo(it) },
                                 showlyricsthumbnail = showlyricsthumbnail,
                                 isLandscape = isLandscape,

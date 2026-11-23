@@ -400,7 +400,6 @@ object WaveformExtractor {
         private var dataSource: DataSource? = null
         private var currentPosition: Long = -1
         private var size: Long = -1
-        private var readCount = 0
 
         init {
             val ds = dataSourceFactory.createDataSource()

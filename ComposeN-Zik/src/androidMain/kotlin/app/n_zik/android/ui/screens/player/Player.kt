@@ -5,8 +5,6 @@ import app.n_zik.android.components.theme.paletteDarkness
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
 
-import app.n_zik.android.core.coil.imageLoadingViewport
-import app.n_zik.android.core.coil.rememberImageLoadingViewportPainter
 import app.n_zik.android.ui.screens.player.components.LocalPlayerMusicVideo
 import app.n_zik.android.ui.screens.player.components.PlayerMusicVideo
 import app.n_zik.android.ui.screens.player.components.PlayerAudioVideoToggle
@@ -19,28 +17,21 @@ import app.n_zik.android.utils.actionExpandedKey
 import android.util.LruCache
 
 import app.n_zik.android.components.player.playerQueueUnderlayCovered
-import app.n_zik.android.components.player.queuePanelAtExpandedEndpoint
-import app.n_zik.android.components.player.rememberPlayerQueueBackdrop
 import app.n_zik.android.components.player.playerGlassSceneCaptureActive
-import app.n_zik.android.components.glass.LocalQueuePlayerBackdrop
 import app.n_zik.android.components.glass.LocalGlassUnderlayCovered
 import app.n_zik.android.components.player.LocalPlayerSheetGlassTransition
 import app.n_zik.android.components.player.rememberPlayerSheetGlassTransition
 import app.n_zik.android.components.player.rememberPlayerControlsGlassSource
 import app.n_zik.android.components.player.playerGlassSourceCaptureActive
-import app.n_zik.android.components.glass.FullGlassOpticsProgress
 import app.n_zik.android.components.glass.LocalGlassOpticsTransitionProgress
 import app.n_zik.android.components.glass.LocalGlassOpticsEnabled
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
-import app.n_zik.android.components.glass.NativeQueueRows
 import app.n_zik.android.components.glass.usesQueueToolbarGlass
 import app.n_zik.android.components.glass.GlassOverlayHost
 import app.n_zik.android.components.glass.rememberOverlayTransition
 import app.n_zik.android.components.glass.hasOverlayContent
-import app.n_zik.android.components.glass.GlassQueuePanel
-import app.n_zik.android.components.glass.glassQueuePanelBackground
 import app.n_zik.android.components.glass.LocalGlassOverlayBackdrop
 import app.n_zik.android.components.glass.glassPlayerSceneSource
 import app.n_zik.android.components.glass.glassSceneOverlayBackdrop
@@ -67,10 +58,6 @@ import app.n_zik.android.components.player.PlayerInformationGlassBlock
 import app.n_zik.android.components.player.LocalPlayerTransportGeometry
 import app.n_zik.android.components.player.PlayerTransportGeometry
 import app.n_zik.android.components.player.playerTransportGeometryHost
-import app.n_zik.android.components.player.PlayerInformationGlassRegion
-import app.n_zik.android.components.player.PlayerQueueDurationGlass
-import app.n_zik.android.components.player.PlayerControlsWidthFraction
-import app.n_zik.android.components.player.PlayerTopAction
 import app.n_zik.android.components.player.canSkipStandalonePlayerCover
 import app.n_zik.android.components.player.rememberGlassPlayerBackground
 
@@ -87,16 +74,10 @@ import app.n_zik.android.utils.titleWithFallback
 
 import app.n_zik.android.components.dialog.common.SleepTimerDialog
 import android.annotation.SuppressLint
-import android.graphics.RenderEffect
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.thumbnail
@@ -106,20 +87,16 @@ import app.n_zik.android.components.player.slide.itemZIndexFor
 import app.n_zik.android.components.player.slide.playerThumbnailCover
 import app.n_zik.android.components.player.slide.slideSettledPageEffect
 import app.n_zik.android.components.PLAYER_SHEET_HANDOVER_PROGRESS
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -128,7 +105,6 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -143,6 +119,7 @@ import app.n_zik.android.components.player.PlayerLandscapeColumns
 import app.n_zik.android.components.player.PlayerLandscapeThumbnailFrame
 import app.n_zik.android.components.player.playerLandscapeControlsMargin
 import app.n_zik.android.components.player.PlayerCarouselCover
+import app.n_zik.android.components.player.PlayerCarouselGeometry
 import app.n_zik.android.components.player.CarouselButtonNavigation
 import app.n_zik.android.components.player.LocalCarouselButtonNavigation
 import app.n_zik.android.components.player.hasArtworkStackOverlap
@@ -154,12 +131,10 @@ import app.n_zik.android.components.player.playerCoverArtworkVisible
 import app.n_zik.android.components.player.playerStandaloneVisualizerVisible
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import app.n_zik.android.components.player.rememberPlayerArtworkPagerState
 import app.n_zik.android.components.player.shouldWaitForPlayerBackdrop
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Composable
@@ -190,7 +165,6 @@ import androidx.compose.ui.geometry.center
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.compositeOver
 import app.n_zik.android.components.glass.LocalSurfaceBackdropColor
 import app.n_zik.android.components.glass.rememberNeutralForegroundForSurface
@@ -223,30 +197,16 @@ import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.components.player.PlayerArtworkPaint
 import app.n_zik.android.components.glass.GlassArtworkTint
 import app.n_zik.android.components.glass.LocalGlassArtworkTint
-import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.asComposeRenderEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
@@ -280,19 +240,12 @@ import app.n_zik.android.enums.SwipeAnimationNoThumbnail
 import app.n_zik.android.enums.ThumbnailCoverType
 import app.n_zik.android.enums.ThumbnailType
 import app.n_zik.android.models.ui.toUiMedia
-import app.n_zik.android.typography
 import app.n_zik.android.ui.components.LocalMenuState
-import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
-import app.n_zik.android.ui.components.themed.NowPlayingSongIndicator
 import app.n_zik.android.extensions.nextvisualizer.views.NextVisualizer
 import app.n_zik.android.components.menu.player.PlayerMenu
-import app.n_zik.android.components.menu.MenuDragHandleBar
-import app.n_zik.android.ui.components.themed.RotateThumbnailCoverAnimationModern
 import app.n_zik.android.components.dialog.common.ThumbnailOffsetDialog
 import app.n_zik.android.components.player.rememberCoverSpin
 import app.n_zik.android.components.player.rememberPlayerDecorationsActive
-import app.n_zik.android.ui.styling.Dimensions
-import app.n_zik.android.ui.styling.collapsedPlayerProgressBar
 import app.n_zik.android.ui.styling.favoritesOverlay
 import app.n_zik.android.utils.DisposableListener
 import app.n_zik.android.utils.VerticalfadingEdge2
@@ -311,13 +264,11 @@ import app.n_zik.android.utils.coverThumbnailAnimationKey
 import app.n_zik.android.utils.disablePlayerHorizontalSwipeKey
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.discoverKey
-import app.n_zik.android.components.player.PlayerQueueDuration
 import app.n_zik.android.components.player.rememberPlayerQueueDuration
 import app.n_zik.android.components.player.playerStandaloneLyricsVisible
 import app.n_zik.android.utils.effectRotationKey
 import app.n_zik.android.utils.expandedplayerKey
 import app.n_zik.android.utils.fadingedgeKey
-import app.n_zik.android.utils.formatAsTime
 import app.n_zik.android.utils.isExplicit
 import app.n_zik.android.utils.isLandscape
 import app.n_zik.android.utils.mediaItems
@@ -337,7 +288,6 @@ import app.n_zik.android.utils.queueDurationExpandedKey
 import app.n_zik.android.utils.queueLoopTypeKey
 import app.n_zik.android.utils.queueTypeKey
 import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.shouldBePlaying
 import app.n_zik.android.utils.showButtonPlayerMenuKey
 import app.n_zik.android.utils.showCoverThumbnailAnimationKey
@@ -378,17 +328,13 @@ import app.n_zik.android.components.player.rememberArtworkDisplayResult
 import app.n_zik.android.components.player.M3ECoverColors
 import app.n_zik.android.components.player.BlurAdjuster
 import app.n_zik.android.components.player.m3eDarkenBy
-import app.n_zik.android.components.player.playerTextOutlineColor
 import app.n_zik.android.components.player.m3eSaturate
 import app.n_zik.android.core.utils.Toaster
 import kotlin.Float.Companion.POSITIVE_INFINITY
 import kotlin.math.absoluteValue
-import kotlin.math.sqrt
-import androidx.compose.ui.res.stringResource
 import app.n_zik.android.components.player.lyrics.LyricsScreen
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.utils.thumbnailSizeDpKey
-import app.n_zik.android.topUiRoundnessShape
 import app.n_zik.android.LocalIsShowingVisualizer
 import androidx.compose.ui.platform.LocalView
 import app.n_zik.android.LocalIsShowingLyrics
@@ -397,7 +343,6 @@ import androidx.compose.ui.graphics.RectangleShape
 import android.app.Activity
 import android.view.Window
 import android.content.ContextWrapper
-import androidx.compose.ui.layout.layout
 import app.n_zik.android.core.sync.YouTubeSync
 
 
@@ -663,40 +608,6 @@ fun Player(
     }
     var playerError by remember(playerUpdateTrigger) {
         mutableStateOf<PlaybackException?>(player.playerError)
-    }
-
-    fun PagerState.offsetForPage(page: Int) = (currentPage - page) + currentPageOffsetFraction
-
-    fun PagerState.startOffsetForPage(page: Int): Float {
-        return offsetForPage(page).coerceAtLeast(0f)
-    }
-
-    fun PagerState.endOffsetForPage(page: Int): Float {
-        return offsetForPage(page).coerceAtMost(0f)
-    }
-
-    class CirclePath(private val progress: Float, private val origin: Offset = Offset(0f, 0f)) : Shape {
-        override fun createOutline(
-            size: Size, layoutDirection: LayoutDirection, density: Density
-        ): Outline {
-
-            val center = Offset(
-                x = size.center.x - ((size.center.x - origin.x) * (1f - progress)),
-                y = size.center.y - ((size.center.y - origin.y) * (1f - progress)),
-            )
-            val radius = (sqrt(
-                size.height * size.height + size.width * size.width
-            ) * .5f) * progress
-
-            return Outline.Generic(Path().apply {
-                addOval(
-                    Rect(
-                        center = center,
-                        radius = radius,
-                    )
-                )
-            })
-        }
     }
 
     player.DisposableListener(playerUpdateTrigger) {
@@ -967,8 +878,10 @@ fun Player(
     val glassSettings = rememberGlassSettings()
     val inheritedOpticsEnabled = LocalGlassOpticsEnabled.current
     val inheritedUnderlayCovered = LocalGlassUnderlayCovered.current
-    var isQueuePanelVisible by remember { mutableStateOf(false) }
-    var isQueueFullyCovering by remember { mutableStateOf(false) }
+    val queuePanelVisibleState = remember { mutableStateOf(false) }
+    val isQueuePanelVisible by queuePanelVisibleState
+    val queueFullyCoveringState = remember { mutableStateOf(false) }
+    val isQueueFullyCovering by queueFullyCoveringState
     val playerUnderlayCovered = playerQueueUnderlayCovered(inheritedUnderlayCovered, isQueuePanelVisible, isQueueFullyCovering)
     val playerExpanded = playerSheetState.isExpanded
     val decorationsVisible = playerContentVisible && !appRunningInBackground && !playerUnderlayCovered
@@ -1453,32 +1366,112 @@ fun Player(
         position: () -> Long,
         duration: () -> Long
     ) {
-        var region by remember { mutableStateOf<Rect?>(null) }
-        val surface = rememberPlayerBackdropRegionColor(region, useLocalSample = true)
-        val displayLinks = if (displayItem.mediaId == mediaItem.mediaId) currentLinks
-            else displayItem.playerTrackLinks(linkCache)
-        val controls: @Composable () -> Unit = {
-            Controls(
-                navController = navController,
-                onCollapse = onDismiss,
-                onBlurScaleChange = { strength -> blurAdjuster.strength = strength },
-                expandedplayer = expandedplayer,
-                titleExpanded = titleExpanded,
-                timelineExpanded = timelineExpanded,
-                controlsExpanded = controlsExpanded,
-                isShowingLyrics = isShowingStandaloneLyrics,
-                mediaItem = displayItem,
-                artistIds = displayLinks.artists,
-                albumId = displayLinks.albumId,
-                shouldBePlaying = shouldBePlaying,
-                isBuffering = isBuffering,
-                position = position,
-                duration = duration,
-                dynamicColorPalette = backgroundPalette.copy(accent = artworkAccent.value),
-                modifier = modifier.onGloballyPositioned { region = it.boundsInWindow() },
+        PlayerTrackInformation(
+            displayItem = displayItem,
+            currentMediaId = mediaItem.mediaId,
+            currentLinks = currentLinks,
+            linkCache = linkCache,
+            navController = navController,
+            onDismiss = onDismiss,
+            blurAdjuster = blurAdjuster,
+            expandedplayer = expandedplayer,
+            titleExpanded = titleExpanded,
+            timelineExpanded = timelineExpanded,
+            controlsExpanded = controlsExpanded,
+            isShowingStandaloneLyrics = isShowingStandaloneLyrics,
+            shouldBePlaying = shouldBePlaying,
+            backgroundPalette = backgroundPalette,
+            artworkAccent = artworkAccent,
+            modifier = modifier,
+            isBuffering = isBuffering,
+            position = position,
+            duration = duration,
+        )
+    }
+
+    @Composable
+    fun CarouselPage(
+        pageIndex: Int,
+        carouselGeometry: PlayerCarouselGeometry,
+        spacingDialogAllowed: () -> Boolean,
+        showDragIndicator: () -> Boolean,
+    ) {
+        val pageItem = mediaItems.getOrNull(pageIndex)
+        val pageCover = rememberPlayerCoverIdentity(pageItem?.mediaId.orEmpty(), coverUrl(pageItem).orEmpty())
+        val artworkDrawn = remember(pageCover) { mutableStateOf(false) }
+        val coverPainter = ImageCacheFactory.Painter(
+            thumbnailUrl = pageCover.artworkUri,
+            publishArtworkColors = visiblePlayerArtwork && carouselOwnsArtwork &&
+                !fullscreenPagerOwnsArtwork && pageIndex == pagerState.currentPage,
+            onArtworkDrawn = { reportCarouselArtworkDrawn(artworkDrawn) },
+            playerArtworkMediaId = pageItem?.mediaId,
+        )
+        ReportPresentedPlayerCover(
+            identity = pageCover,
+            ready = artworkDrawn.value,
+            active = expectsForegroundCover && pageCover == targetCover &&
+                pageIndex == player.currentMediaItemIndex && pageIndex == pagerState.currentPage,
+            motionSettled = pageIndex == pagerState.settledPage && !pagerState.isScrollInProgress,
+        ) { presentedCover = pageCover }
+
+        val coverModifier = Modifier.playerThumbnailCover(
+            pagerState = pagerState,
+            shadowOverflow = artworkShadowOverflow,
+            page = pageIndex,
+            padding = carouselGeometry.coverPadding,
+            carousel = carousel,
+            replayArtworkOverflow = carouselGeometry.hasArtworkStackOverlap(thumbnailType),
+            scaleAlways = false,
+            scaleStart = PlayerCarouselCoverScaleStart,
+            thumbnailType = thumbnailType,
+            showCoverThumbnailAnimation = showCoverThumbnailAnimation,
+            onTap = { page ->
+                if (page == pagerState.settledPage && thumbnailTapEnabled) {
+                    if (isShowingVisualizer) isShowingVisualizer =
+                        false
+                    isShowingLyrics = !isShowingLyrics
+                }
+                if (page != pagerState.settledPage) {
+                    player.playAtIndex(page)
+                }
+            },
+            onLongClick = { page ->
+                if (page == pagerState.settledPage && spacingDialogAllowed())
+                    showThumbnailOffsetDialog = true
+            }
+        )
+
+        val zIndex = itemZIndexFor(pageIndex, pagerState.currentPage)
+
+        PlayerCarouselCover(
+            page = pageIndex,
+            playingIndex = player.currentMediaItemIndex,
+            mediaItem = mediaItems.getOrNull(pageIndex),
+            playingMediaId = mediaItem.mediaId,
+            showingLyrics = isShowingLyrics,
+            lyricsOnCover = coverOverlayPolicy.lyricsOnCover,
+            showingVisualizer = isShowingVisualizer,
+            visualizerOnCover = coverOverlayPolicy.visualizerOnCover,
+            hasPlaybackError = player.playerError != null,
+            onDismissLyrics = { isShowingLyrics = false },
+            durationProvider = player::getDuration,
+            clickLyricsText = clickLyricsText,
+            isLandscape = isLandscape,
+            modifier = coverModifier.zIndex(zIndex),
+        ) {
+            PlayerCarouselArtwork(
+                coverPainter = coverPainter,
+                player = player,
+                mediaItems = mediaItems,
+                pagerState = pagerState,
+                pageIndex = pageIndex,
+                showCoverThumbnailAnimation = showCoverThumbnailAnimation,
+                imageCoverSize = imageCoverSize,
+                decorationsActive = decorationsActive,
+                coverThumbnailAnimation = coverThumbnailAnimation,
+                showDragIndicator = showDragIndicator,
             )
         }
-        SurfaceForegroundContent(surface, preferMeasuredText = true, content = controls)
     }
 
     blurAdjuster.Render()
@@ -1623,17 +1616,7 @@ fun Player(
                      )
                  }
 
-                 Column(modifier = Modifier
-                     .matchParentSize()
-                     .background(
-                         Brush.verticalGradient(
-                             0.0f to Color.Transparent,
-                             1.0f to blurredVeilEnd,
-                             startY = playerGradientStartY,
-                             endY = POSITIVE_INFINITY
-                         )
-                     )
-                     .background(blurredVeilBase)){}
+                 PlayerFullscreenArtworkVeil(playerGradientStartY, blurredVeilEnd, blurredVeilBase)
              }
 
              if (!skipStandaloneCover) PlayerBlurredCover(
@@ -1776,100 +1759,11 @@ fun Player(
                                          }
                                      ) {
 
-                                     val pageItem = mediaItems.getOrNull(it)
-                                     val pageCover = rememberPlayerCoverIdentity(pageItem?.mediaId.orEmpty(), coverUrl(pageItem).orEmpty())
-                                     val artworkDrawn = remember(pageCover) { mutableStateOf(false) }
-                                     val coverPainter = ImageCacheFactory.Painter(
-                                         thumbnailUrl = pageCover.artworkUri,
-                                         publishArtworkColors = visiblePlayerArtwork && carouselOwnsArtwork &&
-                                             !fullscreenPagerOwnsArtwork && it == pagerState.currentPage,
-                                         onArtworkDrawn = { reportCarouselArtworkDrawn(artworkDrawn) },
-                                         playerArtworkMediaId = pageItem?.mediaId,
+                                     CarouselPage(
+                                         it, carouselGeometry,
+                                         spacingDialogAllowed = { true },
+                                         showDragIndicator = { isDragged },
                                      )
-                                     ReportPresentedPlayerCover(
-                                         identity = pageCover,
-                                         ready = artworkDrawn.value,
-                                         active = expectsForegroundCover && pageCover == targetCover &&
-                                             it == player.currentMediaItemIndex && it == pagerState.currentPage,
-                                         motionSettled = it == pagerState.settledPage && !pagerState.isScrollInProgress,
-                                     ) { presentedCover = pageCover }
-
-                                      val coverModifier = Modifier.playerThumbnailCover(
-                                          pagerState = pagerState,
-                                          shadowOverflow = artworkShadowOverflow,
-                                          page = it,
-                                          padding = carouselGeometry.coverPadding,
-                                          carousel = carousel,
-                                          replayArtworkOverflow = carouselGeometry.hasArtworkStackOverlap(thumbnailType),
-                                          scaleAlways = false,
-                                          scaleStart = PlayerCarouselCoverScaleStart,
-                                           thumbnailType = thumbnailType,
-                                          showCoverThumbnailAnimation = showCoverThumbnailAnimation,
-                                          onTap = { page ->
-                                              if (page == pagerState.settledPage && thumbnailTapEnabled) {
-                                                  if (isShowingVisualizer) isShowingVisualizer =
-                                                      false
-                                                  isShowingLyrics = !isShowingLyrics
-                                              }
-                                              if (page != pagerState.settledPage) {
-                                                  player.playAtIndex(page)
-                                              }
-                                          },
-                                          onLongClick = { page ->
-                                              if (page == pagerState.settledPage)
-                                                  showThumbnailOffsetDialog = true
-                                          }
-                                      )
-
-                                      val zIndex = itemZIndexFor(it, pagerState.currentPage)
-
-                                     PlayerCarouselCover(
-                                         page = it,
-                                         playingIndex = player.currentMediaItemIndex,
-                                         mediaItem = mediaItems.getOrNull(it),
-                                         playingMediaId = mediaItem.mediaId,
-                                         showingLyrics = isShowingLyrics,
-                                         lyricsOnCover = coverOverlayPolicy.lyricsOnCover,
-                                         showingVisualizer = isShowingVisualizer,
-                                         visualizerOnCover = coverOverlayPolicy.visualizerOnCover,
-                                         hasPlaybackError = player.playerError != null,
-                                         onDismissLyrics = { isShowingLyrics = false },
-                                         durationProvider = player::getDuration,
-                                         clickLyricsText = clickLyricsText,
-                                         isLandscape = isLandscape,
-                                         modifier = coverModifier.zIndex(zIndex),
-                                     ) {
-                                         if (showCoverThumbnailAnimation)
-                                             RotateThumbnailCoverAnimationModern(
-                                                 painter = coverPainter,
-                                                 isSongPlaying = player.isPlaying,
-                                                 modifier = Modifier.fillMaxSize(),
-                                                 state = pagerState,
-                                                 it = it,
-                                                 imageCoverSize = imageCoverSize,
-                                                 rotationActive = decorationsActive,
-                                                 type = coverThumbnailAnimation
-                                             )
-                                         else {
-                                             val viewportPainter = rememberImageLoadingViewportPainter(coverPainter)
-                                             Image(
-                                                 painter = viewportPainter,
-                                                 contentDescription = "",
-                                                 contentScale = ContentScale.Fit,
-                                                 modifier = Modifier.fillMaxSize().imageLoadingViewport(viewportPainter)
-                                             )
-                                             if (isDragged && it == player.currentMediaItemIndex) {
-                                                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                                     NowPlayingSongIndicator(
-                                                         mediaItems.getOrNull(
-                                                             player.currentMediaItemIndex
-                                                         )?.mediaId ?: "", player,
-                                                         Dimensions.thumbnails.album
-                                                     )
-                                                 }
-                                             }
-                                         }
-                                     }
                                  }
                              }
                             if (landscapeModernVisualizerState.hasOverlayContent) {
@@ -2119,63 +2013,18 @@ fun Player(
                                 noBlur = noblur,
                                 isShowingLyrics = isShowingLyrics,
                                 isShowingVisualizer = isShowingVisualizer,
-                                modifier = Modifier.conditional(albumCoverRotation) {
-                                                       graphicsLayer {
-                                                           scaleX = if (isShowingLyrics || showthumbnail) (screenHeight / screenWidth) + 0.5f else 1f
-                                                           scaleY = if (isShowingLyrics || showthumbnail) (screenHeight / screenWidth) + 0.5f else 1f
-                                                           rotationZ = if ((it == pagerStateFS.settledPage) && (isShowingLyrics || showthumbnail)) rotation.value else 0f
-                                                       }
-                                                   }
-                                                   .conditional(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Fade && !showthumbnail){
-                                                       graphicsLayer {
-                                                           val pageOffset = pagerStateFS.currentPageOffsetFraction
-                                                           translationX = pageOffset * size.width
-                                                           alpha = 1 - pageOffset.absoluteValue
-                                                       }
-                                                   }
-                                                   .conditional(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Carousel && isDraggedFS) { //by sinasamaki
-                                                       graphicsLayer {
-                                                           val startOffset = pagerStateFS.startOffsetForPage(it)
-                                                           translationX = size.width * (startOffset * .99f)
-                                                           alpha = (2f - startOffset) / 2f
-                                                           val blur = (startOffset * 20f).coerceAtLeast(0.1f)
-                                                           renderEffect = RenderEffect
-                                                               .createBlurEffect(
-                                                                   blur, blur, android.graphics.Shader.TileMode.DECAL
-                                                               ).asComposeRenderEffect()
-                                                           val scale = 1f - (startOffset * .1f)
-                                                           scaleX = scale
-                                                           scaleY = scale
-                                                       }
-                                                   }
-                                                   .conditional(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Circle && !showthumbnail){ //by sinasamaki
-                                                       graphicsLayer {
-                                                           val pageOffset = pagerStateFS.offsetForPage(it)
-                                                           translationX = size.width * pageOffset
-
-                                                           val endOffset = pagerStateFS.endOffsetForPage(it)
-                                                           shadowElevation = 20f
-
-                                                           shape = CirclePath(
-                                                               progress = 1f - endOffset.absoluteValue,
-                                                               origin = Offset(
-                                                                   size.width,
-                                                                   circleOffsetY,
-                                                               )
-                                                           )
-
-                                                           clip = true
-
-                                                           val absoluteOffset = pagerStateFS.offsetForPage(it).absoluteValue
-                                                           val scale = 1f + (absoluteOffset.absoluteValue * .4f)
-
-                                                           scaleX = scale
-                                                           scaleY = scale
-
-                                                           val startOffset = pagerStateFS.startOffsetForPage(it)
-                                                           alpha = (2f - startOffset) / 2f
-                                                       }
-                                                   }
+                                modifier = Modifier.playerFullscreenArtworkMotion(
+                                    pagerState = pagerStateFS,
+                                    page = it,
+                                    allowRotation = albumCoverRotation,
+                                    shouldRotate = { isShowingLyrics || showthumbnail },
+                                    rotation = rotation,
+                                    rotatingCoverScale = (screenHeight / screenWidth) + 0.5f,
+                                    swipeAnimation = swipeAnimationNoThumbnail,
+                                    showThumbnail = showthumbnail,
+                                    isDragged = isDraggedFS,
+                                    circleOriginY = { circleOffsetY },
+                                )
                                                    .clip(uiRoundnessShape())
                                                    .clip(uiRoundnessShape()).combinedClickable(
                                                        interactionSource = remember { MutableInteractionSource() },
@@ -2242,17 +2091,7 @@ fun Player(
                             }
                         }
                     }
-                    Column(modifier = Modifier
-                        .matchParentSize()
-                        .background(
-                            Brush.verticalGradient(
-                                0.0f to Color.Transparent,
-                                1.0f to blurredVeilEnd,
-                                startY = playerGradientStartY,
-                                endY = POSITIVE_INFINITY
-                            )
-                        )
-                        .background(blurredVeilBase)){}
+                    PlayerFullscreenArtworkVeil(playerGradientStartY, blurredVeilEnd, blurredVeilBase)
                 }
 
                if (!skipStandaloneCover) PlayerBlurredCover(
@@ -2307,90 +2146,37 @@ fun Player(
 
 
                 header = {
-                if (showTopActionsBar) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .padding(
-                                windowInsets
-                                    .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
-                                    .asPaddingValues()
-                            )
-                            //.padding(top = 5.dp)
-                            .fillMaxWidth(PlayerControlsWidthFraction)
-                            .height(44.dp)
-                    ) {
-
-                        PlayerTopAction(
-                            icon = R.drawable.chevron_down,
-                            color = colorPalette().collapsedPlayerProgressBar,
-                            rotation = rotationAngle,
-                            settings = glassSettings,
-                            onClick = onDismiss,
-                        )
-
-                        if (showVideoMode && toggleSession != null) {
-                            PlayerAudioVideoToggle(
-                                toggleSession,
-                                onSearchManually = openManualVideoSearch,
-                                interactive = preview == null,
-                            )
-                        }
-
-                        if (!showButtonPlayerMenu) {
-                            PlayerTopAction(
-                                icon = R.drawable.ellipsis_vertical,
-                                color = colorPalette().collapsedPlayerProgressBar,
-                                rotation = rotationAngle,
-                                settings = glassSettings,
-                                onClick = {
-                                    menuState.display {
-                                        PlayerMenu(
-                                            navController = navController,
-                                            onDismiss = menuState::hide,
-                                            mediaItem = mediaItem,
-                                            binder = binder ?: return@display,
-                                            onClosePlayer = {
-                                                onDismiss()
-                                            },
-                                            onShowSleepTimer = {
-                                                isShowingSleepTimerDialog = true
-                                                menuState.hide()
-                                            },
-                                            disableScrollingText = disableScrollingText
-                                        )
-                                    }
-                                },
-                            )
-                        } else {
-                            Spacer(Modifier.size(44.dp))
-                        }
-
-                    }
-                    Spacer(
-                        modifier = Modifier
-                            .height(5.dp)
-                            .padding(
-                                windowInsets
-                                    .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
-                                    .asPaddingValues()
-                            )
+                    PlayerPortraitHeader(
+                        showTopActionsBar = showTopActionsBar,
+                        topPadding = topPadding,
+                        showMenu = !showButtonPlayerMenu,
+                        windowInsets = windowInsets,
+                        glassSettings = glassSettings,
+                        rotationAngle = rotationAngle,
+                        showVideoMode = showVideoMode,
+                        toggleSession = toggleSession,
+                        videoInteractive = preview == null,
+                        openManualVideoSearch = openManualVideoSearch,
+                        onDismiss = onDismiss,
+                        onOpenMenu = {
+                            menuState.display {
+                                PlayerMenu(
+                                    navController = navController,
+                                    onDismiss = menuState::hide,
+                                    mediaItem = mediaItem,
+                                    binder = binder ?: return@display,
+                                    onClosePlayer = {
+                                        onDismiss()
+                                    },
+                                    onShowSleepTimer = {
+                                        isShowingSleepTimerDialog = true
+                                        menuState.hide()
+                                    },
+                                    disableScrollingText = disableScrollingText
+                                )
+                            }
+                        },
                     )
-                }
-
-                if (topPadding && !showTopActionsBar) {
-                    Spacer(
-                        modifier = Modifier
-                            .padding(
-                                windowInsets
-                                    .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
-                                    .asPaddingValues()
-                            )
-                            .height(35.dp)
-                    )
-                }
-
                 },
                 artwork = {
                 BoxWithConstraints(
@@ -2484,100 +2270,11 @@ fun Player(
                                          }
                                  ){
 
-                                     val pageItem = mediaItems.getOrNull(it)
-                                     val pageCover = rememberPlayerCoverIdentity(pageItem?.mediaId.orEmpty(), coverUrl(pageItem).orEmpty())
-                                     val artworkDrawn = remember(pageCover) { mutableStateOf(false) }
-                                     val coverPainter = ImageCacheFactory.Painter(
-                                         thumbnailUrl = pageCover.artworkUri,
-                                         publishArtworkColors = visiblePlayerArtwork && carouselOwnsArtwork &&
-                                             !fullscreenPagerOwnsArtwork && it == pagerState.currentPage,
-                                         onArtworkDrawn = { reportCarouselArtworkDrawn(artworkDrawn) },
-                                         playerArtworkMediaId = pageItem?.mediaId,
+                                     CarouselPage(
+                                         it, carouselGeometry,
+                                         spacingDialogAllowed = { expandedplayer || fadingedge },
+                                         showDragIndicator = { isDragged && expandedplayer },
                                      )
-                                     ReportPresentedPlayerCover(
-                                         identity = pageCover,
-                                         ready = artworkDrawn.value,
-                                         active = expectsForegroundCover && pageCover == targetCover &&
-                                             it == player.currentMediaItemIndex && it == pagerState.currentPage,
-                                         motionSettled = it == pagerState.settledPage && !pagerState.isScrollInProgress,
-                                     ) { presentedCover = pageCover }
-
-                                      val coverModifier = Modifier.playerThumbnailCover(
-                                          pagerState = pagerState,
-                                          shadowOverflow = artworkShadowOverflow,
-                                          page = it,
-                                          padding = carouselGeometry.coverPadding,
-                                          carousel = carousel,
-                                          replayArtworkOverflow = carouselGeometry.hasArtworkStackOverlap(thumbnailType),
-                                          scaleAlways = false,
-                                          scaleStart = PlayerCarouselCoverScaleStart,
-                                          thumbnailType = thumbnailType,
-                                          showCoverThumbnailAnimation = showCoverThumbnailAnimation,
-                                          onTap = { page ->
-                                              if (page == pagerState.settledPage && thumbnailTapEnabled) {
-                                                  if (isShowingVisualizer) isShowingVisualizer =
-                                                      false
-                                                  isShowingLyrics = !isShowingLyrics
-                                              }
-                                              if (page != pagerState.settledPage) {
-                                                  player.playAtIndex(page)
-                                              }
-                                          },
-                                          onLongClick = { page ->
-                                              if (page == pagerState.settledPage && (expandedplayer || fadingedge))
-                                                  showThumbnailOffsetDialog = true
-                                          }
-                                      )
-
-                                      val zIndex = itemZIndexFor(it, pagerState.currentPage)
-
-                                     PlayerCarouselCover(
-                                         page = it,
-                                         playingIndex = player.currentMediaItemIndex,
-                                         mediaItem = mediaItems.getOrNull(it),
-                                         playingMediaId = mediaItem.mediaId,
-                                         showingLyrics = isShowingLyrics,
-                                         lyricsOnCover = coverOverlayPolicy.lyricsOnCover,
-                                         showingVisualizer = isShowingVisualizer,
-                                         visualizerOnCover = coverOverlayPolicy.visualizerOnCover,
-                                         hasPlaybackError = player.playerError != null,
-                                         onDismissLyrics = { isShowingLyrics = false },
-                                         durationProvider = player::getDuration,
-                                         clickLyricsText = clickLyricsText,
-                                         isLandscape = isLandscape,
-                                         modifier = coverModifier.zIndex(zIndex),
-                                     ) {
-                                         if (showCoverThumbnailAnimation)
-                                             RotateThumbnailCoverAnimationModern(
-                                                 painter = coverPainter,
-                                                 isSongPlaying = player.isPlaying,
-                                                 modifier = Modifier.fillMaxSize(),
-                                                 state = pagerState,
-                                                 it = it,
-                                                 imageCoverSize = imageCoverSize,
-                                                 rotationActive = decorationsActive,
-                                                 type = coverThumbnailAnimation
-                                             )
-                                         else {
-                                             val viewportPainter = rememberImageLoadingViewportPainter(coverPainter)
-                                             Image(
-                                                 painter = viewportPainter,
-                                                 contentDescription = "",
-                                                 contentScale = ContentScale.Fit,
-                                                 modifier = Modifier.fillMaxSize().imageLoadingViewport(viewportPainter)
-                                             )
-                                             if (isDragged && expandedplayer && it == player.currentMediaItemIndex) {
-                                                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                                     NowPlayingSongIndicator(
-                                                         mediaItems.getOrNull(
-                                                             player.currentMediaItemIndex
-                                                         )?.mediaId ?: "", player,
-                                                         Dimensions.thumbnails.album
-                                                     )
-                                                 }
-                                             }
-                                         }
-                                     }
                                  }
                                  }
                              } else {
@@ -2651,67 +2348,7 @@ fun Player(
                     above = {
                 if (!expandedplayer || !isShowingStandaloneLyrics || queueDurationExpanded) {
                     if (showTotalTimeQueue) {
-                        PlayerInformationGlassRegion("queueDuration") {
-                        PlayerQueueDurationGlass {
-                            Row(
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                            ) {
-                                Image(
-                                    painter = painterResource(R.drawable.time),
-                                    colorFilter = ColorFilter.tint(colorPalette().accent),
-                                    modifier = Modifier
-                                        .size(20.dp)
-                                        .padding(horizontal = 5.dp),
-                                    contentDescription = stringResource(R.string.accessibility_background_image),
-                                    contentScale = ContentScale.Fit
-                                )
-
-                                Box {
-                                    if (totalPlayTimes == PlayerQueueDuration.Loading) {
-                                        ItemTextPlaceholder(
-                                            text = null,
-                                            style = typography().xxs.semiBold,
-                                            modifier = Modifier.width(56.dp),
-                                            width = 1f,
-                                        )
-                                    } else {
-                                        val durationText = (totalPlayTimes as? PlayerQueueDuration.Known)
-                                            ?.let { " ${formatAsTime(it.milliseconds)}" } ?: " —"
-                                        BasicText(
-                                            text = durationText,
-                                            style = typography().xxs.semiBold.merge(
-                                                TextStyle(
-                                                    textAlign = TextAlign.Center,
-                                                    color = colorPalette().text,
-                                                )
-                                            ),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                        )
-                                        BasicText(
-                                            text = durationText,
-                                            style = typography().xxs.semiBold.merge(
-                                                TextStyle(
-                                                    textAlign = TextAlign.Center,
-                                                    drawStyle = Stroke(
-                                                        width = 1f,
-                                                        join = StrokeJoin.Round
-                                                    ),
-                                                    // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
-                                                    color = if (!textoutline) Color.Transparent
-                                                    else playerTextOutlineColor(colorPalette().isDark, 0.5f),
-                                                )
-                                            ),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
+                        PlayerQueueDurationInformation(totalPlayTimes, textoutline)
                     }
 
                     Spacer(
@@ -2767,190 +2404,20 @@ fun Player(
 
         }
 
-        // Inline resizable queue panel
-        val queuePanelHeightFraction = remember { Animatable(0f) }
-        val queuePanelCoroutineScope = rememberCoroutineScope()
-
-        LaunchedEffect(showQueue) {
-            if (showQueue) {
-                isQueuePanelVisible = true
-                queuePanelHeightFraction.snapTo(0f)
-                queuePanelHeightFraction.animateTo(
-                    targetValue = if (preview != null) 0.91f else 0.65f,
-                    animationSpec = spring(dampingRatio = 0.8f, stiffness = 300f)
-                )
-            } else if (isQueuePanelVisible) {
-                queuePanelHeightFraction.animateTo(
-                    targetValue = 0f,
-                    animationSpec = tween(durationMillis = 200, easing = LinearOutSlowInEasing)
-                )
-                isQueuePanelVisible = false
-            }
-        }
-
-        if (isQueuePanelVisible) {
-            val queueUnderlay = rememberPlayerQueueBackdrop(
-                if (captureQueueUnderlay) queuePlayerBackdrop else artworkControlsSource,
-            ) { queuePanelHeightFraction.value }
-            // The queue is the foreground surface; a global modal still covers it.
-            CompositionLocalProvider(
-                LocalGlassOpticsEnabled provides inheritedOpticsEnabled,
-                LocalGlassUnderlayCovered provides inheritedUnderlayCovered,
-                LocalGlassOpticsTransitionProgress provides FullGlassOpticsProgress,
-                LocalQueuePlayerBackdrop provides queueUnderlay,
-            ) {
-            BackHandler { showQueue = false }
-
-            val density = LocalDensity.current
-            val screenHeightPx = with(density) { LocalConfiguration.current.screenHeightDp.dp.roundToPx() }
-            val statusBarTopPx = with(density) {
-                WindowInsets.systemBars
-                    .only(WindowInsetsSides.Top)
-                    .asPaddingValues()
-                    .calculateTopPadding()
-                    .roundToPx()
-            }
-            val maxFraction = ((screenHeightPx - statusBarTopPx).toFloat() / screenHeightPx).coerceAtMost(1f)
-
-            // Scrim — read fraction inside graphicsLayer to avoid recomposition
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer {
-                        alpha = (queuePanelHeightFraction.value / 0.65f).coerceIn(0f, 1f) * 0.5f
-                    }
-                    .background(Color.Black)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) { showQueue = false }
-            )
-
-            // Queue panel — height controlled via Modifier.layout to avoid recomposition
-            val queuePanelBackground = if (queueType == QueueType.Modern) Color.Transparent else colorPalette().background2
-            GlassQueuePanel(
-                panelBackgroundColor = queuePanelBackground,
-                panelShape = topUiRoundnessShape(),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .layout { measurable, constraints ->
-                        // Read fraction in LAYOUT phase (not composition) → no recomposition
-                        val f = queuePanelHeightFraction.value.coerceIn(0.01f, 1f)
-                        val panelHeight = (constraints.maxHeight * f).toInt().coerceAtLeast(1)
-                        isQueueFullyCovering = queuePanelAtExpandedEndpoint(panelHeight, constraints.maxHeight, maxFraction, queuePanelBackground.alpha)
-                        val placeable = measurable.measure(
-                            constraints.copy(minHeight = panelHeight, maxHeight = panelHeight)
-                        )
-                        layout(placeable.width, panelHeight) {
-                            placeable.placeRelative(0, 0)
-                        }
-                    }
-                    .clip(topUiRoundnessShape())
-                    .glassQueuePanelBackground(queuePanelBackground, topUiRoundnessShape())
-                    .windowInsetsPadding((if (usesQueueToolbarGlass()) WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal) else WindowInsets.navigationBars).union(
-                            WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)
-                        ))
-            ) {
-                // Queue content - padding top for drag handle
-                Box(
-                    modifier = Modifier
-                        .padding(top = 48.dp)
-                ) {
-                    NativeQueueRows {
-                        Queue(
-                            navController = navController,
-                            onSearchOpened = {
-                                queuePanelCoroutineScope.launch {
-                                    queuePanelHeightFraction.animateTo(
-                                        maxFraction,
-                                        spring(dampingRatio = 0.8f, stiffness = 300f),
-                                    )
-                                }
-                            },
-                            onDismiss = {
-                                queueLoopState.value = it
-                                showQueue = false
-                            },
-                            onDiscoverClick = {
-                                binder?.service?.nzikRadio?.toggleDiscover()
-                            }
-                        )
-                    }
-                }
-
-                // Drag handle - overlays at top
-                val handleAlpha = if (queueType == QueueType.Modern) 0.5f else 1f
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                        .align(Alignment.TopCenter)
-                        .clip(topUiRoundnessShape())
-                        .background(colorPalette().background0.copy(alpha = handleAlpha))
-                        .pointerInput(Unit) {
-                                detectVerticalDragGestures(
-                                    onDragEnd = {
-                                        queuePanelCoroutineScope.launch {
-                                            val currentFraction = queuePanelHeightFraction.value
-                                            when {
-                                                currentFraction > 0.85f -> queuePanelHeightFraction.animateTo(
-                                                    maxFraction,
-                                                    spring(dampingRatio = 0.8f, stiffness = 300f)
-                                                )
-                                                currentFraction < 0.4f -> showQueue = false
-                                                else -> queuePanelHeightFraction.animateTo(
-                                                    0.65f,
-                                                    spring(dampingRatio = 0.8f, stiffness = 300f)
-                                                )
-                                            }
-                                        }
-                                    },
-                                    onVerticalDrag = { _, dragAmount ->
-                                        queuePanelCoroutineScope.launch {
-                                            val newFraction = (queuePanelHeightFraction.value - dragAmount / screenHeightPx)
-                                                .coerceIn(0.1f, maxFraction)
-                                            queuePanelHeightFraction.snapTo(newFraction)
-                                        }
-                                    }
-                                )
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        MenuDragHandleBar(color = colorPalette().textSecondary)
-                    }
-
-                    // QueueToolBar at bottom of panel — slides down and fades out when closing
-                    QueueToolBar(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.BottomCenter)
-                            .graphicsLayer {
-                                val toolbarProgress = ((queuePanelHeightFraction.value - 0.55f) / 0.1f).coerceIn(0f, 1f)
-                                translationY = with(density) { (1f - toolbarProgress) * 100.dp.toPx() }
-                                alpha = toolbarProgress
-                            }
-                    )
-                }
-
-            }
-        }
-
-
-
-
-        // Nav bar background for queue
-        if (queueNavigationSurface != null) {
-            val navBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(navBarHeight)
-                    .align(Alignment.BottomCenter)
-                    .background(queueNavigationSurface)
-            )
-        }
-
+        PlayerQueuePanel(
+            navController = navController,
+            showQueueState = showQueueState,
+            visibleState = queuePanelVisibleState,
+            fullyCoveringState = queueFullyCoveringState,
+            queueLoopState = queueLoopState,
+            queueType = queueType,
+            backdrop = if (captureQueueUnderlay) queuePlayerBackdrop else artworkControlsSource,
+            inheritedOpticsEnabled = inheritedOpticsEnabled,
+            inheritedUnderlayCovered = inheritedUnderlayCovered,
+            queueNavigationSurface = queueNavigationSurface,
+            preview = preview != null,
+            onDiscoverClick = { binder?.service?.nzikRadio?.toggleDiscover() },
+        )
 
 
     }

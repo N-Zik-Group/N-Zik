@@ -7,9 +7,6 @@ import app.n_zik.android.components.player.rememberMiniPlayerProgress
 
 import android.graphics.Bitmap
 
-import app.n_zik.android.components.discoverButtonIconRes
-import app.n_zik.android.components.radioButtonIcon
-import app.n_zik.android.components.shuffleButtonIcon
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.artistTextWithFallback
@@ -22,6 +19,7 @@ import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.CompositionLocalProvider
+import app.n_zik.android.components.glass.rememberGlassArtwork
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
@@ -82,13 +80,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.draw.alpha
-import app.n_zik.android.listentogether.guestLockedAlpha
 import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.utils.showLyricsStateKey
-import app.n_zik.android.utils.showVisualizerStateKey
-import app.n_zik.android.utils.saveLyricsStateKey
-import app.n_zik.android.utils.saveVisualizerStateKey
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
@@ -122,16 +114,12 @@ import app.n_zik.android.enums.BackgroundProgress
 import app.n_zik.android.enums.MiniPlayerType
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.NavigationBarPosition
-import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.enums.MiniPlayerButton
-import app.n_zik.android.enums.PendingMiniPlayerAction
 import app.n_zik.android.LocalPendingMiniPlayerAction
 import app.n_zik.android.LocalPlayerSheetState
 import app.n_zik.android.ui.components.LocalMenuState
 import androidx.compose.ui.graphics.graphicsLayer
-import app.n_zik.android.components.menu.player.AddToPlaylistPlayerMenu
 import app.n_zik.android.components.menu.player.AudioDeviceMenu
-import app.n_zik.android.playback.services.AudioOutputManager
 import android.content.Intent
 import timber.log.Timber
 import app.n_zik.android.thumbnailShape
@@ -147,7 +135,6 @@ import app.n_zik.android.utils.disableClosingPlayerSwipingDownKey
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.effectRotationKey
 import app.n_zik.android.utils.getLikedIcon
-import app.n_zik.android.utils.getUnlikedIcon
 import app.n_zik.android.utils.getDislikedIcon
 import app.n_zik.android.utils.intent
 import app.n_zik.android.utils.isExplicit
@@ -156,29 +143,8 @@ import app.n_zik.android.utils.miniPlayerSlot1Key
 import app.n_zik.android.utils.miniPlayerSlot2Key
 import app.n_zik.android.utils.miniPlayerSlot3Key
 import app.n_zik.android.utils.miniPlayerSlot4Key
-import app.n_zik.android.utils.miniPlayerButtonOrderKey
-import app.n_zik.android.utils.showMiniPlayerPlayPauseKey
-import app.n_zik.android.utils.showMiniPlayerSkipBackKey
-import app.n_zik.android.utils.showMiniPlayerSkipForwardKey
-import app.n_zik.android.utils.showMiniPlayerShuffleKey
-import app.n_zik.android.utils.showMiniPlayerRepeatKey
-import app.n_zik.android.utils.showMiniPlayerLikeKey
-import app.n_zik.android.utils.showMiniPlayerAddToPlaylistKey
-import app.n_zik.android.utils.showMiniPlayerDownloadKey
-import app.n_zik.android.utils.showMiniPlayerShareKey
-import app.n_zik.android.utils.showMiniPlayerRadioKey
-import app.n_zik.android.utils.showMiniPlayerAudioOutputKey
-import app.n_zik.android.utils.showMiniPlayerSleepTimerKey
-import app.n_zik.android.utils.showMiniPlayerLyricsKey
-import app.n_zik.android.utils.showMiniPlayerVisualizerKey
-import app.n_zik.android.utils.showMiniPlayerQueueKey
-import app.n_zik.android.utils.showMiniPlayerDiscoverKey
-import app.n_zik.android.utils.shuffleQueue
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.shouldBePlaying
-import app.n_zik.android.enums.QueueLoopType
-import app.n_zik.android.utils.isDownloadedSong
-import app.n_zik.android.utils.manageDownload
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -191,10 +157,6 @@ import app.n_zik.android.core.coil.thumbnail
 import app.n_zik.android.components.player.MiniPlayerSwipeAction
 import app.n_zik.android.components.ExplicitBadge
 import app.n_zik.android.components.player.miniPlayerButtonSpacing
-import app.n_zik.android.components.player.GlassMiniPlayerIconButton
-import app.n_zik.android.components.player.rememberPlayerSkipAvailability
-import app.n_zik.android.playback.utils.playNextIfAvailable
-import app.n_zik.android.playback.utils.seekPreviousIfAvailable
 import app.n_zik.android.components.player.miniPlayerPlayPauseGlyphColor
 import app.n_zik.android.components.player.GlassMiniPlayerPlayPauseButton
 import app.n_zik.android.components.player.playButtonNativeColor
@@ -214,22 +176,8 @@ import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.enums.PlayerControlsColors
 import app.n_zik.android.utils.playerControlsColorsKey
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.runtime.DisposableEffect
-import app.n_zik.android.ui.components.MenuState
-import androidx.compose.animation.ExperimentalAnimationApi
-import app.n_zik.android.LocalIsShowingVisualizer
-import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.ui.platform.LocalDensity
-import app.n_zik.android.utils.discoverKey
-import app.n_zik.android.LocalIsShowingLyrics
-import app.n_zik.android.utils.autoLoadSongsInQueueKey
-import android.media.AudioDeviceInfo
-import android.media.AudioManager
 import android.os.Build
-import org.json.JSONArray
-import android.content.Context
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.player.rememberArtworkDisplayColors
@@ -306,6 +254,8 @@ fun MiniPlayer(
     }
 
     val mediaItem = nullableMediaItem ?: return
+    val artworkUrl = rememberGlassArtwork(player)?.takeIf { it.mediaId == mediaItem.mediaId }?.uri
+        ?: mediaItem.mediaMetadata.artworkUri?.toString()
 
     val likeState by remember( mediaItem.mediaId, preview ) {
         if (preview != null) kotlinx.coroutines.flow.flowOf(null) else Database.songTable
@@ -324,99 +274,8 @@ fun MiniPlayer(
     val slot3Key = rememberPreference(miniPlayerSlot3Key, "")
     val slot4Key = rememberPreference(miniPlayerSlot4Key, "")
 
-    // New toggle-based system: read button order + individual toggles
-    val defaultMiniPlayerButtonOrder = listOf(
-        "skip_back", "play_pause", "skip_forward", 
-        "shuffle", "repeat", "queue", "audio_output", "sleep_timer", 
-        "like", "add_to_playlist", "download", "share", 
-        "radio", "discover", "lyrics", "visualizer"
-    )
-
-    fun parseMiniPlayerOrder(serialized: String): List<String> {
-        if (serialized.isBlank()) return defaultMiniPlayerButtonOrder
-        return try {
-            val arr = JSONArray(serialized)
-            val list = mutableListOf<String>()
-            for (i in 0 until arr.length()) {
-                list.add(arr.getString(i))
-            }
-            val validIds = defaultMiniPlayerButtonOrder
-            val result = list.filter { it in validIds }.toMutableList()
-            for (id in validIds) {
-                if (id !in result) result.add(id)
-            }
-            result
-        } catch (_: Exception) {
-            defaultMiniPlayerButtonOrder
-        }
-    }
-
-    val miniPlayerButtonIdToButton = mapOf(
-        "play_pause" to MiniPlayerButton.PlayPause,
-        "skip_back" to MiniPlayerButton.SkipBack,
-        "skip_forward" to MiniPlayerButton.SkipForward,
-        "shuffle" to MiniPlayerButton.Shuffle,
-        "repeat" to MiniPlayerButton.Repeat,
-        "like" to MiniPlayerButton.Like,
-        "add_to_playlist" to MiniPlayerButton.AddToPlaylist,
-        "download" to MiniPlayerButton.Download,
-        "share" to MiniPlayerButton.Share,
-        "radio" to MiniPlayerButton.Radio,
-        "audio_output" to MiniPlayerButton.AudioOutput,
-        "sleep_timer" to MiniPlayerButton.SleepTimer,
-        "lyrics" to MiniPlayerButton.Lyrics,
-        "visualizer" to MiniPlayerButton.Visualizer,
-        "queue" to MiniPlayerButton.Queue,
-        "discover" to MiniPlayerButton.Discover,
-    )
-
-    var orderSerialized by rememberPreference(miniPlayerButtonOrderKey, "")
-    val orderedIds = remember(orderSerialized) { parseMiniPlayerOrder(orderSerialized) }
-
-    val togglePlayPause by rememberPreference(showMiniPlayerPlayPauseKey, true)
-    val toggleSkipBack by rememberPreference(showMiniPlayerSkipBackKey, true)
-    val toggleSkipForward by rememberPreference(showMiniPlayerSkipForwardKey, true)
-    val toggleShuffle by rememberPreference(showMiniPlayerShuffleKey, false)
-    val toggleRepeat by rememberPreference(showMiniPlayerRepeatKey, false)
-    val toggleLike by rememberPreference(showMiniPlayerLikeKey, false)
-    val toggleAddToPlaylist by rememberPreference(showMiniPlayerAddToPlaylistKey, false)
-    val toggleDownload by rememberPreference(showMiniPlayerDownloadKey, false)
-    val toggleShare by rememberPreference(showMiniPlayerShareKey, false)
-    val toggleRadio by rememberPreference(showMiniPlayerRadioKey, false)
-    val toggleAudioOutput by rememberPreference(showMiniPlayerAudioOutputKey, true)
-    val toggleSleepTimer by rememberPreference(showMiniPlayerSleepTimerKey, false)
-    val toggleLyrics by rememberPreference(showMiniPlayerLyricsKey, false)
-    val toggleVisualizer by rememberPreference(showMiniPlayerVisualizerKey, false)
-    val toggleQueue by rememberPreference(showMiniPlayerQueueKey, false)
-    val toggleDiscover by rememberPreference(showMiniPlayerDiscoverKey, false)
-    val toggleMap = remember(togglePlayPause, toggleSkipBack, toggleSkipForward, toggleShuffle, toggleRepeat, toggleLike, toggleAddToPlaylist, toggleDownload, toggleShare, toggleRadio, toggleAudioOutput, toggleSleepTimer, toggleLyrics, toggleVisualizer, toggleQueue, toggleDiscover) {
-        mapOf(
-            "play_pause" to togglePlayPause,
-            "skip_back" to toggleSkipBack,
-            "skip_forward" to toggleSkipForward,
-            "shuffle" to toggleShuffle,
-            "repeat" to toggleRepeat,
-            "like" to toggleLike,
-            "add_to_playlist" to toggleAddToPlaylist,
-            "download" to toggleDownload,
-            "share" to toggleShare,
-            "radio" to toggleRadio,
-            "audio_output" to toggleAudioOutput,
-            "sleep_timer" to toggleSleepTimer,
-            "lyrics" to toggleLyrics,
-            "visualizer" to toggleVisualizer,
-            "queue" to toggleQueue,
-            "discover" to toggleDiscover,
-        )
-    }
-
-    val expandedButtons = remember(toggleMap, orderedIds) {
-        orderedIds.filter { id -> toggleMap[id] == true }
-            .mapNotNull { id -> miniPlayerButtonIdToButton[id] }
-    }
-
     // Folding changes presentation only; every configured action keeps its node and handler.
-    val activeButtons = expandedButtons
+    val activeButtons = rememberMiniPlayerButtons()
 
     val color = colorPalette()
     val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
@@ -432,7 +291,7 @@ fun MiniPlayer(
                     lerp(color.accent, color.text, appArtwork.glass.darkness) else appArtwork.coverControl)
             } else {
                 val coverDisplay = rememberArtworkDisplayColors(
-                    mediaItem.mediaMetadata.artworkUri?.toString(), !lightTheme, awaitArtworkMetadata = true,
+                    artworkUrl, !lightTheme, awaitArtworkMetadata = true,
                 )
                 val coverAccent = if (coverDisplay?.forceDark == true) coverDisplay.foreground else coverDisplay?.palette?.accent
                 val themeAccent = LocalPaletteFadeTarget.current?.colorPalette?.accent ?: color.accent
@@ -744,7 +603,6 @@ fun MiniPlayer(
                 modifier = Modifier.miniFoldSize(height = contentHeight)
                     .padding(artworkPadding)
             ) {
-                val artworkUrl = mediaItem.mediaMetadata.artworkUri?.toString()
                 val isCustomImage = artworkUrl?.let {
                     it.startsWith("file://") || it.contains("app_covers") || it.startsWith("modified:")
                 } == true
@@ -974,359 +832,6 @@ private fun Modifier.miniFoldSize(
         maxHeight = fittedHeight ?: constraints.maxHeight,
     ))
     layout(child.width, child.height) { child.placeRelative(0, 0) }
-}
-
-@androidx.annotation.OptIn(UnstableApi::class)
-@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalTextApi::class)
-@Composable
-private fun MiniPlayerSlotButton(
-    button: MiniPlayerButton?,
-    likeState: Boolean?,
-    controlsColorTextState: State<Color>,
-    rotationAngle: Float,
-    onLikeClick: () -> Unit,
-    onAudioOutputClick: () -> Unit,
-    onShowPlayer: () -> Unit,
-    mediaItem: MediaItem?,
-    context: Context,
-    player: Player,
-    binder: PlayerServiceModern.Binder?,
-    effectRotationEnabled: Boolean,
-    isRotated: Boolean,
-    onRotatedChange: (Boolean) -> Unit,
-    menuState: MenuState?,
-    pendingAction: MutableState<PendingMiniPlayerAction?>?,
-    navController: NavController?,
-    onClosePlayer: () -> Unit
-) {
-    if (button == null) return
-    val controlsColorText = controlsColorTextState.value
-    val requestQueue = LocalMiniPlayerQueueRequest.current
-
-    // Listen Together guest lock (spec-listen-together): guests in a room cannot
-    // skip tracks or shuffle; play/pause stays available
-    val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
-    // Locked controls are also visibly disabled (spec-listen-together-guest-lock-hardening)
-    val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
-    val skipAvailability by rememberPlayerSkipAvailability(player)
-
-
-    when (button) {
-        MiniPlayerButton.SkipBack -> {
-            GlassMiniPlayerIconButton(
-                icon = R.drawable.play_skip_back,
-                color = controlsColorText,
-                contentDescription = stringResource(button.labelRes),
-                enabled = !listenTogetherGuestLock && skipAvailability.previous,
-                onClick = {
-                    if (!listenTogetherGuestLock && player.seekPreviousIfAvailable()) {
-                        if (effectRotationEnabled) onRotatedChange(!isRotated)
-                    }
-                },
-                rotationAngle = rotationAngle,
-                alpha = if (!listenTogetherGuestLock && skipAvailability.previous) 1f else 0.38f,
-            )
-        }
-        MiniPlayerButton.SkipForward -> {
-            GlassMiniPlayerIconButton(
-                icon = R.drawable.play_skip_forward,
-                color = controlsColorText,
-                contentDescription = stringResource(button.labelRes),
-                enabled = !listenTogetherGuestLock && skipAvailability.next,
-                onClick = {
-                    if (!listenTogetherGuestLock) {
-                        player.playNextIfAvailable()
-                        if (effectRotationEnabled) onRotatedChange(!isRotated)
-                    }
-                },
-                rotationAngle = rotationAngle,
-                alpha = if (!listenTogetherGuestLock && skipAvailability.next) 1f else 0.38f,
-            )
-        }
-        MiniPlayerButton.Shuffle -> {
-            GlassMiniPlayerIconButton(
-                contentDescription = stringResource(button.labelRes),
-                preserveNativeGeometry = true,
-                // Issue #866 (gh-866): app-wide shuffle confirmation flash (shuffle_ok ~1 s).
-                icon = shuffleButtonIcon(),
-                color = controlsColorText,
-                enabled = !listenTogetherGuestLock,
-                onClick = {
-                    if (!listenTogetherGuestLock) {
-                        player.shuffleQueue()
-                        binder?.triggerShuffleOkFlash()
-                        if (effectRotationEnabled) onRotatedChange(!isRotated)
-                    }
-                },
-                rotationAngle = rotationAngle,
-                alpha = guestLockAlpha
-            )
-        }
-        MiniPlayerButton.Repeat -> {
-            var currentRepeatMode by remember { mutableIntStateOf(player.repeatMode) }
-            val queueLoopType = QueueLoopType.from(currentRepeatMode)
-            GlassMiniPlayerIconButton(
-                contentDescription = stringResource(button.labelRes),
-                preserveNativeGeometry = true,
-                icon = queueLoopType.iconId,
-                color = if (queueLoopType != QueueLoopType.Default) colorPalette().accent else controlsColorText,
-                enabled = !listenTogetherGuestLock,
-                onClick = {
-                    if (!listenTogetherGuestLock) {
-                        val next = queueLoopType.next()
-                        player.repeatMode = next.type
-                        currentRepeatMode = next.type
-                        if (effectRotationEnabled) onRotatedChange(!isRotated)
-                    }
-                },
-                rotationAngle = rotationAngle,
-                alpha = guestLockAlpha
-            )
-        }
-        MiniPlayerButton.Like -> {
-            GlassMiniPlayerIconButton(
-                contentDescription = stringResource(button.labelRes),
-                preserveNativeGeometry = true,
-                icon = when(likeState) {
-                    false -> getDislikedIcon()
-                    null -> getUnlikedIcon()
-                    else -> getLikedIcon()
-                },
-                color = when(likeState) {
-                    false -> colorPalette().red
-                    else -> colorPalette().favoritesIcon
-                },
-                onClick = onLikeClick,
-                rotationAngle = rotationAngle
-            )
-        }
-        MiniPlayerButton.AddToPlaylist -> {
-            GlassMiniPlayerIconButton(
-                contentDescription = stringResource(button.labelRes),
-                preserveNativeGeometry = true,
-                icon = R.drawable.add_in_playlist,
-                color = controlsColorText,
-                onClick = {
-                    menuState?.display {
-                        AddToPlaylistPlayerMenu(
-                            navController = navController ?: return@display,
-                            onDismiss = menuState::hide,
-                            mediaItem = mediaItem ?: return@display,
-                            binder = binder ?: return@display,
-                            onClosePlayer = onClosePlayer
-                        )
-                    }
-                    if (effectRotationEnabled) onRotatedChange(!isRotated)
-                },
-                rotationAngle = rotationAngle
-            )
-        }
-        MiniPlayerButton.Download -> {
-            val isDownloaded = mediaItem?.let { isDownloadedSong(it.mediaId) } ?: false
-            GlassMiniPlayerIconButton(
-                contentDescription = stringResource(button.labelRes),
-                preserveNativeGeometry = true,
-                icon = if (isDownloaded) R.drawable.downloaded else R.drawable.download,
-                color = if (isDownloaded) colorPalette().accent else controlsColorText,
-                onClick = {
-                    mediaItem?.let { manageDownload(context, it, isDownloaded) }
-                    if (effectRotationEnabled) onRotatedChange(!isRotated)
-                },
-                rotationAngle = rotationAngle
-            )
-        }
-        MiniPlayerButton.Share -> {
-            GlassMiniPlayerIconButton(
-                contentDescription = stringResource(button.labelRes),
-                preserveNativeGeometry = true,
-                icon = R.drawable.share_social,
-                color = controlsColorText,
-                onClick = {
-                    mediaItem?.let { item ->
-                        val intent = Intent(Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/watch?v=${item.mediaId}")
-                        }
-                        context.startActivity(Intent.createChooser(intent, null))
-                    }
-                    if (effectRotationEnabled) onRotatedChange(!isRotated)
-                },
-                rotationAngle = rotationAngle
-            )
-        }
-        MiniPlayerButton.Radio -> {
-            val isRadioActive = binder?.isRadioActive == true
-            GlassMiniPlayerIconButton(
-                contentDescription = stringResource(button.labelRes),
-                preserveNativeGeometry = true,
-                // Issue #866 (gh-866): state icon — radio_stop while the radio is active
-                // (the state change is the press feedback).
-                icon = radioButtonIcon(),
-                color = if (isRadioActive) colorPalette().accent else controlsColorText,
-                // Guest lock: Radio is a stateful ON/OFF control owned by the host
-                // (blocked centrally in NZikRadio.startRadio + grayed here).
-                enabled = !listenTogetherGuestLock,
-                onClick = {
-                    if (!listenTogetherGuestLock) mediaItem?.let { binder?.startRadio(it, false, null, true) }
-                    if (effectRotationEnabled) onRotatedChange(!isRotated)
-                },
-                rotationAngle = rotationAngle,
-                alpha = guestLockAlpha
-            )
-        }
-        MiniPlayerButton.AudioOutput -> {
-            val context = LocalContext.current
-            val audioManager = remember { context.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
-            val audioOutputManager = remember { AudioOutputManager(context, audioManager) }
-            var activeDevice by remember { mutableStateOf(audioOutputManager.getAvailableDevices().firstOrNull { it.isCurrentlyActive }) }
-
-            DisposableEffect(Unit) {
-                audioOutputManager.registerDeviceChanges { devices ->
-                    activeDevice = devices.firstOrNull { it.isCurrentlyActive }
-                }
-                onDispose {
-                    audioOutputManager.unregisterDeviceChanges()
-                }
-            }
-
-            val isExternal = (activeDevice != null && activeDevice?.type != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER && activeDevice?.type != AudioDeviceInfo.TYPE_BUILTIN_EARPIECE) || activeDevice?.isCar == true
-            
-            val iconVal = activeDevice?.icon ?: R.drawable.devices
-
-            val isAudioOutputEnabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-            val finalColor = if (!isAudioOutputEnabled) {
-                controlsColorText.copy(alpha = 0.3f)
-            } else if (isExternal) {
-                colorPalette().accent
-            } else {
-                controlsColorText
-            }
-
-            val finalIcon = if (isExternal) iconVal else R.drawable.devices
-            if (finalIcon is ImageVector) {
-                GlassMiniPlayerIconButton(
-                    icon = finalIcon,
-                    color = finalColor,
-                    contentDescription = stringResource(button.labelRes),
-                    enabled = true,
-                    onClick = onAudioOutputClick,
-                    rotationAngle = rotationAngle,
-                )
-            } else {
-                GlassMiniPlayerIconButton(
-                    icon = finalIcon as Int,
-                    color = finalColor,
-                    contentDescription = stringResource(button.labelRes),
-                    enabled = true,
-                    onClick = onAudioOutputClick,
-                    rotationAngle = rotationAngle,
-                )
-            }
-        }
-        MiniPlayerButton.SleepTimer -> {
-            GlassMiniPlayerIconButton(
-                contentDescription = stringResource(button.labelRes),
-                preserveNativeGeometry = true,
-                icon = R.drawable.sleep,
-                color = if (listenTogetherGuestLock) colorPalette().textDisabled else controlsColorText,
-                // Guest lock: the sleep timer auto-stops the app — a session-level control,
-                // grayed + disabled for a guest (spec-listen-together-guest-lock-hardening).
-                enabled = !listenTogetherGuestLock,
-                onClick = {
-                    if (listenTogetherGuestLock) return@GlassMiniPlayerIconButton
-                    pendingAction?.value = PendingMiniPlayerAction.SleepTimer
-                    onShowPlayer()
-                    if (effectRotationEnabled) onRotatedChange(!isRotated)
-                },
-                rotationAngle = rotationAngle,
-                alpha = guestLockAlpha
-            )
-        }
-        MiniPlayerButton.Lyrics -> {
-            var isLyricsActive by LocalIsShowingLyrics.current
-            var savedLyricsState by rememberPreference(saveLyricsStateKey, false)
-            val shouldRememberLyricsState by rememberPreference(showLyricsStateKey, false)
-            
-            GlassMiniPlayerIconButton(
-                contentDescription = stringResource(button.labelRes),
-                preserveNativeGeometry = true,
-                icon = R.drawable.song_lyrics,
-                color = if (isLyricsActive) colorPalette().accent else controlsColorText,
-                onClick = {
-                    if (isLyricsActive) {
-                        isLyricsActive = false
-                        if (shouldRememberLyricsState) savedLyricsState = false
-                    } else {
-                        pendingAction?.value = PendingMiniPlayerAction.Lyrics
-                        onShowPlayer()
-                    }
-                    if (effectRotationEnabled) onRotatedChange(!isRotated)
-                },
-                rotationAngle = rotationAngle
-            )
-        }
-        MiniPlayerButton.Visualizer -> {
-            var isVisualizerActive by LocalIsShowingVisualizer.current
-            var savedVisualizerState by rememberPreference(saveVisualizerStateKey, false)
-            val shouldRememberVisualizerState by rememberPreference(showVisualizerStateKey, false)
-            
-            GlassMiniPlayerIconButton(
-                contentDescription = stringResource(button.labelRes),
-                preserveNativeGeometry = true,
-                icon = R.drawable.sound_effect,
-                color = if (isVisualizerActive) colorPalette().accent else controlsColorText,
-                onClick = {
-                    if (isVisualizerActive) {
-                        isVisualizerActive = false
-                        if (shouldRememberVisualizerState) savedVisualizerState = false
-                    } else {
-                        pendingAction?.value = PendingMiniPlayerAction.Visualizer
-                        onShowPlayer()
-                    }
-                    if (effectRotationEnabled) onRotatedChange(!isRotated)
-                },
-                rotationAngle = rotationAngle
-            )
-        }
-        MiniPlayerButton.Queue -> {
-            GlassMiniPlayerIconButton(
-                contentDescription = stringResource(button.labelRes),
-                preserveNativeGeometry = true,
-                icon = R.drawable.reorder,
-                color = controlsColorText,
-                onClick = {
-                    requestQueue?.invoke() ?: navController?.navigate(NavRoutes.queue.name)
-                    if (effectRotationEnabled) onRotatedChange(!isRotated)
-                },
-                rotationAngle = rotationAngle
-            )
-        }
-        MiniPlayerButton.Discover -> {
-            val discoverIsEnabled by rememberPreference(discoverKey, false)
-            val isAutoFillEnabled by rememberPreference(autoLoadSongsInQueueKey, true)
-            val isDiscoverClickable = binder?.service?.nzikRadio?.isRadioActive == true || isAutoFillEnabled
-
-            GlassMiniPlayerIconButton(
-                contentDescription = stringResource(button.labelRes),
-                preserveNativeGeometry = true,
-                // Issue #866 (gh-866): state icon — discover_stop while discover mode is ON
-                // (the state change is the feedback).
-                icon = discoverButtonIconRes(discoverIsEnabled),
-                color = if (discoverIsEnabled && isDiscoverClickable) colorPalette().accent else controlsColorText,
-                // Guest lock: Discover is a stateful ON/OFF control owned by the host
-                // (blocked centrally in NZikRadio.toggleDiscover + grayed here).
-                enabled = !listenTogetherGuestLock,
-                onClick = {
-                    if (!listenTogetherGuestLock) binder?.service?.nzikRadio?.toggleDiscover()
-                    if (effectRotationEnabled) onRotatedChange(!isRotated)
-                },
-                onLongClick = { Toaster.i(R.string.queue_discover_description) },
-                rotationAngle = rotationAngle,
-                alpha = (if (isDiscoverClickable) 1f else 0.4f) * guestLockAlpha
-            )
-        }
-        else -> {}
-    }
 }
 
 /** Pure compatibility seam for extraction regression tests; production uses the shared artwork facade. */

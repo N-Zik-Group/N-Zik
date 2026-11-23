@@ -1,17 +1,15 @@
 package app.n_zik.android.components.ui.screens.rewind.slides
 
-import androidx.compose.ui.res.pluralStringResource
+import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.TimeZone
+import kotlin.math.roundToInt
+import kotlinx.coroutines.delay
+
+import android.text.format.DateFormat
 import androidx.annotation.PluralsRes
-import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
-import app.n_zik.android.components.glass.LocalGlassMaterialSource
-import app.n_zik.android.components.glass.glassContentCaptureEnabled
-import app.n_zik.android.components.glass.rememberGlassSettings
-import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
-import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
-import app.n_zik.android.components.glass.backdrop.backdrops.rememberCombinedBackdrop
-import android.util.LruCache
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -24,10 +22,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,10 +42,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -60,22 +56,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.layout.ContentScale
-import android.text.format.DateFormat
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.TimeZone
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -85,44 +74,28 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mikepenz.hypnoticcanvas.shaderBackground
+
+import app.n_zik.android.R
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
+import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCombinedBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import app.n_zik.android.components.glass.glassContentCaptureEnabled
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.ui.iconBadgeBackground
+import app.n_zik.android.components.ui.screens.rewind.RewindData
+import app.n_zik.android.components.ui.screens.rewind.RewindLevel
 import app.n_zik.android.components.ui.screens.rewind.rewindCaptureMode
 import app.n_zik.android.components.ui.screens.rewind.rewindShareCaptureActive
 import app.n_zik.android.components.ui.screens.rewind.rewindSlideShaders
-import app.n_zik.android.components.ui.screens.rewind.RewindLevel
-import app.n_zik.android.MONTHLY_PREFIX
-import app.n_zik.android.PINNED_PREFIX
-import app.n_zik.android.cleanPrefix
-import app.n_zik.android.core.rewind.RewindPlaylists
-import app.n_zik.android.utils.checkFileExists
-import app.n_zik.android.utils.conditional
-import app.n_zik.android.utils.disableScrollingTextKey
-import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.components.ui.screens.rewind.RewindData
-import app.n_zik.android.components.ui.iconBadgeBackground
-import app.n_zik.android.R
-import app.n_zik.android.colorPalette
-import app.n_zik.android.core.coil.ImageCacheFactory
-import app.n_zik.android.core.coil.thumbnail
-import app.n_zik.android.components.glass.glassImageRim
-import app.n_zik.android.thumbnailShape
-import app.n_zik.android.ui.items.rememberPlaylistSongThumbnails
-import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.ui.styling.Hsl
 import app.n_zik.android.ui.styling.hsl
-import app.n_zik.android.ui.styling.overlay
-import app.n_zik.innertube.YtMusic
-import app.n_zik.innertube.requests.ArtistPage
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
-import java.net.URLEncoder
-import java.text.NumberFormat
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.math.roundToInt
+import app.n_zik.android.utils.conditional
+import app.n_zik.android.utils.disableScrollingTextKey
+import app.n_zik.android.utils.rememberPreference
 
 /**
  * Slide palette derived from the app's current [ColorPalette], so the deck recolors with the
@@ -615,469 +588,6 @@ internal fun RewindAnimatedNumber(
         overflow = TextOverflow.Ellipsis,
         modifier = modifier.rewindMarqueeOnly()
     )
-}
-
-@Composable
-internal fun RewindArtwork(
-    imageUrl: String?,
-    contentDescription: String?,
-    modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Crop,
-    onError: (() -> Unit)? = null,
-    shape: Shape = RectangleShape,
-) {
-    ImageCacheFactory.AsyncImage(
-        thumbnailUrl = imageUrl,
-        shape = shape,
-        contentDescription = contentDescription,
-        contentScale = contentScale,
-        modifier = modifier,
-        onError = {
-            if (!imageUrl.isNullOrBlank()) onError?.invoke()
-        }
-    )
-}
-
-@Composable
-internal fun RewindArtworkWithFallback(
-    imageUrl: String?,
-    title: String,
-    modifier: Modifier = Modifier,
-    circular: Boolean = false,
-    background: Color = rewindColors.value.purple,
-    foreground: Color = rewindColors.value.cream,
-    onError: (() -> Unit)? = null
-) {
-    Box(
-        modifier = modifier
-            .clip(if (circular) CircleShape else RoundedCornerShape(8.dp))
-            .background(background),
-        contentAlignment = Alignment.Center
-    ) {
-        val textScale = LocalRewindTextScale.current
-        Text(
-            text = title.trim().take(2).uppercase().ifBlank { "♪" },
-            color = foreground.copy(alpha = 0.70f),
-            fontSize = textScale.size(18.sp),
-            fontWeight = FontWeight.Black
-        )
-        RewindArtwork(
-            imageUrl = imageUrl,
-            shape = if (circular) CircleShape else RoundedCornerShape(8.dp),
-            contentDescription = title,
-            modifier = Modifier.fillMaxSize(),
-            onError = onError
-        )
-    }
-}
-
-/**
- * Origin indicator overlay for a playlist artwork, mirroring the statistics screen playlist
- * rows: the N-Zik launcher icon on local playlists, the pin on pinned playlists, the month
- * icon on monthly playlists, and the source icon on imported or YouTube playlists.
- *
- * Spec 2 adds the dedicated origin icons of the generated rewind-* playlists
- * (monthly -> month, yearly -> year, all-time -> notes, accent tint).
- */
-@Composable
-internal fun RewindPlaylistOriginIcon(
-    name: String,
-    browseId: String?,
-    isYoutubePlaylist: Boolean,
-    iconSize: Dp,
-    modifier: Modifier = Modifier
-) {
-    val (painter, tint) = when {
-        name.startsWith(PINNED_PREFIX, true) ->
-            painterResource(R.drawable.pin_filled) to colorPalette().accent
-
-        name.startsWith(MONTHLY_PREFIX, true) ->
-            painterResource(R.drawable.stat_month) to colorPalette().accent
-
-        RewindPlaylists.isMonthly(name) ->
-            painterResource(R.drawable.stat_month) to colorPalette().accent
-
-        RewindPlaylists.isYearly(name) ->
-            painterResource(R.drawable.stat_year) to colorPalette().accent
-
-        RewindPlaylists.isAlltime(name) ->
-            painterResource(R.drawable.musical_notes) to colorPalette().accent
-
-        browseId == "SPOTIFY_IMPORT" || browseId?.startsWith("SPOTIFY_IMPORT") == true ->
-            painterResource(R.drawable.spotify) to Color.Unspecified
-
-        browseId == "RIPLAY_IMPORT" || browseId?.startsWith("RIPLAY_IMPORT") == true ->
-            painterResource(R.drawable.riplay) to Color.Unspecified
-
-        isYoutubePlaylist || browseId?.startsWith("VL") == true ->
-            painterResource(R.drawable.ytmusic) to Color.Red
-
-        else ->
-            painterResource(R.drawable.ic_launcher) to Color.Unspecified
-    }
-    Icon(
-        painter = painter,
-        contentDescription = stringResource(R.string.accessibility_origin_indicator),
-        tint = tint,
-        modifier = modifier.size(iconSize)
-    )
-}
-
-/**
- * Playlist "logo" used on the top playlists slide — a 2x2 mosaic of the four
- * most-played track covers (a single cover when they all match), dimmed by the
- * app scrim with the origin indicator (N-Zik logo / pin / source icon)
- * top-right. The rank number is not drawn here: it lives in the row, like the
- * Deep Cuts slide.
- *
- * Same pipeline as the statistics screen and Home Library: custom playlist
- * thumbnail file, else the four most-played song thumbnails, rendered via
- * ImageCacheFactory.Thumbnail.
- */
-@Composable
-internal fun RewindPlaylistArtwork(
-    playlistId: Long,
-    title: String,
-    name: String,
-    browseId: String?,
-    isYoutubePlaylist: Boolean,
-    // Named sizeDp (not "size") so the parameter does not shadow Modifier.size().
-    sizeDp: Dp = 46.dp,
-    shape: Shape = thumbnailShape(),
-    // When true, a playlist without artwork shows the app launcher box (ImageCacheFactory's
-    // fallback) instead of the initials placeholder.
-    emptyFallback: Boolean = false,
-    // When false, the built-in dimming overlay is skipped — for callers that paint their
-    // own scrim over the artwork (the rewind home month cells and year rows).
-    dimOverlay: Boolean = true,
-    modifier: Modifier = Modifier
-) {
-    val quadrant = sizeDp / 2
-    val context = LocalContext.current
-    val customThumbnail = remember(context, playlistId) {
-        checkFileExists(context, "thumbnail/playlist_$playlistId")
-    }
-    val thumbnails = customThumbnail?.let(::listOf) ?: rememberPlaylistSongThumbnails(playlistId).orEmpty()
-
-    val showFallback = emptyFallback && thumbnails.isEmpty()
-    Box(
-        modifier = modifier
-            .clip(shape)
-            .glassImageRim(shape)
-            .background(rewindColors.value.ink),
-        contentAlignment = Alignment.Center
-    ) {
-        when {
-            showFallback ->
-                Image(
-                    painter = painterResource(R.drawable.ic_launcher_box),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            thumbnails.isEmpty() ->
-                Text(
-                    text = title.trim().take(2).uppercase().ifBlank { "♪" },
-                    color = rewindColors.value.cream.copy(alpha = 0.70f),
-                    fontSize = LocalRewindTextScale.current.size(18.sp),
-                    fontWeight = FontWeight.Black
-                )
-            thumbnails.toSet().size == 1 ->
-                ImageCacheFactory.Thumbnail(
-                    shape = null,
-                    thumbnailUrl = thumbnails.first(),
-                    contentDescription = title,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            else ->
-                listOf(
-                    Alignment.TopStart,
-                    Alignment.TopEnd,
-                    Alignment.BottomStart,
-                    Alignment.BottomEnd
-                ).forEachIndexed { index, alignment ->
-                    val thumbnail = thumbnails.getOrNull(index)
-                    if (thumbnail != null) {
-                        ImageCacheFactory.Thumbnail(
-                            shape = null,
-                            thumbnailUrl = thumbnail,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .align(alignment)
-                                .size(quadrant)
-                        )
-                    }
-                }
-        }
-        if (!showFallback) {
-            // Same dimming overlay as the statistics screen, without the rank: the rank
-            // number is rendered by the row itself (Deep Cuts style). Skipped by callers
-            // that paint their own scrim over the artwork.
-            if (dimOverlay)
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(shape)
-                        .background(colorPalette().overlay)
-                )
-            // The statistics screen also paints an origin indicator (N-Zik logo, pin,
-            // source icon) over the artwork; it is kept top-right on the deck artworks.
-            RewindPlaylistOriginIcon(
-                name = name,
-                browseId = browseId,
-                isYoutubePlaylist = isYoutubePlaylist,
-                iconSize = sizeDp * 0.30f,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(sizeDp * 0.05f)
-            )
-        }
-    }
-}
-
-@Composable
-internal fun RewindArtistArtwork(
-    artistName: String,
-    primaryUrl: String?,
-    modifier: Modifier = Modifier,
-    preferWikipedia: Boolean = false,
-    circular: Boolean = true,
-    enableSlideshow: Boolean = false
-) {
-    var wikipediaUrl by remember(artistName) { mutableStateOf<String?>(null) }
-    var failedUrls by remember(artistName, primaryUrl) { mutableStateOf(emptySet<String>()) }
-    var activeIndex by remember(artistName, primaryUrl) { mutableStateOf(0) }
-    LaunchedEffect(artistName, primaryUrl, preferWikipedia, enableSlideshow) {
-        wikipediaUrl = null
-        failedUrls = emptySet()
-        activeIndex = 0
-        if (artistName.isBlank()) return@LaunchedEffect
-        if (rewindShareCaptureActive.value) {
-            // Export capture: skip the wiki fetch entirely — the frame settles on the
-            // primary artwork only (no network wait, no late portrait).
-            return@LaunchedEffect
-        }
-        if (enableSlideshow || preferWikipedia || primaryUrl.isNullOrBlank()) {
-            wikipediaUrl = withContext(NzikDispatchers.DATA) {
-                WikipediaArtistImageResolver.findImage(artistName)
-            }
-        }
-    }
-    val orderedUrls = if (preferWikipedia) {
-        listOf(wikipediaUrl, primaryUrl)
-    } else {
-        listOf(primaryUrl, wikipediaUrl)
-    }
-    val candidates = orderedUrls
-        .filterNotNull()
-        .filter { it.isNotBlank() && it !in failedUrls }
-        .distinct()
-    LaunchedEffect(candidates, enableSlideshow) {
-        activeIndex = activeIndex.coerceIn(0, (candidates.size - 1).coerceAtLeast(0))
-        if (enableSlideshow && candidates.size > 1) {
-            while (true) {
-                delay(7_000)
-                // Export capture: stop cycling so a frame cannot land mid-crossfade
-                if (rewindShareCaptureActive.value) break
-                activeIndex = (activeIndex + 1) % candidates.size
-            }
-        }
-    }
-    val selectedUrl = candidates.getOrNull(activeIndex) ?: candidates.firstOrNull()
-    Crossfade(
-        targetState = selectedUrl,
-        animationSpec = if (rewindShareCaptureActive.value) tween(0) else tween(900),
-        label = "rewindArtistArtwork"
-    ) { imageUrl ->
-        RewindArtworkWithFallback(
-            imageUrl = imageUrl,
-            title = artistName,
-            modifier = modifier,
-            circular = circular,
-            background = rewindColors.value.purple,
-            foreground = rewindColors.value.cream,
-            onError = {
-                if (!imageUrl.isNullOrBlank()) failedUrls = failedUrls + imageUrl
-            }
-        )
-    }
-}
-
-internal data class ArtistWikiMetadata(
-    val imageUrl: String?,
-    val description: String?,
-    val bio: String? = null,
-    val wikipediaUrl: String? = null
-)
-
-/**
- * In-app artist bio for the Top Artist spotlight page, from the same source the
- * artist screen uses: the description already stored on the artist row (written
- * from the Innertube artist page), then the Innertube artist page fetched by
- * browseId. A by-name Wikipedia lookup is deliberately NOT used: for ambiguous
- * or channel-derived names it resolves to unrelated pages (e.g. a same-named
- * song's article), which is what the spotlight used to show.
- *
- * Returns null while loading or when no description is available — the card
- * renders without the "about" section in that case.
- */
-@Composable
-internal fun rememberArtistBio(
-    browseId: String?,
-    storedDescription: String? = null
-): ArtistWikiMetadata? {
-    var metadata by remember(browseId, storedDescription) { mutableStateOf<ArtistWikiMetadata?>(null) }
-    LaunchedEffect(browseId, storedDescription) {
-        metadata = null
-        metadata = withContext(NzikDispatchers.DATA) {
-            RewindArtistBioResolver.resolve(browseId, storedDescription)
-        }
-    }
-    return metadata
-}
-
-/**
- * Compose-free bio resolution so the in-app-first ordering is unit-testable: a non-blank
- * stored description short-circuits any network fetch, and otherwise the Innertube artist
- * page (fetched by [browseId]) is the sole source. [fetchPage] is injectable for tests.
- */
-internal object RewindArtistBioResolver {
-    suspend fun resolve(
-        browseId: String?,
-        storedDescription: String?,
-        fetchPage: suspend (String) -> Result<ArtistPage> = { YtMusic.getArtistPage(it) }
-    ): ArtistWikiMetadata? {
-        val stored = storedDescription?.trim()?.takeIf(String::isNotBlank)
-        if (stored != null) {
-            return ArtistWikiMetadata(imageUrl = null, description = stored, bio = stored)
-        }
-        val id = browseId?.trim()?.takeIf(String::isNotBlank) ?: return null
-        return fetchPage(id).getOrNull()?.let { page ->
-            val description = page.description?.trim()?.takeIf(String::isNotBlank) ?: return@let null
-            ArtistWikiMetadata(
-                imageUrl = page.artist.thumbnail?.url,
-                description = description,
-                bio = description
-            )
-        }
-    }
-}
-
-private object WikipediaArtistImageResolver {
-    suspend fun findImage(artistName: String): String? =
-        WikipediaArtistMetadataResolver.find(artistName)?.imageUrl
-}
-
-private object WikipediaArtistMetadataResolver {
-    private const val MissCacheTtlMs = 5L * 60L * 1000L
-    private const val CacheCapacity = 64
-    // Bounded cache: process-lifetime retention of every resolved artist would grow without
-    // bound (spec GH-275, patch "Wikipedia cache unbounded").
-    private val cache = LruCache<String, ArtistWikiMetadata>(CacheCapacity)
-    private val misses = ConcurrentHashMap<String, Long>()
-    // In-flight coalescing: concurrent searches for the same artist share one network request.
-    private val inFlight = ConcurrentHashMap<String, CompletableDeferred<ArtistWikiMetadata?>>()
-
-    suspend fun find(artistName: String): ArtistWikiMetadata? {
-        val key = artistName.trim().lowercase()
-        if (key.isBlank()) return null
-        cache.get(key)?.let { return it }
-        val now = System.currentTimeMillis()
-        misses[key]?.let { missedAt ->
-            if (now - missedAt < MissCacheTtlMs) return null
-            misses.remove(key, missedAt)
-        }
-        val slot = CompletableDeferred<ArtistWikiMetadata?>()
-        val existing = inFlight.putIfAbsent(key, slot)
-        val resolved: ArtistWikiMetadata? = if (existing == null) {
-            // We own the in-flight slot [slot]: resolve, publish to the waiters, release the
-            // slot
-            val result = runCatching {
-                listOf(
-                    "$artistName musician",
-                    "$artistName singer",
-                    "$artistName rapper",
-                    artistName
-                ).firstNotNullOfOrNull { query ->
-                    runCatching { requestMetadata(artistName, query) }.getOrNull()
-                }
-            }.getOrNull()
-            try {
-                slot.complete(result)
-                result
-            } finally {
-                // Remove only when still the slot owner (a newer in-flight search replaced it)
-                inFlight.remove(key, slot)
-            }
-        } else {
-            // A concurrent search already owns the slot: await its result instead of firing
-            // a duplicate network request
-            existing.await()
-        }
-        if (resolved != null) {
-            cache.put(key, resolved)
-            misses.remove(key)
-        } else {
-            misses[key] = now
-        }
-        return resolved
-    }
-
-    private fun requestMetadata(artistName: String, query: String): ArtistWikiMetadata? {
-        val encoded = URLEncoder.encode(query, Charsets.UTF_8.name())
-        val endpoint =
-            "https://en.wikipedia.org/w/api.php?action=query&generator=search" +
-                "&gsrsearch=$encoded&gsrnamespace=0&gsrlimit=5" +
-                "&prop=pageimages|description|extracts|info&pithumbsize=1000" +
-                "&exintro=1&explaintext=1&exchars=480&inprop=url" +
-                "&format=json&formatversion=2&redirects=1"
-        val connection = URL(endpoint).openConnection() as HttpURLConnection
-        return try {
-            connection.requestMethod = "GET"
-            connection.connectTimeout = 5000
-            connection.readTimeout = 7000
-            connection.setRequestProperty("User-Agent", "NZik-Rewind/1.0")
-            connection.setRequestProperty("Accept", "application/json")
-            if (connection.responseCode !in 200..299) return null
-            val body = connection.inputStream.bufferedReader().use { it.readText() }
-            val pages = JSONObject(body)
-                .optJSONObject("query")
-                ?.optJSONArray("pages")
-                ?: return null
-            val normalized = artistName.trim().lowercase()
-            val results = buildList {
-                for (i in 0 until pages.length()) {
-                    val page = pages.optJSONObject(i) ?: continue
-                    val title = page.optString("title").trim().lowercase()
-                    val source = page.optJSONObject("thumbnail")?.optString("source").orEmpty()
-                    val description = page.optString("description")
-                        .takeIf { it.isNotBlank() && !it.contains("may refer to", ignoreCase = true) }
-                    val bio = page.optString("extract")
-                        .replace(Regex("\\s+"), " ")
-                        .trim()
-                        .takeIf {
-                            it.isNotBlank() &&
-                                !it.contains("may refer to", ignoreCase = true) &&
-                                !it.contains("disambiguation", ignoreCase = true)
-                        }
-                    val pageUrl = page.optString("fullurl").takeIf { it.isNotBlank() }
-                    if (source.isBlank() && description.isNullOrBlank() && bio.isNullOrBlank()) continue
-                    val score = when {
-                        title == normalized -> 0
-                        title.startsWith("$normalized (") -> 1
-                        title.contains(normalized) -> 2
-                        else -> 3
-                    }
-                    add(score to ArtistWikiMetadata(source.ifBlank { null }, description, bio, pageUrl))
-                }
-            }
-            results.minByOrNull { it.first }?.second
-        } finally {
-            connection.disconnect()
-        }
-    }
 }
 
 /**

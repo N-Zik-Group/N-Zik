@@ -15,7 +15,6 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import android.os.Build
 import android.os.Process
-import android.system.Os
 import androidx.annotation.StringRes
 import app.n_zik.android.R
 import app.n_zik.android.utils.DEFAULT_PROFILE_ID
@@ -58,7 +57,6 @@ import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.download.utils.InactiveDownloadCleanup
 import app.n_zik.android.core.profiles.ProtectedProfileHistory
 import app.n_zik.android.core.profiles.ProfileStorageIdentity
-import app.n_zik.android.core.profiles.ProfileCacheLocationMigration
 import app.n_zik.android.core.profiles.clearProfileShareFlags
 import app.n_zik.android.core.profiles.coversDir
 import app.n_zik.android.core.profiles.downloadsDir
@@ -83,23 +81,11 @@ import app.n_zik.android.extensions.lastfm.lastfmScrobbleThresholdPercentKey
 import app.n_zik.android.extensions.lastfm.lastfmSessionKey
 import app.n_zik.android.extensions.lastfm.lastfmUsernameKey
 import app.n_zik.android.utils.debug.profileDiagnosticsDir
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import timber.log.Timber
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
-import java.io.StringReader
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
-import org.w3c.dom.Element
-import org.xml.sax.InputSource
 
 /**
  * Pure file operations for the Rescue Center.
@@ -160,12 +146,6 @@ object RescueFiles {
      * exist on Android, which would silently back up (and restore) nothing.
      */
     private const val SHARED_PREFS_DIR = "shared_prefs"
-    private fun settingsFileNames(profile: String = rescueTargetProfile()): List<String> {
-        val suffix = if (profile == DEFAULT_PROFILE_ID) "" else "_$profile"
-        return listOf("preferences$suffix.xml", "secure_preferences$suffix.xml",
-            "${GlassProfilePreferences.fileName(profile)}.xml",
-            "github_account_profile_$profile.xml", "github_account_profile_$profile.xml.bak")
-    }
 
     /** Suffixes of the files that make up one SQLite database, main file first. */
     private val DB_FILE_SUFFIXES = listOf("", "-wal", "-shm", "-journal")
@@ -403,20 +383,11 @@ object RescueFiles {
         SettingsOutcome(encryptedSkipped)
     }
 
-    /** Writes settings as `Type,Key,Value` CSV using the same writer as the regular settings export, so values containing commas, quotes or line breaks round-trip through [readSettingsCsv]. */
-    internal fun writeSettingsCsv(outStream: OutputStream, entries: List<Triple<String, String, Any>>) {
-        csvWriter().open(outStream) {
-            writeRow("Type", "Key", "Value")
-            entries.forEach { (type, key, value) -> writeRow(type, key, value) }
-        }
-    }
+    internal fun writeSettingsCsv(outStream: OutputStream, entries: List<Triple<String, String, Any>>) =
+        RescueSettingsCsv.write(outStream, entries)
 
-    /** Parses a `Type,Key,Value` CSV into (type, key, value) rows; rows missing a key are dropped. */
     internal fun readSettingsCsv(inStream: InputStream): List<Triple<String, String, String>> =
-        csvReader().readAllWithHeader(inStream).mapNotNull { row ->
-            val key = row["Key"]?.takeIf { it.isNotEmpty() } ?: return@mapNotNull null
-            Triple(row["Type"].orEmpty(), key, row["Value"].orEmpty())
-        }
+        RescueSettingsCsv.read(inStream)
 
     // Import settings (CSV)
 
@@ -849,14 +820,14 @@ object RescueFiles {
         val sharedPrefsDir = File(context.applicationInfo.dataDir, SHARED_PREFS_DIR)
         listOf("preferences$suffix", "secure_preferences$suffix", GlassProfilePreferences.fileName(profileId)).forEach { name ->
             val src = File(backup, "$name.xml")
-            if (src.exists()) moveReplacing(src, File(sharedPrefsDir, "$name.xml"))
+            if (src.exists()) moveRescueFileReplacing(src, File(sharedPrefsDir, "$name.xml"))
         }
         // Older snapshots omitted the identity; let the restored encrypted account rebuild it.
         listOf(".xml", ".xml.bak").forEach { extension ->
             val name = "github_account_profile_$profileId$extension"
             val source = File(backup, name)
             val target = File(sharedPrefsDir, name)
-            if (source.exists()) moveReplacing(source, target) else ProfileResetSnapshot.deleteVerifiedTree(target)
+            if (source.exists()) moveRescueFileReplacing(source, target) else ProfileResetSnapshot.deleteVerifiedTree(target)
         }
 
         // The face files: the backed-up dir replaces the live one.
@@ -1223,20 +1194,8 @@ object RescueFiles {
         }
         DB_FILE_SUFFIXES.forEach { suffix ->
             val source = File(from.path + suffix)
-            if (source.exists()) moveReplacing(source, File(to.path + suffix))
+            if (source.exists()) moveRescueFileReplacing(source, File(to.path + suffix))
         }
-    }
-
-    /**
-     * Renames [source] to [target], replacing it. Falls back to copy + delete when the rename is
-     * refused (existing target on some filesystems, or a different filesystem).
-     */
-    private fun moveReplacing(source: File, target: File) {
-        if (source.renameTo(target)) return
-        if (target.exists()) check(target.delete()) { "Cannot replace ${target.name}" }
-        if (source.renameTo(target)) return
-        source.copyTo(target, overwrite = true)
-        check(source.delete()) { "Cannot remove ${source.name} after copying it" }
     }
 
     /** Moves the directory tree [from] to [to], replacing any stale tree at [to] first (the same "the set can be left half-moved" contract as [moveDatabaseFiles]: a failure part-way throws without a rollback). */
@@ -1347,7 +1306,7 @@ object RescueFiles {
 
         val plain = context.getSharedPreferences("preferences$suffix", Context.MODE_PRIVATE)
         val editor = plain.edit()
-        plain.all.keys.filterNot(::isSettingsOnlyStorageKey).forEach(editor::remove)
+        plain.all.keys.filterNot(RescueSettingsSnapshot::isStorageKey).forEach(editor::remove)
         check(editor.commit()) { "Could not clear normal preferences" }
         Timber.tag(TAG).i("Normal preferences cleared")
         check(glass.edit().clear().commit()) { "Could not clear Glass settings" }
@@ -1387,7 +1346,7 @@ object RescueFiles {
         profile: String = rescueTargetProfile(),
         beforeRestore: () -> Unit = {},
     ): Result<Unit> = runRescueMutation(context) {
-        val names = settingsFileNames(profile)
+        val names = RescueSettingsSnapshot.fileNames(profile)
         val plainFileName = names.first()
         val backupDir = File(context.filesDir, RESCUE_BACKUPS_DIR)
         if (names.none { File(backupDir, it).exists() }) {
@@ -1395,93 +1354,27 @@ object RescueFiles {
         }
 
         val sharedPrefsDir = File(context.applicationInfo.dataDir, SHARED_PREFS_DIR)
-        preserveSettingsOnlyStorage(sharedPrefsDir.resolve(plainFileName), backupDir.resolve(plainFileName))
+        RescueSettingsSnapshot.preserveStorage(sharedPrefsDir.resolve(plainFileName), backupDir.resolve(plainFileName))
         beforeRestore()
         swapSettingsFiles(sharedPrefsDir, backupDir, profile)
         Timber.tag(TAG).i("Settings restored from backup")
     }
 
-    private fun isSettingsOnlyStorageKey(key: String): Boolean =
-        SettingsPreferencesBridge.isStorageSetting(key) || ProfileCacheLocationMigration.isRequestKey(key)
+    internal fun backupSettingsFiles(sharedPrefsDir: File, backupDir: File, profile: String = rescueTargetProfile()) =
+        RescueSettingsSnapshot.backup(sharedPrefsDir, backupDir, profile)
 
-    /** Settings-only snapshots never change the live paths or quota of the retained media. */
-    private fun preserveSettingsOnlyStorage(live: File, backup: File) {
-        val builder = DocumentBuilderFactory.newInstance().apply { isExpandEntityReferences = false }.newDocumentBuilder()
-        builder.setEntityResolver { _, _ -> InputSource(StringReader("")) }
-        fun read(file: File) = if (file.exists()) {
-            builder.parse(file).also { check(it.doctype == null && it.documentElement.tagName == "map") }
-        } else {
-            builder.newDocument().apply { appendChild(createElement("map")) }
-        }
-        fun storageEntries(root: Element): List<Element> =
-            (0 until root.childNodes.length).mapNotNull { root.childNodes.item(it) as? Element }
-                .filter { isSettingsOnlyStorageKey(it.getAttribute("name")) }
-
-        val current = storageEntries(read(live).documentElement)
-        val restored = read(backup)
-        val target = restored.documentElement
-        val old = storageEntries(target)
-        if (current.isEmpty() && old.isEmpty()) return
-        old.forEach(target::removeChild)
-        current.forEach { target.appendChild(restored.importNode(it, true)) }
-        val stage = File.createTempFile(".settings-storage-", ".xml", backup.parentFile)
-        try {
-            FileOutputStream(stage).use { output ->
-                TransformerFactory.newInstance().newTransformer().transform(DOMSource(restored), StreamResult(output))
-                output.fd.sync()
-            }
-            if (Build.VERSION.SDK_INT == 0 || Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                Files.move(stage.toPath(), backup.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
-            } else {
-                Os.rename(stage.path, backup.path)
-            }
-        } finally {
-            stage.delete()
-        }
-    }
-
-    /**
-     * Copies the settings XML files of [sharedPrefsDir] into [backupDir], replacing the previous
-     * backup. A settings file that does not exist leaves no stale copy behind.
-     */
-    internal fun backupSettingsFiles(sharedPrefsDir: File, backupDir: File, profile: String = rescueTargetProfile()) {
-        backupDir.mkdirs()
-        settingsFileNames(profile).forEach { name ->
-            val source = File(sharedPrefsDir, name)
-            val backup = File(backupDir, name)
-            if (source.exists()) source.copyTo(backup, overwrite = true) else backup.delete()
-        }
-    }
-
-    /**
-     * Swaps each settings XML file of [sharedPrefsDir] with its copy in [backupDir]: the backup
-     * becomes live and the file that was live becomes the new backup. The live file is parked
-     * first, so no step removes the last good copy.
-     */
     internal fun swapSettingsFiles(
         sharedPrefsDir: File,
         backupDir: File,
         profile: String = rescueTargetProfile(),
-    ) {
-        sharedPrefsDir.mkdirs()
-        settingsFileNames(profile).forEach { name ->
-            val live = File(sharedPrefsDir, name)
-            val backup = File(backupDir, name)
-            val parked = File(backupDir, "$name.swap")
-
-            parked.delete()
-            if (live.exists()) moveReplacing(live, parked)
-            if (backup.exists()) moveReplacing(backup, live)
-            if (parked.exists()) moveReplacing(parked, backup)
-        }
-    }
+    ) = RescueSettingsSnapshot.swap(sharedPrefsDir, backupDir, profile)
 
     /**
      * Returns true if a settings backup exists from a previous [resetSettings].
      */
     fun hasSettingsBackup(context: Context): Boolean {
         val backupDir = File(context.filesDir, RESCUE_BACKUPS_DIR)
-        return settingsFileNames().any { File(backupDir, it).exists() }
+        return RescueSettingsSnapshot.fileNames(rescueTargetProfile()).any { File(backupDir, it).exists() }
     }
 
     /** Serializes rescue file changes with imports and main-process startup. */
@@ -1514,4 +1407,16 @@ object RescueFiles {
         check(!backupDir.exists()) { "Failed to delete the backups directory" }
         Timber.tag(TAG).i("Deleted backups directory (%d items)", deletedCount)
     }
+}
+
+/**
+ * Renames [source] to [target], replacing it. Falls back to copy + delete when the rename is
+ * refused (existing target on some filesystems, or a different filesystem).
+ */
+internal fun moveRescueFileReplacing(source: File, target: File) {
+    if (source.renameTo(target)) return
+    if (target.exists()) check(target.delete()) { "Cannot replace ${target.name}" }
+    if (source.renameTo(target)) return
+    source.copyTo(target, overwrite = true)
+    check(source.delete()) { "Cannot remove ${source.name} after copying it" }
 }

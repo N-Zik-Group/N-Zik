@@ -1,39 +1,5 @@
 package app.n_zik.android.ui.screens.localplaylist
 
-import androidx.compose.ui.layout.onGloballyPositioned
-
-import app.n_zik.android.components.ui.InlineCircularLoader
-import app.n_zik.android.core.ondevice.DeviceLibraryResults
-import app.n_zik.android.core.ondevice.observeDeviceLibrary
-import app.n_zik.android.utils.getActiveProfile
-import app.n_zik.android.enums.NavRoutes
-import app.n_zik.android.components.podcast.launchSavedPodcastBookmarkToggle
-import app.n_zik.android.core.database.canEditPlaylistMembership
-import app.n_zik.android.core.database.editStoredPlaylistMembership
-import app.n_zik.android.components.playlist.canOfferPlaylistDeleteAction
-import app.n_zik.android.components.playlist.playlistMembershipSwipeAction
-import app.n_zik.android.components.playlist.RefreshPlaylistOnOpening
-import app.n_zik.android.components.playlist.playlistRefreshOnOpenAction
-import app.n_zik.android.components.playlist.launchPlaylistSourceRefresh
-
-import app.n_zik.android.components.glass.glassGlobalIndication
-
-import androidx.compose.foundation.layout.PaddingValues
-import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
-import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.components.search.SearchEmptyFeedback
-import app.n_zik.android.components.search.SearchEmptySpace
-
-import androidx.compose.ui.draw.clip
-
-import app.n_zik.android.uiRoundnessShape
-
-import app.n_zik.android.core.database.PlaylistLinkKind
-import app.n_zik.android.core.database.canBookmarkPlaylist
-import app.n_zik.android.core.database.canRefreshPlaylist
-import app.n_zik.android.core.database.isPlaylistBookmarked
-import app.n_zik.android.core.database.playlistLinkKind
-
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -41,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -51,12 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import app.n_zik.android.ui.components.forceLoadingShimmerPreview
-import app.n_zik.android.ui.items.ItemArtworkPlaceholder
-import app.n_zik.android.ui.items.ItemContainer
-import app.n_zik.android.ui.items.FullSongListPlaceholderCount
-import app.n_zik.android.ui.items.SongItemPlaceholder
-import app.n_zik.android.ui.items.SongItemPlaceholders
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -64,80 +25,161 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
-import app.n_zik.android.R
 import com.github.doyaaaaaken.kotlincsv.client.KotlinCsvExperimental
-import app.n_zik.android.compose.persist.persistList
-import sh.calvin.reorderable.rememberReorderableLazyListState
-import sh.calvin.reorderable.ReorderableItem
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import app.n_zik.innertube.Innertube
-import app.n_zik.innertube.YtMusic
-import app.n_zik.innertube.requests.playlistPage
-import app.n_zik.innertube.requests.relatedSongs
-import app.n_zik.android.core.database.Database
-import app.n_zik.android.EXPLICIT_PREFIX
-import app.n_zik.android.LocalPlayerServiceBinder
-import app.n_zik.android.MONTHLY_PREFIX
+import kotlinx.coroutines.withContext
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
+import timber.log.Timber
 
+import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.LocalDownloadStatesMap
+import app.n_zik.android.LocalPlayerServiceBinder
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.MONTHLY_PREFIX
+import app.n_zik.android.R
 import app.n_zik.android.appContext
-import app.n_zik.android.components.settings.appearance.preview.ThemePreviewAssets
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.SongItem
+import app.n_zik.android.components.dialog.common.ConfirmationDialog
+import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.dialog.common.InProgressDialog
+import app.n_zik.android.components.dialog.common.RawUrlImportDialog
+import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
+import app.n_zik.android.components.dialog.playlist.ChangePlaylistCoverDialog
+import app.n_zik.android.components.dialog.playlist.PlaylistInsertionDialog
+import app.n_zik.android.components.dialog.playlist.RenamePlaylistDialog
+import app.n_zik.android.components.dialog.search.MatchResultsDialog
+import app.n_zik.android.components.dialog.settings.LocalPlaylistToolbarSettingsDialog
+import app.n_zik.android.components.dialog.song.UpdateSongDialog
+import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
+import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassControlOverflowColumn
+import app.n_zik.android.components.glass.GlassToolbarButtons
+import app.n_zik.android.components.glass.GlassToolbarColumn
+import app.n_zik.android.components.glass.GlassToolbarLoading
+import app.n_zik.android.components.glass.GlassToolbarRow
+import app.n_zik.android.components.glass.glassGlobalIndication
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+import app.n_zik.android.components.playlist.LocalPlaylistHeaderSurfaceScope
+import app.n_zik.android.components.playlist.PinPlaylist
+import app.n_zik.android.components.playlist.PlaylistSongsSort
+import app.n_zik.android.components.playlist.RefreshPlaylistOnOpening
+import app.n_zik.android.components.playlist.Reposition
+import app.n_zik.android.components.playlist.canOfferPlaylistDeleteAction
+import app.n_zik.android.components.playlist.launchPlaylistSourceRefresh
+import app.n_zik.android.components.playlist.localPlaylistHeaderSurface
+import app.n_zik.android.components.playlist.playlistMembershipSwipeAction
+import app.n_zik.android.components.playlist.playlistRefreshOnOpenAction
+import app.n_zik.android.components.podcast.launchSavedPodcastBookmarkToggle
+import app.n_zik.android.components.search.SearchEmptyFeedback
+import app.n_zik.android.components.search.SearchEmptySpace
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
+import app.n_zik.android.components.settings.appearance.preview.ThemePreviewAssets
+import app.n_zik.android.components.shuffleButtonIcon
+import app.n_zik.android.components.tab.ImportPlaylistsMenu
+import app.n_zik.android.components.tab.ImportSongsFromCSV
+import app.n_zik.android.components.tab.ImportSongsFromServices
+import app.n_zik.android.components.tab.ItemSelector
+import app.n_zik.android.components.tab.LikeComponent
+import app.n_zik.android.components.tab.Locator
+import app.n_zik.android.components.tab.Search
+import app.n_zik.android.components.tab.SongShuffler
+import app.n_zik.android.components.ui.InlineCircularLoader
+import app.n_zik.android.components.ui.screens.home.GlassHomeChips
+import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceCoverBadge
+import app.n_zik.android.compose.persist.persistList
+import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.PlaylistLinkKind
+import app.n_zik.android.core.database.PlaylistStateManager
+import app.n_zik.android.core.database.artistEntryNames
+import app.n_zik.android.core.database.canBookmarkPlaylist
+import app.n_zik.android.core.database.canEditPlaylistMembership
+import app.n_zik.android.core.database.canRefreshPlaylist
+import app.n_zik.android.core.database.editStoredPlaylistMembership
+import app.n_zik.android.core.database.isPlaylistBookmarked
+import app.n_zik.android.core.database.playlistLinkKind
+import app.n_zik.android.core.matching.SongMatch
+import app.n_zik.android.core.matching.SongMatchRequest
+import app.n_zik.android.core.matching.SongMatchStatus
+import app.n_zik.android.core.matching.loadSongMatchFailures
+import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.core.ondevice.DeviceLibraryResults
+import app.n_zik.android.core.ondevice.observeDeviceLibrary
+import app.n_zik.android.core.rewind.RewindPlaylists
+import app.n_zik.android.core.rewind.RewindPlaylists.rewindDisplayName
+import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.enums.DownloadedStateMedia
+import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.PlaylistSongSortBy
+import app.n_zik.android.enums.QueueSwipeAction
 import app.n_zik.android.enums.RecommendationsNumber
-import app.n_zik.android.models.Song
+import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.enums.SyncDirection
 import app.n_zik.android.models.Playlist
-import androidx.compose.ui.res.pluralStringResource
+import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.isUnmatched
+import app.n_zik.android.playback.utils.Shuffler
+import app.n_zik.android.themed.n_zik.component.playlist.PositionLock
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.SwipeableQueueItem
+import app.n_zik.android.ui.components.forceLoadingShimmerPreview
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.Dialog
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.ui.components.themed.Bookmark
 import app.n_zik.android.ui.components.themed.Enqueue
 import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import app.n_zik.android.ui.components.themed.HeaderIconButton
-import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.glass.GlassToolbarButtons
-import app.n_zik.android.components.ui.screens.home.GlassHomeChips
-import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceCoverBadge
-import app.n_zik.android.components.glass.GlassControlOverflowColumn
-import app.n_zik.android.components.glass.GlassToolbarLoading
-import app.n_zik.android.components.glass.GlassToolbarRow
-import app.n_zik.android.components.glass.GlassToolbarColumn
-import app.n_zik.android.components.glass.rememberGlassSettings
-import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.ui.components.themed.IconInfo
@@ -147,109 +189,53 @@ import app.n_zik.android.ui.components.themed.Playlist
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.ui.components.themed.ResetThumbnail
 import app.n_zik.android.ui.components.themed.Synchronize
-import app.n_zik.android.ui.components.themed.Bookmark
 import app.n_zik.android.ui.components.themed.ThumbnailPicker
+import app.n_zik.android.ui.items.FullSongListPlaceholderCount
+import app.n_zik.android.ui.items.ItemArtworkPlaceholder
+import app.n_zik.android.ui.items.ItemContainer
+import app.n_zik.android.ui.items.SongItemPlaceholder
+import app.n_zik.android.ui.items.SongItemPlaceholders
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.onOverlay
 import app.n_zik.android.ui.styling.overlay
 import app.n_zik.android.ui.styling.px
-import app.n_zik.android.themed.n_zik.component.playlist.PositionLock
+import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.utils.ExternalUris
 import app.n_zik.android.utils.addNext
-
 import app.n_zik.android.utils.asMediaItem
-import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
+import app.n_zik.android.utils.asSong
 import app.n_zik.android.utils.center
 import app.n_zik.android.utils.checkFileExists
 import app.n_zik.android.utils.color
+import app.n_zik.android.utils.compactPlayTimeLabel
+import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.deleteFileIfExists
-
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.durationTextToMillis
 import app.n_zik.android.utils.enqueue
 import app.n_zik.android.utils.excludeMediaItems
 import app.n_zik.android.utils.forcePlayAtIndex
 import app.n_zik.android.utils.formatAsTime
-import app.n_zik.android.utils.compactPlayTimeLabel
-
-
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.getSyncDirection
+import app.n_zik.android.utils.isNetworkConnected
+import app.n_zik.android.utils.localPlaylistToolbarOrderKey
 import app.n_zik.android.utils.manageDownload
 import app.n_zik.android.utils.parentalControlEnabledKey
-import app.n_zik.android.utils.recommendationsNumberKey
-import androidx.core.net.toUri
-import app.n_zik.android.utils.asSong
-import app.n_zik.android.core.database.artistEntryNames
-import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.utils.localPlaylistToolbarOrderKey
+import app.n_zik.android.utils.playlist.importSongsToPlaylist
+import app.n_zik.android.utils.playlist.supportsInsertionPosition
 import app.n_zik.android.utils.preferences
-import app.n_zik.android.download.utils.MyDownloadHelper
-import androidx.media3.exoplayer.offline.Download
-import app.n_zik.android.LocalDownloadStatesMap
-import app.n_zik.android.enums.DownloadedStateMedia
-import app.n_zik.android.enums.QueueSwipeAction
 import app.n_zik.android.utils.queueSwipeLeftActionKey
 import app.n_zik.android.utils.queueSwipeRightActionKey
-import androidx.compose.runtime.CompositionLocalProvider
-
-import app.n_zik.android.components.dialog.playlist.ChangePlaylistCoverDialog
+import app.n_zik.android.utils.recommendationsNumberKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.showFloatingIconKey
 import app.n_zik.android.utils.syncPushPlaylistKey
-import app.n_zik.android.utils.getSyncDirection
-import app.n_zik.android.utils.isNetworkConnected
-import app.n_zik.android.enums.SyncDirection
-
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
-import app.n_zik.android.utils.ExternalUris
-import app.n_zik.android.components.dialog.song.UpdateSongDialog
-import app.n_zik.android.components.SongItem
-import app.n_zik.android.components.shuffleButtonIcon
-import app.n_zik.android.components.playlist.PinPlaylist
-import app.n_zik.android.core.database.LikeStateManager
-import app.n_zik.android.core.database.PlaylistStateManager
-import app.n_zik.android.components.playlist.PlaylistSongsSort
-import app.n_zik.android.components.playlist.LocalPlaylistHeaderSurfaceScope
-import app.n_zik.android.components.playlist.localPlaylistHeaderSurface
-import app.n_zik.android.components.dialog.playlist.PlaylistInsertionDialog
-import app.n_zik.android.utils.playlist.supportsInsertionPosition
-import app.n_zik.android.utils.playlist.importSongsToPlaylist
-import app.n_zik.android.components.dialog.playlist.RenamePlaylistDialog
-import app.n_zik.android.components.playlist.Reposition
-import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
-import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
-import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
-import app.n_zik.android.components.tab.ItemSelector
-import app.n_zik.android.components.tab.LikeComponent
-import app.n_zik.android.components.tab.Locator
-import app.n_zik.android.components.tab.Search
-import app.n_zik.android.components.tab.SongShuffler
-import app.n_zik.android.playback.utils.Shuffler
-import app.n_zik.android.core.utils.Toaster
-import timber.log.Timber
-import app.n_zik.android.enums.SortOrder
-import app.n_zik.android.ui.components.tab.toolbar.Descriptive
-import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
-import app.n_zik.android.components.dialog.common.ConfirmationDialog
-import app.n_zik.android.components.dialog.common.InProgressDialog
-import app.n_zik.android.components.dialog.common.RawUrlImportDialog
-import app.n_zik.android.components.dialog.search.MatchResultsDialog
-import app.n_zik.android.components.tab.ImportPlaylistsMenu
-import app.n_zik.android.components.tab.ImportSongsFromCSV
-import app.n_zik.android.components.tab.ImportSongsFromServices
-import app.n_zik.android.core.matching.SongMatch
-import app.n_zik.android.core.matching.SongMatchRequest
-import app.n_zik.android.core.matching.SongMatchStatus
-import app.n_zik.android.core.matching.loadSongMatchFailures
-import app.n_zik.android.core.network.OfflineMode
-import app.n_zik.android.components.dialog.settings.LocalPlaylistToolbarSettingsDialog
-import app.n_zik.android.core.rewind.RewindPlaylists
-import app.n_zik.android.core.rewind.RewindPlaylists.rewindDisplayName
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.n_zik.android.MODIFIED_PREFIX
-
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.YtMusic
+import app.n_zik.innertube.requests.playlistPage
+import app.n_zik.innertube.requests.relatedSongs
 
 @KotlinCsvExperimental
 @ExperimentalTextApi
@@ -813,14 +799,6 @@ fun LocalPlaylistSongs(
             return@LaunchedEffect
         }
 
-        /*
-            This process will be run before [items]
-               most of the time.
-            When it does, an exception will
-               be thrown because [items] is not ready yet.
-            To make sure that it is ready to use, a
-               delay is set to suspend the thread.
-        */
         while( items.isEmpty() )
             delay( 100L )
 
@@ -895,33 +873,15 @@ fun LocalPlaylistSongs(
     }
     //</editor-fold>
     LaunchedEffect(items, relatedSongs, search.inputValue, parentalControlEnabled, onDeviceOnly, isRecommendationEnabled) {
-        val baseList = items.toMutableList()
-        
-        if (!onDeviceOnly && isRecommendationEnabled && relatedSongs.isNotEmpty()) {
-            // Use the memorized positions to maintain stability
-            relatedSongs.forEach { (song, position) ->
-                if (!baseList.any { it.id == song.id }) {
-                    // Use the memorized position, but ensure it's within bounds
-                    val safePosition = position.coerceIn(0, baseList.size)
-                    baseList.add( safePosition, song )
-                }
-            }
-        }
-        
-        baseList
-             .distinctBy( Song::id )
-             .filter { !onDeviceOnly || it.isLocal }
-             .filter { !parentalControlEnabled || !it.title.startsWith( EXPLICIT_PREFIX ) }
-             .filter { song ->
-                 // Without cleaning, user can search explicit songs with "e:"
-                 // I kinda want this to be a feature, but it seems unnecessary
-                 val containsName = song.cleanTitle().contains(search.inputValue, true)
-                 val containsArtist = song.cleanArtistsText().contains(search.inputValue, true)
-
-                 containsName || containsArtist
-             }
-            .let { itemsOnDisplay = it }
-        filteredQuery = search.inputValue
+        val query = search.inputValue
+        itemsOnDisplay = projectLocalPlaylistSongs(
+            songs = items,
+            recommendations = if (isRecommendationEnabled) relatedSongs else emptyMap(),
+            query = query,
+            onDeviceOnly = onDeviceOnly,
+            parentalControlEnabled = parentalControlEnabled,
+        )
+        filteredQuery = query
     }
     SearchEmptyFeedback(
         query = search.inputValue,

@@ -28,7 +28,6 @@ import app.n_zik.innertube.requests.searchPage
 import app.n_zik.innertube.requests.albumPage
 import app.n_zik.innertube.utils.from
 import app.n_zik.android.cleanPrefix
-import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.models.Album
 import app.n_zik.android.models.Artist
 import app.n_zik.android.models.Event
@@ -103,7 +102,6 @@ import app.n_zik.android.core.database.migration.From42To43Migration
 import app.n_zik.android.core.utils.PropUtils
 import app.n_zik.android.core.backup.BackupManager
 import app.n_zik.android.playback.services.PersistentQueueArtwork
-import app.n_zik.android.playback.services.ArtworkContentProvider
 import androidx.room.InvalidationTracker
 import timber.log.Timber
 import android.database.sqlite.SQLiteDatabaseLockedException
@@ -568,12 +566,7 @@ object Database {
         return dropped
     }
 
-    /**
-     * Attempt to insert a [MediaItem] into `Song` table
-     *
-     * If [mediaItem] comes with album and artist(s) then
-     * this method handles the insertion automatically.
-     */
+    /** Validates incoming and existing cover sources ahead of a batched insert. */
     @OptIn(UnstableApi::class)
     internal suspend fun prepareArtworkForInsert(mediaItem: MediaItem): Map<String?, String?> {
         val songId = mediaItem.mediaId.substringAfterLast('/')
@@ -586,16 +579,7 @@ object Database {
         ).distinct().associateWith { validateLibraryArtwork(it, songId) }
     }
 
-    private fun validateLibraryArtwork(source: String?, songId: String): String? {
-        val direct = PersistentQueueArtwork.readableUri(source, ::appContext)
-        if (direct != null) return direct.toString()
-        val uri = PersistentQueueArtwork.durableUri(source, songId) ?: return null
-        if (uri.authority != ArtworkContentProvider.AUTHORITY) return null
-        val context = appContext()
-        return PersistentQueueArtwork.backingCoverFile(context, getActiveProfile(context), source, songId)
-            ?.let { android.net.Uri.fromFile(it).toString() }
-    }
-
+    /** Inserts a media item and reconciles its album and artist links. */
     suspend fun insertIgnore(mediaItem: MediaItem, autoFix: Boolean = true) =
         insertIgnore(mediaItem, autoFix, null)
 
@@ -604,24 +588,7 @@ object Database {
         val cleanSongId = mediaItem.mediaId.split("/").lastOrNull() ?: mediaItem.mediaId
         val newSong = mediaItem.asSong
         val dbSong = songTable.findByIdDirect(cleanSongId)
-        fun usableCover(source: String?): String? = if (preparedArtwork == null) {
-            validateLibraryArtwork(source, cleanSongId)
-        } else if (preparedArtwork.containsKey(source)) {
-            preparedArtwork[source]
-        } else PersistentQueueArtwork.durableUri(source, cleanSongId)?.toString()
-        val providerCover = PersistentQueueArtwork.durableUri(newSong.thumbnailUrl, cleanSongId)
-            ?.authority == ArtworkContentProvider.AUTHORITY
-        val directArtwork = usableCover(newSong.thumbnailUrl).takeUnless { providerCover }
-        val originalArtwork = PersistentQueueArtwork.originalSource(mediaItem)
-        val recoveredArtwork = if (directArtwork == null) {
-            usableCover(originalArtwork)
-        } else null
-        val providerFile = if (providerCover) usableCover(newSong.thumbnailUrl) else null
-        val preferProviderFile = providerFile != null && newSong.thumbnailUrl?.startsWith(MODIFIED_PREFIX, true) == true
-        val source = if (preferProviderFile) providerFile else directArtwork ?: recoveredArtwork ?: providerFile
-        val winningSource = if (!preferProviderFile && directArtwork == null && recoveredArtwork != null) originalArtwork else newSong.thumbnailUrl
-        val incomingModified = winningSource?.startsWith(MODIFIED_PREFIX, true) == true
-        val newThumbnailUrl = source?.let { if (incomingModified) MODIFIED_PREFIX + it else it }
+        val artwork = LibraryInsertArtwork(mediaItem, cleanSongId, newSong.thumbnailUrl, preparedArtwork)
         val mergedSong = if (dbSong != null) {
             val newTitle = newSong.title
             val finalTitle = when {
@@ -638,36 +605,24 @@ object Database {
                 newDurationText.isNullOrBlank() && !dbSong.durationText.isNullOrBlank() -> dbSong.durationText
                 else -> newDurationText
             }
-            val existingCover = dbSong.thumbnailUrl
-            val finalThumbnailUrl = when {
-                newThumbnailUrl == null -> existingCover
-                newThumbnailUrl == existingCover -> existingCover
-                usableCover(existingCover) == null -> newThumbnailUrl
-                directArtwork == null && !incomingModified -> existingCover
-                providerCover && existingCover == newSong.thumbnailUrl -> newThumbnailUrl
-                else -> PropUtils.retainIfModified(existingCover, newThumbnailUrl)
-            }
 
             Song(
                 id = cleanSongId,
                 title = finalTitle.orEmpty(),
                 artistsText = finalArtistsText ?: "",
                 durationText = finalDurationText,
-                thumbnailUrl = finalThumbnailUrl,
+                thumbnailUrl = artwork.songThumbnailWithExisting(dbSong.thumbnailUrl),
                 likedAt = dbSong.likedAt,
                 totalPlayTimeMs = dbSong.totalPlayTimeMs,
                 position = dbSong.position
             )
-        } else newSong.copy(thumbnailUrl = newThumbnailUrl)
+        } else newSong.copy(thumbnailUrl = artwork.songThumbnail)
         songTable.upsert(mergedSong)
         if (cleanSongId.startsWith(LOCAL_KEY_PREFIX)) return
 
         val albumId = mediaItem.mediaMetadata.extras?.getString("albumId")?.takeUnless(::isDeviceAlbumId)
         if (albumId != null) {
-            val albumArtwork = (directArtwork ?: recoveredArtwork)?.takeUnless {
-                incomingModified || PersistentQueueArtwork.durableUri(it) == null ||
-                    (it.startsWith("file:") && it.substringAfterLast('/') == "cover_$cleanSongId.jpg")
-            }
+            val albumArtwork = artwork.albumThumbnail()
             val albumTitle = mediaItem.mediaMetadata.albumTitle?.toString()
             val artist = mediaItem.mediaMetadata.artist?.toString()
             val year = mediaItem.mediaMetadata.releaseYear?.toString()
@@ -676,12 +631,7 @@ object Database {
             val mergedAlbum = if (dbAlbum != null) {
                 dbAlbum.copy(
                     title = albumTitle.takeIf { !it.isNullOrBlank() } ?: dbAlbum.title,
-                    thumbnailUrl = when {
-                        albumArtwork == null -> dbAlbum.thumbnailUrl
-                        usableCover(dbAlbum.thumbnailUrl) == null -> albumArtwork
-                        directArtwork == null -> dbAlbum.thumbnailUrl
-                        else -> PropUtils.retainIfModified(dbAlbum.thumbnailUrl, albumArtwork)
-                    },
+                    thumbnailUrl = artwork.albumThumbnailWithExisting(albumArtwork, dbAlbum.thumbnailUrl),
                     year = year.takeIf { !it.isNullOrBlank() } ?: dbAlbum.year,
                     authorsText = artist.takeIf { !it.isNullOrBlank() } ?: dbAlbum.authorsText
                 )

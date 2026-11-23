@@ -1,21 +1,10 @@
-// Ported from Metrolist (GPL-3.0, https://github.com/MetrolistGroup/Metrolist):
-// app/src/main/kotlin/com/metrolist/music/listentogether/ListenTogetherManager.kt
-//
-// Adapted for N-Zik: no PlayerConnection (uses [ListenTogetherPlayerBridge]), no Hilt,
-// no queue-title/mute state, volume synced via heartbeat poll, guest controls gated
-//
-// through [listenTogetherGuestLock].
-// NOTE on `!!` usage (Metrolist pattern, kept as-is): `playTarget`/`pauseTarget` reach
-//
-// these calls only when the null-rejecting `guestNeedsTrackReconcile` predicate returned
-//
-// true — a null there would mean a protocol-invariant violation; failing fast over desync.
+// Ported from Metrolist (GPL-3.0, https://github.com/MetrolistGroup/Metrolist).
+// The guestNeedsTrackReconcile predicate rejects null targets before guarded assertions.
 package app.n_zik.android.listentogether
 
 import android.content.Context
 import android.os.SystemClock
 import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.Job
@@ -27,30 +16,13 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import app.n_zik.android.core.utils.Toaster
-import app.n_zik.android.R
-import app.n_zik.android.appTextResources
-import app.n_zik.android.utils.DataStoreUtils
-import app.n_zik.android.utils.coroutines.NzikDispatchers
 import timber.log.Timber
 
-internal fun canonicalPlaybackQueue(
-    currentTrack: TrackInfo,
-    upcomingQueue: List<TrackInfo>,
-): List<TrackInfo> =
-    buildList {
-        add(currentTrack)
-        upcomingQueue
-            .asSequence()
-            .filter { it.id != currentTrack.id }
-            .distinctBy { it.id }
-            .forEach(::add)
-    }
-
-internal fun <T> upcomingQueueItems(
-    queue: List<T>,
-    currentIndex: Int,
-): List<T> = if (currentIndex in queue.indices) queue.drop(currentIndex + 1) else emptyList()
+import app.n_zik.android.R
+import app.n_zik.android.appTextResources
+import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 private const val ACTIVE_PLAYBACK_SYNC_TOLERANCE_MS = 2_000L
 
@@ -75,11 +47,6 @@ class ListenTogetherManager(
 
         /** Persisted "Sync volume" setting key (guests apply the host's volume); defaults ON. */
         const val PREF_SYNC_HOST_VOLUME = "listen_together_sync_volume"
-
-        private const val SOFT_SYNC_THRESHOLD_MS = 50L
-        private const val HARD_SYNC_THRESHOLD_MS = 750L
-        private const val DRIFT_CORRECTION_SPEED = 0.02f
-        private const val DRIFT_CHECK_INTERVAL_MS = 250L
 
         /**
          * Single instance (Metrolist `getInstance`/`setInstance` pattern — N-Zik has no DI
@@ -151,14 +118,15 @@ class ListenTogetherManager(
 
     // Track active sync job to cancel it if a better update arrives
     private var activeSyncJob: Job? = null
-    private var driftCorrectionJob: Job? = null
-    private var driftBasePlaybackParameters: PlaybackParameters? = null
-    private var driftAppliedPlaybackParameters: PlaybackParameters? = null
-    private var driftCorrectedPlayer: Player? = null
-    private var driftCorrectionGeneration = 0
+    private val driftCorrection = ListenTogetherDriftCorrection(
+        scope = scope,
+        client = client,
+        isHost = { isHost },
+        localTrackId = ::localTrackId,
+    )
+
     private var lastAppliedRevision = 0L
-    private var queueSyncGeneration = 0
-    private var queueMutationJob: Job? = null
+    private val guestQueue = ListenTogetherGuestQueue(scope, TAG)
     private var applyNextHostSnapshot = false
 
     // Generation ID for track changes - incremented on each new track change
@@ -729,7 +697,7 @@ class ListenTogetherManager(
         }
         stopQueueSyncObservation()
         stopHeartbeat()
-        cancelDriftCorrection()
+        driftCorrection.cancel()
         lastSyncedIsPlaying = null
         lastSyncedTrackId = null
         bufferingTrackId = null
@@ -740,7 +708,7 @@ class ListenTogetherManager(
         lastAppliedRevision = 0L
         applyNextHostSnapshot = false
         lastSyncedVolume = null
-        invalidatePendingQueueMutations()
+        guestQueue.invalidate()
         ++currentTrackGeneration // Increment to invalidate any pending track-change coroutines
     }
 
@@ -751,49 +719,11 @@ class ListenTogetherManager(
         ListenTogetherPlayerBridge.player?.volume = target
     }
 
-    private fun cancelDriftCorrection() {
-        driftCorrectionGeneration++
-        driftCorrectionJob?.cancel()
-        driftCorrectionJob = null
-        restoreDriftCorrectionSpeed()
-    }
-
-    private fun restoreDriftCorrectionSpeed() {
-        val player = driftCorrectedPlayer
-        val parameters = driftBasePlaybackParameters
-        val appliedParameters = driftAppliedPlaybackParameters
-        if (player != null && parameters != null && appliedParameters != null && player.playbackParameters == appliedParameters) {
-            player.setPlaybackParameters(parameters)
-        }
-        driftBasePlaybackParameters = null
-        driftAppliedPlaybackParameters = null
-        driftCorrectedPlayer = null
-    }
-
-    private fun invalidatePendingQueueMutations() {
-        queueSyncGeneration++
-        queueMutationJob?.cancel()
-        queueMutationJob = null
-    }
-
-    private fun enqueueQueueMutation(
-        generation: Int,
-        mutation: suspend () -> Unit,
-    ) {
-        val previous = queueMutationJob
-        queueMutationJob =
-            scope.launch {
-                previous?.join()
-                if (generation != queueSyncGeneration) return@launch
-                mutation()
-            }
-    }
-
     @UnstableApi
     private fun applyCanonicalUpcomingQueue(
         queue: List<TrackInfo>,
     ) {
-        invalidatePendingQueueMutations()
+        guestQueue.invalidate()
         val player = ListenTogetherPlayerBridge.player ?: return
 
         val state = roomState.value
@@ -810,75 +740,7 @@ class ListenTogetherManager(
             return
         }
 
-        val currentIndex = player.currentMediaItemIndex
-        if (currentIndex < 0) return
-        val mediaItems =
-            currentTrack
-                ?.let { canonicalPlaybackQueue(it, queue).drop(1) }
-                .orEmpty()
-                .asSequence()
-                .map { ListenTogetherPlayerBridge.trackToMediaItem(it) }
-                .toList()
-
-        ListenTogetherPlayerBridge.allowInternalSync = true
-        try {
-            player.shuffleModeEnabled = false
-            if (player.mediaItemCount > currentIndex + 1) {
-                player.removeMediaItems(currentIndex + 1, player.mediaItemCount)
-            }
-            if (mediaItems.isNotEmpty()) {
-                player.addMediaItems(currentIndex + 1, mediaItems)
-            }
-        } finally {
-            ListenTogetherPlayerBridge.allowInternalSync = false
-        }
-    }
-
-    private fun startDriftCorrection(
-        trackId: String?,
-        position: Long,
-        effectiveAtServerTime: Long?,
-    ) {
-        cancelDriftCorrection()
-        val player = ListenTogetherPlayerBridge.player ?: return
-        if (!player.playWhenReady || effectiveAtServerTime == null || client.serverTimeNow() == null) return
-
-        val baseParameters = player.playbackParameters
-        driftBasePlaybackParameters = baseParameters
-        driftCorrectedPlayer = player
-        val generation = driftCorrectionGeneration
-        driftCorrectionJob =
-            scope.launch {
-                while (
-                    generation == driftCorrectionGeneration &&
-                    driftCorrectedPlayer === ListenTogetherPlayerBridge.player &&
-                    !isHost &&
-                    player.playWhenReady &&
-                    (trackId == null || localTrackId() == trackId)
-                ) {
-                    val target = client.positionAtServerTime(position, effectiveAtServerTime, isPlaying = true)
-                    val drift = target - player.currentPosition
-                    val absoluteDrift = kotlin.math.abs(drift)
-                    if (absoluteDrift <= SOFT_SYNC_THRESHOLD_MS) break
-                    if (absoluteDrift >= HARD_SYNC_THRESHOLD_MS) {
-                        ListenTogetherPlayerBridge.seekTo(target)
-                        break
-                    }
-
-                    val appliedParameters = driftAppliedPlaybackParameters
-                    if (appliedParameters != null && player.playbackParameters != appliedParameters) break
-                    val multiplier = if (drift > 0L) 1f + DRIFT_CORRECTION_SPEED else 1f - DRIFT_CORRECTION_SPEED
-                    val correctedParameters = baseParameters.withSpeed(baseParameters.speed * multiplier)
-                    player.setPlaybackParameters(correctedParameters)
-                    driftAppliedPlaybackParameters = correctedParameters
-                    delay(DRIFT_CHECK_INTERVAL_MS)
-                }
-
-                if (generation == driftCorrectionGeneration) {
-                    restoreDriftCorrectionSpeed()
-                    driftCorrectionJob = null
-                }
-            }
+        guestQueue.replaceUpcoming(player, currentTrack, queue)
     }
 
     private fun applyPendingSyncIfReady() {
@@ -923,9 +785,9 @@ class ListenTogetherManager(
             ListenTogetherPlayerBridge.pause()
         }
         if (willPlay) {
-            startDriftCorrection(pendingTrackId, pending.position, pending.lastUpdate.takeIf { it > 0L })
+            driftCorrection.start(pendingTrackId, pending.position, pending.lastUpdate.takeIf { it > 0L })
         } else {
-            cancelDriftCorrection()
+            driftCorrection.cancel()
         }
 
         scope.launch {
@@ -1069,12 +931,12 @@ class ListenTogetherManager(
                     if (alreadyPlaying) {
                         // PLAY is also the host heartbeat, so ordinary drift must not interrupt playback.
                         if (shouldSeekDuringActivePlayback(posDiff, player.playbackState == Player.STATE_READY)) {
-                            cancelDriftCorrection()
+                            driftCorrection.cancel()
                             Timber.tag(TAG).d("Guest: hard sync ${player.currentPosition} -> $adjustedPos (diff ${posDiff}ms)")
                             ListenTogetherPlayerBridge.seekTo(adjustedPos)
                         }
                     } else {
-                        cancelDriftCorrection()
+                        driftCorrection.cancel()
                         if (posDiff > SOFT_SYNC_THRESHOLD_MS) {
                             ListenTogetherPlayerBridge.seekTo(adjustedPos)
                         }
@@ -1094,7 +956,7 @@ class ListenTogetherManager(
                 PlaybackActions.PAUSE -> {
                     val pos = actionPosition ?: 0L
                     val now = SystemClock.elapsedRealtime()
-                    cancelDriftCorrection()
+                    driftCorrection.cancel()
 
                     Timber.tag(TAG).d("Guest: PAUSE at position $pos, currently playing=${player.playWhenReady}")
 
@@ -1188,18 +1050,18 @@ class ListenTogetherManager(
                         return
                     }
 
-                    cancelDriftCorrection()
+                    driftCorrection.cancel()
                     if (kotlin.math.abs(player.currentPosition - adjustedPos) > SOFT_SYNC_THRESHOLD_MS) {
                         ListenTogetherPlayerBridge.seekTo(adjustedPos)
                     }
                     if (playing) {
-                        startDriftCorrection(seekTarget, pos, actionServerTime)
+                        driftCorrection.start(seekTarget, pos, actionServerTime)
                     }
                     lastSyncActionTime = now
                 }
 
                 PlaybackActions.CHANGE_TRACK -> {
-                    cancelDriftCorrection()
+                    driftCorrection.cancel()
                     actionTrackInfo?.let { track ->
                         Timber.tag(TAG).d("Guest: CHANGE_TRACK to ${track.title}, queue size=${action.queue?.size}")
 
@@ -1240,25 +1102,7 @@ class ListenTogetherManager(
                         Timber.tag(TAG).w("QUEUE_ADD missing trackInfo")
                     } else {
                         Timber.tag(TAG).d("Guest: QUEUE_ADD ${track.title}, insertNext=${action.insertNext == true}")
-                        val actionQueueGeneration = queueSyncGeneration
-                        enqueueQueueMutation(actionQueueGeneration) {
-                            if (queueSyncGeneration != actionQueueGeneration) return@enqueueQueueMutation
-                            // The host's TrackInfo already carries title/artist/thumbnail —
-                            // no network metadata fetch needed (N-Zik resolves streams lazily).
-                            val mediaItem = ListenTogetherPlayerBridge.trackToMediaItem(track)
-                            val p = ListenTogetherPlayerBridge.player
-                            if (p == null) return@enqueueQueueMutation
-                            ListenTogetherPlayerBridge.allowInternalSync = true
-                            try {
-                                if (action.insertNext == true) {
-                                    p.addMediaItems(p.currentMediaItemIndex + 1, listOf(mediaItem))
-                                } else {
-                                    p.addMediaItem(mediaItem)
-                                }
-                            } finally {
-                                ListenTogetherPlayerBridge.allowInternalSync = false
-                            }
-                        }
+                        guestQueue.addLegacy(track, action.insertNext == true)
                     }
                 }
 
@@ -1269,27 +1113,7 @@ class ListenTogetherManager(
                     } else if (removeId.isNullOrEmpty()) {
                         Timber.tag(TAG).w("QUEUE_REMOVE missing trackId")
                     } else {
-                        val actionQueueGeneration = queueSyncGeneration
-                        enqueueQueueMutation(actionQueueGeneration) {
-                            if (queueSyncGeneration != actionQueueGeneration) return@enqueueQueueMutation
-                            val p = ListenTogetherPlayerBridge.player ?: return@enqueueQueueMutation
-                            val startIndex = p.currentMediaItemIndex + 1
-                            var removeIndex = -1
-                            val total = p.mediaItemCount
-                            for (i in startIndex until total) {
-                                val id = p.getMediaItemAt(i).mediaId
-                                if (id == removeId || id.split("/").lastOrNull() == removeId) {
-                                    removeIndex = i
-                                    break
-                                }
-                            }
-                            if (removeIndex >= 0) {
-                                Timber.tag(TAG).d("Guest: QUEUE_REMOVE index=$removeIndex id=$removeId")
-                                p.removeMediaItem(removeIndex)
-                            } else {
-                                Timber.tag(TAG).w("QUEUE_REMOVE id not found in queue: $removeId")
-                            }
-                        }
+                        guestQueue.removeLegacy(removeId)
                     }
                 }
 
@@ -1297,18 +1121,7 @@ class ListenTogetherManager(
                     if (action.revision > 0L) {
                         applyCanonicalUpcomingQueue(action.queue.orEmpty())
                     } else {
-                        val actionQueueGeneration = queueSyncGeneration
-                        enqueueQueueMutation(actionQueueGeneration) {
-                            if (queueSyncGeneration != actionQueueGeneration) return@enqueueQueueMutation
-                            val p = ListenTogetherPlayerBridge.player ?: return@enqueueQueueMutation
-                            val currentIndex = p.currentMediaItemIndex
-                            val count = p.mediaItemCount
-                            val itemsAfter = count - (currentIndex + 1)
-                            if (itemsAfter > 0) {
-                                Timber.tag(TAG).d("Guest: QUEUE_CLEAR removing $itemsAfter items after current")
-                                p.removeMediaItems(currentIndex + 1, count - (currentIndex + 1))
-                            }
-                        }
+                        guestQueue.clearLegacy()
                     }
                 }
 
@@ -1317,7 +1130,7 @@ class ListenTogetherManager(
                 }
 
                 PlaybackActions.SYNC_QUEUE -> {
-                    invalidatePendingQueueMutations()
+                    guestQueue.invalidate()
                     val queue = action.queue
                     if (queue != null) {
                         Timber.tag(TAG).d("Guest: SYNC_QUEUE size=${queue.size}")
@@ -1336,7 +1149,7 @@ class ListenTogetherManager(
                             pendingSyncState = null
                             bufferingTrackId = null
                             bufferCompleteReceivedForTrack = null
-                            cancelDriftCorrection()
+                            driftCorrection.cancel()
                             ListenTogetherPlayerBridge.allowInternalSync = true
                             try {
                                 ListenTogetherPlayerBridge.clearMediaItemsForSync()
@@ -1472,12 +1285,12 @@ class ListenTogetherManager(
         effectiveAtServerTime: Long? = null,
         bypassBuffer: Boolean = false,
     ) {
-        invalidatePendingQueueMutations()
+        guestQueue.invalidate()
         if (ListenTogetherPlayerBridge.player == null) {
             Timber.tag(TAG).w("Cannot apply playback state - no player")
             return
         }
-        cancelDriftCorrection()
+        driftCorrection.cancel()
         // A locally-paused guest (their own pause tap, tracked in [guestLocalPause]) must stay
         // paused even when the server state says the host is playing: the position is still
 //
@@ -1585,7 +1398,7 @@ class ListenTogetherManager(
                     ListenTogetherPlayerBridge.seekTo(readyPosition)
                     if (effectivePlaying) {
                         ListenTogetherPlayerBridge.play()
-                        startDriftCorrection(currentTrack.id, position, effectiveAtServerTime)
+                        driftCorrection.start(currentTrack.id, position, effectiveAtServerTime)
                         Timber.tag(TAG).d("Bypass: PLAY issued")
                     } else {
                         ListenTogetherPlayerBridge.pause()

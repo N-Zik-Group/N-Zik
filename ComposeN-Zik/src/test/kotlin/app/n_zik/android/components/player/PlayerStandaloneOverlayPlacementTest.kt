@@ -2,6 +2,8 @@ package app.n_zik.android.components.player
 
 import android.Manifest
 import android.app.Application
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
@@ -28,6 +30,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityOptionsCompat
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.FontType
@@ -52,9 +56,18 @@ import app.n_zik.android.components.glass.LocalGlassPreviewSettings
 import app.n_zik.android.components.player.lyrics.LyricsScreen
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.LyricsTable
+import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.extensions.nextvisualizer.views.NextVisualizer
 import app.n_zik.android.models.Lyrics
+import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
+import coil3.ImageLoader
+import coil3.asImage
+import coil3.decode.DataSource
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -62,6 +75,7 @@ import io.mockk.unmockkAll
 import kotlinx.coroutines.flow.flowOf
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -75,7 +89,9 @@ import utils.ShadowVisualizerCaptureSizeRange
 import utils.VisualizerHelper
 import utils.VisualizerSnapshot
 import views.VisualizerView
+import java.io.File
 import java.time.Duration
+import java.util.concurrent.CopyOnWriteArrayList
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [32], application = Application::class, qualifiers = "w900dp-h900dp",
@@ -127,19 +143,77 @@ class PlayerStandaloneOverlayPlacementTest {
         verifyPlacement(visualizer = true)
     }
 
+    @Test fun `mounted visualizer reloads local cover at the same URI after artwork invalidation`() {
+        val bitmap = Bitmap.createBitmap(16, 16, Bitmap.Config.ARGB_8888)
+        val cover = File(context.filesDir, "visualizer-cover.png")
+        cover.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        val coverUri = "file://${cover.toURI().rawPath}"
+        val metadata = MediaMetadata.Builder().setArtworkUri(Uri.parse(coverUri)).build()
+        val item = MediaItem.Builder().setMediaId("visualizer-cover").setMediaMetadata(metadata).build()
+        val player = mockk<Player>(relaxed = true)
+        every { player.currentMediaItem } returns item
+        every { player.mediaMetadata } returns metadata
+        val binder = mockk<PlayerServiceModern.Binder>()
+        every { binder.player } returns player
+
+        val requests = CopyOnWriteArrayList<ImageRequest>()
+        val loader = mockk<ImageLoader>()
+        val result = mockk<SuccessResult>()
+        every { result.image } returns bitmap.asImage()
+        every { result.dataSource } returns DataSource.MEMORY_CACHE
+        coEvery { loader.execute(any()) } answers {
+            requests += firstArg<ImageRequest>()
+            result
+        }
+        mockkObject(ImageCacheFactory)
+        every { ImageCacheFactory.LOADER } returns loader
+        every { ImageCacheFactory.getDownloadDecision(any()) } returns
+            ImageCacheFactory.DownloadDecision(false, ImageCacheFactory.NetworkQuality.HIGH)
+
+        val registryOwner = grantedPermissionRegistryOwner()
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            val palette = DefaultDarkColorPalette
+            CompositionLocalProvider(
+                LocalActivityResultRegistryOwner provides registryOwner,
+                LocalPlayerServiceBinder provides binder,
+                LocalAppearance provides Appearance(palette,
+                    typographyOf(palette.text, true, false, FontType.Rubik),
+                    CircleShape, CircleShape, CircleShape),
+            ) {
+                NextVisualizer(true, onCover = false, fadeHosted = true)
+            }
+        }
+        settle()
+        compose.waitUntil(10_000) { requests.any { it.data == coverUri } }
+        val initialRequest = requests.first { it.data == coverUri }
+        val initialKey = requireNotNull(initialRequest.memoryCacheKey)
+
+        ArtworkRevisions.invalidate()
+        compose.waitUntil(10_000) {
+            shadowOf(Looper.getMainLooper()).idle()
+            compose.mainClock.advanceTimeByFrame()
+            requests.any { it.data == coverUri && it.memoryCacheKey != initialKey }
+        }
+        val replacement = requests.first { it.data == coverUri && it.memoryCacheKey != initialKey }
+        assertNotEquals(initialRequest.diskCacheKey, replacement.diskCacheKey)
+    }
+
+    private fun grantedPermissionRegistryOwner() = object : ActivityResultRegistryOwner {
+        override val activityResultRegistry = object : ActivityResultRegistry() {
+            override fun <I, O> onLaunch(requestCode: Int, contract: ActivityResultContract<I, O>,
+                input: I, options: ActivityOptionsCompat?) {
+                error("Granted microphone permission must reach the renderer without a request")
+            }
+        }
+    }
+
     private fun verifyPlacement(visualizer: Boolean) {
         val glass = mutableStateOf(false)
         val onCover = mutableStateOf(false)
         val landscape = mutableStateOf(false)
         var rootView: View? = null
-        val registryOwner = object : ActivityResultRegistryOwner {
-            override val activityResultRegistry = object : ActivityResultRegistry() {
-                override fun <I, O> onLaunch(requestCode: Int, contract: ActivityResultContract<I, O>,
-                    input: I, options: ActivityOptionsCompat?) {
-                    error("Granted microphone permission must reach the renderer without a request")
-                }
-            }
-        }
+        val registryOwner = grantedPermissionRegistryOwner()
         compose.mainClock.autoAdvance = false
         compose.setContent {
             rootView = LocalView.current.rootView

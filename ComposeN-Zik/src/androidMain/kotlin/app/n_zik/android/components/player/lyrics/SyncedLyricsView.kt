@@ -20,7 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -47,7 +46,6 @@ import app.n_zik.android.R
 
 import app.n_zik.android.components.player.lyrics.utils.SynchronizedLyrics
 import app.n_zik.android.utils.verticalFadingEdge
-import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.colorPalette
 import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
@@ -56,7 +54,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import app.n_zik.android.components.player.lyrics.utils.HtmlDecoder
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import androidx.compose.animation.core.tween
@@ -198,116 +195,15 @@ fun SyncedLyricsView(
         }
     }
 
-    // --- Translation cache ---
-    // Keyed on options that affect translation output; survives scroll without re-fetching.
-    val translationCache = remember(syncedSentences, showSecondLine, translateEnabled, romanizationEnabled, languageDestination) {
-        mutableStateMapOf<Int, String>()
-    }
-
-    // Pre-compute translations for every sentence in the background, once per key change.
-    LaunchedEffect(syncedSentences, showSecondLine, translateEnabled, romanizationEnabled, languageDestination) {
-        if (!showSecondLine && !translateEnabled && !romanizationEnabled) return@LaunchedEffect
-
-        val linesToTranslate = mutableListOf<Pair<Int, String>>()
-        syncedSentences.forEachIndexed { index, sentence ->
-            val trimmed = sentence.text.trim()
-            if (trimmed.isEmpty()) {
-                translationCache[index] = trimmed
-            } else if (!translationCache.containsKey(index)) {
-                linesToTranslate.add(index to trimmed)
-            }
-        }
-
-        if (linesToTranslate.isEmpty()) return@LaunchedEffect
-
-        if (translateEnabled) {
-            withContext(NzikDispatchers.UI) {
-                Toaster.i(R.string.lyrics_translation_in_progress_message)
-            }
-        }
-
-        withContext(NzikDispatchers.DATA) {
-            try {
-                // Join all lines to translate in one go
-                val textToTranslate = linesToTranslate.joinToString("\n") { it.second }
-
-                val helperTranslation = translator.translate(textToTranslate, Language.CHINESE_TRADITIONAL, Language.AUTO)
-                var destLanguage = languageDestination
-                if (destLanguage == Language.AUTO) {
-                    destLanguage = if (helperTranslation.translatedText == textToTranslate)
-                        Language.CHINESE_TRADITIONAL
-                    else
-                        helperTranslation.sourceLanguage
-                }
-                val mainTranslation = translator.translate(textToTranslate, destLanguage, Language.AUTO)
-
-                val cleanTranslatedText = mainTranslation.translatedText.replace("\\\"", "\"").trim()
-                val cleanPronunciation = mainTranslation.translatedPronunciation?.replace("\\\"", "\"")?.trim()
-
-                val helpPronLineText = helperTranslation.sourcePronunciation?.trim() ?: ""
-                val mainPronLineText = mainTranslation.sourcePronunciation?.trim() ?: textToTranslate
-
-                val cleanTransLines = cleanTranslatedText.split("\n")
-                val cleanPronLines = cleanPronunciation?.split("\n")
-                val helpPronLines = helpPronLineText.split("\n")
-                val mainPronLines = mainPronLineText.split("\n")
-
-                linesToTranslate.forEachIndexed { i, (sentenceIndex, trimmed) ->
-                    val cleanTransLine = cleanTransLines.getOrNull(i)?.trim() ?: ""
-                    val cleanPronLine = cleanPronLines?.getOrNull(i)?.trim()
-                    
-                    val hPronLine = helpPronLines.getOrNull(i)?.trim() ?: ""
-                    val mPronLine = mainPronLines.getOrNull(i)?.trim() ?: trimmed
-                    val transPronLine = cleanPronLine ?: cleanTransLine
-
-                    val isSameText = mainTranslation.sourceText == mainTranslation.translatedText
-
-                    val outputText = if (!showSecondLine || isSameText) {
-                        if (translateEnabled && romanizationEnabled) {
-                            transPronLine
-                        } else if (translateEnabled) {
-                            cleanTransLine
-                        } else if (romanizationEnabled) {
-                            if (helperTranslation.sourceText == helperTranslation.translatedText)
-                                hPronLine
-                            else
-                                mPronLine.ifEmpty { trimmed }
-                        } else {
-                            trimmed
-                        }
-                    } else {
-                        if (translateEnabled && romanizationEnabled) {
-                            val pron = if (helperTranslation.sourceText == helperTranslation.translatedText) hPronLine else mPronLine.ifEmpty { trimmed }
-                            pron + "\n[$transPronLine]"
-                        } else if (translateEnabled) {
-                            trimmed + "\n[$cleanTransLine]"
-                        } else if (romanizationEnabled) {
-                            val pron = if (helperTranslation.sourceText == helperTranslation.translatedText) hPronLine else mPronLine.ifEmpty { trimmed }
-                            trimmed + "\n[$pron]"
-                        } else {
-                            trimmed
-                        }
-                    }
-
-                    val finalText = outputText.replace("\\r", "\r").replace("\\n", "\n")
-                    translationCache[sentenceIndex] = finalText
-                }
-
-                if (translateEnabled) {
-                    withContext(NzikDispatchers.UI) {
-                        Toaster.s(R.string.lyrics_translation_success_message)
-                    }
-                }
-            } catch (e: Exception) {
-                Timber.tag("SyncedLyricsView").e("sync translation error: ${e.message}")
-                if (translateEnabled) {
-                    withContext(NzikDispatchers.UI) {
-                        Toaster.e(R.string.lyrics_translation_failed_message)
-                    }
-                }
-            }
-        }
-    }
+    val translationCache = rememberLyricsTranslations(
+        syncedSentences,
+        showSecondLine,
+        translateEnabled,
+        romanizationEnabled,
+        languageDestination,
+        translator,
+        logTag = "SyncedLyricsView",
+    ) { it.text }
 
     val lazyListState = rememberLazyListState()
 

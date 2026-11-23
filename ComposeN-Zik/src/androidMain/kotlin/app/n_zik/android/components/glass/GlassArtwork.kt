@@ -7,11 +7,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
@@ -29,6 +31,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 
+@Immutable
 internal data class GlassArtwork(val mediaId: String?, val uri: String?)
 
 /** Transparent artwork blends back to the live theme accent while its coverage fades out. */
@@ -92,10 +95,19 @@ private fun Player.glassArtwork(): GlassArtwork {
     )
 }
 
+internal class PlayerArtworkObservation(val player: Player?, val state: State<GlassArtwork?>)
+
+internal val LocalPlayerArtworkObservation = staticCompositionLocalOf<PlayerArtworkObservation?> { null }
+
+@Composable
+internal fun rememberGlassArtwork(player: Player?): GlassArtwork? =
+    (LocalPlayerArtworkObservation.current?.takeIf { it.player === player }
+        ?: rememberPlayerArtworkObservation(player)).state.value
+
 /** Observes metadata as well as queue transitions, including artwork replaced on the same song. */
 @Composable
-internal fun rememberGlassArtwork(player: Player?): GlassArtwork? {
-    var artwork by remember(player) { mutableStateOf(player?.glassArtwork()) }
+internal fun rememberPlayerArtworkObservation(player: Player?): PlayerArtworkObservation {
+    val artwork = remember(player) { mutableStateOf(player?.glassArtwork()) }
     DisposableEffect(player) {
         val listener = object : Player.Listener {
             override fun onEvents(player: Player, events: Player.Events) {
@@ -104,15 +116,15 @@ internal fun rememberGlassArtwork(player: Player?): GlassArtwork? {
                         Player.EVENT_MEDIA_METADATA_CHANGED,
                         Player.EVENT_TIMELINE_CHANGED,
                     )) {
-                    artwork = player.glassArtwork()
+                    artwork.value = player.glassArtwork()
                 }
             }
         }
         player?.addListener(listener)
-        artwork = player?.glassArtwork()
+        artwork.value = player?.glassArtwork()
         onDispose { player?.removeListener(listener) }
     }
-    return artwork
+    return remember(player, artwork) { PlayerArtworkObservation(player, artwork) }
 }
 
 /** Uses NZik's shared dominant-cover extraction rather than an unrelated vibrant accent. */

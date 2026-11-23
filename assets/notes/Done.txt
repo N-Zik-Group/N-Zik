@@ -289,3 +289,8 @@ Refactor:
 - refactor(rescue): extract scope selectors
   - Move the All and Per profile chips and the horizontal target selector into RescueScopeSelectors. Keep their appearance, layout and transition ownership in the existing screen.
   - Preserve target selection and profile data reloads. Verify four focused tests, both categories and opening and canceling the import picker on the Pixel VM.
+- refactor(app): split large Android components and share playback plumbing
+  - Extract responsibilities from 35 Android and common Kotlin files across library navigation, Rescue, Maintenance, Theme Store, Listen Together, Bridge, Rewind and playback.
+  - Share artwork observation, thumbnail request handling, lyric translation and carousel rendering. Reuse the playback position clock for karaoke, including when the shared owner is absent.
+  - Remove unused navigation and artwork paths while retaining active routes, Room schemas, profile boundaries and published resource aliases.
+  - Assemble Debug and pass 52 targeted review tests. Verify same-track artwork updates and same-URI invalidation through mounted consumers and check player controls on the Pixel VM.

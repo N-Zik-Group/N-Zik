@@ -1,38 +1,23 @@
-/**
- * Metrolist Project (C) 2026
- * Licensed under GPL-3.0 | See git history for contributors
- *
- * Ported for N-Zik: persistence goes through [DataStoreUtils] (SharedPreferences) instead of
- * DataStore, network observation goes through [NetworkQualityHelper], and the background-idle
- * disconnect policy (ProcessLifecycleOwner) is dropped — N-Zik has no lifecycle-process
- * dependency, so the connection stays alive in the background (wake lock held).
- *
- * NOTE on `!!` usage (Metrolist pattern, kept as-is): every occurrence is null-guarded at
- * its call site (explicit `!= null` checks above, room state established by
- * RoomCreated/JoinApproved, or a null-rejecting predicate) — a null at these points would
- * mean a protocol-invariant violation; failing fast is preferred over silent desync.
- */
+// Metrolist Project (C) 2026, licensed under GPL-3.0. See git history for contributors.
+// Room invariants or local guards establish the asserted values before use.
 
 package app.n_zik.android.listentogether
 
-import androidx.annotation.StringRes
-import app.n_zik.android.appTextResources
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.PowerManager
 import android.os.SystemClock
+import androidx.annotation.StringRes
 import androidx.core.app.ActivityCompat
 import androidx.core.content.getSystemService
 import com.google.protobuf.MessageLite
-import app.n_zik.android.core.utils.Toaster
-import app.n_zik.android.R
-import app.n_zik.android.core.network.utils.NetworkQualityHelper
-import app.n_zik.android.core.notifications.ensureStartupNotificationChannel
-import app.n_zik.android.utils.DataStoreUtils
-import app.n_zik.android.utils.getActiveProfile
-import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -43,18 +28,21 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import timber.log.Timber
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicLong
+
+import app.n_zik.android.R
+import app.n_zik.android.appTextResources
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import app.n_zik.android.core.notifications.ensureStartupNotificationChannel
+import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.getActiveProfile
 
 /** Shared Listen Together WebSocket client installed by the application. */
 class ListenTogetherClient(
@@ -147,13 +135,8 @@ class ListenTogetherClient(
         val events: SharedFlow<ListenTogetherEvent> = _events.asSharedFlow()
         private val eventQueue = Channel<ListenTogetherEvent>(Channel.UNLIMITED)
 
-        // Used from [loadPersistedSession] launched in init — must be declared before init (Kotlin
-        // initialization order + IO thread can run the coroutine before later properties run).
-        private val json =
-            Json {
-                ignoreUnknownKeys = true
-                encodeDefaults = true
-            }
+        // The startup coroutine reads preferences immediately after launch.
+        private val sessionPreferences = ListenTogetherSessionPreferences(context)
 
         /** Incremented when the user explicitly starts create/join so a late-finishing [loadPersistedSession] cannot restore disk state over that intent (would make [onOpen] choose RECONNECT instead of [executePendingAction]). */
         private val sessionApplyGeneration = AtomicInteger(0)
@@ -217,11 +200,12 @@ class ListenTogetherClient(
         private fun loadPersistedSession() {
             val generationAtLoadStart = sessionApplyGeneration.get()
             try {
-                val token = DataStoreUtils.getString(context, PREF_SESSION_TOKEN)
-                val roomCode = DataStoreUtils.getString(context, PREF_ROOM_CODE)
-                val userId = DataStoreUtils.getString(context, PREF_USER_ID)
-                val isHost = DataStoreUtils.getBoolean(context, PREF_IS_HOST, false)
-                val timestamp = DataStoreUtils.getString(context, PREF_SESSION_TIMESTAMP).toLongOrNull() ?: 0L
+                val session = sessionPreferences.read()
+                val token = session.token
+                val roomCode = session.roomCode
+                val userId = session.userId
+                val isHost = session.isHost
+                val timestamp = session.timestamp
 
                 // Check if session is still valid (within grace period)
                 if (token.isNotEmpty() && roomCode.isNotEmpty() &&
@@ -268,14 +252,7 @@ class ListenTogetherClient(
          */
         private fun loadBlockedUsernames() {
             try {
-                val blockedJson = DataStoreUtils.getString(context, PREF_BLOCKED_USERS)
-                val blockedList =
-                    if (blockedJson.isNotEmpty()) {
-                        json.decodeFromString<List<String>>(blockedJson)
-                    } else {
-                        emptyList()
-                    }
-                _blockedUsernames.value = blockedList.toSet()
+                _blockedUsernames.value = sessionPreferences.readBlockedUsernames()
             } catch (e: Exception) {
                 log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_load_blocked_usernames, e.message)
                 _blockedUsernames.value = emptySet()
@@ -285,10 +262,9 @@ class ListenTogetherClient(
         /**
          * Save blocked usernames to storage
          */
-        private suspend fun saveBlockedUsernames() {
+        private fun saveBlockedUsernames() {
             try {
-                val blockedJson = json.encodeToString(_blockedUsernames.value.toList())
-                DataStoreUtils.saveString(context, PREF_BLOCKED_USERS, blockedJson)
+                sessionPreferences.saveBlockedUsernames(_blockedUsernames.value)
             } catch (e: Exception) {
                 log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_save_blocked_usernames, e.message)
             }
@@ -320,12 +296,12 @@ class ListenTogetherClient(
             try {
                 val token = sessionToken ?: return
                 scope.launch {
-                    DataStoreUtils.saveString(context, PREF_SESSION_TOKEN, token)
-                    DataStoreUtils.saveString(context, PREF_ROOM_CODE, storedRoomCode ?: "")
-                    DataStoreUtils.saveString(context, PREF_USER_ID, _userId.value ?: "")
-                    DataStoreUtils.saveBoolean(context, PREF_IS_HOST, wasHost)
-                    // Long timestamps are stored as strings (DataStoreUtils has no long accessor)
-                    DataStoreUtils.saveString(context, PREF_SESSION_TIMESTAMP, System.currentTimeMillis().toString())
+                    sessionPreferences.save(
+                        token = token,
+                        roomCode = { storedRoomCode.orEmpty() },
+                        userId = { _userId.value.orEmpty() },
+                        isHost = { wasHost },
+                    )
                 }
             } catch (e: Exception) {
                 log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_save_persisted_session, e.message)
@@ -338,13 +314,7 @@ class ListenTogetherClient(
         private fun clearPersistedSession() {
             try {
                 scope.launch {
-                    val editor = DataStoreUtils.prefs(context).edit()
-                    editor.remove(PREF_SESSION_TOKEN)
-                    editor.remove(PREF_ROOM_CODE)
-                    editor.remove(PREF_USER_ID)
-                    editor.remove(PREF_IS_HOST)
-                    editor.remove(PREF_SESSION_TIMESTAMP)
-                    editor.apply()
+                    sessionPreferences.clear()
                 }
             } catch (e: Exception) {
                 log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_clear_persisted_session, e.message)
@@ -935,101 +905,7 @@ class ListenTogetherClient(
                         }
                         log(LogLevel.DEBUG, R.string.listen_together_log_event_playback_sync, logDetail(R.string.listen_together_log_detail_action, payload.action))
 
-                        // Update room state based on action
-                        when (payload.action) {
-                            PlaybackActions.PLAY -> {
-                                _roomState.value =
-                                    _roomState.value?.copy(
-                                        isPlaying = true,
-                                        position = payload.positionOrNull ?: _roomState.value!!.position,
-                                        lastUpdate = payload.serverTimeOrNull ?: _roomState.value!!.lastUpdate,
-                                        revision = maxOf(_roomState.value!!.revision, payload.revision),
-                                    )
-                            }
-
-                            PlaybackActions.PAUSE -> {
-                                _roomState.value =
-                                    _roomState.value?.copy(
-                                        isPlaying = false,
-                                        position = payload.positionOrNull ?: _roomState.value!!.position,
-                                        lastUpdate = payload.serverTimeOrNull ?: _roomState.value!!.lastUpdate,
-                                        revision = maxOf(_roomState.value!!.revision, payload.revision),
-                                    )
-                            }
-
-                            PlaybackActions.SEEK -> {
-                                _roomState.value =
-                                    _roomState.value?.copy(
-                                        position = payload.positionOrNull ?: _roomState.value!!.position,
-                                        lastUpdate = payload.serverTimeOrNull ?: _roomState.value!!.lastUpdate,
-                                        revision = maxOf(_roomState.value!!.revision, payload.revision),
-                                    )
-                            }
-
-                            PlaybackActions.CHANGE_TRACK -> {
-                                _roomState.value =
-                                    _roomState.value?.copy(
-                                        currentTrack = payload.trackInfoOrNull,
-                                        isPlaying = false,
-                                        position = 0,
-                                        lastUpdate = payload.serverTimeOrNull ?: _roomState.value!!.lastUpdate,
-                                        queue = if (payload.revision > 0L) payload.queue.orEmpty() else _roomState.value!!.queue,
-                                        revision = maxOf(_roomState.value!!.revision, payload.revision),
-                                    )
-                            }
-
-                            PlaybackActions.QUEUE_ADD -> {
-                                val ti = payload.trackInfoOrNull
-                                if (ti != null) {
-                                    val currentQueue = _roomState.value?.queue ?: emptyList()
-                                    _roomState.value =
-                                        _roomState.value?.copy(
-                                            queue =
-                                                if (payload.revision > 0L) {
-                                                    payload.queue.orEmpty()
-                                                } else if (payload.insertNext == true) {
-                                                    listOf(ti) + currentQueue
-                                                } else {
-                                                    currentQueue + ti
-                                                },
-                                        )
-                                }
-                            }
-
-                            PlaybackActions.QUEUE_REMOVE -> {
-                                val id = payload.trackIdOrNull
-                                if (!id.isNullOrEmpty()) {
-                                    val currentQueue = _roomState.value?.queue ?: emptyList()
-                                    _roomState.value =
-                                        _roomState.value?.copy(
-                                            queue = if (payload.revision > 0L) payload.queue.orEmpty() else currentQueue.filter { it.id != id },
-                                        )
-                                }
-                            }
-
-                            PlaybackActions.QUEUE_CLEAR -> {
-                                _roomState.value =
-                                    _roomState.value?.copy(
-                                        queue = if (payload.revision > 0L) payload.queue.orEmpty() else emptyList(),
-                                    )
-                            }
-
-                            PlaybackActions.SYNC_QUEUE -> {
-                                _roomState.value = _roomState.value?.copy(queue = payload.queue.orEmpty())
-                            }
-
-                            PlaybackActions.SET_VOLUME -> {
-                                val vol = payload.volumeOrNull
-                                if (vol != null) {
-                                    _roomState.value = _roomState.value?.copy(volume = vol.coerceIn(0f, 1f))
-                                }
-                            }
-                        }
-
-                        _roomState.value =
-                            _roomState.value?.copy(
-                                revision = maxOf(_roomState.value!!.revision, payload.revision),
-                            )
+                        _roomState.applyPlaybackAction(payload)
 
                         emitEvent(ListenTogetherEvent.PlaybackSync(payload))
                     }
@@ -1054,16 +930,7 @@ class ListenTogetherClient(
                             log(LogLevel.DEBUG, R.string.listen_together_log_event_discarding_stale_sync_state, logDetail(R.string.listen_together_log_detail_revision, payload.revision))
                             return
                         }
-                        _roomState.value =
-                            _roomState.value?.copy(
-                                currentTrack = payload.currentTrackOrNull,
-                                isPlaying = payload.isPlaying,
-                                position = payload.position,
-                                lastUpdate = payload.lastUpdate,
-                                volume = payload.volume,
-                                queue = payload.queue ?: _roomState.value!!.queue,
-                                revision = maxOf(_roomState.value!!.revision, payload.revision),
-                            )
+                        _roomState.applyPlaybackSnapshot(payload)
                         log(LogLevel.INFO, R.string.listen_together_log_event_sync_state_received, logDetail(R.string.listen_together_log_detail_playback_state, payload.isPlaying, payload.position))
                         emitEvent(ListenTogetherEvent.SyncStateReceived(payload))
                     }

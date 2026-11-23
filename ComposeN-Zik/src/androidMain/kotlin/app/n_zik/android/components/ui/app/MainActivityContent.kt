@@ -10,21 +10,14 @@ import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -116,16 +109,15 @@ import app.n_zik.android.components.CustomBottomSheet
 import app.n_zik.android.components.dialog.common.triggerSamsungStorageAdvice
 import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
 import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.glass.GlassDialogOverlayHost
 import app.n_zik.android.components.glass.GlassMenuHostState
 import app.n_zik.android.components.glass.GlassModalContent
-import app.n_zik.android.components.glass.GlassOverlayHost
 import app.n_zik.android.components.glass.GlassRenderer
 import app.n_zik.android.components.glass.GlassRippleProvider
 import app.n_zik.android.components.glass.GlassSceneContent
 import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.glassRenderer
-import app.n_zik.android.components.glass.rememberGlassArtwork
+import app.n_zik.android.components.glass.LocalPlayerArtworkObservation
+import app.n_zik.android.components.glass.rememberPlayerArtworkObservation
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.navigation.AppNavigation
@@ -157,7 +149,6 @@ import app.n_zik.android.components.player.presentMiniplayerThenExpand
 import app.n_zik.android.components.player.rememberArtworkDisplayResult
 import app.n_zik.android.components.player.shouldComposePlayerSheet
 import app.n_zik.android.components.player.showMiniplayerIfDismissed
-import app.n_zik.android.components.theme.AppearanceMenuSheet
 import app.n_zik.android.components.theme.DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT
 import app.n_zik.android.components.theme.DynamicAppearanceOwner
 import app.n_zik.android.components.theme.DynamicPaletteArtworkListener
@@ -788,8 +779,9 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
         ambientLyricsColor == LyricsColor.Cover ||
         ambientVisualizerEnabled && ambientVisualizerColor == VisualizerWhiteColorOption.Cover)
     var fixedArtworkColors by remember(preferences) { mutableStateOf<ArtworkDisplayColors?>(null) }
+    val playerArtwork = rememberPlayerArtworkObservation(binder?.player)
     if (needsFixedArtwork) {
-        val artwork = rememberGlassArtwork(binder?.player)
+        val artwork = playerArtwork.state.value
         val result = rememberArtworkDisplayResult(artwork?.uri, appearance.colorPalette.isDark,
             awaitArtworkMetadata = artwork?.mediaId != null)
         if (result.resolved) SideEffect {
@@ -1169,6 +1161,7 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
                     LocalShimmerPalette provides LocalAppearance.current.colorPalette,
                     LocalPlayerServiceBinder provides binder,
                     LocalPlaybackPositionClock provides positionClock,
+                    LocalPlayerArtworkObservation provides playerArtwork,
                     LocalPlayerMusicVideo provides videoSession.takeUnless { pipState.value },
                     LocalFloatingDock provides pageDock,
                     app.n_zik.android.components.navigation.LocalSideRailScrollOrigin provides scaffoldScroll.sideRailScrollOrigin,
@@ -1401,51 +1394,16 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
 
                     val menuState = LocalMenuState.current
                     val menuSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-                    AppearanceMenuSheet(
-                        showSheet = menuState.isDisplayed,
-                        onDismissRequest = menuState::hide,
-                        sheetState = menuSheetState,
-                    ) {
-                        AnimatedContent(
-                            targetState = menuState.contentState,
-                            transitionSpec = {
-                                slideInHorizontally(animationSpec = tween(300)) { width -> width / 2 } + fadeIn(animationSpec = tween(300)) togetherWith
-                                slideOutHorizontally(animationSpec = tween(300)) { width -> -width / 2 } + fadeOut(animationSpec = tween(300))
-                            },
-                            label = "MenuContentTransition"
-                        ) { target ->
-                            BackHandler(enabled = menuState.hasPrevious) {
-                                menuState.pop()
-                            }
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                target.second()
-                            }
-                        }
-                    }
+                    AppAppearanceMenu(menuState, menuSheetState)
 
                     }
                     }
-                    val toastGlass = rememberGlassSettings(app.n_zik.android.components.glass.GlassScope.Toast)
-                    app.n_zik.android.components.glass.GlassToastOverlayScene(
-                        backdrop = glassMenuHost.modalBackdrop,
-                        captureOverlays = toastNeedsLiveBackdrop &&
-                            toastGlass.usesGlassMaterial(GlassArea.Menus) &&
-                            app.n_zik.android.components.glass.glassContentCaptureEnabled(toastGlass) &&
-                            (glassMenuHost.dialogs.hasDialogs || glassMenuHost.entry != null),
-                        overlays = {
-                            GlassDialogOverlayHost(glassMenuHost)
-                            // Draw anchored glass menus above both navigation and the player.
-                            GlassOverlayHost(glassMenuHost)
-                        },
-                    ) { toastBackdrop ->
-                        app.n_zik.android.components.glass.GlassToastHost(
-                            backdrop = toastBackdrop,
-                            onPresenceChanged = { toastNeedsLiveBackdrop = it },
-                            bottomInset = with(LocalDensity.current) {
-                                windowsInsets.getBottom(this).toDp()
-                            },
-                        )
-                    }
+                    AppGlassOverlayScene(
+                        host = glassMenuHost,
+                        toastNeedsLiveBackdrop = toastNeedsLiveBackdrop,
+                        onToastPresenceChanged = { toastNeedsLiveBackdrop = it },
+                        windowsInsets = windowsInsets,
+                    )
                     }
 
                 }

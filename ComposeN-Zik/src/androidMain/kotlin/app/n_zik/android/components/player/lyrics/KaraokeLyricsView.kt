@@ -3,6 +3,7 @@ package app.n_zik.android.components.player.lyrics
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.animateScrollBy
@@ -18,32 +19,37 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toLong
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -51,60 +57,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.enums.ColorPaletteMode
+import dev.rebelonion.translator.Language
+import dev.rebelonion.translator.Translator
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
+import timber.log.Timber
+
+import app.n_zik.android.colorPalette
 import app.n_zik.android.components.player.lyricsThemeColor
 import app.n_zik.android.components.theme.LaunchedAppearanceAnimationEffect
+import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.enums.lyrics.LyricsAlignment
 import app.n_zik.android.enums.lyrics.LyricsBackground
 import app.n_zik.android.enums.lyrics.LyricsColor
 import app.n_zik.android.enums.lyrics.LyricsFontSize
 import app.n_zik.android.enums.lyrics.LyricsHighlight
 import app.n_zik.android.enums.lyrics.LyricsOutline
-import app.n_zik.android.colorPalette
-import app.n_zik.android.uiRoundnessShape
-import app.n_zik.android.utils.verticalFadingEdge
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.drawscope.clipRect
-import app.n_zik.android.R
-import app.n_zik.android.core.utils.Toaster
-import dev.rebelonion.translator.Language
-import dev.rebelonion.translator.Translator
-import kotlinx.coroutines.withContext
-import timber.log.Timber
-import app.n_zik.android.enums.lyrics.LyricsAlignment
 import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import androidx.compose.ui.graphics.Path
-import androidx.compose.runtime.withFrameMillis
-import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.text.TextLayoutResult
-import kotlin.math.roundToLong
-
-/**
- * A single word with its start and end time in milliseconds.
- */
-data class KaraokeWord(
-    val text: String,
-    val startMs: Long,
-    val endMs: Long,
-    val charStartIndex: Int = 0,
-    val hasExplicitEnd: Boolean = true
-)
-
-/** A single karaoke line: the text, its timestamp, word-level timings, and agent/background info for positioning. */
-data class KaraokeLine(
-    val timeMs: Long,
-    val text: String,
-    val words: List<KaraokeWord>,
-    val agent: String? = null,     // "v1", "v2", "v1000", etc.
-    val isBackground: Boolean = false,
-    val endMs: Long? = null
-)
+import app.n_zik.android.utils.verticalFadingEdge
 
 /**
  * Helper to create a fast clipping path using bounding boxes instead of complex text glyph outlines.
@@ -112,16 +84,16 @@ data class KaraokeLine(
 fun getFastPathForRange(layout: TextLayoutResult, startIdx: Int, endIdx: Int): Path {
     val path = Path()
     if (startIdx > endIdx || startIdx < 0 || endIdx >= layout.layoutInput.text.length) return path
-    
+
     val startLine = layout.getLineForOffset(startIdx)
     val endLine = layout.getLineForOffset(endIdx)
-    
+
     for (i in startLine..endLine) {
         val lineStartIdx = layout.getLineStart(i)
         val lineEndIdx = layout.getLineEnd(i, visibleEnd = true)
         val clipStartIdx = maxOf(startIdx, lineStartIdx)
         val clipEndIdx = minOf(endIdx, lineEndIdx - 1)
-        
+
         if (clipStartIdx <= clipEndIdx) {
             val startBox = layout.getBoundingBox(clipStartIdx)
             val endBox = layout.getBoundingBox(clipEndIdx)
@@ -131,162 +103,10 @@ fun getFastPathForRange(layout: TextLayoutResult, startIdx: Int, endIdx: Int): P
     return path
 }
 
-/**
- * Parse the extended LRC format produced by TTMLParser.toLRC().
- *
- * Format: `[MM:SS.cc]{agent:v1|bg}Line text` followed by a word line
- * `<word1:startSec:endSec|word2:startSec:endSec>`.
- * Imported Lyricsfile can use millisecond line tags and escaped word text.
- */
-fun parseKaraokeLrc(text: String, preserveText: Boolean = false): List<KaraokeLine> {
-    val lines = if (preserveText) text.lines() else text.trim().lines()
-    val result = mutableListOf<KaraokeLine>()
-
-    val agentRegex = Regex("\\{agent:([^}]+)\\}")
-    val bgRegex = Regex("\\{bg\\}")
-
-    var i = 0
-    while (i < lines.size) {
-        val line = lines[i]
-        if (line.startsWith("[")) {
-            // Parse [MM:SS.cc]text
-            val closeBracket = line.indexOf(']')
-            if (closeBracket < 0) { i++; continue }
-            val timeStr = line.substring(1, closeBracket)
-            var lineText = line.substring(closeBracket + 1)
-            val importedLine = parseLyricsFileLineText(lineText)
-
-            // Parse agent tag
-            val agentMatch = if (importedLine == null) agentRegex.find(lineText) else null
-            val agent = agentMatch?.groupValues?.get(1)
-            if (agentMatch != null) {
-                lineText = lineText.replaceFirst(agentRegex, "")
-            }
-
-            // Parse background tag
-            val isBg = importedLine == null && bgRegex.containsMatchIn(lineText)
-            if (isBg) {
-                lineText = lineText.replaceFirst(bgRegex, "")
-            }
-
-            val untaggedText = importedLine?.text ?: lineText
-            val cleanText = if (preserveText) untaggedText else untaggedText.trim()
-            val timeMs = parseLrcTime(timeStr)
-            if (timeMs == null) {
-                i++
-                continue
-            }
-
-            // Check if next lines are word-timing lines (can be multiline)
-            var words = emptyList<KaraokeWord>()
-            if (i + 1 < lines.size && lines[i + 1].trim().startsWith("<")) {
-                val wordsRawBuilder = StringBuilder()
-                i++ // Move to the first word timing line
-                while (i < lines.size) {
-                    val lineTrim = lines[i].trim()
-                    wordsRawBuilder.append(lineTrim)
-                    if (lineTrim.endsWith(">")) {
-                        break
-                    }
-                    i++
-                }
-                words = parseWordTimings(wordsRawBuilder.toString())
-                var searchIndex = 0
-                words = words.map { w ->
-                    val idx = cleanText.indexOf(w.text, searchIndex)
-                    if (idx >= 0) {
-                        searchIndex = idx + w.text.length
-                        w.copy(charStartIndex = idx)
-                    } else {
-                        w
-                    }
-                }
-            }
-
-            result.add(KaraokeLine(timeMs, cleanText, words, agent, isBg, importedLine?.endMs))
-        }
-        i++
-    }
-    return result
-}
-
-private val karaokeTimestamp = Regex("""(\d{1,9}):([0-5]\d)(?:[.:](\d{1,3}))?""")
-
-private fun parseLrcTime(timeStr: String): Long? {
-    val match = karaokeTimestamp.matchEntire(timeStr) ?: return null
-    val (minutes, seconds, fraction) = match.destructured
-    return minutes.toLong() * 60_000 + seconds.toLong() * 1000 + fraction.padEnd(3, '0').toLong()
-}
-
-private fun parseWordTimings(line: String): List<KaraokeWord> {
-    // Format: <word1:startSec:endSec|word2:startSec:endSec>
-    val imported = line.startsWith(LYRICSFILE_WORD_TIMINGS_PREFIX)
-    val content = line.removePrefix(if (imported) LYRICSFILE_WORD_TIMINGS_PREFIX else "<").removeSuffix(">")
-    if (content.isBlank()) return emptyList()
-
-    return content.split("|").mapNotNull { part ->
-        // Handle words that may contain colons (unlikely but defensive)
-        // Format: text:startTime:endTime
-        val lastColon = part.lastIndexOf(':')
-        if (lastColon < 0) return@mapNotNull null
-        val secondLastColon = part.lastIndexOf(':', lastColon - 1)
-        if (secondLastColon < 0) return@mapNotNull null
-
-        val encodedWordText = part.substring(0, secondLastColon)
-        val wordText = if (imported) unescapeLyricsFileWord(encodedWordText) else encodedWordText
-        val endField = part.substring(lastColon + 1)
-        val inferredEnd = imported && endField.endsWith('~')
-        val startSec = part.substring(secondLastColon + 1, lastColon).toDoubleOrNull()
-        val endSec = (if (inferredEnd) endField.dropLast(1) else endField).toDoubleOrNull()
-        if (startSec == null || endSec == null || !startSec.isFinite() || !endSec.isFinite()) return@mapNotNull null
-        KaraokeWord(
-            text = wordText,
-            startMs = (startSec * 1000).roundToLong(),
-            endMs = (endSec * 1000).roundToLong(),
-            hasExplicitEnd = !inferredEnd
-        )
-    }
-}
-
-/** One-shot computation of the interval-indicator data for karaoke lines: the initial gap (when the first non-background line starts late) and the per-line gap windows (overlapping windows removed to prevent double loaders in duets). */
-fun computeKaraokeGapWindows(lines: List<KaraokeLine>): Pair<Pair<Long, Long>?, Map<Int, Pair<Long, Long>>> {
-    val firstStart = lines.firstOrNull { !it.isBackground }?.timeMs ?: 0L
-    val initialGapWindow = if (firstStart > 3000L) Pair(0L, firstStart - 650L) else null
-
-    val gapWindows = buildMap {
-        lines.forEachIndexed { index, line ->
-            if (line.isBackground) return@forEachIndexed
-            val startMs = line.timeMs
-            val nextStartMs = if (index < lines.size - 1) lines.drop(index + 1).firstOrNull { !it.isBackground }?.timeMs ?: (startMs + 10000L) else startMs + 10000L
-            val lineEndMs = if (line.words.isNotEmpty()) line.words.maxOf { it.endMs } else line.timeMs + 2000L
-
-            val gap = nextStartMs - lineEndMs
-            if (gap > 2500L) {
-                put(index, Pair(lineEndMs, nextStartMs - 650L))
-            }
-        }
-    }.toMutableMap().apply {
-        val keysToRemove = mutableSetOf<Int>()
-        for ((idx1, window1) in this) {
-            for ((idx2, window2) in this) {
-                if (idx1 < idx2) {
-                    if (window1.first < window2.second && window1.second > window2.first) {
-                        keysToRemove.add(idx1)
-                    }
-                }
-            }
-        }
-        keysToRemove.forEach { remove(it) }
-    }
-
-    return initialGapWindow to gapWindows
-}
-
 @Composable
 fun KaraokeLyricsView(
     text: String,
     currentPositionProvider: () -> Long,
-    isPlayingProvider: () -> Boolean,
     onSeekTo: (Long) -> Unit,
     showlyricsthumbnail: Boolean,
     isLandscape: Boolean,
@@ -340,134 +160,26 @@ fun KaraokeLyricsView(
         if (parsed.isEmpty()) onInvalidLrc(true) else onInvalidLrc(false)
     }
 
-    // Track current position for word-by-word animation with exact Metrolist interpolation
+    // The shared playback clock already interpolates at playback speed and caps at duration.
     var currentPositionMs by remember { mutableLongStateOf(0L) }
     val readPosition by rememberUpdatedState(currentPositionProvider)
-    val readPlaying by rememberUpdatedState(isPlayingProvider)
     LaunchedAppearanceAnimationEffect(Unit) {
-        var lastPlayerPos = readPosition()
-        var lastUpdateTime = System.currentTimeMillis()
         while (isActive) {
             withFrameMillis {
-                val now = System.currentTimeMillis()
-                val playerPos = readPosition()
-                if (playerPos != lastPlayerPos) {
-                    lastPlayerPos = playerPos
-                    lastUpdateTime = now
-                }
-                val elapsed = now - lastUpdateTime
-                currentPositionMs = lastPlayerPos + (if (readPlaying()) elapsed else 0L)
+                currentPositionMs = readPosition()
             }
         }
     }
 
-    // --- Translation cache ---
-    val translationCache = remember(karaokeLines, showSecondLine, translateEnabled, romanizationEnabled, languageDestination) {
-        mutableStateMapOf<Int, String>()
-    }
-
-    LaunchedEffect(karaokeLines, showSecondLine, translateEnabled, romanizationEnabled, languageDestination) {
-        if (!showSecondLine && !translateEnabled && !romanizationEnabled) return@LaunchedEffect
-
-        val linesToTranslate = mutableListOf<Pair<Int, String>>()
-        karaokeLines.forEachIndexed { index, line ->
-            val trimmed = line.text.trim()
-            if (trimmed.isEmpty()) {
-                translationCache[index] = trimmed
-            } else if (!translationCache.containsKey(index)) {
-                linesToTranslate.add(index to trimmed)
-            }
-        }
-
-        if (linesToTranslate.isEmpty()) return@LaunchedEffect
-
-        if (translateEnabled) {
-            withContext(NzikDispatchers.UI) {
-                Toaster.i(R.string.lyrics_translation_in_progress_message)
-            }
-        }
-
-        withContext(NzikDispatchers.DATA) {
-            try {
-                val textToTranslate = linesToTranslate.joinToString("\n") { it.second }
-
-                val helperTranslation = translator.translate(textToTranslate, Language.CHINESE_TRADITIONAL, Language.AUTO)
-                var destLanguage = languageDestination
-                if (destLanguage == Language.AUTO) {
-                    destLanguage = if (helperTranslation.translatedText == textToTranslate)
-                        Language.CHINESE_TRADITIONAL
-                    else
-                        helperTranslation.sourceLanguage
-                }
-                val mainTranslation = translator.translate(textToTranslate, destLanguage, Language.AUTO)
-
-                val cleanTranslatedText = mainTranslation.translatedText.replace("\\\"", "\"").trim()
-                val cleanPronunciation = mainTranslation.translatedPronunciation?.replace("\\\"", "\"")?.trim()
-
-                val helpPronLineText = helperTranslation.sourcePronunciation?.trim() ?: ""
-                val mainPronLineText = mainTranslation.sourcePronunciation?.trim() ?: textToTranslate
-
-                val cleanTransLines = cleanTranslatedText.split("\n")
-                val cleanPronLines = cleanPronunciation?.split("\n")
-                val helpPronLines = helpPronLineText.split("\n")
-                val mainPronLines = mainPronLineText.split("\n")
-
-                linesToTranslate.forEachIndexed { i, (sentenceIndex, trimmed) ->
-                    val cleanTransLine = cleanTransLines.getOrNull(i)?.trim() ?: ""
-                    val cleanPronLine = cleanPronLines?.getOrNull(i)?.trim()
-                    
-                    val hPronLine = helpPronLines.getOrNull(i)?.trim() ?: ""
-                    val mPronLine = mainPronLines.getOrNull(i)?.trim() ?: trimmed
-                    val transPronLine = cleanPronLine ?: cleanTransLine
-
-                    val isSameText = mainTranslation.sourceText == mainTranslation.translatedText
-
-                    val outputText = if (!showSecondLine || isSameText) {
-                        if (translateEnabled && romanizationEnabled) {
-                            transPronLine
-                        } else if (translateEnabled) {
-                            cleanTransLine
-                        } else if (romanizationEnabled) {
-                            if (helperTranslation.sourceText == helperTranslation.translatedText)
-                                hPronLine
-                            else
-                                mPronLine.ifEmpty { trimmed }
-                        } else {
-                            trimmed
-                        }
-                    } else {
-                        if (translateEnabled && romanizationEnabled) {
-                            val pron = if (helperTranslation.sourceText == helperTranslation.translatedText) hPronLine else mPronLine.ifEmpty { trimmed }
-                            pron + "\n[$transPronLine]"
-                        } else if (translateEnabled) {
-                            trimmed + "\n[$cleanTransLine]"
-                        } else if (romanizationEnabled) {
-                            val pron = if (helperTranslation.sourceText == helperTranslation.translatedText) hPronLine else mPronLine.ifEmpty { trimmed }
-                            trimmed + "\n[$pron]"
-                        } else {
-                            trimmed
-                        }
-                    }
-
-                    val finalText = outputText.replace("\\r", "\r").replace("\\n", "\n")
-                    translationCache[sentenceIndex] = finalText
-                }
-
-                if (translateEnabled) {
-                    withContext(NzikDispatchers.UI) {
-                        Toaster.s(R.string.lyrics_translation_success_message)
-                    }
-                }
-            } catch (e: Exception) {
-                Timber.tag("KaraokeLyricsView").e("sync translation error: ${e.message}")
-                if (translateEnabled) {
-                    withContext(NzikDispatchers.UI) {
-                        Toaster.e(R.string.lyrics_translation_failed_message)
-                    }
-                }
-            }
-        }
-    }
+    val translationCache = rememberLyricsTranslations(
+        karaokeLines,
+        showSecondLine,
+        translateEnabled,
+        romanizationEnabled,
+        languageDestination,
+        translator,
+        logTag = "KaraokeLyricsView",
+    ) { it.text }
 
     // Determine active lines (multiple can be active for overlapping agents).
     // Inside a gap (finished / blank / loader window, after a background line
@@ -479,7 +191,7 @@ fun KaraokeLyricsView(
     }
 
     // Primary active line for scroll targeting: the furthest active main line,
-    // or — when only a chorus line is active — that chorus (the index switches
+    // or — when only a chorus line is active - that chorus (the index switches
 //
     // to it, so the chorus advances to the center like a main line and
 //
@@ -557,12 +269,12 @@ fun KaraokeLyricsView(
         else -> 0.44f
     }
     var multiplier = if (showlyricsthumbnail) lineMultiplier else 0.42f
-    
+
     val hasBackgroundBelow = karaokeLines.getOrNull(primaryActiveIndex + 1)?.isBackground == true
     if (hasBackgroundBelow) {
         multiplier -= if (showlyricsthumbnail) 0.12f else 0.06f
     }
-    
+
     val fixedCenter = (effectiveVpH * multiplier).toInt()
 
     // Centers the item at [targetItem] at its target position. Extracted so
@@ -616,7 +328,7 @@ fun KaraokeLyricsView(
     }
 
     // The item the scroll index should point at: an active line (main, else the
-    // active chorus — the index switches to it); while no line is active, the
+    // active chorus - the index switches to it); while no line is active, the
 //
     // gap-loader item of the active gap window (or the initial loader);
 //
@@ -645,7 +357,7 @@ fun KaraokeLyricsView(
         recenterOnItem(target)
     }
 
-    // Chorus lines expand their slot (200ms) when they appear (lead-in) —
+    // Chorus lines expand their slot (200ms) when they appear (lead-in) -
     // the height change shifts the active line's scroll position, so the
 //
 //
@@ -720,7 +432,7 @@ fun KaraokeLyricsView(
         // Each line is its own item, followed by its gap-loader item when the
         // line owns a gap window: the loaders are SEPARATE items (not part of
 //
-        // the previous line's item), so the scroll index can switch to one —
+        // the previous line's item), so the scroll index can switch to one -
 //
         // while a gap runs the list centers on the loader, and the index
         // switches to the chorus line itself while it is sung.
@@ -755,7 +467,7 @@ fun KaraokeLyricsView(
             // A chorus is revealed within an extended window (isChorusLineShown):
             // it fades/expands in a few seconds BEFORE it is sung (lead-in), and
 //
-            // once sung it STAYS shown (slot kept, rendered in the past state) —
+            // once sung it STAYS shown (slot kept, rendered in the past state) -
 //
             // it never de-pops back, so the canvas is not shifted again after
             // the reveal. Regular lines are always shown.
@@ -768,7 +480,7 @@ fun KaraokeLyricsView(
             // Fully in the past state: settling tail over (lines with words) or
             // the active window over (wordless lines). Chorus lines fade down to
 //
-            // the regular past-line dim level once they reach it — the same
+            // the regular past-line dim level once they reach it - the same
             // "fade to the background" the other lines get once sung.
             val isPastState = isKaraokeLineInPastState(line, currentPositionMs, karaokeLines.getOrNull(index + 1)?.timeMs)
             val animateOpacity by animateFloatAsState(
@@ -828,7 +540,7 @@ fun KaraokeLyricsView(
 //
                         // so a not-sung chorus takes no space (gap removed) and a
 //
-                        // sung one takes its place back — like the interval loader.
+                        // sung one takes its place back - like the interval loader.
                         // Regular lines keep fraction 1f (no-op).
                         val placeable = measurable.measure(constraints)
                         val targetHeight = (placeable.height * heightFraction).toInt().coerceAtLeast(0)
@@ -892,7 +604,7 @@ fun KaraokeLyricsView(
                                     val isSung = currentPositionMs >= word.endMs
                                     val dur = word.endMs - word.startMs
                                     val isLongWord = dur > 500L
-                                    
+
                                     // Append spaces between words
                                     val wordStartInText = line.text.indexOf(word.text, searchIdx)
                                     if (wordStartInText > searchIdx) {
@@ -900,8 +612,8 @@ fun KaraokeLyricsView(
                                             append(line.text.substring(searchIdx, wordStartInText))
                                         }
                                     }
-                                    
-                                    // Word itself — SING words (short or long alike) are
+
+                                    // Word itself - SING words (short or long alike) are
                                     // transparent in this layer: the foreground clip renders the
 //
                                     // settled word, so both word types share the exact same final
@@ -953,22 +665,22 @@ fun KaraokeLyricsView(
                                 line.words.forEachIndexed { wordIndex, word ->
                                     val isWordActive = currentPositionMs >= word.startMs && currentPositionMs < word.endMs
                                     val isWordSung = currentPositionMs >= word.endMs
-                                    
+
                                     if (isWordActive || isWordSung) {
                                         val dur = word.endMs - word.startMs
-                                        val sungFactor = if (isWordSung) 1f 
+                                        val sungFactor = if (isWordSung) 1f
                                                          else if (isWordActive) ((currentPositionMs - word.startMs).toFloat() / dur.coerceAtLeast(1L)).coerceIn(0f, 1f)
                                                          else 0f
-                                        
+
                                         val wordLenText = word.text.length.coerceAtLeast(1)
                                         val impactRatio = dur.toFloat() / wordLenText
                                         val fadeFactor = (sungFactor * 5f).coerceIn(0f, 1f) * ((1f - sungFactor) * 8f).coerceIn(0f, 1f)
                                         val impactFactor = (((impactRatio - 100f) / 250f).coerceIn(0f, 1f) * 0.6f + ((dur.toFloat() - 300f) / 1500f).coerceIn(0f, 1f) * 0.4f).coerceIn(0f, 1f) * fadeFactor
-                                        
+
                                         // Make the glow completely opaque/solid to combat the transparency
                                         val glowAlpha = (1f * impactFactor).coerceIn(0f, 0.7f)
                                         val baseGlowRadius = with(density) { 8.dp.toPx() } * impactFactor
-                                        
+
                                         if (impactFactor > 0.01f && baseGlowRadius > 0f) {
                                             withStyle(
                                                 SpanStyle(
@@ -991,7 +703,7 @@ fun KaraokeLyricsView(
                                         withStyle(SpanStyle(color = androidx.compose.ui.graphics.Color.Transparent)) { append(" ") }
                                     }
                                 }
-                                
+
                                 // Preserve layout identical to displayedText by appending the translation part transparently
                                 val builtLen = this.length
                                 if (builtLen < displayedText.length) {
@@ -1000,7 +712,7 @@ fun KaraokeLyricsView(
                                     }
                                 }
                             }
-                            
+
                             BasicText(
                                 text = glowText,
                                 style = TextStyle(
@@ -1017,7 +729,7 @@ fun KaraokeLyricsView(
 //
                         // dimmed past-line accent (the color the static branch uses) over
 //
-                        // the sung-fade window after its OWN end — short words included — so
+                        // the sung-fade window after its OWN end — short words included - so
                         // nothing pops in the background and the branch switch at the end of
 //
                         // the fade tail is seamless (all words already sit on that color).
@@ -1073,7 +785,7 @@ fun KaraokeLyricsView(
                                     return@drawWithContent
                                 }
 
-                                // [DEBUG] text layout bounds — shows where the text box ends
+                                // [DEBUG] text layout bounds - shows where the text box ends
                                 if (showClipRectsDebug) {
                                     val layoutSize = layout.size
                                     drawRect(Color.Blue.copy(alpha = 0.2f), Offset(0f, 0f), Size(layoutSize.width.toFloat(), layoutSize.height.toFloat()))
@@ -1082,17 +794,17 @@ fun KaraokeLyricsView(
                                 if (isTextReplaced) {
                                     val lineStartMs = line.timeMs
                                     val lineEndMs = line.words.maxOfOrNull { it.endMs } ?: (lineStartMs + 2000L)
-                                    
+
                                     if (currentPositionMs >= lineEndMs) {
                                         this@drawWithContent.drawContent()
                                     } else if (currentPositionMs > lineStartMs) {
                                         val progress = ((currentPositionMs - lineStartMs).toFloat() / (lineEndMs - lineStartMs).coerceAtLeast(1L)).coerceIn(0f, 1f)
                                         val totalLength = displayedText.length
-                                        
+
                                         if (totalLength > 0) {
                                             val activeCharIdx = (progress * totalLength).toInt().coerceAtMost(totalLength - 1)
                                             val charLp = ((progress * totalLength) - activeCharIdx).coerceIn(0f, 1f)
-                                            
+
                                             if (activeCharIdx > 0) {
                                                 val path = getFastPathForRange(layout, 0, activeCharIdx - 1)
                                                 drawContext.canvas.save()
@@ -1100,7 +812,7 @@ fun KaraokeLyricsView(
                                                 this@drawWithContent.drawContent()
                                                 drawContext.canvas.restore()
                                             }
-                                            
+
                                             val ease = { t: Float -> t * t * (3f - 2f * t) }
                                             val bounceFactor = when {
                                                 charLp < 0.4f -> ease(charLp / 0.4f)
@@ -1109,16 +821,16 @@ fun KaraokeLyricsView(
                                             }
                                             val charBounceY = -bounceFactor * with(density) { 0.8.dp.toPx() }
                                             val scaleFactor = 1f + (bounceFactor * 0.05f)
-                                            
+
                                             val charBox = layout.getBoundingBox(activeCharIdx)
-                                            
+
                                             drawContext.canvas.save()
                                             val pivotX = charBox.left + charBox.width / 2f
                                             val pivotY = charBox.bottom
                                             drawContext.canvas.translate(pivotX, pivotY + charBounceY)
                                             drawContext.canvas.scale(scaleFactor, scaleFactor)
                                             drawContext.canvas.translate(-pivotX, -pivotY)
-                                            
+
                                             drawContext.canvas.clipRect(Rect(charBox.left, charBox.top, charBox.right, charBox.bottom))
                                             this@drawWithContent.drawContent()
                                             drawContext.canvas.restore()
@@ -1128,14 +840,14 @@ fun KaraokeLyricsView(
                                     line.words.forEach { word ->
                                     val isWordActive = currentPositionMs >= word.startMs && currentPositionMs < word.endMs
                                     val isWordSung = currentPositionMs >= word.endMs
-                                    
+
                                     val maxIdx = layoutTextLength.coerceAtLeast(1) - 1
                                     val wStartIdx = word.charStartIndex.coerceIn(0, maxIdx)
                                     val wEndIdx = (word.charStartIndex + word.text.length - 1).coerceIn(0, maxIdx)
 
                                     val startBox = layout.getBoundingBox(wStartIdx)
                                     val endBox = layout.getBoundingBox(wEndIdx)
-                                    
+
                                     if (isWordSung) {
                                         val dur = word.endMs - word.startMs
                                         if (dur > 500L) {
@@ -1150,7 +862,7 @@ fun KaraokeLyricsView(
                                             val waveFrequency = (600f / dur.toFloat().coerceAtLeast(100f)).coerceIn(2f, 8f)
                                             // Rise fades gradually
                                             val riseAmount = fadeFactor * with(density) { (2.5f * durFactor).dp.toPx() }
-                                            // Envelope: per-physical-line rects, fully revealed — the same
+                                            // Envelope: per-physical-line rects, fully revealed - the same
                                             // geometry the ACTIVE branch ends on (progress 1), so the
 //
                                             // ACTIVE→SING switch is seamless. The legacy single rect
@@ -1205,7 +917,7 @@ fun KaraokeLyricsView(
                                                 val endPhase = charPos * waveFrequency - waveFrequency * 1.5f
                                                 val wavePhase = endPhase + fadeProgress * 0.5f // slight forward motion
                                                 val charWaveY = kotlin.math.sin(wavePhase).toFloat() * waveAmplitude
-                                                
+
                                                 val pivotX = charBox.left + charBox.width / 2f
                                                 val pivotY = charBox.bottom
                                                 drawContext.canvas.save()
@@ -1224,7 +936,7 @@ fun KaraokeLyricsView(
                                             }
                                         } else {
                                             // Short word: same per-character settle as the long
-                                            // words, but at rest (no wave/rise motion) — identical
+                                            // words, but at rest (no wave/rise motion) - identical
 //
                                             // final rendering so short and long sung words look the
 //
@@ -1246,7 +958,7 @@ fun KaraokeLyricsView(
                                     } else if (isWordActive) {
                                         val dur = word.endMs - word.startMs
                                         val linearProgress = ((currentPositionMs - word.startMs).toFloat() / dur.coerceAtLeast(1L)).coerceIn(0f, 1f)
-                                        
+
                                         if (dur > 500L) {
                                             // Long word: wave effect
                                             val easedProgress = linearProgress * linearProgress * (3f - 2f * linearProgress)
@@ -1255,12 +967,12 @@ fun KaraokeLyricsView(
                                             val waveAmplitude = with(density) { (4f * durFactor).dp.toPx() }
                                             val waveFrequency = (600f / dur.toFloat().coerceAtLeast(100f)).coerceIn(2f, 8f)
                                             val scaleAmount = 1f + (easedProgress * 0.04f)
-                                            
+
                                             // Aggressive rise curve: fast at start, then stabilizes
                                             val riseCurve = linearProgress * linearProgress // quadratic - rises fast
                                             val riseAmount = riseCurve * with(density) { (2.5f * durFactor).dp.toPx() }
-                                            
-                                            // Fill clip: per-physical-line sweep — a word that wraps (typically a CJK line
+
+                                            // Fill clip: per-physical-line sweep - a word that wraps (typically a CJK line
                                             // merged into a single word) fills line by line instead of revealing every
 //
                                             // wrapped line at once (GH #820). Single-line words keep the legacy clipRect
@@ -1336,12 +1048,12 @@ fun KaraokeLyricsView(
                                                     }
                                                 }
                                             }
-                                            
+
                                             // Draw each physical line's characters, gated by that line's own sweep
                                             // rect inset to the true frontier (activeLineGateRect strips the 8dp
 //
                                             // horizontal pad): with the padded edges a short final line (often one
-                                            // CJK char) would open half-revealed when the previous line closes —
+                                            // CJK char) would open half-revealed when the previous line closes -
 //
                                             // the visible flash at the end of a wrapped word. The per-line rects
                                             // also overlap vertically (headroom exceeds the CJK line spacing), so
@@ -1362,13 +1074,13 @@ fun KaraokeLyricsView(
                                                 val globalIdx = (word.charStartIndex + charIdx).coerceIn(0, displayedText.length - 1)
                                                 val charBox = layout.getBoundingBox(globalIdx)
                                                 val charPos = charIdx.toFloat() / wordLen.coerceAtLeast(1)
-                                                
+
                                                 val wavePhase = charPos * waveFrequency - linearProgress * waveFrequency * 1.5f
                                                 val charWaveY = kotlin.math.sin(wavePhase).toFloat() * waveAmplitude
-                                                
+
                                                 val pivotX = charBox.left + charBox.width / 2f
                                                 val pivotY = charBox.bottom
-                                                
+
                                                 drawContext.canvas.save()
                                                 drawContext.canvas.translate(pivotX, pivotY + charWaveY - riseAmount)
                                                 drawContext.canvas.scale(scaleAmount, scaleAmount)
@@ -1389,16 +1101,16 @@ fun KaraokeLyricsView(
                                             val wordLen = word.text.length
                                             val activeCharIdxInWord = (linearProgress * wordLen).toInt().coerceAtMost(wordLen - 1)
                                             val charLp = ((linearProgress * wordLen) - activeCharIdxInWord).coerceIn(0f, 1f)
-                                            
+
                                             val activeCharGlobalIdx = (word.charStartIndex + activeCharIdxInWord).coerceIn(0, displayedText.length.coerceAtLeast(1) - 1)
                                             val charBox = layout.getBoundingBox(activeCharGlobalIdx)
-                                            
+
                                             val path = getFastPathForRange(layout, wStartIdx, activeCharGlobalIdx - 1)
                                             drawContext.canvas.save()
                                             drawContext.canvas.clipPath(path)
                                             this@drawWithContent.drawContent()
                                             drawContext.canvas.restore()
-                                            
+
                                             val ease = { t: Float -> t * t * (3f - 2f * t) }
                                             val bounceFactor = when {
                                                 charLp < 0.4f -> ease(charLp / 0.4f)
@@ -1407,14 +1119,14 @@ fun KaraokeLyricsView(
                                             }
                                             val charBounceY = -bounceFactor * with(density) { 0.8.dp.toPx() }
                                             val scaleFactor = 1f + (bounceFactor * 0.05f)
-                                            
+
                                             drawContext.canvas.save()
                                             val pivotX = charBox.left + charBox.width / 2f
                                             val pivotY = charBox.bottom
                                             drawContext.canvas.translate(pivotX, pivotY + charBounceY)
                                             drawContext.canvas.scale(scaleFactor, scaleFactor)
                                             drawContext.canvas.translate(-pivotX, -pivotY)
-                                            
+
                                             drawContext.canvas.save()
                                             drawContext.canvas.clipRect(Rect(charBox.left, charBox.top, charBox.right, charBox.bottom))
                                             this@drawWithContent.drawContent()
@@ -1423,7 +1135,7 @@ fun KaraokeLyricsView(
                                                 drawRect(Color.Green.copy(alpha = 0.35f), Offset(charBox.left, charBox.top), Size(charBox.width, charBox.height))
                                             }
                                             drawContext.canvas.restore()
-                                            
+
                                             drawContext.canvas.restore()
                                         }
                                     }
@@ -1433,7 +1145,7 @@ fun KaraokeLyricsView(
                         )
                     }
                 } else if (line.words.isNotEmpty() && !isActiveLine) {
-                    // Inactive line with word timings — check if past or future
+                    // Inactive line with word timings - check if past or future
                     val isPastLine = currentPositionMs > (line.words.maxOfOrNull { it.endMs } ?: line.timeMs)
 
                     BasicText(

@@ -1,5 +1,11 @@
 package app.n_zik.android.extensions.nextvisualizer
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.n_zik.android.components.glass.rememberGlassArtwork
+import app.n_zik.android.components.player.SharedArtworkColors
+import app.n_zik.android.components.player.rememberScopedArtworkColorRevision
+import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.coil.rememberDisplayArtworkSource
 import app.n_zik.android.components.glass.glassGlobalIndication
 
 import app.n_zik.android.privacy.PermissionUsageJournal
@@ -58,7 +64,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.drawable.APP_ICON_BITMAP
@@ -85,9 +90,7 @@ import app.n_zik.android.typography
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.glass.GlassOverlayIconButton as IconButton
 import app.n_zik.android.ui.components.themed.SecondaryTextButton
-import app.n_zik.android.utils.DisposableListener
 import app.n_zik.android.utils.currentVisualizerKey
-import app.n_zik.android.utils.getBitmapFromUrl
 import app.n_zik.android.utils.hasPermission
 import app.n_zik.android.utils.isCompositionLaunched
 import app.n_zik.android.utils.rememberPreference
@@ -186,22 +189,7 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
             var circleBitmap by remember { mutableStateOf(Icon.getCircledBitmap(APP_ICON_BITMAP)) }
             val visualizerWhiteColorOption by rememberPreference(visualizerWhiteColorOptionKey, enums.VisualizerWhiteColorOption.White)
             val visualizerCustomColor by rememberPreference(visualizerCustomColorKey, android.graphics.Color.WHITE)
-            val artworkPlayer = binder?.player
-            var currentArtworkUri by remember(artworkPlayer) {
-                mutableStateOf(artworkPlayer?.mediaMetadata?.artworkUri
-                    ?: artworkPlayer?.currentMediaItem?.mediaMetadata?.artworkUri)
-            }
-            artworkPlayer?.DisposableListener {
-                object : Player.Listener {
-                    override fun onEvents(player: Player, events: Player.Events) {
-                        if (events.containsAny(Player.EVENT_MEDIA_ITEM_TRANSITION,
-                                Player.EVENT_MEDIA_METADATA_CHANGED, Player.EVENT_TIMELINE_CHANGED)) {
-                            currentArtworkUri = player.mediaMetadata.artworkUri
-                                ?: player.currentMediaItem?.mediaMetadata?.artworkUri
-                        }
-                    }
-                }
-            }
+            val currentArtworkUri = rememberGlassArtwork(binder?.player)?.uri
             val paletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
             val requestedDark = paletteMode == ColorPaletteMode.Dark || (paletteMode == ColorPaletteMode.PitchBlack || paletteMode == ColorPaletteMode.PureBlack) ||
                 (paletteMode == ColorPaletteMode.System && isSystemInDarkTheme())
@@ -210,21 +198,28 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
             val coverTint = if (visualizerWhiteColorOption == enums.VisualizerWhiteColorOption.Cover &&
                 scopedArtworkPaint == null && ambientArtwork == null) {
                 val coverDisplay = rememberArtworkDisplayColors(
-                    currentArtworkUri?.toString(), requestedDark, awaitArtworkMetadata = true,
+                    currentArtworkUri, requestedDark, awaitArtworkMetadata = true,
                 )
                 val target = coverDisplay?.takeIf { it.colors != null || it.forceDark }?.foreground ?: Color.White
                 rememberPlayerColorFade(target, active = true, interpolate = ::lerp)
             } else null
             val themeTint = colorPalette().accent
 
-            // These bitmaps supply actual artwork pixels to the painters, never color extraction.
-            LaunchedEffect(currentArtworkUri) {
+            val profile = ImageCacheFactory.rememberArtworkProfile()
+            val displayedSource = rememberDisplayArtworkSource(currentArtworkUri)
+            val sourceRevision = rememberScopedArtworkColorRevision(currentArtworkUri, profile)
+            val localRevision = ImageCacheFactory.rememberLocalArtworkRevision(displayedSource)
+            val cacheGeneration by SharedArtworkColors.generation.collectAsStateWithLifecycle(
+                context = NzikDispatchers.DATA,
+            )
+            // These bitmaps supply actual artwork pixels to the painters.
+            LaunchedEffect(displayedSource, profile, sourceRevision, localRevision, cacheGeneration) {
                 withContext(NzikDispatchers.DATA) {
                     try {
-                        val bitmap = getBitmapFromUrl(
-                            context,
-                            currentArtworkUri.toString().resize(1000, 1000)
-                        ) ?: throw Exception("Bitmap is null")
+                        val bitmap = displayedSource?.resize(1000, 1000)
+                            ?.let { ImageCacheFactory.loadBitmap(it, allowHardware = false) }
+                            ?.takeIf { !it.isRecycled && it.width > 0 && it.height > 0 }
+                            ?: APP_ICON_BITMAP
                         val circled = withContext(NzikDispatchers.MEDIA) { Icon.getCircledBitmap(bitmap) }
                         withContext(NzikDispatchers.UI) {
                             bitmapCover = bitmap

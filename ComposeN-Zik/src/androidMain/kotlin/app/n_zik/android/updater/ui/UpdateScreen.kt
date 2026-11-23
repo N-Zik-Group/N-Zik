@@ -1,41 +1,24 @@
 @file:kotlin.OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.n_zik.android.updater.ui
 
-import app.n_zik.android.appTextResources
-import app.n_zik.android.utils.percentLabel
-import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.glass.usesGlassMaterial
-import app.n_zik.android.components.glass.rememberGlassSettings
-import app.n_zik.android.components.glass.glassContentCaptureEnabled
-import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
-import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
-import app.n_zik.android.components.glass.NativeIconActionSize
-import app.n_zik.android.components.ui.iconBadgeBackground
-import app.n_zik.android.components.ui.LeadingIconBadge
-
-import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 import android.content.Context
-import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.uiRoundnessShape
-
-import app.n_zik.android.updater.services.Updater
-import app.n_zik.android.updater.services.UpdateDownloadManager
-import app.n_zik.android.updater.models.UpdaterConstants
-import app.n_zik.android.components.dialog.common.ValueSelectorDialog
-
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,14 +31,17 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-
+import androidx.compose.material3.LinearWavyProgressIndicator
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,58 +49,60 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
-import app.n_zik.android.enums.Languages
-import app.n_zik.android.utils.otherLanguageAppUpdateKey
-import app.n_zik.android.utils.rememberPreference
-import dev.rebelonion.translator.Language
-import dev.rebelonion.translator.Translator
-import app.n_zik.android.core.network.client.NetworkClientFactory
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.withContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import app.n_zik.android.updater.models.UpdateEndpoints
-import app.n_zik.android.appContext
+import dev.rebelonion.translator.Language
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import timber.log.Timber
+
+import app.n_zik.android.BuildConfig
+import app.n_zik.android.R
 import app.n_zik.android.colorPalette
-import app.n_zik.android.surfaceColor
-import app.n_zik.android.updater.models.CheckUpdateState
+import app.n_zik.android.components.dialog.common.ConfirmationDialog
+import app.n_zik.android.components.dialog.common.DialogFrame
+import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassMenuTrigger
+import app.n_zik.android.components.glass.GlassMenuTriggerState
+import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import app.n_zik.android.components.glass.glassContentCaptureEnabled
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.menu.DropdownMenu
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+import app.n_zik.android.components.ui.iconBadgeBackground
+import app.n_zik.android.core.backup.BackupManager
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.enums.Languages
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
+import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.updater.models.CheckUpdateState
+import app.n_zik.android.updater.models.UpdateEndpoints
+import app.n_zik.android.updater.services.UpdateDownloadManager
+import app.n_zik.android.updater.services.Updater
 import app.n_zik.android.utils.bold
 import app.n_zik.android.utils.checkBetaUpdatesKey
 import app.n_zik.android.utils.checkUpdateStateKey
 import app.n_zik.android.utils.colorPaletteModeKey
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
-import app.n_zik.android.utils.secondary
-import app.n_zik.android.utils.semiBold
-import app.n_zik.android.BuildConfig
-import app.n_zik.android.components.dialog.common.DialogFrame
-import app.n_zik.android.R
-import app.n_zik.android.core.utils.Toaster
-import timber.log.Timber
-import app.n_zik.android.components.dialog.common.ConfirmationDialog
-import androidx.compose.material3.LinearWavyProgressIndicator
-import app.n_zik.android.components.menu.DropdownMenu
-import app.n_zik.android.components.glass.GlassMenuTrigger
-import app.n_zik.android.components.glass.GlassMenuTriggerState
-import androidx.compose.material3.Scaffold
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.ui.text.style.TextAlign
-import app.n_zik.android.core.backup.BackupManager
-import app.n_zik.android.utils.preferences
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import app.n_zik.android.utils.lastUpdateCheckKey
 import app.n_zik.android.utils.contentTranslationChoices
 import app.n_zik.android.utils.contentTranslationLanguage
-import app.n_zik.android.utils.contentTranslationTarget
-import java.util.Locale
-import java.text.SimpleDateFormat
-import java.util.Date
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.lastUpdateCheckKey
+import app.n_zik.android.utils.otherLanguageAppUpdateKey
+import app.n_zik.android.utils.percentLabel
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.secondary
+import app.n_zik.android.utils.semiBold
 
 @Composable
 fun UpdateScreen(navController: NavController) {
@@ -128,14 +116,11 @@ private fun UpdateScreenContent(navController: NavController) {
     val downloadState by UpdateDownloadManager.downloadState.collectAsStateWithLifecycle()
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
 
-    // Update Preferences
     var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Enabled)
-    // Beta-family flavors (beta/beta32) start with the beta channel enabled
+    // Beta builds enable the beta channel by default.
     var checkBetaUpdates by rememberPreference(checkBetaUpdatesKey, Updater.isBetaFamily(BuildConfig.VERSION_NAME))
 
-    // Builds without auto-update (debug/foss): the stored preferences can be stale leftovers
-    // from an updater build, so force auto-check off and beta off - they must never change
-    // the channel of a manual check or the displayed state
+    // Ignore stale channel preferences for builds without auto-update.
     val (effectiveCheckState, effectiveCheckBeta) =
         Updater.effectiveUpdaterSettings(checkUpdateState, checkBetaUpdates, BuildConfig.IS_AUTOUPDATE)
 
@@ -158,7 +143,7 @@ private fun UpdateScreenContent(navController: NavController) {
     val preInstallBackupUri by rememberPreference(BackupManager.PREF_URI, "")
     val preInstallCoroutineScope = rememberCoroutineScope()
 
-    // Handle back press during download - let download continue in background
+    // Return to the previous screen while the download continues.
     BackHandler(enabled = downloadState is UpdateDownloadManager.DownloadState.Downloading ||
             downloadState is UpdateDownloadManager.DownloadState.Starting) {
         Toaster.i(R.string.downloads_cancelled)
@@ -166,14 +151,13 @@ private fun UpdateScreenContent(navController: NavController) {
         navController.popBackStack()
     }
 
-    // Cleanup state on exit - but NOT if download is active or completed
+    // Preserve download results and any active download across screen exits.
     DisposableEffect(Unit) {
         onDispose {
             val currentState = UpdateDownloadManager.downloadState.value
             if (currentState is UpdateDownloadManager.DownloadState.Failed) {
                 UpdateDownloadManager.resetState()
             }
-            // Don't reset Idle, Downloading, Starting or Completed - let download persist
         }
     }
 
@@ -187,8 +171,7 @@ private fun UpdateScreenContent(navController: NavController) {
     val updateLabel = Updater.flavorLabel(newVersion, isFoss) ?: Updater.FlavorLabel(R.string.updates_build_release_label)
     val updateBuildTypeLabel = if (updateLabel.literal != null) updateLabel.literal
     else stringResource(updateLabel.resId) + if (updateLabel.append32) " 32" else ""
-    // Only shown while an update is actually selected — Updater.build may keep
-    // a previously found APK after a failed re-check (githubRelease is cleared)
+    // Selection can clear after a failed re-check while the last APK remains cached.
     val fileSize = if (hasUpdate) try { Updater.build.readableSize } catch (_: Exception) { "" } else ""
 
     val footerBackdrop = rememberLayerBackdrop()
@@ -201,7 +184,6 @@ private fun UpdateScreenContent(navController: NavController) {
         containerColor = colorPalette().background0,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
-            // Floating Action button at the bottom
             UpdaterBottomPanel(
                 backdrop = footerBackdrop.takeIf { captureFooterBackdrop },
                 drawSurface = !singleDownloadSurface || downloadState !is UpdateDownloadManager.DownloadState.Completed,
@@ -455,14 +437,7 @@ private fun UpdateScreenContent(navController: NavController) {
 
                                 UpdaterActionCard(
                                         onClick = {
-                                            // Prefer the actual release tag when the target release is
-                                            // known, so the link always points to an existing release
-//
-                                            // (dev tags carry a dated suffix that cannot be guessed)
-                                            // hasUpdate guarantees a non-null githubRelease, so the
-//
-                                            // elvis below only applies on the no-update path
-//
+                                            // Use the actual tag because dev builds append a date.
                                             val tag = (if (hasUpdate) Updater.githubRelease?.tagName else null)
                                                 ?: Updater.releaseTag(currentVersion)
                                             uriHandler.openUri("${UpdateEndpoints.REPO_URL}/releases/tag/$tag")
@@ -514,7 +489,6 @@ private fun UpdateScreenContent(navController: NavController) {
                     .padding(rememberPageChromeContentPadding(base = paddingValues))
             ) {
 
-                // Top Card (Up to date or Update available)
                 AnimatedVisibility(
                     visible = true,
                     enter = fadeIn(animationSpec = tween(600)) + scaleIn(
@@ -536,7 +510,6 @@ private fun UpdateScreenContent(navController: NavController) {
                             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                         ) {
                             Box(modifier = Modifier.fillMaxWidth()) {
-                                // Settings Menu positioned at TopEnd
                                 Box(modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)) {
                                     var showMenu by remember { mutableStateOf(false) }
                                     val menuTrigger = remember { GlassMenuTriggerState() }
@@ -560,10 +533,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                         onDismissRequest = { showMenu = false }
                                     )
 
-                                    // The beta toggle only makes sense for flavors that can receive
-                                    // beta updates (release64/release32/beta64/beta32); the minified and dev
-//
-                                    // families never receive beta updates
+                                    // Only release and beta builds can receive beta updates.
                                     val showBetaToggle = !Updater.isMinifiedFamily(BuildConfig.VERSION_NAME) &&
                                         !Updater.isDevFamily(BuildConfig.VERSION_NAME)
                                     if (showBetaToggle) {
@@ -571,7 +541,6 @@ private fun UpdateScreenContent(navController: NavController) {
                                             DropdownMenu.Item(
                                                 iconId = R.drawable.shield_checkmark,
                                                 customText = "${stringResource(R.string.updates_beta_enabled_label)}: ${if (effectiveCheckBeta) stringResource(R.string.common_state_on) else stringResource(R.string.common_state_off)}",
-                                                // Without auto-update the beta value is forced off above
                                                 enabled = BuildConfig.IS_AUTOUPDATE
                                             ) {
                                                 checkBetaUpdates = !checkBetaUpdates
@@ -587,7 +556,6 @@ private fun UpdateScreenContent(navController: NavController) {
                                         DropdownMenu.Item(
                                             iconId = R.drawable.update,
                                             customText = "${stringResource(R.string.updates_automatic_check_title)}: $stateStr",
-                                            // Without auto-update the check state is forced off above
                                             enabled = BuildConfig.IS_AUTOUPDATE
                                         ) {
                                             checkUpdateState = when (checkUpdateState) {
@@ -646,8 +614,6 @@ private fun UpdateScreenContent(navController: NavController) {
                                     )
                                     menu.Draw()
                                 }
-
-                                // The translate button has been moved to the bottom right of the What's new card
 
                                 DialogPresence(visible = showLanguageDialog) {
                                     ValueSelectorDialog(
@@ -737,7 +703,6 @@ private fun UpdateScreenContent(navController: NavController) {
                                             maxLines = 1,
                                             style = typography().s.copy(color = colorPalette().textSecondary, textAlign = TextAlign.Center)
                                         )
-                                        // No file size displayed when up to date
                                     } else {
                                         Box(
                                             modifier = Modifier
@@ -793,121 +758,18 @@ private fun UpdateScreenContent(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Changelog Section
-                // Load cached changelog first, then fetch from network
-                val isReinstalling = downloadState !is UpdateDownloadManager.DownloadState.Idle && UpdateDownloadManager.downloadingVersion == currentVersion
-                LaunchedEffect(isReinstalling, hasUpdate) {
-                    if (isReinstalling || !hasUpdate) {
-                        // Load from cache first for instant display
-                        Updater.loadCachedChangelog()
-                        // Then fetch from network to get latest
-                        Updater.fetchCurrentChangelog()
-                    }
-                }
-                var currentChangelog by remember { mutableStateOf("") }
-                LaunchedEffect(Unit) {
-                    currentChangelog = withContext(NzikDispatchers.DATA) { readLocalReleaseNotes() }
-                }
-                val changelogTextToDisplay = if (isReinstalling || !hasUpdate) {
-                    Updater.currentChangelog?.takeIf { it.isNotBlank() }
-                        ?: currentChangelog
-                } else {
-                    Updater.latestChangelog?.takeIf { it.isNotBlank() } ?: if (Updater.isFetchingChangelog) "" else
-                        Updater.githubRelease?.body?.takeIf { it.isNotBlank() } ?: currentChangelog
-                }
-
-                val translator = remember { Translator(NetworkClientFactory.getTranslatorClient()) }
-                var translatedText by remember { mutableStateOf<String?>(null) }
-
-                LaunchedEffect(changelogTextToDisplay, isTranslationActive, changelogTranslationTarget) {
-                    translatedText = null
-                    val destination = changelogTranslationTarget
-                    if (isTranslationActive && changelogTextToDisplay.isNotBlank() &&
-                        destination != null && destination != Language.ENGLISH
-                    ) {
-                        try {
-                            translatedText = withContext(NzikDispatchers.DATA) {
-                                translator.translate(changelogTextToDisplay, destination, Language.ENGLISH).translatedText
-                            }
-                        } catch (e: Exception) {
-                            Timber.tag("UpdateScreen").e(e, "Translation failed")
-                        }
-                    }
-                }
-
-                // We don't replace the display text here. We pass both to ChangelogCard.
-                if (changelogTextToDisplay.isNotBlank() || Updater.isFetchingChangelog) {
-                    AnimatedVisibility(
-                        visible = true,
-                        enter = fadeIn(animationSpec = tween(800)) + scaleIn(
-                            animationSpec = tween(800),
-                            initialScale = 0.9f
-                        )
-                    ) {
-                        UpdaterCard(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = surfaceColor(colorPalette().background1)
-                            ),
-                            shape = uiRoundnessShape(),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                        ) {
-                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(bottom = 16.dp)
-                                ) {
-                                    LeadingIconBadge(
-                                        iconRes = R.drawable.sparkles,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(32.dp),
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    BasicText(
-                                        text = stringResource(R.string.updates_changelog_title, if (hasUpdate && !isReinstalling) newVersion else stringResource(R.string.updates_current_version_format, currentVersion)),
-                                        modifier = Modifier.weight(1f).padding(end = 8.dp).basicMarquee(iterations = Int.MAX_VALUE),
-                                        maxLines = 1,
-                                        style = typography().m.bold.copy(color = colorPalette().text)
-                                    )
-                                    UpdaterIconAction(
-                                        modifier = Modifier.size(NativeIconActionSize),
-                                        onClick = {
-                                            if (changelogTranslationTarget == null) showLanguageDialog = true
-                                            else isTranslationActive = !isTranslationActive
-                                        },
-                                        onLongClick = { showLanguageDialog = true },
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.translate),
-                                            contentDescription = stringResource(R.string.common_action_translate),
-                                            tint = if (isTranslationActive && changelogTranslationTarget != null) {
-                                                colorPalette().accent
-                                            } else colorPalette().textSecondary,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
-                                }
-                                if (changelogTextToDisplay.isBlank()) {
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth().padding(32.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        CircularWavyProgressIndicator(
-                                            modifier = Modifier.size(32.dp),
-                                            color = colorPalette().accent,
-                                        )
-                                    }
-                                } else {
-                                    ChangelogCard(
-                                        rawText = changelogTextToDisplay,
-                                        translatedText = if (isTranslationActive && changelogTranslationTarget != null) translatedText else null,
-                                        colorPaletteMode = colorPaletteMode
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+                UpdaterReleaseNotes(
+                    isReinstalling = downloadState !is UpdateDownloadManager.DownloadState.Idle &&
+                        UpdateDownloadManager.downloadingVersion == currentVersion,
+                    hasUpdate = hasUpdate,
+                    currentVersion = currentVersion,
+                    newVersion = newVersion,
+                    colorPaletteMode = colorPaletteMode,
+                    isTranslationActive = isTranslationActive,
+                    changelogTranslationTarget = changelogTranslationTarget,
+                    onToggleTranslation = { isTranslationActive = !isTranslationActive },
+                    onChooseTranslationLanguage = { showLanguageDialog = true },
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -959,184 +821,7 @@ private fun UpdateScreenContent(navController: NavController) {
     }
 }
 
-internal val Languages.changelogTranslationTarget: Language?
-    get() = contentTranslationTarget
-
-/**
- * Reads the bundled local changelog (`R.raw.release_notes`), used as a last-resort fallback by
- * [UpdateScreen] when neither [Updater.currentChangelog]/[Updater.latestChangelog] nor the GitHub
- * release body are available yet. Extracted to a top-level function (issue #606 M7a) so the read
- * can be dispatched via `withContext(NzikDispatchers.DATA)` from a `LaunchedEffect` instead of
- * running synchronously during composition, and so it is unit-testable without instantiating the
- * whole [UpdateScreen] composable. `context` defaults to [appContext] for production call sites;
- * tests inject a Robolectric application context directly.
- */
-internal fun readLocalReleaseNotes(context: Context = appContext()): String =
-    try {
-        context.resources
-            .openRawResource(R.raw.release_notes)
-            .bufferedReader(Charsets.UTF_8)
-            .readText()
-    } catch (e: Exception) { "" }
-
-/**
- * Purges the downloaded update APKs (issue #606 N3). Dispatched on [NzikDispatchers.DATA] from
- * the update menu click; the caller shows its toast afterwards on [NzikDispatchers.UI].
- */
+/** Clears update APKs on the caller's data dispatcher. */
 internal suspend fun clearUpdateCache(context: Context) {
     UpdateDownloadManager.clearCache(context)
 }
-
-fun parseChangelogText(text: String): List<Pair<String, List<String>>> {
-    val sections = mutableListOf<Pair<String, List<String>>>()
-    var currentTitle: String? = null
-    val currentChanges = mutableListOf<String>()
-
-    fun packSection() {
-        val title = currentTitle
-        if (title != null) {
-            sections.add(title to currentChanges.toList())
-            currentChanges.clear()
-        }
-    }
-
-    text.lines().forEach { line ->
-        val trimmed = line.trim()
-        when {
-            trimmed.endsWith(":") || trimmed.endsWith(" :") -> {
-                packSection()
-                currentTitle = trimmed.substringBeforeLast(":").trim()
-            }
-            trimmed.startsWith("-") -> {
-                val change = trimmed.removePrefix("-").trim()
-                if (change.isNotBlank()) {
-                    currentChanges.add(change)
-                }
-            }
-        }
-    }
-    packSection()
-
-    if (sections.isEmpty() && currentChanges.isNotEmpty()) {
-        val otherTitle = appTextResources().getString(R.string.common_other_section_title)
-        sections.add(otherTitle to currentChanges.toList())
-    }
-
-    return sections
-}
-
-@Composable
-fun ChangelogCard(rawText: String, translatedText: String?, colorPaletteMode: ColorPaletteMode) {
-    val rawSections = remember(rawText) { parseChangelogText(rawText) }
-
-    val displaySections = remember(rawText, translatedText) {
-        val parsedTranslated = translatedText?.let { parseChangelogText(it) }
-
-        if (parsedTranslated != null && parsedTranslated.size == rawSections.size) {
-            // Zip them: Triple(Raw Title, Display Title, Display Changes)
-            rawSections.mapIndexed { index, rawSection ->
-                Triple(rawSection.first, parsedTranslated[index].first, parsedTranslated[index].second)
-            }
-        } else {
-            // Fallback: no translation or structure broke
-            val fallbackSections = parsedTranslated ?: rawSections
-            fallbackSections.map { Triple(it.first, it.first, it.second) }
-        }
-    }
-
-    if (displaySections.isEmpty()) return
-
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        displaySections.forEach { section ->
-            var expanded by remember { mutableStateOf(true) }
-
-            UpdaterCard(
-                onClick = { expanded = !expanded },
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.Transparent
-                ),
-                shape = uiRoundnessShape(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                glassContainerColor = surfaceColor(colorPalette().background1),
-            ) {
-                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        LeadingIconBadge(
-                            iconRes = when (section.first.lowercase()) {
-                                    UpdaterConstants.CHANGELOG_ADDED -> R.drawable.add
-                                    UpdaterConstants.CHANGELOG_CHANGED -> R.drawable.pencil
-                                    UpdaterConstants.CHANGELOG_IMPROVED -> R.drawable.refresh_circle
-                                    UpdaterConstants.CHANGELOG_FIXED -> R.drawable.alert
-                                    UpdaterConstants.CHANGELOG_DEV -> R.drawable.sparkles
-                                    else -> R.drawable.information
-                            },
-                            contentDescription = null,
-                            modifier = Modifier.size(32.dp),
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        BasicText(
-                            text = section.second, // Use Display Title
-                            style = typography().s.semiBold.copy(color = colorPalette().text)
-                        )
-                        Spacer(modifier = Modifier.weight(1f))
-                        Icon(
-                            painter = painterResource(if (expanded) R.drawable.chevron_up else R.drawable.chevron_down),
-                            contentDescription = null,
-                            tint = colorPalette().textSecondary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-
-                    AnimatedVisibility(visible = expanded) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 16.dp)
-                        ) {
-                            section.third.forEach { change ->
-                                Row(
-                                    verticalAlignment = Alignment.Top,
-                                    modifier = Modifier.padding(vertical = 6.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .padding(top = 6.dp)
-                                            .size(6.dp)
-                                            .clip(uiRoundnessShape())
-                                            .background(
-                                                when (section.first.lowercase()) {
-                                                    UpdaterConstants.CHANGELOG_ADDED -> Color(0xFF4CAF50)
-                                                    UpdaterConstants.CHANGELOG_CHANGED -> Color(0xFFFF9800)
-                                                    UpdaterConstants.CHANGELOG_IMPROVED -> Color(0xFF2196F3)
-                                                    UpdaterConstants.CHANGELOG_FIXED -> Color(0xFFF44336)
-                                                    UpdaterConstants.CHANGELOG_DEV -> Color(0xFFFFEB3B)
-                                                    else -> colorPalette().accent
-                                                }
-                                            )
-                                    )
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    BasicText(
-                                        text = change, // Display Change (prefix already removed by new parser)
-                                        style = typography().xs.copy(color = colorPalette().text),
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-
-

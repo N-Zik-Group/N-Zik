@@ -103,7 +103,6 @@ class PredictiveScreenTransitionsTest {
             .first { it.isDirectory }
         listOf(
             "app/n_zik/android/components/ui/screens/settings/SettingsScreen.kt",
-            "app/n_zik/android/ui/screens/AppNavigation.kt",
             "app/n_zik/android/components/navigation/AppNavigation.kt",
         ).forEach { path ->
             val source = File(root, path).readText()

@@ -1,14 +1,17 @@
 package app.n_zik.android.components.player
 
 import android.app.Application
+import android.os.SystemClock
 import androidx.compose.runtime.CompositionLocalProvider
 import app.n_zik.android.utils.LocalPlaybackPositionClock
+import app.n_zik.android.utils.PlaybackPositionClock
 import app.n_zik.android.utils.playbackPositionClock
 import app.n_zik.android.utils.rememberPlaybackPositionClock
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.media3.common.C
+import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import app.n_zik.android.utils.POSITION_POLL_INTERVAL_MS
@@ -263,6 +266,24 @@ class PositionAndDurationStateTest {
 
         verify(exactly = 1) { player.removeListener(captured) }
     }
+
+    @Test
+    fun `a standalone playback clock interpolates and caps the lyrics position`() {
+        every { player.isPlaying } returns true
+        every { player.playbackParameters } returns PlaybackParameters(2f)
+        liveDuration = livePosition + 50L
+        composeRule.mainClock.autoAdvance = false
+        lateinit var clock: PlaybackPositionClock
+        composeRule.setContent { clock = player.playbackPositionClock() }
+
+        composeRule.runOnIdle {
+            clock.publish()
+            SystemClock.sleep(20L)
+            assertEquals(livePosition + 40L, clock.estimatedPositionMs())
+            SystemClock.sleep(10L)
+            assertEquals(liveDuration, clock.estimatedPositionMs())
+        }
+    }
 
     @Test
     fun `main player and mini player consume one playback listener and sample`() {

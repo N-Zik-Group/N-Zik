@@ -47,10 +47,8 @@ import app.n_zik.android.enums.lyrics.LyricsColor
 import app.n_zik.android.enums.lyrics.LyricsFontSize
 import app.n_zik.android.enums.lyrics.LyricsHighlight
 import app.n_zik.android.enums.lyrics.LyricsOutline
-import app.n_zik.android.ui.styling.PureBlackColorPalette
 import app.n_zik.android.utils.conditional
 import app.n_zik.android.colorPalette
-import app.n_zik.android.uiRoundnessShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 
 @Composable
@@ -90,89 +88,7 @@ fun LyricsTextPainter(
         }
         return
     }
-    val infiniteTransition = rememberInfiniteTransition()
-
-    val offset by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 10000,
-                easing = LinearEasing
-            ),
-            repeatMode = RepeatMode.Reverse
-        ), label = ""
-    )
-
-    val RainbowColors = listOf(Color.Red, Color.Magenta, Color.Blue, Color.Cyan, Color.Green, Color.Yellow, Color.Red)
-    val RainbowColorsdark = listOf(
-        Color.Black.copy(0.35f).compositeOver(Color.Red),
-        Color.Black.copy(0.35f).compositeOver(Color.Magenta),
-        Color.Black.copy(0.35f).compositeOver(Color.Blue),
-        Color.Black.copy(0.35f).compositeOver(Color.Cyan),
-        Color.Black.copy(0.35f).compositeOver(Color.Green),
-        Color.Black.copy(0.35f).compositeOver(Color.Yellow),
-        Color.Black.copy(0.35f).compositeOver(Color.Red)
-    )
-    val RainbowColors2 = listOf(
-        Color.Red.copy(0.3f), Color.Magenta.copy(0.3f), Color.Blue.copy(0.3f),
-        Color.Cyan.copy(0.3f), Color.Green.copy(0.3f), Color.Yellow.copy(0.3f), Color.Red.copy(0.3f)
-    )
-    val Themegradient = listOf(colorPalette().background2, colorPalette().accent)
-    val Themegradient2 = listOf(colorPalette().background2.copy(0.5f), colorPalette().accent.copy(0.5f))
-    val oldlyrics = listOf(PureBlackColorPalette.text, PureBlackColorPalette.text)
-    val oldlyrics2 = listOf(PureBlackColorPalette.textDisabled, PureBlackColorPalette.textDisabled)
-
     val lightTheme = colorPaletteMode == ColorPaletteMode.Light
-    
-    val brushrainbow = remember(offset) {
-        object : ShaderBrush() {
-            override fun createShader(size: Size): Shader {
-                val widthOffset = size.width * offset
-                val heightOffset = size.height * offset
-                return LinearGradientShader(
-                    colors = if (isCurrentIndex)
-                        if (showlyricsthumbnail) oldlyrics else RainbowColors
-                    else if (showlyricsthumbnail) oldlyrics2 else RainbowColors2,
-                    from = Offset(widthOffset, heightOffset),
-                    to = Offset(widthOffset + size.width, heightOffset + size.height),
-                    tileMode = TileMode.Mirror
-                )
-            }
-        }
-    }
-    
-    val brushrainbowdark = remember(offset) {
-        object : ShaderBrush() {
-            override fun createShader(size: Size): Shader {
-                val widthOffset = size.width * offset
-                val heightOffset = size.height * offset
-                return LinearGradientShader(
-                    colors = if (isCurrentIndex) RainbowColorsdark else RainbowColors2,
-                    from = Offset(widthOffset, heightOffset),
-                    to = Offset(widthOffset + size.width, heightOffset + size.height),
-                    tileMode = TileMode.Mirror
-                )
-            }
-        }
-    }
-
-    val brushtheme = remember(offset) {
-        object : ShaderBrush() {
-            override fun createShader(size: Size): Shader {
-                val widthOffset = size.width * offset
-                val heightOffset = size.height * offset
-                return LinearGradientShader(
-                    colors = if (isCurrentIndex)
-                        if (showlyricsthumbnail) oldlyrics else Themegradient
-                    else if (showlyricsthumbnail) oldlyrics2 else Themegradient2,
-                    from = Offset(widthOffset, heightOffset),
-                    to = Offset(widthOffset + size.width, heightOffset + size.height),
-                    tileMode = TileMode.Mirror
-                )
-            }
-        }
-    }
 
     val animateSizeText by animateFloatAsState(
         targetValue = if (isCurrentIndex) 1.08f else 0.92f,
@@ -234,7 +150,7 @@ fun LyricsTextPainter(
                     text = text,
                     style = TextStyle(
                         textAlign = lyricsAlignment.selected,
-                        brush = if (lightTheme) brushrainbow else brushrainbowdark,
+                        brush = rememberRainbowOutlineBrush(isCurrentIndex, lightTheme),
                         fontSize = textSize,
                         fontWeight = FontWeight.Medium,
                         drawStyle = Stroke(
@@ -346,7 +262,7 @@ fun LyricsTextPainter(
                         onClick = onClick
                     )
             )
-        } else if (lyricsColor == LyricsColor.White || lyricsColor == LyricsColor.Cover || lyricsColor == LyricsColor.Custom || lyricsColor == LyricsColor.Thememode) {
+        } else {
             BasicText(
                 text = text,
                 style = TextStyle(
@@ -387,38 +303,44 @@ fun LyricsTextPainter(
                     )
                     .conditional(lyricsHighlight != LyricsHighlight.None) { fillMaxWidth() }
             )
-        } else {
-            BasicText(
-                text = text,
-                style = TextStyle(
-                    brush = if (lightTheme) brushrainbow else brushrainbowdark,
-                    fontSize = textSize,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = lyricsAlignment.selected
-                ),
-                modifier = Modifier
-                    .padding(vertical = 4.dp, horizontal = 32.dp)
-                    .conditional(isSync) { padding(vertical = 4.dp) }
-                    .align(
-                        if (lyricsAlignment == LyricsAlignment.Left) Alignment.CenterStart
-                        else if (lyricsAlignment == LyricsAlignment.Right) Alignment.CenterEnd else Alignment.Center
-                    )
-                    .graphicsLayer {
-                        alpha = if(isSync) animateOpacity else 1f
-                        transformOrigin = if (lyricsAlignment == LyricsAlignment.Center) TransformOrigin(0.5f, 0.5f)
-                        else if (lyricsAlignment == LyricsAlignment.Left) TransformOrigin(0f, 0.5f)
-                        else TransformOrigin(1f, 0.5f)
-                        scaleY = animateSizeText
-                        scaleX = animateSizeText
-                    }
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = glassGlobalIndication(if (clickLyricsText) ripple(true) else null),
-                        onClick = onClick
-                    )
-            )
         }
     }
 }
 
+private val rainbowOutlineColors =
+    listOf(Color.Red, Color.Magenta, Color.Blue, Color.Cyan, Color.Green, Color.Yellow, Color.Red)
+private val darkRainbowOutlineColors = rainbowOutlineColors.map { Color.Black.copy(alpha = 0.35f).compositeOver(it) }
+private val inactiveRainbowOutlineColors = rainbowOutlineColors.map { it.copy(alpha = 0.3f) }
+
+@Composable
+private fun rememberRainbowOutlineBrush(isCurrentIndex: Boolean, lightTheme: Boolean): ShaderBrush {
+    val transition = rememberInfiniteTransition(label = "Lyrics rainbow outline")
+    val offset by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 10_000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "Lyrics rainbow offset",
+    )
+    val colors = when {
+        !isCurrentIndex -> inactiveRainbowOutlineColors
+        lightTheme -> rainbowOutlineColors
+        else -> darkRainbowOutlineColors
+    }
+    return remember(offset, colors) {
+        object : ShaderBrush() {
+            override fun createShader(size: Size): Shader {
+                val widthOffset = size.width * offset
+                val heightOffset = size.height * offset
+                return LinearGradientShader(
+                    colors = colors,
+                    from = Offset(widthOffset, heightOffset),
+                    to = Offset(widthOffset + size.width, heightOffset + size.height),
+                    tileMode = TileMode.Mirror,
+                )
+            }
+        }
+    }
+}

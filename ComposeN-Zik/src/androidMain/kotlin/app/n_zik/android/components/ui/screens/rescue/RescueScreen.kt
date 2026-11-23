@@ -982,121 +982,48 @@ fun RescueScreen() {
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                // Profiles - the profile state of the whole app (the list + every face) and
-            // the multi-select operations on the user profiles (the selection is made in
-            // the dialog, not in the per-profile target subcategory)
-            RescueSectionCard(
-                title = stringResource(R.string.recovery_group_profiles),
-                iconRes = R.drawable.person,
-                content = {
-                    // Export profiles (profile state: the list + every face, one .txt file)
-                    RescueActionCard(
-                        iconRes = R.drawable.person,
-                        title = stringResource(R.string.profile_action_export),
-                        description = stringResource(R.string.recovery_export_profiles_description),
-                        enabled = fileState.hasProfileState,
-                        disabledReason = stringResource(R.string.recovery_no_profile_state),
-                        onClick = {
+                    RescueGlobalProfilesSection(
+                        hasProfileState = fileState.hasProfileState,
+                        hasDeletableProfiles = profileOptions.any { it.id != DEFAULT_PROFILE_ID },
+                        hasProfileBackups = fileState.profileBackups.isNotEmpty(),
+                        onExport = {
                             exportProfileStateLauncher.launch(
                                 "${BuildConfig.APP_NAME}_${targetProfile}_${fullDate}_Profiles_Export.txt"
                             )
-                        }
-                    )
-
-                    // Import profiles (profile state)
-                    RescueActionCard(
-                        iconRes = R.drawable.person,
-                        title = stringResource(R.string.profile_action_import),
-                        description = stringResource(R.string.recovery_import_profiles_description),
-                        onClick = {
+                        },
+                        onImport = {
                             guardWrite {
                                 confirmAction = ConfirmAction(R.string.recovery_confirm_import_accounts) {
                                     importProfileStateLauncher.launch(IMPORT_PROFILE_STATE_MIMES)
                                 }
                             }
-                        }
-                    )
-
-                    // Delete profiles: every user profile is offered as a checkbox in the
-                    // selection dialog (the base is never listed - it is reset by its own
-                    // action, never deleted). The active profile is NOT skipped: deleting it
-                    // switches the active slot to the base, and the app must be relaunched.
-                    RescueActionCard(
-                        iconRes = R.drawable.trash,
-                        title = stringResource(R.string.recovery_delete_profiles),
-                        description = stringResource(R.string.recovery_delete_profiles_description),
-                        enabled = profileOptions.any { it.id != DEFAULT_PROFILE_ID },
-                        disabledReason = stringResource(R.string.recovery_no_profiles_to_delete),
-                        onClick = {
+                        },
+                        onDelete = {
                             guardWrite {
                                 deleteSelection = emptySet()
                                 deleteProfilesDialog = true
                             }
-                        }
-                    )
-
-                    // Reset profiles: every profile is offered as a checkbox in the selection
-                    // dialog (the base included - first row, badged). Unlike deletion, the
-                    // profiles are kept in the list: they are simply factory-reset (database,
-                    // settings, name and photo deleted), so the active slot is untouched and
-                    // the app must be relaunched - the result message says so.
-                    RescueActionCard(
-                        iconRes = R.drawable.person,
-                        title = stringResource(R.string.recovery_reset_profiles),
-                        description = stringResource(R.string.recovery_reset_profiles_description),
-                        onClick = {
+                        },
+                        onReset = {
                             guardWrite {
                                 resetSelection = emptySet()
                                 resetProfilesDialog = true
                             }
-                        }
-                    )
-
-                    // Restore profiles: brings back the profiles reset earlier - their
-                    // last reset backup (database, settings, credentials, face and name),
-                    // the base included. The selection dialog offers only the profiles
-                    // that carry a backup.
-                    RescueActionCard(
-                        iconRes = R.drawable.restore,
-                        title = stringResource(R.string.recovery_restore_profiles),
-                        description = stringResource(R.string.recovery_restore_profiles_description),
-                        enabled = fileState.profileBackups.isNotEmpty(),
-                        disabledReason = stringResource(R.string.recovery_no_profiles_to_restore),
-                        onClick = {
+                        },
+                        onRestore = {
                             guardWrite {
                                 restoreSelection = emptySet()
                                 restoreProfilesDialog = true
                             }
-                        }
+                        },
                     )
-                }
-            )
-
-            // Logs - export / delete the app log
-            RescueSectionCard(
-                title = stringResource(R.string.recovery_group_logs),
-                iconRes = R.drawable.bugs,
-                content = {
-                    // Export logs
-                    RescueActionCard(
-                        iconRes = R.drawable.bugs,
-                        title = stringResource(R.string.recovery_export_logs),
-                        description = stringResource(R.string.recovery_export_logs_description),
-                        enabled = fileState.hasLogs,
-                        disabledReason = stringResource(R.string.recovery_no_logs),
-                        onClick = {
+                    RescueLogsSection(
+                        hasLogs = fileState.hasLogs,
+                        hasDeletableLogs = fileState.hasDeletableLogs,
+                        onExport = {
                             exportLogsLauncher.launch("${BuildConfig.APP_NAME} $date Logs.txt")
-                        }
-                    )
-
-                    // Delete logs
-                    RescueActionCard(
-                        iconRes = R.drawable.trash,
-                        title = stringResource(R.string.recovery_delete_logs),
-                        description = stringResource(R.string.recovery_delete_logs_description),
-                        enabled = fileState.hasDeletableLogs,
-                        disabledReason = stringResource(R.string.recovery_no_logs),
-                        onClick = {
+                        },
+                        onDelete = {
                             guardWrite {
                                 confirmAction = ConfirmAction(R.string.recovery_confirm_delete_logs) {
                                     scope.launch {
@@ -1107,22 +1034,13 @@ fun RescueScreen() {
                                     }
                                 }
                             }
-                        }
+                        },
                     )
-                }
-            )
-
-            // Storage - the shared (non-profiled) caches, downloads and the safety copies
-            RescueSectionCard(
-                title = stringResource(R.string.recovery_group_storage),
-                iconRes = R.drawable.trash,
-                content = {
-                    // Clear cache
-                    RescueActionCard(
-                        iconRes = R.drawable.trash,
-                        title = stringResource(R.string.recovery_clear_cache),
-                        description = stringResource(R.string.recovery_clear_cache_description),
-                        onClick = {
+                    RescueStorageSection(
+                        hasBackups = fileState.hasDatabaseBackup ||
+                            fileState.hasSettingsBackup ||
+                            fileState.profileBackups.isNotEmpty(),
+                        onClearCache = {
                             guardWrite {
                                 confirmAction = ConfirmAction(R.string.recovery_confirm_clear_cache) {
                                     scope.launch {
@@ -1133,15 +1051,8 @@ fun RescueScreen() {
                                     }
                                 }
                             }
-                        }
-                    )
-
-                    // Delete downloads
-                    RescueActionCard(
-                        iconRes = R.drawable.trash,
-                        title = stringResource(R.string.recovery_delete_downloads),
-                        description = stringResource(R.string.recovery_delete_downloads_description),
-                        onClick = {
+                        },
+                        onDeleteDownloads = {
                             guardWrite {
                                 confirmAction = ConfirmAction(R.string.recovery_confirm_delete_downloads) {
                                     scope.launch {
@@ -1152,21 +1063,8 @@ fun RescueScreen() {
                                     }
                                 }
                             }
-                        }
-                    )
-
-                    // Delete backups: removes the only safety copy
-                    RescueActionCard(
-                        iconRes = R.drawable.trash,
-                        title = stringResource(R.string.recovery_delete_backups),
-                        description = stringResource(R.string.recovery_delete_backups_description),
-                        // The action wipes the whole rescue_backups tree - database, settings
-                        // AND the profile reset backups - so any of them keeps the card on.
-                        enabled = fileState.hasDatabaseBackup ||
-                            fileState.hasSettingsBackup ||
-                            fileState.profileBackups.isNotEmpty(),
-                        disabledReason = stringResource(R.string.recovery_no_backups_to_delete),
-                        onClick = {
+                        },
+                        onDeleteBackups = {
                             guardWrite {
                                 confirmAction = ConfirmAction(R.string.recovery_confirm_delete_backups) {
                                     scope.launch {
@@ -1177,27 +1075,11 @@ fun RescueScreen() {
                                     }
                                 }
                             }
-                        }
+                        },
                     )
-                }
-            )
-
-            // App - end the main process
-            RescueSectionCard(
-                title = stringResource(R.string.recovery_group_app),
-                iconRes = R.drawable.logout,
-                content = {
-
-            // Kill the app: re-sends the kill request when the automatic one (sent when this
-            // screen opened) failed. Gated on the process still being alive: a stale flag
-            // sent to a dead process would be consumed as a self-kill on the next launch.
-            // Not gated by guardWrite: its purpose is to release the guard; it writes nothing.
-                    RescueActionCard(
-                        iconRes = R.drawable.logout,
-                        title = stringResource(R.string.recovery_kill_app),
-                        description = stringResource(R.string.recovery_kill_app_description),
-                        enabled = mainProcessRunning == true,
-                        onClick = {
+                    RescueMainAppSection(
+                        canKillApp = mainProcessRunning == true,
+                        onKillApp = {
                             confirmAction = ConfirmAction(R.string.recovery_confirm_kill_app) {
                                 scope.launch {
                                     withContext(NzikDispatchers.DATA) {
@@ -1207,10 +1089,8 @@ fun RescueScreen() {
                                 // Restart the status polling so "stopping" → "stopped" is visible again.
                                 killRequestGeneration++
                             }
-                        }
+                        },
                     )
-                }
-            )
                 }
             }
 

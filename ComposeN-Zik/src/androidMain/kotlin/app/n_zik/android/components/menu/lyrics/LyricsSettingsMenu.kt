@@ -1,49 +1,45 @@
 package app.n_zik.android.components.menu.lyrics
 
-import app.n_zik.android.components.glass.NativeIconActionSize
-
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
+
+import app.n_zik.android.R
+import app.n_zik.android.appContext
+import app.n_zik.android.components.menu.GridMenu
+import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.player.lyrics.karaokeClipRectsDebugKey
+import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.enums.Languages
-import app.n_zik.android.utils.contentTranslationChoices
 import app.n_zik.android.enums.MenuStyle
+import app.n_zik.android.enums.lyrics.LyricsAlignment
+import app.n_zik.android.enums.lyrics.LyricsBackground
+import app.n_zik.android.enums.lyrics.LyricsColor
+import app.n_zik.android.enums.lyrics.LyricsFontSize
+import app.n_zik.android.enums.lyrics.LyricsHighlight
+import app.n_zik.android.enums.lyrics.LyricsOutline
+import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
-import app.n_zik.android.ui.components.tab.toolbar.Button
 import app.n_zik.android.ui.components.tab.toolbar.Menu
-import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.clickOnLyricsTextKey
+import app.n_zik.android.utils.contentTranslationChoices
 import app.n_zik.android.utils.karaokeRespectAgentPositionKey
 import app.n_zik.android.utils.landscapeControlsKey
 import app.n_zik.android.utils.lyricsAlignmentKey
@@ -56,41 +52,17 @@ import app.n_zik.android.utils.lyricsIntervalIndicatorKey
 import app.n_zik.android.utils.lyricsOutlineKey
 import app.n_zik.android.utils.lyricsSizeAnimateKey
 import app.n_zik.android.utils.lyricsTypeKey
-import app.n_zik.android.utils.otherLanguageAppLyricsKey
 import app.n_zik.android.utils.menuStyleKey
+import app.n_zik.android.utils.otherLanguageAppLyricsKey
 import app.n_zik.android.utils.playerEnableLyricsPopupMessageKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.romanizationEnabledKey
-import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.showBackgroundLyricsKey
 import app.n_zik.android.utils.showButtonPlayerLyricsKey
 import app.n_zik.android.utils.showLyricsStateKey
 import app.n_zik.android.utils.showSecondLineKey
 import app.n_zik.android.utils.showlyricsthumbnailKey
 import app.n_zik.android.utils.thumbnailTapEnabledKey
-import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.R
-import app.n_zik.android.appContext
-import app.n_zik.android.core.network.OfflineMode
-import app.n_zik.android.components.glass.TextContrast
-import app.n_zik.android.components.glass.surfaceGlyphColor
-import app.n_zik.android.components.ui.iconBadgeBackground
-import app.n_zik.android.components.ui.iconBadgeGlyphColor
-import app.n_zik.android.colorPalette
-import app.n_zik.android.components.menu.GridMenu
-import app.n_zik.android.components.menu.ListMenu
-import app.n_zik.android.components.player.lyrics.karaokeClipRectsDebugKey
-import app.n_zik.android.components.ui.toggles.Switch
-import app.n_zik.android.enums.lyrics.LyricsAlignment
-import app.n_zik.android.enums.lyrics.LyricsBackground
-import app.n_zik.android.enums.lyrics.LyricsColor
-import app.n_zik.android.enums.lyrics.LyricsFontSize
-import app.n_zik.android.enums.lyrics.LyricsHighlight
-import app.n_zik.android.enums.lyrics.LyricsOutline
-import app.n_zik.android.enums.lyrics.LyricsType
-import app.n_zik.android.typography
-import app.n_zik.android.uiRoundnessShape
-import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 
 @UnstableApi
 class LyricsSettingsMenu private constructor(
@@ -144,7 +116,6 @@ class LyricsSettingsMenu private constructor(
             )
     }
 
-    private lateinit var buttons: List<Button>
     override var menuStyle: MenuStyle by styleState
 
     @Composable
@@ -202,47 +173,9 @@ class LyricsSettingsMenu private constructor(
             // Section: Display Mode
             SectionTitle(stringResource(R.string.lyrics_display_section_title))
 
-            // Lyrics Type
-            EnumSettingEntry(
-                title = stringResource(R.string.recommendations_show_section_label),
-                icon = R.drawable.time,
-                selectedValue = lyricsType,
-                values = LyricsType.entries.toList(),
-                valueText = { value ->
-                    when (value) {
-                        LyricsType.Karaoke -> stringResource(R.string.lyrics_mode_karaoke_label)
-                        LyricsType.Synced -> stringResource(R.string.lyrics_mode_synchronized_label)
-                        LyricsType.Unsynced -> stringResource(R.string.lyrics_mode_unsynchronized_label)
-                        LyricsType.Auto -> stringResource(R.string.lyrics_mode_automatic_label)
-                    }
-                },
-                onValueSelected = { lyricsType = it }
-            )
-
+            LyricsTypeEntry(lyricsType) { lyricsType = it }
             providerSettingsEntry()
-
-            val actualStateString = actualLyricsType()?.let {
-                when (it) {
-                    LyricsType.Karaoke -> stringResource(R.string.lyrics_mode_karaoke_label)
-                    LyricsType.Synced -> stringResource(R.string.lyrics_mode_synchronized_label)
-                    LyricsType.Unsynced -> stringResource(R.string.lyrics_mode_unsynchronized_label)
-                    LyricsType.Auto -> stringResource(R.string.lyrics_mode_automatic_label)
-                }
-            }
-
-            AnimatedContent(
-                targetState = actualStateString,
-                label = "LyricsStateAnimation"
-            ) { stateString ->
-                if (stateString != null) {
-                    ActionSettingEntry(
-                        title = stringResource(R.string.lyrics_current_state_format, stateString),
-                        icon = R.drawable.information,
-                        enabled = false,
-                        onClick = {}
-                    )
-                }
-            }
+            LyricsCurrentTypeEntry(actualLyricsType(), label = "LyricsStateAnimation")
 
             // Show Lyrics Thumbnail
             ToggleSettingEntry(
@@ -273,42 +206,7 @@ class LyricsSettingsMenu private constructor(
             // Section: Text Style
             SectionTitle(stringResource(R.string.lyrics_text_style_section_title))
 
-            // Font Size
-            EnumSettingEntry(
-                title = stringResource(R.string.lyrics_size),
-                icon = R.drawable.text,
-                selectedValue = fontSize,
-                values = LyricsFontSize.entries.toList(),
-                valueText = { value ->
-                    when (value) {
-                        LyricsFontSize.Light -> stringResource(R.string.lyrics_font_size_small_label)
-                        LyricsFontSize.Medium -> stringResource(R.string.common_size_medium)
-                        LyricsFontSize.Heavy -> stringResource(R.string.lyrics_font_size_large_label)
-                        LyricsFontSize.Large -> stringResource(R.string.lyrics_font_size_extra_large_label)
-                        LyricsFontSize.Custom -> stringResource(R.string.common_option_custom)
-                    }
-                },
-                onValueSelected = { fontSize = it },
-                trailingContent = {
-                    if (fontSize == LyricsFontSize.Custom) {
-                        Box(
-                            modifier = Modifier
-                                .size(NativeIconActionSize)
-                                .clip(uiRoundnessShape())
-                                .iconBadgeBackground(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape())
-                                .clickable { onShowLyricsSizeDialog() },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.text),
-                                tint = iconBadgeGlyphColor(colorPalette().accent),
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-                }
-            )
+            LyricsFontSizeEntry(fontSize, { fontSize = it }, onShowLyricsSizeDialog)
 
             // Debug: karaoke clip rects overlay
             ToggleSettingEntry(
@@ -626,50 +524,9 @@ class LyricsSettingsMenu private constructor(
             // Section: Display Mode
             item(span = { GridItemSpan(maxLineSpan) }) { SectionTitle(stringResource(R.string.lyrics_display_section_title)) }
 
-            // Lyrics Type
-            item {
-                EnumSettingEntry(
-                    title = stringResource(R.string.recommendations_show_section_label),
-                    icon = R.drawable.time,
-                    selectedValue = lyricsType,
-                    values = LyricsType.entries.toList(),
-                    valueText = { value ->
-                        when (value) {
-                            LyricsType.Karaoke -> stringResource(R.string.lyrics_mode_karaoke_label)
-                            LyricsType.Synced -> stringResource(R.string.lyrics_mode_synchronized_label)
-                            LyricsType.Unsynced -> stringResource(R.string.lyrics_mode_unsynchronized_label)
-                            LyricsType.Auto -> stringResource(R.string.lyrics_mode_automatic_label)
-                        }
-                    },
-                    onValueSelected = { lyricsType = it }
-                )
-            }
-
+            item { LyricsTypeEntry(lyricsType) { lyricsType = it } }
             item { providerSettingsEntry() }
-
-            item {
-                val actualStateString = when (actualLyricsType()) {
-                    LyricsType.Karaoke -> stringResource(R.string.lyrics_mode_karaoke_label)
-                    LyricsType.Synced -> stringResource(R.string.lyrics_mode_synchronized_label)
-                    LyricsType.Unsynced -> stringResource(R.string.lyrics_mode_unsynchronized_label)
-                    LyricsType.Auto -> stringResource(R.string.lyrics_mode_automatic_label)
-                    null -> null
-                }
-
-                AnimatedContent(
-                    targetState = actualStateString,
-                    label = "LyricsStateGridAnimation"
-                ) { stateString ->
-                    if (stateString != null) {
-                        ActionSettingEntry(
-                            title = stringResource(R.string.lyrics_current_state_format, stateString),
-                            icon = R.drawable.information,
-                            enabled = false,
-                            onClick = {}
-                        )
-                    }
-                }
-            }
+            item { LyricsCurrentTypeEntry(actualLyricsType(), label = "LyricsStateGridAnimation") }
 
             // Show Lyrics Thumbnail
             item {
@@ -706,44 +563,7 @@ class LyricsSettingsMenu private constructor(
             // Section: Text Style
             item(span = { GridItemSpan(maxLineSpan) }) { SectionTitle(stringResource(R.string.lyrics_text_style_section_title)) }
 
-            // Font Size
-            item {
-                EnumSettingEntry(
-                    title = stringResource(R.string.lyrics_size),
-                    icon = R.drawable.text,
-                    selectedValue = fontSize,
-                    values = LyricsFontSize.entries.toList(),
-                    valueText = { value ->
-                        when (value) {
-                            LyricsFontSize.Light -> stringResource(R.string.lyrics_font_size_small_label)
-                            LyricsFontSize.Medium -> stringResource(R.string.common_size_medium)
-                            LyricsFontSize.Heavy -> stringResource(R.string.lyrics_font_size_large_label)
-                            LyricsFontSize.Large -> stringResource(R.string.lyrics_font_size_extra_large_label)
-                            LyricsFontSize.Custom -> stringResource(R.string.common_option_custom)
-                        }
-                    },
-                    onValueSelected = { fontSize = it },
-                    trailingContent = {
-                        if (fontSize == LyricsFontSize.Custom) {
-                            Box(
-                                modifier = Modifier
-                                    .size(NativeIconActionSize)
-                                    .clip(uiRoundnessShape())
-                                    .iconBadgeBackground(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape())
-                                    .clickable { onShowLyricsSizeDialog() },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.text),
-                                    tint = iconBadgeGlyphColor(colorPalette().accent),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                        }
-                    }
-                )
-            }
+            item { LyricsFontSizeEntry(fontSize, { fontSize = it }, onShowLyricsSizeDialog) }
 
             // Debug: karaoke clip rects overlay
             item {
@@ -1113,181 +933,6 @@ class LyricsSettingsMenu private constructor(
             GridMenu.Menu(title = stringResource(R.string.lyrics_title)) {
                 settingsGridContent()
             }
-        }
-    }
-
-    // Helper composables
-
-    @Composable
-    private fun SettingIcon(icon: Int) {
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .iconBadgeBackground(
-                    color = colorPalette().accent.copy(alpha = 0.1f),
-                    shape = uiRoundnessShape()
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(icon),
-                tint = iconBadgeGlyphColor(colorPalette().accent),
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-        }
-    }
-
-    @Composable
-    private fun SectionTitle(title: String) {
-        BasicText(
-            text = title,
-            style = typography().xxs.semiBold.copy(
-                color = surfaceGlyphColor(colorPalette().accent, minimum = TextContrast),
-                textAlign = TextAlign.Start
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 4.dp)
-        )
-    }
-
-    @Composable
-    private fun ToggleSettingEntry(
-        title: String,
-        icon: Int,
-        isChecked: Boolean,
-        onCheckedChange: (Boolean) -> Unit,
-        subtitle: String? = null
-    ) {
-        if (menuStyle == MenuStyle.List) {
-            ListMenu.Entry(
-                text = title,
-                icon = { SettingIcon(icon) },
-                subtitle = subtitle,
-                onClick = { onCheckedChange(!isChecked) },
-                trailingContent = {
-                    Switch(
-                        checked = isChecked,
-                        onCheckedChange = null,
-                        modifier = Modifier.scale(0.8f),
-                        checkedThumbColor = colorPalette().textSecondary,
-                        checkedTrackColor = colorPalette().accent.copy(alpha = 0.3f),
-                        uncheckedThumbColor = colorPalette().textSecondary,
-                        uncheckedTrackColor = colorPalette().textSecondary.copy(alpha = 0.3f)
-                    )
-                }
-            )
-        } else {
-            GridMenu.Entry(
-                text = title,
-                icon = { SettingIcon(icon) },
-                subtitle = subtitle,
-                onClick = { onCheckedChange(!isChecked) },
-                trailingContent = {
-                    Switch(
-                        checked = isChecked,
-                        onCheckedChange = null,
-                        modifier = Modifier.scale(0.8f),
-                        checkedThumbColor = colorPalette().textSecondary,
-                        checkedTrackColor = colorPalette().accent.copy(alpha = 0.3f),
-                        uncheckedThumbColor = colorPalette().textSecondary,
-                        uncheckedTrackColor = colorPalette().textSecondary.copy(alpha = 0.3f)
-                    )
-                }
-            )
-        }
-    }
-
-    @Composable
-    private fun ActionSettingEntry(
-        title: String,
-        icon: Int,
-        enabled: Boolean = true,
-        onClick: () -> Unit
-    ) {
-        if (menuStyle == MenuStyle.List) {
-            ListMenu.Entry(
-                text = title,
-                icon = { SettingIcon(icon) },
-                enabled = enabled,
-                onClick = onClick,
-                trailingContent = {
-                    Icon(
-                        painter = painterResource(R.drawable.chevron_forward),
-                        tint = colorPalette().textSecondary,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-            )
-        } else {
-            GridMenu.Entry(
-                text = title,
-                icon = { SettingIcon(icon) },
-                enabled = enabled,
-                onClick = onClick,
-                trailingContent = {
-                    Icon(
-                        painter = painterResource(R.drawable.chevron_forward),
-                        tint = colorPalette().textSecondary,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-            )
-        }
-    }
-
-    @Composable
-    private inline fun <reified T : Enum<T>> EnumSettingEntry(
-        title: String,
-        icon: Int,
-        selectedValue: T,
-        values: List<T>,
-        noinline valueText: @Composable (T) -> String,
-        noinline onValueSelected: (T) -> Unit,
-        noinline trailingContent: @Composable () -> Unit = {
-            Icon(
-                painter = painterResource(R.drawable.chevron_forward),
-                tint = colorPalette().textSecondary,
-                contentDescription = null,
-                modifier = Modifier.size(16.dp)
-            )
-        }
-    ) {
-        var isShowingDialog by remember { mutableStateOf(false) }
-
-        DialogPresence(visible = isShowingDialog) {
-            ValueSelectorDialog(
-                onDismiss = { isShowingDialog = false },
-                title = title,
-                selectedValue = selectedValue,
-                values = values,
-                onValueSelected = {
-                    onValueSelected(it)
-                    isShowingDialog = false
-                },
-                valueText = valueText
-            )
-        }
-
-        if (menuStyle == MenuStyle.List) {
-            ListMenu.Entry(
-                text = title,
-                icon = { SettingIcon(icon) },
-                subtitle = valueText(selectedValue),
-                onClick = { isShowingDialog = true },
-                trailingContent = trailingContent
-            )
-        } else {
-            GridMenu.Entry(
-                text = title,
-                icon = { SettingIcon(icon) },
-                subtitle = valueText(selectedValue),
-                onClick = { isShowingDialog = true },
-                trailingContent = trailingContent
-            )
         }
     }
 }

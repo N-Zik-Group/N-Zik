@@ -2,11 +2,7 @@ package app.n_zik.android.playback.services.automotive.session
 
 import app.n_zik.android.playback.services.hasCachedStream
 import android.content.Context
-import app.n_zik.android.playback.services.PersistentQueueArtwork
-import app.n_zik.android.playback.services.ArtworkContentProvider
 import android.os.Bundle
-import android.net.Uri
-import app.n_zik.android.MODIFIED_PREFIX
 import android.os.Handler
 import android.os.Looper
 import android.service.media.MediaBrowserService.BrowserRoot
@@ -39,7 +35,6 @@ import kotlinx.coroutines.Deferred
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import androidx.media3.session.SessionCommands
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.Job
@@ -58,7 +53,6 @@ import app.n_zik.android.utils.maxSongsInQueueAndroidAutoKey
 import app.n_zik.android.utils.MaxTopPlaylistItemsCustomValueKey
 import app.n_zik.android.utils.MaxTopPlaylistItemsKey
 import app.n_zik.android.utils.parentalControlEnabledKey
-import app.n_zik.android.utils.persistentQueueKey
 import app.n_zik.android.utils.Preference
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.components.ui.screens.home.onDevice.getProfileLocalSongs
@@ -1001,72 +995,6 @@ class AutoSessionCallback(
             .also { pendingSelection = it }
     }
 
-    private fun loadPlaybackResumption(): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
-        val defaultResult = MediaSession.MediaItemsWithStartPosition(emptyList(), 0, 0)
-        if (!context.preferences.getBoolean(persistentQueueKey, false)) return Futures.immediateFuture(defaultResult)
-        return scope.future(NzikDispatchers.DATA) {
-            playbackReady?.await()
-            val requestProfile = getActiveProfile(context)
-            val epoch = accessEpoch.get()
-            try {
-                val queued = database.readSavedQueue()
-                if (getActiveProfile(context) != requestProfile || epoch != accessEpoch.get()) {
-                    throw CancellationException("Automotive queue read invalidated")
-                }
-                val idx = queued.indexOfFirst { it.position != null }.coerceAtLeast(0)
-                val startPos = queued.getOrNull(idx)?.position ?: 0L
-                val mediaItems = queued.map { item ->
-                    val restored = PersistentQueueArtwork.restore(context, requestProfile, item.mediaItem) {
-                        database.songTable.findByIdDirect(it)?.thumbnailUrl
-                    }
-                    val original = PersistentQueueArtwork.originalSource(restored)
-                    val song = restored.asSong.let { song ->
-                        val backedCustomCover = restored.mediaMetadata.artworkUri?.authority == ArtworkContentProvider.AUTHORITY
-                        val modified = restored.mediaMetadata.extras?.getBoolean("isCoverModified") == true
-                        val coverFile = if (backedCustomCover && modified) {
-                            PersistentQueueArtwork.backingCoverFile(context, requestProfile, song.thumbnailUrl, song.id)
-                        } else null
-                        if (coverFile != null) {
-                            song.copy(thumbnailUrl = MODIFIED_PREFIX + Uri.fromFile(coverFile))
-                        } else if (backedCustomCover || modified) song else {
-                            original?.let { song.copy(thumbnailUrl = it) } ?: song
-                        }
-                    }
-                    val mapped = CancellableAutoMediaItemMapper.mapSongToMediaItem(song, true, song.isLocal)
-                    if (original == null) mapped else {
-                        val extras = Bundle(mapped.mediaMetadata.extras).apply {
-                            putString(SessionMediaItemMapper.ORIGINAL_ARTWORK_SOURCE_EXTRA, original)
-                        }
-                        mapped.buildUpon().setMediaMetadata(mapped.mediaMetadata.buildUpon().setExtras(extras).build()).build()
-                    }
-                }
-                val available = accessPolicy().eligible(mediaItems)
-                if (getActiveProfile(context) != requestProfile || epoch != accessEpoch.get()) {
-                    Timber.tag("AutoSessionCallback").w("Access changed before automotive resumption publication")
-                    throw CancellationException("Automotive resumption publication invalidated")
-                } else {
-                    val retainedIndex = available.indexOfFirst { it.index == idx }
-                    if (retainedIndex < 0) defaultResult
-                    else MediaSession.MediaItemsWithStartPosition(available.map { it.value }, retainedIndex, startPos)
-                }
-            } catch (exception: CancellationException) {
-                throw exception
-            } catch (exception: Exception) {
-                Timber.tag("AutoSessionCallback").w(exception, "Unable to resume automotive playback")
-                defaultResult
-            }
-        }
-    }
-
-    private fun getCountCachedSongs(): Flow<Int> = database.formatTable.allWithSongs().map { flist ->
-        if (!::binder.isInitialized) return@map 0
-        flist.filter { itf ->
-            val contentLength = itf.format.contentLength
-            binder.cache.hasCachedStream(itf.song.id, contentLength)
-        }.size
-    }
-    private fun getCountDownloadedSongs(): Flow<Int> {
-        downloadHelper.getDownloadManager(context)
-        return downloadHelper.downloads.map { dm -> dm.filter { ite -> ite.value.state == Download.STATE_COMPLETED }.size }
-    }
+    private fun loadPlaybackResumption(): ListenableFuture<MediaSession.MediaItemsWithStartPosition> =
+        loadAutoQueueResumption(context, database, scope, playbackReady, accessEpoch, ::accessPolicy)
 }
