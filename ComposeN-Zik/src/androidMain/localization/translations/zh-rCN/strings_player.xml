@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">在播放器中向上滑动打开播放队列。</string>
     <string name="player_action_bar_transparent_background_description">删除播放器动作按钮背后的固有背景。</string>
     <string name="player_action_enqueue">添加到播放队列</string>
+    <string name="player_action_hide_stats_for_nerds">隐藏Nerds统计</string>
     <string name="player_action_like">赞</string>
     <string name="player_action_listen_on_invidious">在%1$s上收听</string>
     <string name="player_action_listen_on_youtube">在YouTube上收听</string>
@@ -168,6 +169,7 @@
     <string name="player_action_seek_forward">转发方式</string>
     <string name="player_action_seek_forward_30_seconds">轉發30秒</string>
     <string name="player_action_seek_forward_5_seconds">转发5秒</string>
+    <string name="player_action_show_stats_for_nerds">显示Nerds统计</string>
     <string name="player_action_shuffle">随机播放</string>
     <string name="player_action_shuffle_hint">随机播放</string>
     <string name="player_appearance">播放器外观</string>
