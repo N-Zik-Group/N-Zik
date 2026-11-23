@@ -72,7 +72,7 @@ fun DebugLogsMenuItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             LeadingIconBadge(
-                iconRes = R.drawable.bugs,
+                iconRes = if (logDebugEnabled) R.drawable.bugs_stop else R.drawable.bugs,
                 contentDescription = null,
                 modifier = Modifier.size(24.dp),
             )
