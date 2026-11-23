@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">Levyn ja artistin otsikko</string>
     <string name="settings_player_header_icons_visible_label">Näytä tiedot kuvakkeilla</string>
     <string name="settings_player_header_style_label">Otsikon tyyli</string>
+    <string name="settings_player_m3e_always_show_shapes_description">Pidä M3E-muodot animoituina, kun pelaaja on auki, vaikka se keskeytettäisiin.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">Näytä aina muodot</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Teeman Ravistus Herkkyys</string>
     <string name="settings_player_mini_style_label">Pienoissoittimen tyyppi</string>
     <string name="settings_player_next_queue_visible_label">Näytä seuraavan kappaleen jono</string>
