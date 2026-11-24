@@ -3,6 +3,7 @@ package app.n_zik.android.core.coil
 import android.net.Uri
 import androidx.core.net.toUri
 import app.n_zik.innertube.models.Thumbnail
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 fun String.resize(width: Int? = null, height: Int? = null): String {
     if (width == null && height == null) return this
@@ -31,15 +32,15 @@ fun String.resize(width: Int? = null, height: Int? = null): String {
     return this
 }
 
-internal fun String.getYouTubeId(): String? {
-    return try {
-        when {
-            contains("i.ytimg.com/vi/") -> substringAfter("/vi/").substringBefore("/")
-            contains("i.ytimg.com/pl_c/") -> substringAfter("/pl_c/").substringBefore("/")
-            contains("i.ytimg.com/podcasts_artwork/") -> substringAfter("/podcasts_artwork/").substringBefore("/")
-            else -> null
-        }?.takeIf { it.isNotEmpty() && it != this }
-    } catch (e: Exception) { null }
+internal fun String.learnablePlaylistArtworkId(): String? {
+    if (!contains("/pl_c/") && !contains("/podcasts_artwork/")) return null
+    val url = toHttpUrlOrNull() ?: return null
+    if (url.host != "i.ytimg.com") return null
+    val segments = url.encodedPathSegments
+    return when (segments.firstOrNull()) {
+        "pl_c", "podcasts_artwork" -> segments.getOrNull(1)?.takeIf { it.isNotEmpty() }
+        else -> null
+    }
 }
 
 internal const val ORIGINAL_SOURCE_SIZE = 0
@@ -54,37 +55,15 @@ fun String?.thumbnail(size: Int): String? {
     // We use >= 700 because the MEDIUM size is now 700.
     val quality = if (targetSize >= 700) ImageCacheFactory.NetworkQuality.HIGH else ImageCacheFactory.NetworkQuality.LOW
 
-    if (contains("i.ytimg.com/pl_c/") || contains("i.ytimg.com/podcasts_artwork/")) {
-        val id = getYouTubeId()
-        if (id != null) {
-            // Absolute priority to the learned (HQ) version if it exists
-            val learnedHigh = ImageCacheFactory.PlaylistThumbnailStore.getHighUrl(id)
-            if (learnedHigh != null) {
-                return learnedHigh
-            }
-
-            // [STRICT LEARNING MODE]
-            // We only swap if there is no 'rs=' signature.
-//
-            // We manage mwEIC (Low) and mwEUC (Medium) towards mwEKC (High).
-            if (quality == ImageCacheFactory.NetworkQuality.HIGH) {
-                return if (!contains("rs=")) {
-                    replace("mwEIC", "mwEKC")
-                        .replace("mwEUC", "mwEKC")
-                        .replace("mwESC", "mwEKC")
-                } else {
-                    // If we have a signed "Medium" (EUC) link, still try to see if we can "clean" it
-                    // or if the store has better. (The store was already checked above via learnedHigh)
-                    this
-                }
-            } else {
-                val smallerUrl = ImageCacheFactory.PlaylistThumbnailStore.getLowUrl(id)
-                if (smallerUrl != null && smallerUrl != this) {
-                    return smallerUrl
-                }
-            }
+    val playlistArtworkId = learnablePlaylistArtworkId()
+    if (playlistArtworkId != null) {
+        ImageCacheFactory.PlaylistThumbnailStore.getHighUrl(playlistArtworkId)?.let { return it }
+        if (quality == ImageCacheFactory.NetworkQuality.LOW) {
+            return ImageCacheFactory.PlaylistThumbnailStore.getLowUrl(playlistArtworkId) ?: this
         }
-        return this
+        // Rewriting the size would invalidate an existing signature.
+        if (contains("rs=")) return this
+        return replace("mwEIC", "mwEKC").replace("mwEUC", "mwEKC").replace("mwESC", "mwEKC")
     }
 
     // i.ytimg: modify video thumbnails based on size (Un-signing)

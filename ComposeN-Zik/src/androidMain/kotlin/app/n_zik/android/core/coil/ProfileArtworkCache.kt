@@ -77,19 +77,20 @@ internal object ProfileArtworkCache {
 
         // Store format: "lowResUrl|highResUrl"
         @Synchronized
-        fun save(id: String, url: String, isHigh: Boolean) {
+        fun save(url: String) {
+            val id = url.learnablePlaylistArtworkId() ?: return
             try {
                 val preferences = getPrefs()
                 val current = preferences.getString(id, null)
                 val parts = current?.split("|")
-                var low = parts?.getOrNull(0).orEmpty()
-                var high = parts?.getOrNull(1).orEmpty()
+                var low = parts?.getOrNull(0)?.takeIf { it.learnablePlaylistArtworkId() == id }.orEmpty()
+                var high = parts?.getOrNull(1)?.takeIf { it.learnablePlaylistArtworkId() == id }.orEmpty()
 
                 val newScore = url.getYouTubeQualityScore()
 
                 // Only overwrite if the quality is better for the "high" slot
                 // or worse for the "low" slot (to keep an ultra-light fallback thumbnail)
-                if (isHigh || newScore >= 5) {
+                if (newScore >= 5) {
                     if (newScore >= high.getYouTubeQualityScore()) {
                         high = url
                     }
@@ -112,14 +113,14 @@ internal object ProfileArtworkCache {
         fun getHighUrl(id: String): String? {
             return try {
                 val current = getPrefs().getString(id, null) ?: return null
-                current.split("|").getOrNull(1)?.takeIf { it.isNotEmpty() }
+                current.split("|").getOrNull(1)?.takeIf { it.learnablePlaylistArtworkId() == id }
             } catch (e: Exception) { null }
         }
 
         fun getLowUrl(id: String): String? {
             return try {
                 val current = getPrefs().getString(id, null) ?: return null
-                current.split("|").getOrNull(0)?.takeIf { it.isNotEmpty() }
+                current.split("|").getOrNull(0)?.takeIf { it.learnablePlaylistArtworkId() == id }
             } catch (e: Exception) { null }
         }
 

@@ -13,9 +13,9 @@ import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.unmockkAll
 import io.mockk.verify
-import kotlinx.coroutines.flow.StateFlow
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -53,11 +53,11 @@ class ImageCacheFactoryPlaylistStoreTest {
     }
 
     @Test fun `the same learned thumbnail key is isolated by profile`() {
-        val main = "https://i.ytimg.com/vi/main/maxresdefault.jpg"
-        val voyage = "https://i.ytimg.com/vi/trip/maxresdefault.jpg"
-        ImageCacheFactory.PlaylistThumbnailStore.save("same", main, true)
+        val main = "https://i.ytimg.com/pl_c/same/mwEKC.jpg?rs=main"
+        val voyage = "https://i.ytimg.com/pl_c/same/mwEKC.jpg?rs=voyage"
+        ImageCacheFactory.PlaylistThumbnailStore.save(main)
         setActiveProfile("voyage", context)
-        ImageCacheFactory.PlaylistThumbnailStore.save("same", voyage, true)
+        ImageCacheFactory.PlaylistThumbnailStore.save(voyage)
         assertEquals(voyage, ImageCacheFactory.PlaylistThumbnailStore.getHighUrl("same"))
         setActiveProfile("default", context)
         assertEquals(main, ImageCacheFactory.PlaylistThumbnailStore.getHighUrl("same"))
@@ -68,40 +68,36 @@ class ImageCacheFactoryPlaylistStoreTest {
     }
 
     @Test fun `identical and lower quality loads do not write or notify painters again`() {
-        val high = "https://i.ytimg.com/vi/track/maxresdefault.jpg"
-        val before = storeVersion()
+        val high = "https://i.ytimg.com/pl_c/playlist/mwEKC.jpg"
+        val before = ProfileArtworkCache.storeVersion.value
 
-        ImageCacheFactory.PlaylistThumbnailStore.save("track", high, true)
-        repeat(10) { ImageCacheFactory.PlaylistThumbnailStore.save("track", high, true) }
-        ImageCacheFactory.PlaylistThumbnailStore.save(
-            "track", "https://i.ytimg.com/vi/track/sddefault.jpg", true,
-        )
+        ImageCacheFactory.PlaylistThumbnailStore.save(high)
+        repeat(10) { ImageCacheFactory.PlaylistThumbnailStore.save(high) }
+        ImageCacheFactory.PlaylistThumbnailStore.save("https://i.ytimg.com/pl_c/playlist/mwEHKC.jpg")
 
-        assertEquals(high, ImageCacheFactory.PlaylistThumbnailStore.getHighUrl("track"))
-        assertEquals(before + 1, storeVersion())
+        assertEquals(high, ImageCacheFactory.PlaylistThumbnailStore.getHighUrl("playlist"))
+        assertEquals(before + 1, ProfileArtworkCache.storeVersion.value)
         verify(exactly = 1) { preferences.edit() }
 
         val replacement = "$high?revision=2"
-        ImageCacheFactory.PlaylistThumbnailStore.save("track", replacement, true)
+        ImageCacheFactory.PlaylistThumbnailStore.save(replacement)
 
-        assertEquals(replacement, ImageCacheFactory.PlaylistThumbnailStore.getHighUrl("track"))
-        assertEquals(before + 2, storeVersion())
+        assertEquals(replacement, ImageCacheFactory.PlaylistThumbnailStore.getHighUrl("playlist"))
+        assertEquals(before + 2, ProfileArtworkCache.storeVersion.value)
         verify(exactly = 2) { preferences.edit() }
     }
 
     @Test fun `concurrent duplicate loads preserve both quality slots with one notification per change`() {
-        val high = "https://i.ytimg.com/vi/track/maxresdefault.jpg"
-        val low = "https://i.ytimg.com/vi/track/hqdefault.jpg"
-        val before = storeVersion()
+        val high = "https://i.ytimg.com/podcasts_artwork/show/mwEKC.jpg"
+        val low = "https://i.ytimg.com/podcasts_artwork/show/mwEIC.jpg"
+        val before = ProfileArtworkCache.storeVersion.value
         val start = CountDownLatch(1)
         val workers = Executors.newFixedThreadPool(4)
         try {
             val calls = (0 until 16).map { index ->
                 workers.submit {
                     assertTrue(start.await(5, TimeUnit.SECONDS))
-                    ImageCacheFactory.PlaylistThumbnailStore.save(
-                        "track", if (index % 2 == 0) high else low, index % 2 == 0,
-                    )
+                    ImageCacheFactory.PlaylistThumbnailStore.save(if (index % 2 == 0) high else low)
                 }
             }
             start.countDown()
@@ -110,16 +106,45 @@ class ImageCacheFactoryPlaylistStoreTest {
             workers.shutdownNow()
         }
 
-        assertEquals(high, ImageCacheFactory.PlaylistThumbnailStore.getHighUrl("track"))
-        assertEquals(low, ImageCacheFactory.PlaylistThumbnailStore.getLowUrl("track"))
-        assertEquals(before + 2, storeVersion())
+        assertEquals(high, ImageCacheFactory.PlaylistThumbnailStore.getHighUrl("show"))
+        assertEquals(low, ImageCacheFactory.PlaylistThumbnailStore.getLowUrl("show"))
+        assertEquals(before + 2, ProfileArtworkCache.storeVersion.value)
         verify(exactly = 2) { preferences.edit() }
     }
 
-    private fun storeVersion(): Int {
-        // Observe the actual invalidation signal without adding a production test accessor.
-        val field = ImageCacheFactory::class.java.getDeclaredField("storeVersion")
-        field.isAccessible = true
-        return (field.get(ImageCacheFactory) as StateFlow<*>).value as Int
+    @Test fun `video thumbnails do not write playlist metadata or notify painters`() {
+        val video = "https://i.ytimg.com/vi/track/maxresdefault.jpg"
+        val before = ProfileArtworkCache.storeVersion.value
+
+        ImageCacheFactory.PlaylistThumbnailStore.save(video)
+
+        assertEquals("https://i.ytimg.com/vi/track/hqdefault.jpg", video.thumbnail(300))
+        assertNull(ImageCacheFactory.PlaylistThumbnailStore.getHighUrl("track"))
+        assertEquals(before, ProfileArtworkCache.storeVersion.value)
+        verify(exactly = 0) { preferences.edit() }
+    }
+
+    @Test fun `playlist and podcast thumbnail resolution can reuse a learned signed source`() {
+        for (path in listOf("pl_c", "podcasts_artwork")) {
+            val original = "https://i.ytimg.com/$path/$path/mwEIC.jpg?rs=original"
+            val learned = "https://i.ytimg.com/$path/$path/mwEKC.jpg?rs=learned"
+            assertEquals(original, original.thumbnail(700))
+
+            ImageCacheFactory.PlaylistThumbnailStore.save(learned)
+
+            assertEquals(learned, original.thumbnail(700))
+        }
+    }
+
+    @Test fun `a legacy video entry does not override a playlist cover with the same id`() {
+        val playlist = "https://i.ytimg.com/pl_c/shared/mwEIC.jpg?rs=original"
+        preferences.edit().putString("shared", "|https://i.ytimg.com/vi/shared/maxresdefault.jpg").commit()
+
+        assertEquals(playlist, playlist.thumbnail(700))
+
+        val learned = "https://i.ytimg.com/pl_c/shared/mwEHKC.jpg?rs=learned"
+        ImageCacheFactory.PlaylistThumbnailStore.save(learned)
+
+        assertEquals(learned, playlist.thumbnail(700))
     }
 }

@@ -192,8 +192,8 @@ object ImageCacheFactory {
     }
 
     private fun artworkBaseKey(url: String, quality: NetworkQuality): String {
-        val id = url.getYouTubeId()
-        if (id != null && (url.contains("pl_c") || url.contains("podcasts"))) {
+        val id = url.learnablePlaylistArtworkId()
+        if (id != null) {
             val resSuffix = if (url.isYouTubeHighRes()) "HIGH" else "LOW"
             return "playlist_${id}_$resSuffix"
         }
@@ -432,11 +432,7 @@ object ImageCacheFactory {
             .listener(
                 onSuccess = { _, result ->
                     if (result.dataSource != DataSource.MEMORY_CACHE) {
-                        val url = currentUrl()
-                        val id = url?.getYouTubeId()
-                        if (url != null && id != null) {
-                            PlaylistThumbnailStore.save(id, url, url.isYouTubeHighRes())
-                        }
+                        requestedUrl?.let(PlaylistThumbnailStore::save)
                     }
                     if (originalUrl != null && decision.useNetwork) {
                         cacheMetadataStore.save(originalUrl, decision.quality)
@@ -444,9 +440,8 @@ object ImageCacheFactory {
                 },
                 onError = { _, result ->
                     val url = currentUrl()
-                    val id = url?.getYouTubeId()
-                    if (url != null && url != originalUrl && id != null &&
-                        (url.contains("i.ytimg.com/pl_c/") || url.contains("podcasts"))) {
+                    val id = url?.learnablePlaylistArtworkId()
+                    if (url != null && url != originalUrl && id != null) {
                         clearCacheForKey(url, decision.quality, invalidateColors = false)
                         PlaylistThumbnailStore.clear(id)
                         onUrlChanged(originalUrl)
@@ -598,12 +593,8 @@ object ImageCacheFactory {
             .listener(
                 onSuccess = { _, result ->
                     if (!isCurrentRequest()) return@listener
-                    val dataSource = result.dataSource
-                    if (dataSource != DataSource.MEMORY_CACHE) {
-                        val id = currentUrl?.getYouTubeId()
-                        if (id != null) {
-                            currentUrl?.let { url -> PlaylistThumbnailStore.save(id, url, url.isYouTubeHighRes()) }
-                        }
+                    if (result.dataSource != DataSource.MEMORY_CACHE) {
+                        attemptedUrl?.let(PlaylistThumbnailStore::save)
                     }
                     if (validUrl != null && decision.useNetwork) {
                         cacheMetadataStore.save(validUrl, decision.quality)
@@ -614,10 +605,8 @@ object ImageCacheFactory {
                     val next = nextPainterArtwork(attemptedUrl, validUrl, result)
                     if (next != null) {
                         if (next == validUrl) {
-                            attemptedUrl?.getYouTubeId()?.let { id ->
-                                clearCacheForKey(attemptedUrl, decision.quality, invalidateColors = false)
-                                PlaylistThumbnailStore.clear(id)
-                            }
+                            clearCacheForKey(attemptedUrl, decision.quality, invalidateColors = false)
+                            attemptedUrl?.learnablePlaylistArtworkId()?.let(PlaylistThumbnailStore::clear)
                         }
                         currentUrl = next
                     }
@@ -714,9 +703,7 @@ object ImageCacheFactory {
 
     private fun nextPainterArtwork(url: String?, source: String?, result: ErrorResult): String? {
         if (url == null) return null
-        if (url != source && url.getYouTubeId() != null &&
-            (url.contains("i.ytimg.com/pl_c/") || url.contains("podcasts"))
-        ) return source
+        if (url != source && url.learnablePlaylistArtworkId() != null) return source
         return if (result.throwable.message.orEmpty().contains("404")) url.getNextYouTubeFallback() else null
     }
 
@@ -990,10 +977,7 @@ object ImageCacheFactory {
                 val dataSource = (result as? SuccessResult)?.dataSource
 
                 if (!cacheOnly && dataSource != null && dataSource != DataSource.MEMORY_CACHE) {
-                    val id = currentUrl.getYouTubeId()
-                    if (id != null) {
-                        PlaylistThumbnailStore.save(id, currentUrl, currentUrl.isYouTubeHighRes())
-                    }
+                    PlaylistThumbnailStore.save(currentUrl)
                 }
                 if (!cacheOnly && decision.useNetwork) {
                     cacheMetadataStore.save(url, decision.quality)
@@ -1008,8 +992,8 @@ object ImageCacheFactory {
             //Timber.tag("ImageCache").e("Error (loadBitmap): original=%s, modified=%s, error=%s", url, currentUrl, lastError)
 
             // Un-swap fallback for loadBitmap
-            val id = currentUrl.getYouTubeId()
-            if (currentUrl != url && id != null && (currentUrl.contains("pl_c") || currentUrl.contains("podcasts"))) {
+            val id = currentUrl.learnablePlaylistArtworkId()
+            if (currentUrl != url && id != null) {
 
                 if (!cacheOnly) {
                     clearCacheForKey(currentUrl, decision.quality, invalidateColors = false)
