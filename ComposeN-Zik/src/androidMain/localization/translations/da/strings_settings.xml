@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">Download automatisk sange baseret på dine præferencer</string>
     <string name="settings_downloads_on_album_bookmark_description">Download automatisk sange, når du bogmærker et album</string>
     <string name="settings_downloads_on_like_description">Download automatisk sange når du kan lide dem</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">Download automatisk sange, når du bogmærker en musikafspilningsliste</string>
     <string name="settings_downloads_storage_limit_label">Maks. størrelse for sanghentning</string>
     <string name="settings_enable_autodownload_song">Aktivér auto-hentning af sange</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto-hent sang, når album bogmærkes</string>
     <string name="settings_enable_autodownload_song_when_liked">Auto-hent sang ved \'Kan lide\'</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">Auto-download sange i bogmærkede afspilningslister</string>
     <string name="settings_enable_pip">Aktivér billede-i-billede</string>
     <string name="settings_enable_pip_auto">Aktivér automatisk billede-i-billede</string>
     <string name="settings_font_include_padding_description">Tilføj afstand omkring tekst</string>
