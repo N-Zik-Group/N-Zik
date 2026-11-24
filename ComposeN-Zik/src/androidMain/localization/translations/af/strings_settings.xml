@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">Automatically download songs based on your preferences</string>
     <string name="settings_downloads_on_album_bookmark_description">Automatically download songs when you bookmark an album</string>
     <string name="settings_downloads_on_like_description">Automatically download songs when you like them</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">Automatically download songs when you bookmark a music playlist</string>
     <string name="settings_downloads_storage_limit_label">Maksimum afgelaaide liedjie grootte</string>
     <string name="settings_enable_autodownload_song">Enable auto download song</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="settings_enable_autodownload_song_when_liked">Auto download song when liked</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">Auto-download songs in bookmarked playlists</string>
     <string name="settings_enable_pip">Enable Picture in Picture</string>
     <string name="settings_enable_pip_auto">Enable Automatic Picture in Picture</string>
     <string name="settings_font_include_padding_description">Voeg spasie rondom teks by</string>
