@@ -38,7 +38,6 @@ Cam katkıları: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / B
 - Şimdi Çalıyor ve beğenme/beğenme seçenekleriyle Last.fm'e kaydetme
 - MusicBrainz sanatçı ve albüm bilgileri
 - Discord Zengin Varlık, canlı önizlemeli gelişmiş mod dahil
-- Alternatif YouTube akışı için Invidious entegrasyonu
 - Çalma listesi içe/dışa aktarma: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Birlikte Dinleyin</b>
