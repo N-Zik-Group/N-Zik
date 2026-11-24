@@ -157,7 +157,6 @@
     <string name="player_action_enqueue">Em fila</string>
     <string name="player_action_hide_stats_for_nerds">Ocultar estatísticas para nerds</string>
     <string name="player_action_like">Gostei</string>
-    <string name="player_action_listen_on_invidious">Escutar no %1$s</string>
     <string name="player_action_listen_on_youtube">Escutar no YouTube</string>
     <string name="player_action_listen_on_youtube_music">Escutar no YouTube Music</string>
     <string name="player_action_locate_current_song">Encontre a música que está tocando</string>
