@@ -57,6 +57,54 @@
         <item quantity="many">%1$d songs</item>
         <item quantity="other">%1$d songs</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_playlist_tracks">
+        <item quantity="zero">إضافة مسارات %1$d من قائمة التشغيل هذه إلى المفضلة؟</item>
+        <item quantity="one">إضافة %1$d مسار من قائمة التشغيل هذه إلى المفضلة؟</item>
+        <item quantity="two">إضافة مسارات %1$d من قائمة التشغيل هذه إلى المفضلة؟</item>
+        <item quantity="few">إضافة مسارات %1$d من قائمة التشغيل هذه إلى المفضلة؟</item>
+        <item quantity="many">إضافة مسارات %1$d من قائمة التشغيل هذه إلى المفضلة؟</item>
+        <item quantity="other">إضافة مسارات %1$d من قائمة التشغيل هذه إلى المفضلة؟</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_playlist_tracks">
+        <item quantity="zero">إزالة المسارات %1$d في قائمة التشغيل هذه من المفضلة؟</item>
+        <item quantity="one">إزالة المسار %1$d في قائمة التشغيل هذه من المفضلة؟</item>
+        <item quantity="two">إزالة المسارات %1$d في قائمة التشغيل هذه من المفضلة؟</item>
+        <item quantity="few">إزالة المسارات %1$d في قائمة التشغيل هذه من المفضلة؟</item>
+        <item quantity="many">إزالة المسارات %1$d في قائمة التشغيل هذه من المفضلة؟</item>
+        <item quantity="other">إزالة المسارات %1$d في قائمة التشغيل هذه من المفضلة؟</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_album_tracks">
+        <item quantity="zero">إضافة مسارات %1$d من هذا الألبوم إلى المفضلة؟</item>
+        <item quantity="one">إضافة مقطع %1$d من هذا الألبوم إلى المفضلة؟</item>
+        <item quantity="two">إضافة مسارات %1$d من هذا الألبوم إلى المفضلة؟</item>
+        <item quantity="few">إضافة مسارات %1$d من هذا الألبوم إلى المفضلة؟</item>
+        <item quantity="many">إضافة مسارات %1$d من هذا الألبوم إلى المفضلة؟</item>
+        <item quantity="other">إضافة مسارات %1$d من هذا الألبوم إلى المفضلة؟</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_album_tracks">
+        <item quantity="zero">إزالة المسارات %1$d في هذا الألبوم من المفضلة؟</item>
+        <item quantity="one">إزالة المسار %1$d في هذا الألبوم من المفضلة؟</item>
+        <item quantity="two">إزالة المسارات %1$d في هذا الألبوم من المفضلة؟</item>
+        <item quantity="few">إزالة المسارات %1$d في هذا الألبوم من المفضلة؟</item>
+        <item quantity="many">إزالة المسارات %1$d في هذا الألبوم من المفضلة؟</item>
+        <item quantity="other">إزالة المسارات %1$d في هذا الألبوم من المفضلة؟</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_episodes">
+        <item quantity="zero">إضافة حلقات %1$d من هذا البث الصوتي إلى المفضلة؟</item>
+        <item quantity="one">إضافة حلقة %1$d من هذا podcast إلى المفضلة؟</item>
+        <item quantity="two">إضافة حلقات %1$d من هذا البث الصوتي إلى المفضلة؟</item>
+        <item quantity="few">إضافة حلقات %1$d من هذا البث الصوتي إلى المفضلة؟</item>
+        <item quantity="many">إضافة حلقات %1$d من هذا البث الصوتي إلى المفضلة؟</item>
+        <item quantity="other">إضافة حلقات %1$d من هذا البث الصوتي إلى المفضلة؟</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_episodes">
+        <item quantity="zero">إزالة الحلقات %1$d في هذا التدوين من المفضلة؟</item>
+        <item quantity="one">إزالة الحلقة %1$d في هذا التدوين من المفضلة؟</item>
+        <item quantity="two">إزالة الحلقات %1$d في هذا التدوين من المفضلة؟</item>
+        <item quantity="few">إزالة الحلقات %1$d في هذا التدوين من المفضلة؟</item>
+        <item quantity="many">إزالة الحلقات %1$d في هذا التدوين من المفضلة؟</item>
+        <item quantity="other">إزالة الحلقات %1$d في هذا التدوين من المفضلة؟</item>
+    </plurals>
     <plurals name="about_translator_count">
         <item quantity="zero">مترجمون %1$d</item>
         <item quantity="one">مترجم %1$d</item>
