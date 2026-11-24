@@ -98,6 +98,9 @@
     <string name="library_favorites_action_add">添加至收藏夹</string>
     <string name="library_favorites_added">已添加到收藏夹</string>
     <string name="library_favorites_removed">已从收藏夹移除</string>
+    <string name="library_collection_favorites_action_remove">从收藏夹中删除</string>
+    <string name="library_collection_favorites_update_failed">无法更新收藏夹。</string>
+    <string name="library_collection_favorites_sync_failed">无法与 YouTube 同步一些收藏夹。</string>
     <!-- Library Sort -->
     <string name="library_sort_album">专辑</string>
     <string name="library_sort_album_year">专辑年份</string>
