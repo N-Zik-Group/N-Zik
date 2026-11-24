@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">Scarica automaticamente i brani in base alle tue preferenze</string>
     <string name="settings_downloads_on_album_bookmark_description">Scarica automaticamente i brani quando si segnala un album</string>
     <string name="settings_downloads_on_like_description">Scarica automaticamente le canzoni quando ti piacciono</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">Scaricare automaticamente i brani quando si segnalibro di una scaletta musicale</string>
     <string name="settings_downloads_storage_limit_label">Dimensione massima del download brano</string>
     <string name="settings_enable_autodownload_song">Abilita il download automatico del brano</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Scaricare automaticamente il brano quando l\'album è contrassegnato</string>
     <string name="settings_enable_autodownload_song_when_liked">Scarica automaticamente il brano quando è aggiunto ai preferiti</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">Auto-download brani nelle playlist con segnalibri</string>
     <string name="settings_enable_pip">Abilita Picture-in-picture</string>
     <string name="settings_enable_pip_auto">Abilita Picture-in-picture automatico</string>
     <string name="settings_font_include_padding_description">Aggiungi spaziatura nei testi</string>
