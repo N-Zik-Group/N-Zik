@@ -98,6 +98,9 @@
     <string name="library_favorites_action_add">إضافة إلى المفضلة</string>
     <string name="library_favorites_added">تمت الإضافة إلى المفضلة</string>
     <string name="library_favorites_removed">تمت إزالته من المفضلة</string>
+    <string name="library_collection_favorites_action_remove">إزالة من المفضلة</string>
+    <string name="library_collection_favorites_update_failed">تعذر تحديث المفضلة.</string>
+    <string name="library_collection_favorites_sync_failed">تعذر مزامنة بعض المفضلات مع يوتيوب.</string>
     <!-- Library Sort -->
     <string name="library_sort_album">ألبوم</string>
     <string name="library_sort_album_year">سنة الألبوم</string>
