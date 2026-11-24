@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">Automatycznie pobieraj utwory w oparciu o Twoje preferencje</string>
     <string name="settings_downloads_on_album_bookmark_description">Automatycznie pobieraj utwory, gdy dodasz zakładkę do albumu</string>
     <string name="settings_downloads_on_like_description">Automatycznie pobierz utwory, gdy je lubisz</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">Automatycznie pobieraj utwory po dodaniu do zakładki listy odtwarzania muzyki</string>
     <string name="settings_downloads_storage_limit_label">Maksymalny rozmiar pobranych utworów</string>
     <string name="settings_enable_autodownload_song">Włącz automatyczne pobieranie utworu</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Automatycznie pobierz utwór gdy albumu jest zaznaczony</string>
     <string name="settings_enable_autodownload_song_when_liked">Pobierz automatycznie, gdy polubiono</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">Automatyczne pobieranie utworów z zakładek playlist</string>
     <string name="settings_enable_pip">Włącz obraz w obrazie</string>
     <string name="settings_enable_pip_auto">Włącz automatyczny obraz</string>
     <string name="settings_font_include_padding_description">Dodaj odstęp dookoła tekstu</string>
