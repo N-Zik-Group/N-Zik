@@ -157,7 +157,6 @@
     <string name="player_action_enqueue">Enqueue</string>
     <string name="player_action_hide_stats_for_nerds">Hide Stats for Nerds</string>
     <string name="player_action_like">Like</string>
-    <string name="player_action_listen_on_invidious">Listen on %1$s</string>
     <string name="player_action_listen_on_youtube">Listen on YouTube</string>
     <string name="player_action_listen_on_youtube_music">Listen on YouTube Music</string>
     <string name="player_action_locate_current_song">Show currently playing song</string>
