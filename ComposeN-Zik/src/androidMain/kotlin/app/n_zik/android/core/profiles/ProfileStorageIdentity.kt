@@ -20,6 +20,8 @@ internal data class ProfileStorageIdentity(val id: String, val generation: Strin
 private var processStorageProfile: ProfileStorageIdentity? = null
 private val profileSelectionLock = Any()
 
+internal fun boundProcessStorageIdentity(): ProfileStorageIdentity? = processStorageProfile
+
 /** Freezes the selected owner before startup opens or prepares any of its stores. */
 internal fun bindSelectedProcessStorageProfile(context: Context): String =
     synchronized(profileSelectionLock) {

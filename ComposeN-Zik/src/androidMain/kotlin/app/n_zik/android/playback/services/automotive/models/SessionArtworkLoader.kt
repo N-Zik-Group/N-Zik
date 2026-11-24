@@ -11,6 +11,8 @@ import app.n_zik.android.utils.preferences
 import app.n_zik.android.appContext
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import app.n_zik.android.core.profiles.profileStorageIdentity
+import app.n_zik.android.playback.services.ArtworkContentProvider
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import java.io.File
 import kotlin.math.roundToInt
@@ -27,26 +29,38 @@ object SessionArtworkLoader {
         java.nio.file.Paths.get(java.net.URI(url)).toFile()
     } catch (_: Exception) { File(barePath) }
 
-    suspend fun load(url: String?, cropOverride: Boolean? = null): ByteArray? = withContext(NzikDispatchers.DATA) {
-        if (url.isNullOrBlank()) return@withContext null
+    suspend fun load(
+        url: String?,
+        cropOverride: Boolean? = null,
+        requestProfile: String = getActiveProfile(appContext()),
+    ): ByteArray? {
+        if (url.isNullOrBlank()) return null
+        val context = appContext()
+        val generation = profileStorageIdentity(context, requestProfile)?.generation ?: return null
+        val source = ArtworkContentProvider.bindLocalRequestUri(context, requestProfile, Uri.parse(url)) ?: return null
+        return withContext(NzikDispatchers.DATA) { loadOwned(source.toString(), cropOverride, requestProfile, generation) }
+    }
+
+    private suspend fun loadOwned(url: String, cropOverride: Boolean?, profile: String, generation: String): ByteArray? {
         val file = if (url.startsWith("file:") || url.startsWith("/")) {
             resolveArtworkFile(url, url.removePrefix("file://"))
         } else null
         val context = appContext()
-        val profile = getActiveProfile(context)
+        fun ownsArtwork() = profile == getActiveProfile(context) &&
+            generation == profileStorageIdentity(context, profile)?.generation
+        if (!ownsArtwork()) return null
         val revision = ImageCacheFactory.artworkSourceRevision(url, profile)
         val square = cropOverride ?: context.preferences.getBoolean(cropVideoThumbnailsKey, true)
         val cacheOnly = !NetworkQualityHelper.isNetworkConnected(context)
-        val contentKey = "$profile|$revision|$square|${file?.absolutePath ?: url}|${file?.lastModified()}|${file?.length()}"
+        val contentKey = "$profile|$generation|$revision|$square|${file?.absolutePath ?: url}|${file?.lastModified()}|${file?.length()}"
         val highKey = "$contentKey|HIGH"
-        fun stillCurrent() = profile == getActiveProfile(context) &&
-            revision == ImageCacheFactory.artworkSourceRevision(url, profile)
+        fun stillCurrent() = ownsArtwork() && revision == ImageCacheFactory.artworkSourceRevision(url, profile)
         if (cacheOnly) artworkBytesCache.get(highKey)?.let { cached ->
-            return@withContext cached.takeIf { stillCurrent() }
+            return cached.takeIf { stillCurrent() }
         }
         val key = if (cacheOnly && file == null) "$contentKey|offline" else highKey
-        if (file != null && !file.exists()) return@withContext null
-        artworkBytesCache.getOrLoad(key) {
+        if (file != null && !file.exists()) return null
+        return artworkBytesCache.getOrLoad(key) {
             try {
                 val bytes = when {
                     file != null -> runInterruptible(NzikDispatchers.DATA) {
@@ -64,7 +78,7 @@ object SessionArtworkLoader {
                         var borrowed: Bitmap? = null
                         for (quality in qualities) {
                             borrowed = ImageCacheFactory.loadBitmap(url, requestSize = 512, qualityOverride = quality,
-                                cacheOnly = cacheOnly, cropToSquare = square, cacheDecodedBitmap = false)
+                                cacheOnly = cacheOnly, cropToSquare = square, cacheDecodedBitmap = false, profile = profile)
                             if (borrowed != null) break
                         }
                         borrowed?.let { bitmap ->

@@ -62,6 +62,7 @@ import coil3.request.crossfade
 import coil3.request.SuccessResult
 import coil3.toBitmap
 import app.n_zik.android.appContext
+import app.n_zik.android.playback.services.ArtworkContentProvider
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.utils.activeProfileKey
@@ -176,16 +177,34 @@ object ImageCacheFactory {
             .build()
     }
 
-    fun generateCacheKeySync(url: String?, quality: NetworkQuality): String {
+    fun generateCacheKeySync(url: String?, quality: NetworkQuality): String =
+        generateArtworkCacheKey(url, quality, null)
+
+    private fun requestCacheKey(
+        url: String?,
+        quality: NetworkQuality,
+        profile: String,
+        scopedUrl: String? = null,
+    ): String = if (isContentArtwork(url)) generateArtworkCacheKey(url, quality, profile, scopedUrl)
+        else generateCacheKeySync(url, quality)
+
+    private fun generateArtworkCacheKey(
+        url: String?,
+        quality: NetworkQuality,
+        requestedProfile: String?,
+        scopedUrl: String? = null,
+    ): String {
         if (url.isNullOrBlank()) return "empty"
-        val baseKey = artworkBaseKey(url, quality)
+        val profile = if (isContentArtwork(url)) requestedProfile ?: getActiveProfile(appContext()) else null
+        val data = scopedUrl ?: profile?.let { artworkRequestData(url, it) } ?: url
+        val baseKey = artworkBaseKey(data, quality)
         return when {
             isLocalArtworkSource(url) -> {
                 val clean = cleanPrefix(url)
-                val profile = if (clean.startsWith("content:", ignoreCase = true)) getActiveProfile(appContext()) else null
                 val source = profile?.let { currentArtworkSource(clean, it) }
-                if (source?.signedRemote == true) "$baseKey-provider-${source.remoteRevision}"
-                else "$baseKey-local-${ArtworkRevisions.current(clean, profile)}"
+                val ownerKey = profile?.let { "$baseKey-profile-${Uri.encode(it)}" } ?: baseKey
+                if (source?.signedRemote == true) "$ownerKey-provider-${source.remoteRevision}"
+                else "$ownerKey-local-${ArtworkRevisions.current(clean, profile)}"
             }
             isRemoteArtworkSource(url) -> diskRevisions.key(baseKey)
             else -> baseKey
@@ -209,6 +228,13 @@ object ImageCacheFactory {
             } catch (e: Exception) { "${url.hashCode()}_${quality.size}" }
         }.also { cacheKeyMap.put(cacheKey, it) }
     }
+
+    private fun isContentArtwork(url: String?): Boolean =
+        url?.let(::cleanPrefix)?.startsWith("content:", ignoreCase = true) == true
+
+    private fun artworkRequestData(url: String?, profile: String): String? =
+        if (url == null || !isContentArtwork(url)) url
+        else ArtworkContentProvider.bindLocalRequestUri(appContext(), profile, Uri.parse(cleanPrefix(url)))?.toString()
 
     private fun isRemoteArtworkSource(url: String): Boolean =
         url.startsWith("https://", ignoreCase = true) || url.startsWith("http://", ignoreCase = true)
@@ -321,15 +347,15 @@ object ImageCacheFactory {
 
     fun clearCacheForKey(url: String?, quality: NetworkQuality, invalidateColors: Boolean = true) {
         if (url == null) return
-        val profile = if (invalidateColors) getActiveProfile(appContext()) else null
-        val key = generateCacheKeySync(url, quality)
+        val profile = getActiveProfile(appContext())
+        val key = requestCacheKey(url, quality, profile)
         try {
             evictCacheKey(key)
         } catch (error: Exception) {
             Timber.tag("ImageCacheFactory").w("Unable to evict image cache key (%s)", error.javaClass.simpleName)
         }
         // Publish only after pixel eviction so palette readers cannot reuse the evicted pixels.
-        if (profile != null) SharedArtworkColors.invalidateSources(setOf(url), profile)
+        if (invalidateColors) SharedArtworkColors.invalidateSources(setOf(url), profile)
     }
 
     /** Explicit update actions must report failed eviction instead of claiming a complete cover reset. */
@@ -347,7 +373,7 @@ object ImageCacheFactory {
             }
         }
         val keys = sources.flatMapTo(mutableSetOf()) { url ->
-            NetworkQuality.entries.map { generateCacheKeySync(url, it) }
+            NetworkQuality.entries.map { requestCacheKey(url, it, profile) }
         }
         keys.forEach(::evictCacheKey)
         diskRevisions.refresh(sources.filter(::isRemoteArtworkSource).flatMapTo(mutableSetOf()) { url ->
@@ -423,15 +449,19 @@ object ImageCacheFactory {
         currentUrl: () -> String?,
         onUrlChanged: (String?) -> Unit,
         retryMissingVideo: Boolean,
+        profile: String?,
     ): ImageRequest {
+        val owner = profile ?: getActiveProfile(appContext())
         val requestedUrl = currentUrl()
-        val cacheKey = generateCacheKeySync(requestedUrl, decision.quality)
+        val data = artworkRequestData(requestedUrl, owner)
+        val cacheKey = requestCacheKey(requestedUrl, decision.quality, owner, data)
         return ImageRequest.Builder(appContext())
-            .data(requestedUrl)
+            .data(data)
             .diskCacheKey(cacheKey)
             .memoryCacheKey(cacheKey)
             .listener(
                 onSuccess = { _, result ->
+                    if (getActiveProfile(appContext()) != owner) return@listener
                     if (result.dataSource != DataSource.MEMORY_CACHE) {
                         requestedUrl?.let(PlaylistThumbnailStore::save)
                     }
@@ -440,6 +470,7 @@ object ImageCacheFactory {
                     }
                 },
                 onError = { _, result ->
+                    if (getActiveProfile(appContext()) != owner) return@listener
                     val url = currentUrl()
                     val id = url?.learnablePlaylistArtworkId()
                     if (url != null && url != originalUrl && id != null) {
@@ -465,15 +496,16 @@ object ImageCacheFactory {
         modifier: Modifier = Modifier.clip(thumbnailShape()).fillMaxSize(),
         shape: Shape? = thumbnailShape(),
     ) {
-        val sourceUrl = rememberDisplayArtworkSource(thumbnailUrl)
+        val requestProfile = if (isContentArtwork(thumbnailUrl)) rememberArtworkProfile() else null
+        val sourceUrl = rememberDisplayArtworkSource(thumbnailUrl, requestProfile)
         val resolvedScale = rememberVideoArtworkContentScale(sourceUrl, contentScale)
         val imageModifier = if (shape == null) modifier else modifier.glassImageRim(shape)
         val cleanedUrl = sourceUrl?.let { cleanPrefix(it) }
         val validUrl = if (cleanedUrl.isNullOrBlank() || cleanedUrl == "null") null else cleanedUrl
         val decision = getDownloadDecision(validUrl)
         val version by storeVersion.collectAsStateWithLifecycle()
-        val localRevision = rememberLocalArtworkRevision(validUrl)
-        var currentUrl by remember(validUrl, version, localRevision, decision.sourceSize) {
+        val localRevision = rememberLocalArtworkRevision(validUrl, requestProfile)
+        var currentUrl by remember(validUrl, requestProfile, version, localRevision, decision.sourceSize) {
             mutableStateOf(validUrl?.thumbnail(decision.sourceSize).also { modUrl ->
                 // if (validUrl != null) Timber.tag("ImageCache").d("URL: original=%s, modified=%s", validUrl, modUrl)
             })
@@ -496,6 +528,7 @@ object ImageCacheFactory {
             currentUrl = { currentUrl },
             onUrlChanged = { currentUrl = it },
             retryMissingVideo = true,
+            profile = requestProfile,
         )
 
         AsyncImage(
@@ -570,8 +603,11 @@ object ImageCacheFactory {
         }
         val attemptedUrl = currentUrl
         val stamp = fileRevision.orEmpty()
-        val cacheKey = generateCacheKeySync(attemptedUrl, decision.quality).withFileRevision(stamp)
-        val requestedData = attemptedUrl.takeIf { fileUrl == null || fileRevision != null }
+        val requestedData = artworkRequestData(
+            attemptedUrl.takeIf { fileUrl == null || fileRevision != null },
+            requestProfile,
+        )
+        val cacheKey = requestCacheKey(attemptedUrl, decision.quality, requestProfile, requestedData).withFileRevision(stamp)
         val usesPlayerArtwork = sharePlayerArtwork || playerArtworkMediaId != null
         val cacheEpoch = if (usesPlayerArtwork) playerArtworkCacheEpoch.collectAsStateWithLifecycle().value else 0
         val retainedArtwork = if (playerArtworkMediaId != null) {
@@ -580,7 +616,7 @@ object ImageCacheFactory {
         fun isCurrentRequest(): Boolean = requestedData != null && attemptedUrl == currentUrl &&
             getActiveProfile(appContext()) == requestProfile &&
             (colorSource == null || isCurrentArtworkSource(colorSource)) &&
-            generateCacheKeySync(attemptedUrl, decision.quality).withFileRevision(stamp) == cacheKey
+            requestCacheKey(attemptedUrl, decision.quality, requestProfile).withFileRevision(stamp) == cacheKey
 
         val request = ImageRequest.Builder(appContext())
             .data(requestedData)
@@ -717,15 +753,16 @@ object ImageCacheFactory {
         @DrawableRes error: Int = R.drawable.ic_launcher_box,
         shape: Shape = RectangleShape,
     ) {
-        val sourceUrl = rememberDisplayArtworkSource(thumbnailUrl)
+        val requestProfile = if (isContentArtwork(thumbnailUrl)) rememberArtworkProfile() else null
+        val sourceUrl = rememberDisplayArtworkSource(thumbnailUrl, requestProfile)
         val resolvedScale = rememberVideoArtworkContentScale(sourceUrl, contentScale)
         val imageModifier = modifier.glassImageRim(shape)
         val cleanedUrl = sourceUrl?.let { cleanPrefix(it) }
         val validUrl = if (cleanedUrl.isNullOrBlank() || cleanedUrl == "null") null else cleanedUrl
         val decision = getDownloadDecision(validUrl)
         val version by storeVersion.collectAsStateWithLifecycle()
-        val localRevision = rememberLocalArtworkRevision(validUrl)
-        var currentUrl by remember(validUrl, version, localRevision, decision.sourceSize) {
+        val localRevision = rememberLocalArtworkRevision(validUrl, requestProfile)
+        var currentUrl by remember(validUrl, requestProfile, version, localRevision, decision.sourceSize) {
             mutableStateOf(validUrl?.thumbnail(decision.sourceSize))
         }
 
@@ -744,6 +781,7 @@ object ImageCacheFactory {
             currentUrl = { currentUrl },
             onUrlChanged = { currentUrl = it },
             retryMissingVideo = false,
+            profile = requestProfile,
         )
 
         SubcomposeAsyncImage(
@@ -782,15 +820,16 @@ object ImageCacheFactory {
         onError: ((State.Error) -> Unit)? = null,
         shape: Shape? = RectangleShape,
     ) {
-        val sourceUrl = rememberDisplayArtworkSource(thumbnailUrl)
+        val requestProfile = if (isContentArtwork(thumbnailUrl)) rememberArtworkProfile() else null
+        val sourceUrl = rememberDisplayArtworkSource(thumbnailUrl, requestProfile)
         val resolvedScale = rememberVideoArtworkContentScale(sourceUrl, contentScale)
         val imageModifier = if (shape == null) modifier else modifier.glassImageRim(shape)
         val cleanedUrl = sourceUrl?.let { cleanPrefix(it) }
         val validUrl = if (cleanedUrl.isNullOrBlank() || cleanedUrl == "null") null else cleanedUrl
         val decision = getDownloadDecision(validUrl)
         val version by storeVersion.collectAsStateWithLifecycle()
-        val localRevision = rememberLocalArtworkRevision(validUrl)
-        var currentUrl by remember(validUrl, version, localRevision, decision.sourceSize) {
+        val localRevision = rememberLocalArtworkRevision(validUrl, requestProfile)
+        var currentUrl by remember(validUrl, requestProfile, version, localRevision, decision.sourceSize) {
             mutableStateOf(validUrl?.thumbnail(decision.sourceSize).also { modUrl ->
                 //if (validUrl != null) Timber.tag("ImageCache").d("URL: original=%s, modified=%s", validUrl, modUrl)
             })
@@ -813,6 +852,7 @@ object ImageCacheFactory {
             currentUrl = { currentUrl },
             onUrlChanged = { currentUrl = it },
             retryMissingVideo = true,
+            profile = requestProfile,
         )
 
         AsyncImage(
@@ -893,11 +933,22 @@ object ImageCacheFactory {
             return
         }
 
-        val loading = remember(listOf(model, cacheKey)) { mutableStateOf(true) }
+        val contentUrl = when (model) {
+            is Uri, is String -> model.toString().takeIf(::isContentArtwork)
+            else -> null
+        }
+        val profile = if (contentUrl != null) rememberArtworkProfile() else null
+        val scopedUrl = profile?.let { artworkRequestData(contentUrl, it) }
+        val scopedModel = if (profile == null) model else scopedUrl
+        val scopedKey = if (profile == null) cacheKey else {
+            val ownerKey = requestCacheKey(contentUrl, NetworkQuality.HIGH, profile, scopedUrl)
+            cacheKey?.let { "$ownerKey-$it" } ?: ownerKey
+        }
+        val loading = remember(scopedModel, scopedKey) { mutableStateOf(true) }
 
         val request = ImageRequest.Builder(appContext())
-            .data(model)
-            .apply { if (cacheKey != null) { diskCacheKey(cacheKey); memoryCacheKey(cacheKey) } }
+            .data(scopedModel)
+            .apply { if (scopedKey != null) { diskCacheKey(scopedKey); memoryCacheKey(scopedKey) } }
             .apply { if (crossfade != null) crossfade(crossfade) }
             .build()
 
@@ -910,7 +961,10 @@ object ImageCacheFactory {
             placeholder = loadingPainter,
             error = fallback?.let { rememberArtworkResourcePainter(it) },
             onLoading = { loading.value = true },
-            onSuccess = { state -> loading.value = false; onSuccess?.invoke(state) },
+            onSuccess = { state ->
+                loading.value = false
+                if (profile == null || getActiveProfile(appContext()) == profile) onSuccess?.invoke(state)
+            },
             onError = { loading.value = false },
         )
     }
@@ -929,12 +983,14 @@ object ImageCacheFactory {
         cacheOnly: Boolean = false,
         cropToSquare: Boolean = false,
         cacheDecodedBitmap: Boolean = true,
+        profile: String? = null,
     ): Bitmap? {
         require(requestSize == null || requestSize > 0)
         if (url.isNullOrBlank() || url == "null") {
             return null
         }
 
+        val owner = profile ?: getActiveProfile(appContext())
         val defaultDecision = getDownloadDecision(url)
         val decision = qualityOverride?.let { quality ->
             defaultDecision.copy(
@@ -951,11 +1007,13 @@ object ImageCacheFactory {
         var lastError: String? = null
 
         while (currentUrl != null) {
+            if (getActiveProfile(appContext()) != owner) return null
+            val data = artworkRequestData(currentUrl, owner) ?: return null
             val isLocalFile = isFileArtwork(currentUrl)
 
-            val cacheKey = generateCacheKeySync(currentUrl, decision.quality).withFileRevision(fileRevision)
+            val cacheKey = requestCacheKey(currentUrl, decision.quality, owner, data).withFileRevision(fileRevision)
             val requestBuilder = ImageRequest.Builder(appContext())
-                .data(currentUrl)
+                .data(data)
                 .diskCacheKey(cacheKey)
                 .memoryCacheKey(cacheKey)
                 .allowHardware(allowHardware)
@@ -974,6 +1032,7 @@ object ImageCacheFactory {
             val request = requestBuilder.build()
 
             val result = LOADER.execute(request)
+            if (getActiveProfile(appContext()) != owner) return null
             if (result.image != null) {
                 val dataSource = (result as? SuccessResult)?.dataSource
 
@@ -1029,10 +1088,11 @@ object ImageCacheFactory {
         // Timber.tag("ImageCache").d("URL (preload): original=%s, modified=%s", thumbnailUrl, finalUrl)
 
         suspend fun executeWithFallback(url: String) {
-            if (!isCurrentArtworkSource(source)) return
-            val cacheKey = generateCacheKeySync(url, decision.quality).withFileRevision(fileRevision)
+            if (getActiveProfile(appContext()) != source.profile || !isCurrentArtworkSource(source)) return
+            val data = artworkRequestData(url, source.profile) ?: return
+            val cacheKey = requestCacheKey(url, decision.quality, source.profile, data).withFileRevision(fileRevision)
             val request = ImageRequest.Builder(appContext())
-                .data(url)
+                .data(data)
                 .apply {
                     if (isFileArtwork(url) || decision.original) {
                         val edge = playerDisplayEdge ?: 1000

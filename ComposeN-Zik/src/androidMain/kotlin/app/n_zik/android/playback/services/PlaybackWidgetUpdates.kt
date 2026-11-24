@@ -85,17 +85,18 @@ internal class PlaybackWidgetUpdates(
             return
         }
 
+        val app = context.applicationContext
+        val profileId = getActiveProfile(app)
         val playback = widgetPlayer.snapshotTiming()
         val metadata = widgetPlayer.mediaMetadata
         val artworkUri = metadata.artworkUri ?: widgetPlayer.currentMediaItem?.mediaMetadata?.artworkUri
         val currentBitmap = bitmapProvider().bitmap.takeIf { bitmapProvider().lastUri == artworkUri }
 
         widgetRenderJob = coroutineScope.launch(NzikDispatchers.DATA) {
-            val app = context.applicationContext
-            if (!WidgetAppearance.hasWidgets(app)) return@launch
-            val profileId = getActiveProfile(app)
+            if (getActiveProfile(app) != profileId || !WidgetAppearance.hasWidgets(app)) return@launch
             val songId = currentMediaId.substringAfterLast('/')
             val likeState = Database.songTable.likeState(songId).first()
+            if (getActiveProfile(app) != profileId) return@launch
             val updates = mutableListOf<WidgetTimingUpdate>()
 
             NZikWidgetManager.updateWidgets(
@@ -110,7 +111,7 @@ internal class PlaybackWidgetUpdates(
                 timingUpdates = updates,
             )
             withContext(NzikDispatchers.UI) {
-                if (!isDestroying() && updates.isNotEmpty()) {
+                if (!isDestroying() && getActiveProfile(app) == profileId && updates.isNotEmpty()) {
                     timingRender = TimingRender(currentMediaId, profileId, updates)
                 }
             }

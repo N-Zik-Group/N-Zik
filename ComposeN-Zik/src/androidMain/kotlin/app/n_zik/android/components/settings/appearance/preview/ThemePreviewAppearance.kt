@@ -38,6 +38,7 @@ import app.n_zik.android.utils.colorPaletteModeKey
 import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.fontTypeKey
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.thumbnailRoundnessDpKey
 import app.n_zik.android.utils.uiRoundnessDpKey
 import app.n_zik.android.utils.useSystemFontKey
@@ -131,14 +132,15 @@ private fun rememberPreviewAppearance(
         val generation by SharedArtworkColors.generation.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
         val sourceRevision = rememberScopedArtworkColorRevision(atlasUri, profile)
         val colors by produceState<ArtworkColorSnapshot?>(null, context, atlasUri, profile, revision, generation, sourceRevision) {
-            value = try {
-                SharedArtworkColors.load(context, atlasUri)
+            val loaded = try {
+                SharedArtworkColors.load(context, atlasUri, profile = profile)
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
                 Timber.tag("ThemePreview").w(error, "Demo artwork colors are unavailable")
                 null
             }
+            if (getActiveProfile(context) == profile) value = loaded
         }
         colors
     } else null

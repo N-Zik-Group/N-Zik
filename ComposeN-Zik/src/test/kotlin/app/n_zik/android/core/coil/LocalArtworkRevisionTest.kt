@@ -21,9 +21,14 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import app.n_zik.android.appContext
 import app.n_zik.android.components.image.PosixAtomicFileShadow
 import app.n_zik.android.components.image.saveOwnedImage
+import app.n_zik.android.playback.services.ArtworkContentProvider
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.setActiveProfile
+import app.n_zik.android.utils.writeProfileEntries
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import coil3.ImageLoader
+import coil3.intercept.Interceptor
 import coil3.memory.MemoryCache
 import coil3.request.allowHardware
 import coil3.toBitmap
@@ -153,6 +158,74 @@ class LocalArtworkRevisionTest {
         awaitPixels("Replacement blue cover") { Color.blue(it) > 240 && Color.red(it) < 15 }
         assertNotEquals(firstKey, successes.last().first)
         assertEquals(listOf(target.name), target.parentFile?.listFiles()?.map(File::getName))
+    }
+
+    @Test
+    fun `identical local cover URI loads each profile pixels through the same memory cache`() {
+        val original = getActiveProfile(context)
+        val defaultProfile = "default"
+        val otherProfile = "coil-cover-profile"
+        val songId = "same-cover-in-both-profiles"
+        assertTrue(context.writeProfileEntries(listOf(otherProfile to "Other profile")))
+        fun seed(profile: String, color: Int): File {
+            val file = File(context.cacheDir, "$profile-profile-cover.jpg")
+            val bitmap = Bitmap.createBitmap(16, 16, Bitmap.Config.ARGB_8888)
+            try {
+                bitmap.eraseColor(color)
+                file.outputStream().use {
+                    assertTrue(bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it))
+                }
+            } finally {
+                bitmap.recycle()
+            }
+            return file
+        }
+
+        val uri = ArtworkContentProvider.uriFor(songId).toString()
+        val firstData = requireNotNull(ArtworkContentProvider.scopedUriFor(context, defaultProfile, songId)).toString()
+        val secondData = requireNotNull(ArtworkContentProvider.scopedUriFor(context, otherProfile, songId)).toString()
+        val files = mapOf(firstData to seed(defaultProfile, Color.RED), secondData to seed(otherProfile, Color.BLUE))
+        // Use a local file for the transport in Robolectric while exercising the actual Coil cache,
+        // request keys and owner-bound data. Provider-side pixel decoding has its own tests.
+        loader.shutdown()
+        loader = ImageLoader.Builder(context)
+            .allowHardware(false)
+            .diskCache(null)
+            .memoryCache(MemoryCache.Builder().maxSizeBytes(1024 * 1024).build())
+            .components {
+                add(Interceptor { chain ->
+                    val file = requireNotNull(files[chain.request.data.toString()])
+                    chain.withRequest(chain.request.newBuilder().data(file).build()).proceed()
+                })
+            }
+            .build()
+        every { ImageCacheFactory.LOADER } returns loader
+
+        val quality = ImageCacheFactory.NetworkQuality.HIGH
+        assertEquals(ArtworkRevisions.current(uri, defaultProfile), ArtworkRevisions.current(uri, otherProfile))
+
+        // The synchronous test entry point waits for Coil's suspend decode.
+        fun readPixel(): Int = runBlocking {
+            requireNotNull(ImageCacheFactory.loadBitmap(uri, requestSize = 16, qualityOverride = quality))
+                .getPixel(8, 8)
+        }
+
+        try {
+            setActiveProfile(defaultProfile, context)
+            val firstKey = ImageCacheFactory.generateCacheKeySync(uri, quality)
+            val first = readPixel()
+            assertTrue(Color.red(first) > 220 && Color.blue(first) < 30)
+            setActiveProfile(otherProfile, context)
+            val secondKey = ImageCacheFactory.generateCacheKeySync(uri, quality)
+            assertNotEquals(firstKey, secondKey)
+            val second = readPixel()
+            assertTrue(Color.blue(second) > 220 && Color.red(second) < 30)
+            setActiveProfile(defaultProfile, context)
+            assertEquals(firstKey, ImageCacheFactory.generateCacheKeySync(uri, quality))
+            assertEquals(first, readPixel())
+        } finally {
+            setActiveProfile(original, context)
+        }
     }
 
     @Test

@@ -2,6 +2,7 @@ package app.n_zik.android.playback.services.automotive.models
 
 import java.io.File
 import android.net.Uri
+import app.n_zik.android.playback.services.ArtworkContentProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,7 +47,14 @@ object ArtworkRevisions {
 
     private fun sourceKey(source: String, profile: String?): String = when {
         source.startsWith("file:", ignoreCase = true) -> Uri.parse(source).path?.let(::fileKey) ?: source
-        source.startsWith("content:", ignoreCase = true) -> "$profile|$source"
+        source.startsWith("content:", ignoreCase = true) -> {
+            val uri = Uri.parse(source)
+            val songId = uri.lastPathSegment
+            val revisionUri = if (songId != null && ArtworkContentProvider.isSongArtworkUri(uri, songId)) {
+                ArtworkContentProvider.uriFor(songId, uri.getQueryParameter("r")?.toLongOrNull() ?: 0L).toString()
+            } else source
+            "$profile|$revisionUri"
+        }
         else -> fileKey(source)
     }
     private fun fileKey(path: String): String {

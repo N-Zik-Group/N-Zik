@@ -197,10 +197,16 @@ object SharedArtworkColors {
         uri: String?,
         revision: String? = null,
         bitmap: Bitmap? = null,
+        profile: String = getActiveProfile(context),
     ): ArtworkColorSnapshot? = withContext(NzikDispatchers.DATA) {
-        if (uri.isNullOrBlank() || uri == "null") return@withContext bitmap?.let { fromBitmap(it, getActiveProfile(context)) }
+        fun requireCurrentProfile() {
+            if (getActiveProfile(context) != profile) throw CancellationException("Artwork profile changed")
+        }
+        requireCurrentProfile()
+        if (uri.isNullOrBlank() || uri == "null") {
+            return@withContext bitmap?.let { fromBitmap(it, profile) }.also { requireCurrentProfile() }
+        }
         val cacheGeneration = generation.value
-        val profile = getActiveProfile(context)
         val observation = observe(uri, profile) ?: return@withContext null
         val sourceRevision = observation.revision.value
         val source = ImageCacheFactory.artworkColorSource(uri, profile) ?: return@withContext null
@@ -210,9 +216,10 @@ object SharedArtworkColors {
             observation.identity.source)
         val quality = ImageCacheFactory.NetworkQuality.HIGH
         fun requireCurrentArtwork() {
+            requireCurrentProfile()
             if (cacheGeneration != generation.value || observation.revision.value != sourceRevision ||
                 !ImageCacheFactory.isCurrentArtworkSource(source) ||
-                ImageCacheFactory.artworkFileRevision(source.uri) != fileRevision || getActiveProfile(context) != profile
+                ImageCacheFactory.artworkFileRevision(source.uri) != fileRevision
             ) throw CancellationException("Artwork changed during extraction")
         }
         requireCurrentArtwork()
@@ -227,7 +234,7 @@ object SharedArtworkColors {
             } else {
                 Timber.tag("ArtworkColors").d("Decode canonical artwork")
                 ImageCacheFactory.loadBitmap(source.uri, allowHardware = false,
-                    qualityOverride = quality, requestSize = quality.size, cacheDecodedBitmap = false)
+                    qualityOverride = quality, requestSize = quality.size, cacheDecodedBitmap = false, profile = profile)
             }
             image?.takeUnless { it.isRecycled || it.config == Bitmap.Config.ALPHA_8 }?.let { analyzeArtworkColors(it) }
                 .also { requireCurrentArtwork() }

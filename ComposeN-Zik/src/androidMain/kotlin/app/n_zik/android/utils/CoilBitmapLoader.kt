@@ -44,11 +44,12 @@ class CoilBitmapLoader(
             ) fallbackBitmap() else error("Could not load image")
         }
 
-    internal suspend fun loadSource(uri: Uri): Bitmap? =
+    internal suspend fun loadSource(uri: Uri, profile: String? = null): Bitmap? =
         ImageCacheFactory.loadBitmap(
             uri.toString(),
             requestSize = bitmapSize.coerceAtLeast(1),
             cacheDecodedBitmap = false,
+            profile = profile,
         )?.let { fitToSession(it, owned = false) }
 
     internal fun fallbackBitmap(): Bitmap = fallback

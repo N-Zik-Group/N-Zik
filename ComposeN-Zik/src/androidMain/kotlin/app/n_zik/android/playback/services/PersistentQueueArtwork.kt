@@ -10,6 +10,7 @@ import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.R
+import app.n_zik.android.playback.services.ArtworkContentProvider.Companion.isSongArtworkUri
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
 import app.n_zik.android.playback.services.automotive.models.ArtworkBitmapDecoder
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper.ORIGINAL_ARTWORK_SOURCE_EXTRA
@@ -42,14 +43,6 @@ internal object PersistentQueueArtwork {
 
     fun originalSource(item: MediaItem): String? =
         item.mediaMetadata.extras?.getString(ORIGINAL_ARTWORK_SOURCE_EXTRA)
-
-    private fun isSongArtworkUri(uri: Uri, songId: String): Boolean {
-        if (uri.scheme != "content" || uri.authority != ArtworkContentProvider.AUTHORITY ||
-            songId == "source" || songId == "remote"
-        ) return false
-        val revision = uri.getQueryParameter("r")?.toLongOrNull() ?: 0L
-        return uri == ArtworkContentProvider.uriFor(songId, revision)
-    }
 
     fun readableUri(source: String?, context: () -> Context): Uri? =
         durableUri(source)?.takeIf { uri ->
@@ -98,20 +91,26 @@ internal object PersistentQueueArtwork {
     private fun decodesFile(file: File): Boolean =
         ArtworkBitmapDecoder.file(file)?.let { it.recycle(); true } == true
 
-    fun backingCoverFile(context: Context, profile: String, source: String?, songId: String): File? =
-        durableUri(source, songId)?.takeIf { isSongArtworkUri(it, songId) }?.let {
-            var cover: File? = null
-            validated {
-                cover = ArtworkContentProvider.customCoverFile(context, profile, songId)?.takeIf(::decodesFile)
-                cover != null
-            }
-            cover
+    private fun scopedCoverUri(context: Context, profile: String, source: String?, songId: String): Uri? =
+        durableUri(source, songId)?.takeIf { isSongArtworkUri(it, songId) }
+            ?.let { ArtworkContentProvider.bindLocalRequestUri(context, profile, it) }
+
+    private fun decodedCoverFile(context: Context, profile: String, songId: String): File? {
+        var cover: File? = null
+        validated {
+            cover = ArtworkContentProvider.customCoverFile(context, profile, songId)?.takeIf(::decodesFile)
+            cover != null
         }
+        return cover
+    }
+
+    fun backingCoverFile(context: Context, profile: String, source: String?, songId: String): File? =
+        scopedCoverUri(context, profile, source, songId)?.let { decodedCoverFile(context, profile, songId) }
 
     private fun backingCoverUri(context: Context, profile: String, source: String?, songId: String): Uri? =
-        durableUri(source, songId)?.takeIf { uri ->
-            isSongArtworkUri(uri, songId) && (backingCoverFile(context, profile, source, songId) != null ||
-                validated { ArtworkContentProvider().mediaStoreArtwork(context, songId)?.let { it.recycle(); true } == true })
+        scopedCoverUri(context, profile, source, songId)?.takeIf {
+            decodedCoverFile(context, profile, songId) != null ||
+                validated { ArtworkContentProvider().mediaStoreArtwork(context, songId)?.let { it.recycle(); true } == true }
         }
 
     fun preserveSnapshotSource(context: Context, profile: String, item: MediaItem): MediaItem {

@@ -21,6 +21,7 @@ import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.models.Song
 import app.n_zik.android.utils.PROFILE_NAMES_FILE_NAME
 import app.n_zik.android.utils.activeProfileKey
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
@@ -143,7 +144,7 @@ class AutoLocalArtworkSnapshotTest {
             val song = Song(songId, "Local title", "Artist", "1:00", albumUri.toString())
             val original = SessionMediaItemMapper.mapSongToMediaItem(song, loadArtwork = true)
             assertNotNull("fixture starts with embedded artwork which snapshots strip", original.mediaMetadata.artworkData)
-            val returned = assertCallbackArtwork(original, ArtworkContentProvider.uriFor(songId))
+            val returned = assertCallbackArtwork(original, requireNotNull(ArtworkContentProvider.scopedUriFor(context, profile, songId)))
             // Open the URI actually returned by onGetItem, after the snapshot removed bytes.
             val returnedUri = requireNotNull(returned.mediaMetadata.artworkUri)
             val descriptor = requireNotNull(provider.openFile(returnedUri, "r"))
@@ -194,7 +195,7 @@ class AutoLocalArtworkSnapshotTest {
             }
             every { appContext() } returns wrapped
             val song = Song("local:93801", "Local title", "Artist", "1:00", uri.toString())
-            val expected = ArtworkContentProvider.uriFor(song.id)
+            val expected = requireNotNull(ArtworkContentProvider.scopedUriFor(context, getActiveProfile(context), song.id))
             val before = ArtworkBitmapDecoder.decodeCount.get()
             assertEquals(expected, SessionMediaItemMapper.baseMediaItem(song).mediaMetadata.artworkUri)
             assertEquals(expected, SessionMediaItemMapper.mapSongToMediaItem(song).mediaMetadata.artworkUri)
@@ -227,7 +228,7 @@ class AutoLocalArtworkSnapshotTest {
     fun `missing and resource local artwork retain provider uri with serialized fallback`() {
         listOf(null, "android.resource://${context.packageName}/missing", "file:///missing/local-cover.png").forEachIndexed { index, uri ->
             val song = Song("local:${93810 + index}", "Local title", "Artist", "1:00", uri)
-            val expected = ArtworkContentProvider.uriFor(song.id)
+            val expected = requireNotNull(ArtworkContentProvider.scopedUriFor(context, getActiveProfile(context), song.id))
             assertEquals(expected, SessionMediaItemMapper.baseMediaItem(song).mediaMetadata.artworkUri)
             listOf(
                 SessionMediaItemMapper.mapSongToMediaItem(song, loadArtwork = true),

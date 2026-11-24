@@ -73,11 +73,12 @@ object SessionMediaItemMapper {
     }
 
     /** AA metadata parity without the legacy converter's eager full-resolution decode. */
-    fun baseMediaItem(song: Song): MediaItem {
+    fun baseMediaItem(song: Song): MediaItem = baseMediaItem(song, getActiveProfile(appContext()))
+
+    private fun baseMediaItem(song: Song, profile: String): MediaItem {
         val explicit = song.title.hasExplicitPrefix()
         val title = (if (explicit) "\uD83C\uDD74 " else "") + cleanPrefix(song.title)
         val artist = cleanPrefix(song.artistsText.orEmpty())
-        val artwork = bestArtworkSource(song.thumbnailUrl)?.toUri()
         val metadata = MediaMetadata.Builder()
             .setTitle(title.takeUnless { it == "null" }.orEmpty())
             .setArtist(artist.takeUnless { it == "null" }.orEmpty())
@@ -93,7 +94,7 @@ object SessionMediaItemMapper {
                 song.thumbnailUrl?.let { putString(ORIGINAL_ARTWORK_SOURCE_EXTRA, it) }
             })
             .setIsPlayable(true).setIsBrowsable(false).setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
-        setArtworkUri(metadata, song, artwork?.toString())
+        setArtworkUri(metadata, song, bestArtworkSource(song.thumbnailUrl), profile)
         val built = metadata.build()
         applyMetadataFallbacks(metadata, built)
         return MediaItem.Builder().setMediaId(song.id)
@@ -103,8 +104,8 @@ object SessionMediaItemMapper {
     }
 
     /** Embeds the placeholder so the head unit can render tracks without artwork. */
-    private suspend fun setSerializedFallback(metadataBuilder: MediaMetadata.Builder, song: Song) {
-        metadataBuilder.setArtworkUri(ArtworkContentProvider.uriFor(song.id))
+    private suspend fun setSerializedFallback(metadataBuilder: MediaMetadata.Builder, songId: String, profile: String) {
+        metadataBuilder.setArtworkUri(ArtworkContentProvider.scopedUriFor(appContext(), profile, songId))
         val fallback = runInterruptible(NzikDispatchers.DATA) { fallbackArtworkBytes() }
         if (fallback != null) {
             metadataBuilder.setArtworkData(fallback, MediaMetadata.PICTURE_TYPE_ILLUSTRATION)
@@ -126,21 +127,25 @@ object SessionMediaItemMapper {
         if (clean.toUri().scheme in setOf("http", "https")) clean.thumbnail(1200) else clean
     }
 
-    private fun setArtworkUri(metadata: MediaMetadata.Builder, song: Song, source: String?) {
+    private fun setArtworkUri(metadata: MediaMetadata.Builder, song: Song, source: String?, profile: String) {
+        val context = appContext()
         val candidate = source?.takeUnless { it.isBlank() }?.toUri()
         val file = candidate?.takeIf { it.scheme == "file" || source?.startsWith("/") == true }
             ?.let { resolveArtworkFile(it.toString(), it.path.orEmpty()) }
-        metadata.setArtworkUri(when {
-            file?.exists() == true -> ArtworkContentProvider.uriForSource(appContext(), song.id, file)
+        val artwork = when {
+            file?.exists() == true -> ArtworkContentProvider.uriForSource(context, profile, song.id, file)
+            candidate != null && candidate.authority == ArtworkContentProvider.AUTHORITY ->
+                ArtworkContentProvider.bindLocalRequestUri(context, profile, candidate)
             LocalArtworkRules.needsProviderArtwork(song.id, source, ArtworkContentProvider.AUTHORITY) ->
-                ArtworkContentProvider.uriFor(song.id)
-            candidate == null || file != null -> drawableUri(appContext(), R.drawable.ic_launcher_box)
+                ArtworkContentProvider.scopedUriFor(context, profile, song.id)
+            candidate == null || file != null -> null
             candidate.scheme in setOf("http", "https") -> ArtworkContentProvider.uriForRemote(
-                candidate.toString(), getActiveProfile(appContext()),
-                appContext().preferences.getBoolean(cropVideoThumbnailsKey, true), ImageCacheFactory.artworkSourceRevision(candidate.toString(), getActiveProfile(appContext())),
+                candidate.toString(), profile, context.preferences.getBoolean(cropVideoThumbnailsKey, true),
+                ImageCacheFactory.artworkSourceRevision(candidate.toString(), profile),
             )
             else -> candidate
-        })
+        }
+        metadata.setArtworkUri(artwork ?: drawableUri(context, R.drawable.ic_launcher_box))
     }
 
     /** Uses localized labels for missing title and artist tags. */
@@ -203,19 +208,19 @@ object SessionMediaItemMapper {
 
     fun mapSongToMediaItem(song: Song, path: String, loadArtwork: Boolean = false): MediaItem {
         if (loadArtwork) return blockingArtworkBridge { mapSongWithArtwork(song, path) }
-        val baseItem = baseMediaItem(song)
-        val metadataBuilder = baseItem.mediaMetadata.buildUpon()
-        applyMetadataFallbacks(metadataBuilder, baseItem.mediaMetadata)
-        setArtworkUri(metadataBuilder, song, bestArtworkSource(song.thumbnailUrl))
+        return contextualMediaItem(baseMediaItem(song), song.id, path)
+    }
 
+    private fun contextualMediaItem(baseItem: MediaItem, songId: String, path: String): MediaItem {
+        val metadataBuilder = baseItem.mediaMetadata.buildUpon()
         return if (path.contains(AutoSessionConstants.ID_SEARCH_VIDEOS)) {
             baseItem.buildUpon()
-                .setMediaId("$path/${song.id}")
+                .setMediaId("$path/$songId")
                 .setMediaMetadata(metadataBuilder.setMediaType(MediaMetadata.MEDIA_TYPE_VIDEO).build())
                 .build()
         } else {
             baseItem.buildUpon()
-                .setMediaId("$path/${song.id}")
+                .setMediaId("$path/$songId")
                 .setMediaMetadata(metadataBuilder.build())
                 .build()
         }
@@ -223,7 +228,10 @@ object SessionMediaItemMapper {
 
     fun mapSongToMediaItem(song: Song, isFromPersistentQueue: Boolean = false, loadArtwork: Boolean = false): MediaItem {
         if (loadArtwork) return blockingArtworkBridge { mapSongWithArtwork(song, isFromPersistentQueue) }
-        val mediaItem = baseMediaItem(song)
+        return queueMediaItem(baseMediaItem(song), isFromPersistentQueue)
+    }
+
+    private fun queueMediaItem(mediaItem: MediaItem, isFromPersistentQueue: Boolean): MediaItem {
         val existingExtras = mediaItem.mediaMetadata.extras ?: Bundle()
         val bundle = Bundle(existingExtras).apply {
             putBoolean(persistentQueueKey, isFromPersistentQueue)
@@ -232,9 +240,6 @@ object SessionMediaItemMapper {
         val metadataBuilder = mediaItem.mediaMetadata
             .buildUpon()
             .setExtras(bundle)
-        applyMetadataFallbacks(metadataBuilder, mediaItem.mediaMetadata)
-        setArtworkUri(metadataBuilder, song, bestArtworkSource(song.thumbnailUrl))
-
         return mediaItem.buildUpon().setMediaMetadata(metadataBuilder.build()).build()
     }
 
@@ -263,30 +268,30 @@ object SessionMediaItemMapper {
             .setArtworkData(bytes, MediaMetadata.PICTURE_TYPE_ILLUSTRATION).build()).build()
     }
 
-    internal suspend fun mapSongWithArtwork(song: Song, path: String): MediaItem =
-        attachSongArtwork(mapSongToMediaItem(song, path), song)
+    internal suspend fun mapSongWithArtwork(song: Song, path: String): MediaItem {
+        val profile = getActiveProfile(appContext())
+        return attachSongArtwork(contextualMediaItem(baseMediaItem(song, profile), song.id, path), song, profile)
+    }
 
     internal suspend fun mapSongWithArtwork(song: Song, isFromPersistentQueue: Boolean = false): MediaItem {
-        val item = mapSongToMediaItem(song, isFromPersistentQueue)
+        val profile = getActiveProfile(appContext())
+        val item = queueMediaItem(baseMediaItem(song, profile), isFromPersistentQueue)
         val source = song.thumbnailUrl?.let(::cleanPrefix)
         // Queue mapping historically embeds only local or file art; browse mapping loads remote art too.
         return if (song.isLocal || source?.startsWith("file:") == true || source?.startsWith("/") == true) {
-            attachSongArtwork(item, song)
-        } else restoreLoadedArtworkUri(item, song)
+            attachSongArtwork(item, song, profile)
+        } else item
     }
 
-    // The artwork-loading overloads historically retained the base item's 1200px remote URI.
-    private fun restoreLoadedArtworkUri(item: MediaItem, song: Song): MediaItem {
+    private suspend fun attachSongArtwork(item: MediaItem, song: Song, profile: String): MediaItem {
         val metadata = item.mediaMetadata.buildUpon()
-        setArtworkUri(metadata, song, bestArtworkSource(song.thumbnailUrl))
-        return item.buildUpon().setMediaMetadata(metadata.build()).build()
-    }
-
-    private suspend fun attachSongArtwork(item: MediaItem, song: Song): MediaItem {
-        val metadata = restoreLoadedArtworkUri(item, song).mediaMetadata.buildUpon()
-        val bytes = loadArtworkBytes(song.thumbnailUrl?.let(::cleanPrefix))
+        val source = song.thumbnailUrl?.let(::cleanPrefix)
+        val local = source?.toUri()?.takeIf { it.authority == ArtworkContentProvider.AUTHORITY }
+        if (local != null && ArtworkContentProvider.bindLocalRequestUri(appContext(), profile, local) == null) return item
+        val bytes = SessionArtworkLoader.load(source, requestProfile = profile)
+        if (profile != getActiveProfile(appContext())) return item
         if (bytes != null) metadata.setArtworkData(bytes, MediaMetadata.PICTURE_TYPE_ILLUSTRATION)
-        else setSerializedFallback(metadata, song)
+        else setSerializedFallback(metadata, song.id, profile)
         return item.buildUpon().setMediaMetadata(metadata.build()).build()
     }
 

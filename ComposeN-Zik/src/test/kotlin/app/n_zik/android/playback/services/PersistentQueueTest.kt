@@ -27,6 +27,7 @@ import app.n_zik.android.utils.resumePlaybackOnStartKey
 import app.n_zik.android.utils.persistentQueueKey
 import app.n_zik.android.utils.activeProfileKey
 import app.n_zik.android.utils.profilePreferences
+import app.n_zik.android.utils.writeProfileEntries
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.DatabaseInitializer
@@ -174,7 +175,8 @@ class PersistentQueueTest {
             db.queueTable.replaceAll(listOf(QueuedMediaItem(mediaItem = item, position = 100L)))
             val saved = db.queueTable.allDirect().single().mediaItem
             val restored = PersistentQueueArtwork.restore(context, "default", saved) { null }
-            assertEquals(titleCover, restored.mediaMetadata.artworkUri)
+            assertEquals(ArtworkContentProvider.scopedUriFor(context, "default", "portable", revision = 17L),
+                restored.mediaMetadata.artworkUri)
             assertTrue(requireNotNull(restored.mediaMetadata.extras).getBoolean("isCoverModified"))
             assertNull(PersistentQueueArtwork.originalSource(restored))
             val preparedArtwork = Database.prepareArtworkForInsert(item)
@@ -183,6 +185,30 @@ class PersistentQueueTest {
         } finally {
             unmockkStatic("app.n_zik.android.GlobalVarsKt")
             unmockkObject(DatabaseInitializer.Companion)
+            bitmap.recycle()
+            file.delete()
+        }
+    }
+
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `restoration rejects a saved cover scoped to a different profile`() {
+        check(context.writeProfileEntries(listOf("secondary" to "Secondary")))
+        val songId = "queue-owned-cover"
+        val file = File(coversDir(context, "default"), "cover_$songId.jpg")
+        file.parentFile?.mkdirs()
+        val bitmap = Bitmap.createBitmap(8, 8, Bitmap.Config.ARGB_8888)
+        try {
+            file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            val foreign = requireNotNull(ArtworkContentProvider.scopedUriFor(context, "secondary", songId))
+            val saved = mediaItem(songId, foreign, modified = true)
+            val fallback = "https://example.com/library.jpg"
+
+            val restored = PersistentQueueArtwork.restore(context, "default", saved) { fallback }
+
+            assertEquals(Uri.parse(fallback), restored.mediaMetadata.artworkUri)
+            assertFalse(requireNotNull(restored.mediaMetadata.extras).getBoolean("isCoverModified"))
+        } finally {
             bitmap.recycle()
             file.delete()
         }

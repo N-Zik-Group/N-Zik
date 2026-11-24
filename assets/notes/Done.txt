@@ -352,3 +352,9 @@ Artwork profile observation:
 - refactor(artwork): reuse the observed profile in image requests
   - Share the observed profile between the Coil painter, signed artwork resolution, and revision tracking. Pass the existing profile from the app palette, player colors, theme preview, and visualizer.
   - Pass 47 targeted tests, including signed-source and revision behavior with a mounted consumer. Verify cover and palette rendering across two profiles on the Pixel.
+
+Artwork cache isolation:
+- fix(artwork): isolate local cover caches between profiles
+  - Bind local provider URIs and Coil keys to the requesting profile and its storage generation. Keep older queue entries readable and publish scoped artwork through Media3 and Android Auto.
+  - Reject stale artwork during decoding and publication, including session fallback and widget bitmaps.
+  - Pass 125 focused tests and verify the installed Debug on the Pixel across two profiles and back.

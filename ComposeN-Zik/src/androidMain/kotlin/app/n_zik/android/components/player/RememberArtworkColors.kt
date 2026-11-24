@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.rememberDisplayArtworkSource
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.components.theme.DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
@@ -77,13 +78,15 @@ internal fun rememberArtworkDisplayResult(
     LaunchedEffect(request) {
         if (missingUri && awaitArtworkMetadata) delay(ARTWORK_METADATA_GRACE_MS)
         try {
-            val loaded = SharedArtworkColors.load(context, uri, revision)
+            val loaded = SharedArtworkColors.load(context, uri, revision, profile = profile)
             currentCoroutineContext().ensureActive()
+            if (getActiveProfile(context) != profile) return@LaunchedEffect
             raw = loaded
             completedRequest = request
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
+            if (getActiveProfile(context) != profile) return@LaunchedEffect
             raw = null
             completedRequest = request
             Timber.tag("ArtworkColors").w(error, "Unable to analyze artwork")

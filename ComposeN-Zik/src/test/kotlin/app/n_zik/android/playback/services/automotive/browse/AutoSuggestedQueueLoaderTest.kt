@@ -186,7 +186,7 @@ class AutoSuggestedQueueLoaderTest {
             val result = AutoSuggestedQueueLoader.load(context, Database, MyDownloadHelper, null)
             val localTrack = result.single { entry -> entry.items.any { it.mediaId == "local:42" } }
             assertEquals("local:42", localTrack.title)
-            assertEquals(ArtworkContentProvider.uriFor("local:42"), localTrack.artworkUri)
+            assertEquals(ArtworkContentProvider.scopedUriFor(context, "default", "local:42"), localTrack.artworkUri)
             assertEquals(ArtworkContentProvider.uriForSource(context, "playlist-song", playlistCover),
                 result.single { it.title == "Private cover" }.artworkUri)
             assertEquals(ArtworkContentProvider.uriForSource(context, "artist-song", artistCover),

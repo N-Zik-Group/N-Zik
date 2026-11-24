@@ -73,11 +73,11 @@ class ArtworkConsumerReactivityTest {
         mockkObject(ImageCacheFactory)
         coEvery {
             ImageCacheFactory.loadBitmap(previousUri, allowHardware = false, requestSize = 1000,
-                qualityOverride = ImageCacheFactory.NetworkQuality.HIGH, cacheDecodedBitmap = false)
+                qualityOverride = ImageCacheFactory.NetworkQuality.HIGH, cacheDecodedBitmap = false, profile = "artwork_consumers_test")
         } returns previous
         coEvery {
             ImageCacheFactory.loadBitmap(nextUri, allowHardware = false, requestSize = 1000,
-                qualityOverride = ImageCacheFactory.NetworkQuality.HIGH, cacheDecodedBitmap = false)
+                qualityOverride = ImageCacheFactory.NetworkQuality.HIGH, cacheDecodedBitmap = false, profile = "artwork_consumers_test")
         } coAnswers {
             started.complete(Unit)
             pending.await()
@@ -111,7 +111,7 @@ class ArtworkConsumerReactivityTest {
         mockkObject(ImageCacheFactory)
         coEvery {
             ImageCacheFactory.loadBitmap(uri, allowHardware = false, requestSize = 1000,
-                qualityOverride = ImageCacheFactory.NetworkQuality.HIGH, cacheDecodedBitmap = false)
+                qualityOverride = ImageCacheFactory.NetworkQuality.HIGH, cacheDecodedBitmap = false, profile = "artwork_consumers_test")
         } returns bitmap
         // The real repository loads the original URI at the common high-quality contract.
         // A synchronous JUnit setup needs the suspend API before composition starts.
@@ -182,7 +182,7 @@ class ArtworkConsumerReactivityTest {
         assertSame(source, runBlocking { SharedArtworkColors.load(context, uri) })
         coVerify(exactly = 1) {
             ImageCacheFactory.loadBitmap(uri, allowHardware = false, requestSize = 1000,
-                qualityOverride = ImageCacheFactory.NetworkQuality.HIGH, cacheDecodedBitmap = false)
+                qualityOverride = ImageCacheFactory.NetworkQuality.HIGH, cacheDecodedBitmap = false, profile = "artwork_consumers_test")
         }
     }
 }

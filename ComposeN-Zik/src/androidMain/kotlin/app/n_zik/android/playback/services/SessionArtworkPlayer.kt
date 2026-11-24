@@ -10,6 +10,7 @@ import androidx.core.net.toUri
 import androidx.media3.common.C
 import androidx.media3.common.FlagSet
 import androidx.media3.common.ForwardingPlayer
+import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -35,6 +36,8 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
     private var localArtwork: LocalSessionArtwork? = null
     private var providerArtwork: ProviderArtwork? = null
     private var observedArtwork: ArtworkObservation? = null
+    private var artworkItem: MediaItem? = null
+    private var artworkProfile = profile
     private var durationMediaId: String? = null
     private var knownDurationMs: Long? = null
     private var lastDurationDiagnostic: String? = null
@@ -54,7 +57,7 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
         val refreshedProviderUri: Uri?,
     )
 
-    private data class ProviderArtwork(val uri: Uri, val sequence: Long, val refreshedUri: Uri)
+    private data class ProviderArtwork(val uri: Uri, val sequence: Long, val refreshedUri: Uri?)
 
     private fun artworkObservation(source: String?, providerUri: Uri?): ArtworkObservation =
         ArtworkObservation(
@@ -64,12 +67,14 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
             providerUri?.let(::currentProviderArtworkUri),
         )
 
-    private fun currentProviderArtworkUri(uri: Uri): Uri {
+    private fun currentProviderArtworkUri(uri: Uri): Uri? {
         if (uri.pathSegments == listOf("remote")) return uri
         val sequence = ArtworkRevisions.current()
         val cached = providerArtwork
         if (cached?.uri == uri && cached.sequence == sequence) return cached.refreshedUri
-        val refreshedUri = ArtworkContentProvider.refreshLocalUri(appContext(), profile, uri)
+        val context = appContext()
+        val scoped = ArtworkContentProvider.bindLocalRequestUri(context, profile, uri)
+        val refreshedUri = scoped?.let { ArtworkContentProvider.refreshLocalUri(context, profile, it) }
         providerArtwork = ProviderArtwork(uri, sequence, refreshedUri)
         return refreshedUri
     }
@@ -84,8 +89,9 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
         ) return cached.uri
         val path = source.takeIf { it.startsWith('/') } ?: source.toUri().path ?: return null
         val file = SessionMediaItemMapper.resolveArtworkFile(source, path)
-        val uri = runCatching { ArtworkContentProvider.uriForSource(appContext(), songId, file) }
-            .getOrElse { ArtworkContentProvider.uriFor(songId) }
+        val context = appContext()
+        val uri = runCatching { ArtworkContentProvider.uriForSource(context, profile, songId, file) }
+            .getOrElse { ArtworkContentProvider.scopedUriFor(context, profile, songId) } ?: return null
         localArtwork = LocalSessionArtwork(source, songId, profile, revision, uri)
         return uri
     }
@@ -117,9 +123,12 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
 
     /** Called on the player thread after profile, crop or connectivity policy changes. */
     fun refreshArtwork() {
-        profile = getActiveProfile(appContext())
+        val selectedProfile = getActiveProfile(appContext())
+        if (selectedProfile != profile) rememberArtworkItem(currentMediaItem)
+        profile = selectedProfile
         square = appContext().preferences.getBoolean(cropVideoThumbnailsKey, true)
         expires = now() + 24 * 60 * 60 * 1000L
+        localArtwork = null
         providerArtwork = null
         observedArtwork = null
         publishMetadata()
@@ -150,9 +159,19 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
         }
     }
 
+    private fun rememberArtworkItem(currentItem: MediaItem?) {
+        // A retained item still belongs to the profile that supplied its artwork.
+        if (artworkItem !== currentItem) {
+            artworkItem = currentItem
+            artworkProfile = profile
+        }
+    }
+
     override fun getMediaMetadata(): MediaMetadata {
         val metadata = super.getMediaMetadata()
         val currentItem = currentMediaItem
+        rememberArtworkItem(currentItem)
+        val ownsArtwork = (currentItem == null || artworkProfile == profile) && profile == getActiveProfile(appContext())
         val hasLoadedTrack = currentItem != null && playbackState != Player.STATE_IDLE
         val mediaId = currentItem?.mediaId
         val selectedArtwork = currentItem?.mediaMetadata?.takeIf { it.extras?.getBoolean("isCoverModified") == true }
@@ -163,17 +182,21 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
         if (now() >= expires) expires = now() + 24 * 60 * 60 * 1000L
         val existingProviderUri = selectedArtwork?.takeIf { it.authority == ArtworkContentProvider.AUTHORITY }
             ?: metadata.artworkUri?.takeIf { it.authority == ArtworkContentProvider.AUTHORITY }
-        val observation = artworkObservation(source, existingProviderUri)
-        if (source != observedArtwork?.source || existingProviderUri != observedArtwork?.providerUri) {
+        val observation = if (ownsArtwork) artworkObservation(source, existingProviderUri) else null
+        if (observation?.source != observedArtwork?.source || observation?.providerUri != observedArtwork?.providerUri) {
             observedArtwork = observation
         }
-        val providerArtworkUri = source?.takeIf { currentItem != null }?.let {
-            ArtworkContentProvider.uriForRemote(it, profile, square, observation.sourceRevision, expires)
-        } ?: observation.refreshedProviderUri
-        ?: mediaId?.let { id -> source?.let { localArtworkUri(id, it) } }
-        ?: mediaId?.takeIf {
-            LocalArtworkRules.needsProviderArtwork(it, source, ArtworkContentProvider.AUTHORITY)
-        }?.let { ArtworkContentProvider.uriFor(LocalArtworkRules.songIdOf(it)) }
+        val rejectedProvider = existingProviderUri != null && observation?.refreshedProviderUri == null
+        val providerArtworkUri = observation?.takeUnless { rejectedProvider }?.let {
+            source?.takeIf { currentItem != null }?.let { remote ->
+                ArtworkContentProvider.uriForRemote(remote, profile, square, it.sourceRevision, expires)
+            } ?: it.refreshedProviderUri
+                ?: mediaId?.let { id -> source?.let { localArtworkUri(id, it) } }
+                ?: mediaId?.takeIf {
+                    LocalArtworkRules.needsProviderArtwork(it, source, ArtworkContentProvider.AUTHORITY)
+                }?.let { ArtworkContentProvider.scopedUriFor(appContext(), profile, LocalArtworkRules.songIdOf(it)) }
+        }
+        val clearArtwork = !ownsArtwork || rejectedProvider
         val needsTitleFallback = hasLoadedTrack && SessionMetadataFallbacks.needsFallback(metadata.title)
         val needsArtistFallback = hasLoadedTrack && SessionMetadataFallbacks.needsFallback(metadata.artist)
         if (durationMediaId != mediaId || isCurrentMediaItemLive) {
@@ -203,14 +226,17 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
             }
         }
         val hasReservedDuration = metadata.extras?.containsKey(METADATA_KEY_DURATION) == true
-        if (providerArtworkUri == null && !needsTitleFallback && !needsArtistFallback &&
+        if (providerArtworkUri == null && !clearArtwork && !needsTitleFallback && !needsArtistFallback &&
             declaredDuration == metadata.durationMs && !hasReservedDuration
         ) return metadata
         return metadata.buildUpon().apply {
             setDurationMs(declaredDuration)
             // Legacy conversion applies extras last, so a reserved key could clobber the real duration.
             if (hasReservedDuration) setExtras(Bundle(metadata.extras).apply { remove(METADATA_KEY_DURATION) })
-            providerArtworkUri?.let { setArtworkUri(it); setArtworkData(null, null) }
+            if (clearArtwork || providerArtworkUri != null) {
+                setArtworkUri(providerArtworkUri)
+                setArtworkData(null, null)
+            }
             if (needsTitleFallback) setTitle(appTextResources().getString(R.string.metadata_unknown_title))
             if (needsArtistFallback) setArtist(appTextResources().getString(R.string.metadata_unknown_artist))
         }.build()

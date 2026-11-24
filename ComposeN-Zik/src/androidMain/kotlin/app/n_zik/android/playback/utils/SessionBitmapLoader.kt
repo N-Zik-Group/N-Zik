@@ -7,10 +7,13 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.media3.common.util.BitmapLoader
 import androidx.media3.common.util.UnstableApi
+import app.n_zik.android.core.profiles.isCurrentProcessStorageProfile
+import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.utils.CoilBitmapLoader
 import app.n_zik.android.playback.services.ArtworkContentProvider
 import app.n_zik.android.playback.services.automotive.models.ArtworkBitmapDecoder
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.getActiveProfile
 import com.google.common.util.concurrent.ListenableFuture
 import java.io.File
 import kotlinx.coroutines.CancellationException
@@ -40,10 +43,25 @@ class SessionBitmapLoader(
 
     override fun loadBitmap(uri: Uri): ListenableFuture<Bitmap> =
         when (uri.scheme) {
-            ContentResolver.SCHEME_CONTENT, ContentResolver.SCHEME_FILE ->
+            ContentResolver.SCHEME_CONTENT, ContentResolver.SCHEME_FILE -> {
+                val profile = getActiveProfile(context)
+                val owner = profileStorageIdentity(context, profile)
+                val requestUri = owner?.let { ArtworkContentProvider.bindLocalRequestUri(context, profile, uri) }
                 scope.future(NzikDispatchers.DATA) {
-                    tryLocal { inner.loadSource(uri) } ?: decodeLocal(uri) ?: inner.fallbackBitmap()
+                    if (owner == null || requestUri == null || !isCurrentProcessStorageProfile(context, owner)) {
+                        return@future inner.fallbackBitmap()
+                    }
+                    val borrowed = tryLocal { inner.loadSource(requestUri, profile) }
+                    if (!isCurrentProcessStorageProfile(context, owner)) return@future inner.fallbackBitmap()
+                    if (borrowed != null) return@future borrowed
+                    val decoded = decodeLocal(requestUri)
+                    if (!isCurrentProcessStorageProfile(context, owner)) {
+                        decoded?.recycle()
+                        return@future inner.fallbackBitmap()
+                    }
+                    decoded ?: inner.fallbackBitmap()
                 }
+            }
 
             else -> inner.loadBitmap(uri)
         }

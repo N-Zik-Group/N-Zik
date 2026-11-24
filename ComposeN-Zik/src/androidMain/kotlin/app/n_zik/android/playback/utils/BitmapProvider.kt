@@ -27,6 +27,7 @@ class BitmapProvider(
         private set
 
     var lastBitmap: Bitmap? = null
+        get() = field?.takeIf { lastSource?.profile == getActiveProfile(appContext()) }
     private var lastSource: ArtworkSource? = null
     private var lastCacheGeneration = -1L
     private var lastIsSystemInDarkMode = false
@@ -81,7 +82,9 @@ class BitmapProvider(
             return
         }
         
-        val source = ImageCacheFactory.artworkColorSource(uri.toString(), getActiveProfile(appContext()))
+        val context = appContext()
+        val profile = getActiveProfile(context)
+        val source = ImageCacheFactory.artworkColorSource(uri.toString(), profile)
         val cacheGeneration = SharedArtworkColors.generation.value
         if (lastUri == uri && lastSource == source && lastCacheGeneration == cacheGeneration &&
             (lastBitmap != null || loadJob?.isActive == true)
@@ -103,14 +106,12 @@ class BitmapProvider(
                     source?.uri,
                     requestSize = 400,
                     cacheDecodedBitmap = false,
+                    profile = profile,
                 )
                 
                 withContext(NzikDispatchers.UI) {
-                    if (loadedBitmap != null) {
-                        lastBitmap = loadedBitmap
-                    } else {
-                        lastBitmap = null
-                    }
+                    if (getActiveProfile(context) != profile) return@withContext
+                    lastBitmap = loadedBitmap
                     onDone(bitmap)
                 }
             } catch (cancelled: CancellationException) {
@@ -118,6 +119,7 @@ class BitmapProvider(
             } catch (e: Exception) {
                 Timber.tag("BitmapProvider").e("Failed to load bitmap ${e.stackTraceToString()}")
                 withContext(NzikDispatchers.UI) {
+                    if (getActiveProfile(context) != profile) return@withContext
                     lastBitmap = null
                     onDone(bitmap)
                 }

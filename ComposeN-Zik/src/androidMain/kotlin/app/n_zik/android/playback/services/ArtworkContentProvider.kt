@@ -1,50 +1,56 @@
 package app.n_zik.android.playback.services
 
 
-import app.n_zik.android.core.backup.isLibraryReady
-
 import android.content.ContentProvider
-import app.n_zik.android.core.profiles.ScopedTemporaryFiles
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
+import android.graphics.Bitmap
 import android.net.Uri
-import android.os.Build
 import android.os.Binder
+import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.os.Process
 import android.provider.MediaStore
+import android.util.Base64
 import android.util.Size
-import timber.log.Timber
-import app.n_zik.android.R
-import app.n_zik.android.core.profiles.coversDir
-import app.n_zik.android.core.profiles.ProfileStorageIdentity
-import app.n_zik.android.core.profiles.profileStorageIdentity
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.n_zik.android.utils.getActiveProfile
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.util.UUID
-import app.n_zik.android.playback.services.automotive.models.ArtworkBitmapDecoder
-import android.graphics.Bitmap
-import android.util.Base64
-import app.n_zik.android.playback.services.automotive.models.SessionArtworkLoader
 import java.security.MessageDigest
 import java.security.SecureRandom
+import java.util.UUID
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import kotlinx.coroutines.runBlocking
+import timber.log.Timber
+import app.n_zik.android.BuildConfig
+import app.n_zik.android.R
+import app.n_zik.android.core.backup.isLibraryReady
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
+import app.n_zik.android.core.profiles.boundProcessStorageIdentity
+import app.n_zik.android.core.profiles.ScopedTemporaryFiles
+import app.n_zik.android.core.profiles.coversDir
+import app.n_zik.android.core.profiles.isCurrentProcessStorageProfile
+import app.n_zik.android.core.profiles.profileStorageIdentity
+import app.n_zik.android.playback.services.automotive.models.ArtworkBitmapDecoder
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
+import app.n_zik.android.playback.services.automotive.models.SessionArtworkLoader
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.getActiveProfile
 
-/** Serves bounded seekable JPEGs with signed profile-owned remote sources. */
+/** Serves seekable JPEGs from profile-owned local and signed remote sources. */
 class ArtworkContentProvider : ContentProvider() {
 
     companion object {
-        val AUTHORITY = "${app.n_zik.android.BuildConfig.APPLICATION_ID}.artwork"
+        val AUTHORITY = "${BuildConfig.APPLICATION_ID}.artwork"
 
         private const val TAG = "ArtworkProvider"
+        private const val OWNER_PARAM = "p"
+        private const val GENERATION_PARAM = "g"
+        private const val REVISION_PARAM = "r"
+        private val songArtworkParams = setOf(OWNER_PARAM, GENERATION_PARAM, REVISION_PARAM)
 
         /** Longest side served for MediaStore art (AA renders it at card size). */
         private const val MEDIA_STORE_ART_MAX_SIDE = 512
@@ -53,14 +59,21 @@ class ArtworkContentProvider : ContentProvider() {
         private const val MAX_SOURCES = 1024
         private val sources = LinkedHashMap<String, Source>(MAX_SOURCES, 0.75f, true)
 
+        internal fun uriForSource(ctx: Context, songId: String, file: File): Uri =
+            uriForSource(ctx, getActiveProfile(ctx), songId, file) ?: uriFor(songId)
+
         /** Only in-process mapping can register files; exported requests accept opaque tokens. */
-        internal fun uriForSource(ctx: Context, songId: String, file: File): Uri {
-            val profile = profileStorageIdentity(ctx, getActiveProfile(ctx)) ?: return uriFor(songId)
+        internal fun uriForSource(ctx: Context, profile: String, songId: String, file: File): Uri? {
+            val owner = profileStorageIdentity(ctx, profile) ?: return null
+            if (!isCurrentProcessStorageProfile(ctx, owner)) return null
             val canonical = file.canonicalFile
-            val expected = File(coversDir(ctx, profile.id), "cover_${songId}.jpg").canonicalFile
-            val revision = ArtworkRevisions.current(canonical.path, profile.id)
-            if (canonical == expected) return uriFor(songId, revision)
-            val source = Source(profile, canonical)
+            val expected = File(coversDir(ctx, owner.id), "cover_$songId.jpg").canonicalFile
+            val revision = ArtworkRevisions.current(canonical.path, owner.id)
+            if (canonical == expected) {
+                val uri = uriFor(songId, revision)
+                return uri.takeIf { isSongArtworkUri(it, songId) }?.withSongArtworkOwner(owner)
+            }
+            val source = Source(owner, canonical)
             val token = synchronized(sources) {
                 val existing = sources.entries.firstOrNull { it.value == source }?.key
                 if (existing != null) {
@@ -131,24 +144,80 @@ class ArtworkContentProvider : ContentProvider() {
             .build()
 
         private fun Uri.Builder.appendArtworkRevision(revision: Long): Uri.Builder =
-            apply { if (revision != 0L) appendQueryParameter("r", revision.toString()) }
+            apply { if (revision != 0L) appendQueryParameter(REVISION_PARAM, revision.toString()) }
+
+        private fun songArtworkId(uri: Uri): String? {
+            if (uri.scheme != "content" || uri.encodedAuthority != AUTHORITY) return null
+            return uri.pathSegments.singleOrNull()?.takeUnless { it == "source" || it == "remote" }
+        }
+
+        internal fun isSongArtworkUri(uri: Uri, songId: String): Boolean {
+            if (songArtworkId(uri) != songId || uri.fragment != null || !isSafeSongId(songId) ||
+                uri.encodedPath?.count { it == '/' } != 1
+            ) return false
+            if (uri.queryParameterNames.any { it !in songArtworkParams || uri.getQueryParameters(it).size != 1 }) {
+                return false
+            }
+            val owner = uri.getQueryParameter(OWNER_PARAM)
+            val generation = uri.getQueryParameter(GENERATION_PARAM)
+            if (owner != null || generation != null) {
+                if (owner.isNullOrBlank() || generation.isNullOrBlank()) return false
+            }
+            val revision = uri.getQueryParameter(REVISION_PARAM)
+            return revision == null || revision.toLongOrNull() != null
+        }
+
+        internal fun scopedUriFor(context: Context, profile: String, songId: String, revision: Long = 0L): Uri? {
+            val uri = uriFor(songId, revision)
+            if (!isSongArtworkUri(uri, songId)) return null
+            return bindLocalRequestUri(context, profile, uri)
+        }
+
+        internal fun bindLocalRequestUri(context: Context, profile: String, uri: Uri): Uri? {
+            val songId = songArtworkId(uri) ?: return uri
+            if (!isSongArtworkUri(uri, songId)) return null
+            val owner = boundProcessStorageIdentity() ?: profileStorageIdentity(context, profile) ?: return null
+            if (owner.id != profile) return null
+            return bindSongArtworkUri(uri, owner)
+        }
+
+        private fun bindSongArtworkUri(uri: Uri, owner: ProfileStorageIdentity): Uri? {
+            if (uri.getQueryParameter(OWNER_PARAM) != null) {
+                return uri.takeIf { matchesSongArtworkOwner(it, owner) }
+            }
+            return uri.withSongArtworkOwner(owner)
+        }
+
+        private fun Uri.withSongArtworkOwner(owner: ProfileStorageIdentity): Uri = buildUpon()
+            .appendQueryParameter(OWNER_PARAM, owner.id)
+            .appendQueryParameter(GENERATION_PARAM, owner.generation)
+            .build()
+
+        private fun matchesSongArtworkOwner(uri: Uri, owner: ProfileStorageIdentity): Boolean =
+            uri.getQueryParameter(OWNER_PARAM) == owner.id && uri.getQueryParameter(GENERATION_PARAM) == owner.generation
 
         internal fun registeredSourceFile(ctx: Context, profile: String, uri: Uri): File? =
-            registeredSource(ctx, profile, uri)?.takeIf { it.isFile && it.canRead() }
+            registeredSource(uri)?.takeIf { it.profile == profileStorageIdentity(ctx, profile) }?.file
+                ?.takeIf { it.isFile && it.canRead() }
 
-        private fun registeredSource(ctx: Context, profile: String, uri: Uri): File? {
+        private fun registeredSource(owner: ProfileStorageIdentity, uri: Uri): File? =
+            registeredSource(uri)?.takeIf { it.profile == owner }?.file
+
+        private fun registeredSource(uri: Uri): Source? {
             if (uri.scheme != "content" || uri.authority != AUTHORITY ||
                 uri.pathSegments.size != 2 || uri.pathSegments.first() != "source"
             ) return null
-            val source = synchronized(sources) { sources[uri.lastPathSegment] } ?: return null
-            return source.file.takeIf { source.profile == profileStorageIdentity(ctx, profile) }
+            return synchronized(sources) { sources[uri.lastPathSegment] }
         }
 
         internal fun customCoverFile(ctx: Context, profile: String, songId: String): File? =
             ownedCoverPath(ctx, profile, songId)?.takeIf(File::isFile)
 
+        private fun isSafeSongId(songId: String): Boolean =
+            songId.isNotBlank() && songId.none { it == '/' || it == '\\' || it == '\u0000' }
+
         private fun ownedCoverPath(ctx: Context, profile: String, songId: String): File? {
-            if (songId.isBlank() || songId.any { it == '/' || it == '\\' }) return null
+            if (!isSafeSongId(songId)) return null
             val directory = ctx.filesDir.canonicalFile.resolve(coversDir(ctx, profile).name)
             if (directory.canonicalFile != directory.absoluteFile) return null
             val file = directory.resolve("cover_$songId.jpg")
@@ -156,20 +225,24 @@ class ArtworkContentProvider : ContentProvider() {
         }
 
         internal fun refreshLocalUri(ctx: Context, profile: String, uri: Uri): Uri {
-            if (uri.scheme != "content" || uri.authority != AUTHORITY || profile != getActiveProfile(ctx)) return uri
-            val segments = uri.pathSegments
-            val file = when {
-                segments.size == 2 -> registeredSource(ctx, profile, uri)
-                // The path still owns its revision after a custom cover is deleted.
-                segments.size == 1 && segments.first() !in setOf("source", "remote") &&
-                    profileStorageIdentity(ctx, profile) != null -> ownedCoverPath(ctx, profile, segments.first())
-                else -> null
-            } ?: return uri
-            val publishedRevision = uri.getQueryParameter("r")
+            if (uri.scheme != "content" || uri.authority != AUTHORITY) return uri
+            val songId = songArtworkId(uri)
+            val source = if (songId == null) registeredSource(uri) ?: return uri else null
+            val owner = profileStorageIdentity(ctx, profile) ?: return uri
+            if (!isCurrentProcessStorageProfile(ctx, owner)) return uri
+            val boundUri = if (songId == null) uri else {
+                if (!isSongArtworkUri(uri, songId)) return uri
+                bindSongArtworkUri(uri, owner) ?: return uri
+            }
+            // The path still owns its revision after its custom cover is deleted.
+            val file = (if (songId == null) source?.takeIf { it.profile == owner }?.file else ownedCoverPath(ctx, profile, songId))
+                ?: return boundUri
+            val publishedRevision = uri.getQueryParameter(REVISION_PARAM)
             // An absent unversioned cover needs an explicit file edit to change its URI.
-            val includeGlobal = segments.size != 1 || publishedRevision != null || file.isFile
+            val includeGlobal = songId == null || publishedRevision != null || file.isFile
             val revision = ArtworkRevisions.current(file.path, profile, includeGlobal)
-            if (revision == (publishedRevision?.toLongOrNull() ?: 0L)) return uri
+            if (revision == (publishedRevision?.toLongOrNull() ?: 0L)) return boundUri
+            if (songId != null) return uriFor(songId, revision).withSongArtworkOwner(owner)
             return uri.buildUpon().clearQuery().appendArtworkRevision(revision).build()
         }
     }
@@ -177,49 +250,65 @@ class ArtworkContentProvider : ContentProvider() {
     override fun onCreate(): Boolean = true
 
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
-        if (mode != "r" || uri.authority != AUTHORITY) return null
+        if (mode != "r" || uri.scheme != "content" || uri.authority != AUTHORITY) return null
         val songId = uri.lastPathSegment ?: return null
         val ctx = context ?: return null
         return try {
-            val requestType = uri.pathSegments.firstOrNull()
-            if (!ctx.isLibraryReady()) {
-                if (requestType == "remote" || requestType == "source") return null
-                return placeholder(ctx)?.let { writeSeekableJpeg(ScopedTemporaryFiles.publicArtwork(ctx), it) }
-            }
-            if (requestType == "remote") {
+            if (uri.pathSegments.firstOrNull() == "remote") {
+                if (!ctx.isLibraryReady()) return null
                 if (!LocalArtworkRules.isTrustedCaller(runCatching { callingPackage }.getOrNull(), ctx.packageName)) return null
                 val profile = getActiveProfile(ctx)
                 val (source, crop) = remoteSource(uri, profile) ?: return null
+                val owner = profileStorageIdentity(ctx, profile) ?: return null
+                if (!isCurrentProcessStorageProfile(ctx, owner)) return null
                 // ContentProvider's synchronous descriptor API runs on its Binder worker, never the metadata getter.
-                val bytes = runBlocking(NzikDispatchers.DATA) { SessionArtworkLoader.load(source, crop) } ?: return null
-                if (profile != getActiveProfile(ctx)) return null
-                return writeSeekableBytes(privateArtworkDirectory(ctx), bytes)
+                val bytes = runBlocking(NzikDispatchers.DATA) {
+                    SessionArtworkLoader.load(source, crop, requestProfile = profile)
+                } ?: return null
+                if (!isCurrentProcessStorageProfile(ctx, owner)) return null
+                val descriptor = writeSeekableBytes(privateArtworkDirectory(ctx, owner), bytes)
+                if (isCurrentProcessStorageProfile(ctx, owner)) descriptor else {
+                    descriptor.close()
+                    null
+                }
+            } else {
+                openLocalArtwork(ctx, uri, songId)
             }
-            val profile = getActiveProfile(ctx)
-            val sourceRequest = requestType == "source"
-            val trusted = Binder.getCallingUid() == Process.myUid() ||
-                LocalArtworkRules.isTrustedCaller(runCatching { callingPackage }.getOrNull(), ctx.packageName)
-            val privateBitmap = when {
-                sourceRequest -> registeredSource(ctx, uri)
-                trusted -> customCover(ctx, songId) ?: mediaStoreArtIfTrusted(ctx, songId)
-                else -> null
-            }
-            val bitmap = privateBitmap ?: placeholder(ctx) ?: return null
-            if (profile != getActiveProfile(ctx)) {
-                bitmap.recycle()
-                return null
-            }
-            val directory = if (privateBitmap == null) ScopedTemporaryFiles.publicArtwork(ctx) else privateArtworkDirectory(ctx)
-            writeSeekableJpeg(directory, bitmap)
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Failed to open artwork for song %s", songId)
             null
         }
     }
 
-    private fun registeredSource(ctx: Context, uri: Uri): Bitmap? {
-        if (!LocalArtworkRules.isTrustedCaller(runCatching { callingPackage }.getOrNull(), ctx.packageName)) return null
-        val file = registeredSourceFile(ctx, getActiveProfile(ctx), uri) ?: return null
+    private fun openLocalArtwork(ctx: Context, uri: Uri, songId: String): ParcelFileDescriptor? {
+        val sourceRequest = uri.pathSegments.firstOrNull() == "source"
+        if (!sourceRequest && !isSongArtworkUri(uri, songId)) return null
+        val libraryReady = ctx.isLibraryReady()
+        if (!libraryReady && sourceRequest) return null
+        val caller = runCatching { callingPackage }.getOrNull()
+        val sameUid = Binder.getCallingUid() == Process.myUid()
+        val trusted = (!sourceRequest && sameUid) || LocalArtworkRules.isTrustedCaller(caller, ctx.packageName)
+        val unscopedExternalSong = !sourceRequest && !sameUid && uri.getQueryParameter(OWNER_PARAM) == null
+        if (!libraryReady || !trusted || unscopedExternalSong) {
+            return placeholder(ctx)?.let { writeSeekableJpeg(ctx, it) }
+        }
+        val owner = profileStorageIdentity(ctx, getActiveProfile(ctx)) ?: return null
+        if (!isCurrentProcessStorageProfile(ctx, owner)) return null
+        if (!sourceRequest && uri.getQueryParameter(OWNER_PARAM) != null && !matchesSongArtworkOwner(uri, owner)) {
+            return null
+        }
+
+        val privateBitmap = if (sourceRequest) {
+            registeredSourceBitmap(owner, uri)
+        } else {
+            customCover(ctx, owner, songId) ?: mediaStoreArtIfTrusted(ctx, songId)
+        }
+        val bitmap = privateBitmap ?: placeholder(ctx) ?: return null
+        return writeSeekableJpeg(ctx, bitmap, owner, privateBitmap != null)
+    }
+
+    private fun registeredSourceBitmap(owner: ProfileStorageIdentity, uri: Uri): Bitmap? {
+        val file = registeredSource(owner, uri)?.takeIf { it.isFile && it.canRead() } ?: return null
         val bitmap = try {
             ArtworkBitmapDecoder.file(file)
         } catch (e: IOException) {
@@ -233,8 +322,8 @@ class ArtworkContentProvider : ContentProvider() {
     }
 
     /** Custom cover with EXIF rotation applied, center-cropped (pre-existing behavior). */
-    private fun customCover(ctx: Context, songId: String): Bitmap? {
-        val file = customCoverFile(ctx, getActiveProfile(ctx), songId) ?: return null
+    private fun customCover(ctx: Context, owner: ProfileStorageIdentity, songId: String): Bitmap? {
+        val file = customCoverFile(ctx, owner.id, songId) ?: return null
         return ArtworkBitmapDecoder.file(file)?.let { ArtworkBitmapDecoder.finish(it, square = true) }
     }
 
@@ -285,19 +374,33 @@ class ArtworkContentProvider : ContentProvider() {
     }?.let { ArtworkBitmapDecoder.finish(it, square = true) }
 
     // A regular file avoids ESPIPE in AA; unlinking leaves its open descriptor valid.
-    private fun privateArtworkDirectory(context: Context): File = ScopedTemporaryFiles.directory(
-        context, ScopedTemporaryFiles.PRIVATE_ARTWORK, ScopedTemporaryFiles.activeOwner(context)
-    )
+    private fun privateArtworkDirectory(context: Context, owner: ProfileStorageIdentity): File =
+        ScopedTemporaryFiles.directory(context, ScopedTemporaryFiles.PRIVATE_ARTWORK, owner)
 
-    private fun writeSeekableJpeg(directory: File, bitmap: Bitmap): ParcelFileDescriptor {
+    private fun writeSeekableJpeg(
+        context: Context,
+        bitmap: Bitmap,
+        owner: ProfileStorageIdentity? = null,
+        privateArtwork: Boolean = false,
+    ): ParcelFileDescriptor? {
         var tempFile: File? = null
         try {
+            if (owner != null && !isCurrentProcessStorageProfile(context, owner)) return null
+            val directory = if (privateArtwork && owner != null) privateArtworkDirectory(context, owner)
+                else ScopedTemporaryFiles.publicArtwork(context)
             val file = File.createTempFile("artwork_", ".jpg", ScopedTemporaryFiles.requireWritableDirectory(directory))
             tempFile = file
             FileOutputStream(file).use { out ->
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
             }
-            return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
+            val descriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
+            var current = false
+            try {
+                current = owner == null || isCurrentProcessStorageProfile(context, owner)
+                return descriptor.takeIf { current }
+            } finally {
+                if (!current) descriptor.close()
+            }
         } finally {
             bitmap.recycle()
             tempFile?.delete()

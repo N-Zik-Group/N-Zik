@@ -14,6 +14,7 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.ArtworkContentProvider
 import app.n_zik.android.playback.services.automotive.browse.AutoBrowseTree
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
+import app.n_zik.android.utils.getActiveProfile
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
@@ -82,7 +83,7 @@ class AutoArtworkUriQualityTest {
             assertEquals(expected, artist.mediaMetadata.artworkUri.let { it?.getQueryParameter("u") ?: it.toString() })
             assertEquals(expected, album.mediaMetadata.artworkUri.let { it?.getQueryParameter("u") ?: it.toString() })
         }
-        val provider = ArtworkContentProvider.uriFor("local:42").toString()
+        val provider = ArtworkContentProvider.scopedUriFor(context, getActiveProfile(context), "local:42").toString()
         val local = Song("local:42", "Local", "Artist", "3:00", provider)
         assertEquals(provider, SessionMediaItemMapper.mapSongToMediaItem(local, "songs").mediaMetadata.artworkUri.let { it?.getQueryParameter("u") ?: it.toString() })
         assertEquals(provider, SessionMediaItemMapper.mapSongToMediaItem(local).mediaMetadata.artworkUri.let { it?.getQueryParameter("u") ?: it.toString() })

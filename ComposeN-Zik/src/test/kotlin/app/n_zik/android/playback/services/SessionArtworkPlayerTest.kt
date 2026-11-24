@@ -14,12 +14,15 @@ import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.setActiveProfile
+import app.n_zik.android.utils.writeProfileEntries
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -119,8 +122,35 @@ class SessionArtworkPlayerTest {
         every { upstream.currentMediaItem } returns MediaItem.Builder().setMediaId("stream-abc")
             .setMediaMetadata(metadata).build()
         val published = SessionArtworkPlayer(upstream).mediaMetadata
-        assertEquals(cover, published.artworkUri)
+        assertEquals(ArtworkContentProvider.bindLocalRequestUri(app, getActiveProfile(app), cover), published.artworkUri)
         assertEquals(true, published.extras?.getBoolean("isCoverModified"))
+    }
+
+    @Test
+    fun `the same legacy route publishes a distinct uri for each new profile item`() {
+        stubAppContext()
+        check(app.writeProfileEntries(listOf("secondary" to "Secondary")))
+        val songId = "local:42"
+        val legacy = ArtworkContentProvider.uriFor(songId)
+        val upstream = upstreamWith("Song", "Artist", songId)
+        val metadata = upstream.mediaMetadata.buildUpon().setArtworkUri(legacy).build()
+        val firstItem = MediaItem.Builder().setMediaId(songId).setMediaMetadata(metadata).build()
+        every { upstream.mediaMetadata } returns metadata
+        every { upstream.currentMediaItem } returns firstItem
+
+        val session = SessionArtworkPlayer(upstream)
+        val firstUri = requireNotNull(session.mediaMetadata.artworkUri)
+        assertEquals(ArtworkContentProvider.scopedUriFor(app, "default", songId), firstUri)
+
+        every { upstream.currentMediaItem } returns firstItem.buildUpon().build()
+        setActiveProfile("secondary", app)
+        session.refreshArtwork()
+        assertNull(session.mediaMetadata.artworkUri)
+
+        every { upstream.currentMediaItem } returns firstItem.buildUpon().build()
+        val nextUri = requireNotNull(session.mediaMetadata.artworkUri)
+        assertEquals(ArtworkContentProvider.scopedUriFor(app, "secondary", songId), nextUri)
+        assertNotEquals(firstUri, nextUri)
     }
 
     @Test

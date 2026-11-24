@@ -88,6 +88,7 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.glass.GlassOverlayIconButton as IconButton
 import app.n_zik.android.ui.components.themed.SecondaryTextButton
 import app.n_zik.android.utils.currentVisualizerKey
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.hasPermission
 import app.n_zik.android.utils.isCompositionLaunched
 import app.n_zik.android.utils.rememberPreference
@@ -221,17 +222,18 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
                     try {
                         val bitmap = withContext(NzikDispatchers.DATA) {
                             displayedSource?.resize(1000, 1000)
-                                ?.let { ImageCacheFactory.loadBitmap(it, allowHardware = false) }
+                                ?.let { ImageCacheFactory.loadBitmap(it, allowHardware = false, profile = profile) }
                                 ?.takeIf { !it.isRecycled && it.width > 0 && it.height > 0 }
                         }
-                        circleBitmap = withContext(NzikDispatchers.MEDIA) {
+                        val circled = withContext(NzikDispatchers.MEDIA) {
                             Icon.getCircledBitmap(bitmap ?: APP_ICON_BITMAP)
                         }
+                        if (getActiveProfile(context) == profile) circleBitmap = circled
                     } catch (cancelled: CancellationException) {
                         throw cancelled
                     } catch (error: Exception) {
                         Timber.tag("NextVisualizer").w(error, "Could not load visualizer artwork")
-                        circleBitmap = null
+                        if (getActiveProfile(context) == profile) circleBitmap = null
                     }
                 }
                 val fallback by remember { lazy { Icon.getCircledBitmap(APP_ICON_BITMAP) } }
