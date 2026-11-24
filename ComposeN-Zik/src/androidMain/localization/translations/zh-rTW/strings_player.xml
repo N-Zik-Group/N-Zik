@@ -157,7 +157,6 @@
     <string name="player_action_enqueue">加入至播放佇列</string>
     <string name="player_action_hide_stats_for_nerds">Hide Stats for Nerds</string>
     <string name="player_action_like">Like</string>
-    <string name="player_action_listen_on_invidious">在%1$s上收聽</string>
     <string name="player_action_listen_on_youtube">在YouTube上收聽</string>
     <string name="player_action_listen_on_youtube_music">在YouTube Music上收聽</string>
     <string name="player_action_locate_current_song">尋找正在播放的歌曲</string>
