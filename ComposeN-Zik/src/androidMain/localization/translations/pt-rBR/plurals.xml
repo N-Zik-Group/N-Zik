@@ -29,6 +29,30 @@
         <item quantity="one">%1$d song</item>
         <item quantity="other">%1$d músicas</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_playlist_tracks">
+        <item quantity="one">Adicionar uma faixa %1$d desta playlist aos favoritos?</item>
+        <item quantity="other">Adicionar faixas %1$d desta playlist aos favoritos?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_playlist_tracks">
+        <item quantity="one">Remover a faixa %1$d desta playlist dos favoritos?</item>
+        <item quantity="other">Remover faixas %1$d desta playlist dos favoritos?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_album_tracks">
+        <item quantity="one">Adicionar uma faixa %1$d deste álbum aos favoritos?</item>
+        <item quantity="other">Adicionar músicas %1$d deste álbum aos favoritos?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_album_tracks">
+        <item quantity="one">Remover faixa %1$d neste álbum dos favoritos?</item>
+        <item quantity="other">Remover músicas %1$d deste álbum dos favoritos?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_episodes">
+        <item quantity="one">Adicionar episódio %1$d deste podcast aos favoritos?</item>
+        <item quantity="other">Adicionar episódios %1$d deste podcast aos favoritos?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_episodes">
+        <item quantity="one">Remover o episódio %1$d deste podcast dos favoritos?</item>
+        <item quantity="other">Remover episódios %1$d deste podcast dos favoritos?</item>
+    </plurals>
     <plurals name="about_translator_count">
         <item quantity="one">Tradutor %1$d</item>
         <item quantity="other">Tradutores %1$d</item>
